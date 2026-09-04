@@ -59,7 +59,8 @@ func CalculateTDXAdjustments(ctx context.Context, db *sql.DB) (AdjustmentSummary
 
 // CalculateTDXAdjustmentsWithOptions rebuilds adjustment segments strictly from
 // canonical TDX daily bars and corporate actions already stored in DuckDB. It
-// performs no network access.
+// performs no network access. Input lineage is summarized before historical data
+// is loaded; unchanged instruments are skipped without a full-history scan.
 func CalculateTDXAdjustmentsWithOptions(ctx context.Context, db *sql.DB, options AdjustmentOptions) (summary AdjustmentSummary, retErr error) {
 	if db == nil {
 		return summary, fmt.Errorf("duckdb is nil")
@@ -101,18 +102,37 @@ func CalculateTDXAdjustmentsWithOptions(ctx context.Context, db *sql.DB, options
 		summary.Attempted++
 		instrumentID := instrument.Instrument.InstrumentID
 		symbol := instrument.Identifier.Value
+		inputSignature, hasDaily, err := duckstore.AdjustmentInputSignature(ctx, db, instrumentID, "tdx")
+		if err != nil {
+			summary.Failures = append(summary.Failures, AdjustmentFailure{Symbol: symbol, Err: err})
+			reportAdjustmentProgress(options, summary, eligibleTotal, symbol)
+			continue
+		}
+		if !hasDaily {
+			summary.Skipped++
+			reportAdjustmentProgress(options, summary, eligibleTotal, symbol)
+			continue
+		}
+		previousSignature, hasState, err := duckstore.DerivedStateSignature(
+			ctx, db, tdxAdjustmentDataset, instrumentID, "tdx", calc.AdjustmentMethodAffineGBBQV1,
+		)
+		if err != nil {
+			summary.Failures = append(summary.Failures, AdjustmentFailure{Symbol: symbol, Err: err})
+			reportAdjustmentProgress(options, summary, eligibleTotal, symbol)
+			continue
+		}
+		if hasState && previousSignature == inputSignature {
+			summary.Skipped++
+			reportAdjustmentProgress(options, summary, eligibleTotal, symbol)
+			continue
+		}
+
 		bars, err := duckstore.LoadDailyBars(ctx, db, instrumentID, "tdx")
 		if err != nil {
 			summary.Failures = append(summary.Failures, AdjustmentFailure{Symbol: symbol, Err: err})
 			reportAdjustmentProgress(options, summary, eligibleTotal, symbol)
 			continue
 		}
-		if len(bars) == 0 {
-			summary.Skipped++
-			reportAdjustmentProgress(options, summary, eligibleTotal, symbol)
-			continue
-		}
-
 		actions, err := duckstore.LoadCorporateActions(ctx, db, instrumentID, "tdx")
 		if err != nil {
 			summary.Failures = append(summary.Failures, AdjustmentFailure{Symbol: symbol, Err: err})
@@ -125,7 +145,10 @@ func CalculateTDXAdjustmentsWithOptions(ctx context.Context, db *sql.DB, options
 			reportAdjustmentProgress(options, summary, eligibleTotal, symbol)
 			continue
 		}
-		if err := duckstore.ReplaceAdjustmentSegmentsForRun(ctx, db, runID, instrumentID, calc.AdjustmentMethodAffineGBBQV1, "tdx", segments); err != nil {
+		if err := duckstore.ReplaceAdjustmentSegmentsAndStateForRun(
+			ctx, db, runID, instrumentID, tdxAdjustmentDataset,
+			calc.AdjustmentMethodAffineGBBQV1, "tdx", inputSignature, segments,
+		); err != nil {
 			summary.Failures = append(summary.Failures, AdjustmentFailure{Symbol: symbol, Err: err})
 			reportAdjustmentProgress(options, summary, eligibleTotal, symbol)
 			continue
