@@ -15,11 +15,11 @@ import (
 
 func TestClassifyPeriodicTitle(t *testing.T) {
 	tests := []struct {
-		title      string
-		wantType   domain.FilingType
+		title       string
+		wantType    domain.FilingType
 		wantVariant domain.FilingVariant
-		wantPeriod string
-		eligible   bool
+		wantPeriod  string
+		eligible    bool
 	}{
 		{"平安银行股份有限公司2025年年度报告", domain.FilingTypeAnnual, domain.FilingVariantFull, "2025-12-31", true},
 		{"平安银行股份有限公司2025年年度报告摘要", domain.FilingTypeAnnual, domain.FilingVariantSummary, "2025-12-31", false},
@@ -50,8 +50,21 @@ func TestClassifyPeriodicTitle(t *testing.T) {
 	}
 }
 
+func TestAnnouncementAvailabilityUsesNextChinaDayBoundary(t *testing.T) {
+	providerLocalMidnight := time.Date(2026, 3, 28, 0, 0, 0, 0, chinaDisclosureLocation)
+	date, available := announcementAvailability(providerLocalMidnight.UnixMilli())
+	if date.Format("2006-01-02") != "2026-03-28" {
+		t.Fatalf("announcement date=%s", date)
+	}
+	wantAvailable := time.Date(2026, 3, 29, 0, 0, 0, 0, chinaDisclosureLocation).UTC()
+	if !available.Equal(wantAvailable) {
+		t.Fatalf("available=%s, want %s", available, wantAvailable)
+	}
+}
+
 func TestClientCatalogueAndDocument(t *testing.T) {
-	announcement := time.Date(2026, 3, 28, 10, 42, 0, 0, time.UTC)
+	providerTimestamp := time.Date(2026, 3, 28, 0, 0, 0, 0, chinaDisclosureLocation)
+	wantAvailable := time.Date(2026, 3, 29, 0, 0, 0, 0, chinaDisclosureLocation).UTC()
 	var server *httptest.Server
 	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -71,7 +84,7 @@ func TestClientCatalogueAndDocument(t *testing.T) {
 					{"announcementId":"1212345678","secCode":"000001","secName":"平安银行","orgId":"gssz0000001","announcementTitle":"平安银行股份有限公司<em>2025年年度报告</em>","announcementTime":%d,"adjunctUrl":"finalpage/2026-03-28/report.PDF","adjunctType":"PDF","announcementType":"年度报告","columnId":"szse","pageColumn":"sz"},
 					{"announcementId":"bad-time","secCode":"000002","secName":"万科A","announcementTitle":"2025年年度报告","announcementTime":0}
 				]
-			}`, announcement.UnixMilli())
+			}`, providerTimestamp.UnixMilli())
 		case "/finalpage/2026-03-28/report.PDF":
 			w.Header().Set("Content-Type", "application/pdf; charset=binary")
 			_, _ = w.Write([]byte("%PDF-test"))
@@ -102,8 +115,8 @@ func TestClientCatalogueAndDocument(t *testing.T) {
 	if filing.SourceFilingID != "1212345678" || filing.ExchangeMIC != "XSHE" || filing.FilingType != domain.FilingTypeAnnual || filing.ReportPeriod == nil || filing.ReportPeriod.Format("2006-01-02") != "2025-12-31" {
 		t.Fatalf("filing=%#v", filing)
 	}
-	if !filing.AnnouncementTime.Equal(announcement) || !strings.Contains(filing.Title, "2025年年度报告") {
-		t.Fatalf("time/title=%s/%q", filing.AnnouncementTime, filing.Title)
+	if filing.AnnouncementDate.Format("2006-01-02") != "2026-03-28" || !filing.AnnouncementTime.Equal(wantAvailable) || filing.AnnouncementTimePrecision != domain.AnnouncementPrecisionDate || !strings.Contains(filing.Title, "2025年年度报告") {
+		t.Fatalf("date/time/precision/title=%s/%s/%s/%q", filing.AnnouncementDate, filing.AnnouncementTime, filing.AnnouncementTimePrecision, filing.Title)
 	}
 	content, sourceURL, mediaType, err := client.FilingDocument(t.Context(), filing.DocumentLocator)
 	if err != nil {
