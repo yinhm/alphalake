@@ -172,4 +172,15 @@ func TestSyncAllTDXDailyContinuesAfterInstrumentValidationFailure(t *testing.T) 
 	if rows != 1 {
 		t.Fatalf("good rows = %d, want 1", rows)
 	}
+
+	var validations int
+	if err := db.QueryRowContext(ctx, `
+		SELECT count(*) FROM meta.validation_result
+		WHERE source='tdx' AND dataset='daily_ohlcv' AND passed=false
+	`).Scan(&validations); err != nil {
+		t.Fatalf("count validation failures: %v", err)
+	}
+	if validations == 0 {
+		t.Fatal("expected persisted validation failure")
+	}
 }
