@@ -68,7 +68,7 @@ func TestProviderFinancialResolutionAcknowledgementSurvivesReplayAndYieldsToReso
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(rows) != 1 || rows[0].InstrumentID == nil || *rows[0].InstrumentID != 42 || rows[0].IdentifierValue != "bj870001" || rows[0].Reason != "" {
+	if len(rows) != 1 || rows[0].InstrumentID == nil || *rows[0].InstrumentID != 42 || rows[0].IdentifierValue != "bj870001" || rows[0].Reason != "" || rows[0].AcknowledgedReason != "" || rows[0].AcknowledgedAt != nil {
 		t.Fatalf("resolved rows=%#v", rows)
 	}
 }
@@ -91,6 +91,9 @@ func TestProviderFinancialResolutionCanBeUnacknowledged(t *testing.T) {
 	if changed, err := AcknowledgeProviderFinancialResolution(ctx, db, 201, "430001", "manual review"); err != nil || !changed {
 		t.Fatalf("ack changed=%v err=%v", changed, err)
 	}
+	if err := SetCheckpoint(ctx, db, "tdx", "professional_financial", "package:gpcw19991231.zip", "md5"); err != nil {
+		t.Fatal(err)
+	}
 	changed, err := UnacknowledgeProviderFinancialResolution(ctx, db, 201, "430001")
 	if err != nil || !changed {
 		t.Fatalf("unack changed=%v err=%v", changed, err)
@@ -101,6 +104,9 @@ func TestProviderFinancialResolutionCanBeUnacknowledged(t *testing.T) {
 	}
 	if len(rows) != 1 || rows[0].Status != ProviderResolutionPending || rows[0].AcknowledgedReason != "" || rows[0].AcknowledgedAt != nil || rows[0].Reason != input.Reason {
 		t.Fatalf("pending row after unack=%#v", rows)
+	}
+	if _, found, err := GetCheckpoint(ctx, db, "tdx", "professional_financial", "package:gpcw19991231.zip"); err != nil || found {
+		t.Fatalf("checkpoint after unack found=%v err=%v, want invalidated", found, err)
 	}
 	if changed, err := UnacknowledgeProviderFinancialResolution(ctx, db, 201, "430001"); err != nil || changed {
 		t.Fatalf("idempotent unack changed=%v err=%v", changed, err)
