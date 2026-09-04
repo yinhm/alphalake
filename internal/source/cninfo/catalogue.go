@@ -15,10 +15,10 @@ import (
 )
 
 const (
-	Source                    = "cninfo"
-	CatalogueParserVersion    = "cninfo-catalogue-v1"
-	FilingClassifierVersion   = "cninfo-periodic-title-v1"
-	PeriodicReportCategories  = "category_ndbg_szsh;category_bndbg_szsh;category_yjdbg_szsh;category_sjdbg_szsh"
+	Source                   = "cninfo"
+	CatalogueParserVersion   = "cninfo-catalogue-v1"
+	FilingClassifierVersion  = "cninfo-periodic-title-v1"
+	PeriodicReportCategories = "category_ndbg_szsh;category_bndbg_szsh;category_yjdbg_szsh;category_sjdbg_szsh"
 )
 
 type CatalogueRequest struct {
@@ -56,18 +56,18 @@ type rawCatalogueResponse struct {
 }
 
 type rawAnnouncement struct {
-	ID                 flexibleString `json:"id"`
-	AnnouncementID     flexibleString `json:"announcementId"`
-	SecCode             string         `json:"secCode"`
-	SecName             string         `json:"secName"`
-	OrgID               string         `json:"orgId"`
-	AnnouncementTitle   string         `json:"announcementTitle"`
-	AnnouncementTime    flexibleInt64  `json:"announcementTime"`
-	AdjunctURL          string         `json:"adjunctUrl"`
-	AdjunctType         string         `json:"adjunctType"`
-	AnnouncementType   string         `json:"announcementType"`
-	ColumnID            string         `json:"columnId"`
-	PageColumn          string         `json:"pageColumn"`
+	ID               flexibleString `json:"id"`
+	AnnouncementID   flexibleString `json:"announcementId"`
+	SecCode           string         `json:"secCode"`
+	SecName           string         `json:"secName"`
+	OrgID             string         `json:"orgId"`
+	AnnouncementTitle string         `json:"announcementTitle"`
+	AnnouncementTime  flexibleInt64  `json:"announcementTime"`
+	AdjunctURL        string         `json:"adjunctUrl"`
+	AdjunctType       string         `json:"adjunctType"`
+	AnnouncementType  string         `json:"announcementType"`
+	ColumnID          string         `json:"columnId"`
+	PageColumn        string         `json:"pageColumn"`
 }
 
 type flexibleString string
@@ -203,6 +203,19 @@ func ClassifyPeriodicTitle(title string) (domain.FilingType, domain.FilingVarian
 	}
 	year, err := strconv.Atoi(yearText)
 	if err != nil || year < 1990 || year > 2200 {
+		return domain.FilingTypeUnknown, domain.FilingVariantOther, nil, false
+	}
+
+	// Category search can return documents that merely discuss a report. These
+	// references are evidence but not statement filings and must not become PIT
+	// announcement anchors. Explicit report correction/revision wording is handled
+	// below and therefore intentionally absent from this exclusion set.
+	if containsAny(title,
+		"延期披露", "推迟披露", "预约披露", "披露日期", "披露时间",
+		"问询函", "监管工作函", "回复公告", "说明会", "业绩说明会",
+		"董事会决议", "监事会决议", "审议", "编制工作", "年报工作",
+		"业绩预告", "业绩快报",
+	) {
 		return domain.FilingTypeUnknown, domain.FilingVariantOther, nil, false
 	}
 
