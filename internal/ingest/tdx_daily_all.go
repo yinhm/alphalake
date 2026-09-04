@@ -84,15 +84,7 @@ func SyncAllTDXDailyWithOptions(ctx context.Context, db *sql.DB, source TDXIncre
 	}
 	summary.RunID = runID
 	defer func() {
-		status := ingestRunStatus(summary, retErr)
-		finishCtx := context.WithoutCancel(ctx)
-		if err := duckstore.FinishIngestRun(finishCtx, db, runID, status, nil, retErr); err != nil {
-			if retErr == nil {
-				retErr = err
-			} else {
-				retErr = errors.Join(retErr, err)
-			}
-		}
+		finalizeTrackedRun(ctx, db, runID, ingestRunStatus(summary, retErr), &retErr)
 	}()
 
 	observations, err := source.Instruments(ctx)
@@ -111,7 +103,7 @@ func SyncAllTDXDailyWithOptions(ctx context.Context, db *sql.DB, source TDXIncre
 		if err := ctx.Err(); err != nil {
 			return summary, err
 		}
-		if !dailyEligible(observation.Instrument.Type) {
+		if !equityOrETF(observation.Instrument.Type) {
 			summary.Skipped++
 			continue
 		}
@@ -169,7 +161,7 @@ func reportTDXDailyProgress(options TDXDailySyncOptions, summary TDXDailySyncSum
 func countDailyEligible(observations []domain.InstrumentObservation) int {
 	count := 0
 	for _, observation := range observations {
-		if dailyEligible(observation.Instrument.Type) {
+		if equityOrETF(observation.Instrument.Type) {
 			count++
 		}
 	}
@@ -190,8 +182,4 @@ func ingestRunStatus(summary TDXDailySyncSummary, runErr error) string {
 		return duckstore.IngestRunPartial
 	}
 	return duckstore.IngestRunFailed
-}
-
-func dailyEligible(t domain.InstrumentType) bool {
-	return t == domain.InstrumentEquity || t == domain.InstrumentETF
 }
