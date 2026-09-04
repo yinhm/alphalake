@@ -39,13 +39,28 @@ type InstrumentObservation struct {
 	Identifier Identifier
 }
 
+// InstrumentMasterPartition describes one independently verifiable provider
+// partition of a security master, such as one exchange. Complete=true grants
+// destructive authority only for this partition: identifiers absent from a
+// complete partition may eventually be closed, while a failed/incomplete
+// partition is frozen and cannot close history.
+type InstrumentMasterPartition struct {
+	Key          string
+	ExchangeMIC  string
+	Complete     bool
+	Error        string
+	Observations []InstrumentObservation
+}
+
 // InstrumentMasterSnapshot is one provider's point-in-time security-master
-// observation. Complete means the provider adapter verified every expected
-// partition needed to represent the current universe; only complete snapshots
-// may close provider identifiers that disappeared since the previous snapshot.
+// observation. Observations is the flat union of usable partition rows for
+// downstream acquisition loops. Partitions carries the destructive-authority
+// boundary. Complete remains as a compatibility/global summary and is true only
+// when every expected partition is complete.
 type InstrumentMasterSnapshot struct {
 	Source       string
 	AsOfDate     time.Time
 	Complete     bool
 	Observations []InstrumentObservation
+	Partitions   []InstrumentMasterPartition
 }
