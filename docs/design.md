@@ -1,10 +1,12 @@
 # AlphaLake Design
 
-Status: draft v0
+Status: accepted target architecture, v0 draft
 
-This document intentionally contains both the **current specification** and the **important design decisions that led to it**. The specification is normative for implementation; the decision log records alternatives, trade-offs, and reasons so later changes can be made deliberately rather than by accident.
+This document contains the **accepted target specification** and the **important design decisions that led to it**. It is normative for implementation direction and compatibility decisions, but it is **not a claim that every described capability already exists**.
 
-## 1. Final specification
+Current repository reality is tracked separately in [`implementation-status.md`](implementation-status.md). A capability is considered implemented only when an executable path exists and is covered by tests; schema-only and planned capabilities are labeled explicitly there. When this target specification and current implementation differ, the status document describes the present state while this document describes the intended contract.
+
+## 1. Accepted target specification
 
 ### 1.1 Product definition
 
@@ -21,15 +23,15 @@ External sources
     |                  |
     +-- CNINFO --------+----> source adapters ----> canonical domains ----> DuckDB
     |                  |             |
-    +-- future sources +             +----> immutable raw artifacts
+    +-- future sources +             +----> immutable raw artifacts (when applicable)
 ```
 
 A source adapter has two responsibilities:
 
-1. acquire source data and preserve a reproducible raw artifact when applicable;
+1. acquire provider data, preserving a reproducible raw artifact when the source naturally exposes a stable file/document;
 2. translate provider-specific records into AlphaLake canonical records.
 
-Provider SDK types must not escape the adapter package.
+AlphaLake deliberately does **not** require one broad adapter interface for all source shapes. Ingest workflows define narrow consumer interfaces for the capabilities they need. Provider SDK types must not escape the adapter package.
 
 ### 1.3 Source roles
 
@@ -69,7 +71,7 @@ Examples mapping to one instrument:
 - `600519` + XSHG (exchange ticker)
 - possible future ISIN/vendor identifiers
 
-A provider symbol change must not change `instrument_id`.
+A provider symbol change must not change `instrument_id`. Provider-code reuse by a different security must create a different instrument and close/open identifier validity intervals rather than silently reusing the old identity.
 
 ### 1.5 Domain schemas
 
@@ -83,7 +85,7 @@ DuckDB uses domain-oriented schemas:
 - `fund` — fund master/NAV/AUM/holdings (later slice);
 - `index` — index master, temporal constituents and weights (later slice);
 - `derived` — reproducible research/valuation/factor datasets;
-- `staging` — transient normalized batches before canonical merge.
+- transient staging relations/tables — used where bulk ingestion benefits from set-based merge semantics.
 
 ### 1.6 Raw artifacts and lineage
 
@@ -99,15 +101,20 @@ Raw source artifacts are immutable whenever the source offers a stable file or d
 
 Canonical facts retain source lineage (`source`, source record/file identifier, ingest run). Reprocessing a raw artifact with a newer parser must be possible without redownloading it.
 
+Protocol responses without a natural stable source file do not need to be artificially wrapped into an artifact abstraction; they still retain record/run lineage and validation evidence.
+
 ### 1.7 Market data semantics
 
 `market.ohlcv_daily` stores unadjusted prices only.
 
 Canonical units:
 
-- prices/amount: native currency units using exact/decimal-compatible database types where practical;
+- prices/amount: native currency units; current market runtime may use `float64`, while persistent precision is controlled by the DuckDB schema;
 - volume: shares/units, not TDX "hands";
-- dates/times: exchange-local observation date/time plus timezone-aware ingestion metadata.
+- daily observations: exchange/provider calendar dates represented canonically as date-only values, independent of the host machine timezone;
+- ingestion timestamps: timezone-aware timestamps.
+
+Using `DECIMAL` persistence after a `float64` runtime path does not make the pipeline end-to-end exact. Financial-fact precision is a separate unresolved contract and must be settled before production fundamental ingestion.
 
 Adjusted prices are derived from raw OHLCV plus corporate-action semantics. Provider high-level adjusted-price helpers may be used for validation, not as the canonical stored truth.
 
@@ -116,6 +123,8 @@ Adjusted prices are derived from raw OHLCV plus corporate-action semantics. Prov
 TDX GBBQ decoding may come from `injoyai/tdx`, but AlphaLake owns interpretation.
 
 This is required because provider libraries may normalize or omit semantics that matter to the lake, including ETF split/scale events such as category 11. Canonical corporate-action records must preserve the original category and source fields in addition to normalized meaning.
+
+Full-snapshot replacement must protect the last known-good history from suspicious empty/truncated upstream responses. Provider record identity must be strong enough to distinguish multiple events with the same symbol/date/category.
 
 ### 1.9 Classification and membership
 
@@ -154,7 +163,7 @@ TDX FN232 -> canonical net_income_parent
 
 This allows field definitions to evolve without changing the binary parser.
 
-Canonical financial facts include enough dimensions to distinguish statement/period semantics and to support point-in-time queries.
+Canonical financial facts include enough dimensions to distinguish statement/period semantics and to support point-in-time queries. The current `fundamental` schema is provisional until the precision model and first production writer are accepted.
 
 ### 1.11 TDX adapter boundary
 
@@ -163,6 +172,7 @@ Only `internal/source/tdx` may directly import `github.com/injoyai/tdx`.
 The adapter converts library types into AlphaLake-neutral types. It must correct/retain semantics where the SDK's convenience representation differs from AlphaLake, for example:
 
 - convert stock volume back to shares/units if an SDK normalizes it to hands;
+- normalize provider timestamps into explicit calendar-date semantics before they enter daily canonical records;
 - preserve raw GBBQ categories and fields;
 - avoid the SDK's private SQLite cache/scheduler as AlphaLake owns persistence and workflow;
 - retain additional `.day` metadata when needed even if a high-level SDK type does not expose it.
@@ -191,6 +201,8 @@ Market:
 - volume >= 0;
 - uniqueness by instrument/date/source policy.
 
+A bad daily observation should be quarantined rather than permanently blocking later valid observations for the instrument. Retry state must ensure quarantined historical dates remain eligible for re-fetch even when newer good dates have already advanced the stored maximum date.
+
 Financial:
 - selected accounting identities within tolerance;
 - high-value facts cross-checked against CNINFO filings;
@@ -211,7 +223,11 @@ Each dataset defines:
 
 Do not use a single global `MAX(date)` rule for every dataset. Financial updates must be able to detect corrections/restatements to older periods, commonly by rescanning a recent announcement window and deduplicating by source identity/hash.
 
+For DuckDB bulk paths, prefer Appender/staging plus set-based merge over OLTP-style per-row INSERT loops while keeping useful recovery boundaries (currently per instrument for daily data).
+
 ### 1.15 Initial delivery slices
+
+These slices describe intended delivery order, not implementation status. See `implementation-status.md` for current completion.
 
 #### Slice 0 — foundation
 - repository layout;
@@ -223,7 +239,7 @@ Do not use a single global `MAX(date)` rule for every dataset. Financial updates
 #### Slice 1 — TDX daily market data
 - instrument bootstrap;
 - daily OHLCV acquisition/import;
-- immutable raw artifacts;
+- immutable raw artifacts where a stable source artifact exists;
 - market validation.
 
 #### Slice 2 — corporate actions/classification
@@ -270,7 +286,7 @@ Do not use a single global `MAX(date)` rule for every dataset. Financial updates
 
 **Why:** A source-shaped schema becomes expensive when adding filings, funds, other markets, or a second provider. The stable abstraction is the investment-data domain, not a provider API.
 
-**Consequence:** provider types stop at `internal/source/<provider>`.
+**Consequence:** provider types stop at `internal/source/<provider>`. Ingest workflows own narrow interfaces instead of relying on one artifact-shaped global adapter interface.
 
 ### D-003 — Reuse `injoyai/tdx` for TDX-specific codec/protocol work
 
@@ -314,11 +330,15 @@ Do not use a single global `MAX(date)` rule for every dataset. Financial updates
 
 **Trade-off:** uses more disk. Local market/fundamental data size makes this acceptable compared with the value of reproducibility.
 
+**Implementation note:** this decision is not yet fully implemented; it applies first to sources with stable artifacts such as TDX professional financial packages and CNINFO documents.
+
 ### D-009 — Canonical instrument ID instead of provider symbol as identity
 
 **Decision:** Introduce `instrument_id` immediately.
 
 **Why:** Provider codes differ and codes/names can change. A stable identity prevents downstream tables from coupling to TDX naming.
+
+**Implementation note:** code-reuse and full temporal identifier lifecycle are still incomplete; see `implementation-status.md`.
 
 ### D-010 — Store provider financial facts vertically before canonical mapping
 
@@ -344,8 +364,8 @@ Do not use a single global `MAX(date)` rule for every dataset. Financial updates
 
 These are deliberately not settled in v0 foundation work:
 
-- exact DuckDB decimal types/precision for all financial and price fields;
-- whether `instrument_id` should be sequence-backed BIGINT or application-generated UUID/ULID;
+- exact runtime/storage precision model for financial facts and whether scaled integers/decimal library values are required;
+- whether `instrument_id` should remain sequence-backed BIGINT or move to application-generated UUID/ULID;
 - how much of TDX professional-financial field metadata should be generated from an upstream catalogue versus curated manually;
 - CNINFO parser depth in v0 (metadata validation only vs structured PDF/XBRL extraction);
 - artifact retention/compression policy for minute/tick data if those become large.
