@@ -12,8 +12,8 @@ import (
 
 // ProviderCodeResolution resolves a raw provider code that lacks a verified
 // exchange marker. A unique temporal provider symbol resolves to one canonical
-// instrument. Multiple distinct provider symbols are a legitimate ambiguity of
-// the raw evidence and remain unresolved rather than being guessed.
+// instrument. Multiple distinct financial-eligible provider symbols remain
+// unresolved rather than being guessed.
 type ProviderCodeResolution struct {
 	InstrumentID    int64
 	IdentifierValue string
@@ -28,6 +28,11 @@ func (r ProviderCodeResolution) Resolved() bool {
 // provider's temporal symbol identifiers at the observation date. It does not
 // consult current code-range classifiers, so historical B-share/legacy-market
 // records are not rejected merely because today's SDK does not classify them.
+//
+// Professional-financial packages contain company financial records, so index
+// instruments are not legitimate identity candidates even when an index and a
+// company security share the same six-digit provider code. This dataset-level
+// semantic filter is independent of the unverified raw market-marker byte.
 func ResolveProviderCodesAt(ctx context.Context, db *sql.DB, provider string, codes []string, asOf time.Time) ([]ProviderCodeResolution, error) {
 	if db == nil {
 		return nil, errors.New("duckdb is nil")
@@ -49,12 +54,14 @@ func ResolveProviderCodesAt(ctx context.Context, db *sql.DB, provider string, co
 	}
 	asOf = dateUTC(asOf)
 	rows, err := db.QueryContext(ctx, `
-		SELECT instrument_id, identifier_value
-		FROM ref.instrument_identifier
-		WHERE provider=?
-		  AND identifier_type='symbol'
-		  AND (valid_from IS NULL OR valid_from <= ?)
-		  AND (valid_to IS NULL OR valid_to > ?)
+		SELECT x.instrument_id, x.identifier_value
+		FROM ref.instrument_identifier x
+		JOIN ref.instrument i ON i.instrument_id=x.instrument_id
+		WHERE x.provider=?
+		  AND x.identifier_type='symbol'
+		  AND i.instrument_type <> 'index'
+		  AND (x.valid_from IS NULL OR x.valid_from <= ?)
+		  AND (x.valid_to IS NULL OR x.valid_to > ?)
 	`, provider, asOf, asOf)
 	if err != nil {
 		return nil, fmt.Errorf("query temporal provider symbols: %w", err)
