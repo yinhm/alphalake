@@ -16,11 +16,11 @@ Status meanings:
 | DuckDB canonical store | Implemented | Single analytical backend; persistent files use stable `alphalake` catalog alias. |
 | Versioned schema migrations | Implemented | Embedded migrations are the single SQL source of truth; only unapplied versions run, each in its own transaction and recorded after success. Legacy replay-only databases are upgraded by version registration. |
 | Schema single source of truth | Implemented | Only `internal/store/duckdb/migrations/*.sql` is authoritative; the duplicate top-level `schema/` copies were removed. |
-| `meta.ingest_run` lifecycle | Implemented | Daily, corporate-action, classification, industry and adjustment jobs create durable runs with terminal status; cancel-safe finalization/error joining is shared by a minimal ingest helper. |
+| `meta.ingest_run` lifecycle | Implemented | Daily, corporate-action, classification, industry, professional-financial and adjustment jobs create durable runs with terminal status; cancel-safe finalization/error joining is shared by a minimal ingest helper. |
 | Operational status | Implemented | `alphalake status <db-path>` reads schema version/pending migrations, validation failures, checkpoints and recent ingest runs without mutating the database. |
 | Validation persistence | Implemented | Daily structural violations are stored in `meta.validation_result`; good bars, validation evidence and quarantine retry state publish atomically per instrument/run. The obsolete standalone validation writer was removed so production daily validation has one transaction semantic. |
-| Checkpoints | Partial | Durable checkpoints are used for daily-bar quarantine retry and security-master missing-identifier confirmation; generic checkpoint semantics are not yet shared by every dataset. |
-| Raw artifact catalogue | Schema only | `meta.artifact` exists. Stable-file/document acquisition and immutable local retention are not implemented yet. |
+| Checkpoints | Partial | Durable checkpoints are used for daily-bar quarantine retry, security-master missing-identifier confirmation, and completed professional-financial package revisions; generic checkpoint semantics are not yet shared by every dataset. |
+| Immutable raw artifact store | Implemented | Common SHA-256 content-addressed store writes raw bytes atomically, verifies retained bytes on reload, records `meta.artifact` lineage, and currently backs TDX `gpcw.txt`/`gpcw*.zip` acquisition. |
 | Broad source adapter interface | Removed | AlphaLake uses narrow consumer-defined interfaces per ingest workflow instead of forcing file/artifact semantics onto every source. |
 
 ## Reference / identity
@@ -28,7 +28,7 @@ Status meanings:
 | Capability | Status | Notes |
 | --- | --- | --- |
 | Canonical `instrument_id` | Implemented | TDX provider identifiers resolve to canonical instruments. |
-| Provider identifier interval semantics | Implemented | Store uses half-open `[valid_from, valid_to)` intervals, explicit as-of resolution, ambiguity rejection and non-overlapping identity on code reuse. Classification uses the same strict temporal resolver semantics. |
+| Provider identifier interval semantics | Implemented | Store uses half-open `[valid_from, valid_to)` intervals, explicit as-of resolution, ambiguity rejection and non-overlapping identity on code reuse. Classification and professional-financial ingestion use the same strict temporal resolver semantics. |
 | Observed TDX security-master lifecycle | Implemented | SH/SZ/BJ are independently verifiable/applicable partitions. A failed or suspicious partition is frozen without blocking healthy exchanges. Missing identifiers require absence in two distinct complete observations before close; a return before confirmation clears pending evidence. |
 | Security-master partition isolation | Implemented | Source partition failure and store-side truncation/validation failure are isolated per exchange; downstream ingestion receives only successfully-applied partition observations. |
 | Authoritative identifier lifecycle acquisition | Partial | Current-only TDX snapshots can observe disappearance/reappearance but cannot reconstruct an absence interval AlphaLake never observed or guarantee official delist/relist/code-change dates. When a closed code reappears without a list date, the previous `valid_to` is a conservative non-overlap lower bound until an authoritative source tightens it. |
@@ -67,11 +67,15 @@ Status meanings:
 
 | Capability | Status | Notes |
 | --- | --- | --- |
-| `fundamental.*` tables | Schema only | Current schema is provisional and must not be treated as a finalized financial precision/model contract. |
-| TDX professional financial (`gpcw`) ingestion | Planned | Accepted primary structured financial source; download/parser pipeline not complete. |
-| Financial precision model | Planned | Runtime representation and DuckDB decimal/scaled-integer policy must be settled before canonical financial facts are implemented. |
-| Point-in-time report/announcement semantics | Planned | Accepted contract, not yet backed by a complete ingestion path. |
-| CNINFO filing catalogue/documents | Planned | Intended authoritative evidence/validation source; no production adapter yet. |
+| TDX professional financial raw acquisition | Implemented | `sync-financial <db>` fetches `gpcw.txt`, verifies listed package size/MD5, retains manifest/package artifacts, and defaults to the newest package; `--all` explicitly requests full history. |
+| Lossless `gpcw` parser | Implemented | Dynamic field count comes from `report_size/4`; exact float32 bits plus analytical float64 values are preserved. Package structure/offset validation is covered by tests. |
+| `fundamental.provider_fact` production writer | Implemented | DuckDB Appender/staging bulk writer stores every FN field, artifact SHA as revision key, raw float32 bits, report period, artifact/run lineage, and nullable announcement time. Same artifact replay is idempotent; corrected artifacts remain separate revisions. |
+| Core TDX provider field catalog | Implemented | Migration 010 maps reviewed official fields FN230–FN238 to stable canonical names; unreviewed FN fields remain available losslessly as provider facts without speculative canonical mapping. |
+| Financial identity resolution | Implemented | Each package record is resolved against temporal provider identifiers as of its report period. Unresolved historical codes are not assigned guessed instruments; retained raw artifacts remain retryable after lifecycle enrichment. |
+| Financial precision model | Partial | Provider raw precision is explicit: exact float32 bits + exactly representable float64 analytical value. Canonical `fundamental.fact` decimal/unit policy remains to be finalized before materialization. |
+| Point-in-time report/announcement semantics | Partial | Report period and as-of identity resolution are implemented. `gpcw` package parsing does not provide an authoritative per-record announcement timestamp, so AlphaLake deliberately leaves provider `announcement_time` NULL rather than inferring it. |
+| Canonical `fundamental.fact` materialization | Planned | Table exists, but no production writer is enabled until authoritative announcement time and canonical unit/precision semantics are available. |
+| CNINFO filing catalogue/documents | Planned | Intended authoritative evidence/announcement-time/validation source; no production adapter yet. |
 | CNINFO fact/date validation | Planned | No production validation path yet. |
 
 ## Later domains
@@ -85,6 +89,7 @@ Status meanings:
 ## Known structural work still open
 
 1. Add an authoritative security-lifecycle source/process so observed/conservative provider identifier boundaries can be tightened to official dates and missed absence intervals can be reconstructed.
-2. Implement immutable artifact retention first for stable-file/document sources such as TDX professional financial packages and CNINFO filings.
-3. Revisit the provisional `fundamental` schema and financial precision model before its first production writer is introduced.
-4. If adjustment content-signature scans become material at scale, maintain content revision/signature incrementally inside canonical merge/snapshot transactions without changing the content-based dirty semantics.
+2. Add authoritative financial filing/announcement metadata (CNINFO is the preferred next source) so provider facts can become true point-in-time canonical facts without invented timestamps.
+3. Finalize canonical financial unit/decimal policy before the first `fundamental.fact` production writer; expand the curated FN mapping only with reviewed semantics.
+4. Consider persisting unresolved professional-financial identities as queryable validation evidence in addition to run-level unresolved counts while keeping package replay semantics intact.
+5. If adjustment content-signature scans become material at scale, maintain content revision/signature incrementally inside canonical merge/snapshot transactions without changing the content-based dirty semantics.
