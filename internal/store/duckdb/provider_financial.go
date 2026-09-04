@@ -14,51 +14,58 @@ import (
 
 const providerFactStageTable = "_alphalake_provider_fact_stage"
 
+type ProviderFactWriteResult struct {
+	Attempted int
+	Inserted  int
+}
+
 // InsertProviderFinancialRecordsForArtifact appends one immutable artifact
 // revision of provider facts. The revision key is the artifact SHA-256, so a
 // corrected package with the same report period remains queryable alongside the
-// prior revision instead of destructively overwriting history.
+// prior revision instead of destructively overwriting history. Attempted counts
+// staged facts; Inserted counts only rows absent from the canonical target before
+// this merge, making idempotent replay observable as Inserted=0.
 func InsertProviderFinancialRecordsForArtifact(
 	ctx context.Context,
 	db *sql.DB,
 	ingestRunID int64,
 	artifactSHA string,
 	records []domain.ProviderFinancialRecord,
-) (int, error) {
+) (ProviderFactWriteResult, error) {
+	var result ProviderFactWriteResult
 	if db == nil {
-		return 0, errors.New("duckdb is nil")
+		return result, errors.New("duckdb is nil")
 	}
 	if ingestRunID <= 0 {
-		return 0, errors.New("ingest run ID must be positive")
+		return result, errors.New("ingest run ID must be positive")
 	}
 	artifactSHA = strings.TrimSpace(artifactSHA)
 	if artifactSHA == "" {
-		return 0, errors.New("artifact sha256 is required")
+		return result, errors.New("artifact sha256 is required")
 	}
 	if len(records) == 0 {
-		return 0, nil
+		return result, nil
 	}
-	facts := 0
 	for i, record := range records {
 		if record.InstrumentID <= 0 || record.ReportPeriod.IsZero() || record.ArtifactID <= 0 {
-			return 0, fmt.Errorf("provider financial record %d has incomplete canonical identity/lineage", i)
+			return result, fmt.Errorf("provider financial record %d has incomplete canonical identity/lineage", i)
 		}
-		if strings.TrimSpace(record.Identifier.Provider) == "" || strings.TrimSpace(record.SourceFile) == "" {
-			return 0, fmt.Errorf("provider financial record %d has incomplete source identity", i)
+		if strings.TrimSpace(record.Provider) == "" || strings.TrimSpace(record.SourceFile) == "" {
+			return result, fmt.Errorf("provider financial record %d has incomplete source identity", i)
 		}
-		facts += len(record.ProviderFields)
+		result.Attempted += len(record.ProviderFields)
 	}
 
 	conn, err := db.Conn(ctx)
 	if err != nil {
-		return 0, fmt.Errorf("acquire provider-fact connection: %w", err)
+		return result, fmt.Errorf("acquire provider-fact connection: %w", err)
 	}
 	defer conn.Close()
 	if _, err := conn.ExecContext(ctx, `DROP TABLE IF EXISTS temp.main.`+providerFactStageTable); err != nil {
-		return 0, fmt.Errorf("cleanup provider-fact staging table: %w", err)
+		return result, fmt.Errorf("cleanup provider-fact staging table: %w", err)
 	}
 	if _, err := conn.ExecContext(ctx, `BEGIN TRANSACTION`); err != nil {
-		return 0, fmt.Errorf("begin provider-fact bulk insert: %w", err)
+		return result, fmt.Errorf("begin provider-fact bulk insert: %w", err)
 	}
 	committed := false
 	defer func() {
@@ -84,10 +91,28 @@ func InsertProviderFinancialRecordsForArtifact(
 			revision_key VARCHAR NOT NULL
 		)
 	`); err != nil {
-		return 0, fmt.Errorf("create provider-fact staging table: %w", err)
+		return result, fmt.Errorf("create provider-fact staging table: %w", err)
 	}
 	if err := appendProviderFacts(ctx, conn, ingestRunID, artifactSHA, records); err != nil {
-		return 0, err
+		return result, err
+	}
+	if err := conn.QueryRowContext(ctx, `
+		SELECT count(*)
+		FROM (
+			SELECT DISTINCT instrument_id, source, report_period, provider_field, revision_key
+			FROM temp.main.`+providerFactStageTable+`
+		) s
+		WHERE NOT EXISTS (
+			SELECT 1
+			FROM fundamental.provider_fact p
+			WHERE p.instrument_id=s.instrument_id
+			  AND p.source=s.source
+			  AND p.report_period=s.report_period
+			  AND p.provider_field=s.provider_field
+			  AND p.revision_key=s.revision_key
+		)
+	`).Scan(&result.Inserted); err != nil {
+		return result, fmt.Errorf("count new provider financial facts: %w", err)
 	}
 	if _, err := conn.ExecContext(ctx, `
 		INSERT INTO fundamental.provider_fact (
@@ -102,16 +127,16 @@ func InsertProviderFinancialRecordsForArtifact(
 		FROM temp.main.`+providerFactStageTable+`
 		ON CONFLICT (instrument_id, source, report_period, provider_field, revision_key) DO NOTHING
 	`); err != nil {
-		return 0, fmt.Errorf("merge provider financial facts: %w", err)
+		return result, fmt.Errorf("merge provider financial facts: %w", err)
 	}
 	if _, err := conn.ExecContext(ctx, `DROP TABLE temp.main.`+providerFactStageTable); err != nil {
-		return 0, fmt.Errorf("drop provider-fact staging table: %w", err)
+		return result, fmt.Errorf("drop provider-fact staging table: %w", err)
 	}
 	if _, err := conn.ExecContext(ctx, `COMMIT`); err != nil {
-		return 0, fmt.Errorf("commit provider-fact bulk insert: %w", err)
+		return result, fmt.Errorf("commit provider-fact bulk insert: %w", err)
 	}
 	committed = true
-	return facts, nil
+	return result, nil
 }
 
 func appendProviderFacts(ctx context.Context, conn *sql.Conn, ingestRunID int64, artifactSHA string, records []domain.ProviderFinancialRecord) error {
@@ -132,7 +157,7 @@ func appendProviderFacts(ctx context.Context, conn *sql.Conn, ingestRunID int64,
 			for i, field := range record.ProviderFields {
 				if err := appender.AppendRow(
 					record.InstrumentID,
-					record.Identifier.Provider,
+					record.Provider,
 					record.ReportPeriod,
 					announcement,
 					fmt.Sprintf("FN%d", i+1),
