@@ -3,6 +3,7 @@ package duckdb
 import (
 	"context"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -88,6 +89,36 @@ func TestResolveAndUpsertFilings(t *testing.T) {
 	}
 	if documents != 1 {
 		t.Fatalf("documents=%d, want 1 immutable revision", documents)
+	}
+}
+
+func TestResolveFilingObservationsDoesNotDiscardUnknownExchangeEvidence(t *testing.T) {
+	ctx := context.Background()
+	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "unknown-exchange.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err := UpsertInstrument(ctx, db,
+		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHE", Currency: "CNY", Name: "WouldMatchByCode"},
+		domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sz000001"},
+	); err != nil {
+		t.Fatal(err)
+	}
+	period := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+	filings, err := ResolveFilingObservations(ctx, db, []domain.FilingObservation{{
+		Source: "cninfo", SourceFilingID: "unsupported-market", ProviderCode: "000001", ExchangeMIC: "XUNK",
+		Title: "2025年年度报告", FilingType: domain.FilingTypeAnnual, FilingVariant: domain.FilingVariantFull,
+		ReportPeriod: &period, AnnouncementTime: time.Date(2026, 3, 28, 10, 0, 0, 0, time.UTC), ClassifierVersion: "test",
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(filings) != 1 || filings[0].InstrumentID != 0 || filings[0].ResolutionStatus != domain.FilingResolutionPending {
+		t.Fatalf("filing=%#v", filings)
+	}
+	if !strings.Contains(filings[0].ResolutionReason, "unsupported filing exchange evidence") {
+		t.Fatalf("reason=%q", filings[0].ResolutionReason)
 	}
 }
 
