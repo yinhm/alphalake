@@ -3,6 +3,7 @@ package tdx
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/injoyai/tdx/protocol"
 	"github.com/yinhm/alphalake/internal/domain"
@@ -53,5 +54,35 @@ func TestListInstrumentsNormalizesTDXCodeList(t *testing.T) {
 	}
 	if observations[0].Identifier.Value != "sh600519" {
 		t.Fatalf("first identifier = %q, want sh600519", observations[0].Identifier.Value)
+	}
+}
+
+func TestInstrumentSnapshotUsesChinaCalendarDate(t *testing.T) {
+	fake := fakeCodeListClient{responses: map[protocol.Exchange]*protocol.CodeResp{
+		protocol.ExchangeSH: {List: []*protocol.Code{{Code: "600519", Name: "贵州茅台"}}},
+	}}
+	observedAt := time.Date(2026, 9, 3, 16, 30, 0, 0, time.UTC) // 2026-09-04 in China.
+	snapshot, err := loadInstrumentSnapshot(context.Background(), fake, []protocol.Exchange{protocol.ExchangeSH}, observedAt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC)
+	if !snapshot.Complete || snapshot.Source != Provider || !snapshot.AsOfDate.Equal(want) {
+		t.Fatalf("snapshot metadata = %#v, want complete TDX snapshot at %v", snapshot, want)
+	}
+}
+
+func TestInstrumentSnapshotRejectsEmptyPartition(t *testing.T) {
+	fake := fakeCodeListClient{responses: map[protocol.Exchange]*protocol.CodeResp{
+		protocol.ExchangeSH: {List: []*protocol.Code{{Code: "600519", Name: "贵州茅台"}}},
+		protocol.ExchangeSZ: {List: nil},
+	}}
+	_, err := loadInstrumentSnapshot(
+		context.Background(), fake,
+		[]protocol.Exchange{protocol.ExchangeSH, protocol.ExchangeSZ},
+		time.Date(2026, 9, 4, 12, 0, 0, 0, time.UTC),
+	)
+	if err == nil {
+		t.Fatal("expected incomplete security-master error")
 	}
 }
