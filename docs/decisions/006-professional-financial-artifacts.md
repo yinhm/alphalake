@@ -60,12 +60,14 @@ The source adapter preserves both values as raw evidence. It does **not** call c
 
 The one-byte package marker is retained as `MarketMarker`, but AlphaLake does not assign exchange semantics to it until those semantics are independently verified. An apparently market-like byte is not sufficient evidence to alter canonical identity.
 
-Financial identity resolution instead queries temporal TDX `symbol` identifiers as of the package report period and groups them by the raw six-digit code:
+Financial identity resolution instead queries temporal TDX `symbol` identifiers as of the package report period and groups them by the raw six-digit code. The candidate universe also applies the dataset's own semantics: gpcw contains company financial records, so index instruments are not legitimate identity candidates even when an index and a company security share the same six-digit code.
 
-- exactly one active provider symbol resolves to its canonical `instrument_id`;
-- no active provider symbol remains unresolved;
-- multiple distinct active provider symbols are an ambiguity of the raw evidence and remain unresolved rather than guessed;
+- exactly one active non-index provider symbol resolves to its canonical `instrument_id`;
+- no active non-index provider symbol remains unresolved;
+- multiple distinct active non-index provider symbols remain unresolved rather than guessed;
 - overlapping rows for the same full provider identifier are still treated as store corruption.
+
+For example, `sh000001` (Shanghai Composite index) does not make gpcw raw code `000001` ambiguous with `sz000001` (Ping An Bank), because the index is outside the financial-record candidate universe. A true company-security/company-security collision remains unresolved.
 
 Thus a record that cannot currently be classified/resolved does not fail its entire package.
 
@@ -106,6 +108,7 @@ Pending records are inspectable with `financial-unresolved <db>`. An explicit ma
 - D-008 immutable raw artifacts now has a production implementation rather than schema-only intent.
 - Provider-level financial history can be replayed and revised without losing source evidence.
 - Historical code-range gaps no longer hard-fail an entire gpcw package.
+- Index/company raw-code collisions are resolved using dataset semantics instead of becoming recurring false ambiguities.
 - Permanently unresolved historical evidence has a visible, auditable governance path instead of making every full-history run permanently partial.
 - Canonical PIT facts remain intentionally incomplete until announcement-time semantics are authoritative.
 - Provider market-marker semantics remain an explicit research item rather than an assumption embedded in identity.
