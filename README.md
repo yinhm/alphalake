@@ -2,7 +2,7 @@
 
 AlphaLake is a local-first, reproducible financial market data infrastructure for investment research.
 
-It ingests data from multiple source adapters, normalizes records into a canonical model, stores analytical data in DuckDB, and keeps lineage needed to rebuild, validate, and derive datasets. Immutable raw-artifact retention is an accepted target for sources that expose stable files/documents; see the implementation-status document for what is live today.
+It ingests data from multiple source adapters, normalizes records into a canonical model, stores analytical data in DuckDB, and keeps lineage needed to rebuild, validate, and derive datasets. Stable source files are retained as immutable raw evidence when available.
 
 ## Initial scope
 
@@ -14,7 +14,7 @@ It ingests data from multiple source adapters, normalizes records into a canonic
 
 ## Current implementation
 
-The current market-data foundation supports:
+The current foundation supports:
 
 - TDX security-master discovery for Shanghai, Shenzhen, and Beijing with exchange-partition fault isolation;
 - canonical `instrument_id` resolution while retaining temporal provider identifiers;
@@ -34,8 +34,15 @@ The current market-data foundation supports:
 - content-based dirty-input signatures so unchanged adjustment inputs skip historical reload/recalculation even after normal ingestion replay;
 - temporal TDX concept/style-region/index-block membership;
 - temporal TDX and Shenwan industry hierarchies/memberships with taxonomy-level failure isolation after shared acquisition;
+- SHA-256 content-addressed immutable raw-artifact storage with `meta.artifact` lineage;
+- TDX professional-financial `gpcw.txt` / `gpcw*.zip` acquisition with listed MD5/size verification;
+- dynamic, lossless gpcw parsing: field count comes from `report_size/4`, and original float32 bits are retained;
+- bulk `fundamental.provider_fact` persistence with immutable-artifact revisions and report-period temporal identity resolution;
+- reviewed TDX FN230–FN238 provider-field mappings;
 - durable ingest/calculation run state (`completed`, `partial`, `failed`, `canceled`);
 - database-backed operational status and version-gated schema migrations.
+
+Professional-financial provider facts deliberately keep `announcement_time` nullable. The raw gpcw package does not provide an authoritative per-record announcement timestamp, so AlphaLake does **not** infer one from fetch time, filename, or report period and does not yet materialize canonical point-in-time `fundamental.fact` rows.
 
 Indexes and convertible bonds are discovered in the instrument master but deliberately excluded from the first equity/ETF daily and adjustment paths until their request/unit semantics have dedicated tests.
 
@@ -102,6 +109,20 @@ Refresh TDX and Shenwan industry hierarchies/memberships from TDX industry assig
 alphalake sync-industries ./alphalake.duckdb
 ```
 
+Synchronize TDX professional financial data. The safe default processes only the newest listed gpcw package and retains raw data under `raw/` beside the DuckDB file:
+
+```bash
+alphalake sync-financial ./alphalake.duckdb
+```
+
+Explicitly backfill every listed historical package:
+
+```bash
+alphalake sync-financial ./alphalake.duckdb --all
+```
+
+A package gets a completion checkpoint only after every record can be resolved to a canonical instrument. Historical unresolved codes remain retryable from the retained local artifact, so a later lifecycle enrichment does not require redownloading the package.
+
 A normal market refresh sequence is therefore:
 
 ```bash
@@ -110,6 +131,7 @@ alphalake sync-actions ./alphalake.duckdb
 alphalake calc-adjustments ./alphalake.duckdb
 alphalake sync-classifications ./alphalake.duckdb
 alphalake sync-industries ./alphalake.duckdb
+alphalake sync-financial ./alphalake.duckdb
 ```
 
 Inspect the database without mutating it:
@@ -126,6 +148,23 @@ Inspect embedded schema migrations:
 alphalake schema
 ```
 
+## Data layout
+
+For a database at `./data/market.duckdb`, professional-financial raw artifacts default to:
+
+```text
+data/
+  market.duckdb
+  raw/
+    tdx/
+      professional_financial/
+        <sha-prefix>/
+          <sha256>.txt
+          <sha256>.zip
+```
+
+The paths stored in `meta.artifact` are relative to the configured raw root.
+
 ## Principles
 
 - Provider-specific formats stop at source adapters.
@@ -133,9 +172,10 @@ alphalake schema
 - Destructive temporal changes require sufficiently complete, repeated provider evidence; one incomplete or one-off observation must not silently close history.
 - Provider partitions fail independently where the source naturally exposes independent partitions.
 - Ingestion lineage records provenance, while derived-data dirtiness is determined from canonical content.
-- Stable source files/documents should be retained immutably when that acquisition path is implemented.
+- Stable source files/documents are immutable evidence, content-addressed when retained locally.
 - Unadjusted OHLC is primary price truth; adjusted values are reproducible derivatives.
-- Financial data is point-in-time aware: report period and announcement time are distinct.
+- Financial report period and announcement time are distinct; missing announcement time must not be guessed.
+- Provider facts may precede canonical PIT facts when source semantics are incomplete.
 - Derived datasets are reproducible from canonical facts and their input state.
 - Data-quality failures are queryable data, not only log output.
 
@@ -148,3 +188,4 @@ alphalake schema
 - [`docs/decisions/003-temporal-classification-snapshots.md`](docs/decisions/003-temporal-classification-snapshots.md) — prospective temporal classification decisions.
 - [`docs/decisions/004-security-master-and-content-dirtiness.md`](docs/decisions/004-security-master-and-content-dirtiness.md) — verified security-master snapshots, temporal identity, content-based dirtiness, and atomic daily quarantine publication.
 - [`docs/decisions/005-partitioned-security-master-resilience.md`](docs/decisions/005-partitioned-security-master-resilience.md) — partition-scoped master refresh, repeated absence confirmation, industry fault isolation, and dead-path cleanup.
+- [`docs/decisions/006-professional-financial-artifacts.md`](docs/decisions/006-professional-financial-artifacts.md) — immutable gpcw evidence, lossless provider facts, artifact revisions, temporal financial identity, and announcement-time boundaries.
