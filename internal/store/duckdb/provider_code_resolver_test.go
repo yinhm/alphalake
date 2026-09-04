@@ -48,7 +48,44 @@ func TestResolveProviderCodesAtUsesTemporalIdentifiersNotCurrentCodeRanges(t *te
 	}
 }
 
-func TestResolveProviderCodesAtLeavesCrossMarketAmbiguityUnresolved(t *testing.T) {
+func TestResolveProviderCodesAtExcludesIndexCollision(t *testing.T) {
+	ctx := context.Background()
+	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "provider-code-index-collision.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	if _, err := UpsertInstrument(ctx, db,
+		domain.InstrumentRef{Type: domain.InstrumentIndex, ExchangeMIC: "XSHG", Currency: "CNY", Name: "上证指数"},
+		domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh000001"},
+	); err != nil {
+		t.Fatal(err)
+	}
+	bankID, err := UpsertInstrument(ctx, db,
+		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHE", Currency: "CNY", Name: "平安银行"},
+		domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sz000001"},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resolved, err := ResolveProviderCodesAt(ctx, db, "tdx", []string{"000001"}, time.Now().UTC())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !resolved[0].Resolved() {
+		t.Fatalf("000001 unresolved: %#v", resolved[0])
+	}
+	if resolved[0].InstrumentID != bankID || resolved[0].IdentifierValue != "sz000001" {
+		t.Fatalf("000001 resolved to %#v, want sz000001 instrument %d", resolved[0], bankID)
+	}
+	if len(resolved[0].Candidates) != 1 || resolved[0].Candidates[0] != "sz000001" {
+		t.Fatalf("000001 candidates=%v, want only sz000001", resolved[0].Candidates)
+	}
+}
+
+func TestResolveProviderCodesAtLeavesCrossMarketEquityAmbiguityUnresolved(t *testing.T) {
 	ctx := context.Background()
 	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "provider-code-ambiguous.duckdb"))
 	if err != nil {
@@ -74,6 +111,6 @@ func TestResolveProviderCodesAtLeavesCrossMarketAmbiguityUnresolved(t *testing.T
 		t.Fatal(err)
 	}
 	if resolved[0].Resolved() || len(resolved[0].Candidates) != 2 {
-		t.Fatalf("ambiguous code=%#v, want unresolved with two candidates", resolved[0])
+		t.Fatalf("ambiguous code=%#v, want unresolved with two equity candidates", resolved[0])
 	}
 }
