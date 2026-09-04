@@ -22,7 +22,7 @@ Artifacts are:
 
 The same bytes from different provider locators share one physical content-addressed file but keep separate metadata lineage rows.
 
-A package that cannot yet be fully canonicalized remains useful evidence and is retried from local raw bytes rather than redownloaded.
+A package that cannot yet be fully canonicalized remains useful evidence and is retried from local raw bytes rather than redownloaded. All retained versions for a locator are eligible for reuse: if an upstream manifest later rolls back from content B to previously-seen content A, AlphaLake verifies and reuses local A rather than unnecessarily fetching it again.
 
 ## Decision 2 — Parse gpcw dynamically and losslessly
 
@@ -36,6 +36,8 @@ Each provider field retains:
 
 Preserving the raw bits matters for signed zero, NaN payloads, and reproducible provider decoding even when analytical consumers normally use the float64 value.
 
+`github.com/injoyai/tdx` v0.0.87 provides report-file transport (`GetReportFile`) but does not provide a professional-financial gpcw binary codec. AlphaLake therefore owns this narrowly-scoped lossless codec today. This is an explicit exception to the general preference in D-003 to reuse/upstream provider codecs; if the codec stabilizes and fits upstream scope, contributing it upstream (or maintaining the smallest possible fork) is preferred to unconstrained protocol duplication.
+
 ## Decision 3 — Artifact content is a provider-fact revision
 
 `fundamental.provider_fact.revision_key` is the artifact SHA-256.
@@ -48,13 +50,40 @@ Consequences:
 
 Migration 009 adds `value_float32_bits` and hardens the provider-field catalog identity before the first production financial writer.
 
-## Decision 4 — Financial identity is resolved as of report period
+Provider-fact persistence reports both staged/attempted facts and newly inserted facts. `ON CONFLICT DO NOTHING` replay therefore reports `inserted=0` instead of making an idempotent replay look like new data.
 
-A gpcw record's six-digit code is not a canonical identity. AlphaLake normalizes it to a TDX provider identifier and resolves that identifier using temporal `[valid_from, valid_to)` semantics at the report period.
+## Decision 4 — Raw provider identity is not current-market classification
 
-If a historical record cannot be resolved, AlphaLake does not invent a canonical instrument. Resolved records may be ingested, while the package remains incomplete and therefore does not receive a completion checkpoint. A later lifecycle enrichment can then replay the retained artifact and ingest the previously unresolved record.
+A gpcw record carries a six-digit provider code and a one-byte marker. Neither is a canonical instrument identity.
 
-## Decision 5 — Do not invent announcement time
+The source adapter preserves both values as raw evidence. It does **not** call current SDK code-range classifiers to invent `sh`/`sz`/`bj` prefixes. Current code-range rules are not a historical market master and are known to be unsuitable for old B-share and legacy Beijing/NEEQ-era records.
+
+The one-byte package marker is retained as `MarketMarker`, but AlphaLake does not assign exchange semantics to it until those semantics are independently verified. An apparently market-like byte is not sufficient evidence to alter canonical identity.
+
+Financial identity resolution instead queries temporal TDX `symbol` identifiers as of the package report period and groups them by the raw six-digit code:
+
+- exactly one active provider symbol resolves to its canonical `instrument_id`;
+- no active provider symbol remains unresolved;
+- multiple distinct active provider symbols are an ambiguity of the raw evidence and remain unresolved rather than guessed;
+- overlapping rows for the same full provider identifier are still treated as store corruption.
+
+Thus a record that cannot currently be classified/resolved does not fail its entire package.
+
+## Decision 5 — Durable unresolved evidence and explicit acknowledgement
+
+Migration 011 adds `fundamental.provider_record_resolution`. Every parsed provider record has durable identity-resolution state keyed by immutable artifact revision and raw provider code.
+
+Statuses are:
+
+- `resolved` — linked to a canonical instrument and provider identifier;
+- `pending` — no unique temporal identity is currently supportable;
+- `acknowledged` — an operator explicitly accepts that the record cannot presently be resolved, with a required reason and timestamp.
+
+Replay of a still-unresolved record preserves an acknowledgement. If authoritative lifecycle evidence later makes the record resolvable, `resolved` supersedes the prior acknowledgement automatically.
+
+A package completion checkpoint means every record is either `resolved` or explicitly `acknowledged`. Pending records keep the package replayable from retained raw bytes. AlphaLake never automatically acknowledges or silently drops an unresolved record.
+
+## Decision 6 — Do not invent announcement time
 
 The raw gpcw package parser provides report period but no authoritative per-record announcement timestamp. Fetch time, package filename, and report period are not acceptable substitutes.
 
@@ -62,7 +91,7 @@ Therefore this slice writes provider facts with nullable `announcement_time` and
 
 Canonical PIT facts become eligible only after announcement time is enriched from a verified source, such as authoritative filing metadata or another provider interface whose semantics have been validated.
 
-## Decision 6 — Safe CLI default
+## Decision 7 — Safe CLI defaults and governance commands
 
 `sync-financial <db>` processes only the newest listed package by default. `sync-financial <db> --all` explicitly requests the full historical package set.
 
@@ -70,9 +99,13 @@ This prevents an ordinary refresh command from unexpectedly triggering a very la
 
 Raw files default to a `raw/` directory beside the DuckDB file.
 
+Pending records are inspectable with `financial-unresolved <db>`. An explicit manual disposition requires `financial-ack <db> <artifact-id> <provider-code> <reason>`; the reason is mandatory, and a subsequent financial sync re-evaluates the package before checkpointing it.
+
 ## Consequences
 
 - D-008 immutable raw artifacts now has a production implementation rather than schema-only intent.
 - Provider-level financial history can be replayed and revised without losing source evidence.
+- Historical code-range gaps no longer hard-fail an entire gpcw package.
+- Permanently unresolved historical evidence has a visible, auditable governance path instead of making every full-history run permanently partial.
 - Canonical PIT facts remain intentionally incomplete until announcement-time semantics are authoritative.
-- Historical delisted/security-code edge cases fail conservatively instead of silently merging facts into the wrong instrument.
+- Provider market-marker semantics remain an explicit research item rather than an assumption embedded in identity.
