@@ -127,7 +127,7 @@ func SyncAllTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDaily
 			summary.Failures = append(summary.Failures, TDXDailySyncFailure{Symbol: symbol, Err: validationErr})
 			continue
 		}
-		if err := duckstore.UpsertDailyBars(ctx, db, bars); err != nil {
+		if err := duckstore.UpsertDailyBarsForRun(ctx, db, runID, bars); err != nil {
 			summary.Failures = append(summary.Failures, TDXDailySyncFailure{Symbol: symbol, Err: err})
 			continue
 		}
