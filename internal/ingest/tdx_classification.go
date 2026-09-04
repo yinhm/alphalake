@@ -27,14 +27,14 @@ type TDXClassificationFailure struct {
 }
 
 type TDXClassificationSummary struct {
-	RunID       int64
-	Families    int
-	Synced      int
-	Nodes       int
-	Members     int
-	Opened      int
-	Closed      int
-	Failures    []TDXClassificationFailure
+	RunID    int64
+	Families int
+	Synced   int
+	Nodes    int
+	Members  int
+	Opened   int
+	Closed   int
+	Failures []TDXClassificationFailure
 }
 
 type TDXClassificationProgress struct {
@@ -90,15 +90,7 @@ func SyncTDXClassificationsWithOptions(ctx context.Context, db *sql.DB, source T
 	}
 	summary.RunID = runID
 	defer func() {
-		status := classificationRunStatus(summary, retErr)
-		finishCtx := context.WithoutCancel(ctx)
-		if err := duckstore.FinishIngestRun(finishCtx, db, runID, status, nil, retErr); err != nil {
-			if retErr == nil {
-				retErr = err
-			} else {
-				retErr = errors.Join(retErr, err)
-			}
-		}
+		finalizeTrackedRun(ctx, db, runID, classificationRunStatus(summary, retErr), &retErr)
 	}()
 
 	instruments, err := source.Instruments(ctx)
