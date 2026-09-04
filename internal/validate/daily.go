@@ -8,8 +8,7 @@ import (
 	"github.com/yinhm/alphalake/internal/domain"
 )
 
-// Violation is a provider-neutral data-quality finding. Ingestion may choose to
-// persist these findings and reject the affected batch.
+// Violation is a provider-neutral data-quality finding.
 type Violation struct {
 	RuleCode   string
 	Severity   string
@@ -21,39 +20,60 @@ type Violation struct {
 // The rules are deliberately structural; provider-specific market rules belong
 // in the adapter layer.
 func DailyBars(bars []domain.DailyBar) []Violation {
-	var out []Violation
-	for i, bar := range bars {
-		subject := dailySubject(bar, i)
-		if bar.InstrumentID <= 0 {
-			out = append(out, violation("daily.instrument_id", subject, "instrument ID must be positive"))
-		}
-		if bar.TradeDate.IsZero() {
-			out = append(out, violation("daily.trade_date", subject, "trade date is required"))
-		}
-		if strings.TrimSpace(bar.Source) == "" {
-			out = append(out, violation("daily.source", subject, "source is required"))
-		}
+	_, violations := PartitionDailyBars(bars)
+	return violations
+}
 
-		if !finite(bar.Open) || !finite(bar.High) || !finite(bar.Low) || !finite(bar.Close) {
-			out = append(out, violation("daily.price_finite", subject, "OHLC values must be finite"))
-		} else {
-			if bar.High < bar.Open || bar.High < bar.Low || bar.High < bar.Close {
-				out = append(out, violation("daily.high_bound", subject,
-					fmt.Sprintf("high %.6f is below another OHLC value", bar.High)))
-			}
-			if bar.Low > bar.Open || bar.Low > bar.High || bar.Low > bar.Close {
-				out = append(out, violation("daily.low_bound", subject,
-					fmt.Sprintf("low %.6f is above another OHLC value", bar.Low)))
-			}
+// PartitionDailyBars separates structurally valid observations from rows that
+// must be quarantined. A bad row does not make unrelated observations in the
+// same provider batch unusable; callers should persist violations and retain a
+// retry boundary for the earliest quarantined date.
+func PartitionDailyBars(bars []domain.DailyBar) ([]domain.DailyBar, []Violation) {
+	valid := make([]domain.DailyBar, 0, len(bars))
+	var violations []Violation
+	for i, bar := range bars {
+		rowViolations := dailyBarViolations(bar, i)
+		if len(rowViolations) == 0 {
+			valid = append(valid, bar)
+			continue
 		}
-		if bar.Volume < 0 {
-			out = append(out, violation("daily.volume_nonnegative", subject,
-				fmt.Sprintf("volume %d is negative", bar.Volume)))
+		violations = append(violations, rowViolations...)
+	}
+	return valid, violations
+}
+
+func dailyBarViolations(bar domain.DailyBar, index int) []Violation {
+	var out []Violation
+	subject := dailySubject(bar, index)
+	if bar.InstrumentID <= 0 {
+		out = append(out, violation("daily.instrument_id", subject, "instrument ID must be positive"))
+	}
+	if bar.TradeDate.IsZero() {
+		out = append(out, violation("daily.trade_date", subject, "trade date is required"))
+	}
+	if strings.TrimSpace(bar.Source) == "" {
+		out = append(out, violation("daily.source", subject, "source is required"))
+	}
+
+	if !finite(bar.Open) || !finite(bar.High) || !finite(bar.Low) || !finite(bar.Close) {
+		out = append(out, violation("daily.price_finite", subject, "OHLC values must be finite"))
+	} else {
+		if bar.High < bar.Open || bar.High < bar.Low || bar.High < bar.Close {
+			out = append(out, violation("daily.high_bound", subject,
+				fmt.Sprintf("high %.6f is below another OHLC value", bar.High)))
 		}
-		if !finite(bar.Amount) || bar.Amount < 0 {
-			out = append(out, violation("daily.amount_nonnegative", subject,
-				fmt.Sprintf("amount %.6f must be finite and non-negative", bar.Amount)))
+		if bar.Low > bar.Open || bar.Low > bar.High || bar.Low > bar.Close {
+			out = append(out, violation("daily.low_bound", subject,
+				fmt.Sprintf("low %.6f is above another OHLC value", bar.Low)))
 		}
+	}
+	if bar.Volume < 0 {
+		out = append(out, violation("daily.volume_nonnegative", subject,
+			fmt.Sprintf("volume %d is negative", bar.Volume)))
+	}
+	if !finite(bar.Amount) || bar.Amount < 0 {
+		out = append(out, violation("daily.amount_nonnegative", subject,
+			fmt.Sprintf("amount %.6f must be finite and non-negative", bar.Amount)))
 	}
 	return out
 }
