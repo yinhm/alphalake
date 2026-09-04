@@ -221,19 +221,28 @@ func RefreshProviderFilingLinks(ctx context.Context, db *sql.DB, ingestRunID int
 	}
 
 	if err := conn.QueryRowContext(ctx, `
-		WITH deleted AS (
-			DELETE FROM fundamental.provider_filing_link l
-			WHERE l.provider_source=?
-			  AND NOT EXISTS (
-				SELECT 1 FROM fundamental.provider_fact pf
-				WHERE pf.source=l.provider_source
-				  AND pf.revision_key=l.provider_revision_key
-				  AND pf.provider_code=l.provider_code
-			  )
-			RETURNING 1
-		)
-		SELECT count(*) FROM deleted
+		SELECT count(*)
+		FROM fundamental.provider_filing_link l
+		WHERE l.provider_source=?
+		  AND NOT EXISTS (
+			SELECT 1 FROM fundamental.provider_fact pf
+			WHERE pf.source=l.provider_source
+			  AND pf.revision_key=l.provider_revision_key
+			  AND pf.provider_code=l.provider_code
+		  )
 	`, providerSource).Scan(&result.Removed); err != nil {
+		return result, fmt.Errorf("count stale provider-filing links: %w", err)
+	}
+	if _, err := conn.ExecContext(ctx, `
+		DELETE FROM fundamental.provider_filing_link l
+		WHERE l.provider_source=?
+		  AND NOT EXISTS (
+			SELECT 1 FROM fundamental.provider_fact pf
+			WHERE pf.source=l.provider_source
+			  AND pf.revision_key=l.provider_revision_key
+			  AND pf.provider_code=l.provider_code
+		  )
+	`, providerSource); err != nil {
 		return result, fmt.Errorf("remove stale provider-filing links: %w", err)
 	}
 	if _, err := conn.ExecContext(ctx, `DROP TABLE temp.main.`+providerFilingStage); err != nil {
