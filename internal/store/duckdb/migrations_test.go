@@ -7,7 +7,14 @@ func TestMigrationOrder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := []string{"001_meta.sql", "002_ref.sql", "003_market.sql", "004_fundamental.sql", "005_classification.sql"}
+	want := []string{
+		"001_meta.sql",
+		"002_ref.sql",
+		"003_market.sql",
+		"004_fundamental.sql",
+		"005_classification.sql",
+		"006_adjustment_lineage.sql",
+	}
 	if len(names) != len(want) {
 		t.Fatalf("got %v", names)
 	}
