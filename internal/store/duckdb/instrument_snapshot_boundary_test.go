@@ -21,21 +21,48 @@ func TestInstrumentSnapshotPreflightRejectsFlatPartitionDriftBeforeWrites(t *tes
 	flat := []domain.InstrumentObservation{snapshotObservation("sh600001", "A")}
 	partition := []domain.InstrumentObservation{
 		flat[0],
-		snapshotObservation("sh600002", "B"), // absent from flat snapshot
+		snapshotObservation("sh600002", "B"),
 	}
 	_, err = ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{
 		Source: "tdx",
 		AsOfDate: time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC),
 		Complete: true,
 		Observations: flat,
-		Partitions: []domain.InstrumentMasterPartition{{
-			Key: "sh", ExchangeMIC: "XSHG", Complete: true, Observations: partition,
-		}},
+		Partitions: []domain.InstrumentMasterPartition{{Key: "sh", ExchangeMIC: "XSHG", Complete: true, Observations: partition}},
 	})
 	if err == nil {
 		t.Fatal("expected flat/partition preflight error")
 	}
+	assertNoInstrumentSideEffects(t, ctx, db)
+}
 
+func TestInstrumentSnapshotPreflightRejectsUnownedFlatObservationBeforeWrites(t *testing.T) {
+	ctx := context.Background()
+	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "preflight-reverse.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	flat := []domain.InstrumentObservation{
+		snapshotObservation("sh600001", "A"),
+		snapshotObservation("sh600002", "B"),
+	}
+	_, err = ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{
+		Source: "tdx",
+		AsOfDate: time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC),
+		Complete: true,
+		Observations: flat,
+		Partitions: []domain.InstrumentMasterPartition{{Key: "sh", ExchangeMIC: "XSHG", Complete: true, Observations: flat[:1]}},
+	})
+	if err == nil {
+		t.Fatal("expected unowned flat observation preflight error")
+	}
+	assertNoInstrumentSideEffects(t, ctx, db)
+}
+
+func assertNoInstrumentSideEffects(t *testing.T, ctx context.Context, db interface{ QueryRowContext(context.Context, string, ...any) *sql.Row }) {
+	t.Helper()
 	var instruments, identifiers int
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM ref.instrument`).Scan(&instruments); err != nil {
 		t.Fatal(err)
@@ -64,14 +91,10 @@ func TestLegacyInstrumentSnapshotRetainsGlobalTruncationGuard(t *testing.T) {
 		return out
 	}
 	day1 := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
-	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{
-		Source: "tdx", AsOfDate: day1, Complete: true, Observations: makeObservations(100),
-	}); err != nil {
+	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{Source: "tdx", AsOfDate: day1, Complete: true, Observations: makeObservations(100)}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{
-		Source: "tdx", AsOfDate: day1.AddDate(0, 0, 1), Complete: true, Observations: makeObservations(50),
-	}); err == nil {
+	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{Source: "tdx", AsOfDate: day1.AddDate(0, 0, 1), Complete: true, Observations: makeObservations(50)}); err == nil {
 		t.Fatal("expected legacy global truncation guard error")
 	}
 
