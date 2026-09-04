@@ -100,10 +100,11 @@ func SyncAllTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDaily
 		}
 
 		if violations := validate.DailyBars(bars); len(violations) != 0 {
-			summary.Failures = append(summary.Failures, TDXDailySyncFailure{
-				Symbol: symbol,
-				Err:    fmt.Errorf("daily validation failed: %s", summarizeViolations(violations)),
-			})
+			validationErr := fmt.Errorf("daily validation failed: %s", summarizeViolations(violations))
+			if err := duckstore.RecordValidationViolations(ctx, db, nil, observation.Identifier.Provider, "daily_ohlcv", "daily_bar", violations); err != nil {
+				validationErr = fmt.Errorf("%v; persist validation failures: %w", validationErr, err)
+			}
+			summary.Failures = append(summary.Failures, TDXDailySyncFailure{Symbol: symbol, Err: validationErr})
 			continue
 		}
 		if err := duckstore.UpsertDailyBars(ctx, db, bars); err != nil {
