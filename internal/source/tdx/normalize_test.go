@@ -44,7 +44,7 @@ func TestActionFromGBBQPreservesETFScale(t *testing.T) {
 
 func TestGBBQObservationCreatesVerifiedShareCapital(t *testing.T) {
 	day := time.Date(2026, 6, 30, 15, 0, 0, 0, time.Local)
-	observation, err := GBBQObservation("sh600519", day, 5, 100, 200, 123456789, 200000000, )
+	observation, err := GBBQObservation("sh600519", day, 5, 100, 200, 123456789, 200000000)
 	if err != nil {
 		t.Fatalf("GBBQObservation() error = %v", err)
 	}
