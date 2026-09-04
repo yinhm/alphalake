@@ -72,15 +72,7 @@ func CalculateTDXAdjustmentsWithOptions(ctx context.Context, db *sql.DB, options
 	}
 	summary.RunID = runID
 	defer func() {
-		status := adjustmentRunStatus(summary, retErr)
-		finishCtx := context.WithoutCancel(ctx)
-		if err := duckstore.FinishIngestRun(finishCtx, db, runID, status, nil, retErr); err != nil {
-			if retErr == nil {
-				retErr = err
-			} else {
-				retErr = errors.Join(retErr, err)
-			}
-		}
+		finalizeTrackedRun(ctx, db, runID, adjustmentRunStatus(summary, retErr), &retErr)
 	}()
 
 	instruments, err := duckstore.ListProviderInstruments(ctx, db, "tdx")
@@ -94,7 +86,7 @@ func CalculateTDXAdjustmentsWithOptions(ctx context.Context, db *sql.DB, options
 		if err := ctx.Err(); err != nil {
 			return summary, err
 		}
-		if !adjustmentEligible(instrument.Instrument.Type) {
+		if !equityOrETF(instrument.Instrument.Type) {
 			summary.Skipped++
 			continue
 		}
@@ -164,14 +156,10 @@ func CalculateTDXAdjustmentsWithOptions(ctx context.Context, db *sql.DB, options
 	return summary, nil
 }
 
-func adjustmentEligible(t domain.InstrumentType) bool {
-	return t == domain.InstrumentEquity || t == domain.InstrumentETF
-}
-
 func countAdjustmentEligible(instruments []domain.InstrumentObservation) int {
 	count := 0
 	for _, instrument := range instruments {
-		if adjustmentEligible(instrument.Instrument.Type) {
+		if equityOrETF(instrument.Instrument.Type) {
 			count++
 		}
 	}
