@@ -20,7 +20,7 @@ type Violation struct {
 // The rules are deliberately structural; provider-specific market rules belong
 // in the adapter layer.
 func DailyBars(bars []domain.DailyBar) []Violation {
-	_, violations := PartitionDailyBars(bars)
+	_, _, violations := PartitionDailyBars(bars)
 	return violations
 }
 
@@ -28,18 +28,19 @@ func DailyBars(bars []domain.DailyBar) []Violation {
 // must be quarantined. A bad row does not make unrelated observations in the
 // same provider batch unusable; callers should persist violations and retain a
 // retry boundary for the earliest quarantined date.
-func PartitionDailyBars(bars []domain.DailyBar) ([]domain.DailyBar, []Violation) {
-	valid := make([]domain.DailyBar, 0, len(bars))
-	var violations []Violation
+func PartitionDailyBars(bars []domain.DailyBar) (valid []domain.DailyBar, quarantined []domain.DailyBar, violations []Violation) {
+	valid = make([]domain.DailyBar, 0, len(bars))
+	quarantined = make([]domain.DailyBar, 0)
 	for i, bar := range bars {
 		rowViolations := dailyBarViolations(bar, i)
 		if len(rowViolations) == 0 {
 			valid = append(valid, bar)
 			continue
 		}
+		quarantined = append(quarantined, bar)
 		violations = append(violations, rowViolations...)
 	}
-	return valid, violations
+	return valid, quarantined, violations
 }
 
 func dailyBarViolations(bar domain.DailyBar, index int) []Violation {
