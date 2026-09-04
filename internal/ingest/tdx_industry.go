@@ -19,14 +19,15 @@ type TDXIndustrySource interface {
 }
 
 type TDXIndustrySummary struct {
-	RunID      int64
-	Taxonomies int
-	Synced     int
-	Nodes      int
-	Members    int
-	Opened     int
-	Closed     int
-	Failures   []TDXClassificationFailure
+	RunID          int64
+	Taxonomies     int
+	Synced         int
+	Nodes          int
+	Members        int
+	Opened         int
+	Closed         int
+	Failures       []TDXClassificationFailure
+	MasterFailures []InstrumentMasterFailure
 }
 
 type TDXIndustryProgress struct {
@@ -89,9 +90,12 @@ func SyncTDXIndustriesWithOptions(ctx context.Context, db *sql.DB, source TDXInd
 		finalizeTrackedRun(ctx, db, runID, industryRunStatus(summary, retErr), &retErr)
 	}()
 
-	if _, _, err := refreshInstrumentMaster(ctx, db, source); err != nil {
+	master, err := refreshInstrumentMaster(ctx, db, runID, source)
+	if err != nil {
 		return summary, fmt.Errorf("refresh TDX instrument master: %w", err)
 	}
+	summary.MasterFailures = master.Failures
+
 	results, err := source.IndustrySnapshotResults(ctx)
 	if err != nil {
 		return summary, fmt.Errorf("load TDX industry snapshot results: %w", err)
@@ -151,7 +155,7 @@ func reportIndustryProgress(options TDXIndustrySyncOptions, summary TDXIndustryS
 	}
 	options.OnProgress(TDXIndustryProgress{
 		RunID: summary.RunID, Processed: processed, Total: summary.Taxonomies,
-		Synced: summary.Synced, Failed: len(summary.Failures), Taxonomy: taxonomy,
+		Synced: summary.Synced, Failed: len(summary.Failures) + len(summary.MasterFailures), Taxonomy: taxonomy,
 	})
 }
 
@@ -160,9 +164,12 @@ func industryRunStatus(summary TDXIndustrySummary, runErr error) string {
 		return duckstore.IngestRunCanceled
 	}
 	if runErr == nil {
+		if len(summary.MasterFailures) > 0 {
+			return duckstore.IngestRunPartial
+		}
 		return duckstore.IngestRunCompleted
 	}
-	if len(summary.Failures) > 0 && summary.Synced > 0 {
+	if (len(summary.Failures) > 0 || len(summary.MasterFailures) > 0) && summary.Synced > 0 {
 		return duckstore.IngestRunPartial
 	}
 	return duckstore.IngestRunFailed
