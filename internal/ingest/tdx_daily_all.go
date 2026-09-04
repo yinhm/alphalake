@@ -37,6 +37,19 @@ type TDXDailySyncSummary struct {
 	Failures    []TDXDailySyncFailure
 }
 
+type TDXDailyProgress struct {
+	RunID     int64
+	Processed int
+	Total     int
+	Synced    int
+	Failed    int
+	Symbol    string
+}
+
+type TDXDailySyncOptions struct {
+	OnProgress func(TDXDailyProgress)
+}
+
 type TDXDailyBatchError struct {
 	Failures []TDXDailySyncFailure
 }
@@ -49,12 +62,18 @@ func (e *TDXDailyBatchError) Error() string {
 	return fmt.Sprintf("%d TDX instruments failed; first %s: %v", len(e.Failures), first.Symbol, first.Err)
 }
 
-// SyncAllTDXDaily refreshes the TDX instrument master, then synchronizes
-// canonical daily history for equities and ETFs. Each instrument resumes from
-// its own latest stored day; that boundary day is fetched again and upserted.
-// Per-instrument failures are collected so one bad symbol does not discard the
-// rest of the market update.
-func SyncAllTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDailySource) (summary TDXDailySyncSummary, retErr error) {
+// SyncAllTDXDaily refreshes the TDX instrument master and synchronizes daily
+// history using default options.
+func SyncAllTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDailySource) (TDXDailySyncSummary, error) {
+	return SyncAllTDXDailyWithOptions(ctx, db, source, TDXDailySyncOptions{})
+}
+
+// SyncAllTDXDailyWithOptions refreshes the TDX instrument master, then
+// synchronizes canonical daily history for equities and ETFs. Each instrument
+// resumes from its own latest stored day; that boundary day is fetched again and
+// upserted. Per-instrument failures are collected so one bad symbol does not
+// discard the rest of the market update.
+func SyncAllTDXDailyWithOptions(ctx context.Context, db *sql.DB, source TDXIncrementalDailySource, options TDXDailySyncOptions) (summary TDXDailySyncSummary, retErr error) {
 	if db == nil {
 		return summary, fmt.Errorf("duckdb is nil")
 	}
@@ -84,6 +103,7 @@ func SyncAllTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDaily
 		return summary, fmt.Errorf("list TDX instruments: %w", err)
 	}
 	summary.Instruments = len(observations)
+	eligibleTotal := countDailyEligible(observations)
 
 	instrumentIDs, err := duckstore.UpsertInstruments(ctx, db, observations)
 	if err != nil {
@@ -105,6 +125,7 @@ func SyncAllTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDaily
 		latest, hasLatest, err := duckstore.LatestDailyDate(ctx, db, instrumentID, observation.Identifier.Provider)
 		if err != nil {
 			summary.Failures = append(summary.Failures, TDXDailySyncFailure{Symbol: symbol, Err: err})
+			reportTDXDailyProgress(options, summary, eligibleTotal, symbol)
 			continue
 		}
 
@@ -116,6 +137,7 @@ func SyncAllTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDaily
 		}
 		if err != nil {
 			summary.Failures = append(summary.Failures, TDXDailySyncFailure{Symbol: symbol, Err: err})
+			reportTDXDailyProgress(options, summary, eligibleTotal, symbol)
 			continue
 		}
 
@@ -125,20 +147,43 @@ func SyncAllTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDaily
 				validationErr = fmt.Errorf("%v; persist validation failures: %w", validationErr, err)
 			}
 			summary.Failures = append(summary.Failures, TDXDailySyncFailure{Symbol: symbol, Err: validationErr})
+			reportTDXDailyProgress(options, summary, eligibleTotal, symbol)
 			continue
 		}
 		if err := duckstore.UpsertDailyBarsForRun(ctx, db, runID, bars); err != nil {
 			summary.Failures = append(summary.Failures, TDXDailySyncFailure{Symbol: symbol, Err: err})
+			reportTDXDailyProgress(options, summary, eligibleTotal, symbol)
 			continue
 		}
 		summary.Synced++
 		summary.Bars += len(bars)
+		reportTDXDailyProgress(options, summary, eligibleTotal, symbol)
 	}
 
 	if len(summary.Failures) != 0 {
 		return summary, &TDXDailyBatchError{Failures: summary.Failures}
 	}
 	return summary, nil
+}
+
+func reportTDXDailyProgress(options TDXDailySyncOptions, summary TDXDailySyncSummary, total int, symbol string) {
+	if options.OnProgress == nil {
+		return
+	}
+	options.OnProgress(TDXDailyProgress{
+		RunID: summary.RunID, Processed: summary.Attempted, Total: total,
+		Synced: summary.Synced, Failed: len(summary.Failures), Symbol: symbol,
+	})
+}
+
+func countDailyEligible(observations []domain.InstrumentObservation) int {
+	count := 0
+	for _, observation := range observations {
+		if dailyEligible(observation.Instrument.Type) {
+			count++
+		}
+	}
+	return count
 }
 
 func ingestRunStatus(summary TDXDailySyncSummary, runErr error) string {
