@@ -82,3 +82,79 @@ func TestPersistSameBytesDifferentLocatorKeepsLineageRows(t *testing.T) {
 		t.Fatalf("a=%#v b=%#v", a, b)
 	}
 }
+
+func TestPersistRepairsCorruptContentAddressedFile(t *testing.T) {
+	ctx := context.Background()
+	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "artifact-repair.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	root := filepath.Join(t.TempDir(), "raw")
+	input := Input{
+		Source: "tdx", Dataset: "professional_financial", SourceLocator: "tdxfin/a.zip",
+		FetchedAt: time.Now(), Content: []byte("verified provider bytes"),
+	}
+	stored, err := Persist(ctx, db, root, input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := Resolve(root, stored)
+	if err := os.WriteFile(path, []byte("corrupt"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := LoadVersions(ctx, db, root, "tdx", "professional_financial", "tdxfin/a.zip", 1); err == nil {
+		t.Fatal("strict load unexpectedly accepted corrupt artifact")
+	}
+
+	repaired, err := Persist(ctx, db, root, input)
+	if err != nil {
+		t.Fatalf("Persist() repair error = %v", err)
+	}
+	if repaired.ArtifactID != stored.ArtifactID {
+		t.Fatalf("repair artifact ID=%d, want original %d", repaired.ArtifactID, stored.ArtifactID)
+	}
+	got, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != string(input.Content) {
+		t.Fatalf("repaired bytes=%q, want %q", got, input.Content)
+	}
+}
+
+func TestLoadHealthyVersionsSkipsCorruptRetainedRevision(t *testing.T) {
+	ctx := context.Background()
+	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "artifact-healthy.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	root := filepath.Join(t.TempDir(), "raw")
+	base := Input{Source: "tdx", Dataset: "professional_financial", SourceLocator: "tdxfin/a.zip", FetchedAt: time.Now()}
+	base.Content = []byte("old")
+	old, err := Persist(ctx, db, root, base)
+	if err != nil {
+		t.Fatal(err)
+	}
+	base.FetchedAt = base.FetchedAt.Add(time.Minute)
+	base.Content = []byte("new")
+	newer, err := Persist(ctx, db, root, base)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(Resolve(root, old), []byte("broken-old"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	versions, failures, err := LoadHealthyVersions(ctx, db, root, "tdx", "professional_financial", "tdxfin/a.zip", 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(failures) != 1 || len(versions) != 1 {
+		t.Fatalf("healthy/failures=%d/%d, want 1/1", len(versions), len(failures))
+	}
+	if versions[0].Stored.ArtifactID != newer.ArtifactID || string(versions[0].Content) != "new" {
+		t.Fatalf("healthy version=%#v", versions[0])
+	}
+}
