@@ -48,31 +48,14 @@ func dailyFetchBoundary(ctx context.Context, db *sql.DB, source string, instrume
 func applyDailyRows(ctx context.Context, db *sql.DB, runID int64, source string, instrumentID int64, bars []domain.DailyBar) (dailyApplyResult, error) {
 	var result dailyApplyResult
 	valid, quarantined, violations := validate.PartitionDailyBars(bars)
-	if len(violations) != 0 {
-		if err := duckstore.RecordValidationViolations(ctx, db, &runID, source, tdxDailyDataset, "daily_bar", violations); err != nil {
-			return result, fmt.Errorf("persist daily validation failures: %w", err)
-		}
-	}
-	if err := duckstore.UpsertDailyBarsForRun(ctx, db, runID, valid); err != nil {
-		return result, err
-	}
 	result.Written = len(valid)
 	result.Quarantined = len(quarantined)
-
-	checkpointKey := dailyRetryCheckpointKey(instrumentID)
-	if len(quarantined) == 0 {
-		if err := duckstore.DeleteCheckpoint(ctx, db, source, tdxDailyDataset, checkpointKey); err != nil {
-			return result, err
-		}
-		return result, nil
-	}
 
 	var earliest time.Time
 	for _, bar := range quarantined {
 		if bar.TradeDate.IsZero() {
-			// A row without a date cannot provide a useful retry boundary. The
-			// validation record remains persisted, but do not poison the durable
-			// checkpoint with an unparseable value.
+			// A row without a date cannot provide a useful retry boundary. Its
+			// validation evidence is still persisted atomically with the good rows.
 			continue
 		}
 		if earliest.IsZero() || bar.TradeDate.Before(earliest) {
@@ -81,10 +64,22 @@ func applyDailyRows(ctx context.Context, db *sql.DB, runID int64, source string,
 	}
 	if !earliest.IsZero() {
 		day := time.Date(earliest.Year(), earliest.Month(), earliest.Day(), 0, 0, 0, 0, time.UTC)
-		if err := duckstore.SetCheckpoint(ctx, db, source, tdxDailyDataset, checkpointKey, day.Format("2006-01-02")); err != nil {
-			return result, err
-		}
 		result.RetryFrom = &day
+	}
+
+	if err := duckstore.ApplyDailyIngestBatchForRun(
+		ctx,
+		db,
+		runID,
+		source,
+		tdxDailyDataset,
+		"daily_bar",
+		dailyRetryCheckpointKey(instrumentID),
+		valid,
+		violations,
+		result.RetryFrom,
+	); err != nil {
+		return dailyApplyResult{}, err
 	}
 	return result, nil
 }
