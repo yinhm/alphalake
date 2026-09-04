@@ -213,6 +213,10 @@ func upsertInstrumentTx(ctx context.Context, tx *sql.Tx, ref domain.InstrumentRe
 		return 0, err
 	}
 	if !found {
+		identifier, err = inferIdentifierValidFromTx(ctx, tx, ref, identifier)
+		if err != nil {
+			return 0, err
+		}
 		if err := tx.QueryRowContext(ctx, `
 			INSERT INTO ref.instrument (
 				instrument_type, exchange_mic, currency, name, list_date, delist_date
@@ -256,6 +260,38 @@ func upsertInstrumentTx(ctx context.Context, tx *sql.Tx, ref domain.InstrumentRe
 		}
 	}
 	return instrumentID, nil
+}
+
+// inferIdentifierValidFromTx prevents a newly reused provider code from having
+// an unbounded lower interval. Prefer an authoritative list date when available;
+// otherwise use the most recent closed interval boundary as the earliest known
+// start of the new identity. This guarantees non-overlap while leaving room for
+// a later authoritative lifecycle source to tighten the boundary.
+func inferIdentifierValidFromTx(ctx context.Context, tx *sql.Tx, ref domain.InstrumentRef, identifier domain.Identifier) (domain.Identifier, error) {
+	if identifier.ValidFrom != nil {
+		return identifier, nil
+	}
+	var candidate *time.Time
+	if ref.ListDate != nil {
+		v := dateUTC(*ref.ListDate)
+		candidate = &v
+	}
+	var previousClose sql.NullTime
+	if err := tx.QueryRowContext(ctx, `
+		SELECT max(valid_to)
+		FROM ref.instrument_identifier
+		WHERE provider=? AND identifier_type=? AND identifier_value=? AND valid_to IS NOT NULL
+	`, identifier.Provider, identifier.Type, identifier.Value).Scan(&previousClose); err != nil {
+		return identifier, fmt.Errorf("query previous identifier boundary: %w", err)
+	}
+	if previousClose.Valid {
+		v := dateUTC(previousClose.Time)
+		if candidate == nil || v.After(*candidate) {
+			candidate = &v
+		}
+	}
+	identifier.ValidFrom = candidate
+	return identifier, nil
 }
 
 func resolveInstrumentIdentifierTx(ctx context.Context, tx *sql.Tx, identifier domain.Identifier) (instrumentID int64, identifierRowID int64, found bool, err error) {
