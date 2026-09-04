@@ -183,6 +183,10 @@ func buildIndustrySnapshot(ctx context.Context, assignments []*protocol.TdxHy, n
 			code := industryCode[:length]
 			name := strings.TrimSpace(names[code])
 			if name == "" {
+				// Historical incon.dat variants can omit an intermediate label.
+				// Keep the nearest named ancestor rather than inventing a node;
+				// the assigned leaf itself is required above to have a real name,
+				// so membership is never attached to a fabricated hierarchy node.
 				continue
 			}
 			node := nodes[code]
