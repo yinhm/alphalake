@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/yinhm/alphalake/internal/domain"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
 )
 
@@ -22,6 +23,6 @@ func finalizeTrackedRun(ctx context.Context, db *sql.DB, runID int64, status str
 	}
 }
 
-func equityOrETF(t string) bool {
-	return t == "equity" || t == "etf"
+func equityOrETF(t domain.InstrumentType) bool {
+	return t == domain.InstrumentEquity || t == domain.InstrumentETF
 }
