@@ -22,6 +22,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  init <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-daily <db-path> <tdx-symbol>")
 	fmt.Fprintln(os.Stderr, "  sync-daily-all <db-path>")
+	fmt.Fprintln(os.Stderr, "  sync-actions <db-path>")
 	fmt.Fprintln(os.Stderr, "  status")
 }
 
@@ -113,6 +114,39 @@ func main() {
 		summary, syncErr := ingest.SyncAllTDXDailyWithOptions(ctx, db, source, options)
 		fmt.Printf("TDX daily sync: run=%d instruments=%d attempted=%d synced=%d skipped=%d bars=%d failures=%d\n",
 			summary.RunID, summary.Instruments, summary.Attempted, summary.Synced, summary.Skipped, summary.Bars, len(summary.Failures))
+		if syncErr != nil {
+			fatal(syncErr)
+		}
+
+	case "sync-actions":
+		if len(os.Args) != 3 {
+			usage()
+			os.Exit(2)
+		}
+		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		if err != nil {
+			fatal(err)
+		}
+		defer db.Close()
+
+		source, err := tdxsource.DialDefault()
+		if err != nil {
+			fatal(err)
+		}
+		defer source.Close()
+
+		lastFailures := 0
+		options := ingest.TDXCorporateActionSyncOptions{OnProgress: func(p ingest.TDXCorporateActionProgress) {
+			if p.Processed%100 == 0 || p.Processed == p.Total || p.Failed > lastFailures {
+				fmt.Printf("TDX action progress: run=%d %d/%d synced=%d failed=%d current=%s\n",
+					p.RunID, p.Processed, p.Total, p.Synced, p.Failed, p.Symbol)
+			}
+			lastFailures = p.Failed
+		}}
+		summary, syncErr := ingest.SyncTDXCorporateActionsWithOptions(ctx, db, source, options)
+		fmt.Printf("TDX action sync: run=%d instruments=%d attempted=%d synced=%d skipped=%d actions=%d share_capital=%d failures=%d\n",
+			summary.RunID, summary.Instruments, summary.Attempted, summary.Synced, summary.Skipped,
+			summary.Actions, summary.ShareCapital, len(summary.Failures))
 		if syncErr != nil {
 			fatal(syncErr)
 		}
