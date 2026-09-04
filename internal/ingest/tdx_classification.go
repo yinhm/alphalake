@@ -27,14 +27,15 @@ type TDXClassificationFailure struct {
 }
 
 type TDXClassificationSummary struct {
-	RunID    int64
-	Families int
-	Synced   int
-	Nodes    int
-	Members  int
-	Opened   int
-	Closed   int
-	Failures []TDXClassificationFailure
+	RunID          int64
+	Families       int
+	Synced         int
+	Nodes          int
+	Members        int
+	Opened         int
+	Closed         int
+	Failures       []TDXClassificationFailure
+	MasterFailures []InstrumentMasterFailure
 }
 
 type TDXClassificationProgress struct {
@@ -93,9 +94,11 @@ func SyncTDXClassificationsWithOptions(ctx context.Context, db *sql.DB, source T
 		finalizeTrackedRun(ctx, db, runID, classificationRunStatus(summary, retErr), &retErr)
 	}()
 
-	if _, _, err := refreshInstrumentMaster(ctx, db, source); err != nil {
+	master, err := refreshInstrumentMaster(ctx, db, runID, source)
+	if err != nil {
 		return summary, fmt.Errorf("refresh TDX instrument master: %w", err)
 	}
+	summary.MasterFailures = master.Failures
 
 	families := source.ClassificationFamilies()
 	summary.Families = len(families)
@@ -144,7 +147,7 @@ func reportClassificationProgress(options TDXClassificationSyncOptions, summary 
 		Processed: processed,
 		Total: summary.Families,
 		Synced: summary.Synced,
-		Failed: len(summary.Failures),
+		Failed: len(summary.Failures) + len(summary.MasterFailures),
 		Family: family,
 	})
 }
@@ -154,9 +157,12 @@ func classificationRunStatus(summary TDXClassificationSummary, runErr error) str
 		return duckstore.IngestRunCanceled
 	}
 	if runErr == nil {
+		if len(summary.MasterFailures) > 0 {
+			return duckstore.IngestRunPartial
+		}
 		return duckstore.IngestRunCompleted
 	}
-	if len(summary.Failures) > 0 && summary.Synced > 0 {
+	if (len(summary.Failures) > 0 || len(summary.MasterFailures) > 0) && summary.Synced > 0 {
 		return duckstore.IngestRunPartial
 	}
 	return duckstore.IngestRunFailed
