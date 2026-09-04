@@ -16,9 +16,10 @@ It ingests data from multiple source adapters, normalizes records into a canonic
 
 The current market-data foundation supports:
 
-- TDX security-master discovery for Shanghai, Shenzhen, and Beijing;
+- TDX security-master discovery for Shanghai, Shenzhen, and Beijing with exchange-partition fault isolation;
 - canonical `instrument_id` resolution while retaining temporal provider identifiers;
-- half-open identifier validity intervals and observed code-reuse lifecycle handling from complete TDX security-master snapshots;
+- half-open identifier validity intervals and observed code-reuse lifecycle handling;
+- two-observation close confirmation so a one-off code-list omission cannot immediately fragment identity;
 - strict temporal identifier resolution: overlapping identities are treated as corruption rather than resolved arbitrarily;
 - full bootstrap plus per-instrument incremental daily ingestion for equities and ETFs;
 - canonical date-only daily semantics independent of host timezone;
@@ -32,7 +33,7 @@ The current market-data foundation supports:
 - affine QFQ/HFQ adjustment segments derived locally from raw OHLC + corporate actions;
 - content-based dirty-input signatures so unchanged adjustment inputs skip historical reload/recalculation even after normal ingestion replay;
 - temporal TDX concept/style-region/index-block membership;
-- temporal TDX and Shenwan industry hierarchies and memberships;
+- temporal TDX and Shenwan industry hierarchies/memberships with taxonomy-level failure isolation after shared acquisition;
 - durable ingest/calculation run state (`completed`, `partial`, `failed`, `canceled`);
 - database-backed operational status and version-gated schema migrations.
 
@@ -63,7 +64,7 @@ Synchronize one TDX symbol. The first run bootstraps history; later runs use the
 alphalake sync-daily ./alphalake.duckdb sh600519
 ```
 
-Synchronize the current TDX equity/ETF universe. Existing instruments resume from their own latest stored/retry boundary and re-fetch the boundary day:
+Synchronize the current TDX equity/ETF universe. Existing instruments resume from their own latest stored/retry boundary and re-fetch the boundary day. A temporary failure in one exchange partition does not prevent healthy exchange partitions from continuing:
 
 ```bash
 alphalake sync-daily-all ./alphalake.duckdb
@@ -129,7 +130,8 @@ alphalake schema
 
 - Provider-specific formats stop at source adapters.
 - Canonical records use stable instrument identity instead of provider symbols.
-- Destructive temporal changes require a sufficiently complete provider snapshot; incomplete observations must not silently close history.
+- Destructive temporal changes require sufficiently complete, repeated provider evidence; one incomplete or one-off observation must not silently close history.
+- Provider partitions fail independently where the source naturally exposes independent partitions.
 - Ingestion lineage records provenance, while derived-data dirtiness is determined from canonical content.
 - Stable source files/documents should be retained immutably when that acquisition path is implemented.
 - Unadjusted OHLC is primary price truth; adjusted values are reproducible derivatives.
@@ -145,3 +147,4 @@ alphalake schema
 - [`docs/decisions/002-gbbq-and-adjustment-segments.md`](docs/decisions/002-gbbq-and-adjustment-segments.md) — GBBQ snapshots and affine adjustment semantics.
 - [`docs/decisions/003-temporal-classification-snapshots.md`](docs/decisions/003-temporal-classification-snapshots.md) — prospective temporal classification decisions.
 - [`docs/decisions/004-security-master-and-content-dirtiness.md`](docs/decisions/004-security-master-and-content-dirtiness.md) — verified security-master snapshots, temporal identity, content-based dirtiness, and atomic daily quarantine publication.
+- [`docs/decisions/005-partitioned-security-master-resilience.md`](docs/decisions/005-partitioned-security-master-resilience.md) — partition-scoped master refresh, repeated absence confirmation, industry fault isolation, and dead-path cleanup.
