@@ -19,6 +19,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  schema")
 	fmt.Fprintln(os.Stderr, "  init <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-daily <db-path> <tdx-symbol>")
+	fmt.Fprintln(os.Stderr, "  sync-daily-all <db-path>")
 	fmt.Fprintln(os.Stderr, "  status")
 }
 
@@ -80,6 +81,30 @@ func main() {
 			fatal(err)
 		}
 		fmt.Printf("synced %d daily bars for %s\n", rows, os.Args[3])
+
+	case "sync-daily-all":
+		if len(os.Args) != 3 {
+			usage()
+			os.Exit(2)
+		}
+		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		if err != nil {
+			fatal(err)
+		}
+		defer db.Close()
+
+		source, err := tdxsource.DialDefault()
+		if err != nil {
+			fatal(err)
+		}
+		defer source.Close()
+
+		summary, syncErr := ingest.SyncAllTDXDaily(ctx, db, source)
+		fmt.Printf("TDX daily sync: instruments=%d attempted=%d synced=%d skipped=%d bars=%d failures=%d\n",
+			summary.Instruments, summary.Attempted, summary.Synced, summary.Skipped, summary.Bars, len(summary.Failures))
+		if syncErr != nil {
+			fatal(syncErr)
+		}
 
 	case "status":
 		fmt.Printf("AlphaLake %s\n", version)
