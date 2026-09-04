@@ -25,7 +25,8 @@ type FilingWriteResult struct {
 // ResolveFilingObservations resolves authoritative filing observations through
 // temporal TDX identifiers. Explicit exchange evidence is authoritative for the
 // candidate prefix; absent exchange evidence falls back to a strict equity-only
-// raw-code search. No current code-range classifier is consulted.
+// raw-code search. Unknown non-empty exchange evidence remains pending rather
+// than being silently discarded. No current code-range classifier is consulted.
 func ResolveFilingObservations(ctx context.Context, db *sql.DB, filings []domain.FilingObservation) ([]domain.FilingObservation, error) {
 	if db == nil {
 		return nil, errors.New("duckdb is nil")
@@ -38,6 +39,14 @@ func ResolveFilingObservations(ctx context.Context, db *sql.DB, filings []domain
 		filing.ExchangeMIC = strings.TrimSpace(filing.ExchangeMIC)
 		if filing.ProviderCode == "" || filing.AnnouncementTime.IsZero() {
 			return nil, fmt.Errorf("filing %d requires provider code and announcement time", i)
+		}
+		if filing.ExchangeMIC != "" {
+			if _, ok := filingExchangePrefix(filing.ExchangeMIC); !ok {
+				filing.InstrumentID = 0
+				filing.ResolutionStatus = domain.FilingResolutionPending
+				filing.ResolutionReason = fmt.Sprintf("unsupported filing exchange evidence %q for provider code %s", filing.ExchangeMIC, filing.ProviderCode)
+				continue
+			}
 		}
 		instrumentID, candidates, err := resolveFilingInstrument(ctx, db, filing.ProviderCode, filing.ExchangeMIC, filing.AnnouncementTime)
 		if err != nil {
