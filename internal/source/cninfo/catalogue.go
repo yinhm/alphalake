@@ -15,10 +15,11 @@ import (
 )
 
 const (
-	Source                   = "cninfo"
-	CatalogueParserVersion   = "cninfo-catalogue-v1"
-	FilingClassifierVersion  = "cninfo-periodic-title-v1"
-	PeriodicReportCategories = "category_ndbg_szsh;category_bndbg_szsh;category_yjdbg_szsh;category_sjdbg_szsh"
+	Source                  = "cninfo"
+	CatalogueParserVersion  = "cninfo-catalogue-v1"
+	FilingClassifierVersion = "cninfo-periodic-title-v1"
+	PeriodicReportCategories = "category_ndbg_szsh;category_bndbg_szsh;category_yjdbg_szsh;category_sjdbg_szsh;" +
+		"category_ndbg_bj;category_bndbg_bj;category_yjdbg_bj;category_sjdbg_bj"
 )
 
 type CatalogueRequest struct {
@@ -172,9 +173,9 @@ func normalizeAnnouncement(item rawAnnouncement) (domain.FilingObservation, *Cat
 	if millis <= 0 {
 		return issue("announcement has no positive provider timestamp")
 	}
-	announcementTime := time.UnixMilli(millis).UTC()
-	if announcementTime.Year() < 1990 || announcementTime.Year() > 2200 {
-		return issue(fmt.Sprintf("announcement timestamp resolves to implausible year %d", announcementTime.Year()))
+	announcementDate, availableAt := announcementAvailability(millis)
+	if announcementDate.Year() < 1990 || announcementDate.Year() > 2200 {
+		return issue(fmt.Sprintf("announcement timestamp resolves to implausible year %d", announcementDate.Year()))
 	}
 	filingType, variant, period, isCorrection := ClassifyPeriodicTitle(title)
 	return domain.FilingObservation{
@@ -187,7 +188,9 @@ func normalizeAnnouncement(item rawAnnouncement) (domain.FilingObservation, *Cat
 		FilingType:                filingType,
 		FilingVariant:             variant,
 		ReportPeriod:              period,
-		AnnouncementTime:          announcementTime,
+		AnnouncementDate:          announcementDate,
+		AnnouncementTime:          availableAt,
+		AnnouncementTimePrecision: domain.AnnouncementPrecisionDate,
 		DocumentLocator:           strings.TrimSpace(item.AdjunctURL),
 		RawCategory:               strings.TrimSpace(item.AnnouncementType),
 		ClassifierVersion:         FilingClassifierVersion,
