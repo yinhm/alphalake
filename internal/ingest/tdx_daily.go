@@ -18,9 +18,10 @@ type TDXDailySource interface {
 }
 
 type TDXSingleDailySummary struct {
-	RunID       int64
-	Written     int
-	Quarantined int
+	RunID          int64
+	Written        int
+	Quarantined    int
+	MasterFailures []InstrumentMasterFailure
 }
 
 // SyncTDXDaily remains as a compatibility wrapper. New callers that need run
@@ -50,17 +51,18 @@ func SyncTDXDailyWithSummary(ctx context.Context, db *sql.DB, source TDXIncremen
 		finalizeTrackedRun(ctx, db, runID, singleDailyRunStatus(summary, retErr), &retErr)
 	}()
 
-	observations, instrumentIDs, err := refreshInstrumentMaster(ctx, db, source)
+	master, err := refreshInstrumentMaster(ctx, db, runID, source)
 	if err != nil {
 		return summary, fmt.Errorf("refresh TDX instrument master: %w", err)
 	}
+	summary.MasterFailures = master.Failures
 
 	var observation *domain.InstrumentObservation
 	var instrumentID int64
-	for i := range observations {
-		if observations[i].Identifier.Provider == "tdx" && observations[i].Identifier.Value == symbol {
-			observation = &observations[i]
-			instrumentID = instrumentIDs[i]
+	for i := range master.Observations {
+		if master.Observations[i].Identifier.Provider == "tdx" && master.Observations[i].Identifier.Value == symbol {
+			observation = &master.Observations[i]
+			instrumentID = master.InstrumentIDs[i]
 			break
 		}
 	}
@@ -101,7 +103,7 @@ func singleDailyRunStatus(summary TDXSingleDailySummary, runErr error) string {
 	if runErr != nil {
 		return duckstore.IngestRunFailed
 	}
-	if summary.Quarantined > 0 {
+	if summary.Quarantined > 0 || len(summary.MasterFailures) > 0 {
 		return duckstore.IngestRunPartial
 	}
 	return duckstore.IngestRunCompleted
