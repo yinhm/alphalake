@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -142,6 +143,62 @@ func TestUnresolvedFinancialRecordRetriesFromLocalArtifactWithoutRedownload(t *t
 	}
 	if artifactID <= 0 {
 		t.Fatal("pending resolution has no artifact ID")
+	}
+}
+
+func TestCorruptRetainedFinancialPackageRedownloadsAndRepairs(t *testing.T) {
+	ctx := context.Background()
+	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "corrupt-retained.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	root := filepath.Join(t.TempDir(), "raw")
+	source := &fakeProfessionalFinancialSource{
+		instruments: []domain.InstrumentObservation{{
+			Instrument: domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Current"},
+			Identifier: domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh600001"},
+		}},
+		packageBytes: []byte("zip!"), recordCode: "600999", marketMarker: 9,
+	}
+	options := TDXProfessionalFinancialOptions{MaxPackages: 1, Now: func() time.Time {
+		return time.Date(2026, 9, 4, 12, 0, 0, 0, time.UTC)
+	}}
+	first, err := SyncTDXProfessionalFinancialWithOptions(ctx, db, source, root, options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if first.Unresolved != 1 || source.packageCalls != 1 {
+		t.Fatalf("first=%#v calls=%d", first, source.packageCalls)
+	}
+
+	var localPath string
+	if err := db.QueryRowContext(ctx, `
+		SELECT local_path FROM meta.artifact
+		WHERE source='tdx' AND dataset='professional_financial'
+		  AND source_locator='tdxfin/gpcw20260630.zip'
+		ORDER BY artifact_id DESC LIMIT 1
+	`).Scan(&localPath); err != nil {
+		t.Fatal(err)
+	}
+	fullPath := filepath.Join(root, filepath.FromSlash(localPath))
+	if err := os.WriteFile(fullPath, []byte("bad!"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	second, err := SyncTDXProfessionalFinancialWithOptions(ctx, db, source, root, options)
+	if err != nil {
+		t.Fatalf("second sync after corruption: %v", err)
+	}
+	if second.Unresolved != 1 || source.packageCalls != 2 {
+		t.Fatalf("second=%#v calls=%d, want provider redownload", second, source.packageCalls)
+	}
+	got, err := os.ReadFile(fullPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != string(source.packageBytes) {
+		t.Fatalf("repaired retained bytes=%q, want %q", got, source.packageBytes)
 	}
 }
 
