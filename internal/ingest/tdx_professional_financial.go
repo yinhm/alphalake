@@ -36,15 +36,15 @@ type TDXProfessionalFinancialOptions struct {
 }
 
 type TDXProfessionalFinancialProgress struct {
-	RunID       int64
-	Processed   int
-	Total       int
-	Package     string
-	Packages    int
-	Skipped     int
-	Facts       int
-	Unresolved  int
-	Failures    int
+	RunID      int64
+	Processed  int
+	Total      int
+	Package    string
+	Packages   int
+	Skipped    int
+	Facts      int
+	Unresolved int
+	Failures   int
 }
 
 type TDXProfessionalFinancialFailure struct {
@@ -53,14 +53,15 @@ type TDXProfessionalFinancialFailure struct {
 }
 
 type TDXProfessionalFinancialSummary struct {
-	RunID      int64
-	Listed     int
-	Selected   int
-	Packages   int
-	Skipped    int
-	Facts      int
-	Unresolved int
-	Failures   []TDXProfessionalFinancialFailure
+	RunID          int64
+	Listed         int
+	Selected       int
+	Packages       int
+	Skipped        int
+	Facts          int
+	Unresolved     int
+	Failures       []TDXProfessionalFinancialFailure
+	MasterFailures []InstrumentMasterFailure
 }
 
 type TDXProfessionalFinancialBatchError struct {
@@ -115,9 +116,12 @@ func SyncTDXProfessionalFinancialWithOptions(
 		finalizeTrackedRun(ctx, db, runID, professionalFinancialRunStatus(summary, retErr), &retErr)
 	}()
 
-	if _, _, err := refreshInstrumentMaster(ctx, db, source); err != nil {
+	master, err := refreshInstrumentMaster(ctx, db, runID, source)
+	if err != nil {
 		return summary, fmt.Errorf("refresh TDX instrument master: %w", err)
 	}
+	summary.MasterFailures = master.Failures
+
 	entries, manifestRaw, err := source.ProfessionalFinancialFileList(ctx)
 	if err != nil {
 		return summary, err
@@ -257,7 +261,8 @@ func reportProfessionalFinancialProgress(options TDXProfessionalFinancialOptions
 	options.OnProgress(TDXProfessionalFinancialProgress{
 		RunID: summary.RunID, Processed: processed, Total: summary.Selected,
 		Package: name, Packages: summary.Packages, Skipped: summary.Skipped,
-		Facts: summary.Facts, Unresolved: summary.Unresolved, Failures: len(summary.Failures),
+		Facts: summary.Facts, Unresolved: summary.Unresolved,
+		Failures: len(summary.Failures) + len(summary.MasterFailures),
 	})
 }
 
@@ -265,10 +270,10 @@ func professionalFinancialRunStatus(summary TDXProfessionalFinancialSummary, run
 	if errors.Is(runErr, context.Canceled) || errors.Is(runErr, context.DeadlineExceeded) {
 		return duckstore.IngestRunCanceled
 	}
-	if runErr == nil && summary.Unresolved == 0 {
+	if runErr == nil && summary.Unresolved == 0 && len(summary.MasterFailures) == 0 {
 		return duckstore.IngestRunCompleted
 	}
-	if summary.Packages > 0 || summary.Unresolved > 0 {
+	if summary.Packages > 0 || summary.Unresolved > 0 || len(summary.MasterFailures) > 0 {
 		return duckstore.IngestRunPartial
 	}
 	return duckstore.IngestRunFailed
