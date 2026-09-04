@@ -84,17 +84,12 @@ func SyncTDXCorporateActionsWithOptions(ctx context.Context, db *sql.DB, source 
 		finalizeTrackedRun(ctx, db, runID, corporateActionRunStatus(summary, retErr), &retErr)
 	}()
 
-	instruments, err := source.Instruments(ctx)
+	instruments, instrumentIDs, err := refreshInstrumentMaster(ctx, db, source)
 	if err != nil {
-		return summary, fmt.Errorf("list TDX instruments: %w", err)
+		return summary, fmt.Errorf("refresh TDX instrument master: %w", err)
 	}
 	summary.Instruments = len(instruments)
 	eligibleTotal := countCorporateActionEligible(instruments)
-
-	instrumentIDs, err := duckstore.UpsertInstruments(ctx, db, instruments)
-	if err != nil {
-		return summary, fmt.Errorf("refresh canonical instrument master: %w", err)
-	}
 
 	for i, instrument := range instruments {
 		if err := ctx.Err(); err != nil {
