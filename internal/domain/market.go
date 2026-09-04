@@ -56,3 +56,18 @@ type CorporateActionObservation struct {
 	Action       CorporateAction
 	ShareCapital *ShareCapital
 }
+
+// AdjustmentSegment stores an affine transformation valid for a contiguous
+// trading-date interval. AdjustedPrice = Mul*RawPrice + Add. Historical
+// effective_to values are inclusive; the latest segment has EffectiveTo=nil.
+type AdjustmentSegment struct {
+	InstrumentID int64
+	EffectiveFrom time.Time
+	EffectiveTo   *time.Time
+	QFQMul        float64
+	QFQAdd        float64
+	HFQMul        float64
+	HFQAdd        float64
+	Method        string
+	Source        string
+}
