@@ -31,3 +31,10 @@ type Identifier struct {
 	ValidFrom    *time.Time
 	ValidTo      *time.Time
 }
+
+// InstrumentObservation is a provider-neutral observation of an instrument and
+// one provider identifier that can resolve it into AlphaLake's canonical master.
+type InstrumentObservation struct {
+	Instrument InstrumentRef
+	Identifier Identifier
+}
