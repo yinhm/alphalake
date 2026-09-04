@@ -37,9 +37,10 @@ func (c *Client) StockDailyBars(ctx context.Context, instrumentID int64, symbol 
 	return fetchStockDailyBars(ctx, c.raw, instrumentID, symbol)
 }
 
-// StockDailyBarsSince fetches the boundary day again plus all newer bars. The
-// inclusive boundary intentionally repairs a previously stored partial current-day
-// bar by letting canonical upsert replace it.
+// StockDailyBarsSince fetches the boundary calendar day again plus all newer
+// bars. The comparison is date-only: SDK Kline.Time is an exchange observation
+// encoded in time.Local, while AlphaLake's canonical TradeDate is always UTC
+// midnight carrying only the exchange-local Y/M/D fields.
 func (c *Client) StockDailyBarsSince(ctx context.Context, instrumentID int64, symbol string, since time.Time) ([]domain.DailyBar, error) {
 	if c == nil || c.raw == nil {
 		return nil, fmt.Errorf("TDX client is not initialized")
@@ -85,17 +86,23 @@ func fetchStockDailyBarsSince(ctx context.Context, c dailyKlineSinceClient, inst
 	if err != nil {
 		return nil, err
 	}
+	sinceDate := canonicalTradeDate(since)
 
 	resp, err := c.GetKlineDayUntil(key.ProviderSymbol, func(k *protocol.Kline) bool {
-		return k != nil && !k.Time.After(since)
+		if k == nil {
+			return false
+		}
+		// GetKlineDayUntil includes the matching bar before stopping. Stop only
+		// once we reach a day strictly before the inclusive boundary.
+		return canonicalTradeDate(k.Time).Before(sinceDate)
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fetch TDX daily bars since %s for %s: %w", since.Format("2006-01-02"), key.ProviderSymbol, err)
+		return nil, fmt.Errorf("fetch TDX daily bars since %s for %s: %w", sinceDate.Format("2006-01-02"), key.ProviderSymbol, err)
 	}
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	return dailyBarsFromResponse(instrumentID, key.ProviderSymbol, resp, &since)
+	return dailyBarsFromResponse(instrumentID, key.ProviderSymbol, resp, &sinceDate)
 }
 
 func dailyBarsFromResponse(instrumentID int64, symbol string, resp *protocol.KlineResp, since *time.Time) ([]domain.DailyBar, error) {
@@ -104,16 +111,20 @@ func dailyBarsFromResponse(instrumentID int64, symbol string, resp *protocol.Kli
 	}
 	bars := make([]domain.DailyBar, 0, len(resp.List))
 	for _, k := range resp.List {
-		if k == nil || (since != nil && k.Time.Before(*since)) {
+		if k == nil {
+			continue
+		}
+		tradeDate := canonicalTradeDate(k.Time)
+		if since != nil && tradeDate.Before(*since) {
 			continue
 		}
 		volume, err := NormalizeStockVolume(k.Volume)
 		if err != nil {
-			return nil, fmt.Errorf("normalize %s %s volume: %w", symbol, k.Time.Format("2006-01-02"), err)
+			return nil, fmt.Errorf("normalize %s %s volume: %w", symbol, tradeDate.Format("2006-01-02"), err)
 		}
 		bars = append(bars, domain.DailyBar{
 			InstrumentID: instrumentID,
-			TradeDate:    k.Time,
+			TradeDate:    tradeDate,
 			Open:         k.Open.Float64(),
 			High:         k.High.Float64(),
 			Low:          k.Low.Float64(),
@@ -126,4 +137,13 @@ func dailyBarsFromResponse(instrumentID int64, symbol string, resp *protocol.Kli
 		})
 	}
 	return bars, nil
+}
+
+// canonicalTradeDate intentionally copies calendar fields rather than calling
+// t.UTC(). The TDX SDK encodes a market-local observation date using time.Local;
+// timezone conversion could therefore move the date. Within AlphaLake a DATE is
+// represented in Go as UTC midnight with no instant semantics.
+func canonicalTradeDate(t time.Time) time.Time {
+	y, m, d := t.Date()
+	return time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 }
