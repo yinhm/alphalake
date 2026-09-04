@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/yinhm/alphalake/internal/ingest"
+	tdxsource "github.com/yinhm/alphalake/internal/source/tdx"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
 )
 
@@ -16,6 +18,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  version")
 	fmt.Fprintln(os.Stderr, "  schema")
 	fmt.Fprintln(os.Stderr, "  init <db-path>")
+	fmt.Fprintln(os.Stderr, "  sync-daily <db-path> <tdx-symbol>")
 	fmt.Fprintln(os.Stderr, "  status")
 }
 
@@ -24,6 +27,8 @@ func main() {
 		usage()
 		os.Exit(2)
 	}
+
+	ctx := context.Background()
 
 	switch os.Args[1] {
 	case "version":
@@ -44,7 +49,7 @@ func main() {
 			os.Exit(2)
 		}
 		path := os.Args[2]
-		db, err := duckstore.OpenAndMigrate(context.Background(), path)
+		db, err := duckstore.OpenAndMigrate(ctx, path)
 		if err != nil {
 			fatal(err)
 		}
@@ -52,6 +57,29 @@ func main() {
 			fatal(err)
 		}
 		fmt.Printf("initialized DuckDB: %s\n", path)
+
+	case "sync-daily":
+		if len(os.Args) != 4 {
+			usage()
+			os.Exit(2)
+		}
+		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		if err != nil {
+			fatal(err)
+		}
+		defer db.Close()
+
+		source, err := tdxsource.DialDefault()
+		if err != nil {
+			fatal(err)
+		}
+		defer source.Close()
+
+		rows, err := ingest.SyncTDXDaily(ctx, db, source, os.Args[3])
+		if err != nil {
+			fatal(err)
+		}
+		fmt.Printf("synced %d daily bars for %s\n", rows, os.Args[3])
 
 	case "status":
 		fmt.Printf("AlphaLake %s\n", version)
