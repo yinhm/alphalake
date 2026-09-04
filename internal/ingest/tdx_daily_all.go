@@ -3,6 +3,7 @@ package ingest
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -11,6 +12,8 @@ import (
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
 	"github.com/yinhm/alphalake/internal/validate"
 )
+
+const tdxDailyDataset = "daily_ohlcv"
 
 // TDXIncrementalDailySource extends the initial source boundary with an
 // inclusive incremental fetch used by all-market synchronization.
@@ -25,6 +28,7 @@ type TDXDailySyncFailure struct {
 }
 
 type TDXDailySyncSummary struct {
+	RunID       int64
 	Instruments int
 	Attempted   int
 	Synced      int
@@ -50,14 +54,30 @@ func (e *TDXDailyBatchError) Error() string {
 // its own latest stored day; that boundary day is fetched again and upserted.
 // Per-instrument failures are collected so one bad symbol does not discard the
 // rest of the market update.
-func SyncAllTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDailySource) (TDXDailySyncSummary, error) {
-	var summary TDXDailySyncSummary
+func SyncAllTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDailySource) (summary TDXDailySyncSummary, retErr error) {
 	if db == nil {
 		return summary, fmt.Errorf("duckdb is nil")
 	}
 	if source == nil {
 		return summary, fmt.Errorf("TDX source is nil")
 	}
+
+	runID, err := duckstore.StartIngestRun(ctx, db, "tdx", tdxDailyDataset, nil)
+	if err != nil {
+		return summary, fmt.Errorf("start TDX daily ingest run: %w", err)
+	}
+	summary.RunID = runID
+	defer func() {
+		status := ingestRunStatus(summary, retErr)
+		finishCtx := context.WithoutCancel(ctx)
+		if err := duckstore.FinishIngestRun(finishCtx, db, runID, status, nil, retErr); err != nil {
+			if retErr == nil {
+				retErr = err
+			} else {
+				retErr = errors.Join(retErr, err)
+			}
+		}
+	}()
 
 	observations, err := source.Instruments(ctx)
 	if err != nil {
@@ -101,7 +121,7 @@ func SyncAllTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDaily
 
 		if violations := validate.DailyBars(bars); len(violations) != 0 {
 			validationErr := fmt.Errorf("daily validation failed: %s", summarizeViolations(violations))
-			if err := duckstore.RecordValidationViolations(ctx, db, nil, observation.Identifier.Provider, "daily_ohlcv", "daily_bar", violations); err != nil {
+			if err := duckstore.RecordValidationViolations(ctx, db, &runID, observation.Identifier.Provider, tdxDailyDataset, "daily_bar", violations); err != nil {
 				validationErr = fmt.Errorf("%v; persist validation failures: %w", validationErr, err)
 			}
 			summary.Failures = append(summary.Failures, TDXDailySyncFailure{Symbol: symbol, Err: validationErr})
@@ -119,6 +139,19 @@ func SyncAllTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDaily
 		return summary, &TDXDailyBatchError{Failures: summary.Failures}
 	}
 	return summary, nil
+}
+
+func ingestRunStatus(summary TDXDailySyncSummary, runErr error) string {
+	if errors.Is(runErr, context.Canceled) || errors.Is(runErr, context.DeadlineExceeded) {
+		return duckstore.IngestRunCanceled
+	}
+	if runErr == nil {
+		return duckstore.IngestRunCompleted
+	}
+	if len(summary.Failures) > 0 && summary.Synced > 0 {
+		return duckstore.IngestRunPartial
+	}
+	return duckstore.IngestRunFailed
 }
 
 func dailyEligible(t domain.InstrumentType) bool {
