@@ -54,7 +54,7 @@ func UpsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar) er
 			amount = excluded.amount,
 			up_count = excluded.up_count,
 			down_count = excluded.down_count,
-			ingested_at = current_timestamp
+			ingested_at = now()
 	`)
 	if err != nil {
 		return fmt.Errorf("prepare daily-bar upsert: %w", err)
