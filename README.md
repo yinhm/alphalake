@@ -18,18 +18,21 @@ The current market-data foundation supports:
 
 - TDX security-master discovery for Shanghai, Shenzhen, and Beijing;
 - canonical `instrument_id` resolution while retaining temporal provider identifiers;
-- half-open identifier validity intervals and safe code-reuse semantics in the store;
+- half-open identifier validity intervals and observed code-reuse lifecycle handling from complete TDX security-master snapshots;
+- strict temporal identifier resolution: overlapping identities are treated as corruption rather than resolved arbitrarily;
 - full bootstrap plus per-instrument incremental daily ingestion for equities and ETFs;
 - canonical date-only daily semantics independent of host timezone;
 - canonical stock/ETF volume in shares/units rather than TDX hands;
 - row-level OHLCV quarantine with persisted validation findings and durable retry checkpoints;
+- atomic daily publication of valid bars, validation findings, and retry checkpoint state;
 - DuckDB Appender + temporary staging + set-based daily upsert inside per-instrument recovery transactions;
 - TDX GBBQ corporate-action ingestion with raw category/C1-C4 lineage;
-- last-known-good protection against suspicious empty/truncated GBBQ snapshots;
+- last-known-good protection against suspicious empty/truncated GBBQ snapshots, with an explicit repair override;
 - verified share-capital observations with source-record identity;
 - affine QFQ/HFQ adjustment segments derived locally from raw OHLC + corporate actions;
-- dirty-input signatures so unchanged adjustment inputs skip historical reload/recalculation;
+- content-based dirty-input signatures so unchanged adjustment inputs skip historical reload/recalculation even after normal ingestion replay;
 - temporal TDX concept/style-region/index-block membership;
+- temporal TDX and Shenwan industry hierarchies and memberships;
 - durable ingest/calculation run state (`completed`, `partial`, `failed`, `canceled`);
 - database-backed operational status and version-gated schema migrations.
 
@@ -72,7 +75,15 @@ Refresh TDX GBBQ corporate-action/share-capital snapshots:
 alphalake sync-actions ./alphalake.duckdb
 ```
 
-Calculate adjustment segments locally from stored raw OHLC and corporate actions. Unchanged instruments are skipped by input signature:
+By default AlphaLake refuses a successful-but-empty or suspiciously truncated GBBQ snapshot when a prior snapshot exists. For an explicit operator-approved repair, bypass only that snapshot-size safety guard with:
+
+```bash
+alphalake sync-actions ./alphalake.duckdb --force
+```
+
+`--force` does **not** bypass acquisition errors, identifier mismatches, or database constraints.
+
+Calculate adjustment segments locally from stored raw OHLC and corporate actions. Unchanged canonical inputs are skipped by content signature:
 
 ```bash
 alphalake calc-adjustments ./alphalake.duckdb
@@ -84,6 +95,12 @@ Refresh temporal TDX block classifications:
 alphalake sync-classifications ./alphalake.duckdb
 ```
 
+Refresh TDX and Shenwan industry hierarchies/memberships from TDX industry assignments and `incon.dat`:
+
+```bash
+alphalake sync-industries ./alphalake.duckdb
+```
+
 A normal market refresh sequence is therefore:
 
 ```bash
@@ -91,6 +108,7 @@ alphalake sync-daily-all ./alphalake.duckdb
 alphalake sync-actions ./alphalake.duckdb
 alphalake calc-adjustments ./alphalake.duckdb
 alphalake sync-classifications ./alphalake.duckdb
+alphalake sync-industries ./alphalake.duckdb
 ```
 
 Inspect the database without mutating it:
@@ -111,10 +129,12 @@ alphalake schema
 
 - Provider-specific formats stop at source adapters.
 - Canonical records use stable instrument identity instead of provider symbols.
+- Destructive temporal changes require a sufficiently complete provider snapshot; incomplete observations must not silently close history.
+- Ingestion lineage records provenance, while derived-data dirtiness is determined from canonical content.
 - Stable source files/documents should be retained immutably when that acquisition path is implemented.
 - Unadjusted OHLC is primary price truth; adjusted values are reproducible derivatives.
 - Financial data is point-in-time aware: report period and announcement time are distinct.
-- Derived datasets are reproducible from canonical facts and their input lineage.
+- Derived datasets are reproducible from canonical facts and their input state.
 - Data-quality failures are queryable data, not only log output.
 
 ## Design documentation
@@ -124,3 +144,4 @@ alphalake schema
 - [`docs/decisions/001-tdx-daily-ingestion.md`](docs/decisions/001-tdx-daily-ingestion.md) — TDX daily ingestion/resumability decisions.
 - [`docs/decisions/002-gbbq-and-adjustment-segments.md`](docs/decisions/002-gbbq-and-adjustment-segments.md) — GBBQ snapshots and affine adjustment semantics.
 - [`docs/decisions/003-temporal-classification-snapshots.md`](docs/decisions/003-temporal-classification-snapshots.md) — prospective temporal classification decisions.
+- [`docs/decisions/004-security-master-and-content-dirtiness.md`](docs/decisions/004-security-master-and-content-dirtiness.md) — verified security-master snapshots, temporal identity, content-based dirtiness, and atomic daily quarantine publication.
