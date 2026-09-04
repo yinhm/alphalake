@@ -23,14 +23,15 @@ type TDXCorporateActionFailure struct {
 }
 
 type TDXCorporateActionSummary struct {
-	RunID        int64
-	Instruments  int
-	Attempted    int
-	Synced       int
-	Skipped      int
-	Actions      int
-	ShareCapital int
-	Failures     []TDXCorporateActionFailure
+	RunID          int64
+	Instruments    int
+	Attempted      int
+	Synced         int
+	Skipped        int
+	Actions        int
+	ShareCapital   int
+	Failures       []TDXCorporateActionFailure
+	MasterFailures []InstrumentMasterFailure
 }
 
 type TDXCorporateActionProgress struct {
@@ -43,7 +44,7 @@ type TDXCorporateActionProgress struct {
 }
 
 type TDXCorporateActionSyncOptions struct {
-	OnProgress  func(TDXCorporateActionProgress)
+	OnProgress   func(TDXCorporateActionProgress)
 	ForceReplace bool
 }
 
@@ -86,10 +87,13 @@ func SyncTDXCorporateActionsWithOptions(ctx context.Context, db *sql.DB, source 
 		finalizeTrackedRun(ctx, db, runID, corporateActionRunStatus(summary, retErr), &retErr)
 	}()
 
-	instruments, instrumentIDs, err := refreshInstrumentMaster(ctx, db, source)
+	master, err := refreshInstrumentMaster(ctx, db, runID, source)
 	if err != nil {
 		return summary, fmt.Errorf("refresh TDX instrument master: %w", err)
 	}
+	instruments := master.Observations
+	instrumentIDs := master.InstrumentIDs
+	summary.MasterFailures = master.Failures
 	summary.Instruments = len(instruments)
 	eligibleTotal := countCorporateActionEligible(instruments)
 
@@ -202,7 +206,7 @@ func reportCorporateActionProgress(options TDXCorporateActionSyncOptions, summar
 		Processed: summary.Attempted,
 		Total: total,
 		Synced: summary.Synced,
-		Failed: len(summary.Failures),
+		Failed: len(summary.Failures) + len(summary.MasterFailures),
 		Symbol: symbol,
 	})
 }
@@ -212,9 +216,12 @@ func corporateActionRunStatus(summary TDXCorporateActionSummary, runErr error) s
 		return duckstore.IngestRunCanceled
 	}
 	if runErr == nil {
+		if len(summary.MasterFailures) > 0 {
+			return duckstore.IngestRunPartial
+		}
 		return duckstore.IngestRunCompleted
 	}
-	if len(summary.Failures) > 0 && summary.Synced > 0 {
+	if (len(summary.Failures) > 0 || len(summary.MasterFailures) > 0) && summary.Synced > 0 {
 		return duckstore.IngestRunPartial
 	}
 	return duckstore.IngestRunFailed
