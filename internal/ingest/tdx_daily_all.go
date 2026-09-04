@@ -5,12 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/yinhm/alphalake/internal/domain"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
-	"github.com/yinhm/alphalake/internal/validate"
 )
 
 const tdxDailyDataset = "daily_ohlcv"
@@ -34,16 +32,18 @@ type TDXDailySyncSummary struct {
 	Synced      int
 	Skipped     int
 	Bars        int
+	Quarantined int
 	Failures    []TDXDailySyncFailure
 }
 
 type TDXDailyProgress struct {
-	RunID     int64
-	Processed int
-	Total     int
-	Synced    int
-	Failed    int
-	Symbol    string
+	RunID       int64
+	Processed   int
+	Total       int
+	Synced      int
+	Failed      int
+	Quarantined int
+	Symbol      string
 }
 
 type TDXDailySyncOptions struct {
@@ -62,17 +62,14 @@ func (e *TDXDailyBatchError) Error() string {
 	return fmt.Sprintf("%d TDX instruments failed; first %s: %v", len(e.Failures), first.Symbol, first.Err)
 }
 
-// SyncAllTDXDaily refreshes the TDX instrument master and synchronizes daily
-// history using default options.
 func SyncAllTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDailySource) (TDXDailySyncSummary, error) {
 	return SyncAllTDXDailyWithOptions(ctx, db, source, TDXDailySyncOptions{})
 }
 
 // SyncAllTDXDailyWithOptions refreshes the TDX instrument master, then
-// synchronizes canonical daily history for equities and ETFs. Each instrument
-// resumes from its own latest stored day; that boundary day is fetched again and
-// upserted. Per-instrument failures are collected so one bad symbol does not
-// discard the rest of the market update.
+// synchronizes canonical daily history for equities and ETFs. Structural bad
+// rows are quarantined individually: valid rows still advance, while the
+// earliest quarantined calendar day is retained as a durable retry checkpoint.
 func SyncAllTDXDailyWithOptions(ctx context.Context, db *sql.DB, source TDXIncrementalDailySource, options TDXDailySyncOptions) (summary TDXDailySyncSummary, retErr error) {
 	if db == nil {
 		return summary, fmt.Errorf("duckdb is nil")
@@ -122,7 +119,7 @@ func SyncAllTDXDailyWithOptions(ctx context.Context, db *sql.DB, source TDXIncre
 		summary.Attempted++
 		symbol := observation.Identifier.Value
 		instrumentID := instrumentIDs[i]
-		latest, hasLatest, err := duckstore.LatestDailyDate(ctx, db, instrumentID, observation.Identifier.Provider)
+		boundary, hasBoundary, err := dailyFetchBoundary(ctx, db, observation.Identifier.Provider, instrumentID)
 		if err != nil {
 			summary.Failures = append(summary.Failures, TDXDailySyncFailure{Symbol: symbol, Err: err})
 			reportTDXDailyProgress(options, summary, eligibleTotal, symbol)
@@ -130,8 +127,8 @@ func SyncAllTDXDailyWithOptions(ctx context.Context, db *sql.DB, source TDXIncre
 		}
 
 		var bars []domain.DailyBar
-		if hasLatest {
-			bars, err = source.StockDailyBarsSince(ctx, instrumentID, symbol, latest)
+		if hasBoundary {
+			bars, err = source.StockDailyBarsSince(ctx, instrumentID, symbol, boundary)
 		} else {
 			bars, err = source.StockDailyBars(ctx, instrumentID, symbol)
 		}
@@ -141,22 +138,15 @@ func SyncAllTDXDailyWithOptions(ctx context.Context, db *sql.DB, source TDXIncre
 			continue
 		}
 
-		if violations := validate.DailyBars(bars); len(violations) != 0 {
-			validationErr := fmt.Errorf("daily validation failed: %s", summarizeViolations(violations))
-			if err := duckstore.RecordValidationViolations(ctx, db, &runID, observation.Identifier.Provider, tdxDailyDataset, "daily_bar", violations); err != nil {
-				validationErr = fmt.Errorf("%v; persist validation failures: %w", validationErr, err)
-			}
-			summary.Failures = append(summary.Failures, TDXDailySyncFailure{Symbol: symbol, Err: validationErr})
-			reportTDXDailyProgress(options, summary, eligibleTotal, symbol)
-			continue
-		}
-		if err := duckstore.UpsertDailyBarsForRun(ctx, db, runID, bars); err != nil {
+		applied, err := applyDailyRows(ctx, db, runID, observation.Identifier.Provider, instrumentID, bars)
+		if err != nil {
 			summary.Failures = append(summary.Failures, TDXDailySyncFailure{Symbol: symbol, Err: err})
 			reportTDXDailyProgress(options, summary, eligibleTotal, symbol)
 			continue
 		}
 		summary.Synced++
-		summary.Bars += len(bars)
+		summary.Bars += applied.Written
+		summary.Quarantined += applied.Quarantined
 		reportTDXDailyProgress(options, summary, eligibleTotal, symbol)
 	}
 
@@ -172,7 +162,7 @@ func reportTDXDailyProgress(options TDXDailySyncOptions, summary TDXDailySyncSum
 	}
 	options.OnProgress(TDXDailyProgress{
 		RunID: summary.RunID, Processed: summary.Attempted, Total: total,
-		Synced: summary.Synced, Failed: len(summary.Failures), Symbol: symbol,
+		Synced: summary.Synced, Failed: len(summary.Failures), Quarantined: summary.Quarantined, Symbol: symbol,
 	})
 }
 
@@ -190,10 +180,13 @@ func ingestRunStatus(summary TDXDailySyncSummary, runErr error) string {
 	if errors.Is(runErr, context.Canceled) || errors.Is(runErr, context.DeadlineExceeded) {
 		return duckstore.IngestRunCanceled
 	}
-	if runErr == nil {
+	if runErr == nil && summary.Quarantined == 0 {
 		return duckstore.IngestRunCompleted
 	}
-	if len(summary.Failures) > 0 && summary.Synced > 0 {
+	if runErr == nil && summary.Quarantined > 0 {
+		return duckstore.IngestRunPartial
+	}
+	if (len(summary.Failures) > 0 || summary.Quarantined > 0) && summary.Synced > 0 {
 		return duckstore.IngestRunPartial
 	}
 	return duckstore.IngestRunFailed
@@ -201,26 +194,4 @@ func ingestRunStatus(summary TDXDailySyncSummary, runErr error) string {
 
 func dailyEligible(t domain.InstrumentType) bool {
 	return t == domain.InstrumentEquity || t == domain.InstrumentETF
-}
-
-func summarizeViolations(violations []validate.Violation) string {
-	const max = 3
-	parts := make([]string, 0, minInt(len(violations), max))
-	for i, violation := range violations {
-		if i == max {
-			break
-		}
-		parts = append(parts, violation.RuleCode+"("+violation.SubjectKey+")")
-	}
-	if len(violations) > max {
-		parts = append(parts, fmt.Sprintf("+%d more", len(violations)-max))
-	}
-	return strings.Join(parts, ", ")
-}
-
-func minInt(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }
