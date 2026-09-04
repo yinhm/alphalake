@@ -10,6 +10,9 @@ import (
 	"github.com/yinhm/alphalake/internal/domain"
 )
 
+// ListProviderInstruments returns the provider's current open primary
+// identifiers only. valid_to follows half-open interval semantics, so an
+// identifier with valid_to=today is already inactive today.
 func ListProviderInstruments(ctx context.Context, db *sql.DB, provider string) ([]domain.InstrumentObservation, error) {
 	if db == nil {
 		return nil, errors.New("duckdb is nil")
@@ -26,7 +29,8 @@ func ListProviderInstruments(ctx context.Context, db *sql.DB, provider string) (
 		FROM ref.instrument_identifier x
 		JOIN ref.instrument i ON i.instrument_id = x.instrument_id
 		WHERE x.provider = ? AND x.is_primary = true
-		  AND (x.valid_to IS NULL OR x.valid_to >= current_date)
+		  AND x.valid_to IS NULL
+		  AND (x.valid_from IS NULL OR x.valid_from <= current_date)
 		ORDER BY i.instrument_id
 	`, provider)
 	if err != nil {
