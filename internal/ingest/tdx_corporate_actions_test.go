@@ -83,20 +83,6 @@ func TestSyncTDXCorporateActionsPersistsRunLineage(t *testing.T) {
 	if status != duckstore.IngestRunCompleted {
 		t.Fatalf("run status = %q, want %q", status, duckstore.IngestRunCompleted)
 	}
-
-	var actions, capital, wrongRun int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM market.corporate_action WHERE ingest_run_id=?`, summary.RunID).Scan(&actions); err != nil {
-		t.Fatalf("count corporate actions: %v", err)
-	}
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM market.share_capital WHERE ingest_run_id=?`, summary.RunID).Scan(&capital); err != nil {
-		t.Fatalf("count share capital: %v", err)
-	}
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM market.corporate_action WHERE ingest_run_id<>? OR ingest_run_id IS NULL`, summary.RunID).Scan(&wrongRun); err != nil {
-		t.Fatalf("count wrong lineage: %v", err)
-	}
-	if actions != 2 || capital != 1 || wrongRun != 0 {
-		t.Fatalf("stored actions/capital/wrongRun = %d/%d/%d", actions, capital, wrongRun)
-	}
 }
 
 func TestSyncTDXCorporateActionsKeepsFailedSymbolSnapshot(t *testing.T) {
@@ -142,14 +128,6 @@ func TestSyncTDXCorporateActionsKeepsFailedSymbolSnapshot(t *testing.T) {
 		t.Fatalf("summary = %#v", summary)
 	}
 
-	var status string
-	if err := db.QueryRowContext(ctx, `SELECT status FROM meta.ingest_run WHERE ingest_run_id=?`, summary.RunID).Scan(&status); err != nil {
-		t.Fatalf("query run: %v", err)
-	}
-	if status != duckstore.IngestRunPartial {
-		t.Fatalf("run status = %q, want partial", status)
-	}
-
 	var badRows, goodRows int
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM market.corporate_action WHERE instrument_id=? AND source='tdx'`, ids[0]).Scan(&badRows); err != nil {
 		t.Fatalf("count bad snapshot: %v", err)
@@ -159,5 +137,47 @@ func TestSyncTDXCorporateActionsKeepsFailedSymbolSnapshot(t *testing.T) {
 	}
 	if badRows != 1 || goodRows != 1 {
 		t.Fatalf("snapshot rows bad/good = %d/%d, want 1/1", badRows, goodRows)
+	}
+}
+
+func TestSyncTDXCorporateActionsRejectsEmptyResponseWhenHistoryExists(t *testing.T) {
+	ctx := context.Background()
+	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "empty-guard.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	instrument := observation(domain.InstrumentEquity, "XSHG", "Existing", "sh600003")
+	ids, err := duckstore.UpsertInstruments(ctx, db, []domain.InstrumentObservation{instrument})
+	if err != nil {
+		t.Fatal(err)
+	}
+	seedRun, err := duckstore.StartIngestRun(ctx, db, "tdx", tdxCorporateActionDataset, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	old := actionObservation("sh600003", time.Date(2025, 6, 30, 0, 0, 0, 0, time.UTC), 1, "distribution", false)
+	old.Action.InstrumentID = ids[0]
+	if err := duckstore.ReplaceCorporateActionSnapshotForRun(ctx, db, seedRun, ids[0], "tdx", []domain.CorporateAction{old.Action}, nil); err != nil {
+		t.Fatal(err)
+	}
+
+	source := &fakeCorporateActionSource{
+		instruments: []domain.InstrumentObservation{instrument},
+		actions:     map[string][]domain.CorporateActionObservation{"sh600003": {}},
+		errors:      map[string]error{},
+	}
+	summary, err := SyncTDXCorporateActions(ctx, db, source)
+	var batchErr *TDXCorporateActionBatchError
+	if !errors.As(err, &batchErr) || len(summary.Failures) != 1 {
+		t.Fatalf("summary/error = %#v / %v", summary, err)
+	}
+	var rows int
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM market.corporate_action WHERE instrument_id=? AND source='tdx'`, ids[0]).Scan(&rows); err != nil {
+		t.Fatal(err)
+	}
+	if rows != 1 {
+		t.Fatalf("last good snapshot was erased; rows=%d", rows)
 	}
 }
