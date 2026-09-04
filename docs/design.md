@@ -1,371 +1,434 @@
-# AlphaLake Design
+# AlphaLake design
 
-Status: accepted target architecture, v0 draft
+Status: accepted target architecture, v0
 
-This document contains the **accepted target specification** and the **important design decisions that led to it**. It is normative for implementation direction and compatibility decisions, but it is **not a claim that every described capability already exists**.
+This document contains:
 
-Current repository reality is tracked separately in [`implementation-status.md`](implementation-status.md). A capability is considered implemented only when an executable path exists and is covered by tests; schema-only and planned capabilities are labeled explicitly there. When this target specification and current implementation differ, the status document describes the present state while this document describes the intended contract.
+1. the accepted final specification for the current AlphaLake foundation;
+2. the important design choices and the reasoning that led to it.
 
-## 1. Accepted target specification
+It is normative for architecture and compatibility direction. It is not, by itself, a claim that every future domain exists. Current executable status is recorded in [`implementation-status.md`](implementation-status.md), and detailed decisions are preserved in [`decisions/`](decisions/).
 
-### 1.1 Product definition
+## 1. Product definition
 
-AlphaLake is a local-first financial data lake and analytical store for reproducible investment research. It is not a trading execution system and is not tied to a single vendor, exchange, country, or database file format.
+AlphaLake is a local-first financial data lake and analytical store for reproducible investment research.
 
-The first implementation targets A-share research using TDX as the primary structured data source and CNINFO as an authoritative filing/validation source.
+It is designed for:
 
-### 1.2 Architectural boundaries
+- historical market and fundamental research;
+- point-in-time queries without future information leakage;
+- source evidence retention and deterministic rebuilds;
+- multi-source validation;
+- local SQL analysis through DuckDB.
+
+It is not a trading execution system, a market-data redistribution service, or an abstraction over multiple analytical databases.
+
+The first production scope uses:
+
+- TDX as the primary structured source for A-share market data and professional financial values;
+- CNINFO as the authoritative filing identity, disclosure-date, and original-document source;
+- DuckDB as the canonical analytical store.
+
+## 2. Architectural boundaries
 
 ```text
 External sources
     |
-    +-- TDX -----------+
-    |                  |
-    +-- CNINFO --------+----> source adapters ----> canonical domains ----> DuckDB
-    |                  |             |
-    +-- future sources +             +----> immutable raw artifacts (when applicable)
+    +-- TDX --------------------------------------+
+    |                                             |
+    +-- CNINFO -----------------------------------+----> narrow source adapters
+    |                                                        |
+    +-- future providers ------------------------------------+
+                                                             |
+                         +-----------------------------------+
+                         |
+                         +--> immutable raw artifacts, when a stable
+                         |    source file/document naturally exists
+                         |
+                         +--> provider-neutral observations
+                                  |
+                                  +--> temporal identity resolution
+                                  +--> validation / quarantine
+                                  +--> canonical domain merge
+                                            |
+                                            +--> DuckDB
+                                            +--> reproducible local derivations
 ```
 
-A source adapter has two responsibilities:
+Source adapters own provider transport and decoding. Provider SDK types must not escape adapter packages.
 
-1. acquire provider data, preserving a reproducible raw artifact when the source naturally exposes a stable file/document;
-2. translate provider-specific records into AlphaLake canonical records.
+AlphaLake deliberately does not define one broad adapter interface. A paginated HTTP catalogue, a binary report file, a protocol response, and an original PDF are different source shapes. Ingest workflows define narrow consumer interfaces for the capabilities they need.
 
-AlphaLake deliberately does **not** require one broad adapter interface for all source shapes. Ingest workflows define narrow consumer interfaces for the capabilities they need. Provider SDK types must not escape the adapter package.
-
-### 1.3 Source roles
-
-#### TDX
-
-TDX is the initial primary source for:
-
-- security/code discovery needed to bootstrap the A-share universe;
-- daily OHLCV and later intraday data;
-- corporate actions and share-capital history (GBBQ);
-- TDX classifications, blocks, and index membership;
-- professional financial data (`tdxfin/gpcw*.zip` family);
-- optional F10/current finance snapshots as supplementary data.
-
-TDX-specific transport, report-file protocol, binary codecs, and local file parsing should use `github.com/injoyai/tdx` where practical. AlphaLake owns canonical units and semantics.
-
-#### CNINFO
-
-CNINFO is initially an authoritative evidence and validation source, not the primary structured financial provider.
-
-It is used for:
-
-- filing catalogue and original report documents;
-- announcement/disclosure timestamps;
-- validation of selected high-value financial facts;
-- lineage from canonical facts to authoritative filings.
-
-### 1.4 Canonical identity
-
-Provider symbols are identifiers, not primary identities.
-
-`ref.instrument` owns a stable `instrument_id`. Provider-specific identifiers are stored in `ref.instrument_identifier` with validity intervals.
-
-Examples mapping to one instrument:
-
-- `sh600519` (TDX)
-- `600519` + XSHG (exchange ticker)
-- possible future ISIN/vendor identifiers
-
-A provider symbol change must not change `instrument_id`. Provider-code reuse by a different security must create a different instrument and close/open identifier validity intervals rather than silently reusing the old identity.
-
-### 1.5 Domain schemas
+## 3. Canonical domains
 
 DuckDB uses domain-oriented schemas:
 
-- `meta` — schema version, ingestion runs, artifacts, checkpoints, validation results;
-- `ref` — instruments, identifiers, exchanges, calendars, companies;
-- `market` — OHLCV, corporate actions, share capital, adjustment data;
-- `fundamental` — filings, raw provider facts, canonical facts and mappings;
+- `meta` — schema versions, ingest runs, artifacts, checkpoints, validation results, derived state;
+- `ref` — instruments, temporal identifiers, exchanges, companies, calendars;
+- `market` — unadjusted OHLCV, corporate actions, share capital, adjustment segments;
 - `classification` — taxonomies, nodes, temporal membership;
-- `fund` — fund master/NAV/AUM/holdings (later slice);
-- `index` — index master, temporal constituents and weights (later slice);
-- `derived` — reproducible research/valuation/factor datasets;
-- transient staging relations/tables — used where bulk ingestion benefits from set-based merge semantics.
+- `fundamental` — provider fields/facts, filings, provider-filing links, canonical PIT facts;
+- future `fund`, `index`, and `derived` domains.
 
-### 1.6 Raw artifacts and lineage
+Temporary relations are used for bulk staging and set-based reconciliation. They are implementation details rather than durable source truth.
 
-Raw source artifacts are immutable whenever the source offers a stable file or document. Each artifact records at least:
+## 4. Canonical identity
 
-- source;
-- dataset;
-- source locator/name;
-- fetched timestamp;
-- content hash;
+Provider symbols are identifiers, not primary identities.
+
+`ref.instrument.instrument_id` is the stable canonical identity. `ref.instrument_identifier` stores provider identifiers with half-open validity intervals:
+
+```text
+[valid_from, valid_to)
+```
+
+Required behavior:
+
+- a provider symbol change must not create a new instrument merely because the string changed;
+- code reuse by a different security must create a distinct instrument;
+- overlapping active intervals for the same full provider identifier are corruption, not a tie to resolve arbitrarily;
+- point-in-time joins resolve identifiers at the observation date relevant to the source record.
+
+TDX current-universe snapshots are exchange-partitioned. Destructive close decisions require a complete partition and repeated absence evidence. Failed or suspicious partitions freeze without blocking healthy exchanges, and their failures remain queryable.
+
+Current-only TDX observations cannot reconstruct an absence interval that AlphaLake never observed. Official historical listing, delisting, relisting, transfer, and code-change dates remain the responsibility of a future authoritative lifecycle source.
+
+## 5. Raw artifacts and lineage
+
+A stable source file or document is immutable evidence.
+
+Every retained artifact records at least:
+
+- source and dataset;
+- source locator;
+- fetch time;
+- SHA-256;
 - content length;
-- parser version or ingest version when parsed.
+- local root-relative path;
+- parser/ingest version when applicable;
+- ingest-run lineage.
 
-Canonical facts retain source lineage (`source`, source record/file identifier, ingest run). Reprocessing a raw artifact with a newer parser must be possible without redownloading it.
+Artifact storage requirements:
 
-Protocol responses without a natural stable source file do not need to be artificially wrapped into an artifact abstraction; they still retain record/run lineage and validation evidence.
+- content-addressed physical paths;
+- temporary-file write, fsync, and atomic rename;
+- hash verification on reuse;
+- same bytes may share one physical object while retaining separate locator lineage rows;
+- corrupt or missing cache objects may be recovered only through independently verified provider acquisition;
+- a newer parser must be able to rebuild canonical data from retained bytes without redownloading.
 
-### 1.7 Market data semantics
+Protocol responses without a natural stable artifact are not artificially wrapped as files. They still retain run, source-record, and validation lineage.
+
+## 6. Market-data semantics
 
 `market.ohlcv_daily` stores unadjusted prices only.
 
-Canonical units:
+Canonical semantics:
 
-- prices/amount: native currency units; current market runtime may use `float64`, while persistent precision is controlled by the DuckDB schema;
-- volume: shares/units, not TDX "hands";
-- daily observations: exchange/provider calendar dates represented canonically as date-only values, independent of the host machine timezone;
-- ingestion timestamps: timezone-aware timestamps.
+- daily observations are exchange/provider calendar dates represented as date-only values, independent of host timezone;
+- stock/ETF volume is stored in shares or units, not TDX hands;
+- ingestion time is timezone-aware;
+- adjusted prices are reproducible derivatives, not primary truth.
 
-Using `DECIMAL` persistence after a `float64` runtime path does not make the pipeline end-to-end exact. Financial-fact precision is a separate unresolved contract and must be settled before production fundamental ingestion.
+Invalid daily rows are quarantined individually. Good rows continue, while the earliest invalid historical date remains eligible for re-fetch. Valid rows, validation evidence, and retry checkpoint state publish atomically per instrument.
 
-Adjusted prices are derived from raw OHLCV plus corporate-action semantics. Provider high-level adjusted-price helpers may be used for validation, not as the canonical stored truth.
+Bulk writes use DuckDB Appender/staging plus set-based merge, while preserving useful per-instrument recovery boundaries.
 
-### 1.8 Corporate actions
+## 7. Corporate actions and adjustments
 
-TDX GBBQ decoding may come from `injoyai/tdx`, but AlphaLake owns interpretation.
+TDX GBBQ decoding may use the TDX SDK, but AlphaLake owns canonical interpretation.
 
-This is required because provider libraries may normalize or omit semantics that matter to the lake, including ETF split/scale events such as category 11. Canonical corporate-action records must preserve the original category and source fields in addition to normalized meaning.
+Every corporate-action observation preserves:
 
-Full-snapshot replacement must protect the last known-good history from suspicious empty/truncated upstream responses. Provider record identity must be strong enough to distinguish multiple events with the same symbol/date/category.
+- raw category;
+- raw provider fields;
+- strong source-record identity;
+- normalized semantics only where the interpretation is verified.
 
-### 1.9 Classification and membership
+Successful-but-empty or suspiciously truncated full snapshots must not erase the last known-good history by default. An explicit operator repair may bypass the snapshot-size guard, but never acquisition, identity, or database errors.
 
-Classification is temporal.
+QFQ/HFQ adjustment segments are local affine derivations from raw OHLCV and verified corporate-action semantics. Cash distributions retain the additive component rather than being forced into a purely multiplicative model.
 
-A membership record contains an effective interval, not only today's state. Daily/scheduled snapshots may be diffed to create history when the source only exposes current membership.
+Derived-data dirtiness is based on canonical content, not ingest-run timestamps or surrogate IDs.
 
-This applies to:
+## 8. Classification semantics
 
-- TDX industry/concept/style/geography;
-- future standardized taxonomies;
-- index constituents.
+Classification membership is temporal.
 
-The design prevents look-ahead and survivorship bias in historical research.
+A membership records an effective interval rather than only current state. Complete source snapshots are diffed prospectively to produce history without look-ahead.
 
-### 1.10 Financial data model
+Failed/incomplete families or taxonomies cannot close previous membership. Unresolved members make the affected snapshot incomplete rather than silently disappearing from history.
 
-Financial data is point-in-time aware.
+This model supports TDX concept/style/region/index blocks and TDX/Shenwan industries. Historical membership before AlphaLake begins observing requires an additional historical source.
 
-At minimum, the model distinguishes:
+## 9. TDX professional financial provider layer
 
-- `report_period` — period the statement describes;
-- `announcement_time` — when the market could have known it;
-- `ingested_at` — when AlphaLake acquired it;
-- revision/restatement identity where detectable.
+TDX professional financial data is acquired from `tdxfin/gpcw.txt` and `gpcwYYYYMMDD.zip`.
 
-TDX professional financial fields are first retained losslessly as provider facts, e.g. `FN230`, rather than immediately becoming hundreds of physical columns.
+The parser must:
 
-Provider mapping is explicit:
+- derive field count from `report_size / 4`;
+- validate header, offsets, record boundaries, and archive structure;
+- preserve every provider field as `FN1...FNn`;
+- preserve the exact float32 bit pattern and an analytical float64 value;
+- retain the raw six-digit provider code and raw one-byte marker;
+- never infer historical exchange identity from present-day code-range helpers.
+
+`github.com/injoyai/tdx` supplies report-file transport but currently lacks a lossless gpcw codec. AlphaLake therefore owns a deliberately narrow codec, with upstream contribution or a minimal fork preferred if the implementation stabilizes and fits upstream scope.
+
+Provider-fact revision identity is the immutable artifact revision. Raw provider-record identity is separate from canonical instrument identity, allowing later lifecycle correction to reassign or remove canonical links without producing duplicate facts.
+
+A provider package is complete only when every raw record is either resolved or explicitly operator-acknowledged. Pending evidence remains locally replayable.
+
+## 10. CNINFO filing evidence
+
+CNINFO is the authoritative disclosure-evidence source, not the primary structured numerical provider.
+
+### 10.1 Catalogue acquisition
+
+The filing catalogue is acquired through bounded date windows and pages. Every page is persisted as an immutable artifact before normalized metadata is written.
+
+Old completed windows may be checkpoint-skipped. Recent windows are rescanned so late corrections, revisions, and metadata changes remain discoverable. A source/artifact/diagnostic/write failure withholds the window checkpoint.
+
+### 10.2 Filing identity
+
+`fundamental.filing` is unique by:
 
 ```text
-TDX FN230 -> canonical revenue
-TDX FN232 -> canonical net_income_parent
-...
+(source, source_filing_id)
 ```
 
-This allows field definitions to evolve without changing the binary parser.
+An instrument/report-period pair is not filing identity because one period may have a full report, summary, correction notice, corrected report, revision, audit report, inquiry letter, or other related document.
 
-Canonical financial facts include enough dimensions to distinguish statement/period semantics and to support point-in-time queries. The current `fundamental` schema is provisional until the precision model and first production writer are accepted.
+Normalized filing metadata retains:
 
-### 1.11 TDX adapter boundary
+- provider code and exchange evidence;
+- source filing ID;
+- filing type and variant;
+- report period;
+- disclosure date and canonical availability time;
+- original title/category/classifier version;
+- original catalogue fields;
+- first/last observation times;
+- catalogue and document artifact lineage;
+- resolution status and reason.
 
-Only `internal/source/tdx` may directly import `github.com/injoyai/tdx`.
+### 10.3 Conservative filing classification
 
-The adapter converts library types into AlphaLake-neutral types. It must correct/retain semantics where the SDK's convenience representation differs from AlphaLake, for example:
+Only explicit Q1, semiannual, Q3, and annual report wording can produce periodic-report semantics.
 
-- convert stock volume back to shares/units if an SDK normalizes it to hands;
-- normalize provider timestamps into explicit calendar-date semantics before they enter daily canonical records;
-- preserve raw GBBQ categories and fields;
-- avoid the SDK's private SQLite cache/scheduler as AlphaLake owns persistence and workflow;
-- retain additional `.day` metadata when needed even if a high-level SDK type does not expose it.
+Summaries are retained but cannot anchor statement facts. Postponement/reservation notices, inquiry letters, presentations, board resolutions, forecasts, earnings flashes, and similar references are evidence but not PIT statement filings.
 
-If the upstream library lacks a lossless capability, prefer contributing/forking the codec there rather than duplicating the protocol inside AlphaLake.
+Correction notices, corrected reports, and revisions remain distinct source filings. A correction may point to the immediately preceding eligible report anchor without losing its own identity.
 
-### 1.12 Professional financial files
+### 10.4 Filing instrument resolution
 
-AlphaLake should support the TDX professional financial file family (`tdxfin/gpcw.txt` and `gpcwYYYYMMDD.zip`).
+Explicit exchange evidence is used to resolve the exact temporal TDX equity identifier at the disclosure date. If exchange evidence is absent, a strict equity-only raw-code search is used.
 
-The parser must derive field count from the file header/report size. It must not hard-code historical fixed counts such as 264 fields.
+Unknown non-empty exchange evidence is not discarded and does not silently fall back to another market. It remains pending. Missing and ambiguous identities also remain pending and are locally re-resolved after future lifecycle enrichment.
 
-The parser layer outputs provider fields (`FN1...FNn`) and source metadata. Canonical financial mapping happens one layer above it.
+### 10.5 Filing documents
 
-### 1.13 Validation
+Eligible full/corrected/revision documents are downloaded by default and retained as immutable artifacts. Metadata-only mode is explicit.
 
-Validation is data, not only logging.
+Document acquisition rejects empty payloads, HTML/anti-bot responses, and expected PDF payloads without a PDF signature. Hash-valid but semantically invalid retained payloads are not reused.
 
-Validation results should be persisted with source, rule, observation, severity, and run identity.
+## 11. Disclosure-time precision
 
-Initial checks include:
+Report period, disclosure availability, and ingestion time are separate concepts.
 
-Market:
-- high >= open/close/low;
-- low <= open/close/high;
-- volume >= 0;
-- uniqueness by instrument/date/source policy.
+The public CNINFO catalogue establishes a China-local disclosure **date**, but its millisecond field is not promoted to a verified intraday publication timestamp.
 
-A bad daily observation should be quarantined rather than permanently blocking later valid observations for the instrument. Retry state must ensure quarantined historical dates remain eligible for re-fetch even when newer good dates have already advanced the stored maximum date.
+For catalogue-derived filings AlphaLake stores:
 
-Financial:
-- selected accounting identities within tolerance;
-- high-value facts cross-checked against CNINFO filings;
-- TDX announcement date compared with CNINFO disclosure time where possible.
+- `announcement_date` — China-local disclosure date as a date value;
+- `raw_announcement_time_ms` — unmodified provider evidence;
+- `announcement_time_precision='date'`;
+- `announcement_time` — the next China-calendar-day boundary, used as the earliest safe PIT availability instant.
 
-### 1.14 Ingestion workflow
+This deliberately sacrifices same-day availability rather than leaking information into intraday historical queries. A future independently verified timestamp source may use precision `timestamp` without changing the query contract.
 
-Workflow is dataset-oriented and resumable.
+## 12. Provider-to-filing links
 
-Each dataset defines:
+TDX values and CNINFO filing evidence never overwrite each other's provenance.
 
-- dependencies;
-- checkpoint semantics;
-- acquisition step;
-- parsing/normalization step;
-- validation step;
-- canonical merge step.
+`fundamental.provider_filing_link` explicitly connects one immutable provider-record revision to one filing.
 
-Do not use a single global `MAX(date)` rule for every dataset. Financial updates must be able to detect corrections/restatements to older periods, commonly by rescanning a recent announcement window and deduplicating by source identity/hash.
+A candidate filing must have:
 
-For DuckDB bulk paths, prefer Appender/staging plus set-based merge over OLTP-style per-row INSERT loops while keeping useful recovery boundaries (currently per instrument for daily data).
+- the same canonical instrument;
+- the same report period;
+- a compatible periodic-report type;
+- availability no later than the first observation time of the provider artifact.
 
-### 1.15 Initial delivery slices
+The observation-time constraint prevents a later correction from leaking backward into an earlier observed provider revision.
 
-These slices describe intended delivery order, not implementation status. See `implementation-status.md` for current completion.
+Among eligible candidates, later availability wins. At the same availability time, corrected-report/revision/correction-notice/full-report priority is deterministic. Equally ranked candidates remain ambiguous.
 
-#### Slice 0 — foundation
-- repository layout;
-- design/spec and decision log;
-- SQL schema bootstrap;
-- source/domain/store boundaries;
-- minimal CLI.
+## 13. Canonical point-in-time fundamentals
 
-#### Slice 1 — TDX daily market data
-- instrument bootstrap;
-- daily OHLCV acquisition/import;
-- immutable raw artifacts where a stable source artifact exists;
-- market validation.
+Only reviewed provider mappings with known units may become canonical facts.
 
-#### Slice 2 — corporate actions/classification
-- raw GBBQ ingestion;
-- normalized corporate actions/share capital;
-- TDX classifications and temporal membership.
+The initial canonical set is:
 
-#### Slice 3 — TDX professional financial data
-- financial file list/download;
-- lossless `gpcw` parser;
-- FN field catalogue/mapping;
-- point-in-time canonical facts.
+- FN230 revenue — CNY yuan;
+- FN231 operating profit — CNY yuan;
+- FN232 parent net income — CNY yuan;
+- FN233 adjusted net income — CNY yuan;
+- FN234 operating cash flow — CNY yuan;
+- FN235 investing cash flow — CNY yuan;
+- FN236 financing cash flow — CNY yuan;
+- FN237 net cash increase — CNY yuan;
+- FN238 total shares — shares.
 
-#### Slice 4 — CNINFO validation
-- filing catalogue;
-- document lineage;
-- announcement-time validation;
-- selected fact validation.
+Provider precision remains lossless in `fundamental.provider_fact`. Canonical values use `DECIMAL(38,10)` as a deterministic decimal representation of the provider float32 value. This does not restore precision that the provider encoding did not contain.
 
-### 1.16 Non-goals for v0
+Statement scope is `provider_default` until the provider record supplies a reviewed scope dimension. AlphaLake does not invent consolidated/parent scope.
 
-- real-time execution/order management;
-- data redistribution service;
-- vendor-specific business logic outside adapters;
-- introducing EastMoney/Tushare as required sources;
-- storing adjusted prices as primary facts;
-- supporting multiple analytical database backends.
+`materialize-fundamentals` is a local-only reconciliation:
 
-## 2. Important design decisions
+1. retry retained pending filing identities;
+2. refresh provider-to-filing links;
+3. validate linked provider facts;
+4. insert/update/remove canonical facts by immutable raw identity;
+5. persist rejected candidates as validation evidence.
 
-### D-001 — DuckDB is the single canonical analytical store
+A canonical fact is not materialized when identity, period, report type, announcement ordering, finiteness, unit, or decimal conversion is unsafe.
 
-**Decision:** Use DuckDB rather than a generic storage abstraction or Pebble as the primary database.
+## 14. Point-in-time query contract
 
-**Why:** The workload is increasingly relational/analytical: historical OHLC, financial statements, point-in-time joins, classification membership, fund/index constituents, factor preparation, screening and backtests. SQL, window functions, ASOF joins, columnar scans and Parquet interoperability are more valuable than raw KV control.
+`fundamental.fact_latest` returns the latest supported revision for each instrument, canonical field, and report period.
 
-**Rejected:** Pebble as the only store. It remains excellent for low-level KV workloads, but would force AlphaLake to implement query/index/join/aggregation semantics itself.
+`fundamental.fact_asof(as_of_time)` returns the latest revision whose canonical disclosure availability is no later than `as_of_time`.
 
-**Consequence:** Do not build a ClickHouse/DuckDB repository abstraction in v0. Abstract sources, not the already-selected store.
+Required behavior:
 
-### D-002 — Source adapters, not source-shaped domain models
+```text
+before original disclosure availability -> no fact
+after original disclosure availability  -> original supported revision
+after correction availability           -> corrected supported revision
+```
 
-**Decision:** TDX is a source adapter; its symbol/classes/structs do not define the canonical schema.
+This behavior is bounded by observed provider revisions. If AlphaLake never retained a pre-correction TDX revision, it cannot invent the original value merely because CNINFO records an earlier filing.
 
-**Why:** A source-shaped schema becomes expensive when adding filings, funds, other markets, or a second provider. The stable abstraction is the investment-data domain, not a provider API.
+## 15. Validation contract
 
-**Consequence:** provider types stop at `internal/source/<provider>`. Ingest workflows own narrow interfaces instead of relying on one artifact-shaped global adapter interface.
+Validation is queryable data, not only logs.
 
-### D-003 — Reuse `injoyai/tdx` for TDX-specific codec/protocol work
+Initial market rules include OHLC ordering, non-negative volume, and canonical uniqueness.
 
-**Decision:** Prefer `github.com/injoyai/tdx` for network protocol, report-file transfer, local TDX formats and raw GBBQ/block codecs.
+Initial fundamental materialization rules include:
 
-**Why:** Maintaining duplicate byte-level protocol implementations is high-cost and error-prone. The library already covers broad TDX functionality and is actively maintained.
+- filing instrument equals provider instrument;
+- filing report period equals provider report period;
+- filing type matches the period;
+- disclosure availability is not before report period;
+- provider value is finite;
+- canonical mapping and unit are reviewed;
+- decimal conversion succeeds;
+- mapping intervals are unambiguous.
 
-**Caveat:** High-level convenience semantics are not canonical. Examples observed during design include volume normalization to hands and GBBQ convenience logic that does not fully model all ETF events needed by AlphaLake.
+Original CNINFO documents are retained now. Numerical extraction from PDF/XBRL and selected official-value comparison with TDX remain the next validation layer.
 
-**Consequence:** keep a thin AlphaLake adapter and tests against known TDX/tdx2db edge cases.
+## 16. Operational workflow
 
-### D-004 — Keep `tdx2db` as a reference/test oracle, not a runtime dependency
+Normal refresh:
 
-**Decision:** Borrow proven data-engineering edge cases and workflow ideas from `tdx2db`, but do not copy its provider-shaped schema or depend on it at runtime.
+```text
+sync-daily-all
+sync-actions
+calc-adjustments
+sync-classifications
+sync-industries
+sync-financial
+sync-filings
+materialize-fundamentals
+```
 
-**Why:** It contains valuable behavior around daily files, GBBQ, ETF category 11, calendars and update workflows, but its primary key/model is centered on TDX symbols and it historically supported multiple DB backends that AlphaLake does not need.
+Historical bootstrap uses explicit `--all` for large TDX financial and CNINFO filing backfills.
 
-### D-005 — TDX professional financial data is primary; CNINFO is authoritative evidence
+Network ingestion and local derivation remain separate. Raw/provider truth can be refreshed independently; canonical derived data can be rebuilt without network access.
 
-**Decision:** Do not introduce EastMoney or Tushare in v0. Use TDX professional financial files for structured facts and CNINFO for original filings and verification.
+## 17. Non-goals for v0
 
-**Why:** This keeps the initial trust model simple: one structured primary source plus one authoritative evidence source. It avoids premature provider proliferation while preserving the ability to validate.
+- order execution or portfolio trading;
+- commercial data redistribution;
+- multiple analytical storage backends;
+- EastMoney or Tushare as required dependencies;
+- adjusted prices as primary facts;
+- speculative canonicalization of unreviewed provider fields;
+- fabricated announcement timestamps or statement scope.
 
-### D-006 — `GetFinanceInfo` is a snapshot, not the historical financial database
+# 18. Important design decisions and process
 
-**Decision:** Treat TDX `GetFinanceInfo`/F10 as supplementary data only.
+The architecture evolved through explicit review-driven decisions rather than a single fixed upfront schema.
 
-**Why:** Historical research requires multiple report periods, announcement time and revision semantics. TDX professional financial files are the correct source family for that use case.
+### D-001 — DuckDB instead of Pebble as canonical storage
 
-### D-007 — Point-in-time semantics are first-class
+The workload requires relational point-in-time joins, window functions, ASOF analysis, columnar scans, and Parquet interoperability. A KV-only design would require AlphaLake to rebuild query and indexing semantics itself.
 
-**Decision:** Store report period separately from announcement/disclosure time.
+### D-002 — Source abstraction, not database abstraction
 
-**Why:** Backtests must only use data available at the historical decision time. Querying by `report_period <= trade_date` introduces look-ahead bias.
+After choosing DuckDB, a multi-backend repository layer no longer created value. Source/provider boundaries, canonical semantics, and reproducible ingestion are the real variability points.
 
-### D-008 — Immutable raw artifacts
+### D-003 — Reuse TDX transport/codecs, retain AlphaLake semantics
 
-**Decision:** Preserve source files/documents and hashes before normalization where practical.
+`injoyai/tdx` is used where practical for TDX protocol/file mechanics. AlphaLake owns units, temporal identity, validation, and canonical meaning. The gpcw codec is a documented narrow exception because upstream does not currently provide it.
 
-**Why:** Parser fixes should not require redownloading data. It also enables audit, reproducibility, and evidence retention.
+### D-004 — Raw artifacts are evidence
 
-**Trade-off:** uses more disk. Local market/fundamental data size makes this acceptable compared with the value of reproducibility.
+Direct HTTP/protocol-to-database ingestion was rejected for stable files/documents. Immutable bytes permit parser correction, audit, historical revision comparison, and offline rebuild.
 
-**Implementation note:** this decision is not yet fully implemented; it applies first to sources with stable artifacts such as TDX professional financial packages and CNINFO documents.
+### D-005 — Temporal identity and destructive-change grace
 
-### D-009 — Canonical instrument ID instead of provider symbol as identity
+Provider symbol strings cannot safely be canonical identities. Current-source omissions also cannot immediately close history. Partition isolation and repeated evidence were introduced after review exposed identity fragmentation and availability risks.
 
-**Decision:** Introduce `instrument_id` immediately.
+### D-006 — Content and lineage are different
 
-**Why:** Provider codes differ and codes/names can change. A stable identity prevents downstream tables from coupling to TDX naming.
+Ingest-run IDs describe provenance; they do not prove content changed. Derived-data dirtiness therefore uses canonical content rather than timestamps/surrogate IDs.
 
-**Implementation note:** code-reuse and full temporal identifier lifecycle are still incomplete; see `implementation-status.md`.
+### D-007 — Quarantine poison records, do not wedge datasets
 
-### D-010 — Store provider financial facts vertically before canonical mapping
+A bad daily row or unresolved financial record must not permanently block later good data. Valid rows progress while bad evidence remains visible and retryable.
 
-**Decision:** retain `FNxxx -> value` provider facts and map them into canonical facts.
+### D-008 — Do not invent point-in-time semantics
 
-**Why:** TDX financial field counts and definitions evolve. A hard-coded giant wide table couples storage migrations to provider evolution.
+TDX gpcw report periods were available before authoritative announcement time. Canonical facts remained intentionally empty until CNINFO filing evidence existed. This prevented a convenient but invalid substitution of fetch time, filename, or report period for market availability.
 
-**Consequence:** frequently-used canonical facts may later be exposed through views/materialized derived tables for ergonomics/performance.
+### D-009 — Provider values and filing evidence remain independent
 
-### D-011 — Classification/index membership is temporal
+CNINFO timing is not written into TDX facts as though TDX supplied it. An explicit link relation preserves source roles and supports ambiguity/correction handling.
 
-**Decision:** model effective intervals, not only latest membership.
+### D-010 — Date-only disclosure is conservative, not fake precision
 
-**Why:** current-only membership creates survivorship and look-ahead bias. Snapshot diffing can recover history prospectively even when an upstream API only exposes current state.
+The public catalogue's date evidence is represented as date precision and becomes PIT-visible at the next China-day boundary. Same-day availability is intentionally sacrificed until a trustworthy intraday source exists.
 
-### D-012 — Small, reviewable commits
+### D-011 — Canonical fact identity follows immutable raw identity
 
-**Decision:** implementation proceeds in vertical slices with narrow commits: docs, schema, adapter boundary, one dataset at a time.
+Canonical instrument identity can be corrected. Fact identity therefore follows provider revision + raw code + field, allowing reassignment or removal without duplicate conflicting facts.
 
-**Why:** data semantics are subtle. Small commits make regressions and design changes easier to audit and revert.
+### D-012 — Review issues are repaired, not merely documented
 
-## 3. Open questions
+Repeated reviews exposed migration drift, timezone coincidence, poison-record wedges, empty-snapshot erasure, ineffective dirtiness, code-reuse gaps, false ambiguity, corrupt-cache wedges, and identity-reassignment duplication. Correctness and recoverability issues were implemented and regression-tested rather than left as prose-only caveats.
 
-These are deliberately not settled in v0 foundation work:
+Detailed decision records:
 
-- exact runtime/storage precision model for financial facts and whether scaled integers/decimal library values are required;
-- whether `instrument_id` should remain sequence-backed BIGINT or move to application-generated UUID/ULID;
-- how much of TDX professional-financial field metadata should be generated from an upstream catalogue versus curated manually;
-- CNINFO parser depth in v0 (metadata validation only vs structured PDF/XBRL extraction);
-- artifact retention/compression policy for minute/tick data if those become large.
+- [`001-tdx-daily-ingestion.md`](decisions/001-tdx-daily-ingestion.md)
+- [`002-gbbq-and-adjustment-segments.md`](decisions/002-gbbq-and-adjustment-segments.md)
+- [`003-temporal-classification-snapshots.md`](decisions/003-temporal-classification-snapshots.md)
+- [`004-security-master-and-content-dirtiness.md`](decisions/004-security-master-and-content-dirtiness.md)
+- [`005-partitioned-security-master-resilience.md`](decisions/005-partitioned-security-master-resilience.md)
+- [`006-professional-financial-artifacts.md`](decisions/006-professional-financial-artifacts.md)
+- [`007-cninfo-filing-and-pit-fundamentals.md`](decisions/007-cninfo-filing-and-pit-fundamentals.md)
+
+# 19. Remaining roadmap
+
+The current A+B evidence/PIT loop is complete for the reviewed FN230–FN238 fields. Remaining work is intentionally separate:
+
+1. authoritative CNINFO numerical extraction/selected-fact validation;
+2. authoritative historical security lifecycle;
+3. authoritative trading calendar and populated exchange/company masters;
+4. broader reviewed financial field mappings and statement dimensions;
+5. dedicated index and fund domains;
+6. intraday canonical data;
+7. derived fundamentals, valuation, factors, screening, and backtesting interfaces.
