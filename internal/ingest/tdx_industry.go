@@ -15,7 +15,7 @@ const tdxIndustryDataset = "classification_industry"
 
 type TDXIndustrySource interface {
 	Instruments(context.Context) ([]domain.InstrumentObservation, error)
-	IndustrySnapshots(context.Context) ([]domain.ClassificationSnapshot, error)
+	IndustrySnapshotResults(context.Context) ([]domain.ClassificationSnapshotResult, error)
 }
 
 type TDXIndustrySummary struct {
@@ -59,9 +59,10 @@ func SyncTDXIndustries(ctx context.Context, db *sql.DB, source TDXIndustrySource
 	return SyncTDXIndustriesWithOptions(ctx, db, source, TDXIndustrySyncOptions{})
 }
 
-// SyncTDXIndustries downloads TDX industry assignments plus the shared industry
-// dictionary once, then applies TDX and Shenwan taxonomies through the same
-// temporal classification store used by block families.
+// SyncTDXIndustriesWithOptions acquires shared industry inputs once, then applies
+// TDX and Shenwan taxonomy build results independently through the common
+// temporal classification store. One taxonomy build failure does not suppress
+// another taxonomy that was built successfully.
 func SyncTDXIndustriesWithOptions(ctx context.Context, db *sql.DB, source TDXIndustrySource, options TDXIndustrySyncOptions) (summary TDXIndustrySummary, retErr error) {
 	if db == nil {
 		return summary, fmt.Errorf("duckdb is nil")
@@ -91,20 +92,33 @@ func SyncTDXIndustriesWithOptions(ctx context.Context, db *sql.DB, source TDXInd
 	if _, _, err := refreshInstrumentMaster(ctx, db, source); err != nil {
 		return summary, fmt.Errorf("refresh TDX instrument master: %w", err)
 	}
-	snapshots, err := source.IndustrySnapshots(ctx)
+	results, err := source.IndustrySnapshotResults(ctx)
 	if err != nil {
-		return summary, fmt.Errorf("load TDX industry snapshots: %w", err)
+		return summary, fmt.Errorf("load TDX industry snapshot results: %w", err)
 	}
-	if len(snapshots) == 0 {
+	if len(results) == 0 {
 		return summary, fmt.Errorf("TDX industry source returned no taxonomies")
 	}
-	summary.Taxonomies = len(snapshots)
+	summary.Taxonomies = len(results)
 
-	for i, snapshot := range snapshots {
+	for i, item := range results {
 		if err := ctx.Err(); err != nil {
 			return summary, err
 		}
-		code := snapshot.Taxonomy.Code
+		code := item.Code
+		if item.Error != "" || item.Snapshot == nil {
+			err := errors.New(item.Error)
+			if item.Error == "" {
+				err = errors.New("taxonomy returned no snapshot")
+			}
+			summary.Failures = append(summary.Failures, TDXClassificationFailure{Family: code, Err: err})
+			reportIndustryProgress(options, summary, i+1, code)
+			continue
+		}
+		snapshot := *item.Snapshot
+		if code == "" {
+			code = snapshot.Taxonomy.Code
+		}
 		if snapshot.Taxonomy.Source != "tdx" {
 			err := fmt.Errorf("industry taxonomy %q returned source %q", code, snapshot.Taxonomy.Source)
 			summary.Failures = append(summary.Failures, TDXClassificationFailure{Family: code, Err: err})
