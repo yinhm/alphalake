@@ -34,32 +34,42 @@ const (
 	FilingResolutionAcknowledged = "acknowledged"
 )
 
-// FilingObservation is one authoritative disclosure-platform observation before
-// or after canonical instrument resolution. ProviderCode and ExchangeMIC remain
-// explicit evidence; InstrumentID is zero until resolution succeeds.
-type FilingObservation struct {
-	FilingID           int64
-	InstrumentID       int64
-	Source             string
-	SourceFilingID     string
-	ProviderCode       string
-	ExchangeMIC        string
-	SecurityName       string
-	Title              string
-	FilingType         FilingType
-	FilingVariant      FilingVariant
-	ReportPeriod       *time.Time
-	AnnouncementTime   time.Time
-	DocumentLocator    string
-	SourceURL          string
-	RawCategory        string
-	ClassifierVersion  string
-	IsCorrection       bool
+const (
+	AnnouncementPrecisionTimestamp = "timestamp"
+	AnnouncementPrecisionDate      = "date"
+)
 
-	ProviderOrgID              string
-	ProviderColumnID           string
-	ProviderPageColumn         string
-	RawAnnouncementTimeMillis  int64
+// FilingObservation is one authoritative disclosure-platform observation before
+// or after canonical instrument resolution. AnnouncementDate is the provider's
+// exchange-local disclosure date represented as a UTC-midnight date carrier.
+// AnnouncementTime is the canonical earliest-safe availability instant. When the
+// source exposes date precision only, AlphaLake uses the next China-calendar-day
+// boundary so intraday ASOF queries cannot see an announcement prematurely.
+type FilingObservation struct {
+	FilingID                  int64
+	InstrumentID              int64
+	Source                    string
+	SourceFilingID            string
+	ProviderCode              string
+	ExchangeMIC               string
+	SecurityName              string
+	Title                     string
+	FilingType                FilingType
+	FilingVariant             FilingVariant
+	ReportPeriod              *time.Time
+	AnnouncementDate          time.Time
+	AnnouncementTime          time.Time
+	AnnouncementTimePrecision string
+	DocumentLocator           string
+	SourceURL                 string
+	RawCategory               string
+	ClassifierVersion         string
+	IsCorrection              bool
+
+	ProviderOrgID             string
+	ProviderColumnID          string
+	ProviderPageColumn        string
+	RawAnnouncementTimeMillis int64
 
 	CatalogueArtifactID int64
 	DocumentArtifactID  int64
