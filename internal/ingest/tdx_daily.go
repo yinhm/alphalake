@@ -47,22 +47,7 @@ func SyncTDXDailyWithSummary(ctx context.Context, db *sql.DB, source TDXIncremen
 	}
 	summary.RunID = runID
 	defer func() {
-		status := duckstore.IngestRunCompleted
-		if errors.Is(retErr, context.Canceled) || errors.Is(retErr, context.DeadlineExceeded) {
-			status = duckstore.IngestRunCanceled
-		} else if retErr != nil {
-			status = duckstore.IngestRunFailed
-		} else if summary.Quarantined > 0 {
-			status = duckstore.IngestRunPartial
-		}
-		finishCtx := context.WithoutCancel(ctx)
-		if err := duckstore.FinishIngestRun(finishCtx, db, runID, status, nil, retErr); err != nil {
-			if retErr == nil {
-				retErr = err
-			} else {
-				retErr = errors.Join(retErr, err)
-			}
-		}
+		finalizeTrackedRun(ctx, db, runID, singleDailyRunStatus(summary, retErr), &retErr)
 	}()
 
 	observations, err := source.Instruments(ctx)
@@ -80,7 +65,7 @@ func SyncTDXDailyWithSummary(ctx context.Context, db *sql.DB, source TDXIncremen
 	if observation == nil {
 		return summary, fmt.Errorf("TDX instrument %q not found", symbol)
 	}
-	if !dailyEligible(observation.Instrument.Type) {
+	if !equityOrETF(observation.Instrument.Type) {
 		return summary, fmt.Errorf("TDX daily ingestion for %q type %q is not supported", symbol, observation.Instrument.Type)
 	}
 
@@ -110,4 +95,17 @@ func SyncTDXDailyWithSummary(ctx context.Context, db *sql.DB, source TDXIncremen
 	summary.Written = applied.Written
 	summary.Quarantined = applied.Quarantined
 	return summary, nil
+}
+
+func singleDailyRunStatus(summary TDXSingleDailySummary, runErr error) string {
+	if errors.Is(runErr, context.Canceled) || errors.Is(runErr, context.DeadlineExceeded) {
+		return duckstore.IngestRunCanceled
+	}
+	if runErr != nil {
+		return duckstore.IngestRunFailed
+	}
+	if summary.Quarantined > 0 {
+		return duckstore.IngestRunPartial
+	}
+	return duckstore.IngestRunCompleted
 }
