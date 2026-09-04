@@ -14,8 +14,10 @@ Status meanings:
 | Capability | Status | Notes |
 | --- | --- | --- |
 | DuckDB canonical store | Implemented | Single analytical backend; persistent files use stable `alphalake` catalog alias. |
-| Versioned schema migrations | Implemented | Embedded migrations are the single SQL source of truth; only unapplied versions run, each in its own transaction. |
-| `meta.ingest_run` lifecycle | Implemented | Daily, corporate-action, classification and adjustment jobs create durable runs with terminal status. |
+| Versioned schema migrations | Implemented | Embedded migrations are the single SQL source of truth; only unapplied versions run, each in its own transaction and recorded after success. Legacy replay-only databases are upgraded by version registration. |
+| Schema single source of truth | Implemented | Only `internal/store/duckdb/migrations/*.sql` is authoritative; the duplicate top-level `schema/` copies were removed. |
+| `meta.ingest_run` lifecycle | Implemented | Daily, corporate-action, classification and adjustment jobs create durable runs with terminal status; cancel-safe finalization/error joining is shared by a minimal ingest helper. |
+| Operational status | Implemented | `alphalake status <db-path>` reads schema version/pending migrations, validation failures, checkpoints and recent ingest runs without mutating the database. |
 | Validation persistence | Implemented | Daily structural violations are stored in `meta.validation_result`. |
 | Checkpoints | Partial | Durable checkpoints are currently used for daily-bar quarantine retry; generic checkpoint semantics are not yet shared by every dataset. |
 | Raw artifact catalogue | Schema only | `meta.artifact` exists. Stable-file/document acquisition and immutable local retention are not implemented yet. |
@@ -26,7 +28,8 @@ Status meanings:
 | Capability | Status | Notes |
 | --- | --- | --- |
 | Canonical `instrument_id` | Implemented | TDX provider identifiers resolve to canonical instruments. |
-| Provider identifier validity intervals | Partial | Columns exist, but code reuse / delist-and-reuse resolution is not yet implemented end-to-end. |
+| Provider identifier interval semantics | Implemented | Store uses half-open `[valid_from, valid_to)` intervals, explicit as-of resolution, open-identifier closure, ambiguity rejection and non-overlapping identity on code reuse. |
+| Authoritative identifier lifecycle acquisition | Partial | Current TDX security-master snapshots do not by themselves provide all authoritative delist/relist/code-change dates. When a closed code reappears without a list date, AlphaLake uses the previous `valid_to` as a conservative non-overlap lower bound until a better lifecycle source tightens it. |
 | Exchange master | Schema only | `ref.exchange` exists without a populated acquisition path. |
 | Company master | Schema only | `ref.company` exists without a populated acquisition path. |
 | Trading calendar | Schema only | Table exists; no authoritative calendar ingestion path is complete. |
@@ -35,16 +38,17 @@ Status meanings:
 
 | Capability | Status | Notes |
 | --- | --- | --- |
-| TDX equity/ETF daily OHLCV | Implemented | Full bootstrap plus inclusive per-instrument incremental refresh. |
+| TDX equity/ETF daily OHLCV | Implemented | Full bootstrap plus inclusive per-instrument incremental refresh. Single-symbol and all-market commands share run/lineage/incremental semantics. |
 | Canonical daily date semantics | Implemented | Adapter emits date-only UTC-midnight carriers based on provider Y/M/D, independent of host timezone. |
 | Canonical stock/ETF volume | Implemented | TDX hands are normalized to shares/units. |
 | Daily structural validation | Implemented | Bad rows are quarantined while good rows continue; earliest bad date is retried via durable checkpoint. |
-| Daily bulk persistence | Implemented | Per-instrument transaction uses DuckDB temporary staging + Appender + set-based upsert. |
+| Daily bulk persistence | Implemented | Per-instrument transaction uses DuckDB temporary staging + Appender + set-based upsert rather than row-by-row OLTP writes. |
 | TDX GBBQ corporate actions | Implemented | Raw categories/fields retained; per-symbol snapshots replace atomically. |
 | GBBQ snapshot safety | Implemented | Empty or suspiciously truncated snapshots do not erase the last known-good history by default. |
-| Share-capital history | Implemented | Source-record identity supports multiple same-day/same-category records after migration 007. |
+| Corporate-action source identity | Implemented | Source IDs include raw-field bit fingerprints, allowing multiple same-day/same-category events. |
+| Share-capital history | Implemented | Migration 007 includes `source_record_id` in identity, allowing multiple same-day/same-category records. |
 | QFQ/HFQ affine adjustments | Implemented | Derived from raw OHLCV + verified corporate-action semantics; cash distributions preserve additive terms. |
-| Incremental derived recalculation | Planned | Adjustment calculation still needs dirty-input/signature based skipping. |
+| Incremental derived recalculation | Implemented | Migration 008 records per-instrument input signatures; unchanged adjustment inputs skip historical loading/recalculation, while historical daily/action revisions dirty the output. Derived segments and state publish atomically. |
 
 ## Classification
 
@@ -77,9 +81,7 @@ Status meanings:
 
 ## Known structural work still open
 
-1. Complete temporal provider-identifier/code-reuse semantics before relying on historical identity across delist/relist events.
-2. Add dirty-input signatures so adjustment calculations skip unchanged instruments.
-3. Refactor repeated ingest-run/progress/error lifecycle only after the dataset-specific correctness semantics remain explicit.
-4. Replace the placeholder `status` command with database-backed operational status.
-5. Implement immutable artifact retention first for stable-file/document sources such as TDX professional financial packages and CNINFO filings.
-6. Revisit provisional `fundamental` schema before its first production writer is introduced.
+1. Add an authoritative security-lifecycle source/process so provider identifier `valid_from/valid_to` can be tightened from observed/conservative boundaries to official dates.
+2. Implement immutable artifact retention first for stable-file/document sources such as TDX professional financial packages and CNINFO filings.
+3. Revisit the provisional `fundamental` schema and financial precision model before its first production writer is introduced.
+4. Complete and integrate TDX/Shenwan industry hierarchy ingestion, then resume the professional-financial slice.
