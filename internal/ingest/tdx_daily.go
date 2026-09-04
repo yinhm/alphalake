@@ -18,7 +18,9 @@ type TDXDailySource interface {
 }
 
 // SyncTDXDaily resolves one TDX symbol into the canonical instrument master and
-// refreshes its complete unadjusted daily-bar history.
+// refreshes its complete unadjusted daily-bar history. Slice 1 deliberately
+// supports equities and ETFs only; other TDX instrument classes need their own
+// request/unit semantics before canonical ingestion is safe.
 func SyncTDXDaily(ctx context.Context, db *sql.DB, source TDXDailySource, symbol string) (int, error) {
 	if db == nil {
 		return 0, fmt.Errorf("duckdb is nil")
@@ -42,6 +44,9 @@ func SyncTDXDaily(ctx context.Context, db *sql.DB, source TDXDailySource, symbol
 	if observation == nil {
 		return 0, fmt.Errorf("TDX instrument %q not found", symbol)
 	}
+	if !dailyEligible(observation.Instrument.Type) {
+		return 0, fmt.Errorf("TDX daily ingestion for %q type %q is not supported in Slice 1", symbol, observation.Instrument.Type)
+	}
 
 	instrumentID, err := duckstore.UpsertInstrument(ctx, db, observation.Instrument, observation.Identifier)
 	if err != nil {
@@ -54,7 +59,7 @@ func SyncTDXDaily(ctx context.Context, db *sql.DB, source TDXDailySource, symbol
 	}
 	if violations := validate.DailyBars(bars); len(violations) != 0 {
 		validationErr := fmt.Errorf("daily validation failed: %s", summarizeViolations(violations))
-		if err := duckstore.RecordValidationViolations(ctx, db, nil, observation.Identifier.Provider, "daily_ohlcv", "daily_bar", violations); err != nil {
+		if err := duckstore.RecordValidationViolations(ctx, db, nil, observation.Identifier.Provider, tdxDailyDataset, "daily_bar", violations); err != nil {
 			return 0, fmt.Errorf("%v; persist validation failures: %w", validationErr, err)
 		}
 		return 0, validationErr
