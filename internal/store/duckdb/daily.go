@@ -38,10 +38,22 @@ func LatestDailyDate(ctx context.Context, db *sql.DB, instrumentID int64, source
 	return latest.Time, true, nil
 }
 
-// UpsertDailyBars writes canonical unadjusted daily bars. The canonical key is
-// (instrument_id, trade_date, source), so re-ingestion refreshes a provider's
-// observation without duplicating it.
+// UpsertDailyBars writes canonical unadjusted daily bars without changing their
+// existing ingest-run lineage when refreshing a row outside a tracked run.
 func UpsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar) error {
+	return upsertDailyBars(ctx, db, bars, nil)
+}
+
+// UpsertDailyBarsForRun writes canonical bars and records which ingest run most
+// recently inserted/refreshed each observation.
+func UpsertDailyBarsForRun(ctx context.Context, db *sql.DB, ingestRunID int64, bars []domain.DailyBar) error {
+	if ingestRunID <= 0 {
+		return errors.New("ingest run ID must be positive")
+	}
+	return upsertDailyBars(ctx, db, bars, &ingestRunID)
+}
+
+func upsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar, ingestRunID *int64) error {
 	if db == nil {
 		return errors.New("duckdb is nil")
 	}
@@ -67,7 +79,7 @@ func UpsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar) er
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.PrepareContext(ctx, `
+	query := `
 		INSERT INTO market.ohlcv_daily (
 			instrument_id, trade_date,
 			open, high, low, close,
@@ -83,14 +95,36 @@ func UpsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar) er
 			up_count = excluded.up_count,
 			down_count = excluded.down_count,
 			ingested_at = now()
-	`)
+	`
+	if ingestRunID != nil {
+		query = `
+			INSERT INTO market.ohlcv_daily (
+				instrument_id, trade_date,
+				open, high, low, close,
+				volume, amount, up_count, down_count, source, ingest_run_id
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			ON CONFLICT (instrument_id, trade_date, source) DO UPDATE SET
+				open = excluded.open,
+				high = excluded.high,
+				low = excluded.low,
+				close = excluded.close,
+				volume = excluded.volume,
+				amount = excluded.amount,
+				up_count = excluded.up_count,
+				down_count = excluded.down_count,
+				ingest_run_id = excluded.ingest_run_id,
+				ingested_at = now()
+		`
+	}
+
+	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		return fmt.Errorf("prepare daily-bar upsert: %w", err)
 	}
 	defer stmt.Close()
 
 	for _, bar := range bars {
-		if _, err := stmt.ExecContext(ctx,
+		args := []any{
 			bar.InstrumentID,
 			bar.TradeDate,
 			bar.Open,
@@ -102,7 +136,11 @@ func UpsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar) er
 			bar.UpCount,
 			bar.DownCount,
 			bar.Source,
-		); err != nil {
+		}
+		if ingestRunID != nil {
+			args = append(args, *ingestRunID)
+		}
+		if _, err := stmt.ExecContext(ctx, args...); err != nil {
 			return fmt.Errorf("upsert daily bar for instrument %d on %s: %w", bar.InstrumentID, bar.TradeDate.Format("2006-01-02"), err)
 		}
 	}
