@@ -34,12 +34,14 @@ The current foundation supports:
 - content-based dirty-input signatures so unchanged adjustment inputs skip historical reload/recalculation even after normal ingestion replay;
 - temporal TDX concept/style-region/index-block membership;
 - temporal TDX and Shenwan industry hierarchies/memberships with taxonomy-level failure isolation after shared acquisition;
-- SHA-256 content-addressed immutable raw-artifact storage with `meta.artifact` lineage and verified historical-version reuse;
+- SHA-256 content-addressed immutable raw-artifact storage with `meta.artifact` lineage, verified historical-version reuse, and provider-redownload recovery for corrupt retained package bytes;
 - TDX professional-financial `gpcw.txt` / `gpcw*.zip` acquisition with listed MD5/size verification;
 - dynamic, lossless gpcw parsing: field count comes from `report_size/4`, original float32 bits are retained, and the raw market-marker byte is preserved without guessed exchange semantics;
 - raw financial identity preservation: source normalization keeps the six-digit provider code rather than applying current SDK code-range heuristics;
-- report-period temporal financial identity resolution with durable `resolved` / `pending` / `acknowledged` record evidence;
-- bulk `fundamental.provider_fact` persistence with immutable-artifact revisions and separate attempted/newly-inserted fact counts;
+- report-period temporal financial identity resolution with dataset-semantic index exclusion and durable `resolved` / `pending` / `acknowledged` record evidence;
+- bulk `fundamental.provider_fact` reconciliation keyed by immutable provider evidence, so canonical identity corrections reassign or remove stale facts instead of duplicating one revision across instruments;
+- provider-fact counters for attempted, inserted, reassigned, and removed facts;
+- reversible financial-resolution governance with paged unresolved listing, explicit acknowledgement, and un-acknowledgement;
 - reviewed TDX FN230–FN238 provider-field mappings;
 - durable ingest/calculation run state (`completed`, `partial`, `failed`, `canceled`);
 - database-backed operational status and version-gated schema migrations.
@@ -123,14 +125,16 @@ Explicitly backfill every listed historical package:
 alphalake sync-financial ./alphalake.duckdb --all
 ```
 
-Financial sync reports both `facts_attempted` and `facts_inserted`; replay of an already-ingested immutable artifact therefore reports new inserts as zero rather than looking like fresh data.
+Financial sync reports `facts_attempted`, `facts_inserted`, `facts_reassigned`, and `facts_removed`. Replay of an already-ingested immutable artifact therefore reports no new changes, while a later temporal-identity correction is visible as reassignment/removal rather than a duplicate fact set.
 
-A raw gpcw code is resolved from temporal TDX provider identifiers at the package report period. AlphaLake does not infer an exchange from today's SDK code ranges. Records with no unique temporal identity become durable `pending` resolution evidence; they do not fail the whole package and remain retryable from the retained local artifact.
+Retained package bytes are verified before reuse. If a retained package revision is corrupt or missing, AlphaLake treats it as a cache miss, redownloads through the provider size/MD5 verification path, and repairs the content-addressed local object rather than permanently wedging the package.
 
-Inspect pending financial identity records:
+A raw gpcw code is resolved from temporal TDX provider identifiers at the package report period. AlphaLake does not infer an exchange from today's SDK code ranges. Since gpcw contains company financial records, index instruments are excluded from the candidate universe; a true company-security/company-security collision remains pending rather than guessed. Records with no unique temporal identity become durable `pending` resolution evidence; they do not fail the whole package and remain retryable from the retained local artifact.
+
+Inspect pending financial identity records with explicit paging:
 
 ```bash
-alphalake financial-unresolved ./alphalake.duckdb
+alphalake financial-unresolved ./alphalake.duckdb --limit 100 --offset 0
 ```
 
 If an historical record has been manually reviewed and cannot presently be resolved, acknowledge that specific immutable-artifact record explicitly:
@@ -139,7 +143,17 @@ If an historical record has been manually reviewed and cannot presently be resol
 alphalake financial-ack ./alphalake.duckdb 12345 870001 "historical identity unavailable after manual review"
 ```
 
-Acknowledgement is never automatic and requires a reason. A later lifecycle enrichment can still resolve an acknowledged record. Rerun `sync-financial` after acknowledgement; a package gets a completion checkpoint only when every record is either resolved or explicitly acknowledged.
+Acknowledgement is never automatic and requires a reason. An unresolved replay preserves the machine reason that was actually reviewed; a later authoritative resolution supersedes the acknowledgement and clears obsolete acknowledgement metadata.
+
+A mistaken acknowledgement can be reversed:
+
+```bash
+alphalake financial-unack ./alphalake.duckdb 12345 870001
+```
+
+Un-acknowledgement returns the record to `pending` and invalidates the package completion checkpoint in the same transaction, forcing the next `sync-financial` to re-evaluate the retained raw record.
+
+A package gets a completion checkpoint only when every record is either resolved or explicitly acknowledged.
 
 A normal market refresh sequence is therefore:
 
@@ -190,12 +204,13 @@ The paths stored in `meta.artifact` are relative to the configured raw root.
 - Destructive temporal changes require sufficiently complete, repeated provider evidence; one incomplete or one-off observation must not silently close history.
 - Provider partitions fail independently where the source naturally exposes independent partitions.
 - Ingestion lineage records provenance, while derived-data dirtiness is determined from canonical content.
-- Stable source files/documents are immutable evidence, content-addressed when retained locally.
+- Stable source files/documents are immutable evidence, content-addressed when retained locally; local corruption is recoverable from re-verified provider bytes when the upstream artifact remains available.
 - Unadjusted OHLC is primary price truth; adjusted values are reproducible derivatives.
 - Financial report period and announcement time are distinct; missing announcement time must not be guessed.
 - Raw provider financial identity evidence must not be replaced by present-day market-code heuristics.
 - Provider facts may precede canonical PIT facts when source semantics are incomplete.
-- Unresolved evidence is retained and governed explicitly; it is never silently discarded or automatically waived.
+- Immutable provider-record identity and canonical instrument identity are separate: later identity corrections must update the canonical link without duplicating source evidence.
+- Unresolved evidence is retained and governed explicitly; acknowledgement is reversible and never automatic.
 - Derived datasets are reproducible from canonical facts and their input state.
 - Data-quality failures are queryable data, not only log output.
 
