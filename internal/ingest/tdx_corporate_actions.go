@@ -23,14 +23,14 @@ type TDXCorporateActionFailure struct {
 }
 
 type TDXCorporateActionSummary struct {
-	RunID       int64
-	Instruments int
-	Attempted   int
-	Synced      int
-	Skipped     int
-	Actions     int
-	ShareCapital int
-	Failures    []TDXCorporateActionFailure
+	RunID         int64
+	Instruments   int
+	Attempted     int
+	Synced        int
+	Skipped       int
+	Actions       int
+	ShareCapital  int
+	Failures      []TDXCorporateActionFailure
 }
 
 type TDXCorporateActionProgress struct {
@@ -64,8 +64,9 @@ func SyncTDXCorporateActions(ctx context.Context, db *sql.DB, source TDXCorporat
 
 // SyncTDXCorporateActionsWithOptions refreshes TDX GBBQ snapshots for canonical
 // equities and ETFs. Each successfully fetched symbol atomically replaces its
-// prior provider snapshot, so upstream corrections/removals are reflected while
-// a fetch failure cannot erase previously stored facts.
+// prior provider snapshot. Before replacement, the new snapshot is compared
+// with the last known-good one so a provider-side empty/truncated response does
+// not silently erase corporate-action history.
 func SyncTDXCorporateActionsWithOptions(ctx context.Context, db *sql.DB, source TDXCorporateActionSource, options TDXCorporateActionSyncOptions) (summary TDXCorporateActionSummary, retErr error) {
 	if db == nil {
 		return summary, fmt.Errorf("duckdb is nil")
@@ -146,6 +147,18 @@ func SyncTDXCorporateActionsWithOptions(ctx context.Context, db *sql.DB, source 
 			continue
 		}
 
+		previous, err := duckstore.GetCorporateActionSnapshotStats(ctx, db, instrumentID, instrument.Identifier.Provider)
+		if err != nil {
+			summary.Failures = append(summary.Failures, TDXCorporateActionFailure{Symbol: symbol, Err: err})
+			reportCorporateActionProgress(options, summary, eligibleTotal, symbol)
+			continue
+		}
+		if err := validateCorporateActionSnapshotReplacement(previous, len(actions), len(capital)); err != nil {
+			summary.Failures = append(summary.Failures, TDXCorporateActionFailure{Symbol: symbol, Err: err})
+			reportCorporateActionProgress(options, summary, eligibleTotal, symbol)
+			continue
+		}
+
 		if err := duckstore.ReplaceCorporateActionSnapshotForRun(ctx, db, runID, instrumentID, instrument.Identifier.Provider, actions, capital); err != nil {
 			summary.Failures = append(summary.Failures, TDXCorporateActionFailure{Symbol: symbol, Err: err})
 			reportCorporateActionProgress(options, summary, eligibleTotal, symbol)
@@ -161,6 +174,26 @@ func SyncTDXCorporateActionsWithOptions(ctx context.Context, db *sql.DB, source 
 		return summary, &TDXCorporateActionBatchError{Failures: summary.Failures}
 	}
 	return summary, nil
+}
+
+func validateCorporateActionSnapshotReplacement(previous duckstore.CorporateActionSnapshotStats, actions, capital int) error {
+	if previous.Actions > 0 && actions == 0 {
+		return fmt.Errorf("refuse suspicious empty GBBQ snapshot: previous actions=%d", previous.Actions)
+	}
+	if previous.ShareCapital > 0 && capital == 0 {
+		return fmt.Errorf("refuse GBBQ snapshot that drops all share-capital history: previous rows=%d", previous.ShareCapital)
+	}
+	// A full historical snapshot should almost never lose more than half of its
+	// records. Requiring at least five lost rows avoids overreacting to tiny
+	// histories while still catching common server truncation/partial-response
+	// failure modes. A future explicit repair/force mode can override this guard.
+	if previous.Actions >= 10 && actions*2 < previous.Actions && previous.Actions-actions >= 5 {
+		return fmt.Errorf("refuse suspiciously truncated GBBQ snapshot: actions %d -> %d", previous.Actions, actions)
+	}
+	if previous.ShareCapital >= 10 && capital*2 < previous.ShareCapital && previous.ShareCapital-capital >= 5 {
+		return fmt.Errorf("refuse suspiciously truncated share-capital snapshot: rows %d -> %d", previous.ShareCapital, capital)
+	}
+	return nil
 }
 
 func corporateActionEligible(t domain.InstrumentType) bool {
