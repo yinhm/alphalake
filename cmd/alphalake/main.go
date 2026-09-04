@@ -23,6 +23,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-daily <db-path> <tdx-symbol>")
 	fmt.Fprintln(os.Stderr, "  sync-daily-all <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-actions <db-path>")
+	fmt.Fprintln(os.Stderr, "  calc-adjustments <db-path>")
 	fmt.Fprintln(os.Stderr, "  status")
 }
 
@@ -149,6 +150,33 @@ func main() {
 			summary.Actions, summary.ShareCapital, len(summary.Failures))
 		if syncErr != nil {
 			fatal(syncErr)
+		}
+
+	case "calc-adjustments":
+		if len(os.Args) != 3 {
+			usage()
+			os.Exit(2)
+		}
+		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		if err != nil {
+			fatal(err)
+		}
+		defer db.Close()
+
+		lastFailures := 0
+		options := ingest.AdjustmentOptions{OnProgress: func(p ingest.AdjustmentProgress) {
+			if p.Processed%100 == 0 || p.Processed == p.Total || p.Failed > lastFailures {
+				fmt.Printf("adjustment progress: run=%d %d/%d calculated=%d failed=%d current=%s\n",
+					p.RunID, p.Processed, p.Total, p.Calculated, p.Failed, p.Symbol)
+			}
+			lastFailures = p.Failed
+		}}
+		summary, calcErr := ingest.CalculateTDXAdjustmentsWithOptions(ctx, db, options)
+		fmt.Printf("adjustment calculation: run=%d instruments=%d attempted=%d calculated=%d skipped=%d segments=%d failures=%d\n",
+			summary.RunID, summary.Instruments, summary.Attempted, summary.Calculated, summary.Skipped,
+			summary.Segments, len(summary.Failures))
+		if calcErr != nil {
+			fatal(calcErr)
 		}
 
 	case "status":
