@@ -121,8 +121,14 @@ func GBBQObservation(symbol string, eventDate time.Time, category int, c1, c2, c
 	if eventDate.IsZero() {
 		return domain.CorporateActionObservation{}, fmt.Errorf("GBBQ event date is required for %s", key.ProviderSymbol)
 	}
+	eventDate = canonicalTradeDate(eventDate)
 
-	recordID := fmt.Sprintf("%s:%s:%d", key.ProviderSymbol, eventDate.Format("2006-01-02"), category)
+	// Date+category is not a unique event identity: TDX may contain multiple
+	// records of the same category on one date. Include the exact raw float bit
+	// patterns so provider records remain deterministic and collision-safe.
+	recordID := fmt.Sprintf("%s:%s:%d:%016x:%016x:%016x:%016x",
+		key.ProviderSymbol, eventDate.Format("2006-01-02"), category,
+		math.Float64bits(c1), math.Float64bits(c2), math.Float64bits(c3), math.Float64bits(c4))
 	action := ActionFromGBBQ(0, category, c1, c2, c3, c4)
 	action.ActionDate = eventDate
 	action.SourceRecordID = recordID
