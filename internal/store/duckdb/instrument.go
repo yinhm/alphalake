@@ -17,11 +17,8 @@ func UpsertInstrument(ctx context.Context, db *sql.DB, ref domain.InstrumentRef,
 	if db == nil {
 		return 0, errors.New("duckdb is nil")
 	}
-	if strings.TrimSpace(identifier.Provider) == "" || strings.TrimSpace(identifier.Type) == "" || strings.TrimSpace(identifier.Value) == "" {
-		return 0, errors.New("provider, identifier type, and identifier value are required")
-	}
-	if ref.Type == "" {
-		return 0, errors.New("instrument type is required")
+	if err := validateInstrumentInput(ref, identifier); err != nil {
+		return 0, err
 	}
 
 	tx, err := db.BeginTx(ctx, nil)
@@ -30,8 +27,63 @@ func UpsertInstrument(ctx context.Context, db *sql.DB, ref domain.InstrumentRef,
 	}
 	defer tx.Rollback()
 
+	instrumentID, err := upsertInstrumentTx(ctx, tx, ref, identifier)
+	if err != nil {
+		return 0, err
+	}
+	if err := tx.Commit(); err != nil {
+		return 0, fmt.Errorf("commit instrument upsert: %w", err)
+	}
+	return instrumentID, nil
+}
+
+// UpsertInstruments performs an idempotent security-master refresh in one
+// transaction. Returned IDs align with observations by index.
+func UpsertInstruments(ctx context.Context, db *sql.DB, observations []domain.InstrumentObservation) ([]int64, error) {
+	if db == nil {
+		return nil, errors.New("duckdb is nil")
+	}
+	if len(observations) == 0 {
+		return []int64{}, nil
+	}
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("begin instrument batch upsert: %w", err)
+	}
+	defer tx.Rollback()
+
+	ids := make([]int64, len(observations))
+	for i, observation := range observations {
+		if err := validateInstrumentInput(observation.Instrument, observation.Identifier); err != nil {
+			return nil, fmt.Errorf("instrument %d: %w", i, err)
+		}
+		instrumentID, err := upsertInstrumentTx(ctx, tx, observation.Instrument, observation.Identifier)
+		if err != nil {
+			return nil, fmt.Errorf("upsert instrument %d (%s): %w", i, observation.Identifier.Value, err)
+		}
+		ids[i] = instrumentID
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("commit instrument batch upsert: %w", err)
+	}
+	return ids, nil
+}
+
+func validateInstrumentInput(ref domain.InstrumentRef, identifier domain.Identifier) error {
+	if strings.TrimSpace(identifier.Provider) == "" || strings.TrimSpace(identifier.Type) == "" || strings.TrimSpace(identifier.Value) == "" {
+		return errors.New("provider, identifier type, and identifier value are required")
+	}
+	if ref.Type == "" {
+		return errors.New("instrument type is required")
+	}
+	return nil
+}
+
+func upsertInstrumentTx(ctx context.Context, tx *sql.Tx, ref domain.InstrumentRef, identifier domain.Identifier) (int64, error) {
 	var instrumentID int64
-	err = tx.QueryRowContext(ctx, `
+	err := tx.QueryRowContext(ctx, `
 		SELECT instrument_id
 		FROM ref.instrument_identifier
 		WHERE provider = ?
@@ -75,16 +127,12 @@ func UpsertInstrument(ctx context.Context, db *sql.DB, ref domain.InstrumentRef,
 			    name = ?,
 			    list_date = COALESCE(?, list_date),
 			    delist_date = COALESCE(?, delist_date),
-			    updated_at = current_timestamp
+			    updated_at = now()
 			WHERE instrument_id = ?
 		`, ref.Type, nullableString(ref.ExchangeMIC), nullableString(ref.Currency), nullableString(ref.Name), ref.ListDate, ref.DelistDate, instrumentID)
 		if err != nil {
 			return 0, fmt.Errorf("refresh canonical instrument: %w", err)
 		}
-	}
-
-	if err := tx.Commit(); err != nil {
-		return 0, fmt.Errorf("commit instrument upsert: %w", err)
 	}
 	return instrumentID, nil
 }
