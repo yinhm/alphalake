@@ -13,6 +13,8 @@ import (
 
 const filingResolverVersion = "filing-identity-v1"
 
+var chinaFilingLocation = time.FixedZone("Asia/Shanghai", 8*60*60)
+
 type FilingWriteResult struct {
 	Attempted int
 	Inserted  int
@@ -40,6 +42,10 @@ func ResolveFilingObservations(ctx context.Context, db *sql.DB, filings []domain
 		if filing.ProviderCode == "" || filing.AnnouncementTime.IsZero() {
 			return nil, fmt.Errorf("filing %d requires provider code and announcement time", i)
 		}
+		observationDate := filingResolutionDate(*filing)
+		if filing.AnnouncementDate.IsZero() {
+			filing.AnnouncementDate = observationDate
+		}
 		if filing.ExchangeMIC != "" {
 			if _, ok := filingExchangePrefix(filing.ExchangeMIC); !ok {
 				filing.InstrumentID = 0
@@ -48,7 +54,7 @@ func ResolveFilingObservations(ctx context.Context, db *sql.DB, filings []domain
 				continue
 			}
 		}
-		instrumentID, candidates, err := resolveFilingInstrument(ctx, db, filing.ProviderCode, filing.ExchangeMIC, filing.AnnouncementTime)
+		instrumentID, candidates, err := resolveFilingInstrument(ctx, db, filing.ProviderCode, filing.ExchangeMIC, observationDate)
 		if err != nil {
 			return nil, fmt.Errorf("resolve filing %s: %w", filing.SourceFilingID, err)
 		}
@@ -62,9 +68,9 @@ func ResolveFilingObservations(ctx context.Context, db *sql.DB, filings []domain
 		filing.ResolutionStatus = domain.FilingResolutionPending
 		if len(candidates) == 0 {
 			if filing.ExchangeMIC == "" {
-				filing.ResolutionReason = fmt.Sprintf("no temporal TDX equity identifier for raw code %s at %s", filing.ProviderCode, dateUTC(filing.AnnouncementTime).Format("2006-01-02"))
+				filing.ResolutionReason = fmt.Sprintf("no temporal TDX equity identifier for raw code %s at %s", filing.ProviderCode, observationDate.Format("2006-01-02"))
 			} else {
-				filing.ResolutionReason = fmt.Sprintf("no temporal TDX equity identifier for %s/%s at %s", filing.ExchangeMIC, filing.ProviderCode, dateUTC(filing.AnnouncementTime).Format("2006-01-02"))
+				filing.ResolutionReason = fmt.Sprintf("no temporal TDX equity identifier for %s/%s at %s", filing.ExchangeMIC, filing.ProviderCode, observationDate.Format("2006-01-02"))
 			}
 		} else {
 			filing.ResolutionReason = fmt.Sprintf("ambiguous temporal TDX equity identifiers for raw code %s: %s", filing.ProviderCode, strings.Join(candidates, ","))
@@ -214,6 +220,11 @@ func UpsertFilings(ctx context.Context, db *sql.DB, ingestRunID int64, filings [
 				status = domain.FilingResolutionPending
 			}
 		}
+		announcementDate := filingResolutionDate(filing)
+		precision := strings.TrimSpace(filing.AnnouncementTimePrecision)
+		if precision == "" {
+			precision = domain.AnnouncementPrecisionTimestamp
+		}
 
 		var existingID int64
 		err := tx.QueryRowContext(ctx, `
@@ -270,7 +281,8 @@ func UpsertFilings(ctx context.Context, db *sql.DB, ingestRunID int64, filings [
 					instrument_id=?, provider_code=?, exchange_mic=?, security_name=?,
 					filing_type=?, filing_variant=?, report_period=?, announcement_time=?,
 					title=?, source_url=?, raw_category=?, classifier_version=?,
-					is_correction=?, resolution_status=?, resolution_reason=?,
+					is_correction=?, corrects_filing_id=NULL,
+					resolution_status=?, resolution_reason=?,
 					catalogue_artifact_id=COALESCE(?, catalogue_artifact_id),
 					artifact_id=COALESCE(?, artifact_id),
 					sha256=COALESCE(?, sha256),
@@ -287,6 +299,13 @@ func UpsertFilings(ctx context.Context, db *sql.DB, ingestRunID int64, filings [
 				return result, fmt.Errorf("update filing %s: %w", filing.SourceFilingID, err)
 			}
 			result.Updated++
+		}
+		if _, err := tx.ExecContext(ctx, `
+			UPDATE fundamental.filing
+			SET announcement_date=?, announcement_time_precision=?
+			WHERE filing_id=?
+		`, announcementDate, precision, existingID); err != nil {
+			return result, fmt.Errorf("record filing announcement precision %s: %w", filing.SourceFilingID, err)
 		}
 
 		if status == domain.FilingResolutionResolved {
@@ -330,10 +349,21 @@ func validateFilingObservation(filing domain.FilingObservation) error {
 	if strings.TrimSpace(filing.ClassifierVersion) == "" {
 		return errors.New("classifier version is required")
 	}
+	if precision := strings.TrimSpace(filing.AnnouncementTimePrecision); precision != "" && precision != domain.AnnouncementPrecisionDate && precision != domain.AnnouncementPrecisionTimestamp {
+		return fmt.Errorf("unsupported announcement time precision %q", precision)
+	}
 	if filing.InstrumentID > 0 && filing.ResolutionStatus == domain.FilingResolutionPending {
 		return errors.New("resolved filing cannot have pending status")
 	}
 	return nil
+}
+
+func filingResolutionDate(filing domain.FilingObservation) time.Time {
+	if !filing.AnnouncementDate.IsZero() {
+		return dateUTC(filing.AnnouncementDate)
+	}
+	local := filing.AnnouncementTime.In(chinaFilingLocation)
+	return time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, time.UTC)
 }
 
 func linkCorrectionTx(ctx context.Context, tx *sql.Tx, filingID int64, filing domain.FilingObservation) error {
