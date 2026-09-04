@@ -26,6 +26,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-actions <db-path> [--force]")
 	fmt.Fprintln(os.Stderr, "  calc-adjustments <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-classifications <db-path>")
+	fmt.Fprintln(os.Stderr, "  sync-industries <db-path>")
 	fmt.Fprintln(os.Stderr, "  status <db-path>")
 }
 
@@ -220,6 +221,35 @@ func main() {
 		summary, syncErr := ingest.SyncTDXClassificationsWithOptions(ctx, db, source, options)
 		fmt.Printf("TDX classification sync: run=%d families=%d synced=%d nodes=%d members=%d opened=%d closed=%d failures=%d\n",
 			summary.RunID, summary.Families, summary.Synced, summary.Nodes, summary.Members,
+			summary.Opened, summary.Closed, len(summary.Failures))
+		if syncErr != nil {
+			fatal(syncErr)
+		}
+
+	case "sync-industries":
+		if len(os.Args) != 3 {
+			usage()
+			os.Exit(2)
+		}
+		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		if err != nil {
+			fatal(err)
+		}
+		defer db.Close()
+
+		source, err := tdxsource.DialDefault()
+		if err != nil {
+			fatal(err)
+		}
+		defer source.Close()
+
+		options := ingest.TDXIndustrySyncOptions{OnProgress: func(p ingest.TDXIndustryProgress) {
+			fmt.Printf("TDX industry progress: run=%d %d/%d synced=%d failed=%d taxonomy=%s\n",
+				p.RunID, p.Processed, p.Total, p.Synced, p.Failed, p.Taxonomy)
+		}}
+		summary, syncErr := ingest.SyncTDXIndustriesWithOptions(ctx, db, source, options)
+		fmt.Printf("TDX industry sync: run=%d taxonomies=%d synced=%d nodes=%d members=%d opened=%d closed=%d failures=%d\n",
+			summary.RunID, summary.Taxonomies, summary.Synced, summary.Nodes, summary.Members,
 			summary.Opened, summary.Closed, len(summary.Failures))
 		if syncErr != nil {
 			fatal(syncErr)
