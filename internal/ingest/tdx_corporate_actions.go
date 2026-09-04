@@ -23,14 +23,14 @@ type TDXCorporateActionFailure struct {
 }
 
 type TDXCorporateActionSummary struct {
-	RunID         int64
-	Instruments   int
-	Attempted     int
-	Synced        int
-	Skipped       int
-	Actions       int
-	ShareCapital  int
-	Failures      []TDXCorporateActionFailure
+	RunID        int64
+	Instruments  int
+	Attempted    int
+	Synced       int
+	Skipped      int
+	Actions      int
+	ShareCapital int
+	Failures     []TDXCorporateActionFailure
 }
 
 type TDXCorporateActionProgress struct {
@@ -81,15 +81,7 @@ func SyncTDXCorporateActionsWithOptions(ctx context.Context, db *sql.DB, source 
 	}
 	summary.RunID = runID
 	defer func() {
-		status := corporateActionRunStatus(summary, retErr)
-		finishCtx := context.WithoutCancel(ctx)
-		if err := duckstore.FinishIngestRun(finishCtx, db, runID, status, nil, retErr); err != nil {
-			if retErr == nil {
-				retErr = err
-			} else {
-				retErr = errors.Join(retErr, err)
-			}
-		}
+		finalizeTrackedRun(ctx, db, runID, corporateActionRunStatus(summary, retErr), &retErr)
 	}()
 
 	instruments, err := source.Instruments(ctx)
@@ -108,7 +100,7 @@ func SyncTDXCorporateActionsWithOptions(ctx context.Context, db *sql.DB, source 
 		if err := ctx.Err(); err != nil {
 			return summary, err
 		}
-		if !corporateActionEligible(instrument.Instrument.Type) {
+		if !equityOrETF(instrument.Instrument.Type) {
 			summary.Skipped++
 			continue
 		}
@@ -183,10 +175,6 @@ func validateCorporateActionSnapshotReplacement(previous duckstore.CorporateActi
 	if previous.ShareCapital > 0 && capital == 0 {
 		return fmt.Errorf("refuse GBBQ snapshot that drops all share-capital history: previous rows=%d", previous.ShareCapital)
 	}
-	// A full historical snapshot should almost never lose more than half of its
-	// records. Requiring at least five lost rows avoids overreacting to tiny
-	// histories while still catching common server truncation/partial-response
-	// failure modes. A future explicit repair/force mode can override this guard.
 	if previous.Actions >= 10 && actions*2 < previous.Actions && previous.Actions-actions >= 5 {
 		return fmt.Errorf("refuse suspiciously truncated GBBQ snapshot: actions %d -> %d", previous.Actions, actions)
 	}
@@ -196,14 +184,10 @@ func validateCorporateActionSnapshotReplacement(previous duckstore.CorporateActi
 	return nil
 }
 
-func corporateActionEligible(t domain.InstrumentType) bool {
-	return t == domain.InstrumentEquity || t == domain.InstrumentETF
-}
-
 func countCorporateActionEligible(instruments []domain.InstrumentObservation) int {
 	count := 0
 	for _, instrument := range instruments {
-		if corporateActionEligible(instrument.Instrument.Type) {
+		if equityOrETF(instrument.Instrument.Type) {
 			count++
 		}
 	}
