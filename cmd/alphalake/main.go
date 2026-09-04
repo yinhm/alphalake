@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/yinhm/alphalake/internal/ingest"
 	tdxsource "github.com/yinhm/alphalake/internal/source/tdx"
@@ -29,7 +31,8 @@ func main() {
 		os.Exit(2)
 	}
 
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
 	switch os.Args[1] {
 	case "version":
@@ -99,9 +102,17 @@ func main() {
 		}
 		defer source.Close()
 
-		summary, syncErr := ingest.SyncAllTDXDaily(ctx, db, source)
-		fmt.Printf("TDX daily sync: instruments=%d attempted=%d synced=%d skipped=%d bars=%d failures=%d\n",
-			summary.Instruments, summary.Attempted, summary.Synced, summary.Skipped, summary.Bars, len(summary.Failures))
+		lastFailures := 0
+		options := ingest.TDXDailySyncOptions{OnProgress: func(p ingest.TDXDailyProgress) {
+			if p.Processed%100 == 0 || p.Processed == p.Total || p.Failed > lastFailures {
+				fmt.Printf("TDX daily progress: run=%d %d/%d synced=%d failed=%d current=%s\n",
+					p.RunID, p.Processed, p.Total, p.Synced, p.Failed, p.Symbol)
+			}
+			lastFailures = p.Failed
+		}}
+		summary, syncErr := ingest.SyncAllTDXDailyWithOptions(ctx, db, source, options)
+		fmt.Printf("TDX daily sync: run=%d instruments=%d attempted=%d synced=%d skipped=%d bars=%d failures=%d\n",
+			summary.RunID, summary.Instruments, summary.Attempted, summary.Synced, summary.Skipped, summary.Bars, len(summary.Failures))
 		if syncErr != nil {
 			fatal(syncErr)
 		}
