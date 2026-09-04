@@ -9,20 +9,25 @@ import (
 )
 
 type fakeDailySinceClient struct {
-	resp         *protocol.KlineResp
-	boundaryHit  bool
-	newerStopped bool
+	resp            *protocol.KlineResp
+	beforeStopped   bool
+	boundaryStopped bool
+	newerStopped    bool
 }
 
 func (f *fakeDailySinceClient) GetKlineDayUntil(_ string, stop func(*protocol.Kline) bool) (*protocol.KlineResp, error) {
-	boundary := time.Date(2026, 9, 2, 0, 0, 0, 0, time.Local)
-	f.boundaryHit = stop(&protocol.Kline{Time: boundary})
+	loc := time.FixedZone("UTC-10", -10*60*60)
+	boundary := time.Date(2026, 9, 2, 15, 0, 0, 0, loc)
+	f.beforeStopped = stop(&protocol.Kline{Time: boundary.AddDate(0, 0, -1)})
+	f.boundaryStopped = stop(&protocol.Kline{Time: boundary})
 	f.newerStopped = stop(&protocol.Kline{Time: boundary.AddDate(0, 0, 1)})
 	return f.resp, nil
 }
 
-func TestFetchStockDailyBarsSinceKeepsBoundaryAndNewerBars(t *testing.T) {
-	since := time.Date(2026, 9, 2, 0, 0, 0, 0, time.Local)
+func TestFetchStockDailyBarsSinceUsesCalendarDateAndKeepsBoundary(t *testing.T) {
+	loc := time.FixedZone("UTC-10", -10*60*60)
+	sdkBoundary := time.Date(2026, 9, 2, 15, 0, 0, 0, loc)
+	since := time.Date(2026, 9, 2, 0, 0, 0, 0, time.UTC)
 	bar := func(day time.Time, close int64) *protocol.Kline {
 		return &protocol.Kline{
 			Open: protocol.Price(close - 10), High: protocol.Price(close + 10),
@@ -31,22 +36,24 @@ func TestFetchStockDailyBarsSinceKeepsBoundaryAndNewerBars(t *testing.T) {
 		}
 	}
 	fake := &fakeDailySinceClient{resp: &protocol.KlineResp{List: []*protocol.Kline{
-		bar(since.AddDate(0, 0, -1), 10000),
-		bar(since, 10100),
-		bar(since.AddDate(0, 0, 1), 10200),
+		bar(sdkBoundary.AddDate(0, 0, -1), 10000),
+		bar(sdkBoundary, 10100),
+		bar(sdkBoundary.AddDate(0, 0, 1), 10200),
 	}}}
 
 	bars, err := fetchStockDailyBarsSince(context.Background(), fake, 7, "sh600519", since)
 	if err != nil {
 		t.Fatalf("fetchStockDailyBarsSince() error = %v", err)
 	}
-	if !fake.boundaryHit || fake.newerStopped {
-		t.Fatalf("stop predicate boundary/newer = %v/%v, want true/false", fake.boundaryHit, fake.newerStopped)
+	if !fake.beforeStopped || fake.boundaryStopped || fake.newerStopped {
+		t.Fatalf("stop predicate before/boundary/newer = %v/%v/%v, want true/false/false",
+			fake.beforeStopped, fake.boundaryStopped, fake.newerStopped)
 	}
 	if len(bars) != 2 {
 		t.Fatalf("len(bars) = %d, want boundary plus newer bar", len(bars))
 	}
-	if !bars[0].TradeDate.Equal(since) || !bars[1].TradeDate.Equal(since.AddDate(0, 0, 1)) {
+	wantNext := time.Date(2026, 9, 3, 0, 0, 0, 0, time.UTC)
+	if !bars[0].TradeDate.Equal(since) || !bars[1].TradeDate.Equal(wantNext) {
 		t.Fatalf("bar dates = %v, %v", bars[0].TradeDate, bars[1].TradeDate)
 	}
 }
