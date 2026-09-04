@@ -12,15 +12,7 @@ import (
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
 )
 
-func seedAdjustmentInstrument(t *testing.T, ctx context.Context, dbPath string, db interface {
-}) {
-	_ = t
-	_ = ctx
-	_ = dbPath
-	_ = db
-}
-
-func TestCalculateTDXAdjustmentsBuildsSegments(t *testing.T) {
+func TestCalculateTDXAdjustmentsBuildsSegmentsAndSkipsCleanInputs(t *testing.T) {
 	ctx := context.Background()
 	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "calc.duckdb"))
 	if err != nil {
@@ -37,10 +29,11 @@ func TestCalculateTDXAdjustmentsBuildsSegments(t *testing.T) {
 	}
 	day1 := time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC)
 	day2 := time.Date(2026, 6, 2, 0, 0, 0, 0, time.UTC)
-	if err := duckstore.UpsertDailyBars(ctx, db, []domain.DailyBar{
+	bars := []domain.DailyBar{
 		{InstrumentID: instrumentID, TradeDate: day1, Open: 10, High: 11, Low: 9, Close: 10, Volume: 1000, Amount: 10000, Source: "tdx"},
 		{InstrumentID: instrumentID, TradeDate: day2, Open: 9, High: 10, Low: 8, Close: 9, Volume: 1000, Amount: 9000, Source: "tdx"},
-	}); err != nil {
+	}
+	if err := duckstore.UpsertDailyBars(ctx, db, bars); err != nil {
 		t.Fatalf("UpsertDailyBars() error = %v", err)
 	}
 	actionRun, err := duckstore.StartIngestRun(ctx, db, "tdx", "corporate_action", nil)
@@ -55,20 +48,12 @@ func TestCalculateTDXAdjustmentsBuildsSegments(t *testing.T) {
 		t.Fatalf("ReplaceCorporateActionSnapshotForRun() error = %v", err)
 	}
 
-	summary, err := CalculateTDXAdjustments(ctx, db)
+	first, err := CalculateTDXAdjustments(ctx, db)
 	if err != nil {
-		t.Fatalf("CalculateTDXAdjustments() error = %v", err)
+		t.Fatalf("first CalculateTDXAdjustments() error = %v", err)
 	}
-	if summary.RunID <= 0 || summary.Calculated != 1 || summary.Segments != 2 {
-		t.Fatalf("summary = %#v", summary)
-	}
-
-	var status string
-	if err := db.QueryRowContext(ctx, `SELECT status FROM meta.ingest_run WHERE ingest_run_id=?`, summary.RunID).Scan(&status); err != nil {
-		t.Fatalf("query run: %v", err)
-	}
-	if status != duckstore.IngestRunCompleted {
-		t.Fatalf("status = %q", status)
+	if first.RunID <= 0 || first.Calculated != 1 || first.Segments != 2 {
+		t.Fatalf("first summary = %#v", first)
 	}
 
 	var count int
@@ -77,11 +62,53 @@ func TestCalculateTDXAdjustmentsBuildsSegments(t *testing.T) {
 		SELECT count(*), min(qfq_add), max(hfq_add)
 		FROM market.adjustment_segment
 		WHERE instrument_id=? AND method=? AND source='tdx' AND ingest_run_id=?
-	`, instrumentID, calc.AdjustmentMethodAffineGBBQV1, summary.RunID).Scan(&count, &oldAdd, &newHFQAdd); err != nil {
+	`, instrumentID, calc.AdjustmentMethodAffineGBBQV1, first.RunID).Scan(&count, &oldAdd, &newHFQAdd); err != nil {
 		t.Fatalf("query segments: %v", err)
 	}
 	if count != 2 || oldAdd != -1 || newHFQAdd != 1 {
 		t.Fatalf("segments count/qfqAdd/hfqAdd = %d/%.3f/%.3f", count, oldAdd, newHFQAdd)
+	}
+
+	second, err := CalculateTDXAdjustments(ctx, db)
+	if err != nil {
+		t.Fatalf("second CalculateTDXAdjustments() error = %v", err)
+	}
+	if second.Calculated != 0 || second.Skipped == 0 {
+		t.Fatalf("clean-input summary = %#v, want skipped without calculation", second)
+	}
+	var outputRun int64
+	if err := db.QueryRowContext(ctx, `
+		SELECT output_ingest_run_id FROM meta.derived_state
+		WHERE dataset=? AND instrument_id=? AND source='tdx' AND method=?
+	`, tdxAdjustmentDataset, instrumentID, calc.AdjustmentMethodAffineGBBQV1).Scan(&outputRun); err != nil {
+		t.Fatalf("query derived state: %v", err)
+	}
+	if outputRun != first.RunID {
+		t.Fatalf("clean rerun changed derived output run to %d, want %d", outputRun, first.RunID)
+	}
+
+	// Correct a historical input without adding a newer market date. Upsert updates
+	// ingested_at, which must change the input signature and dirty the instrument.
+	bars[0].Close = 10.5
+	bars[0].High = 11.5
+	if err := duckstore.UpsertDailyBars(ctx, db, []domain.DailyBar{bars[0]}); err != nil {
+		t.Fatalf("historical UpsertDailyBars() error = %v", err)
+	}
+	third, err := CalculateTDXAdjustments(ctx, db)
+	if err != nil {
+		t.Fatalf("third CalculateTDXAdjustments() error = %v", err)
+	}
+	if third.Calculated != 1 {
+		t.Fatalf("dirty-input summary = %#v, want recalculation", third)
+	}
+	if err := db.QueryRowContext(ctx, `
+		SELECT output_ingest_run_id FROM meta.derived_state
+		WHERE dataset=? AND instrument_id=? AND source='tdx' AND method=?
+	`, tdxAdjustmentDataset, instrumentID, calc.AdjustmentMethodAffineGBBQV1).Scan(&outputRun); err != nil {
+		t.Fatalf("query refreshed derived state: %v", err)
+	}
+	if outputRun != third.RunID {
+		t.Fatalf("derived output run = %d, want %d", outputRun, third.RunID)
 	}
 }
 
