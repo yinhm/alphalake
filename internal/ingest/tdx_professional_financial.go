@@ -163,13 +163,13 @@ func SyncTDXProfessionalFinancialWithOptions(
 			continue
 		}
 
-		stored, raw, found, err := artifact.LoadLatest(ctx, db, artifactRoot, "tdx", tdxProfessionalFinancialDataset, "tdxfin/"+entry.Filename)
+		stored, raw, found, err := loadRetainedFinancialPackage(ctx, db, artifactRoot, entry)
 		if err != nil {
 			summary.Failures = append(summary.Failures, TDXProfessionalFinancialFailure{Package: entry.Filename, Err: err})
 			reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
 			continue
 		}
-		if !found || !md5Matches(raw, entry.MD5) {
+		if !found {
 			raw, err = source.ProfessionalFinancialPackage(ctx, entry)
 			if err != nil {
 				summary.Failures = append(summary.Failures, TDXProfessionalFinancialFailure{Package: entry.Filename, Err: err})
@@ -230,6 +230,19 @@ func SyncTDXProfessionalFinancialWithOptions(
 		return summary, &TDXProfessionalFinancialBatchError{Failures: summary.Failures}
 	}
 	return summary, nil
+}
+
+func loadRetainedFinancialPackage(ctx context.Context, db *sql.DB, artifactRoot string, entry tdxfinancial.FileEntry) (artifact.Stored, []byte, bool, error) {
+	versions, err := artifact.LoadVersions(ctx, db, artifactRoot, "tdx", tdxProfessionalFinancialDataset, "tdxfin/"+entry.Filename, 0)
+	if err != nil {
+		return artifact.Stored{}, nil, false, err
+	}
+	for _, version := range versions {
+		if md5Matches(version.Content, entry.MD5) {
+			return version.Stored, version.Content, true, nil
+		}
+	}
+	return artifact.Stored{}, nil, false, nil
 }
 
 func resolveProviderFinancialRecords(ctx context.Context, db *sql.DB, records []domain.ProviderFinancialRecord) ([]domain.ProviderFinancialRecord, []duckstore.ProviderFinancialResolutionInput, error) {
