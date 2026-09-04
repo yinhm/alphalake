@@ -15,6 +15,10 @@ const canonicalFundamentalDataset = "fundamental_fact"
 type FundamentalMaterializationSummary struct {
 	RunID int64
 
+	FilingResolutionAttempted int
+	FilingResolutionRecovered int
+	FilingResolutionPending   int
+
 	LinkRecords   int
 	Linked        int
 	LinkPending   int
@@ -31,8 +35,8 @@ type FundamentalMaterializationSummary struct {
 
 // MaterializeProviderFundamentals is a local-only derivation. It never performs
 // network I/O: provider facts and authoritative filing evidence must already be
-// present. Link refresh and canonical reconciliation share one tracked run but
-// remain separate store transactions so each stage has an explicit boundary.
+// present. Retained pending filings are first retried against the current temporal
+// security master, then provider/filing links and canonical facts are reconciled.
 func MaterializeProviderFundamentals(ctx context.Context, db *sql.DB, providerSource string) (summary FundamentalMaterializationSummary, retErr error) {
 	if db == nil {
 		return summary, errors.New("duckdb is nil")
@@ -49,6 +53,14 @@ func MaterializeProviderFundamentals(ctx context.Context, db *sql.DB, providerSo
 	defer func() {
 		finalizeTrackedRun(ctx, db, runID, fundamentalMaterializationRunStatus(summary, retErr), &retErr)
 	}()
+
+	filingResolution, err := duckstore.RefreshPendingFilingResolutions(ctx, db, runID, 500)
+	if err != nil {
+		return summary, fmt.Errorf("refresh pending filing resolutions: %w", err)
+	}
+	summary.FilingResolutionAttempted = filingResolution.Attempted
+	summary.FilingResolutionRecovered = filingResolution.Resolved
+	summary.FilingResolutionPending = filingResolution.StillPending
 
 	links, err := duckstore.RefreshProviderFilingLinks(ctx, db, runID, providerSource)
 	if err != nil {
@@ -78,12 +90,12 @@ func fundamentalMaterializationRunStatus(summary FundamentalMaterializationSumma
 		return duckstore.IngestRunCanceled
 	}
 	if runErr != nil {
-		if summary.LinkRecords > 0 || summary.Candidates > 0 {
+		if summary.FilingResolutionAttempted > 0 || summary.LinkRecords > 0 || summary.Candidates > 0 {
 			return duckstore.IngestRunPartial
 		}
 		return duckstore.IngestRunFailed
 	}
-	if summary.LinkPending > 0 || summary.LinkAmbiguous > 0 || summary.Rejected > 0 {
+	if summary.FilingResolutionPending > 0 || summary.LinkPending > 0 || summary.LinkAmbiguous > 0 || summary.Rejected > 0 {
 		return duckstore.IngestRunPartial
 	}
 	return duckstore.IngestRunCompleted
