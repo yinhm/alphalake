@@ -18,6 +18,7 @@ func TestMigrationOrder(t *testing.T) {
 		"004_fundamental.sql",
 		"005_classification.sql",
 		"006_adjustment_lineage.sql",
+		"007_share_capital_identity.sql",
 	}
 	if len(migrations) != len(want) {
 		t.Fatalf("got %v", migrations)
@@ -37,6 +38,10 @@ func TestApplyRecordsEachMigrationOnce(t *testing.T) {
 	}
 	defer db.Close()
 
+	migrations, err := Migrations()
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := Apply(ctx, db); err != nil {
 		t.Fatalf("first Apply() error = %v", err)
 	}
@@ -48,15 +53,15 @@ func TestApplyRecordsEachMigrationOnce(t *testing.T) {
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM meta.schema_version`).Scan(&count); err != nil {
 		t.Fatal(err)
 	}
-	if count != 6 {
-		t.Fatalf("schema version rows = %d, want 6", count)
+	if count != len(migrations) {
+		t.Fatalf("schema version rows = %d, want %d", count, len(migrations))
 	}
 	version, err := CurrentSchemaVersion(ctx, db)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if version != 6 {
-		t.Fatalf("CurrentSchemaVersion() = %d, want 6", version)
+	if version != len(migrations) {
+		t.Fatalf("CurrentSchemaVersion() = %d, want %d", version, len(migrations))
 	}
 }
 
@@ -68,19 +73,20 @@ func TestApplyRegistersLegacyReplayOnlyDatabase(t *testing.T) {
 	}
 	defer db.Close()
 
-	// Reproduce the pre-version-gating behavior: all embedded migrations were
-	// replayed on startup, while only 001_meta.sql wrote schema_version.
-	names, err := Names()
+	migrations, err := Migrations()
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range names {
-		body, err := Read(name)
+	// Reproduce the pre-version-gating repository state: migrations 001-006
+	// existed and were replayed on every startup, while only 001_meta.sql wrote
+	// schema_version. 007 is new and must execute exactly once through Apply.
+	for _, migration := range migrations[:6] {
+		body, err := Read(migration.Name)
 		if err != nil {
 			t.Fatal(err)
 		}
 		if _, err := db.ExecContext(ctx, string(body)); err != nil {
-			t.Fatalf("legacy replay %s: %v", name, err)
+			t.Fatalf("legacy replay %s: %v", migration.Name, err)
 		}
 	}
 	var before int
@@ -98,7 +104,34 @@ func TestApplyRegistersLegacyReplayOnlyDatabase(t *testing.T) {
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM meta.schema_version`).Scan(&after); err != nil {
 		t.Fatal(err)
 	}
-	if after != len(names) {
-		t.Fatalf("schema version rows after upgrade = %d, want %d", after, len(names))
+	if after != len(migrations) {
+		t.Fatalf("schema version rows after upgrade = %d, want %d", after, len(migrations))
+	}
+}
+
+func TestShareCapitalIdentityAllowsMultipleSourceRecordsPerDay(t *testing.T) {
+	ctx := context.Background()
+	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "share-capital.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	for _, recordID := range []string{"event-a", "event-b"} {
+		if _, err := db.ExecContext(ctx, `
+			INSERT INTO market.share_capital (
+				instrument_id, effective_date, float_shares, total_shares,
+				source_category, source, source_record_id
+			) VALUES (1, DATE '2026-09-04', 100, 200, 5, 'tdx', ?)
+		`, recordID); err != nil {
+			t.Fatalf("insert %s: %v", recordID, err)
+		}
+	}
+	var count int
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM market.share_capital`).Scan(&count); err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Fatalf("share capital rows = %d, want 2", count)
 	}
 }
