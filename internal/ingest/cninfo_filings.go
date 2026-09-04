@@ -1,6 +1,7 @@
 package ingest
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"database/sql"
@@ -44,20 +45,20 @@ type CNINFOFilingOptions struct {
 }
 
 type CNINFOFilingProgress struct {
-	RunID         int64
-	Windows       int
-	Window        string
-	Page          int
-	Pages         int
-	Filings       int
-	Inserted      int
-	Updated       int
-	Resolved      int
-	Pending       int
-	Documents     int
-	ReusedDocs    int
-	Issues        int
-	Failures      int
+	RunID      int64
+	Windows    int
+	Window     string
+	Page       int
+	Pages      int
+	Filings    int
+	Inserted   int
+	Updated    int
+	Resolved   int
+	Pending    int
+	Documents  int
+	ReusedDocs int
+	Issues     int
+	Failures   int
 }
 
 type CNINFOFilingFailure struct {
@@ -68,19 +69,19 @@ type CNINFOFilingFailure struct {
 }
 
 type CNINFOFilingSummary struct {
-	RunID         int64
-	Windows       int
+	RunID          int64
+	Windows        int
 	SkippedWindows int
-	Pages         int
-	Filings       int
-	Inserted      int
-	Updated       int
-	Resolved      int
-	Pending       int
-	Documents     int
-	ReusedDocs    int
-	Issues        int
-	Failures      []CNINFOFilingFailure
+	Pages          int
+	Filings        int
+	Inserted       int
+	Updated        int
+	Resolved       int
+	Pending        int
+	Documents      int
+	ReusedDocs     int
+	Issues         int
+	Failures       []CNINFOFilingFailure
 }
 
 type CNINFOFilingBatchError struct {
@@ -150,6 +151,10 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 			}
 		}
 
+		// Any failure recorded while processing this window, including failure to
+		// persist catalogue diagnostics, blocks its completion checkpoint. This
+		// keeps checkpoint state an honest assertion of a fully processed window.
+		windowFailureStart := len(summary.Failures)
 		windowFilings, pageSHAs, windowFailures, windowIssues := acquireCNINFOFilingWindow(
 			ctx, db, source, artifactRoot, runID, now, window.start, window.end, pageSize, &summary, options,
 		)
@@ -165,7 +170,6 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 			}
 			return windowFilings[i].AnnouncementTime.Before(windowFilings[j].AnnouncementTime)
 		})
-		documentFailuresBefore := len(summary.Failures)
 		for i := range windowFilings {
 			windowFilings[i].IngestRunID = runID
 			if err := attachCNINFOFilingDocument(ctx, db, source, artifactRoot, runID, now, options.MetadataOnly, &windowFilings[i], &summary); err != nil {
@@ -193,10 +197,10 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 		summary.Resolved += writeResult.Resolved
 		summary.Pending += writeResult.Pending
 
-		// Window checkpoints describe complete catalogue acquisition. When document
-		// acquisition is enabled, every eligible document must also have succeeded;
-		// unresolved identity remains locally replayable and does not force re-fetch.
-		if len(windowFailures) == 0 && len(summary.Failures) == documentFailuresBefore {
+		// Unresolved identity remains locally replayable and does not force source
+		// re-fetch. Acquisition, artifact, diagnostic, resolution or write failures
+		// do block the window checkpoint.
+		if len(summary.Failures) == windowFailureStart {
 			if err := duckstore.SetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, checkpointKey, catalogueWindowSignature(pageSHAs)); err != nil {
 				summary.Failures = append(summary.Failures, CNINFOFilingFailure{Window: windowName, Err: err})
 			}
@@ -348,16 +352,24 @@ func attachCNINFOFilingDocument(
 	if metadataOnly || !filing.EligiblePITAnchor() {
 		return nil
 	}
-	healthy, _, err := artifact.LoadHealthyVersions(ctx, db, artifactRoot, cninfo.Source, cninfoDocumentArtifactData, sourceURL, 1)
+
+	// Hash-valid bytes can still be a cached HTML anti-bot page from an earlier
+	// response. Search retained revisions lazily and reuse only a payload whose
+	// media semantics are compatible with the authoritative document URL.
+	healthy, _, err := artifact.LoadHealthyVersions(ctx, db, artifactRoot, cninfo.Source, cninfoDocumentArtifactData, sourceURL, 0)
 	if err != nil {
 		return err
 	}
-	if len(healthy) > 0 {
-		filing.DocumentArtifactID = healthy[0].Stored.ArtifactID
-		filing.DocumentSHA256 = healthy[0].Stored.SHA256
+	for _, version := range healthy {
+		if err := validateCNINFOFilingDocument(sourceURL, "", version.Content); err != nil {
+			continue
+		}
+		filing.DocumentArtifactID = version.Stored.ArtifactID
+		filing.DocumentSHA256 = version.Stored.SHA256
 		summary.ReusedDocs++
 		return nil
 	}
+
 	content, downloadedURL, mediaType, err := source.FilingDocument(ctx, filing.DocumentLocator)
 	if err != nil {
 		return err
@@ -365,7 +377,10 @@ func attachCNINFOFilingDocument(
 	if downloadedURL != sourceURL {
 		return fmt.Errorf("CNINFO document URL changed from %s to %s", sourceURL, downloadedURL)
 	}
-	if mediaType == "" {
+	if err := validateCNINFOFilingDocument(sourceURL, mediaType, content); err != nil {
+		return err
+	}
+	if strings.TrimSpace(mediaType) == "" {
 		mediaType = "application/octet-stream"
 	}
 	stored, err := artifact.Persist(ctx, db, artifactRoot, artifact.Input{
@@ -379,6 +394,31 @@ func attachCNINFOFilingDocument(
 	filing.DocumentArtifactID = stored.ArtifactID
 	filing.DocumentSHA256 = stored.SHA256
 	summary.Documents++
+	return nil
+}
+
+func validateCNINFOFilingDocument(sourceURL, mediaType string, content []byte) error {
+	trimmed := bytes.TrimSpace(content)
+	if len(trimmed) == 0 {
+		return errors.New("CNINFO filing document is empty")
+	}
+	mediaType = strings.ToLower(strings.TrimSpace(mediaType))
+	prefixLength := len(trimmed)
+	if prefixLength > 512 {
+		prefixLength = 512
+	}
+	lowerPrefix := strings.ToLower(string(trimmed[:prefixLength]))
+	if strings.Contains(mediaType, "text/html") || strings.HasPrefix(lowerPrefix, "<!doctype html") || strings.HasPrefix(lowerPrefix, "<html") {
+		return fmt.Errorf("CNINFO filing document returned HTML instead of authoritative bytes")
+	}
+	cleanURL := strings.ToLower(sourceURL)
+	if i := strings.IndexByte(cleanURL, '?'); i >= 0 {
+		cleanURL = cleanURL[:i]
+	}
+	pdfExpected := strings.Contains(mediaType, "application/pdf") || strings.HasSuffix(cleanURL, ".pdf")
+	if pdfExpected && !bytes.HasPrefix(trimmed, []byte("%PDF-")) {
+		return fmt.Errorf("CNINFO PDF document lacks %%PDF- header")
+	}
 	return nil
 }
 
