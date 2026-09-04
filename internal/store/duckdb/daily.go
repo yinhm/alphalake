@@ -6,9 +6,37 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/yinhm/alphalake/internal/domain"
 )
+
+// LatestDailyDate returns the newest stored observation for one instrument and
+// source. It acts as the resumable boundary for incremental market ingestion.
+func LatestDailyDate(ctx context.Context, db *sql.DB, instrumentID int64, source string) (time.Time, bool, error) {
+	if db == nil {
+		return time.Time{}, false, errors.New("duckdb is nil")
+	}
+	if instrumentID <= 0 {
+		return time.Time{}, false, errors.New("instrument ID must be positive")
+	}
+	if strings.TrimSpace(source) == "" {
+		return time.Time{}, false, errors.New("source is required")
+	}
+
+	var latest sql.NullTime
+	if err := db.QueryRowContext(ctx, `
+		SELECT max(trade_date)
+		FROM market.ohlcv_daily
+		WHERE instrument_id = ? AND source = ?
+	`, instrumentID, source).Scan(&latest); err != nil {
+		return time.Time{}, false, fmt.Errorf("query latest daily date: %w", err)
+	}
+	if !latest.Valid {
+		return time.Time{}, false, nil
+	}
+	return latest.Time, true, nil
+}
 
 // UpsertDailyBars writes canonical unadjusted daily bars. The canonical key is
 // (instrument_id, trade_date, source), so re-ingestion refreshes a provider's
