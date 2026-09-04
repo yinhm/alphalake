@@ -3,13 +3,17 @@ package duckdb
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	duckdbgo "github.com/duckdb/duckdb-go/v2"
 	"github.com/yinhm/alphalake/internal/domain"
 )
+
+const dailyStageTable = "_alphalake_daily_stage"
 
 // LatestDailyDate returns the newest stored observation for one instrument and
 // source. It acts as the resumable boundary for incremental market ingestion.
@@ -60,7 +64,6 @@ func upsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar, in
 	if len(bars) == 0 {
 		return nil
 	}
-
 	for i, bar := range bars {
 		if bar.InstrumentID <= 0 {
 			return fmt.Errorf("bar %d: instrument ID must be positive", i)
@@ -73,18 +76,62 @@ func upsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar, in
 		}
 	}
 
-	tx, err := db.BeginTx(ctx, nil)
+	conn, err := db.Conn(ctx)
 	if err != nil {
-		return fmt.Errorf("begin daily-bar upsert: %w", err)
+		return fmt.Errorf("acquire daily-bar connection: %w", err)
 	}
-	defer tx.Rollback()
+	defer conn.Close()
+	// A pooled DuckDB connection may have been used for a prior failed staging
+	// attempt. Cleanup is cheap and keeps the stage lifecycle explicit.
+	if _, err := conn.ExecContext(ctx, `DROP TABLE IF EXISTS temp.main.`+dailyStageTable); err != nil {
+		return fmt.Errorf("cleanup daily staging table: %w", err)
+	}
+	if _, err := conn.ExecContext(ctx, `BEGIN TRANSACTION`); err != nil {
+		return fmt.Errorf("begin daily-bar bulk upsert: %w", err)
+	}
+	committed := false
+	defer func() {
+		if !committed {
+			_, _ = conn.ExecContext(context.Background(), `ROLLBACK`)
+		}
+		_, _ = conn.ExecContext(context.Background(), `DROP TABLE IF EXISTS temp.main.`+dailyStageTable)
+	}()
 
-	query := `
+	if _, err := conn.ExecContext(ctx, `
+		CREATE TEMP TABLE `+dailyStageTable+` (
+			instrument_id BIGINT NOT NULL,
+			trade_date DATE NOT NULL,
+			open DOUBLE,
+			high DOUBLE,
+			low DOUBLE,
+			close DOUBLE,
+			volume BIGINT,
+			amount DOUBLE,
+			up_count BIGINT,
+			down_count BIGINT,
+			source VARCHAR NOT NULL,
+			ingest_run_id BIGINT
+		)
+	`); err != nil {
+		return fmt.Errorf("create daily staging table: %w", err)
+	}
+	if err := appendDailyStage(ctx, conn, bars, ingestRunID); err != nil {
+		return err
+	}
+
+	mergeSQL := `
 		INSERT INTO market.ohlcv_daily (
 			instrument_id, trade_date,
 			open, high, low, close,
-			volume, amount, up_count, down_count, source
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			volume, amount, up_count, down_count,
+			source, ingest_run_id
+		)
+		SELECT
+			instrument_id, trade_date,
+			open, high, low, close,
+			volume, amount, up_count, down_count,
+			source, ingest_run_id
+		FROM temp.main.` + dailyStageTable + `
 		ON CONFLICT (instrument_id, trade_date, source) DO UPDATE SET
 			open = excluded.open,
 			high = excluded.high,
@@ -97,12 +144,19 @@ func upsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar, in
 			ingested_at = now()
 	`
 	if ingestRunID != nil {
-		query = `
+		mergeSQL = `
 			INSERT INTO market.ohlcv_daily (
 				instrument_id, trade_date,
 				open, high, low, close,
-				volume, amount, up_count, down_count, source, ingest_run_id
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				volume, amount, up_count, down_count,
+				source, ingest_run_id
+			)
+			SELECT
+				instrument_id, trade_date,
+				open, high, low, close,
+				volume, amount, up_count, down_count,
+				source, ingest_run_id
+			FROM temp.main.` + dailyStageTable + `
 			ON CONFLICT (instrument_id, trade_date, source) DO UPDATE SET
 				open = excluded.open,
 				high = excluded.high,
@@ -116,37 +170,56 @@ func upsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar, in
 				ingested_at = now()
 		`
 	}
-
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		return fmt.Errorf("prepare daily-bar upsert: %w", err)
+	if _, err := conn.ExecContext(ctx, mergeSQL); err != nil {
+		return fmt.Errorf("merge daily staging rows: %w", err)
 	}
-	defer stmt.Close()
-
-	for _, bar := range bars {
-		args := []any{
-			bar.InstrumentID,
-			bar.TradeDate,
-			bar.Open,
-			bar.High,
-			bar.Low,
-			bar.Close,
-			bar.Volume,
-			bar.Amount,
-			bar.UpCount,
-			bar.DownCount,
-			bar.Source,
-		}
-		if ingestRunID != nil {
-			args = append(args, *ingestRunID)
-		}
-		if _, err := stmt.ExecContext(ctx, args...); err != nil {
-			return fmt.Errorf("upsert daily bar for instrument %d on %s: %w", bar.InstrumentID, bar.TradeDate.Format("2006-01-02"), err)
-		}
+	if _, err := conn.ExecContext(ctx, `DROP TABLE temp.main.`+dailyStageTable); err != nil {
+		return fmt.Errorf("drop daily staging table: %w", err)
 	}
-
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("commit daily-bar upsert: %w", err)
+	if _, err := conn.ExecContext(ctx, `COMMIT`); err != nil {
+		return fmt.Errorf("commit daily-bar bulk upsert: %w", err)
 	}
+	committed = true
 	return nil
+}
+
+func appendDailyStage(ctx context.Context, conn *sql.Conn, bars []domain.DailyBar, ingestRunID *int64) error {
+	return conn.Raw(func(raw any) error {
+		driverConn, ok := raw.(driver.Conn)
+		if !ok {
+			return errors.New("duckdb raw connection does not implement driver.Conn")
+		}
+		appender, err := duckdbgo.NewAppender(driverConn, "temp", "main", dailyStageTable)
+		if err != nil {
+			return fmt.Errorf("create daily staging appender: %w", err)
+		}
+		for _, bar := range bars {
+			var runValue driver.Value
+			if ingestRunID != nil {
+				runValue = *ingestRunID
+			}
+			if err := appender.AppendRow(
+				bar.InstrumentID,
+				bar.TradeDate,
+				bar.Open,
+				bar.High,
+				bar.Low,
+				bar.Close,
+				bar.Volume,
+				bar.Amount,
+				bar.UpCount,
+				bar.DownCount,
+				bar.Source,
+				runValue,
+			); err != nil {
+				_ = appender.Clear()
+				_ = appender.Close()
+				return fmt.Errorf("append daily staging row for instrument %d on %s: %w", bar.InstrumentID, bar.TradeDate.Format("2006-01-02"), err)
+			}
+		}
+		if err := appender.CloseWithCancel(ctx); err != nil {
+			return fmt.Errorf("flush daily staging appender: %w", err)
+		}
+		return nil
+	})
 }
