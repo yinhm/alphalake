@@ -101,7 +101,7 @@ func TestSyncAllTDXDailyUsesPerInstrumentBoundary(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SyncAllTDXDaily() error = %v", err)
 	}
-	if summary.Instruments != 3 || summary.Attempted != 2 || summary.Synced != 2 || summary.Skipped != 1 || summary.Bars != 3 {
+	if summary.RunID <= 0 || summary.Instruments != 3 || summary.Attempted != 2 || summary.Synced != 2 || summary.Skipped != 1 || summary.Bars != 3 {
 		t.Fatalf("summary = %#v", summary)
 	}
 	if got, ok := source.sinceCalls["sh600519"]; !ok || !got.Equal(boundary) {
@@ -127,6 +127,14 @@ func TestSyncAllTDXDailyUsesPerInstrumentBoundary(t *testing.T) {
 	}
 	if etfRows != 1 {
 		t.Fatalf("ETF rows = %d, want 1", etfRows)
+	}
+
+	var runStatus string
+	if err := db.QueryRowContext(ctx, `SELECT status FROM meta.ingest_run WHERE ingest_run_id=?`, summary.RunID).Scan(&runStatus); err != nil {
+		t.Fatalf("query completed ingest run: %v", err)
+	}
+	if runStatus != duckstore.IngestRunCompleted {
+		t.Fatalf("run status = %q, want %q", runStatus, duckstore.IngestRunCompleted)
 	}
 }
 
@@ -157,7 +165,7 @@ func TestSyncAllTDXDailyContinuesAfterInstrumentValidationFailure(t *testing.T) 
 	if !errors.As(err, &batchErr) {
 		t.Fatalf("error = %v, want TDXDailyBatchError", err)
 	}
-	if summary.Synced != 1 || len(summary.Failures) != 1 || summary.Failures[0].Symbol != "sh600001" {
+	if summary.RunID <= 0 || summary.Synced != 1 || len(summary.Failures) != 1 || summary.Failures[0].Symbol != "sh600001" {
 		t.Fatalf("summary = %#v", summary)
 	}
 
@@ -176,11 +184,19 @@ func TestSyncAllTDXDailyContinuesAfterInstrumentValidationFailure(t *testing.T) 
 	var validations int
 	if err := db.QueryRowContext(ctx, `
 		SELECT count(*) FROM meta.validation_result
-		WHERE source='tdx' AND dataset='daily_ohlcv' AND passed=false
-	`).Scan(&validations); err != nil {
+		WHERE source='tdx' AND dataset='daily_ohlcv' AND passed=false AND ingest_run_id=?
+	`, summary.RunID).Scan(&validations); err != nil {
 		t.Fatalf("count validation failures: %v", err)
 	}
 	if validations == 0 {
-		t.Fatal("expected persisted validation failure")
+		t.Fatal("expected persisted validation failure linked to ingest run")
+	}
+
+	var runStatus string
+	if err := db.QueryRowContext(ctx, `SELECT status FROM meta.ingest_run WHERE ingest_run_id=?`, summary.RunID).Scan(&runStatus); err != nil {
+		t.Fatalf("query partial ingest run: %v", err)
+	}
+	if runStatus != duckstore.IngestRunPartial {
+		t.Fatalf("run status = %q, want %q", runStatus, duckstore.IngestRunPartial)
 	}
 }
