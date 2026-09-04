@@ -50,15 +50,17 @@ func SyncTDXDailyWithSummary(ctx context.Context, db *sql.DB, source TDXIncremen
 		finalizeTrackedRun(ctx, db, runID, singleDailyRunStatus(summary, retErr), &retErr)
 	}()
 
-	observations, err := source.Instruments(ctx)
+	observations, instrumentIDs, err := refreshInstrumentMaster(ctx, db, source)
 	if err != nil {
-		return summary, fmt.Errorf("list TDX instruments: %w", err)
+		return summary, fmt.Errorf("refresh TDX instrument master: %w", err)
 	}
 
 	var observation *domain.InstrumentObservation
+	var instrumentID int64
 	for i := range observations {
 		if observations[i].Identifier.Provider == "tdx" && observations[i].Identifier.Value == symbol {
 			observation = &observations[i]
+			instrumentID = instrumentIDs[i]
 			break
 		}
 	}
@@ -67,11 +69,6 @@ func SyncTDXDailyWithSummary(ctx context.Context, db *sql.DB, source TDXIncremen
 	}
 	if !equityOrETF(observation.Instrument.Type) {
 		return summary, fmt.Errorf("TDX daily ingestion for %q type %q is not supported", symbol, observation.Instrument.Type)
-	}
-
-	instrumentID, err := duckstore.UpsertInstrument(ctx, db, observation.Instrument, observation.Identifier)
-	if err != nil {
-		return summary, fmt.Errorf("upsert canonical instrument %q: %w", symbol, err)
 	}
 
 	boundary, hasBoundary, err := dailyFetchBoundary(ctx, db, observation.Identifier.Provider, instrumentID)
