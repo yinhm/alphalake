@@ -289,6 +289,7 @@ func cleanTitle(value string) string {
 			if !inTag {
 				out.WriteRune(r)
 			}
+		}
 	}
 	return strings.TrimSpace(strings.Join(strings.Fields(out.String()), " "))
 }
