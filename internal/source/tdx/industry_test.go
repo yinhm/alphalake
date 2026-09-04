@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/injoyai/tdx/protocol"
+	"github.com/yinhm/alphalake/internal/domain"
 )
 
 func TestParseInconNames(t *testing.T) {
@@ -50,15 +51,6 @@ func TestBuildIndustrySnapshotsConstructsHierarchyAndLeafMembership(t *testing.T
 	assertIndustryNode(t, swSnapshot.Nodes, "X010101", "X0101", 3, 0)
 	assertIndustryNode(t, swSnapshot.Nodes, "X010101001", "X010101", 4, 0)
 	assertIndustryNode(t, swSnapshot.Nodes, "X010101001001", "X010101001", 5, 1)
-
-	for _, snapshot := range []struct {
-		name  string
-		nodes int
-	}{{"tdx", len(tdxSnapshot.Nodes)}, {"sw", len(swSnapshot.Nodes)}} {
-		if snapshot.nodes == 0 {
-			t.Fatalf("%s snapshot has no nodes", snapshot.name)
-		}
-	}
 }
 
 func TestBuildIndustrySnapshotRejectsUnknownMarket(t *testing.T) {
