@@ -101,8 +101,38 @@ func LoadCorporateActions(ctx context.Context, db *sql.DB, instrumentID int64, s
 }
 
 // ReplaceAdjustmentSegmentsForRun atomically replaces one derived adjustment
-// method/source snapshot for one instrument.
+// method/source snapshot for one instrument without recording an input state.
+// Production calculation should normally use ReplaceAdjustmentSegmentsAndStateForRun.
 func ReplaceAdjustmentSegmentsForRun(ctx context.Context, db *sql.DB, ingestRunID, instrumentID int64, method, source string, segments []domain.AdjustmentSegment) error {
+	return replaceAdjustmentSegments(ctx, db, ingestRunID, instrumentID, method, source, "", "", segments)
+}
+
+// ReplaceAdjustmentSegmentsAndStateForRun atomically publishes adjustment
+// segments and the canonical-input signature from which they were calculated.
+// The state write occurs only after all segment inserts have succeeded and in the
+// same transaction, so a failed calculation can never mark stale output clean.
+func ReplaceAdjustmentSegmentsAndStateForRun(
+	ctx context.Context,
+	db *sql.DB,
+	ingestRunID, instrumentID int64,
+	dataset, method, source, inputSignature string,
+	segments []domain.AdjustmentSegment,
+) error {
+	dataset = strings.TrimSpace(dataset)
+	inputSignature = strings.TrimSpace(inputSignature)
+	if dataset == "" || inputSignature == "" {
+		return errors.New("derived dataset and input signature are required")
+	}
+	return replaceAdjustmentSegments(ctx, db, ingestRunID, instrumentID, method, source, dataset, inputSignature, segments)
+}
+
+func replaceAdjustmentSegments(
+	ctx context.Context,
+	db *sql.DB,
+	ingestRunID, instrumentID int64,
+	method, source, dataset, inputSignature string,
+	segments []domain.AdjustmentSegment,
+) error {
 	if db == nil {
 		return errors.New("duckdb is nil")
 	}
@@ -155,6 +185,21 @@ func ReplaceAdjustmentSegmentsForRun(ctx context.Context, db *sql.DB, ingestRunI
 			segment.Method, segment.Source, ingestRunID,
 		); err != nil {
 			return fmt.Errorf("insert adjustment segment from %s: %w", segment.EffectiveFrom.Format("2006-01-02"), err)
+		}
+	}
+
+	if dataset != "" {
+		if _, err := tx.ExecContext(ctx, `
+			INSERT INTO meta.derived_state (
+				dataset, instrument_id, source, method,
+				input_signature, output_ingest_run_id, calculated_at
+			) VALUES (?, ?, ?, ?, ?, ?, now())
+			ON CONFLICT(dataset, instrument_id, source, method) DO UPDATE SET
+				input_signature=excluded.input_signature,
+				output_ingest_run_id=excluded.output_ingest_run_id,
+				calculated_at=excluded.calculated_at
+		`, dataset, instrumentID, source, method, inputSignature, ingestRunID); err != nil {
+			return fmt.Errorf("record adjustment derived state: %w", err)
 		}
 	}
 
