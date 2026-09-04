@@ -3,35 +3,71 @@ package ingest
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/yinhm/alphalake/internal/domain"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
-	"github.com/yinhm/alphalake/internal/validate"
 )
 
-// TDXDailySource is the narrow source contract needed by the first market-data
-// vertical slice. Keeping it here makes orchestration testable without a live TDX server.
+// TDXDailySource is the narrow source contract needed by daily market-data
+// ingestion. The incremental extension is declared in tdx_daily_all.go.
 type TDXDailySource interface {
 	Instruments(context.Context) ([]domain.InstrumentObservation, error)
 	StockDailyBars(context.Context, int64, string) ([]domain.DailyBar, error)
 }
 
-// SyncTDXDaily resolves one TDX symbol into the canonical instrument master and
-// refreshes its complete unadjusted daily-bar history. Slice 1 deliberately
-// supports equities and ETFs only; other TDX instrument classes need their own
-// request/unit semantics before canonical ingestion is safe.
-func SyncTDXDaily(ctx context.Context, db *sql.DB, source TDXDailySource, symbol string) (int, error) {
+type TDXSingleDailySummary struct {
+	RunID       int64
+	Written     int
+	Quarantined int
+}
+
+// SyncTDXDaily remains as a compatibility wrapper. New callers that need run
+// lineage/status should use SyncTDXDailyWithSummary.
+func SyncTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDailySource, symbol string) (int, error) {
+	summary, err := SyncTDXDailyWithSummary(ctx, db, source, symbol)
+	return summary.Written, err
+}
+
+// SyncTDXDailyWithSummary resolves one TDX symbol into the canonical instrument
+// master and performs the same resumable, quarantining, lineage-aware ingestion
+// used by the all-market path.
+func SyncTDXDailyWithSummary(ctx context.Context, db *sql.DB, source TDXIncrementalDailySource, symbol string) (summary TDXSingleDailySummary, retErr error) {
 	if db == nil {
-		return 0, fmt.Errorf("duckdb is nil")
+		return summary, fmt.Errorf("duckdb is nil")
 	}
 	if source == nil {
-		return 0, fmt.Errorf("TDX source is nil")
+		return summary, fmt.Errorf("TDX source is nil")
 	}
+
+	runID, err := duckstore.StartIngestRun(ctx, db, "tdx", tdxDailyDataset, nil)
+	if err != nil {
+		return summary, fmt.Errorf("start TDX daily ingest run: %w", err)
+	}
+	summary.RunID = runID
+	defer func() {
+		status := duckstore.IngestRunCompleted
+		if errors.Is(retErr, context.Canceled) || errors.Is(retErr, context.DeadlineExceeded) {
+			status = duckstore.IngestRunCanceled
+		} else if retErr != nil {
+			status = duckstore.IngestRunFailed
+		} else if summary.Quarantined > 0 {
+			status = duckstore.IngestRunPartial
+		}
+		finishCtx := context.WithoutCancel(ctx)
+		if err := duckstore.FinishIngestRun(finishCtx, db, runID, status, nil, retErr); err != nil {
+			if retErr == nil {
+				retErr = err
+			} else {
+				retErr = errors.Join(retErr, err)
+			}
+		}
+	}()
 
 	observations, err := source.Instruments(ctx)
 	if err != nil {
-		return 0, fmt.Errorf("list TDX instruments: %w", err)
+		return summary, fmt.Errorf("list TDX instruments: %w", err)
 	}
 
 	var observation *domain.InstrumentObservation
@@ -42,30 +78,36 @@ func SyncTDXDaily(ctx context.Context, db *sql.DB, source TDXDailySource, symbol
 		}
 	}
 	if observation == nil {
-		return 0, fmt.Errorf("TDX instrument %q not found", symbol)
+		return summary, fmt.Errorf("TDX instrument %q not found", symbol)
 	}
 	if !dailyEligible(observation.Instrument.Type) {
-		return 0, fmt.Errorf("TDX daily ingestion for %q type %q is not supported in Slice 1", symbol, observation.Instrument.Type)
+		return summary, fmt.Errorf("TDX daily ingestion for %q type %q is not supported", symbol, observation.Instrument.Type)
 	}
 
 	instrumentID, err := duckstore.UpsertInstrument(ctx, db, observation.Instrument, observation.Identifier)
 	if err != nil {
-		return 0, fmt.Errorf("upsert canonical instrument %q: %w", symbol, err)
+		return summary, fmt.Errorf("upsert canonical instrument %q: %w", symbol, err)
 	}
 
-	bars, err := source.StockDailyBars(ctx, instrumentID, symbol)
+	boundary, hasBoundary, err := dailyFetchBoundary(ctx, db, observation.Identifier.Provider, instrumentID)
 	if err != nil {
-		return 0, fmt.Errorf("fetch daily bars %q: %w", symbol, err)
+		return summary, err
 	}
-	if violations := validate.DailyBars(bars); len(violations) != 0 {
-		validationErr := fmt.Errorf("daily validation failed: %s", summarizeViolations(violations))
-		if err := duckstore.RecordValidationViolations(ctx, db, nil, observation.Identifier.Provider, tdxDailyDataset, "daily_bar", violations); err != nil {
-			return 0, fmt.Errorf("%v; persist validation failures: %w", validationErr, err)
-		}
-		return 0, validationErr
+	var bars []domain.DailyBar
+	if hasBoundary {
+		bars, err = source.StockDailyBarsSince(ctx, instrumentID, symbol, boundary)
+	} else {
+		bars, err = source.StockDailyBars(ctx, instrumentID, symbol)
 	}
-	if err := duckstore.UpsertDailyBars(ctx, db, bars); err != nil {
-		return 0, fmt.Errorf("store daily bars %q: %w", symbol, err)
+	if err != nil {
+		return summary, fmt.Errorf("fetch daily bars %q: %w", symbol, err)
 	}
-	return len(bars), nil
+
+	applied, err := applyDailyRows(ctx, db, runID, observation.Identifier.Provider, instrumentID, bars)
+	if err != nil {
+		return summary, fmt.Errorf("store daily bars %q: %w", symbol, err)
+	}
+	summary.Written = applied.Written
+	summary.Quarantined = applied.Quarantined
+	return summary, nil
 }
