@@ -48,17 +48,18 @@ var industrySpecs = []industrySpec{
 	},
 }
 
-// IndustrySnapshots fetches the TDX security-industry assignments and the
-// shared incon.dat code/name dictionary once, then emits two complete canonical
-// classification snapshots: TDX industry and Shenwan industry.
-func (c *Client) IndustrySnapshots(ctx context.Context) ([]domain.ClassificationSnapshot, error) {
+// IndustrySnapshotResults fetches the shared assignment/dictionary inputs once,
+// then builds each taxonomy independently. Shared acquisition failure remains a
+// global error; a TDX hierarchy build failure does not suppress a valid Shenwan
+// hierarchy, and vice versa.
+func (c *Client) IndustrySnapshotResults(ctx context.Context) ([]domain.ClassificationSnapshotResult, error) {
 	if c == nil || c.raw == nil {
 		return nil, fmt.Errorf("TDX client is not initialized")
 	}
-	return fetchIndustrySnapshots(ctx, c.raw)
+	return fetchIndustrySnapshotResults(ctx, c.raw)
 }
 
-func fetchIndustrySnapshots(ctx context.Context, c industrySnapshotClient) ([]domain.ClassificationSnapshot, error) {
+func fetchIndustrySnapshotResults(ctx context.Context, c industrySnapshotClient) ([]domain.ClassificationSnapshotResult, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -82,13 +83,32 @@ func fetchIndustrySnapshots(ctx context.Context, c industrySnapshotClient) ([]do
 		return nil, fmt.Errorf("TDX %s contains no industry names", protocol.FileIncon)
 	}
 
-	out := make([]domain.ClassificationSnapshot, 0, len(industrySpecs))
+	out := make([]domain.ClassificationSnapshotResult, 0, len(industrySpecs))
 	for _, spec := range industrySpecs {
 		snapshot, err := buildIndustrySnapshot(ctx, assignments, names, spec)
 		if err != nil {
-			return nil, fmt.Errorf("build %s snapshot: %w", spec.code, err)
+			out = append(out, domain.ClassificationSnapshotResult{Code: spec.code, Error: err.Error()})
+			continue
 		}
-		out = append(out, snapshot)
+		copy := snapshot
+		out = append(out, domain.ClassificationSnapshotResult{Code: spec.code, Snapshot: &copy})
+	}
+	return out, nil
+}
+
+// IndustrySnapshots remains as a compatibility helper for callers that require
+// all taxonomies. It fails when any independently-built taxonomy fails.
+func (c *Client) IndustrySnapshots(ctx context.Context) ([]domain.ClassificationSnapshot, error) {
+	results, err := c.IndustrySnapshotResults(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]domain.ClassificationSnapshot, 0, len(results))
+	for _, result := range results {
+		if result.Error != "" || result.Snapshot == nil {
+			return nil, fmt.Errorf("build %s snapshot: %s", result.Code, result.Error)
+		}
+		out = append(out, *result.Snapshot)
 	}
 	return out, nil
 }
@@ -163,9 +183,6 @@ func buildIndustrySnapshot(ctx context.Context, assignments []*protocol.TdxHy, n
 			code := industryCode[:length]
 			name := strings.TrimSpace(names[code])
 			if name == "" {
-				// Historical incon.dat variants may omit an intermediate label.
-				// Keep the nearest named ancestor, but require the assigned leaf
-				// itself above so membership is never attached to an invented node.
 				continue
 			}
 			node := nodes[code]
@@ -202,12 +219,8 @@ func buildIndustrySnapshot(ctx context.Context, assignments []*protocol.TdxHy, n
 			members = append(members, node.members[symbol])
 		}
 		observations = append(observations, domain.ClassificationNodeObservation{
-			Taxonomy: taxonomy,
-			SourceNodeCode: node.code,
-			Name: node.name,
-			ParentNodeCode: node.parentCode,
-			Level: node.level,
-			Members: members,
+			Taxonomy: taxonomy, SourceNodeCode: node.code, Name: node.name,
+			ParentNodeCode: node.parentCode, Level: node.level, Members: members,
 		})
 	}
 	return domain.ClassificationSnapshot{Taxonomy: taxonomy, Nodes: observations, Complete: true}, nil
