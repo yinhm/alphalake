@@ -43,7 +43,8 @@ type TDXCorporateActionProgress struct {
 }
 
 type TDXCorporateActionSyncOptions struct {
-	OnProgress func(TDXCorporateActionProgress)
+	OnProgress  func(TDXCorporateActionProgress)
+	ForceReplace bool
 }
 
 type TDXCorporateActionBatchError struct {
@@ -64,9 +65,10 @@ func SyncTDXCorporateActions(ctx context.Context, db *sql.DB, source TDXCorporat
 
 // SyncTDXCorporateActionsWithOptions refreshes TDX GBBQ snapshots for canonical
 // equities and ETFs. Each successfully fetched symbol atomically replaces its
-// prior provider snapshot. Before replacement, the new snapshot is compared
-// with the last known-good one so a provider-side empty/truncated response does
-// not silently erase corporate-action history.
+// prior provider snapshot. By default, the new snapshot is compared with the
+// last known-good one so a provider-side empty/truncated response cannot erase
+// history. ForceReplace is an explicit repair escape hatch for a successfully
+// fetched snapshot; it never bypasses fetch, identity, or database errors.
 func SyncTDXCorporateActionsWithOptions(ctx context.Context, db *sql.DB, source TDXCorporateActionSource, options TDXCorporateActionSyncOptions) (summary TDXCorporateActionSummary, retErr error) {
 	if db == nil {
 		return summary, fmt.Errorf("duckdb is nil")
@@ -134,16 +136,18 @@ func SyncTDXCorporateActionsWithOptions(ctx context.Context, db *sql.DB, source 
 			continue
 		}
 
-		previous, err := duckstore.GetCorporateActionSnapshotStats(ctx, db, instrumentID, instrument.Identifier.Provider)
-		if err != nil {
-			summary.Failures = append(summary.Failures, TDXCorporateActionFailure{Symbol: symbol, Err: err})
-			reportCorporateActionProgress(options, summary, eligibleTotal, symbol)
-			continue
-		}
-		if err := validateCorporateActionSnapshotReplacement(previous, len(actions), len(capital)); err != nil {
-			summary.Failures = append(summary.Failures, TDXCorporateActionFailure{Symbol: symbol, Err: err})
-			reportCorporateActionProgress(options, summary, eligibleTotal, symbol)
-			continue
+		if !options.ForceReplace {
+			previous, err := duckstore.GetCorporateActionSnapshotStats(ctx, db, instrumentID, instrument.Identifier.Provider)
+			if err != nil {
+				summary.Failures = append(summary.Failures, TDXCorporateActionFailure{Symbol: symbol, Err: err})
+				reportCorporateActionProgress(options, summary, eligibleTotal, symbol)
+				continue
+			}
+			if err := validateCorporateActionSnapshotReplacement(previous, len(actions), len(capital)); err != nil {
+				summary.Failures = append(summary.Failures, TDXCorporateActionFailure{Symbol: symbol, Err: err})
+				reportCorporateActionProgress(options, summary, eligibleTotal, symbol)
+				continue
+			}
 		}
 
 		if err := duckstore.ReplaceCorporateActionSnapshotForRun(ctx, db, runID, instrumentID, instrument.Identifier.Provider, actions, capital); err != nil {
