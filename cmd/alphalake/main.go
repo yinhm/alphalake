@@ -31,6 +31,8 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-classifications <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-industries <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-financial <db-path> [--all]")
+	fmt.Fprintln(os.Stderr, "  sync-filings <db-path> [--all] [--start YYYY-MM-DD] [--end YYYY-MM-DD] [--metadata-only] [--rescan]")
+	fmt.Fprintln(os.Stderr, "  materialize-fundamentals <db-path>")
 	fmt.Fprintln(os.Stderr, "  financial-unresolved <db-path> [--limit N] [--offset N]")
 	fmt.Fprintln(os.Stderr, "  financial-ack <db-path> <artifact-id> <provider-code> <reason>")
 	fmt.Fprintln(os.Stderr, "  financial-unack <db-path> <artifact-id> <provider-code>")
@@ -45,6 +47,13 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	if handled, err := runExtendedCommand(ctx, os.Args[1:]); handled {
+		if err != nil {
+			fatal(err)
+		}
+		return
+	}
 
 	switch os.Args[1] {
 	case "version":
