@@ -30,10 +30,48 @@ func LoadLatest(ctx context.Context, db *sql.DB, root, source, dataset, sourceLo
 }
 
 // LoadVersions returns retained versions for one provider locator newest first,
-// verifying each content-addressed file before returning it. limit <= 0 loads
-// every retained revision. This lets a source reuse an older local artifact when
-// an upstream manifest legitimately rolls back to previously-seen bytes.
+// verifying every selected content-addressed file. Any corrupt/missing retained
+// file is an error because callers of this strict API requested verified history.
 func LoadVersions(ctx context.Context, db *sql.DB, root, source, dataset, sourceLocator string, limit int) ([]Loaded, error) {
+	rows, err := queryVersionMetadata(ctx, db, root, source, dataset, sourceLocator, limit)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]Loaded, 0, len(rows))
+	for _, stored := range rows {
+		content, err := loadVerified(root, stored)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, Loaded{Stored: stored, Content: content})
+	}
+	return out, nil
+}
+
+// LoadHealthyVersions is the cache-oriented counterpart to LoadVersions. It
+// verifies versions independently, returns every healthy revision, and reports
+// corrupt/missing local revisions separately instead of allowing one bad cache
+// entry to make all retained history unusable. A caller may then fall back to a
+// provider re-download for the desired revision.
+func LoadHealthyVersions(ctx context.Context, db *sql.DB, root, source, dataset, sourceLocator string, limit int) ([]Loaded, []error, error) {
+	rows, err := queryVersionMetadata(ctx, db, root, source, dataset, sourceLocator, limit)
+	if err != nil {
+		return nil, nil, err
+	}
+	out := make([]Loaded, 0, len(rows))
+	var failures []error
+	for _, stored := range rows {
+		content, err := loadVerified(root, stored)
+		if err != nil {
+			failures = append(failures, err)
+			continue
+		}
+		out = append(out, Loaded{Stored: stored, Content: content})
+	}
+	return out, failures, nil
+}
+
+func queryVersionMetadata(ctx context.Context, db *sql.DB, root, source, dataset, sourceLocator string, limit int) ([]Stored, error) {
 	if db == nil {
 		return nil, errors.New("duckdb is nil")
 	}
@@ -60,17 +98,13 @@ func LoadVersions(ctx context.Context, db *sql.DB, root, source, dataset, source
 		return nil, fmt.Errorf("query artifact versions: %w", err)
 	}
 	defer rows.Close()
-	var out []Loaded
+	var out []Stored
 	for rows.Next() {
 		var stored Stored
 		if err := rows.Scan(&stored.ArtifactID, &stored.SHA256, &stored.ContentLength, &stored.LocalPath); err != nil {
 			return nil, fmt.Errorf("scan artifact version: %w", err)
 		}
-		content, err := loadVerified(root, stored)
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, Loaded{Stored: stored, Content: content})
+		out = append(out, stored)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("iterate artifact versions: %w", err)
