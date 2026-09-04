@@ -2,6 +2,7 @@ package duckdb
 
 import (
 	"context"
+	"database/sql"
 	"path/filepath"
 	"testing"
 	"time"
