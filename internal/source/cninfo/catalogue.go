@@ -134,6 +134,9 @@ func ParseCataloguePage(raw []byte) (CataloguePage, error) {
 	if page.TotalRecords == 0 {
 		page.TotalRecords = response.TotalAnnouncement
 	}
+	if page.TotalPages == 0 && page.TotalRecords > 0 && page.PageSize > 0 {
+		page.TotalPages = (page.TotalRecords + page.PageSize - 1) / page.PageSize
+	}
 	page.Filings = make([]domain.FilingObservation, 0, len(response.Announcements))
 	for _, item := range response.Announcements {
 		filing, issue := normalizeAnnouncement(item)
@@ -170,6 +173,9 @@ func normalizeAnnouncement(item rawAnnouncement) (domain.FilingObservation, *Cat
 		return issue("announcement has no positive provider timestamp")
 	}
 	announcementTime := time.UnixMilli(millis).UTC()
+	if announcementTime.Year() < 1990 || announcementTime.Year() > 2200 {
+		return issue(fmt.Sprintf("announcement timestamp resolves to implausible year %d", announcementTime.Year()))
+	}
 	filingType, variant, period, isCorrection := ClassifyPeriodicTitle(title)
 	return domain.FilingObservation{
 		Source:                    Source,
@@ -283,7 +289,6 @@ func cleanTitle(value string) string {
 			if !inTag {
 				out.WriteRune(r)
 			}
-		}
 	}
 	return strings.TrimSpace(strings.Join(strings.Fields(out.String()), " "))
 }
