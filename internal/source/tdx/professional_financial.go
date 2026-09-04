@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/injoyai/tdx/protocol"
 	"github.com/yinhm/alphalake/internal/domain"
 	tdxfinancial "github.com/yinhm/alphalake/internal/source/tdx/financial"
 )
@@ -33,8 +32,11 @@ func (c *Client) ProfessionalFinancialPackage(ctx context.Context, entry tdxfina
 }
 
 // NormalizeProfessionalFinancialPackage parses one verified raw package into
-// provider-neutral records. Announcement time remains nil because the gpcw
-// package itself does not provide an authoritative announcement timestamp.
+// provider-neutral records. It preserves the raw six-digit provider code and
+// the package's one-byte market marker without assigning unverified semantics
+// to that marker or guessing a current exchange from today's code ranges.
+// Announcement time remains nil because the gpcw package itself does not
+// provide an authoritative announcement timestamp.
 func (c *Client) NormalizeProfessionalFinancialPackage(entry tdxfinancial.FileEntry, raw []byte, artifactID int64) ([]domain.ProviderFinancialRecord, error) {
 	if artifactID <= 0 {
 		return nil, fmt.Errorf("artifact ID must be positive")
@@ -43,21 +45,23 @@ func (c *Client) NormalizeProfessionalFinancialPackage(entry tdxfinancial.FileEn
 	if err != nil {
 		return nil, err
 	}
+	return normalizeProfessionalFinancialRecords(entry, pkg, artifactID), nil
+}
+
+func normalizeProfessionalFinancialRecords(entry tdxfinancial.FileEntry, pkg tdxfinancial.Package, artifactID int64) []domain.ProviderFinancialRecord {
 	out := make([]domain.ProviderFinancialRecord, 0, len(pkg.Records))
 	for _, record := range pkg.Records {
-		symbol, err := financialSymbol(record.Code)
-		if err != nil {
-			return nil, fmt.Errorf("normalize gpcw code %s: %w", record.Code, err)
-		}
 		out = append(out, domain.ProviderFinancialRecord{
-			Identifier: domain.Identifier{Provider: Provider, Type: "symbol", Value: symbol},
+			Provider: Provider,
+			ProviderCode: record.Code,
+			MarketMarker: record.MarketMarker,
 			ReportPeriod: record.ReportPeriod,
 			ProviderFields: record.Fields,
 			SourceFile: entry.Filename,
 			ArtifactID: artifactID,
 		})
 	}
-	return out, nil
+	return out
 }
 
 func fetchProfessionalFinancialFileList(ctx context.Context, c reportFileClient) ([]tdxfinancial.FileEntry, []byte, error) {
@@ -99,18 +103,4 @@ func fetchProfessionalFinancialPackage(ctx context.Context, c reportFileClient, 
 		return nil, fmt.Errorf("TDX professional financial package %s md5=%s, want %s", entry.Filename, got, entry.MD5)
 	}
 	return raw, nil
-}
-
-func financialSymbol(code string) (string, error) {
-	candidates := []string{"sh" + code, "sz" + code, "bj" + code}
-	var matches []string
-	for _, symbol := range candidates {
-		if protocol.IsStock(symbol) || protocol.IsETF(symbol) {
-			matches = append(matches, symbol)
-		}
-	}
-	if len(matches) != 1 {
-		return "", fmt.Errorf("expected exactly one A-share market match, got %v", matches)
-	}
-	return matches[0], nil
 }
