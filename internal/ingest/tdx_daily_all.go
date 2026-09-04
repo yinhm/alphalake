@@ -87,17 +87,12 @@ func SyncAllTDXDailyWithOptions(ctx context.Context, db *sql.DB, source TDXIncre
 		finalizeTrackedRun(ctx, db, runID, ingestRunStatus(summary, retErr), &retErr)
 	}()
 
-	observations, err := source.Instruments(ctx)
+	observations, instrumentIDs, err := refreshInstrumentMaster(ctx, db, source)
 	if err != nil {
-		return summary, fmt.Errorf("list TDX instruments: %w", err)
+		return summary, fmt.Errorf("refresh TDX instrument master: %w", err)
 	}
 	summary.Instruments = len(observations)
 	eligibleTotal := countDailyEligible(observations)
-
-	instrumentIDs, err := duckstore.UpsertInstruments(ctx, db, observations)
-	if err != nil {
-		return summary, fmt.Errorf("refresh canonical instrument master: %w", err)
-	}
 
 	for i, observation := range observations {
 		if err := ctx.Err(); err != nil {
