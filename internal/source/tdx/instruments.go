@@ -56,7 +56,7 @@ func listInstruments(ctx context.Context, c codeListClient, exchanges []protocol
 			observations = append(observations, domain.InstrumentObservation{
 				Instrument: domain.InstrumentRef{
 					Type:        classifyInstrument(symbol),
-					ExchangeMIC: key.MIC,
+					ExchangeMIC: key.ExchangeMIC,
 					Currency:    "CNY",
 					Name:        item.Name,
 				},
