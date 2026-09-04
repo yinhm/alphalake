@@ -36,15 +36,17 @@ type TDXProfessionalFinancialOptions struct {
 }
 
 type TDXProfessionalFinancialProgress struct {
-	RunID      int64
-	Processed  int
-	Total      int
-	Package    string
-	Packages   int
-	Skipped    int
-	Facts      int
-	Unresolved int
-	Failures   int
+	RunID          int64
+	Processed      int
+	Total          int
+	Package        string
+	Packages       int
+	Skipped        int
+	FactsAttempted int
+	FactsInserted  int
+	Unresolved     int
+	Acknowledged   int
+	Failures       int
 }
 
 type TDXProfessionalFinancialFailure struct {
@@ -58,8 +60,10 @@ type TDXProfessionalFinancialSummary struct {
 	Selected       int
 	Packages       int
 	Skipped        int
-	Facts          int
-	Unresolved     int
+	FactsAttempted int
+	FactsInserted  int
+	Unresolved     int // pending unresolved records only; acknowledged records are separate
+	Acknowledged   int
 	Failures       []TDXProfessionalFinancialFailure
 	MasterFailures []InstrumentMasterFailure
 }
@@ -191,22 +195,30 @@ func SyncTDXProfessionalFinancialWithOptions(
 			reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
 			continue
 		}
-		resolved, unresolved, err := resolveProviderFinancialRecords(ctx, db, records)
+		resolved, resolutionInputs, err := resolveProviderFinancialRecords(ctx, db, records)
 		if err != nil {
 			summary.Failures = append(summary.Failures, TDXProfessionalFinancialFailure{Package: entry.Filename, Err: err})
 			reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
 			continue
 		}
-		facts, err := duckstore.InsertProviderFinancialRecordsForArtifact(ctx, db, runID, stored.SHA256, resolved)
+		resolutionState, err := duckstore.ApplyProviderFinancialResolutions(ctx, db, runID, resolutionInputs)
+		if err != nil {
+			summary.Failures = append(summary.Failures, TDXProfessionalFinancialFailure{Package: entry.Filename, Err: err})
+			reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
+			continue
+		}
+		factWrite, err := duckstore.InsertProviderFinancialRecordsForArtifact(ctx, db, runID, stored.SHA256, resolved)
 		if err != nil {
 			summary.Failures = append(summary.Failures, TDXProfessionalFinancialFailure{Package: entry.Filename, Err: err})
 			reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
 			continue
 		}
 		summary.Packages++
-		summary.Facts += facts
-		summary.Unresolved += unresolved
-		if unresolved == 0 {
+		summary.FactsAttempted += factWrite.Attempted
+		summary.FactsInserted += factWrite.Inserted
+		summary.Unresolved += resolutionState.Pending
+		summary.Acknowledged += resolutionState.Acknowledged
+		if resolutionState.Pending == 0 {
 			if err := duckstore.SetCheckpoint(ctx, db, "tdx", tdxProfessionalFinancialDataset, checkpointKey, entry.MD5); err != nil {
 				summary.Failures = append(summary.Failures, TDXProfessionalFinancialFailure{Package: entry.Filename, Err: err})
 			}
@@ -220,33 +232,61 @@ func SyncTDXProfessionalFinancialWithOptions(
 	return summary, nil
 }
 
-func resolveProviderFinancialRecords(ctx context.Context, db *sql.DB, records []domain.ProviderFinancialRecord) ([]domain.ProviderFinancialRecord, int, error) {
+func resolveProviderFinancialRecords(ctx context.Context, db *sql.DB, records []domain.ProviderFinancialRecord) ([]domain.ProviderFinancialRecord, []duckstore.ProviderFinancialResolutionInput, error) {
 	if len(records) == 0 {
-		return nil, 0, nil
+		return nil, nil, nil
 	}
 	period := records[0].ReportPeriod
-	identifiers := make([]domain.Identifier, len(records))
+	provider := strings.TrimSpace(records[0].Provider)
+	if provider == "" {
+		return nil, nil, errors.New("gpcw record provider is empty")
+	}
+	codes := make([]string, len(records))
+	seenCodes := make(map[string]struct{}, len(records))
 	for i, record := range records {
 		if !record.ReportPeriod.Equal(period) {
-			return nil, 0, fmt.Errorf("gpcw package mixes report periods %s and %s", period.Format("2006-01-02"), record.ReportPeriod.Format("2006-01-02"))
+			return nil, nil, fmt.Errorf("gpcw package mixes report periods %s and %s", period.Format("2006-01-02"), record.ReportPeriod.Format("2006-01-02"))
 		}
-		identifiers[i] = record.Identifier
+		if strings.TrimSpace(record.Provider) != provider {
+			return nil, nil, fmt.Errorf("gpcw package mixes providers %q and %q", provider, record.Provider)
+		}
+		code := strings.TrimSpace(record.ProviderCode)
+		if _, exists := seenCodes[code]; exists {
+			return nil, nil, fmt.Errorf("gpcw package contains duplicate provider code %q", code)
+		}
+		seenCodes[code] = struct{}{}
+		codes[i] = code
 	}
-	ids, err := duckstore.ResolveInstrumentIdentifiersAt(ctx, db, identifiers, period)
+	resolutions, err := duckstore.ResolveProviderCodesAt(ctx, db, provider, codes, period)
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, err
 	}
 	resolved := make([]domain.ProviderFinancialRecord, 0, len(records))
-	unresolved := 0
+	resolutionInputs := make([]duckstore.ProviderFinancialResolutionInput, 0, len(records))
 	for i, record := range records {
-		if ids[i] == 0 {
-			unresolved++
-			continue
+		resolution := resolutions[i]
+		reason := ""
+		if resolution.Resolved() {
+			record.InstrumentID = resolution.InstrumentID
+			resolved = append(resolved, record)
+		} else if len(resolution.Candidates) == 0 {
+			reason = fmt.Sprintf("no temporal %s symbol for raw code %s at %s", provider, record.ProviderCode, period.Format("2006-01-02"))
+		} else {
+			reason = fmt.Sprintf("raw code %s is ambiguous across temporal provider symbols: %s", record.ProviderCode, strings.Join(resolution.Candidates, ","))
 		}
-		record.InstrumentID = ids[i]
-		resolved = append(resolved, record)
+		resolutionInputs = append(resolutionInputs, duckstore.ProviderFinancialResolutionInput{
+			ArtifactID: record.ArtifactID,
+			Source: record.Provider,
+			SourceFile: record.SourceFile,
+			ReportPeriod: record.ReportPeriod,
+			ProviderCode: record.ProviderCode,
+			MarketMarker: record.MarketMarker,
+			InstrumentID: resolution.InstrumentID,
+			IdentifierValue: resolution.IdentifierValue,
+			Reason: reason,
+		})
 	}
-	return resolved, unresolved, nil
+	return resolved, resolutionInputs, nil
 }
 
 func md5Matches(content []byte, want string) bool {
@@ -261,7 +301,8 @@ func reportProfessionalFinancialProgress(options TDXProfessionalFinancialOptions
 	options.OnProgress(TDXProfessionalFinancialProgress{
 		RunID: summary.RunID, Processed: processed, Total: summary.Selected,
 		Package: name, Packages: summary.Packages, Skipped: summary.Skipped,
-		Facts: summary.Facts, Unresolved: summary.Unresolved,
+		FactsAttempted: summary.FactsAttempted, FactsInserted: summary.FactsInserted,
+		Unresolved: summary.Unresolved, Acknowledged: summary.Acknowledged,
 		Failures: len(summary.Failures) + len(summary.MasterFailures),
 	})
 }
