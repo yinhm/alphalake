@@ -19,6 +19,7 @@ func TestMigrationOrder(t *testing.T) {
 		"005_classification.sql",
 		"006_adjustment_lineage.sql",
 		"007_share_capital_identity.sql",
+		"008_derived_state.sql",
 	}
 	if len(migrations) != len(want) {
 		t.Fatalf("got %v", migrations)
@@ -79,7 +80,7 @@ func TestApplyRegistersLegacyReplayOnlyDatabase(t *testing.T) {
 	}
 	// Reproduce the pre-version-gating repository state: migrations 001-006
 	// existed and were replayed on every startup, while only 001_meta.sql wrote
-	// schema_version. 007 is new and must execute exactly once through Apply.
+	// schema_version. Newer migrations must execute exactly once through Apply.
 	for _, migration := range migrations[:6] {
 		body, err := Read(migration.Name)
 		if err != nil {
