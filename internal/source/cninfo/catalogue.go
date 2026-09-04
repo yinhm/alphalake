@@ -172,20 +172,24 @@ func normalizeAnnouncement(item rawAnnouncement) (domain.FilingObservation, *Cat
 	announcementTime := time.UnixMilli(millis).UTC()
 	filingType, variant, period, isCorrection := ClassifyPeriodicTitle(title)
 	return domain.FilingObservation{
-		Source: Source,
-		SourceFilingID: filingID,
-		ProviderCode: code,
-		ExchangeMIC: exchangeMIC(item.ColumnID, item.PageColumn),
-		SecurityName: strings.TrimSpace(item.SecName),
-		Title: title,
-		FilingType: filingType,
-		FilingVariant: variant,
-		ReportPeriod: period,
-		AnnouncementTime: announcementTime,
-		DocumentLocator: strings.TrimSpace(item.AdjunctURL),
-		RawCategory: strings.TrimSpace(item.AnnouncementType),
-		ClassifierVersion: FilingClassifierVersion,
-		IsCorrection: isCorrection,
+		Source:                    Source,
+		SourceFilingID:            filingID,
+		ProviderCode:              code,
+		ExchangeMIC:               exchangeMIC(item.ColumnID, item.PageColumn),
+		SecurityName:              strings.TrimSpace(item.SecName),
+		Title:                     title,
+		FilingType:                filingType,
+		FilingVariant:             variant,
+		ReportPeriod:              period,
+		AnnouncementTime:          announcementTime,
+		DocumentLocator:           strings.TrimSpace(item.AdjunctURL),
+		RawCategory:               strings.TrimSpace(item.AnnouncementType),
+		ClassifierVersion:         FilingClassifierVersion,
+		IsCorrection:              isCorrection,
+		ProviderOrgID:             strings.TrimSpace(item.OrgID),
+		ProviderColumnID:          strings.TrimSpace(item.ColumnID),
+		ProviderPageColumn:        strings.TrimSpace(item.PageColumn),
+		RawAnnouncementTimeMillis: millis,
 	}, nil
 }
 
