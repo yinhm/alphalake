@@ -26,14 +26,15 @@ type TDXDailySyncFailure struct {
 }
 
 type TDXDailySyncSummary struct {
-	RunID       int64
-	Instruments int
-	Attempted   int
-	Synced      int
-	Skipped     int
-	Bars        int
-	Quarantined int
-	Failures    []TDXDailySyncFailure
+	RunID          int64
+	Instruments    int
+	Attempted      int
+	Synced         int
+	Skipped        int
+	Bars           int
+	Quarantined    int
+	Failures       []TDXDailySyncFailure
+	MasterFailures []InstrumentMasterFailure
 }
 
 type TDXDailyProgress struct {
@@ -87,10 +88,13 @@ func SyncAllTDXDailyWithOptions(ctx context.Context, db *sql.DB, source TDXIncre
 		finalizeTrackedRun(ctx, db, runID, ingestRunStatus(summary, retErr), &retErr)
 	}()
 
-	observations, instrumentIDs, err := refreshInstrumentMaster(ctx, db, source)
+	master, err := refreshInstrumentMaster(ctx, db, runID, source)
 	if err != nil {
 		return summary, fmt.Errorf("refresh TDX instrument master: %w", err)
 	}
+	observations := master.Observations
+	instrumentIDs := master.InstrumentIDs
+	summary.MasterFailures = master.Failures
 	summary.Instruments = len(observations)
 	eligibleTotal := countDailyEligible(observations)
 
@@ -149,7 +153,7 @@ func reportTDXDailyProgress(options TDXDailySyncOptions, summary TDXDailySyncSum
 	}
 	options.OnProgress(TDXDailyProgress{
 		RunID: summary.RunID, Processed: summary.Attempted, Total: total,
-		Synced: summary.Synced, Failed: len(summary.Failures), Quarantined: summary.Quarantined, Symbol: symbol,
+		Synced: summary.Synced, Failed: len(summary.Failures) + len(summary.MasterFailures), Quarantined: summary.Quarantined, Symbol: symbol,
 	})
 }
 
@@ -167,13 +171,13 @@ func ingestRunStatus(summary TDXDailySyncSummary, runErr error) string {
 	if errors.Is(runErr, context.Canceled) || errors.Is(runErr, context.DeadlineExceeded) {
 		return duckstore.IngestRunCanceled
 	}
-	if runErr == nil && summary.Quarantined == 0 {
+	if runErr == nil && summary.Quarantined == 0 && len(summary.MasterFailures) == 0 {
 		return duckstore.IngestRunCompleted
 	}
-	if runErr == nil && summary.Quarantined > 0 {
+	if runErr == nil {
 		return duckstore.IngestRunPartial
 	}
-	if (len(summary.Failures) > 0 || summary.Quarantined > 0) && summary.Synced > 0 {
+	if (len(summary.Failures) > 0 || len(summary.MasterFailures) > 0 || summary.Quarantined > 0) && summary.Synced > 0 {
 		return duckstore.IngestRunPartial
 	}
 	return duckstore.IngestRunFailed
