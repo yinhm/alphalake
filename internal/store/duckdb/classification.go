@@ -111,7 +111,11 @@ func ApplyClassificationSnapshotForRun(
 		}
 	}
 
-	identifierMap, err := loadActiveIdentifierMap(ctx, tx, snapshotDate, snapshot.Nodes)
+	var memberIdentifiers []domain.Identifier
+	for _, node := range snapshot.Nodes {
+		memberIdentifiers = append(memberIdentifiers, node.Members...)
+	}
+	identifierMap, err := resolveInstrumentIdentifiersAtTx(ctx, tx, memberIdentifiers, snapshotDate)
 	if err != nil {
 		return result, err
 	}
@@ -125,7 +129,7 @@ func ApplyClassificationSnapshotForRun(
 		nodeCode := strings.TrimSpace(node.SourceNodeCode)
 		nodeID := nodeIDs[nodeCode]
 		for _, member := range node.Members {
-			key := identifierKey(member.Provider, member.Type, member.Value)
+			key := providerIdentifierKey(member.Provider, member.Type, member.Value)
 			instrumentID, ok := identifierMap[key]
 			if !ok {
 				return result, fmt.Errorf("unresolved classification member %s/%s/%s in node %q", member.Provider, member.Type, member.Value, nodeCode)
@@ -274,52 +278,6 @@ func upsertClassificationNode(ctx context.Context, tx *sql.Tx, taxonomyID int64,
 		}
 	}
 	return nodeID, nil
-}
-
-func loadActiveIdentifierMap(ctx context.Context, tx *sql.Tx, snapshotDate time.Time, nodes []domain.ClassificationNodeObservation) (map[string]int64, error) {
-	providers := make(map[string]struct{})
-	for _, node := range nodes {
-		for _, member := range node.Members {
-			provider := strings.TrimSpace(member.Provider)
-			if provider == "" || strings.TrimSpace(member.Type) == "" || strings.TrimSpace(member.Value) == "" {
-				return nil, errors.New("classification member identifier is incomplete")
-			}
-			providers[provider] = struct{}{}
-		}
-	}
-	out := make(map[string]int64)
-	for provider := range providers {
-		rows, err := tx.QueryContext(ctx, `
-			SELECT instrument_id, provider, identifier_type, identifier_value
-			FROM ref.instrument_identifier
-			WHERE provider=?
-			  AND (valid_from IS NULL OR valid_from <= ?)
-			  AND (valid_to IS NULL OR valid_to > ?)
-			ORDER BY valid_from NULLS FIRST
-		`, provider, snapshotDate, snapshotDate)
-		if err != nil {
-			return nil, fmt.Errorf("query active identifiers for %q: %w", provider, err)
-		}
-		for rows.Next() {
-			var instrumentID int64
-			var p, typ, value string
-			if err := rows.Scan(&instrumentID, &p, &typ, &value); err != nil {
-				rows.Close()
-				return nil, fmt.Errorf("scan active identifier: %w", err)
-			}
-			out[identifierKey(p, typ, value)] = instrumentID
-		}
-		if err := rows.Err(); err != nil {
-			rows.Close()
-			return nil, fmt.Errorf("iterate active identifiers: %w", err)
-		}
-		rows.Close()
-	}
-	return out, nil
-}
-
-func identifierKey(provider, typ, value string) string {
-	return strings.TrimSpace(provider) + "\x00" + strings.TrimSpace(typ) + "\x00" + strings.TrimSpace(value)
 }
 
 func nullableInt(v int) any {
