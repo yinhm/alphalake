@@ -13,11 +13,11 @@ import (
 )
 
 type fakeCNINFOFilingSource struct {
-	pages         map[int]cninfo.CataloguePage
-	raw           map[int][]byte
-	documents     map[string][]byte
+	pages          map[int]cninfo.CataloguePage
+	raw            map[int][]byte
+	documents      map[string][]byte
 	catalogueCalls int
-	documentCalls int
+	documentCalls  int
 }
 
 func (f *fakeCNINFOFilingSource) CataloguePage(_ context.Context, request cninfo.CatalogueRequest) (cninfo.CataloguePage, []byte, error) {
@@ -154,5 +154,74 @@ func TestSyncCNINFOFilingsKeepsUnresolvedEvidenceWithoutFailingWindow(t *testing
 	}
 	if runStatus != duckstore.IngestRunPartial {
 		t.Fatalf("run status=%s, want partial", runStatus)
+	}
+}
+
+func TestSyncCNINFOFilingsRejectsHTMLDocumentAndWithholdsCheckpoint(t *testing.T) {
+	ctx := context.Background()
+	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "cninfo-html.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	root := filepath.Join(t.TempDir(), "raw")
+	if _, err := duckstore.UpsertInstrument(ctx, db,
+		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Test"},
+		domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh600001"},
+	); err != nil {
+		t.Fatal(err)
+	}
+	period := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+	filing := domain.FilingObservation{
+		Source: cninfo.Source, SourceFilingID: "anti-bot", ProviderCode: "600001", ExchangeMIC: "XSHG",
+		Title: "2025年年度报告", FilingType: domain.FilingTypeAnnual, FilingVariant: domain.FilingVariantFull,
+		ReportPeriod: &period, AnnouncementTime: time.Date(2026, 3, 28, 10, 0, 0, 0, time.UTC),
+		DocumentLocator: "anti-bot.pdf", ClassifierVersion: cninfo.FilingClassifierVersion,
+	}
+	source := &fakeCNINFOFilingSource{
+		pages: map[int]cninfo.CataloguePage{1: {Page: 1, PageSize: 50, TotalPages: 1, Filings: []domain.FilingObservation{filing}}},
+		raw: map[int][]byte{1: []byte(`{"announcements":[]}`)},
+		documents: map[string][]byte{"anti-bot.pdf": []byte("<!doctype html><html>challenge</html>")},
+	}
+	summary, err := SyncCNINFOFilingsWithOptions(ctx, db, source, root, CNINFOFilingOptions{
+		StartDate: time.Date(2026, 3, 28, 0, 0, 0, 0, time.UTC),
+		EndDate: time.Date(2026, 3, 28, 0, 0, 0, 0, time.UTC),
+		Now: func() time.Time { return time.Date(2026, 3, 29, 0, 0, 0, 0, time.UTC) },
+	})
+	if err == nil || len(summary.Failures) != 1 {
+		t.Fatalf("summary=%#v err=%v", summary, err)
+	}
+	var documents, checkpoints int
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM meta.artifact WHERE source='cninfo' AND dataset='filing_document'`).Scan(&documents); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM meta.checkpoint WHERE source='cninfo' AND dataset='filing'`).Scan(&checkpoints); err != nil {
+		t.Fatal(err)
+	}
+	if documents != 0 || checkpoints != 0 {
+		t.Fatalf("documents/checkpoints=%d/%d, want 0/0", documents, checkpoints)
+	}
+}
+
+func TestValidateCNINFOFilingDocument(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		url       string
+		mediaType string
+		content   []byte
+		wantError bool
+	}{
+		{name: "pdf", url: "https://static.cninfo.test/a.pdf", mediaType: "application/pdf", content: []byte("%PDF-ok")},
+		{name: "empty", url: "https://static.cninfo.test/a.pdf", content: nil, wantError: true},
+		{name: "html media", url: "https://static.cninfo.test/a.pdf", mediaType: "text/html", content: []byte("challenge"), wantError: true},
+		{name: "html bytes", url: "https://static.cninfo.test/a.pdf", mediaType: "application/octet-stream", content: []byte("<html>challenge</html>"), wantError: true},
+		{name: "bad pdf", url: "https://static.cninfo.test/a.pdf", mediaType: "application/pdf", content: []byte("not-pdf"), wantError: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateCNINFOFilingDocument(tc.url, tc.mediaType, tc.content)
+			if (err != nil) != tc.wantError {
+				t.Fatalf("error=%v wantError=%v", err, tc.wantError)
+			}
+		})
 	}
 }
