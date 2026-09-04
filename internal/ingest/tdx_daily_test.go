@@ -3,6 +3,7 @@ package ingest
 import (
 	"context"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 type fakeTDXDailySource struct {
 	observations []domain.InstrumentObservation
 	bars         []domain.DailyBar
+	barCalls     int
 }
 
 func (f fakeTDXDailySource) Instruments(context.Context) ([]domain.InstrumentObservation, error) {
@@ -83,5 +85,34 @@ func TestSyncTDXDailyPersistsCanonicalInstrumentAndBars(t *testing.T) {
 	}
 	if count != 1 {
 		t.Fatalf("bar count = %d, want 1", count)
+	}
+}
+
+func TestSyncTDXDailyRejectsUnsupportedInstrumentType(t *testing.T) {
+	ctx := context.Background()
+	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "unsupported.duckdb"))
+	if err != nil {
+		t.Fatalf("OpenAndMigrate() error = %v", err)
+	}
+	defer db.Close()
+
+	source := fakeTDXDailySource{observations: []domain.InstrumentObservation{{
+		Instrument: domain.InstrumentRef{
+			Type: domain.InstrumentIndex, ExchangeMIC: "XSHG", Currency: "CNY", Name: "上证指数",
+		},
+		Identifier: domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh000001"},
+	}}}
+
+	_, err = SyncTDXDaily(ctx, db, source, "sh000001")
+	if err == nil || !strings.Contains(err.Error(), "not supported") {
+		t.Fatalf("SyncTDXDaily() error = %v, want unsupported type error", err)
+	}
+
+	var count int
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM market.ohlcv_daily`).Scan(&count); err != nil {
+		t.Fatalf("count bars: %v", err)
+	}
+	if count != 0 {
+		t.Fatalf("bar count = %d, want 0", count)
 	}
 }
