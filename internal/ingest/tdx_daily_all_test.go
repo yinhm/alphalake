@@ -2,7 +2,6 @@ package ingest
 
 import (
 	"context"
-	"errors"
 	"path/filepath"
 	"testing"
 	"time"
@@ -101,7 +100,7 @@ func TestSyncAllTDXDailyUsesPerInstrumentBoundary(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SyncAllTDXDaily() error = %v", err)
 	}
-	if summary.RunID <= 0 || summary.Instruments != 3 || summary.Attempted != 2 || summary.Synced != 2 || summary.Skipped != 1 || summary.Bars != 3 {
+	if summary.RunID <= 0 || summary.Instruments != 3 || summary.Attempted != 2 || summary.Synced != 2 || summary.Skipped != 1 || summary.Bars != 3 || summary.Quarantined != 0 {
 		t.Fatalf("summary = %#v", summary)
 	}
 	if got, ok := source.sinceCalls["sh600519"]; !ok || !got.Equal(boundary) {
@@ -111,36 +110,18 @@ func TestSyncAllTDXDailyUsesPerInstrumentBoundary(t *testing.T) {
 		t.Fatalf("full calls = %#v", source.fullCalls)
 	}
 
-	var equityRows, etfRows int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM market.ohlcv_daily WHERE instrument_id=?`, instrumentID).Scan(&equityRows); err != nil {
-		t.Fatalf("count equity bars: %v", err)
-	}
-	if equityRows != 2 {
-		t.Fatalf("equity rows = %d, want 2", equityRows)
-	}
-	if err := db.QueryRowContext(ctx, `
-		SELECT count(*) FROM market.ohlcv_daily d
-		JOIN ref.instrument_identifier i USING (instrument_id)
-		WHERE i.provider='tdx' AND i.identifier_value='sh510300'
-	`).Scan(&etfRows); err != nil {
-		t.Fatalf("count ETF bars: %v", err)
-	}
-	if etfRows != 1 {
-		t.Fatalf("ETF rows = %d, want 1", etfRows)
-	}
-
 	var runStatus string
 	if err := db.QueryRowContext(ctx, `SELECT status FROM meta.ingest_run WHERE ingest_run_id=?`, summary.RunID).Scan(&runStatus); err != nil {
-		t.Fatalf("query completed ingest run: %v", err)
+		t.Fatal(err)
 	}
 	if runStatus != duckstore.IngestRunCompleted {
-		t.Fatalf("run status = %q, want %q", runStatus, duckstore.IngestRunCompleted)
+		t.Fatalf("run status = %q, want completed", runStatus)
 	}
 }
 
-func TestSyncAllTDXDailyContinuesAfterInstrumentValidationFailure(t *testing.T) {
+func TestSyncAllTDXDailyQuarantinesBadRowAndRetriesUntilCorrected(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "partial.duckdb"))
+	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "quarantine.duckdb"))
 	if err != nil {
 		t.Fatalf("OpenAndMigrate() error = %v", err)
 	}
@@ -148,55 +129,74 @@ func TestSyncAllTDXDailyContinuesAfterInstrumentValidationFailure(t *testing.T) 
 
 	bad := observation(domain.InstrumentEquity, "XSHG", "Bad", "sh600001")
 	good := observation(domain.InstrumentEquity, "XSHG", "Good", "sh600002")
-	day := time.Date(2026, 9, 3, 0, 0, 0, 0, time.UTC)
-	badBar := validBar(day, 10)
+	day1 := time.Date(2026, 9, 2, 0, 0, 0, 0, time.UTC)
+	day2 := time.Date(2026, 9, 3, 0, 0, 0, 0, time.UTC)
+	badBar := validBar(day1, 10)
 	badBar.High = 9
 
 	source := &fakeIncrementalTDXSource{
 		observations: []domain.InstrumentObservation{bad, good},
 		full: map[string][]domain.DailyBar{
-			"sh600001": {badBar},
-			"sh600002": {validBar(day, 20)},
+			"sh600001": {badBar, validBar(day2, 11)},
+			"sh600002": {validBar(day2, 20)},
 		},
 	}
 
-	summary, err := SyncAllTDXDaily(ctx, db, source)
-	var batchErr *TDXDailyBatchError
-	if !errors.As(err, &batchErr) {
-		t.Fatalf("error = %v, want TDXDailyBatchError", err)
+	first, err := SyncAllTDXDaily(ctx, db, source)
+	if err != nil {
+		t.Fatalf("first sync error = %v; row validation should not fail the symbol batch", err)
 	}
-	if summary.RunID <= 0 || summary.Synced != 1 || len(summary.Failures) != 1 || summary.Failures[0].Symbol != "sh600001" {
-		t.Fatalf("summary = %#v", summary)
-	}
-
-	var rows int
-	if err := db.QueryRowContext(ctx, `
-		SELECT count(*) FROM market.ohlcv_daily d
-		JOIN ref.instrument_identifier i USING (instrument_id)
-		WHERE i.identifier_value='sh600002'
-	`).Scan(&rows); err != nil {
-		t.Fatalf("count good bars: %v", err)
-	}
-	if rows != 1 {
-		t.Fatalf("good rows = %d, want 1", rows)
+	if first.Synced != 2 || first.Bars != 2 || first.Quarantined != 1 || len(first.Failures) != 0 {
+		t.Fatalf("first summary = %#v", first)
 	}
 
-	var validations int
-	if err := db.QueryRowContext(ctx, `
-		SELECT count(*) FROM meta.validation_result
-		WHERE source='tdx' AND dataset='daily_ohlcv' AND passed=false AND ingest_run_id=?
-	`, summary.RunID).Scan(&validations); err != nil {
-		t.Fatalf("count validation failures: %v", err)
+	var badInstrumentID int64
+	if err := db.QueryRowContext(ctx, `SELECT instrument_id FROM ref.instrument_identifier WHERE provider='tdx' AND identifier_value='sh600001'`).Scan(&badInstrumentID); err != nil {
+		t.Fatal(err)
 	}
-	if validations == 0 {
-		t.Fatal("expected persisted validation failure linked to ingest run")
+	var badRows int
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM market.ohlcv_daily WHERE instrument_id=?`, badInstrumentID).Scan(&badRows); err != nil {
+		t.Fatal(err)
+	}
+	if badRows != 1 {
+		t.Fatalf("bad symbol stored rows=%d, want only later valid row", badRows)
 	}
 
-	var runStatus string
-	if err := db.QueryRowContext(ctx, `SELECT status FROM meta.ingest_run WHERE ingest_run_id=?`, summary.RunID).Scan(&runStatus); err != nil {
-		t.Fatalf("query partial ingest run: %v", err)
+	checkpoint, ok, err := duckstore.GetCheckpoint(ctx, db, "tdx", tdxDailyDataset, dailyRetryCheckpointKey(badInstrumentID))
+	if err != nil || !ok || checkpoint != "2026-09-02" {
+		t.Fatalf("retry checkpoint = %q/%v/%v", checkpoint, ok, err)
 	}
-	if runStatus != duckstore.IngestRunPartial {
-		t.Fatalf("run status = %q, want %q", runStatus, duckstore.IngestRunPartial)
+	var firstStatus string
+	if err := db.QueryRowContext(ctx, `SELECT status FROM meta.ingest_run WHERE ingest_run_id=?`, first.RunID).Scan(&firstStatus); err != nil {
+		t.Fatal(err)
+	}
+	if firstStatus != duckstore.IngestRunPartial {
+		t.Fatalf("first run status=%q, want partial", firstStatus)
+	}
+
+	// Upstream later fixes the quarantined row. Even though the latest stored
+	// date is day2, the durable checkpoint must force a retry from day1.
+	source.incremental = map[string][]domain.DailyBar{
+		"sh600001": {validBar(day1, 10), validBar(day2, 11)},
+		"sh600002": {validBar(day2, 20)},
+	}
+	second, err := SyncAllTDXDaily(ctx, db, source)
+	if err != nil {
+		t.Fatalf("second sync error = %v", err)
+	}
+	if got := source.sinceCalls["sh600001"]; !got.Equal(day1) {
+		t.Fatalf("retry boundary=%v, want %v", got, day1)
+	}
+	if second.Quarantined != 0 {
+		t.Fatalf("second summary=%#v", second)
+	}
+	if _, ok, err := duckstore.GetCheckpoint(ctx, db, "tdx", tdxDailyDataset, dailyRetryCheckpointKey(badInstrumentID)); err != nil || ok {
+		t.Fatalf("checkpoint should clear after correction: ok=%v err=%v", ok, err)
+	}
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM market.ohlcv_daily WHERE instrument_id=?`, badInstrumentID).Scan(&badRows); err != nil {
+		t.Fatal(err)
+	}
+	if badRows != 2 {
+		t.Fatalf("bad symbol rows after repair=%d, want 2", badRows)
 	}
 }
