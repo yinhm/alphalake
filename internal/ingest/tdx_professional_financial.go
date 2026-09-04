@@ -36,17 +36,19 @@ type TDXProfessionalFinancialOptions struct {
 }
 
 type TDXProfessionalFinancialProgress struct {
-	RunID          int64
-	Processed      int
-	Total          int
-	Package        string
-	Packages       int
-	Skipped        int
-	FactsAttempted int
-	FactsInserted  int
-	Unresolved     int
-	Acknowledged   int
-	Failures       int
+	RunID           int64
+	Processed       int
+	Total           int
+	Package         string
+	Packages        int
+	Skipped         int
+	FactsAttempted  int
+	FactsInserted   int
+	FactsReassigned int
+	FactsRemoved    int
+	Unresolved      int
+	Acknowledged    int
+	Failures        int
 }
 
 type TDXProfessionalFinancialFailure struct {
@@ -55,17 +57,19 @@ type TDXProfessionalFinancialFailure struct {
 }
 
 type TDXProfessionalFinancialSummary struct {
-	RunID          int64
-	Listed         int
-	Selected       int
-	Packages       int
-	Skipped        int
-	FactsAttempted int
-	FactsInserted  int
-	Unresolved     int // pending unresolved records only; acknowledged records are separate
-	Acknowledged   int
-	Failures       []TDXProfessionalFinancialFailure
-	MasterFailures []InstrumentMasterFailure
+	RunID           int64
+	Listed          int
+	Selected        int
+	Packages        int
+	Skipped         int
+	FactsAttempted  int
+	FactsInserted   int
+	FactsReassigned int
+	FactsRemoved    int
+	Unresolved      int // pending unresolved records only; acknowledged records are separate
+	Acknowledged    int
+	Failures        []TDXProfessionalFinancialFailure
+	MasterFailures  []InstrumentMasterFailure
 }
 
 type TDXProfessionalFinancialBatchError struct {
@@ -207,7 +211,7 @@ func SyncTDXProfessionalFinancialWithOptions(
 			reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
 			continue
 		}
-		factWrite, err := duckstore.InsertProviderFinancialRecordsForArtifact(ctx, db, runID, stored.SHA256, resolved)
+		factWrite, err := duckstore.ReconcileProviderFinancialRecordsForArtifact(ctx, db, runID, "tdx", stored.SHA256, resolved)
 		if err != nil {
 			summary.Failures = append(summary.Failures, TDXProfessionalFinancialFailure{Package: entry.Filename, Err: err})
 			reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
@@ -216,6 +220,8 @@ func SyncTDXProfessionalFinancialWithOptions(
 		summary.Packages++
 		summary.FactsAttempted += factWrite.Attempted
 		summary.FactsInserted += factWrite.Inserted
+		summary.FactsReassigned += factWrite.Reassigned
+		summary.FactsRemoved += factWrite.Removed
 		summary.Unresolved += resolutionState.Pending
 		summary.Acknowledged += resolutionState.Acknowledged
 		if resolutionState.Pending == 0 {
@@ -233,7 +239,7 @@ func SyncTDXProfessionalFinancialWithOptions(
 }
 
 func loadRetainedFinancialPackage(ctx context.Context, db *sql.DB, artifactRoot string, entry tdxfinancial.FileEntry) (artifact.Stored, []byte, bool, error) {
-	versions, err := artifact.LoadVersions(ctx, db, artifactRoot, "tdx", tdxProfessionalFinancialDataset, "tdxfin/"+entry.Filename, 0)
+	versions, _, err := artifact.LoadHealthyVersions(ctx, db, artifactRoot, "tdx", tdxProfessionalFinancialDataset, "tdxfin/"+entry.Filename, 0)
 	if err != nil {
 		return artifact.Stored{}, nil, false, err
 	}
@@ -242,6 +248,9 @@ func loadRetainedFinancialPackage(ctx context.Context, db *sql.DB, artifactRoot 
 			return version.Stored, version.Content, true, nil
 		}
 	}
+	// Missing/corrupt local revisions are cache misses. The provider download path
+	// independently verifies manifest size+MD5 before Persist repairs/reuses the
+	// content-addressed object.
 	return artifact.Stored{}, nil, false, nil
 }
 
@@ -315,6 +324,7 @@ func reportProfessionalFinancialProgress(options TDXProfessionalFinancialOptions
 		RunID: summary.RunID, Processed: processed, Total: summary.Selected,
 		Package: name, Packages: summary.Packages, Skipped: summary.Skipped,
 		FactsAttempted: summary.FactsAttempted, FactsInserted: summary.FactsInserted,
+		FactsReassigned: summary.FactsReassigned, FactsRemoved: summary.FactsRemoved,
 		Unresolved: summary.Unresolved, Acknowledged: summary.Acknowledged,
 		Failures: len(summary.Failures) + len(summary.MasterFailures),
 	})
