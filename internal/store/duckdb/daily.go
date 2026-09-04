@@ -64,6 +64,15 @@ func upsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar, in
 	if len(bars) == 0 {
 		return nil
 	}
+	if err := validateDailyBarKeys(bars); err != nil {
+		return err
+	}
+	return withDailyWriteTransaction(ctx, db, func(conn *sql.Conn) error {
+		return mergeDailyBarsOnConn(ctx, conn, bars, ingestRunID)
+	})
+}
+
+func validateDailyBarKeys(bars []domain.DailyBar) error {
 	for i, bar := range bars {
 		if bar.InstrumentID <= 0 {
 			return fmt.Errorf("bar %d: instrument ID must be positive", i)
@@ -75,19 +84,27 @@ func upsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar, in
 			return fmt.Errorf("bar %d: source is required", i)
 		}
 	}
+	return nil
+}
 
+// withDailyWriteTransaction owns the dedicated connection required by DuckDB's
+// Appender. Callers may compose canonical bar merge, validation evidence and
+// checkpoint changes inside the same transaction. A callback error rolls back
+// every effect before the connection is returned to the pool.
+func withDailyWriteTransaction(ctx context.Context, db *sql.DB, fn func(*sql.Conn) error) error {
+	if db == nil {
+		return errors.New("duckdb is nil")
+	}
 	conn, err := db.Conn(ctx)
 	if err != nil {
 		return fmt.Errorf("acquire daily-bar connection: %w", err)
 	}
 	defer conn.Close()
-	// A pooled DuckDB connection may have been used for a prior failed staging
-	// attempt. Cleanup is cheap and keeps the stage lifecycle explicit.
 	if _, err := conn.ExecContext(ctx, `DROP TABLE IF EXISTS temp.main.`+dailyStageTable); err != nil {
 		return fmt.Errorf("cleanup daily staging table: %w", err)
 	}
 	if _, err := conn.ExecContext(ctx, `BEGIN TRANSACTION`); err != nil {
-		return fmt.Errorf("begin daily-bar bulk upsert: %w", err)
+		return fmt.Errorf("begin daily write transaction: %w", err)
 	}
 	committed := false
 	defer func() {
@@ -97,6 +114,28 @@ func upsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar, in
 		_, _ = conn.ExecContext(context.Background(), `DROP TABLE IF EXISTS temp.main.`+dailyStageTable)
 	}()
 
+	if err := fn(conn); err != nil {
+		return err
+	}
+	if _, err := conn.ExecContext(ctx, `COMMIT`); err != nil {
+		return fmt.Errorf("commit daily write transaction: %w", err)
+	}
+	committed = true
+	return nil
+}
+
+// mergeDailyBarsOnConn requires an active transaction on conn. It bulk-appends
+// into a connection-local temporary table and performs one set-based upsert.
+func mergeDailyBarsOnConn(ctx context.Context, conn *sql.Conn, bars []domain.DailyBar, ingestRunID *int64) error {
+	if len(bars) == 0 {
+		return nil
+	}
+	if err := validateDailyBarKeys(bars); err != nil {
+		return err
+	}
+	if _, err := conn.ExecContext(ctx, `DROP TABLE IF EXISTS temp.main.`+dailyStageTable); err != nil {
+		return fmt.Errorf("cleanup daily staging table: %w", err)
+	}
 	if _, err := conn.ExecContext(ctx, `
 		CREATE TEMP TABLE `+dailyStageTable+` (
 			instrument_id BIGINT NOT NULL,
@@ -176,10 +215,6 @@ func upsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar, in
 	if _, err := conn.ExecContext(ctx, `DROP TABLE temp.main.`+dailyStageTable); err != nil {
 		return fmt.Errorf("drop daily staging table: %w", err)
 	}
-	if _, err := conn.ExecContext(ctx, `COMMIT`); err != nil {
-		return fmt.Errorf("commit daily-bar bulk upsert: %w", err)
-	}
-	committed = true
 	return nil
 }
 
