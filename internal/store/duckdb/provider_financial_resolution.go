@@ -54,7 +54,8 @@ type ProviderFinancialResolutionRow struct {
 // identity state. A newly resolved record always becomes resolved. A still-
 // unresolved record preserves an explicit operator acknowledgement instead of
 // silently reverting it to pending on replay. While acknowledged, the machine
-// reason that was reviewed is also preserved; a later resolution still wins.
+// reason that was reviewed is also preserved; a later resolution wins and
+// clears obsolete acknowledgement metadata.
 func ApplyProviderFinancialResolutions(ctx context.Context, db *sql.DB, ingestRunID int64, inputs []ProviderFinancialResolutionInput) (ProviderFinancialResolutionApplyResult, error) {
 	var result ProviderFinancialResolutionApplyResult
 	if db == nil {
@@ -98,6 +99,14 @@ func ApplyProviderFinancialResolutions(ctx context.Context, db *sql.DB, ingestRu
 				WHEN excluded.status='resolved' THEN 'resolved'
 				WHEN status='acknowledged' THEN 'acknowledged'
 				ELSE 'pending'
+			END,
+			acknowledged_reason=CASE
+				WHEN excluded.status='resolved' THEN NULL
+				ELSE acknowledged_reason
+			END,
+			acknowledged_at=CASE
+				WHEN excluded.status='resolved' THEN NULL
+				ELSE acknowledged_at
 			END,
 			last_ingest_run_id=excluded.last_ingest_run_id,
 			updated_at=now()
@@ -218,9 +227,8 @@ func AcknowledgeProviderFinancialResolution(ctx context.Context, db *sql.DB, art
 }
 
 // UnacknowledgeProviderFinancialResolution reverses an operator acknowledgement
-// back to pending without fabricating a resolution. The previously reviewed
-// machine reason is retained; acknowledgement metadata is cleared. The next
-// financial replay may refresh the pending reason or resolve the record.
+// back to pending without fabricating a resolution. The package checkpoint is
+// invalidated in the same transaction so the next sync must replay the artifact.
 func UnacknowledgeProviderFinancialResolution(ctx context.Context, db *sql.DB, artifactID int64, providerCode string) (bool, error) {
 	if db == nil {
 		return false, errors.New("duckdb is nil")
@@ -229,32 +237,48 @@ func UnacknowledgeProviderFinancialResolution(ctx context.Context, db *sql.DB, a
 	if artifactID <= 0 || providerCode == "" {
 		return false, errors.New("artifact ID and provider code are required")
 	}
-	var status string
-	err := db.QueryRowContext(ctx, `
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return false, fmt.Errorf("begin unacknowledge provider resolution: %w", err)
+	}
+	defer tx.Rollback()
+
+	var source, sourceFile string
+	err = tx.QueryRowContext(ctx, `
 		UPDATE fundamental.provider_record_resolution
 		SET status='pending', acknowledged_reason=NULL, acknowledged_at=NULL, updated_at=now()
 		WHERE artifact_id=? AND provider_code=? AND status='acknowledged'
-		RETURNING status
-	`, artifactID, providerCode).Scan(&status)
-	if err == nil {
-		return true, nil
+		RETURNING source, source_file
+	`, artifactID, providerCode).Scan(&source, &sourceFile)
+	if errors.Is(err, sql.ErrNoRows) {
+		var status string
+		if err := tx.QueryRowContext(ctx, `
+			SELECT status FROM fundamental.provider_record_resolution
+			WHERE artifact_id=? AND provider_code=?
+		`, artifactID, providerCode).Scan(&status); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return false, fmt.Errorf("provider resolution artifact=%d code=%s not found", artifactID, providerCode)
+			}
+			return false, fmt.Errorf("query provider resolution status: %w", err)
+		}
+		if status == ProviderResolutionPending {
+			return false, nil
+		}
+		return false, fmt.Errorf("provider resolution artifact=%d code=%s has status %s, not acknowledged", artifactID, providerCode, status)
 	}
-	if !errors.Is(err, sql.ErrNoRows) {
+	if err != nil {
 		return false, fmt.Errorf("unacknowledge provider resolution: %w", err)
 	}
-	if err := db.QueryRowContext(ctx, `
-		SELECT status FROM fundamental.provider_record_resolution
-		WHERE artifact_id=? AND provider_code=?
-	`, artifactID, providerCode).Scan(&status); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return false, fmt.Errorf("provider resolution artifact=%d code=%s not found", artifactID, providerCode)
-		}
-		return false, fmt.Errorf("query provider resolution status: %w", err)
+	if _, err := tx.ExecContext(ctx, `
+		DELETE FROM meta.checkpoint
+		WHERE source=? AND dataset='professional_financial' AND checkpoint_key=?
+	`, source, "package:"+sourceFile); err != nil {
+		return false, fmt.Errorf("invalidate financial package checkpoint: %w", err)
 	}
-	if status == ProviderResolutionPending {
-		return false, nil
+	if err := tx.Commit(); err != nil {
+		return false, fmt.Errorf("commit unacknowledge provider resolution: %w", err)
 	}
-	return false, fmt.Errorf("provider resolution artifact=%d code=%s has status %s, not acknowledged", artifactID, providerCode, status)
+	return true, nil
 }
 
 func ListProviderFinancialResolutions(ctx context.Context, db *sql.DB, status string, limit int) ([]ProviderFinancialResolutionRow, error) {
