@@ -14,13 +14,13 @@ type ClassificationTaxonomy struct {
 // identifiers. Canonical taxonomy/node/instrument IDs are deliberately resolved
 // later by the store/ingest layer.
 type ClassificationNodeObservation struct {
-	Taxonomy      ClassificationTaxonomy
+	Taxonomy       ClassificationTaxonomy
 	SourceNodeCode string
-	Name          string
+	Name           string
 	ParentNodeCode string
-	Level         int
-	SourceSymbol  string
-	Members       []Identifier
+	Level          int
+	SourceSymbol   string
+	Members        []Identifier
 }
 
 // ClassificationSnapshot is a complete current observation of one provider
@@ -30,4 +30,13 @@ type ClassificationSnapshot struct {
 	Taxonomy ClassificationTaxonomy
 	Nodes    []ClassificationNodeObservation
 	Complete bool
+}
+
+// ClassificationSnapshotResult lets one shared acquisition produce multiple
+// independently-buildable taxonomies. Error is adapter/build evidence for this
+// taxonomy only; other successful results remain usable.
+type ClassificationSnapshotResult struct {
+	Code     string
+	Snapshot *ClassificationSnapshot
+	Error    string
 }
