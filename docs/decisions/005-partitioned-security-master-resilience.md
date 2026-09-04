@@ -60,17 +60,37 @@ After acquisition, taxonomy construction is independent:
 - successful taxonomy results continue through the existing temporal classification store;
 - a mixed result produces a partial ingest run rather than suppressing all industry updates.
 
+Historical `incon.dat` variants may omit an intermediate hierarchy label. Such unnamed intermediate levels are skipped rather than fabricated; the assigned leaf must still have a real provider name before membership can attach to it.
+
 ## Decision 4 — Remove duplicate/dead write semantics
 
 `RecordValidationViolations` was removed after daily ingestion moved to the atomic `ApplyDailyIngestBatchForRun` path. Validation persistence now has one production transaction semantic for daily ingestion rather than a second standalone writer.
 
 The unused `snapshotDateAt` helper was also removed.
 
+## Decision 5 — Partial safety must remain observable, and structure is validated before side effects
+
+Partition fault isolation is not permission to silently shrink the visible universe. Source-side partition errors and store-side partition failures are returned as `PartitionFailures`, persisted as run diagnostics in `meta.validation_result`, and propagated into ingest summaries. A workflow may continue with healthy partitions, but its terminal run status is `partial`, not `completed`.
+
+`InstrumentMasterSnapshot` also has a structural preflight before any partition transaction begins. The preflight verifies:
+
+- flat identifiers are unique and provider-consistent;
+- partition exchange MICs are unique;
+- each partition identifier exists in the flat snapshot;
+- each flat identifier belongs to exactly one partition;
+- partition observations match the partition exchange MIC.
+
+A structural mismatch therefore fails with **no database side effects**, instead of discovering representation drift only after an earlier partition has already committed.
+
+Compatibility snapshots without explicit partitions retain their older single-transaction behavior and also retain a global size/truncation guard. Compatibility must not silently mean weaker destructive-safety checks.
+
 ## Consequences
 
 - temporary exchange-specific TDX outages degrade only that exchange instead of stopping the whole market refresh;
+- a degraded partition is visible in the run summary/status and queryable through `meta.validation_result` rather than being detectable only by comparing universe counts;
 - one transient code-list omission no longer causes irreversible instrument fragmentation;
 - destructive identity changes now require repeated evidence, matching AlphaLake's last-known-good/safety-first philosophy;
+- malformed flat/partition structure cannot leave a partially committed database before returning an error;
 - partial master refreshes can proceed, but failed partitions are intentionally frozen until a healthy observation returns;
 - exact official list/delist/reuse dates still require an authoritative lifecycle source;
 - industry ingestion has taxonomy-level fault isolation after its shared acquisition stage.
