@@ -38,23 +38,28 @@ const (
 // or after canonical instrument resolution. ProviderCode and ExchangeMIC remain
 // explicit evidence; InstrumentID is zero until resolution succeeds.
 type FilingObservation struct {
-	FilingID        int64
-	InstrumentID    int64
-	Source          string
-	SourceFilingID  string
-	ProviderCode    string
-	ExchangeMIC     string
-	SecurityName    string
-	Title           string
-	FilingType      FilingType
-	FilingVariant   FilingVariant
-	ReportPeriod    *time.Time
-	AnnouncementTime time.Time
-	DocumentLocator string
-	SourceURL       string
-	RawCategory     string
-	ClassifierVersion string
-	IsCorrection    bool
+	FilingID           int64
+	InstrumentID       int64
+	Source             string
+	SourceFilingID     string
+	ProviderCode       string
+	ExchangeMIC        string
+	SecurityName       string
+	Title              string
+	FilingType         FilingType
+	FilingVariant      FilingVariant
+	ReportPeriod       *time.Time
+	AnnouncementTime   time.Time
+	DocumentLocator    string
+	SourceURL          string
+	RawCategory        string
+	ClassifierVersion  string
+	IsCorrection       bool
+
+	ProviderOrgID              string
+	ProviderColumnID           string
+	ProviderPageColumn         string
+	RawAnnouncementTimeMillis  int64
 
 	CatalogueArtifactID int64
 	DocumentArtifactID  int64
