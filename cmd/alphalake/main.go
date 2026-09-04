@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -27,6 +28,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  calc-adjustments <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-classifications <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-industries <db-path>")
+	fmt.Fprintln(os.Stderr, "  sync-financial <db-path> [--all]")
 	fmt.Fprintln(os.Stderr, "  status <db-path>")
 }
 
@@ -251,6 +253,58 @@ func main() {
 		fmt.Printf("TDX industry sync: run=%d taxonomies=%d synced=%d nodes=%d members=%d opened=%d closed=%d failures=%d\n",
 			summary.RunID, summary.Taxonomies, summary.Synced, summary.Nodes, summary.Members,
 			summary.Opened, summary.Closed, len(summary.Failures))
+		if syncErr != nil {
+			fatal(syncErr)
+		}
+
+	case "sync-financial":
+		if len(os.Args) != 3 && len(os.Args) != 4 {
+			usage()
+			os.Exit(2)
+		}
+		all := false
+		if len(os.Args) == 4 {
+			if os.Args[3] != "--all" {
+				usage()
+				os.Exit(2)
+			}
+			all = true
+		}
+		dbPath := os.Args[2]
+		db, err := duckstore.OpenAndMigrate(ctx, dbPath)
+		if err != nil {
+			fatal(err)
+		}
+		defer db.Close()
+
+		source, err := tdxsource.DialDefault()
+		if err != nil {
+			fatal(err)
+		}
+		defer source.Close()
+
+		artifactRoot := filepath.Join(filepath.Dir(dbPath), "raw")
+		maxPackages := 1
+		if all {
+			maxPackages = 0
+		}
+		lastFailures := 0
+		lastUnresolved := 0
+		options := ingest.TDXProfessionalFinancialOptions{
+			MaxPackages: maxPackages,
+			OnProgress: func(p ingest.TDXProfessionalFinancialProgress) {
+				if p.Processed == p.Total || p.Failures > lastFailures || p.Unresolved > lastUnresolved {
+					fmt.Printf("TDX financial progress: run=%d %d/%d packages=%d skipped=%d facts=%d unresolved=%d failed=%d current=%s\n",
+						p.RunID, p.Processed, p.Total, p.Packages, p.Skipped, p.Facts, p.Unresolved, p.Failures, p.Package)
+				}
+				lastFailures = p.Failures
+				lastUnresolved = p.Unresolved
+			},
+		}
+		summary, syncErr := ingest.SyncTDXProfessionalFinancialWithOptions(ctx, db, source, artifactRoot, options)
+		fmt.Printf("TDX financial sync: run=%d listed=%d selected=%d packages=%d skipped=%d facts=%d unresolved=%d failures=%d all=%v raw=%s\n",
+			summary.RunID, summary.Listed, summary.Selected, summary.Packages, summary.Skipped,
+			summary.Facts, summary.Unresolved, len(summary.Failures), all, artifactRoot)
 		if syncErr != nil {
 			fatal(syncErr)
 		}
