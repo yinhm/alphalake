@@ -17,5 +17,12 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false
+      - name: Resolve modules
+        run: |
+          go mod tidy
+          echo '--- go.mod ---'
+          cat go.mod
+          echo '--- go.sum ---'
+          cat go.sum
       - name: Test
         run: go test ./...
