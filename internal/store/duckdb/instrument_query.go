@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/yinhm/alphalake/internal/domain"
 )
@@ -77,6 +78,71 @@ func ListProviderInstruments(ctx context.Context, db *sql.DB, provider string) (
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("iterate provider instruments: %w", err)
+	}
+	return out, nil
+}
+
+// resolveInstrumentIdentifiersAtTx resolves a batch of identifiers at one
+// observation date using the same strict temporal semantics as the single-item
+// resolver. It performs at most one active-identifier scan per provider and
+// treats overlapping intervals as corruption instead of last-row-wins.
+func resolveInstrumentIdentifiersAtTx(ctx context.Context, tx *sql.Tx, identifiers []domain.Identifier, asOf time.Time) (map[string]int64, error) {
+	if tx == nil {
+		return nil, errors.New("transaction is nil")
+	}
+	if asOf.IsZero() {
+		return nil, errors.New("as-of date is required")
+	}
+	asOf = dateUTC(asOf)
+	requestedByProvider := map[string]map[string]struct{}{}
+	for _, identifier := range identifiers {
+		provider := strings.TrimSpace(identifier.Provider)
+		typ := strings.TrimSpace(identifier.Type)
+		value := strings.TrimSpace(identifier.Value)
+		if provider == "" || typ == "" || value == "" {
+			return nil, errors.New("identifier provider, type, and value are required")
+		}
+		key := providerIdentifierKey(provider, typ, value)
+		if requestedByProvider[provider] == nil {
+			requestedByProvider[provider] = map[string]struct{}{}
+		}
+		requestedByProvider[provider][key] = struct{}{}
+	}
+
+	out := make(map[string]int64, len(identifiers))
+	for provider, requested := range requestedByProvider {
+		rows, err := tx.QueryContext(ctx, `
+			SELECT instrument_id, provider, identifier_type, identifier_value
+			FROM ref.instrument_identifier
+			WHERE provider=?
+			  AND (valid_from IS NULL OR valid_from <= ?)
+			  AND (valid_to IS NULL OR valid_to > ?)
+		`, provider, asOf, asOf)
+		if err != nil {
+			return nil, fmt.Errorf("query temporal identifiers for %q: %w", provider, err)
+		}
+		for rows.Next() {
+			var instrumentID int64
+			var p, typ, value string
+			if err := rows.Scan(&instrumentID, &p, &typ, &value); err != nil {
+				rows.Close()
+				return nil, fmt.Errorf("scan temporal identifier: %w", err)
+			}
+			key := providerIdentifierKey(p, typ, value)
+			if _, wanted := requested[key]; !wanted {
+				continue
+			}
+			if existing, duplicate := out[key]; duplicate && existing != instrumentID {
+				rows.Close()
+				return nil, fmt.Errorf("ambiguous provider identifier %s/%s/%s at %s", p, typ, value, asOf.Format("2006-01-02"))
+			}
+			out[key] = instrumentID
+		}
+		if err := rows.Err(); err != nil {
+			rows.Close()
+			return nil, fmt.Errorf("iterate temporal identifiers for %q: %w", provider, err)
+		}
+		rows.Close()
 	}
 	return out, nil
 }
