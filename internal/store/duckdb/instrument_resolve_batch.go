@@ -23,7 +23,10 @@ func ResolveInstrumentIdentifiersAt(ctx context.Context, db *sql.DB, identifiers
 	if len(identifiers) == 0 {
 		return []int64{}, nil
 	}
-	tx, err := db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	// duckdb-go currently rejects database/sql read-only transaction options.
+	// This transaction performs reads only by convention, matching the existing
+	// strict resolver used inside classification transactions.
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("begin batch identifier resolution: %w", err)
 	}
