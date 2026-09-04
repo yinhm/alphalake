@@ -24,6 +24,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-daily-all <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-actions <db-path>")
 	fmt.Fprintln(os.Stderr, "  calc-adjustments <db-path>")
+	fmt.Fprintln(os.Stderr, "  sync-classifications <db-path>")
 	fmt.Fprintln(os.Stderr, "  status")
 }
 
@@ -177,6 +178,35 @@ func main() {
 			summary.Segments, len(summary.Failures))
 		if calcErr != nil {
 			fatal(calcErr)
+		}
+
+	case "sync-classifications":
+		if len(os.Args) != 3 {
+			usage()
+			os.Exit(2)
+		}
+		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		if err != nil {
+			fatal(err)
+		}
+		defer db.Close()
+
+		source, err := tdxsource.DialDefault()
+		if err != nil {
+			fatal(err)
+		}
+		defer source.Close()
+
+		options := ingest.TDXClassificationSyncOptions{OnProgress: func(p ingest.TDXClassificationProgress) {
+			fmt.Printf("TDX classification progress: run=%d %d/%d synced=%d failed=%d family=%s\n",
+				p.RunID, p.Processed, p.Total, p.Synced, p.Failed, p.Family)
+		}}
+		summary, syncErr := ingest.SyncTDXClassificationsWithOptions(ctx, db, source, options)
+		fmt.Printf("TDX classification sync: run=%d families=%d synced=%d nodes=%d members=%d opened=%d closed=%d failures=%d\n",
+			summary.RunID, summary.Families, summary.Synced, summary.Nodes, summary.Members,
+			summary.Opened, summary.Closed, len(summary.Failures))
+		if syncErr != nil {
+			fatal(syncErr)
 		}
 
 	case "status":
