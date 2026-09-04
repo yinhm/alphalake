@@ -112,14 +112,24 @@ func persistBytes(path string, content []byte, wantSHA string) error {
 		if err != nil {
 			return err
 		}
-		if !ok {
-			return fmt.Errorf("artifact content-addressed path %q contains unexpected bytes", path)
+		if ok {
+			return nil
+		}
+		// A content-addressed path containing the wrong bytes is local corruption,
+		// not a new artifact revision. A provider re-fetch that independently
+		// verifies to wantSHA is authoritative repair material, so replace the bad
+		// cache entry while retaining the same immutable metadata identity.
+		if err := publishArtifactBytes(path, content, wantSHA, true); err != nil {
+			return fmt.Errorf("repair corrupt artifact path %q: %w", path, err)
 		}
 		return nil
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("stat artifact path: %w", err)
 	}
+	return publishArtifactBytes(path, content, wantSHA, false)
+}
 
+func publishArtifactBytes(path string, content []byte, wantSHA string, replace bool) error {
 	tmp, err := os.CreateTemp(filepath.Dir(path), ".alphalake-artifact-*")
 	if err != nil {
 		return fmt.Errorf("create artifact temp file: %w", err)
@@ -137,7 +147,18 @@ func persistBytes(path string, content []byte, wantSHA string) error {
 	if err := tmp.Close(); err != nil {
 		return fmt.Errorf("close artifact temp file: %w", err)
 	}
-	if err := os.Rename(tmpName, path); err != nil {
+	if ok, err := fileHasSHA(tmpName, wantSHA); err != nil || !ok {
+		if err != nil {
+			return fmt.Errorf("verify artifact temp file: %w", err)
+		}
+		return errors.New("artifact temp file hash mismatch")
+	}
+
+	if err := os.Rename(tmpName, path); err == nil {
+		return nil
+	} else if !replace {
+		// Another writer may have won the race. Accept it only if the published
+		// bytes are exactly the expected content-addressed object.
 		if _, statErr := os.Stat(path); statErr == nil {
 			ok, hashErr := fileHasSHA(path, wantSHA)
 			if hashErr == nil && ok {
@@ -146,6 +167,37 @@ func persistBytes(path string, content []byte, wantSHA string) error {
 		}
 		return fmt.Errorf("publish artifact: %w", err)
 	}
+
+	// Some platforms do not allow Rename to replace an existing file. Move the
+	// corrupt file aside, publish the verified replacement, and restore the old
+	// path if publication fails. Unix normally takes the atomic replacement path
+	// above and never enters this fallback.
+	backup, err := os.CreateTemp(filepath.Dir(path), ".alphalake-corrupt-*")
+	if err != nil {
+		return fmt.Errorf("create corrupt-artifact backup name: %w", err)
+	}
+	backupName := backup.Name()
+	if err := backup.Close(); err != nil {
+		os.Remove(backupName)
+		return fmt.Errorf("close corrupt-artifact backup placeholder: %w", err)
+	}
+	if err := os.Remove(backupName); err != nil {
+		return fmt.Errorf("remove corrupt-artifact backup placeholder: %w", err)
+	}
+	if err := os.Rename(path, backupName); err != nil {
+		return fmt.Errorf("move corrupt artifact aside: %w", err)
+	}
+	restored := false
+	defer func() {
+		if !restored {
+			_ = os.Rename(backupName, path)
+		}
+	}()
+	if err := os.Rename(tmpName, path); err != nil {
+		return fmt.Errorf("publish repaired artifact: %w", err)
+	}
+	restored = true
+	_ = os.Remove(backupName)
 	return nil
 }
 
