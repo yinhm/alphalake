@@ -87,8 +87,8 @@ func main() {
 		defer source.Close()
 
 		summary, err := ingest.SyncTDXDailyWithSummary(ctx, db, source, os.Args[3])
-		fmt.Printf("TDX daily sync: run=%d symbol=%s written=%d quarantined=%d\n",
-			summary.RunID, os.Args[3], summary.Written, summary.Quarantined)
+		fmt.Printf("TDX daily sync: run=%d symbol=%s written=%d quarantined=%d master_failures=%d\n",
+			summary.RunID, os.Args[3], summary.Written, summary.Quarantined, len(summary.MasterFailures))
 		if err != nil {
 			fatal(err)
 		}
@@ -121,9 +121,9 @@ func main() {
 			lastQuarantined = p.Quarantined
 		}}
 		summary, syncErr := ingest.SyncAllTDXDailyWithOptions(ctx, db, source, options)
-		fmt.Printf("TDX daily sync: run=%d instruments=%d attempted=%d synced=%d skipped=%d bars=%d quarantined=%d failures=%d\n",
+		fmt.Printf("TDX daily sync: run=%d instruments=%d attempted=%d synced=%d skipped=%d bars=%d quarantined=%d failures=%d master_failures=%d\n",
 			summary.RunID, summary.Instruments, summary.Attempted, summary.Synced, summary.Skipped,
-			summary.Bars, summary.Quarantined, len(summary.Failures))
+			summary.Bars, summary.Quarantined, len(summary.Failures), len(summary.MasterFailures))
 		if syncErr != nil {
 			fatal(syncErr)
 		}
@@ -165,9 +165,9 @@ func main() {
 			},
 		}
 		summary, syncErr := ingest.SyncTDXCorporateActionsWithOptions(ctx, db, source, options)
-		fmt.Printf("TDX action sync: run=%d instruments=%d attempted=%d synced=%d skipped=%d actions=%d share_capital=%d failures=%d force=%v\n",
+		fmt.Printf("TDX action sync: run=%d instruments=%d attempted=%d synced=%d skipped=%d actions=%d share_capital=%d failures=%d master_failures=%d force=%v\n",
 			summary.RunID, summary.Instruments, summary.Attempted, summary.Synced, summary.Skipped,
-			summary.Actions, summary.ShareCapital, len(summary.Failures), force)
+			summary.Actions, summary.ShareCapital, len(summary.Failures), len(summary.MasterFailures), force)
 		if syncErr != nil {
 			fatal(syncErr)
 		}
@@ -221,9 +221,9 @@ func main() {
 				p.RunID, p.Processed, p.Total, p.Synced, p.Failed, p.Family)
 		}}
 		summary, syncErr := ingest.SyncTDXClassificationsWithOptions(ctx, db, source, options)
-		fmt.Printf("TDX classification sync: run=%d families=%d synced=%d nodes=%d members=%d opened=%d closed=%d failures=%d\n",
+		fmt.Printf("TDX classification sync: run=%d families=%d synced=%d nodes=%d members=%d opened=%d closed=%d failures=%d master_failures=%d\n",
 			summary.RunID, summary.Families, summary.Synced, summary.Nodes, summary.Members,
-			summary.Opened, summary.Closed, len(summary.Failures))
+			summary.Opened, summary.Closed, len(summary.Failures), len(summary.MasterFailures))
 		if syncErr != nil {
 			fatal(syncErr)
 		}
@@ -250,9 +250,9 @@ func main() {
 				p.RunID, p.Processed, p.Total, p.Synced, p.Failed, p.Taxonomy)
 		}}
 		summary, syncErr := ingest.SyncTDXIndustriesWithOptions(ctx, db, source, options)
-		fmt.Printf("TDX industry sync: run=%d taxonomies=%d synced=%d nodes=%d members=%d opened=%d closed=%d failures=%d\n",
+		fmt.Printf("TDX industry sync: run=%d taxonomies=%d synced=%d nodes=%d members=%d opened=%d closed=%d failures=%d master_failures=%d\n",
 			summary.RunID, summary.Taxonomies, summary.Synced, summary.Nodes, summary.Members,
-			summary.Opened, summary.Closed, len(summary.Failures))
+			summary.Opened, summary.Closed, len(summary.Failures), len(summary.MasterFailures))
 		if syncErr != nil {
 			fatal(syncErr)
 		}
@@ -302,9 +302,9 @@ func main() {
 			},
 		}
 		summary, syncErr := ingest.SyncTDXProfessionalFinancialWithOptions(ctx, db, source, artifactRoot, options)
-		fmt.Printf("TDX financial sync: run=%d listed=%d selected=%d packages=%d skipped=%d facts=%d unresolved=%d failures=%d all=%v raw=%s\n",
+		fmt.Printf("TDX financial sync: run=%d listed=%d selected=%d packages=%d skipped=%d facts=%d unresolved=%d failures=%d master_failures=%d all=%v raw=%s\n",
 			summary.RunID, summary.Listed, summary.Selected, summary.Packages, summary.Skipped,
-			summary.Facts, summary.Unresolved, len(summary.Failures), all, artifactRoot)
+			summary.Facts, summary.Unresolved, len(summary.Failures), len(summary.MasterFailures), all, artifactRoot)
 		if syncErr != nil {
 			fatal(syncErr)
 		}
