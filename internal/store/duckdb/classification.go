@@ -61,27 +61,32 @@ func ApplyClassificationSnapshotForRun(
 	result.TaxonomyID = taxonomyID
 
 	nodeIDs := make(map[string]int64, len(snapshot.Nodes))
-	for i, node := range snapshot.Nodes {
-		if node.Taxonomy.Source != snapshot.Taxonomy.Source || node.Taxonomy.Code != snapshot.Taxonomy.Code {
+	for i, original := range snapshot.Nodes {
+		if original.Taxonomy.Source != snapshot.Taxonomy.Source || original.Taxonomy.Code != snapshot.Taxonomy.Code {
 			return result, fmt.Errorf("node %d taxonomy does not match snapshot", i)
 		}
-		code := strings.TrimSpace(node.SourceNodeCode)
-		if code == "" || strings.TrimSpace(node.Name) == "" {
+		node := original
+		node.SourceNodeCode = strings.TrimSpace(node.SourceNodeCode)
+		node.Name = strings.TrimSpace(node.Name)
+		node.ParentNodeCode = strings.TrimSpace(node.ParentNodeCode)
+		node.SourceSymbol = strings.TrimSpace(node.SourceSymbol)
+		if node.SourceNodeCode == "" || node.Name == "" {
 			return result, fmt.Errorf("node %d has incomplete identity", i)
 		}
-		if _, exists := nodeIDs[code]; exists {
-			return result, fmt.Errorf("duplicate source node code %q", code)
+		if _, exists := nodeIDs[node.SourceNodeCode]; exists {
+			return result, fmt.Errorf("duplicate source node code %q", node.SourceNodeCode)
 		}
 		nodeID, err := upsertClassificationNode(ctx, tx, taxonomyID, node, nil)
 		if err != nil {
 			return result, err
 		}
-		nodeIDs[code] = nodeID
+		nodeIDs[node.SourceNodeCode] = nodeID
 	}
 
 	// Resolve parent references only after every current node has an ID. Parents
 	// outside the current snapshot are resolved from the existing taxonomy.
 	for _, node := range snapshot.Nodes {
+		nodeCode := strings.TrimSpace(node.SourceNodeCode)
 		parentCode := strings.TrimSpace(node.ParentNodeCode)
 		if parentCode == "" {
 			continue
@@ -101,8 +106,8 @@ func ApplyClassificationSnapshotForRun(
 		if _, err := tx.ExecContext(ctx, `
 			UPDATE classification.node SET parent_node_id=?
 			WHERE node_id=?
-		`, parentID, nodeIDs[node.SourceNodeCode]); err != nil {
-			return result, fmt.Errorf("update parent for node %q: %w", node.SourceNodeCode, err)
+		`, parentID, nodeIDs[nodeCode]); err != nil {
+			return result, fmt.Errorf("update parent for node %q: %w", nodeCode, err)
 		}
 	}
 
@@ -117,12 +122,13 @@ func ApplyClassificationSnapshotForRun(
 	}
 	current := make(map[membershipKey]struct{})
 	for _, node := range snapshot.Nodes {
-		nodeID := nodeIDs[node.SourceNodeCode]
+		nodeCode := strings.TrimSpace(node.SourceNodeCode)
+		nodeID := nodeIDs[nodeCode]
 		for _, member := range node.Members {
 			key := identifierKey(member.Provider, member.Type, member.Value)
 			instrumentID, ok := identifierMap[key]
 			if !ok {
-				return result, fmt.Errorf("unresolved classification member %s/%s/%s in node %q", member.Provider, member.Type, member.Value, node.SourceNodeCode)
+				return result, fmt.Errorf("unresolved classification member %s/%s/%s in node %q", member.Provider, member.Type, member.Value, nodeCode)
 			}
 			current[membershipKey{instrumentID: instrumentID, nodeID: nodeID}] = struct{}{}
 		}
@@ -180,8 +186,23 @@ func ApplyClassificationSnapshotForRun(
 			if _, stillPresent := current[item.key]; stillPresent {
 				continue
 			}
-			if snapshotDate.Before(dateUTC(item.effectiveFrom)) {
-				return result, fmt.Errorf("snapshot date %s precedes open membership %s", snapshotDate.Format("2006-01-02"), item.effectiveFrom.Format("2006-01-02"))
+			from := dateUTC(item.effectiveFrom)
+			if snapshotDate.Before(from) {
+				return result, fmt.Errorf("snapshot date %s precedes open membership %s", snapshotDate.Format("2006-01-02"), from.Format("2006-01-02"))
+			}
+			if snapshotDate.Equal(from) {
+				// Classification history is date-granular. If a later snapshot on
+				// the same day disagrees with a membership opened that day, treat
+				// it as a correction to today's snapshot rather than persisting a
+				// meaningless zero-length [date,date) interval.
+				if _, err := tx.ExecContext(ctx, `
+					DELETE FROM classification.membership
+					WHERE instrument_id=? AND node_id=? AND effective_from=? AND source=? AND effective_to IS NULL
+				`, item.key.instrumentID, item.key.nodeID, item.effectiveFrom, snapshot.Taxonomy.Source); err != nil {
+					return result, fmt.Errorf("remove same-day classification membership: %w", err)
+				}
+				result.Closed++
+				continue
 			}
 			if _, err := tx.ExecContext(ctx, `
 				UPDATE classification.membership
