@@ -82,11 +82,12 @@ func main() {
 		}
 		defer source.Close()
 
-		rows, err := ingest.SyncTDXDaily(ctx, db, source, os.Args[3])
+		summary, err := ingest.SyncTDXDailyWithSummary(ctx, db, source, os.Args[3])
+		fmt.Printf("TDX daily sync: run=%d symbol=%s written=%d quarantined=%d\n",
+			summary.RunID, os.Args[3], summary.Written, summary.Quarantined)
 		if err != nil {
 			fatal(err)
 		}
-		fmt.Printf("synced %d daily bars for %s\n", rows, os.Args[3])
 
 	case "sync-daily-all":
 		if len(os.Args) != 3 {
@@ -106,16 +107,19 @@ func main() {
 		defer source.Close()
 
 		lastFailures := 0
+		lastQuarantined := 0
 		options := ingest.TDXDailySyncOptions{OnProgress: func(p ingest.TDXDailyProgress) {
-			if p.Processed%100 == 0 || p.Processed == p.Total || p.Failed > lastFailures {
-				fmt.Printf("TDX daily progress: run=%d %d/%d synced=%d failed=%d current=%s\n",
-					p.RunID, p.Processed, p.Total, p.Synced, p.Failed, p.Symbol)
+			if p.Processed%100 == 0 || p.Processed == p.Total || p.Failed > lastFailures || p.Quarantined > lastQuarantined {
+				fmt.Printf("TDX daily progress: run=%d %d/%d synced=%d failed=%d quarantined=%d current=%s\n",
+					p.RunID, p.Processed, p.Total, p.Synced, p.Failed, p.Quarantined, p.Symbol)
 			}
 			lastFailures = p.Failed
+			lastQuarantined = p.Quarantined
 		}}
 		summary, syncErr := ingest.SyncAllTDXDailyWithOptions(ctx, db, source, options)
-		fmt.Printf("TDX daily sync: run=%d instruments=%d attempted=%d synced=%d skipped=%d bars=%d failures=%d\n",
-			summary.RunID, summary.Instruments, summary.Attempted, summary.Synced, summary.Skipped, summary.Bars, len(summary.Failures))
+		fmt.Printf("TDX daily sync: run=%d instruments=%d attempted=%d synced=%d skipped=%d bars=%d quarantined=%d failures=%d\n",
+			summary.RunID, summary.Instruments, summary.Attempted, summary.Synced, summary.Skipped,
+			summary.Bars, summary.Quarantined, len(summary.Failures))
 		if syncErr != nil {
 			fatal(syncErr)
 		}
