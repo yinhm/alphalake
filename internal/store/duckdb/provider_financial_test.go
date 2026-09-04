@@ -34,7 +34,7 @@ func TestInsertProviderFinancialRecordsPreservesRawBitsAndRevisions(t *testing.T
 	bits2 := uint32(0x80000000)
 	record := domain.ProviderFinancialRecord{
 		InstrumentID: instrumentID,
-		Identifier: domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh600001"},
+		Provider: "tdx", ProviderCode: "600001",
 		ReportPeriod: period,
 		ProviderFields: []domain.ProviderFloat32{
 			{Bits: bits1, Value: float64(math.Float32frombits(bits1))},
@@ -42,16 +42,20 @@ func TestInsertProviderFinancialRecordsPreservesRawBitsAndRevisions(t *testing.T
 		},
 		SourceFile: "gpcw20260630.zip", ArtifactID: 101,
 	}
-	facts, err := InsertProviderFinancialRecordsForArtifact(ctx, db, runID, "sha-a", []domain.ProviderFinancialRecord{record})
+	first, err := InsertProviderFinancialRecordsForArtifact(ctx, db, runID, "sha-a", []domain.ProviderFinancialRecord{record})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if facts != 2 {
-		t.Fatalf("facts=%d, want 2", facts)
+	if first.Attempted != 2 || first.Inserted != 2 {
+		t.Fatalf("first write=%#v, want attempted=2 inserted=2", first)
 	}
-	// Idempotent replay of the same immutable artifact.
-	if _, err := InsertProviderFinancialRecordsForArtifact(ctx, db, runID, "sha-a", []domain.ProviderFinancialRecord{record}); err != nil {
+	// Idempotent replay of the same immutable artifact must not look like new data.
+	replay, err := InsertProviderFinancialRecordsForArtifact(ctx, db, runID, "sha-a", []domain.ProviderFinancialRecord{record})
+	if err != nil {
 		t.Fatal(err)
+	}
+	if replay.Attempted != 2 || replay.Inserted != 0 {
+		t.Fatalf("replay=%#v, want attempted=2 inserted=0", replay)
 	}
 
 	var rows int
@@ -70,8 +74,12 @@ func TestInsertProviderFinancialRecordsPreservesRawBitsAndRevisions(t *testing.T
 	// Same report period from a corrected artifact is a separate revision.
 	record.ArtifactID = 102
 	record.ProviderFields[0] = domain.ProviderFloat32{Bits: math.Float32bits(124), Value: 124}
-	if _, err := InsertProviderFinancialRecordsForArtifact(ctx, db, runID, "sha-b", []domain.ProviderFinancialRecord{record}); err != nil {
+	corrected, err := InsertProviderFinancialRecordsForArtifact(ctx, db, runID, "sha-b", []domain.ProviderFinancialRecord{record})
+	if err != nil {
 		t.Fatal(err)
+	}
+	if corrected.Inserted != 2 {
+		t.Fatalf("corrected write=%#v, want two new revision rows", corrected)
 	}
 	if err := db.QueryRowContext(ctx, `
 		SELECT count(*) FROM fundamental.provider_fact
