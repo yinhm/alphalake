@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/yinhm/alphalake/internal/ingest"
 	tdxsource "github.com/yinhm/alphalake/internal/source/tdx"
@@ -25,7 +26,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-actions <db-path>")
 	fmt.Fprintln(os.Stderr, "  calc-adjustments <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-classifications <db-path>")
-	fmt.Fprintln(os.Stderr, "  status")
+	fmt.Fprintln(os.Stderr, "  status <db-path>")
 }
 
 func main() {
@@ -214,10 +215,45 @@ func main() {
 		}
 
 	case "status":
+		if len(os.Args) != 3 {
+			usage()
+			os.Exit(2)
+		}
+		if _, err := os.Stat(os.Args[2]); err != nil {
+			fatal(fmt.Errorf("stat database %q: %w", os.Args[2], err))
+		}
+		db, err := duckstore.Open(ctx, os.Args[2])
+		if err != nil {
+			fatal(err)
+		}
+		defer db.Close()
+		status, err := duckstore.ReadOperationalStatus(ctx, db, 10)
+		if err != nil {
+			fatal(err)
+		}
 		fmt.Printf("AlphaLake %s\n", version)
-		fmt.Println("store: DuckDB")
-		fmt.Println("primary source: TDX")
-		fmt.Println("validation source: CNINFO")
+		fmt.Printf("database: %s\n", os.Args[2])
+		fmt.Printf("schema: %d/%d", status.SchemaVersion, status.LatestSchemaVersion)
+		if pending := status.LatestSchemaVersion - status.SchemaVersion; pending > 0 {
+			fmt.Printf(" (%d pending)", pending)
+		}
+		fmt.Println()
+		fmt.Printf("validation failures: %d\n", status.ValidationFailures)
+		fmt.Printf("checkpoints: %d\n", status.Checkpoints)
+		if len(status.RecentRuns) == 0 {
+			fmt.Println("recent runs: none")
+			break
+		}
+		fmt.Println("recent runs:")
+		for _, run := range status.RecentRuns {
+			finished := "-"
+			if run.FinishedAt != nil {
+				finished = run.FinishedAt.Format(time.RFC3339)
+			}
+			fmt.Printf("  %d %s/%s status=%s started=%s finished=%s\n",
+				run.RunID, run.Source, run.Dataset, run.Status,
+				run.StartedAt.Format(time.RFC3339), finished)
+		}
 
 	default:
 		usage()
