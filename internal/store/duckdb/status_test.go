@@ -32,12 +32,16 @@ func TestReadOperationalStatusReportsDatabaseState(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	migrations, err := Migrations()
+	if err != nil {
+		t.Fatal(err)
+	}
 	status, err := ReadOperationalStatus(ctx, db, 5)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if status.SchemaVersion != status.LatestSchemaVersion || status.SchemaVersion != 7 {
-		t.Fatalf("schema versions = %d/%d, want 7/7", status.SchemaVersion, status.LatestSchemaVersion)
+	if status.SchemaVersion != status.LatestSchemaVersion || status.SchemaVersion != len(migrations) {
+		t.Fatalf("schema versions = %d/%d, want %d/%d", status.SchemaVersion, status.LatestSchemaVersion, len(migrations), len(migrations))
 	}
 	if status.ValidationFailures != 1 || status.Checkpoints != 1 {
 		t.Fatalf("validation/checkpoints = %d/%d, want 1/1", status.ValidationFailures, status.Checkpoints)
@@ -58,12 +62,16 @@ func TestReadOperationalStatusDoesNotRequireMigration(t *testing.T) {
 	}
 	defer db.Close()
 
+	migrations, err := Migrations()
+	if err != nil {
+		t.Fatal(err)
+	}
 	status, err := ReadOperationalStatus(ctx, db, 5)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if status.SchemaVersion != 0 || status.LatestSchemaVersion != 7 {
-		t.Fatalf("schema versions = %d/%d, want 0/7", status.SchemaVersion, status.LatestSchemaVersion)
+	if status.SchemaVersion != 0 || status.LatestSchemaVersion != len(migrations) {
+		t.Fatalf("schema versions = %d/%d, want 0/%d", status.SchemaVersion, status.LatestSchemaVersion, len(migrations))
 	}
 	if len(status.RecentRuns) != 0 {
 		t.Fatalf("recent runs = %#v, want none", status.RecentRuns)
