@@ -1,0 +1,6 @@
+/alphalake
+/data/
+*.duckdb
+*.duckdb.wal
+*.db
+.DS_Store
