@@ -20,10 +20,10 @@ type InstrumentSnapshotPartitionFailure struct {
 }
 
 type InstrumentSnapshotApplyResult struct {
-	InstrumentIDs    []int64
-	Closed           int
-	PendingClose     int
-	DeferredClose    int
+	InstrumentIDs     []int64
+	Closed            int
+	PendingClose      int
+	DeferredClose     int
 	PartitionFailures []InstrumentSnapshotPartitionFailure
 }
 
@@ -44,9 +44,11 @@ type instrumentPartitionApplyResult struct {
 }
 
 // ApplyInstrumentMasterSnapshot applies verified provider partitions
-// independently. A failed/truncated partition cannot roll back another healthy
-// exchange. Destructive authority remains partition-scoped, and identifiers are
-// closed only after absence from two distinct complete observations.
+// independently. Structural flat/partition consistency is validated before any
+// transaction begins. A failed/truncated partition cannot roll back another
+// healthy exchange. Destructive authority remains partition-scoped, and
+// identifiers are closed only after absence from two distinct complete
+// observations.
 func ApplyInstrumentMasterSnapshot(ctx context.Context, db *sql.DB, snapshot domain.InstrumentMasterSnapshot) (InstrumentSnapshotApplyResult, error) {
 	var result InstrumentSnapshotApplyResult
 	if db == nil {
@@ -60,10 +62,16 @@ func ApplyInstrumentMasterSnapshot(ctx context.Context, db *sql.DB, snapshot dom
 	if len(snapshot.Observations) == 0 {
 		return result, errors.New("instrument snapshot is empty")
 	}
+
+	flatIndex, err := validateInstrumentMasterSnapshotStructure(snapshot)
+	if err != nil {
+		return result, err
+	}
 	result.InstrumentIDs = make([]int64, len(snapshot.Observations))
 
 	// Legacy/compatibility snapshots without explicit partitions retain one
-	// transaction and global Complete semantics.
+	// transaction and global Complete semantics. They also retain the historical
+	// global truncation guard so compatibility does not silently weaken safety.
 	if len(snapshot.Partitions) == 0 {
 		part, err := applyInstrumentPartition(ctx, db, snapshot.Source, snapshot.AsOfDate, "", snapshot.Complete, snapshot.Observations)
 		if err != nil {
@@ -76,52 +84,49 @@ func ApplyInstrumentMasterSnapshot(ctx context.Context, db *sql.DB, snapshot dom
 		return result, nil
 	}
 
-	flatIndex := make(map[string]int, len(snapshot.Observations))
-	for i, observation := range snapshot.Observations {
-		key := providerIdentifierKey(observation.Identifier.Provider, observation.Identifier.Type, observation.Identifier.Value)
-		if _, exists := flatIndex[key]; exists {
-			return result, fmt.Errorf("duplicate flat instrument snapshot identifier %s/%s/%s", observation.Identifier.Provider, observation.Identifier.Type, observation.Identifier.Value)
-		}
-		flatIndex[key] = i
-	}
-
 	applied := 0
-	seenMIC := make(map[string]struct{}, len(snapshot.Partitions))
-	for i, partition := range snapshot.Partitions {
+	for _, partition := range snapshot.Partitions {
 		mic := strings.TrimSpace(partition.ExchangeMIC)
 		label := strings.TrimSpace(partition.Key)
 		if label == "" {
 			label = mic
 		}
-		if mic == "" {
-			result.PartitionFailures = append(result.PartitionFailures, InstrumentSnapshotPartitionFailure{Partition: label, Err: errors.New("missing exchange MIC")})
-			continue
+
+		var partitionFailure error
+		if strings.TrimSpace(partition.Error) != "" {
+			partitionFailure = errors.New(strings.TrimSpace(partition.Error))
 		}
-		if _, exists := seenMIC[mic]; exists {
-			return result, fmt.Errorf("duplicate instrument snapshot partition %d for exchange %q", i, mic)
-		}
-		seenMIC[mic] = struct{}{}
 		if len(partition.Observations) == 0 {
-			if partition.Complete {
-				result.PartitionFailures = append(result.PartitionFailures, InstrumentSnapshotPartitionFailure{Partition: label, Err: errors.New("complete partition is empty")})
+			if partition.Complete && partitionFailure == nil {
+				partitionFailure = errors.New("complete partition is empty")
+			}
+			if partitionFailure != nil {
+				result.PartitionFailures = append(result.PartitionFailures, InstrumentSnapshotPartitionFailure{Partition: label, Err: partitionFailure})
 			}
 			continue
 		}
-		part, err := applyInstrumentPartition(ctx, db, snapshot.Source, snapshot.AsOfDate, mic, partition.Complete, partition.Observations)
-		if err != nil {
-			result.PartitionFailures = append(result.PartitionFailures, InstrumentSnapshotPartitionFailure{Partition: label, Err: err})
+
+		// Any adapter-reported error removes destructive authority even when the
+		// usable subset can still be upserted non-destructively.
+		complete := partition.Complete && partitionFailure == nil
+		part, applyErr := applyInstrumentPartition(ctx, db, snapshot.Source, snapshot.AsOfDate, mic, complete, partition.Observations)
+		if applyErr != nil {
+			partitionFailure = errors.Join(partitionFailure, applyErr)
+		}
+		if partitionFailure != nil {
+			result.PartitionFailures = append(result.PartitionFailures, InstrumentSnapshotPartitionFailure{Partition: label, Err: partitionFailure})
+		}
+		if applyErr != nil {
 			continue
 		}
+
 		applied++
 		result.Closed += part.Closed
 		result.PendingClose += part.PendingClose
 		result.DeferredClose += part.DeferredClose
 		for j, observation := range partition.Observations {
 			key := providerIdentifierKey(observation.Identifier.Provider, observation.Identifier.Type, observation.Identifier.Value)
-			flat, ok := flatIndex[key]
-			if !ok {
-				return result, fmt.Errorf("partition %q identifier %s is absent from flat snapshot", label, observation.Identifier.Value)
-			}
+			flat := flatIndex[key] // preflight proved this mapping exists exactly once.
 			result.InstrumentIDs[flat] = part.InstrumentIDs[j]
 		}
 	}
@@ -132,6 +137,87 @@ func ApplyInstrumentMasterSnapshot(ctx context.Context, db *sql.DB, snapshot dom
 		return result, errors.New("no instrument master partitions applied")
 	}
 	return result, nil
+}
+
+// validateInstrumentMasterSnapshotStructure verifies the provider-neutral
+// snapshot representation before any partition transaction can commit. It
+// rejects one-way flat/partition drift instead of reporting an error after an
+// earlier partition already changed the database.
+func validateInstrumentMasterSnapshotStructure(snapshot domain.InstrumentMasterSnapshot) (map[string]int, error) {
+	flatIndex := make(map[string]int, len(snapshot.Observations))
+	for i, observation := range snapshot.Observations {
+		identifier := normalizedIdentifier(observation.Identifier)
+		if identifier.Provider != snapshot.Source {
+			return nil, fmt.Errorf("flat instrument %d provider %q does not match snapshot source %q", i, identifier.Provider, snapshot.Source)
+		}
+		if identifier.ValidTo != nil {
+			return nil, fmt.Errorf("flat instrument %d current snapshot identifier is already closed", i)
+		}
+		if err := validateInstrumentInput(observation.Instrument, identifier); err != nil {
+			return nil, fmt.Errorf("flat instrument %d: %w", i, err)
+		}
+		key := providerIdentifierKey(identifier.Provider, identifier.Type, identifier.Value)
+		if _, exists := flatIndex[key]; exists {
+			return nil, fmt.Errorf("duplicate flat instrument snapshot identifier %s/%s/%s", identifier.Provider, identifier.Type, identifier.Value)
+		}
+		flatIndex[key] = i
+	}
+	if len(snapshot.Partitions) == 0 {
+		return flatIndex, nil
+	}
+
+	seenMIC := make(map[string]struct{}, len(snapshot.Partitions))
+	owned := make(map[string]string, len(snapshot.Observations))
+	for i, partition := range snapshot.Partitions {
+		mic := strings.TrimSpace(partition.ExchangeMIC)
+		label := strings.TrimSpace(partition.Key)
+		if label == "" {
+			label = mic
+		}
+		if mic == "" {
+			return nil, fmt.Errorf("instrument snapshot partition %q is missing exchange MIC", label)
+		}
+		if _, exists := seenMIC[mic]; exists {
+			return nil, fmt.Errorf("duplicate instrument snapshot partition %d for exchange %q", i, mic)
+		}
+		seenMIC[mic] = struct{}{}
+		partitionSeen := make(map[string]struct{}, len(partition.Observations))
+		for j, observation := range partition.Observations {
+			identifier := normalizedIdentifier(observation.Identifier)
+			if identifier.Provider != snapshot.Source {
+				return nil, fmt.Errorf("partition %q instrument %d provider %q does not match snapshot source %q", label, j, identifier.Provider, snapshot.Source)
+			}
+			if identifier.ValidTo != nil {
+				return nil, fmt.Errorf("partition %q instrument %d current snapshot identifier is already closed", label, j)
+			}
+			if err := validateInstrumentInput(observation.Instrument, identifier); err != nil {
+				return nil, fmt.Errorf("partition %q instrument %d: %w", label, j, err)
+			}
+			observationMIC := strings.TrimSpace(observation.Instrument.ExchangeMIC)
+			if observationMIC != mic {
+				return nil, fmt.Errorf("partition %q instrument %s exchange %q does not match partition %q", label, identifier.Value, observationMIC, mic)
+			}
+			key := providerIdentifierKey(identifier.Provider, identifier.Type, identifier.Value)
+			if _, exists := partitionSeen[key]; exists {
+				return nil, fmt.Errorf("duplicate identifier %s/%s/%s in partition %q", identifier.Provider, identifier.Type, identifier.Value, label)
+			}
+			partitionSeen[key] = struct{}{}
+			if _, ok := flatIndex[key]; !ok {
+				return nil, fmt.Errorf("partition %q identifier %s is absent from flat snapshot", label, identifier.Value)
+			}
+			if prior, exists := owned[key]; exists {
+				return nil, fmt.Errorf("flat identifier %s is owned by multiple partitions %q and %q", identifier.Value, prior, label)
+			}
+			owned[key] = label
+		}
+	}
+	for key, flat := range flatIndex {
+		if _, ok := owned[key]; !ok {
+			identifier := snapshot.Observations[flat].Identifier
+			return nil, fmt.Errorf("flat snapshot identifier %s/%s/%s is absent from all partitions", identifier.Provider, identifier.Type, identifier.Value)
+		}
+	}
+	return flatIndex, nil
 }
 
 func applyInstrumentPartition(ctx context.Context, db *sql.DB, source string, asOf time.Time, exchangeMIC string, complete bool, observations []domain.InstrumentObservation) (instrumentPartitionApplyResult, error) {
@@ -180,6 +266,8 @@ func applyInstrumentPartition(ctx context.Context, db *sql.DB, source string, as
 			if err := validateInstrumentPartitionSize(open, current, exchangeMIC); err != nil {
 				return result, err
 			}
+		} else if err := validateInstrumentSnapshotSize(open, current); err != nil {
+			return result, err
 		}
 		for _, item := range open {
 			mic := strings.TrimSpace(item.exchangeMIC)
@@ -277,6 +365,18 @@ func validateInstrumentPartitionSize(open []openProviderIdentifier, current map[
 	}
 	if previous >= 100 && previous-currentCount >= 20 && currentCount*100 < previous*80 {
 		return fmt.Errorf("refuse suspiciously truncated instrument partition %q: %d -> %d", mic, previous, currentCount)
+	}
+	return nil
+}
+
+func validateInstrumentSnapshotSize(open []openProviderIdentifier, current map[string]string) error {
+	previous := len(open)
+	currentCount := len(current)
+	if previous >= 20 && currentCount == 0 {
+		return fmt.Errorf("refuse legacy instrument snapshot that drops from %d identifiers to zero", previous)
+	}
+	if previous >= 100 && previous-currentCount >= 20 && currentCount*100 < previous*80 {
+		return fmt.Errorf("refuse suspiciously truncated legacy instrument snapshot: %d -> %d", previous, currentCount)
 	}
 	return nil
 }
