@@ -2,6 +2,7 @@ package duckdb
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"path/filepath"
 	"testing"
@@ -61,7 +62,7 @@ func TestInstrumentSnapshotPreflightRejectsUnownedFlatObservationBeforeWrites(t 
 	assertNoInstrumentSideEffects(t, ctx, db)
 }
 
-func assertNoInstrumentSideEffects(t *testing.T, ctx context.Context, db interface{ QueryRowContext(context.Context, string, ...any) *sql.Row }) {
+func assertNoInstrumentSideEffects(t *testing.T, ctx context.Context, db *sql.DB) {
 	t.Helper()
 	var instruments, identifiers int
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM ref.instrument`).Scan(&instruments); err != nil {
