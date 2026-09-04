@@ -31,8 +31,9 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-classifications <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-industries <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-financial <db-path> [--all]")
-	fmt.Fprintln(os.Stderr, "  financial-unresolved <db-path>")
+	fmt.Fprintln(os.Stderr, "  financial-unresolved <db-path> [--limit N] [--offset N]")
 	fmt.Fprintln(os.Stderr, "  financial-ack <db-path> <artifact-id> <provider-code> <reason>")
+	fmt.Fprintln(os.Stderr, "  financial-unack <db-path> <artifact-id> <provider-code>")
 	fmt.Fprintln(os.Stderr, "  status <db-path>")
 }
 
@@ -298,42 +299,46 @@ func main() {
 			MaxPackages: maxPackages,
 			OnProgress: func(p ingest.TDXProfessionalFinancialProgress) {
 				if p.Processed == p.Total || p.Failures > lastFailures || p.Unresolved > lastUnresolved {
-					fmt.Printf("TDX financial progress: run=%d %d/%d packages=%d skipped=%d facts_attempted=%d facts_inserted=%d unresolved=%d acknowledged=%d failed=%d current=%s\n",
+					fmt.Printf("TDX financial progress: run=%d %d/%d packages=%d skipped=%d facts_attempted=%d facts_inserted=%d facts_reassigned=%d facts_removed=%d unresolved=%d acknowledged=%d failed=%d current=%s\n",
 						p.RunID, p.Processed, p.Total, p.Packages, p.Skipped, p.FactsAttempted, p.FactsInserted,
-						p.Unresolved, p.Acknowledged, p.Failures, p.Package)
+						p.FactsReassigned, p.FactsRemoved, p.Unresolved, p.Acknowledged, p.Failures, p.Package)
 				}
 				lastFailures = p.Failures
 				lastUnresolved = p.Unresolved
 			},
 		}
 		summary, syncErr := ingest.SyncTDXProfessionalFinancialWithOptions(ctx, db, source, artifactRoot, options)
-		fmt.Printf("TDX financial sync: run=%d listed=%d selected=%d packages=%d skipped=%d facts_attempted=%d facts_inserted=%d unresolved=%d acknowledged=%d failures=%d master_failures=%d all=%v raw=%s\n",
+		fmt.Printf("TDX financial sync: run=%d listed=%d selected=%d packages=%d skipped=%d facts_attempted=%d facts_inserted=%d facts_reassigned=%d facts_removed=%d unresolved=%d acknowledged=%d failures=%d master_failures=%d all=%v raw=%s\n",
 			summary.RunID, summary.Listed, summary.Selected, summary.Packages, summary.Skipped,
-			summary.FactsAttempted, summary.FactsInserted, summary.Unresolved, summary.Acknowledged,
-			len(summary.Failures), len(summary.MasterFailures), all, artifactRoot)
+			summary.FactsAttempted, summary.FactsInserted, summary.FactsReassigned, summary.FactsRemoved,
+			summary.Unresolved, summary.Acknowledged, len(summary.Failures), len(summary.MasterFailures), all, artifactRoot)
 		if syncErr != nil {
 			fatal(syncErr)
 		}
 
 	case "financial-unresolved":
-		if len(os.Args) != 3 {
+		if len(os.Args) < 3 {
 			usage()
 			os.Exit(2)
+		}
+		limit, offset, err := parseResolutionPageArgs(os.Args[3:])
+		if err != nil {
+			fatal(err)
 		}
 		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
 		if err != nil {
 			fatal(err)
 		}
 		defer db.Close()
-		rows, err := duckstore.ListProviderFinancialResolutions(ctx, db, duckstore.ProviderResolutionPending, 500)
+		rows, err := duckstore.ListProviderFinancialResolutionsPage(ctx, db, duckstore.ProviderResolutionPending, limit, offset)
 		if err != nil {
 			fatal(err)
 		}
 		if len(rows) == 0 {
-			fmt.Println("pending financial resolutions: none")
+			fmt.Printf("pending financial resolutions: none (limit=%d offset=%d)\n", limit, offset)
 			break
 		}
-		fmt.Printf("pending financial resolutions: %d (showing up to 500)\n", len(rows))
+		fmt.Printf("pending financial resolutions: %d (limit=%d offset=%d)\n", len(rows), limit, offset)
 		for _, row := range rows {
 			fmt.Printf("  artifact=%d file=%s period=%s code=%s marker=%d reason=%s\n",
 				row.ArtifactID, row.SourceFile, row.ReportPeriod.Format("2006-01-02"), row.ProviderCode, row.MarketMarker, row.Reason)
@@ -366,6 +371,31 @@ func main() {
 			fmt.Println("rerun sync-financial so the package can be checkpointed if no pending records remain")
 		} else {
 			fmt.Printf("financial resolution already acknowledged: artifact=%d code=%s\n", artifactID, os.Args[4])
+		}
+
+	case "financial-unack":
+		if len(os.Args) != 5 {
+			usage()
+			os.Exit(2)
+		}
+		artifactID, err := strconv.ParseInt(os.Args[3], 10, 64)
+		if err != nil || artifactID <= 0 {
+			fatal(fmt.Errorf("invalid artifact ID %q", os.Args[3]))
+		}
+		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		if err != nil {
+			fatal(err)
+		}
+		defer db.Close()
+		changed, err := duckstore.UnacknowledgeProviderFinancialResolution(ctx, db, artifactID, os.Args[4])
+		if err != nil {
+			fatal(err)
+		}
+		if changed {
+			fmt.Printf("unacknowledged financial resolution: artifact=%d code=%s\n", artifactID, os.Args[4])
+			fmt.Println("package checkpoint invalidated; rerun sync-financial to re-evaluate the record")
+		} else {
+			fmt.Printf("financial resolution already pending: artifact=%d code=%s\n", artifactID, os.Args[4])
 		}
 
 	case "status":
@@ -413,6 +443,34 @@ func main() {
 		usage()
 		os.Exit(2)
 	}
+}
+
+func parseResolutionPageArgs(args []string) (int, int, error) {
+	limit, offset := 100, 0
+	if len(args)%2 != 0 {
+		return 0, 0, fmt.Errorf("financial-unresolved options must be --limit N and/or --offset N")
+	}
+	for i := 0; i < len(args); i += 2 {
+		value, err := strconv.Atoi(args[i+1])
+		if err != nil {
+			return 0, 0, fmt.Errorf("invalid %s value %q", args[i], args[i+1])
+		}
+		switch args[i] {
+		case "--limit":
+			if value <= 0 {
+				return 0, 0, fmt.Errorf("--limit must be positive")
+			}
+			limit = value
+		case "--offset":
+			if value < 0 {
+				return 0, 0, fmt.Errorf("--offset must be non-negative")
+			}
+			offset = value
+		default:
+			return 0, 0, fmt.Errorf("unsupported financial-unresolved option %q", args[i])
+		}
+	}
+	return limit, offset, nil
 }
 
 func fatal(err error) {
