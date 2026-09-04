@@ -93,12 +93,8 @@ func SyncTDXClassificationsWithOptions(ctx context.Context, db *sql.DB, source T
 		finalizeTrackedRun(ctx, db, runID, classificationRunStatus(summary, retErr), &retErr)
 	}()
 
-	instruments, err := source.Instruments(ctx)
-	if err != nil {
-		return summary, fmt.Errorf("list TDX instruments: %w", err)
-	}
-	if _, err := duckstore.UpsertInstruments(ctx, db, instruments); err != nil {
-		return summary, fmt.Errorf("refresh canonical instrument master: %w", err)
+	if _, _, err := refreshInstrumentMaster(ctx, db, source); err != nil {
+		return summary, fmt.Errorf("refresh TDX instrument master: %w", err)
 	}
 
 	families := source.ClassificationFamilies()
