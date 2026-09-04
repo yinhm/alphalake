@@ -1,3 +1,7 @@
+-- Legacy compatibility assumption:
+-- rows in market.share_capital were produced by AlphaLake's supported writer,
+-- which always populated source and source_category. Manually-created legacy
+-- rows with NULL identity fields are outside the supported upgrade contract.
 ALTER TABLE market.share_capital RENAME TO share_capital_legacy;
 
 CREATE TABLE market.share_capital (
