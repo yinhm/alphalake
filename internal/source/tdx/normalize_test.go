@@ -43,12 +43,14 @@ func TestActionFromGBBQPreservesETFScale(t *testing.T) {
 }
 
 func TestGBBQObservationCreatesVerifiedShareCapital(t *testing.T) {
-	day := time.Date(2026, 6, 30, 15, 0, 0, 0, time.Local)
+	loc := time.FixedZone("UTC-10", -10*60*60)
+	day := time.Date(2026, 6, 30, 15, 0, 0, 0, loc)
 	observation, err := GBBQObservation("sh600519", day, 5, 100, 200, 123456789, 200000000)
 	if err != nil {
 		t.Fatalf("GBBQObservation() error = %v", err)
 	}
-	if observation.Identifier.Value != "sh600519" || observation.Action.ActionDate != day {
+	wantDate := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
+	if observation.Identifier.Value != "sh600519" || !observation.Action.ActionDate.Equal(wantDate) {
 		t.Fatalf("observation identity/date = %#v", observation)
 	}
 	if observation.Action.ActionType != "share_capital_change" || observation.Action.SourceRecordID == "" {
@@ -62,6 +64,21 @@ func TestGBBQObservationCreatesVerifiedShareCapital(t *testing.T) {
 	}
 	if observation.ShareCapital.SourceRecordID != observation.Action.SourceRecordID {
 		t.Fatalf("source record IDs differ: %q/%q", observation.ShareCapital.SourceRecordID, observation.Action.SourceRecordID)
+	}
+}
+
+func TestGBBQRecordIDDistinguishesSameDaySameCategoryEvents(t *testing.T) {
+	day := time.Date(2026, 6, 30, 15, 0, 0, 0, time.Local)
+	a, err := GBBQObservation("sh600519", day, 1, 1, 0, 0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := GBBQObservation("sh600519", day, 1, 2, 0, 0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a.Action.SourceRecordID == b.Action.SourceRecordID {
+		t.Fatalf("same-day same-category events collided: %q", a.Action.SourceRecordID)
 	}
 }
 
