@@ -2,7 +2,6 @@ package duckdb
 
 import (
 	"context"
-	"errors"
 	"path/filepath"
 	"testing"
 )
@@ -70,7 +69,7 @@ func TestReadOperationalStatusDoesNotRequireMigration(t *testing.T) {
 		t.Fatalf("recent runs = %#v, want none", status.RecentRuns)
 	}
 
-	if _, err := ReadOperationalStatus(ctx, db, -1); !errors.Is(err, errors.New("recent run limit must be non-negative")) && err == nil {
+	if _, err := ReadOperationalStatus(ctx, db, -1); err == nil {
 		t.Fatal("expected negative limit error")
 	}
 }
