@@ -1,5 +1,6 @@
 /alphalake
 /data/
+/workspace/
 *.duckdb
 *.duckdb.wal
 *.db
