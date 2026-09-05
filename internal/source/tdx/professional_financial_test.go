@@ -4,6 +4,9 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -24,7 +27,7 @@ func TestFetchProfessionalFinancialListAndVerifiedPackage(t *testing.T) {
 	manifest := []byte("gpcw20260630.zip," + md5hex + ",18\n")
 	files := fakeReportFiles{
 		ProfessionalFinancialListLocator: manifest,
-		"tdxfin/gpcw20260630.zip":      pkg,
+		"tdxfin/gpcw20260630.zip":        pkg,
 	}
 	entries, raw, err := fetchProfessionalFinancialFileList(context.Background(), files)
 	if err != nil {
@@ -88,4 +91,39 @@ func TestNormalizeProfessionalFinancialRecordsPreservesLegacyRawCodes(t *testing
 func md5Sum(v []byte) []byte {
 	sum := md5.Sum(v)
 	return sum[:]
+}
+
+func TestFinancialFilesUseVerifiedHTTPFallback(t *testing.T) {
+	content := []byte("verified zip bytes")
+	sum := md5.Sum(content)
+	entry := tdxfinancial.FileEntry{Filename: "gpcw20251231.zip", MD5: hex.EncodeToString(sum[:]), Size: int64(len(content))}
+	status := http.StatusOK
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		w.WriteHeader(status)
+		_, _ = w.Write(content)
+	}))
+	defer server.Close()
+	files := financialReportFiles{t.Context(), fakeReportFiles{}, server.URL + "/"}
+	got, err := fetchProfessionalFinancialPackage(t.Context(), files, entry)
+	if err != nil || string(got) != string(content) {
+		t.Fatalf("fallback=%q, err=%v", got, err)
+	}
+	entry.MD5 = strings.Repeat("0", 32)
+	if _, err := fetchProfessionalFinancialPackage(t.Context(), files, entry); err == nil {
+		t.Fatal("HTTP fallback bypassed MD5 verification")
+	}
+	status = http.StatusNotFound
+	if _, err := files.GetReportFile(ProfessionalFinancialListLocator); err == nil {
+		t.Fatal("accepted HTTP error")
+	}
+	files.protocol = fakeReportFiles{ProfessionalFinancialListLocator: []byte("protocol bytes")}
+	before := calls
+	if got, err := files.GetReportFile(ProfessionalFinancialListLocator); err != nil || string(got) != "protocol bytes" || calls != before {
+		t.Fatalf("healthy protocol should avoid HTTP: %q, %v, calls=%d", got, err, calls)
+	}
+	if _, err := files.GetReportFile("tdxfin/../../escape"); err == nil {
+		t.Fatal("accepted financial locator escape")
+	}
 }

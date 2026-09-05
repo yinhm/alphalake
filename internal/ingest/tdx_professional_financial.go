@@ -19,7 +19,7 @@ import (
 
 const (
 	tdxProfessionalFinancialDataset = "professional_financial"
-	gpcwParserVersion              = "gpcw-v1"
+	gpcwParserVersion               = "gpcw-v1"
 )
 
 type TDXProfessionalFinancialSource interface {
@@ -145,6 +145,11 @@ func SyncTDXProfessionalFinancialWithOptions(
 	}
 
 	sort.Slice(entries, func(i, j int) bool { return entries[i].Filename > entries[j].Filename })
+	// The live manifest includes empty placeholders for future reporting periods.
+	cutoff := "gpcw" + now.In(domain.ChinaDisclosureLocation).Format("20060102") + ".zip"
+	for len(entries) > 0 && entries[0].Filename > cutoff {
+		entries = entries[1:]
+	}
 	if options.MaxPackages > 0 && len(entries) > options.MaxPackages {
 		entries = entries[:options.MaxPackages]
 	}
@@ -297,15 +302,15 @@ func resolveProviderFinancialRecords(ctx context.Context, db *sql.DB, records []
 			reason = fmt.Sprintf("raw code %s is ambiguous across temporal provider symbols: %s", record.ProviderCode, strings.Join(resolution.Candidates, ","))
 		}
 		resolutionInputs = append(resolutionInputs, duckstore.ProviderFinancialResolutionInput{
-			ArtifactID: record.ArtifactID,
-			Source: record.Provider,
-			SourceFile: record.SourceFile,
-			ReportPeriod: record.ReportPeriod,
-			ProviderCode: record.ProviderCode,
-			MarketMarker: record.MarketMarker,
-			InstrumentID: resolution.InstrumentID,
+			ArtifactID:      record.ArtifactID,
+			Source:          record.Provider,
+			SourceFile:      record.SourceFile,
+			ReportPeriod:    record.ReportPeriod,
+			ProviderCode:    record.ProviderCode,
+			MarketMarker:    record.MarketMarker,
+			InstrumentID:    resolution.InstrumentID,
 			IdentifierValue: resolution.IdentifierValue,
-			Reason: reason,
+			Reason:          reason,
 		})
 	}
 	return resolved, resolutionInputs, nil

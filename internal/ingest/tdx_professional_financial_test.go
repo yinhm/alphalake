@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -15,11 +16,12 @@ import (
 )
 
 type fakeProfessionalFinancialSource struct {
-	instruments  []domain.InstrumentObservation
-	packageBytes []byte
-	packageCalls int
-	recordCode   string
-	marketMarker byte
+	instruments       []domain.InstrumentObservation
+	packageBytes      []byte
+	packageCalls      int
+	futurePlaceholder bool
+	recordCode        string
+	marketMarker      byte
 }
 
 func (f *fakeProfessionalFinancialSource) Instruments(context.Context) ([]domain.InstrumentObservation, error) {
@@ -30,10 +32,17 @@ func (f *fakeProfessionalFinancialSource) ProfessionalFinancialFileList(context.
 	sum := md5.Sum(f.packageBytes)
 	entry := tdxfinancial.FileEntry{Filename: "gpcw20260630.zip", MD5: hex.EncodeToString(sum[:]), Size: int64(len(f.packageBytes))}
 	manifest := []byte(entry.Filename + "," + entry.MD5 + "," + "4\n")
-	return []tdxfinancial.FileEntry{entry}, manifest, nil
+	entries := []tdxfinancial.FileEntry{entry}
+	if f.futurePlaceholder {
+		entries = append(entries, tdxfinancial.FileEntry{Filename: "gpcw20260930.zip", Size: 164})
+	}
+	return entries, manifest, nil
 }
 
-func (f *fakeProfessionalFinancialSource) ProfessionalFinancialPackage(context.Context, tdxfinancial.FileEntry) ([]byte, error) {
+func (f *fakeProfessionalFinancialSource) ProfessionalFinancialPackage(_ context.Context, entry tdxfinancial.FileEntry) ([]byte, error) {
+	if entry.Filename != "gpcw20260630.zip" {
+		return nil, fmt.Errorf("unexpected package %s", entry.Filename)
+	}
 	f.packageCalls++
 	return append([]byte(nil), f.packageBytes...), nil
 }
@@ -41,9 +50,9 @@ func (f *fakeProfessionalFinancialSource) ProfessionalFinancialPackage(context.C
 func (f *fakeProfessionalFinancialSource) NormalizeProfessionalFinancialPackage(entry tdxfinancial.FileEntry, _ []byte, artifactID int64) ([]domain.ProviderFinancialRecord, error) {
 	return []domain.ProviderFinancialRecord{{
 		Provider: "tdx", ProviderCode: f.recordCode, MarketMarker: f.marketMarker,
-		ReportPeriod: time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC),
+		ReportPeriod:   time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC),
 		ProviderFields: []domain.ProviderFloat32{{Bits: 0x3f800000, Value: 1}, {Bits: 0x40000000, Value: 2}},
-		SourceFile: entry.Filename, ArtifactID: artifactID,
+		SourceFile:     entry.Filename, ArtifactID: artifactID,
 	}}, nil
 }
 
@@ -60,7 +69,7 @@ func TestSyncTDXProfessionalFinancialPersistsArtifactFactsAndCheckpoint(t *testi
 			Instrument: domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Test"},
 			Identifier: domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh600001"},
 		}},
-		packageBytes: []byte("zip!"), recordCode: "600001", marketMarker: 7,
+		packageBytes: []byte("zip!"), recordCode: "600001", marketMarker: 7, futurePlaceholder: true,
 	}
 	now := time.Date(2026, 9, 4, 12, 0, 0, 0, time.UTC)
 	options := TDXProfessionalFinancialOptions{MaxPackages: 1, Now: func() time.Time { return now }}
@@ -68,7 +77,7 @@ func TestSyncTDXProfessionalFinancialPersistsArtifactFactsAndCheckpoint(t *testi
 	if err != nil {
 		t.Fatal(err)
 	}
-	if first.Packages != 1 || first.FactsAttempted != 2 || first.FactsInserted != 2 || first.Unresolved != 0 || source.packageCalls != 1 {
+	if first.Listed != 2 || first.Selected != 1 || first.Packages != 1 || first.FactsAttempted != 2 || first.FactsInserted != 2 || first.Unresolved != 0 || source.packageCalls != 1 {
 		t.Fatalf("first=%#v calls=%d", first, source.packageCalls)
 	}
 	var facts, artifacts, resolved int

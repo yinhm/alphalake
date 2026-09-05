@@ -5,13 +5,18 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"io"
+	"net/http"
 	"strings"
+	"time"
 
 	"github.com/yinhm/alphalake/internal/domain"
 	tdxfinancial "github.com/yinhm/alphalake/internal/source/tdx/financial"
 )
 
 const ProfessionalFinancialListLocator = "tdxfin/gpcw.txt"
+
+const professionalFinancialBaseURL = "http://down.tdx.com.cn:8001/"
 
 type reportFileClient interface {
 	GetReportFile(string) ([]byte, error)
@@ -21,14 +26,57 @@ func (c *Client) ProfessionalFinancialFileList(ctx context.Context) ([]tdxfinanc
 	if c == nil || c.raw == nil {
 		return nil, nil, fmt.Errorf("TDX client is not initialized")
 	}
-	return fetchProfessionalFinancialFileList(ctx, c.raw)
+	return fetchProfessionalFinancialFileList(ctx, financialReportFiles{ctx, c.raw, professionalFinancialBaseURL})
 }
 
 func (c *Client) ProfessionalFinancialPackage(ctx context.Context, entry tdxfinancial.FileEntry) ([]byte, error) {
 	if c == nil || c.raw == nil {
 		return nil, fmt.Errorf("TDX client is not initialized")
 	}
-	return fetchProfessionalFinancialPackage(ctx, c.raw, entry)
+	return fetchProfessionalFinancialPackage(ctx, financialReportFiles{ctx, c.raw, professionalFinancialBaseURL}, entry)
+}
+
+// Some live quotation servers return an empty report-file response for gpcw.
+// Use TDX's official download service in that case; size/MD5 checks still run.
+type financialReportFiles struct {
+	ctx      context.Context
+	protocol reportFileClient
+	baseURL  string
+}
+
+func (f financialReportFiles) GetReportFile(locator string) ([]byte, error) {
+	if !strings.HasPrefix(locator, "tdxfin/") || strings.ContainsAny(strings.TrimPrefix(locator, "tdxfin/"), "/\\?#") {
+		return nil, fmt.Errorf("invalid financial file locator %q", locator)
+	}
+	if raw, err := f.protocol.GetReportFile(locator); err == nil && len(raw) > 0 {
+		return raw, nil
+	}
+	ctx, cancel := context.WithTimeout(f.ctx, 45*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, f.baseURL+locator, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("download TDX financial file: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("download TDX financial file %s: %s", locator, resp.Status)
+	}
+	limit := int64(128 << 20)
+	if locator == ProfessionalFinancialListLocator {
+		limit = 1 << 20
+	}
+	raw, err := io.ReadAll(io.LimitReader(resp.Body, limit+1))
+	if err != nil {
+		return nil, fmt.Errorf("read TDX financial file: %w", err)
+	}
+	if len(raw) == 0 || int64(len(raw)) > limit {
+		return nil, fmt.Errorf("TDX financial file %s has invalid size %d (limit %d)", locator, len(raw), limit)
+	}
+	return raw, nil
 }
 
 // NormalizeProfessionalFinancialPackage parses one verified raw package into
@@ -52,13 +100,13 @@ func normalizeProfessionalFinancialRecords(entry tdxfinancial.FileEntry, pkg tdx
 	out := make([]domain.ProviderFinancialRecord, 0, len(pkg.Records))
 	for _, record := range pkg.Records {
 		out = append(out, domain.ProviderFinancialRecord{
-			Provider: Provider,
-			ProviderCode: record.Code,
-			MarketMarker: record.MarketMarker,
-			ReportPeriod: record.ReportPeriod,
+			Provider:       Provider,
+			ProviderCode:   record.Code,
+			MarketMarker:   record.MarketMarker,
+			ReportPeriod:   record.ReportPeriod,
 			ProviderFields: record.Fields,
-			SourceFile: entry.Filename,
-			ArtifactID: artifactID,
+			SourceFile:     entry.Filename,
+			ArtifactID:     artifactID,
 		})
 	}
 	return out
