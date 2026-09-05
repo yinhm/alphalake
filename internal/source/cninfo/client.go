@@ -151,6 +151,11 @@ func (c *Client) CataloguePage(ctx context.Context, request CatalogueRequest) (C
 	if page.PageSize == 0 {
 		page.PageSize = request.PageSize
 	}
+	// The live catalogue rounds totalpages down (12 rows / 5 yields 2).
+	// Recover the final partial page from the record count and request size.
+	if pages := (page.TotalRecords + page.PageSize - 1) / page.PageSize; pages > page.TotalPages {
+		page.TotalPages = pages
+	}
 	return page, response.body, nil
 }
 

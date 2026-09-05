@@ -138,9 +138,8 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 		}
 		summary.Windows++
 		windowName := filingWindowName(window.start, window.end)
-		// Legacy checkpoints did not distinguish metadata-only acquisition.
-		// Use mode-specific keys so they cannot suppress required documents.
-		checkpointKey := fmt.Sprintf("catalogue-window:v2:metadata-only=%t:%s", options.MetadataOnly, windowName)
+		// Older checkpoints may omit documents or the final partial page.
+		checkpointKey := fmt.Sprintf("catalogue-window:v3:metadata-only=%t:%s", options.MetadataOnly, windowName)
 		if !options.Rescan && window.end.Before(dateUTCIngest(now.AddDate(0, 0, -cninfoRecentRescanDays))) {
 			if _, found, err := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, checkpointKey); err != nil {
 				summary.Failures = append(summary.Failures, CNINFOFilingFailure{Window: windowName, Err: err})

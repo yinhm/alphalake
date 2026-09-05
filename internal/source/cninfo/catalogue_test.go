@@ -50,6 +50,21 @@ func TestClassifyPeriodicTitle(t *testing.T) {
 	}
 }
 
+func TestCatalogueExchangeFromLiveBoardCodes(t *testing.T) {
+	// 2026-03-06 live catalogue uses board codes, not exchange names.
+	for _, tc := range []struct{ column, board, want string }{
+		{"250401||251302", "SHZB", "XSHG"},
+		{"09020202||250101||251302", "SZZB", "XSHE"},
+		{"", " shzb ", "XSHG"},
+		{"szse", "sz", "XSHE"},
+		{"", "unknown", ""},
+	} {
+		if got := exchangeMIC(tc.column, tc.board); got != tc.want {
+			t.Errorf("exchangeMIC(%q, %q)=%q, want %q", tc.column, tc.board, got, tc.want)
+		}
+	}
+}
+
 func TestAnnouncementAvailabilityUsesNextChinaDayBoundary(t *testing.T) {
 	providerLocalMidnight := time.Date(2026, 3, 28, 0, 0, 0, 0, domain.ChinaDisclosureLocation)
 	date, available := announcementAvailability(providerLocalMidnight.UnixMilli())
@@ -169,5 +184,27 @@ func TestClientRedirectsStayOnConfiguredOrigin(t *testing.T) {
 	}
 	if body, _, _, err := client.FilingDocument(t.Context(), "local"); err != nil || string(body) != "%PDF-test" {
 		t.Fatalf("same-origin redirect: %q, %v", body, err)
+	}
+}
+
+func TestCatalogueRecoversFinalPartialPage(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"totalpages":2,"totalRecordNum":12,"hasMore":true,"announcements":[]}`))
+	}))
+	defer server.Close()
+	client, err := NewClient(server.Client(), ClientOptions{BaseURL: server.URL})
+	if err != nil {
+		t.Fatal(err)
+	}
+	page, _, err := client.CataloguePage(t.Context(), CatalogueRequest{
+		Page: 2, PageSize: 5,
+		StartDate: time.Date(2026, 3, 6, 0, 0, 0, 0, time.UTC),
+		EndDate:   time.Date(2026, 3, 6, 0, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if page.Page != 2 || page.PageSize != 5 || page.TotalPages != 3 || !page.HasMore {
+		t.Fatalf("last partial page lost: %#v", page)
 	}
 }

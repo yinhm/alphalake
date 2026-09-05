@@ -15,9 +15,9 @@ import (
 )
 
 const (
-	Source                  = "cninfo"
-	CatalogueParserVersion  = "cninfo-catalogue-v1"
-	FilingClassifierVersion = "cninfo-periodic-title-v1"
+	Source                   = "cninfo"
+	CatalogueParserVersion   = "cninfo-catalogue-v1"
+	FilingClassifierVersion  = "cninfo-periodic-title-v1"
 	PeriodicReportCategories = "category_ndbg_szsh;category_bndbg_szsh;category_yjdbg_szsh;category_sjdbg_szsh;" +
 		"category_ndbg_bj;category_bndbg_bj;category_yjdbg_bj;category_sjdbg_bj"
 )
@@ -57,8 +57,8 @@ type rawCatalogueResponse struct {
 }
 
 type rawAnnouncement struct {
-	ID               flexibleString `json:"id"`
-	AnnouncementID   flexibleString `json:"announcementId"`
+	ID                flexibleString `json:"id"`
+	AnnouncementID    flexibleString `json:"announcementId"`
 	SecCode           string         `json:"secCode"`
 	SecName           string         `json:"secName"`
 	OrgID             string         `json:"orgId"`
@@ -265,6 +265,12 @@ func ClassifyPeriodicTitle(title string) (domain.FilingType, domain.FilingVarian
 }
 
 func exchangeMIC(columnID, pageColumn string) string {
+	switch strings.ToUpper(strings.TrimSpace(pageColumn)) {
+	case "SHZB":
+		return "XSHG"
+	case "SZZB":
+		return "XSHE"
+	}
 	value := strings.ToLower(strings.TrimSpace(columnID + " " + pageColumn))
 	switch {
 	case strings.Contains(value, "szse") || strings.Contains(value, "shen") || strings.Contains(value, "深"):

@@ -259,6 +259,9 @@ func TestCNINFOCheckpointRequiresRequestedEvidence(t *testing.T) {
 		t.Fatal("metadata-only sync downloaded a document")
 	}
 	options.MetadataOnly = false
+	if err := duckstore.SetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, "catalogue-window:v2:metadata-only=false:"+filingWindowName(day, day), "truncated-pages"); err != nil {
+		t.Fatal(err)
+	}
 	full, err := SyncCNINFOFilingsWithOptions(ctx, db, source, root, options)
 	if err != nil || full.Documents != 1 || full.SkippedWindows != 0 {
 		t.Fatalf("full sync=%#v, err=%v", full, err)
