@@ -63,6 +63,8 @@ go build ./cmd/alphalake
 
 CI 还会检查 `go mod tidy` 是否产生文件改动。
 
+真实财务样本的离线重放、PDF 归档复核及验证范围见[可重复验收报告](docs/acceptance-20260905.md)。
+
 ## 命令行
 
 初始化或迁移 DuckDB 数据库：
