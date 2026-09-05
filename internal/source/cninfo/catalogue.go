@@ -17,7 +17,7 @@ import (
 const (
 	Source                   = "cninfo"
 	CatalogueParserVersion   = "cninfo-catalogue-v1"
-	FilingClassifierVersion  = "cninfo-periodic-title-v1"
+	FilingClassifierVersion  = "cninfo-periodic-title-v2"
 	PeriodicReportCategories = "category_ndbg_szsh;category_bndbg_szsh;category_yjdbg_szsh;category_sjdbg_szsh;" +
 		"category_ndbg_bj;category_bndbg_bj;category_yjdbg_bj;category_sjdbg_bj"
 )
@@ -255,7 +255,7 @@ func ClassifyPeriodicTitle(title string) (domain.FilingType, domain.FilingVarian
 		variant = domain.FilingVariantSummary
 	case containsAny(title, "更正公告", "修正公告"):
 		variant = domain.FilingVariantCorrectionNotice
-	case containsAny(title, "更正后", "修正后"):
+	case containsAny(title, "更正后", "修正后", "（更正）", "(更正)"):
 		variant = domain.FilingVariantCorrectedReport
 	case containsAny(title, "修订版", "修订稿", "修订后", "更新后", "补充版"):
 		variant = domain.FilingVariantRevision

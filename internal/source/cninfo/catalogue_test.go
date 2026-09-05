@@ -25,6 +25,8 @@ func TestClassifyPeriodicTitle(t *testing.T) {
 		{"平安银行股份有限公司2025年年度报告摘要", domain.FilingTypeAnnual, domain.FilingVariantSummary, "2025-12-31", false},
 		{"关于2025年年度报告的更正公告", domain.FilingTypeAnnual, domain.FilingVariantCorrectionNotice, "2025-12-31", true},
 		{"2026年第一季度报告（更正后）", domain.FilingTypeQ1, domain.FilingVariantCorrectedReport, "2026-03-31", true},
+		{"浙江东日股份有限公司2025年第三季度报告（更正）", domain.FilingTypeQ3, domain.FilingVariantCorrectedReport, "2025-09-30", true},
+		{"2025年第三季度报告(更正)", domain.FilingTypeQ3, domain.FilingVariantCorrectedReport, "2025-09-30", true},
 		{"关于延期披露2025年年度报告的公告", domain.FilingTypeUnknown, domain.FilingVariantOther, "", false},
 		{"关于召开2025年年度报告说明会的公告", domain.FilingTypeUnknown, domain.FilingVariantOther, "", false},
 		{"2025年度业绩快报", domain.FilingTypeUnknown, domain.FilingVariantOther, "", false},
