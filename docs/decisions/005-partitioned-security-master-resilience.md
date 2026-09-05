@@ -1,96 +1,96 @@
-# ADR 005 — Partitioned security-master resilience and confirmed temporal closes
+# ADR 005——分区证券主数据韧性与时态关闭确认
 
-Status: accepted
+状态：已接受
 
-Supersedes the global-completeness/first-absence close mechanics in ADR 004 Decision 1. The temporal identity and content-dirtiness principles in ADR 004 remain in force.
+替代 ADR 004 决策 1 的全局完整性门槛与首次缺失即关闭机制。ADR 004 的时态身份和基于内容的失效原则仍有效。
 
-## Context
+## 背景
 
-The first production security-master lifecycle implementation made destructive identity changes only from a verified complete TDX snapshot. That prevented a truncated response from closing history, but two availability problems remained:
+首个生产版证券主数据生命周期实现只根据验证完整的 TDX 快照执行破坏性身份变更。这防止截断响应关闭历史，但仍有两个可用性问题：
 
-1. Shanghai, Shenzhen, and Beijing were coupled into one global completeness gate and one store transaction. A temporary Beijing failure could block valid Shanghai/Shenzhen refreshes, and a store-side guard failure in one exchange could roll back healthy exchanges.
-2. A single complete observation in which one code was absent immediately closed its identifier. A transient one-day omission followed by a return would therefore split one real security into two canonical instruments.
+1. 上海、深圳、北京耦合为一个全局完整性条件和一个存储事务。北京临时失败可能阻止有效的沪深刷新；一个交易所触发存储保护也可能回滚正常交易所。
+2. 单次完整观测缺失某代码便立即关闭标识符。代码临时遗漏一天后恢复，会将一个真实证券割裂成两个标准身份。
 
-The industry acquisition path had a similar coupling problem: TDX and Shenwan hierarchies share acquisition inputs, but a build error in one taxonomy prevented the other from updating.
+行业采集有类似问题：TDX 与申万共享采集输入，但一方分类体系构建错误会阻止另一方更新。
 
-## Decision 1 — Security-master authority is partition-scoped
+## 决策 1——主数据变更权威限定在分区内
 
-`InstrumentMasterSnapshot` carries independent partition state. TDX currently uses exchange partitions:
+`InstrumentMasterSnapshot` 携带独立分区状态。TDX 当前采用交易所分区：
 
-- `XSHG` / Shanghai;
-- `XSHE` / Shenzhen;
-- `XBSE` / Beijing.
+- `XSHG` / 上海；
+- `XSHE` / 深圳；
+- `XBSE` / 北京。
 
-The adapter may return a usable partial snapshot when at least one partition succeeds. A failed/empty/malformed partition is marked incomplete and has **no destructive authority**; healthy partitions remain usable.
+至少一个分区成功时，适配器可返回可用的部分快照。失败、为空或格式错误的分区标记为不完整，**无权执行破坏性变更**；正常分区仍可使用。
 
-The DuckDB store applies each usable partition in its own transaction. Therefore:
+DuckDB 为每个可用分区使用独立事务。因此：
 
-- a source failure in Beijing cannot block Shanghai/Shenzhen;
-- a suspicious truncation or store-side validation failure in one partition rolls back only that partition;
-- downstream ingestion receives only observations whose partition was successfully applied.
+- 北京源故障不会阻止沪深；
+- 一个分区可疑截断或存储校验失败，只回滚该分区；
+- 下游仅收到已成功应用分区的观测。
 
-A partition marked complete must be non-empty and still passes the exchange-level size/truncation guard before it may advance removal evidence.
+标为完整的分区必须非空，且推进移除证据前仍需通过交易所级大小/截断保护。
 
-## Decision 2 — Closing an identifier requires repeated absence evidence
+## 决策 2——关闭标识符需要重复缺失证据
 
-A destructive `valid_to` update is not made from one observation.
+一次观测不执行破坏性的 `valid_to` 更新。
 
-For each open provider identifier absent from a complete partition:
+完整分区中缺失的每个开放数据源标识符按以下规则处理：
 
-1. the first missing observation writes a durable `meta.checkpoint` evidence row containing the first missing date;
-2. a same-day rerun is not additional evidence;
-3. a later complete observation in which the identifier remains absent confirms the close;
-4. `valid_to` is set to the **first observed missing date**, preserving the best observed boundary;
-5. if the identifier returns before confirmation, the pending evidence is deleted and the identity remains open.
+1. 首次缺失写入持久 `meta.checkpoint` 证据，保存首次缺失日期；
+2. 同日重跑不算额外证据；
+3. 后续完整观测仍缺失时确认关闭；
+4. `valid_to` 设为**首次观测到缺失的日期**，保留最佳观测边界；
+5. 确认前标识符恢复，则删除待确认证据，身份继续开放。
 
-Thus the current close threshold is **two distinct complete observations**. Failed/incomplete partition observations neither create nor advance missing evidence.
+当前关闭阈值是**两次不同日期的完整观测**。失败或不完整分区既不新建也不推进缺失证据。
 
-If confirming a close would produce a zero/negative interval because of inconsistent historical data, AlphaLake leaves the identifier open and defers the close rather than rolling back valid partition work or inventing an invalid interval.
+如果历史数据不一致使确认关闭产生零长或负长区间，AlphaLake 保持标识符开放并推迟关闭，不回滚有效分区工作，也不虚构无效区间。
 
-This is still observation-derived lifecycle evidence, not an authoritative delisting calendar. Missing the entire absence interval remains unrecoverable without another source.
+这仍是观测推导的生命周期证据，不是权威退市日历。完全错过的缺失区间仍需其他源才能恢复。
 
-## Decision 3 — Industry taxonomies share acquisition, not failure fate
+## 决策 3——行业体系共享采集，不共享故障结果
 
-TDX industry and Shenwan industry share `tdxhy` assignments and `incon.dat`, so those inputs are still fetched once. Shared acquisition failures remain global because neither taxonomy can be built reliably without the common inputs.
+TDX 与申万行业共享 `tdxhy` 归属和 `incon.dat`，仍只抓取一次。共享采集失败影响全局，因为缺少公共输入时两个体系都无法可靠构建。
 
-After acquisition, taxonomy construction is independent:
+采集后各体系独立构建：
 
-- a TDX-industry build error yields a failed TDX result only;
-- a Shenwan build error yields a failed Shenwan result only;
-- successful taxonomy results continue through the existing temporal classification store;
-- a mixed result produces a partial ingest run rather than suppressing all industry updates.
+- TDX 行业构建错误仅生成 TDX 失败结果；
+- 申万构建错误仅生成申万失败结果；
+- 成功结果继续使用已有时态分类存储；
+- 混合结果生成部分完成运行，不压制全部行业更新。
 
-Historical `incon.dat` variants may omit an intermediate hierarchy label. Such unnamed intermediate levels are skipped rather than fabricated; the assigned leaf must still have a real provider name before membership can attach to it.
+历史 `incon.dat` 变体可能缺少中间层名称。跳过这些无名中间层，不虚构名称；实际归属的叶节点仍必须有真实源名称才能关联成员。
 
-## Decision 4 — Remove duplicate/dead write semantics
+## 决策 4——删除重复或无效的写入语义
 
-`RecordValidationViolations` was removed after daily ingestion moved to the atomic `ApplyDailyIngestBatchForRun` path. Validation persistence now has one production transaction semantic for daily ingestion rather than a second standalone writer.
+日线采集迁入原子 `ApplyDailyIngestBatchForRun` 路径后，删除 `RecordValidationViolations`。日线校验持久化只有一种生产事务语义，不保留第二套独立写入器。
 
-The unused `snapshotDateAt` helper was also removed.
+同时删除未使用的 `snapshotDateAt` 辅助函数。
 
-## Decision 5 — Partial safety must remain observable, and structure is validated before side effects
+## 决策 5——安全降级必须可见，副作用前先验证结构
 
-Partition fault isolation is not permission to silently shrink the visible universe. Source-side partition errors and store-side partition failures are returned as `PartitionFailures`, persisted as run diagnostics in `meta.validation_result`, and propagated into ingest summaries. A workflow may continue with healthy partitions, but its terminal run status is `partial`, not `completed`.
+分区故障隔离不允许悄然缩小可见证券集合。源侧和存储侧分区错误通过 `PartitionFailures` 返回，作为运行诊断持久化到 `meta.validation_result`，并传播到采集摘要。正常分区可继续，但运行终态应为 `partial`，不是 `completed`。
 
-`InstrumentMasterSnapshot` also has a structural preflight before any partition transaction begins. The preflight verifies:
+开始任何分区事务前，`InstrumentMasterSnapshot` 进行结构预检，确认：
 
-- flat identifiers are unique and provider-consistent;
-- partition exchange MICs are unique;
-- each partition identifier exists in the flat snapshot;
-- each flat identifier belongs to exactly one partition;
-- partition observations match the partition exchange MIC.
+- 平铺标识符唯一且来源一致；
+- 分区交易所 MIC 唯一；
+- 每个分区标识符均存在于平铺快照；
+- 每个平铺标识符恰好属于一个分区；
+- 分区观测与分区交易所 MIC 匹配。
 
-A structural mismatch therefore fails with **no database side effects**, instead of discovering representation drift only after an earlier partition has already committed.
+因此结构不一致时**没有数据库副作用**，不会在早期分区已提交后才发现表示方式不一致。
 
-Compatibility snapshots without explicit partitions retain their older single-transaction behavior and also retain a global size/truncation guard. Compatibility must not silently mean weaker destructive-safety checks.
+无显式分区的兼容快照保留旧单事务行为和全局大小/截断保护。兼容不能悄然弱化破坏性变更保护。
 
-## Consequences
+## 影响
 
-- temporary exchange-specific TDX outages degrade only that exchange instead of stopping the whole market refresh;
-- a degraded partition is visible in the run summary/status and queryable through `meta.validation_result` rather than being detectable only by comparing universe counts;
-- one transient code-list omission no longer causes irreversible instrument fragmentation;
-- destructive identity changes now require repeated evidence, matching AlphaLake's last-known-good/safety-first philosophy;
-- malformed flat/partition structure cannot leave a partially committed database before returning an error;
-- partial master refreshes can proceed, but failed partitions are intentionally frozen until a healthy observation returns;
-- exact official list/delist/reuse dates still require an authoritative lifecycle source;
-- industry ingestion has taxonomy-level fault isolation after its shared acquisition stage.
+- TDX 某交易所临时故障仅使该交易所降级，不停止全市场刷新；
+- 降级分区在运行摘要/状态中可见，且可查询 `meta.validation_result`，不必只靠比较证券数量发现；
+- 一次临时代码遗漏不再导致不可逆的身份割裂；
+- 破坏性身份变更要求重复证据，符合保留上次可信数据和安全优先原则；
+- 平铺/分区结构错误不会在返回错误前留下部分提交；
+- 部分主数据刷新仍可推进，失败分区冻结直到正常观测恢复；
+- 精确官方上市、退市和代码复用日期仍需权威生命周期源；
+- 行业采集在共享输入获取后，按分类体系隔离故障。

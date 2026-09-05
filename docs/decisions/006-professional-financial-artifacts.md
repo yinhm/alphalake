@@ -1,129 +1,129 @@
-# ADR 006 — TDX professional financial artifacts and provider facts
+# ADR 006——TDX 专业财务归档与数据源事实
 
-Status: accepted
+状态：已接受
 
-## Context
+## 背景
 
-AlphaLake's target design requires immutable raw evidence, lossless provider facts, and point-in-time financial semantics. TDX professional financial data is distributed through `tdxfin/gpcw.txt` plus versioned `gpcwYYYYMMDD.zip` packages. The package payload is a binary float32 matrix and its header carries the report period and record width; it does not, by itself, provide an authoritative announcement timestamp for each company record.
+AlphaLake 的目标设计要求不可变原始证据、无损源事实和时点财务语义。TDX 专业财务通过 `tdxfin/gpcw.txt` 及版本化 `gpcwYYYYMMDD.zip` 分发。包内为二进制 float32 矩阵，头部携带报告期和记录宽度，但本身不提供逐公司记录的权威公告时间戳。
 
-This is the first production slice that exercises `meta.artifact` and `fundamental.provider_fact`.
+这是首个实际使用 `meta.artifact` 与 `fundamental.provider_fact` 的生产切片。
 
-## Decision 1 — Raw bytes are immutable evidence and retained corruption is recoverable
+## 决策 1——原始字节是不可变证据，保留内容损坏可恢复
 
-Every fetched manifest and package is retained through the common artifact store before semantic ingestion.
+每份抓取的清单和包，在语义采集前通过通用归档存储保留。
 
-Artifacts are:
+归档具有：
 
-- content-addressed by SHA-256;
-- written atomically to disk;
-- verified when reloaded;
-- recorded in `meta.artifact` with source locator, fetch time, content length, parser version, and ingest-run lineage;
-- root-relative on disk so the database and raw lake can be moved together.
+- SHA-256 内容寻址；
+- 原子磁盘写入；
+- 重新加载时校验；
+- 在 `meta.artifact` 记录源定位符、抓取时间、内容长度、解析器版本和运行血缘；
+- 相对根目录的路径，数据库与原始湖可一起移动。
 
-The same bytes from different provider locators share one physical content-addressed file but keep separate metadata lineage rows.
+不同源定位符的相同字节共享一个物理内容寻址文件，但保留独立元数据血缘行。
 
-A package that cannot yet be fully canonicalized remains useful evidence and is retried from local raw bytes rather than redownloaded. All retained versions for a locator are eligible for reuse: if an upstream manifest later rolls back from content B to previously-seen content A, AlphaLake verifies and reuses local A rather than unnecessarily fetching it again.
+暂时无法完全标准化的包仍是有价值的证据，应从本地字节重试，不重新下载。同一定位符的全部历史版本均可复用：上游清单从 B 回滚到已见过的 A 时，校验并复用本地 A，避免无必要抓取。
 
-Retained artifacts are a cache of immutable evidence, not a source of permanent wedges. Strict artifact reads still surface missing/corrupt bytes as errors for diagnostics. Financial acquisition uses a healthy-version scan instead: corrupt retained revisions are skipped, and if no healthy local revision matches the provider manifest the package is redownloaded through the provider integrity path. The downloaded bytes are rechecked against manifest size/MD5 before `Persist` atomically repairs a corrupt content-addressed file while preserving its artifact metadata identity.
+归档是不可变证据的缓存，不应造成永久阻塞。严格读取仍将损坏/丢失报告为诊断错误。财务采集改用健康版本扫描，跳过损坏版本；没有健康版本匹配清单时，通过源完整性路径重下。下载字节重新通过清单大小/MD5 校验后，`Persist` 原子修复损坏的内容寻址文件，并保留归档元数据身份。
 
-## Decision 2 — Parse gpcw dynamically and losslessly
+## 决策 2——动态、无损解析 gpcw
 
-The gpcw parser derives field count from the binary header's `report_size / 4`. It must never hardcode a historical field count such as 264.
+字段数由二进制头部 `report_size / 4` 推导，绝不硬编码 264 等历史字段数。
 
-Each provider field retains:
+每个数据源字段保留：
 
-- its stable ordinal name (`FN1`, `FN2`, ...);
-- the exact float32 bit pattern;
-- an exactly representable float64 analytical value.
+- 稳定序号名称：`FN1`、`FN2` 等；
+- 精确 float32 位模式；
+- 可精确表示原 float32 的分析用 float64 值。
 
-Preserving the raw bits matters for signed zero, NaN payloads, and reproducible provider decoding even when analytical consumers normally use the float64 value.
+原始位模式对带符号零、NaN 载荷和可复现解码很重要，即使分析消费者通常只使用 float64。
 
-`github.com/injoyai/tdx` v0.0.87 provides report-file transport (`GetReportFile`) but does not provide a professional-financial gpcw binary codec. AlphaLake therefore owns this narrowly-scoped lossless codec today. This is an explicit exception to the general preference in D-003 to reuse/upstream provider codecs; if the codec stabilizes and fits upstream scope, contributing it upstream (or maintaining the smallest possible fork) is preferred to unconstrained protocol duplication.
+`github.com/injoyai/tdx` v0.0.87 提供报告文件传输 `GetReportFile`，但没有专业财务 gpcw 二进制编解码器，因此当前由 AlphaLake 维护这一窄范围无损编解码器。这是 D-003 优先复用/贡献上游原则的显式例外。实现稳定且符合上游范围时，优先贡献上游或维护最小分支，不无限复制协议能力。
 
-## Decision 3 — Artifact content is a provider revision; raw record identity is stable across canonical corrections
+## 决策 3——归档内容标识数据源版本，原始记录身份不随标准身份修正而改变
 
-`fundamental.provider_fact.revision_key` is the artifact SHA-256.
+`fundamental.provider_fact.revision_key` 是归档 SHA-256。
 
-Consequences:
+因此：
 
-- replaying the same immutable artifact is idempotent;
-- a corrected package for the same report period produces a distinct revision instead of overwriting prior evidence;
-- old revisions remain queryable and traceable to their raw package.
+- 重放同一不可变归档是幂等的；
+- 同报告期的更正包生成独立版本，不覆盖旧证据；
+- 旧版本仍可查询并追溯到原始包。
 
-Migration 009 adds `value_float32_bits` and hardens the provider-field catalog identity before the first production financial writer.
+迁移 009 在首个生产财务写入器之前增加 `value_float32_bits`，并强化数据源字段目录身份。
 
-Migration 012 corrects the provider-fact identity model. A provider fact is identified by immutable provider evidence — source/artifact revision + raw provider code + provider field — not by the current canonical `instrument_id`. `instrument_id` is a resolvable attribute that may change when later lifecycle evidence corrects historical identity.
+迁移 012 修正源事实身份模型。源事实由不可变证据标识，即来源/归档版本、原始代码、源字段，而非当前标准 `instrument_id`。`instrument_id` 是可解析属性，后续生命周期证据修正历史身份时允许变化。
 
-The provider-fact reconcile path therefore:
+数据源事实协调路径因此：
 
-- inserts facts not yet seen for an artifact/raw-code/FN tuple;
-- reassigns existing facts to a newly-correct canonical instrument without creating a second fact for the same provider evidence;
-- removes facts for raw records that become unresolved on replay so stale canonical links do not survive;
-- keeps different artifact SHA revisions separate.
+- 对未见过的归档/原始代码/FN 组合插入事实；
+- 已有事实重新归属到修正后的标准证券，不为同一证据创建第二份事实；
+- 重放时原始记录变为未解析，删除对应事实，避免过时标准关联残留；
+- 不同归档 SHA 版本保持独立。
 
-Operational counters distinguish `attempted`, `inserted`, `reassigned`, and `removed`. An idempotent replay reports no new changes instead of looking like fresh data.
+运行统计区分 `attempted`、`inserted`、`reassigned`、`removed`。幂等重放报告没有新增变更，不伪装成新数据。
 
-## Decision 4 — Raw provider identity is not current-market classification
+## 决策 4——原始数据源身份不等于当前市场分类
 
-A gpcw record carries a six-digit provider code and a one-byte marker. Neither is a canonical instrument identity.
+gpcw 记录携带六位代码和单字节标记，两者都不是标准证券身份。
 
-The source adapter preserves both values as raw evidence. It does **not** call current SDK code-range classifiers to invent `sh`/`sz`/`bj` prefixes. Current code-range rules are not a historical market master and are known to be unsuitable for old B-share and legacy Beijing/NEEQ-era records.
+适配器保留这两个原始值，**不**调用当前 SDK 代码区间分类器猜测 `sh`/`sz`/`bj` 前缀。当前规则不是历史市场主数据，已知不适合旧 B 股和北京/新三板历史记录。
 
-The one-byte package marker is retained as `MarketMarker`, but AlphaLake does not assign exchange semantics to it until those semantics are independently verified. An apparently market-like byte is not sufficient evidence to alter canonical identity.
+单字节标记保留为 `MarketMarker`，独立验证前不赋予交易所语义。字节看似像市场编号，不足以改变标准身份。
 
-Financial identity resolution instead queries temporal TDX `symbol` identifiers as of the package report period and groups them by the raw six-digit code. The candidate universe also applies the dataset's own semantics: gpcw contains company financial records, so index instruments are not legitimate identity candidates even when an index and a company security share the same six-digit code.
+财务身份改为按包的报告期查询时态 TDX `symbol` 标识符，再按六位原始代码分组。候选范围还使用数据集自身语义：gpcw 是公司财务记录，因此即使指数与公司证券共用六位代码，指数也不是合法候选。
 
-- exactly one active non-index provider symbol resolves to its canonical `instrument_id`;
-- no active non-index provider symbol remains unresolved;
-- multiple distinct active non-index provider symbols remain unresolved rather than guessed;
-- overlapping rows for the same full provider identifier are still treated as store corruption.
+- 恰好一个有效非指数代码：解析为标准 `instrument_id`；
+- 没有有效非指数代码：保持未解析；
+- 多个不同有效非指数代码：保持未解析，不猜测；
+- 同一完整数据源标识符存在重叠行：仍视为存储损坏。
 
-For example, `sh000001` (Shanghai Composite index) does not make gpcw raw code `000001` ambiguous with `sz000001` (Ping An Bank), because the index is outside the financial-record candidate universe. A true company-security/company-security collision remains unresolved.
+例如，`sh000001` 上证指数不使 gpcw 原始代码 `000001` 与 `sz000001` 平安银行产生歧义，因为指数不属于财务候选集合。真正的公司证券间代码冲突仍保持未解析。
 
-Thus a record that cannot currently be classified/resolved does not fail its entire package.
+无法分类/解析的记录因此不会使整个包失败。
 
-## Decision 5 — Durable unresolved evidence and reversible explicit acknowledgement
+## 决策 5——持久未解析证据与可撤销的显式确认
 
-Migration 011 adds `fundamental.provider_record_resolution`. Every parsed provider record has durable identity-resolution state keyed by immutable artifact revision and raw provider code.
+迁移 011 增加 `fundamental.provider_record_resolution`。每条解析出的数据源记录都有按不可变归档版本和原始代码标识的持久身份解析状态。
 
-Statuses are:
+状态包括：
 
-- `resolved` — linked to a canonical instrument and provider identifier;
-- `pending` — no unique temporal identity is currently supportable;
-- `acknowledged` — an operator explicitly accepts that the record cannot presently be resolved, with a required reason and timestamp.
+- `resolved`——已关联标准证券和数据源标识符；
+- `pending`——当前无法支持唯一时态身份；
+- `acknowledged`——操作人员显式接受暂时无法解析，必须记录原因和时间。
 
-Replay of a still-unresolved acknowledged record preserves both the acknowledgement and the machine reason that the operator actually reviewed; later machine explanations do not silently rewrite that historical review context. If authoritative lifecycle evidence later makes the record resolvable, `resolved` supersedes the prior acknowledgement and clears obsolete acknowledgement metadata.
+已确认但仍未解析的记录重放时，保留确认信息与当时审核过的机器原因；后续机器解释不悄然改写历史审核背景。未来权威生命周期证据使记录可解析时，`resolved` 替代原确认，并清除过时确认元数据。
 
-Acknowledgement is reversible. `financial-unack` returns an acknowledged record to `pending`, clears acknowledgement metadata, and invalidates the package completion checkpoint in the same transaction so the next `sync-financial` must replay and re-evaluate the raw record.
+确认可以撤销。`financial-unack` 在同一事务中将记录恢复为 `pending`、清除确认信息并使包完成检查点失效，强制下次 `sync-financial` 重放和重新评估原始记录。
 
-A package completion checkpoint means every record is either `resolved` or explicitly `acknowledged`. Pending records keep the package replayable from retained raw bytes. AlphaLake never automatically acknowledges or silently drops an unresolved record.
+包完成检查点表示所有记录均为 `resolved` 或显式 `acknowledged`。待解析记录使包继续可从本地字节重放。系统绝不自动确认或悄然丢弃未解析记录。
 
-## Decision 6 — Do not invent announcement time
+## 决策 6——不虚构公告时间
 
-The raw gpcw package parser provides report period but no authoritative per-record announcement timestamp. Fetch time, package filename, and report period are not acceptable substitutes.
+原始 gpcw 解析器提供报告期，没有逐记录权威公告时间。抓取时间、文件名和报告期都不能替代公告时间。
 
-Therefore this slice writes provider facts with nullable `announcement_time` and deliberately does **not** materialize `fundamental.fact`, whose point-in-time contract requires an announcement timestamp.
+因此本切片写入允许 `announcement_time` 为空的数据源事实，有意**不**物化时点约定要求公告时间的 `fundamental.fact`。
 
-Canonical PIT facts become eligible only after announcement time is enriched from a verified source, such as authoritative filing metadata or another provider interface whose semantics have been validated.
+只有从验证过的来源补充公告时间，例如权威公告元数据或语义已验证的其他接口，才能生成标准 PIT 事实。后续 [ADR 007](007-cninfo-filing-and-pit-fundamentals.md) 与 [ADR 008](008-cninfo-announcement-date-precision.md) 实现了独立的 CNINFO 公告证据关联及保守可用时间。
 
-## Decision 7 — Safe CLI defaults and complete governance commands
+## 决策 7——安全命令行默认值与完整治理命令
 
-`sync-financial <db>` processes only the newest listed package by default. `sync-financial <db> --all` explicitly requests the full historical package set.
+`sync-financial <db>` 默认只处理清单最新包；`sync-financial <db> --all` 显式请求全部历史包。
 
-This prevents an ordinary refresh command from unexpectedly triggering a very large historical download and fact expansion.
+这防止普通刷新意外触发巨量历史下载与事实扩张。
 
-Raw files default to a `raw/` directory beside the DuckDB file.
+原始文件默认保存在 DuckDB 文件旁的 `raw/`。
 
-Pending records are inspectable with paged `financial-unresolved <db> [--limit N] [--offset N]`. An explicit manual disposition requires `financial-ack <db> <artifact-id> <provider-code> <reason>`; the reason is mandatory. A mistaken acknowledgement can be reversed with `financial-unack <db> <artifact-id> <provider-code>`.
+`financial-unresolved <db> [--limit N] [--offset N]` 分页检查待解析记录。人工处置必须使用 `financial-ack <db> <artifact-id> <provider-code> <reason>`，原因必填。错误确认通过 `financial-unack <db> <artifact-id> <provider-code>` 撤销。
 
-## Consequences
+## 影响
 
-- D-008 immutable raw artifacts now has a production implementation rather than schema-only intent.
-- Provider-level financial history can be replayed and revised without losing source evidence.
-- Corrupt/missing retained package bytes do not permanently wedge financial ingestion; verified provider re-download can repair the local content-addressed object.
-- Historical code-range gaps no longer hard-fail an entire gpcw package.
-- Index/company raw-code collisions are resolved using dataset semantics instead of becoming recurring false ambiguities.
-- Canonical identity corrections do not leave duplicate facts for the same immutable provider revision.
-- Permanently unresolved historical evidence has a visible, auditable, reversible governance path instead of making every full-history run permanently partial.
-- Canonical PIT facts remain intentionally incomplete until announcement-time semantics are authoritative.
-- Provider market-marker semantics remain an explicit research item rather than an assumption embedded in identity.
+- 不可变原始归档原则（当前设计 D-004）已有生产实现，不再仅有结构意图。
+- 数据源级财务历史可重放、修订，不丢失证据。
+- 保留包损坏/丢失不会永久阻塞财务采集，经过验证的重新下载可修复本地对象。
+- 历史代码区间缺口不再直接使整个 gpcw 包失败。
+- 指数/公司代码冲突通过数据集语义消解，不反复产生假歧义。
+- 标准身份修正不会为同一不可变源版本留下重复事实。
+- 永久无法解析的历史证据有可见、可审计、可撤销的治理路径，不必使每次全历史运行永久处于部分完成。
+- 公告时间语义变得权威之前，标准 PIT 事实有意保持不完整。
+- 源市场标记语义仍是显式研究项，不作为隐藏身份假设。

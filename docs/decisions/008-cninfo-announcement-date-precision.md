@@ -1,35 +1,35 @@
-# ADR 008 — CNINFO announcement date precision
+# ADR 008——CNINFO 公告日期精度
 
-Status: accepted
+状态：已接受
 
-Supersedes the intraday-precision implication in ADR 007 while preserving its source-role and PIT-linking decisions.
+替代 ADR 007 中隐含的日内精度含义，同时保留其来源职责与 PIT 关联决策。
 
-## Context
+## 背景
 
-The public CNINFO announcement catalogue exposes `announcementTime` as milliseconds, but the observed public contract establishes an announcement date rather than a trustworthy intraday publication instant. Treating that value as exact release time would create false precision and could leak a filing into a same-day historical query before it was actually public.
+公开 CNINFO 公告目录以毫秒提供 `announcementTime`，但观测到的公开接口约定只确定公告日期，不保证可信的日内发布时间。将其视为精确发布时间会产生虚假精度，并可能在真正公开前就让公告进入同日历史查询。
 
-AlphaLake needs a deterministic PIT boundary that is conservative across daily and intraday research.
+AlphaLake 需要适用于日频与日内研究、确定且保守的 PIT 边界。
 
-## Decision
+## 决策
 
-For filings acquired from the public CNINFO catalogue, AlphaLake stores four distinct pieces of timing evidence:
+对于公开 CNINFO 目录采集的公告，AlphaLake 保存四种独立时间证据：
 
-- `raw_announcement_time_ms` — the unmodified provider value;
-- `announcement_date` — the China-local disclosure date represented as a canonical date;
-- `announcement_time_precision='date'` — an explicit statement that intraday precision is not established;
-- `announcement_time` — the next China-calendar-day boundary, used as the earliest safe PIT availability instant.
+- `raw_announcement_time_ms`——未经修改的数据源值；
+- `announcement_date`——表示为标准日期的中国本地披露日期；
+- `announcement_time_precision='date'`——明确声明尚未确定日内精度；
+- `announcement_time`——中国日历次日零点，作为最早安全 PIT 可用时刻。
 
-Instrument resolution uses `announcement_date`, because security identity should be resolved on the provider's disclosure date rather than on the following conservative availability boundary.
+证券解析使用 `announcement_date`，因为证券身份应按源披露日期解析，不应按次日的保守可用边界解析。待解析公告重新加载和写入时也必须保留该日期与精度。
 
-`fundamental.fact_asof(...)` uses `announcement_time`. Therefore a catalogue-derived filing cannot become visible during its disclosure date and becomes visible at the start of the next China calendar day.
+`fundamental.fact_asof(...)` 使用 `announcement_time`。因此目录公告在披露当日不可见，到中国日历次日开始才可见。
 
-A future source with independently verified publication timestamps may set `announcement_time_precision='timestamp'` and provide its exact availability instant without changing the canonical query interface.
+未来独立验证的发布时间源可设置 `announcement_time_precision='timestamp'` 并提供精确可用时刻，不改变标准查询接口。
 
-## Consequences
+## 影响
 
-- Daily research remains conservative and deterministic.
-- Intraday research cannot consume an announcement prematurely merely because the catalogue encoded a date as milliseconds.
-- The original provider value remains available for audit and later reinterpretation.
-- The system intentionally accepts up to one calendar day of delayed availability rather than introducing look-ahead.
-- CNINFO filing identity, document lineage, TDX numerical provenance, and provider-to-filing links remain unchanged.
-- Correction predecessor links require strictly earlier availability. Original and correction filings with date precision on the same China day share an availability boundary and cannot link to each other; their intraday order is unknown. Verified timestamps or explicit predecessor evidence would be needed to relax this rule. Provider-to-filing selection still uses the variant priority in ADR 007.
+- 日频研究保持保守、确定。
+- 不会仅因目录将日期编码为毫秒，就使日内研究过早使用公告。
+- 保留原始数据源值，支持审计及未来重新解释。
+- 系统有意接受最多一个日历日的可用性延迟，避免未来信息泄漏。
+- CNINFO 公告身份、文档血缘、TDX 数值来源及数据源—公告关联保持原有语义。
+- 更正前序关联要求可用时间严格更早。同一中国日历日、日期精度的原始与更正公告共享可用边界，日内顺序未知，因此不能相互建立前序关联。需要经验证的时间戳或显式前序证据才能放宽。数据源—公告候选选择仍使用 ADR 007 的变体优先级。

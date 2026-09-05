@@ -1,338 +1,338 @@
-# AlphaLake design
+# AlphaLake 设计
 
-Status: accepted target architecture, v0
+状态：已接受的目标架构，v0
 
-This document contains:
+本文包含：
 
-1. the accepted final specification for the current AlphaLake foundation;
-2. the important design choices and the reasoning that led to it.
+1. 当前 AlphaLake 基础设施已接受的最终规范；
+2. 形成该规范的重要设计选择及其依据。
 
-It is normative for architecture and compatibility direction. It is not, by itself, a claim that every future domain exists. Current executable status is recorded in [`implementation-status.md`](implementation-status.md), and detailed decisions are preserved in [`decisions/`](decisions/).
+本文约束架构和兼容性方向，并不表示所有未来领域都已实现。当前可执行状态见[实现状态](implementation-status.md)，详细决策保存在[决策目录](decisions/)。
 
-## 1. Product definition
+## 1. 产品定义
 
-AlphaLake is a local-first financial data lake and analytical store for reproducible investment research.
+AlphaLake 是本地优先的金融数据湖与分析存储，服务于可复现的投资研究。
 
-It is designed for:
+设计用途包括：
 
-- historical market and fundamental research;
-- point-in-time queries without future information leakage;
-- source evidence retention and deterministic rebuilds;
-- multi-source validation;
-- local SQL analysis through DuckDB.
+- 历史市场与基本面研究；
+- 不泄露未来信息的时点查询；
+- 源证据保留和确定性重建；
+- 多源校验；
+- 通过 DuckDB 进行本地 SQL 分析。
 
-It is not a trading execution system, a market-data redistribution service, or an abstraction over multiple analytical databases.
+它不是交易执行系统、行情再分发服务，也不是多个分析数据库之上的抽象层。
 
-The first production scope uses:
+首个生产范围采用：
 
-- TDX as the primary structured source for A-share market data and professional financial values;
-- CNINFO as the authoritative filing identity, disclosure-date, and original-document source;
-- DuckDB as the canonical analytical store.
+- TDX：A 股市场数据与专业财务数值的主要结构化来源；
+- CNINFO：公告身份、披露日期和原始文档的权威来源；
+- DuckDB：标准分析存储。
 
-## 2. Architectural boundaries
+## 2. 架构边界
 
 ```text
-External sources
+外部数据源
     |
-    +-- TDX --------------------------------------+
-    |                                             |
-    +-- CNINFO -----------------------------------+----> narrow source adapters
-    |                                                        |
-    +-- future providers ------------------------------------+
-                                                             |
-                         +-----------------------------------+
+    +-- TDX -------------------+
+    |                          |
+    +-- CNINFO ----------------+----> 窄职责源适配器
+    |                                       |
+    +-- 后续数据源 --------------------------+
+                                            |
+                         +------------------+
                          |
-                         +--> immutable raw artifacts, when a stable
-                         |    source file/document naturally exists
+                         +--> 不可变原始归档
+                         |    （存在天然稳定的源文件/文档时）
                          |
-                         +--> provider-neutral observations
+                         +--> 与数据源无关的观测记录
                                   |
-                                  +--> temporal identity resolution
-                                  +--> validation / quarantine
-                                  +--> canonical domain merge
+                                  +--> 时态身份解析
+                                  +--> 校验 / 隔离
+                                  +--> 标准领域合并
                                             |
                                             +--> DuckDB
-                                            +--> reproducible local derivations
+                                            +--> 可复现的本地派生
 ```
 
-Source adapters own provider transport and decoding. Provider SDK types must not escape adapter packages.
+源适配器负责数据源传输和解码。数据源 SDK 类型不得泄露到适配器包外。
 
-AlphaLake deliberately does not define one broad adapter interface. A paginated HTTP catalogue, a binary report file, a protocol response, and an original PDF are different source shapes. Ingest workflows define narrow consumer interfaces for the capabilities they need.
+AlphaLake 不定义一个宽泛的统一适配器接口。分页 HTTP 目录、二进制报告文件、协议响应和原始 PDF 是不同源形态。采集流程仅针对所需能力定义窄消费者接口。
 
-## 3. Canonical domains
+## 3. 标准领域
 
-DuckDB uses domain-oriented schemas:
+DuckDB 按领域组织 schema：
 
-- `meta` — schema versions, ingest runs, artifacts, checkpoints, validation results, derived state;
-- `ref` — instruments, temporal identifiers, exchanges, companies, calendars;
-- `market` — unadjusted OHLCV, corporate actions, share capital, adjustment segments;
-- `classification` — taxonomies, nodes, temporal membership;
-- `fundamental` — provider fields/facts, filings, provider-filing links, canonical PIT facts;
-- future `fund`, `index`, and `derived` domains.
+- `meta`——结构版本、采集运行、归档、检查点、校验结果、派生状态；
+- `ref`——证券、时态标识符、交易所、公司、日历；
+- `market`——未复权 OHLCV、公司行动、股本、复权区间；
+- `classification`——分类体系、节点、时态成员关系；
+- `fundamental`——数据源字段/事实、公告、数据源—公告关联、标准时点事实；
+- 后续的 `fund`、`index` 和 `derived` 领域。
 
-Temporary relations are used for bulk staging and set-based reconciliation. They are implementation details rather than durable source truth.
+临时关系用于批量暂存和集合式协调，只是实现细节，不是持久的源事实。
 
-## 4. Canonical identity
+## 4. 标准身份
 
-Provider symbols are identifiers, not primary identities.
+数据源代码是标识符，不是主身份。
 
-`ref.instrument.instrument_id` is the stable canonical identity. `ref.instrument_identifier` stores provider identifiers with half-open validity intervals:
+`ref.instrument.instrument_id` 是稳定的标准身份。`ref.instrument_identifier` 使用半开有效区间保存数据源标识符：
 
 ```text
 [valid_from, valid_to)
 ```
 
-Required behavior:
+必须满足：
 
-- a provider symbol change must not create a new instrument merely because the string changed;
-- code reuse by a different security must create a distinct instrument;
-- overlapping active intervals for the same full provider identifier are corruption, not a tie to resolve arbitrarily;
-- point-in-time joins resolve identifiers at the observation date relevant to the source record.
+- 数据源代码变更不应仅因字符串变化就创建新证券；
+- 不同证券复用代码时必须创建独立证券身份；
+- 同一完整数据源标识符的有效区间重叠属于损坏，不得任意选择；
+- 时点关联应按与源记录相关的观测日期解析标识符。
 
-TDX current-universe snapshots are exchange-partitioned. Destructive close decisions require a complete partition and repeated absence evidence. Failed or suspicious partitions freeze without blocking healthy exchanges, and their failures remain queryable.
+TDX 当前证券集合快照按交易所分区。关闭历史身份需要分区完整且重复缺失的证据。失败或可疑分区冻结，不阻止正常交易所；故障证据保持可查询。
 
-Current-only TDX observations cannot reconstruct an absence interval that AlphaLake never observed. Official historical listing, delisting, relisting, transfer, and code-change dates remain the responsibility of a future authoritative lifecycle source.
+仅反映当前状态的 TDX 观测无法重建 AlphaLake 未观测到的缺失区间。官方历史上市、退市、重新上市、转板及代码变更日期仍需未来权威生命周期源提供。
 
-## 5. Raw artifacts and lineage
+## 5. 原始归档与血缘
 
-A stable source file or document is immutable evidence.
+稳定的源文件或文档是不可变证据。
 
-Every retained artifact records at least:
+每份保留归档至少记录：
 
-- source and dataset;
-- source locator;
-- fetch time;
-- SHA-256;
-- content length;
-- local root-relative path;
-- parser/ingest version when applicable;
-- ingest-run lineage.
+- 来源和数据集；
+- 源定位符；
+- 抓取时间；
+- SHA-256；
+- 内容长度；
+- 相对本地根目录的路径；
+- 适用时的解析器/采集版本；
+- 采集运行血缘。
 
-Artifact storage requirements:
+归档存储要求：
 
-- content-addressed physical paths;
-- temporary-file write, fsync, and atomic rename;
-- hash verification on reuse;
-- same bytes may share one physical object while retaining separate locator lineage rows;
-- corrupt or missing cache objects may be recovered only through independently verified provider acquisition;
-- a newer parser must be able to rebuild canonical data from retained bytes without redownloading.
+- 物理路径采用内容寻址；
+- 临时文件写入、fsync、原子重命名；
+- 复用时校验哈希；
+- 相同字节可共用物理对象，同时保留独立定位符血缘行；
+- 损坏或丢失的缓存对象只能通过独立校验的数据源采集恢复；
+- 新版解析器能够从已保留字节重建标准数据，无需重新下载。
 
-Protocol responses without a natural stable artifact are not artificially wrapped as files. They still retain run, source-record, and validation lineage.
+没有天然稳定归档形式的协议响应不强行包装为文件，但仍保留运行、源记录及校验血缘。
 
-## 6. Market-data semantics
+## 6. 市场数据语义
 
-`market.ohlcv_daily` stores unadjusted prices only.
+`market.ohlcv_daily` 仅存储未复权价格。
 
-Canonical semantics:
+标准语义：
 
-- daily observations are exchange/provider calendar dates represented as date-only values, independent of host timezone;
-- stock/ETF volume is stored in shares or units, not TDX hands;
-- ingestion time is timezone-aware;
-- adjusted prices are reproducible derivatives, not primary truth.
+- 日线观测是交易所/数据源日历日期，以仅含日期的值表示，不受主机时区影响；
+- 股票/ETF 成交量以股/份存储，不使用 TDX 手数；
+- 采集时间带时区；
+- 复权价格是可复现的派生值，不是主要事实。
 
-Invalid daily rows are quarantined individually. Good rows continue, while the earliest invalid historical date remains eligible for re-fetch. Valid rows, validation evidence, and retry checkpoint state publish atomically per instrument.
+无效日线逐行隔离。有效行继续处理，最早的无效历史日期保留为可重新抓取边界。逐证券原子发布有效行、校验证据和重试检查点。
 
-Bulk writes use DuckDB Appender/staging plus set-based merge, while preserving useful per-instrument recovery boundaries.
+批量写入采用 DuckDB Appender/暂存表及集合式合并，同时保留逐证券的实用恢复边界。
 
-## 7. Corporate actions and adjustments
+## 7. 公司行动与复权
 
-TDX GBBQ decoding may use the TDX SDK, but AlphaLake owns canonical interpretation.
+TDX GBBQ 解码可以复用 TDX SDK，但标准语义解释由 AlphaLake 负责。
 
-Every corporate-action observation preserves:
+每条公司行动观测保留：
 
-- raw category;
-- raw provider fields;
-- strong source-record identity;
-- normalized semantics only where the interpretation is verified.
+- 原始类别；
+- 原始数据源字段；
+- 明确的源记录身份；
+- 仅在含义已验证时添加归一化语义。
 
-Successful-but-empty or suspiciously truncated full snapshots must not erase the last known-good history by default. An explicit operator repair may bypass the snapshot-size guard, but never acquisition, identity, or database errors.
+请求成功但为空或明显截断的全量快照，默认不得清除上次可信历史。操作人员显式修复可以绕过快照大小保护，但不能绕过采集、身份或数据库错误。
 
-QFQ/HFQ adjustment segments are local affine derivations from raw OHLCV and verified corporate-action semantics. Cash distributions retain the additive component rather than being forced into a purely multiplicative model.
+前/后复权区间根据原始 OHLCV 和已验证公司行动语义在本地进行仿射推导。现金分派保留加法项，不强制简化为纯乘法模型。
 
-Derived-data dirtiness is based on canonical content, not ingest-run timestamps or surrogate IDs.
+派生数据是否失效取决于标准内容，而非采集运行时间戳或代理 ID。
 
-## 8. Classification semantics
+## 8. 分类语义
 
-Classification membership is temporal.
+分类成员关系具有时间属性。
 
-A membership records an effective interval rather than only current state. Complete source snapshots are diffed prospectively to produce history without look-ahead.
+成员关系记录有效区间，而非仅记录当前状态。对完整源快照做差分，从观测开始形成历史，避免未来信息泄漏。
 
-Failed/incomplete families or taxonomies cannot close previous membership. Unresolved members make the affected snapshot incomplete rather than silently disappearing from history.
+失败或不完整的板块族/分类体系不能关闭已有成员关系。存在未解析成员时，相关快照视为不完整，不让这些成员悄然从历史消失。
 
-This model supports TDX concept/style/region/index blocks and TDX/Shenwan industries. Historical membership before AlphaLake begins observing requires an additional historical source.
+该模型支持 TDX 概念/风格/地域/指数板块及 TDX/申万行业。AlphaLake 开始观测前的成员历史需要额外历史源。
 
-## 9. TDX professional financial provider layer
+## 9. TDX 专业财务数据源层
 
-TDX professional financial data is acquired from `tdxfin/gpcw.txt` and `gpcwYYYYMMDD.zip`.
+TDX 专业财务数据来自 `tdxfin/gpcw.txt` 和 `gpcwYYYYMMDD.zip`。
 
-The parser must:
+解析器必须：
 
-- derive field count from `report_size / 4`;
-- validate header, offsets, record boundaries, and archive structure;
-- preserve every provider field as `FN1...FNn`;
-- preserve the exact float32 bit pattern and an analytical float64 value;
-- retain the raw six-digit provider code and raw one-byte marker;
-- never infer historical exchange identity from present-day code-range helpers.
+- 从 `report_size / 4` 推导字段数；
+- 校验头部、偏移、记录边界和归档结构；
+- 将所有源字段保留为 `FN1...FNn`；
+- 同时保留精确 float32 位模式及分析用 float64 值；
+- 保留六位原始代码和原始单字节标记；
+- 不使用当前代码区间辅助函数推断历史交易所身份。
 
-`github.com/injoyai/tdx` supplies report-file transport but currently lacks a lossless gpcw codec. AlphaLake therefore owns a deliberately narrow codec, with upstream contribution or a minimal fork preferred if the implementation stabilizes and fits upstream scope.
+`github.com/injoyai/tdx` 提供报告文件传输，但当前缺少无损 gpcw 编解码器。因此 AlphaLake 维护范围受限的编解码器；实现稳定且符合上游范围时，优先贡献上游或维护最小分支。
 
-Provider-fact revision identity is the immutable artifact revision. Raw provider-record identity is separate from canonical instrument identity, allowing later lifecycle correction to reassign or remove canonical links without producing duplicate facts.
+数据源事实的版本身份就是不可变归档版本。原始记录身份与标准证券身份分离，后续生命周期修正可重新归属或删除标准关联，不重复生成事实。
 
-A provider package is complete only when every raw record is either resolved or explicitly operator-acknowledged. Pending evidence remains locally replayable.
+只有每条原始记录均已解析或经操作人员显式确认，包才算完成。待解析证据仍可从本地重放。
 
-## 10. CNINFO filing evidence
+## 10. CNINFO 公告证据
 
-CNINFO is the authoritative disclosure-evidence source, not the primary structured numerical provider.
+CNINFO 是权威披露证据来源，不是主要结构化数值来源。
 
-### 10.1 Catalogue acquisition
+### 10.1 目录采集
 
-The filing catalogue is acquired through bounded date windows and pages. Every page is persisted as an immutable artifact before normalized metadata is written.
+公告目录按有界日期窗口分页采集。在写入归一化元数据前，每页先保存为不可变归档。
 
-Old completed windows may be checkpoint-skipped. Recent windows are rescanned so late corrections, revisions, and metadata changes remain discoverable. A source/artifact/diagnostic/write failure withholds the window checkpoint.
+旧的完整窗口可按检查点跳过。近期窗口重扫，以发现迟到更正、修订和元数据变化。源、分页、归档、诊断或写入失败会阻止窗口完成检查点。元数据与完整文档模式分别记录完成状态；旧版无法证明文档完整性的检查点不复用。
 
-### 10.2 Filing identity
+### 10.2 公告身份
 
-`fundamental.filing` is unique by:
+`fundamental.filing` 的唯一键是：
 
 ```text
 (source, source_filing_id)
 ```
 
-An instrument/report-period pair is not filing identity because one period may have a full report, summary, correction notice, corrected report, revision, audit report, inquiry letter, or other related document.
+证券/报告期组合不是公告身份：同一期可能存在完整报告、摘要、更正公告、更正后报告、修订版、审计报告、问询函或其他相关文档。
 
-Normalized filing metadata retains:
+归一化公告元数据保留：
 
-- provider code and exchange evidence;
-- source filing ID;
-- filing type and variant;
-- report period;
-- disclosure date and canonical availability time;
-- original title/category/classifier version;
-- original catalogue fields;
-- first/last observation times;
-- catalogue and document artifact lineage;
-- resolution status and reason.
+- 数据源代码与交易所证据；
+- 源公告 ID；
+- 公告类型与变体；
+- 报告期；
+- 披露日期与标准可用时间；
+- 原始标题、类别、分类器版本；
+- 原始目录字段；
+- 首次/末次观测时间；
+- 目录和文档归档血缘；
+- 解析状态与原因。
 
-### 10.3 Conservative filing classification
+### 10.3 保守的公告分类
 
-Only explicit Q1, semiannual, Q3, and annual report wording can produce periodic-report semantics.
+只有明确的一季报、半年报、三季报、年报措辞才能生成定期报告语义。
 
-Summaries are retained but cannot anchor statement facts. Postponement/reservation notices, inquiry letters, presentations, board resolutions, forecasts, earnings flashes, and similar references are evidence but not PIT statement filings.
+摘要保留为证据，但不能支撑报表事实。延期/预约公告、问询函、说明会、董事会决议、预告、快报及类似提及报告的文档，均不作为 PIT 报表公告。
 
-Correction notices, corrected reports, and revisions remain distinct source filings. A correction may point to the immediately preceding eligible report anchor without losing its own identity.
+更正公告、更正后报告和修订版保持独立源公告身份。更正可以指向可用时间严格更早的最近合格报告，不丢失自身身份。同日日期精度公告不能凭相同可用时间推断先后关系。
 
-### 10.4 Filing instrument resolution
+### 10.4 公告证券解析
 
-Explicit exchange evidence is used to resolve the exact temporal TDX equity identifier at the disclosure date. If exchange evidence is absent, a strict equity-only raw-code search is used.
+有显式交易所证据时，在披露日期解析准确的时态 TDX 股票标识符；没有交易所证据时，仅在股票范围按原始代码严格查找。
 
-Unknown non-empty exchange evidence is not discarded and does not silently fall back to another market. It remains pending. Missing and ambiguous identities also remain pending and are locally re-resolved after future lifecycle enrichment.
+未知但非空的交易所证据不会丢弃，也不会悄然回退到其他市场，而是保持待解析。缺失或歧义身份同样保持待解析，在未来生命周期信息补全后本地重新解析。
 
-### 10.5 Filing documents
+### 10.5 公告文档
 
-Eligible full/corrected/revision documents are downloaded by default and retained as immutable artifacts. Metadata-only mode is explicit.
+默认下载符合条件的完整、更正、修订文档，保留不可变归档。仅元数据模式必须显式指定。
 
-Document acquisition rejects empty payloads, HTML/anti-bot responses, and expected PDF payloads without a PDF signature. Hash-valid but semantically invalid retained payloads are not reused.
+文档采集拒绝空内容、HTML/反爬响应，以及应为 PDF 却缺少 PDF 签名的内容。哈希正确但内容语义无效的历史归档不复用。HTTP 重定向不能绕过配置的源站边界。
 
-## 11. Disclosure-time precision
+## 11. 披露时间精度
 
-Report period, disclosure availability, and ingestion time are separate concepts.
+报告期、披露可用时间和采集时间是不同概念。
 
-The public CNINFO catalogue establishes a China-local disclosure **date**, but its millisecond field is not promoted to a verified intraday publication timestamp.
+公开 CNINFO 目录只确定中国本地披露**日期**，其毫秒字段不能直接当作已验证的日内发布时间。
 
-For catalogue-derived filings AlphaLake stores:
+目录生成的公告保存：
 
-- `announcement_date` — China-local disclosure date as a date value;
-- `raw_announcement_time_ms` — unmodified provider evidence;
-- `announcement_time_precision='date'`;
-- `announcement_time` — the next China-calendar-day boundary, used as the earliest safe PIT availability instant.
+- `announcement_date`——中国本地披露日期；
+- `raw_announcement_time_ms`——未经修改的数据源证据；
+- `announcement_time_precision='date'`；
+- `announcement_time`——中国日历次日零点，作为最早安全 PIT 可用时间。
 
-This deliberately sacrifices same-day availability rather than leaking information into intraday historical queries. A future independently verified timestamp source may use precision `timestamp` without changing the query contract.
+这有意放弃同日可用性，避免日内历史查询出现未来信息。未来独立验证的时间戳来源可使用 `timestamp` 精度，不改变查询约定。
 
-## 12. Provider-to-filing links
+## 12. 数据源—公告关联
 
-TDX values and CNINFO filing evidence never overwrite each other's provenance.
+TDX 数值与 CNINFO 公告证据不互相覆盖来源信息。
 
-`fundamental.provider_filing_link` explicitly connects one immutable provider-record revision to one filing.
+`fundamental.provider_filing_link` 显式关联一个不可变数据源记录版本和一份公告。
 
-A candidate filing must have:
+候选公告必须满足：
 
-- the same canonical instrument;
-- the same report period;
-- a compatible periodic-report type;
-- availability no later than the first observation time of the provider artifact.
+- 标准证券相同；
+- 报告期相同；
+- 定期报告类型兼容；
+- 可用时间不晚于数据源归档首次观测时间。
 
-The observation-time constraint prevents a later correction from leaking backward into an earlier observed provider revision.
+观测时间约束防止后来的更正向早期已观测数据源版本泄漏。
 
-Among eligible candidates, later availability wins. At the same availability time, corrected-report/revision/correction-notice/full-report priority is deterministic. Equally ranked candidates remain ambiguous.
+合格候选中优先选择可用时间较晚者。可用时间相同时，依次优先更正后报告、修订版、更正公告、完整报告。同排名候选保持歧义。
 
-## 13. Canonical point-in-time fundamentals
+## 13. 标准时点基本面
 
-Only reviewed provider mappings with known units may become canonical facts.
+只有经过审核且单位明确的源字段映射才能生成标准事实。
 
-The initial canonical set is:
+初始标准字段为：
 
-- FN230 revenue — CNY yuan;
-- FN231 operating profit — CNY yuan;
-- FN232 parent net income — CNY yuan;
-- FN233 adjusted net income — CNY yuan;
-- FN234 operating cash flow — CNY yuan;
-- FN235 investing cash flow — CNY yuan;
-- FN236 financing cash flow — CNY yuan;
-- FN237 net cash increase — CNY yuan;
-- FN238 total shares — shares.
+- FN230 营业收入——人民币元；
+- FN231 营业利润——人民币元；
+- FN232 归母净利润——人民币元；
+- FN233 扣非净利润——人民币元；
+- FN234 经营活动现金流——人民币元；
+- FN235 投资活动现金流——人民币元；
+- FN236 筹资活动现金流——人民币元；
+- FN237 现金净增加额——人民币元；
+- FN238 总股本——股。
 
-Provider precision remains lossless in `fundamental.provider_fact`. Canonical values use `DECIMAL(38,10)` as a deterministic decimal representation of the provider float32 value. This does not restore precision that the provider encoding did not contain.
+`fundamental.provider_fact` 无损保留源精度。标准值使用 `DECIMAL(38,10)` 确定性表示源 float32 值，并不恢复源编码未包含的精度。
 
-Statement scope is `provider_default` until the provider record supplies a reviewed scope dimension. AlphaLake does not invent consolidated/parent scope.
+在数据源记录提供经过审核的报表范围维度之前，范围保持 `provider_default`，不虚构合并/母公司口径。
 
-`materialize-fundamentals` is a local-only reconciliation:
+`materialize-fundamentals` 仅执行本地协调：
 
-1. retry retained pending filing identities;
-2. refresh provider-to-filing links;
-3. validate linked provider facts;
-4. insert/update/remove canonical facts by immutable raw identity;
-5. persist rejected candidates as validation evidence.
+1. 重试保留的待解析公告身份；
+2. 刷新数据源—公告关联；
+3. 校验已关联的数据源事实；
+4. 按不可变原始身份插入、更新或删除标准事实；
+5. 将被拒绝候选保存为校验证据。
 
-A canonical fact is not materialized when identity, period, report type, announcement ordering, finiteness, unit, or decimal conversion is unsafe.
+身份、报告期、报告类型、公告顺序、有限值、单位或十进制转换存在问题时，不物化标准事实。
 
-## 14. Point-in-time query contract
+## 14. 时点查询约定
 
-`fundamental.fact_latest` returns the latest supported revision for each instrument, canonical field, and report period.
+`fundamental.fact_latest` 按证券、标准字段和报告期返回有证据支持的最新版本。
 
-`fundamental.fact_asof(as_of_time)` returns the latest revision whose canonical disclosure availability is no later than `as_of_time`.
+`fundamental.fact_asof(as_of_time)` 返回标准披露可用时间不晚于 `as_of_time` 的最新版本。
 
-Required behavior:
+必须满足：
 
 ```text
-before original disclosure availability -> no fact
-after original disclosure availability  -> original supported revision
-after correction availability           -> corrected supported revision
+原始披露可用之前 -> 无事实
+原始披露可用之后 -> 有依据的原始版本
+更正披露可用之后 -> 有依据的更正版本
 ```
 
-This behavior is bounded by observed provider revisions. If AlphaLake never retained a pre-correction TDX revision, it cannot invent the original value merely because CNINFO records an earlier filing.
+该行为受已观测数据源版本限制。如果 AlphaLake 从未保留更正前的 TDX 版本，不能仅因 CNINFO 存在早期公告就虚构原始数值。
 
-## 15. Validation contract
+## 15. 校验约定
 
-Validation is queryable data, not only logs.
+校验是可查询数据，不仅是日志。
 
-Initial market rules include OHLC ordering, non-negative volume, and canonical uniqueness.
+初始市场规则包括 OHLC 大小关系、非负成交量和标准唯一性。
 
-Initial fundamental materialization rules include:
+初始基本面物化规则包括：
 
-- filing instrument equals provider instrument;
-- filing report period equals provider report period;
-- filing type matches the period;
-- disclosure availability is not before report period;
-- provider value is finite;
-- canonical mapping and unit are reviewed;
-- decimal conversion succeeds;
-- mapping intervals are unambiguous.
+- 公告证券与数据源证券相同；
+- 公告报告期与数据源报告期相同；
+- 公告类型与报告期匹配；
+- 披露可用时间不早于报告期；
+- 数据源值为有限数；
+- 标准映射和单位已经审核；
+- 十进制转换成功；
+- 映射有效区间无歧义。
 
-Original CNINFO documents are retained now. Numerical extraction from PDF/XBRL and selected official-value comparison with TDX remain the next validation layer.
+目前已保留 CNINFO 原文。从 PDF/XBRL 提取数值，以及选定官方数值与 TDX 的比较，属于下一层校验工作。
 
-## 16. Operational workflow
+## 16. 运行流程
 
-Normal refresh:
+正常刷新顺序：
 
 ```text
 sync-daily-all
@@ -345,90 +345,91 @@ sync-filings
 materialize-fundamentals
 ```
 
-Historical bootstrap uses explicit `--all` for large TDX financial and CNINFO filing backfills.
+TDX 财务和 CNINFO 公告的大规模历史回填使用显式 `--all`。
 
-Network ingestion and local derivation remain separate. Raw/provider truth can be refreshed independently; canonical derived data can be rebuilt without network access.
+网络采集与本地派生分离。原始/数据源事实可独立刷新，标准派生数据可离线重建。
 
-## 17. Non-goals for v0
+## 17. v0 非目标
 
-- order execution or portfolio trading;
-- commercial data redistribution;
-- multiple analytical storage backends;
-- EastMoney or Tushare as required dependencies;
-- adjusted prices as primary facts;
-- speculative canonicalization of unreviewed provider fields;
-- fabricated announcement timestamps or statement scope.
+- 下单执行或组合交易；
+- 商业数据再分发；
+- 多个分析存储后端；
+- 强制依赖东方财富或 Tushare；
+- 将复权价格作为主要事实；
+- 对未审核源字段进行猜测性标准化；
+- 虚构公告时间或报表范围。
 
-# 18. Important design decisions and process
+## 18. 重要设计决策与过程
 
-The architecture evolved through explicit review-driven decisions rather than a single fixed upfront schema.
+架构通过显式审查推动的决策演进，并非一次性预设固定结构。
 
-### D-001 — DuckDB instead of Pebble as canonical storage
+### D-001——标准存储采用 DuckDB，而非 Pebble
 
-The workload requires relational point-in-time joins, window functions, ASOF analysis, columnar scans, and Parquet interoperability. A KV-only design would require AlphaLake to rebuild query and indexing semantics itself.
+工作负载需要关系型时点关联、窗口函数、ASOF 分析、列式扫描和 Parquet 互操作。仅使用 KV 将迫使 AlphaLake 自行重建查询与索引语义。
 
-### D-002 — Source abstraction, not database abstraction
+### D-002——抽象数据源，不抽象数据库
 
-After choosing DuckDB, a multi-backend repository layer no longer created value. Source/provider boundaries, canonical semantics, and reproducible ingestion are the real variability points.
+选择 DuckDB 后，多后端仓储层不再创造价值。真正的变化点是数据源边界、标准语义和可复现采集。
 
-### D-003 — Reuse TDX transport/codecs, retain AlphaLake semantics
+### D-003——复用 TDX 传输/编解码，保留 AlphaLake 语义
 
-`injoyai/tdx` is used where practical for TDX protocol/file mechanics. AlphaLake owns units, temporal identity, validation, and canonical meaning. The gpcw codec is a documented narrow exception because upstream does not currently provide it.
+可行时使用 `injoyai/tdx` 完成协议和文件机制。AlphaLake 负责单位、时态身份、校验与标准含义。上游当前没有 gpcw 编解码器，因此该部分是已记录的有限例外。
 
-### D-004 — Raw artifacts are evidence
+### D-004——原始归档是证据
 
-Direct HTTP/protocol-to-database ingestion was rejected for stable files/documents. Immutable bytes permit parser correction, audit, historical revision comparison, and offline rebuild.
+稳定文件/文档不采用 HTTP/协议直接入库的单一路径。不可变字节支持解析器修正、审计、历史版本比较和离线重建。
 
-### D-005 — Temporal identity and destructive-change grace
+### D-005——时态身份与破坏性变更宽限
 
-Provider symbol strings cannot safely be canonical identities. Current-source omissions also cannot immediately close history. Partition isolation and repeated evidence were introduced after review exposed identity fragmentation and availability risks.
+数据源代码字符串不能安全地充当标准身份；当前源的遗漏也不能立即关闭历史。审查发现身份割裂和可用性风险后，引入分区隔离与重复证据确认。
 
-### D-006 — Content and lineage are different
+### D-006——内容与血缘不同
 
-Ingest-run IDs describe provenance; they do not prove content changed. Derived-data dirtiness therefore uses canonical content rather than timestamps/surrogate IDs.
+采集运行 ID 说明来源，不证明内容变化。因此派生数据失效判断使用标准内容，而非时间戳或代理 ID。
 
-### D-007 — Quarantine poison records, do not wedge datasets
+### D-007——隔离问题记录，避免阻塞整个数据集
 
-A bad daily row or unresolved financial record must not permanently block later good data. Valid rows progress while bad evidence remains visible and retryable.
+异常日线或未解析财务记录不应永久阻止后续正常数据。有效行继续推进，问题证据保持可见、可重试。
 
-### D-008 — Do not invent point-in-time semantics
+### D-008——不虚构时点语义
 
-TDX gpcw report periods were available before authoritative announcement time. Canonical facts remained intentionally empty until CNINFO filing evidence existed. This prevented a convenient but invalid substitution of fetch time, filename, or report period for market availability.
+TDX gpcw 先提供报告期，后续才有权威公告时间证据。在 CNINFO 公告证据接入前，标准事实有意保持为空，防止以抓取时间、文件名或报告期便利但错误地替代市场可用时间。
 
-### D-009 — Provider values and filing evidence remain independent
+### D-009——数据源数值与公告证据保持独立
 
-CNINFO timing is not written into TDX facts as though TDX supplied it. An explicit link relation preserves source roles and supports ambiguity/correction handling.
+CNINFO 时间不写进 TDX 事实并伪装成 TDX 提供。显式关联关系保留各来源职责，支持歧义和更正处理。
 
-### D-010 — Date-only disclosure is conservative, not fake precision
+### D-010——仅有披露日期时采用保守可用时间
 
-The public catalogue's date evidence is represented as date precision and becomes PIT-visible at the next China-day boundary. Same-day availability is intentionally sacrificed until a trustworthy intraday source exists.
+公开目录的日期证据按日期精度表示，到中国次日零点才在 PIT 查询中可见。在可信日内来源出现前，有意放弃同日可用性。
 
-### D-011 — Canonical fact identity follows immutable raw identity
+### D-011——标准事实身份遵循不可变原始身份
 
-Canonical instrument identity can be corrected. Fact identity therefore follows provider revision + raw code + field, allowing reassignment or removal without duplicate conflicting facts.
+标准证券身份可能修正，因此事实身份采用数据源版本、原始代码和字段，允许重新归属或删除，不产生重复冲突事实。
 
-### D-012 — Review issues are repaired, not merely documented
+### D-012——审查问题必须修复，不能仅记录
 
-Repeated reviews exposed migration drift, timezone coincidence, poison-record wedges, empty-snapshot erasure, ineffective dirtiness, code-reuse gaps, false ambiguity, corrupt-cache wedges, and identity-reassignment duplication. Correctness and recoverability issues were implemented and regression-tested rather than left as prose-only caveats.
+多次审查发现迁移漂移、时区偶合、问题记录阻塞、空快照清除、失效判断无效、代码复用缺口、假歧义、损坏缓存阻塞和身份重新归属重复等问题。正确性与恢复问题均通过实现修复及回归测试处理，而非仅留作文档提醒。
 
-Detailed decision records:
+详细决策记录：
 
-- [`001-tdx-daily-ingestion.md`](decisions/001-tdx-daily-ingestion.md)
-- [`002-gbbq-and-adjustment-segments.md`](decisions/002-gbbq-and-adjustment-segments.md)
-- [`003-temporal-classification-snapshots.md`](decisions/003-temporal-classification-snapshots.md)
-- [`004-security-master-and-content-dirtiness.md`](decisions/004-security-master-and-content-dirtiness.md)
-- [`005-partitioned-security-master-resilience.md`](decisions/005-partitioned-security-master-resilience.md)
-- [`006-professional-financial-artifacts.md`](decisions/006-professional-financial-artifacts.md)
-- [`007-cninfo-filing-and-pit-fundamentals.md`](decisions/007-cninfo-filing-and-pit-fundamentals.md)
+- [TDX 日线采集](decisions/001-tdx-daily-ingestion.md)
+- [GBBQ 与复权区间](decisions/002-gbbq-and-adjustment-segments.md)
+- [时态分类快照](decisions/003-temporal-classification-snapshots.md)
+- [证券主数据与内容失效判断](decisions/004-security-master-and-content-dirtiness.md)
+- [分区证券主数据韧性](decisions/005-partitioned-security-master-resilience.md)
+- [专业财务归档](decisions/006-professional-financial-artifacts.md)
+- [CNINFO 公告与时点基本面](decisions/007-cninfo-filing-and-pit-fundamentals.md)
+- [CNINFO 公告日期精度](decisions/008-cninfo-announcement-date-precision.md)
 
-# 19. Remaining roadmap
+## 19. 后续路线
 
-The current A+B evidence/PIT loop is complete for the reviewed FN230–FN238 fields. Remaining work is intentionally separate:
+当前 A+B 证据/时点查询闭环已覆盖审核过的 FN230–FN238 字段。后续工作独立推进：
 
-1. authoritative CNINFO numerical extraction/selected-fact validation;
-2. authoritative historical security lifecycle;
-3. authoritative trading calendar and populated exchange/company masters;
-4. broader reviewed financial field mappings and statement dimensions;
-5. dedicated index and fund domains;
-6. intraday canonical data;
-7. derived fundamentals, valuation, factors, screening, and backtesting interfaces.
+1. 权威 CNINFO 数值提取与选定事实校验；
+2. 权威历史证券生命周期；
+3. 权威交易日历及交易所/公司主数据填充；
+4. 更多经过审核的财务字段映射与报表维度；
+5. 专用指数和基金领域；
+6. 标准日内数据；
+7. 派生基本面、估值、因子、筛选及回测接口。

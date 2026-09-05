@@ -1,100 +1,104 @@
-# ADR 007 — CNINFO filing evidence and point-in-time fundamentals
+# ADR 007——CNINFO 公告证据与时点基本面
 
-Status: accepted
+状态：已接受
 
-## Context
+## 背景
 
-TDX professional-financial packages provide reproducible structured values and report periods, but the raw `gpcw` package does not provide a trustworthy per-company announcement timestamp. AlphaLake therefore retained provider facts without fabricating `announcement_time` and deliberately left canonical `fundamental.fact` unmaterialized.
+TDX 专业财务包提供可复现的结构化数值和报告期，但原始 `gpcw` 包不提供可信的逐公司公告时间戳。因此 AlphaLake 保留数据源事实，不虚构 `announcement_time`，并曾有意不物化标准 `fundamental.fact`。
 
-CNINFO is the authoritative disclosure platform selected to supply filing identity, disclosure time and original filing-document evidence. It does not replace TDX as the initial structured numerical provider. The two sources retain independent provenance and are joined explicitly.
+CNINFO 被选为提供公告身份、披露时间及原始公告文档证据的权威披露平台。它不替代 TDX 作为初始结构化数值来源。两类来源各自保留独立血缘，通过显式关系关联。
 
-## Decision 1 — Preserve catalogue pages and filing documents as separate evidence
+## 决策 1——目录页与公告文档作为独立证据保留
 
-Every acquired CNINFO catalogue page is retained through the common immutable artifact store before normalized filing metadata is written. Catalogue artifact identity includes the query date window, page number and page size.
+在写入归一化公告元数据前，每个已获取 CNINFO 目录页均先通过通用不可变归档存储保留。目录归档身份包含查询日期窗口、页码和页大小。
 
-By default, original periodic-report documents are also downloaded and retained as content-addressed artifacts. `--metadata-only` is an explicit operational mode that retains announcement metadata without document bytes; it is not the normal evidence-complete path.
+默认同时下载原始定期报告文档，保存为内容寻址归档。`--metadata-only` 是显式运行模式，仅保留公告元数据，不下载文档字节；它不是证据完整的默认路径。
 
-The filing row points at the currently observed document artifact while `fundamental.filing_document` retains every immutable document revision associated with the source filing ID.
+公告行指向当前观测的文档归档，`fundamental.filing_document` 则保留与源公告 ID 关联的每个不可变文档版本。
 
-## Decision 2 — Source filing ID is filing identity
+## 决策 2——源公告 ID 是公告身份
 
-`fundamental.filing` is unique by `(source, source_filing_id)`.
+`fundamental.filing` 按 `(source, source_filing_id)` 唯一。
 
-Instrument/report-period pairs are not filing identity because one period may have a full report, summary, corrected report, correction notice, revision, audit report and unrelated announcements. Re-observation of one source filing updates normalized metadata and resolution while retaining `first_seen_at` and source artifact lineage.
+证券/报告期组合不是公告身份：同一期可能有完整报告、摘要、更正后报告、更正公告、修订版、审计报告及无关公告。重复观测同一源公告时更新归一化元数据与解析结果，同时保留 `first_seen_at` 和源归档血缘。
 
-Correction/revision observations may point to the immediately preceding eligible report anchor through `corrects_filing_id`, but that relationship does not replace source identity.
+更正/修订观测可以通过 `corrects_filing_id` 指向最近的前序合格报告，但该关系不替代源身份。
 
-## Decision 3 — Filing classification is conservative and versioned
+## 决策 3——公告分类保守且带版本
 
-The first classifier recognizes Q1, semiannual, Q3 and annual periodic reports from explicit title wording. It distinguishes full reports, summaries, correction notices, corrected reports and revisions.
+初始分类器根据明确标题措辞识别一季报、半年报、三季报和年报，区分完整报告、摘要、更正公告、更正后报告及修订版。
 
-Announcements that merely discuss a report — including postponement/reservation notices, inquiry letters, presentations, board resolutions, forecasts and earnings flashes — are retained as filing evidence but cannot anchor PIT facts.
+仅讨论报告的公告，包括延期/预约公告、问询函、说明会、董事会决议、预告和快报，保留为证据，但不能作为 PIT 事实依据。
 
-The original provider category and raw catalogue identity fields are retained. `classifier_version` makes future reclassification reproducible.
+保留原始数据源类别与目录身份字段。`classifier_version` 使未来重新分类可复现。
 
-## Decision 4 — Filing identity uses disclosure-time security evidence
+## 决策 4——公告身份使用披露时点的证券证据
 
-CNINFO security codes are identifiers, not canonical identities.
+CNINFO 证券代码是标识符，不是标准身份。
 
-A filing is resolved against temporal TDX identifiers as of its announcement date. Explicit exchange evidence is used to form an exact provider symbol; if exchange evidence is absent, AlphaLake performs a strict equity-only raw-code search. Present-day code-range heuristics are not used.
+公告按披露日期解析时态 TDX 标识符。有显式交易所证据时构造准确源代码；缺失时仅在股票范围严格按原始代码查找。不采用当前代码区间启发式规则。
 
-Zero matches remain `pending`; multiple eligible matches remain ambiguous/pending; overlapping rows for the same full temporal identifier are store corruption. Pending filings remain queryable and are retried locally before fundamental materialization, so later security-lifecycle enrichment can repair old catalogue windows without redownloading them.
+零匹配保持 `pending`；多个合格匹配保持歧义/待解析；同一完整时态标识符重叠属于存储损坏。待解析公告仍可查询，并在基本面物化前本地重试，后续生命周期补全可修复旧目录窗口，无需重新下载。
 
-## Decision 5 — Windowed acquisition is resumable but corrections remain discoverable
+## 决策 5——窗口采集可续传，更正仍可发现
 
-CNINFO catalogue acquisition is split into bounded date windows and pages. Each page is an immutable artifact. A completed old window may be skipped by checkpoint, while recent windows are rescanned by default so late corrections and revised metadata remain discoverable. `--rescan` explicitly ignores old-window checkpoints.
+CNINFO 目录按有界日期窗口分页采集，每页是不可变归档。已完成的旧窗口可按检查点跳过；近期窗口默认重扫，以发现迟到更正和修订元数据。`--rescan` 显式忽略旧窗口完成检查点。
 
-Catalogue row failures are persisted as validation evidence and do not discard other valid rows from the page. A window checkpoint is published only after all pages and required document acquisitions for that window succeed.
+目录行失败持久化为校验证据，不丢弃同页其他有效行。只有所有页面及所需文档获取成功，才发布窗口完成检查点。
 
-## Decision 6 — Provider values and filing evidence never overwrite each other
+完成检查点按元数据/完整文档模式区分。旧版没有区分模式的检查点不证明文档已齐全，因此升级后重新扫描相关窗口。页码不一致、与分页声明矛盾的空页，或未结束就耗尽分页安全上限，均视为窗口失败。
 
-TDX provider facts remain TDX facts. CNINFO announcement time is not written back as though TDX supplied it.
+## 决策 6——数据源数值与公告证据不互相覆盖
 
-`fundamental.provider_filing_link` explicitly links one immutable provider-record revision `(provider source, artifact revision, raw provider code)` to one authoritative filing.
+TDX 数据源事实仍是 TDX 事实。不将 CNINFO 公告时间回写并伪装成 TDX 提供。
 
-A candidate filing must have:
+`fundamental.provider_filing_link` 显式关联一个不可变数据源记录版本 `(provider source, artifact revision, raw provider code)` 和一份权威公告。
 
-- the same canonical instrument;
-- the same report period;
-- a compatible periodic-report type;
-- an announcement time no later than the first observation time of that provider artifact.
+候选公告必须满足：
 
-The last condition prevents a correction announced in the future from being attached to an earlier provider revision. Among eligible candidates, later announcement time wins; at the same time, corrected report/revision/correction notice/full-report priority is deterministic. Equally ranked candidates remain `ambiguous` rather than being selected by filing ID.
+- 标准证券相同；
+- 报告期相同；
+- 定期报告类型兼容；
+- 公告可用时间不晚于数据源归档首次观测时间。
 
-## Decision 7 — Canonical facts use reviewed mappings and deterministic precision
+最后一个条件防止未来更正关联到早期数据源版本。合格候选中优先较晚公告时间；时间相同时，依次优先更正后报告、修订版、更正公告、完整报告。同排名候选保持 `ambiguous`，不按公告 ID 任意选择。
 
-Only provider fields with an explicitly reviewed canonical mapping and unit are eligible for `fundamental.fact`.
+## 决策 7——标准事实采用已审核映射和确定性精度
 
-The initial set remains FN230–FN238:
+只有标准映射与单位经过明确审核的源字段，才有资格进入 `fundamental.fact`。
 
-- FN230–FN237 are monetary facts normalized to CNY yuan;
-- FN238 is normalized to shares.
+初始范围保持 FN230–FN238：
 
-The provider layer remains lossless (`float32` bits plus analytical `float64`). Canonical values use `DECIMAL(38,10)` as a deterministic decimal representation of the provider value. This does not claim recovery of precision that the provider's float32 encoding did not contain.
+- FN230–FN237 为金额事实，归一化为人民币元；
+- FN238 归一化为股。
 
-Statement scope is recorded as `provider_default`; AlphaLake does not assert consolidated/parent-company scope that the provider record did not explicitly distinguish.
+数据源层保持无损：float32 位模式加分析用 float64。标准值使用 `DECIMAL(38,10)` 确定性表示源值，不宣称恢复 float32 编码未包含的精度。
 
-## Decision 8 — Canonical materialization is a local reconciliation
+报表范围记录为 `provider_default`。没有数据源明确区分时，不断言合并/母公司口径。
 
-`materialize-fundamentals` performs no network access. It:
+## 决策 8——标准物化是本地协调
 
-1. retries retained pending filing identities;
-2. refreshes provider-to-filing links;
-3. validates linked provider facts;
-4. reconciles canonical PIT facts.
+`materialize-fundamentals` 不访问网络，依次：
 
-Canonical fact identity follows immutable provider-record identity rather than canonical instrument identity. Later identity, mapping or filing corrections therefore update/reassign the existing fact instead of creating conflicting duplicates. Facts whose source evidence is no longer safely linked/materializable are removed, and rejected candidates create queryable validation results.
+1. 重试保留的待解析公告身份；
+2. 刷新数据源—公告关联；
+3. 校验已关联源事实；
+4. 协调标准 PIT 事实。
 
-## Decision 9 — ASOF semantics are first-class
+标准事实身份遵循不可变源记录，而非标准证券身份。后续身份、映射或公告修正更新/重新归属已有事实，不制造冲突重复项。源证据不再能安全关联/物化时删除事实，被拒候选生成可查询校验结果。
 
-`fundamental.fact_latest` exposes the latest known revision per instrument/field/report period.
+## 决策 9——ASOF 语义是一等约定
 
-`fundamental.fact_asof(as_of_time)` returns the latest revision whose authoritative `announcement_time` is no later than the supplied timestamp. Therefore a report is absent before disclosure, appears after the original filing, and changes only after a later correction/revision announcement.
+`fundamental.fact_latest` 按证券/字段/报告期提供最新已知版本。
 
-## Consequences and boundaries
+`fundamental.fact_asof(as_of_time)` 返回权威 `announcement_time` 不晚于指定时间的最新版本。因此，报告在披露可用前不存在，原始公告可用后出现，仅在后续更正/修订可用后改变。
 
-- AlphaLake now has an explicit evidence path from TDX numerical values to CNINFO filing identity and announcement time.
-- Original and corrected provider revisions can coexist and are selected correctly by ASOF time.
-- Historical backfill cannot recreate provider revisions that AlphaLake never observed. If only the current corrected gpcw bytes exist, AlphaLake materializes only that supported revision; it does not invent an earlier value history.
-- Catalogue/document acquisition and canonical materialization are separate commands so raw source ingestion and local derivation remain reproducible.
-- Numerical extraction from PDF/XBRL and selected CNINFO-vs-TDX value comparison remain a later validation layer; they are not prerequisites for authoritative announcement-time anchoring.
+公开目录仅支持日期精度时，具体可用边界遵循 [ADR 008](008-cninfo-announcement-date-precision.md)。
+
+## 影响与边界
+
+- AlphaLake 已有从 TDX 数值到 CNINFO 公告身份及公告时间的显式证据路径。
+- 原始与更正数据源版本可共存，并按 ASOF 时间正确选择。
+- 历史回填不能重建 AlphaLake 从未观测的数据源版本。若只存在当前更正后的 gpcw 字节，则仅物化该有依据版本，不虚构早期数值历史。
+- 目录/文档采集与标准物化分为独立命令，使原始采集和本地派生均可复现。
+- PDF/XBRL 数值提取及选定 CNINFO/TDX 数值比较属于后续校验层，不是权威公告时间关联的前置条件。

@@ -1,66 +1,68 @@
-# ADR 004 — Security-master lifecycle and content-based derived dirtiness
+# ADR 004——证券主数据生命周期与基于内容的派生失效判断
 
-Status: accepted
+状态：已接受
 
-## Context
+## 背景
 
-Two mechanisms existed in AlphaLake but were not effective in normal production workflows:
+AlphaLake 已有两个机制，但它们在普通生产流程中没有实际生效：
 
-1. `ref.instrument_identifier` supported temporal validity, but current TDX security-master refreshes only upserted identifiers. A code disappearing from `GetCodeAll` was never closed, so a later code reuse could still resolve to the old `instrument_id`.
-2. adjustment dirty state used ingestion lineage (`ingest_run_id`, `ingested_at`, row sequence IDs). Normal incremental daily sync rewrites the inclusive boundary row and GBBQ sync replaces a full snapshot, so unchanged canonical content still appeared dirty after every normal refresh.
+1. `ref.instrument_identifier` 支持时态有效期，但当前 TDX 主数据刷新只插入/更新标识符。`GetCodeAll` 中消失的代码从不关闭，后续代码复用仍可能解析到旧 `instrument_id`。
+2. 复权失效状态依赖采集血缘：`ingest_run_id`、`ingested_at`、行序列 ID。正常增量日线会重写包含的边界行，GBBQ 同步会替换完整快照，因此每次普通刷新后，不变内容也会被判断为已变化。
 
-## Decision 1 — Treat the provider security master as a verified snapshot
+## 决策 1——将数据源证券主数据视为经过验证的快照
 
-TDX exposes the current security universe as Shanghai, Shenzhen, and Beijing code-list partitions. The adapter emits a provider-neutral `InstrumentMasterSnapshot` with an observation date and a completeness flag.
+TDX 以上海、深圳、北京代码列表分区提供当前证券集合。适配器生成带观测日期和完整标记、与数据源无关的 `InstrumentMasterSnapshot`。
 
-Production TDX acquisition requires every configured exchange partition to succeed and be non-empty. The DuckDB store applies a complete snapshot in one transaction:
+本决策最初要求所有配置的交易所分区均成功且非空。DuckDB 在一个事务中应用完整快照：
 
-1. validate and upsert every current observation;
-2. compare current identifiers with previously open primary provider identifiers;
-3. reject suspicious exchange-level truncation before making lifecycle changes;
-4. close identifiers absent from the verified complete snapshot by setting `valid_to = snapshot_date`.
+1. 校验并写入所有当前观测；
+2. 将当前标识符与此前开放的主要数据源标识符比较；
+3. 在改变生命周期前拒绝可疑的交易所级截断；
+4. 对完整验证快照中缺失的标识符设置 `valid_to = snapshot_date`。
 
-Incomplete snapshots may update observations only through explicitly non-destructive fallback paths; they cannot infer removals.
+不完整快照仅能通过明确的非破坏性回退路径更新观测，不得推断移除。
 
-Identifier intervals use half-open `[valid_from, valid_to)` semantics. If a previously closed provider code reappears, it creates/resolves a new canonical instrument. When no authoritative new list date is available, the prior `valid_to` is the conservative lower bound for the reused identifier, preventing overlap until a better lifecycle source is available.
+标识符区间采用半开 `[valid_from, valid_to)`。已关闭的数据源代码重新出现时，创建/解析为新的标准证券。没有权威新上市日期时，以旧 `valid_to` 作为复用标识符的保守下界，在更好的生命周期源出现前避免重叠。
 
-## Decision 2 — One strict temporal resolver semantics
+上述全局完整性和首次缺失关闭机制已由 [ADR 005](005-partitioned-security-master-resilience.md) 替代；此处保留历史决策依据。
 
-All temporal identifier consumers must follow the same rules:
+## 决策 2——统一严格的时态解析语义
 
-- zero active matches: unresolved;
-- exactly one active match: resolved;
-- more than one active match: data-corruption error.
+所有时态标识符消费者必须遵循：
 
-Classification uses a batch resolver with those semantics rather than its earlier last-row-wins map. Current-universe queries return only open primary identifiers (`valid_to IS NULL`).
+- 零个有效匹配：未解析；
+- 恰好一个有效匹配：已解析；
+- 多于一个有效匹配：数据损坏错误。
 
-## Decision 3 — Derived dirtiness is about canonical content, not provenance
+分类使用符合这些规则的批量解析器，替代早期“最后一行覆盖前面结果”的映射。当前证券集合查询只返回开放的主要标识符，即 `valid_to IS NULL`。
 
-Ingestion lineage answers *who/when wrote this row*. It does not answer whether canonical input content changed.
+## 决策 3——派生失效取决于标准内容，不取决于来源记录
 
-Adjustment input signatures therefore exclude `ingest_run_id`, `ingested_at`, and generated sequence IDs. The current `content-v1` signature is derived from stable canonical input content:
+采集血缘回答“谁在何时写入这一行”，不回答标准输入内容是否变化。
 
-- daily: ordered trade date + OHLC + volume + amount + breadth values;
-- corporate actions: ordered stable `source_record_id` values, with raw-field fallback for legacy rows.
+复权输入签名因此排除 `ingest_run_id`、`ingested_at` 和生成的序列 ID。当前 `content-v1` 签名取自稳定标准输入：
 
-This means:
+- 日线：按顺序的交易日期、OHLC、成交量、成交额和市场宽度值；
+- 公司行动：按顺序的稳定 `source_record_id`；旧行回退为原始字段。
 
-- replaying the same inclusive daily boundary under a new ingest run remains clean;
-- deleting/reinserting an identical full GBBQ snapshot remains clean;
-- correcting an existing historical/boundary bar dirties adjustments;
-- correcting GBBQ raw content dirties adjustments.
+因此：
 
-`market.adjustment_segment` and `meta.derived_state` continue to publish atomically, so a failed recalculation cannot mark stale output clean.
+- 新运行重放相同日线边界仍保持有效；
+- 删除后重新插入相同完整 GBBQ 快照仍保持有效；
+- 修正已有历史/边界日线会使复权失效；
+- 修正 GBBQ 原始内容会使复权失效。
 
-## Decision 4 — Daily quarantine evidence is one transaction
+`market.adjustment_segment` 与 `meta.derived_state` 继续原子发布，重算失败不能将旧输出标记为有效。
 
-For one instrument/run, canonical valid bars, persisted validation violations, and the durable quarantine retry checkpoint are one atomic DuckDB transaction. Either all three effects commit or all roll back.
+## 决策 4——日线隔离证据置于同一事务
 
-This preserves the invariant that a quarantined row cannot be forgotten because good rows committed while retry state failed to persist.
+单个证券/运行的有效标准日线、校验违规和持久隔离重试检查点使用一个原子 DuckDB 事务。三项一起提交或一起回滚。
 
-## Consequences
+这样，正常行已提交但重试状态保存失败时，也不会遗忘被隔离行。
 
-- Code reuse protection is effective in normal observed TDX workflows rather than existing only as store APIs.
-- A missed entire absence interval still cannot be reconstructed from a current-only source; an authoritative security-lifecycle source remains desirable for exact historical dates.
-- Adjustment dirty checking now works after the normal `sync-daily-all -> sync-actions -> calc-adjustments` sequence.
-- Content signatures currently require SQL aggregation over an instrument's canonical history. If that becomes material at scale, content revision/signature maintenance should move into the merge/snapshot transaction without changing the semantic contract above.
+## 影响
+
+- 代码复用保护在实际 TDX 观测流程中生效，不再仅存在于存储 API。
+- 仅有当前状态的源仍无法重建完全错过的缺失区间；精确历史日期仍需权威生命周期源。
+- 正常执行 `sync-daily-all -> sync-actions -> calc-adjustments` 后，复权失效检查真正有效。
+- 当前内容签名需要对证券的标准历史做 SQL 聚合。规模增大后如成本显著，可将内容版本/签名维护移入合并或快照事务，但不改变上述语义约定。

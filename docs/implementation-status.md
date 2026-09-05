@@ -1,124 +1,124 @@
-# AlphaLake implementation status
+# AlphaLake 实现状态
 
-This document records **what exists in the repository today**. It complements `design.md`, which describes the accepted target architecture and compatibility contracts.
+本文记录**仓库中当前实际存在的能力**，与描述已接受目标架构及兼容性约定的 `design.md` 配套使用。
 
-Status meanings:
+状态含义：
 
-- **Implemented** — an executable production path exists and is covered by tests.
-- **Partial** — executable behavior exists, but the accepted design is not complete.
-- **Schema only** — a table/model exists without a complete acquisition or processing path.
-- **Planned** — accepted direction only; no implementation should be inferred.
+- **已实现**——存在可执行的生产路径，且有测试覆盖。
+- **部分实现**——已有可执行行为，但尚未完成已接受的设计。
+- **仅有结构**——已有表或模型，但缺少完整采集或处理路径。
+- **计划中**——仅为已接受的方向，不代表已有实现。
 
-## Foundation
+## 基础设施
 
-| Capability | Status | Notes |
+| 能力 | 状态 | 说明 |
 | --- | --- | --- |
-| DuckDB canonical store | Implemented | DuckDB is the single analytical backend; persistent databases use the stable `alphalake` catalog alias. |
-| Versioned migrations | Implemented | Embedded migrations are the only SQL source of truth. Only pending versions run, each in its own transaction, and successful versions are recorded. Current schema includes migrations 001–017. |
-| Ingest-run lifecycle | Implemented | Market, classification, financial, CNINFO filing, and canonical-materialization workflows create durable runs with `completed`, `partial`, `failed`, or `canceled` terminal state. |
-| Operational status | Implemented | `alphalake status` reports schema version, pending migrations, validation failures, checkpoints, and recent runs without migrating the database. |
-| Validation persistence | Implemented | OHLCV violations, acquisition diagnostics, invalid catalogue records, and rejected canonical financial candidates are queryable in `meta.validation_result`. |
-| Checkpoints | Partial | Dataset-specific checkpoints support daily quarantine retry, security-master disappearance confirmation, TDX financial package completion, and completed CNINFO catalogue windows. There is intentionally no single global checkpoint meaning. |
-| Immutable artifact store | Implemented | SHA-256 content addressing, root-relative paths, temporary-file/fsync/rename publication, retained-version reuse, load-time verification, and corrupt/missing-file recovery are implemented. TDX manifests/packages and CNINFO catalogue pages/documents use it. |
-| Broad adapter interface | Removed | Workflows define narrow consumer interfaces instead of forcing one source shape onto protocol responses, paginated APIs, and stable files/documents. |
+| DuckDB 标准存储 | 已实现 | DuckDB 是唯一分析后端；持久化数据库使用稳定的 `alphalake` 目录别名。 |
+| 版本化迁移 | 已实现 | 内嵌迁移是 SQL 的唯一事实来源。仅执行待迁移版本，每个版本独立事务，成功后记录版本。当前结构包含 001–017。 |
+| 采集运行生命周期 | 已实现 | 市场、分类、财务、CNINFO 公告和标准事实物化流程均保存运行记录，终态为 `completed`、`partial`、`failed` 或 `canceled`。 |
+| 运行状态查询 | 已实现 | `alphalake status` 不迁移数据库，直接报告结构版本、待执行迁移、校验失败、检查点和近期运行。 |
+| 校验持久化 | 已实现 | OHLCV 异常、采集诊断、无效目录记录及被拒绝的标准财务候选可在 `meta.validation_result` 查询。 |
+| 检查点 | 部分实现 | 数据集分别使用日线隔离重试、证券消失确认、TDX 财务包完成、CNINFO 目录窗口完成检查点。不存在统一的全局检查点语义。 |
+| 不可变归档存储 | 已实现 | 支持 SHA-256 内容寻址、根目录相对路径、临时文件/fsync/rename 发布、版本复用、加载校验和损坏/丢失恢复。TDX 清单/包、CNINFO 目录/文档均已接入。路径段不会保留 `.` 或 `..`。 |
+| 宽泛适配器接口 | 已移除 | 各流程定义窄消费者接口，不强行将协议响应、分页 API 和稳定文件/文档统一成一种源形态。 |
 
-## Reference and identity
+## 参考数据与身份
 
-| Capability | Status | Notes |
+| 能力 | 状态 | 说明 |
 | --- | --- | --- |
-| Canonical `instrument_id` | Implemented | Provider symbols resolve to stable canonical instruments. |
-| Temporal provider identifiers | Implemented | Half-open `[valid_from, valid_to)` intervals, explicit as-of resolution, overlap rejection, and non-overlapping code reuse are implemented. |
-| TDX security-master lifecycle | Implemented | SH/SZ/BJ are independently validated/applied. Failed or suspicious partitions freeze without blocking healthy exchanges. Missing identifiers require two distinct complete observations before close. |
-| Security-master diagnostics | Implemented | Partition failures are returned in summaries, persisted as validation evidence, and force otherwise healthy runs to `partial`. |
-| Legacy master safety | Implemented | Non-partitioned compatibility snapshots retain repeated-absence semantics and global truncation protection. |
-| Authoritative historical lifecycle | Partial | Current TDX snapshots can observe disappearance/reappearance after AlphaLake begins observing. They cannot reconstruct missed historical absence intervals or guarantee official list/delist/relist/code-change dates. |
-| Exchange master | Schema only | `ref.exchange` exists without an authoritative population workflow. |
-| Company master | Schema only | `ref.company` exists without a production acquisition path. |
-| Trading calendar | Schema only | The table exists; no authoritative exchange-calendar workflow is complete. |
+| 标准 `instrument_id` | 已实现 | 数据源代码解析为稳定的标准证券身份。 |
+| 时态数据源标识符 | 已实现 | 支持半开 `[valid_from, valid_to)` 区间、显式时点解析、拒绝区间重叠和不重叠的代码复用。 |
+| TDX 证券主数据生命周期 | 已实现 | SH/SZ/BJ 独立校验和应用。失败或可疑分区冻结，不阻止正常交易所。标识符关闭前需两次不同日期的完整缺失观测。 |
+| 证券主数据诊断 | 已实现 | 分区失败写入摘要和校验证据，并使其他部分正常的运行标记为 `partial`。 |
+| 旧版主数据安全保护 | 已实现 | 无显式分区的兼容快照保留重复缺失确认语义与全局截断保护。 |
+| 权威历史生命周期 | 部分实现 | 当前 TDX 快照只能记录 AlphaLake 开始观测后的消失/重现，无法重建错过的历史缺失区间，也不能保证官方上市、退市、重新上市或代码变更日期。 |
+| 交易所主数据 | 仅有结构 | 已有 `ref.exchange`，尚无权威填充流程。 |
+| 公司主数据 | 仅有结构 | 已有 `ref.company`，尚无生产采集路径。 |
+| 交易日历 | 仅有结构 | 已有表，尚未完成权威交易所日历流程。 |
 
-## Market data
+## 市场数据
 
-| Capability | Status | Notes |
+| 能力 | 状态 | 说明 |
 | --- | --- | --- |
-| TDX equity/ETF daily OHLCV | Implemented | Full bootstrap plus inclusive per-instrument incremental refresh. Single-symbol and all-market paths share run, lineage, validation, and retry semantics. |
-| Canonical daily dates | Implemented | Provider Y/M/D is normalized to a date-only UTC carrier independent of the host timezone. |
-| Canonical volume | Implemented | Stock/ETF TDX hands are converted to shares or units. |
-| Daily validation/quarantine | Implemented | Invalid rows are quarantined while good rows continue. Earliest bad date remains retryable. Good rows, validation evidence, and retry checkpoint publish in one transaction. |
-| Daily bulk persistence | Implemented | Per-instrument DuckDB Appender/staging and set-based upsert replace row-by-row OLTP writes. |
-| TDX GBBQ corporate actions | Implemented | Raw categories and C1–C4 fields are retained; per-symbol snapshots replace atomically. |
-| GBBQ last-known-good safety | Implemented | Empty/suspicious truncation is refused by default. `--force` bypasses only the snapshot-size guard after successful acquisition. |
-| Share-capital history | Implemented | Raw source-record identity permits multiple same-day/same-category observations. |
-| QFQ/HFQ affine adjustments | Implemented | Derived locally from unadjusted prices and verified corporate-action semantics, including cash-distribution additive terms. |
-| Incremental adjustment derivation | Implemented | Dirtiness is based on canonical content, not ingest lineage. Identical source replay remains clean; same-date historical correction dirties output. Derived segments and state publish atomically. |
+| TDX 股票/ETF 日线 OHLCV | 已实现 | 首次全历史导入，之后逐证券包含边界日增量刷新。单代码和全市场流程共享运行、血缘、校验及重试语义。 |
+| 标准日线日期 | 已实现 | 数据源年月日归一化为仅承载日期的 UTC 值，不受主机时区影响。 |
+| 标准成交量 | 已实现 | 股票/ETF 的 TDX 手数转为股/份。 |
+| 日线校验/隔离 | 已实现 | 异常行被隔离，正常行继续处理。保留最早异常日期以重试。有效行、校验证据、重试检查点在同一事务发布。 |
+| 日线批量持久化 | 已实现 | 逐证券使用 DuckDB Appender/暂存表及集合式写入，替代逐行 OLTP 式写入。 |
+| TDX GBBQ 公司行动 | 已实现 | 保留原始类别及 C1–C4 字段；逐代码原子替换快照。 |
+| GBBQ 上次可信数据保护 | 已实现 | 默认拒绝空快照或可疑截断。`--force` 仅在采集成功后跳过快照大小保护。 |
+| 股本历史 | 已实现 | 原始源记录身份允许同日、同类别存在多条观测。 |
+| 前/后复权仿射变换 | 已实现 | 根据未复权价格和已验证的公司行动语义在本地派生，包含现金分派加法项。 |
+| 增量复权派生 | 已实现 | 按标准内容判断是否失效，不依赖采集血缘。相同内容重放保持有效，同日历史修正会使输出失效。派生区间与状态原子发布。 |
 
-## Classification
+## 分类
 
-| Capability | Status | Notes |
+| 能力 | 状态 | 说明 |
 | --- | --- | --- |
-| Taxonomy/node model | Implemented | Provider taxonomy identity is separate from canonical database identity. |
-| Temporal membership | Implemented | Half-open effective intervals and same-day correction behavior are supported. |
-| Strict member resolution | Implemented | Batch resolution uses 0=unresolved, 1=resolved, >1=corruption semantics; overlapping identifiers cannot silently last-row-win. |
-| TDX concept/style-region/index-block | Implemented | Families update independently; failed/incomplete families cannot close prior membership. |
-| TDX and Shenwan industry hierarchy | Implemented | Shared source inputs are acquired once, each taxonomy is built/applied independently, and sparse unnamed intermediate levels are tolerated without inventing membership leaves. |
-| Pre-bootstrap membership history | Planned | Prospective snapshot history exists; historical memberships before AlphaLake observation require another source. |
+| 分类体系/节点模型 | 已实现 | 数据源分类身份与标准数据库身份分离。 |
+| 时态成员关系 | 已实现 | 支持半开有效区间及同日修正。 |
+| 严格成员解析 | 已实现 | 批量解析采用 0=未解析、1=已解析、>1=损坏的语义；重叠标识符不会悄然采用最后一行。 |
+| TDX 概念/风格地域/指数板块 | 已实现 | 各板块族独立更新；失败或不完整的板块族不能关闭历史成员关系。 |
+| TDX 与申万行业层级 | 已实现 | 共享输入只采集一次，各体系独立构建和应用；允许缺少名称的中间层，但不虚构成员叶节点。 |
+| 首次观测前的成员历史 | 计划中 | 已能从快照观测开始建立历史；更早的成员关系需要其他数据源。 |
 
-## TDX professional financial provider layer
+## TDX 专业财务数据源层
 
-| Capability | Status | Notes |
+| 能力 | 状态 | 说明 |
 | --- | --- | --- |
-| Manifest/package acquisition | Implemented | `sync-financial` fetches `gpcw.txt`, verifies package size/MD5, retains manifest/package artifacts, defaults to the newest package, and supports explicit `--all` backfill. |
-| Lossless gpcw parser | Implemented | Field count derives from `report_size/4`; package offsets/structure are validated; original float32 bits plus analytical float64 values are retained. |
-| Raw financial identity | Implemented | The adapter retains six-digit provider code and raw marker without assigning unverified market semantics or using present-day code-range classification. |
-| Temporal raw-code resolution | Implemented | Candidate symbols are queried at the report period. Indexes are excluded by dataset semantics; one eligible candidate resolves, zero/multiple remain pending, and overlapping full identifiers are corruption. |
-| Resolution governance | Implemented | `resolved`, `pending`, and operator-`acknowledged` evidence is durable per artifact/code. Ack is reversible, pending rows are pageable, and later authoritative resolution supersedes acknowledgement. |
-| Provider-fact writer | Implemented | Every FN field is bulk persisted with artifact/run lineage and exact provider bits. Immutable raw identity is separate from canonical instrument identity, so later identity correction reassigns facts instead of duplicating them. |
-| Provider artifact recovery | Implemented | Historical retained revisions are reused; corrupt/missing local objects fall back to provider download, integrity verification, and atomic repair. |
-| Reviewed provider mapping | Partial | FN230–FN238 are reviewed and mapped. Other FN fields remain lossless provider evidence but are not canonicalized until their semantics and units are reviewed. |
+| 清单/包采集 | 已实现 | `sync-financial` 抓取 `gpcw.txt`，校验包大小/MD5，保留清单和包归档；默认最新包，显式 `--all` 回填。 |
+| 无损 gpcw 解析 | 已实现 | 字段数取自 `report_size/4`；校验包偏移和结构；保留原始 float32 位模式及分析用 float64 值。 |
+| 原始财务身份 | 已实现 | 适配器保留六位代码及原始标记，不赋予未经验证的市场语义，不使用当前代码区间分类。 |
+| 时态原始代码解析 | 已实现 | 在报告期查询候选代码，根据数据集语义排除指数；唯一候选可解析，零个或多个保持待解析，同一完整标识符重叠视为损坏。 |
+| 解析治理 | 已实现 | 按归档/代码持久保存 `resolved`、`pending` 和人工 `acknowledged` 证据。确认可撤销，待解析行可分页查询，后续权威解析替代确认。 |
+| 数据源事实写入 | 已实现 | 每个 FN 字段批量持久化，保留归档/运行血缘和精确原始位模式。不可变原始身份与标准证券身份分离，后续修正重新归属事实而非重复生成。 |
+| 数据源归档恢复 | 已实现 | 复用历史版本；本地对象损坏/丢失时重新下载、校验完整性并原子修复。 |
+| 已审核字段映射 | 部分实现 | FN230–FN238 已审核并映射。其他 FN 字段保留为无损证据，语义和单位审核前不标准化。 |
 
-## CNINFO filing evidence
+## CNINFO 公告证据
 
-| Capability | Status | Notes |
+| 能力 | 状态 | 说明 |
 | --- | --- | --- |
-| CNINFO catalogue client | Implemented | Paginated `/new/hisAnnouncement/query` acquisition includes retry/backoff, rate limiting, response-size limits, bounded windows, and row-level parsing failures. |
-| Catalogue artifacts | Implemented | Every acquired page is retained before normalized filing metadata is written. Artifact locator records date window, page, and page size. |
-| Periodic-report classification | Implemented | Q1/H1/Q3/annual reports, summaries, correction notices, corrected reports, and revisions are distinguished. Postponement notices, inquiry letters, presentations, forecasts, flashes, and similar references cannot anchor PIT facts. |
-| Filing identity/model | Implemented | `fundamental.filing` is unique by source filing ID and retains provider code, exchange evidence, report period, classifier/raw metadata, first/last seen, resolution, and artifact lineage. |
-| Filing document evidence | Implemented | Eligible full/correction/revision documents are downloaded by default, semantically checked against empty/HTML/non-PDF responses, and retained as immutable artifacts. `filing_document` retains revision history. `--metadata-only` is explicit. |
-| Filing identity resolution | Implemented | Explicit exchange evidence resolves exact temporal TDX equity identifiers at the disclosure date; missing exchange evidence uses strict equity-only raw-code resolution. Unsupported/ambiguous/missing identity remains pending. |
-| Pending filing recovery | Implemented | `materialize-fundamentals` re-resolves retained pending filings locally after lifecycle enrichment; no catalogue/document redownload is required. `filing-unresolved` exposes pageable pending evidence. |
-| Correction predecessor relation | Implemented | A correction/revision can link to the immediately preceding eligible report anchor while preserving its own source identity. |
-| Catalogue-window resumability | Implemented | Old complete windows may be checkpoint-skipped; recent windows are rescanned so late corrections/revisions remain discoverable; `--rescan` overrides old-window checkpoints. Any acquisition/artifact/diagnostic/write failure withholds the window checkpoint. |
-| Disclosure time precision | Implemented | The public catalogue is treated as date precision. China-local disclosure date and raw provider milliseconds are retained; canonical PIT availability is the next China-calendar-day boundary, with precision recorded as `date`. No intraday timestamp is invented. |
+| CNINFO 目录客户端 | 已实现 | 分页访问 `/new/hisAnnouncement/query`，支持重试退避、限速、响应大小限制、有界窗口和逐行解析错误。重定向不得离开配置的源站。 |
+| 目录归档 | 已实现 | 在写入归一化元数据前保留每个已获取页面；定位符包含日期窗口、页码和页大小。 |
+| 定期报告分类 | 已实现 | 区分 Q1/H1/Q3/年报、摘要、更正公告、更正后报告及修订版。延期通知、问询函、说明会、预告、快报等不能作为 PIT 事实依据。 |
+| 公告身份/模型 | 已实现 | `fundamental.filing` 按来源及源公告 ID 唯一，保留代码、交易所证据、报告期、分类器/原始元数据、首次/末次观测、解析状态和归档血缘。 |
+| 公告文档证据 | 已实现 | 默认下载符合条件的完整/更正/修订文档，拒绝空内容、HTML 和不符合 PDF 签名的响应，保存不可变归档。`filing_document` 保留版本历史；仅元数据模式需显式 `--metadata-only`。 |
+| 公告身份解析 | 已实现 | 显式交易所证据在披露日期解析准确的时态 TDX 股票标识符；缺失时仅在股票范围按原始代码严格解析。不支持、歧义或缺失身份保持待解析。 |
+| 待解析公告恢复 | 已实现 | 生命周期信息补全后，`materialize-fundamentals` 本地重新解析，无需重下目录/文档。`filing-unresolved` 提供分页证据查询。刷新保留披露日期及精度。 |
+| 更正前序关系 | 已实现 | 更正/修订可关联可用时间严格更早的最近合格报告，同时保留自身身份。同日日期精度公告无法相互确定前序关系。 |
+| 目录窗口续传 | 已实现 | 旧完整窗口可按检查点跳过，近期窗口重扫以发现迟到更正/修订；`--rescan` 强制重扫。元数据/完整文档检查点分离，忽略旧版未区分模式的检查点。采集、分页、归档、诊断或写入失败均阻止写入完成检查点。 |
+| 披露时间精度 | 已实现 | 公开目录按日期精度处理。保留中国本地披露日期和原始毫秒值，标准 PIT 可用时间设为中国次日零点，精度记为 `date`，不虚构日内时间。 |
 
-## Canonical point-in-time fundamentals
+## 标准时点基本面
 
-| Capability | Status | Notes |
+| 能力 | 状态 | 说明 |
 | --- | --- | --- |
-| Provider-to-filing link | Implemented | `fundamental.provider_filing_link` keeps TDX numerical provenance separate from CNINFO filing provenance. Candidate filing must match instrument, report period, report type, and be available no later than provider-artifact observation time. |
-| Correction-aware linking | Implemented | Earlier observed provider revisions link only to filings already available then; later revisions can link to later corrections. Equally ranked candidates remain ambiguous. |
-| Canonical precision/unit policy | Implemented for reviewed fields | FN230–FN237 normalize to CNY yuan; FN238 to shares. Values use `DECIMAL(38,10)` as deterministic representation of provider float32, not as recovery of unavailable source precision. Statement scope remains `provider_default`. |
-| PIT fact materializer | Implemented | `materialize-fundamentals` is local-only. It retries pending filing identities, refreshes links, validates candidates, and reconciles canonical facts by immutable raw identity. |
-| Canonical reconciliation | Implemented | Identity/mapping/filing corrections update the existing raw-identity fact. Unsupported or newly unsafe evidence removes stale canonical facts. Rejected candidates create validation evidence. |
-| Latest view | Implemented | `fundamental.fact_latest` selects the latest available revision per instrument/canonical field/report period. |
-| ASOF macro | Implemented | `fundamental.fact_asof(as_of_time)` selects the latest revision whose authoritative availability is no later than the supplied timestamp. Tests prove no row before original disclosure and corrected value only after correction availability. |
-| End-to-end evidence chain | Implemented | Tests cover CNINFO catalogue HTTP parsing, document retention, TDX provider revision persistence, explicit link, canonical materialization, original/corrected revisions, and ASOF behavior. |
-| CNINFO numerical fact extraction/validation | Planned | Original documents are retained, but AlphaLake does not yet extract PDF/XBRL values or numerically compare selected official values with TDX provider facts. |
+| 数据源—公告关联 | 已实现 | `fundamental.provider_filing_link` 分开保留 TDX 数值与 CNINFO 公告来源。候选公告必须证券、报告期和报告类型匹配，且可用时间不晚于数据源归档观测时间。 |
+| 考虑更正的关联 | 已实现 | 早期数据源版本只关联当时已可用公告；后期版本可关联后续更正。同优先级候选保持歧义。 |
+| 标准精度/单位策略 | 已审核字段已实现 | FN230–FN237 归一化为人民币元，FN238 为股。用 `DECIMAL(38,10)` 确定性表示 float32 值，不恢复源编码缺失的精度。报表范围保持 `provider_default`。 |
+| PIT 事实物化 | 已实现 | `materialize-fundamentals` 仅在本地运行，重试公告身份、刷新关联、校验候选，并按不可变原始身份协调标准事实。 |
+| 标准事实协调 | 已实现 | 身份/映射/公告修正更新已有原始身份的事实；依据不再受支持或不安全时删除过时事实；被拒候选形成校验证据。 |
+| 最新视图 | 已实现 | `fundamental.fact_latest` 按证券/标准字段/报告期选择最新可用版本。 |
+| ASOF 宏 | 已实现 | `fundamental.fact_asof(as_of_time)` 选择权威可用时间不晚于给定时间的最新版本。测试验证原始披露前无记录、更正可用后才出现更正值。 |
+| 端到端证据链 | 已实现 | 测试覆盖 CNINFO 目录 HTTP 解析、文档保留、TDX 版本持久化、显式关联、标准物化、原始/更正版本及 ASOF 行为。 |
+| CNINFO 数值提取/校验 | 计划中 | 已保留原文，尚不从 PDF/XBRL 提取数值或对选定官方数值与 TDX 事实进行数值比较。 |
 
-## Later domains
+## 后续领域
 
-| Capability | Status | Notes |
+| 能力 | 状态 | 说明 |
 | --- | --- | --- |
-| Dedicated index master/weights | Planned | Generic temporal classification exists, but a dedicated weighted-constituent domain is not complete. |
-| Fund master/NAV/AUM/holdings | Planned | No complete canonical fund slice exists. |
-| Intraday market data | Planned | TDX parser/source support exists upstream, but canonical intraday session/time/unit persistence is not implemented. |
-| Derived research/valuation/factors | Planned | Outside the ingestion and PIT-fundamental foundation completed here. |
+| 专用指数主数据/权重 | 计划中 | 已有通用时态分类，尚未完成专用加权成分领域。 |
+| 基金主数据/净值/规模/持仓 | 计划中 | 尚无完整的标准基金数据切片。 |
+| 日内行情 | 计划中 | 上游已有解析/源支持，标准日内时段、时间和单位持久化尚未实现。 |
+| 派生研究/估值/因子 | 计划中 | 不属于本阶段已完成的采集与时点基本面基础设施。 |
 
-## Known work still open
+## 尚待完成
 
-1. Extract selected values from authoritative CNINFO documents or structured attachments and compare them with TDX provider facts.
-2. Add an authoritative security-lifecycle source so official list/delist/relist/code-change dates and missed historical absence intervals can replace conservative observed boundaries.
-3. Expand the reviewed FN catalogue and statement dimensions only after semantics, units, scope, and industry-specific fields are reviewed.
-4. Add an authoritative trading-calendar workflow and populate exchange/company reference masters.
-5. Verify the raw gpcw marker byte independently before assigning it market semantics; until then it remains raw evidence only.
-6. If adjustment content-signature scans become material at scale, maintain signatures incrementally without changing content-based correctness semantics.
-7. Build dedicated index, fund, intraday, valuation, factor, screening, and backtest domains after the reference/fundamental foundation stabilizes.
+1. 从权威 CNINFO 文档或结构化附件中提取选定数值，与 TDX 数据源事实比较。
+2. 引入权威证券生命周期源，用官方上市/退市/重新上市/代码变更日期及错过的历史缺失区间替代保守观测边界。
+3. 审核语义、单位、范围和行业专有字段后，再扩展 FN 目录及报表维度。
+4. 增加权威交易日历流程，填充交易所和公司主数据。
+5. 独立验证 gpcw 原始标记字节，再赋予市场语义；此前只作为原始证据。
+6. 如果复权内容签名扫描在大规模数据下成本明显，则增量维护签名，保留基于内容的正确性语义。
+7. 参考数据/基本面基础稳定后，再建设指数、基金、日内、估值、因子、筛选及回测领域。

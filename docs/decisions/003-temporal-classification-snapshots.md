@@ -1,18 +1,18 @@
-# ADR 003 — Temporal classification snapshots
+# ADR 003——时态分类快照
 
-Status: accepted
+状态：已接受
 
-## Context
+## 背景
 
-TDX block and industry APIs primarily expose current classification state. Investment research and historical backtests require point-in-time membership history so that today's industry/concept/index membership is not silently projected backward.
+TDX 板块与行业 API 主要提供当前分类状态。投资研究和历史回测需要时点成员历史，避免将今天的行业、概念、指数成员关系悄然投射到过去。
 
-AlphaLake therefore needs to turn repeated current snapshots into temporal canonical facts without inventing precision that the provider did not supply.
+因此，AlphaLake 需要将反复获取的当前快照转成时态标准事实，不虚构数据源未提供的精度。
 
-## Decisions
+## 决策
 
-### 1. Provider classification structures stop at the TDX adapter
+### 1. 数据源分类结构止于 TDX 适配器
 
-TDX block files are normalized into provider-neutral snapshots:
+TDX 板块文件归一化为与数据源无关的快照：
 
 ```text
 ClassificationSnapshot
@@ -22,83 +22,83 @@ ClassificationSnapshot
     Name
     ParentNodeCode
     SourceSymbol
-    Member provider identifiers[]
+    成员的数据源标识符[]
 ```
 
-Canonical `taxonomy_id`, `node_id`, and `instrument_id` are resolved by the store/ingest layer, not the source adapter.
+标准 `taxonomy_id`、`node_id`、`instrument_id` 由存储/采集层解析，不由源适配器分配。
 
-### 2. Block families are separate taxonomies
+### 2. 板块族是独立分类体系
 
-The first block families are:
+首批板块族：
 
-- `tdx_concept` from `block_gn.dat`;
-- `tdx_style_region` from `block_fg.dat`;
-- `tdx_index_block` from `block_zs.dat`.
+- `block_gn.dat` 对应 `tdx_concept`；
+- `block_fg.dat` 对应 `tdx_style_region`；
+- `block_zs.dat` 对应 `tdx_index_block`。
 
-TDX industry and Shenwan-industry taxonomies are handled separately because they use `tdxhy.cfg` assignments plus `incon.dat` code/name hierarchy rather than block membership files.
+TDX 和申万行业单独处理，因为其来源为 `tdxhy.cfg` 行业归属与 `incon.dat` 代码/名称层级，而非板块成员文件。
 
-### 3. Use stable provider node codes where available
+### 3. 可用时采用稳定的数据源节点代码
 
-For concept/style blocks, AlphaLake prefers the TDX board index code populated by `GetBlockDataWithIndex`.
+概念/风格板块优先采用 `GetBlockDataWithIndex` 填充的 TDX 板块指数代码。
 
-`block_zs.dat` itself does not contain a stable board index identifier. Until a stronger mapping is available, AlphaLake uses the explicit fallback:
+`block_zs.dat` 本身没有稳定板块指数标识符。获得更可靠映射前，显式回退为：
 
 ```text
-block_zs.dat:<provider board name>
+block_zs.dat:<数据源板块名称>
 ```
 
-This fallback is deliberately visible rather than pretending the name is a stable exchange identifier.
+明确显示该回退，不将名称伪装成稳定交易所标识符。
 
-### 4. Membership intervals are half-open
+### 4. 成员区间为半开区间
 
-Canonical classification membership uses:
+标准分类成员关系使用：
 
 ```text
 [effective_from, effective_to)
 ```
 
-An open membership has `effective_to = NULL`.
+开放成员关系的 `effective_to = NULL`。
 
-If a member is present on the September 1 snapshot and absent from a complete September 4 snapshot, its interval becomes:
+若成员存在于 9 月 1 日快照，但在 9 月 4 日完整快照中消失，则区间为：
 
 ```text
 [2026-09-01, 2026-09-04)
 ```
 
-This says only what the observations support: by September 4 it is no longer present. AlphaLake does not invent September 3 as the exact removal date.
+这只表达观测支持的结论：到 9 月 4 日已不在其中。不虚构 9 月 3 日为精确移除日。
 
-### 5. Same-day disagreements are corrections, not zero-length history
+### 5. 同日差异视为修正，不生成零长度历史
 
-Classification history is currently date-granular. If a membership is opened by an earlier snapshot on a date and a later complete snapshot on the same date says it is absent, AlphaLake removes that same-day interval instead of storing meaningless `[date,date)` history.
+分类历史目前为日期粒度。如果当天较早快照新建成员关系，而当天较晚完整快照表示不存在，则删除该同日区间，不保存无意义的 `[date,date)` 历史。
 
-### 6. Only complete snapshots may close memberships
+### 6. 只有完整快照可关闭成员关系
 
-A successful TDX family fetch is marked `Complete=true`.
+TDX 板块族成功获取后标记 `Complete=true`。
 
-If acquisition/parsing fails, the family is not represented as an empty snapshot and therefore cannot close previously open membership.
+采集/解析失败时，不把该板块族表示为空快照，因此不能关闭已有成员关系。
 
-The classification ingest run is allowed to be `partial`: one failed family does not prevent successfully fetched families from updating.
+分类运行允许为 `partial`：一个板块族失败不阻止成功板块族更新。
 
-### 7. Unresolved members reject the whole taxonomy snapshot
+### 7. 未解析成员使整个分类体系快照被拒绝
 
-Before changing membership history, every provider member identifier in the snapshot must resolve to a canonical instrument.
+改变成员历史前，快照中的每个数据源成员标识符都必须解析为标准证券。
 
-If any member is unresolved, the transaction is rolled back. This is safer than partially applying a snapshot that would then look complete and could incorrectly close valid members.
+任一成员未解析就回滚事务。这比部分应用更安全，避免快照看似完整而错误关闭有效成员。
 
-### 8. Snapshot dates use the China market calendar day
+### 8. 快照日期使用中国市场日历日
 
-The observation instant is stored as a timezone-aware timestamp, while membership effective dates are date-granular. AlphaLake derives the snapshot date using UTC+8 (Asia/Shanghai market calendar), independent of the machine/user timezone.
+观测时刻存储为带时区时间戳，成员生效日为日期粒度。快照日期按 UTC+8（Asia/Shanghai 市场日历）推导，不受机器/用户时区影响。
 
-### 9. Current TDX block snapshots are prospective history
+### 9. 当前 TDX 板块快照只能从观测开始建立历史
 
-AlphaLake cannot reconstruct classification history that TDX no longer exposes unless a separate historical source is added.
+没有独立历史源时，AlphaLake 无法重建 TDX 不再暴露的分类历史。
 
-Therefore the temporal membership history is authoritative from the date AlphaLake starts observing snapshots forward. It must not be presented as historical truth for earlier periods without another evidence source.
+因此，成员历史的证据范围从 AlphaLake 开始观测快照之日起向后延伸。没有其他来源时，不应将其视为更早时期的历史事实。
 
-## Consequences
+## 影响
 
-- Historical screens can avoid using future/current memberships once AlphaLake has observed the relevant period.
-- Repeated unchanged snapshots are idempotent.
-- Removals and re-additions create separate intervals.
-- Provider outages do not erase history.
-- Industry hierarchies can reuse the same canonical temporal store while keeping their source-specific parser separate.
+- 已观测相关时期后，历史筛选可避免使用未来/当前成员关系。
+- 重复不变快照保持幂等。
+- 移除与重新加入形成不同区间。
+- 数据源故障不清除历史。
+- 行业层级可复用同一时态标准存储，源特有解析器保持独立。

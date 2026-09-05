@@ -1,14 +1,14 @@
-# AlphaLake architecture decisions
+# AlphaLake 架构决策
 
-The accepted target specification is in [`../design.md`](../design.md). This directory preserves the major decision process and the review-driven changes that produced the current design.
+已接受的目标规范见[设计文档](../design.md)。本目录保留形成当前设计的主要决策过程，以及代码审查推动的变更。
 
-1. [`001-tdx-daily-ingestion.md`](001-tdx-daily-ingestion.md) — TDX daily ingestion, canonical dates/units, resumability, and quarantine.
-2. [`002-gbbq-and-adjustment-segments.md`](002-gbbq-and-adjustment-segments.md) — full-snapshot GBBQ semantics and affine QFQ/HFQ derivation.
-3. [`003-temporal-classification-snapshots.md`](003-temporal-classification-snapshots.md) — temporal taxonomy membership and incomplete-snapshot safety.
-4. [`004-security-master-and-content-dirtiness.md`](004-security-master-and-content-dirtiness.md) — temporal security identity, content-based derived state, and atomic daily publication.
-5. [`005-partitioned-security-master-resilience.md`](005-partitioned-security-master-resilience.md) — exchange-partition isolation and repeated absence confirmation.
-6. [`006-professional-financial-artifacts.md`](006-professional-financial-artifacts.md) — immutable gpcw evidence, lossless provider facts, and financial identity governance.
-7. [`007-cninfo-filing-and-pit-fundamentals.md`](007-cninfo-filing-and-pit-fundamentals.md) — CNINFO filing evidence, provider-filing links, canonical PIT facts, and ASOF queries.
-8. [`008-cninfo-announcement-date-precision.md`](008-cninfo-announcement-date-precision.md) — conservative date-precision availability for the public CNINFO catalogue.
+1. [TDX 日线采集与续传](001-tdx-daily-ingestion.md)——标准日期和单位、续传及异常隔离。
+2. [GBBQ 快照与复权区间](002-gbbq-and-adjustment-segments.md)——全量快照语义和前/后复权仿射推导。
+3. [时态分类快照](003-temporal-classification-snapshots.md)——分类成员历史与不完整快照保护。
+4. [证券主数据与内容失效判断](004-security-master-and-content-dirtiness.md)——时态证券身份、基于内容的派生状态和日线原子发布。
+5. [分区证券主数据韧性](005-partitioned-security-master-resilience.md)——交易所分区隔离和重复缺失确认。
+6. [专业财务归档](006-professional-financial-artifacts.md)——gpcw 不可变证据、无损数据源事实和财务身份治理。
+7. [CNINFO 公告与时点基本面](007-cninfo-filing-and-pit-fundamentals.md)——公告证据、数据源—公告关联、标准时点事实和 ASOF 查询。
+8. [CNINFO 公告日期精度](008-cninfo-announcement-date-precision.md)——公开目录日期精度下的保守可用时间。
 
-Later ADRs may supersede a narrow part of an earlier decision. The later ADR must state that relationship explicitly; supersession does not erase the historical reasoning.
+后续 ADR 可以替代早期决策的某一部分，但必须明确说明替代关系；替代不会抹去历史决策依据。

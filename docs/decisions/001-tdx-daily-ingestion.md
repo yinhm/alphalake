@@ -1,149 +1,149 @@
-# ADR-001: TDX daily ingestion and resumability
+# ADR-001：TDX 日线采集与续传
 
-- Status: Accepted
-- Date: 2026-09-04
-- Scope: Slice 1 — TDX daily market data
+- 状态：已接受
+- 日期：2026-09-04
+- 范围：切片 1——TDX 日线市场数据
 
-## Context
+## 背景
 
-AlphaLake's first production-facing ingestion path must bootstrap the A-share security master, ingest historical daily bars, and support repeated daily updates without re-downloading full history for every instrument.
+AlphaLake 首个面向生产的采集路径必须初始化 A 股证券主数据、导入历史日线，并支持反复日更，避免每次为所有证券重新下载全部历史。
 
-The implementation also needs to preserve canonical units, survive isolated provider/data errors, and remain auditable through DuckDB metadata.
+实现还需保留标准单位、容忍孤立的数据源/数据错误，并通过 DuckDB 元数据保持可审计。
 
-## Decisions
+## 决策
 
-### 1. Go 1.25 is the project baseline for the current implementation
+### 1. 当前实现以 Go 1.25 为基线
 
-The foundation initially targeted Go 1.23 so the repository could compile without external dependencies. Once `github.com/injoyai/tdx` became the runtime TDX SDK, AlphaLake moved to Go 1.25 because the current upstream module requires it.
+基础设施最初面向 Go 1.23，以便在没有外部依赖时编译。引入 `github.com/injoyai/tdx` 作为运行时 TDX SDK 后，因当前上游模块要求而升级到 Go 1.25。
 
-This is a dependency-driven choice, not a general requirement that AlphaLake always track the newest Go release.
+这是依赖驱动的选择，不表示 AlphaLake 必须始终追随最新 Go 版本。
 
-### 2. Daily synchronization uses a per-instrument canonical boundary
+### 2. 日线同步采用逐证券标准边界
 
-The resumable boundary for one source/instrument is:
+单个数据源/证券的续传边界是：
 
 ```sql
 max(market.ohlcv_daily.trade_date)
 WHERE instrument_id = ? AND source = ?
 ```
 
-AlphaLake does not use one global `MAX(date)` checkpoint for the whole market because instruments can have different histories, suspensions, failures, listing dates, and partial previous runs.
+AlphaLake 不对整个市场使用一个全局 `MAX(date)` 检查点，因为各证券可能具有不同历史、停牌、故障、上市日期和上次部分完成状态。
 
-A failed symbol therefore does not move a global cursor past its own missing data.
+因此，某代码失败不会让全局游标跨过其缺失数据。
 
-### 3. The latest stored trading day is re-fetched inclusively
+### 3. 包含最新存储交易日重新抓取
 
-Incremental TDX fetch stops when it reaches the latest stored day, but that boundary record is retained and upserted again.
+TDX 增量抓取到达最新已存储日时停止，但保留该边界记录并再次写入。
 
-Reason: a previous run may have occurred during market hours and stored an incomplete current-day K-line. Inclusive re-fetch lets the next run repair that row automatically.
+原因是前次运行可能发生在交易时段，保存了尚不完整的当日 K 线。包含边界日重抓可使下次运行自动修复。
 
-The canonical primary key `(instrument_id, trade_date, source)` makes this repair idempotent.
+标准主键 `(instrument_id, trade_date, source)` 保证修复幂等。
 
-### 4. Slice 1 all-market daily sync covers equities and ETFs only
+### 4. 切片 1 的全市场日线仅覆盖股票与 ETF
 
-The initial all-market loop ingests:
+初始全市场循环采集：
 
-- A-share equities;
-- ETFs/LOFs classified as ETF by the TDX SDK.
+- A 股股票；
+- TDX SDK 分类为 ETF 的 ETF/LOF。
 
-It deliberately skips indexes and convertible bonds for now.
+暂时跳过指数与可转债。
 
-Reason: TDX uses different request/volume semantics for indexes, while convertible bonds also have unit-specific behavior. Adding them before explicit canonical-unit tests would risk silently mixing incompatible volume meanings.
+TDX 指数的请求/成交量语义不同，可转债也有特定单位行为。在明确标准单位测试前加入它们，可能悄然混用不兼容的成交量含义。
 
-The instrument master may still contain those instruments; only daily market ingestion is deferred.
+证券主数据仍可包含这些品种，仅推迟其日线采集。
 
-### 5. Canonical stock/ETF daily volume is stored in shares/units
+### 5. 标准股票/ETF 日线成交量以股/份存储
 
-`injoyai/tdx` exposes standard stock/ETF daily K-line volume in hands. Its own newer `extend/pull` implementation converts those values with `ToShares` before storage.
+`injoyai/tdx` 暴露的标准股票/ETF 日 K 线成交量以手计，其较新的 `extend/pull` 实现也在存储前用 `ToShares` 转换。
 
-AlphaLake therefore converts stock/ETF K-line volume as:
-
-```text
-TDX hands × 100 -> canonical shares/units
-```
-
-Provider convenience units never become AlphaLake's canonical storage contract.
-
-### 6. Security-master refresh is batched in one DuckDB transaction
-
-TDX code discovery can return thousands of instruments. AlphaLake resolves/upserts the resulting `InstrumentObservation` set in one transaction instead of opening one transaction per symbol.
-
-Returned canonical IDs preserve input order so ingestion can associate each source observation with its resolved `instrument_id` without provider-specific IDs leaking downstream.
-
-### 7. One instrument failure does not abort the whole market
-
-After the security master is refreshed, daily ingestion treats each eligible instrument as an independent recoverable unit.
-
-Provider errors, validation failures, or write errors are collected in `TDXDailySyncSummary.Failures`; subsequent symbols continue.
-
-The overall ingest run is:
-
-- `completed` when all attempted symbols succeed;
-- `partial` when at least one symbol succeeds and at least one fails;
-- `failed` when the run fails without useful symbol-level progress;
-- `canceled` on context cancellation/deadline.
-
-A later run naturally retries failed symbols from their own last canonical boundary.
-
-### 8. Validation failures are persisted, successful row checks are not
-
-Structural OHLCV validation runs before canonical write. Current rules include OHLC bounds, finite prices, non-negative volume/amount, and required identity fields.
-
-Failures are written to `meta.validation_result` and linked to the current `ingest_run_id`.
-
-V0 does not persist a success record for every good bar because doing so would multiply metadata volume without adding equivalent audit value. A successful ingest plus absence of violations is the pass signal.
-
-### 9. Market rows record their latest ingest run
-
-When a tracked run inserts or refreshes `market.ohlcv_daily`, the row records the `ingest_run_id` responsible for that latest write.
-
-This supports lineage in both directions:
+AlphaLake 因此采用：
 
 ```text
-ingest run -> rows/validation findings
-row -> ingest run that last wrote it
+TDX 手数 × 100 -> 标准股数/份数
 ```
 
-### 10. Initial all-market synchronization is sequential
+数据源便利单位不成为 AlphaLake 的标准存储约定。
 
-The first correct implementation intentionally processes eligible instruments sequentially over one source abstraction.
+### 6. 证券主数据在一个 DuckDB 事务中批量刷新
 
-Reason: concurrency should not be introduced until connection-sharing/thread-safety behavior of the chosen TDX client strategy is explicit. The upstream project has a `Manage`/pool abstraction that may be a better future concurrency boundary than issuing concurrent requests against one `tdx.Client`.
+TDX 代码发现可能返回数千证券。AlphaLake 在一个事务内解析并写入整组 `InstrumentObservation`，而非逐代码开启事务。
 
-Correct resumability and semantics take priority over first-run throughput.
+返回的标准 ID 保持输入顺序，使采集层可将源观测与 `instrument_id` 对齐，不向下游泄露数据源专有 ID。
 
-## Consequences
+### 7. 单个证券失败不终止整个市场
 
-### Positive
+证券主数据刷新后，每个符合条件的证券都是独立、可恢复的处理单元。
 
-- partial failures are naturally resumable;
-- no global checkpoint can hide symbol-specific gaps;
-- current-day partial observations self-repair;
-- data-quality failures are queryable instead of being log-only;
-- rows and findings have durable run lineage;
-- unit semantics are explicit before adding more instrument classes.
+源错误、校验失败或写入错误收集到 `TDXDailySyncSummary.Failures`，后续代码继续处理。
 
-### Costs / follow-up work
+整体采集运行状态为：
 
-- a first full-market history load is sequential and may be slow;
-- progress reporting should be added before treating long-running CLI sync as polished UX;
-- index and convertible-bond daily ingestion need dedicated canonical-unit tests;
-- a future connection-pool implementation can add bounded concurrency without changing canonical storage semantics.
+- `completed`：所有尝试的代码均成功；
+- `partial`：至少一个成功且至少一个失败；
+- `failed`：没有有效的逐证券进展就失败；
+- `canceled`：上下文取消或超时。
 
-## Rejected alternatives
+后续运行自然从失败证券各自的最后标准边界重试。
 
-### One global daily checkpoint
+### 8. 持久化校验失败，不逐行保存成功校验
 
-Rejected because a successful majority of symbols could advance the checkpoint past a failed/suspended/newly listed symbol and make recovery ambiguous.
+标准写入前执行结构性 OHLCV 校验，规则包括 OHLC 范围、有限价格、非负成交量/成交额和必需身份字段。
 
-### Increment from `latest_date + 1 day`
+失败写入 `meta.validation_result`，关联当前 `ingest_run_id`。
 
-Rejected because it cannot repair a partial latest-day bar.
+v0 不为每条正常 K 线保存成功记录，以免元数据成倍增长却没有相当审计收益。采集成功且没有违规即为通过信号。
 
-### Fail-fast on the first symbol error
+### 9. 市场记录保存最近采集运行
 
-Rejected because one provider anomaly would prevent thousands of unrelated instruments from updating.
+受跟踪运行插入或刷新 `market.ohlcv_daily` 时，记录负责最近写入的 `ingest_run_id`。
 
-### Parallel requests on one TDX client immediately
+支持双向血缘：
 
-Rejected until concurrency guarantees are established. Silent protocol corruption or race behavior is a worse failure mode than a slower first implementation.
+```text
+采集运行 -> 数据行/校验结果
+数据行 -> 最近写入它的采集运行
+```
+
+### 10. 初始全市场同步按顺序执行
+
+首个正确实现通过一个源抽象顺序处理符合条件的证券。
+
+选择 TDX 客户端策略后，必须明确连接共享与线程安全语义才能引入并发。上游已有 `Manage`/连接池抽象，未来可能比对单个 `tdx.Client` 并发发请求更适合作为并发边界。
+
+正确续传与语义优先于首次导入吞吐量。
+
+## 影响
+
+### 收益
+
+- 部分失败可自然续传；
+- 全局检查点不会掩盖单代码缺口；
+- 当日不完整观测可自修复；
+- 数据质量失败可查询，不仅出现在日志；
+- 数据行和问题均保留持久运行血缘；
+- 添加其他品种前已明确单位语义。
+
+### 成本与后续工作
+
+- 首次全市场历史导入为顺序执行，可能较慢；
+- 本决策形成时，长时间命令行同步尚需补充进度报告；当前实现已提供；
+- 指数和可转债日线需要专门的标准单位测试；
+- 未来连接池可增加有界并发，不改变标准存储语义。
+
+## 否决方案
+
+### 一个全局日线检查点
+
+多数代码成功可能推进检查点，跨过失败、停牌或新上市代码，导致恢复语义不明确。
+
+### 从 `latest_date + 1 day` 增量抓取
+
+无法修复最新一日的不完整 K 线。
+
+### 第一个代码报错就终止
+
+一个数据源异常会阻止数千个无关证券更新。
+
+### 立即对一个 TDX 客户端并发请求
+
+在并发保证明确前不采用。悄然发生的协议损坏或竞态比首版速度稍慢更糟。
