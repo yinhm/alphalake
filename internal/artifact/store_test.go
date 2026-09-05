@@ -158,3 +158,12 @@ func TestLoadHealthyVersionsSkipsCorruptRetainedRevision(t *testing.T) {
 		t.Fatalf("healthy version=%#v", versions[0])
 	}
 }
+
+func TestSafeSegmentCannotTraverseDirectories(t *testing.T) {
+	for _, input := range []string{"", ".", "..", " ../.. ", "/tmp/raw", "tdx"} {
+		segment := safeSegment(input)
+		if !filepath.IsLocal(segment) || filepath.Base(segment) != segment || segment == "." {
+			t.Fatalf("unsafe segment %q for %q", segment, input)
+		}
+	}
+}

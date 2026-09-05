@@ -138,3 +138,36 @@ func TestClientRejectsDocumentHostEscape(t *testing.T) {
 		t.Fatal("expected document host guard")
 	}
 }
+
+func TestClientRedirectsStayOnConfiguredOrigin(t *testing.T) {
+	externalCalls := 0
+	external := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		externalCalls++
+	}))
+	defer external.Close()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/escape":
+			http.Redirect(w, r, external.URL, http.StatusFound)
+		case "/local":
+			http.Redirect(w, r, "/report.pdf", http.StatusFound)
+		default:
+			_, _ = w.Write([]byte("%PDF-test"))
+		}
+	}))
+	defer server.Close()
+	caller := server.Client()
+	client, err := NewClient(caller, ClientOptions{BaseURL: server.URL, DocumentBaseURL: server.URL})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, _, _, err := client.FilingDocument(t.Context(), "escape"); err == nil {
+		t.Fatal("accepted cross-origin redirect")
+	}
+	if externalCalls != 0 || caller.CheckRedirect != nil {
+		t.Fatal("redirect escaped or caller's HTTP client was modified")
+	}
+	if body, _, _, err := client.FilingDocument(t.Context(), "local"); err != nil || string(body) != "%PDF-test" {
+		t.Fatalf("same-origin redirect: %q, %v", body, err)
+	}
+}

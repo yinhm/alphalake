@@ -68,14 +68,14 @@ func TestSyncCNINFOFilingsPersistsEvidenceAndReusesDocument(t *testing.T) {
 		RawAnnouncementTimeMillis: announcement.UnixMilli(),
 	}
 	source := &fakeCNINFOFilingSource{
-		pages: map[int]cninfo.CataloguePage{1: {Page: 1, PageSize: 50, TotalPages: 1, TotalRecords: 1, Filings: []domain.FilingObservation{filing}}},
-		raw: map[int][]byte{1: []byte(`{"announcements":[{"announcementId":"1212345678"}]}`)},
+		pages:     map[int]cninfo.CataloguePage{1: {Page: 1, PageSize: 50, TotalPages: 1, TotalRecords: 1, Filings: []domain.FilingObservation{filing}}},
+		raw:       map[int][]byte{1: []byte(`{"announcements":[{"announcementId":"1212345678"}]}`)},
 		documents: map[string][]byte{"finalpage/report.pdf": []byte("%PDF-authoritative")},
 	}
 	options := CNINFOFilingOptions{
 		StartDate: time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC),
-		EndDate: time.Date(2026, 3, 31, 0, 0, 0, 0, time.UTC),
-		Now: func() time.Time { return time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC) },
+		EndDate:   time.Date(2026, 3, 31, 0, 0, 0, 0, time.UTC),
+		Now:       func() time.Time { return time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC) },
 	}
 	first, err := SyncCNINFOFilingsWithOptions(ctx, db, source, root, options)
 	if err != nil {
@@ -126,14 +126,14 @@ func TestSyncCNINFOFilingsKeepsUnresolvedEvidenceWithoutFailingWindow(t *testing
 		DocumentLocator: "historical.pdf", ClassifierVersion: cninfo.FilingClassifierVersion,
 	}
 	source := &fakeCNINFOFilingSource{
-		pages: map[int]cninfo.CataloguePage{1: {Page: 1, PageSize: 50, TotalPages: 1, Filings: []domain.FilingObservation{filing}}},
-		raw: map[int][]byte{1: []byte(`{"announcements":[]}`)},
+		pages:     map[int]cninfo.CataloguePage{1: {Page: 1, PageSize: 50, TotalPages: 1, Filings: []domain.FilingObservation{filing}}},
+		raw:       map[int][]byte{1: []byte(`{"announcements":[]}`)},
 		documents: map[string][]byte{"historical.pdf": []byte("%PDF-old")},
 	}
 	summary, err := SyncCNINFOFilingsWithOptions(ctx, db, source, root, CNINFOFilingOptions{
 		StartDate: time.Date(2001, 3, 1, 0, 0, 0, 0, time.UTC),
-		EndDate: time.Date(2001, 3, 1, 0, 0, 0, 0, time.UTC),
-		Now: func() time.Time { return time.Date(2001, 3, 2, 0, 0, 0, 0, time.UTC) },
+		EndDate:   time.Date(2001, 3, 1, 0, 0, 0, 0, time.UTC),
+		Now:       func() time.Time { return time.Date(2001, 3, 2, 0, 0, 0, 0, time.UTC) },
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -179,14 +179,14 @@ func TestSyncCNINFOFilingsRejectsHTMLDocumentAndWithholdsCheckpoint(t *testing.T
 		DocumentLocator: "anti-bot.pdf", ClassifierVersion: cninfo.FilingClassifierVersion,
 	}
 	source := &fakeCNINFOFilingSource{
-		pages: map[int]cninfo.CataloguePage{1: {Page: 1, PageSize: 50, TotalPages: 1, Filings: []domain.FilingObservation{filing}}},
-		raw: map[int][]byte{1: []byte(`{"announcements":[]}`)},
+		pages:     map[int]cninfo.CataloguePage{1: {Page: 1, PageSize: 50, TotalPages: 1, Filings: []domain.FilingObservation{filing}}},
+		raw:       map[int][]byte{1: []byte(`{"announcements":[]}`)},
 		documents: map[string][]byte{"anti-bot.pdf": []byte("<!doctype html><html>challenge</html>")},
 	}
 	summary, err := SyncCNINFOFilingsWithOptions(ctx, db, source, root, CNINFOFilingOptions{
 		StartDate: time.Date(2026, 3, 28, 0, 0, 0, 0, time.UTC),
-		EndDate: time.Date(2026, 3, 28, 0, 0, 0, 0, time.UTC),
-		Now: func() time.Time { return time.Date(2026, 3, 29, 0, 0, 0, 0, time.UTC) },
+		EndDate:   time.Date(2026, 3, 28, 0, 0, 0, 0, time.UTC),
+		Now:       func() time.Time { return time.Date(2026, 3, 29, 0, 0, 0, 0, time.UTC) },
 	})
 	if err == nil || len(summary.Failures) != 1 {
 		t.Fatalf("summary=%#v err=%v", summary, err)
@@ -223,5 +223,73 @@ func TestValidateCNINFOFilingDocument(t *testing.T) {
 				t.Fatalf("error=%v wantError=%v", err, tc.wantError)
 			}
 		})
+	}
+}
+
+func TestCNINFOCheckpointRequiresRequestedEvidence(t *testing.T) {
+	ctx := t.Context()
+	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "checkpoint.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	day := time.Date(2026, 3, 28, 0, 0, 0, 0, time.UTC)
+	period := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+	source := &fakeCNINFOFilingSource{
+		pages: map[int]cninfo.CataloguePage{1: {Page: 1, TotalPages: 1, Filings: []domain.FilingObservation{{
+			Source: cninfo.Source, SourceFilingID: "original", ProviderCode: "000001",
+			FilingType: domain.FilingTypeAnnual, FilingVariant: domain.FilingVariantFull,
+			ReportPeriod: &period, AnnouncementTime: day,
+			ClassifierVersion: "test", DocumentLocator: "report.pdf",
+		}}}},
+		raw:       map[int][]byte{1: []byte("{}")},
+		documents: map[string][]byte{"report.pdf": []byte("%PDF-test")},
+	}
+	root := filepath.Join(t.TempDir(), "raw")
+	options := CNINFOFilingOptions{StartDate: day, EndDate: day, MetadataOnly: true,
+		Now: func() time.Time { return day.AddDate(2, 0, 0) }}
+	// An old checkpoint cannot prove document completeness.
+	if err := duckstore.SetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, "catalogue-window:"+filingWindowName(day, day), "legacy"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := SyncCNINFOFilingsWithOptions(ctx, db, source, root, options); err != nil {
+		t.Fatal(err)
+	}
+	if source.documentCalls != 0 {
+		t.Fatal("metadata-only sync downloaded a document")
+	}
+	options.MetadataOnly = false
+	full, err := SyncCNINFOFilingsWithOptions(ctx, db, source, root, options)
+	if err != nil || full.Documents != 1 || full.SkippedWindows != 0 {
+		t.Fatalf("full sync=%#v, err=%v", full, err)
+	}
+	replay, err := SyncCNINFOFilingsWithOptions(ctx, db, source, root, options)
+	if err != nil || replay.SkippedWindows != 1 || source.documentCalls != 1 {
+		t.Fatalf("replay=%#v, err=%v, downloads=%d", replay, err, source.documentCalls)
+	}
+}
+
+func TestCNINFOPaginationRejectsContradictoryPages(t *testing.T) {
+	ctx := t.Context()
+	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "pagination.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	day := time.Date(2026, 3, 28, 0, 0, 0, 0, time.UTC)
+	source := &fakeCNINFOFilingSource{
+		pages: map[int]cninfo.CataloguePage{},
+		raw:   map[int][]byte{1: []byte("{}")},
+	}
+	root := filepath.Join(t.TempDir(), "raw")
+	for _, page := range []cninfo.CataloguePage{
+		{Page: 2, TotalPages: 1},
+		{Page: 1, TotalPages: 1, TotalRecords: 1},
+	} {
+		source.pages[1] = page
+		_, _, failures, _ := acquireCNINFOFilingWindow(ctx, db, source, root, 1, day, day, day, 50, &CNINFOFilingSummary{}, CNINFOFilingOptions{})
+		if len(failures) == 0 {
+			t.Fatalf("accepted inconsistent page: %#v", page)
+		}
 	}
 }

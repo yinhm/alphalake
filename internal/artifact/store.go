@@ -224,7 +224,7 @@ func safeSegment(v string) string {
 			b.WriteByte('_')
 		}
 	}
-	if b.Len() == 0 {
+	if b.Len() == 0 || b.String() == "." || b.String() == ".." {
 		return "_"
 	}
 	return b.String()

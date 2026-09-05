@@ -33,13 +33,13 @@ type ClientOptions struct {
 }
 
 type Client struct {
-	httpClient *http.Client
-	baseURL    *url.URL
+	httpClient      *http.Client
+	baseURL         *url.URL
 	documentBaseURL *url.URL
-	userAgent  string
-	referer    string
-	retries    int
-	minInterval time.Duration
+	userAgent       string
+	referer         string
+	retries         int
+	minInterval     time.Duration
 
 	mu          sync.Mutex
 	lastRequest time.Time
@@ -83,8 +83,22 @@ func NewClient(httpClient *http.Client, options ClientOptions) (*Client, error) 
 	if retries < 0 {
 		return nil, errors.New("CNINFO retries must be non-negative")
 	}
+	// Keep the caller's transport and policy without mutating their client.
+	client := *httpClient
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if !strings.EqualFold(req.URL.Host, via[0].URL.Host) || req.URL.Scheme != via[0].URL.Scheme {
+			return errors.New("CNINFO redirect leaves the configured origin")
+		}
+		if httpClient.CheckRedirect != nil {
+			return httpClient.CheckRedirect(req, via)
+		}
+		if len(via) >= 10 {
+			return errors.New("stopped after 10 redirects")
+		}
+		return nil
+	}
 	return &Client{
-		httpClient: httpClient, baseURL: baseURL, documentBaseURL: documentBaseURL,
+		httpClient: &client, baseURL: baseURL, documentBaseURL: documentBaseURL,
 		userAgent: userAgent, referer: referer, retries: retries,
 		minInterval: options.MinInterval,
 	}, nil

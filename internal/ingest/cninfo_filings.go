@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	cninfoFilingDataset          = "filing"
+	cninfoFilingDataset         = "filing"
 	cninfoCatalogueArtifactData = "filing_catalogue"
 	cninfoDocumentArtifactData  = "filing_document"
 	cninfoDefaultPageSize       = 50
@@ -138,7 +138,9 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 		}
 		summary.Windows++
 		windowName := filingWindowName(window.start, window.end)
-		checkpointKey := "catalogue-window:" + windowName
+		// Legacy checkpoints did not distinguish metadata-only acquisition.
+		// Use mode-specific keys so they cannot suppress required documents.
+		checkpointKey := fmt.Sprintf("catalogue-window:v2:metadata-only=%t:%s", options.MetadataOnly, windowName)
 		if !options.Rescan && window.end.Before(dateUTCIngest(now.AddDate(0, 0, -cninfoRecentRescanDays))) {
 			if _, found, err := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, checkpointKey); err != nil {
 				summary.Failures = append(summary.Failures, CNINFOFilingFailure{Window: windowName, Err: err})
@@ -307,6 +309,10 @@ func acquireCNINFOFilingWindow(
 		reportCNINFOFilingProgress(options, *summary, windowName, pageNumber)
 
 		observedRows := len(page.Filings) + len(page.Issues)
+		if page.Page != pageNumber || (observedRows == 0 && (page.HasMore || page.TotalRecords > 0 || page.TotalPages > 1)) {
+			failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: fmt.Errorf("inconsistent CNINFO pagination: requested page %d, received page %d with %d rows", pageNumber, page.Page, observedRows)})
+			break
+		}
 		if page.TotalPages > 10000 {
 			failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: fmt.Errorf("CNINFO total pages %d exceeds safety limit", page.TotalPages)})
 			break
@@ -320,8 +326,8 @@ func acquireCNINFOFilingWindow(
 		if !page.HasMore && observedRows < pageSize {
 			break
 		}
-		if observedRows == 0 && !page.HasMore {
-			break
+		if pageNumber == 10000 {
+			failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: errors.New("CNINFO pagination exhausted safety limit before completion")})
 		}
 	}
 	return filings, pageSHAs, failures, issues
