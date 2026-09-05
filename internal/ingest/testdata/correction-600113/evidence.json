@@ -1,0 +1,43 @@
+{
+  "code": "600113",
+  "report_period": "2025-09-30",
+  "field": "FN230",
+  "unit": "CNY",
+  "original": {
+    "id": "1224770723",
+    "title": "<em>浙江东日股份有限公司</em>2025年第三季度报告",
+    "url": "https://static.cninfo.com.cn/finalpage/2025-10-31/1224770723.PDF",
+    "sha256": "d554f86a141ac905844d81b0a4e274a6e6f6c234396c1ec734dfcc2a4fd9376b",
+    "size": 184783,
+    "value": "191975181.93",
+    "page": 1
+  },
+  "corrected": {
+    "id": "1224780589",
+    "title": "<em>浙江东日股份有限公司</em>2025年第三季度报告（更正）",
+    "url": "https://static.cninfo.com.cn/finalpage/2025-11-01/1224780589.PDF",
+    "sha256": "eab2715d808b5fdf9ed95a9b586a27d2ea2139add7486249e2e8a00f70a28cb1",
+    "size": 184789,
+    "value": "184541742.16",
+    "page": 1
+  },
+  "notice": {
+    "id": "1224780588",
+    "title": "<em>浙江东日股份有限公司</em>2025年第三季度报告更正公告",
+    "url": "https://static.cninfo.com.cn/finalpage/2025-11-01/1224780588.PDF",
+    "sha256": "ac9d4a7e49e85ebc85633c53e74a9ab1f28e14d0a76f475a3b25a4d18e6c4c3d",
+    "size": 88591,
+    "original_value_page": 1,
+    "corrected_value_page": 2
+  },
+  "provider": {
+    "file": "gpcw20250930.zip",
+    "url": "http://down.tdx.com.cn:8001/tdxfin/gpcw20250930.zip",
+    "sha256": "3c3182f93153b7328e96b327e1bff007d868ac209f471cd54cb3a220fd8fbe53",
+    "size": 5337281,
+    "fetched_at": "2026-09-05T16:54:05.840934+00:00",
+    "sample_sha256": "f1e91671796427b92158f3ce03d5879e4a4023279821cc7f3a39878dcc456fe4",
+    "field_bits": 1294990883,
+    "original_version_status": "not_found"
+  }
+}
