@@ -3,6 +3,7 @@ package duckdb
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"math"
 	"path/filepath"
 	"testing"
@@ -197,5 +198,74 @@ func insertMappedProviderFact(t *testing.T, ctx context.Context, db *sql.DB, art
 		) VALUES (?, 'tdx', ?, ?, ?, ?, ?, ?, ?)
 	`, instrumentID, period, code, field, value, uint64(math.Float32bits(float32(value))), artifactID, revision); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// Annual-package FN230 is Q4 revenue, not full-year revenue. Exercise all
+// quarter ends and repair facts previously labeled using the filing type.
+func TestMaterializeSingleQuarterFlowsAndRepairLegacyPeriods(t *testing.T) {
+	ctx := t.Context()
+	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "quarters.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	id, err := UpsertInstrument(ctx, db,
+		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHE", Currency: "CNY", Name: "Test"},
+		domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sz002920"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for q, typ := range []domain.FilingType{domain.FilingTypeQ1, domain.FilingTypeH1, domain.FilingTypeQ3, domain.FilingTypeAnnual} {
+		period := time.Date(2025, time.Month((q+1)*3+1), 0, 0, 0, 0, 0, time.UTC)
+		revision := fmt.Sprintf("quarter-%d", q+1)
+		announcement := period.AddDate(0, 1, 0)
+		_, err := UpsertFilings(ctx, db, 1, []domain.FilingObservation{{
+			InstrumentID: id, Source: "cninfo", SourceFilingID: revision, ProviderCode: "002920", ExchangeMIC: "XSHE",
+			FilingType: typ, FilingVariant: domain.FilingVariantFull, ReportPeriod: &period,
+			AnnouncementTime: announcement, ClassifierVersion: "test", ResolutionStatus: domain.FilingResolutionResolved,
+		}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		artifactID := insertTestArtifact(t, ctx, db, revision, announcement.AddDate(0, 0, 1))
+		for field := 230; field <= 238; field++ {
+			insertMappedProviderFact(t, ctx, db, artifactID, id, revision, "002920", fmt.Sprintf("FN%d", field), period, 100)
+		}
+	}
+	if _, err := RefreshProviderFilingLinks(ctx, db, 2, "tdx"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := MaterializeCanonicalFundamentals(ctx, db, 3, "tdx"); err != nil {
+		t.Fatal(err)
+	}
+	for q, stockPeriod := range []string{"Q1", "H1", "Q3", "FY"} {
+		var flows, stocks int
+		err := db.QueryRowContext(ctx, `SELECT count(*) FILTER (WHERE source_provider_field <> 'FN238' AND period_type=?),
+   count(*) FILTER (WHERE source_provider_field='FN238' AND period_type=?)
+   FROM fundamental.fact WHERE revision_key=?`, fmt.Sprintf("Q%d", q+1), stockPeriod, fmt.Sprintf("quarter-%d", q+1)).Scan(&flows, &stocks)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if flows != 8 || stocks != 1 {
+			t.Fatalf("quarter %d flows/stocks=%d/%d", q+1, flows, stocks)
+		}
+	}
+	if _, err := db.ExecContext(ctx, `UPDATE fundamental.fact SET period_type='FY', materializer_version='pit-fundamental-v1' WHERE revision_key='quarter-4' AND source_provider_field <> 'FN238'`); err != nil {
+		t.Fatal(err)
+	}
+	repaired, err := MaterializeCanonicalFundamentals(ctx, db, 4, "tdx")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if repaired.Updated != 8 || repaired.Inserted != 0 {
+		t.Fatalf("repair=%+v", repaired)
+	}
+	replay, err := MaterializeCanonicalFundamentals(ctx, db, 5, "tdx")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if replay.Updated != 0 || replay.Inserted != 0 || replay.Removed != 0 {
+		t.Fatalf("replay=%+v", replay)
 	}
 }

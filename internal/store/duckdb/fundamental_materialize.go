@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	fundamentalMaterializerV1 = "pit-fundamental-v1"
+	fundamentalMaterializerV2  = "pit-fundamental-v2"
 	fundamentalNormalizationV1 = "tdx-float32-decimal-v1"
 	fundamentalFactStage       = "_alphalake_fundamental_fact_stage"
 	fundamentalRejectStage     = "_alphalake_fundamental_reject_stage"
@@ -167,6 +167,10 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 			report_period,
 			announcement_time,
 			CASE
+				-- FN230-FN237 are single-quarter flows even in H1/FY packages.
+				WHEN primary_source='tdx' AND provider_field IN (
+					'FN230','FN231','FN232','FN233','FN234','FN235','FN236','FN237'
+				) THEN 'Q' || cast(quarter(report_period) AS VARCHAR)
 				WHEN month(report_period)=3 AND day(report_period)=31 THEN 'Q1'
 				WHEN month(report_period)=6 AND day(report_period)=30 THEN 'H1'
 				WHEN month(report_period)=9 AND day(report_period)=30 THEN 'Q3'
@@ -188,7 +192,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 			?::BIGINT AS ingest_run_id
 		FROM temp.main.`+fundamentalRejectStage+`
 		WHERE rejection_rule IS NULL
-	`, fundamentalNormalizationV1, fundamentalMaterializerV1, ingestRunID); err != nil {
+	`, fundamentalNormalizationV1, fundamentalMaterializerV2, ingestRunID); err != nil {
 		return result, fmt.Errorf("build canonical fundamental stage: %w", err)
 	}
 	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM temp.main.`+fundamentalFactStage).Scan(&result.Materialized); err != nil {
