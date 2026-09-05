@@ -84,7 +84,9 @@ func AdjustmentSegments(bars []domain.DailyBar, actions []domain.CorporateAction
 
 		key := dateKey(action.ActionDate)
 		idx := sort.Search(len(bs), func(j int) bool { return dateKey(bs[j].TradeDate) >= key })
-		if idx >= len(bs) {
+		// No stored price precedes the first bar, so these events cannot
+		// affect either anchor and must not be combined into a false conflict.
+		if idx == 0 || idx >= len(bs) {
 			continue
 		}
 		event := events[idx]
@@ -152,20 +154,20 @@ func AdjustmentSegments(bars []domain.DailyBar, actions []domain.CorporateAction
 		}
 		to := dateOnly(bs[i-1].TradeDate)
 		segments = append(segments, domain.AdjustmentSegment{
-			InstrumentID: instrumentID,
+			InstrumentID:  instrumentID,
 			EffectiveFrom: dateOnly(bs[start].TradeDate),
-			EffectiveTo: &to,
-			QFQMul: qMul[start], QFQAdd: qAdd[start],
+			EffectiveTo:   &to,
+			QFQMul:        qMul[start], QFQAdd: qAdd[start],
 			HFQMul: hMul[start], HFQAdd: hAdd[start],
 			Method: method, Source: source,
 		})
 		start = i
 	}
 	segments = append(segments, domain.AdjustmentSegment{
-		InstrumentID: instrumentID,
+		InstrumentID:  instrumentID,
 		EffectiveFrom: dateOnly(bs[start].TradeDate),
-		EffectiveTo: nil,
-		QFQMul: qMul[start], QFQAdd: qAdd[start],
+		EffectiveTo:   nil,
+		QFQMul:        qMul[start], QFQAdd: qAdd[start],
 		HFQMul: hMul[start], HFQAdd: hAdd[start],
 		Method: method, Source: source,
 	})

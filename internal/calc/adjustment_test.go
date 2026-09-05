@@ -27,7 +27,7 @@ func TestAdjustmentSegmentsCashDividendUsesAffineAdd(t *testing.T) {
 		adjustmentBar(1, "2026-06-30"),
 	}
 	action := adjustmentAction(1, "2026-06-28", "distribution") // Sunday -> Monday
-	action.CashDividendPer10 = 10 // one currency unit per share
+	action.CashDividendPer10 = 10                               // one currency unit per share
 
 	segments, err := AdjustmentSegments(bars, []domain.CorporateAction{action}, AdjustmentMethodAffineGBBQV1, "tdx")
 	if err != nil {
@@ -85,5 +85,24 @@ func TestAdjustmentSegmentsIgnoresUnverifiedCategory12PriceEffect(t *testing.T) 
 	}
 	if len(segments) != 1 || !closeEnough(segments[0].QFQMul, 1) || !closeEnough(segments[0].QFQAdd, 0) || !closeEnough(segments[0].HFQMul, 1) || !closeEnough(segments[0].HFQAdd, 0) {
 		t.Fatalf("unexpected segment = %#v", segments)
+	}
+}
+
+func TestAdjustmentSegmentsIgnoresEventsBeforeFirstStoredPrice(t *testing.T) {
+	bars := []domain.DailyBar{adjustmentBar(1, "2026-02-02"), adjustmentBar(1, "2026-02-03")}
+	old := adjustmentAction(1, "1992-03-23", "distribution")
+	old.RightsPrice, old.RightsPer10 = 3.56, 1
+	later := adjustmentAction(1, "1993-05-24", "distribution")
+	later.RightsPrice, later.RightsPer10 = 16, 1
+	atStart := adjustmentAction(1, "2026-02-02", "distribution")
+	atStart.RightsPrice, atStart.RightsPer10 = 20, 1
+	current := adjustmentAction(1, "2026-02-03", "distribution")
+	current.CashDividendPer10 = 10
+	segments, err := AdjustmentSegments(bars, []domain.CorporateAction{old, later, atStart, current}, AdjustmentMethodAffineGBBQV1, "tdx")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(segments) != 2 || !closeEnough(segments[0].QFQAdd, -1) || !closeEnough(segments[1].HFQAdd, 1) {
+		t.Fatalf("historical events changed slice coefficients: %#v", segments)
 	}
 }
