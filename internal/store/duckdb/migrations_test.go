@@ -28,6 +28,7 @@ func TestMigrationOrder(t *testing.T) {
 		"014_provider_filing_link.sql",
 		"015_canonical_fundamental_fact.sql",
 		"016_filing_link_lineage.sql",
+		"017_filing_announcement_precision.sql",
 	}
 	if len(migrations) != len(want) {
 		t.Fatalf("got %v", migrations)
@@ -142,5 +143,38 @@ func TestShareCapitalIdentityAllowsMultipleSourceRecordsPerDay(t *testing.T) {
 	}
 	if count != 2 {
 		t.Fatalf("share capital rows = %d, want 2", count)
+	}
+}
+
+func TestFilingPrecisionMigrationBackfillsLegacyRows(t *testing.T) {
+	ctx := context.Background()
+	db, err := Open(ctx, filepath.Join(t.TempDir(), "filing-precision.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	migrations, err := Migrations()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, migration := range migrations[:16] {
+		if err := applyMigration(ctx, db, migration); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := db.ExecContext(ctx, `INSERT INTO fundamental.filing (source, source_filing_id, announcement_time)
+		VALUES ('legacy', 'legacy', TIMESTAMP '2026-03-28 10:00:00')`); err != nil {
+		t.Fatal(err)
+	}
+	if err := Apply(ctx, db); err != nil {
+		t.Fatal(err)
+	}
+	var date, precision string
+	if err := db.QueryRowContext(ctx, `SELECT CAST(announcement_date AS VARCHAR), announcement_time_precision
+		FROM fundamental.filing WHERE source='legacy'`).Scan(&date, &precision); err != nil {
+		t.Fatal(err)
+	}
+	if date != "2026-03-28" || precision != "timestamp" {
+		t.Fatalf("legacy timing=%s/%s", date, precision)
 	}
 }

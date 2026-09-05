@@ -34,7 +34,7 @@ func TestCNINFOToPointInTimeFundamentalEndToEnd(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	china := time.FixedZone("Asia/Shanghai", 8*60*60)
+	china := domain.ChinaDisclosureLocation
 	phase := "original"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -182,7 +182,7 @@ func persistProviderRevision(t *testing.T, ctx context.Context, db *sql.DB, arti
 	if result.Inserted != 230 {
 		t.Fatalf("provider revision %s write=%#v", revision, result)
 	}
-	if err := duckstore.FinishIngestRun(ctx, db, runID, duckstore.IngestRunCompleted, nil); err != nil {
+	if err := duckstore.FinishIngestRun(ctx, db, runID, duckstore.IngestRunCompleted, nil, nil); err != nil {
 		t.Fatal(err)
 	}
 }

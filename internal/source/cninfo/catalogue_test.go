@@ -51,20 +51,20 @@ func TestClassifyPeriodicTitle(t *testing.T) {
 }
 
 func TestAnnouncementAvailabilityUsesNextChinaDayBoundary(t *testing.T) {
-	providerLocalMidnight := time.Date(2026, 3, 28, 0, 0, 0, 0, chinaDisclosureLocation)
+	providerLocalMidnight := time.Date(2026, 3, 28, 0, 0, 0, 0, domain.ChinaDisclosureLocation)
 	date, available := announcementAvailability(providerLocalMidnight.UnixMilli())
 	if date.Format("2006-01-02") != "2026-03-28" {
 		t.Fatalf("announcement date=%s", date)
 	}
-	wantAvailable := time.Date(2026, 3, 29, 0, 0, 0, 0, chinaDisclosureLocation).UTC()
+	wantAvailable := time.Date(2026, 3, 29, 0, 0, 0, 0, domain.ChinaDisclosureLocation).UTC()
 	if !available.Equal(wantAvailable) {
 		t.Fatalf("available=%s, want %s", available, wantAvailable)
 	}
 }
 
 func TestClientCatalogueAndDocument(t *testing.T) {
-	providerTimestamp := time.Date(2026, 3, 28, 0, 0, 0, 0, chinaDisclosureLocation)
-	wantAvailable := time.Date(2026, 3, 29, 0, 0, 0, 0, chinaDisclosureLocation).UTC()
+	providerTimestamp := time.Date(2026, 3, 28, 0, 0, 0, 0, domain.ChinaDisclosureLocation)
+	wantAvailable := time.Date(2026, 3, 29, 0, 0, 0, 0, domain.ChinaDisclosureLocation).UTC()
 	var server *httptest.Server
 	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -103,7 +103,7 @@ func TestClientCatalogueAndDocument(t *testing.T) {
 	page, raw, err := client.CataloguePage(t.Context(), CatalogueRequest{
 		Page: 1, PageSize: 30,
 		StartDate: time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC),
-		EndDate: time.Date(2026, 3, 31, 0, 0, 0, 0, time.UTC),
+		EndDate:   time.Date(2026, 3, 31, 0, 0, 0, 0, time.UTC),
 	})
 	if err != nil {
 		t.Fatal(err)

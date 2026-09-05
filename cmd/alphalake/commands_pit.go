@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yinhm/alphalake/internal/domain"
 	"github.com/yinhm/alphalake/internal/ingest"
 	"github.com/yinhm/alphalake/internal/source/cninfo"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
@@ -19,6 +20,8 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return false, nil
 	}
 	switch args[0] {
+	case "filing-unresolved":
+		return true, runFilingUnresolved(ctx, args[1:])
 	case "sync-filings":
 		return true, runSyncFilings(ctx, args[1:])
 	case "materialize-fundamentals":
@@ -26,6 +29,36 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 	default:
 		return false, nil
 	}
+}
+
+func runFilingUnresolved(ctx context.Context, args []string) error {
+	if len(args) == 0 || strings.TrimSpace(args[0]) == "" {
+		return fmt.Errorf("usage: alphalake filing-unresolved <db-path> [--limit N] [--offset N]")
+	}
+	limit, offset, err := parseResolutionPageArgs(args[1:])
+	if err != nil {
+		return err
+	}
+	db, err := duckstore.OpenAndMigrate(ctx, args[0])
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	rows, err := duckstore.ListFilingResolutionsPage(ctx, db, domain.FilingResolutionPending, limit, offset)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("pending filing resolutions: %d (limit=%d offset=%d)\n", len(rows), limit, offset)
+	for _, row := range rows {
+		date := ""
+		if row.AnnouncementDate != nil {
+			date = row.AnnouncementDate.Format("2006-01-02")
+		}
+		fmt.Printf("  filing=%d source=%s source_id=%s code=%s exchange=%s date=%s precision=%s title=%q reason=%q\n",
+			row.FilingID, row.Source, row.SourceFilingID, row.ProviderCode, row.ExchangeMIC,
+			date, row.AnnouncementTimePrecision, row.Title, row.ResolutionReason)
+	}
+	return nil
 }
 
 func runSyncFilings(ctx context.Context, args []string) error {
@@ -85,12 +118,12 @@ func runSyncFilings(ctx context.Context, args []string) error {
 	lastPages := -1
 	lastFailures := -1
 	options := ingest.CNINFOFilingOptions{
-		StartDate: startDate,
-		EndDate: endDate,
-		PageSize: *pageSize,
-		WindowDays: *windowDays,
+		StartDate:    startDate,
+		EndDate:      endDate,
+		PageSize:     *pageSize,
+		WindowDays:   *windowDays,
 		MetadataOnly: *metadataOnly,
-		Rescan: *rescan,
+		Rescan:       *rescan,
 		OnProgress: func(progress ingest.CNINFOFilingProgress) {
 			if progress.Pages != lastPages || progress.Failures != lastFailures {
 				fmt.Printf("CNINFO filing progress: run=%d window=%s page=%d pages=%d filings=%d inserted=%d updated=%d resolved=%d pending=%d documents=%d reused=%d issues=%d failures=%d\n",

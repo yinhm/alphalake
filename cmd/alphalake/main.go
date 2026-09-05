@@ -34,6 +34,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-filings <db-path> [--all] [--start YYYY-MM-DD] [--end YYYY-MM-DD] [--metadata-only] [--rescan]")
 	fmt.Fprintln(os.Stderr, "  materialize-fundamentals <db-path>")
 	fmt.Fprintln(os.Stderr, "  financial-unresolved <db-path> [--limit N] [--offset N]")
+	fmt.Fprintln(os.Stderr, "  filing-unresolved <db-path> [--limit N] [--offset N]")
 	fmt.Fprintln(os.Stderr, "  financial-ack <db-path> <artifact-id> <provider-code> <reason>")
 	fmt.Fprintln(os.Stderr, "  financial-unack <db-path> <artifact-id> <provider-code>")
 	fmt.Fprintln(os.Stderr, "  status <db-path>")
@@ -457,7 +458,7 @@ func main() {
 func parseResolutionPageArgs(args []string) (int, int, error) {
 	limit, offset := 100, 0
 	if len(args)%2 != 0 {
-		return 0, 0, fmt.Errorf("financial-unresolved options must be --limit N and/or --offset N")
+		return 0, 0, fmt.Errorf("resolution options must be --limit N and/or --offset N")
 	}
 	for i := 0; i < len(args); i += 2 {
 		value, err := strconv.Atoi(args[i+1])
@@ -476,7 +477,7 @@ func parseResolutionPageArgs(args []string) (int, int, error) {
 			}
 			offset = value
 		default:
-			return 0, 0, fmt.Errorf("unsupported financial-unresolved option %q", args[i])
+			return 0, 0, fmt.Errorf("unsupported resolution option %q", args[i])
 		}
 	}
 	return limit, offset, nil

@@ -3,7 +3,7 @@
 -- instant. Preserve the provider milliseconds separately and record the
 -- canonical disclosure date/availability precision explicitly.
 ALTER TABLE fundamental.filing ADD COLUMN announcement_date DATE;
-ALTER TABLE fundamental.filing ADD COLUMN announcement_time_precision VARCHAR NOT NULL DEFAULT 'timestamp';
+ALTER TABLE fundamental.filing ADD COLUMN announcement_time_precision VARCHAR DEFAULT 'timestamp';
 
 -- No production CNINFO writer existed before this migration. This fallback only
 -- gives manually-created legacy rows a deterministic date; the production writer

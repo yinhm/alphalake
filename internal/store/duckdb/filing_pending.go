@@ -65,7 +65,7 @@ func listPendingFilingsAfter(ctx context.Context, db *sql.DB, afterID int64, lim
 			filing_id, instrument_id, source, source_filing_id, provider_code,
 			COALESCE(exchange_mic,''), COALESCE(security_name,''), COALESCE(title,''),
 			COALESCE(filing_type,'unknown'), filing_variant, report_period,
-			announcement_time, COALESCE(source_url,''), COALESCE(raw_category,''),
+			announcement_time, announcement_date, announcement_time_precision, COALESCE(source_url,''), COALESCE(raw_category,''),
 			classifier_version, is_correction,
 			COALESCE(provider_org_id,''), COALESCE(provider_column_id,''),
 			COALESCE(provider_page_column,''), raw_announcement_time_ms,
@@ -86,7 +86,7 @@ func listPendingFilingsAfter(ctx context.Context, db *sql.DB, afterID int64, lim
 		var filing domain.FilingObservation
 		var instrument sql.NullInt64
 		var reportPeriod sql.NullTime
-		var announcement sql.NullTime
+		var announcement, announcementDate sql.NullTime
 		var rawMillis sql.NullInt64
 		var catalogueArtifact sql.NullInt64
 		var documentArtifact sql.NullInt64
@@ -96,7 +96,7 @@ func listPendingFilingsAfter(ctx context.Context, db *sql.DB, afterID int64, lim
 			&filing.FilingID, &instrument, &filing.Source, &filing.SourceFilingID, &filing.ProviderCode,
 			&filing.ExchangeMIC, &filing.SecurityName, &filing.Title,
 			&filingType, &filingVariant, &reportPeriod,
-			&announcement, &filing.SourceURL, &filing.RawCategory,
+			&announcement, &announcementDate, &filing.AnnouncementTimePrecision, &filing.SourceURL, &filing.RawCategory,
 			&filing.ClassifierVersion, &filing.IsCorrection,
 			&filing.ProviderOrgID, &filing.ProviderColumnID,
 			&filing.ProviderPageColumn, &rawMillis,
@@ -119,6 +119,9 @@ func listPendingFilingsAfter(ctx context.Context, db *sql.DB, afterID int64, lim
 			return nil, afterID, fmt.Errorf("pending filing %d has no announcement time", filing.FilingID)
 		}
 		filing.AnnouncementTime = announcement.Time
+		if announcementDate.Valid {
+			filing.AnnouncementDate = announcementDate.Time
+		}
 		if rawMillis.Valid {
 			filing.RawAnnouncementTimeMillis = rawMillis.Int64
 		}

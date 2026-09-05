@@ -131,10 +131,11 @@ Retained package bytes are verified before reuse. If a retained package revision
 
 A raw gpcw code is resolved from temporal TDX provider identifiers at the package report period. AlphaLake does not infer an exchange from today's SDK code ranges. Since gpcw contains company financial records, index instruments are excluded from the candidate universe; a true company-security/company-security collision remains pending rather than guessed. Records with no unique temporal identity become durable `pending` resolution evidence; they do not fail the whole package and remain retryable from the retained local artifact.
 
-Inspect pending financial identity records with explicit paging:
+Inspect pending financial and filing identity records with explicit paging:
 
 ```bash
 alphalake financial-unresolved ./alphalake.duckdb --limit 100 --offset 0
+alphalake filing-unresolved ./alphalake.duckdb --limit 100 --offset 0
 ```
 
 If an historical record has been manually reviewed and cannot presently be resolved, acknowledge that specific immutable-artifact record explicitly:

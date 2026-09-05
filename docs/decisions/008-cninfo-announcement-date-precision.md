@@ -32,3 +32,4 @@ A future source with independently verified publication timestamps may set `anno
 - The original provider value remains available for audit and later reinterpretation.
 - The system intentionally accepts up to one calendar day of delayed availability rather than introducing look-ahead.
 - CNINFO filing identity, document lineage, TDX numerical provenance, and provider-to-filing links remain unchanged.
+- Correction predecessor links require strictly earlier availability. Original and correction filings with date precision on the same China day share an availability boundary and cannot link to each other; their intraday order is unknown. Verified timestamps or explicit predecessor evidence would be needed to relax this rule. Provider-to-filing selection still uses the variant priority in ADR 007.

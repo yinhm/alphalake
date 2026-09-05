@@ -2,6 +2,9 @@ package domain
 
 import "time"
 
+// ChinaDisclosureLocation is the fixed UTC+8 zone used for filing disclosure dates.
+var ChinaDisclosureLocation = time.FixedZone("Asia/Shanghai", 8*60*60)
+
 // FilingType identifies the periodic report whose financial period is described.
 // Values are intentionally provider-neutral and limited to report forms that can
 // anchor canonical point-in-time fundamentals.

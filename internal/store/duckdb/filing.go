@@ -13,8 +13,6 @@ import (
 
 const filingResolverVersion = "filing-identity-v1"
 
-var chinaFilingLocation = time.FixedZone("Asia/Shanghai", 8*60*60)
-
 type FilingWriteResult struct {
 	Attempted int
 	Inserted  int
@@ -256,17 +254,17 @@ func UpsertFilings(ctx context.Context, db *sql.DB, ingestRunID int64, filings [
 				INSERT INTO fundamental.filing (
 					instrument_id, source, source_filing_id, provider_code,
 					exchange_mic, security_name, filing_type, filing_variant,
-					report_period, announcement_time, title, source_url,
+					report_period, announcement_time, announcement_date, announcement_time_precision, title, source_url,
 					raw_category, classifier_version, is_correction,
 					resolution_status, resolution_reason, catalogue_artifact_id,
 					artifact_id, sha256, provider_org_id, provider_column_id,
 					provider_page_column, raw_announcement_time_ms, ingest_run_id,
 					first_seen_at, last_seen_at
-				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), now())
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), now())
 				RETURNING filing_id
 			`, instrument, filing.Source, filing.SourceFilingID, filing.ProviderCode,
 				nullableString(filing.ExchangeMIC), nullableString(filing.SecurityName), string(filing.FilingType), string(filing.FilingVariant),
-				reportPeriod, filing.AnnouncementTime.UTC(), nullableString(filing.Title), nullableString(filing.SourceURL),
+				reportPeriod, filing.AnnouncementTime.UTC(), announcementDate, precision, nullableString(filing.Title), nullableString(filing.SourceURL),
 				nullableString(filing.RawCategory), filing.ClassifierVersion, filing.IsCorrection,
 				status, nullableString(filing.ResolutionReason), catalogueArtifact,
 				documentArtifact, nullableString(filing.DocumentSHA256), nullableString(filing.ProviderOrgID), nullableString(filing.ProviderColumnID),
@@ -280,6 +278,7 @@ func UpsertFilings(ctx context.Context, db *sql.DB, ingestRunID int64, filings [
 				UPDATE fundamental.filing SET
 					instrument_id=?, provider_code=?, exchange_mic=?, security_name=?,
 					filing_type=?, filing_variant=?, report_period=?, announcement_time=?,
+					announcement_date=?, announcement_time_precision=?,
 					title=?, source_url=?, raw_category=?, classifier_version=?,
 					is_correction=?, corrects_filing_id=NULL,
 					resolution_status=?, resolution_reason=?,
@@ -290,7 +289,7 @@ func UpsertFilings(ctx context.Context, db *sql.DB, ingestRunID int64, filings [
 					raw_announcement_time_ms=?, ingest_run_id=?, last_seen_at=now()
 				WHERE filing_id=?
 			`, instrument, filing.ProviderCode, nullableString(filing.ExchangeMIC), nullableString(filing.SecurityName),
-				string(filing.FilingType), string(filing.FilingVariant), reportPeriod, filing.AnnouncementTime.UTC(),
+				string(filing.FilingType), string(filing.FilingVariant), reportPeriod, filing.AnnouncementTime.UTC(), announcementDate, precision,
 				nullableString(filing.Title), nullableString(filing.SourceURL), nullableString(filing.RawCategory), filing.ClassifierVersion,
 				filing.IsCorrection, status, nullableString(filing.ResolutionReason), catalogueArtifact,
 				documentArtifact, nullableString(filing.DocumentSHA256), nullableString(filing.ProviderOrgID), nullableString(filing.ProviderColumnID), nullableString(filing.ProviderPageColumn),
@@ -299,13 +298,6 @@ func UpsertFilings(ctx context.Context, db *sql.DB, ingestRunID int64, filings [
 				return result, fmt.Errorf("update filing %s: %w", filing.SourceFilingID, err)
 			}
 			result.Updated++
-		}
-		if _, err := tx.ExecContext(ctx, `
-			UPDATE fundamental.filing
-			SET announcement_date=?, announcement_time_precision=?
-			WHERE filing_id=?
-		`, announcementDate, precision, existingID); err != nil {
-			return result, fmt.Errorf("record filing announcement precision %s: %w", filing.SourceFilingID, err)
 		}
 
 		if status == domain.FilingResolutionResolved {
@@ -362,7 +354,7 @@ func filingResolutionDate(filing domain.FilingObservation) time.Time {
 	if !filing.AnnouncementDate.IsZero() {
 		return dateUTC(filing.AnnouncementDate)
 	}
-	local := filing.AnnouncementTime.In(chinaFilingLocation)
+	local := filing.AnnouncementTime.In(domain.ChinaDisclosureLocation)
 	return time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, time.UTC)
 }
 
