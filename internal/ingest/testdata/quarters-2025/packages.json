@@ -1,0 +1,38 @@
+[
+  {
+    "file": "gpcw20250331.zip",
+    "url": "http://down.tdx.com.cn:8001/tdxfin/gpcw20250331.zip",
+    "sha256": "e48aae321173bd5be24d5c75523b2d8c424e00dac8eb94b5b11d1ebf265b0384",
+    "size": 4969303,
+    "fetched_at": "2026-09-05T16:52:25.100746+00:00",
+    "md5": "4fc3e205389e908c0c4b1bf83b505bef",
+    "records": 5403,
+    "fields": 584,
+    "sample_sha256": "551ea6ca11f95c3992dd418ddf8765ddac7b3fef0775e6e160766789cf1517e0",
+    "sample_size": 2184
+  },
+  {
+    "file": "gpcw20250630.zip",
+    "url": "http://down.tdx.com.cn:8001/tdxfin/gpcw20250630.zip",
+    "sha256": "f6150eb487480a1f1816178ae1343b232ecd9d1767a51b5583317a9091cbd0cd",
+    "size": 5682297,
+    "fetched_at": "2026-09-05T17:04:16.083834+00:00",
+    "md5": "92a093afd13fa6334656228cc8b961f9",
+    "records": 5536,
+    "fields": 584,
+    "sample_sha256": "753f33a3493fb2d6f07649c2eff674a3ade71fc3569cf1c7abbba673c3748b2b",
+    "sample_size": 2398
+  },
+  {
+    "file": "gpcw20250930.zip",
+    "url": "http://down.tdx.com.cn:8001/tdxfin/gpcw20250930.zip",
+    "sha256": "3c3182f93153b7328e96b327e1bff007d868ac209f471cd54cb3a220fd8fbe53",
+    "size": 5337281,
+    "fetched_at": "2026-09-05T16:54:05.840934+00:00",
+    "md5": "70c934587b3f1c527737a8d125039aad",
+    "records": 5465,
+    "fields": 584,
+    "sample_sha256": "1dc2aebe304a817e87ba1511f7243bd4e8ddfb15d7f234799989fc9b52d685b9",
+    "sample_size": 2272
+  }
+]
