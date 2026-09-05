@@ -130,6 +130,7 @@ func TestRealFinancialWorkflow(t *testing.T) {
 	if recovered.Pages != 3 || recovered.Filings != 12 || recovered.Pending != 0 || recovered.Issues != 0 {
 		t.Fatalf("incomplete recovery: %+v", recovered)
 	}
+	count(fmt.Sprintf("SELECT count(*) FROM meta.ingest_run WHERE ingest_run_id=%d AND status IN ('partial','failed')", interrupted.RunID), 1)
 	count("SELECT count(*) FROM fundamental.filing", 12)
 	count("SELECT count(*) FROM meta.checkpoint WHERE source='cninfo'", 1)
 	count("SELECT count(*) FROM fundamental.filing WHERE resolution_status='pending'", 0)
