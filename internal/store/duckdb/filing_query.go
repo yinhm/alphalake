@@ -12,23 +12,23 @@ import (
 )
 
 type FilingResolutionRow struct {
-	FilingID                 int64
-	Source                   string
-	SourceFilingID           string
-	ProviderCode             string
-	ExchangeMIC              string
-	SecurityName             string
-	Title                    string
-	FilingType               domain.FilingType
-	FilingVariant            domain.FilingVariant
-	ReportPeriod             *time.Time
-	AnnouncementDate         *time.Time
-	AnnouncementTime         *time.Time
+	FilingID                  int64
+	Source                    string
+	SourceFilingID            string
+	ProviderCode              string
+	ExchangeMIC               string
+	SecurityName              string
+	Title                     string
+	FilingType                domain.FilingType
+	FilingVariant             domain.FilingVariant
+	ReportPeriod              *time.Time
+	AnnouncementDate          *time.Time
+	AnnouncementTime          *time.Time
 	AnnouncementTimePrecision string
-	ResolutionStatus         string
-	ResolutionReason         string
-	SourceURL                string
-	UpdatedAt                time.Time
+	ResolutionStatus          string
+	ResolutionReason          string
+	SourceURL                 string
+	UpdatedAt                 time.Time
 }
 
 func ListFilingResolutionsPage(ctx context.Context, db *sql.DB, status string, limit, offset int) ([]FilingResolutionRow, error) {
@@ -51,7 +51,7 @@ func ListFilingResolutionsPage(ctx context.Context, db *sql.DB, status string, l
 			COALESCE(exchange_mic,''), COALESCE(security_name,''), COALESCE(title,''),
 			COALESCE(filing_type,'unknown'), filing_variant,
 			report_period, announcement_date, announcement_time,
-			announcement_time_precision, resolution_status,
+			COALESCE(announcement_time_precision,'timestamp'), resolution_status,
 			COALESCE(resolution_reason,''), COALESCE(source_url,''), last_seen_at
 		FROM fundamental.filing
 	`

@@ -65,7 +65,7 @@ func listPendingFilingsAfter(ctx context.Context, db *sql.DB, afterID int64, lim
 			filing_id, instrument_id, source, source_filing_id, provider_code,
 			COALESCE(exchange_mic,''), COALESCE(security_name,''), COALESCE(title,''),
 			COALESCE(filing_type,'unknown'), filing_variant, report_period,
-			announcement_time, announcement_date, announcement_time_precision, COALESCE(source_url,''), COALESCE(raw_category,''),
+			announcement_time, announcement_date, COALESCE(announcement_time_precision,'timestamp'), COALESCE(source_url,''), COALESCE(raw_category,''),
 			classifier_version, is_correction,
 			COALESCE(provider_org_id,''), COALESCE(provider_column_id,''),
 			COALESCE(provider_page_column,''), raw_announcement_time_ms,

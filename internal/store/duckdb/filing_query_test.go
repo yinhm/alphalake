@@ -23,9 +23,9 @@ func TestListFilingResolutionsPage(t *testing.T) {
 			Source: "cninfo", SourceFilingID: fmt.Sprintf("filing-%d", i), ProviderCode: fmt.Sprintf("%06d", i),
 			Title: "2000年年度报告", FilingType: domain.FilingTypeAnnual, FilingVariant: domain.FilingVariantFull,
 			ReportPeriod: &period, AnnouncementDate: time.Date(2001, 3, i, 0, 0, 0, 0, time.UTC),
-			AnnouncementTime: time.Date(2001, 3, i, 16, 0, 0, 0, time.UTC),
+			AnnouncementTime:          time.Date(2001, 3, i, 16, 0, 0, 0, time.UTC),
 			AnnouncementTimePrecision: domain.AnnouncementPrecisionDate,
-			ClassifierVersion: "test", ResolutionStatus: domain.FilingResolutionPending,
+			ClassifierVersion:         "test", ResolutionStatus: domain.FilingResolutionPending,
 			ResolutionReason: "missing historical identity",
 		}
 		if _, err := UpsertFilings(ctx, db, 1, []domain.FilingObservation{filing}); err != nil {
@@ -52,5 +52,29 @@ func TestListFilingResolutionsPage(t *testing.T) {
 	}
 	if first[0].AnnouncementTimePrecision != domain.AnnouncementPrecisionDate || first[0].AnnouncementDate == nil {
 		t.Fatalf("precision/date=%s/%v", first[0].AnnouncementTimePrecision, first[0].AnnouncementDate)
+	}
+	if _, err := db.ExecContext(ctx, `UPDATE fundamental.filing SET announcement_time_precision=NULL WHERE source_filing_id='filing-5'`); err != nil {
+		t.Fatal(err)
+	}
+	third, err = ListFilingResolutionsPage(ctx, db, domain.FilingResolutionPending, 2, 4)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(third) != 1 || third[0].AnnouncementTimePrecision != domain.AnnouncementPrecisionTimestamp {
+		t.Fatalf("null precision fallback=%#v", third)
+	}
+	refreshed, err := RefreshPendingFilingResolutions(ctx, db, 2, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if refreshed.Attempted != 5 || refreshed.StillPending != 5 {
+		t.Fatalf("refresh=%#v", refreshed)
+	}
+	var precision string
+	if err := db.QueryRowContext(ctx, `SELECT announcement_time_precision FROM fundamental.filing WHERE source_filing_id='filing-5'`).Scan(&precision); err != nil {
+		t.Fatal(err)
+	}
+	if precision != domain.AnnouncementPrecisionTimestamp {
+		t.Fatalf("stored precision=%q", precision)
 	}
 }
