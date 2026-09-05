@@ -1,0 +1,135 @@
+[
+  {
+    "Instrument": {
+      "InstrumentID": 0,
+      "Type": "equity",
+      "ExchangeMIC": "XSHG",
+      "Currency": "CNY",
+      "Name": "顺景科技",
+      "ListDate": null,
+      "DelistDate": null
+    },
+    "Identifier": {
+      "InstrumentID": 0,
+      "Provider": "tdx",
+      "Type": "symbol",
+      "Value": "sh603007",
+      "ValidFrom": null,
+      "ValidTo": null
+    }
+  },
+  {
+    "Instrument": {
+      "InstrumentID": 0,
+      "Type": "equity",
+      "ExchangeMIC": "XSHG",
+      "Currency": "CNY",
+      "Name": "璞泰来",
+      "ListDate": null,
+      "DelistDate": null
+    },
+    "Identifier": {
+      "InstrumentID": 0,
+      "Provider": "tdx",
+      "Type": "symbol",
+      "Value": "sh603659",
+      "ValidFrom": null,
+      "ValidTo": null
+    }
+  },
+  {
+    "Instrument": {
+      "InstrumentID": 0,
+      "Type": "equity",
+      "ExchangeMIC": "XSHE",
+      "Currency": "CNY",
+      "Name": "平安银行",
+      "ListDate": null,
+      "DelistDate": null
+    },
+    "Identifier": {
+      "InstrumentID": 0,
+      "Provider": "tdx",
+      "Type": "symbol",
+      "Value": "sz000001",
+      "ValidFrom": null,
+      "ValidTo": null
+    }
+  },
+  {
+    "Instrument": {
+      "InstrumentID": 0,
+      "Type": "equity",
+      "ExchangeMIC": "XSHE",
+      "Currency": "CNY",
+      "Name": "山金国际",
+      "ListDate": null,
+      "DelistDate": null
+    },
+    "Identifier": {
+      "InstrumentID": 0,
+      "Provider": "tdx",
+      "Type": "symbol",
+      "Value": "sz000975",
+      "ValidFrom": null,
+      "ValidTo": null
+    }
+  },
+  {
+    "Instrument": {
+      "InstrumentID": 0,
+      "Type": "equity",
+      "ExchangeMIC": "XSHE",
+      "Currency": "CNY",
+      "Name": "大为股份",
+      "ListDate": null,
+      "DelistDate": null
+    },
+    "Identifier": {
+      "InstrumentID": 0,
+      "Provider": "tdx",
+      "Type": "symbol",
+      "Value": "sz002213",
+      "ValidFrom": null,
+      "ValidTo": null
+    }
+  },
+  {
+    "Instrument": {
+      "InstrumentID": 0,
+      "Type": "equity",
+      "ExchangeMIC": "XSHE",
+      "Currency": "CNY",
+      "Name": "大金重工",
+      "ListDate": null,
+      "DelistDate": null
+    },
+    "Identifier": {
+      "InstrumentID": 0,
+      "Provider": "tdx",
+      "Type": "symbol",
+      "Value": "sz002487",
+      "ValidFrom": null,
+      "ValidTo": null
+    }
+  },
+  {
+    "Instrument": {
+      "InstrumentID": 0,
+      "Type": "equity",
+      "ExchangeMIC": "XSHE",
+      "Currency": "CNY",
+      "Name": "德赛西威",
+      "ListDate": null,
+      "DelistDate": null
+    },
+    "Identifier": {
+      "InstrumentID": 0,
+      "Provider": "tdx",
+      "Type": "symbol",
+      "Value": "sz002920",
+      "ValidFrom": null,
+      "ValidTo": null
+    }
+  }
+]

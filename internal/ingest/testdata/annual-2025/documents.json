@@ -1,0 +1,38 @@
+[
+  {
+    "source_locator": "https://static.cninfo.com.cn/finalpage/2026-03-06/1224997956.PDF",
+    "local_path": "cninfo/filing_document/be/be11f9d8a30b23c2b4710120a851f839820242785e50fd6193e44c168e005241.pdf",
+    "sha256": "be11f9d8a30b23c2b4710120a851f839820242785e50fd6193e44c168e005241",
+    "content_length": 1842153
+  },
+  {
+    "source_locator": "https://static.cninfo.com.cn/finalpage/2026-03-06/1224998079.PDF",
+    "local_path": "cninfo/filing_document/48/48c8eb40a7bf2ffaf4681c7471b6bc3a373437e1969fd842fd5270c222269c59.pdf",
+    "sha256": "48c8eb40a7bf2ffaf4681c7471b6bc3a373437e1969fd842fd5270c222269c59",
+    "content_length": 1565128
+  },
+  {
+    "source_locator": "https://static.cninfo.com.cn/finalpage/2026-03-06/1224998168.PDF",
+    "local_path": "cninfo/filing_document/18/18650f336dd525d1c4f0fa32fabe158f64c7bdfaa9f9faf6dbf0145236228435.pdf",
+    "sha256": "18650f336dd525d1c4f0fa32fabe158f64c7bdfaa9f9faf6dbf0145236228435",
+    "content_length": 1527513
+  },
+  {
+    "source_locator": "https://static.cninfo.com.cn/finalpage/2026-03-06/1224998205.PDF",
+    "local_path": "cninfo/filing_document/f2/f233d8ae10ccaf114f2fc7e5cca0989206221bc4b4e1298d9d9127ec096914b9.pdf",
+    "sha256": "f233d8ae10ccaf114f2fc7e5cca0989206221bc4b4e1298d9d9127ec096914b9",
+    "content_length": 17816153
+  },
+  {
+    "source_locator": "https://static.cninfo.com.cn/finalpage/2026-03-06/1224998406.PDF",
+    "local_path": "cninfo/filing_document/5c/5c57c31d09f39410f29e77e8ff79aa6e0a4e790ef19807ac7e1c528ef3968142.pdf",
+    "sha256": "5c57c31d09f39410f29e77e8ff79aa6e0a4e790ef19807ac7e1c528ef3968142",
+    "content_length": 3620376
+  },
+  {
+    "source_locator": "https://static.cninfo.com.cn/finalpage/2026-03-06/1224998510.PDF",
+    "local_path": "cninfo/filing_document/4e/4e81f5539046ba1eee733100f38442a4abd5037afe3881115ba7f48678fa35b6.pdf",
+    "sha256": "4e81f5539046ba1eee733100f38442a4abd5037afe3881115ba7f48678fa35b6",
+    "content_length": 1740667
+  }
+]

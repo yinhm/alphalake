@@ -15,3 +15,24 @@ go test ./internal/ingest -run '^TestRealAnnualReportValues$' -count=1 -v
 测试直接解析真实字段字节，将年报十进制金额转换为 float32 后逐位比较，包含负利润和负现金流。CSV 保留原文 URL、PDF SHA-256 和页码，PDF 大文件保留在本地原始归档中，不随代码提交。它不是通用 PDF 提取器；增加样本时必须重新核对原文、期间和单位。
 
 该样本证明所选数值与对应年报一致，不证明全市场覆盖或完整历史版本；9 月取得的财务包不能单凭公告日期证明其全部数值在 3 月已存在。
+
+## 采集链路重放
+
+`page-1.json` 至 `page-3.json` 是 2026-09-05 06:49:52 UTC 采集的原始 CNINFO 响应，查询公告日为 2026-03-06、每页 5 条；保留上游错误的 `totalpages=2`，实际共 12 条，需要三页。三个文件的 SHA-256 依次为：
+
+- `9c67bd3d55f96d4bca03dbe7981fa4529147677a22eabdd79780c28f2781b169`
+- `6b694d34ac13f3523cbeff9e5d8b1be9b442d5609dc1c1f2acf282e8435d0dd9`
+- `710a794951e1c77a9ca804ef4f63916bf99ead09b4cb3b297f8e4233603a0b2c`
+
+`instruments.json` 是同次真实 TDX 主数据的七证券切片，空有效期不构成已审核的历史生命周期证据。`documents.json` 记录六份原文的 URL、归档相对路径、大小和 SHA-256。
+
+```bash
+# 默认离线运行：真实目录字节和财务记录，无需本地历史归档。
+go test ./internal/ingest -run '^TestReal(AnnualReportValues|FinancialWorkflow)$' -count=1 -v
+
+# 同时检查真实 PDF 完整性、下载入库、正文复用及不同模式的检查点。
+ALPHALAKE_ACCEPTANCE_RAW="$PWD/workspace/live-sync-20260905/raw" \
+  go test ./internal/ingest -run '^TestRealFinancialWorkflow$' -count=1 -v
+```
+
+测试在临时数据库中调用生产 HTTP 客户端和采集/归一化/物化函数，向第二页注入 HTTP 503，关闭并重新打开数据库后恢复，再检查幂等重放和 PIT 边界。未设置环境变量时明确记录未校验正文；设置后缺失或损坏的 PDF 必须失败。测试不修改原始归档，不访问上游，不依赖旧数据库及旧运行日志。
