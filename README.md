@@ -62,7 +62,7 @@ go test ./...
 go build ./cmd/alphalake
 ```
 
-CI 还会检查 `go mod tidy` 是否产生文件改动，并以 Python 3.12 / `pypdf==6.17.0` 离线核对安克原始 PDF、源值、十一张财务输入表及一张模型情景表；另运行六年历史及研发资本化情景的离线校验。
+CI 还会检查 `go mod tidy` 是否产生文件改动，并以 Python 3.12 / `pypdf==6.17.0` 离线核对安克原始 PDF、源值、十一张财务输入表及一张模型情景表；另运行六年历史及研发资本化情景的离线校验。财务入口已扩展为安克回溯验证性 DCF，同时核对十年 FCFF、终值、股权桥接及敏感性，见[估值结果与边界](docs/anker-validation-valuation-20260906.md)。
 
 真实财务样本的离线重放、PDF 归档复核及验证范围见[可重复验收报告](docs/acceptance-20260905.md)。[安克创新财务输入样本](docs/anker-valuation-20260906.md)提供 EBIT 调整、债务和营运资本的原文证据、分析政策与可复算 CSV。
 
