@@ -1,0 +1,71 @@
+period,item,value,unit,status,formula,as_of
+2024-12-31,current_assets,12367549328.75,CNY,policy_defined,1*2024-12-31/current_assets,2026-09-06T00:00:00+00:00
+2024-12-31,cash,-2533583870.05,CNY,policy_defined,-1*2024-12-31/cash,2026-09-06T00:00:00+00:00
+2024-12-31,trading_assets,-2330707593.22,CNY,policy_defined,-1*2024-12-31/trading_assets,2026-09-06T00:00:00+00:00
+2024-12-31,trading_forward_asset,39231320.43,CNY,policy_defined,1*2024-12-31/trading_forward_asset,2026-09-06T00:00:00+00:00
+2024-12-31,deposits,-1641656907.11,CNY,policy_defined,-1*2024-12-31/deposits,2026-09-06T00:00:00+00:00
+2024-12-31,current_liabilities,-5901511917.72,CNY,policy_defined,-1*2024-12-31/current_liabilities,2026-09-06T00:00:00+00:00
+2024-12-31,short_debt,453374390.03,CNY,policy_defined,1*2024-12-31/short_debt,2026-09-06T00:00:00+00:00
+2024-12-31,current_debt,196607813.62,CNY,policy_defined,1*2024-12-31/current_debt,2026-09-06T00:00:00+00:00
+2024-12-31,fixed_notes,-75037710.81,CNY,policy_defined,-1*2024-12-31/fixed_notes,2026-09-06T00:00:00+00:00
+2024-12-31,noncash_nondebt_wc_broad,574264853.92,CNY,broad_policy_includes_mixed_items,sum(component rows),2026-09-06T00:00:00+00:00
+2025-06-30,current_assets,14040449636.72,CNY,policy_defined,1*2025-06-30/current_assets,2026-09-06T00:00:00+00:00
+2025-06-30,cash,-2979713227.13,CNY,policy_defined,-1*2025-06-30/cash,2026-09-06T00:00:00+00:00
+2025-06-30,trading_assets,-1603587471.19,CNY,policy_defined,-1*2025-06-30/trading_assets,2026-09-06T00:00:00+00:00
+2025-06-30,trading_forward_asset,15766091.02,CNY,policy_defined,1*2025-06-30/trading_forward_asset,2026-09-06T00:00:00+00:00
+2025-06-30,deposits,-1354928010.31,CNY,policy_defined,-1*2025-06-30/deposits,2026-09-06T00:00:00+00:00
+2025-06-30,current_liabilities,-6771706535.90,CNY,policy_defined,-1*2025-06-30/current_liabilities,2026-09-06T00:00:00+00:00
+2025-06-30,short_debt,668730859.26,CNY,policy_defined,1*2025-06-30/short_debt,2026-09-06T00:00:00+00:00
+2025-06-30,current_debt,198468179.73,CNY,policy_defined,1*2025-06-30/current_debt,2026-09-06T00:00:00+00:00
+2025-06-30,fixed_notes,-0.00,CNY,policy_defined,-1*2025-06-30/fixed_notes,2026-09-06T00:00:00+00:00
+2025-06-30,noncash_nondebt_wc_broad,2213479522.20,CNY,broad_policy_includes_mixed_items,sum(component rows),2026-09-06T00:00:00+00:00
+2025-06-30,loan_receivable,-19223003.00,CNY,policy_defined,-1*2025-06-30/loan_receivable,2026-09-06T00:00:00+00:00
+2025-06-30,loan_allowance,1922300.30,CNY,policy_defined,1*2025-06-30/loan_allowance,2026-09-06T00:00:00+00:00
+2025-06-30,dividends_receivable,-3782144.00,CNY,policy_defined,-1*2025-06-30/dividends_receivable,2026-09-06T00:00:00+00:00
+2025-06-30,income_tax_payable,342410144.85,CNY,policy_defined,1*2025-06-30/income_tax_payable,2026-09-06T00:00:00+00:00
+2025-06-30,wc_after_identified_exclusions,2534806820.35,CNY,provisional_residual_classification,broad_wc+identified_exclusion_rows,2026-09-06T00:00:00+00:00
+2025-06-30,unclassified_other_payables,101396564.59,CNY,unclassified_not_zero,2025-06-30/other_payables_residual,2026-09-06T00:00:00+00:00
+2025-12-31,current_assets,16086526642.49,CNY,policy_defined,1*2025-12-31/current_assets,2026-09-06T00:00:00+00:00
+2025-12-31,cash,-3656509315.28,CNY,policy_defined,-1*2025-12-31/cash,2026-09-06T00:00:00+00:00
+2025-12-31,trading_assets,-2466995658.45,CNY,policy_defined,-1*2025-12-31/trading_assets,2026-09-06T00:00:00+00:00
+2025-12-31,trading_forward_asset,20235805.69,CNY,policy_defined,1*2025-12-31/trading_forward_asset,2026-09-06T00:00:00+00:00
+2025-12-31,deposits,-1663955379.72,CNY,policy_defined,-1*2025-12-31/deposits,2026-09-06T00:00:00+00:00
+2025-12-31,current_liabilities,-6768511512.64,CNY,policy_defined,-1*2025-12-31/current_liabilities,2026-09-06T00:00:00+00:00
+2025-12-31,short_debt,567318259.44,CNY,policy_defined,1*2025-12-31/short_debt,2026-09-06T00:00:00+00:00
+2025-12-31,current_debt,226443613.72,CNY,policy_defined,1*2025-12-31/current_debt,2026-09-06T00:00:00+00:00
+2025-12-31,fixed_notes,-0.00,CNY,policy_defined,-1*2025-12-31/fixed_notes,2026-09-06T00:00:00+00:00
+2025-12-31,noncash_nondebt_wc_broad,2344552455.25,CNY,broad_policy_includes_mixed_items,sum(component rows),2026-09-06T00:00:00+00:00
+2025-12-31,loan_receivable,-19682216.97,CNY,policy_defined,-1*2025-12-31/loan_receivable,2026-09-06T00:00:00+00:00
+2025-12-31,loan_allowance,5904665.09,CNY,policy_defined,1*2025-12-31/loan_allowance,2026-09-06T00:00:00+00:00
+2025-12-31,dividends_receivable,-0.00,CNY,policy_defined,-1*2025-12-31/dividends_receivable,2026-09-06T00:00:00+00:00
+2025-12-31,income_tax_payable,275891927.71,CNY,policy_defined,1*2025-12-31/income_tax_payable,2026-09-06T00:00:00+00:00
+2025-12-31,ipo_prepaid,-18455446.58,CNY,policy_defined,-1*2025-12-31/ipo_prepaid,2026-09-06T00:00:00+00:00
+2025-12-31,repurchase_payable,49124989.54,CNY,policy_defined,1*2025-12-31/repurchase_payable,2026-09-06T00:00:00+00:00
+2025-12-31,capex_payable,43513437.05,CNY,policy_defined,1*2025-12-31/capex_payable,2026-09-06T00:00:00+00:00
+2025-12-31,ipo_payable,9518554.61,CNY,policy_defined,1*2025-12-31/ipo_payable,2026-09-06T00:00:00+00:00
+2025-12-31,wc_after_identified_exclusions,2690368365.70,CNY,provisional_residual_classification,broad_wc+identified_exclusion_rows,2026-09-06T00:00:00+00:00
+2025-12-31,unclassified_other_payables,70015514.23,CNY,unclassified_not_zero,2025-12-31/other_payables_residual,2026-09-06T00:00:00+00:00
+2026-06-30,current_assets,18104480755.26,CNY,policy_defined,1*2026-06-30/current_assets,2026-09-06T00:00:00+00:00
+2026-06-30,cash,-3803700574.91,CNY,policy_defined,-1*2026-06-30/cash,2026-09-06T00:00:00+00:00
+2026-06-30,trading_assets,-2283072248.41,CNY,policy_defined,-1*2026-06-30/trading_assets,2026-09-06T00:00:00+00:00
+2026-06-30,trading_forward_asset,1890858.07,CNY,policy_defined,1*2026-06-30/trading_forward_asset,2026-09-06T00:00:00+00:00
+2026-06-30,deposits,-1214315026.71,CNY,policy_defined,-1*2026-06-30/deposits,2026-09-06T00:00:00+00:00
+2026-06-30,current_liabilities,-8092648945.92,CNY,policy_defined,-1*2026-06-30/current_liabilities,2026-09-06T00:00:00+00:00
+2026-06-30,short_debt,730723241.22,CNY,policy_defined,1*2026-06-30/short_debt,2026-09-06T00:00:00+00:00
+2026-06-30,current_debt,233506458.05,CNY,policy_defined,1*2026-06-30/current_debt,2026-09-06T00:00:00+00:00
+2026-06-30,noncash_nondebt_wc_broad,3676864516.65,CNY,broad_policy_includes_mixed_items,sum(component rows),2026-09-06T00:00:00+00:00
+2026-06-30,loan_receivable,-12720528.54,CNY,policy_defined,-1*2026-06-30/loan_receivable,2026-09-06T00:00:00+00:00
+2026-06-30,loan_allowance,3816158.56,CNY,policy_defined,1*2026-06-30/loan_allowance,2026-09-06T00:00:00+00:00
+2026-06-30,dividends_receivable,-0.00,CNY,policy_defined,-1*2026-06-30/dividends_receivable,2026-09-06T00:00:00+00:00
+2026-06-30,income_tax_payable,547192904.15,CNY,policy_defined,1*2026-06-30/income_tax_payable,2026-09-06T00:00:00+00:00
+2026-06-30,ipo_prepaid,-41461101.58,CNY,policy_defined,-1*2026-06-30/ipo_prepaid,2026-09-06T00:00:00+00:00
+2026-06-30,repurchase_payable,49124989.54,CNY,policy_defined,1*2026-06-30/repurchase_payable,2026-09-06T00:00:00+00:00
+2026-06-30,capex_payable,43711357.63,CNY,policy_defined,1*2026-06-30/capex_payable,2026-09-06T00:00:00+00:00
+2026-06-30,ipo_payable,14743520.00,CNY,policy_defined,1*2026-06-30/ipo_payable,2026-09-06T00:00:00+00:00
+2026-06-30,wc_after_identified_exclusions,4281271816.41,CNY,provisional_residual_classification,broad_wc+identified_exclusion_rows,2026-09-06T00:00:00+00:00
+2026-06-30,unclassified_other_payables,92290886.74,CNY,unclassified_not_zero,2026-06-30/other_payables_residual,2026-09-06T00:00:00+00:00
+FY-2025,change_in_broad_wc,1770287601.33,CNY,balance_change_not_cashflow_reconciliation,2025-12-31/noncash_nondebt_wc_broad-2024-12-31/noncash_nondebt_wc_broad,2026-09-06T00:00:00+00:00
+H1-2026,change_in_broad_wc,1332312061.40,CNY,balance_change_not_cashflow_reconciliation,2026-06-30/noncash_nondebt_wc_broad-2025-12-31/noncash_nondebt_wc_broad,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,change_in_broad_wc,1463384994.45,CNY,balance_change_not_cashflow_reconciliation,2026-06-30/noncash_nondebt_wc_broad-2025-06-30/noncash_nondebt_wc_broad,2026-09-06T00:00:00+00:00
+FY-2025,change_in_fully_classified_operating_wc,,CNY,missing_historical_classification,2024 opening loan allowance and mixed classifications missing,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,change_in_fully_classified_operating_wc,,CNY,missing_historical_classification,2025H1 other_payables residual includes undisclosed classifications,2026-09-06T00:00:00+00:00

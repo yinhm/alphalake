@@ -1,0 +1,28 @@
+period,item,value,unit,status,formula,as_of
+2025-06-30,short_debt,668730859.26,CNY,policy_defined,1*2025-06-30/short_debt,2026-09-06T00:00:00+00:00
+2025-06-30,long_debt,852671125.12,CNY,policy_defined,1*2025-06-30/long_debt,2026-09-06T00:00:00+00:00
+2025-06-30,current_loans,143318543.02,CNY,policy_defined,1*2025-06-30/current_loans,2026-09-06T00:00:00+00:00
+2025-06-30,bonds,1085867928.06,CNY,policy_defined,1*2025-06-30/bonds,2026-09-06T00:00:00+00:00
+2025-06-30,current_bonds,84986.15,CNY,policy_defined,1*2025-06-30/current_bonds,2026-09-06T00:00:00+00:00
+2025-06-30,leases,153271729.96,CNY,policy_defined,1*2025-06-30/leases,2026-09-06T00:00:00+00:00
+2025-06-30,current_leases,55064650.56,CNY,policy_defined,1*2025-06-30/current_leases,2026-09-06T00:00:00+00:00
+2025-06-30,interest_bearing_debt_book_value,2959009822.13,CNY,book_value_not_market_value,sum(component rows),2026-09-06T00:00:00+00:00
+2025-06-30,notes_payable_if_financing,3530760938.94,CNY,sensitivity_not_base,book_debt+notes_payable,2026-09-06T00:00:00+00:00
+2025-12-31,short_debt,567318259.44,CNY,policy_defined,1*2025-12-31/short_debt,2026-09-06T00:00:00+00:00
+2025-12-31,long_debt,781332000.16,CNY,policy_defined,1*2025-12-31/long_debt,2026-09-06T00:00:00+00:00
+2025-12-31,current_loans,143319923.70,CNY,policy_defined,1*2025-12-31/current_loans,2026-09-06T00:00:00+00:00
+2025-12-31,bonds,1097399801.76,CNY,policy_defined,1*2025-12-31/bonds,2026-09-06T00:00:00+00:00
+2025-12-31,current_bonds,1201793.53,CNY,policy_defined,1*2025-12-31/current_bonds,2026-09-06T00:00:00+00:00
+2025-12-31,leases,246330560.40,CNY,policy_defined,1*2025-12-31/leases,2026-09-06T00:00:00+00:00
+2025-12-31,current_leases,81921896.49,CNY,policy_defined,1*2025-12-31/current_leases,2026-09-06T00:00:00+00:00
+2025-12-31,interest_bearing_debt_book_value,2918824235.48,CNY,book_value_not_market_value,sum(component rows),2026-09-06T00:00:00+00:00
+2025-12-31,notes_payable_if_financing,3361679421.29,CNY,sensitivity_not_base,book_debt+notes_payable,2026-09-06T00:00:00+00:00
+2026-06-30,short_debt,730723241.22,CNY,policy_defined,1*2026-06-30/short_debt,2026-09-06T00:00:00+00:00
+2026-06-30,long_debt,714162621.09,CNY,policy_defined,1*2026-06-30/long_debt,2026-09-06T00:00:00+00:00
+2026-06-30,current_loans,139041423.46,CNY,policy_defined,1*2026-06-30/current_loans,2026-09-06T00:00:00+00:00
+2026-06-30,bonds,1108968087.40,CNY,policy_defined,1*2026-06-30/bonds,2026-09-06T00:00:00+00:00
+2026-06-30,current_bonds,181516.69,CNY,policy_defined,1*2026-06-30/current_bonds,2026-09-06T00:00:00+00:00
+2026-06-30,leases,279555364.95,CNY,policy_defined,1*2026-06-30/leases,2026-09-06T00:00:00+00:00
+2026-06-30,current_leases,94283517.90,CNY,policy_defined,1*2026-06-30/current_leases,2026-09-06T00:00:00+00:00
+2026-06-30,interest_bearing_debt_book_value,3066915772.71,CNY,book_value_not_market_value,sum(component rows),2026-09-06T00:00:00+00:00
+2026-06-30,notes_payable_if_financing,3718221232.40,CNY,sensitivity_not_base,book_debt+notes_payable,2026-09-06T00:00:00+00:00
