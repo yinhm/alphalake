@@ -120,7 +120,7 @@
 
 按用户要求，旧更正包、历史身份及代码复用等边界案例保留在案，暂不作为下一阶段主线。优先提高当前财务数据对普通非金融公司估值的可用程度。
 
-最近各轮 review 尚未关闭的九项非阻塞小点已归并至[待办清单](review-minor-backlog.md)，记录当前覆盖、处理时机及关闭标准；不替代财务完整度主线。
+最近各轮 review 尚未关闭的非阻塞小点已归并至[待办清单](review-minor-backlog.md)，记录当前覆盖、处理时机及关闭标准；不替代财务完整度主线。2026-09-06 校验维护已关闭四批历史 PDF 校验未入 CI、pypdf 安装包未锁哈希两项，验收记录保留正负安装结果。
 
 以达摩达兰 FCFF 估值为参考，项目暂定十二组核心财务输入：收入、经调整 EBIT、税项、折旧摊销、资本开支、非现金营运资本、现金、有息债务、账面权益、少数股东权益、非经营性投资、股数。这是项目的工作清单，不是达摩达兰规定的固定字段数；参考其 [DCF 讲义](https://pages.stern.nyu.edu/adamodar/pdfiles/eqnotes/dcfall2pg.pdf)和[估值工具](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/eqspread.htm)。
 

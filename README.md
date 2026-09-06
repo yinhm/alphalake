@@ -62,7 +62,7 @@ go test ./...
 go build ./cmd/alphalake
 ```
 
-CI 还会检查 `go mod tidy` 是否产生文件改动，并以 Python 3.12 / `pypdf==6.17.0` 运行[标准事实到估值的双公司验收](internal/ingest/testdata/valuation-chain-2026/README.md)：先执行生产归档、TDX 解析、标准物化及时点查询，再独立核验安克和茅台原始 PDF，最后用标准查询值及明确补充项复算估值。安克六年历史与研发资本化校验另行保留。
+CI 还会检查 `go mod tidy` 是否产生文件改动，并以 Python 3.12 / [版本与 wheel 哈希锁定的 pypdf](.github/requirements-pdf.txt) 运行[标准事实到估值的双公司验收](internal/ingest/testdata/valuation-chain-2026/README.md)：先执行生产归档、TDX 解析、标准物化及时点查询，再独立核验安克和茅台原始 PDF，最后用标准查询值及明确补充项复算估值。安克六年历史与研发资本化校验另行保留；更正、税项/债务、TTM、核心财务字段四批历史 PDF 校验也在 CI 强制运行。
 
 安克、茅台的原 PDF 模型保留为研究对照；它们通过不等于生产数据链路通过。当前 158 个模型取值中 68 个由标准事实供应，90 个尚无已审核对应映射、作为显式补充，不宣称 TDX 没有这些字段。标准链重算后的两位小数每股值不变，源精度差异单列；纯经营现金流等历史缺口仍保留，结果不是当前目标价。见[安克报告](docs/anker-validation-valuation-20260906.md)及[茅台报告](docs/moutai-validation-valuation-20260906.md)。
 

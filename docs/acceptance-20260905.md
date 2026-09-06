@@ -311,3 +311,17 @@ Python 默认先运行上述 Go 验收（关闭依赖联网、禁止写快照）
 三项新负向实验在内存副本完成：删除茅台标准货币资金时失败于 `required standard fact missing; no PDF fallback`；标准金额加 1 元时失败于标准值与源位一致性；PDF 金额增加 100,000 元跨越 float32 格点时失败于 `PDF/source conflict`。恢复后重建通过。此处固定片段、位比较及恒等式各验证不同边界，不宣称金额来源拥有第二套完全独立的经济事实。
 
 最终默认双公司入口、`go test ./...`、`go build ./cmd/alphalake`、`go vet ./...`、改动 Go 文件的 gofmt 及 `git diff --check` 通过。CI 配置已替换成标准链入口，未执行远端 Actions；未修改既有原始 PDF、原财务/估值 CSV、TDX 映射或依赖。原库未被改写；需要在实际数据库应用新分类时，先升级 schema，再执行 `materialize-fundamentals`。详见[复现及分层边界](../internal/ingest/testdata/valuation-chain-2026/README.md)。
+
+## Review 跟进：历史校验与安装哈希（2026-09-06）
+
+对照 `/tmp/alphalake-review.md` 追加的 `084577d..cc6c00e` review，本轮关闭两项既有校验待办：`correction-600113`、`tax-debt-2025`、`ttm-2026`、`core-financial-2025` 四个原 PDF 校验器分别接入 CI；pypdf 以 `.github/requirements-pdf.txt` 同时锁定版本和通用 wheel 的 SHA-256，安装强制 `--only-binary=:all: --require-hashes`。保留原安克历史、双公司标准链入口，没有修改财务事实、解析规则或估值假设。
+
+在不继承已有包的 Python 3.12 虚拟环境中，按锁文件安装 pypdf 6.17.0 成功，wheel 哈希为 `5bd827266a21553b74d910e350131a6227b72f2ab4209bf372814b8195fa11c5`，与已有 PyPI wheel 元数据一致。本机缺 ensurepip，因此以 `venv --without-pip` 创建环境，再用已有 pip 的 `--python` 指向新环境执行同样安装约束；没有为此修改系统 Python。安装允许使用经过哈希检查的下载缓存，不声称完全无缓存下载。
+
+另一空虚拟环境使用全零错误哈希，安装以 `DO NOT MATCH THE HASHES` 拒绝，随后确认该环境不存在 pypdf。错误锁文件仅在 workspace，用于负向实验；没有改写仓库锁文件。
+
+新增四批默认只读校验均通过：更正样本的三份 PDF、16 个单季度和 16 个累计单元格；税项/债务的 9 字段 16 金额及万元舍入；TTM 的 38 个年度/累计/期末金额；核心财务的 20 字段 35 金额。这些是重新提取归档 PDF，不是只比较已生成的 CSV。现有安克历史校验也在新环境通过，涵盖 180 个历史金额和 7 个资本开支证据金额。
+
+译本迁移后的 `status` 待重放提示暂不实现，已列待办 10；准确提示需要可追溯的待重放状态，不能将合法为空的更正前序都解释成待重扫。固定身份样本是已明确的验收范围，不伪装成证券发现测试。AGENTS 实际新增三条约定，仓库文本无“新增两条”的错误数量需要修订。
+
+最终双公司默认入口也在该新环境通过，包含生产标准链 Go 回归、安克原 PDF/DCF、茅台八份 PDF 及八张标准链输出表。`git diff --check` 通过；未运行远端 Actions。本轮仅改 CI 配置、安装锁文件与说明，没有 Go 源码或 Go 依赖变更，未额外重复全套 Go 测试/构建/vet。原待办 1、2 已从未关闭清单移除。
