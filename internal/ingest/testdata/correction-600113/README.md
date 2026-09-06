@@ -12,4 +12,12 @@
 go test ./internal/ingest -run '^TestRealCorrectionWithoutOriginalProviderVersion$' -count=1 -v
 ```
 
-原始 PDF 和完整包保留在本地归档，普通测试不重新解析 PDF。证据缺口及归档基线见[调查记录](../../../../docs/correction-evidence-20260905.md)。
+三份原始 PDF 已随样本提交，普通 Go 测试强制检查大小及 SHA-256，无需本地 workspace。`comparison.csv` 列出营业收入、利润总额、归母净利润、扣非净利润的更正前后单季度值及未变的累计值。Go 测试将其中三个已映射字段与当前 TDX 原始位及标准事实比较；利润总额不等于 FN231 营业利润，不参与该映射。
+
+独立 PDF 比对需要 Python 和 `pypdf`（本次使用已有的 6.17.0；不属于 Go 运行依赖）：
+
+```bash
+python3 internal/ingest/testdata/correction-600113/verify.py
+```
+
+脚本离线从三份 PDF 重新提取，按项目名及表格列检查 16 个单季度单元格、16 个累计单元格；依赖或文件缺失直接失败，不静默跳过。它是固定样本验收，不是通用 PDF 财务提取器。完整 TDX 包仍在本地归档。证据缺口及归档基线见[调查记录](../../../../docs/correction-evidence-20260905.md)。

@@ -1,7 +1,11 @@
 package ingest
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"math"
 	"path/filepath"
 	"strconv"
@@ -27,13 +31,23 @@ func TestRealCorrectionWithoutOriginalProviderVersion(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	type document struct {
+		ID, Value, SHA256 string
+		Size              int
+	}
 	var evidence struct {
-		Original, Corrected struct{ ID, Value string }
-		Provider            struct {
+		Original, Corrected, Notice document
+		Provider                    struct {
 			FetchedAt time.Time `json:"fetched_at"`
 		}
 	}
 	check(json.Unmarshal(readFinancialSample(t, dir, "evidence.json"), &evidence))
+	for _, doc := range []document{evidence.Original, evidence.Corrected, evidence.Notice} {
+		raw := readFinancialSample(t, dir, doc.ID+".pdf")
+		if len(raw) != doc.Size || fmt.Sprintf("%x", sha256.Sum256(raw)) != doc.SHA256 {
+			t.Fatalf("%s PDF evidence changed", doc.ID)
+		}
+	}
 	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "correction.duckdb"))
 	check(err)
 	defer db.Close()
@@ -91,6 +105,32 @@ func TestRealCorrectionWithoutOriginalProviderVersion(t *testing.T) {
 	check(err)
 	if result.Linked != 1 || result.Inserted != 9 || result.Rejected != 0 || result.LinkAmbiguous != 0 {
 		t.Fatalf("corrected materialization: %+v", result)
+	}
+	comparisons, err := csv.NewReader(bytes.NewReader(readFinancialSample(t, dir, "comparison.csv"))).ReadAll()
+	check(err)
+	if len(comparisons) != 5 || len(comparisons[0]) != 5 {
+		t.Fatal("expected four comparison rows")
+	}
+	for _, row := range comparisons[1:] {
+		if row[1] == "" { // 利润总额不冒充已审核的营业利润字段。
+			continue
+		}
+		field, err := strconv.Atoi(row[1][2:])
+		check(err)
+		corrected, err := strconv.ParseFloat(row[3], 32)
+		check(err)
+		original, err := strconv.ParseFloat(row[2], 32)
+		check(err)
+		bits := records[0].ProviderFields[field-1].Bits
+		if bits != math.Float32bits(float32(corrected)) || bits == math.Float32bits(float32(original)) {
+			t.Fatalf("%s does not match corrected PDF", row[1])
+		}
+		var value float64
+		check(db.QueryRowContext(ctx, `SELECT CAST(value AS DOUBLE) FROM fundamental.fact
+			WHERE source_provider_field=? AND period_type='Q3' AND unit='CNY'`, row[1]).Scan(&value))
+		if value != corrected {
+			t.Fatalf("%s canonical value=%v, want %v", row[1], value, corrected)
+		}
 	}
 	var filingID, variant, period string
 	check(db.QueryRowContext(ctx, `SELECT a.source_filing_id, a.filing_variant, f.period_type
