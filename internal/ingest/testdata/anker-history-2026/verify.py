@@ -68,19 +68,49 @@ def main(write=False):
     existing = {r['id']:D(r['value']) for r in csv.DictReader((ROOT/'../anker-valuation-2026/reported.csv').open())}
     for key,old in [('revenue','revenue'),('cash_capex','cf_capex'),('disposal_cash','cash_disposals'),('ocf','cf_ocf_statement'),('ar','receivables'),('inventory','inventory'),('prepayments','prepayments'),('ap','payables'),('contract_liabilities','contract_liabilities')]:
         assert values[2025,key] == existing['2025-12-31/'+old],key
-    out = io.StringIO()
-    writer = csv.DictWriter(out,fieldnames=output[0],lineterminator='\n')
-    writer.writeheader()
-    writer.writerows(output)
-    path = ROOT/'annual-inputs.csv'
-    if write:
-        path.write_text(out.getvalue())
-    else:
-        assert path.read_text() == out.getvalue(), 'annual-inputs.csv differs; review before --write'
-    print('通过：三份年报、180 个原文金额、六期 OCF 十九项调节及 2020—2025 六年输入表。')
+    # 五年年末资本化、次年起直线摊销；分析资产不是报表确认资产。
+    cohorts = []
+    opening = amortization = closing = D(0)
+    for year in range(2020,2026):
+        expense = values[year,'rd_expense']
+        before = expense*D(max(0,5-(2024-year)))/5 if year<2025 else D(0)
+        charge = expense/5 if year<2025 else D(0)
+        addition = expense if year==2025 else D(0)
+        after = expense*D(max(0,5-(2025-year)))/5
+        assert before+addition-charge == after
+        opening += before
+        amortization += charge
+        closing += after
+        cohorts.append(dict(vintage=year,analysis_year=2025,life_years=5,rd_expense=f'{expense:.6f}',opening_asset=f'{before:.6f}',addition=f'{addition:.6f}',amortization=f'{charge:.6f}',closing_asset=f'{after:.6f}',unit='CNY',source=f'{year}/rd_expense',status='illustrative_model_asset_not_reported',as_of=AS_OF))
+    delta = values[2025,'rd_expense']-amortization
+    assert closing-opening == delta
+    base_rows = [r for r in csv.DictReader((ROOT/'../anker-valuation-2026/valuation-scenarios.csv').open()) if r['period']=='2025-12-31']
+    assert len(base_rows)==3 and {r['assumed_tax_rate'] for r in base_rows}=={'0.15','0.20','0.25'}
+    scenarios = []
+    for r in base_rows:
+        assert r['as_of']==AS_OF and r['unit']=='CNY' and r['fcff']==''
+        base_ebit, tax, investment = (D(r[k]) for k in ['adjusted_ebit','modelled_operating_tax','identified_net_longlived_investment'])
+        assert base_ebit-tax == D(r['value'])
+        nopat = base_ebit+delta-tax
+        adjusted_investment = investment+delta
+        subtotal = nopat-adjusted_investment
+        assert subtotal == D(r['subtotal_before_wc_and_other_adjustments'])
+        scenarios.append(dict(year=2025,life_years=5,assumed_tax_rate=r['assumed_tax_rate'],opening_research_asset=f'{opening:.6f}',closing_research_asset=f'{closing:.6f}',research_amortization=f'{amortization:.6f}',ebit_and_reinvestment_adjustment=f'{delta:.6f}',adjusted_ebit=f'{base_ebit+delta:.6f}',unchanged_modelled_tax=f'{tax:.6f}',adjusted_nopat=f'{nopat:.6f}',adjusted_identified_net_investment=f'{adjusted_investment:.6f}',subtotal_before_wc_and_other_adjustments=f'{subtotal:.6f}',fcff='',unit='CNY',status='illustrative_reclassification_tax_unchanged_not_fcff',policy='five-year straight-line from following year; base model tax unchanged; no additional R&D tax benefit or OCI adjustment',as_of=AS_OF))
+    for name,data in [('annual-inputs',output),('rd-cohorts',cohorts),('rd-capitalization',scenarios)]:
+        out = io.StringIO()
+        writer = csv.DictWriter(out,fieldnames=data[0],lineterminator='\n')
+        writer.writeheader()
+        writer.writerows(data)
+        path = ROOT/(name+'.csv')
+        if write:
+            path.write_text(out.getvalue())
+        else:
+            assert path.read_text()==out.getvalue(),name+'.csv differs; review before --write'
+    print('通过：三份年报、180 个原文金额、六年历史及五年研发资本化/税项不变情景。')
+
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--write',action='store_true',help='验收后重建历史表；默认只核对')
+    parser.add_argument('--write',action='store_true',help='验收后重建历史与研发情景表；默认只核对')
     main(parser.parse_args().write)
