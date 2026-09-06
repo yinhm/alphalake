@@ -62,3 +62,5 @@ alphalake materialize-fundamentals ./alphalake.duckdb
 重新校验完整包与裁剪包 SHA-256，并将 600113 的市场标记和 2336 字节字段逐字节比对，全部一致。`go test ./...`、`go build ./cmd/alphalake`、`go vet ./...` 均通过，Go 依赖没有变化。
 
 进一步检索发现 [2025-08-26 的历史 H1 包帖子](https://linux.do/t/topic/900322/1)，但附件读取返回 HTTP 403（网页抓取返回 404），未取得字节，也不是本例 Q3 包。检查 pytdx、mootdx、QUANTAXIS、wkingnet/stock-analysis 的当前 GitHub 文件树也未找到旧包。因此本次完成的是公告双版本金额比对与当前 TDX 版本验收；**真实 TDX 双版本验收仍不能标记通过**。没有倒填观察时间或构造旧包。
+
+核心字段扩充后（迁移 018），本案例当前 TDX 版本物化为 26 条标准事实，另有 3 个零值折旧摊销候选拒绝物化。此前九字段验收的计数保留为历史记录；原始版本缺失、公告选择与 PIT 边界不变。

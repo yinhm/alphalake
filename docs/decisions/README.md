@@ -11,4 +11,6 @@
 7. [CNINFO 公告与时点基本面](007-cninfo-filing-and-pit-fundamentals.md)——公告证据、数据源—公告关联、标准时点事实和 ASOF 查询。
 8. [CNINFO 公告日期精度](008-cninfo-announcement-date-precision.md)——公开目录日期精度下的保守可用时间。
 
+9. [核心财务字段](009-core-financial-fields.md)——现金、借款、权益和再投资明细、期间区分与真实财报验收。
+
 后续 ADR 可以替代早期决策的某一部分，但必须明确说明替代关系；替代不会抹去历史决策依据。
