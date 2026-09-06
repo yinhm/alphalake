@@ -3,11 +3,11 @@
   "status": "shared_orchestrator_verified_industry_policy_not_equivalent_not_market_target",
   "statement_scope": "provider_default; EBIT is liquor policy proxy, not exact deconsolidation",
   "source_sha256": {
-    "facts.csv": "c3187c997619c6ec2416361621139f89d5518104b7b67e497c01117458c7ab1a",
-    "windows.csv": "24c6dbd793712562336a7b9ead11801b9a4829b97b501a54513b58907618feed",
-    "inputs.csv": "e0f1d74e3756bfe89e5a81774aadbbeb2f97cd9aab1b5adb71404622c691dda0",
-    "input-audit.csv": "1ea8b29369f3dc1b979f07225b0975fc5da6210d5368948c671abdf0df1cc759",
-    "600519-equity-bridge.csv": "b565a8446007f632e175368eaea6401878b0b64d87700798813f2472b413d0f3"
+    "facts.csv": "cb6f7d72c9aaa8bdc6e0227442d338ffd418799d879d3b1699d2ae8030932fb4",
+    "windows.csv": "865d38d512b69161a0c5d66c07ca535d28e224257b50f5ad187defb71788dcb4",
+    "inputs.csv": "c97736cbf612ddcda191ef50e876575bbd17e5a29df8ee4b1fbdbd62e94c2bcd",
+    "input-audit.csv": "07b3b9b7b70c416d8db9e7a91b929375b3f5b254c55e554ce1a0400a3175dcc4",
+    "600519-equity-bridge.csv": "5fba83d0d3ad46818f8fe4d1d500e114120f34f46a29a8f9d833568c38412baf"
   },
   "consolidated_reference_not_liquor_inputs": {
     "capex_ttm": 2363.742016,
@@ -23,11 +23,11 @@
   "scenarios": [
     {
       "scenario": "cautious",
-      "target_enterprise": 800365.2581047165,
-      "original_enterprise": 784453.8506210839,
-      "target_forecast_with_original_policy_bridge": 733.7874553211584,
+      "target_enterprise": 800365.2581008105,
+      "original_enterprise": 784453.8504319816,
+      "target_forecast_with_original_policy_bridge": 733.7874553174273,
       "original_per_share": 721.530132,
-      "operating_minority_fraction": 0.0370019325648511,
+      "operating_minority_fraction": 0.037001932565803815,
       "historical_fcff": null,
       "final_engine_per_share": null,
       "warnings": [
@@ -38,38 +38,38 @@
         {
           "year": 1,
           "revenue": 170152.009728,
-          "margin": 0.6453586540178841,
+          "margin": 0.6453586540012675,
           "reinvestment": 0.0,
-          "fcff": 82356.803982375,
+          "fcff": 82356.80398025448,
           "original_margin": 0.636287,
-          "original_reinvestment": 3283.6816343287
+          "original_reinvestment": 3283.6816832847
         },
         {
           "year": 2,
           "revenue": 170152.009728,
-          "margin": 0.6272151924107304,
+          "margin": 0.6272151924007605,
           "reinvestment": 0.0,
-          "fcff": 80041.444140465,
+          "fcff": 80041.4441391927,
           "original_margin": 0.627215,
-          "original_reinvestment": 3437.430990318921
+          "original_reinvestment": 3437.4310392749207
         },
         {
           "year": 3,
           "revenue": 170152.009728,
-          "margin": 0.6181434616071536,
+          "margin": 0.6181434616005069,
           "reinvestment": 0.0,
-          "fcff": 78883.76421950999,
+          "fcff": 78883.76421866179,
           "original_margin": 0.618143,
-          "original_reinvestment": 3592.7153896801037
+          "original_reinvestment": 3592.715438636104
         },
         {
           "year": 4,
           "revenue": 170152.009728,
-          "margin": 0.6090717308035768,
+          "margin": 0.6090717308002535,
           "reinvestment": 0.0,
-          "fcff": 77726.084298555,
+          "fcff": 77726.0842981309,
           "original_margin": 0.609072,
-          "original_reinvestment": 3835.545613759158
+          "original_reinvestment": 3835.545662715158
         },
         {
           "year": 5,
@@ -78,7 +78,7 @@
           "reinvestment": 0.0,
           "fcff": 76568.4043776,
           "original_margin": 0.6,
-          "original_reinvestment": 4082.1423663062446
+          "original_reinvestment": 4082.1424152622453
         },
         {
           "year": 6,
@@ -129,11 +129,11 @@
     },
     {
       "scenario": "central",
-      "target_enterprise": 1468623.8546367523,
-      "original_enterprise": 1466464.237187648,
-      "target_forecast_with_original_policy_bridge": 1269.0198626990016,
+      "target_enterprise": 1468623.8546324053,
+      "original_enterprise": 1466464.2369907377,
+      "target_forecast_with_original_policy_bridge": 1269.0198626946342,
       "original_per_share": 1267.343421,
-      "operating_minority_fraction": 0.029601546051880877,
+      "operating_minority_fraction": 0.029601546052643056,
       "historical_fcff": null,
       "final_engine_per_share": null,
       "warnings": [
@@ -144,38 +144,38 @@
         {
           "year": 1,
           "revenue": 177026.1509210112,
-          "margin": 0.6453586540178841,
+          "margin": 0.6453586540012675,
           "reinvestment": 3643.294832295933,
-          "fcff": 82040.72403096702,
+          "fcff": 82040.72402876084,
           "original_margin": 0.646287,
-          "original_reinvestment": 5192.012510822167
+          "original_reinvestment": 5192.0125518668765
         },
         {
           "year": 2,
           "revenue": 184178.00741822005,
-          "margin": 0.6472151924107304,
+          "margin": 0.6472151924007605,
           "reinvestment": 3790.4839435206904,
-          "fcff": 85611.61943823547,
+          "fcff": 85611.6194368583,
           "original_margin": 0.647215,
-          "original_reinvestment": 5135.054824027662
+          "original_reinvestment": 5135.054868788306
         },
         {
           "year": 3,
           "revenue": 191618.79891791614,
-          "margin": 0.6481434616071536,
+          "margin": 0.648143461600507,
           "reinvestment": 3943.619494838928,
-          "fcff": 89203.73423490852,
+          "fcff": 89203.7342339533,
           "original_margin": 0.648143,
-          "original_reinvestment": 5058.751603911496
+          "original_reinvestment": 5058.7516526213285
         },
         {
           "year": 4,
           "revenue": 199360.19839419995,
-          "margin": 0.6490717308035768,
+          "margin": 0.6490717308002535,
           "reinvestment": 4102.941722430421,
-          "fcff": 92946.36004637044,
+          "fcff": 92946.36004587355,
           "original_margin": 0.649072,
-          "original_reinvestment": 4796.28892275552
+          "original_reinvestment": 4796.288975660578
         },
         {
           "year": 5,
@@ -184,7 +184,7 @@
           "reinvestment": 4268.700568016606,
           "fcff": 96845.79525652963,
           "original_margin": 0.65,
-          "original_reinvestment": 4500.744044708479
+          "original_reinvestment": 4500.744102068236
         },
         {
           "year": 6,
@@ -235,11 +235,11 @@
     },
     {
       "scenario": "expansive",
-      "target_enterprise": 2244723.7693260806,
-      "original_enterprise": 2248908.837147612,
-      "target_forecast_with_original_policy_bridge": 1888.816513721915,
+      "target_enterprise": 2244723.769321491,
+      "original_enterprise": 2248908.8369461624,
+      "target_forecast_with_original_policy_bridge": 1888.816513717224,
       "original_per_share": 1892.090023,
-      "operating_minority_fraction": 0.022201159538910664,
+      "operating_minority_fraction": 0.022201159539482294,
       "historical_fcff": null,
       "final_engine_per_share": null,
       "warnings": [
@@ -250,38 +250,38 @@
         {
           "year": 1,
           "revenue": 180514.2671204352,
-          "margin": 0.6453586540178841,
+          "margin": 0.6453586540012675,
           "reinvestment": 3937.657809125372,
-          "fcff": 83434.67553577626,
+          "fcff": 83434.6755335266,
           "original_margin": 0.652287,
-          "original_reinvestment": 5018.007098141481
+          "original_reinvestment": 5018.007135171799
         },
         {
           "year": 2,
           "revenue": 191507.58598806968,
-          "margin": 0.6592151924107305,
+          "margin": 0.6592151924007605,
           "reinvestment": 4177.461169701105,
-          "fcff": 90506.0714392288,
+          "fcff": 90506.07143779681,
           "original_margin": 0.659215,
-          "original_reinvestment": 4804.495922046394
+          "original_reinvestment": 4804.4959644948485
         },
         {
           "year": 3,
           "revenue": 203170.39797474313,
-          "margin": 0.6661434616071537,
+          "margin": 0.666143461600507,
           "reinvestment": 4431.868554935911,
-          "fcff": 97073.60559731291,
+          "fcff": 97073.60559630011,
           "original_margin": 0.666143,
-          "original_reinvestment": 4533.582847878694
+          "original_reinvestment": 4533.582896267874
         },
         {
           "year": 4,
           "revenue": 215543.47521140496,
-          "margin": 0.6730717308035769,
+          "margin": 0.6730717308002535,
           "reinvestment": 4701.769349931496,
-          "fcff": 104105.39559303717,
+          "fcff": 104105.39559249992,
           "original_margin": 0.673072,
-          "original_reinvestment": 3964.3902917012238
+          "original_reinvestment": 3964.390346597277
         },
         {
           "year": 5,
@@ -290,7 +290,7 @@
           "reinvestment": 4988.107103342332,
           "fcff": 111633.63005106522,
           "original_margin": 0.68,
-          "original_reinvestment": 3309.182701399452
+          "original_reinvestment": 3309.1827634154492
         },
         {
           "year": 6,

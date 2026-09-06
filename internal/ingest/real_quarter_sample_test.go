@@ -144,7 +144,7 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 	check(duckstore.FinishIngestRun(ctx, db, runID, duckstore.IngestRunCompleted, nil, nil))
 	result, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if result.FilingResolutionRecovered != 8 || result.FilingResolutionPending != 0 || result.Linked != 6 || result.Inserted != 212 || result.Rejected != 16 || result.LinkPending != 0 || result.LinkAmbiguous != 0 {
+	if result.FilingResolutionRecovered != 8 || result.FilingResolutionPending != 0 || result.Linked != 6 || result.Inserted != 254 || result.Rejected != 16 || result.LinkPending != 0 || result.LinkAmbiguous != 0 {
 		t.Fatalf("quarter materialization: %+v", result)
 	}
 	values := financialSampleValues(t, quarterSampleDir, "values.csv", 24)
@@ -203,7 +203,7 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 	}
 	replay, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 || replay.Rejected != 16 || replay.Materialized != 212 {
+	if replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 || replay.Rejected != 16 || replay.Materialized != 254 {
 		t.Fatalf("quarter materialization replay: %+v", replay)
 	}
 	// 错误倍率不得留下旧的看似可信结果；恢复目录后可从原始证据重建。
@@ -218,8 +218,8 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 	check(err)
 	restored, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if restored.Inserted != 6 || restored.Materialized != 212 || restored.Rejected != 16 {
+	if restored.Inserted != 6 || restored.Materialized != 254 || restored.Rejected != 16 {
 		t.Fatalf("restored multiplier: %+v", restored)
 	}
-	t.Log("Q1/Q2/Q3：24 个金额、六个原始公告关联及各自 PIT 边界通过；212 条标准事实重放无变更")
+	t.Log("Q1/Q2/Q3：24 个金额、六个原始公告关联及各自 PIT 边界通过；254 条标准事实重放无变更")
 }

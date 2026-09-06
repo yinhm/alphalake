@@ -12,7 +12,7 @@
       "financials": {
         "fiscal_year": 2026,
         "revenues": 34252.649984,
-        "ebit": 3230.45721411,
+        "ebit": 3230.457212141328,
         "ebitda": null,
         "net_income": null,
         "interest_expense": null,
@@ -43,10 +43,10 @@
       "money_unit": "million_reporting_currency",
       "shares_unit": "million_shares",
       "provenance": {
-        "facts.csv": "c3187c997619c6ec2416361621139f89d5518104b7b67e497c01117458c7ab1a",
-        "windows.csv": "24c6dbd793712562336a7b9ead11801b9a4829b97b501a54513b58907618feed",
-        "inputs.csv": "e0f1d74e3756bfe89e5a81774aadbbeb2f97cd9aab1b5adb71404622c691dda0",
-        "input-audit.csv": "1ea8b29369f3dc1b979f07225b0975fc5da6210d5368948c671abdf0df1cc759"
+        "facts.csv": "cb6f7d72c9aaa8bdc6e0227442d338ffd418799d879d3b1699d2ae8030932fb4",
+        "windows.csv": "865d38d512b69161a0c5d66c07ca535d28e224257b50f5ad187defb71788dcb4",
+        "inputs.csv": "c97736cbf612ddcda191ef50e876575bbd17e5a29df8ee4b1fbdbd62e94c2bcd",
+        "input-audit.csv": "07b3b9b7b70c416d8db9e7a91b929375b3f5b254c55e554ce1a0400a3175dcc4"
       }
     },
     "raw_financials": [],
@@ -109,7 +109,7 @@
       "high_growth_years": 5,
       "stable_growth_rate": null,
       "revenue_growth_next_year": 0.12,
-      "operating_margin_next_year": 0.09431262152326905,
+      "operating_margin_next_year": 0.09431262146579403,
       "revenue_growth_years_2_5": 0.12,
       "target_operating_margin": 0.1,
       "margin_convergence_year": 5,

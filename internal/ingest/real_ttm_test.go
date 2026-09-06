@@ -110,7 +110,7 @@ func TestRealSixQuarterWindows(t *testing.T) {
 	check(duckstore.FinishIngestRun(ctx, db, run, duckstore.IngestRunCompleted, nil, nil))
 	materialized, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if len(records) != 12 || materialized.Linked != 12 || materialized.Materialized != 432 || materialized.Rejected != 24 {
+	if len(records) != 12 || materialized.Linked != 12 || materialized.Materialized != 516 || materialized.Rejected != 24 {
 		t.Fatalf("six quarters: records=%d result=%+v", len(records), materialized)
 	}
 	rows := financialSampleValues(t, dir, "reported.csv", 38)
@@ -209,8 +209,8 @@ func TestRealSixQuarterWindows(t *testing.T) {
 			t.Fatal("incomplete TTM visible before H1 disclosure")
 		}
 		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.ttm_asof(?, DATE '2026-06-30') WHERE provider_code=? AND coverage_status='complete'`, available, code).Scan(&n))
-		if n != 38 {
-			t.Fatalf("%s complete H1 inputs=%d want=38", code, n)
+		if n != 45 {
+			t.Fatalf("%s complete H1 inputs=%d want=45", code, n)
 		}
 	}
 	replay, err := MaterializeProviderFundamentals(ctx, db, "tdx")

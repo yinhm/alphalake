@@ -5,3 +5,5 @@
 *.duckdb.wal
 *.db
 .DS_Store
+
+__pycache__/

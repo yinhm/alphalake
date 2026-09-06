@@ -1,6 +1,8 @@
 code,period,field,canonical_field,calculation_basis,coverage_status,value,required_inputs,available_inputs,input_periods,coefficients
 300866,2026-06-30,FN11,accounts_receivable,instant,complete,2500613120.0000000000,1,1,[2026-06-30],[1]
 300866,2026-06-30,FN114,capital_expenditure_cash,ytd,complete,319634280.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
+300866,2026-06-30,FN12,prepayments,instant,complete,214351936.0000000000,1,1,[2026-06-30],[1]
+300866,2026-06-30,FN13,other_receivables,instant,complete,147167344.0000000000,1,1,[2026-06-30],[1]
 300866,2026-06-30,FN133,cash_and_cash_equivalents,instant,complete,2992257024.0000000000,1,1,[2026-06-30],[1]
 300866,2026-06-30,FN136,depreciation_depletion,ytd,complete,127963758.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 300866,2026-06-30,FN137,intangible_amortization,ytd,complete,6912272.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
@@ -18,12 +20,15 @@ code,period,field,canonical_field,calculation_basis,coverage_status,value,requir
 300866,2026-06-30,FN238,total_shares,instant,complete,536276384.0000000000,1,1,[2026-06-30],[1]
 300866,2026-06-30,FN25,long_term_equity_investments,instant,complete,556090432.0000000000,1,1,[2026-06-30],[1]
 300866,2026-06-30,FN271,equity_parent,instant,complete,11591724032.0000000000,1,1,[2026-06-30],[1]
+300866,2026-06-30,FN301,asset_disposal_income,ytd,complete,263910.3886718750,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 300866,2026-06-30,FN305,interest_expense,ytd,complete,63953754.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 300866,2026-06-30,FN306,interest_income,ytd,complete,77690396.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 300866,2026-06-30,FN40,total_assets,instant,complete,22420156416.0000000000,1,1,[2026-06-30],[1]
 300866,2026-06-30,FN41,short_term_borrowings,instant,complete,730723264.0000000000,1,1,[2026-06-30],[1]
 300866,2026-06-30,FN439,lease_liabilities,instant,complete,279555390.6249999872,1,1,[2026-06-30],[1]
 300866,2026-06-30,FN44,accounts_payable,instant,complete,2822353920.0000000000,1,1,[2026-06-30],[1]
+300866,2026-06-30,FN46,payroll_payable,instant,complete,956199488.0000000000,1,1,[2026-06-30],[1]
+300866,2026-06-30,FN47,taxes_payable,instant,complete,660685696.0000000000,1,1,[2026-06-30],[1]
 300866,2026-06-30,FN52,current_portion_noncurrent_liabilities,instant,complete,233506464.0000000000,1,1,[2026-06-30],[1]
 300866,2026-06-30,FN54,current_liabilities,instant,complete,8092648960.0000000000,1,1,[2026-06-30],[1]
 300866,2026-06-30,FN55,long_term_borrowings,instant,complete,714162624.0000000000,1,1,[2026-06-30],[1]
@@ -34,11 +39,15 @@ code,period,field,canonical_field,calculation_basis,coverage_status,value,requir
 300866,2026-06-30,FN72,total_equity,instant,complete,11752974336.0000000000,1,1,[2026-06-30],[1]
 300866,2026-06-30,FN8,monetary_funds,instant,complete,3803700480.0000000000,1,1,[2026-06-30],[1]
 300866,2026-06-30,FN80,finance_costs,ytd,complete,233608232.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
+300866,2026-06-30,FN82,fair_value_change_income,ytd,complete,337062960.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
+300866,2026-06-30,FN83,investment_income,ytd,complete,147508038.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 300866,2026-06-30,FN86,operating_profit_cumulative,ytd,complete,3748730752.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 300866,2026-06-30,FN92,profit_before_tax,ytd,complete,3731007616.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 300866,2026-06-30,FN93,income_tax_expense,ytd,complete,535279168.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 600519,2026-06-30,FN11,accounts_receivable,instant,complete,570895.0625000000,1,1,[2026-06-30],[1]
 600519,2026-06-30,FN114,capital_expenditure_cash,ytd,complete,2363742016.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
+600519,2026-06-30,FN12,prepayments,instant,complete,16190169.0000000000,1,1,[2026-06-30],[1]
+600519,2026-06-30,FN13,other_receivables,instant,complete,47328676.0000000000,1,1,[2026-06-30],[1]
 600519,2026-06-30,FN133,cash_and_cash_equivalents,instant,complete,184811094016.0000000000,1,1,[2026-06-30],[1]
 600519,2026-06-30,FN136,depreciation_depletion,ytd,complete,1972230784.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 600519,2026-06-30,FN137,intangible_amortization,ytd,complete,303019408.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
@@ -56,12 +65,15 @@ code,period,field,canonical_field,calculation_basis,coverage_status,value,requir
 600519,2026-06-30,FN238,total_shares,instant,complete,1250081664.0000000000,1,1,[2026-06-30],[1]
 600519,2026-06-30,FN25,long_term_equity_investments,instant,complete,147198784.0000000000,1,1,[2026-06-30],[1]
 600519,2026-06-30,FN271,equity_parent,instant,complete,251253587968.0000000000,1,1,[2026-06-30],[1]
+600519,2026-06-30,FN301,asset_disposal_income,ytd,complete,2734430.8593750000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 600519,2026-06-30,FN305,interest_expense,ytd,complete,45399919.5000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 600519,2026-06-30,FN306,interest_income,ytd,complete,615989616.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 600519,2026-06-30,FN40,total_assets,instant,complete,309050769408.0000000000,1,1,[2026-06-30],[1]
 600519,2026-06-30,FN41,short_term_borrowings,instant,complete,0.0000000000,1,1,[2026-06-30],[1]
 600519,2026-06-30,FN439,lease_liabilities,instant,complete,186829492.1875000064,1,1,[2026-06-30],[1]
 600519,2026-06-30,FN44,accounts_payable,instant,complete,3509015552.0000000000,1,1,[2026-06-30],[1]
+600519,2026-06-30,FN46,payroll_payable,instant,complete,375947872.0000000000,1,1,[2026-06-30],[1]
+600519,2026-06-30,FN47,taxes_payable,instant,complete,6923321856.0000000000,1,1,[2026-06-30],[1]
 600519,2026-06-30,FN52,current_portion_noncurrent_liabilities,instant,complete,56855364.0000000000,1,1,[2026-06-30],[1]
 600519,2026-06-30,FN54,current_liabilities,instant,complete,46645071872.0000000000,1,1,[2026-06-30],[1]
 600519,2026-06-30,FN55,long_term_borrowings,instant,complete,0.0000000000,1,1,[2026-06-30],[1]
@@ -72,6 +84,8 @@ code,period,field,canonical_field,calculation_basis,coverage_status,value,requir
 600519,2026-06-30,FN72,total_equity,instant,complete,262096355328.0000000000,1,1,[2026-06-30],[1]
 600519,2026-06-30,FN8,monetary_funds,instant,complete,53518798848.0000000000,1,1,[2026-06-30],[1]
 600519,2026-06-30,FN80,finance_costs,ytd,complete,-571833296.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
+600519,2026-06-30,FN82,fair_value_change_income,ytd,complete,96487248.7500000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
+600519,2026-06-30,FN83,investment_income,ytd,complete,1515881.4179687500,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 600519,2026-06-30,FN86,operating_profit_cumulative,ytd,complete,113451266048.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 600519,2026-06-30,FN92,profit_before_tax,ytd,complete,113415684096.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"
 600519,2026-06-30,FN93,income_tax_expense,ytd,complete,29058707456.0000000000,3,3,"[2026-06-30, 2025-12-31, 2025-06-30]","[1, 1, -1]"

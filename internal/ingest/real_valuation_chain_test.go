@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 
@@ -33,6 +34,9 @@ func TestRealValuationStandardChain(t *testing.T) {
 	db, err := duckstore.OpenAndMigrate(ctx, dbPath)
 	check(err)
 	defer db.Close()
+	// 022 只新增映射；构造 v21 状态后实际导入全部真实源记录。
+	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field IN ('FN12','FN13','FN46','FN47','FN82','FN83','FN301'); DELETE FROM meta.schema_version WHERE version=22`)
+	check(err)
 	root := filepath.Join(t.TempDir(), "raw")
 	var instruments []domain.InstrumentObservation
 	check(json.Unmarshal(readFinancialSample(t, dir, "instruments.json"), &instruments))
@@ -108,10 +112,41 @@ func TestRealValuationStandardChain(t *testing.T) {
 		rows.Close()
 		t.Fatalf("links: %+v", result)
 	}
+	if result.Inserted != 432 {
+		t.Fatalf("v21 baseline %+v", result)
+	}
+	check(duckstore.Apply(ctx, db))
+	upgraded, err := MaterializeProviderFundamentals(ctx, db, "tdx")
+	check(err)
+	if upgraded.Inserted != 84 || upgraded.Updated != 0 || upgraded.Removed != 0 {
+		t.Fatalf("v21 to v22 replay %+v", upgraded)
+	}
 	check(db.Close())
 	db, err = duckstore.OpenAndMigrate(ctx, dbPath)
 	check(err)
 	defer db.Close()
+	evidence, err := csv.NewReader(bytes.NewReader(readFinancialSample(t, "testdata/earnings-working-capital-2026", "values.csv"))).ReadAll()
+	check(err)
+	if len(evidence) != 39 {
+		t.Fatal("new field evidence count")
+	}
+	for _, row := range evidence[1:] {
+		want, err := strconv.ParseFloat(row[5], 32)
+		check(err)
+		var value float64
+		var unit, periodType string
+		check(db.QueryRowContext(ctx, `SELECT cast(value AS DOUBLE),unit,period_type FROM fundamental.fact_asof('2026-09-06') WHERE provider_code=? AND source_provider_field=? AND report_period=cast(? AS DATE)`, row[0], row[1], row[2]).Scan(&value, &unit, &periodType))
+		period := "instant"
+		if row[4] == "ytd" {
+			period = "H1"
+			if row[2] == "2025-12-31" {
+				period = "FY"
+			}
+		}
+		if value != want || unit != "CNY" || periodType != period {
+			t.Fatalf("new standard fact %v: %v %s %s", row, value, unit, periodType)
+		}
+	}
 	export := func(name, query string) {
 		t.Helper()
 		rows, err := db.QueryContext(ctx, query)
@@ -163,6 +198,20 @@ func TestRealValuationStandardChain(t *testing.T) {
 		}
 	}
 	// 修改映射依据后必须撤销标准值，不能回退 PDF；恢复后从源证据重建。
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE provider_field IN ('FN12','FN13','FN46','FN47','FN82','FN83','FN301') AND source='tdx'`)
+	check(err)
+	rejectedNew, err := MaterializeProviderFundamentals(ctx, db, "tdx")
+	check(err)
+	if rejectedNew.Removed != 84 {
+		t.Fatalf("new mappings invalidation %+v", rejectedNew)
+	}
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=1 WHERE provider_field IN ('FN12','FN13','FN46','FN47','FN82','FN83','FN301') AND source='tdx'`)
+	check(err)
+	recoveredNew, err := MaterializeProviderFundamentals(ctx, db, "tdx")
+	check(err)
+	if recoveredNew.Inserted != 84 {
+		t.Fatalf("new mappings recovery %+v", recoveredNew)
+	}
 	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE provider_field='FN8' AND source='tdx'`)
 	check(err)
 	invalid, err := MaterializeProviderFundamentals(ctx, db, "tdx")
