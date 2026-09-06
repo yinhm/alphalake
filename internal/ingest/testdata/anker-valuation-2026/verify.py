@@ -364,6 +364,23 @@ def main(write=False):
         results['hedge-bridge'].append(dict(period=period, item='derivative_settlement_cash', value='', unit='CNY', status='missing_separate_cash_disclosure', formula='no complete settlement cash and cashflow classification bridge in the three archived reports'))
         for key,reason in [('cash_income_tax','all-tax cash totals and income-tax payable movements do not provide a complete income-tax cash bridge'), ('operating_income_tax','tax allocation to adjusted operating profit is not separately disclosed')]:
             results['tax-cash-bridge'].append(dict(period=period,item=key,value='',unit='CNY',status='missing_tax_allocation',formula=reason))
+    # 三档税率仅为模型敏感性；不填补历史税项或营运资本事实空值。
+    inputs = {(table,r['period']):D(r['value'])
+              for table,key in [('ebit','ebit_financing_and_investment_adjusted'),('reinvestment','identified_net_longlived_investment')]
+              for r in results[table] if r['item']==key}
+    for period in ['2025-12-31','TTM-2026-06-30']:
+        operating_profit = inputs['ebit',period]
+        investment = inputs['reinvestment',period]
+        for rate in [D('.15'),D('.20'),D('.25')]:
+            tax = (operating_profit*rate).quantize(D('.01'),rounding=ROUND_HALF_UP)
+            nopat = operating_profit-tax
+            results.setdefault('valuation-scenarios',[]).append(dict(
+                period=period,item='nopat_tax_sensitivity',assumed_tax_rate=str(rate),
+                adjusted_ebit=f'{operating_profit:.2f}',modelled_operating_tax=f'{tax:.2f}',value=f'{nopat:.2f}',unit='CNY',
+                identified_net_longlived_investment=f'{investment:.2f}',subtotal_before_wc_and_other_adjustments=f'{nopat-investment:.2f}',
+                fully_classified_wc_change='',fcff='',status='illustrative_assumption_not_reported_or_forecast',fcff_status='missing_valuation_inputs',
+                formula=f'NOPAT={period}/ebit.ebit_financing_and_investment_adjusted-round_half_up(EBIT*assumed_tax_rate,2); subtotal=NOPAT-{period}/reinvestment.identified_net_longlived_investment',
+                policy='existing EBIT and lease policy; R&D remains expensed; no extra OCI adjustment; no WC or other adjustment assumed zero'))
     for name, data in results.items():
         for row in data:
             row['as_of'] = AS_OF
@@ -373,7 +390,7 @@ def main(write=False):
             path.write_text(expected)
         else:
             assert path.read_text() == expected, f'{path.name}: run --write only after reviewing input/policy changes'
-    print(f'通过：{len(rows)} 个 PDF 金额、84 个源字段位比较、报表/债务恒等式及十一张 Decimal 输入表。')
+    print(f'通过：{len(rows)} 个 PDF 金额、84 个源字段位比较、十一张输入表及一张模型情景表。')
     for name in results:
         for r in results[name]:
             if r['item'] in ('ebit_financing_and_investment_adjusted', 'interest_bearing_debt_book_value', 'noncash_nondebt_wc_broad', 'wc_after_identified_exclusions', 'change_in_broad_wc'):
