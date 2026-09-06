@@ -1,4 +1,4 @@
-"""安克专用离线验收；重提取 PDF、核对源位和恒等式，再复算三张财务输入表。"""
+"""安克专用离线验收；重提取 PDF、核对源位和恒等式，再复算财务输入表。"""
 import argparse
 import csv
 import hashlib
@@ -47,8 +47,9 @@ def main(write=False):
         assert available <= datetime.fromisoformat(AS_OF), id
     with (ROOT / 'reported.csv').open() as f:
         rows = list(csv.DictReader(f))
-    assert len(rows) == 314 and len({r['id'] for r in rows}) == len(rows)
+    assert len(rows) == 409 and len({r['id'] for r in rows}) == len(rows)
     values = {}
+    cf_comparatives = {}
     for r in rows:
         text = texts[r['pdf_id']]
         start = text.index(r['section'])
@@ -61,12 +62,18 @@ def main(write=False):
         value = D('0' if token == '-' else token.replace(',', ''))
         assert token == r['printed'] and page == int(r['pdf_page']) and value == D(r['value']), r
         values[r['id']] = value
+        if r['period'] == '2026-06-30' and r['kind'] == 'ytd' and r['key'].startswith('cf_'):
+            token = tokens[1]
+            cf_comparatives[r['key']] = D('0' if token == '-' else token.replace(',', ''))
+    assert len(cf_comparatives) == 29
+    for key, value in cf_comparatives.items():
+        assert values['2025-06-30/'+key] == value, key
     def v(period, key):
         return values[period + '/' + key]  # 缺项直接失败，绝不默认零。
     def total(period, keys):
         return sum((v(period, k) for k in keys.split()), D(0))
 
-    # 独立的报表和附注加总，而非只确认一个数字能在 PDF 中找到。
+    # 报表与附注的代数一致性，不等同两条独立证据链。
     for p in PERIODS:
         assert v(p, 'loan_customer_balance') == v(p, 'loan_receivable')
         assert D(0) <= v(p, 'loan_allowance') <= v(p, 'loan_receivable')
@@ -101,13 +108,13 @@ def main(write=False):
     mapped = {(r['period'], r['provider_field']): r for r in rows if r['provider_field']}
     with (ROOT / 'values.csv').open() as f:
         source_rows = list(csv.DictReader(f))
-    assert len(source_rows) == len(mapped) == 69
+    assert len(source_rows) == len(mapped) == 84
     for r in source_rows:
         evidence = mapped[(r['period'], r['field'])]
         assert r['pdf_value'] == evidence['value'] and r['pdf_page'] == evidence['pdf_page']
         meta = reports[evidence['pdf_id']]
         assert r['pdf_url'] == meta['url'] and r['pdf_sha256'] == meta['sha256']
-        multiplier = 10000 if r['field'] == 'FN439' else 1
+        multiplier = 10000 if r['field'] in ('FN439', 'FN581') else 1
         encoded = (D(r['pdf_value']) / multiplier).quantize(D('.01'), rounding=ROUND_HALF_UP)
         assert int(r['multiplier']) == multiplier and D(r['encoded_value']) == encoded
         data = records[r['period'].replace('-', '')]
@@ -137,7 +144,7 @@ def main(write=False):
     for p in PERIODS:
         ebit[p] = evaluate('ebit', p, ebit_terms)
         emit('ebit', p, 'ebit_financing_and_investment_adjusted', ebit[p], 'sum(component rows)')
-        # 从利润总额独立起算，应得同一结果。
+        # 同一组原文数据上的利润总额路径代数一致性校验。
         assert ebit[p] == v(p, 'pbt') - v(p, 'nonoperating_income') + v(p, 'nonoperating_expense') + sum((v(p, k)*c for k,c in ebit_terms[1:]), D(0))
         fx = v(p, 'fx_loss') - total(p, 'forward_realized fv_forward_asset fv_forward_liability')
         emit('ebit', p, 'identified_fx_neutral_sensitivity', ebit[p]+fx, 'adjusted_ebit+fx_loss-forward_realized-fv_forward_asset-fv_forward_liability', 'sensitivity_not_base')
@@ -175,6 +182,48 @@ def main(write=False):
     # 历史混合项拆分不全，不输出貌似精确的经营再投资差额。
     for period, reason in [('FY-2025', '2024 opening loan allowance and mixed classifications missing'), ('TTM-2026-06-30', '2025H1 other_payables residual includes undisclosed classifications')]:
         results['working-capital'].append(dict(period=period, item='change_in_fully_classified_operating_wc', value='', unit='CNY', status='missing_historical_classification', formula=reason))
+    # 现金流量主表与补充资料交叉核对；不将会计 OCF 当作 FCFF。
+    cf_keys = 'net_income asset_impairment credit_impairment property_depreciation fixed_depreciation rou_depreciation intangible_amortization deferred_amortization disposal_loss retirement_loss fair_value finance investment deferred_tax_assets deferred_tax_liabilities inventory receivables payables share_payment'.split()
+    da_keys = 'property_depreciation fixed_depreciation rou_depreciation intangible_amortization deferred_amortization'.split()
+    reinvestment = {}
+    for p in PERIODS:
+        signed = evaluate('cashflow', p, [('cf_' + k, 1) for k in cf_keys])
+        assert signed == v(p, 'cf_operating_cash_flow') == v(p, 'cf_ocf_statement')
+        assert signed == v(p, 'cf_cash_in') - v(p, 'cf_cash_out')
+        assert v(p, 'cf_investing_out') == total(p, 'cf_capex cf_investments_paid cf_other_investing_paid')
+        assert v(p, 'cf_net_income') == v(p, 'net_income')
+        assert v(p, 'cf_finance') == v(p, 'interest_expense')
+        assert v(p, 'cf_investment') == -v(p, 'investment_income')
+        assert v(p, 'cf_fair_value') == -v(p, 'fair_value_income')
+        emit('cashflow', p, 'operating_cash_flow', signed, 'sum(signed reconciliation rows)=statement cash_in-cash_out', 'statement_reconciled_not_fcff')
+        opening = '2025-12-31' if p == '2026-06-30' else '2024-12-31'
+        for date in (p, opening):
+            assert v(date, 'cf_gross_inventory') - v(date, 'cf_inventory_allowance') == v(date, 'inventory')
+        assert -v(p, 'cf_inventory') == v(p, 'cf_gross_inventory') - v(opening, 'cf_gross_inventory')
+        da = total(p, ' '.join('cf_' + k for k in da_keys))
+        cf_wc = -total(p, 'cf_inventory cf_receivables cf_payables')
+        balance_wc = wc[p] - wc[opening]
+        allowance = v(p, 'cf_inventory_allowance') - v(opening, 'cf_inventory_allowance')
+        data = {'cash_capex': (v(p, 'cf_capex'), p+'/cf_capex', 'reported_cash_not_total_reinvestment'),
+                'reported_da': (da, '+'.join(p+'/cf_'+k for k in da_keys), 'includes_rou_and_investment_property'),
+                'da_excluding_rou': (da-v(p, 'cf_rou_depreciation'), 'reported_da-rou_depreciation', 'component_not_fcff'),
+                'lease_payment': (v(p, 'cf_lease_payment'), p+'/cf_lease_payment', 'financing_payment_not_capex'),
+                'cf_wc_cash_use': (cf_wc, '-(cf_inventory+cf_receivables+cf_payables)', 'cashflow_statement_scope'),
+                'broad_wc_balance_increase': (balance_wc, p+'/noncash_nondebt_wc_broad-'+opening+'/noncash_nondebt_wc_broad', 'balance_sheet_policy_scope'),
+                'cf_minus_balance_wc': (cf_wc-balance_wc, 'cf_wc_cash_use-broad_wc_balance_increase', 'scope_difference_not_zero'),
+                'inventory_allowance_change': (allowance, p+'/cf_inventory_allowance-'+opening+'/cf_inventory_allowance', 'identified_inventory_net_gross_difference'),
+                'remaining_wc_scope_difference': (cf_wc-balance_wc-allowance, 'cf_minus_balance_wc-inventory_allowance_change', 'unattributed_not_forced_to_zero')}
+        reinvestment[p] = data
+        for k, (amount, formula, status) in data.items():
+            emit('reinvestment', p, k, amount, formula, status)
+    for key in ['cf_'+k for k in cf_keys] + ['operating_cash_flow']:
+        amounts = {r['period']: D(r['value']) for r in results['cashflow'] if r['item'] == key}
+        emit('cashflow', 'TTM-2026-06-30', key, amounts[PERIODS[1]]+amounts[PERIODS[2]]-amounts[PERIODS[0]], f'2025-12-31/{key}+2026-06-30/{key}-2025-06-30/{key}', 'statement_reconciled_not_fcff')
+    for key in reinvestment[PERIODS[0]]:
+        amount = reinvestment[PERIODS[1]][key][0]+reinvestment[PERIODS[2]][key][0]-reinvestment[PERIODS[0]][key][0]
+        emit('reinvestment', 'TTM-2026-06-30', key, amount, f'2025-12-31/{key}+2026-06-30/{key}-2025-06-30/{key}', reinvestment[PERIODS[2]][key][2])
+    for period in ('FY-2025', 'TTM-2026-06-30'):
+        results['reinvestment'].append(dict(period=period, item='valuation_fcff', value='', unit='CNY', status='missing_valuation_adjustments', formula='unresolved WC classification/lease reinvestment and tax policy'))
     for name, data in results.items():
         for row in data:
             row['as_of'] = AS_OF
@@ -184,7 +233,7 @@ def main(write=False):
             path.write_text(expected)
         else:
             assert path.read_text() == expected, f'{path.name}: run --write only after reviewing input/policy changes'
-    print(f'通过：{len(rows)} 个 PDF 金额、69 个源字段位比较、报表/债务恒等式及三张 Decimal 输入表。')
+    print(f'通过：{len(rows)} 个 PDF 金额、84 个源字段位比较、报表/债务恒等式及五张 Decimal 输入表。')
     for name in results:
         for r in results[name]:
             if r['item'] in ('ebit_financing_and_investment_adjusted', 'interest_bearing_debt_book_value', 'noncash_nondebt_wc_broad', 'wc_after_identified_exclusions', 'change_in_broad_wc'):

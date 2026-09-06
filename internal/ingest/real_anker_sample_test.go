@@ -16,7 +16,7 @@ import (
 func TestRealAnkerValuationSourceValues(t *testing.T) {
 	const dir = "testdata/anker-valuation-2026"
 	rows, err := csv.NewReader(bytes.NewReader(readFinancialSample(t, dir, "values.csv"))).ReadAll()
-	if err != nil || len(rows) != 70 || len(rows[0]) != 11 {
+	if err != nil || len(rows) != 85 || len(rows[0]) != 11 {
 		t.Fatalf("Anker evidence: rows=%d error=%v", len(rows), err)
 	}
 	var packages []struct {
@@ -52,15 +52,15 @@ func TestRealAnkerValuationSourceValues(t *testing.T) {
 				t.Fatal("PDF hash mismatch", id)
 			}
 			fields[row[1]] = true
-			row[5] = row[9] // 租赁负债按万元编码核对，估值表保留 PDF 分位金额。
+			row[5] = row[9] // 租赁负债和使用权折旧按万元编码核对，估值表保留 PDF 分位金额。
 			assertReportSampleValues(t, pkg, [][]string{row})
 			count++
 		}
-		if len(fields) != 23 {
-			t.Fatalf("%s fields=%d, want 23", p.File, len(fields))
+		if len(fields) != 28 {
+			t.Fatalf("%s fields=%d, want 28", p.File, len(fields))
 		}
 	}
-	if count != 69 {
-		t.Fatalf("verified values=%d, want 69", count)
+	if count != 84 {
+		t.Fatalf("verified values=%d, want 84", count)
 	}
 }
