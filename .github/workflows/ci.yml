@@ -27,7 +27,15 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install PDF verification dependency
-        run: python -m pip install pypdf==6.17.0
+        run: python -m pip install --only-binary=:all: --require-hashes -r .github/requirements-pdf.txt
+      - name: Verify correction PDF evidence offline
+        run: python internal/ingest/testdata/correction-600113/verify.py
+      - name: Verify tax and debt PDF evidence offline
+        run: python internal/ingest/testdata/tax-debt-2025/verify.py
+      - name: Verify TTM PDF evidence offline
+        run: python internal/ingest/testdata/ttm-2026/verify.py
+      - name: Verify core financial PDF evidence offline
+        run: python internal/ingest/testdata/core-financial-2025/verify.py
       - name: Verify Anker historical evidence offline
         run: python internal/ingest/testdata/anker-history-2026/verify.py
       - name: Verify standard valuation chains and both PDF references offline

@@ -1,0 +1,2 @@
+# PyPI pypdf-6.17.0-py3-none-any.whl；仅接受已核对的通用 wheel。
+pypdf==6.17.0 --hash=sha256:5bd827266a21553b74d910e350131a6227b72f2ab4209bf372814b8195fa11c5
