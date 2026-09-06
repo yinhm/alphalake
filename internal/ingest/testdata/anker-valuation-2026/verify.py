@@ -47,9 +47,10 @@ def main(write=False):
         assert available <= datetime.fromisoformat(AS_OF), id
     with (ROOT / 'reported.csv').open() as f:
         rows = list(csv.DictReader(f))
-    assert len(rows) == 597 and len({r['id'] for r in rows}) == len(rows)
+    assert len(rows) == 641 and len({r['id'] for r in rows}) == len(rows)
     values = {}
     cf_comparatives = {}
+    cash_comparatives = {}
     for r in rows:
         text = texts[r['pdf_id']]
         start = text.index(r['section'])
@@ -65,8 +66,13 @@ def main(write=False):
         if r['period'] == '2026-06-30' and r['kind'] == 'ytd' and r['key'].startswith('cf_'):
             token = tokens[1]
             cf_comparatives[r['key']] = D('0' if token == '-' else token.replace(',', ''))
+        if r['period'] == '2026-06-30' and r['section'] == '5、合并现金流量表' and r['key'].startswith('cash_'):
+            cash_comparatives[r['key']] = D('0' if tokens[1] == '-' else tokens[1].replace(',', ''))
     assert len(cf_comparatives) == 29
     for key, value in cf_comparatives.items():
+        assert values['2025-06-30/'+key] == value, key
+    assert len(cash_comparatives) == 12
+    for key, value in cash_comparatives.items():
         assert values['2025-06-30/'+key] == value, key
     def v(period, key):
         return values[period + '/' + key]  # 缺项直接失败，绝不默认零。
@@ -190,6 +196,9 @@ def main(write=False):
         signed = evaluate('cashflow', p, [('cf_' + k, 1) for k in cf_keys])
         assert signed == v(p, 'cf_operating_cash_flow') == v(p, 'cf_ocf_statement')
         assert signed == v(p, 'cf_cash_in') - v(p, 'cf_cash_out')
+        assert v(p,'cf_cash_in') == total(p,'cash_sales cash_tax_refunds cash_other_operating_in')
+        assert v(p,'cf_cash_out') == total(p,'cash_purchases cash_payroll cash_taxes_paid cash_other_operating_out')
+        assert v(p,'cash_investing_in') == total(p,'cash_investment_recovery cash_investment_income cash_disposals cash_other_investing_in')
         assert v(p, 'cf_investing_out') == total(p, 'cf_capex cf_investments_paid cf_other_investing_paid')
         assert v(p, 'cf_net_income') == v(p, 'net_income')
         assert v(p, 'cf_finance') == v(p, 'interest_expense')
@@ -205,6 +214,9 @@ def main(write=False):
         balance_wc = wc[p] - wc[opening]
         allowance = v(p, 'cf_inventory_allowance') - v(opening, 'cf_inventory_allowance')
         data = {'cash_capex': (v(p, 'cf_capex'), p+'/cf_capex', 'reported_cash_not_total_reinvestment'),
+                'asset_disposal_cash': (v(p,'cash_disposals'), p+'/cash_disposals', 'reported_cash_not_disposal_profit'),
+                'net_cash_capex': (v(p,'cf_capex')-v(p,'cash_disposals'), 'cash_capex-asset_disposal_cash', 'cash_scope_not_total_reinvestment'),
+                'identified_net_longlived_investment': (v(p,'cf_capex')-v(p,'cash_disposals')+v(p,'detail_rou_additions')-da, 'net_cash_capex+detail_rou_additions-reported_da', 'partial_input_excludes_wc_and_other_valuation_adjustments'),
                 'reported_da': (da, '+'.join(p+'/cf_'+k for k in da_keys), 'includes_rou_and_investment_property'),
                 'da_excluding_rou': (da-v(p, 'cf_rou_depreciation'), 'reported_da-rou_depreciation', 'component_not_fcff'),
                 'lease_payment': (v(p, 'cf_lease_payment'), p+'/cf_lease_payment', 'financing_payment_not_capex'),
@@ -216,6 +228,21 @@ def main(write=False):
         reinvestment[p] = data
         for k, (amount, formula, status) in data.items():
             emit('reinvestment', p, k, amount, formula, status)
+        # 全部税费现金、利润表所得税与递延余额分开，不反推现金所得税。
+        assert v(opening,'tax_dta')-v(p,'tax_dta') == v(p,'cf_deferred_tax_assets')
+        assert v(p,'tax_dtl')-v(opening,'tax_dtl') == v(p,'cf_deferred_tax_liabilities')
+        payable_change = v(p,'income_tax_payable')-v(opening,'income_tax_payable')
+        deferred_change = total(p,'cf_deferred_tax_assets cf_deferred_tax_liabilities')
+        tax_data = {
+            'all_taxes_paid': (v(p,'cash_taxes_paid'), p+'/cash_taxes_paid', 'all_taxes_not_income_tax'),
+            'all_tax_refunds': (v(p,'cash_tax_refunds'), p+'/cash_tax_refunds', 'all_taxes_not_income_tax'),
+            'net_all_tax_cash_out': (v(p,'cash_taxes_paid')-v(p,'cash_tax_refunds'), 'all_taxes_paid-all_tax_refunds', 'all_taxes_not_income_tax'),
+            'income_tax_payable_change': (payable_change, p+'/income_tax_payable-'+opening+'/income_tax_payable', 'balance_change_not_cash_paid'),
+            'current_tax_less_payable_change': (v(p,'detail_current_tax')-payable_change, 'detail_current_tax-income_tax_payable_change', 'incomplete_bridge_not_cash_income_tax'),
+            'deferred_net_liability_change': (deferred_change, 'cf_deferred_tax_assets+cf_deferred_tax_liabilities', 'balance_change_not_tax_expense'),
+            'deferred_change_minus_expense': (deferred_change-v(p,'detail_deferred_tax'), 'deferred_net_liability_change-detail_deferred_tax', 'unattributed_not_zero')}
+        for key,(amount,formula,status) in tax_data.items():
+            emit('tax-cash-bridge', p, key, amount, formula, status)
     for key in ['cf_'+k for k in cf_keys] + ['operating_cash_flow']:
         amounts = {r['period']: D(r['value']) for r in results['cashflow'] if r['item'] == key}
         emit('cashflow', 'TTM-2026-06-30', key, amounts[PERIODS[1]]+amounts[PERIODS[2]]-amounts[PERIODS[0]], f'2025-12-31/{key}+2026-06-30/{key}-2025-06-30/{key}', 'statement_reconciled_not_fcff')
@@ -327,7 +354,7 @@ def main(write=False):
     assert v(PERIODS[0],'hedge_oci_open') == v(PERIODS[1],'hedge_oci_open')
     assert v(PERIODS[2],'hedge_oci_open') == v(PERIODS[1],'hedge_oci_close')
     assert v(PERIODS[2],'hedge_comparative_oci') == v(PERIODS[0],'hedge_statement_oci')
-    for table in ['tax-bridge','lease-reinvestment','wc-components','receivables-bridge','hedge-bridge']:
+    for table in ['tax-bridge','lease-reinvestment','wc-components','receivables-bridge','hedge-bridge','tax-cash-bridge']:
         keys = list(dict.fromkeys(r['item'] for r in results[table]))
         for key in keys:
             group = {r['period']:r for r in results[table] if r['item']==key}
@@ -335,6 +362,8 @@ def main(write=False):
             emit(table, 'TTM-2026-06-30', key, amount, f'2025-12-31/{key}+2026-06-30/{key}-2025-06-30/{key}', group[PERIODS[2]]['status'])
     for period in PERIODS+['TTM-2026-06-30']:
         results['hedge-bridge'].append(dict(period=period, item='derivative_settlement_cash', value='', unit='CNY', status='missing_separate_cash_disclosure', formula='no complete settlement cash and cashflow classification bridge in the three archived reports'))
+        for key,reason in [('cash_income_tax','all-tax cash totals and income-tax payable movements do not provide a complete income-tax cash bridge'), ('operating_income_tax','tax allocation to adjusted operating profit is not separately disclosed')]:
+            results['tax-cash-bridge'].append(dict(period=period,item=key,value='',unit='CNY',status='missing_tax_allocation',formula=reason))
     for name, data in results.items():
         for row in data:
             row['as_of'] = AS_OF
@@ -344,7 +373,7 @@ def main(write=False):
             path.write_text(expected)
         else:
             assert path.read_text() == expected, f'{path.name}: run --write only after reviewing input/policy changes'
-    print(f'通过：{len(rows)} 个 PDF 金额、84 个源字段位比较、报表/债务恒等式及十张 Decimal 输入表。')
+    print(f'通过：{len(rows)} 个 PDF 金额、84 个源字段位比较、报表/债务恒等式及十一张 Decimal 输入表。')
     for name in results:
         for r in results[name]:
             if r['item'] in ('ebit_financing_and_investment_adjusted', 'interest_bearing_debt_book_value', 'noncash_nondebt_wc_broad', 'wc_after_identified_exclusions', 'change_in_broad_wc'):

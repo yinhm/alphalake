@@ -1,0 +1,37 @@
+period,item,value,unit,status,formula,as_of
+2025-06-30,all_taxes_paid,880267930.22,CNY,all_taxes_not_income_tax,2025-06-30/cash_taxes_paid,2026-09-06T00:00:00+00:00
+2025-06-30,all_tax_refunds,758199633.67,CNY,all_taxes_not_income_tax,2025-06-30/cash_tax_refunds,2026-09-06T00:00:00+00:00
+2025-06-30,net_all_tax_cash_out,122068296.55,CNY,all_taxes_not_income_tax,all_taxes_paid-all_tax_refunds,2026-09-06T00:00:00+00:00
+2025-06-30,income_tax_payable_change,87938808.27,CNY,balance_change_not_cash_paid,2025-06-30/income_tax_payable-2024-12-31/income_tax_payable,2026-09-06T00:00:00+00:00
+2025-06-30,current_tax_less_payable_change,220380376.27,CNY,incomplete_bridge_not_cash_income_tax,detail_current_tax-income_tax_payable_change,2026-09-06T00:00:00+00:00
+2025-06-30,deferred_net_liability_change,-246685477.80,CNY,balance_change_not_tax_expense,cf_deferred_tax_assets+cf_deferred_tax_liabilities,2026-09-06T00:00:00+00:00
+2025-06-30,deferred_change_minus_expense,-38670838.83,CNY,unattributed_not_zero,deferred_net_liability_change-detail_deferred_tax,2026-09-06T00:00:00+00:00
+2025-12-31,all_taxes_paid,1777763293.59,CNY,all_taxes_not_income_tax,2025-12-31/cash_taxes_paid,2026-09-06T00:00:00+00:00
+2025-12-31,all_tax_refunds,1367997989.02,CNY,all_taxes_not_income_tax,2025-12-31/cash_tax_refunds,2026-09-06T00:00:00+00:00
+2025-12-31,net_all_tax_cash_out,409765304.57,CNY,all_taxes_not_income_tax,all_taxes_paid-all_tax_refunds,2026-09-06T00:00:00+00:00
+2025-12-31,income_tax_payable_change,21420591.13,CNY,balance_change_not_cash_paid,2025-12-31/income_tax_payable-2024-12-31/income_tax_payable,2026-09-06T00:00:00+00:00
+2025-12-31,current_tax_less_payable_change,336093908.24,CNY,incomplete_bridge_not_cash_income_tax,detail_current_tax-income_tax_payable_change,2026-09-06T00:00:00+00:00
+2025-12-31,deferred_net_liability_change,-26480806.24,CNY,balance_change_not_tax_expense,cf_deferred_tax_assets+cf_deferred_tax_liabilities,2026-09-06T00:00:00+00:00
+2025-12-31,deferred_change_minus_expense,25754024.39,CNY,unattributed_not_zero,deferred_net_liability_change-detail_deferred_tax,2026-09-06T00:00:00+00:00
+2026-06-30,all_taxes_paid,1251351331.22,CNY,all_taxes_not_income_tax,2026-06-30/cash_taxes_paid,2026-09-06T00:00:00+00:00
+2026-06-30,all_tax_refunds,1446917336.93,CNY,all_taxes_not_income_tax,2026-06-30/cash_tax_refunds,2026-09-06T00:00:00+00:00
+2026-06-30,net_all_tax_cash_out,-195566005.71,CNY,all_taxes_not_income_tax,all_taxes_paid-all_tax_refunds,2026-09-06T00:00:00+00:00
+2026-06-30,income_tax_payable_change,271300976.44,CNY,balance_change_not_cash_paid,2026-06-30/income_tax_payable-2025-12-31/income_tax_payable,2026-09-06T00:00:00+00:00
+2026-06-30,current_tax_less_payable_change,274865166.32,CNY,incomplete_bridge_not_cash_income_tax,detail_current_tax-income_tax_payable_change,2026-09-06T00:00:00+00:00
+2026-06-30,deferred_net_liability_change,-184576320.95,CNY,balance_change_not_tax_expense,cf_deferred_tax_assets+cf_deferred_tax_liabilities,2026-09-06T00:00:00+00:00
+2026-06-30,deferred_change_minus_expense,31285783.17,CNY,unattributed_not_zero,deferred_net_liability_change-detail_deferred_tax,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,all_taxes_paid,2148846694.59,CNY,all_taxes_not_income_tax,2025-12-31/all_taxes_paid+2026-06-30/all_taxes_paid-2025-06-30/all_taxes_paid,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,all_tax_refunds,2056715692.28,CNY,all_taxes_not_income_tax,2025-12-31/all_tax_refunds+2026-06-30/all_tax_refunds-2025-06-30/all_tax_refunds,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,net_all_tax_cash_out,92131002.31,CNY,all_taxes_not_income_tax,2025-12-31/net_all_tax_cash_out+2026-06-30/net_all_tax_cash_out-2025-06-30/net_all_tax_cash_out,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,income_tax_payable_change,204782759.30,CNY,balance_change_not_cash_paid,2025-12-31/income_tax_payable_change+2026-06-30/income_tax_payable_change-2025-06-30/income_tax_payable_change,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,current_tax_less_payable_change,390578698.29,CNY,incomplete_bridge_not_cash_income_tax,2025-12-31/current_tax_less_payable_change+2026-06-30/current_tax_less_payable_change-2025-06-30/current_tax_less_payable_change,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,deferred_net_liability_change,35628350.61,CNY,balance_change_not_tax_expense,2025-12-31/deferred_net_liability_change+2026-06-30/deferred_net_liability_change-2025-06-30/deferred_net_liability_change,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,deferred_change_minus_expense,95710646.39,CNY,unattributed_not_zero,2025-12-31/deferred_change_minus_expense+2026-06-30/deferred_change_minus_expense-2025-06-30/deferred_change_minus_expense,2026-09-06T00:00:00+00:00
+2025-06-30,cash_income_tax,,CNY,missing_tax_allocation,all-tax cash totals and income-tax payable movements do not provide a complete income-tax cash bridge,2026-09-06T00:00:00+00:00
+2025-06-30,operating_income_tax,,CNY,missing_tax_allocation,tax allocation to adjusted operating profit is not separately disclosed,2026-09-06T00:00:00+00:00
+2025-12-31,cash_income_tax,,CNY,missing_tax_allocation,all-tax cash totals and income-tax payable movements do not provide a complete income-tax cash bridge,2026-09-06T00:00:00+00:00
+2025-12-31,operating_income_tax,,CNY,missing_tax_allocation,tax allocation to adjusted operating profit is not separately disclosed,2026-09-06T00:00:00+00:00
+2026-06-30,cash_income_tax,,CNY,missing_tax_allocation,all-tax cash totals and income-tax payable movements do not provide a complete income-tax cash bridge,2026-09-06T00:00:00+00:00
+2026-06-30,operating_income_tax,,CNY,missing_tax_allocation,tax allocation to adjusted operating profit is not separately disclosed,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,cash_income_tax,,CNY,missing_tax_allocation,all-tax cash totals and income-tax payable movements do not provide a complete income-tax cash bridge,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,operating_income_tax,,CNY,missing_tax_allocation,tax allocation to adjusted operating profit is not separately disclosed,2026-09-06T00:00:00+00:00

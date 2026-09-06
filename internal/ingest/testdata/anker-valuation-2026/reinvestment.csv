@@ -1,5 +1,8 @@
 period,item,value,unit,status,formula,as_of
 2025-06-30,cash_capex,162970285.17,CNY,reported_cash_not_total_reinvestment,2025-06-30/cf_capex,2026-09-06T00:00:00+00:00
+2025-06-30,asset_disposal_cash,0.00,CNY,reported_cash_not_disposal_profit,2025-06-30/cash_disposals,2026-09-06T00:00:00+00:00
+2025-06-30,net_cash_capex,162970285.17,CNY,cash_scope_not_total_reinvestment,cash_capex-asset_disposal_cash,2026-09-06T00:00:00+00:00
+2025-06-30,identified_net_longlived_investment,214400161.85,CNY,partial_input_excludes_wc_and_other_valuation_adjustments,net_cash_capex+detail_rou_additions-reported_da,2026-09-06T00:00:00+00:00
 2025-06-30,reported_da,83966323.39,CNY,includes_rou_and_investment_property,2025-06-30/cf_property_depreciation+2025-06-30/cf_fixed_depreciation+2025-06-30/cf_rou_depreciation+2025-06-30/cf_intangible_amortization+2025-06-30/cf_deferred_amortization,2026-09-06T00:00:00+00:00
 2025-06-30,da_excluding_rou,36201481.01,CNY,component_not_fcff,reported_da-rou_depreciation,2026-09-06T00:00:00+00:00
 2025-06-30,lease_payment,46912506.87,CNY,financing_payment_not_capex,2025-06-30/cf_lease_payment,2026-09-06T00:00:00+00:00
@@ -9,6 +12,9 @@ period,item,value,unit,status,formula,as_of
 2025-06-30,inventory_allowance_change,113422404.60,CNY,identified_inventory_net_gross_difference,2025-06-30/cf_inventory_allowance-2024-12-31/cf_inventory_allowance,2026-09-06T00:00:00+00:00
 2025-06-30,remaining_wc_scope_difference,503901187.55,CNY,unattributed_not_forced_to_zero,cf_minus_balance_wc-inventory_allowance_change,2026-09-06T00:00:00+00:00
 2025-12-31,cash_capex,365120160.05,CNY,reported_cash_not_total_reinvestment,2025-12-31/cf_capex,2026-09-06T00:00:00+00:00
+2025-12-31,asset_disposal_cash,0.00,CNY,reported_cash_not_disposal_profit,2025-12-31/cash_disposals,2026-09-06T00:00:00+00:00
+2025-12-31,net_cash_capex,365120160.05,CNY,cash_scope_not_total_reinvestment,cash_capex-asset_disposal_cash,2026-09-06T00:00:00+00:00
+2025-12-31,identified_net_longlived_investment,482858655.59,CNY,partial_input_excludes_wc_and_other_valuation_adjustments,net_cash_capex+detail_rou_additions-reported_da,2026-09-06T00:00:00+00:00
 2025-12-31,reported_da,199126635.89,CNY,includes_rou_and_investment_property,2025-12-31/cf_property_depreciation+2025-12-31/cf_fixed_depreciation+2025-12-31/cf_rou_depreciation+2025-12-31/cf_intangible_amortization+2025-12-31/cf_deferred_amortization,2026-09-06T00:00:00+00:00
 2025-12-31,da_excluding_rou,104781966.73,CNY,component_not_fcff,reported_da-rou_depreciation,2026-09-06T00:00:00+00:00
 2025-12-31,lease_payment,82362040.61,CNY,financing_payment_not_capex,2025-12-31/cf_lease_payment,2026-09-06T00:00:00+00:00
@@ -18,6 +24,9 @@ period,item,value,unit,status,formula,as_of
 2025-12-31,inventory_allowance_change,240896513.87,CNY,identified_inventory_net_gross_difference,2025-12-31/cf_inventory_allowance-2024-12-31/cf_inventory_allowance,2026-09-06T00:00:00+00:00
 2025-12-31,remaining_wc_scope_difference,442016508.46,CNY,unattributed_not_forced_to_zero,cf_minus_balance_wc-inventory_allowance_change,2026-09-06T00:00:00+00:00
 2026-06-30,cash_capex,117484411.45,CNY,reported_cash_not_total_reinvestment,2026-06-30/cf_capex,2026-09-06T00:00:00+00:00
+2026-06-30,asset_disposal_cash,17350.00,CNY,reported_cash_not_disposal_profit,2026-06-30/cash_disposals,2026-09-06T00:00:00+00:00
+2026-06-30,net_cash_capex,117467061.45,CNY,cash_scope_not_total_reinvestment,cash_capex-asset_disposal_cash,2026-09-06T00:00:00+00:00
+2026-06-30,identified_net_longlived_investment,108447840.06,CNY,partial_input_excludes_wc_and_other_valuation_adjustments,net_cash_capex+detail_rou_additions-reported_da,2026-09-06T00:00:00+00:00
 2026-06-30,reported_da,143774618.82,CNY,includes_rou_and_investment_property,2026-06-30/cf_property_depreciation+2026-06-30/cf_fixed_depreciation+2026-06-30/cf_rou_depreciation+2026-06-30/cf_intangible_amortization+2026-06-30/cf_deferred_amortization,2026-09-06T00:00:00+00:00
 2026-06-30,da_excluding_rou,92190755.52,CNY,component_not_fcff,reported_da-rou_depreciation,2026-09-06T00:00:00+00:00
 2026-06-30,lease_payment,54949067.26,CNY,financing_payment_not_capex,2026-06-30/cf_lease_payment,2026-09-06T00:00:00+00:00
@@ -27,6 +36,9 @@ period,item,value,unit,status,formula,as_of
 2026-06-30,inventory_allowance_change,78706063.59,CNY,identified_inventory_net_gross_difference,2026-06-30/cf_inventory_allowance-2025-12-31/cf_inventory_allowance,2026-09-06T00:00:00+00:00
 2026-06-30,remaining_wc_scope_difference,-144791194.39,CNY,unattributed_not_forced_to_zero,cf_minus_balance_wc-inventory_allowance_change,2026-09-06T00:00:00+00:00
 TTM-2026-06-30,cash_capex,319634286.33,CNY,reported_cash_not_total_reinvestment,2025-12-31/cash_capex+2026-06-30/cash_capex-2025-06-30/cash_capex,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,asset_disposal_cash,17350.00,CNY,reported_cash_not_disposal_profit,2025-12-31/asset_disposal_cash+2026-06-30/asset_disposal_cash-2025-06-30/asset_disposal_cash,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,net_cash_capex,319616936.33,CNY,cash_scope_not_total_reinvestment,2025-12-31/net_cash_capex+2026-06-30/net_cash_capex-2025-06-30/net_cash_capex,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,identified_net_longlived_investment,376906333.80,CNY,partial_input_excludes_wc_and_other_valuation_adjustments,2025-12-31/identified_net_longlived_investment+2026-06-30/identified_net_longlived_investment-2025-06-30/identified_net_longlived_investment,2026-09-06T00:00:00+00:00
 TTM-2026-06-30,reported_da,258934931.32,CNY,includes_rou_and_investment_property,2025-12-31/reported_da+2026-06-30/reported_da-2025-06-30/reported_da,2026-09-06T00:00:00+00:00
 TTM-2026-06-30,da_excluding_rou,160771241.24,CNY,component_not_fcff,2025-12-31/da_excluding_rou+2026-06-30/da_excluding_rou-2025-06-30/da_excluding_rou,2026-09-06T00:00:00+00:00
 TTM-2026-06-30,lease_payment,90398601.00,CNY,financing_payment_not_capex,2025-12-31/lease_payment+2026-06-30/lease_payment-2025-06-30/lease_payment,2026-09-06T00:00:00+00:00
