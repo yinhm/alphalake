@@ -1,0 +1,19 @@
+{
+  "valuation_date": "2026-06-30",
+  "information_as_of": "2026-09-06T00:00:00+00:00",
+  "status": "retrospective_illustrative_valuation_not_market_target",
+  "policies": {
+    "currency": "nominal_CNY",
+    "timing": "annual_cashflows_at_year_end; first_forecast_ends_2027-06-30",
+    "rd": "expensed_in_margin; no_research_asset_added_to_equity",
+    "leases": "lease_interest_excluded_from_EBIT; ROU_depreciation_in_DA; replacement_and_growth_in_investment; liabilities_deducted_once",
+    "wc": "opening_provisional_exclusions_balance; five_year_transition_to_assumed_ratio; historical_missing_classification_unchanged",
+    "securities": "report_date_shares; no_post_June_H_share_proceeds_or_shares; book_claim_and_if_converted_cases_are_proxies_not_option_values",
+    "dilution": "extra_rate_is_unpriced_existing_award_stress_not_actual_outstanding_count; future_SBC_expense_remains_in_margin"
+  },
+  "scenarios": [
+    {"name":"cautious","growth":["0.06","0.06","0.06","0.06","0.06","0.05","0.04","0.03","0.025","0.02"],"margin":"0.085","tax_start":"0.20","tax_terminal":"0.25","sales_to_capital":"2.5","wc_ratio":"0.15","operating_cash_ratio":"0.03","wacc":"0.11","terminal_growth":"0.02","terminal_roic":"0.11","investment_recovery":"0.50","cash_other_recovery":"0","minority_multiple":"2","debt_multiple":"1.10","extra_dilution_rate":"0.03"},
+    {"name":"central","growth":["0.12","0.12","0.12","0.12","0.12","0.10","0.08","0.06","0.04","0.03"],"margin":"0.10","tax_start":"0.20","tax_terminal":"0.25","sales_to_capital":"3","wc_ratio":"0.12","operating_cash_ratio":"0.02","wacc":"0.09","terminal_growth":"0.03","terminal_roic":"0.12","investment_recovery":"0.75","cash_other_recovery":"0.50","minority_multiple":"1.5","debt_multiple":"1","extra_dilution_rate":"0.01"},
+    {"name":"expansive","growth":["0.18","0.18","0.18","0.18","0.18","0.15","0.12","0.09","0.06","0.03"],"margin":"0.115","tax_start":"0.20","tax_terminal":"0.25","sales_to_capital":"3.5","wc_ratio":"0.10","operating_cash_ratio":"0.01","wacc":"0.08","terminal_growth":"0.03","terminal_roic":"0.15","investment_recovery":"1","cash_other_recovery":"1","minority_multiple":"1","debt_multiple":"1","extra_dilution_rate":"0"}
+  ]
+}

@@ -1,0 +1,17 @@
+item,value,source,valuation_date,information_as_of,status
+revenue_ttm,34252649350.860000,reported.csv: FY2025 + H12026 - H12025 / revenue,2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+ebit_ttm,3230457170.030000,ebit.csv: TTM-2026-06-30 / ebit_financing_and_investment_adjusted,2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+opening_wc,4281271816.410000,working-capital.csv: 2026-06-30 / wc_after_identified_exclusions; provisional,2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+da_ttm,258934931.320000,reported.csv: five depreciation/amortization components; FY + H1 - prior H1,2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+cash_equivalents,2992257022.560000,evidence.json: cash_equivalents; 1225533054 p139,2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+other_cash_candidate,628686194.240000,reported.csv: cash - evidence.cash_equivalents - evidence.restricted_cash; not proved freely available,2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+financial_debt_assets,2696234728.830000,"evidence: current_financial_debt + noncurrent_financial_debt + reported.deposits; book proxy, not guaranteed cash",2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+risky_investments,2029765987.580000,evidence: current/noncurrent financial equity + associates + reported.loan_receivable - loan_allowance; before scenario haircut,2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+minority,161250043.780000,reported.csv: 2026-06-30 / minority; book proxy before scenario multiple,2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+debt,3066915772.710000,debt.csv: interest_bearing_debt_book_value; book proxy before scenario multiple,2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+other_claims,873696826.440000,reported: income_tax_payable + repurchase_payable + capex_payable + ipo_payable + evidence.provisions; assumed existing cash claims outside forecast,2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+shares,536276371.000000,"evidence: shares_close; 1225533054 p125; one CNY par per ordinary share, not weighted EPS shares",2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+convertible_debt,1109149604.090000,reported.csv: 2026-06-30 / all_bonds; current + noncurrent exactly once,2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+convertible_equity_book,4494798.360000,"evidence: convertible_equity_book; book proxy, not option fair value",2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+convertible_face,1104660800.000000,evidence: 1225533054 p54 split-line outstanding face amount,2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact
+conversion_price,108.860000,evidence: conversion_price; effective 2026-05-26,2026-06-30,2026-09-06T00:00:00+00:00,illustrative_model_not_reported_fact

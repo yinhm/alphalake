@@ -28,7 +28,7 @@ jobs:
           python-version: '3.12'
       - name: Install PDF verification dependency
         run: python -m pip install pypdf==6.17.0
-      - name: Verify Anker financial evidence offline
-        run: python internal/ingest/testdata/anker-valuation-2026/verify.py
+      - name: Verify Anker financial evidence and DCF offline
+        run: python internal/ingest/testdata/anker-dcf-2026/verify.py
       - name: Verify Anker historical evidence offline
         run: python internal/ingest/testdata/anker-history-2026/verify.py

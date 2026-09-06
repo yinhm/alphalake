@@ -395,6 +395,7 @@ def main(write=False):
         for r in results[name]:
             if r['item'] in ('ebit_financing_and_investment_adjusted', 'interest_bearing_debt_book_value', 'noncash_nondebt_wc_broad', 'wc_after_identified_exclusions', 'change_in_broad_wc'):
                 print(name, r['period'], r['item'], r['value'], r['status'])
+    return values, texts, results
 
 
 if __name__ == '__main__':
