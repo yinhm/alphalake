@@ -3,15 +3,16 @@
   "status": "shared_orchestrator_verified_industry_policy_not_equivalent_not_market_target",
   "statement_scope": "provider_default; EBIT is liquor policy proxy, not exact deconsolidation",
   "source_sha256": {
-    "facts.csv": "cb6f7d72c9aaa8bdc6e0227442d338ffd418799d879d3b1699d2ae8030932fb4",
-    "windows.csv": "865d38d512b69161a0c5d66c07ca535d28e224257b50f5ad187defb71788dcb4",
+    "facts.csv": "415f942150341d3a38bc18ff17b06666ea506ed430b7c21d7c66a940eeffbdaa",
+    "windows.csv": "5a19f02046b00dc9e8dc96aaf809e328a428325848a0ad7feaf7a1e2c2bba3aa",
     "inputs.csv": "c97736cbf612ddcda191ef50e876575bbd17e5a29df8ee4b1fbdbd62e94c2bcd",
     "input-audit.csv": "07b3b9b7b70c416d8db9e7a91b929375b3f5b254c55e554ce1a0400a3175dcc4",
     "600519-equity-bridge.csv": "5fba83d0d3ad46818f8fe4d1d500e114120f34f46a29a8f9d833568c38412baf"
   },
   "consolidated_reference_not_liquor_inputs": {
     "capex_ttm": 2363.742016,
-    "da_ttm": 2349.792005097656
+    "da_ttm": 2349.792005097656,
+    "rd_expense_ttm": 231.136912
   },
   "ltm_revenue": 170152.009728,
   "incomplete_quarter_capex": null,

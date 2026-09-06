@@ -20,3 +20,5 @@
 后续 ADR 可以替代早期决策的某一部分，但必须明确说明替代关系；替代不会抹去历史决策依据。
 
 - [012：非经营损益与营运资本组成字段](012-earnings-working-capital-fields.md)
+
+- [013：税费现金、营运资本调节项与研发费用](013-cashflow-research-fields.md)

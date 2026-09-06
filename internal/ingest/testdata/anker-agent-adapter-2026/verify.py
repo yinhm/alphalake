@@ -48,7 +48,7 @@ def main(write=False):
     i['conversion_price'] *= 1e6
     facts = {(r['period'], r['field']): float(r['value']) / 1e6
              for r in rows(CHAIN / 'facts.csv') if r['code'] == '300866'}
-    windows = {r['field']: float(r['value']) / 1e6
+    windows = {r['field']: float(r['value']) / 1e6 if r['coverage_status'] == 'complete' else None
                for r in rows(CHAIN / 'windows.csv') if r['code'] == '300866'}
     periods = sorted({p for p, f in facts}, reverse=True)
     quarterly = [RawFinancials(fiscal_year=int(p[:4]), revenues=facts[p, 'FN230'],
@@ -79,7 +79,7 @@ def main(write=False):
     assert unsafe.cashflow.fcff is None and unsafe.cashflow.fcfe is None
 
     raw = RawFinancials(fiscal_year=2026, revenues=i['revenue_ttm'], ebit=i['ebit_ttm'],
-        capex=windows['FN114'], d_a=i['da_ttm'], bv_equity=facts['2026-06-30', 'FN72'],
+        capex=windows['FN114'], d_a=i['da_ttm'], r_and_d_expense=windows['FN304'], bv_equity=facts['2026-06-30', 'FN72'],
         bv_debt=i['debt'], cash_and_marketable_securities=i['cash_equivalents'],
         minority_interests=i['minority'], shares_outstanding=i['shares'])
     adjusted = compute_adjustments(raw, adjustment, .09)
@@ -128,6 +128,7 @@ def main(write=False):
     # 与 HTTP 请求相同的 Pydantic JSON 解码，实际运行共享编排器；不再绕开 LTM 入口或伪造 cf_metrics。
     report = run_full_valuation(CompanyValuationInput.model_validate_json(payload.model_dump_json()))
     near(report.ltm_financials.revenues, raw.revenues)
+    near(report.ltm_financials.r_and_d_expense, raw.r_and_d_expense)
     assert report.cashflow.fcff is None and report.cashflow.fcfe is None
     assert report.multiples.pe_ratio_intrinsic is None and report.multiples.ev_sales_intrinsic is None
     assert report.final.value_per_share is None  # 原始跨持股桥接未补齐，组合模型另层处理。

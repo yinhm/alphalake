@@ -147,6 +147,7 @@ def main(write=False):
     for script in ['anker-dcf-2026/verify.py','moutai-valuation-2026/verify.py']:
         subprocess.run([sys.executable,str(ROOT.parent/script)],cwd=REPO,check=True)
     module('earnings_wc_evidence', ROOT.parent/'earnings-working-capital-2026/verify.py').verify(write)
+    module('cash_rd_evidence', ROOT.parent/'cash-rd-2026/verify.py').verify(write)
     with localcontext() as ctx:
         ctx.prec=40
         for name,rows in build().items():

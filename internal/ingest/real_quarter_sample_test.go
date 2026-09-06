@@ -144,7 +144,7 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 	check(duckstore.FinishIngestRun(ctx, db, runID, duckstore.IngestRunCompleted, nil, nil))
 	result, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if result.FilingResolutionRecovered != 8 || result.FilingResolutionPending != 0 || result.Linked != 6 || result.Inserted != 254 || result.Rejected != 16 || result.LinkPending != 0 || result.LinkAmbiguous != 0 {
+	if result.FilingResolutionRecovered != 8 || result.FilingResolutionPending != 0 || result.Linked != 6 || result.Inserted != 278 || result.Rejected != 28 || result.LinkPending != 0 || result.LinkAmbiguous != 0 {
 		t.Fatalf("quarter materialization: %+v", result)
 	}
 	values := financialSampleValues(t, quarterSampleDir, "values.csv", 24)
@@ -198,12 +198,12 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact
 		WHERE source_provider_field IN ('FN136','FN137','FN138','FN581') AND report_period=DATE '2025-09-30'`).Scan(&missingDepreciation))
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM meta.validation_result WHERE rule_code='provider_zero_ambiguous'`).Scan(&zeroDiagnostics))
-	if missingDepreciation != 0 || zeroDiagnostics != 16 {
-		t.Fatalf("missing depreciation materialized=%d diagnostics=%d", missingDepreciation, zeroDiagnostics)
+	if missingDepreciation != 0 || zeroDiagnostics != 28 {
+		t.Fatalf("missing depreciation materialized=%d all zero diagnostics=%d", missingDepreciation, zeroDiagnostics)
 	}
 	replay, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 || replay.Rejected != 16 || replay.Materialized != 254 {
+	if replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 || replay.Rejected != 28 || replay.Materialized != 278 {
 		t.Fatalf("quarter materialization replay: %+v", replay)
 	}
 	// 错误倍率不得留下旧的看似可信结果；恢复目录后可从原始证据重建。
@@ -211,15 +211,15 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 	check(err)
 	invalidScale, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if invalidScale.Rejected != 22 || invalidScale.Removed != 6 {
+	if invalidScale.Rejected != 34 || invalidScale.Removed != 6 {
 		t.Fatalf("invalid multiplier: %+v", invalidScale)
 	}
 	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=10000 WHERE source='tdx' AND provider_field='FN439'`)
 	check(err)
 	restored, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if restored.Inserted != 6 || restored.Materialized != 254 || restored.Rejected != 16 {
+	if restored.Inserted != 6 || restored.Materialized != 278 || restored.Rejected != 28 {
 		t.Fatalf("restored multiplier: %+v", restored)
 	}
-	t.Log("Q1/Q2/Q3：24 个金额、六个原始公告关联及各自 PIT 边界通过；254 条标准事实重放无变更")
+	t.Log("Q1/Q2/Q3：24 个金额、六个原始公告关联及各自 PIT 边界通过；278 条标准事实重放无变更")
 }

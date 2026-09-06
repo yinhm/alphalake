@@ -39,3 +39,5 @@ workspace/anker-agent-adapter-20260906/venv/bin/python internal/ingest/testdata/
 目标后端 115 项测试通过，4 项外部数据测试跳过。新增回归覆盖 prepared TTM JSON 往返、期间/币种/单位/时点约束、二次旋转拒绝、缺季、缺项及显式零；旧正向合成测试明确填入其原本假设为零的少数股权/跨持股，另有删除字段的负向断言。
 
 前端同步 nullable 类型和可选 prepared_ttm，未扩大界面功能。原锁文件有 Vite/Tailwind peer 冲突，安装使用 `npm ci --ignore-scripts --legacy-peer-deps`；构建仍失败，原提交和修正后各 25 条 TypeScript 错误，去除行列号后的错误集合相同，无本轮新增错误。这一限制未计作构建通过。
+
+标准 TTM 研发费用现由 TDX FN304 提供（3567.709568 百万元），真实目标引擎回传值也有断言；未启用研发资本化，历史 FCFF 仍保留缺项。

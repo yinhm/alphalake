@@ -34,8 +34,8 @@ func TestRealValuationStandardChain(t *testing.T) {
 	db, err := duckstore.OpenAndMigrate(ctx, dbPath)
 	check(err)
 	defer db.Close()
-	// 022 只新增映射；构造 v21 状态后实际导入全部真实源记录。
-	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field IN ('FN12','FN13','FN46','FN47','FN82','FN83','FN301'); DELETE FROM meta.schema_version WHERE version=22`)
+	// 023 只新增映射；构造 v22 状态后实际导入全部真实源记录。
+	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field IN ('FN99','FN104','FN146','FN147','FN148','FN304'); DELETE FROM meta.schema_version WHERE version=23`)
 	check(err)
 	root := filepath.Join(t.TempDir(), "raw")
 	var instruments []domain.InstrumentObservation
@@ -112,14 +112,14 @@ func TestRealValuationStandardChain(t *testing.T) {
 		rows.Close()
 		t.Fatalf("links: %+v", result)
 	}
-	if result.Inserted != 432 {
-		t.Fatalf("v21 baseline %+v", result)
+	if result.Inserted != 516 {
+		t.Fatalf("v22 baseline %+v", result)
 	}
 	check(duckstore.Apply(ctx, db))
 	upgraded, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if upgraded.Inserted != 84 || upgraded.Updated != 0 || upgraded.Removed != 0 {
-		t.Fatalf("v21 to v22 replay %+v", upgraded)
+	if upgraded.Inserted != 48 || upgraded.Updated != 0 || upgraded.Removed != 0 {
+		t.Fatalf("v22 to v23 replay %+v", upgraded)
 	}
 	check(db.Close())
 	db, err = duckstore.OpenAndMigrate(ctx, dbPath)
@@ -130,6 +130,12 @@ func TestRealValuationStandardChain(t *testing.T) {
 	if len(evidence) != 39 {
 		t.Fatal("new field evidence count")
 	}
+	cashEvidence, err := csv.NewReader(bytes.NewReader(readFinancialSample(t, "testdata/cash-rd-2026", "values.csv"))).ReadAll()
+	check(err)
+	if len(cashEvidence) != 34 {
+		t.Fatal("cash/RD evidence count")
+	}
+	evidence = append(evidence, cashEvidence[1:]...)
 	for _, row := range evidence[1:] {
 		want, err := strconv.ParseFloat(row[5], 32)
 		check(err)
@@ -196,6 +202,25 @@ func TestRealValuationStandardChain(t *testing.T) {
 		if n == 0 {
 			t.Fatal("H1 missing at disclosure")
 		}
+	}
+	var missingZeros int
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE (source_provider_field IN ('FN146','FN147','FN148') AND month(report_period) IN (3,9)) OR (provider_code='600519' AND source_provider_field='FN99')`).Scan(&missingZeros))
+	if missingZeros != 0 {
+		t.Fatal("ambiguous zeros became facts")
+	}
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE source='tdx' AND provider_field IN ('FN99','FN104','FN146','FN147','FN148','FN304')`)
+	check(err)
+	rejectedCash, err := MaterializeProviderFundamentals(ctx, db, "tdx")
+	check(err)
+	if rejectedCash.Removed != 48 {
+		t.Fatalf("cash/RD invalidation %+v", rejectedCash)
+	}
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=1 WHERE source='tdx' AND provider_field IN ('FN99','FN104','FN146','FN147','FN148','FN304')`)
+	check(err)
+	restoredCash, err := MaterializeProviderFundamentals(ctx, db, "tdx")
+	check(err)
+	if restoredCash.Inserted != 48 {
+		t.Fatalf("cash/RD recovery %+v", restoredCash)
 	}
 	// 修改映射依据后必须撤销标准值，不能回退 PDF；恢复后从源证据重建。
 	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE provider_field IN ('FN12','FN13','FN46','FN47','FN82','FN83','FN301') AND source='tdx'`)

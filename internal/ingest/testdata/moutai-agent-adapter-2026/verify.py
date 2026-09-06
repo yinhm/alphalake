@@ -40,8 +40,9 @@ def main(write=False):
          for r in rows(CHAIN / 'inputs.csv') if r['code'] == '600519'}
     facts = {(r['period'], r['field']): float(r['value']) / 1e6
              for r in rows(CHAIN / 'facts.csv') if r['code'] == '600519'}
-    windows = {r['field']: float(r['value']) / 1e6
+    windows = {r['field']: float(r['value']) / 1e6 if r['coverage_status'] == 'complete' else None
                for r in rows(CHAIN / 'windows.csv') if r['code'] == '600519'}
+    assert windows['FN99'] is None  # 未覆盖退税保留缺项，不能转换为空串或零。
     periods = sorted({p for p, _ in facts}, reverse=True)
     quarters = [RawFinancials(fiscal_year=int(p[:4]), revenues=facts[p, 'FN230'],
                               ebit=facts[p, 'FN231']) for p in periods]
@@ -160,7 +161,7 @@ def main(write=False):
             warnings=report.warnings, forecast=forecast))
     output = dict(target_commit=REVISION, status='shared_orchestrator_verified_industry_policy_not_equivalent_not_market_target',
         statement_scope='provider_default; EBIT is liquor policy proxy, not exact deconsolidation',
-        source_sha256=provenance, consolidated_reference_not_liquor_inputs=dict(capex_ttm=windows['FN114'], da_ttm=i['da_ttm']),
+        source_sha256=provenance, consolidated_reference_not_liquor_inputs=dict(capex_ttm=windows['FN114'], da_ttm=i['da_ttm'], rd_expense_ttm=windows['FN304']),
         ltm_revenue=rotated.revenues, incomplete_quarter_capex=rotated.capex,
         lag_probe=lag_probe, scenarios=results)
     for filename, obj in [('requests.json', requests), ('result.json', output)]:

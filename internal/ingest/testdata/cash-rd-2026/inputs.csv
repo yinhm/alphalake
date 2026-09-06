@@ -1,0 +1,15 @@
+code,field,canonical_field,period,value,unit,coverage_status,available_inputs,required_inputs,information_as_of,statement_scope
+300866,FN99,tax_refunds_received,TTM-2026-06-30,2056715712.0000000000,CNY,complete,3,3,2026-09-06T00:00:00+00:00,provider_default
+300866,FN104,taxes_paid,TTM-2026-06-30,2148846720.0000000000,CNY,complete,3,3,2026-09-06T00:00:00+00:00,provider_default
+300866,FN146,inventory_decrease_cashflow,TTM-2026-06-30,-1645305344.0000000000,CNY,complete,3,3,2026-09-06T00:00:00+00:00,provider_default
+300866,FN147,operating_receivables_decrease_cashflow,TTM-2026-06-30,-1038968448.0000000000,CNY,complete,3,3,2026-09-06T00:00:00+00:00,provider_default
+300866,FN148,operating_payables_increase_cashflow,TTM-2026-06-30,1221384608.0000000000,CNY,complete,3,3,2026-09-06T00:00:00+00:00,provider_default
+300866,FN304,research_and_development_expense,TTM-2026-06-30,3567709568.0000000000,CNY,complete,3,3,2026-09-06T00:00:00+00:00,provider_default
+300866,FN146+FN147+FN148,working_capital_cashflow_contribution,TTM-2026-06-30,-1462889184.0000000000,CNY,cashflow_reconciliation_not_classified_valuation_wc,3,3,2026-09-06T00:00:00+00:00,provider_default
+600519,FN99,tax_refunds_received,TTM-2026-06-30,,CNY,missing_inputs,0,3,2026-09-06T00:00:00+00:00,provider_default
+600519,FN104,taxes_paid,TTM-2026-06-30,78023897088.0000000000,CNY,complete,3,3,2026-09-06T00:00:00+00:00,provider_default
+600519,FN146,inventory_decrease_cashflow,TTM-2026-06-30,-6345476240.0000000000,CNY,complete,3,3,2026-09-06T00:00:00+00:00,provider_default
+600519,FN147,operating_receivables_decrease_cashflow,TTM-2026-06-30,35821845504.0000000000,CNY,complete,3,3,2026-09-06T00:00:00+00:00,provider_default
+600519,FN148,operating_payables_increase_cashflow,TTM-2026-06-30,3784046848.0000000000,CNY,complete,3,3,2026-09-06T00:00:00+00:00,provider_default
+600519,FN304,research_and_development_expense,TTM-2026-06-30,231136912.0000000000,CNY,complete,3,3,2026-09-06T00:00:00+00:00,provider_default
+600519,FN146+FN147+FN148,working_capital_cashflow_contribution,TTM-2026-06-30,33260416112.0000000000,CNY,cashflow_reconciliation_not_classified_valuation_wc,3,3,2026-09-06T00:00:00+00:00,provider_default
