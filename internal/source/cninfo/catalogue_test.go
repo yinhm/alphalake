@@ -21,6 +21,8 @@ func TestClassifyPeriodicTitle(t *testing.T) {
 		wantPeriod  string
 		eligible    bool
 	}{
+		{"贵州茅台2025年年度报告（英文版）", domain.FilingTypeAnnual, domain.FilingVariantTranslation, "2025-12-31", false},
+		{"2025年年度报告（英文译本）（更正后）", domain.FilingTypeAnnual, domain.FilingVariantTranslation, "2025-12-31", false},
 		{"平安银行股份有限公司2025年年度报告", domain.FilingTypeAnnual, domain.FilingVariantFull, "2025-12-31", true},
 		{"平安银行股份有限公司2025年年度报告摘要", domain.FilingTypeAnnual, domain.FilingVariantSummary, "2025-12-31", false},
 		{"关于2025年年度报告的更正公告", domain.FilingTypeAnnual, domain.FilingVariantCorrectionNotice, "2025-12-31", true},

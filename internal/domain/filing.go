@@ -25,6 +25,7 @@ type FilingVariant string
 const (
 	FilingVariantOther            FilingVariant = "other"
 	FilingVariantFull             FilingVariant = "full"
+	FilingVariantTranslation      FilingVariant = "translation"
 	FilingVariantSummary          FilingVariant = "summary"
 	FilingVariantCorrectionNotice FilingVariant = "correction_notice"
 	FilingVariantCorrectedReport  FilingVariant = "corrected_report"

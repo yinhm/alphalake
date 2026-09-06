@@ -319,7 +319,7 @@ func UpsertFilings(ctx context.Context, db *sql.DB, ingestRunID int64, filings [
 			}
 			result.Documents++
 		}
-		if filing.IsCorrection && filing.InstrumentID > 0 && filing.ReportPeriod != nil {
+		if filing.IsCorrection && filing.InstrumentID > 0 && filing.EligiblePITAnchor() {
 			if err := linkCorrectionTx(ctx, tx, existingID, filing); err != nil {
 				return result, err
 			}

@@ -32,6 +32,7 @@ func TestMigrationOrder(t *testing.T) {
 		"018_core_financial_fields.sql",
 		"019_tax_and_debt_fields.sql",
 		"020_financial_windows.sql",
+		"021_filing_translation.sql",
 	}
 	if len(migrations) != len(want) {
 		t.Fatalf("got %v", migrations)
@@ -214,5 +215,56 @@ func TestFilingPrecisionMigrationBackfillsLegacyRows(t *testing.T) {
 	}
 	if date != "2026-03-28" || precision != "timestamp" {
 		t.Fatalf("legacy timing=%s/%s", date, precision)
+	}
+}
+
+func TestTranslationMigrationFromV20(t *testing.T) {
+	ctx := t.Context()
+	db, err := Open(ctx, filepath.Join(t.TempDir(), "translation.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	migrations, err := Migrations()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, m := range migrations[:20] {
+		if err := applyMigration(ctx, db, m); err != nil {
+			t.Fatal(err)
+		}
+	}
+	_, err = db.ExecContext(ctx, `INSERT INTO fundamental.filing (source,source_filing_id,title,report_period,filing_variant,classifier_version) VALUES
+ ('cninfo','cn','贵州茅台2025年年度报告',DATE '2025-12-31','full','cninfo-periodic-title-v2'),
+ ('cninfo','en','贵州茅台2025年年度报告（英文版）',DATE '2025-12-31','full','cninfo-periodic-title-v2')`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.filing SET corrects_filing_id=(SELECT filing_id FROM fundamental.filing WHERE source_filing_id='en') WHERE source_filing_id='cn'`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := Apply(ctx, db); err != nil {
+		t.Fatal(err)
+	}
+	var variant, version string
+	if err := db.QueryRowContext(ctx, `SELECT filing_variant,classifier_version FROM fundamental.filing WHERE source_filing_id='en'`).Scan(&variant, &version); err != nil {
+		t.Fatal(err)
+	}
+	if variant != "translation" || version != "cninfo-periodic-title-v3" {
+		t.Fatal(variant, version)
+	}
+	if err := db.QueryRowContext(ctx, `SELECT filing_variant FROM fundamental.filing WHERE source_filing_id='cn'`).Scan(&variant); err != nil {
+		t.Fatal(err)
+	}
+	if variant != "full" {
+		t.Fatal(variant)
+	}
+	var n int
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.filing WHERE corrects_filing_id IS NOT NULL`).Scan(&n); err != nil {
+		t.Fatal(err)
+	}
+	if n != 0 {
+		t.Fatal("unsupported translation predecessor retained")
 	}
 }

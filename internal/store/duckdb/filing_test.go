@@ -162,4 +162,18 @@ func TestCorrectionFilingLinksImmediatePriorAnchor(t *testing.T) {
 	if predecessor != originalID {
 		t.Fatalf("correction predecessor=%d, want %d", predecessor, originalID)
 	}
+	translation := correction
+	translation.SourceFilingID = "translation-correction"
+	translation.FilingVariant = domain.FilingVariantTranslation
+	translation.Title = "2025年年度报告（英文版）（更正后）"
+	if _, err := UpsertFilings(ctx, db, 1, []domain.FilingObservation{translation}); err != nil {
+		t.Fatal(err)
+	}
+	var unlinked bool
+	if err := db.QueryRowContext(ctx, `SELECT corrects_filing_id IS NULL FROM fundamental.filing WHERE source_filing_id='translation-correction'`).Scan(&unlinked); err != nil {
+		t.Fatal(err)
+	}
+	if !unlinked {
+		t.Fatal("translation became a correction anchor")
+	}
 }
