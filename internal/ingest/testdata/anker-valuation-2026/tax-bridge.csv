@@ -1,0 +1,49 @@
+period,item,value,unit,status,formula,as_of
+2025-06-30,disclosed_base_minus_15pct_reference,-0.02,CNY,reported_difference_not_overwritten,"disclosed tax_base-round(profit_before_tax*15%,2)",2026-09-06T00:00:00+00:00
+2025-06-30,tax_base,189988811.94,CNY,disclosed_tax_not_cash_paid,2025-06-30/detail_tax_base,2026-09-06T00:00:00+00:00
+2025-06-30,tax_subsidiary_rates,9072220.00,CNY,disclosed_tax_not_cash_paid,2025-06-30/detail_tax_subsidiary_rates,2026-09-06T00:00:00+00:00
+2025-06-30,tax_prior_periods,6639891.03,CNY,disclosed_tax_not_cash_paid,2025-06-30/detail_tax_prior_periods,2026-09-06T00:00:00+00:00
+2025-06-30,tax_nontaxable,-24434383.03,CNY,disclosed_tax_not_cash_paid,2025-06-30/detail_tax_nontaxable,2026-09-06T00:00:00+00:00
+2025-06-30,tax_nondeductible,63748.20,CNY,disclosed_tax_not_cash_paid,2025-06-30/detail_tax_nondeductible,2026-09-06T00:00:00+00:00
+2025-06-30,tax_prior_losses,-8093059.65,CNY,disclosed_tax_not_cash_paid,2025-06-30/detail_tax_prior_losses,2026-09-06T00:00:00+00:00
+2025-06-30,tax_unrecognized_losses,20670874.24,CNY,disclosed_tax_not_cash_paid,2025-06-30/detail_tax_unrecognized_losses,2026-09-06T00:00:00+00:00
+2025-06-30,tax_rd_deduction,-93603557.16,CNY,disclosed_tax_not_cash_paid,2025-06-30/detail_tax_rd_deduction,2026-09-06T00:00:00+00:00
+2025-06-30,current_tax,308319184.54,CNY,disclosed_tax_not_cash_paid,2025-06-30/detail_current_tax,2026-09-06T00:00:00+00:00
+2025-06-30,deferred_tax,-208014638.97,CNY,disclosed_tax_not_cash_paid,2025-06-30/detail_deferred_tax,2026-09-06T00:00:00+00:00
+2025-06-30,total_tax_expense,100304545.57,CNY,not_operating_tax_allocation,current_tax+deferred_tax=sum(tax reconciliation),2026-09-06T00:00:00+00:00
+2025-12-31,disclosed_base_minus_15pct_reference,0.00,CNY,reported_difference_not_overwritten,"disclosed tax_base-round(profit_before_tax*15%,2)",2026-09-06T00:00:00+00:00
+2025-12-31,tax_base,438371038.50,CNY,disclosed_tax_not_cash_paid,2025-12-31/detail_tax_base,2026-09-06T00:00:00+00:00
+2025-12-31,tax_subsidiary_rates,95835293.14,CNY,disclosed_tax_not_cash_paid,2025-12-31/detail_tax_subsidiary_rates,2026-09-06T00:00:00+00:00
+2025-12-31,tax_prior_periods,6236548.09,CNY,disclosed_tax_not_cash_paid,2025-12-31/detail_tax_prior_periods,2026-09-06T00:00:00+00:00
+2025-12-31,tax_nontaxable,-28375902.07,CNY,disclosed_tax_not_cash_paid,2025-12-31/detail_tax_nontaxable,2026-09-06T00:00:00+00:00
+2025-12-31,tax_nondeductible,977389.68,CNY,disclosed_tax_not_cash_paid,2025-12-31/detail_tax_nondeductible,2026-09-06T00:00:00+00:00
+2025-12-31,tax_prior_losses,-2883541.44,CNY,disclosed_tax_not_cash_paid,2025-12-31/detail_tax_prior_losses,2026-09-06T00:00:00+00:00
+2025-12-31,tax_unrecognized_losses,62452905.28,CNY,disclosed_tax_not_cash_paid,2025-12-31/detail_tax_unrecognized_losses,2026-09-06T00:00:00+00:00
+2025-12-31,tax_rd_deduction,-267334062.44,CNY,disclosed_tax_not_cash_paid,2025-12-31/detail_tax_rd_deduction,2026-09-06T00:00:00+00:00
+2025-12-31,current_tax,357514499.37,CNY,disclosed_tax_not_cash_paid,2025-12-31/detail_current_tax,2026-09-06T00:00:00+00:00
+2025-12-31,deferred_tax,-52234830.63,CNY,disclosed_tax_not_cash_paid,2025-12-31/detail_deferred_tax,2026-09-06T00:00:00+00:00
+2025-12-31,total_tax_expense,305279668.74,CNY,not_operating_tax_allocation,current_tax+deferred_tax=sum(tax reconciliation),2026-09-06T00:00:00+00:00
+2026-06-30,disclosed_base_minus_15pct_reference,-0.89,CNY,reported_difference_not_overwritten,"disclosed tax_base-round(profit_before_tax*15%,2)",2026-09-06T00:00:00+00:00
+2026-06-30,tax_base,311268945.41,CNY,disclosed_tax_not_cash_paid,2026-06-30/detail_tax_base,2026-09-06T00:00:00+00:00
+2026-06-30,tax_subsidiary_rates,194289445.47,CNY,disclosed_tax_not_cash_paid,2026-06-30/detail_tax_subsidiary_rates,2026-09-06T00:00:00+00:00
+2026-06-30,tax_prior_periods,-26182540.13,CNY,disclosed_tax_not_cash_paid,2026-06-30/detail_tax_prior_periods,2026-09-06T00:00:00+00:00
+2026-06-30,tax_nontaxable,-4543837.03,CNY,disclosed_tax_not_cash_paid,2026-06-30/detail_tax_nontaxable,2026-09-06T00:00:00+00:00
+2026-06-30,tax_nondeductible,5988099.09,CNY,disclosed_tax_not_cash_paid,2026-06-30/detail_tax_nondeductible,2026-09-06T00:00:00+00:00
+2026-06-30,tax_prior_losses,-11397789.53,CNY,disclosed_tax_not_cash_paid,2026-06-30/detail_tax_prior_losses,2026-09-06T00:00:00+00:00
+2026-06-30,tax_unrecognized_losses,22716555.13,CNY,disclosed_tax_not_cash_paid,2026-06-30/detail_tax_unrecognized_losses,2026-09-06T00:00:00+00:00
+2026-06-30,tax_rd_deduction,-161834839.77,CNY,disclosed_tax_not_cash_paid,2026-06-30/detail_tax_rd_deduction,2026-09-06T00:00:00+00:00
+2026-06-30,current_tax,546166142.76,CNY,disclosed_tax_not_cash_paid,2026-06-30/detail_current_tax,2026-09-06T00:00:00+00:00
+2026-06-30,deferred_tax,-215862104.12,CNY,disclosed_tax_not_cash_paid,2026-06-30/detail_deferred_tax,2026-09-06T00:00:00+00:00
+2026-06-30,total_tax_expense,330304038.64,CNY,not_operating_tax_allocation,current_tax+deferred_tax=sum(tax reconciliation),2026-09-06T00:00:00+00:00
+TTM-2026-06-30,disclosed_base_minus_15pct_reference,-0.87,CNY,reported_difference_not_overwritten,2025-12-31/disclosed_base_minus_15pct_reference+2026-06-30/disclosed_base_minus_15pct_reference-2025-06-30/disclosed_base_minus_15pct_reference,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,tax_base,559651171.97,CNY,disclosed_tax_not_cash_paid,2025-12-31/tax_base+2026-06-30/tax_base-2025-06-30/tax_base,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,tax_subsidiary_rates,281052518.61,CNY,disclosed_tax_not_cash_paid,2025-12-31/tax_subsidiary_rates+2026-06-30/tax_subsidiary_rates-2025-06-30/tax_subsidiary_rates,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,tax_prior_periods,-26585883.07,CNY,disclosed_tax_not_cash_paid,2025-12-31/tax_prior_periods+2026-06-30/tax_prior_periods-2025-06-30/tax_prior_periods,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,tax_nontaxable,-8485356.07,CNY,disclosed_tax_not_cash_paid,2025-12-31/tax_nontaxable+2026-06-30/tax_nontaxable-2025-06-30/tax_nontaxable,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,tax_nondeductible,6901740.57,CNY,disclosed_tax_not_cash_paid,2025-12-31/tax_nondeductible+2026-06-30/tax_nondeductible-2025-06-30/tax_nondeductible,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,tax_prior_losses,-6188271.32,CNY,disclosed_tax_not_cash_paid,2025-12-31/tax_prior_losses+2026-06-30/tax_prior_losses-2025-06-30/tax_prior_losses,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,tax_unrecognized_losses,64498586.17,CNY,disclosed_tax_not_cash_paid,2025-12-31/tax_unrecognized_losses+2026-06-30/tax_unrecognized_losses-2025-06-30/tax_unrecognized_losses,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,tax_rd_deduction,-335565345.05,CNY,disclosed_tax_not_cash_paid,2025-12-31/tax_rd_deduction+2026-06-30/tax_rd_deduction-2025-06-30/tax_rd_deduction,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,current_tax,595361457.59,CNY,disclosed_tax_not_cash_paid,2025-12-31/current_tax+2026-06-30/current_tax-2025-06-30/current_tax,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,deferred_tax,-60082295.78,CNY,disclosed_tax_not_cash_paid,2025-12-31/deferred_tax+2026-06-30/deferred_tax-2025-06-30/deferred_tax,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,total_tax_expense,535279161.81,CNY,not_operating_tax_allocation,2025-12-31/total_tax_expense+2026-06-30/total_tax_expense-2025-06-30/total_tax_expense,2026-09-06T00:00:00+00:00

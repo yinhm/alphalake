@@ -47,14 +47,14 @@ def main(write=False):
         assert available <= datetime.fromisoformat(AS_OF), id
     with (ROOT / 'reported.csv').open() as f:
         rows = list(csv.DictReader(f))
-    assert len(rows) == 409 and len({r['id'] for r in rows}) == len(rows)
+    assert len(rows) == 496 and len({r['id'] for r in rows}) == len(rows)
     values = {}
     cf_comparatives = {}
     for r in rows:
         text = texts[r['pdf_id']]
         start = text.index(r['section'])
         section = text[start:text.index(r['end_section'], start + len(r['section']))]
-        matches = list(re.finditer('^' + re.escape(r['label']) + r'[^\n]*', section, re.M))
+        matches = list(re.finditer('^' + re.escape(r['label']) + (r'[\s\S]*' if r['end_section'] == '长期借款' else r'[^\n]*'), section, re.M))
         match = matches[int(r['occurrence'])]
         page = int(re.findall(r'=== 页 (\d+) ===', text[:start+match.start()])[-1])
         tokens = re.findall(r'(?<!\S)(?:-?[\d,]+\.\d{2}|-)(?!\S)', match[0])
@@ -224,6 +224,56 @@ def main(write=False):
         emit('reinvestment', 'TTM-2026-06-30', key, amount, f'2025-12-31/{key}+2026-06-30/{key}-2025-06-30/{key}', reinvestment[PERIODS[2]][key][2])
     for period in ('FY-2025', 'TTM-2026-06-30'):
         results['reinvestment'].append(dict(period=period, item='valuation_fcff', value='', unit='CNY', status='missing_valuation_adjustments', formula='unresolved WC classification/lease reinvestment and tax policy'))
+    # 租赁资产、租赁负债和所得税的明细桥接，仍属于公司样本分析层。
+    tax_keys = 'tax_base tax_subsidiary_rates tax_prior_periods tax_nontaxable tax_nondeductible tax_prior_losses tax_unrecognized_losses tax_rd_deduction'.split()
+    for p in PERIODS:
+        d = lambda key: v(p, 'detail_'+key)
+        assert d('rou_gross_open')+d('rou_additions')-d('rou_disposals')+d('rou_gross_fx') == d('rou_gross_close')
+        assert d('rou_dep_open')+d('rou_depreciation')-d('rou_dep_disposals')+d('rou_dep_fx') == d('rou_dep_close')
+        assert d('rou_gross_open')-d('rou_dep_open') == d('rou_net_open')
+        assert d('rou_gross_close')-d('rou_dep_close') == d('rou_net_close')
+        assert d('rou_depreciation') == v(p, 'cf_rou_depreciation')
+        assert d('lease_liability_open') == d('lease_open')
+        assert d('lease_liability_close') == v(p, 'all_leases')
+        assert d('lease_liability_cash_out') == v(p, 'cf_lease_payment')
+        assert d('lease_liability_open')+d('lease_liability_cash_in')+d('lease_liability_noncash_in')-d('lease_liability_cash_out')-d('lease_liability_noncash_out') == d('lease_liability_close')
+        assert d('rou_additions')+v(p, 'lease_interest') == d('lease_liability_noncash_in')
+        assert d('current_tax')+d('deferred_tax') == v(p, 'tax_expense')
+        assert sum((d(k) for k in tax_keys), D(0)) == v(p, 'tax_expense')
+        emit('tax-bridge', p, 'disclosed_base_minus_15pct_reference', d('tax_base')-(v(p,'pbt')*D('.15')).quantize(D('.01'), rounding=ROUND_HALF_UP), 'disclosed tax_base-round(profit_before_tax*15%,2)', 'reported_difference_not_overwritten')
+        for k in tax_keys+['current_tax','deferred_tax']:
+            emit('tax-bridge', p, k, d(k), p+'/detail_'+k, 'disclosed_tax_not_cash_paid')
+        emit('tax-bridge', p, 'total_tax_expense', v(p,'tax_expense'), 'current_tax+deferred_tax=sum(tax reconciliation)', 'not_operating_tax_allocation')
+        for k in ['rou_additions','rou_disposals','rou_depreciation','rou_gross_fx','rou_dep_disposals','rou_dep_fx','lease_liability_cash_in','lease_liability_noncash_in','lease_liability_cash_out','lease_liability_noncash_out']:
+            emit('lease-reinvestment', p, k, d(k), p+'/detail_'+k, 'disclosed_movement')
+        emit('lease-reinvestment', p, 'lease_interest', v(p,'lease_interest'), p+'/lease_interest', 'accrual_not_cash_interest')
+        emit('lease-reinvestment', p, 'cash_capex_plus_rou_additions', v(p,'cf_capex')+d('rou_additions'), p+'/cf_capex+'+p+'/detail_rou_additions', 'cash_and_noncash_input_not_final_fcff')
+        opening = '2025-12-31' if p=='2026-06-30' else '2024-12-31'
+        def receivable_balance(date):
+            fixed = D(0) if date=='2026-06-30' else v(date,'fixed_notes')
+            return total(date,'current_assets trading_forward_asset')-total(date,'cash trading_assets deposits inventory')-fixed
+        def payable_balance(date):
+            return v(date,'current_liabilities')-total(date,'short_debt current_debt')
+        rec_change = receivable_balance(p)-receivable_balance(opening)
+        pay_change = payable_balance(p)-payable_balance(opening)
+        rec_gap = -v(p,'cf_receivables')-rec_change
+        pay_gap = pay_change-v(p,'cf_payables')
+        assert rec_gap+pay_gap == reinvestment[p]['remaining_wc_scope_difference'][0]
+        components = {'receivable_balance_increase': (rec_change, 'noninventory broad current assets: close-open', 'balance_policy_scope'),
+                      'payable_balance_increase': (pay_change, 'nondebt current liabilities: close-open', 'balance_policy_scope'),
+                      'receivable_cash_use': (-v(p,'cf_receivables'), '-'+p+'/cf_receivables', 'cashflow_statement_scope'),
+                      'payable_cash_source': (v(p,'cf_payables'), p+'/cf_payables', 'cashflow_statement_scope'),
+                      'receivable_scope_gap': (rec_gap, 'receivable_cash_use-receivable_balance_increase', 'unattributed_not_zero'),
+                      'payable_scope_gap': (pay_gap, 'payable_balance_increase-payable_cash_source', 'unattributed_not_zero'),
+                      'income_tax_payable_change': (v(p,'income_tax_payable')-v(opening,'income_tax_payable'), p+'/income_tax_payable-'+opening+'/income_tax_payable', 'candidate_not_attributed_to_gap')}
+        for key,(amount,formula,status) in components.items():
+            emit('wc-components', p, key, amount, formula, status)
+    for table in ['tax-bridge','lease-reinvestment','wc-components']:
+        keys = list(dict.fromkeys(r['item'] for r in results[table]))
+        for key in keys:
+            group = {r['period']:r for r in results[table] if r['item']==key}
+            amount = D(group[PERIODS[1]]['value'])+D(group[PERIODS[2]]['value'])-D(group[PERIODS[0]]['value'])
+            emit(table, 'TTM-2026-06-30', key, amount, f'2025-12-31/{key}+2026-06-30/{key}-2025-06-30/{key}', group[PERIODS[2]]['status'])
     for name, data in results.items():
         for row in data:
             row['as_of'] = AS_OF
@@ -233,7 +283,7 @@ def main(write=False):
             path.write_text(expected)
         else:
             assert path.read_text() == expected, f'{path.name}: run --write only after reviewing input/policy changes'
-    print(f'通过：{len(rows)} 个 PDF 金额、84 个源字段位比较、报表/债务恒等式及五张 Decimal 输入表。')
+    print(f'通过：{len(rows)} 个 PDF 金额、84 个源字段位比较、报表/债务恒等式及八张 Decimal 输入表。')
     for name in results:
         for r in results[name]:
             if r['item'] in ('ebit_financing_and_investment_adjusted', 'interest_bearing_debt_book_value', 'noncash_nondebt_wc_broad', 'wc_after_identified_exclusions', 'change_in_broad_wc'):

@@ -1,0 +1,29 @@
+period,item,value,unit,status,formula,as_of
+2025-06-30,receivable_balance_increase,231087880.78,CNY,balance_policy_scope,noninventory broad current assets: close-open,2026-09-06T00:00:00+00:00
+2025-06-30,payable_balance_increase,652977782.84,CNY,balance_policy_scope,nondebt current liabilities: close-open,2026-09-06T00:00:00+00:00
+2025-06-30,receivable_cash_use,295803723.39,CNY,cashflow_statement_scope,-2025-06-30/cf_receivables,2026-09-06T00:00:00+00:00
+2025-06-30,payable_cash_source,213792437.90,CNY,cashflow_statement_scope,2025-06-30/cf_payables,2026-09-06T00:00:00+00:00
+2025-06-30,receivable_scope_gap,64715842.61,CNY,unattributed_not_zero,receivable_cash_use-receivable_balance_increase,2026-09-06T00:00:00+00:00
+2025-06-30,payable_scope_gap,439185344.94,CNY,unattributed_not_zero,payable_balance_increase-payable_cash_source,2026-09-06T00:00:00+00:00
+2025-06-30,income_tax_payable_change,87938808.27,CNY,candidate_not_attributed_to_gap,2025-06-30/income_tax_payable-2024-12-31/income_tax_payable,2026-09-06T00:00:00+00:00
+2025-12-31,receivable_balance_increase,729942690.13,CNY,balance_policy_scope,noninventory broad current assets: close-open,2026-09-06T00:00:00+00:00
+2025-12-31,payable_balance_increase,723219925.41,CNY,balance_policy_scope,nondebt current liabilities: close-open,2026-09-06T00:00:00+00:00
+2025-12-31,receivable_cash_use,660609943.23,CNY,cashflow_statement_scope,-2025-12-31/cf_receivables,2026-09-06T00:00:00+00:00
+2025-12-31,payable_cash_source,211870670.05,CNY,cashflow_statement_scope,2025-12-31/cf_payables,2026-09-06T00:00:00+00:00
+2025-12-31,receivable_scope_gap,-69332746.90,CNY,unattributed_not_zero,receivable_cash_use-receivable_balance_increase,2026-09-06T00:00:00+00:00
+2025-12-31,payable_scope_gap,511349255.36,CNY,unattributed_not_zero,payable_balance_increase-payable_cash_source,2026-09-06T00:00:00+00:00
+2025-12-31,income_tax_payable_change,21420591.13,CNY,candidate_not_attributed_to_gap,2025-12-31/income_tax_payable-2024-12-31/income_tax_payable,2026-09-06T00:00:00+00:00
+2026-06-30,receivable_balance_increase,749316711.28,CNY,balance_policy_scope,noninventory broad current assets: close-open,2026-09-06T00:00:00+00:00
+2026-06-30,payable_balance_increase,1153669607.17,CNY,balance_policy_scope,nondebt current liabilities: close-open,2026-09-06T00:00:00+00:00
+2026-06-30,receivable_cash_use,674162259.27,CNY,cashflow_statement_scope,-2026-06-30/cf_receivables,2026-09-06T00:00:00+00:00
+2026-06-30,payable_cash_source,1223306349.55,CNY,cashflow_statement_scope,2026-06-30/cf_payables,2026-09-06T00:00:00+00:00
+2026-06-30,receivable_scope_gap,-75154452.01,CNY,unattributed_not_zero,receivable_cash_use-receivable_balance_increase,2026-09-06T00:00:00+00:00
+2026-06-30,payable_scope_gap,-69636742.38,CNY,unattributed_not_zero,payable_balance_increase-payable_cash_source,2026-09-06T00:00:00+00:00
+2026-06-30,income_tax_payable_change,271300976.44,CNY,candidate_not_attributed_to_gap,2026-06-30/income_tax_payable-2025-12-31/income_tax_payable,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,receivable_balance_increase,1248171520.63,CNY,balance_policy_scope,2025-12-31/receivable_balance_increase+2026-06-30/receivable_balance_increase-2025-06-30/receivable_balance_increase,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,payable_balance_increase,1223911749.74,CNY,balance_policy_scope,2025-12-31/payable_balance_increase+2026-06-30/payable_balance_increase-2025-06-30/payable_balance_increase,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,receivable_cash_use,1038968479.11,CNY,cashflow_statement_scope,2025-12-31/receivable_cash_use+2026-06-30/receivable_cash_use-2025-06-30/receivable_cash_use,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,payable_cash_source,1221384581.70,CNY,cashflow_statement_scope,2025-12-31/payable_cash_source+2026-06-30/payable_cash_source-2025-06-30/payable_cash_source,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,receivable_scope_gap,-209203041.52,CNY,unattributed_not_zero,2025-12-31/receivable_scope_gap+2026-06-30/receivable_scope_gap-2025-06-30/receivable_scope_gap,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,payable_scope_gap,2527168.04,CNY,unattributed_not_zero,2025-12-31/payable_scope_gap+2026-06-30/payable_scope_gap-2025-06-30/payable_scope_gap,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,income_tax_payable_change,204782759.30,CNY,candidate_not_attributed_to_gap,2025-12-31/income_tax_payable_change+2026-06-30/income_tax_payable_change-2025-06-30/income_tax_payable_change,2026-09-06T00:00:00+00:00
