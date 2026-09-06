@@ -22,3 +22,5 @@
 - [012：非经营损益与营运资本组成字段](012-earnings-working-capital-fields.md)
 
 - [013：税费现金、营运资本调节项与研发费用](013-cashflow-research-fields.md)
+
+- [014：开源目录与余额/利润增补](014-open-source-fn-balance-profit.md)——参考 mootdx/QUANTAXIS，十二字段进入标准链与估值。

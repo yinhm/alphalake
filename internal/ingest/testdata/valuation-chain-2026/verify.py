@@ -86,8 +86,10 @@ def build():
             mapping.update(extra_cash_equivalents='FN133',extra_associates='FN25',extra_shares_close='FN238')
             model=module('anker_model',ROOT.parent/'anker-dcf-2026/verify.py').model
             baseline={r['item']:D(r['value']) for r in read(ROOT.parent/'anker-dcf-2026/inputs.csv')}
+        mapping.update(net_income='FN95', other_current_assets='FN20', other_current_liabilities='FN53')
         mapping.update(investment_income='FN83', fair_value_income='FN82', disposal_income='FN301')
         if company == 'moutai':
+            mapping.update(current_financial_maturity='FN19', other_payable='FN50', minority_income='FN97')
             mapping.update(prepayments='FN12', other_receivable='FN13', payroll_payable='FN46', tax_payable='FN47')
         def v(p,k):
             row=pdf[p+'/'+k];amount=D(row['value']);locator=company+'/'+row['pdf_id']+'.pdf#page='+str(row['pdf_page'])
@@ -147,6 +149,7 @@ def main(write=False):
     for script in ['anker-dcf-2026/verify.py','moutai-valuation-2026/verify.py']:
         subprocess.run([sys.executable,str(ROOT.parent/script)],cwd=REPO,check=True)
     module('earnings_wc_evidence', ROOT.parent/'earnings-working-capital-2026/verify.py').verify(write)
+    module('balance_profit_evidence', ROOT.parent/'balance-profit-2026/verify.py').verify(write)
     module('cash_rd_evidence', ROOT.parent/'cash-rd-2026/verify.py').verify(write)
     with localcontext() as ctx:
         ctx.prec=40

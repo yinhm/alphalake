@@ -1,7 +1,7 @@
 code,scenario,per_share,pdf_model_per_share,difference,information_as_of,valuation_date,status
-600519,cautious,721.530132,721.530170,-0.000038,2026-09-06T00:00:00+00:00,2026-06-30,illustrative_model_not_reported_fact
+600519,cautious,721.530133,721.530170,-0.000037,2026-09-06T00:00:00+00:00,2026-06-30,illustrative_model_not_reported_fact
 600519,central,1267.343421,1267.343484,-0.000063,2026-09-06T00:00:00+00:00,2026-06-30,illustrative_model_not_reported_fact
-600519,expansive,1892.090023,1892.090116,-0.000093,2026-09-06T00:00:00+00:00,2026-06-30,illustrative_model_not_reported_fact
+600519,expansive,1892.090024,1892.090116,-0.000092,2026-09-06T00:00:00+00:00,2026-06-30,illustrative_model_not_reported_fact
 300866,cautious,43.865608,43.865610,-0.000002,2026-09-06T00:00:00+00:00,2026-06-30,illustrative_model_not_reported_fact
 300866,central,99.205161,99.205163,-0.000002,2026-09-06T00:00:00+00:00,2026-06-30,illustrative_model_not_reported_fact
 300866,expansive,204.407567,204.407570,-0.000003,2026-09-06T00:00:00+00:00,2026-06-30,illustrative_model_not_reported_fact

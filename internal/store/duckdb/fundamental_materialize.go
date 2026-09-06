@@ -144,8 +144,8 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 					ELSE 'unknown' END THEN 'filing_type_mismatch'
 				WHEN value_multiplier IS NULL OR value_multiplier NOT IN (1,10000) THEN 'canonical_scale_unknown'
 				WHEN value IS NULL OR NOT isfinite(value) THEN 'provider_value_not_finite'
-				-- 季报常不披露现金流补充资料，TDX 用 0 表示空项；不把缺失折旧或营运变动当成零；新税费/研发字段的零同样保守拒绝。
-				WHEN primary_source='tdx' AND provider_field IN ('FN99','FN104','FN136','FN137','FN138','FN146','FN147','FN148','FN304','FN581') AND value=0 THEN 'provider_zero_ambiguous'
+				-- TDX 部分源零无法区分未披露与真实零；已识别现金流缺口及新批次字段统一保守拒绝。
+				WHEN primary_source='tdx' AND provider_field IN ('FN19','FN20','FN27','FN28','FN33','FN37','FN50','FN53','FN60','FN95','FN96','FN97','FN99','FN104','FN136','FN137','FN138','FN146','FN147','FN148','FN304','FN581') AND value=0 THEN 'provider_zero_ambiguous'
 				WHEN period_basis NOT IN ('report','instant','ytd') OR period_basis IS NULL THEN 'canonical_period_unknown'
 				WHEN value_kind NOT IN ('monetary','shares') OR unit IS NULL OR trim(unit)='' THEN 'canonical_unit_unknown'
 				WHEN try_cast(value AS DECIMAL(38,10)) IS NULL THEN 'canonical_decimal_overflow'

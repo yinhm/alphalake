@@ -193,7 +193,7 @@ func TestRealFinancialWorkflow(t *testing.T) {
 	count("SELECT count(*) FROM fundamental.provider_fact WHERE announcement_time IS NULL", 3504)
 	materialized, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if materialized.Inserted != 305 || materialized.Linked != 6 || materialized.Rejected != 1 || materialized.LinkPending != 0 || materialized.LinkAmbiguous != 0 {
+	if materialized.Inserted != 372 || materialized.Linked != 6 || materialized.Rejected != 6 || materialized.LinkPending != 0 || materialized.LinkAmbiguous != 0 {
 		t.Fatalf("materialization coverage: %+v", materialized)
 	}
 	for _, row := range annualReportValues(t) {
@@ -210,16 +210,16 @@ func TestRealFinancialWorkflow(t *testing.T) {
 	}
 	count("SELECT count(*) FROM fundamental.fact WHERE source_provider_field<>'FN238' AND period_type='Q4' AND unit='CNY'", 48)
 	count("SELECT count(*) FROM fundamental.fact WHERE source_provider_field='FN238' AND period_type='FY' AND unit='share'", 6)
-	count("SELECT count(*) FROM fundamental.fact WHERE period_type='instant' AND unit='CNY'", 132)
-	count("SELECT count(*) FROM fundamental.fact WHERE period_type='FY' AND unit='CNY'", 119)
+	count("SELECT count(*) FROM fundamental.fact WHERE period_type='instant' AND unit='CNY'", 182)
+	count("SELECT count(*) FROM fundamental.fact WHERE period_type='FY' AND unit='CNY'", 136)
 	count("SELECT count(*) FROM fundamental.fact WHERE provider_code='603659' AND canonical_field='bonds_payable' AND period_type='instant' AND value=199443184 AND unit='CNY'", 1)
 	count("SELECT count(*) FROM fundamental.fact_asof(TIMESTAMPTZ '2026-03-06 15:59:59+00')", 0)
-	count("SELECT count(*) FROM fundamental.fact_asof(TIMESTAMPTZ '2026-03-06 16:00:00+00')", 305)
+	count("SELECT count(*) FROM fundamental.fact_asof(TIMESTAMPTZ '2026-03-06 16:00:00+00')", 372)
 	again, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if again.Inserted != 0 || again.Updated != 0 || again.Removed != 0 || again.Rejected != 1 {
+	if again.Inserted != 0 || again.Updated != 0 || again.Removed != 0 || again.Rejected != 6 {
 		t.Fatalf("non-idempotent materialization: %+v", again)
 	}
-	count("SELECT count(*) FROM fundamental.fact", 305)
+	count("SELECT count(*) FROM fundamental.fact", 372)
 	t.Logf("真实样本验收通过：公告=12，目录页=3，正文=%d，源事实=3504，标准事实=305，独立金额=16；失败恢复、幂等及 PIT 边界通过", len(documents))
 }

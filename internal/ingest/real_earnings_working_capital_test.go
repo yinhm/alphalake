@@ -20,6 +20,10 @@ func TestRealCashRDValues(t *testing.T) {
 	assertRealMappedFields(t, "testdata/cash-rd-2026", 33, 6)
 }
 
+func TestRealBalanceProfitValues(t *testing.T) {
+	assertRealMappedFields(t, "testdata/balance-profit-2026", 41, 12)
+}
+
 func assertRealMappedFields(t *testing.T, dir string, count, fieldCount int) {
 	t.Helper()
 	rows, err := csv.NewReader(bytes.NewReader(readFinancialSample(t, dir, "values.csv"))).ReadAll()

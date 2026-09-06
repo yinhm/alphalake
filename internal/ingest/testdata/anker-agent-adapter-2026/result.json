@@ -15,10 +15,10 @@
     "adjustments": "RD expensed; leases already accounted; no repeated capitalization"
   },
   "source_sha256": {
-    "facts.csv": "415f942150341d3a38bc18ff17b06666ea506ed430b7c21d7c66a940eeffbdaa",
-    "windows.csv": "5a19f02046b00dc9e8dc96aaf809e328a428325848a0ad7feaf7a1e2c2bba3aa",
-    "inputs.csv": "c97736cbf612ddcda191ef50e876575bbd17e5a29df8ee4b1fbdbd62e94c2bcd",
-    "input-audit.csv": "07b3b9b7b70c416d8db9e7a91b929375b3f5b254c55e554ce1a0400a3175dcc4"
+    "facts.csv": "72360a9802b1bb0f2200377ec95f76032822c704c35e48c28f8350bdacd4ca5e",
+    "windows.csv": "340cdfb356cbda456763f84fc658c3f8872d6caf353040c600b73b1fa7e6950c",
+    "inputs.csv": "eed015e9de60d58b1fd4d0473fc1d8d0ceb44766cbb28f95e67ccd41c5a8a6f0",
+    "input-audit.csv": "982a8a703865647e6948e7d3e5ac070788e9db3ec962eb2f3810a39548b3e70d"
   },
   "prepared_base": {
     "fiscal_year": 2026,

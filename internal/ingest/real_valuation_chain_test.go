@@ -34,8 +34,8 @@ func TestRealValuationStandardChain(t *testing.T) {
 	db, err := duckstore.OpenAndMigrate(ctx, dbPath)
 	check(err)
 	defer db.Close()
-	// 023 只新增映射；构造 v22 状态后实际导入全部真实源记录。
-	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field IN ('FN99','FN104','FN146','FN147','FN148','FN304'); DELETE FROM meta.schema_version WHERE version=23`)
+	// 024 只新增映射；构造 v23 状态后实际导入全部真实源记录。
+	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field IN ('FN19','FN20','FN27','FN28','FN33','FN37','FN50','FN53','FN60','FN95','FN96','FN97'); DELETE FROM meta.schema_version WHERE version=24`)
 	check(err)
 	root := filepath.Join(t.TempDir(), "raw")
 	var instruments []domain.InstrumentObservation
@@ -112,14 +112,14 @@ func TestRealValuationStandardChain(t *testing.T) {
 		rows.Close()
 		t.Fatalf("links: %+v", result)
 	}
-	if result.Inserted != 516 {
-		t.Fatalf("v22 baseline %+v", result)
+	if result.Inserted != 564 {
+		t.Fatalf("v23 baseline %+v", result)
 	}
 	check(duckstore.Apply(ctx, db))
 	upgraded, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if upgraded.Inserted != 48 || upgraded.Updated != 0 || upgraded.Removed != 0 {
-		t.Fatalf("v22 to v23 replay %+v", upgraded)
+	if upgraded.Inserted != 135 || upgraded.Updated != 0 || upgraded.Removed != 0 {
+		t.Fatalf("v23 to v24 replay %+v", upgraded)
 	}
 	check(db.Close())
 	db, err = duckstore.OpenAndMigrate(ctx, dbPath)
@@ -136,6 +136,12 @@ func TestRealValuationStandardChain(t *testing.T) {
 		t.Fatal("cash/RD evidence count")
 	}
 	evidence = append(evidence, cashEvidence[1:]...)
+	balanceEvidence, err := csv.NewReader(bytes.NewReader(readFinancialSample(t, "testdata/balance-profit-2026", "values.csv"))).ReadAll()
+	check(err)
+	if len(balanceEvidence) != 42 {
+		t.Fatal("balance/profit evidence count")
+	}
+	evidence = append(evidence, balanceEvidence[1:]...)
 	for _, row := range evidence[1:] {
 		want, err := strconv.ParseFloat(row[5], 32)
 		check(err)
@@ -221,6 +227,25 @@ func TestRealValuationStandardChain(t *testing.T) {
 	check(err)
 	if restoredCash.Inserted != 48 {
 		t.Fatalf("cash/RD recovery %+v", restoredCash)
+	}
+	// 新批次缺失余额不得补零；累计利润与单季度字段分别保留。
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE provider_code='300866' AND (source_provider_field='FN19' OR (source_provider_field='FN28' AND report_period IN (DATE '2025-09-30',DATE '2026-03-31',DATE '2026-06-30')))`).Scan(&missingZeros))
+	if missingZeros != 0 {
+		t.Fatal("ambiguous balance zeros became facts")
+	}
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE source='tdx' AND provider_field IN ('FN19','FN20','FN27','FN28','FN33','FN37','FN50','FN53','FN60','FN95','FN96','FN97')`)
+	check(err)
+	rejectedBalance, err := MaterializeProviderFundamentals(ctx, db, "tdx")
+	check(err)
+	if rejectedBalance.Removed != 135 {
+		t.Fatalf("balance/profit invalidation %+v", rejectedBalance)
+	}
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=1 WHERE source='tdx' AND provider_field IN ('FN19','FN20','FN27','FN28','FN33','FN37','FN50','FN53','FN60','FN95','FN96','FN97')`)
+	check(err)
+	restoredBalance, err := MaterializeProviderFundamentals(ctx, db, "tdx")
+	check(err)
+	if restoredBalance.Inserted != 135 {
+		t.Fatalf("balance/profit recovery %+v", restoredBalance)
 	}
 	// 修改映射依据后必须撤销标准值，不能回退 PDF；恢复后从源证据重建。
 	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE provider_field IN ('FN12','FN13','FN46','FN47','FN82','FN83','FN301') AND source='tdx'`)
