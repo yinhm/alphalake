@@ -31,6 +31,7 @@ func TestMigrationOrder(t *testing.T) {
 		"017_filing_announcement_precision.sql",
 		"018_core_financial_fields.sql",
 		"019_tax_and_debt_fields.sql",
+		"020_financial_windows.sql",
 	}
 	if len(migrations) != len(want) {
 		t.Fatalf("got %v", migrations)

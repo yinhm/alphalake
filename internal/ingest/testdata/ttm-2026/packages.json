@@ -1,0 +1,20 @@
+[
+  {
+    "file": "gpcw20260331.zip",
+    "url": "http://down.tdx.com.cn:8001/tdxfin/gpcw20260331.zip",
+    "sha256": "0439de4c4ceb7ceff15fe1d6504cb03c242856c64889df1ca07aa6e482897025",
+    "size": 5135019,
+    "fetched_at": "2026-09-06T01:49:33.346816+00:00",
+    "md5": "703d55bea3cfca8031d9626d0c17a517",
+    "sample_sha256": "19f8084e39c1772f0b2d05ab55bc947b4e3e3a9564e8c4006003b1c18a1226dc"
+  },
+  {
+    "file": "gpcw20260630.zip",
+    "url": "http://down.tdx.com.cn:8001/tdxfin/gpcw20260630.zip",
+    "sha256": "64c620f92b866ea549364a0721c809a64ff67f3d1fb527dac6b8570908e482d3",
+    "size": 5740204,
+    "fetched_at": "2026-09-06T01:49:29.665973+00:00",
+    "md5": "29c07fefe1f3d4edfbcbfb725a03e337",
+    "sample_sha256": "1439b36d68a58af87579065657ba5dd89bf715706db33becc8e08a92086e2567"
+  }
+]
