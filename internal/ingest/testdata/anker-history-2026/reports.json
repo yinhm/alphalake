@@ -48,5 +48,17 @@
     "sha256": "eb15b497586debf3112300df1038da022b96977908336c1ca7c26f04c26a77fe",
     "size": 5232,
     "fetched_at": "2026-09-06T02:25:37.657006+00:00"
+  },
+  "1216460035": {
+    "file": "1216460035.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2023-04-19/1216460035.PDF",
+    "sha256": "20ed99d2548c09dd1342af21e5774290210863dfd7f2c3bf6fbc4a0de0e93719",
+    "size": 3864282,
+    "fetched_at": "2026-09-06T06:06:51.679416+00:00",
+    "years": [
+      2022,
+      2021
+    ],
+    "catalogue": "catalogue"
   }
 }

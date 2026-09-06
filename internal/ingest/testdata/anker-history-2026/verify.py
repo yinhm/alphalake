@@ -50,6 +50,30 @@ def main(write=False):
         assert int(r['year']) == reports[r['pdf_id']]['years'][int(r['column'])]
         assert r['id'] == r['year']+'/'+r['key']
         values[int(r['year']),r['key']] = amount
+    # 2022 原报告只补资本开支背景，不替换六年表的比较列版本。
+    capex = {}
+    evidence = json.loads((ROOT/'capex-evidence.json').read_text())
+    assert len(evidence) == 5
+    for r in evidence:
+        assert r['pdf_id'] == '1216460035'
+        page = texts[r['pdf_id']].split(f"=== 页 {r['pdf_page']} ===\n",1)[1].split('=== 页 ',1)[0]
+        assert page.count(r['quote']) == 1,r
+        tokens = re.findall(r'-?[\d,]+\.\d{2}(?!\d)',r['quote'])
+        for c in r['cells']:
+            assert c['key'] not in capex and c['multiplier'] in ('1','10000')
+            amount = D(tokens[c['token']].replace(',',''))*D(c['multiplier'])
+            assert amount == D(c['value']),c
+            capex[c['key']] = amount
+    assert len(capex) == 7
+    assert capex['cash_capex_2022'] == values[2022,'cash_capex']
+    assert capex['cash_capex_2021'] == values[2021,'cash_capex']
+    prepaid_change = capex['prepaid_longlived_2022']-capex['prepaid_longlived_2021']
+    capex_review = [dict(year=2022,**{k:f'{v:.2f}' for k,v in capex.items()},
+        prepaid_longlived_change=f'{prepaid_change:.2f}',
+        cash_capex_less_prepaid_change=f"{capex['cash_capex_2022']-prepaid_change:.2f}",
+        property_cash_paid='',maintenance_capex='',unit='CNY',
+        status='property_project_documented_cash_split_unresolved',
+        policy='prepayment movement is not cash payment; residual is not maintenance capex',as_of=AS_OF)]
     output = []
     for year in range(2020,2026):
         v = {k:amount for (y,k),amount in values.items() if y==year}
@@ -96,7 +120,7 @@ def main(write=False):
         subtotal = nopat-adjusted_investment
         assert subtotal == D(r['subtotal_before_wc_and_other_adjustments'])
         scenarios.append(dict(year=2025,life_years=5,assumed_tax_rate=r['assumed_tax_rate'],opening_research_asset=f'{opening:.6f}',closing_research_asset=f'{closing:.6f}',research_amortization=f'{amortization:.6f}',ebit_and_reinvestment_adjustment=f'{delta:.6f}',adjusted_ebit=f'{base_ebit+delta:.6f}',unchanged_modelled_tax=f'{tax:.6f}',adjusted_nopat=f'{nopat:.6f}',adjusted_identified_net_investment=f'{adjusted_investment:.6f}',subtotal_before_wc_and_other_adjustments=f'{subtotal:.6f}',fcff='',unit='CNY',status='illustrative_reclassification_tax_unchanged_not_fcff',policy='five-year straight-line from following year; base model tax unchanged; no additional R&D tax benefit or OCI adjustment',as_of=AS_OF))
-    for name,data in [('annual-inputs',output),('rd-cohorts',cohorts),('rd-capitalization',scenarios)]:
+    for name,data in [('annual-inputs',output),('rd-cohorts',cohorts),('rd-capitalization',scenarios),('capex-review',capex_review)]:
         out = io.StringIO()
         writer = csv.DictWriter(out,fieldnames=data[0],lineterminator='\n')
         writer.writeheader()
@@ -106,7 +130,7 @@ def main(write=False):
             path.write_text(out.getvalue())
         else:
             assert path.read_text()==out.getvalue(),name+'.csv differs; review before --write'
-    print('通过：三份年报、180 个原文金额、六年历史及五年研发资本化/税项不变情景。')
+    print('通过：四份年报、180 个历史金额及 7 个资本开支证据金额、六年历史及五年研发资本化/税项不变情景。')
 
 
 

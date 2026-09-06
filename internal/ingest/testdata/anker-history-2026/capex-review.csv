@@ -1,0 +1,2 @@
+year,cash_capex_2022,cash_capex_2021,prepaid_longlived_2022,prepaid_longlived_2021,property_contract_vat_inclusive,capital_commitment_2022,capital_commitment_2021,prepaid_longlived_change,cash_capex_less_prepaid_change,property_cash_paid,maintenance_capex,unit,status,policy,as_of
+2022,1144162340.55,207129494.05,1233989842.32,162519806.58,1541942500.00,308388500.00,1377000000.00,1071470035.74,72692304.81,,,CNY,property_project_documented_cash_split_unresolved,prepayment movement is not cash payment; residual is not maintenance capex,2026-09-06T00:00:00+00:00
