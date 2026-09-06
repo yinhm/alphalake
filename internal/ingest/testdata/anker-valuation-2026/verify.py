@@ -47,7 +47,7 @@ def main(write=False):
         assert available <= datetime.fromisoformat(AS_OF), id
     with (ROOT / 'reported.csv').open() as f:
         rows = list(csv.DictReader(f))
-    assert len(rows) == 496 and len({r['id'] for r in rows}) == len(rows)
+    assert len(rows) == 564 and len({r['id'] for r in rows}) == len(rows)
     values = {}
     cf_comparatives = {}
     for r in rows:
@@ -268,7 +268,40 @@ def main(write=False):
                       'income_tax_payable_change': (v(p,'income_tax_payable')-v(opening,'income_tax_payable'), p+'/income_tax_payable-'+opening+'/income_tax_payable', 'candidate_not_attributed_to_gap')}
         for key,(amount,formula,status) in components.items():
             emit('wc-components', p, key, amount, formula, status)
-    for table in ['tax-bridge','lease-reinvestment','wc-components']:
+        # 应收侧余额全量分解；准备余额变动不冒充现金流差额的经济归因。
+        balances = {}
+        for date in (opening, p):
+            for prefix, net_key in [('ar', 'receivables'), ('other', 'rec_other_net')]:
+                assert v(date,'rec_'+prefix+'_gross')-v(date,'rec_'+prefix+'_allowance') == v(date,net_key)
+            assert v(date,'rec_ar_net') == v(date,'receivables')
+            assert total(date,'rec_other_net rec_dividend') == v(date,'other_receivables')
+            assert v(date,'rec_hedge_asset') == v(date,'derivative_assets')
+            fixed = D(0) if date=='2026-06-30' else v(date,'fixed_notes')
+            balances[date] = {k:v(date,k) for k in ['receivables','prepayments','other_receivables','trading_forward_asset','derivative_assets']}
+            balances[date]['other_current_assets_ex_deposits_notes'] = v(date,'other_current_assets')-v(date,'deposits')-fixed
+            assert sum(balances[date].values(), D(0)) == receivable_balance(date)
+        for key in balances[p]:
+            emit('receivables-bridge', p, key+'_change', balances[p][key]-balances[opening][key], f'{p}/{key}-{opening}/{key}', 'balance_component_not_cashflow_attribution')
+        provision = D(0)
+        allowance_change = D(0)
+        for prefix in ['ar','other']:
+            r = lambda key: v(p,'rec_'+prefix+'_'+key)
+            assert r('open') == v(opening,'rec_'+prefix+'_allowance')
+            assert r('close') == r('allowance')
+            assert r('open')+r('charge')-r('recovery')-r('writeoff')+r('fx') == r('close')
+            provision += r('charge')-r('recovery')
+            allowance_change += r('close')-r('open')
+            for key in ['charge','recovery','writeoff','fx']:
+                emit('receivables-bridge', p, prefix+'_'+key, r(key), p+'/rec_'+prefix+'_'+key, 'disclosed_allowance_movement')
+        assert provision == v(p,'cf_credit_impairment') == -v(p,'credit_impairment')
+        forward_change = total(p,'trading_forward_asset derivative_assets')-total(opening,'trading_forward_asset derivative_assets')
+        ex_forward_gap = rec_gap+forward_change
+        emit('receivables-bridge', p, 'receivable_allowance_change', allowance_change, 'sum(ar and other allowance close-open)', 'verified_net_gross_difference_not_cashflow_attribution')
+        emit('receivables-bridge', p, 'net_credit_impairment', provision, 'ar_charge-ar_recovery+other_charge-other_recovery=cf_credit_impairment', 'statement_reconciled')
+        emit('receivables-bridge', p, 'forward_asset_change', forward_change, 'trading_forward_asset_change+derivative_assets_change', 'balance_component_not_cashflow_attribution')
+        emit('receivables-bridge', p, 'gap_excluding_forward_assets', ex_forward_gap, 'receivable_scope_gap+forward_asset_change', 'sensitivity_not_attributed_or_base_policy')
+        emit('receivables-bridge', p, 'gap_excluding_forward_assets_gross_receivables', ex_forward_gap-allowance_change, 'gap_excluding_forward_assets-receivable_allowance_change', 'sensitivity_not_attributed_or_base_policy')
+    for table in ['tax-bridge','lease-reinvestment','wc-components','receivables-bridge']:
         keys = list(dict.fromkeys(r['item'] for r in results[table]))
         for key in keys:
             group = {r['period']:r for r in results[table] if r['item']==key}
@@ -283,7 +316,7 @@ def main(write=False):
             path.write_text(expected)
         else:
             assert path.read_text() == expected, f'{path.name}: run --write only after reviewing input/policy changes'
-    print(f'通过：{len(rows)} 个 PDF 金额、84 个源字段位比较、报表/债务恒等式及八张 Decimal 输入表。')
+    print(f'通过：{len(rows)} 个 PDF 金额、84 个源字段位比较、报表/债务恒等式及九张 Decimal 输入表。')
     for name in results:
         for r in results[name]:
             if r['item'] in ('ebit_financing_and_investment_adjusted', 'interest_bearing_debt_book_value', 'noncash_nondebt_wc_broad', 'wc_after_identified_exclusions', 'change_in_broad_wc'):
@@ -292,5 +325,5 @@ def main(write=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--write', action='store_true', help='验收通过后重建三张 CSV；默认只核对')
+    parser.add_argument('--write', action='store_true', help='验收通过后重建分析 CSV；默认只核对')
     main(parser.parse_args().write)
