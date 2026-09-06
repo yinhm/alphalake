@@ -29,6 +29,7 @@ func TestMigrationOrder(t *testing.T) {
 		"015_canonical_fundamental_fact.sql",
 		"016_filing_link_lineage.sql",
 		"017_filing_announcement_precision.sql",
+		"018_core_financial_fields.sql",
 	}
 	if len(migrations) != len(want) {
 		t.Fatalf("got %v", migrations)
@@ -72,6 +73,41 @@ func TestApplyRecordsEachMigrationOnce(t *testing.T) {
 	}
 	if version != len(migrations) {
 		t.Fatalf("CurrentSchemaVersion() = %d, want %d", version, len(migrations))
+	}
+}
+
+func TestCoreFinancialMigrationFromV17(t *testing.T) {
+	ctx := t.Context()
+	db, err := Open(ctx, filepath.Join(t.TempDir(), "upgrade.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	migrations, err := Migrations()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, m := range migrations[:17] {
+		if err := applyMigration(ctx, db, m); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for range 2 {
+		if err := Apply(ctx, db); err != nil {
+			t.Fatal(err)
+		}
+		var existing, instant, ytd, historical int
+		if err := db.QueryRowContext(ctx, `SELECT
+			count(*) FILTER (WHERE period_basis='report'),
+			count(*) FILTER (WHERE period_basis='instant'),
+			count(*) FILTER (WHERE period_basis='ytd'),
+			count(*) FILTER (WHERE valid_from < DATE '2025-01-01')
+			FROM fundamental.provider_field WHERE source='tdx'`).Scan(&existing, &instant, &ytd, &historical); err != nil {
+			t.Fatal(err)
+		}
+		if existing != 9 || instant != 16 || ytd != 4 || historical != 9 {
+			t.Fatalf("mapping upgrade: existing=%d instant=%d ytd=%d historical=%d", existing, instant, ytd, historical)
+		}
 	}
 }
 

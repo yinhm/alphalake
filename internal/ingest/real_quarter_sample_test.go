@@ -144,14 +144,18 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 	check(duckstore.FinishIngestRun(ctx, db, runID, duckstore.IngestRunCompleted, nil, nil))
 	result, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if result.FilingResolutionRecovered != 8 || result.FilingResolutionPending != 0 || result.Linked != 6 || result.Inserted != 54 || result.Rejected != 0 || result.LinkPending != 0 || result.LinkAmbiguous != 0 {
+	if result.FilingResolutionRecovered != 8 || result.FilingResolutionPending != 0 || result.Linked != 6 || result.Inserted != 162 || result.Rejected != 12 || result.LinkPending != 0 || result.LinkAmbiguous != 0 {
 		t.Fatalf("quarter materialization: %+v", result)
 	}
 	values := financialSampleValues(t, quarterSampleDir, "values.csv", 24)
 	cumulative := financialSampleValues(t, quarterSampleDir, "cumulative.csv", 24)
-	for i, row := range values {
-		// Original quarter/half-year disclosures define PIT, not the later annual cross-check.
-		originalURL := cumulative[i][7]
+	// 单季度值来自年报交叉核对；PIT 仍以同期原始公告为准。
+	for i := range values {
+		values[i][7] = cumulative[i][7]
+	}
+	values = append(values, financialSampleValues(t, "testdata/core-financial-2025", "values.csv", 35)...)
+	for _, row := range values {
+		originalURL := row[7]
 		disclosed, err := time.Parse("2006-01-02", strings.Split(originalURL, "/")[4])
 		check(err)
 		available := disclosed.Add(16 * time.Hour) // China calendar next-day midnight.
@@ -178,10 +182,17 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 			t.Fatalf("quarter ASOF value=%v, want %v", value, want)
 		}
 	}
+	var missingDepreciation, zeroDiagnostics int
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact
+		WHERE source_provider_field IN ('FN136','FN137','FN138') AND report_period=DATE '2025-09-30'`).Scan(&missingDepreciation))
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM meta.validation_result WHERE rule_code='provider_zero_ambiguous'`).Scan(&zeroDiagnostics))
+	if missingDepreciation != 0 || zeroDiagnostics != 12 {
+		t.Fatalf("missing depreciation materialized=%d diagnostics=%d", missingDepreciation, zeroDiagnostics)
+	}
 	replay, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 || replay.Rejected != 0 || replay.Materialized != 54 {
+	if replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 || replay.Rejected != 12 || replay.Materialized != 162 {
 		t.Fatalf("quarter materialization replay: %+v", replay)
 	}
-	t.Log("Q1/Q2/Q3：24 个金额、六个原始公告关联及各自 PIT 边界通过；54 条标准事实重放无变更")
+	t.Log("Q1/Q2/Q3：24 个金额、六个原始公告关联及各自 PIT 边界通过；162 条标准事实重放无变更")
 }
