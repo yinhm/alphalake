@@ -1,0 +1,90 @@
+{
+  "1212755849": {
+    "file": "1212755849.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2022-03-31/1212755849.PDF",
+    "sha256": "f65effdde58bcea99fd6bdb53f61b31d5c432e6dfb2661e5caf05156a433ea5a",
+    "size": 3350320,
+    "fetched_at": "2026-09-06T07:41:42.028503+00:00",
+    "catalogue": "catalogue",
+    "title": "贵州茅台2021年年度报告"
+  },
+  "1219506510": {
+    "file": "1219506510.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2024-04-03/1219506510.PDF",
+    "sha256": "2125ff97a452ea79b0d784e2432f7d224b6aecc330b644b593477d69e22f4ed1",
+    "size": 3563819,
+    "fetched_at": "2026-09-06T07:41:40.432724+00:00",
+    "catalogue": "catalogue",
+    "title": "贵州茅台2023年年度报告"
+  },
+  "1225114741": {
+    "file": "1225114741.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-04-17/1225114741.PDF",
+    "sha256": "474905deeaf0f875fc0a1b097a626c0c7852c427faadc5d7fc7816cbf45ea288",
+    "size": 1082847,
+    "fetched_at": "2026-09-06T07:41:12.373812+00:00",
+    "catalogue": "catalogue",
+    "title": "贵州茅台2025年年度报告"
+  },
+  "1224462930": {
+    "file": "1224462930.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2025-08-13/1224462930.PDF",
+    "sha256": "c80fb7180169469053c396e65315414368bcfa9f1f1d4e3bf793c8fb327e6b0c",
+    "size": 805855,
+    "fetched_at": "2026-09-06T07:41:44.050626+00:00",
+    "catalogue": "catalogue",
+    "title": "贵州茅台2025年半年度报告"
+  },
+  "1225475868": {
+    "file": "1225475868.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-08-15/1225475868.PDF",
+    "sha256": "0e10aa26be46b1cf3cd03f06e834c7fb98d5dd0d661b96f8fddd4af7e846a4f6",
+    "size": 832321,
+    "fetched_at": "2026-09-06T07:41:19.911525+00:00",
+    "catalogue": "catalogue",
+    "title": "贵州茅台2026年半年度报告"
+  },
+  "1224462928": {
+    "file": "1224462928.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2025-08-13/1224462928.PDF",
+    "sha256": "5d32e0aa02a47f2178cc973b278177d337f472eaacd46ae2807ed5b6b44ef297",
+    "size": 130220,
+    "fetched_at": "2026-09-06T07:43:30.679963+00:00",
+    "catalogue": "finance-catalogue",
+    "title": "贵州茅台关于贵州茅台集团财务有限公司的风险评估报告"
+  },
+  "1225114745": {
+    "file": "1225114745.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-04-17/1225114745.PDF",
+    "sha256": "0225fe2f8dc67e8cdf751bcbb69239e831a0ceeb3c2c5c3ab9f5d74a3ba5dd09",
+    "size": 133160,
+    "fetched_at": "2026-09-06T07:43:30.831803+00:00",
+    "catalogue": "finance-catalogue",
+    "title": "贵州茅台关于贵州茅台集团财务有限公司的风险评估报告"
+  },
+  "1225475863": {
+    "file": "1225475863.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-08-15/1225475863.PDF",
+    "sha256": "cf2d50aa028fcf11ce9eb04746932b7a9be25c3e31d443295f77add844b1121b",
+    "size": 136379,
+    "fetched_at": "2026-09-06T07:43:31.557299+00:00",
+    "catalogue": "finance-catalogue",
+    "title": "贵州茅台关于贵州茅台集团财务有限公司的风险评估报告"
+  },
+  "catalogue": {
+    "file": "catalogue.json",
+    "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query",
+    "sha256": "2624abdf3b315213bccb9c920cc7869f550f244c6c3ecfad531953a1d7d048ff",
+    "size": 16057,
+    "fetched_at": "2026-09-06T07:41:12.153575+00:00",
+    "catalogue": "catalogue"
+  },
+  "finance-catalogue": {
+    "file": "finance-catalogue.json",
+    "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query",
+    "sha256": "84c9b4605b9117a7632faee0effbafe3af2f73023a6d13aa941c5bf61f0a676e",
+    "size": 4608,
+    "fetched_at": "2026-09-06T07:42:43.116315+00:00",
+    "catalogue": "catalogue"
+  }
+}

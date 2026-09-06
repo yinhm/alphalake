@@ -1,0 +1,5570 @@
+[
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "一、营业总收入 172,054,171,890.91 174,144,069,958.25",
+    "cells": [
+      {
+        "id": "FY2025/revenue_total",
+        "token": 0,
+        "printed": "172,054,171,890.91",
+        "multiplier": "1",
+        "value": "172054171890.91"
+      },
+      {
+        "id": "FY2024/revenue_total",
+        "token": 1,
+        "printed": "174,144,069,958.25",
+        "multiplier": "1",
+        "value": "174144069958.25"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "其中：营业收入 44 168,838,102,514.79 170,899,152,276.34",
+    "cells": [
+      {
+        "id": "FY2025/revenue",
+        "token": 0,
+        "printed": "168,838,102,514.79",
+        "multiplier": "1",
+        "value": "168838102514.79"
+      },
+      {
+        "id": "FY2024/revenue",
+        "token": 1,
+        "printed": "170,899,152,276.34",
+        "multiplier": "1",
+        "value": "170899152276.34"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "一、营业总收入",
+    "end_section": "二、营业总成本",
+    "quote": "利息收入 45 3,216,069,376.12 3,244,917,681.91",
+    "cells": [
+      {
+        "id": "FY2025/financial_interest_income",
+        "token": 0,
+        "printed": "3,216,069,376.12",
+        "multiplier": "1",
+        "value": "3216069376.12"
+      },
+      {
+        "id": "FY2024/financial_interest_income",
+        "token": 1,
+        "printed": "3,244,917,681.91",
+        "multiplier": "1",
+        "value": "3244917681.91"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "二、营业总成本 57,370,818,034.33 54,523,971,452.57",
+    "cells": [
+      {
+        "id": "FY2025/cost_total",
+        "token": 0,
+        "printed": "57,370,818,034.33",
+        "multiplier": "1",
+        "value": "57370818034.33"
+      },
+      {
+        "id": "FY2024/cost_total",
+        "token": 1,
+        "printed": "54,523,971,452.57",
+        "multiplier": "1",
+        "value": "54523971452.57"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "其中：营业成本 44 14,892,277,570.91 13,789,482,367.98",
+    "cells": [
+      {
+        "id": "FY2025/cogs",
+        "token": 0,
+        "printed": "14,892,277,570.91",
+        "multiplier": "1",
+        "value": "14892277570.91"
+      },
+      {
+        "id": "FY2024/cogs",
+        "token": 1,
+        "printed": "13,789,482,367.98",
+        "multiplier": "1",
+        "value": "13789482367.98"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "利息支出 45 175,775,959.12 105,127,802.03",
+    "cells": [
+      {
+        "id": "FY2025/financial_interest_expense",
+        "token": 0,
+        "printed": "175,775,959.12",
+        "multiplier": "1",
+        "value": "175775959.12"
+      },
+      {
+        "id": "FY2024/financial_interest_expense",
+        "token": 1,
+        "printed": "105,127,802.03",
+        "multiplier": "1",
+        "value": "105127802.03"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "手续费及佣金支出 45 103,597.22 94,078.17",
+    "cells": [
+      {
+        "id": "FY2025/financial_fees",
+        "token": 0,
+        "printed": "103,597.22",
+        "multiplier": "1",
+        "value": "103597.22"
+      },
+      {
+        "id": "FY2024/financial_fees",
+        "token": 1,
+        "printed": "94,078.17",
+        "multiplier": "1",
+        "value": "94078.17"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "税金及附加 46 27,354,227,684.88 26,926,161,474.99",
+    "cells": [
+      {
+        "id": "FY2025/tax_surcharges",
+        "token": 0,
+        "printed": "27,354,227,684.88",
+        "multiplier": "1",
+        "value": "27354227684.88"
+      },
+      {
+        "id": "FY2024/tax_surcharges",
+        "token": 1,
+        "printed": "26,926,161,474.99",
+        "multiplier": "1",
+        "value": "26926161474.99"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "销售费用 47 7,253,499,600.68 5,639,300,059.49",
+    "cells": [
+      {
+        "id": "FY2025/selling",
+        "token": 0,
+        "printed": "7,253,499,600.68",
+        "multiplier": "1",
+        "value": "7253499600.68"
+      },
+      {
+        "id": "FY2024/selling",
+        "token": 1,
+        "printed": "5,639,300,059.49",
+        "multiplier": "1",
+        "value": "5639300059.49"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "管理费用 48 8,320,061,659.66 9,315,650,060.38",
+    "cells": [
+      {
+        "id": "FY2025/admin",
+        "token": 0,
+        "printed": "8,320,061,659.66",
+        "multiplier": "1",
+        "value": "8320061659.66"
+      },
+      {
+        "id": "FY2024/admin",
+        "token": 1,
+        "printed": "9,315,650,060.38",
+        "multiplier": "1",
+        "value": "9315650060.38"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "研发费用 49 190,112,246.58 218,375,472.87",
+    "cells": [
+      {
+        "id": "FY2025/rd",
+        "token": 0,
+        "printed": "190,112,246.58",
+        "multiplier": "1",
+        "value": "190112246.58"
+      },
+      {
+        "id": "FY2024/rd",
+        "token": 1,
+        "printed": "218,375,472.87",
+        "multiplier": "1",
+        "value": "218375472.87"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "财务费用 50 -815,240,284.72 -1,470,219,863.34",
+    "cells": [
+      {
+        "id": "FY2025/finance_cost",
+        "token": 0,
+        "printed": "-815,240,284.72",
+        "multiplier": "1",
+        "value": "-815240284.72"
+      },
+      {
+        "id": "FY2024/finance_cost",
+        "token": 1,
+        "printed": "-1,470,219,863.34",
+        "multiplier": "1",
+        "value": "-1470219863.34"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "其中：利息费用 28,734,948.29 14,474,584.09",
+    "cells": [
+      {
+        "id": "FY2025/borrowing_interest",
+        "token": 0,
+        "printed": "28,734,948.29",
+        "multiplier": "1",
+        "value": "28734948.29"
+      },
+      {
+        "id": "FY2024/borrowing_interest",
+        "token": 1,
+        "printed": "14,474,584.09",
+        "multiplier": "1",
+        "value": "14474584.09"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "其中：利息费用",
+    "end_section": "加：其他收益",
+    "quote": "利息收入 842,988,240.60 1,476,991,223.18",
+    "cells": [
+      {
+        "id": "FY2025/treasury_interest",
+        "token": 0,
+        "printed": "842,988,240.60",
+        "multiplier": "1",
+        "value": "842988240.60"
+      },
+      {
+        "id": "FY2024/treasury_interest",
+        "token": 1,
+        "printed": "1,476,991,223.18",
+        "multiplier": "1",
+        "value": "1476991223.18"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "加：其他收益 51 28,531,529.30 21,229,466.81",
+    "cells": [
+      {
+        "id": "FY2025/other_income",
+        "token": 0,
+        "printed": "28,531,529.30",
+        "multiplier": "1",
+        "value": "28531529.30"
+      },
+      {
+        "id": "FY2024/other_income",
+        "token": 1,
+        "printed": "21,229,466.81",
+        "multiplier": "1",
+        "value": "21229466.81"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "投资收益（损失以“－”号填\n列） 52 561,176.14 9,130,340.37",
+    "cells": [
+      {
+        "id": "FY2025/investment_income",
+        "token": 0,
+        "printed": "561,176.14",
+        "multiplier": "1",
+        "value": "561176.14"
+      },
+      {
+        "id": "FY2024/investment_income",
+        "token": 1,
+        "printed": "9,130,340.37",
+        "multiplier": "1",
+        "value": "9130340.37"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "公允价值变动收益（损失以\n“－”号填列） 53 76,162,597.66 60,980,724.35",
+    "cells": [
+      {
+        "id": "FY2025/fair_value_income",
+        "token": 0,
+        "printed": "76,162,597.66",
+        "multiplier": "1",
+        "value": "76162597.66"
+      },
+      {
+        "id": "FY2024/fair_value_income",
+        "token": 1,
+        "printed": "60,980,724.35",
+        "multiplier": "1",
+        "value": "60980724.35"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 61,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "信用减值损失（损失以“-” 54 17,234,379.37 -23,248,436.03",
+    "cells": [
+      {
+        "id": "FY2025/credit_impairment",
+        "token": 0,
+        "printed": "17,234,379.37",
+        "multiplier": "1",
+        "value": "17234379.37"
+      },
+      {
+        "id": "FY2024/credit_impairment",
+        "token": 1,
+        "printed": "-23,248,436.03",
+        "multiplier": "1",
+        "value": "-23248436.03"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 62,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "资产处置收益（损失以“－”\n号填列） 55 3,106,625.19 388,852.05",
+    "cells": [
+      {
+        "id": "FY2025/disposal_income",
+        "token": 0,
+        "printed": "3,106,625.19",
+        "multiplier": "1",
+        "value": "3106625.19"
+      },
+      {
+        "id": "FY2024/disposal_income",
+        "token": 1,
+        "printed": "388,852.05",
+        "multiplier": "1",
+        "value": "388852.05"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 62,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "三、营业利润（亏损以“－”号填列） 114,808,950,164.24 119,688,579,453.23",
+    "cells": [
+      {
+        "id": "FY2025/operating_profit",
+        "token": 0,
+        "printed": "114,808,950,164.24",
+        "multiplier": "1",
+        "value": "114808950164.24"
+      },
+      {
+        "id": "FY2024/operating_profit",
+        "token": 1,
+        "printed": "119,688,579,453.23",
+        "multiplier": "1",
+        "value": "119688579453.23"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 62,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "加：营业外收入 56 74,947,039.70 70,936,575.97",
+    "cells": [
+      {
+        "id": "FY2025/nonoperating_income",
+        "token": 0,
+        "printed": "74,947,039.70",
+        "multiplier": "1",
+        "value": "74947039.70"
+      },
+      {
+        "id": "FY2024/nonoperating_income",
+        "token": 1,
+        "printed": "70,936,575.97",
+        "multiplier": "1",
+        "value": "70936575.97"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 62,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "减：营业外支出 57 128,635,598.86 120,937,834.74",
+    "cells": [
+      {
+        "id": "FY2025/nonoperating_expense",
+        "token": 0,
+        "printed": "128,635,598.86",
+        "multiplier": "1",
+        "value": "128635598.86"
+      },
+      {
+        "id": "FY2024/nonoperating_expense",
+        "token": 1,
+        "printed": "120,937,834.74",
+        "multiplier": "1",
+        "value": "120937834.74"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 62,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "四、利润总额（亏损总额以“－”号\n填列） 114,755,261,605.08 119,638,578,194.46",
+    "cells": [
+      {
+        "id": "FY2025/pbt",
+        "token": 0,
+        "printed": "114,755,261,605.08",
+        "multiplier": "1",
+        "value": "114755261605.08"
+      },
+      {
+        "id": "FY2024/pbt",
+        "token": 1,
+        "printed": "119,638,578,194.46",
+        "multiplier": "1",
+        "value": "119638578194.46"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 62,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "减：所得税费用 58 29,444,936,771.41 30,303,850,168.56",
+    "cells": [
+      {
+        "id": "FY2025/income_tax",
+        "token": 0,
+        "printed": "29,444,936,771.41",
+        "multiplier": "1",
+        "value": "29444936771.41"
+      },
+      {
+        "id": "FY2024/income_tax",
+        "token": 1,
+        "printed": "30,303,850,168.56",
+        "multiplier": "1",
+        "value": "30303850168.56"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 62,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "五、净利润（净亏损以“－”号填列） 85,310,324,833.67 89,334,728,025.90",
+    "cells": [
+      {
+        "id": "FY2025/net_income",
+        "token": 0,
+        "printed": "85,310,324,833.67",
+        "multiplier": "1",
+        "value": "85310324833.67"
+      },
+      {
+        "id": "FY2024/net_income",
+        "token": 1,
+        "printed": "89,334,728,025.90",
+        "multiplier": "1",
+        "value": "89334728025.90"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 62,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "1.归属于母公司股东的净利润\n（净亏损以“-”号填列） 82,320,067,101.68 86,228,146,421.62",
+    "cells": [
+      {
+        "id": "FY2025/parent_income",
+        "token": 0,
+        "printed": "82,320,067,101.68",
+        "multiplier": "1",
+        "value": "82320067101.68"
+      },
+      {
+        "id": "FY2024/parent_income",
+        "token": 1,
+        "printed": "86,228,146,421.62",
+        "multiplier": "1",
+        "value": "86228146421.62"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 62,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "2.少数股东损益（净亏损以“-”\n号填列） 2,990,257,731.99 3,106,581,604.28",
+    "cells": [
+      {
+        "id": "FY2025/minority_income",
+        "token": 0,
+        "printed": "2,990,257,731.99",
+        "multiplier": "1",
+        "value": "2990257731.99"
+      },
+      {
+        "id": "FY2024/minority_income",
+        "token": 1,
+        "printed": "3,106,581,604.28",
+        "multiplier": "1",
+        "value": "3106581604.28"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 64,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "销售商品、提供劳务收到的现\n金 183,990,403,487.80 182,645,203,339.89",
+    "cells": [
+      {
+        "id": "FY2025/sales_cash",
+        "token": 0,
+        "printed": "183,990,403,487.80",
+        "multiplier": "1",
+        "value": "183990403487.80"
+      },
+      {
+        "id": "FY2024/sales_cash",
+        "token": 1,
+        "printed": "182,645,203,339.89",
+        "multiplier": "1",
+        "value": "182645203339.89"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 64,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "客户存款和同业存放款项净\n增加额 -5,099,271,966.87 11,060,205,782.10",
+    "cells": [
+      {
+        "id": "FY2025/deposit_change",
+        "token": 0,
+        "printed": "-5,099,271,966.87",
+        "multiplier": "1",
+        "value": "-5099271966.87"
+      },
+      {
+        "id": "FY2024/deposit_change",
+        "token": 1,
+        "printed": "11,060,205,782.10",
+        "multiplier": "1",
+        "value": "11060205782.10"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 64,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "收取利息、手续费及佣金的现\n金 2,525,372,050.12 3,122,827,833.43",
+    "cells": [
+      {
+        "id": "FY2025/financial_cash_in",
+        "token": 0,
+        "printed": "2,525,372,050.12",
+        "multiplier": "1",
+        "value": "2525372050.12"
+      },
+      {
+        "id": "FY2024/financial_cash_in",
+        "token": 1,
+        "printed": "3,122,827,833.43",
+        "multiplier": "1",
+        "value": "3122827833.43"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 65,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "收到其他与经营活动有关的\n现金 60(1) 4,712,295,194.89 3,258,097,705.14",
+    "cells": [
+      {
+        "id": "FY2025/other_operating_in",
+        "token": 0,
+        "printed": "4,712,295,194.89",
+        "multiplier": "1",
+        "value": "4712295194.89"
+      },
+      {
+        "id": "FY2024/other_operating_in",
+        "token": 1,
+        "printed": "3,258,097,705.14",
+        "multiplier": "1",
+        "value": "3258097705.14"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 65,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "经营活动现金流入小计 186,128,798,765.94 200,086,334,660.56",
+    "cells": [
+      {
+        "id": "FY2025/operating_in",
+        "token": 0,
+        "printed": "186,128,798,765.94",
+        "multiplier": "1",
+        "value": "186128798765.94"
+      },
+      {
+        "id": "FY2024/operating_in",
+        "token": 1,
+        "printed": "200,086,334,660.56",
+        "multiplier": "1",
+        "value": "200086334660.56"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 65,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "购买商品、接受劳务支付的现\n金 11,450,143,940.22 10,824,874,163.03",
+    "cells": [
+      {
+        "id": "FY2025/purchases_cash",
+        "token": 0,
+        "printed": "11,450,143,940.22",
+        "multiplier": "1",
+        "value": "11450143940.22"
+      },
+      {
+        "id": "FY2024/purchases_cash",
+        "token": 1,
+        "printed": "10,824,874,163.03",
+        "multiplier": "1",
+        "value": "10824874163.03"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 65,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "客户贷款及垫款净增加额 -848,113,545.25 262,376,929.65",
+    "cells": [
+      {
+        "id": "FY2025/loan_change",
+        "token": 0,
+        "printed": "-848,113,545.25",
+        "multiplier": "1",
+        "value": "-848113545.25"
+      },
+      {
+        "id": "FY2024/loan_change",
+        "token": 1,
+        "printed": "262,376,929.65",
+        "multiplier": "1",
+        "value": "262376929.65"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 65,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "存放中央银行和同业款项净\n增加额 12,847,265,866.72 -4,585,245,646.29",
+    "cells": [
+      {
+        "id": "FY2025/interbank_change",
+        "token": 0,
+        "printed": "12,847,265,866.72",
+        "multiplier": "1",
+        "value": "12847265866.72"
+      },
+      {
+        "id": "FY2024/interbank_change",
+        "token": 1,
+        "printed": "-4,585,245,646.29",
+        "multiplier": "1",
+        "value": "-4585245646.29"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 65,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "拆出资金净增加额 -900,000,000.00 -400,000,000.00",
+    "cells": [
+      {
+        "id": "FY2025/lending_change",
+        "token": 0,
+        "printed": "-900,000,000.00",
+        "multiplier": "1",
+        "value": "-900000000.00"
+      },
+      {
+        "id": "FY2024/lending_change",
+        "token": 1,
+        "printed": "-400,000,000.00",
+        "multiplier": "1",
+        "value": "-400000000.00"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 65,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "支付利息、手续费及佣金的现\n金 141,082,631.31 97,061,751.28",
+    "cells": [
+      {
+        "id": "FY2025/financial_cash_out",
+        "token": 0,
+        "printed": "141,082,631.31",
+        "multiplier": "1",
+        "value": "141082631.31"
+      },
+      {
+        "id": "FY2024/financial_cash_out",
+        "token": 1,
+        "printed": "97,061,751.28",
+        "multiplier": "1",
+        "value": "97061751.28"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 65,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "支付给职工及为职工支付的\n现金 15,473,458,699.70 15,352,541,000.17",
+    "cells": [
+      {
+        "id": "FY2025/payroll_cash",
+        "token": 0,
+        "printed": "15,473,458,699.70",
+        "multiplier": "1",
+        "value": "15473458699.70"
+      },
+      {
+        "id": "FY2024/payroll_cash",
+        "token": 1,
+        "printed": "15,352,541,000.17",
+        "multiplier": "1",
+        "value": "15352541000.17"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 65,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "支付的各项税费 77,430,597,986.28 77,055,621,533.11",
+    "cells": [
+      {
+        "id": "FY2025/tax_cash",
+        "token": 0,
+        "printed": "77,430,597,986.28",
+        "multiplier": "1",
+        "value": "77430597986.28"
+      },
+      {
+        "id": "FY2024/tax_cash",
+        "token": 1,
+        "printed": "77,055,621,533.11",
+        "multiplier": "1",
+        "value": "77055621533.11"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 65,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "支付其他与经营活动有关的\n现金 60(1) 9,012,158,197.61 9,015,412,761.18",
+    "cells": [
+      {
+        "id": "FY2025/other_operating_out",
+        "token": 0,
+        "printed": "9,012,158,197.61",
+        "multiplier": "1",
+        "value": "9012158197.61"
+      },
+      {
+        "id": "FY2024/other_operating_out",
+        "token": 1,
+        "printed": "9,015,412,761.18",
+        "multiplier": "1",
+        "value": "9015412761.18"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 65,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "经营活动现金流出小计 124,606,593,776.59 107,622,642,492.13",
+    "cells": [
+      {
+        "id": "FY2025/operating_out",
+        "token": 0,
+        "printed": "124,606,593,776.59",
+        "multiplier": "1",
+        "value": "124606593776.59"
+      },
+      {
+        "id": "FY2024/operating_out",
+        "token": 1,
+        "printed": "107,622,642,492.13",
+        "multiplier": "1",
+        "value": "107622642492.13"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 65,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "经营活动产生的现金流\n量净额 61,522,204,989.35 92,463,692,168.43",
+    "cells": [
+      {
+        "id": "FY2025/ocf",
+        "token": 0,
+        "printed": "61,522,204,989.35",
+        "multiplier": "1",
+        "value": "61522204989.35"
+      },
+      {
+        "id": "FY2024/ocf",
+        "token": 1,
+        "printed": "92,463,692,168.43",
+        "multiplier": "1",
+        "value": "92463692168.43"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 65,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "购建固定资产、无形资产和其\n他长期资产支付的现金 3,127,594,916.41 4,678,712,053.56",
+    "cells": [
+      {
+        "id": "FY2025/capex",
+        "token": 0,
+        "printed": "3,127,594,916.41",
+        "multiplier": "1",
+        "value": "3127594916.41"
+      },
+      {
+        "id": "FY2024/capex",
+        "token": 1,
+        "printed": "4,678,712,053.56",
+        "multiplier": "1",
+        "value": "4678712053.56"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 65,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "处置固定资产、无形资产和其\n他长期资产收回的现金净额 155,949.50 715,708.44",
+    "cells": [
+      {
+        "id": "FY2025/disposal_cash",
+        "token": 0,
+        "printed": "155,949.50",
+        "multiplier": "1",
+        "value": "155949.50"
+      },
+      {
+        "id": "FY2024/disposal_cash",
+        "token": 1,
+        "printed": "715,708.44",
+        "multiplier": "1",
+        "value": "715708.44"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 56,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "货币资金 1 51,690,610,946.50 59,295,822,956.89",
+    "cells": [
+      {
+        "id": "2025-12-31/cash",
+        "token": 0,
+        "printed": "51,690,610,946.50",
+        "multiplier": "1",
+        "value": "51690610946.50"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 56,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "拆出资金 2 99,096,188,059.75 127,187,293,298.17",
+    "cells": [
+      {
+        "id": "2025-12-31/interbank_assets",
+        "token": 0,
+        "printed": "99,096,188,059.75",
+        "multiplier": "1",
+        "value": "99096188059.75"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "应收账款 5 2,609,048.49 18,974,192.75",
+    "cells": [
+      {
+        "id": "2025-12-31/ar",
+        "token": 0,
+        "printed": "2,609,048.49",
+        "multiplier": "1",
+        "value": "2609048.49"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "应收款项融资 6 4,457,064,160.16",
+    "cells": [
+      {
+        "id": "2025-12-31/notes_receivable",
+        "token": 0,
+        "printed": "4,457,064,160.16",
+        "multiplier": "1",
+        "value": "4457064160.16"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "预付款项 7 6,637,314.31 26,975,033.20",
+    "cells": [
+      {
+        "id": "2025-12-31/prepayments",
+        "token": 0,
+        "printed": "6,637,314.31",
+        "multiplier": "1",
+        "value": "6637314.31"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "其他应收款 8 36,281,302.94 29,955,673.47",
+    "cells": [
+      {
+        "id": "2025-12-31/other_receivable",
+        "token": 0,
+        "printed": "36,281,302.94",
+        "multiplier": "1",
+        "value": "36281302.94"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "买入返售金融资产 9 8,879,708,146.97 7,220,310,691.10",
+    "cells": [
+      {
+        "id": "2025-12-31/reverse_repo",
+        "token": 0,
+        "printed": "8,879,708,146.97",
+        "multiplier": "1",
+        "value": "8879708146.97"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "存货 10 61,427,421,796.18 54,343,285,157.47",
+    "cells": [
+      {
+        "id": "2025-12-31/inventory",
+        "token": 0,
+        "printed": "61,427,421,796.18",
+        "multiplier": "1",
+        "value": "61427421796.18"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "一年内到期的非流动资产 11 26,871,114,612.71 1,210,959,803.42",
+    "cells": [
+      {
+        "id": "2025-12-31/current_financial_maturity",
+        "token": 0,
+        "printed": "26,871,114,612.71",
+        "multiplier": "1",
+        "value": "26871114612.71"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "其他流动资产 12 51,027,010.56 160,176,582.69",
+    "cells": [
+      {
+        "id": "2025-12-31/other_current_assets",
+        "token": 0,
+        "printed": "51,027,010.56",
+        "multiplier": "1",
+        "value": "51027010.56"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "发放贷款和垫款 13 1,553,536,744.78 2,381,228,475.45",
+    "cells": [
+      {
+        "id": "2025-12-31/loans",
+        "token": 0,
+        "printed": "1,553,536,744.78",
+        "multiplier": "1",
+        "value": "1553536744.78"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "债权投资 14 1,113,032,405.66 1,515,174,439.92",
+    "cells": [
+      {
+        "id": "2025-12-31/debt_investments",
+        "token": 0,
+        "printed": "1,113,032,405.66",
+        "multiplier": "1",
+        "value": "1113032405.66"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "其他债权投资 15 3,496,539,016.41",
+    "cells": [
+      {
+        "id": "2025-12-31/other_debt_investments",
+        "token": 0,
+        "printed": "3,496,539,016.41",
+        "multiplier": "1",
+        "value": "3496539016.41"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "其他非流动金融资产 17 4,105,141,593.22 4,028,978,995.56",
+    "cells": [
+      {
+        "id": "2025-12-31/funds",
+        "token": 0,
+        "printed": "4,105,141,593.22",
+        "multiplier": "1",
+        "value": "4105141593.22"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "固定资产 19 22,488,122,304.35 21,871,446,747.14",
+    "cells": [
+      {
+        "id": "2025-12-31/fixed_assets",
+        "token": 0,
+        "printed": "22,488,122,304.35",
+        "multiplier": "1",
+        "value": "22488122304.35"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "在建工程 20 2,471,886,030.58 2,149,619,937.05",
+    "cells": [
+      {
+        "id": "2025-12-31/cip",
+        "token": 0,
+        "printed": "2,471,886,030.58",
+        "multiplier": "1",
+        "value": "2471886030.58"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "使用权资产 21 221,738,227.51 410,594,173.53",
+    "cells": [
+      {
+        "id": "2025-12-31/rou_assets",
+        "token": 0,
+        "printed": "221,738,227.51",
+        "multiplier": "1",
+        "value": "221738227.51"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "无形资产 22 8,685,618,688.56 8,850,205,831.00",
+    "cells": [
+      {
+        "id": "2025-12-31/intangibles",
+        "token": 0,
+        "printed": "8,685,618,688.56",
+        "multiplier": "1",
+        "value": "8685618688.56"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "资产总计 303,834,844,021.44 298,944,579,918.70",
+    "cells": [
+      {
+        "id": "2025-12-31/assets",
+        "token": 0,
+        "printed": "303,834,844,021.44",
+        "multiplier": "1",
+        "value": "303834844021.44"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 58,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "应付账款 28 4,007,309,049.87 3,514,969,230.31",
+    "cells": [
+      {
+        "id": "2025-12-31/ap",
+        "token": 0,
+        "printed": "4,007,309,049.87",
+        "multiplier": "1",
+        "value": "4007309049.87"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 58,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "合同负债 29 8,006,739,780.94 9,592,453,014.66",
+    "cells": [
+      {
+        "id": "2025-12-31/contract_liabilities",
+        "token": 0,
+        "printed": "8,006,739,780.94",
+        "multiplier": "1",
+        "value": "8006739780.94"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 58,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "吸收存款及同业存放 30 18,038,383,776.30 23,102,858,820.97",
+    "cells": [
+      {
+        "id": "2025-12-31/deposits_liability",
+        "token": 0,
+        "printed": "18,038,383,776.30",
+        "multiplier": "1",
+        "value": "18038383776.30"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 58,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "应付职工薪酬 31 5,523,447,166.50 5,824,371,399.07",
+    "cells": [
+      {
+        "id": "2025-12-31/payroll_payable",
+        "token": 0,
+        "printed": "5,523,447,166.50",
+        "multiplier": "1",
+        "value": "5523447166.50"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 58,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "应交税费 32 7,697,169,830.69 7,717,686,541.38",
+    "cells": [
+      {
+        "id": "2025-12-31/tax_payable",
+        "token": 0,
+        "printed": "7,697,169,830.69",
+        "multiplier": "1",
+        "value": "7697169830.69"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 58,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "其他应付款 33 5,298,261,266.22 5,429,006,700.86",
+    "cells": [
+      {
+        "id": "2025-12-31/other_payable",
+        "token": 0,
+        "printed": "5,298,261,266.22",
+        "multiplier": "1",
+        "value": "5298261266.22"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 58,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "一年内到期的非流动负债 34 44,206,237.05 111,951,112.20",
+    "cells": [
+      {
+        "id": "2025-12-31/current_leases",
+        "token": 0,
+        "printed": "44,206,237.05",
+        "multiplier": "1",
+        "value": "44206237.05"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 58,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "其他流动负债 35 994,959,710.24 1,222,693,799.51",
+    "cells": [
+      {
+        "id": "2025-12-31/other_current_liabilities",
+        "token": 0,
+        "printed": "994,959,710.24",
+        "multiplier": "1",
+        "value": "994959710.24"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 58,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "租赁负债 36 189,504,942.77 313,906,415.76",
+    "cells": [
+      {
+        "id": "2025-12-31/leases",
+        "token": 0,
+        "printed": "189,504,942.77",
+        "multiplier": "1",
+        "value": "189504942.77"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 58,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "负债合计 49,875,590,112.37 56,933,264,798.10",
+    "cells": [
+      {
+        "id": "2025-12-31/liabilities",
+        "token": 0,
+        "printed": "49,875,590,112.37",
+        "multiplier": "1",
+        "value": "49875590112.37"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 58,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "实收资本（或股本） 37 1,252,270,215.00 1,256,197,800.00",
+    "cells": [
+      {
+        "id": "2025-12-31/shares",
+        "token": 0,
+        "printed": "1,252,270,215.00",
+        "multiplier": "1",
+        "value": "1252270215.00"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 58,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "归属于母公司所有者权益 244,637,811,032.18 233,105,984,399.47",
+    "cells": [
+      {
+        "id": "2025-12-31/parent_equity",
+        "token": 0,
+        "printed": "244,637,811,032.18",
+        "multiplier": "1",
+        "value": "244637811032.18"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 59,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "少数股东权益 9,321,442,876.89 8,905,330,721.13",
+    "cells": [
+      {
+        "id": "2025-12-31/minority_equity",
+        "token": 0,
+        "printed": "9,321,442,876.89",
+        "multiplier": "1",
+        "value": "9321442876.89"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 59,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "所有者权益（或股东权\n益）合计 253,959,253,909.07 242,011,315,120.60",
+    "cells": [
+      {
+        "id": "2025-12-31/equity",
+        "token": 0,
+        "printed": "253,959,253,909.07",
+        "multiplier": "1",
+        "value": "253959253909.07"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 28,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "一、营业总收入 91,093,762,553.97 83,451,164,646.53",
+    "cells": [
+      {
+        "id": "H12025/revenue_total",
+        "token": 0,
+        "printed": "91,093,762,553.97",
+        "multiplier": "1",
+        "value": "91093762553.97"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 28,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "其中：营业收入 41 89,389,354,416.84 81,930,977,667.75",
+    "cells": [
+      {
+        "id": "H12025/revenue",
+        "token": 0,
+        "printed": "89,389,354,416.84",
+        "multiplier": "1",
+        "value": "89389354416.84"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 28,
+    "section": "一、营业总收入",
+    "end_section": "二、营业总成本",
+    "quote": "利息收入 42 1,704,408,137.13 1,520,186,978.78",
+    "cells": [
+      {
+        "id": "H12025/financial_interest_income",
+        "token": 0,
+        "printed": "1,704,408,137.13",
+        "multiplier": "1",
+        "value": "1704408137.13"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 28,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "二、营业总成本 28,353,948,643.16 25,936,116,155.36",
+    "cells": [
+      {
+        "id": "H12025/cost_total",
+        "token": 0,
+        "printed": "28,353,948,643.16",
+        "multiplier": "1",
+        "value": "28353948643.16"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 28,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "其中：营业成本 41 7,777,491,083.93 6,750,879,251.19",
+    "cells": [
+      {
+        "id": "H12025/cogs",
+        "token": 0,
+        "printed": "7,777,491,083.93",
+        "multiplier": "1",
+        "value": "7777491083.93"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 28,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "利息支出 42 91,606,314.10 40,596,070.44",
+    "cells": [
+      {
+        "id": "H12025/financial_interest_expense",
+        "token": 0,
+        "printed": "91,606,314.10",
+        "multiplier": "1",
+        "value": "91606314.10"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 28,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "手续费及佣金支出 42 42,669.36 200,913.80",
+    "cells": [
+      {
+        "id": "H12025/financial_fees",
+        "token": 0,
+        "printed": "42,669.36",
+        "multiplier": "1",
+        "value": "42669.36"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 28,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "税金及附加 43 13,942,384,581.48 13,493,473,033.78",
+    "cells": [
+      {
+        "id": "H12025/tax_surcharges",
+        "token": 0,
+        "printed": "13,942,384,581.48",
+        "multiplier": "1",
+        "value": "13942384581.48"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 28,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "销售费用 44 3,260,462,949.46 2,617,482,932.18",
+    "cells": [
+      {
+        "id": "H12025/selling",
+        "token": 0,
+        "printed": "3,260,462,949.46",
+        "multiplier": "1",
+        "value": "3260462949.46"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 28,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "管理费用 45 3,694,704,172.74 3,836,028,544.08",
+    "cells": [
+      {
+        "id": "H12025/admin",
+        "token": 0,
+        "printed": "3,694,704,172.74",
+        "multiplier": "1",
+        "value": "3694704172.74"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 28,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "研发费用 46 73,901,545.96 92,416,649.15",
+    "cells": [
+      {
+        "id": "H12025/rd",
+        "token": 0,
+        "printed": "73,901,545.96",
+        "multiplier": "1",
+        "value": "73901545.96"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 28,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "财务费用 47 -486,644,673.87 -894,961,239.26",
+    "cells": [
+      {
+        "id": "H12025/finance_cost",
+        "token": 0,
+        "printed": "-486,644,673.87",
+        "multiplier": "1",
+        "value": "-486644673.87"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 28,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "其中：利息费用 4,369,620.54 5,748,136.60",
+    "cells": [
+      {
+        "id": "H12025/borrowing_interest",
+        "token": 0,
+        "printed": "4,369,620.54",
+        "multiplier": "1",
+        "value": "4369620.54"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 29,
+    "section": "其中：利息费用",
+    "end_section": "加：其他收益",
+    "quote": "利息收入 493,572,693.81 895,583,582.37",
+    "cells": [
+      {
+        "id": "H12025/treasury_interest",
+        "token": 0,
+        "printed": "493,572,693.81",
+        "multiplier": "1",
+        "value": "493572693.81"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 29,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "加：其他收益 48 22,518,010.95 16,080,612.71",
+    "cells": [
+      {
+        "id": "H12025/other_income",
+        "token": 0,
+        "printed": "22,518,010.95",
+        "multiplier": "1",
+        "value": "22518010.95"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 29,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "投资收益（损失以“－”号填\n列） 49 59,165.27 2,288,120.31",
+    "cells": [
+      {
+        "id": "H12025/investment_income",
+        "token": 0,
+        "printed": "59,165.27",
+        "multiplier": "1",
+        "value": "59165.27"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 29,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "公允价值变动收益（损失以\n“－”号填列） 50 1,758,003.31 35,533,843.83",
+    "cells": [
+      {
+        "id": "H12025/fair_value_income",
+        "token": 0,
+        "printed": "1,758,003.31",
+        "multiplier": "1",
+        "value": "1758003.31"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 29,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "信用减值损失（损失以“-”\n号填列） 51 4,312,358.58 -18,066,729.69",
+    "cells": [
+      {
+        "id": "H12025/credit_impairment",
+        "token": 0,
+        "printed": "4,312,358.58",
+        "multiplier": "1",
+        "value": "4312358.58"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 29,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "资产处置收益（损失以“－”\n号填列） 52 511,925.45 67,280.68",
+    "cells": [
+      {
+        "id": "H12025/disposal_income",
+        "token": 0,
+        "printed": "511,925.45",
+        "multiplier": "1",
+        "value": "511925.45"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 29,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "三、营业利润（亏损以“－”号填列） 62,768,973,374.37 57,550,951,619.01",
+    "cells": [
+      {
+        "id": "H12025/operating_profit",
+        "token": 0,
+        "printed": "62,768,973,374.37",
+        "multiplier": "1",
+        "value": "62768973374.37"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 29,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "加：营业外收入 53 32,407,899.24 27,617,288.18",
+    "cells": [
+      {
+        "id": "H12025/nonoperating_income",
+        "token": 0,
+        "printed": "32,407,899.24",
+        "multiplier": "1",
+        "value": "32407899.24"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 29,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "减：营业外支出 54 23,380,506.79 287,253.75",
+    "cells": [
+      {
+        "id": "H12025/nonoperating_expense",
+        "token": 0,
+        "printed": "23,380,506.79",
+        "multiplier": "1",
+        "value": "23380506.79"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 29,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "四、利润总额（亏损总额以“－”号\n填列） 62,778,000,766.82 57,578,281,653.44",
+    "cells": [
+      {
+        "id": "H12025/pbt",
+        "token": 0,
+        "printed": "62,778,000,766.82",
+        "multiplier": "1",
+        "value": "62778000766.82"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 29,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "减：所得税费用 55 15,791,319,317.58 14,401,367,308.32",
+    "cells": [
+      {
+        "id": "H12025/income_tax",
+        "token": 0,
+        "printed": "15,791,319,317.58",
+        "multiplier": "1",
+        "value": "15791319317.58"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 29,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "五、净利润（净亏损以“－”号填列） 46,986,681,449.24 43,176,914,345.12",
+    "cells": [
+      {
+        "id": "H12025/net_income",
+        "token": 0,
+        "printed": "46,986,681,449.24",
+        "multiplier": "1",
+        "value": "46986681449.24"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 29,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "1.归属于母公司股东的净利润\n（净亏损以“-”号填列） 45,402,962,298.10 41,695,610,983.37",
+    "cells": [
+      {
+        "id": "H12025/parent_income",
+        "token": 0,
+        "printed": "45,402,962,298.10",
+        "multiplier": "1",
+        "value": "45402962298.10"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 29,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "2.少数股东损益（净亏损以“-”\n号填列） 1,583,719,151.14 1,481,303,361.75",
+    "cells": [
+      {
+        "id": "H12025/minority_income",
+        "token": 0,
+        "printed": "1,583,719,151.14",
+        "multiplier": "1",
+        "value": "1583719151.14"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 31,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "销售商品、提供劳务收到的现金 95,086,614,960.23 87,093,638,361.68",
+    "cells": [
+      {
+        "id": "H12025/sales_cash",
+        "token": 0,
+        "printed": "95,086,614,960.23",
+        "multiplier": "1",
+        "value": "95086614960.23"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "客户存款和同业存放款项净增加额 -2,516,653,584.50 11,489,834,329.99",
+    "cells": [
+      {
+        "id": "H12025/deposit_change",
+        "token": 0,
+        "printed": "-2,516,653,584.50",
+        "multiplier": "1",
+        "value": "-2516653584.50"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "收取利息、手续费及佣金的现金 1,473,395,060.41 1,396,614,266.27",
+    "cells": [
+      {
+        "id": "H12025/financial_cash_in",
+        "token": 0,
+        "printed": "1,473,395,060.41",
+        "multiplier": "1",
+        "value": "1473395060.41"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "收到其他与经营活动有关的现金 57(1) 3,959,173,739.04 2,259,241,541.83",
+    "cells": [
+      {
+        "id": "H12025/other_operating_in",
+        "token": 0,
+        "printed": "3,959,173,739.04",
+        "multiplier": "1",
+        "value": "3959173739.04"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "经营活动现金流入小计 98,002,530,175.18 102,242,146,671.06",
+    "cells": [
+      {
+        "id": "H12025/operating_in",
+        "token": 0,
+        "printed": "98,002,530,175.18",
+        "multiplier": "1",
+        "value": "98002530175.18"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "购买商品、接受劳务支付的现金 6,076,043,334.62 4,959,765,138.84",
+    "cells": [
+      {
+        "id": "H12025/purchases_cash",
+        "token": 0,
+        "printed": "6,076,043,334.62",
+        "multiplier": "1",
+        "value": "6076043334.62"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "客户贷款及垫款净增加额 -254,734,305.26 705,033,679.54",
+    "cells": [
+      {
+        "id": "H12025/loan_change",
+        "token": 0,
+        "printed": "-254,734,305.26",
+        "multiplier": "1",
+        "value": "-254734305.26"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "存放中央银行和同业款项净增加额 25,410,788,169.25 7,196,590,763.00",
+    "cells": [
+      {
+        "id": "H12025/interbank_change",
+        "token": 0,
+        "printed": "25,410,788,169.25",
+        "multiplier": "1",
+        "value": "25410788169.25"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "拆出资金净增加额 -2,100,000,000.00 -300,000,000.00",
+    "cells": [
+      {
+        "id": "H12025/lending_change",
+        "token": 0,
+        "printed": "-2,100,000,000.00",
+        "multiplier": "1",
+        "value": "-2100000000.00"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "支付利息、手续费及佣金的现金 43,850,389.39 27,315,638.38",
+    "cells": [
+      {
+        "id": "H12025/financial_cash_out",
+        "token": 0,
+        "printed": "43,850,389.39",
+        "multiplier": "1",
+        "value": "43850389.39"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "支付给职工及为职工支付的现金 9,965,785,368.00 10,031,971,465.62",
+    "cells": [
+      {
+        "id": "H12025/payroll_cash",
+        "token": 0,
+        "printed": "9,965,785,368.00",
+        "multiplier": "1",
+        "value": "9965785368.00"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "支付的各项税费 41,669,889,456.55 38,982,312,154.27",
+    "cells": [
+      {
+        "id": "H12025/tax_cash",
+        "token": 0,
+        "printed": "41,669,889,456.55",
+        "multiplier": "1",
+        "value": "41669889456.55"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "支付其他与经营活动有关的现金 57(1) 4,071,846,731.30 4,017,324,018.78",
+    "cells": [
+      {
+        "id": "H12025/other_operating_out",
+        "token": 0,
+        "printed": "4,071,846,731.30",
+        "multiplier": "1",
+        "value": "4071846731.30"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "经营活动现金流出小计 84,883,469,143.85 65,620,312,858.43",
+    "cells": [
+      {
+        "id": "H12025/operating_out",
+        "token": 0,
+        "printed": "84,883,469,143.85",
+        "multiplier": "1",
+        "value": "84883469143.85"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "经营活动产生的现金流量净额 13,119,061,031.33 36,621,833,812.63",
+    "cells": [
+      {
+        "id": "H12025/ocf",
+        "token": 0,
+        "printed": "13,119,061,031.33",
+        "multiplier": "1",
+        "value": "13119061031.33"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "购建固定资产、无形资产和其他长期\n资产支付的现金 1,595,995,809.23 1,530,991,618.84",
+    "cells": [
+      {
+        "id": "H12025/capex",
+        "token": 0,
+        "printed": "1,595,995,809.23",
+        "multiplier": "1",
+        "value": "1595995809.23"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 32,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "处置固定资产、无形资产和其他长期\n资产收回的现金净额 47,377.00 74,525.50",
+    "cells": [
+      {
+        "id": "H12025/disposal_cash",
+        "token": 0,
+        "printed": "47,377.00",
+        "multiplier": "1",
+        "value": "47377.00"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "一、营业总收入 92,278,072,083.21 91,093,762,553.97",
+    "cells": [
+      {
+        "id": "H12026/revenue_total",
+        "token": 0,
+        "printed": "92,278,072,083.21",
+        "multiplier": "1",
+        "value": "92278072083.21"
+      },
+      {
+        "id": "H12025-comparison/revenue_total",
+        "token": 1,
+        "printed": "91,093,762,553.97",
+        "multiplier": "1",
+        "value": "91093762553.97"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "其中：营业收入 43 90,703,260,964.48 89,389,354,416.84",
+    "cells": [
+      {
+        "id": "H12026/revenue",
+        "token": 0,
+        "printed": "90,703,260,964.48",
+        "multiplier": "1",
+        "value": "90703260964.48"
+      },
+      {
+        "id": "H12025-comparison/revenue",
+        "token": 1,
+        "printed": "89,389,354,416.84",
+        "multiplier": "1",
+        "value": "89389354416.84"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "一、营业总收入",
+    "end_section": "二、营业总成本",
+    "quote": "利息收入 44 1,574,811,118.73 1,704,408,137.13",
+    "cells": [
+      {
+        "id": "H12026/financial_interest_income",
+        "token": 0,
+        "printed": "1,574,811,118.73",
+        "multiplier": "1",
+        "value": "1574811118.73"
+      },
+      {
+        "id": "H12025-comparison/financial_interest_income",
+        "token": 1,
+        "printed": "1,704,408,137.13",
+        "multiplier": "1",
+        "value": "1704408137.13"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "二、营业总成本 30,946,044,878.08 28,353,948,643.16",
+    "cells": [
+      {
+        "id": "H12026/cost_total",
+        "token": 0,
+        "printed": "30,946,044,878.08",
+        "multiplier": "1",
+        "value": "30946044878.08"
+      },
+      {
+        "id": "H12025-comparison/cost_total",
+        "token": 1,
+        "printed": "28,353,948,643.16",
+        "multiplier": "1",
+        "value": "28353948643.16"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "其中：营业成本 43 9,473,762,565.88 7,777,491,083.93",
+    "cells": [
+      {
+        "id": "H12026/cogs",
+        "token": 0,
+        "printed": "9,473,762,565.88",
+        "multiplier": "1",
+        "value": "9473762565.88"
+      },
+      {
+        "id": "H12025-comparison/cogs",
+        "token": 1,
+        "printed": "7,777,491,083.93",
+        "multiplier": "1",
+        "value": "7777491083.93"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "利息支出 44 76,587,662.57 91,606,314.10",
+    "cells": [
+      {
+        "id": "H12026/financial_interest_expense",
+        "token": 0,
+        "printed": "76,587,662.57",
+        "multiplier": "1",
+        "value": "76587662.57"
+      },
+      {
+        "id": "H12025-comparison/financial_interest_expense",
+        "token": 1,
+        "printed": "91,606,314.10",
+        "multiplier": "1",
+        "value": "91606314.10"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "手续费及佣金支出 44 183,088.17 42,669.36",
+    "cells": [
+      {
+        "id": "H12026/financial_fees",
+        "token": 0,
+        "printed": "183,088.17",
+        "multiplier": "1",
+        "value": "183088.17"
+      },
+      {
+        "id": "H12025-comparison/financial_fees",
+        "token": 1,
+        "printed": "42,669.36",
+        "multiplier": "1",
+        "value": "42669.36"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "税金及附加 45 14,682,159,453.47 13,942,384,581.48",
+    "cells": [
+      {
+        "id": "H12026/tax_surcharges",
+        "token": 0,
+        "printed": "14,682,159,453.47",
+        "multiplier": "1",
+        "value": "14682159453.47"
+      },
+      {
+        "id": "H12025-comparison/tax_surcharges",
+        "token": 1,
+        "printed": "13,942,384,581.48",
+        "multiplier": "1",
+        "value": "13942384581.48"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "销售费用 46 3,206,308,341.53 3,260,462,949.46",
+    "cells": [
+      {
+        "id": "H12026/selling",
+        "token": 0,
+        "printed": "3,206,308,341.53",
+        "multiplier": "1",
+        "value": "3206308341.53"
+      },
+      {
+        "id": "H12025-comparison/selling",
+        "token": 1,
+        "printed": "3,260,462,949.46",
+        "multiplier": "1",
+        "value": "3260462949.46"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "管理费用 47 3,635,355,263.82 3,694,704,172.74",
+    "cells": [
+      {
+        "id": "H12026/admin",
+        "token": 0,
+        "printed": "3,635,355,263.82",
+        "multiplier": "1",
+        "value": "3635355263.82"
+      },
+      {
+        "id": "H12025-comparison/admin",
+        "token": 1,
+        "printed": "3,694,704,172.74",
+        "multiplier": "1",
+        "value": "3694704172.74"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "研发费用 48 114,926,219.60 73,901,545.96",
+    "cells": [
+      {
+        "id": "H12026/rd",
+        "token": 0,
+        "printed": "114,926,219.60",
+        "multiplier": "1",
+        "value": "114926219.60"
+      },
+      {
+        "id": "H12025-comparison/rd",
+        "token": 1,
+        "printed": "73,901,545.96",
+        "multiplier": "1",
+        "value": "73901545.96"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "财务费用 49 -243,237,716.96 -486,644,673.87",
+    "cells": [
+      {
+        "id": "H12026/finance_cost",
+        "token": 0,
+        "printed": "-243,237,716.96",
+        "multiplier": "1",
+        "value": "-243237716.96"
+      },
+      {
+        "id": "H12025-comparison/finance_cost",
+        "token": 1,
+        "printed": "-486,644,673.87",
+        "multiplier": "1",
+        "value": "-486644673.87"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "其中：利息费用 21,034,591.16 4,369,620.54",
+    "cells": [
+      {
+        "id": "H12026/borrowing_interest",
+        "token": 0,
+        "printed": "21,034,591.16",
+        "multiplier": "1",
+        "value": "21034591.16"
+      },
+      {
+        "id": "H12025-comparison/borrowing_interest",
+        "token": 1,
+        "printed": "4,369,620.54",
+        "multiplier": "1",
+        "value": "4369620.54"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "其中：利息费用",
+    "end_section": "加：其他收益",
+    "quote": "利息收入 266,574,096.14 493,572,693.81",
+    "cells": [
+      {
+        "id": "H12026/treasury_interest",
+        "token": 0,
+        "printed": "266,574,096.14",
+        "multiplier": "1",
+        "value": "266574096.14"
+      },
+      {
+        "id": "H12025-comparison/treasury_interest",
+        "token": 1,
+        "printed": "493,572,693.81",
+        "multiplier": "1",
+        "value": "493572693.81"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "加：其他收益 50 23,554,465.99 22,518,010.95",
+    "cells": [
+      {
+        "id": "H12026/other_income",
+        "token": 0,
+        "printed": "23,554,465.99",
+        "multiplier": "1",
+        "value": "23554465.99"
+      },
+      {
+        "id": "H12025-comparison/other_income",
+        "token": 1,
+        "printed": "22,518,010.95",
+        "multiplier": "1",
+        "value": "22518010.95"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "投资收益（损失以“-”号填\n列） 51 1,013,870.58 59,165.27",
+    "cells": [
+      {
+        "id": "H12026/investment_income",
+        "token": 0,
+        "printed": "1,013,870.58",
+        "multiplier": "1",
+        "value": "1013870.58"
+      },
+      {
+        "id": "H12025-comparison/investment_income",
+        "token": 1,
+        "printed": "59,165.27",
+        "multiplier": "1",
+        "value": "59165.27"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 30,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "公允价值变动收益（损失以\n“-”号填列） 52 22,082,651.62 1,758,003.31",
+    "cells": [
+      {
+        "id": "H12026/fair_value_income",
+        "token": 0,
+        "printed": "22,082,651.62",
+        "multiplier": "1",
+        "value": "22082651.62"
+      },
+      {
+        "id": "H12025-comparison/fair_value_income",
+        "token": 1,
+        "printed": "1,758,003.31",
+        "multiplier": "1",
+        "value": "1758003.31"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 31,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "信用减值损失（损失以“-”\n号填列） 53 32,473,761.91 4,312,358.58",
+    "cells": [
+      {
+        "id": "H12026/credit_impairment",
+        "token": 0,
+        "printed": "32,473,761.91",
+        "multiplier": "1",
+        "value": "32473761.91"
+      },
+      {
+        "id": "H12025-comparison/credit_impairment",
+        "token": 1,
+        "printed": "4,312,358.58",
+        "multiplier": "1",
+        "value": "4312358.58"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 31,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "资产处置收益（损失以“-”\n号填列） 54 139,731.04 511,925.45",
+    "cells": [
+      {
+        "id": "H12026/disposal_income",
+        "token": 0,
+        "printed": "139,731.04",
+        "multiplier": "1",
+        "value": "139731.04"
+      },
+      {
+        "id": "H12025-comparison/disposal_income",
+        "token": 1,
+        "printed": "511,925.45",
+        "multiplier": "1",
+        "value": "511925.45"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 31,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "三、营业利润（亏损以“-”号填\n列） 61,411,291,686.27 62,768,973,374.37",
+    "cells": [
+      {
+        "id": "H12026/operating_profit",
+        "token": 0,
+        "printed": "61,411,291,686.27",
+        "multiplier": "1",
+        "value": "61411291686.27"
+      },
+      {
+        "id": "H12025-comparison/operating_profit",
+        "token": 1,
+        "printed": "62,768,973,374.37",
+        "multiplier": "1",
+        "value": "62768973374.37"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 31,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "加：营业外收入 55 35,315,234.56 32,407,899.24",
+    "cells": [
+      {
+        "id": "H12026/nonoperating_income",
+        "token": 0,
+        "printed": "35,315,234.56",
+        "multiplier": "1",
+        "value": "35315234.56"
+      },
+      {
+        "id": "H12025-comparison/nonoperating_income",
+        "token": 1,
+        "printed": "32,407,899.24",
+        "multiplier": "1",
+        "value": "32407899.24"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 31,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "减：营业外支出 56 8,187,743.54 23,380,506.79",
+    "cells": [
+      {
+        "id": "H12026/nonoperating_expense",
+        "token": 0,
+        "printed": "8,187,743.54",
+        "multiplier": "1",
+        "value": "8187743.54"
+      },
+      {
+        "id": "H12025-comparison/nonoperating_expense",
+        "token": 1,
+        "printed": "23,380,506.79",
+        "multiplier": "1",
+        "value": "23380506.79"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 31,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "四、利润总额（亏损总额以“-”号\n填列） 61,438,419,177.29 62,778,000,766.82",
+    "cells": [
+      {
+        "id": "H12026/pbt",
+        "token": 0,
+        "printed": "61,438,419,177.29",
+        "multiplier": "1",
+        "value": "61438419177.29"
+      },
+      {
+        "id": "H12025-comparison/pbt",
+        "token": 1,
+        "printed": "62,778,000,766.82",
+        "multiplier": "1",
+        "value": "62778000766.82"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 31,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "减：所得税费用 57 15,405,088,610.51 15,791,319,317.58",
+    "cells": [
+      {
+        "id": "H12026/income_tax",
+        "token": 0,
+        "printed": "15,405,088,610.51",
+        "multiplier": "1",
+        "value": "15405088610.51"
+      },
+      {
+        "id": "H12025-comparison/income_tax",
+        "token": 1,
+        "printed": "15,791,319,317.58",
+        "multiplier": "1",
+        "value": "15791319317.58"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 31,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "五、净利润（净亏损以“-”号填\n列） 46,033,330,566.78 46,986,681,449.24",
+    "cells": [
+      {
+        "id": "H12026/net_income",
+        "token": 0,
+        "printed": "46,033,330,566.78",
+        "multiplier": "1",
+        "value": "46033330566.78"
+      },
+      {
+        "id": "H12025-comparison/net_income",
+        "token": 1,
+        "printed": "46,986,681,449.24",
+        "multiplier": "1",
+        "value": "46986681449.24"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 31,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "1.归属于母公司股东的净利润\n（净亏损以“-”号填列） 44,516,880,421.86 45,402,962,298.10",
+    "cells": [
+      {
+        "id": "H12026/parent_income",
+        "token": 0,
+        "printed": "44,516,880,421.86",
+        "multiplier": "1",
+        "value": "44516880421.86"
+      },
+      {
+        "id": "H12025-comparison/parent_income",
+        "token": 1,
+        "printed": "45,402,962,298.10",
+        "multiplier": "1",
+        "value": "45402962298.10"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 31,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "2.少数股东损益（净亏损以\n“-”号填列） 1,516,450,144.92 1,583,719,151.14",
+    "cells": [
+      {
+        "id": "H12026/minority_income",
+        "token": 0,
+        "printed": "1,516,450,144.92",
+        "multiplier": "1",
+        "value": "1516450144.92"
+      },
+      {
+        "id": "H12025-comparison/minority_income",
+        "token": 1,
+        "printed": "1,583,719,151.14",
+        "multiplier": "1",
+        "value": "1583719151.14"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 33,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "销售商品、提供劳务收到的现金 98,421,697,395.39 95,086,614,960.23",
+    "cells": [
+      {
+        "id": "H12026/sales_cash",
+        "token": 0,
+        "printed": "98,421,697,395.39",
+        "multiplier": "1",
+        "value": "98421697395.39"
+      },
+      {
+        "id": "H12025-comparison/sales_cash",
+        "token": 1,
+        "printed": "95,086,614,960.23",
+        "multiplier": "1",
+        "value": "95086614960.23"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 33,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "客户存款和同业存放款项净增加额 7,383,004,563.78 -2,516,653,584.50",
+    "cells": [
+      {
+        "id": "H12026/deposit_change",
+        "token": 0,
+        "printed": "7,383,004,563.78",
+        "multiplier": "1",
+        "value": "7383004563.78"
+      },
+      {
+        "id": "H12025-comparison/deposit_change",
+        "token": 1,
+        "printed": "-2,516,653,584.50",
+        "multiplier": "1",
+        "value": "-2516653584.50"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 33,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "收取利息、手续费及佣金的现金 1,443,093,695.48 1,473,395,060.41",
+    "cells": [
+      {
+        "id": "H12026/financial_cash_in",
+        "token": 0,
+        "printed": "1,443,093,695.48",
+        "multiplier": "1",
+        "value": "1443093695.48"
+      },
+      {
+        "id": "H12025-comparison/financial_cash_in",
+        "token": 1,
+        "printed": "1,473,395,060.41",
+        "multiplier": "1",
+        "value": "1473395060.41"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 33,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "收到其他与经营活动有关的现金 59（1） 1,997,932,646.37 3,959,173,739.04",
+    "cells": [
+      {
+        "id": "H12026/other_operating_in",
+        "token": 0,
+        "printed": "1,997,932,646.37",
+        "multiplier": "1",
+        "value": "1997932646.37"
+      },
+      {
+        "id": "H12025-comparison/other_operating_in",
+        "token": 1,
+        "printed": "3,959,173,739.04",
+        "multiplier": "1",
+        "value": "3959173739.04"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 34,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "经营活动现金流入小计 109,245,728,301.02 98,002,530,175.18",
+    "cells": [
+      {
+        "id": "H12026/operating_in",
+        "token": 0,
+        "printed": "109,245,728,301.02",
+        "multiplier": "1",
+        "value": "109245728301.02"
+      },
+      {
+        "id": "H12025-comparison/operating_in",
+        "token": 1,
+        "printed": "98,002,530,175.18",
+        "multiplier": "1",
+        "value": "98002530175.18"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 34,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "购买商品、接受劳务支付的现金 6,118,893,646.05 6,076,043,334.62",
+    "cells": [
+      {
+        "id": "H12026/purchases_cash",
+        "token": 0,
+        "printed": "6,118,893,646.05",
+        "multiplier": "1",
+        "value": "6118893646.05"
+      },
+      {
+        "id": "H12025-comparison/purchases_cash",
+        "token": 1,
+        "printed": "6,076,043,334.62",
+        "multiplier": "1",
+        "value": "6076043334.62"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 34,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "客户贷款及垫款净增加额 -1,170,424,843.20 -254,734,305.26",
+    "cells": [
+      {
+        "id": "H12026/loan_change",
+        "token": 0,
+        "printed": "-1,170,424,843.20",
+        "multiplier": "1",
+        "value": "-1170424843.20"
+      },
+      {
+        "id": "H12025-comparison/loan_change",
+        "token": 1,
+        "printed": "-254,734,305.26",
+        "multiplier": "1",
+        "value": "-254734305.26"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 34,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "存放中央银行和同业款项净增加额 -21,895,452,284.18 25,410,788,169.25",
+    "cells": [
+      {
+        "id": "H12026/interbank_change",
+        "token": 0,
+        "printed": "-21,895,452,284.18",
+        "multiplier": "1",
+        "value": "-21895452284.18"
+      },
+      {
+        "id": "H12025-comparison/interbank_change",
+        "token": 1,
+        "printed": "25,410,788,169.25",
+        "multiplier": "1",
+        "value": "25410788169.25"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 34,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "拆出资金净增加额 -900,000,000.00 -2,100,000,000.00",
+    "cells": [
+      {
+        "id": "H12026/lending_change",
+        "token": 0,
+        "printed": "-900,000,000.00",
+        "multiplier": "1",
+        "value": "-900000000.00"
+      },
+      {
+        "id": "H12025-comparison/lending_change",
+        "token": 1,
+        "printed": "-2,100,000,000.00",
+        "multiplier": "1",
+        "value": "-2100000000.00"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 34,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "支付利息、手续费及佣金的现金 71,842,422.65 43,850,389.39",
+    "cells": [
+      {
+        "id": "H12026/financial_cash_out",
+        "token": 0,
+        "printed": "71,842,422.65",
+        "multiplier": "1",
+        "value": "71842422.65"
+      },
+      {
+        "id": "H12025-comparison/financial_cash_out",
+        "token": 1,
+        "printed": "43,850,389.39",
+        "multiplier": "1",
+        "value": "43850389.39"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 34,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "支付给职工及为职工支付的现金 10,296,088,177.23 9,965,785,368.00",
+    "cells": [
+      {
+        "id": "H12026/payroll_cash",
+        "token": 0,
+        "printed": "10,296,088,177.23",
+        "multiplier": "1",
+        "value": "10296088177.23"
+      },
+      {
+        "id": "H12025-comparison/payroll_cash",
+        "token": 1,
+        "printed": "9,965,785,368.00",
+        "multiplier": "1",
+        "value": "9965785368.00"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 34,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "支付的各项税费 42,263,192,495.42 41,669,889,456.55",
+    "cells": [
+      {
+        "id": "H12026/tax_cash",
+        "token": 0,
+        "printed": "42,263,192,495.42",
+        "multiplier": "1",
+        "value": "42263192495.42"
+      },
+      {
+        "id": "H12025-comparison/tax_cash",
+        "token": 1,
+        "printed": "41,669,889,456.55",
+        "multiplier": "1",
+        "value": "41669889456.55"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 34,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "支付其他与经营活动有关的现金 59（1） 3,770,838,567.99 4,071,846,731.30",
+    "cells": [
+      {
+        "id": "H12026/other_operating_out",
+        "token": 0,
+        "printed": "3,770,838,567.99",
+        "multiplier": "1",
+        "value": "3770838567.99"
+      },
+      {
+        "id": "H12025-comparison/other_operating_out",
+        "token": 1,
+        "printed": "4,071,846,731.30",
+        "multiplier": "1",
+        "value": "4071846731.30"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 34,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "经营活动现金流出小计 38,554,978,181.96 84,883,469,143.85",
+    "cells": [
+      {
+        "id": "H12026/operating_out",
+        "token": 0,
+        "printed": "38,554,978,181.96",
+        "multiplier": "1",
+        "value": "38554978181.96"
+      },
+      {
+        "id": "H12025-comparison/operating_out",
+        "token": 1,
+        "printed": "84,883,469,143.85",
+        "multiplier": "1",
+        "value": "84883469143.85"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 34,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "经营活动产生的现金流量净额 70,690,750,119.06 13,119,061,031.33",
+    "cells": [
+      {
+        "id": "H12026/ocf",
+        "token": 0,
+        "printed": "70,690,750,119.06",
+        "multiplier": "1",
+        "value": "70690750119.06"
+      },
+      {
+        "id": "H12025-comparison/ocf",
+        "token": 1,
+        "printed": "13,119,061,031.33",
+        "multiplier": "1",
+        "value": "13119061031.33"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 34,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "购建固定资产、无形资产和其他长\n期资产支付的现金 832,142,752.28 1,595,995,809.23",
+    "cells": [
+      {
+        "id": "H12026/capex",
+        "token": 0,
+        "printed": "832,142,752.28",
+        "multiplier": "1",
+        "value": "832142752.28"
+      },
+      {
+        "id": "H12025-comparison/capex",
+        "token": 1,
+        "printed": "1,595,995,809.23",
+        "multiplier": "1",
+        "value": "1595995809.23"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 34,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "处置固定资产、无形资产和其他长\n期资产收回的现金净额 41,413.35 47,377.00",
+    "cells": [
+      {
+        "id": "H12026/disposal_cash",
+        "token": 0,
+        "printed": "41,413.35",
+        "multiplier": "1",
+        "value": "41413.35"
+      },
+      {
+        "id": "H12025-comparison/disposal_cash",
+        "token": 1,
+        "printed": "47,377.00",
+        "multiplier": "1",
+        "value": "47377.00"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 25,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "货币资金 1 53,518,798,979.08 51,690,610,946.50",
+    "cells": [
+      {
+        "id": "2026-06-30/cash",
+        "token": 0,
+        "printed": "53,518,798,979.08",
+        "multiplier": "1",
+        "value": "53518798979.08"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "拆出资金 2 141,084,158,124.01 99,096,188,059.75",
+    "cells": [
+      {
+        "id": "2026-06-30/interbank_assets",
+        "token": 0,
+        "printed": "141,084,158,124.01",
+        "multiplier": "1",
+        "value": "141084158124.01"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "应收账款 3 570,895.04 2,609,048.49",
+    "cells": [
+      {
+        "id": "2026-06-30/ar",
+        "token": 0,
+        "printed": "570,895.04",
+        "multiplier": "1",
+        "value": "570895.04"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "应收款项融资 4 2,475,749,125.89 4,457,064,160.16",
+    "cells": [
+      {
+        "id": "2026-06-30/notes_receivable",
+        "token": 0,
+        "printed": "2,475,749,125.89",
+        "multiplier": "1",
+        "value": "2475749125.89"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "预付款项 5 16,190,168.54 6,637,314.31",
+    "cells": [
+      {
+        "id": "2026-06-30/prepayments",
+        "token": 0,
+        "printed": "16,190,168.54",
+        "multiplier": "1",
+        "value": "16190168.54"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "其他应收款 6 47,328,677.41 36,281,302.94",
+    "cells": [
+      {
+        "id": "2026-06-30/other_receivable",
+        "token": 0,
+        "printed": "47,328,677.41",
+        "multiplier": "1",
+        "value": "47328677.41"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "买入返售金融资产 7 406,491,272.08 8,879,708,146.97",
+    "cells": [
+      {
+        "id": "2026-06-30/reverse_repo",
+        "token": 0,
+        "printed": "406,491,272.08",
+        "multiplier": "1",
+        "value": "406491272.08"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "存货 8 61,317,208,371.30 61,427,421,796.18",
+    "cells": [
+      {
+        "id": "2026-06-30/inventory",
+        "token": 0,
+        "printed": "61,317,208,371.30",
+        "multiplier": "1",
+        "value": "61317208371.30"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "一年内到期的非流动资产 9 1,798,106,445.56 26,871,114,612.71",
+    "cells": [
+      {
+        "id": "2026-06-30/current_financial_maturity",
+        "token": 0,
+        "printed": "1,798,106,445.56",
+        "multiplier": "1",
+        "value": "1798106445.56"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "其他流动资产 10 60,066,044.49 51,027,010.56",
+    "cells": [
+      {
+        "id": "2026-06-30/other_current_assets",
+        "token": 0,
+        "printed": "60,066,044.49",
+        "multiplier": "1",
+        "value": "60066044.49"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "发放贷款和垫款 11 416,287,173.92 1,553,536,744.78",
+    "cells": [
+      {
+        "id": "2026-06-30/loans",
+        "token": 0,
+        "printed": "416,287,173.92",
+        "multiplier": "1",
+        "value": "416287173.92"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "债权投资 12 1,106,707,304.24 1,113,032,405.66",
+    "cells": [
+      {
+        "id": "2026-06-30/debt_investments",
+        "token": 0,
+        "printed": "1,106,707,304.24",
+        "multiplier": "1",
+        "value": "1106707304.24"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "其他债权投资 13 2,414,885,261.51 3,496,539,016.41",
+    "cells": [
+      {
+        "id": "2026-06-30/other_debt_investments",
+        "token": 0,
+        "printed": "2,414,885,261.51",
+        "multiplier": "1",
+        "value": "2414885261.51"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "其他非流动金融资产 15 3,917,510,576.37 4,105,141,593.22",
+    "cells": [
+      {
+        "id": "2026-06-30/funds",
+        "token": 0,
+        "printed": "3,917,510,576.37",
+        "multiplier": "1",
+        "value": "3917510576.37"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "固定资产 17 22,220,890,242.73 22,488,122,304.35",
+    "cells": [
+      {
+        "id": "2026-06-30/fixed_assets",
+        "token": 0,
+        "printed": "22,220,890,242.73",
+        "multiplier": "1",
+        "value": "22220890242.73"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "在建工程 18 2,481,191,369.98 2,471,886,030.58",
+    "cells": [
+      {
+        "id": "2026-06-30/cip",
+        "token": 0,
+        "printed": "2,481,191,369.98",
+        "multiplier": "1",
+        "value": "2481191369.98"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "使用权资产 19 221,878,454.33 221,738,227.51",
+    "cells": [
+      {
+        "id": "2026-06-30/rou_assets",
+        "token": 0,
+        "printed": "221,878,454.33",
+        "multiplier": "1",
+        "value": "221878454.33"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "无形资产 20 8,578,743,700.95 8,685,618,688.56",
+    "cells": [
+      {
+        "id": "2026-06-30/intangibles",
+        "token": 0,
+        "printed": "8,578,743,700.95",
+        "multiplier": "1",
+        "value": "8578743700.95"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "资产总计 309,050,784,569.31 303,834,844,021.44",
+    "cells": [
+      {
+        "id": "2026-06-30/assets",
+        "token": 0,
+        "printed": "309,050,784,569.31",
+        "multiplier": "1",
+        "value": "309050784569.31"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 27,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "应付账款 26 3,509,015,535.31 4,007,309,049.87",
+    "cells": [
+      {
+        "id": "2026-06-30/ap",
+        "token": 0,
+        "printed": "3,509,015,535.31",
+        "multiplier": "1",
+        "value": "3509015535.31"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 27,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "合同负债 27 3,177,561,597.07 8,006,739,780.94",
+    "cells": [
+      {
+        "id": "2026-06-30/contract_liabilities",
+        "token": 0,
+        "printed": "3,177,561,597.07",
+        "multiplier": "1",
+        "value": "3177561597.07"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 27,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "吸收存款及同业存放 28 25,426,316,668.17 18,038,383,776.30",
+    "cells": [
+      {
+        "id": "2026-06-30/deposits_liability",
+        "token": 0,
+        "printed": "25,426,316,668.17",
+        "multiplier": "1",
+        "value": "25426316668.17"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 27,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "应付职工薪酬 29 375,947,883.69 5,523,447,166.50",
+    "cells": [
+      {
+        "id": "2026-06-30/payroll_payable",
+        "token": 0,
+        "printed": "375,947,883.69",
+        "multiplier": "1",
+        "value": "375947883.69"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 27,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "应交税费 30 6,923,321,600.48 7,697,169,830.69",
+    "cells": [
+      {
+        "id": "2026-06-30/tax_payable",
+        "token": 0,
+        "printed": "6,923,321,600.48",
+        "multiplier": "1",
+        "value": "6923321600.48"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 27,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "其他应付款 31 6,791,660,124.62 5,298,261,266.22",
+    "cells": [
+      {
+        "id": "2026-06-30/other_payable",
+        "token": 0,
+        "printed": "6,791,660,124.62",
+        "multiplier": "1",
+        "value": "6791660124.62"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 27,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "一年内到期的非流动负债 32 56,855,365.72 44,206,237.05",
+    "cells": [
+      {
+        "id": "2026-06-30/current_leases",
+        "token": 0,
+        "printed": "56,855,365.72",
+        "multiplier": "1",
+        "value": "56855365.72"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 27,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "其他流动负债 33 384,394,900.26 994,959,710.24",
+    "cells": [
+      {
+        "id": "2026-06-30/other_current_liabilities",
+        "token": 0,
+        "printed": "384,394,900.26",
+        "multiplier": "1",
+        "value": "384394900.26"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 27,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "租赁负债 34 186,829,502.34 189,504,942.77",
+    "cells": [
+      {
+        "id": "2026-06-30/leases",
+        "token": 0,
+        "printed": "186,829,502.34",
+        "multiplier": "1",
+        "value": "186829502.34"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 27,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "负债合计 46,954,432,394.95 49,875,590,112.37",
+    "cells": [
+      {
+        "id": "2026-06-30/liabilities",
+        "token": 0,
+        "printed": "46,954,432,394.95",
+        "multiplier": "1",
+        "value": "46954432394.95"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 27,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "实收资本（或股本） 36 1,250,081,601.00 1,252,270,215.00",
+    "cells": [
+      {
+        "id": "2026-06-30/shares",
+        "token": 0,
+        "printed": "1,250,081,601.00",
+        "multiplier": "1",
+        "value": "1250081601.00"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 28,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "归属于母公司所有者权益\n（或股东权益）合计 251,253,594,419.50 244,637,811,032.18",
+    "cells": [
+      {
+        "id": "2026-06-30/parent_equity",
+        "token": 0,
+        "printed": "251,253,594,419.50",
+        "multiplier": "1",
+        "value": "251253594419.50"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 28,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "少数股东权益 10,842,757,754.86 9,321,442,876.89",
+    "cells": [
+      {
+        "id": "2026-06-30/minority_equity",
+        "token": 0,
+        "printed": "10,842,757,754.86",
+        "multiplier": "1",
+        "value": "10842757754.86"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 28,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "所有者权益（或股东权\n益）合计 262,096,352,174.36 253,959,253,909.07",
+    "cells": [
+      {
+        "id": "2026-06-30/equity",
+        "token": 0,
+        "printed": "262,096,352,174.36",
+        "multiplier": "1",
+        "value": "262096352174.36"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1212755849",
+    "pdf_page": 54,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "其中：营业收入 35 106,190,154,843.76 94,915,380,916.72",
+    "cells": [
+      {
+        "id": "FY2021/revenue",
+        "token": 0,
+        "printed": "106,190,154,843.76",
+        "multiplier": "1",
+        "value": "106190154843.76"
+      },
+      {
+        "id": "FY2020/revenue",
+        "token": 1,
+        "printed": "94,915,380,916.72",
+        "multiplier": "1",
+        "value": "94915380916.72"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1212755849",
+    "pdf_page": 55,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "三、营业利润（亏损以“－”号填列）  74,750,880,777.52 66,635,079,882.38",
+    "cells": [
+      {
+        "id": "FY2021/operating_profit",
+        "token": 0,
+        "printed": "74,750,880,777.52",
+        "multiplier": "1",
+        "value": "74750880777.52"
+      },
+      {
+        "id": "FY2020/operating_profit",
+        "token": 1,
+        "printed": "66,635,079,882.38",
+        "multiplier": "1",
+        "value": "66635079882.38"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1212755849",
+    "pdf_page": 55,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "五、净利润（净亏损以“－”号填列）  55,720,529,956.46 49,523,329,882.40",
+    "cells": [
+      {
+        "id": "FY2021/net_income",
+        "token": 0,
+        "printed": "55,720,529,956.46",
+        "multiplier": "1",
+        "value": "55720529956.46"
+      },
+      {
+        "id": "FY2020/net_income",
+        "token": 1,
+        "printed": "49,523,329,882.40",
+        "multiplier": "1",
+        "value": "49523329882.40"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1212755849",
+    "pdf_page": 57,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "经营活动产生的现金流量净额  64,028,676,147.37 51,669,068,693.03",
+    "cells": [
+      {
+        "id": "FY2021/ocf",
+        "token": 0,
+        "printed": "64,028,676,147.37",
+        "multiplier": "1",
+        "value": "64028676147.37"
+      },
+      {
+        "id": "FY2020/ocf",
+        "token": 1,
+        "printed": "51,669,068,693.03",
+        "multiplier": "1",
+        "value": "51669068693.03"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1212755849",
+    "pdf_page": 58,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "购建固定资产、 无形资产和其他长期资产支\n付的现金 \n 3,408,784,532.01 2,089,769,498.78",
+    "cells": [
+      {
+        "id": "FY2021/capex",
+        "token": 0,
+        "printed": "3,408,784,532.01",
+        "multiplier": "1",
+        "value": "3408784532.01"
+      },
+      {
+        "id": "FY2020/capex",
+        "token": 1,
+        "printed": "2,089,769,498.78",
+        "multiplier": "1",
+        "value": "2089769498.78"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1212755849",
+    "pdf_page": 50,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "存货 7 33,394,365,084.83 28,869,087,678.06",
+    "cells": [
+      {
+        "id": "FY2021/inventory",
+        "token": 0,
+        "printed": "33,394,365,084.83",
+        "multiplier": "1",
+        "value": "33394365084.83"
+      },
+      {
+        "id": "FY2020/inventory",
+        "token": 1,
+        "printed": "28,869,087,678.06",
+        "multiplier": "1",
+        "value": "28869087678.06"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1219506510",
+    "pdf_page": 63,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "其中：营业收入 40 147,693,604,994.14 124,099,843,771.99",
+    "cells": [
+      {
+        "id": "FY2023/revenue",
+        "token": 0,
+        "printed": "147,693,604,994.14",
+        "multiplier": "1",
+        "value": "147693604994.14"
+      },
+      {
+        "id": "FY2022/revenue",
+        "token": 1,
+        "printed": "124,099,843,771.99",
+        "multiplier": "1",
+        "value": "124099843771.99"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1219506510",
+    "pdf_page": 64,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "三、营业利润（亏损以“－”号填\n列） \n 103,708,655,208.38 87,879,521,782.39",
+    "cells": [
+      {
+        "id": "FY2023/operating_profit",
+        "token": 0,
+        "printed": "103,708,655,208.38",
+        "multiplier": "1",
+        "value": "103708655208.38"
+      },
+      {
+        "id": "FY2022/operating_profit",
+        "token": 1,
+        "printed": "87,879,521,782.39",
+        "multiplier": "1",
+        "value": "87879521782.39"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1219506510",
+    "pdf_page": 64,
+    "section": "合并利润表",
+    "end_section": "母公司利润表",
+    "quote": "五、净利润（净亏损以“－”号填\n列） \n 77,521,476,277.80 65,376,039,957.88",
+    "cells": [
+      {
+        "id": "FY2023/net_income",
+        "token": 0,
+        "printed": "77,521,476,277.80",
+        "multiplier": "1",
+        "value": "77521476277.80"
+      },
+      {
+        "id": "FY2022/net_income",
+        "token": 1,
+        "printed": "65,376,039,957.88",
+        "multiplier": "1",
+        "value": "65376039957.88"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1219506510",
+    "pdf_page": 67,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "经营活动产生的现金流量净额  66,593,247,721.09 36,698,595,830.03",
+    "cells": [
+      {
+        "id": "FY2023/ocf",
+        "token": 0,
+        "printed": "66,593,247,721.09",
+        "multiplier": "1",
+        "value": "66593247721.09"
+      },
+      {
+        "id": "FY2022/ocf",
+        "token": 1,
+        "printed": "36,698,595,830.03",
+        "multiplier": "1",
+        "value": "36698595830.03"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1219506510",
+    "pdf_page": 67,
+    "section": "合并现金流量表",
+    "end_section": "母公司现金流量表",
+    "quote": "购建固定资产、无形资产和其他长\n期资产支付的现金 \n 2,619,755,888.79 5,306,546,416.54",
+    "cells": [
+      {
+        "id": "FY2023/capex",
+        "token": 0,
+        "printed": "2,619,755,888.79",
+        "multiplier": "1",
+        "value": "2619755888.79"
+      },
+      {
+        "id": "FY2022/capex",
+        "token": 1,
+        "printed": "5,306,546,416.54",
+        "multiplier": "1",
+        "value": "5306546416.54"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1219506510",
+    "pdf_page": 59,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "存货 9 46,435,185,061.53 38,824,374,236.24",
+    "cells": [
+      {
+        "id": "FY2023/inventory",
+        "token": 0,
+        "printed": "46,435,185,061.53",
+        "multiplier": "1",
+        "value": "46435185061.53"
+      },
+      {
+        "id": "FY2022/inventory",
+        "token": 1,
+        "printed": "38,824,374,236.24",
+        "multiplier": "1",
+        "value": "38824374236.24"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "存货 10 61,427,421,796.18 54,343,285,157.47",
+    "cells": [
+      {
+        "id": "FY2025/inventory",
+        "token": 0,
+        "printed": "61,427,421,796.18",
+        "multiplier": "1",
+        "value": "61427421796.18"
+      },
+      {
+        "id": "FY2024/inventory",
+        "token": 1,
+        "printed": "54,343,285,157.47",
+        "multiplier": "1",
+        "value": "54343285157.47"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "净利润 85,310,324,833.67 89,334,728,025.90",
+    "cells": [
+      {
+        "id": "FY2025/cf_net_income",
+        "token": 0,
+        "printed": "85,310,324,833.67",
+        "multiplier": "1",
+        "value": "85310324833.67"
+      },
+      {
+        "id": "FY2024/cf_net_income",
+        "token": 1,
+        "printed": "89,334,728,025.90",
+        "multiplier": "1",
+        "value": "89334728025.90"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "信用减值损失 -17,234,379.37 23,248,436.03",
+    "cells": [
+      {
+        "id": "FY2025/cf_credit",
+        "token": 0,
+        "printed": "-17,234,379.37",
+        "multiplier": "1",
+        "value": "-17234379.37"
+      },
+      {
+        "id": "FY2024/cf_credit",
+        "token": 1,
+        "printed": "23,248,436.03",
+        "multiplier": "1",
+        "value": "23248436.03"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "固定资产折旧、油气资产折耗、生产\n性生物资产折旧 1,893,338,311.91 1,721,165,327.14",
+    "cells": [
+      {
+        "id": "FY2025/cf_fixed_da",
+        "token": 0,
+        "printed": "1,893,338,311.91",
+        "multiplier": "1",
+        "value": "1893338311.91"
+      },
+      {
+        "id": "FY2024/cf_fixed_da",
+        "token": 1,
+        "printed": "1,721,165,327.14",
+        "multiplier": "1",
+        "value": "1721165327.14"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "使用权资产摊销 55,797,324.89 94,492,678.29",
+    "cells": [
+      {
+        "id": "FY2025/cf_rou_da",
+        "token": 0,
+        "printed": "55,797,324.89",
+        "multiplier": "1",
+        "value": "55797324.89"
+      },
+      {
+        "id": "FY2024/cf_rou_da",
+        "token": 1,
+        "printed": "94,492,678.29",
+        "multiplier": "1",
+        "value": "94492678.29"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "无形资产摊销 289,613,682.99 249,170,059.35",
+    "cells": [
+      {
+        "id": "FY2025/cf_intangible_da",
+        "token": 0,
+        "printed": "289,613,682.99",
+        "multiplier": "1",
+        "value": "289613682.99"
+      },
+      {
+        "id": "FY2024/cf_intangible_da",
+        "token": 1,
+        "printed": "249,170,059.35",
+        "multiplier": "1",
+        "value": "249170059.35"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "长期待摊费用摊销 20,637,734.49 20,191,550.34",
+    "cells": [
+      {
+        "id": "FY2025/cf_deferred_da",
+        "token": 0,
+        "printed": "20,637,734.49",
+        "multiplier": "1",
+        "value": "20637734.49"
+      },
+      {
+        "id": "FY2024/cf_deferred_da",
+        "token": 1,
+        "printed": "20,191,550.34",
+        "multiplier": "1",
+        "value": "20191550.34"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "处置固定资产、无形资产和其他长期\n资产的损失（收益以“－”号填列） -3,106,625.19 -388,852.05",
+    "cells": [
+      {
+        "id": "FY2025/cf_disposal",
+        "token": 0,
+        "printed": "-3,106,625.19",
+        "multiplier": "1",
+        "value": "-3106625.19"
+      },
+      {
+        "id": "FY2024/cf_disposal",
+        "token": 1,
+        "printed": "-388,852.05",
+        "multiplier": "1",
+        "value": "-388852.05"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "固定资产报废损失（收益以“－”号\n填列） 5,491,211.47 7,287,333.87",
+    "cells": [
+      {
+        "id": "FY2025/cf_retirement",
+        "token": 0,
+        "printed": "5,491,211.47",
+        "multiplier": "1",
+        "value": "5491211.47"
+      },
+      {
+        "id": "FY2024/cf_retirement",
+        "token": 1,
+        "printed": "7,287,333.87",
+        "multiplier": "1",
+        "value": "7287333.87"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "公允价值变动损失（收益以“－”号\n填列） -76,162,597.66 -60,980,724.35",
+    "cells": [
+      {
+        "id": "FY2025/cf_fair_value",
+        "token": 0,
+        "printed": "-76,162,597.66",
+        "multiplier": "1",
+        "value": "-76162597.66"
+      },
+      {
+        "id": "FY2024/cf_fair_value",
+        "token": 1,
+        "printed": "-60,980,724.35",
+        "multiplier": "1",
+        "value": "-60980724.35"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "财务费用（收益以“－”号填列） 28,734,948.29 14,474,584.09",
+    "cells": [
+      {
+        "id": "FY2025/cf_finance",
+        "token": 0,
+        "printed": "28,734,948.29",
+        "multiplier": "1",
+        "value": "28734948.29"
+      },
+      {
+        "id": "FY2024/cf_finance",
+        "token": 1,
+        "printed": "14,474,584.09",
+        "multiplier": "1",
+        "value": "14474584.09"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "投资损失（收益以“－”号填列） -561,176.14 -9,130,340.37",
+    "cells": [
+      {
+        "id": "FY2025/cf_investment",
+        "token": 0,
+        "printed": "-561,176.14",
+        "multiplier": "1",
+        "value": "-561176.14"
+      },
+      {
+        "id": "FY2024/cf_investment",
+        "token": 1,
+        "printed": "-9,130,340.37",
+        "multiplier": "1",
+        "value": "-9130340.37"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "递延所得税资产减少（增加以“－”\n号填列） -1,082,462,282.39 -874,119,443.73",
+    "cells": [
+      {
+        "id": "FY2025/cf_dta",
+        "token": 0,
+        "printed": "-1,082,462,282.39",
+        "multiplier": "1",
+        "value": "-1082462282.39"
+      },
+      {
+        "id": "FY2024/cf_dta",
+        "token": 1,
+        "printed": "-874,119,443.73",
+        "multiplier": "1",
+        "value": "-874119443.73"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "递延所得税负债增加（减少以“－”\n号填列） -27,759,411.59 24,424,701.19",
+    "cells": [
+      {
+        "id": "FY2025/cf_dtl",
+        "token": 0,
+        "printed": "-27,759,411.59",
+        "multiplier": "1",
+        "value": "-27759411.59"
+      },
+      {
+        "id": "FY2024/cf_dtl",
+        "token": 1,
+        "printed": "24,424,701.19",
+        "multiplier": "1",
+        "value": "24424701.19"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "存货的减少（增加以“－”号填列） -7,084,136,638.71 -7,908,100,095.94",
+    "cells": [
+      {
+        "id": "FY2025/cf_inventory",
+        "token": 0,
+        "printed": "-7,084,136,638.71",
+        "multiplier": "1",
+        "value": "-7084136638.71"
+      },
+      {
+        "id": "FY2024/cf_inventory",
+        "token": 1,
+        "printed": "-7,908,100,095.94",
+        "multiplier": "1",
+        "value": "-7908100095.94"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "经营性应收项目的减少（增加以\n“－”号填列） -10,983,881,858.27 1,761,268,977.59",
+    "cells": [
+      {
+        "id": "FY2025/cf_receivables",
+        "token": 0,
+        "printed": "-10,983,881,858.27",
+        "multiplier": "1",
+        "value": "-10983881858.27"
+      },
+      {
+        "id": "FY2024/cf_receivables",
+        "token": 1,
+        "printed": "1,761,268,977.59",
+        "multiplier": "1",
+        "value": "1761268977.59"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 115,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "经营性应付项目的增加（减少以\n“－”号填列） -6,806,428,089.04 8,065,959,951.08",
+    "cells": [
+      {
+        "id": "FY2025/cf_payables",
+        "token": 0,
+        "printed": "-6,806,428,089.04",
+        "multiplier": "1",
+        "value": "-6806428089.04"
+      },
+      {
+        "id": "FY2024/cf_payables",
+        "token": 1,
+        "printed": "8,065,959,951.08",
+        "multiplier": "1",
+        "value": "8065959951.08"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 108,
+    "section": "税金及附加\n√适用",
+    "end_section": "销售费用\n√适用",
+    "quote": "消费税 21,797,399,711.32 21,489,513,090.84",
+    "cells": [
+      {
+        "id": "FY2025/consumption_tax",
+        "token": 0,
+        "printed": "21,797,399,711.32",
+        "multiplier": "1",
+        "value": "21797399711.32"
+      },
+      {
+        "id": "FY2024/consumption_tax",
+        "token": 1,
+        "printed": "21,489,513,090.84",
+        "multiplier": "1",
+        "value": "21489513090.84"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 76,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "净利润 46,986,681,449.24 43,176,914,345.12",
+    "cells": [
+      {
+        "id": "H12025/cf_net_income",
+        "token": 0,
+        "printed": "46,986,681,449.24",
+        "multiplier": "1",
+        "value": "46986681449.24"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 76,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "信用减值损失 -4,312,358.58 18,066,729.69",
+    "cells": [
+      {
+        "id": "H12025/cf_credit",
+        "token": 0,
+        "printed": "-4,312,358.58",
+        "multiplier": "1",
+        "value": "-4312358.58"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 77,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "固定资产折旧、油气资产折耗、生产性生物资\n产折旧 940,703,752.88 849,272,503.83",
+    "cells": [
+      {
+        "id": "H12025/cf_fixed_da",
+        "token": 0,
+        "printed": "940,703,752.88",
+        "multiplier": "1",
+        "value": "940703752.88"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 77,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "使用权资产摊销 26,052,929.46 34,497,364.99",
+    "cells": [
+      {
+        "id": "H12025/cf_rou_da",
+        "token": 0,
+        "printed": "26,052,929.46",
+        "multiplier": "1",
+        "value": "26052929.46"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 77,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "无形资产摊销 139,668,544.83 108,583,867.33",
+    "cells": [
+      {
+        "id": "H12025/cf_intangible_da",
+        "token": 0,
+        "printed": "139,668,544.83",
+        "multiplier": "1",
+        "value": "139668544.83"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 77,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "长期待摊费用摊销 10,560,492.82 8,721,090.73",
+    "cells": [
+      {
+        "id": "H12025/cf_deferred_da",
+        "token": 0,
+        "printed": "10,560,492.82",
+        "multiplier": "1",
+        "value": "10560492.82"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 77,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "处置固定资产、无形资产和其他长期资产的损\n失（收益以“－”号填列） -511,925.45 -67,280.68",
+    "cells": [
+      {
+        "id": "H12025/cf_disposal",
+        "token": 0,
+        "printed": "-511,925.45",
+        "multiplier": "1",
+        "value": "-511925.45"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 77,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "固定资产报废损失（收益以“－”号填列） 1,709,580.66 230,210.62",
+    "cells": [
+      {
+        "id": "H12025/cf_retirement",
+        "token": 0,
+        "printed": "1,709,580.66",
+        "multiplier": "1",
+        "value": "1709580.66"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 77,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "公允价值变动损失（收益以“－”号填列） -1,758,003.31 -35,533,843.83",
+    "cells": [
+      {
+        "id": "H12025/cf_fair_value",
+        "token": 0,
+        "printed": "-1,758,003.31",
+        "multiplier": "1",
+        "value": "-1758003.31"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 77,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "财务费用（收益以“－”号填列） 4,369,620.54 5,748,136.60",
+    "cells": [
+      {
+        "id": "H12025/cf_finance",
+        "token": 0,
+        "printed": "4,369,620.54",
+        "multiplier": "1",
+        "value": "4369620.54"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 77,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "投资损失（收益以“－”号填列） -59,165.27 -2,288,120.31",
+    "cells": [
+      {
+        "id": "H12025/cf_investment",
+        "token": 0,
+        "printed": "-59,165.27",
+        "multiplier": "1",
+        "value": "-59165.27"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 77,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "递延所得税资产减少（增加以“－”号填列） -133,647,318.88 -328,224,459.31",
+    "cells": [
+      {
+        "id": "H12025/cf_dta",
+        "token": 0,
+        "printed": "-133,647,318.88",
+        "multiplier": "1",
+        "value": "-133647318.88"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 77,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "递延所得税负债增加（减少以“－”号填列） -37,213,033.11 -786,505.67",
+    "cells": [
+      {
+        "id": "H12025/cf_dtl",
+        "token": 0,
+        "printed": "-37,213,033.11",
+        "multiplier": "1",
+        "value": "-37213033.11"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 77,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "存货的减少（增加以“－”号填列） -628,446,802.13 -1,331,293,670.84",
+    "cells": [
+      {
+        "id": "H12025/cf_inventory",
+        "token": 0,
+        "printed": "-628,446,802.13",
+        "multiplier": "1",
+        "value": "-628446802.13"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 77,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "经营性应收项目的减少（增加以“－”号填\n列） -20,679,149,330.03 -7,938,626,765.57",
+    "cells": [
+      {
+        "id": "H12025/cf_receivables",
+        "token": 0,
+        "printed": "-20,679,149,330.03",
+        "multiplier": "1",
+        "value": "-20679149330.03"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 77,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "经营性应付项目的增加（减少以“－”号填\n列） -13,505,587,402.34 2,056,620,209.93",
+    "cells": [
+      {
+        "id": "H12025/cf_payables",
+        "token": 0,
+        "printed": "-13,505,587,402.34",
+        "multiplier": "1",
+        "value": "-13505587402.34"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462930",
+    "pdf_page": 70,
+    "section": "税金及附加\n√适用",
+    "end_section": "销售费用\n√适用",
+    "quote": "消费税 11,077,697,612.43 10,792,827,003.63",
+    "cells": [
+      {
+        "id": "H12025/consumption_tax",
+        "token": 0,
+        "printed": "11,077,697,612.43",
+        "multiplier": "1",
+        "value": "11077697612.43"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "净利润 46,033,330,566.78 46,986,681,449.24",
+    "cells": [
+      {
+        "id": "H12026/cf_net_income",
+        "token": 0,
+        "printed": "46,033,330,566.78",
+        "multiplier": "1",
+        "value": "46033330566.78"
+      },
+      {
+        "id": "H12025-comparison/cf_net_income",
+        "token": 1,
+        "printed": "46,986,681,449.24",
+        "multiplier": "1",
+        "value": "46986681449.24"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "信用减值损失 -32,473,761.91 -4,312,358.58",
+    "cells": [
+      {
+        "id": "H12026/cf_credit",
+        "token": 0,
+        "printed": "-32,473,761.91",
+        "multiplier": "1",
+        "value": "-32473761.91"
+      },
+      {
+        "id": "H12025-comparison/cf_credit",
+        "token": 1,
+        "printed": "-4,312,358.58",
+        "multiplier": "1",
+        "value": "-4312358.58"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "固定资产折旧、油气资产折耗、生\n产性生物资产折旧 1,019,596,188.09 940,703,752.88",
+    "cells": [
+      {
+        "id": "H12026/cf_fixed_da",
+        "token": 0,
+        "printed": "1,019,596,188.09",
+        "multiplier": "1",
+        "value": "1019596188.09"
+      },
+      {
+        "id": "H12025-comparison/cf_fixed_da",
+        "token": 1,
+        "printed": "940,703,752.88",
+        "multiplier": "1",
+        "value": "940703752.88"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "使用权资产摊销 25,933,200.71 26,052,929.46",
+    "cells": [
+      {
+        "id": "H12026/cf_rou_da",
+        "token": 0,
+        "printed": "25,933,200.71",
+        "multiplier": "1",
+        "value": "25933200.71"
+      },
+      {
+        "id": "H12025-comparison/cf_rou_da",
+        "token": 1,
+        "printed": "26,052,929.46",
+        "multiplier": "1",
+        "value": "26052929.46"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "无形资产摊销 153,074,255.31 139,668,544.83",
+    "cells": [
+      {
+        "id": "H12026/cf_intangible_da",
+        "token": 0,
+        "printed": "153,074,255.31",
+        "multiplier": "1",
+        "value": "153074255.31"
+      },
+      {
+        "id": "H12025-comparison/cf_intangible_da",
+        "token": 1,
+        "printed": "139,668,544.83",
+        "multiplier": "1",
+        "value": "139668544.83"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "长期待摊费用摊销 8,786,972.11 10,560,492.82",
+    "cells": [
+      {
+        "id": "H12026/cf_deferred_da",
+        "token": 0,
+        "printed": "8,786,972.11",
+        "multiplier": "1",
+        "value": "8786972.11"
+      },
+      {
+        "id": "H12025-comparison/cf_deferred_da",
+        "token": 1,
+        "printed": "10,560,492.82",
+        "multiplier": "1",
+        "value": "10560492.82"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "处置固定资产、无形资产和其他长\n期资产的损失（收益以“-”号填\n列）\n-139,731.04 -511,925.45",
+    "cells": [
+      {
+        "id": "H12026/cf_disposal",
+        "token": 0,
+        "printed": "-139,731.04",
+        "multiplier": "1",
+        "value": "-139731.04"
+      },
+      {
+        "id": "H12025-comparison/cf_disposal",
+        "token": 1,
+        "printed": "-511,925.45",
+        "multiplier": "1",
+        "value": "-511925.45"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "固定资产报废损失（收益以“-”\n号填列） 2,003,901.73 1,709,580.66",
+    "cells": [
+      {
+        "id": "H12026/cf_retirement",
+        "token": 0,
+        "printed": "2,003,901.73",
+        "multiplier": "1",
+        "value": "2003901.73"
+      },
+      {
+        "id": "H12025-comparison/cf_retirement",
+        "token": 1,
+        "printed": "1,709,580.66",
+        "multiplier": "1",
+        "value": "1709580.66"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "公允价值变动损失（收益以“-”\n号填列） -22,082,651.62 -1,758,003.31",
+    "cells": [
+      {
+        "id": "H12026/cf_fair_value",
+        "token": 0,
+        "printed": "-22,082,651.62",
+        "multiplier": "1",
+        "value": "-22082651.62"
+      },
+      {
+        "id": "H12025-comparison/cf_fair_value",
+        "token": 1,
+        "printed": "-1,758,003.31",
+        "multiplier": "1",
+        "value": "-1758003.31"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "财务费用（收益以“-”号填列） 21,034,591.16 4,369,620.54",
+    "cells": [
+      {
+        "id": "H12026/cf_finance",
+        "token": 0,
+        "printed": "21,034,591.16",
+        "multiplier": "1",
+        "value": "21034591.16"
+      },
+      {
+        "id": "H12025-comparison/cf_finance",
+        "token": 1,
+        "printed": "4,369,620.54",
+        "multiplier": "1",
+        "value": "4369620.54"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "投资损失（收益以“-”号填列） -1,013,870.58 -59,165.27",
+    "cells": [
+      {
+        "id": "H12026/cf_investment",
+        "token": 0,
+        "printed": "-1,013,870.58",
+        "multiplier": "1",
+        "value": "-1013870.58"
+      },
+      {
+        "id": "H12025-comparison/cf_investment",
+        "token": 1,
+        "printed": "-59,165.27",
+        "multiplier": "1",
+        "value": "-59165.27"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "递延所得税资产减少（增加以\n“-”号填列） 165,578,976.91 -133,647,318.88",
+    "cells": [
+      {
+        "id": "H12026/cf_dta",
+        "token": 0,
+        "printed": "165,578,976.91",
+        "multiplier": "1",
+        "value": "165578976.91"
+      },
+      {
+        "id": "H12025-comparison/cf_dta",
+        "token": 1,
+        "printed": "-133,647,318.88",
+        "multiplier": "1",
+        "value": "-133647318.88"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "递延所得税负债增加（减少以\n“-”号填列） -4,558,513.32 -37,213,033.11",
+    "cells": [
+      {
+        "id": "H12026/cf_dtl",
+        "token": 0,
+        "printed": "-4,558,513.32",
+        "multiplier": "1",
+        "value": "-4558513.32"
+      },
+      {
+        "id": "H12025-comparison/cf_dtl",
+        "token": 1,
+        "printed": "-37,213,033.11",
+        "multiplier": "1",
+        "value": "-37213033.11"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "存货的减少（增加以“-”号填\n列） 110,213,424.88 -628,446,802.13",
+    "cells": [
+      {
+        "id": "H12026/cf_inventory",
+        "token": 0,
+        "printed": "110,213,424.88",
+        "multiplier": "1",
+        "value": "110213424.88"
+      },
+      {
+        "id": "H12025-comparison/cf_inventory",
+        "token": 1,
+        "printed": "-628,446,802.13",
+        "multiplier": "1",
+        "value": "-628446802.13"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "经营性应收项目的减少（增加以\n“-”号填列） 26,126,578,660.96 -20,679,149,330.03",
+    "cells": [
+      {
+        "id": "H12026/cf_receivables",
+        "token": 0,
+        "printed": "26,126,578,660.96",
+        "multiplier": "1",
+        "value": "26126578660.96"
+      },
+      {
+        "id": "H12025-comparison/cf_receivables",
+        "token": 1,
+        "printed": "-20,679,149,330.03",
+        "multiplier": "1",
+        "value": "-20679149330.03"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 81,
+    "section": "1．将净利润调节为经营活动现金流量",
+    "end_section": "2．不涉及现金收支",
+    "quote": "经营性应付项目的增加（减少以\n“-”号填列） -2,915,112,091.11 -13,505,587,402.34",
+    "cells": [
+      {
+        "id": "H12026/cf_payables",
+        "token": 0,
+        "printed": "-2,915,112,091.11",
+        "multiplier": "1",
+        "value": "-2915112091.11"
+      },
+      {
+        "id": "H12025-comparison/cf_payables",
+        "token": 1,
+        "printed": "-13,505,587,402.34",
+        "multiplier": "1",
+        "value": "-13505587402.34"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 74,
+    "section": "税金及附加\n√适用",
+    "end_section": "销售费用\n√适用",
+    "quote": "消费税 11,710,560,826.88 11,077,697,612.43",
+    "cells": [
+      {
+        "id": "H12026/consumption_tax",
+        "token": 0,
+        "printed": "11,710,560,826.88",
+        "multiplier": "1",
+        "value": "11710560826.88"
+      },
+      {
+        "id": "H12025-comparison/consumption_tax",
+        "token": 1,
+        "printed": "11,077,697,612.43",
+        "multiplier": "1",
+        "value": "11077697612.43"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 104,
+    "section": "应交税费\n√适用",
+    "end_section": "其他应付款\n√适用",
+    "quote": "企业所得税 3,172,867,724.14 3,032,213,454.71",
+    "cells": [
+      {
+        "id": "2025-12-31/income_tax_payable",
+        "token": 0,
+        "printed": "3,172,867,724.14",
+        "multiplier": "1",
+        "value": "3172867724.14"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 57,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "长期股权投资 16 147,181,873.67",
+    "cells": [
+      {
+        "id": "2025-12-31/associates",
+        "token": 0,
+        "printed": "147,181,873.67",
+        "multiplier": "1",
+        "value": "147181873.67"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 116,
+    "section": "现金和现金等价物的构成",
+    "end_section": "所有者权益变动表项目注释",
+    "quote": "三、期末现金及现金等价物余额 126,425,609,447.72 169,970,089,257.83",
+    "cells": [
+      {
+        "id": "2025-12-31/cash_equivalents",
+        "token": 0,
+        "printed": "126,425,609,447.72",
+        "multiplier": "1",
+        "value": "126425609447.72"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 70,
+    "section": "应交税费\n√适用",
+    "end_section": "其他应付款\n√适用",
+    "quote": "企业所得税 2,909,272,618.86 3,172,867,724.14",
+    "cells": [
+      {
+        "id": "2026-06-30/income_tax_payable",
+        "token": 0,
+        "printed": "2,909,272,618.86",
+        "multiplier": "1",
+        "value": "2909272618.86"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 26,
+    "section": "合并资产负债表",
+    "end_section": "母公司资产负债表",
+    "quote": "长期股权投资 14 147,198,786.54 147,181,873.67",
+    "cells": [
+      {
+        "id": "2026-06-30/associates",
+        "token": 0,
+        "printed": "147,198,786.54",
+        "multiplier": "1",
+        "value": "147198786.54"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 82,
+    "section": "现金和现金等价物的构成",
+    "end_section": "所有者权益变动表项目注释",
+    "quote": "三、期末现金及现金等价物余额 184,811,095,482.62 126,425,609,447.72",
+    "cells": [
+      {
+        "id": "2026-06-30/cash_equivalents",
+        "token": 0,
+        "printed": "184,811,095,482.62",
+        "multiplier": "1",
+        "value": "184811095482.62"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1224462928",
+    "pdf_page": 5,
+    "section": "（一）经营情况",
+    "end_section": "（二）管理情况",
+    "quote": "（一）经营情况\n截至 2025 年 6 月 30 日，财务公司资产总额为人民币 1482.74 亿元、\n负债总额为人民币1369.98 亿元、所有者权益合计人民币112.76 亿元，实\n现营业收入人民币 17.04 亿元、利润总额人民币8.45 亿元、净利润人民币\n6.34 亿元。",
+    "cells": [
+      {
+        "id": "H12025/finance_assets",
+        "token": 0,
+        "printed": "1482.74",
+        "multiplier": "100000000",
+        "value": "148274000000.00"
+      },
+      {
+        "id": "H12025/finance_liabilities",
+        "token": 1,
+        "printed": "1369.98",
+        "multiplier": "100000000",
+        "value": "136998000000.00"
+      },
+      {
+        "id": "H12025/finance_equity",
+        "token": 2,
+        "printed": "112.76",
+        "multiplier": "100000000",
+        "value": "11276000000.00"
+      },
+      {
+        "id": "H12025/finance_revenue",
+        "token": 3,
+        "printed": "17.04",
+        "multiplier": "100000000",
+        "value": "1704000000.00"
+      },
+      {
+        "id": "H12025/finance_pbt",
+        "token": 4,
+        "printed": "8.45",
+        "multiplier": "100000000",
+        "value": "845000000.00"
+      },
+      {
+        "id": "H12025/finance_net_income",
+        "token": 5,
+        "printed": "6.34",
+        "multiplier": "100000000",
+        "value": "634000000.00"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114745",
+    "pdf_page": 6,
+    "section": "（一）经营情况",
+    "end_section": "（二）管理情况",
+    "quote": "（一）经营情况\n=== 页 7 ===\n7\n截至2025 年12 月31 日，财务公司资产总额为1497.66 亿元、负债总\n额为1383.27 亿元、所有者权益合计114.39 亿元。2025 年，财务公司实现\n营业收入32.17 亿元，实现利润总额15.32 亿元，净利润11.56 亿元。",
+    "cells": [
+      {
+        "id": "FY2025/finance_assets",
+        "token": 0,
+        "printed": "1497.66",
+        "multiplier": "100000000",
+        "value": "149766000000.00"
+      },
+      {
+        "id": "FY2025/finance_liabilities",
+        "token": 1,
+        "printed": "1383.27",
+        "multiplier": "100000000",
+        "value": "138327000000.00"
+      },
+      {
+        "id": "FY2025/finance_equity",
+        "token": 2,
+        "printed": "114.39",
+        "multiplier": "100000000",
+        "value": "11439000000.00"
+      },
+      {
+        "id": "FY2025/finance_revenue",
+        "token": 3,
+        "printed": "32.17",
+        "multiplier": "100000000",
+        "value": "3217000000.00"
+      },
+      {
+        "id": "FY2025/finance_pbt",
+        "token": 4,
+        "printed": "15.32",
+        "multiplier": "100000000",
+        "value": "1532000000.00"
+      },
+      {
+        "id": "FY2025/finance_net_income",
+        "token": 5,
+        "printed": "11.56",
+        "multiplier": "100000000",
+        "value": "1156000000.00"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475863",
+    "pdf_page": 7,
+    "section": "（一）经营情况",
+    "end_section": "（二）管理情况",
+    "quote": "（一）经营情况\n截至2026 年6 月30日，财务公司资产总额为1571.36 亿元、负债总\n额为1451.96 亿元、所有者权益合计119.41 亿元。2026 年1-6 月，财务\n公司实现营业收入15.76 亿元，实现利润总额8.02 亿元，净利润4.68 亿\n元。",
+    "cells": [
+      {
+        "id": "H12026/finance_assets",
+        "token": 0,
+        "printed": "1571.36",
+        "multiplier": "100000000",
+        "value": "157136000000.00"
+      },
+      {
+        "id": "H12026/finance_liabilities",
+        "token": 1,
+        "printed": "1451.96",
+        "multiplier": "100000000",
+        "value": "145196000000.00"
+      },
+      {
+        "id": "H12026/finance_equity",
+        "token": 2,
+        "printed": "119.41",
+        "multiplier": "100000000",
+        "value": "11941000000.00"
+      },
+      {
+        "id": "H12026/finance_revenue",
+        "token": 3,
+        "printed": "15.76",
+        "multiplier": "100000000",
+        "value": "1576000000.00"
+      },
+      {
+        "id": "H12026/finance_pbt",
+        "token": 4,
+        "printed": "8.02",
+        "multiplier": "100000000",
+        "value": "802000000.00"
+      },
+      {
+        "id": "H12026/finance_net_income",
+        "token": 5,
+        "printed": "4.68",
+        "multiplier": "100000000",
+        "value": "468000000.00"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475863",
+    "pdf_page": 1,
+    "section": "财务公司股权结构",
+    "end_section": "二、财务公司内控情况",
+    "quote": "财务公司股权结构\n股东名称 持股金额\n（亿元）\n持股比例\n（%）\n贵州茅台酒股份有限公司 12.75 51\n=== 页 2 ===\n2\n中国贵州茅台酒厂（集团）有限责任公司 10 40\n贵州茅台酒厂（集团）技术开发有限公司 2.25 9\n合计 25 100",
+    "cells": []
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 72,
+    "section": "股份\n总数 1,252",
+    "end_section": "其他说明：",
+    "quote": "股份\n总数 1,252,270,215.00 -2,188,614.00 -2,188,614.00 1,250,081,601.00",
+    "cells": [
+      {
+        "id": "2026-06-30/shares_open",
+        "token": 0,
+        "printed": "1,252,270,215.00",
+        "multiplier": "1",
+        "value": "1252270215.00"
+      },
+      {
+        "id": "2026-06-30/shares_cancelled",
+        "token": 1,
+        "printed": "-2,188,614.00",
+        "multiplier": "1",
+        "value": "-2188614.00"
+      },
+      {
+        "id": "2026-06-30/shares_close",
+        "token": 3,
+        "printed": "1,250,081,601.00",
+        "multiplier": "1",
+        "value": "1250081601.00"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 72,
+    "section": "股票回购 120,112",
+    "end_section": "其他说明，包括",
+    "quote": "股票回购 120,112,601.53 2,880,061,147.37 3,000,173,748.90\n合计 120,112,601.53 2,880,061,147.37 3,000,173,748.90",
+    "cells": [
+      {
+        "id": "2026-06-30/treasury_open",
+        "token": 0,
+        "printed": "120,112,601.53",
+        "multiplier": "1",
+        "value": "120112601.53"
+      },
+      {
+        "id": "2026-06-30/treasury_added",
+        "token": 1,
+        "printed": "2,880,061,147.37",
+        "multiplier": "1",
+        "value": "2880061147.37"
+      },
+      {
+        "id": "2026-06-30/treasury_cancelled",
+        "token": 2,
+        "printed": "3,000,173,748.90",
+        "multiplier": "1",
+        "value": "3000173748.90"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 69,
+    "section": "货 币 资\n金 8,358",
+    "end_section": "26、 应付账款",
+    "quote": "货 币 资\n金 8,358,830,124.37 8,358,830,124.37 其他\n存放中央银\n行法定存款\n准备金\n7,254,499,309.26 7,254,499,309.26 其他\n存放中央银\n行法定存款\n准备金\n拆 出 资\n金 23,315,882,005.03 23,309,929,811.40 其他\n不能随时支\n取的同业存\n款\n合计 8,358,830,124.37 8,358,830,124.37 / / 30,570,381,314.29 30,564,429,120.66 / /",
+    "cells": [
+      {
+        "id": "2026-06-30/restricted_cash_book",
+        "token": 0,
+        "printed": "8,358,830,124.37",
+        "multiplier": "1",
+        "value": "8358830124.37"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225475868",
+    "pdf_page": 82,
+    "section": "法定存款准备金 8,355",
+    "end_section": "61、 所有者权益变动",
+    "quote": "法定存款准备金 8,355,337,252.97 7,250,789,537.15 使用受限\n合计 8,355,337,252.97 7,250,789,537.15 /",
+    "cells": [
+      {
+        "id": "2026-06-30/restricted_cash_cf",
+        "token": 0,
+        "printed": "8,355,337,252.97",
+        "multiplier": "1",
+        "value": "8355337252.97"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 16,
+    "section": "注：（1）为保证公司可持续发展",
+    "end_section": "产品档次划分标准",
+    "quote": "注：（1）为保证公司可持续发展，每年需留存一定量的基酒，按生产工艺，茅台酒从生产到出厂\n至少需要五年。（2）茅台酒是由不同年份、不同轮次、不同浓度的基酒相互勾兑而成，是技术和\n艺术的完美结合，因此某一年份的基酒可能在未来数年都会作为产品出现。（3）公司坚持质量是\n生命之魂，坚持“崇本守道，坚守工艺，贮足陈酿，不卖新酒”，茅台酒的生产属于自然固态发\n酵，传统工艺酿造，成品率具有一定波动性。（4）基于上述原因，茅台酒基酒产销率不能精准计\n算。系列酒的产品形成过程近似于茅台酒。",
+    "cells": []
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 16,
+    "section": "成品酒 半成品酒（含基础酒）",
+    "end_section": "注：成品酒",
+    "quote": "成品酒 半成品酒（含基础酒）\n24,770.35 315,207.51",
+    "cells": [
+      {
+        "id": "FY2025/finished_wine_tonnes",
+        "token": 0,
+        "printed": "24,770.35",
+        "multiplier": "1",
+        "value": "24770.35"
+      },
+      {
+        "id": "FY2025/unfinished_wine_tonnes",
+        "token": 1,
+        "printed": "315,207.51",
+        "multiplier": "1",
+        "value": "315207.51"
+      }
+    ]
+  },
+  {
+    "pdf_id": "1225114741",
+    "pdf_page": 16,
+    "section": "茅台酒 58,473.16",
+    "end_section": "注：（1）为保证公司可持续发展",
+    "quote": "茅台酒 58,473.16 3.91 46,750.66 0.73 14,649,990.65 0.39 贵州茅台酒\n其他系列酒 57,650.57 19.82 38,353.48 3.88 2,227,467.87 -9.76\n茅台王子酒、茅\n台 1935 酒、汉\n酱酒、赖茅酒",
+    "cells": [
+      {
+        "id": "FY2025/moutai_production_tonnes",
+        "token": 0,
+        "printed": "58,473.16",
+        "multiplier": "1",
+        "value": "58473.16"
+      },
+      {
+        "id": "FY2025/moutai_sales_tonnes",
+        "token": 2,
+        "printed": "46,750.66",
+        "multiplier": "1",
+        "value": "46750.66"
+      },
+      {
+        "id": "FY2025/moutai_revenue",
+        "token": 4,
+        "printed": "14,649,990.65",
+        "multiplier": "10000",
+        "value": "146499906500.00"
+      },
+      {
+        "id": "FY2025/series_production_tonnes",
+        "token": 6,
+        "printed": "57,650.57",
+        "multiplier": "1",
+        "value": "57650.57"
+      },
+      {
+        "id": "FY2025/series_sales_tonnes",
+        "token": 8,
+        "printed": "38,353.48",
+        "multiplier": "1",
+        "value": "38353.48"
+      },
+      {
+        "id": "FY2025/series_revenue",
+        "token": 10,
+        "printed": "2,227,467.87",
+        "multiplier": "10000",
+        "value": "22274678700.00"
+      }
+    ]
+  }
+]

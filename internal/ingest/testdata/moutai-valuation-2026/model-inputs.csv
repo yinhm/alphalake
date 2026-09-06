@@ -1,0 +1,14 @@
+item,value,source,valuation_date,status,information_as_of
+revenue_ttm,170152009062.430000,reported: FY2025 + H12026 - H12025 / revenue; excludes financial interest,2026-06-30,illustrative_model_not_reported_fact,2026-09-06T00:00:00+00:00
+ebit_ttm,109809074377.120000,financial-bridge: liquor_ebit_proxy FY + H1 - prior H1; unallocated finance costs remain,2026-06-30,illustrative_model_not_reported_fact,2026-09-06T00:00:00+00:00
+da_ttm,2349791950.510000,"reported: cf_fixed_da + cf_rou_da + cf_intangible_da + cf_deferred_da, TTM; consolidated proxy",2026-06-30,illustrative_model_not_reported_fact,2026-09-06T00:00:00+00:00
+inventory,61317208371.300000,"reported: 2026-06-30/inventory; carrying cost, not retail wine value",2026-06-30,illustrative_model_not_reported_fact,2026-09-06T00:00:00+00:00
+other_wc,-15652724111.200000,balance-bridge: wc_proxy - inventory; includes unclassified nonfinancial-looking items,2026-06-30,illustrative_model_not_reported_fact,2026-09-06T00:00:00+00:00
+financial_gross,200745434560.400000,"balance-bridge: financial_gross; consolidated balance, not cash equivalents added again",2026-06-30,illustrative_model_not_reported_fact,2026-09-06T00:00:00+00:00
+risk_assets,4064709362.910000,balance-bridge: funds + associates,2026-06-30,illustrative_model_not_reported_fact,2026-09-06T00:00:00+00:00
+external_deposits,25426316668.170000,reported: 2026-06-30/deposits_liability; external to listed consolidation,2026-06-30,illustrative_model_not_reported_fact,2026-09-06T00:00:00+00:00
+finance_book_equity,11941000000.000000,"reported: H12026/finance_equity; source 0.01 hundred-million CNY = 1,000,000 CNY precision",2026-06-30,illustrative_model_not_reported_fact,2026-09-06T00:00:00+00:00
+income_tax_payable,2909272618.860000,reported: 2026-06-30/income_tax_payable; assumed settled outside forecast,2026-06-30,illustrative_model_not_reported_fact,2026-09-06T00:00:00+00:00
+lease_debt,243684868.060000,balance-bridge: current_leases + leases; source statements show no conventional borrowings,2026-06-30,illustrative_model_not_reported_fact,2026-09-06T00:00:00+00:00
+shares,1250081601.000000,"reported: shares_close, shares_open + shares_cancelled; cancelled shares not deducted twice",2026-06-30,illustrative_model_not_reported_fact,2026-09-06T00:00:00+00:00
+operating_minority_fraction_proxy,0.029602,(TTM consolidated minority income - 49% * rounded finance standalone TTM net income)/(liquor EBIT proxy * 75%); allocation assumption,2026-06-30,illustrative_model_not_reported_fact,2026-09-06T00:00:00+00:00

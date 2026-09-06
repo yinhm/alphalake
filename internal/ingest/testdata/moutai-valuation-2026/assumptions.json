@@ -1,0 +1,14 @@
+{
+  "valuation_date":"2026-06-30",
+  "information_as_of":"2026-09-06T00:00:00+00:00",
+  "status":"retrospective_illustrative_valuation_not_market_target",
+  "policy":"nominal CNY; year-end discounting; liquor EBIT proxy retains unallocated finance costs; consumption tax stays in operating cost; financial pool valued separately without double adding deposits or finance book equity",
+  "inventory_policy":"existing pipeline assumed to support first five forecast years; new inventory funding follows revenue increments five years ahead; aggregate cost proxy, not proven vintage/tonnage rollforward",
+  "finance_policy":"remove full standalone finance book equity from consolidated net financial pool as allocation proxy; add back only 51% at scenario PB; remaining pool haircut/allocation is a model assumption, not exact deconsolidation or distributable cash",
+  "minority_policy":"nonfinance minority earnings proxy divided by liquor NOPAT proxy, scaled by scenario; apply to liquor enterprise and residual financial pool; not exact entity-by-entity ownership allocation",
+  "scenarios":[
+    {"name":"cautious","volume_growth":"0","price_mix_growth":"0","terminal_growth":"0.01","margin":"0.60","tax_rate":"0.25","wacc":"0.10","terminal_roic":"0.15","inventory_ratio":"0.45","long_capital_ratio":"0.25","other_wc_ratio":"0","operating_cash_ratio":"0.03","financial_asset_recovery":"0.95","risk_asset_recovery":"0.50","finance_pb":"0.80","minority_scale":"1.25"},
+    {"name":"central","volume_growth":"0.02","price_mix_growth":"0.02","terminal_growth":"0.02","margin":"0.65","tax_rate":"0.25","wacc":"0.08","terminal_roic":"0.20","inventory_ratio":"0.36","long_capital_ratio":"0.20","other_wc_ratio":"-0.05","operating_cash_ratio":"0.02","financial_asset_recovery":"1","risk_asset_recovery":"0.75","finance_pb":"1","minority_scale":"1"},
+    {"name":"expansive","volume_growth":"0.03","price_mix_growth":"0.03","terminal_growth":"0.025","margin":"0.68","tax_rate":"0.25","wacc":"0.07","terminal_roic":"0.25","inventory_ratio":"0.30","long_capital_ratio":"0.15","other_wc_ratio":"-0.08","operating_cash_ratio":"0.01","financial_asset_recovery":"1","risk_asset_recovery":"1","finance_pb":"1.20","minority_scale":"0.75"}
+  ]
+}

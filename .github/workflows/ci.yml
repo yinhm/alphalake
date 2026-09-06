@@ -32,3 +32,5 @@ jobs:
         run: python internal/ingest/testdata/anker-dcf-2026/verify.py
       - name: Verify Anker historical evidence offline
         run: python internal/ingest/testdata/anker-history-2026/verify.py
+      - name: Verify Moutai evidence and valuation offline
+        run: python internal/ingest/testdata/moutai-valuation-2026/verify.py
