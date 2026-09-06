@@ -1,6 +1,6 @@
 {
-  "target_commit": "c4b86e5782371ada63e03972ec13e0fd32be937b",
-  "status": "forecast_module_experiment_not_api_acceptance_not_market_target",
+  "target_commit": "7ce156a7c6d568d41f480919d84b998bee599d54",
+  "status": "shared_orchestrator_verified_not_http_acceptance_not_market_target",
   "contract": {
     "code": "300866",
     "currency": "CNY",
@@ -10,7 +10,7 @@
     "balance_date": "2026-06-30",
     "information_as_of": "2026-09-06T00:00:00+00:00",
     "statement_scope": "provider_default",
-    "entry": "prepared TTM directly to M1/M2/M4; never FY or LTM rotation",
+    "entry": "CompanyValuationInput.prepared_ttm via run_full_valuation; no quarterly rotation",
     "wacc": "explicit 9% assumption; industry beta and market value unused",
     "adjustments": "RD expensed; leases already accounted; no repeated capitalization"
   },
@@ -85,11 +85,11 @@
   ],
   "probes": {
     "ltm_revenue": 34252.649984,
-    "incomplete_capex_returned": 365.12016,
+    "incomplete_capex_returned": null,
     "correct_ttm_capex": 319.63428,
-    "short_quarters_revenue": 30514.403328,
-    "unsafe_full_engine_fcff": 1975.7540800000002,
-    "unsafe_ttm_fcff": 2523.6665276961253
+    "short_quarters_status": "rejected",
+    "unsafe_full_engine_fcff": null,
+    "unsafe_ttm_fcff": null
   },
   "target_operating_value": 52401.10820123296,
   "alphalake_operating_value": 51080.274863153594,
