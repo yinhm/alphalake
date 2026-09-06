@@ -1,0 +1,57 @@
+period,item,value,unit,status,formula,as_of
+2025-06-30,oci_pretax,-258863921.10,CNY,reported_oci_not_settlement_cash,2025-06-30/hedge_oci_pretax,2026-09-06T00:00:00+00:00
+2025-06-30,oci_reclassified,-8638424.02,CNY,reported_oci_not_settlement_cash,2025-06-30/hedge_oci_reclassified,2026-09-06T00:00:00+00:00
+2025-06-30,oci_tax,-41929887.01,CNY,reported_oci_not_settlement_cash,2025-06-30/hedge_oci_tax,2026-09-06T00:00:00+00:00
+2025-06-30,oci_parent,-208295610.07,CNY,reported_oci_not_settlement_cash,2025-06-30/hedge_oci_parent,2026-09-06T00:00:00+00:00
+2025-06-30,oci_minority,0.00,CNY,reported_oci_not_settlement_cash,2025-06-30/hedge_oci_minority,2026-09-06T00:00:00+00:00
+2025-06-30,forward_asset_change,-218667.60,CNY,balance_change_not_settlement_cash,change(trading_forward_asset+derivative_assets),2026-09-06T00:00:00+00:00
+2025-06-30,forward_liability_change,235843228.61,CNY,balance_change_not_settlement_cash,change(trading_liabilities+derivative_liabilities),2026-09-06T00:00:00+00:00
+2025-06-30,net_forward_asset_change,-236061896.21,CNY,balance_change_not_settlement_cash,forward_asset_change-forward_liability_change,2026-09-06T00:00:00+00:00
+2025-06-30,oci_net_pretax_minus_derivative_change,-2421327.25,CNY,reported_scope_difference_not_overwritten,oci_pretax-oci_reclassified-change(derivative_assets-derivative_liabilities),2026-09-06T00:00:00+00:00
+2025-06-30,forward_disposal_profit,75103173.09,CNY,investment_income_not_settlement_cash,2025-06-30/forward_realized,2026-09-06T00:00:00+00:00
+2025-06-30,forward_fair_value_profit,11709752.22,CNY,profit_not_settlement_cash,fv_forward_asset+fv_forward_liability,2026-09-06T00:00:00+00:00
+2025-06-30,wc_gap_excluding_forward_assets_and_liabilities,267839291.34,CNY,sensitivity_not_attributed_or_base_policy,remaining_wc_scope_difference+net_forward_asset_change,2026-09-06T00:00:00+00:00
+2025-06-30,wc_gap_excluding_forwards_gross_receivables,233228319.38,CNY,sensitivity_not_attributed_or_base_policy,wc_gap_excluding_forward_assets_and_liabilities-receivable_allowance_change,2026-09-06T00:00:00+00:00
+2025-12-31,oci_pretax,89271598.41,CNY,reported_oci_not_settlement_cash,2025-12-31/hedge_oci_pretax,2026-09-06T00:00:00+00:00
+2025-12-31,oci_reclassified,-11059751.57,CNY,reported_oci_not_settlement_cash,2025-12-31/hedge_oci_reclassified,2026-09-06T00:00:00+00:00
+2025-12-31,oci_tax,17297152.86,CNY,reported_oci_not_settlement_cash,2025-12-31/hedge_oci_tax,2026-09-06T00:00:00+00:00
+2025-12-31,oci_parent,83034197.12,CNY,reported_oci_not_settlement_cash,2025-12-31/hedge_oci_parent,2026-09-06T00:00:00+00:00
+2025-12-31,oci_minority,0.00,CNY,reported_oci_not_settlement_cash,2025-12-31/hedge_oci_minority,2026-09-06T00:00:00+00:00
+2025-12-31,forward_asset_change,112690405.12,CNY,balance_change_not_settlement_cash,change(trading_forward_asset+derivative_assets),2026-09-06T00:00:00+00:00
+2025-12-31,forward_liability_change,8409339.27,CNY,balance_change_not_settlement_cash,change(trading_liabilities+derivative_liabilities),2026-09-06T00:00:00+00:00
+2025-12-31,net_forward_asset_change,104281065.85,CNY,balance_change_not_settlement_cash,forward_asset_change-forward_liability_change,2026-09-06T00:00:00+00:00
+2025-12-31,oci_net_pretax_minus_derivative_change,0.00,CNY,reported_scope_difference_not_overwritten,oci_pretax-oci_reclassified-change(derivative_assets-derivative_liabilities),2026-09-06T00:00:00+00:00
+2025-12-31,forward_disposal_profit,116342144.35,CNY,investment_income_not_settlement_cash,2025-12-31/forward_realized,2026-09-06T00:00:00+00:00
+2025-12-31,forward_fair_value_profit,3914891.87,CNY,profit_not_settlement_cash,fv_forward_asset+fv_forward_liability,2026-09-06T00:00:00+00:00
+2025-12-31,wc_gap_excluding_forward_assets_and_liabilities,546297574.31,CNY,sensitivity_not_attributed_or_base_policy,remaining_wc_scope_difference+net_forward_asset_change,2026-09-06T00:00:00+00:00
+2025-12-31,wc_gap_excluding_forwards_gross_receivables,517693602.59,CNY,sensitivity_not_attributed_or_base_policy,wc_gap_excluding_forward_assets_and_liabilities-receivable_allowance_change,2026-09-06T00:00:00+00:00
+2026-06-30,oci_pretax,245676736.12,CNY,reported_oci_not_settlement_cash,2026-06-30/hedge_oci_pretax,2026-09-06T00:00:00+00:00
+2026-06-30,oci_reclassified,89271598.41,CNY,reported_oci_not_settlement_cash,2026-06-30/hedge_oci_reclassified,2026-09-06T00:00:00+00:00
+2026-06-30,oci_tax,24659109.22,CNY,reported_oci_not_settlement_cash,2026-06-30/hedge_oci_tax,2026-09-06T00:00:00+00:00
+2026-06-30,oci_parent,131746028.49,CNY,reported_oci_not_settlement_cash,2026-06-30/hedge_oci_parent,2026-09-06T00:00:00+00:00
+2026-06-30,oci_minority,0.00,CNY,reported_oci_not_settlement_cash,2026-06-30/hedge_oci_minority,2026-09-06T00:00:00+00:00
+2026-06-30,forward_asset_change,99270436.45,CNY,balance_change_not_settlement_cash,change(trading_forward_asset+derivative_assets),2026-09-06T00:00:00+00:00
+2026-06-30,forward_liability_change,-57408595.05,CNY,balance_change_not_settlement_cash,change(trading_liabilities+derivative_liabilities),2026-09-06T00:00:00+00:00
+2026-06-30,net_forward_asset_change,156679031.50,CNY,balance_change_not_settlement_cash,forward_asset_change-forward_liability_change,2026-09-06T00:00:00+00:00
+2026-06-30,oci_net_pretax_minus_derivative_change,0.00,CNY,reported_scope_difference_not_overwritten,oci_pretax-oci_reclassified-change(derivative_assets-derivative_liabilities),2026-09-06T00:00:00+00:00
+2026-06-30,forward_disposal_profit,-53469637.17,CNY,investment_income_not_settlement_cash,2026-06-30/forward_realized,2026-09-06T00:00:00+00:00
+2026-06-30,forward_fair_value_profit,323536.79,CNY,profit_not_settlement_cash,fv_forward_asset+fv_forward_liability,2026-09-06T00:00:00+00:00
+2026-06-30,wc_gap_excluding_forward_assets_and_liabilities,11887837.11,CNY,sensitivity_not_attributed_or_base_policy,remaining_wc_scope_difference+net_forward_asset_change,2026-09-06T00:00:00+00:00
+2026-06-30,wc_gap_excluding_forwards_gross_receivables,-35233802.33,CNY,sensitivity_not_attributed_or_base_policy,wc_gap_excluding_forward_assets_and_liabilities-receivable_allowance_change,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,oci_pretax,593812255.63,CNY,reported_oci_not_settlement_cash,2025-12-31/oci_pretax+2026-06-30/oci_pretax-2025-06-30/oci_pretax,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,oci_reclassified,86850270.86,CNY,reported_oci_not_settlement_cash,2025-12-31/oci_reclassified+2026-06-30/oci_reclassified-2025-06-30/oci_reclassified,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,oci_tax,83886149.09,CNY,reported_oci_not_settlement_cash,2025-12-31/oci_tax+2026-06-30/oci_tax-2025-06-30/oci_tax,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,oci_parent,423075835.68,CNY,reported_oci_not_settlement_cash,2025-12-31/oci_parent+2026-06-30/oci_parent-2025-06-30/oci_parent,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,oci_minority,0.00,CNY,reported_oci_not_settlement_cash,2025-12-31/oci_minority+2026-06-30/oci_minority-2025-06-30/oci_minority,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,forward_asset_change,212179509.17,CNY,balance_change_not_settlement_cash,2025-12-31/forward_asset_change+2026-06-30/forward_asset_change-2025-06-30/forward_asset_change,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,forward_liability_change,-284842484.39,CNY,balance_change_not_settlement_cash,2025-12-31/forward_liability_change+2026-06-30/forward_liability_change-2025-06-30/forward_liability_change,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,net_forward_asset_change,497021993.56,CNY,balance_change_not_settlement_cash,2025-12-31/net_forward_asset_change+2026-06-30/net_forward_asset_change-2025-06-30/net_forward_asset_change,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,oci_net_pretax_minus_derivative_change,2421327.25,CNY,reported_scope_difference_not_overwritten,2025-12-31/oci_net_pretax_minus_derivative_change+2026-06-30/oci_net_pretax_minus_derivative_change-2025-06-30/oci_net_pretax_minus_derivative_change,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,forward_disposal_profit,-12230665.91,CNY,investment_income_not_settlement_cash,2025-12-31/forward_disposal_profit+2026-06-30/forward_disposal_profit-2025-06-30/forward_disposal_profit,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,forward_fair_value_profit,-7471323.56,CNY,profit_not_settlement_cash,2025-12-31/forward_fair_value_profit+2026-06-30/forward_fair_value_profit-2025-06-30/forward_fair_value_profit,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,wc_gap_excluding_forward_assets_and_liabilities,290346120.08,CNY,sensitivity_not_attributed_or_base_policy,2025-12-31/wc_gap_excluding_forward_assets_and_liabilities+2026-06-30/wc_gap_excluding_forward_assets_and_liabilities-2025-06-30/wc_gap_excluding_forward_assets_and_liabilities,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,wc_gap_excluding_forwards_gross_receivables,249231480.88,CNY,sensitivity_not_attributed_or_base_policy,2025-12-31/wc_gap_excluding_forwards_gross_receivables+2026-06-30/wc_gap_excluding_forwards_gross_receivables-2025-06-30/wc_gap_excluding_forwards_gross_receivables,2026-09-06T00:00:00+00:00
+2025-06-30,derivative_settlement_cash,,CNY,missing_separate_cash_disclosure,no complete settlement cash and cashflow classification bridge in the three archived reports,2026-09-06T00:00:00+00:00
+2025-12-31,derivative_settlement_cash,,CNY,missing_separate_cash_disclosure,no complete settlement cash and cashflow classification bridge in the three archived reports,2026-09-06T00:00:00+00:00
+2026-06-30,derivative_settlement_cash,,CNY,missing_separate_cash_disclosure,no complete settlement cash and cashflow classification bridge in the three archived reports,2026-09-06T00:00:00+00:00
+TTM-2026-06-30,derivative_settlement_cash,,CNY,missing_separate_cash_disclosure,no complete settlement cash and cashflow classification bridge in the three archived reports,2026-09-06T00:00:00+00:00

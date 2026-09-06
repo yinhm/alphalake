@@ -47,7 +47,7 @@ def main(write=False):
         assert available <= datetime.fromisoformat(AS_OF), id
     with (ROOT / 'reported.csv').open() as f:
         rows = list(csv.DictReader(f))
-    assert len(rows) == 564 and len({r['id'] for r in rows}) == len(rows)
+    assert len(rows) == 597 and len({r['id'] for r in rows}) == len(rows)
     values = {}
     cf_comparatives = {}
     for r in rows:
@@ -301,12 +301,40 @@ def main(write=False):
         emit('receivables-bridge', p, 'forward_asset_change', forward_change, 'trading_forward_asset_change+derivative_assets_change', 'balance_component_not_cashflow_attribution')
         emit('receivables-bridge', p, 'gap_excluding_forward_assets', ex_forward_gap, 'receivable_scope_gap+forward_asset_change', 'sensitivity_not_attributed_or_base_policy')
         emit('receivables-bridge', p, 'gap_excluding_forward_assets_gross_receivables', ex_forward_gap-allowance_change, 'gap_excluding_forward_assets-receivable_allowance_change', 'sensitivity_not_attributed_or_base_policy')
-    for table in ['tax-bridge','lease-reinvestment','wc-components','receivables-bridge']:
+        # 套期储备的列报关系可闭合，不据此反推结算现金。
+        h = lambda key: v(p,'hedge_oci_'+key)
+        assert h('pretax')-h('reclassified')-h('tax') == h('parent')+h('minority')
+        assert h('open')+h('parent') == h('close')
+        assert h('parent') == v(p,'hedge_statement_oci')
+        for date in (opening,p):
+            assert v(date,'hedge_trading_liability') == v(date,'trading_liabilities')
+            assert v(date,'hedge_derivative_liability') == v(date,'derivative_liabilities')
+        for key in ['pretax','reclassified','tax','parent','minority']:
+            emit('hedge-bridge', p, 'oci_'+key, h(key), p+'/hedge_oci_'+key, 'reported_oci_not_settlement_cash')
+        liability_change = total(p,'trading_liabilities derivative_liabilities')-total(opening,'trading_liabilities derivative_liabilities')
+        net_forward_change = forward_change-liability_change
+        derivative_change = v(p,'derivative_assets')-v(p,'derivative_liabilities')-v(opening,'derivative_assets')+v(opening,'derivative_liabilities')
+        emit('hedge-bridge', p, 'forward_asset_change', forward_change, 'change(trading_forward_asset+derivative_assets)', 'balance_change_not_settlement_cash')
+        emit('hedge-bridge', p, 'forward_liability_change', liability_change, 'change(trading_liabilities+derivative_liabilities)', 'balance_change_not_settlement_cash')
+        emit('hedge-bridge', p, 'net_forward_asset_change', net_forward_change, 'forward_asset_change-forward_liability_change', 'balance_change_not_settlement_cash')
+        emit('hedge-bridge', p, 'oci_net_pretax_minus_derivative_change', h('pretax')-h('reclassified')-derivative_change, 'oci_pretax-oci_reclassified-change(derivative_assets-derivative_liabilities)', 'reported_scope_difference_not_overwritten')
+        emit('hedge-bridge', p, 'forward_disposal_profit', v(p,'forward_realized'), p+'/forward_realized', 'investment_income_not_settlement_cash')
+        emit('hedge-bridge', p, 'forward_fair_value_profit', total(p,'fv_forward_asset fv_forward_liability'), 'fv_forward_asset+fv_forward_liability', 'profit_not_settlement_cash')
+        gap = reinvestment[p]['remaining_wc_scope_difference'][0]+net_forward_change
+        assert gap == ex_forward_gap+pay_gap-liability_change
+        emit('hedge-bridge', p, 'wc_gap_excluding_forward_assets_and_liabilities', gap, 'remaining_wc_scope_difference+net_forward_asset_change', 'sensitivity_not_attributed_or_base_policy')
+        emit('hedge-bridge', p, 'wc_gap_excluding_forwards_gross_receivables', gap-allowance_change, 'wc_gap_excluding_forward_assets_and_liabilities-receivable_allowance_change', 'sensitivity_not_attributed_or_base_policy')
+    assert v(PERIODS[0],'hedge_oci_open') == v(PERIODS[1],'hedge_oci_open')
+    assert v(PERIODS[2],'hedge_oci_open') == v(PERIODS[1],'hedge_oci_close')
+    assert v(PERIODS[2],'hedge_comparative_oci') == v(PERIODS[0],'hedge_statement_oci')
+    for table in ['tax-bridge','lease-reinvestment','wc-components','receivables-bridge','hedge-bridge']:
         keys = list(dict.fromkeys(r['item'] for r in results[table]))
         for key in keys:
             group = {r['period']:r for r in results[table] if r['item']==key}
             amount = D(group[PERIODS[1]]['value'])+D(group[PERIODS[2]]['value'])-D(group[PERIODS[0]]['value'])
             emit(table, 'TTM-2026-06-30', key, amount, f'2025-12-31/{key}+2026-06-30/{key}-2025-06-30/{key}', group[PERIODS[2]]['status'])
+    for period in PERIODS+['TTM-2026-06-30']:
+        results['hedge-bridge'].append(dict(period=period, item='derivative_settlement_cash', value='', unit='CNY', status='missing_separate_cash_disclosure', formula='no complete settlement cash and cashflow classification bridge in the three archived reports'))
     for name, data in results.items():
         for row in data:
             row['as_of'] = AS_OF
@@ -316,7 +344,7 @@ def main(write=False):
             path.write_text(expected)
         else:
             assert path.read_text() == expected, f'{path.name}: run --write only after reviewing input/policy changes'
-    print(f'通过：{len(rows)} 个 PDF 金额、84 个源字段位比较、报表/债务恒等式及九张 Decimal 输入表。')
+    print(f'通过：{len(rows)} 个 PDF 金额、84 个源字段位比较、报表/债务恒等式及十张 Decimal 输入表。')
     for name in results:
         for r in results[name]:
             if r['item'] in ('ebit_financing_and_investment_adjusted', 'interest_bearing_debt_book_value', 'noncash_nondebt_wc_broad', 'wc_after_identified_exclusions', 'change_in_broad_wc'):
