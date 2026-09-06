@@ -144,7 +144,7 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 	check(duckstore.FinishIngestRun(ctx, db, runID, duckstore.IngestRunCompleted, nil, nil))
 	result, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if result.FilingResolutionRecovered != 8 || result.FilingResolutionPending != 0 || result.Linked != 6 || result.Inserted != 162 || result.Rejected != 12 || result.LinkPending != 0 || result.LinkAmbiguous != 0 {
+	if result.FilingResolutionRecovered != 8 || result.FilingResolutionPending != 0 || result.Linked != 6 || result.Inserted != 212 || result.Rejected != 16 || result.LinkPending != 0 || result.LinkAmbiguous != 0 {
 		t.Fatalf("quarter materialization: %+v", result)
 	}
 	values := financialSampleValues(t, quarterSampleDir, "values.csv", 24)
@@ -154,6 +154,11 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 		values[i][7] = cumulative[i][7]
 	}
 	values = append(values, financialSampleValues(t, "testdata/core-financial-2025", "values.csv", 35)...)
+	for _, row := range taxDebtSampleValues(t) {
+		if row[2] != "2025-12-31" {
+			values = append(values, row)
+		}
+	}
 	for _, row := range values {
 		originalURL := row[7]
 		disclosed, err := time.Parse("2006-01-02", strings.Split(originalURL, "/")[4])
@@ -167,6 +172,13 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 			WHERE f.provider_code=? AND f.source_provider_field=? AND f.report_period=cast(? AS DATE)`, row[0], row[1], row[2]).Scan(&value, &period, &unit, &filingID, &announcement))
 		want, err := strconv.ParseFloat(row[5], 32)
 		check(err)
+		if len(row) == 11 {
+			want, err = strconv.ParseFloat(row[9], 32)
+			check(err)
+			multiplier, err := strconv.ParseFloat(row[10], 64)
+			check(err)
+			want *= multiplier
+		}
 		if value != want || period != row[3] || unit != row[4] || !announcement.Equal(available) || !strings.HasSuffix(originalURL, "/"+filingID+".PDF") {
 			t.Fatalf("%s/%s/%s: value=%v period=%s unit=%s filing=%s announcement=%s", row[0], row[1], row[2], value, period, unit, filingID, announcement)
 		}
@@ -184,15 +196,30 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 	}
 	var missingDepreciation, zeroDiagnostics int
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact
-		WHERE source_provider_field IN ('FN136','FN137','FN138') AND report_period=DATE '2025-09-30'`).Scan(&missingDepreciation))
+		WHERE source_provider_field IN ('FN136','FN137','FN138','FN581') AND report_period=DATE '2025-09-30'`).Scan(&missingDepreciation))
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM meta.validation_result WHERE rule_code='provider_zero_ambiguous'`).Scan(&zeroDiagnostics))
-	if missingDepreciation != 0 || zeroDiagnostics != 12 {
+	if missingDepreciation != 0 || zeroDiagnostics != 16 {
 		t.Fatalf("missing depreciation materialized=%d diagnostics=%d", missingDepreciation, zeroDiagnostics)
 	}
 	replay, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 || replay.Rejected != 12 || replay.Materialized != 162 {
+	if replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 || replay.Rejected != 16 || replay.Materialized != 212 {
 		t.Fatalf("quarter materialization replay: %+v", replay)
 	}
-	t.Log("Q1/Q2/Q3：24 个金额、六个原始公告关联及各自 PIT 边界通过；162 条标准事实重放无变更")
+	// 错误倍率不得留下旧的看似可信结果；恢复目录后可从原始证据重建。
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE source='tdx' AND provider_field='FN439'`)
+	check(err)
+	invalidScale, err := MaterializeProviderFundamentals(ctx, db, "tdx")
+	check(err)
+	if invalidScale.Rejected != 22 || invalidScale.Removed != 6 {
+		t.Fatalf("invalid multiplier: %+v", invalidScale)
+	}
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=10000 WHERE source='tdx' AND provider_field='FN439'`)
+	check(err)
+	restored, err := MaterializeProviderFundamentals(ctx, db, "tdx")
+	check(err)
+	if restored.Inserted != 6 || restored.Materialized != 212 || restored.Rejected != 16 {
+		t.Fatalf("restored multiplier: %+v", restored)
+	}
+	t.Log("Q1/Q2/Q3：24 个金额、六个原始公告关联及各自 PIT 边界通过；212 条标准事实重放无变更")
 }

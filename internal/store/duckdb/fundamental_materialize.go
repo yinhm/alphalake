@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	fundamentalMaterializerV3  = "pit-fundamental-v3"
-	fundamentalNormalizationV1 = "tdx-float32-decimal-v1"
+	fundamentalMaterializerV4  = "pit-fundamental-v4"
+	fundamentalNormalizationV2 = "tdx-float32-decimal-v2"
 	fundamentalFactStage       = "_alphalake_fundamental_fact_stage"
 	fundamentalRejectStage     = "_alphalake_fundamental_reject_stage"
 )
@@ -102,7 +102,8 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 				pf.provider_code,
 				pf.provider_field,
 				pf.report_period,
-				pf.value,
+				pf.value * m.value_multiplier AS value,
+				m.value_multiplier,
 				m.canonical_field,
 				m.unit,
 				m.value_kind,
@@ -141,9 +142,10 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 					WHEN month(report_period)=9 AND day(report_period)=30 THEN 'quarterly_q3'
 					WHEN month(report_period)=12 AND day(report_period)=31 THEN 'annual'
 					ELSE 'unknown' END THEN 'filing_type_mismatch'
+				WHEN value_multiplier IS NULL OR value_multiplier NOT IN (1,10000) THEN 'canonical_scale_unknown'
 				WHEN value IS NULL OR NOT isfinite(value) THEN 'provider_value_not_finite'
 				-- 季报常不披露现金流补充资料，TDX 用 0 表示空项；不把缺失折旧当成零。
-				WHEN primary_source='tdx' AND provider_field IN ('FN136','FN137','FN138') AND value=0 THEN 'provider_zero_ambiguous'
+				WHEN primary_source='tdx' AND provider_field IN ('FN136','FN137','FN138','FN581') AND value=0 THEN 'provider_zero_ambiguous'
 				WHEN period_basis NOT IN ('report','instant','ytd') OR period_basis IS NULL THEN 'canonical_period_unknown'
 				WHEN value_kind NOT IN ('monetary','shares') OR unit IS NULL OR trim(unit)='' THEN 'canonical_unit_unknown'
 				WHEN try_cast(value AS DECIMAL(38,10)) IS NULL THEN 'canonical_decimal_overflow'
@@ -198,7 +200,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 			?::BIGINT AS ingest_run_id
 		FROM temp.main.`+fundamentalRejectStage+`
 		WHERE rejection_rule IS NULL
-	`, fundamentalNormalizationV1, fundamentalMaterializerV3, ingestRunID); err != nil {
+	`, fundamentalNormalizationV2, fundamentalMaterializerV4, ingestRunID); err != nil {
 		return result, fmt.Errorf("build canonical fundamental stage: %w", err)
 	}
 	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM temp.main.`+fundamentalFactStage).Scan(&result.Materialized); err != nil {

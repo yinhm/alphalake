@@ -103,7 +103,7 @@ func TestRealCorrectionWithoutOriginalProviderVersion(t *testing.T) {
 	check(duckstore.FinishIngestRun(ctx, db, runID, duckstore.IngestRunCompleted, nil, nil))
 	result, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if result.Linked != 1 || result.Inserted != 26 || result.Rejected != 3 || result.LinkAmbiguous != 0 {
+	if result.Linked != 1 || result.Inserted != 34 || result.Rejected != 4 || result.LinkAmbiguous != 0 {
 		t.Fatalf("corrected materialization: %+v", result)
 	}
 	comparisons, err := csv.NewReader(bytes.NewReader(readFinancialSample(t, dir, "comparison.csv"))).ReadAll()
@@ -147,7 +147,7 @@ func TestRealCorrectionWithoutOriginalProviderVersion(t *testing.T) {
 	assertPITRevenue(t, ctx, db, id, reportPeriod, correctedAvailable, true, want)
 	replay, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 || replay.Materialized != 26 {
+	if replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 || replay.Materialized != 34 {
 		t.Fatalf("correction replay: %+v", replay)
 	}
 	t.Log("已验证更正后值及原始版本缺失时的保守边界；未验证真实 TDX 旧值→新值转换")
