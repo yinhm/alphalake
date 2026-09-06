@@ -1,0 +1,28 @@
+[
+  {
+    "Instrument": {
+      "Type": "equity",
+      "ExchangeMIC": "XSHG",
+      "Currency": "CNY",
+      "Name": "贵州茅台"
+    },
+    "Identifier": {
+      "Provider": "tdx",
+      "Type": "symbol",
+      "Value": "sh600519"
+    }
+  },
+  {
+    "Instrument": {
+      "Type": "equity",
+      "ExchangeMIC": "XSHE",
+      "Currency": "CNY",
+      "Name": "安克创新"
+    },
+    "Identifier": {
+      "Provider": "tdx",
+      "Type": "symbol",
+      "Value": "sz300866"
+    }
+  }
+]

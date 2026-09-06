@@ -1,0 +1,19 @@
+{
+  "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query",
+  "request": {
+    "pageNum": 1,
+    "pageSize": 50,
+    "column": "sse",
+    "tabName": "fulltext",
+    "stock": "",
+    "searchkey": "贵州茅台",
+    "category": "category_yjdbg_szsh;category_sjdbg_szsh;",
+    "seDate": "2025-01-01~2026-09-06",
+    "sortName": "time",
+    "sortType": "asc",
+    "isHLtitle": "false"
+  },
+  "size": 2074,
+  "sha256": "712a8e41363428e26152c12e31b73ff6d7d20eb814b6600550eabd93a1f60de0",
+  "fetched_at": "2026-09-06T08:18:34.735589+00:00"
+}

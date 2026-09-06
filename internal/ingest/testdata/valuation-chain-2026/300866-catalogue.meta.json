@@ -1,0 +1,19 @@
+{
+  "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query",
+  "request": {
+    "pageNum": 1,
+    "pageSize": 50,
+    "column": "szse",
+    "tabName": "fulltext",
+    "stock": "",
+    "searchkey": "安克创新",
+    "category": "category_yjdbg_szsh;category_sjdbg_szsh;",
+    "seDate": "2025-01-01~2026-09-06",
+    "sortName": "time",
+    "sortType": "asc",
+    "isHLtitle": "false"
+  },
+  "size": 2054,
+  "sha256": "904dc3780b58de699338854b30157f7d125cc62d58d5dade0a264f3ab986911c",
+  "fetched_at": "2026-09-06T08:18:36.095376+00:00"
+}
