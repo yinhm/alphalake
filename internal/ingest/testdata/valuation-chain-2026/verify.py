@@ -162,6 +162,7 @@ def main(write=False):
     module('balance_profit_evidence', ROOT.parent/'balance-profit-2026/verify.py').verify(write)
     module('cash_rd_evidence', ROOT.parent/'cash-rd-2026/verify.py').verify(write)
     module('supplement_review', ROOT.parent/'supplement-review-2026/verify.py').verify(write)
+    module('f10_supplement_review', ROOT.parent/'f10-supplement-review-2026/verify.py').verify()
     with localcontext() as ctx:
         ctx.prec=40
         for name,rows in build().items():

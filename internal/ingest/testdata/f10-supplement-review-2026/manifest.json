@@ -1,0 +1,8 @@
+{
+  "host": "124.71.187.122:7709",
+  "observed_date": "2026-09-07",
+  "archive_sha256": "49d43210316c3abad73d9615d2e0ae94e3351f85fdebfdbbe17d454a3c06ca6e",
+  "sdk": "github.com/injoyai/tdx@v0.0.87",
+  "sections": 9,
+  "scope": "research_only_not_canonical_supply"
+}
