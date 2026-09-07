@@ -43,3 +43,5 @@ workspace/anker-agent-adapter-20260906/venv/bin/python internal/ingest/testdata/
 标准 TTM 研发费用现由 TDX FN304 提供（3567.709568 百万元），真实目标引擎回传值也有断言；未启用研发资本化，历史 FCFF 仍保留缺项。
 
 2026-09-07：输入血缘增加生产公告快照 filings.csv 与原 61 项补充审核的 resolved.csv；父标准链先核验附注声明、PDF 与独立公告时点。仍需 CNINFO 附注的项不计为 TDX 标准供给。
+
+2026-09-07 合仓后：脚本改用根目录 `valuation/`，不再要求独立仓库 HEAD；输出的 `target_origin_revision` 只记录导入前来源版本，当前引擎由本仓库提交管理。双公司回归及后端测试已加入根 CI。

@@ -1,5 +1,5 @@
 {
-  "target_commit": "7ce156a7c6d568d41f480919d84b998bee599d54",
+  "target_origin_revision": "7ce156a7c6d568d41f480919d84b998bee599d54",
   "status": "shared_orchestrator_verified_industry_policy_not_equivalent_not_market_target",
   "statement_scope": "provider_default; EBIT is liquor policy proxy, not exact deconsolidation",
   "source_sha256": {

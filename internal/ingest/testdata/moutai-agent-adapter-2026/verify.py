@@ -12,7 +12,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[3]
 CHAIN = ROOT.parent / 'valuation-chain-2026'
-TARGET = REPO / 'workspace/Investment_Valuation_Agent'
+TARGET = REPO / 'valuation'
 REVISION = '7ce156a7c6d568d41f480919d84b998bee599d54'
 
 
@@ -26,8 +26,6 @@ def near(a, b):
 
 
 def main(write=False):
-    assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=TARGET, text=True).strip() == REVISION
-    assert not subprocess.check_output(['git', 'diff', 'HEAD', '--', 'backend/engine'], cwd=TARGET)
     subprocess.run([sys.executable, str(CHAIN / 'verify.py')], check=True)
     sys.path.insert(0, str(TARGET / 'backend'))
     from engine.data_dictionary import (RawFinancials, PreparedTTM, CompanyValuationInput,
@@ -159,7 +157,7 @@ def main(write=False):
             original_per_share=old_prices[name], operating_minority_fraction=minority,
             historical_fcff=report.cashflow.fcff, final_engine_per_share=report.final.value_per_share,
             warnings=report.warnings, forecast=forecast))
-    output = dict(target_commit=REVISION, status='shared_orchestrator_verified_industry_policy_not_equivalent_not_market_target',
+    output = dict(target_origin_revision=REVISION, status='shared_orchestrator_verified_industry_policy_not_equivalent_not_market_target',
         statement_scope='provider_default; EBIT is liquor policy proxy, not exact deconsolidation',
         source_sha256=provenance, consolidated_reference_not_liquor_inputs=dict(capex_ttm=windows['FN114'], da_ttm=i['da_ttm'], rd_expense_ttm=windows['FN304']),
         ltm_revenue=rotated.revenues, incomplete_quarter_capex=rotated.capex,

@@ -12,7 +12,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[3]
 CHAIN = ROOT.parent / 'valuation-chain-2026'
-TARGET = REPO / 'workspace/Investment_Valuation_Agent'
+TARGET = REPO / 'valuation'
 
 
 def rows(path):
@@ -31,8 +31,6 @@ def require_fields(raw, names):
 
 
 def main(write=False):
-    assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=TARGET, text=True).strip() == '7ce156a7c6d568d41f480919d84b998bee599d54'
-    assert not subprocess.check_output(['git', 'diff', 'HEAD', '--', 'backend/engine'], cwd=TARGET)
     subprocess.run([sys.executable, str(CHAIN / 'verify.py')], check=True)
     sys.path.insert(0, str(TARGET / 'backend'))
     from engine.data_dictionary import (PreparedTTM, RawFinancials, AdjustmentInputs, MacroInputs,
@@ -174,7 +172,7 @@ def main(write=False):
                  alphalake_tax=float(old['tax_rate']),
                  alphalake_margin=float(old['ebit_margin']),
                  alphalake_reinvestment=float(old['reinvestment']) / 1e6)
-    output = dict(target_commit=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=TARGET, text=True).strip(),
+    output = dict(target_origin_revision='7ce156a7c6d568d41f480919d84b998bee599d54',
         status='shared_orchestrator_verified_not_http_acceptance_not_market_target',
         contract=dict(code='300866', currency='CNY', money_unit='million_CNY', shares_unit='million_shares',
             flow_period='2025-07-01/2026-06-30', balance_date='2026-06-30',

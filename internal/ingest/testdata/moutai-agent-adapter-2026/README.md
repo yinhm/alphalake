@@ -57,3 +57,5 @@ workspace/anker-agent-adapter-20260906/venv/bin/python internal/ingest/testdata/
 新增合并口径研发费用参考值来自 TDX FN304（231.136912 百万元），不冒充酒业分部费用。退税 FN99 的 TTM 缺失显式保留为 None，并有回归断言。
 
 2026-09-07：输入血缘增加生产公告快照 filings.csv 与原 61 项补充审核的 resolved.csv；父标准链先核验附注声明、PDF 与独立公告时点。仍需 CNINFO 附注的项不计为 TDX 标准供给。
+
+2026-09-07 合仓后：脚本改用根目录 `valuation/`，不再要求独立仓库 HEAD；输出的 `target_origin_revision` 只记录导入前来源版本，当前引擎由本仓库提交管理。双公司回归及后端测试已加入根 CI。
