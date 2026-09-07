@@ -120,7 +120,7 @@ def main(write=False):
         information_as_of='2026-09-06T00:00:00+00:00', currency='CNY',
         money_unit='million_reporting_currency', shares_unit='million_shares',
         provenance={n: hashlib.sha256((CHAIN / n).read_bytes()).hexdigest()
-                    for n in ('facts.csv', 'windows.csv', 'inputs.csv', 'input-audit.csv')})
+                    for n in ('facts.csv', 'windows.csv', 'inputs.csv', 'input-audit.csv', 'filings.csv', '../supplement-review-2026/resolved.csv')})
     payload = CompanyValuationInput(ticker='300866', reporting_currency='CNY', prepared_ttm=prepared,
         macro_inputs=macro, industry_data=industry, methodology_choices=method,
         adjustment_inputs=adjustment, valuation_assumptions=assumptions)
@@ -183,7 +183,7 @@ def main(write=False):
             wacc='explicit 9% assumption; industry beta and market value unused',
             adjustments='RD expensed; leases already accounted; no repeated capitalization'),
         source_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in
-            [CHAIN / n for n in ('facts.csv', 'windows.csv', 'inputs.csv', 'input-audit.csv')]},
+            [CHAIN / n for n in ('facts.csv', 'windows.csv', 'inputs.csv', 'input-audit.csv', 'filings.csv', '../supplement-review-2026/resolved.csv')]},
         prepared_base=raw.model_dump(), assumptions=assumptions.model_dump(),
         historical_fcff=None, historical_fcfe=None, missing=missing,
         probes=dict(ltm_revenue=ltm.revenues, incomplete_capex_returned=ltm.capex,

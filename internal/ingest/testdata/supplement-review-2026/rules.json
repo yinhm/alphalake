@@ -1,0 +1,346 @@
+{
+  "600519/financial_interest_income": {
+    "route": "tdx_standard",
+    "field": "FN506",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "ytd"
+  },
+  "600519/financial_interest_expense": {
+    "route": "tdx_standard",
+    "field": "FN509",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "ytd"
+  },
+  "600519/financial_fees": {
+    "route": "tdx_standard",
+    "field": "FN510",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "ytd"
+  },
+  "600519/credit_impairment": {
+    "route": "tdx_standard",
+    "field": "FN520",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "ytd"
+  },
+  "600519/notes_receivable": {
+    "route": "tdx_standard",
+    "field": "FN437",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "600519/contract_liabilities": {
+    "route": "tdx_standard",
+    "field": "FN434",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "600519/income_tax_payable": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "income_tax_component_not_all_taxes",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "600519/interbank_assets": {
+    "route": "tdx_standard",
+    "field": "FN403",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "600519/reverse_repo": {
+    "route": "tdx_standard",
+    "field": "FN409",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "600519/loans": {
+    "route": "tdx_standard",
+    "field": "FN411",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "600519/debt_investments": {
+    "route": "tdx_standard",
+    "field": "FN430",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "600519/other_debt_investments": {
+    "route": "tdx_standard",
+    "field": "FN431",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "600519/funds": {
+    "route": "tdx_standard",
+    "field": "FN433",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "600519/deposits_liability": {
+    "route": "tdx_standard",
+    "field": "FN413",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "600519/finance_equity": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "subsidiary_scope_not_consolidated_field",
+    "scope": "finance_subsidiary",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "600519/finance_net_income": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "subsidiary_scope_not_consolidated_field",
+    "scope": "finance_subsidiary",
+    "unit": "CNY",
+    "period_basis": "ytd"
+  },
+  "300866/forward_realized": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "hedging_component_not_total_investment_or_fair_value",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "ytd"
+  },
+  "300866/fv_forward_asset": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "hedging_component_not_total_investment_or_fair_value",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "ytd"
+  },
+  "300866/fv_forward_liability": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "hedging_component_not_total_investment_or_fair_value",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "ytd"
+  },
+  "300866/trading_assets": {
+    "route": "tdx_standard",
+    "field": "FN9",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/trading_forward_asset": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "hedging_component_not_total_investment_or_fair_value",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/deposits": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "classified_component_not_identifiable_from_aggregate",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/loan_receivable": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "classified_component_not_identifiable_from_aggregate",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/loan_allowance": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "classified_component_not_identifiable_from_aggregate",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/dividends_receivable": {
+    "route": "cninfo_reported_zero",
+    "field": "",
+    "reason": "dash_confirmed_by_report_not_provider_zero",
+    "scope": "consolidated_statement",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/income_tax_payable": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "income_tax_component_not_all_taxes",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/ipo_prepaid": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "classified_component_not_identifiable_from_aggregate",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/repurchase_payable": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "classified_component_not_identifiable_from_aggregate",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/capex_payable": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "classified_component_not_identifiable_from_aggregate",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/ipo_payable": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "classified_component_not_identifiable_from_aggregate",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/cf_property_depreciation": {
+    "route": "tdx_standard",
+    "field": "FN579",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "ytd"
+  },
+  "300866/extra_restricted_cash": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "classified_component_not_identifiable_from_aggregate",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/extra_current_financial_debt": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "classified_component_not_identifiable_from_aggregate",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/extra_noncurrent_financial_debt": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "classified_component_not_identifiable_from_aggregate",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/extra_current_financial_equity": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "classified_component_not_identifiable_from_aggregate",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/extra_noncurrent_financial_equity": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "classified_component_not_identifiable_from_aggregate",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/current_loans": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "maturity_components_not_identifiable_from_total",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/current_bonds": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "maturity_components_not_identifiable_from_total",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/current_leases": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "maturity_components_not_identifiable_from_total",
+    "scope": "consolidated_note_component",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/extra_provisions": {
+    "route": "tdx_standard",
+    "field": "FN59",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/extra_convertible_equity_book": {
+    "route": "tdx_standard",
+    "field": "FN299",
+    "reason": "reviewed_direct_field",
+    "scope": "provider_default",
+    "unit": "CNY",
+    "period_basis": "instant"
+  },
+  "300866/extra_conversion_price": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "security_terms_not_book_liability",
+    "scope": "convertible_security",
+    "unit": "CNY/share",
+    "period_basis": "instant"
+  },
+  "300866/convertible_face": {
+    "route": "cninfo_note",
+    "field": "",
+    "reason": "security_terms_not_book_liability",
+    "scope": "convertible_security",
+    "unit": "CNY",
+    "period_basis": "instant"
+  }
+}

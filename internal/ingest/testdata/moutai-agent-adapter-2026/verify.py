@@ -60,7 +60,7 @@ def main(write=False):
     # EBIT 为酒业政策代理，不将合并 DA/资本开支/现金冒充精确酒业拆分。
     raw = RawFinancials(fiscal_year=2026, revenues=i['revenue_ttm'], ebit=i['ebit_ttm'], shares_outstanding=i['shares'])
     provenance = {n: hashlib.sha256((CHAIN / n).read_bytes()).hexdigest() for n in
-                  ('facts.csv', 'windows.csv', 'inputs.csv', 'input-audit.csv', '600519-equity-bridge.csv')}
+                  ('facts.csv', 'windows.csv', 'inputs.csv', 'input-audit.csv', 'filings.csv', '../supplement-review-2026/resolved.csv', '600519-equity-bridge.csv')}
     prepared = PreparedTTM(financials=raw, period_start='2025-07-01', period_end='2026-06-30',
         information_as_of='2026-09-06T00:00:00+00:00', currency='CNY',
         money_unit='million_reporting_currency', shares_unit='million_shares', provenance=provenance)

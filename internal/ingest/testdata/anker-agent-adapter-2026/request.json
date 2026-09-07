@@ -17,7 +17,7 @@
         "net_income": null,
         "interest_expense": null,
         "capex": 319.63428,
-        "d_a": 258.93503640812503,
+        "d_a": 258.935046797607,
         "noncash_wc": null,
         "change_in_noncash_wc": null,
         "net_debt_issued": null,
@@ -43,10 +43,12 @@
       "money_unit": "million_reporting_currency",
       "shares_unit": "million_shares",
       "provenance": {
-        "facts.csv": "72360a9802b1bb0f2200377ec95f76032822c704c35e48c28f8350bdacd4ca5e",
-        "windows.csv": "340cdfb356cbda456763f84fc658c3f8872d6caf353040c600b73b1fa7e6950c",
-        "inputs.csv": "eed015e9de60d58b1fd4d0473fc1d8d0ceb44766cbb28f95e67ccd41c5a8a6f0",
-        "input-audit.csv": "982a8a703865647e6948e7d3e5ac070788e9db3ec962eb2f3810a39548b3e70d"
+        "facts.csv": "681bc21d3324b438173a2c776a976e0262edd1a2520f31201cec4336d3314c17",
+        "windows.csv": "006fa8518d106cd1f642f870f3a8fd7ac56432e6448a82593ce8164210db326e",
+        "inputs.csv": "57fc964ee0f842dd4255cd47adbf8a5bad0afeee2e34ffc6e5b868d6b000cc40",
+        "input-audit.csv": "6351dac42fe2adad4b0df644da0cf12455ad830b208f318ee280eeb6403522a3",
+        "filings.csv": "e8bb36e1ecfd0f5e0672979fc7da4512fe3297b634c6d078724d1505a9102920",
+        "../supplement-review-2026/resolved.csv": "342389280505f2935baaae5aca8650a9ff3999bfe670cbeb434cf7af04e66dcc"
       }
     },
     "raw_financials": [],

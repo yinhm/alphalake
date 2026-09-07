@@ -110,7 +110,7 @@ func TestRealSixQuarterWindows(t *testing.T) {
 	check(duckstore.FinishIngestRun(ctx, db, run, duckstore.IngestRunCompleted, nil, nil))
 	materialized, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if len(records) != 12 || materialized.Linked != 12 || materialized.Materialized != 702 || materialized.Rejected != 54 {
+	if len(records) != 12 || materialized.Linked != 12 || materialized.Materialized != 751 || materialized.Rejected != 209 {
 		t.Fatalf("six quarters: records=%d result=%+v", len(records), materialized)
 	}
 	rows := financialSampleValues(t, dir, "reported.csv", 38)
@@ -210,7 +210,7 @@ func TestRealSixQuarterWindows(t *testing.T) {
 		}
 		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.ttm_asof(?, DATE '2026-06-30') WHERE provider_code=? AND coverage_status='complete'`, available, code).Scan(&n))
 		// 两家公司 FN19 均为歧义零；002213 的 FN97 也不能由源零确认。
-		wantComplete := map[string]int{"002213": 61, "002920": 62}[code]
+		wantComplete := map[string]int{"002213": 63, "002920": 68}[code]
 		if n != wantComplete {
 			t.Fatalf("%s complete H1 inputs=%d want=%d", code, n, wantComplete)
 		}

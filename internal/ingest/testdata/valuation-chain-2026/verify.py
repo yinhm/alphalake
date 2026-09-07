@@ -34,6 +34,8 @@ def csv_text(rows):
 def build():
     facts={(r['code'],r['period'],r['field']):r for r in read(ROOT/'facts.csv')}
     windows={(r['code'],r['field']):r for r in read(ROOT/'windows.csv')}
+    supplied={(r['code'],r['period'],r['item']):r for r in read(ROOT.parent/'supplement-review-2026/resolved.csv') if r['route']!='tdx_standard'}
+    used_supplements=set()
     audit={};inputs_out=[];forecast_out=[];bridge_out=[];results_out=[];sensitivity_out=[]
     packages={r['sample_sha256']:r for r in json.loads((ROOT/'packages.json').read_text())}
     for sha,p in packages.items():assert hashlib.sha256((ROOT/p['file']).read_bytes()).hexdigest()==sha
@@ -43,7 +45,12 @@ def build():
         assert abs(D(r['value'])-D.from_float(raw)*D(r['multiplier']))<D('.0000001')
     def source(code,p,key,pdf,field,locator):
         if not field:
-            value=pdf;status='supplement_no_reviewed_mapping_not_claimed_absent';refs=''
+            identity=(code,p,key);r=supplied.get(identity)
+            assert r is not None,('undeclared supplement; no implicit PDF fallback',identity)
+            assert r['pdf_locator']==locator and D(r['value'])==pdf and r['information_as_of']==ASOF
+            assert r['unit']==('CNY/share' if key=='extra_conversion_price' else 'CNY')
+            value=D(r['value']);status='verified_cninfo_supplement';refs=r['pdf_sha256']+'/'+r['announcement_id']
+            used_supplements.add(identity)
         else:
             r=facts.get((code,p,field));assert r is not None,('required standard fact missing; no PDF fallback',code,p,key,field)
             multiplier=D(r['multiplier'])
@@ -91,6 +98,7 @@ def build():
         if company == 'moutai':
             mapping.update(current_financial_maturity='FN19', other_payable='FN50', minority_income='FN97')
             mapping.update(prepayments='FN12', other_receivable='FN13', payroll_payable='FN46', tax_payable='FN47')
+        mapping.update(interbank_assets='FN403', reverse_repo='FN409', loans='FN411', deposits_liability='FN413', debt_investments='FN430', other_debt_investments='FN431', funds='FN433', contract_liabilities='FN434', notes_receivable='FN437', financial_interest_income='FN506', financial_interest_expense='FN509', financial_fees='FN510', credit_impairment='FN520') if company == 'moutai' else mapping.update(trading_assets='FN9', extra_provisions='FN59', extra_convertible_equity_book='FN299', cf_property_depreciation='FN579')
         def v(p,k):
             row=pdf[p+'/'+k];amount=D(row['value']);locator=company+'/'+row['pdf_id']+'.pdf#page='+str(row['pdf_page'])
             return revenue(code,p,amount,locator) if k=='revenue' else source(code,p,k,amount,mapping.get(k),locator)
@@ -113,7 +121,7 @@ def build():
             x=lambda k:v(end,'extra_'+k)
             i=dict(revenue_ttm=ttm('revenue'),ebit_ttm=ebit,opening_wc=wc,da_ttm=sum((ttm(k) for k in ['cf_property_depreciation','cf_fixed_depreciation','cf_rou_depreciation','cf_intangible_amortization','cf_deferred_amortization']),D(0)),cash_equivalents=x('cash_equivalents'),other_cash_candidate=v(end,'cash')-x('cash_equivalents')-x('restricted_cash'),financial_debt_assets=x('current_financial_debt')+x('noncurrent_financial_debt')+v(end,'deposits'),risky_investments=x('current_financial_equity')+x('noncurrent_financial_equity')+x('associates')+v(end,'loan_receivable')-v(end,'loan_allowance'),minority=v(end,'minority'),debt=total(end,'short_debt long_debt current_loans bonds current_bonds leases current_leases'),other_claims=total(end,'income_tax_payable repurchase_payable capex_payable ipo_payable')+x('provisions'),shares=x('shares_close'),convertible_debt=total(end,'bonds current_bonds'),convertible_equity_book=x('convertible_equity_book'),convertible_face=D(''.join(re.search(r'(1,104,660,8)\n(00\.00)',next(e['quote'] for e in extra if e['quote'].startswith('11,048,200 '))).groups()).replace(',','')),conversion_price=x('conversion_price'))
             # 转债面值是已锁定跨行披露，不是可用 TDX 映射；显式记录补充输入。
-            source(code,end,'convertible_face',i['convertible_face'],None,'anker/1225533054.pdf; anker-dcf/evidence.json cross-line face value')
+            source(code,end,'convertible_face',i['convertible_face'],None,'anker/1225533054.pdf#page=54')
             assumptions=json.loads((ROOT.parent/'anker-dcf-2026/assumptions.json').read_text())
         assert set(i)==set(baseline)
         for k,value in i.items():inputs_out.append(dict(code=code,item=k,value=value,pdf_model_value=baseline[k],difference=value-baseline[k]))
@@ -128,6 +136,7 @@ def build():
         for w in ['0.07','0.08','0.09','0.10']:
             s=assumptions['scenarios'][1]|{'wacc':w};r=model(i,s)[2]
             sensitivity_out.append(dict(code=code,wacc=w,per_share=r['per_share'] if company=='moutai' else r['per_share_conservative_case']))
+    assert used_supplements==set(supplied), 'unused or missing declared supplements'
     # 不将不同模型的预测字段硬凑为同一标准模型；每家公司分别输出。
     outputs={'input-audit':list(audit.values()),'inputs':inputs_out,'valuation':results_out,'sensitivity':sensitivity_out}
     for code in ['600519','300866']:
@@ -149,14 +158,17 @@ def main(write=False):
     for script in ['anker-dcf-2026/verify.py','moutai-valuation-2026/verify.py']:
         subprocess.run([sys.executable,str(ROOT.parent/script)],cwd=REPO,check=True)
     module('earnings_wc_evidence', ROOT.parent/'earnings-working-capital-2026/verify.py').verify(write)
+    module('financial_instruments_evidence', ROOT.parent/'financial-instruments-2026/verify.py').verify(write)
     module('balance_profit_evidence', ROOT.parent/'balance-profit-2026/verify.py').verify(write)
     module('cash_rd_evidence', ROOT.parent/'cash-rd-2026/verify.py').verify(write)
+    module('supplement_review', ROOT.parent/'supplement-review-2026/verify.py').verify(write)
     with localcontext() as ctx:
         ctx.prec=40
         for name,rows in build().items():
             expected=csv_text(rows);p=ROOT/(name+'.csv')
             if write:p.write_text(expected)
             else:assert p.read_text()==expected,name+' differs'
+    module('supplement_negative', ROOT.parent/'supplement-review-2026/negative.py').verify()
     print('通过：两家公司生产标准链、PDF 对账/显式补充、模型及差异表。')
 
 

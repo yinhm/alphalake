@@ -24,6 +24,10 @@ func TestRealBalanceProfitValues(t *testing.T) {
 	assertRealMappedFields(t, "testdata/balance-profit-2026", 41, 12)
 }
 
+func TestRealFinancialInstrumentValues(t *testing.T) {
+	assertRealMappedFields(t, "testdata/financial-instruments-2026", 38, 17)
+}
+
 func assertRealMappedFields(t *testing.T, dir string, count, fieldCount int) {
 	t.Helper()
 	rows, err := csv.NewReader(bytes.NewReader(readFinancialSample(t, dir, "values.csv"))).ReadAll()
@@ -41,7 +45,11 @@ func assertRealMappedFields(t *testing.T, dir string, count, fieldCount int) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		assertReportSampleValues(t, pkg, [][]string{row})
+		encoded := append([]string(nil), row...)
+		if len(row) == 11 {
+			encoded[5] = row[10]
+		}
+		assertReportSampleValues(t, pkg, [][]string{encoded})
 		fields[row[1]] = true
 	}
 	if len(fields) != fieldCount {

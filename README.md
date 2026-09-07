@@ -42,7 +42,7 @@ AlphaLake 是面向投资研究、本地优先且可复现的金融市场数据�
 - 按不可变数据源证据批量协调 `fundamental.provider_fact`，身份修正时重新归属或删除失效事实，不跨证券重复生成同一版本；
 - 分别统计尝试、插入、重新归属和删除的数据源事实数；
 - 财务身份治理支持分页查看待解析记录、显式确认及撤销确认；
-- 已审核的 63 个 TDX 字段映射，含单季度利润/现金流、股本，以及现金、借款、债券、租赁、税项、利息、权益和再投资明细；新增字段区分期末存量与年初累计，见[核心财务字段](docs/decisions/009-core-financial-fields.md)、[损益/营运资本增补](docs/decisions/012-earnings-working-capital-fields.md)、[现金流/研发字段](docs/decisions/013-cashflow-research-fields.md)及[开源目录与余额/利润增补](docs/decisions/014-open-source-fn-balance-profit.md)；
+- 已审核的 80 个 TDX 字段映射，含单季度利润/现金流、股本，以及现金、借款、债券、租赁、税项、利息、权益和再投资明细；新增字段区分期末存量与年初累计，见[核心财务字段](docs/decisions/009-core-financial-fields.md)、[损益/营运资本增补](docs/decisions/012-earnings-working-capital-fields.md)、[现金流/研发字段](docs/decisions/013-cashflow-research-fields.md)、[开源目录与余额/利润增补](docs/decisions/014-open-source-fn-balance-profit.md)及[金融工具与补充供给](docs/decisions/015-financial-instruments-and-supplement-supply.md)；
 - CNINFO 公告目录与原文归档、保守的披露日期精度，以及待解析公告的本地重试；
 - 显式的数据源事实—公告关联、标准时点基本面物化，以及原始/更正版本的 ASOF 查询；
 - 按公告时点查询年度与 TTM，区分单季、累计和存量，缺期返回空值及输入血缘，见[查询规则](docs/decisions/011-annual-and-ttm-windows.md)；
@@ -64,7 +64,7 @@ go build ./cmd/alphalake
 
 CI 还会检查 `go mod tidy` 是否产生文件改动，并以 Python 3.12 / [版本与 wheel 哈希锁定的 pypdf](.github/requirements-pdf.txt) 运行[标准事实到估值的双公司验收](internal/ingest/testdata/valuation-chain-2026/README.md)：先执行生产归档、TDX 解析、标准物化及时点查询，再独立核验安克和茅台原始 PDF，最后用标准查询值及明确补充项复算估值。安克六年历史与研发资本化校验另行保留；更正、税项/债务、TTM、核心财务字段四批历史 PDF 校验也在 CI 强制运行。
 
-安克、茅台的原 PDF 模型保留为研究对照；它们通过不等于生产数据链路通过。当前 158 个模型取值中 97 个由标准事实供应，61 个尚无已审核对应映射、作为显式补充，不宣称 TDX 没有这些字段。标准链重算后的两位小数每股值不变，源精度差异单列；纯经营现金流等历史缺口仍保留，结果不是当前目标价。见[安克报告](docs/anker-validation-valuation-20260906.md)及[茅台报告](docs/moutai-validation-valuation-20260906.md)。
+安克、茅台的原 PDF 模型保留为研究对照；它们通过不等于生产数据链路通过。当前 158 个模型取值中 124 个由标准事实供应，34 个通过独立公告、原文与显式供给契约提供；原 61 个补充项已全部逐项核验，其中 27 个转为 TDX，34 个仍为 CNINFO 补充，不宣称全部 TDX 化。标准链重算后的两位小数每股值不变，源精度差异单列；纯经营现金流等历史缺口仍保留，结果不是当前目标价。见[安克报告](docs/anker-validation-valuation-20260906.md)及[茅台报告](docs/moutai-validation-valuation-20260906.md)。
 
 真实财务样本的离线重放、PDF 归档复核及验证范围见[可重复验收报告](docs/acceptance-20260905.md)。[安克创新财务输入样本](docs/anker-valuation-20260906.md)提供 EBIT 调整、债务和营运资本的原文证据、分析政策与可复算 CSV。
 

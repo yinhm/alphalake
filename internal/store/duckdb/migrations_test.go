@@ -36,6 +36,7 @@ func TestMigrationOrder(t *testing.T) {
 		"022_earnings_working_capital.sql",
 		"023_cashflow_research_fields.sql",
 		"024_balance_profit_fields.sql",
+		"025_financial_instrument_fields.sql",
 	}
 	if len(migrations) != len(want) {
 		t.Fatalf("got %v", migrations)
@@ -111,7 +112,7 @@ func TestCoreFinancialMigrationFromV17(t *testing.T) {
 			FROM fundamental.provider_field WHERE source='tdx'`).Scan(&existing, &instant, &ytd, &historical); err != nil {
 			t.Fatal(err)
 		}
-		if existing != 9 || instant != 31 || ytd != 23 || historical != 9 {
+		if existing != 9 || instant != 43 || ytd != 28 || historical != 9 {
 			t.Fatalf("mapping upgrade: existing=%d instant=%d ytd=%d historical=%d", existing, instant, ytd, historical)
 		}
 	}

@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -34,8 +35,8 @@ func TestRealValuationStandardChain(t *testing.T) {
 	db, err := duckstore.OpenAndMigrate(ctx, dbPath)
 	check(err)
 	defer db.Close()
-	// 024 只新增映射；构造 v23 状态后实际导入全部真实源记录。
-	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field IN ('FN19','FN20','FN27','FN28','FN33','FN37','FN50','FN53','FN60','FN95','FN96','FN97'); DELETE FROM meta.schema_version WHERE version=24`)
+	// 025 只新增映射；构造 v24 状态后实际导入全部真实源记录。
+	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field IN ('FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579'); DELETE FROM meta.schema_version WHERE version=25`)
 	check(err)
 	root := filepath.Join(t.TempDir(), "raw")
 	var instruments []domain.InstrumentObservation
@@ -44,18 +45,20 @@ func TestRealValuationStandardChain(t *testing.T) {
 	check(err)
 	run, err := duckstore.StartIngestRun(ctx, db, "tdx", "valuation_acceptance_sample", nil)
 	check(err)
-	for _, path := range []string{dir + "/600519-catalogue.json", dir + "/300866-catalogue.json", "testdata/moutai-valuation-2026/catalogue.json", "testdata/anker-valuation-2026/catalogue.json"} {
+	docClient, err := cninfo.NewDefaultClient()
+	check(err)
+	for _, path := range []string{dir + "/600519-catalogue.json", dir + "/300866-catalogue.json", "testdata/moutai-valuation-2026/catalogue.json", "testdata/moutai-valuation-2026/finance-catalogue.json", "testdata/anker-valuation-2026/catalogue.json"} {
 		raw := readFinancialSample(t, filepath.Dir(path), filepath.Base(path))
 		var meta struct {
 			FetchedAt time.Time `json:"fetched_at"`
 			SHA       string    `json:"sha256"`
 		}
+		var reports map[string]json.RawMessage
 		if filepath.Dir(path) == dir {
 			check(json.Unmarshal(readFinancialSample(t, dir, filepath.Base(path[:len(path)-5])+".meta.json"), &meta))
 		} else {
-			var reports map[string]json.RawMessage
 			check(json.Unmarshal(readFinancialSample(t, filepath.Dir(path), "reports.json"), &reports))
-			check(json.Unmarshal(reports["catalogue"], &meta))
+			check(json.Unmarshal(reports[filepath.Base(path[:len(path)-5])], &meta))
 		}
 		if fmt.Sprintf("%x", sha256.Sum256(raw)) != meta.SHA {
 			t.Fatal("catalogue hash", path)
@@ -67,6 +70,22 @@ func TestRealValuationStandardChain(t *testing.T) {
 		for _, f := range page.Filings {
 			if f.ProviderCode == "600519" || f.ProviderCode == "300866" {
 				f.CatalogueArtifactID = stored.ArtifactID
+				f.SourceURL, err = docClient.FilingDocumentURL(f.DocumentLocator)
+				check(err)
+				if report, ok := reports[f.SourceFilingID]; ok {
+					var document struct {
+						FetchedAt time.Time `json:"fetched_at"`
+						SHA       string    `json:"sha256"`
+					}
+					check(json.Unmarshal(report, &document))
+					pdf := readFinancialSample(t, filepath.Dir(path), f.SourceFilingID+".pdf")
+					if fmt.Sprintf("%x", sha256.Sum256(pdf)) != document.SHA {
+						t.Fatal("document hash", f.SourceFilingID)
+					}
+					archived, err := artifact.Persist(ctx, db, root, artifact.Input{Source: "cninfo", Dataset: "filing_document", SourceLocator: f.SourceURL, FetchedAt: document.FetchedAt, MediaType: "application/pdf", ParserVersion: "pdf-raw-v1", Content: pdf})
+					check(err)
+					f.DocumentArtifactID, f.DocumentSHA256 = archived.ArtifactID, archived.SHA256
+				}
 				_, err = duckstore.UpsertFilings(ctx, db, run, []domain.FilingObservation{f})
 				check(err)
 			}
@@ -112,14 +131,17 @@ func TestRealValuationStandardChain(t *testing.T) {
 		rows.Close()
 		t.Fatalf("links: %+v", result)
 	}
-	if result.Inserted != 564 {
-		t.Fatalf("v23 baseline %+v", result)
+	if result.Inserted != 699 {
+		t.Fatalf("v24 baseline %+v", result)
 	}
+	// 构造旧物化元数据，确认升级会重标已有事实，而非只插入新字段。
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.fact SET materializer_version='pit-fundamental-v4', normalization_rule='tdx-float32-decimal-v2'`)
+	check(err)
 	check(duckstore.Apply(ctx, db))
 	upgraded, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if upgraded.Inserted != 135 || upgraded.Updated != 0 || upgraded.Removed != 0 {
-		t.Fatalf("v23 to v24 replay %+v", upgraded)
+	if upgraded.Inserted != 111 || upgraded.Updated != 699 || upgraded.Removed != 0 {
+		t.Fatalf("v24 to v25 replay %+v", upgraded)
 	}
 	check(db.Close())
 	db, err = duckstore.OpenAndMigrate(ctx, dbPath)
@@ -142,9 +164,22 @@ func TestRealValuationStandardChain(t *testing.T) {
 		t.Fatal("balance/profit evidence count")
 	}
 	evidence = append(evidence, balanceEvidence[1:]...)
+	financialEvidence, err := csv.NewReader(bytes.NewReader(readFinancialSample(t, "testdata/financial-instruments-2026", "values.csv"))).ReadAll()
+	check(err)
+	if len(financialEvidence) != 39 {
+		t.Fatal("financial instrument evidence count")
+	}
+	evidence = append(evidence, financialEvidence[1:]...)
 	for _, row := range evidence[1:] {
-		want, err := strconv.ParseFloat(row[5], 32)
+		encoded, multiplier := row[5], float64(1)
+		if len(row) == 11 {
+			encoded = row[10]
+			multiplier, err = strconv.ParseFloat(row[9], 64)
+			check(err)
+		}
+		want, err := strconv.ParseFloat(encoded, 32)
 		check(err)
+		want *= multiplier
 		var value float64
 		var unit, periodType string
 		check(db.QueryRowContext(ctx, `SELECT cast(value AS DOUBLE),unit,period_type FROM fundamental.fact_asof('2026-09-06') WHERE provider_code=? AND source_provider_field=? AND report_period=cast(? AS DATE)`, row[0], row[1], row[2]).Scan(&value, &unit, &periodType))
@@ -155,7 +190,8 @@ func TestRealValuationStandardChain(t *testing.T) {
 				period = "FY"
 			}
 		}
-		if value != want || unit != "CNY" || periodType != period {
+		// DECIMAL(38,10) 存储允许末位舍入；原始 float32 位由独立证据测试精确比较。
+		if math.Abs(value-want) > 1e-7 || unit != "CNY" || periodType != period {
 			t.Fatalf("new standard fact %v: %v %s %s", row, value, unit, periodType)
 		}
 	}
@@ -188,6 +224,12 @@ func TestRealValuationStandardChain(t *testing.T) {
 			t.Fatalf("%s differs from production query", name)
 		}
 	}
+	var exactMoney string
+	check(db.QueryRowContext(ctx, `SELECT cast(value AS VARCHAR) FROM fundamental.fact WHERE provider_code='600519' AND source_provider_field='FN403' AND report_period=DATE '2025-06-30'`).Scan(&exactMoney))
+	if exactMoney != "126350830000.0000000000" {
+		t.Fatal("wide decimal conversion", exactMoney)
+	}
+	export("filings", `SELECT provider_code AS code,source_filing_id AS announcement_id,cast(announcement_time AS VARCHAR) AS available_at,announcement_time_precision,coalesce(cast(report_period AS VARCHAR),'') AS report_period,title,coalesce(source_url,'') AS document_locator,coalesce(sha256,'') AS pdf_sha256 FROM fundamental.filing WHERE source='cninfo' AND provider_code IN ('300866','600519') ORDER BY provider_code,source_filing_id`)
 	export("facts", `SELECT f.provider_code AS code, cast(f.report_period AS VARCHAR) AS period, f.source_provider_field AS field, f.canonical_field, f.period_type, f.statement_scope, f.unit, cast(f.value AS VARCHAR) AS value, cast(p.value_float32_bits AS VARCHAR) AS bits, cast(m.value_multiplier AS VARCHAR) AS multiplier, f.revision_key AS artifact_sha256, fi.source_filing_id AS announcement_id, cast(f.announcement_time AS VARCHAR) AS available_at
  FROM fundamental.fact_asof('2026-09-06') f JOIN fundamental.provider_fact p ON p.provider_fact_id=f.provider_fact_id JOIN fundamental.provider_field m ON m.source=f.primary_source AND m.provider_field=f.source_provider_field JOIN fundamental.filing fi ON fi.filing_id=f.source_filing_id ORDER BY code,period,field`)
 	export("windows", `SELECT provider_code AS code, cast(report_period AS VARCHAR) AS period, source_provider_field AS field, canonical_field, calculation_basis, coverage_status, coalesce(cast(value AS VARCHAR),'') AS value, cast(required_inputs AS VARCHAR) AS required_inputs,cast(available_inputs AS VARCHAR) AS available_inputs, cast(input_periods AS VARCHAR) AS input_periods, cast(input_coefficients AS VARCHAR) AS coefficients FROM fundamental.ttm_asof('2026-09-06', DATE '2026-06-30') ORDER BY code,field`)
@@ -246,6 +288,20 @@ func TestRealValuationStandardChain(t *testing.T) {
 	check(err)
 	if restoredBalance.Inserted != 135 {
 		t.Fatalf("balance/profit recovery %+v", restoredBalance)
+	}
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE source='tdx' AND provider_field IN ('FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579')`)
+	check(err)
+	rejectedFinancial, err := MaterializeProviderFundamentals(ctx, db, "tdx")
+	check(err)
+	if rejectedFinancial.Removed != 111 {
+		t.Fatalf("financial instrument invalidation %+v", rejectedFinancial)
+	}
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=CASE WHEN provider_field IN ('FN9','FN59','FN299') THEN 1 ELSE 10000 END WHERE source='tdx' AND provider_field IN ('FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579')`)
+	check(err)
+	restoredFinancial, err := MaterializeProviderFundamentals(ctx, db, "tdx")
+	check(err)
+	if restoredFinancial.Inserted != 111 {
+		t.Fatalf("financial instrument recovery %+v", restoredFinancial)
 	}
 	// 修改映射依据后必须撤销标准值，不能回退 PDF；恢复后从源证据重建。
 	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE provider_field IN ('FN12','FN13','FN46','FN47','FN82','FN83','FN301') AND source='tdx'`)
