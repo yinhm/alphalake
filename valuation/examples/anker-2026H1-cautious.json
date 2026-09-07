@@ -1,0 +1,22 @@
+{
+  "policy_id": "anker-consolidated-v1",
+  "approved_report_period": "2026-06-30",
+  "scenario": "cautious",
+  "review_note": "Retrospective illustrative scenario; explicit WACC and unified capital ratio, not a market target or original forecast policy equivalence.",
+  "parameters": {
+    "margin": 0.085,
+    "wacc": 0.11,
+    "terminal_growth": 0.02,
+    "terminal_roic": 0.11,
+    "operating_cash_ratio": 0.03,
+    "growth": 0.06,
+    "tax_start": 0.2,
+    "tax_terminal": 0.25,
+    "sales_to_capital": 2.5,
+    "investment_recovery": 0.5,
+    "cash_other_recovery": 0.0,
+    "minority_multiple": 2.0,
+    "debt_multiple": 1.1,
+    "extra_dilution_rate": 0.03
+  }
+}

@@ -42,6 +42,7 @@ class ValuationReport:
     multiples: MultiplesResult | None = None
     final: FinalValuation | None = None
     warnings: list[str] = field(default_factory=list)
+    equity_bridge: dict | None = None
 
 
 def run_full_valuation(
@@ -165,6 +166,10 @@ def run_full_valuation(
         report.cashflow, report.cost_of_capital, report.adjusted,
         raw_current, inputs.valuation_assumptions, inputs.macro_inputs
     )
+
+    if inputs.equity_bridge is not None:
+        from .equity_bridge import apply_equity_bridge
+        report.equity_bridge = apply_equity_bridge(report.dcf, inputs.equity_bridge)
 
     # --- Module 5: Multiples ---
     report.multiples = compute_multiples(

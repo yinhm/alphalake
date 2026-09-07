@@ -8,6 +8,7 @@ All rates/ratios are decimal (0.05 = 5%). All monetary values in reporting curre
 from __future__ import annotations
 
 from datetime import date, datetime
+import math
 from pydantic import BaseModel, Field, model_validator
 
 
@@ -541,6 +542,25 @@ class PreparedTTM(BaseModel):
         return self
 
 
+class EquityBridgeInputs(BaseModel):
+    """显式估值政策，金额百万元；不写回报表事实。"""
+    policy_id: str = Field(min_length=1)
+    components: dict[str, float]
+    operating_ownership: float = Field(ge=0, le=1)
+    shares: float = Field(gt=0)
+    conversion_release: float = Field(ge=0)
+    conversion_shares: float = Field(ge=0)
+
+    @model_validator(mode="after")
+    def finite_values(self):
+        if not self.components or not all(math.isfinite(v) for v in [*self.components.values(),
+                self.operating_ownership, self.shares, self.conversion_release, self.conversion_shares]):
+            raise ValueError("equity bridge requires finite explicit components")
+        if bool(self.conversion_release) != bool(self.conversion_shares):
+            raise ValueError("conversion release and shares must both be supplied")
+        return self
+
+
 class CompanyValuationInput(BaseModel):
     ticker: str
     company_name: str | None = Field(default=None)
@@ -554,6 +574,7 @@ class CompanyValuationInput(BaseModel):
     fx_rate_source: str = Field(default="unknown", description="'CIQ implied' | 'manual' | 'unavailable' | 'unknown'")
     fx_rate_date: str | None = Field(default=None, description="Date of the FX rate (usually the LTM balance-sheet date)")
     prepared_ttm: PreparedTTM | None = None
+    equity_bridge: EquityBridgeInputs | None = None
     raw_financials: list[RawFinancials] = Field(default_factory=list, description="Multi-year, most recent first")
     quarterly_financials: list[RawFinancials] = Field(default_factory=list, description="Quarterly data for LTM (FQ-0..FQ-3)")
     quarters_since_10k: int = Field(default=0, description="Quarters since last annual filing (1-4)")
@@ -575,6 +596,11 @@ class CompanyValuationInput(BaseModel):
 
     @model_validator(mode="after")
     def check_prepared_ttm(self):
+        if self.equity_bridge is not None:
+            if self.prepared_ttm is None or self.option_inputs.has_options:
+                raise ValueError("reviewed bridge requires prepared TTM; employee option overlay not supported")
+            if self.adjustment_inputs.has_r_and_d or self.adjustment_inputs.has_operating_leases:
+                raise ValueError("reviewed bridge forbids repeated RD/lease capitalization")
         if self.prepared_ttm is not None:
             if self.quarterly_financials or self.quarters_since_10k:
                 raise ValueError("prepared TTM cannot also request quarterly rotation")

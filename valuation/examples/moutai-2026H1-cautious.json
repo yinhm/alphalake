@@ -1,0 +1,22 @@
+{
+  "policy_id": "moutai-liquor-proxy-v1",
+  "approved_report_period": "2026-06-30",
+  "scenario": "cautious",
+  "review_note": "Retrospective illustrative scenario; explicit WACC and unified capital ratio, not a market target or original forecast policy equivalence.",
+  "parameters": {
+    "margin": 0.6,
+    "wacc": 0.1,
+    "terminal_growth": 0.01,
+    "terminal_roic": 0.15,
+    "operating_cash_ratio": 0.03,
+    "growth": 0.0,
+    "tax_start": 0.25,
+    "tax_terminal": 0.25,
+    "sales_to_capital": 1.36986301369863,
+    "financial_asset_recovery": 0.95,
+    "risk_asset_recovery": 0.5,
+    "finance_pb": 0.8,
+    "minority_scale": 1.25,
+    "finance_ownership": 0.51
+  }
+}

@@ -108,3 +108,6 @@ knowledge_base/groud_truth/
 # Local-only untracked areas (personal scratch, helper launcher)
 All_major_data/
 start_claude.sh
+
+# AlphaLake content-addressed valuation runs
+backend/data/alphalake_runs/

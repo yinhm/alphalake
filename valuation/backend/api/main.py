@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from .alphalake import router as alphalake_router
 from .routes import router
 from .export import router as export_router
 from .admin import router as admin_router
@@ -22,6 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(alphalake_router)
 app.include_router(router)
 app.include_router(export_router)
 # Admin + DB endpoints live under /api/admin and /api/database; mount at /api/*.
