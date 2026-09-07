@@ -2,6 +2,8 @@
 
 AlphaLake 是面向投资研究、本地优先且可复现的金融市场数据基础设施。
 
+估值引擎与应用已纳入 [`valuation/`](valuation/README.md)，源自 [chrisuzy/Investment_Valuation_Agent](https://github.com/chrisuzy/Investment_Valuation_Agent)。感谢原作者 Chirs Yu Zhang 及上游贡献者；原 MIT 许可证、导入版本与 Credits 见 [来源记录](valuation/UPSTREAM.md)。本次目录合并尚未完成自动估值集成。
+
 它通过多个数据源适配器采集数据，将记录归一化为标准模型，在 DuckDB 中存储分析数据，并保留重建、校验和派生数据集所需的血缘信息。数据源提供稳定文件时，系统将其保存为不可变的原始证据。
 
 ## 初始范围
