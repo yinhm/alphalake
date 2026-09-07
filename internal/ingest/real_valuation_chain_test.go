@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -336,6 +337,81 @@ func TestRealValuationStandardChain(t *testing.T) {
 	check(err)
 	if restored.Inserted != 12 {
 		t.Fatalf("restore %+v", restored)
+	}
+
+	// 新的生产导入/导出路径：独立附注不回写 TDX 事实。
+	var supplements []duckstore.ReviewedSupplement
+	check(json.Unmarshal(readFinancialSample(t, "testdata/valuation-integration-2026", "supplements.json"), &supplements))
+	n, err = duckstore.ImportReviewedSupplements(ctx, db, supplements)
+	check(err)
+	if n != 34 {
+		t.Fatalf("supplements inserted %d", n)
+	}
+	n, err = duckstore.ImportReviewedSupplements(ctx, db, supplements)
+	check(err)
+	if n != 0 {
+		t.Fatal("supplement replay not idempotent")
+	}
+	bad := append([]duckstore.ReviewedSupplement(nil), supplements...)
+	bad[0].Value = "1"
+	if _, err = duckstore.ImportReviewedSupplements(ctx, db, bad); err == nil {
+		t.Fatal("conflicting supplement accepted")
+	}
+
+	// 第二条失败时第一条新记录也不得发布。
+	atomicBad := append([]duckstore.ReviewedSupplement(nil), supplements[:2]...)
+	atomicBad[0].Item = "uncommitted_probe"
+	atomicBad[1].PDFSHA256 = strings.Repeat("0", 64)
+	if _, err = duckstore.ImportReviewedSupplements(ctx, db, atomicBad); err == nil {
+		t.Fatal("bad PDF accepted")
+	}
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.reviewed_supplement`).Scan(&n))
+	if n != 34 {
+		t.Fatal("partial supplement batch committed")
+	}
+	for _, at := range []time.Time{time.Date(2026, 8, 15, 15, 59, 59, 0, time.UTC), time.Date(2026, 8, 15, 16, 0, 0, 0, time.UTC)} {
+		snapshot, err := duckstore.ExportValuationData(ctx, db, "600519", time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC), at)
+		check(err)
+		var records []struct {
+			Period string `json:"period"`
+			Item   string `json:"item"`
+		}
+		check(json.Unmarshal(snapshot["supplements"].(json.RawMessage), &records))
+		found := false
+		for _, row := range records {
+			if row.Period == "2026-06-30" && row.Item == "finance_equity" {
+				found = true
+			}
+		}
+		if found != (at.Hour() == 16) {
+			t.Fatal("independent finance disclosure boundary")
+		}
+	}
+	check(db.Close())
+	db, err = duckstore.Open(ctx, dbPath)
+	check(err)
+	defer db.Close()
+	for _, code := range []string{"300866", "600519", "999999"} {
+		snapshot, err := duckstore.ExportValuationData(ctx, db, code, time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC), time.Date(2026, 9, 6, 0, 0, 0, 0, time.UTC))
+		check(err)
+		payload, err := json.MarshalIndent(snapshot, "", "  ")
+		check(err)
+		if output := os.Getenv("ALPHALAKE_VALUATION_EXPORT_DIR"); output != "" {
+			check(os.MkdirAll(output, 0755))
+			check(os.WriteFile(filepath.Join(output, code+".json"), payload, 0644))
+		}
+		var notes []any
+		check(json.Unmarshal(snapshot["supplements"].(json.RawMessage), &notes))
+		want := map[string]int{"300866": 29, "600519": 5, "999999": 0}[code]
+		if len(notes) != want {
+			t.Fatalf("%s exported supplements %d", code, len(notes))
+		}
+	}
+	if output := os.Getenv("ALPHALAKE_VALUATION_EXPORT_DIR"); output != "" {
+		check(db.Close())
+		rawDB, err := os.ReadFile(dbPath)
+		check(err)
+		check(os.WriteFile(filepath.Join(output, "acceptance.duckdb"), rawDB, 0644))
 	}
 	t.Logf("production chain: %+v", result)
 }

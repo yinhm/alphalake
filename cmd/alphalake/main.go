@@ -38,6 +38,8 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  financial-ack <db-path> <artifact-id> <provider-code> <reason>")
 	fmt.Fprintln(os.Stderr, "  financial-unack <db-path> <artifact-id> <provider-code>")
 	fmt.Fprintln(os.Stderr, "  status <db-path>")
+	fmt.Fprintln(os.Stderr, "  import-supplements <db-path> <reviewed-json-file>")
+	fmt.Fprintln(os.Stderr, "  export-valuation <db-path> <six-digit-code> --period YYYY-MM-DD --as-of RFC3339")
 }
 
 func main() {

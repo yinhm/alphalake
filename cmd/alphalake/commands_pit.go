@@ -20,6 +20,10 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return false, nil
 	}
 	switch args[0] {
+	case "export-valuation":
+		return true, runValuationExport(ctx, args[1:])
+	case "import-supplements":
+		return true, runSupplementImport(ctx, args[1:])
 	case "filing-unresolved":
 		return true, runFilingUnresolved(ctx, args[1:])
 	case "sync-filings":
