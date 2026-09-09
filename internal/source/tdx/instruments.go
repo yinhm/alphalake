@@ -27,10 +27,10 @@ type codeListClient interface {
 // partitions from being refreshed; only a complete partition may authorize
 // temporal closes downstream.
 func (c *Client) InstrumentSnapshot(ctx context.Context) (domain.InstrumentMasterSnapshot, error) {
-	if c == nil || c.raw == nil {
+	if c == nil {
 		return domain.InstrumentMasterSnapshot{}, fmt.Errorf("TDX client is not initialized")
 	}
-	return loadInstrumentSnapshot(ctx, c.raw, aShareExchanges, time.Now())
+	return loadInstrumentSnapshot(ctx, c.requests(ctx), aShareExchanges, time.Now())
 }
 
 // Instruments remains as the narrow compatibility view used by tests and
@@ -124,7 +124,13 @@ func loadInstrumentSnapshot(ctx context.Context, c codeListClient, exchanges []p
 		snapshot.Partitions = append(snapshot.Partitions, partition)
 	}
 	if usablePartitions == 0 || len(snapshot.Observations) == 0 {
-		return domain.InstrumentMasterSnapshot{}, fmt.Errorf("TDX security-master snapshot contains no usable partitions")
+		var failures []string
+		for _, p := range snapshot.Partitions {
+			if p.Error != "" {
+				failures = append(failures, p.Key+": "+p.Error)
+			}
+		}
+		return domain.InstrumentMasterSnapshot{}, fmt.Errorf("TDX security-master snapshot contains no usable partitions: %s", strings.Join(failures, "; "))
 	}
 	return snapshot, nil
 }

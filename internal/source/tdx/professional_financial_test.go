@@ -115,8 +115,8 @@ func TestFinancialFilesUseVerifiedHTTPFallback(t *testing.T) {
 		t.Fatal("HTTP fallback bypassed MD5 verification")
 	}
 	status = http.StatusNotFound
-	if _, err := files.GetReportFile(ProfessionalFinancialListLocator); err == nil {
-		t.Fatal("accepted HTTP error")
+	if _, err := files.GetReportFile(ProfessionalFinancialListLocator); err == nil || !strings.Contains(err.Error(), "empty protocol report file") || !strings.Contains(err.Error(), "404") {
+		t.Fatal("protocol/HTTP failure detail lost", err)
 	}
 	files.protocol = fakeReportFiles{ProfessionalFinancialListLocator: []byte("protocol bytes")}
 	before := calls

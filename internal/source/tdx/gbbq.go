@@ -16,10 +16,10 @@ type gbbqClient interface {
 // it to AlphaLake-neutral observations. The canonical instrument ID is resolved
 // later by the ingest layer through the provider identifier.
 func (c *Client) CorporateActions(ctx context.Context, symbol string) ([]domain.CorporateActionObservation, error) {
-	if c == nil || c.raw == nil {
+	if c == nil {
 		return nil, fmt.Errorf("TDX client is not initialized")
 	}
-	return fetchCorporateActions(ctx, c.raw, symbol)
+	return fetchCorporateActions(ctx, c.requests(ctx), symbol)
 }
 
 func fetchCorporateActions(ctx context.Context, c gbbqClient, symbol string) ([]domain.CorporateActionObservation, error) {

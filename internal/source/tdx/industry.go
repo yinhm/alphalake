@@ -31,20 +31,20 @@ type industrySpec struct {
 
 var industrySpecs = []industrySpec{
 	{
-		code: ClassificationTDXIndustry,
-		name: "TDX Industry",
-		typeName: "industry",
-		prefix: 'T',
+		code:          ClassificationTDXIndustry,
+		name:          "TDX Industry",
+		typeName:      "industry",
+		prefix:        'T',
 		prefixLengths: []int{3, 5, 7},
-		assignment: func(v *protocol.TdxHy) string { return v.TdxHy },
+		assignment:    func(v *protocol.TdxHy) string { return v.TdxHy },
 	},
 	{
-		code: ClassificationShenwanIndustry,
-		name: "Shenwan Industry (TDX)",
-		typeName: "industry",
-		prefix: 'X',
+		code:          ClassificationShenwanIndustry,
+		name:          "Shenwan Industry (TDX)",
+		typeName:      "industry",
+		prefix:        'X',
 		prefixLengths: []int{3, 5, 7, 10, 13},
-		assignment: func(v *protocol.TdxHy) string { return v.SwHy },
+		assignment:    func(v *protocol.TdxHy) string { return v.SwHy },
 	},
 }
 
@@ -53,10 +53,10 @@ var industrySpecs = []industrySpec{
 // global error; a TDX hierarchy build failure does not suppress a valid Shenwan
 // hierarchy, and vice versa.
 func (c *Client) IndustrySnapshotResults(ctx context.Context) ([]domain.ClassificationSnapshotResult, error) {
-	if c == nil || c.raw == nil {
+	if c == nil {
 		return nil, fmt.Errorf("TDX client is not initialized")
 	}
-	return fetchIndustrySnapshotResults(ctx, c.raw)
+	return fetchIndustrySnapshotResults(ctx, c.requests(ctx))
 }
 
 func fetchIndustrySnapshotResults(ctx context.Context, c industrySnapshotClient) ([]domain.ClassificationSnapshotResult, error) {

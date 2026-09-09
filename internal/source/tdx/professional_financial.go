@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -23,17 +24,17 @@ type reportFileClient interface {
 }
 
 func (c *Client) ProfessionalFinancialFileList(ctx context.Context) ([]tdxfinancial.FileEntry, []byte, error) {
-	if c == nil || c.raw == nil {
+	if c == nil {
 		return nil, nil, fmt.Errorf("TDX client is not initialized")
 	}
-	return fetchProfessionalFinancialFileList(ctx, financialReportFiles{ctx, c.raw, professionalFinancialBaseURL})
+	return fetchProfessionalFinancialFileList(ctx, financialReportFiles{ctx, c.requests(ctx), professionalFinancialBaseURL})
 }
 
 func (c *Client) ProfessionalFinancialPackage(ctx context.Context, entry tdxfinancial.FileEntry) ([]byte, error) {
-	if c == nil || c.raw == nil {
+	if c == nil {
 		return nil, fmt.Errorf("TDX client is not initialized")
 	}
-	return fetchProfessionalFinancialPackage(ctx, financialReportFiles{ctx, c.raw, professionalFinancialBaseURL}, entry)
+	return fetchProfessionalFinancialPackage(ctx, financialReportFiles{ctx, c.requests(ctx), professionalFinancialBaseURL}, entry)
 }
 
 // Some live quotation servers return an empty report-file response for gpcw.
@@ -44,13 +45,22 @@ type financialReportFiles struct {
 	baseURL  string
 }
 
-func (f financialReportFiles) GetReportFile(locator string) ([]byte, error) {
+func (f financialReportFiles) GetReportFile(locator string) (body []byte, retErr error) {
 	if !strings.HasPrefix(locator, "tdxfin/") || strings.ContainsAny(strings.TrimPrefix(locator, "tdxfin/"), "/\\?#") {
 		return nil, fmt.Errorf("invalid financial file locator %q", locator)
 	}
-	if raw, err := f.protocol.GetReportFile(locator); err == nil && len(raw) > 0 {
+	raw, protocolErr := f.protocol.GetReportFile(locator)
+	if protocolErr == nil && len(raw) > 0 {
 		return raw, nil
 	}
+	if protocolErr == nil {
+		protocolErr = fmt.Errorf("empty protocol report file %s", locator)
+	}
+	defer func() {
+		if retErr != nil {
+			retErr = errors.Join(protocolErr, retErr)
+		}
+	}()
 	ctx, cancel := context.WithTimeout(f.ctx, 45*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, f.baseURL+locator, nil)
@@ -69,7 +79,7 @@ func (f financialReportFiles) GetReportFile(locator string) ([]byte, error) {
 	if locator == ProfessionalFinancialListLocator {
 		limit = 1 << 20
 	}
-	raw, err := io.ReadAll(io.LimitReader(resp.Body, limit+1))
+	raw, err = io.ReadAll(io.LimitReader(resp.Body, limit+1))
 	if err != nil {
 		return nil, fmt.Errorf("read TDX financial file: %w", err)
 	}

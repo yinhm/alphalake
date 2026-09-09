@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	ClassificationConcept    = "tdx_concept"
+	ClassificationConcept     = "tdx_concept"
 	ClassificationStyleRegion = "tdx_style_region"
-	ClassificationIndexBlock = "tdx_index_block"
+	ClassificationIndexBlock  = "tdx_index_block"
 )
 
 type blockClassificationSpec struct {
@@ -45,10 +45,10 @@ func (c *Client) ClassificationFamilies() []string {
 // ClassificationSnapshot fetches one complete TDX block family. A successful
 // return is marked Complete=true; callers must not infer removals from an error.
 func (c *Client) ClassificationSnapshot(ctx context.Context, family string) (domain.ClassificationSnapshot, error) {
-	if c == nil || c.raw == nil {
+	if c == nil {
 		return domain.ClassificationSnapshot{}, fmt.Errorf("TDX client is not initialized")
 	}
-	return fetchClassificationSnapshot(ctx, c.raw, family)
+	return fetchClassificationSnapshot(ctx, c.requests(ctx), family)
 }
 
 func fetchClassificationSnapshot(ctx context.Context, c blockClassificationClient, family string) (domain.ClassificationSnapshot, error) {
@@ -103,12 +103,12 @@ func fetchClassificationSnapshot(ctx context.Context, c blockClassificationClien
 		}
 
 		nodes = append(nodes, domain.ClassificationNodeObservation{
-			Taxonomy: taxonomy,
+			Taxonomy:       taxonomy,
 			SourceNodeCode: sourceNodeCode,
-			Name: strings.TrimSpace(block.Name),
-			Level: 1,
-			SourceSymbol: strings.TrimSpace(block.Index),
-			Members: members,
+			Name:           strings.TrimSpace(block.Name),
+			Level:          1,
+			SourceSymbol:   strings.TrimSpace(block.Index),
+			Members:        members,
 		})
 	}
 

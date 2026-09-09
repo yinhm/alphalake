@@ -4,6 +4,7 @@ go 1.25.0
 
 require (
 	github.com/duckdb/duckdb-go/v2 v2.10505.0
+	github.com/injoyai/ios v1.2.6
 	github.com/injoyai/tdx v0.0.87
 )
 
@@ -26,7 +27,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/injoyai/base v1.2.23 // indirect
 	github.com/injoyai/conv v1.2.8 // indirect
-	github.com/injoyai/ios v1.2.6 // indirect
 	github.com/injoyai/logs v1.0.12 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.18.3 // indirect

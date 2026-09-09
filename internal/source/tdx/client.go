@@ -5,36 +5,15 @@ import (
 	"fmt"
 	"time"
 
-	tdxlib "github.com/injoyai/tdx"
 	"github.com/injoyai/tdx/protocol"
 	"github.com/yinhm/alphalake/internal/domain"
 )
 
-// Client owns the provider SDK boundary. No injoyai/tdx type should escape this package.
-type Client struct {
-	raw *tdxlib.Client
-}
-
-func DialDefault() (*Client, error) {
-	raw, err := tdxlib.DialDefault()
-	if err != nil {
-		return nil, fmt.Errorf("dial TDX: %w", err)
-	}
-	return &Client{raw: raw}, nil
-}
-
-func (c *Client) Close() {
-	if c == nil || c.raw == nil {
-		return
-	}
-	c.raw.Close()
-}
-
 func (c *Client) StockDailyBars(ctx context.Context, instrumentID int64, symbol string) ([]domain.DailyBar, error) {
-	if c == nil || c.raw == nil {
+	if c == nil {
 		return nil, fmt.Errorf("TDX client is not initialized")
 	}
-	return fetchStockDailyBars(ctx, c.raw, instrumentID, symbol)
+	return fetchStockDailyBars(ctx, c.requests(ctx), instrumentID, symbol)
 }
 
 // StockDailyBarsSince fetches the boundary calendar day again plus all newer
@@ -42,10 +21,10 @@ func (c *Client) StockDailyBars(ctx context.Context, instrumentID int64, symbol 
 // encoded in time.Local, while AlphaLake's canonical TradeDate is always UTC
 // midnight carrying only the exchange-local Y/M/D fields.
 func (c *Client) StockDailyBarsSince(ctx context.Context, instrumentID int64, symbol string, since time.Time) ([]domain.DailyBar, error) {
-	if c == nil || c.raw == nil {
+	if c == nil {
 		return nil, fmt.Errorf("TDX client is not initialized")
 	}
-	return fetchStockDailyBarsSince(ctx, c.raw, instrumentID, symbol, since)
+	return fetchStockDailyBarsSince(ctx, c.requests(ctx), instrumentID, symbol, since)
 }
 
 type dailyKlineClient interface {
