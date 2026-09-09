@@ -28,14 +28,31 @@ type CountryRiskSummary struct {
 	Observations int   `json:"observations"`
 }
 
-func SyncCountryRisk(ctx context.Context, db *sql.DB, root string, options CountryRiskOptions) (out CountryRiskSummary, err error) {
-	if options.Python == "" {
-		options.Python = "python3"
-	}
+type referenceFeed struct{ source, dataset, url, mediaType, parserVersion string }
+
+func SyncCountryRisk(ctx context.Context, db *sql.DB, root string, options CountryRiskOptions) (CountryRiskSummary, error) {
 	if options.Script == "" {
 		options.Script = damodaran.DefaultScript
 	}
-	out.RunID, err = duckstore.StartIngestRun(ctx, db, damodaran.Source, damodaran.Dataset, nil)
+	feed := referenceFeed{damodaran.Source, damodaran.Dataset, damodaran.URL, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", damodaran.ParserVersion}
+	return syncReference(ctx, db, root, options, feed, func(runID int64, stored artifact.Stored) (int64, bool, int, error) {
+		snapshot, hash, err := damodaran.Parse(ctx, defaultPython(options.Python), options.Script, artifact.Resolve(root, stored))
+		if err != nil {
+			return 0, false, 0, err
+		}
+		id, inserted, err := duckstore.PublishCountryRisk(ctx, db, runID, stored.ArtifactID, hash, snapshot)
+		return id, inserted, len(snapshot.Observations), err
+	})
+}
+func defaultPython(python string) string {
+	if python == "" {
+		return "python3"
+	}
+	return python
+}
+
+func syncReference(ctx context.Context, db *sql.DB, root string, options CountryRiskOptions, feed referenceFeed, publish func(int64, artifact.Stored) (int64, bool, int, error)) (out CountryRiskSummary, err error) {
+	out.RunID, err = duckstore.StartIngestRun(ctx, db, feed.source, feed.dataset, nil)
 	if err != nil {
 		return
 	}
@@ -50,7 +67,7 @@ func SyncCountryRisk(ctx context.Context, db *sql.DB, root string, options Count
 		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
 		defer cancel()
 		if err != nil {
-			diagnosticErr := duckstore.RecordIngestDiagnostics(cleanup, db, out.RunID, damodaran.Source, damodaran.Dataset, []duckstore.IngestDiagnostic{{RuleCode: "country_risk_publication_failed", Severity: "error", SubjectType: "dataset", SubjectKey: damodaran.URL, Details: err.Error()}})
+			diagnosticErr := duckstore.RecordIngestDiagnostics(cleanup, db, out.RunID, feed.source, feed.dataset, []duckstore.IngestDiagnostic{{RuleCode: "reference_publication_failed", Severity: "error", SubjectType: "dataset", SubjectKey: feed.url, Details: err.Error()}})
 			err = errors.Join(err, diagnosticErr)
 		}
 		finishErr := duckstore.FinishIngestRun(cleanup, db, out.RunID, status, nil, err)
@@ -62,9 +79,9 @@ func SyncCountryRisk(ctx context.Context, db *sql.DB, root string, options Count
 		var id int64
 		err = db.QueryRowContext(ctx, `SELECT a.artifact_id FROM meta.dataset_release r
           JOIN meta.dataset_release_artifact a ON a.release_id=r.release_id AND a.role='data'
-          WHERE r.source=? AND r.dataset=? ORDER BY r.recorded_at DESC,r.release_id DESC LIMIT 1`, damodaran.Source, damodaran.Dataset).Scan(&id)
+          WHERE r.source=? AND r.dataset=? ORDER BY r.recorded_at DESC,r.release_id DESC LIMIT 1`, feed.source, feed.dataset).Scan(&id)
 		if err != nil {
-			return out, fmt.Errorf("no published country-risk archive: %w", err)
+			return out, fmt.Errorf("no published reference archive: %w", err)
 		}
 		stored, _, err = artifact.LoadByID(ctx, db, root, id)
 		if err != nil {
@@ -76,7 +93,7 @@ func SyncCountryRisk(ctx context.Context, db *sql.DB, root string, options Count
 		if client == nil {
 			client = &http.Client{Timeout: 45 * time.Second}
 		}
-		req, requestErr := http.NewRequestWithContext(ctx, http.MethodGet, damodaran.URL, nil)
+		req, requestErr := http.NewRequestWithContext(ctx, http.MethodGet, feed.url, nil)
 		if requestErr != nil {
 			return out, requestErr
 		}
@@ -86,7 +103,7 @@ func SyncCountryRisk(ctx context.Context, db *sql.DB, root string, options Count
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode != http.StatusOK {
-			return out, fmt.Errorf("country risk HTTP %d", resp.StatusCode)
+			return out, fmt.Errorf("reference HTTP %d", resp.StatusCode)
 		}
 		const limit = 16 << 20
 		body, readErr := io.ReadAll(io.LimitReader(resp.Body, limit+1))
@@ -94,21 +111,17 @@ func SyncCountryRisk(ctx context.Context, db *sql.DB, root string, options Count
 			return out, readErr
 		}
 		if len(body) > limit || len(body) == 0 {
-			return out, errors.New("empty/oversized country-risk response")
+			return out, errors.New("empty/oversized reference response")
 		}
-		stored, err = artifact.Persist(ctx, db, root, artifact.Input{Source: damodaran.Source, Dataset: damodaran.Dataset, SourceLocator: damodaran.URL, FetchedAt: time.Now().UTC(), MediaType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ParserVersion: damodaran.ParserVersion, IngestRunID: &out.RunID, Content: body})
+		stored, err = artifact.Persist(ctx, db, root, artifact.Input{Source: feed.source, Dataset: feed.dataset, SourceLocator: feed.url, FetchedAt: time.Now().UTC(), MediaType: feed.mediaType, ParserVersion: feed.parserVersion, IngestRunID: &out.RunID, Content: body})
 		if err != nil {
 			return
 		}
 	}
 	out.ArtifactID = stored.ArtifactID
-	snapshot, parserHash, parseErr := damodaran.Parse(ctx, options.Python, options.Script, artifact.Resolve(root, stored))
-	if parseErr != nil {
-		return out, parseErr
-	}
-	out.ReleaseID, out.Inserted, err = duckstore.PublishCountryRisk(ctx, db, out.RunID, stored.ArtifactID, parserHash, snapshot)
-	if err == nil {
-		out.Observations = len(snapshot.Observations)
+	out.ReleaseID, out.Inserted, out.Observations, err = publish(out.RunID, stored)
+	if err != nil {
+		out.Observations = 0
 	}
 	return
 }

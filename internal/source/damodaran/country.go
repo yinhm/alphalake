@@ -2,17 +2,11 @@
 package damodaran
 
 import (
-	"bytes"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
+	"github.com/yinhm/alphalake/internal/source/reference"
 	"math/big"
-	"os"
-	"os/exec"
 	"regexp"
 	"strings"
 	"time"
@@ -43,29 +37,12 @@ type Snapshot struct {
 
 func Parse(ctx context.Context, python, script, workbook string) (Snapshot, string, error) {
 	var out Snapshot
-	code, err := os.ReadFile(script)
+
+	hash, err := reference.Parse(ctx, python, script, workbook, nil, &out)
 	if err != nil {
 		return out, "", err
 	}
-	digest := sha256.Sum256(code)
-	// Execute the exact bytes fingerprinted above, even if the script is edited
-	// concurrently after ReadFile.
-	cmd := exec.CommandContext(ctx, python, "-c", string(code), workbook)
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	body, err := cmd.Output()
-	if err != nil {
-		return out, "", fmt.Errorf("country parser: %w: %s", err, stderr.String())
-	}
-	dec := json.NewDecoder(bytes.NewReader(body))
-	dec.DisallowUnknownFields()
-	if err := dec.Decode(&out); err != nil {
-		return out, "", err
-	}
-	if err := dec.Decode(new(any)); err != io.EOF {
-		return out, "", errors.New("trailing parser output")
-	}
-	return out, hex.EncodeToString(digest[:]), Validate(out)
+	return out, hash, Validate(out)
 }
 
 // Validate locks the supported scope and canonical decimal representation.
