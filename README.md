@@ -57,7 +57,7 @@ AlphaLake 是面向投资研究、本地优先且可复现的金融市场数据�
 
 ## WACC 参考数据
 
-已提供 `sync-country-risk`：归档达摩达兰 2026 年 7 月工作簿，发布 CN/HK/US 评级法与成熟市场 ERP 共 10 项，支持原子发布、幂等重放和离线核验。具体命令与范围见[国家风险同步](docs/country-risk-sync.md)。另已接入[全球行业 Beta 与人民币国债收益率](docs/beta-yield-sync.md)：94 个行业的 376 项指标和 8 个国债期限点。三条链均不改动公司财务事实或自动计算 WACC。
+已提供 `sync-country-risk`：归档达摩达兰 2026 年 7 月工作簿，发布 CN/HK/US 评级法与成熟市场 ERP 共 10 项，支持原子发布、幂等重放和离线核验。具体命令与范围见[国家风险同步](docs/country-risk-sync.md)。另已接入[全球行业 Beta 与人民币国债收益率](docs/beta-yield-sync.md)：94 个行业的 376 项指标和 8 个国债期限点。三条同步链均不改动公司财务事实；已有[固定版本到 WACC／估值桥接](docs/wacc-valuation-bridge.md)，须显式提供公司映射与目标资本结构政策，不等于市场资本结构自动测算。
 
 ## 构建与测试
 
