@@ -13,6 +13,7 @@ import (
 	"github.com/yinhm/alphalake/internal/ingest"
 	"github.com/yinhm/alphalake/internal/source/chinabond"
 	"github.com/yinhm/alphalake/internal/source/damodaran"
+	"github.com/yinhm/alphalake/internal/source/safe"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
 )
 
@@ -32,6 +33,8 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 		defaultScript = damodaran.BetaScript
 	case "sync-credit-spreads":
 		defaultScript = damodaran.CreditScript
+	case "sync-hkd-cny":
+		defaultScript = safe.Script
 	case "sync-cny-yield":
 		defaultScript = chinabond.Script
 	}
@@ -54,6 +57,8 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 		sync = ingest.SyncIndustryBeta
 	case "sync-credit-spreads":
 		sync = ingest.SyncCreditSpreads
+	case "sync-hkd-cny":
+		sync = ingest.SyncHKDCNY
 	case "sync-cny-yield":
 		sync = ingest.SyncCNYGovernmentYield
 	}

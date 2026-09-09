@@ -7,6 +7,7 @@ import (
 	"github.com/yinhm/alphalake/internal/artifact"
 	"github.com/yinhm/alphalake/internal/source/chinabond"
 	"github.com/yinhm/alphalake/internal/source/damodaran"
+	"github.com/yinhm/alphalake/internal/source/safe"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
 )
 
@@ -54,6 +55,21 @@ func SyncCreditSpreads(ctx context.Context, db *sql.DB, root string, options Ref
 			return 0, false, 0, err
 		}
 		id, inserted, err := duckstore.PublishCreditSpreads(ctx, db, runID, stored.ArtifactID, hash, s)
+		return id, inserted, len(s.Observations), err
+	})
+}
+
+func SyncHKDCNY(ctx context.Context, db *sql.DB, root string, options ReferenceOptions) (ReferenceSummary, error) {
+	if options.Script == "" {
+		options.Script = safe.Script
+	}
+	feed := referenceFeed{safe.Source, safe.Dataset, safe.URL, "text/html; charset=utf-8", safe.ParserVersion}
+	return syncReference(ctx, db, root, options, feed, func(runID int64, stored artifact.Stored) (int64, bool, int, error) {
+		s, hash, err := safe.Parse(ctx, defaultPython(options.Python), options.Script, artifact.Resolve(root, stored))
+		if err != nil {
+			return 0, false, 0, err
+		}
+		id, inserted, err := duckstore.PublishHKDCNY(ctx, db, runID, stored.ArtifactID, hash, s)
 		return id, inserted, len(s.Observations), err
 	})
 }
