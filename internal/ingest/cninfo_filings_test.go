@@ -366,8 +366,8 @@ func TestRealCNINFORepeatedPagesInvalidateOldCompletion(t *testing.T) {
 			t.Fatal("size-30 page 2 did not advance")
 		}
 	}
-	start := time.Date(2025, 4, 1, 0, 0, 0, 0, time.UTC)
-	end := time.Date(2025, 6, 29, 0, 0, 0, 0, time.UTC)
+	start := time.Date(2025, 6, 28, 0, 0, 0, 0, time.UTC)
+	end := time.Date(2025, 6, 28, 0, 0, 0, 0, time.UTC)
 	oldKey := "catalogue-window:v3:metadata-only=true:" + filingWindowName(start, end)
 	if err = duckstore.SetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, oldKey, "incomplete-old-run"); err != nil {
 		t.Fatal(err)
@@ -394,5 +394,75 @@ func TestRealCNINFORepeatedPagesInvalidateOldCompletion(t *testing.T) {
 	var status string
 	if err = db.QueryRowContext(ctx, `SELECT status FROM meta.ingest_run WHERE ingest_run_id=?`, result.RunID).Scan(&status); err != nil || status == "completed" {
 		t.Fatalf("run=%s %v", status, err)
+	}
+}
+
+type splittingCNINFOFilingSource struct{ fakeCNINFOFilingSource }
+
+func (f *splittingCNINFOFilingSource) CataloguePage(_ context.Context, request cninfo.CatalogueRequest) (cninfo.CataloguePage, []byte, error) {
+	f.catalogueCalls++
+	record := f.pages[1].Filings[0]
+	page := cninfo.CataloguePage{Page: request.Page, PageSize: 30, TotalPages: 2, TotalRecords: 60, HasMore: request.Page == 1, Filings: []domain.FilingObservation{record}}
+	if request.StartDate.Equal(request.EndDate) {
+		record.SourceFilingID = request.StartDate.Format("20060102")
+		record.AnnouncementDate = request.StartDate
+		record.AnnouncementTime = request.StartDate.Add(24 * time.Hour)
+		record.RawAnnouncementTimeMillis = request.StartDate.UnixMilli()
+		page.Filings = []domain.FilingObservation{record}
+		page.TotalPages = 1
+		page.TotalRecords = 1
+		page.HasMore = false
+	}
+	return page, []byte(fmt.Sprintf(`{"test_request":"%s/%s/%d"}`, request.StartDate.Format("2006-01-02"), request.EndDate.Format("2006-01-02"), request.Page)), nil
+}
+
+func TestCNINFOAutomaticallySplitsStalledWindow(t *testing.T) {
+	ctx := t.Context()
+	path := filepath.Join(t.TempDir(), "split.duckdb")
+	db, err := duckstore.OpenAndMigrate(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	compressed, err := os.ReadFile("testdata/cninfo-repeated-pages-2026/page-1.json.gz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	reader, err := gzip.NewReader(bytes.NewReader(compressed))
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, err := io.ReadAll(reader)
+	reader.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	page, err := cninfo.ParseCataloguePage(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := &splittingCNINFOFilingSource{fakeCNINFOFilingSource{pages: map[int]cninfo.CataloguePage{1: page}}}
+	start := time.Date(2025, 6, 27, 0, 0, 0, 0, time.UTC)
+	end := start.AddDate(0, 0, 1)
+	options := CNINFOFilingOptions{StartDate: start, EndDate: end, MetadataOnly: true, Now: func() time.Time { return time.Date(2026, 9, 9, 0, 0, 0, 0, time.UTC) }}
+	result, err := SyncCNINFOFilingsWithOptions(ctx, db, source, filepath.Join(t.TempDir(), "raw"), options)
+	if err != nil || len(result.Failures) != 0 || result.Windows != 3 || result.Filings != 2 || source.catalogueCalls != 4 {
+		t.Fatalf("%+v calls=%d err=%v", result, source.catalogueCalls, err)
+	}
+	for _, day := range []time.Time{start, end} {
+		if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, "catalogue-window:v4:metadata-only=true:"+filingWindowName(day, day)); e != nil || !found {
+			t.Fatalf("missing child completion %v %v", day, e)
+		}
+	}
+	if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, "catalogue-window:v4:metadata-only=true:"+filingWindowName(start, end)); e != nil || found {
+		t.Fatalf("unexpected parent completion %v %v", found, e)
+	}
+	var n int
+	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM meta.validation_result WHERE rule_code='cninfo.catalogue_window_split'`).Scan(&n); err != nil || n != 1 {
+		t.Fatalf("diagnostic %d %v", n, err)
+	}
+	result, err = SyncCNINFOFilingsWithOptions(ctx, db, source, filepath.Join(t.TempDir(), "raw"), options)
+	if err != nil || result.SkippedWindows != 2 || result.Inserted != 0 {
+		t.Fatalf("replay %+v %v", result, err)
 	}
 }

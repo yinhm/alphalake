@@ -27,6 +27,8 @@ const (
 	cninfoRecentRescanDays      = 180
 )
 
+var errCNINFONoPageProgress = errors.New("CNINFO pagination made no progress")
+
 type CNINFOFilingSource interface {
 	CataloguePage(context.Context, cninfo.CatalogueRequest) (cninfo.CataloguePage, []byte, error)
 	FilingDocumentURL(string) (string, error)
@@ -132,7 +134,9 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 		finalizeTrackedRun(ctx, db, runID, cninfoFilingRunStatus(summary, retErr), &retErr)
 	}()
 
-	for _, window := range filingWindows(start, end, windowDays) {
+	windows := filingWindows(start, end, windowDays)
+	for index := 0; index < len(windows); index++ {
+		window := windows[index]
 		if err := ctx.Err(); err != nil {
 			return summary, err
 		}
@@ -159,6 +163,17 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 		windowFilings, pageSHAs, windowFailures, windowIssues := acquireCNINFOFilingWindow(
 			ctx, db, source, artifactRoot, runID, now, window.start, window.end, pageSize, &summary, options,
 		)
+		// 深分页停滞时拆分日期范围；不发布父窗口的部分结果或完成检查点。
+		// ponytail: 不缓存分割计划；若父窗口重复探测流量显著，再持久化已验证的分割边界。
+		if len(windowFailures) == 1 && errors.Is(windowFailures[0].Err, errCNINFONoPageProgress) && window.start.Before(window.end) {
+			middle := window.start.AddDate(0, 0, int(window.end.Sub(window.start).Hours()/24)/2)
+			diagnostic := duckstore.IngestDiagnostic{RuleCode: "cninfo.catalogue_window_split", Severity: "warning", SubjectType: "date_window", SubjectKey: windowName, Details: windowFailures[0].Err.Error()}
+			if err := duckstore.RecordIngestDiagnostics(ctx, db, runID, cninfo.Source, cninfoFilingDataset, []duckstore.IngestDiagnostic{diagnostic}); err != nil {
+				summary.Failures = append(summary.Failures, CNINFOFilingFailure{Window: windowName, Err: err})
+			}
+			windows = append(windows, filingWindow{start: window.start, end: middle}, filingWindow{start: middle.AddDate(0, 0, 1), end: window.end})
+			continue
+		}
 		summary.Failures = append(summary.Failures, windowFailures...)
 		summary.Issues += len(windowIssues)
 		if err := persistCNINFOCatalogueIssues(ctx, db, runID, windowName, windowIssues); err != nil {
@@ -312,7 +327,7 @@ func acquireCNINFOFilingWindow(
 			}
 		}
 		if len(page.Filings) > 0 && newIdentities == 0 {
-			failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: fmt.Errorf("CNINFO pagination made no progress: page %d repeats previously observed announcement identities", pageNumber)})
+			failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: fmt.Errorf("%w: page %d repeats previously observed announcement identities", errCNINFONoPageProgress, pageNumber)})
 			break
 		}
 		filings = append(filings, page.Filings...)
