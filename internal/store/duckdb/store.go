@@ -6,6 +6,8 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -13,7 +15,7 @@ import (
 )
 
 const (
-	DriverName       = "duckdb"
+	DriverName        = "duckdb"
 	PersistentCatalog = "alphalake"
 )
 
@@ -35,15 +37,23 @@ func Open(ctx context.Context, path string) (*sql.DB, error) {
 
 	var connector *duckdbgo.Connector
 	var err error
+	// 使用驱动原生配置，让大市场导入可按部署内存限制溢写，而不是被操作系统杀死。
+	options := url.Values{}
+	for option, variable := range map[string]string{"memory_limit": "ALPHALAKE_DUCKDB_MEMORY_LIMIT", "threads": "ALPHALAKE_DUCKDB_THREADS"} {
+		if value := strings.TrimSpace(os.Getenv(variable)); value != "" {
+			options.Set(option, value)
+		}
+	}
+	dsn := ":memory:?" + options.Encode()
 	if path == ":memory:" {
-		connector, err = duckdbgo.NewConnector(":memory:", nil)
+		connector, err = duckdbgo.NewConnector(dsn, nil)
 	} else {
 		absolutePath, absErr := filepath.Abs(path)
 		if absErr != nil {
 			return nil, fmt.Errorf("resolve duckdb path %q: %w", path, absErr)
 		}
 		attachSQL := fmt.Sprintf("ATTACH IF NOT EXISTS %s AS %s", duckdbStringLiteral(absolutePath), PersistentCatalog)
-		connector, err = duckdbgo.NewConnector(":memory:", func(execer driver.ExecerContext) error {
+		connector, err = duckdbgo.NewConnector(dsn, func(execer driver.ExecerContext) error {
 			if _, err := execer.ExecContext(context.Background(), attachSQL, nil); err != nil {
 				return fmt.Errorf("attach AlphaLake database %q: %w", absolutePath, err)
 			}

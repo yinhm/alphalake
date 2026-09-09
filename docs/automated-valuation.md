@@ -126,3 +126,16 @@ Path('batch-policy.json').write_text(json.dumps(policy, ensure_ascii=False, inde
 迁移032新增最近观察时间/运行，首次观测不变；旧库仅为尚未关闭的成员从原始观察回填，绝不把迁移日当同步日。`sync-industries` 对再次看到的成员刷新时间，不刷新部分快照中缺席的成员。当前只保留最近一次观察，早于它的历史截止可能缺行业，**不支持完整历史行业回测**；如需历史路由，应增加不可变逐次观察日志。先通过 `alphalake init DB` 或写入同步命令应用迁移；只读扫描不会静默迁移。
 
 离线回归覆盖未完成运行隔离、重复观察刷新而首次观察不变、部分快照不刷新缺席成员、行业匹配/过期/冲突/公司覆盖/坏日期隔离。该路由测试的行业成员为合成数据，财务输入为真实安克导出，尚不代表全市场行业配置或新增公司原文验收完成。
+
+## 有限内存部署
+
+全市场六期重放在本机约4GiB内存环境实测被 Linux OOM 终止（PID2416089）；数据库恢复后源事实仍为0，未把中断当成包完成。已根据内核证据将遗留运行7记为失败。外部强杀不能执行进程内终态回调，日常应检查 `status` 中长期 running 的记录，并核实进程是否仍存活，不能仅按运行时长断言失败。
+
+支持驱动原生资源参数：`ALPHALAKE_DUCKDB_MEMORY_LIMIT`、`ALPHALAKE_DUCKDB_THREADS`。不设置时保留 DuckDB 默认；非法值在打开库时拒绝。低内存机器可先按实际空闲资源设置，例如：
+
+```bash
+ALPHALAKE_DUCKDB_MEMORY_LIMIT=768MiB ALPHALAKE_DUCKDB_THREADS=2 GOMEMLIMIT=256MiB \
+  alphalake sync-financial ./alphalake.duckdb --latest 6
+```
+
+DuckDB 限制与 Go 的 `GOMEMLIMIT` 各管各的内存，二者都不是整个进程 RSS 的硬上限。中间计算可溢写，但不能溢写的操作仍可能明确报内存不足；需保留磁盘空间并根据实测调整，不能将上述示例视为全量导入容量保证。原始归档和事务回滚仍承担失败恢复，不能通过少导源字段来隐瞒容量问题。
