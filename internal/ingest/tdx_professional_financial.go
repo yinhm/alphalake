@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -268,9 +269,10 @@ func resolveProviderFinancialRecords(ctx context.Context, db *sql.DB, records []
 	if provider == "" {
 		return nil, nil, errors.New("gpcw record provider is empty")
 	}
-	codes := make([]string, len(records))
-	seenCodes := make(map[string]struct{}, len(records))
-	for i, record := range records {
+	codes := make([]string, 0, len(records))
+	seenCodes := make(map[string]domain.ProviderFinancialRecord, len(records))
+	unique := make([]domain.ProviderFinancialRecord, 0, len(records))
+	for _, record := range records {
 		if !record.ReportPeriod.Equal(period) {
 			return nil, nil, fmt.Errorf("gpcw package mixes report periods %s and %s", period.Format("2006-01-02"), record.ReportPeriod.Format("2006-01-02"))
 		}
@@ -278,12 +280,17 @@ func resolveProviderFinancialRecords(ctx context.Context, db *sql.DB, records []
 			return nil, nil, fmt.Errorf("gpcw package mixes providers %q and %q", provider, record.Provider)
 		}
 		code := strings.TrimSpace(record.ProviderCode)
-		if _, exists := seenCodes[code]; exists {
-			return nil, nil, fmt.Errorf("gpcw package contains duplicate provider code %q", code)
+		if previous, exists := seenCodes[code]; exists {
+			if reflect.DeepEqual(previous, record) {
+				continue
+			}
+			return nil, nil, fmt.Errorf("gpcw package contains conflicting duplicate provider code %q", code)
 		}
-		seenCodes[code] = struct{}{}
-		codes[i] = code
+		seenCodes[code] = record
+		codes = append(codes, code)
+		unique = append(unique, record)
 	}
+	records = unique
 	resolutions, err := duckstore.ResolveProviderCodesAt(ctx, db, provider, codes, period)
 	if err != nil {
 		return nil, nil, err
