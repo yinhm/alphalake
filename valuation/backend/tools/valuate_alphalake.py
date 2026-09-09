@@ -16,6 +16,7 @@ def main():
     parser.add_argument('--as-of',required=True)
     parser.add_argument('--policy',required=True)
     parser.add_argument('--wacc-policy',help='explicit WACC selection policy JSON')
+    parser.add_argument('--market-capital',help='Go-exported market capital snapshot JSON')
     parser.add_argument('--wacc-references',help='Go-exported reference snapshot JSON')
     parser.add_argument('--alphalake',default=str(Path(__file__).resolve().parents[3]/'alphalake'))
     parser.add_argument('--api',default='http://127.0.0.1:8000')
@@ -25,8 +26,10 @@ def main():
     body = dict(data=json.loads(data),policy=json.loads(Path(args.policy).read_text()))
     if bool(args.wacc_policy) != bool(args.wacc_references):
         parser.error('--wacc-policy and --wacc-references must be supplied together')
+    if args.market_capital and not args.wacc_policy: parser.error('--market-capital requires WACC policy and references')
     if args.wacc_policy:
         body['wacc_binding'] = dict(policy=json.loads(Path(args.wacc_policy).read_text()), references=json.loads(Path(args.wacc_references).read_text()))
+    if args.market_capital: body['wacc_binding']['market_capital']=json.loads(Path(args.market_capital).read_text())
     payload = json.dumps(body,allow_nan=False).encode()
     request = Request(args.api.rstrip('/')+'/api/valuation/from-alphalake',data=payload,headers={'Content-Type':'application/json'})
     try:

@@ -6,6 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from engine.data_dictionary import ReferenceCapitalInputs
+from data_sources.alphalake_market import MarketPolicy, MarketSnapshot, equity_market_value
 from engine.module_2_risk import compute_reference_cost_of_capital
 
 
@@ -35,6 +36,14 @@ class SyntheticDebtPolicy(Strict):
     max_credit_age_days: int = Field(ge=0)
 
 
+class CreditBandDebtPolicy(Strict):
+    rating: Literal['Aaa/AAA','Aa2/AA','A1/A+','A2/A','A3/A-','Baa2/BBB']
+    selection_reason: str = Field(min_length=1)
+    sovereign_spread_policy: Literal['add_cn_default_spread','none']
+    sovereign_spread_reason: str = Field(min_length=1)
+    max_credit_age_days: int = Field(ge=0)
+
+
 class WACCPolicy(Strict):
     policy_id: str = Field(min_length=1)
     code: Literal['300866', '600519']
@@ -50,11 +59,13 @@ class WACCPolicy(Strict):
     government_tenor_months: Literal[3, 6, 12, 36, 60, 84, 120, 360]
     risk_free_method: Literal['government_proxy', 'subtract_cn_default_spread']
     risk_free_reason: str = Field(min_length=1)
-    capital_structure_basis: Literal['target_weights']
-    target_debt_weight: float = Field(ge=0, lt=1)
+    capital_structure_basis: Literal['target_weights','market_equity_estimated_debt']
+    target_debt_weight: float | None = Field(default=None,ge=0, lt=1)
+    market: MarketPolicy | None = None
     capital_structure_reason: str = Field(min_length=1)
     debt_cost_pretax: float | None = Field(default=None, ge=0, lt=1)
     synthetic_debt: SyntheticDebtPolicy | None = None
+    credit_band_debt: CreditBandDebtPolicy | None = None
     debt_cost_reason: str = Field(min_length=1)
     tax_shield_rate: float = Field(ge=0, le=1)
     tax_shield_reason: str = Field(min_length=1)
@@ -65,8 +76,11 @@ class WACCPolicy(Strict):
 
     @model_validator(mode='after')
     def weights(self):
-        if (self.synthetic_debt is None) == (self.debt_cost_pretax is None):
-            raise ValueError("exactly one explicit or synthetic debt cost required")
+        if self.capital_structure_basis=='target_weights':
+            if self.target_debt_weight is None or self.market is not None: raise ValueError('target weight required without market policy')
+        elif self.market is None or self.target_debt_weight is not None: raise ValueError('market weights must be derived; no target weight')
+        if sum(x is not None for x in [self.synthetic_debt,self.debt_cost_pretax,self.credit_band_debt])!=1:
+            raise ValueError("exactly one explicit, synthetic or analyst credit-band debt cost required")
         for rows, key in [(self.industries, 'industry'), (self.countries, 'country')]:
             if len({getattr(r, key) for r in rows}) != len(rows) or abs(sum(r.weight for r in rows)-1) > 1e-9:
                 raise ValueError('unique explicit weights summing to one required')
@@ -152,9 +166,10 @@ class ReferenceSnapshot(Strict):
 class WACCBinding(Strict):
     references: ReferenceSnapshot
     policy: WACCPolicy
+    market_capital: MarketSnapshot | None = None
 
 
-def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_of: datetime, *, ebit: float | None = None, interest: float | None = None):
+def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_of: datetime, *, ebit: float | None = None, interest: float | None = None, debt: float | None = None, bridge=None):
     s, p = binding.references, binding.policy
     expected_scope = 'consolidated' if code == '300866' else 'liquor_proxy'
     if p.code != code or p.report_period != period or p.scope != expected_scope or s.information_as_of != information_as_of:
@@ -217,12 +232,46 @@ def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_o
             gross_interest_million_cny=interest, coverage_ratio=str(coverage), rating=band['rating'],
             corporate_default_spread=credit, sovereign_spread_added=sovereign, debt_cost_pretax=kd,
             financial_basis='same TTM policy operating EBIT and TDX FN305 gross interest; see consumed_inputs')
+    if p.credit_band_debt is not None:
+        cp=p.credit_band_debt
+        band,credit=select(s.credit_spreads,cp.max_credit_age_days,rating=cp.rating)
+        sovereign=0.0
+        if cp.sovereign_spread_policy=='add_cn_default_spread':
+            _,sovereign=select(s.country_risk,p.max_country_age_days,subject_code='CN',subject_kind='country',metric_code='sovereign_default_spread',method_code='rating',raw_unit='fraction')
+        kd=government-spread+credit+sovereign
+        debt_audit=dict(status='analyst_credit_band_proxy_not_observed_rating',rating=band['rating'],corporate_default_spread=credit,sovereign_spread_added=sovereign,debt_cost_pretax=kd,selection_reason=cp.selection_reason)
+    market_audit=None
+    market_e=market_d=None
+    weight=p.target_debt_weight
+    if p.market is not None:
+        if binding.market_capital is None or debt is None or debt<0 or bridge is None:
+            raise ValueError('market WACC requires standard capital evidence and reviewed debt/scope bridge')
+        if not 0<=(binding.market_capital.market_date-period).days<=p.market.max_financial_age_days:
+            raise ValueError('stale/future financial debt and scope bridge')
+        common,market_audit,packet=equity_market_value(binding.market_capital,p.market,code,information_as_of)
+        # 逆向已审核股权桥接，分离非经营资产、金融子公司及其他索偿；不把存款当酒业债务。
+        debt_key='debt_claim_proxy' if code=='300866' else 'lease_debt'
+        if debt_key not in bridge.components: raise ValueError('missing debt scope bridge')
+        offset=sum(Decimal(str(v)) for k,v in bridge.components.items() if k!=debt_key)
+        operating=(common-offset)/Decimal(str(bridge.operating_ownership))
+        if operating<=0: raise ValueError('nonpositive residual operating equity')
+        market_e,market_d=float(operating),debt
+        weight=market_d/(market_e+market_d)
+        market_audit.update(operating_equity_million_cny=str(operating),debt_million_cny=debt,
+            debt_value_basis=p.market.debt_value_basis,financial_age_days=(binding.market_capital.market_date-period).days,nondebt_bridge_offset_million_cny=str(offset),
+            operating_ownership=bridge.operating_ownership,source_snapshot=packet,
+            boundaries=['debt and non-operating claims use reviewed financial-date book proxies, not observed fair values',
+            'carried shares may miss changes after latest disclosure; age policy is explicit',
+            'market WACC does not update the historical DCF share/cash bridge or make its per-share value a current target'])
+    elif binding.market_capital is not None:
+        raise ValueError('market packet supplied without market policy')
     components = ReferenceCapitalInputs(risk_free_rate=government-spread, beta_u=beta, mature_market_erp=mature,
-        country_risk_contribution=country, debt_weight=p.target_debt_weight, tax_shield_rate=p.tax_shield_rate,
-        debt_cost_pretax=kd, debt_cost_basis="synthetic_reference" if debt_audit else "explicit_policy")
+        country_risk_contribution=country, debt_weight=weight, capital_structure_basis=p.capital_structure_basis,
+        market_equity=market_e,estimated_debt=market_d, tax_shield_rate=p.tax_shield_rate,
+        debt_cost_pretax=kd, debt_cost_basis=("analyst_credit_reference" if p.credit_band_debt else "synthetic_reference" if debt_audit else "explicit_policy"))
     result = compute_reference_cost_of_capital(components)
     return components, dict(policy=p.model_dump(mode='json'), selected_observations=used,
-        synthetic_debt=debt_audit, government_yield=government, sovereign_default_spread_adjustment=spread,
-        result=result.model_dump(mode='json'), boundaries=['explicit target weights, not observed market capital structure',
+        market_capital=market_audit, synthetic_debt=debt_audit, government_yield=government, sovereign_default_spread_adjustment=spread,
+        result=result.model_dump(mode='json'), boundaries=[('explicit target weights, not observed market capital structure' if market_audit is None else 'market equity with estimated debt and operating scope adjustments'),
         'industry and country weights are analyst policy', 'constant WACC including terminal period',
         'reference packet provenance is validated structurally; not a cryptographic signature of the database'])

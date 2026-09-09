@@ -319,3 +319,84 @@ def test_v1_reference_packet_still_supported(exports,reference_export):
     s['releases']=[r for r in s['releases'] if r['dataset']!='synthetic-credit-large-2026-v1']
     inputs,_=build_inputs(AlphaLakeRequest.model_validate(req))
     assert inputs.methodology_choices.cost_of_capital_approach=='reference_snapshot'
+
+
+@pytest.fixture(scope='module')
+def market_export(tmp_path_factory):
+    import sys
+    output=tmp_path_factory.mktemp('market_capital')
+    env=os.environ|{'ALPHALAKE_MARKET_EXPORT_DIR':str(output),'ALPHALAKE_TEST_PYTHON':sys.executable,'GOPROXY':'off','GOSUMDB':'off'}
+    subprocess.run(['go','test','./internal/ingest','-run','^TestMarketCapitalArchiveReplay$','-count=1'],cwd=REPO,env=env,check=True,capture_output=True,text=True)
+    return {code:json.loads((output/(code+'.json')).read_text()) for code in ['300866','600519']}
+
+
+def market_request(exports,reference_export,market_export,company):
+    req=reference_request(exports,reference_export,company)
+    capital=copy.deepcopy(market_export[req['data']['code']])
+    req['data']['information_as_of']=capital['information_as_of']
+    req['wacc_binding']['references']['information_as_of']=capital['information_as_of']
+    req['wacc_binding']['policy']=json.loads((REPO/f'valuation/examples/wacc/{company}-market-policy.json').read_text())
+    req['wacc_binding']['market_capital']=capital
+    return req
+
+
+@pytest.mark.parametrize('company',['anker','moutai'])
+def test_market_capital_wacc_http(exports,reference_export,market_export,company,tmp_path,monkeypatch):
+    from decimal import Decimal as D
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    req=market_request(exports,reference_export,market_export,company)
+    with TestClient(app) as client:
+        response=client.post('/api/valuation/from-alphalake',json=req)
+        assert response.status_code==200,response.text
+        result=response.json()
+        assert client.post('/api/valuation/from-alphalake',json=req).json()==result
+    s=req['wacc_binding']['market_capital'];p=req['wacc_binding']['policy']
+    shares={r['trading_currency']:D(r['value']) for r in s['share_counts'] if r['share_basis']=='outstanding'}
+    common=shares['CNY']*D(s['a_quote']['quote']['close'])
+    if company=='anker': common+=shares['HKD']*D(s['h_quote']['close'])*D(s['fx']['raw_value'])/100
+    common/=D(1000000)
+    bridge=result['inputs']['equity_bridge'];dk='debt_claim_proxy' if company=='anker' else 'lease_debt'
+    offset=sum(D(str(v)) for k,v in bridge['components'].items() if k!=dk)
+    equity=(common-offset)/D(str(bridge['operating_ownership']))
+    debt=-D(str(bridge['components'][dk]))/D(str(bridge['operating_ownership']))
+    w=debt/(equity+debt);tax=D(str(p['tax_shield_rate']))
+    country={(r['subject_code'],r['metric_code']):D(r['value']) for r in reference_export['country_risk']}
+    gov=next(D(r['value']) for r in reference_export['yield_curve'] if r['tenor_months']==120)
+    beta=next(D(r['value']) for r in reference_export['industry_stats'] if r['industry']==p['industries'][0]['industry'] and r['metric_code']==p['beta_metric'])
+    spread=next(D(r['value']) for r in reference_export['credit_spreads'] if r['rating']=='Aaa/AAA')
+    rf=gov-country['CN','sovereign_default_spread'];kd=gov+spread
+    levered=beta*(1+(1-tax)*debt/equity)
+    ke=rf+levered*country['mature','mature_market_erp']+country['CN','country_risk_premium']
+    expected=(1-w)*ke+w*kd*(1-tax)
+    c=result['report']['cost_of_capital']
+    near(c['mv_equity'],float(equity));near(c['mv_debt_total'],float(debt));near(c['weight_debt'],float(w));near(c['wacc'],float(expected))
+    assert c['capital_structure_basis']=='market_equity_estimated_debt'
+    assert result['report']['cashflow']['fcff'] is None
+    assert c['weight_debt']>0
+
+
+@pytest.mark.parametrize('case', ['share_missing','treasury','wrong_class','duplicate_listing','future_share','stale_share','fx_direction','fx_date','fx_unit','hk_date','a_adjusted','future_release','target_override','missing_packet','debt_missing','bad_credit'])
+def test_market_capital_rejects_bad_evidence(exports,reference_export,market_export,case,tmp_path,monkeypatch):
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    req=market_request(exports,reference_export,market_export,'anker')
+    b=req['wacc_binding'];s=b['market_capital'];p=b['policy']
+    if case=='share_missing':s['share_counts'].pop()
+    elif case=='treasury':next(r for r in s['share_counts'] if r['share_basis']=='treasury')['value']='1.0000000000'
+    elif case=='wrong_class':s['h_quote']['instrument_id']=s['a_quote']['quote']['instrument_id']
+    elif case=='duplicate_listing':s['share_counts']+=copy.deepcopy(s['share_counts'][:3])
+    elif case=='future_share':s['share_counts'][0]['effective_date']='2099-01-01'
+    elif case=='stale_share':p['market']['max_share_age_days']=0
+    elif case=='fx_direction':s['fx']['base_currency']='CNY'
+    elif case=='fx_date':s['fx']['observed_at']='2026-09-07T00:00:00+08:00'
+    elif case=='fx_unit':s['fx']['value']=s['fx']['raw_value']
+    elif case=='hk_date':s['h_quote']['trade_date']='2026-09-07'
+    elif case=='a_adjusted':s['a_quote']['adjustment']='forward'
+    elif case=='future_release':s['releases'][0]['available_at']='2099-01-01T00:00:00Z'
+    elif case=='target_override':p['target_debt_weight']=.05
+    elif case=='missing_packet':b.pop('market_capital')
+    elif case=='debt_missing':p['market'].pop('debt_value_reason')
+    elif case=='bad_credit':p['credit_band_debt']={'rating':'AAA'}
+    with TestClient(app) as client:
+        response=client.post('/api/valuation/from-alphalake',json=req)
+        assert response.status_code==422,response.text
+    assert not list(tmp_path.glob('*.json'))

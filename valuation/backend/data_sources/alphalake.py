@@ -258,7 +258,7 @@ def build_inputs(request: AlphaLakeRequest):
             shares=shares,conversion_release=0,conversion_shares=0)
         raw = RawFinancials(fiscal_year=d.report_period.year,revenues=revenue,ebit=ebit,shares_outstanding=shares)
     if request.wacc_binding is not None:
-        reference_components, reference_audit = resolve_wacc(request.wacc_binding, d.code, d.report_period, d.information_as_of, ebit=ebit, interest=w['FN305'])
+        reference_components, reference_audit = resolve_wacc(request.wacc_binding, d.code, d.report_period, d.information_as_of, ebit=ebit, interest=w['FN305'], debt=debt if anker else w['FN52']+w['FN439'], bridge=bridge)
         p['wacc'] = reference_audit['result']['wacc']
         if p['wacc'] <= p['terminal_growth']:
             raise ValueError('reference WACC must exceed terminal growth')

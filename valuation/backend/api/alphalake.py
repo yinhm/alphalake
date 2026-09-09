@@ -22,7 +22,7 @@ def runtime_versions():
 
 def engine_revision():
     root = Path(__file__).resolve().parents[1]
-    paths = sorted((root/'engine').glob('*.py'))+[root/'data_sources/alphalake.py',root/'data_sources/alphalake_wacc.py',Path(__file__).resolve()]
+    paths = sorted((root/'engine').glob('*.py'))+[root/'data_sources/alphalake.py',root/'data_sources/alphalake_wacc.py',root/'data_sources/alphalake_market.py',Path(__file__).resolve()]
     digest = hashlib.sha256(json.dumps(runtime_versions(),sort_keys=True).encode())
     for path in paths:
         digest.update(path.relative_to(root).as_posix().encode()+b'\0'+path.read_bytes()+b'\0')
