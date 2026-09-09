@@ -342,9 +342,15 @@ func TestRealValuationStandardChain(t *testing.T) {
 	// 新的生产导入/导出路径：独立附注不回写 TDX 事实。
 	var supplements []duckstore.ReviewedSupplement
 	check(json.Unmarshal(readFinancialSample(t, "testdata/valuation-integration-2026", "supplements.json"), &supplements))
+	var debtSupplements []duckstore.ReviewedSupplement
+	check(json.Unmarshal(readFinancialSample(t, "testdata/wacc-debt-2026", "supplements.json"), &debtSupplements))
+	if len(debtSupplements) != 24 {
+		t.Fatal("incomplete debt maturity table")
+	}
+	supplements = append(supplements, debtSupplements...)
 	n, err = duckstore.ImportReviewedSupplements(ctx, db, supplements)
 	check(err)
-	if n != 34 {
+	if n != len(supplements) {
 		t.Fatalf("supplements inserted %d", n)
 	}
 	n, err = duckstore.ImportReviewedSupplements(ctx, db, supplements)
@@ -366,7 +372,7 @@ func TestRealValuationStandardChain(t *testing.T) {
 		t.Fatal("bad PDF accepted")
 	}
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.reviewed_supplement`).Scan(&n))
-	if n != 34 {
+	if n != len(supplements) {
 		t.Fatal("partial supplement batch committed")
 	}
 	for _, at := range []time.Time{time.Date(2026, 8, 15, 15, 59, 59, 0, time.UTC), time.Date(2026, 8, 15, 16, 0, 0, 0, time.UTC)} {
@@ -402,7 +408,7 @@ func TestRealValuationStandardChain(t *testing.T) {
 		}
 		var notes []any
 		check(json.Unmarshal(snapshot["supplements"].(json.RawMessage), &notes))
-		want := map[string]int{"300866": 29, "600519": 5, "999999": 0}[code]
+		want := map[string]int{"300866": 29 + len(debtSupplements), "600519": 5, "999999": 0}[code]
 		if len(notes) != want {
 			t.Fatalf("%s exported supplements %d", code, len(notes))
 		}

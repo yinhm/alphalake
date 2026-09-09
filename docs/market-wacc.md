@@ -86,3 +86,7 @@
 源/存储测试覆盖原文版式、股数恒等式、港股第二行收盘列、换算、坏响应、重放、失败记录重开、缺类别/日期及ASOF拒绝。`TestMarketCapitalArchiveReplay` 已入CI（A股价格使用显式构造值测试关联，真实TDX验收另如上）；后端调用该生产导出和既有真实标准财务/参考导出，再实际请求API，独立Decimal复算并执行16路缺项/篡改拒绝。历史FCFF保持NULL。
 
 全套Go测试、构建、vet、diff检查通过；后端195项通过、4项既有外部测试跳过。新增系统工具Poppler，记录解析运行时版本；Go及Python包依赖版本未变。
+
+## 合同债务补证
+
+新增安克可选 `anker-contractual-debt-policy.json`：导入24个已核验的合同期限表附注后，按参考Kd计算现值区间，显式选择上界用于WACC。茅台账面近似政策补充了半年报第91页的原文依据。完整计算、实际结果及仍未交付的期后融资事件链见[剩余缺口复核](wacc-gap-review-20260909.md)。API明确输出 `current_fair_value_complete=false`，不能因市场权重可算就宣称全部当前公允价值已闭合。

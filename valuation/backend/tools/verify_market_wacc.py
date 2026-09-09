@@ -33,6 +33,11 @@ def verify(path):
         assert len(selected)==1
     kd=rf+D(selected[0]['value'])
     if policy['sovereign_spread_policy']=='add_cn_default_spread': kd+=country['CN','sovereign_default_spread']
+    if p['market']['debt_value_basis']=='contractual_cashflow_pv_upper_bound':
+        notes={r['item']:D(r['value'])/1000000 for r in run['request']['data']['supplements'] if r['period']==p['report_period']}
+        debt=sum(notes[f'debt_cf_{key}_{bucket}']/(1+kd)**year
+            for key in ('short','long','lease','bond')
+            for bucket,year in [('0_1',0),('1_2',1),('2_5',2),('5_plus',5)])
     tax=D(str(p['tax_shield_rate']));weight=debt/(debt+equity)
     leveraged=beta*(1+(1-tax)*debt/equity)
     ke=rf+leveraged*country['mature','mature_market_erp']+crp

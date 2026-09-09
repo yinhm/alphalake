@@ -14,7 +14,7 @@ class MarketPolicy(BaseModel):
     share_carry_reason: str = Field(min_length=1)
     fx_policy: Literal['same_day_safe_central_parity']
     fx_reason: str = Field(min_length=1)
-    debt_value_basis: Literal['reviewed_book_proxy']
+    debt_value_basis: Literal['reviewed_book_proxy','contractual_cashflow_pv_upper_bound']
     debt_value_reason: str = Field(min_length=1)
     operating_equity_basis: Literal['invert_reviewed_equity_bridge']
     scope_reason: str = Field(min_length=1)
@@ -143,3 +143,37 @@ def _equity(s,p,code,asof):
         value=r['outstanding']*close*rate;total+=value
         audit.append(dict(instrument_id=key,symbol=i['symbol'],shares=str(r['outstanding']),close=str(close),fx=str(rate),value_cny=str(value),share_age_days=(s.market_date-date.fromisoformat(i['effective_date'])).days))
     return total/Decimal(1000000),dict(status='market_prices_with_disclosed_share_carry',market_date=s.market_date.isoformat(),classes=audit,common_equity_million_cny=str(total/Decimal(1000000))),s.model_dump(mode='json')
+
+
+def contractual_debt_value(note, book_debt, rate):
+    """六月末合同组合按选定 Kd 重估：区间上界入模，下界仅作敏感性边界。"""
+    if not 0 <= rate < 1:
+        raise ValueError('nonnegative debt discount rate required for maturity bounds')
+    rows=[]
+    for key in ('short','long','lease','bond'):
+        values=[Decimal(str(note('debt_cf_'+key+'_'+c))) for c in ('0_1','1_2','2_5','5_plus','total','book')]
+        if any(v<0 or not v.is_finite() for v in values) or abs(sum(values[:4])-values[4])>Decimal('0.00000001'):
+            raise ValueError('invalid contractual debt cashflow reconciliation: '+key)
+        rows.append((key,values))
+    book=sum(v[5] for _,v in rows)
+    # TDX float32 源精度界限，PDF 不覆盖标准余额；不是会计金额精确相等。
+    if abs(book-Decimal(str(book_debt)))>book*Decimal(2)**-23:
+        raise ValueError('contractual debt book scope differs from standard debt')
+    discount=Decimal(1)+Decimal(str(rate))
+    upper=lower=Decimal(0)
+    for _,v in rows:
+        upper+=sum(v[i]/discount**t for i,t in enumerate((0,1,2,5)))
+        lower+=sum(v[i]/discount**t for i,t in enumerate((1,2,5)))
+        # 开放的 >5 年期限没有可证明的最迟还款日；正利率下 PV 下确界为零。
+        if rate==0: lower+=v[3]
+    return float(upper),dict(status='contractual_cashflow_bound_not_observed_market_price',
+        financial_book_million_cny=str(book),standard_book_million_cny=book_debt,
+        lower_bound_million_cny=str(lower),upper_bound_million_cny=str(upper),
+        selected_bound='upper',discount_rate=rate,
+        timing_origin='financial_report_date_not_market_date',
+        components={k:[str(x) for x in v] for k,v in rows},
+        boundaries=['June-end contractual portfolio repriced at selected Kd; intervening repayments and new borrowing unavailable',
+            'bucket boundaries bound payment timing; floating coupons held at disclosed report-date rates',
+            'convertible contractual cashflows exclude the conversion option; book option adjustment remains a separate proxy',
+            'one reference Kd for all debt currencies and tenors is a policy estimate',
+            'upper debt PV is not necessarily an upper or lower WACC or equity valuation'])

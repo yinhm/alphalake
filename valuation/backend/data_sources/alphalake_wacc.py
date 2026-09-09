@@ -6,7 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from engine.data_dictionary import ReferenceCapitalInputs
-from data_sources.alphalake_market import MarketPolicy, MarketSnapshot, equity_market_value
+from data_sources.alphalake_market import MarketPolicy, MarketSnapshot, equity_market_value, contractual_debt_value
 from engine.module_2_risk import compute_reference_cost_of_capital
 
 
@@ -169,7 +169,7 @@ class WACCBinding(Strict):
     market_capital: MarketSnapshot | None = None
 
 
-def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_of: datetime, *, ebit: float | None = None, interest: float | None = None, debt: float | None = None, bridge=None):
+def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_of: datetime, *, ebit: float | None = None, interest: float | None = None, debt: float | None = None, bridge=None, note=None):
     s, p = binding.references, binding.policy
     expected_scope = 'consolidated' if code == '300866' else 'liquor_proxy'
     if p.code != code or p.report_period != period or p.scope != expected_scope or s.information_as_of != information_as_of:
@@ -256,11 +256,18 @@ def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_o
         operating=(common-offset)/Decimal(str(bridge.operating_ownership))
         if operating<=0: raise ValueError('nonpositive residual operating equity')
         market_e,market_d=float(operating),debt
+        debt_value_audit=None
+        if p.market.debt_value_basis=='contractual_cashflow_pv_upper_bound':
+            if code!='300866' or note is None:
+                raise ValueError('contractual debt maturity evidence supported only for reviewed Anker scope')
+            market_d,debt_value_audit=contractual_debt_value(note,debt,kd)
         weight=market_d/(market_e+market_d)
-        market_audit.update(operating_equity_million_cny=str(operating),debt_million_cny=debt,
+        market_audit.update(operating_equity_million_cny=str(operating),debt_million_cny=market_d,debt_valuation=debt_value_audit,
             debt_value_basis=p.market.debt_value_basis,financial_age_days=(binding.market_capital.market_date-period).days,nondebt_bridge_offset_million_cny=str(offset),
             operating_ownership=bridge.operating_ownership,source_snapshot=packet,
-            boundaries=['debt and non-operating claims use reviewed financial-date book proxies, not observed fair values',
+            current_fair_value_complete=False,
+            unresolved_inputs=(['post_report_net_cash_and_borrowing_movements','convertible_option_market_value','operating_country_risk_exposure'] if code=='300866' else ['liquor_finance_subsidiary_capital_allocation','company_specific_credit_spread','post_report_nonoperating_asset_values']),
+            boundaries=['debt uses the explicit selected valuation basis; non-operating claims remain financial-date proxies',
             'carried shares may miss changes after latest disclosure; age policy is explicit',
             'market WACC does not update the historical DCF share/cash bridge or make its per-share value a current target'])
     elif binding.market_capital is not None:

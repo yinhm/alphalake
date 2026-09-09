@@ -400,3 +400,37 @@ def test_market_capital_rejects_bad_evidence(exports,reference_export,market_exp
         response=client.post('/api/valuation/from-alphalake',json=req)
         assert response.status_code==422,response.text
     assert not list(tmp_path.glob('*.json'))
+
+
+def test_contractual_debt_wacc(exports,reference_export,market_export,tmp_path,monkeypatch):
+    from decimal import Decimal as D
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    req=market_request(exports,reference_export,market_export,'anker')
+    req['wacc_binding']['policy']=json.loads((REPO/'valuation/examples/wacc/anker-contractual-debt-policy.json').read_text())
+    with TestClient(app) as client:
+        response=client.post('/api/valuation/from-alphalake',json=req)
+        assert response.status_code==200,response.text
+        result=response.json()
+        assert client.post('/api/valuation/from-alphalake',json=req).json()==result
+        audit=result['audit']['wacc_reference']['market_capital']['debt_valuation']
+        rate=D(str(result['report']['cost_of_capital']['cost_of_debt_pretax']))
+        notes={r['item']:D(r['value'])/1000000 for r in req['data']['supplements']}
+        upper=sum(notes[f'debt_cf_{k}_{c}']/(1+rate)**t for k in ('short','long','lease','bond') for c,t in [('0_1',0),('1_2',1),('2_5',2),('5_plus',5)])
+        lower=sum(notes[f'debt_cf_{k}_{c}']/(1+rate)**t for k in ('short','long','lease','bond') for c,t in [('0_1',1),('1_2',2),('2_5',5)])
+        near(float(audit['upper_bound_million_cny']),float(upper))
+        near(float(audit['lower_bound_million_cny']),float(lower))
+        near(result['report']['cost_of_capital']['mv_debt_total'],float(upper))
+        assert lower<upper
+        assert result['report']['cashflow']['fcff'] is None
+        for change in ('missing','amount','book','unit','period'):
+            bad=copy.deepcopy(req)
+            row=next(r for r in bad['data']['supplements'] if r['item']=='debt_cf_long_5_plus')
+            if change=='missing': bad['data']['supplements'].remove(row)
+            elif change=='amount': row['value']='1'
+            elif change=='book': next(r for r in bad['data']['supplements'] if r['item']=='debt_cf_long_book')['value']='1'
+            elif change=='unit': row['unit']='HKD'
+            else: row['period']='2025-12-31'
+            assert client.post('/api/valuation/from-alphalake',json=bad).status_code==422,change
+    from data_sources.alphalake_market import contractual_debt_value
+    value,zero=contractual_debt_value(lambda item:float(notes[item]),audit['standard_book_million_cny'],0)
+    near(value,float(zero['lower_bound_million_cny']))
