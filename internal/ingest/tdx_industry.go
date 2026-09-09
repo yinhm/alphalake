@@ -140,6 +140,9 @@ func SyncTDXIndustriesWithOptions(ctx context.Context, db *sql.DB, source TDXInd
 		summary.Members += result.Members
 		summary.Opened += result.Opened
 		summary.Closed += result.Closed
+		if result.Unresolved > 0 {
+			summary.Failures = append(summary.Failures, TDXClassificationFailure{Family: code, Err: fmt.Errorf("partial snapshot: %d unresolved members; known members applied without closing history", result.Unresolved)})
+		}
 		reportIndustryProgress(options, summary, i+1, code)
 	}
 

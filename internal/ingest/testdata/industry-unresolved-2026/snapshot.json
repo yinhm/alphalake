@@ -1,0 +1,134 @@
+{
+  "Taxonomy": {
+    "Source": "tdx",
+    "Code": "tdx_shenwan_industry",
+    "Name": "Shenwan Industry (TDX)",
+    "Type": "industry"
+  },
+  "Nodes": [
+    {
+      "Taxonomy": {
+        "Source": "tdx",
+        "Code": "tdx_shenwan_industry",
+        "Name": "Shenwan Industry (TDX)",
+        "Type": "industry"
+      },
+      "SourceNodeCode": "X15",
+      "Name": "建材",
+      "ParentNodeCode": "",
+      "Level": 1,
+      "SourceSymbol": "",
+      "Members": []
+    },
+    {
+      "Taxonomy": {
+        "Source": "tdx",
+        "Code": "tdx_shenwan_industry",
+        "Name": "Shenwan Industry (TDX)",
+        "Type": "industry"
+      },
+      "SourceNodeCode": "X1502",
+      "Name": "玻璃玻纤",
+      "ParentNodeCode": "X15",
+      "Level": 2,
+      "SourceSymbol": "",
+      "Members": []
+    },
+    {
+      "Taxonomy": {
+        "Source": "tdx",
+        "Code": "tdx_shenwan_industry",
+        "Name": "Shenwan Industry (TDX)",
+        "Type": "industry"
+      },
+      "SourceNodeCode": "X150202",
+      "Name": "玻纤制造",
+      "ParentNodeCode": "X1502",
+      "Level": 3,
+      "SourceSymbol": "",
+      "Members": [
+        {
+          "InstrumentID": 0,
+          "Provider": "tdx",
+          "Type": "symbol",
+          "Value": "sh600176",
+          "ValidFrom": null,
+          "ValidTo": null
+        },
+        {
+          "InstrumentID": 0,
+          "Provider": "tdx",
+          "Type": "symbol",
+          "Value": "sh601112",
+          "ValidFrom": null,
+          "ValidTo": null
+        },
+        {
+          "InstrumentID": 0,
+          "Provider": "tdx",
+          "Type": "symbol",
+          "Value": "sh603256",
+          "ValidFrom": null,
+          "ValidTo": null
+        },
+        {
+          "InstrumentID": 0,
+          "Provider": "tdx",
+          "Type": "symbol",
+          "Value": "sh603601",
+          "ValidFrom": null,
+          "ValidTo": null
+        },
+        {
+          "InstrumentID": 0,
+          "Provider": "tdx",
+          "Type": "symbol",
+          "Value": "sh605006",
+          "ValidFrom": null,
+          "ValidTo": null
+        },
+        {
+          "InstrumentID": 0,
+          "Provider": "tdx",
+          "Type": "symbol",
+          "Value": "sz002080",
+          "ValidFrom": null,
+          "ValidTo": null
+        },
+        {
+          "InstrumentID": 0,
+          "Provider": "tdx",
+          "Type": "symbol",
+          "Value": "sz002201",
+          "ValidFrom": null,
+          "ValidTo": null
+        },
+        {
+          "InstrumentID": 0,
+          "Provider": "tdx",
+          "Type": "symbol",
+          "Value": "sz300196",
+          "ValidFrom": null,
+          "ValidTo": null
+        },
+        {
+          "InstrumentID": 0,
+          "Provider": "tdx",
+          "Type": "symbol",
+          "Value": "sz300728",
+          "ValidFrom": null,
+          "ValidTo": null
+        },
+        {
+          "InstrumentID": 0,
+          "Provider": "tdx",
+          "Type": "symbol",
+          "Value": "sz301526",
+          "ValidFrom": null,
+          "ValidTo": null
+        }
+      ]
+    }
+  ],
+  "Complete": false
+}

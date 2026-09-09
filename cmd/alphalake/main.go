@@ -274,6 +274,9 @@ func main() {
 		fmt.Printf("TDX classification sync: run=%d families=%d synced=%d nodes=%d members=%d opened=%d closed=%d failures=%d master_failures=%d\n",
 			summary.RunID, summary.Families, summary.Synced, summary.Nodes, summary.Members,
 			summary.Opened, summary.Closed, len(summary.Failures), len(summary.MasterFailures))
+		for _, failure := range summary.Failures {
+			fmt.Fprintf(os.Stderr, "TDX classification issue: run=%d taxonomy=%s error=%q\n", summary.RunID, failure.Family, failure.Err)
+		}
 		if syncErr != nil {
 			fatal(syncErr)
 		}
@@ -303,6 +306,9 @@ func main() {
 		fmt.Printf("TDX industry sync: run=%d taxonomies=%d synced=%d nodes=%d members=%d opened=%d closed=%d failures=%d master_failures=%d\n",
 			summary.RunID, summary.Taxonomies, summary.Synced, summary.Nodes, summary.Members,
 			summary.Opened, summary.Closed, len(summary.Failures), len(summary.MasterFailures))
+		for _, failure := range summary.Failures {
+			fmt.Fprintf(os.Stderr, "TDX industry issue: run=%d taxonomy=%s error=%q\n", summary.RunID, failure.Family, failure.Err)
+		}
 		if syncErr != nil {
 			fatal(syncErr)
 		}

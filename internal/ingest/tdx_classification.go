@@ -129,6 +129,9 @@ func SyncTDXClassificationsWithOptions(ctx context.Context, db *sql.DB, source T
 		summary.Members += result.Members
 		summary.Opened += result.Opened
 		summary.Closed += result.Closed
+		if result.Unresolved > 0 {
+			summary.Failures = append(summary.Failures, TDXClassificationFailure{Family: family, Err: fmt.Errorf("partial snapshot: %d unresolved members; known members applied without closing history", result.Unresolved)})
+		}
 		reportClassificationProgress(options, summary, i+1, family)
 	}
 
@@ -143,12 +146,12 @@ func reportClassificationProgress(options TDXClassificationSyncOptions, summary 
 		return
 	}
 	options.OnProgress(TDXClassificationProgress{
-		RunID: summary.RunID,
+		RunID:     summary.RunID,
 		Processed: processed,
-		Total: summary.Families,
-		Synced: summary.Synced,
-		Failed: len(summary.Failures) + len(summary.MasterFailures),
-		Family: family,
+		Total:     summary.Families,
+		Synced:    summary.Synced,
+		Failed:    len(summary.Failures) + len(summary.MasterFailures),
+		Family:    family,
 	})
 }
 

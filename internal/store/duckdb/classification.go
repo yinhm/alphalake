@@ -19,12 +19,13 @@ type ClassificationApplyResult struct {
 	Members    int
 	Opened     int
 	Closed     int
+	Unresolved int
 }
 
 // ApplyClassificationSnapshotForRun resolves provider member identifiers and
-// atomically applies one taxonomy snapshot. If any member cannot be resolved to
-// a canonical instrument, the entire snapshot is rejected so an apparently
-// complete-but-truncated snapshot cannot close valid historical memberships.
+// atomically applies known members and records unknown members as diagnostics.
+// Any unresolved member makes the snapshot incomplete: no prior membership may
+// be closed. Ambiguous identifier history remains a transaction-level error.
 func ApplyClassificationSnapshotForRun(
 	ctx context.Context,
 	db *sql.DB,
@@ -132,7 +133,16 @@ func ApplyClassificationSnapshotForRun(
 			key := providerIdentifierKey(member.Provider, member.Type, member.Value)
 			instrumentID, ok := identifierMap[key]
 			if !ok {
-				return result, fmt.Errorf("unresolved classification member %s/%s/%s in node %q", member.Provider, member.Type, member.Value, nodeCode)
+				if _, err := tx.ExecContext(ctx, `INSERT INTO meta.validation_result
+				 (ingest_run_id,source,dataset,rule_code,severity,subject_type,subject_key,observed_value,expected_value,passed,details)
+				 VALUES (?,?,'classification_membership','classification.unresolved_member','error','classification_member',?,?,?,false,?)`,
+					ingestRunID, snapshot.Taxonomy.Source, snapshot.Taxonomy.Code+"/"+nodeCode+"/"+member.Value,
+					member.Provider+"/"+member.Type+"/"+member.Value, "one canonical instrument at snapshot date",
+					"known members applied; incomplete snapshot cannot close prior memberships"); err != nil {
+					return result, fmt.Errorf("record unresolved classification member: %w", err)
+				}
+				result.Unresolved++
+				continue
 			}
 			current[membershipKey{instrumentID: instrumentID, nodeID: nodeID}] = struct{}{}
 		}
@@ -192,7 +202,7 @@ func ApplyClassificationSnapshotForRun(
 		result.Opened++
 	}
 
-	if snapshot.Complete {
+	if snapshot.Complete && result.Unresolved == 0 {
 		for _, item := range open {
 			if _, stillPresent := current[item.key]; stillPresent {
 				continue

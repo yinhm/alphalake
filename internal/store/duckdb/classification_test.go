@@ -2,6 +2,7 @@ package duckdb
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"testing"
 	"time"
@@ -133,7 +134,7 @@ func TestApplyClassificationSnapshotTracksTemporalMembership(t *testing.T) {
 	}
 }
 
-func TestApplyClassificationSnapshotRejectsUnresolvedMemberWithoutClosingHistory(t *testing.T) {
+func TestApplyClassificationSnapshotQuarantinesUnknownMemberWithoutClosingHistory(t *testing.T) {
 	ctx := context.Background()
 	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "rollback.duckdb"))
 	if err != nil {
@@ -155,8 +156,9 @@ func TestApplyClassificationSnapshotRejectsUnresolvedMemberWithoutClosingHistory
 	}
 
 	run2, _ := StartIngestRun(ctx, db, "tdx", "classification", nil)
-	if _, err := ApplyClassificationSnapshotForRun(ctx, db, run2, day2, day2, classificationSnapshot("sh699999")); err == nil {
-		t.Fatal("expected unresolved-member error")
+	result, err := ApplyClassificationSnapshotForRun(ctx, db, run2, day2, day2, classificationSnapshot("sh699999"))
+	if err != nil || result.Unresolved != 1 || result.Closed != 0 {
+		t.Fatalf("unknown member not isolated: %+v %v", result, err)
 	}
 
 	var open int
@@ -167,5 +169,45 @@ func TestApplyClassificationSnapshotRejectsUnresolvedMemberWithoutClosingHistory
 	}
 	if open != 1 {
 		t.Fatalf("open memberships = %d, want prior interval preserved", open)
+	}
+	var diagnostics int
+	if err := db.QueryRow(`SELECT count(*) FROM meta.validation_result WHERE rule_code='classification.unresolved_member' AND subject_key LIKE '%sh699999' AND NOT passed`).Scan(&diagnostics); err != nil || diagnostics != 1 {
+		t.Fatalf("unknown member evidence: %d %v", diagnostics, err)
+	}
+}
+
+func TestClassificationMarketSnapshotWithUnknownMemberAndBoundedMemory(t *testing.T) {
+	t.Setenv("ALPHALAKE_DUCKDB_MEMORY_LIMIT", "128MiB")
+	t.Setenv("ALPHALAKE_DUCKDB_THREADS", "1")
+	ctx := context.Background()
+	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "market-industry.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	_, err = db.Exec(`INSERT INTO ref.instrument(instrument_id,instrument_type,exchange_mic,currency,name)
+ SELECT i,'equity','XSHG','CNY','synthetic' FROM range(1,6001) r(i);
+ INSERT INTO ref.instrument_identifier(instrument_id,provider,identifier_type,identifier_value)
+ SELECT i,'tdx','symbol','sh'||CAST(600000+i AS VARCHAR) FROM range(1,6001) r(i);`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	members := make([]string, 6001)
+	for i := 0; i < 6000; i++ {
+		members[i] = fmt.Sprintf("sh%d", 600001+i)
+	}
+	members[6000] = "sh699999"
+	snapshot := classificationSnapshot(members...)
+	day := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
+	for i := 0; i < 2; i++ {
+		run, _ := StartIngestRun(ctx, db, "tdx", "classification", nil)
+		result, err := ApplyClassificationSnapshotForRun(ctx, db, run, day, day.Add(time.Duration(i)*time.Hour), snapshot)
+		if err != nil || result.Members != 6000 || result.Unresolved != 1 || result.Closed != 0 {
+			t.Fatalf("snapshot %d: %+v %v", i, result, err)
+		}
+	}
+	var count int
+	if err = db.QueryRow(`SELECT count(*) FROM classification.membership WHERE last_observed_at=?`, day.Add(time.Hour)).Scan(&count); err != nil || count != 6000 {
+		t.Fatalf("refreshed %d %v", count, err)
 	}
 }
