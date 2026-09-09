@@ -150,3 +150,32 @@ func TestListProviderFinancialResolutionsPage(t *testing.T) {
 		t.Fatalf("unexpected pagination order: first=%#v second=%#v third=%#v", first, second, third)
 	}
 }
+
+// 全包规模的身份状态不应因逐条 UPSERT 的事务内存累积而失败。
+func TestProviderResolutionMarketBatchWithBoundedMemory(t *testing.T) {
+	t.Setenv("ALPHALAKE_DUCKDB_MEMORY_LIMIT", "128MiB")
+	t.Setenv("ALPHALAKE_DUCKDB_THREADS", "1")
+	ctx := context.Background()
+	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "batch.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	inputs := make([]ProviderFinancialResolutionInput, 6000)
+	for i := range inputs {
+		inputs[i] = ProviderFinancialResolutionInput{ArtifactID: 1, Source: "tdx", SourceFile: "gpcw20260630.zip", ReportPeriod: time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC), ProviderCode: fmt.Sprintf("%06d", i), InstrumentID: int64(i + 1)}
+	}
+	for i := 0; i < 2; i++ {
+		result, err := ApplyProviderFinancialResolutions(ctx, db, 1, inputs)
+		if err != nil || result.Resolved != 6000 || result.Pending != 0 {
+			t.Fatalf("batch %d: %+v %v", i, result, err)
+		}
+	}
+	if _, err := ApplyProviderFinancialResolutions(ctx, db, 1, append(inputs, inputs[0])); err == nil {
+		t.Fatal("duplicate raw identity accepted")
+	}
+	var count int
+	if err := db.QueryRow(`SELECT count(*) FROM fundamental.provider_record_resolution`).Scan(&count); err != nil || count != 6000 {
+		t.Fatalf("unchanged after rejected batch: %d %v", count, err)
+	}
+}

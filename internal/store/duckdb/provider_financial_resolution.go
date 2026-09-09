@@ -3,6 +3,7 @@ package duckdb
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -72,17 +73,64 @@ func ApplyProviderFinancialResolutions(ctx context.Context, db *sql.DB, ingestRu
 		return result, errors.New("artifact ID must be positive")
 	}
 
+	// 一个 INSERT SELECT 保持包级原子性，避免逐行 ON CONFLICT 的事务内存随证券数膨胀。
+	staged := make([]map[string]any, 0, len(inputs))
+	seen := make(map[string]bool, len(inputs))
+	for i, input := range inputs {
+		if input.ArtifactID != artifactID {
+			return result, fmt.Errorf("provider resolution input %d mixes artifact %d with %d", i, input.ArtifactID, artifactID)
+		}
+		input.Source = strings.TrimSpace(input.Source)
+		input.SourceFile = strings.TrimSpace(input.SourceFile)
+		input.ProviderCode = strings.TrimSpace(input.ProviderCode)
+		input.IdentifierValue = strings.TrimSpace(input.IdentifierValue)
+		input.Reason = strings.TrimSpace(input.Reason)
+		if input.Source == "" || input.SourceFile == "" || input.ProviderCode == "" || input.ReportPeriod.IsZero() {
+			return result, fmt.Errorf("provider resolution input %d has incomplete source identity", i)
+		}
+		status := ProviderResolutionPending
+		var instrument any
+		var identifier any
+		if input.InstrumentID > 0 {
+			status = ProviderResolutionResolved
+			instrument = input.InstrumentID
+			identifier = nullableString(input.IdentifierValue)
+			input.Reason = ""
+		} else if input.Reason == "" {
+			input.Reason = "no unique temporal provider identifier"
+		}
+		if seen[input.ProviderCode] {
+			return result, fmt.Errorf("duplicate provider resolution code=%s", input.ProviderCode)
+		}
+		seen[input.ProviderCode] = true
+		staged = append(staged, map[string]any{
+			"artifact_id": input.ArtifactID, "source": input.Source, "source_file": input.SourceFile,
+			"report_period": dateUTC(input.ReportPeriod).Format("2006-01-02"), "provider_code": input.ProviderCode,
+			"market_marker": uint16(input.MarketMarker), "status": status, "instrument_id": instrument,
+			"identifier_value": identifier, "reason": nullableString(input.Reason), "last_ingest_run_id": ingestRunID,
+		})
+	}
+	payload, err := json.Marshal(staged)
+	if err != nil {
+		return result, fmt.Errorf("encode provider resolutions: %w", err)
+	}
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return result, fmt.Errorf("begin provider resolution update: %w", err)
 	}
 	defer tx.Rollback()
-	stmt, err := tx.PrepareContext(ctx, `
+	_, err = tx.ExecContext(ctx, `
 		INSERT INTO fundamental.provider_record_resolution (
 			artifact_id, source, source_file, report_period, provider_code,
 			market_marker, status, instrument_id, identifier_value, reason,
 			last_ingest_run_id
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		) SELECT
+			CAST(value->>'artifact_id' AS BIGINT), value->>'source', value->>'source_file',
+			CAST(value->>'report_period' AS DATE), value->>'provider_code',
+			CAST(value->>'market_marker' AS USMALLINT), value->>'status',
+			CAST(value->>'instrument_id' AS BIGINT), value->>'identifier_value', value->>'reason',
+			CAST(value->>'last_ingest_run_id' AS BIGINT)
+		FROM json_each(CAST(? AS JSON))
 		ON CONFLICT (artifact_id, provider_code) DO UPDATE SET
 			source=excluded.source,
 			source_file=excluded.source_file,
@@ -110,44 +158,9 @@ func ApplyProviderFinancialResolutions(ctx context.Context, db *sql.DB, ingestRu
 			END,
 			last_ingest_run_id=excluded.last_ingest_run_id,
 			updated_at=now()
-	`)
+	`, string(payload))
 	if err != nil {
-		return result, fmt.Errorf("prepare provider resolution upsert: %w", err)
-	}
-	defer stmt.Close()
-
-	for i, input := range inputs {
-		if input.ArtifactID != artifactID {
-			return result, fmt.Errorf("provider resolution input %d mixes artifact %d with %d", i, input.ArtifactID, artifactID)
-		}
-		input.Source = strings.TrimSpace(input.Source)
-		input.SourceFile = strings.TrimSpace(input.SourceFile)
-		input.ProviderCode = strings.TrimSpace(input.ProviderCode)
-		input.IdentifierValue = strings.TrimSpace(input.IdentifierValue)
-		input.Reason = strings.TrimSpace(input.Reason)
-		if input.Source == "" || input.SourceFile == "" || input.ProviderCode == "" || input.ReportPeriod.IsZero() {
-			return result, fmt.Errorf("provider resolution input %d has incomplete source identity", i)
-		}
-		status := ProviderResolutionPending
-		var instrument any
-		var identifier any
-		if input.InstrumentID > 0 {
-			status = ProviderResolutionResolved
-			instrument = input.InstrumentID
-			identifier = nullableString(input.IdentifierValue)
-			input.Reason = ""
-		} else if input.Reason == "" {
-			input.Reason = "no unique temporal provider identifier"
-		}
-		if _, err := stmt.ExecContext(ctx,
-			input.ArtifactID, input.Source, input.SourceFile, dateUTC(input.ReportPeriod), input.ProviderCode,
-			uint16(input.MarketMarker), status, instrument, identifier, nullableString(input.Reason), ingestRunID,
-		); err != nil {
-			return result, fmt.Errorf("upsert provider resolution code=%s: %w", input.ProviderCode, err)
-		}
-	}
-	if err := stmt.Close(); err != nil {
-		return result, fmt.Errorf("close provider resolution statement: %w", err)
+		return result, fmt.Errorf("batch upsert provider resolutions: %w", err)
 	}
 
 	rows, err := tx.QueryContext(ctx, `
