@@ -23,6 +23,7 @@ class Snapshot(BaseModel):
     facts: list[dict]
     windows: list[dict]
     supplements: list[dict]
+    source_conflicts: list[dict] = Field(default_factory=list)
 
     @model_validator(mode='after')
     def check_identity(self):
@@ -31,7 +32,7 @@ class Snapshot(BaseModel):
         if self.report_period.month % 3 or (self.report_period + timedelta(days=1)).day != 1:
             raise ValueError('quarter-end report period required')
         identities = set()
-        for r in self.facts + self.windows + self.supplements:
+        for r in self.facts + self.windows + self.supplements + self.source_conflicts:
             if r.get('code') != self.code:
                 raise ValueError('mixed security identity')
             if r.get('available_at') is not None:
@@ -261,6 +262,8 @@ def standard_window_reader(d: Snapshot):
 
 
 def build_inputs(request: AlphaLakeRequest):
+    if request.data.source_conflicts:
+        raise MissingInputs(['source_record_conflict:'+r['period'] for r in request.data.source_conflicts])
     d, policy = request.data, request.policy
     if isinstance(policy, HistoricalDCFPolicy):
         return build_historical_dcf_inputs(d, policy)

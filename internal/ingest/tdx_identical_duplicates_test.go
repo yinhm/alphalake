@@ -58,8 +58,9 @@ func TestRealIdenticalFinancialDuplicatesPreserveRawAndReplay(t *testing.T) {
 			bad[1].ProviderFields[0].Bits ^= 1
 			bad[1].ProviderFields[0].Value = float64(math.Float32frombits(bad[1].ProviderFields[0].Bits))
 		}
-		if _, _, err = resolveProviderFinancialRecords(ctx, db, bad); err == nil {
-			t.Fatal("accepted conflicting duplicate")
+		kept, states, err := resolveProviderFinancialRecords(ctx, db, bad)
+		if err != nil || len(kept) != 2 || len(states) != 3 || states[0].InstrumentID != 0 || states[0].Reason == "" {
+			t.Fatalf("conflicting security not isolated: %d %+v %v", len(kept), states, err)
 		}
 	}
 }

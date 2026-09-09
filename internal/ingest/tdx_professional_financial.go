@@ -272,8 +272,12 @@ func resolveProviderFinancialRecords(ctx context.Context, db *sql.DB, records []
 	}
 	codes := make([]string, 0, len(records))
 	seenCodes := make(map[string]domain.ProviderFinancialRecord, len(records))
+	conflicts := make(map[string]string)
 	unique := make([]domain.ProviderFinancialRecord, 0, len(records))
 	for _, record := range records {
+		if record.ArtifactID != records[0].ArtifactID || record.SourceFile != records[0].SourceFile {
+			return nil, nil, errors.New("gpcw package mixes archive identities")
+		}
 		if !record.ReportPeriod.Equal(period) {
 			return nil, nil, fmt.Errorf("gpcw package mixes report periods %s and %s", period.Format("2006-01-02"), record.ReportPeriod.Format("2006-01-02"))
 		}
@@ -285,7 +289,14 @@ func resolveProviderFinancialRecords(ctx context.Context, db *sql.DB, records []
 			if reflect.DeepEqual(previous, record) {
 				continue
 			}
-			return nil, nil, fmt.Errorf("gpcw package contains conflicting duplicate provider code %q", code)
+			differences := []string{}
+			for i, field := range record.ProviderFields {
+				if i >= len(previous.ProviderFields) || field.Bits != previous.ProviderFields[i].Bits {
+					differences = append(differences, fmt.Sprintf("FN%d", i+1))
+				}
+			}
+			conflicts[code] = fmt.Sprintf("conflicting duplicate provider records: code=%s markers=%d/%d fields=%s; entire security withheld; raw archive retains all alternatives", code, previous.MarketMarker, record.MarketMarker, strings.Join(differences, ","))
+			continue
 		}
 		seenCodes[code] = record
 		codes = append(codes, code)
@@ -301,7 +312,11 @@ func resolveProviderFinancialRecords(ctx context.Context, db *sql.DB, records []
 	for i, record := range records {
 		resolution := resolutions[i]
 		reason := ""
-		if resolution.Resolved() {
+		if conflict, found := conflicts[record.ProviderCode]; found {
+			reason = conflict
+			resolution.InstrumentID = 0
+			resolution.IdentifierValue = ""
+		} else if resolution.Resolved() {
 			record.InstrumentID = resolution.InstrumentID
 			resolved = append(resolved, record)
 		} else if len(resolution.Candidates) == 0 {

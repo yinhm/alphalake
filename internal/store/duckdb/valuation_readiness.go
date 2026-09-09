@@ -58,11 +58,18 @@ func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
  AND m.last_observed_at<=CAST(? AS TIMESTAMPTZ) AND r.finished_at<=CAST(? AS TIMESTAMPTZ)
  AND m.effective_from<=CAST(? AS DATE) AND (m.effective_to IS NULL OR m.effective_to>CAST(? AS DATE))
  GROUP BY m.instrument_id
+ ), conflicts AS (
+ SELECT provider_code,list(struct_pack(code:=provider_code,period:=CAST(report_period AS VARCHAR),
+ artifact_id:=artifact_id,artifact_sha256:=artifact_sha256,available_at:=CAST(observed_at AS VARCHAR),reason:=reason)
+ ORDER BY report_period,artifact_id) AS source_conflicts
+ FROM fundamental.provider_conflicts_asof(CAST(? AS TIMESTAMPTZ))
+ WHERE source='tdx' AND report_period<=CAST(? AS DATE) AND report_period>=make_date(year(CAST(? AS DATE))-1,1,1)
+ GROUP BY provider_code
  ) SELECT CAST(to_json(list(r ORDER BY instrument_id)) AS VARCHAR) FROM (
- SELECT u.*,CAST(l.latest_report_period AS VARCHAR) AS latest_report_period,w.fields,c.industry_memberships
- FROM universe u LEFT JOIN latest l USING(instrument_id) LEFT JOIN windows w USING(instrument_id) LEFT JOIN industries c USING(instrument_id)) r`,
+ SELECT u.*,CAST(l.latest_report_period AS VARCHAR) AS latest_report_period,w.fields,c.industry_memberships,q.source_conflicts
+ FROM universe u LEFT JOIN latest l USING(instrument_id) LEFT JOIN windows w USING(instrument_id) LEFT JOIN industries c USING(instrument_id) LEFT JOIN conflicts q ON q.provider_code=substr(u.symbols[1],3)) r`,
 		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"),
-		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof, end, asof, end, asof, asof, asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02")).Scan(&raw)
+		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof, end, asof, end, asof, asof, asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof, end, end).Scan(&raw)
 	if err != nil {
 		return nil, err
 	}
@@ -113,6 +120,9 @@ func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 		}
 		if r["latest_report_period"] == nil {
 			status = "blocked_no_standard_facts"
+		}
+		if r["source_conflicts"] != nil {
+			status = "blocked_source_record_conflict"
 		}
 		identityOK := r["symbol_count"] == json.Number("1") && r["identifier_count"] == json.Number("1")
 		if identityOK {

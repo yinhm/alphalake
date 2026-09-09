@@ -62,6 +62,10 @@ def run_batch(readiness, policy, export):
     results = []
     for company in readiness['companies']:
         row = {k:company[k] for k in ('instrument_id','name','symbols','financial_status','missing_core_fields')}
+        if company.get('source_conflicts'):
+            row.update(status='blocked_source_record_conflict',source_conflicts=company['source_conflicts'])
+            results.append(row)
+            continue
         symbols = company['symbols'] or []
         row['status'] = 'blocked_security_identity'
         if company['financial_status'] != 'blocked_security_identity' and len(symbols) == 1:

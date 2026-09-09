@@ -357,6 +357,10 @@ func main() {
 			fatal(syncErr)
 		}
 
+		if summary.Unresolved > 0 || len(summary.MasterFailures) > 0 {
+			fatal(fmt.Errorf("financial sync is partial: unresolved=%d master_failures=%d; inspect financial-unresolved/status", summary.Unresolved, len(summary.MasterFailures)))
+		}
+
 	case "financial-unresolved":
 		if len(os.Args) < 3 {
 			usage()

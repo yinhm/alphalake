@@ -32,6 +32,7 @@ func TestFinancialProgressKeepsCurrentFailure(t *testing.T) {
 type fakeProfessionalFinancialSource struct {
 	instruments       []domain.InstrumentObservation
 	packageBytes      []byte
+	packageFilename   string
 	packageCalls      int
 	futurePlaceholder bool
 	recordCode        string
@@ -45,7 +46,10 @@ func (f *fakeProfessionalFinancialSource) Instruments(context.Context) ([]domain
 func (f *fakeProfessionalFinancialSource) ProfessionalFinancialFileList(context.Context) ([]tdxfinancial.FileEntry, []byte, error) {
 	sum := md5.Sum(f.packageBytes)
 	entry := tdxfinancial.FileEntry{Filename: "gpcw20260630.zip", MD5: hex.EncodeToString(sum[:]), Size: int64(len(f.packageBytes))}
-	manifest := []byte(entry.Filename + "," + entry.MD5 + "," + "4\n")
+	if f.packageFilename != "" {
+		entry.Filename = f.packageFilename
+	}
+	manifest := []byte(fmt.Sprintf("%s,%s,%d\n", entry.Filename, entry.MD5, entry.Size))
 	entries := []tdxfinancial.FileEntry{entry}
 	if f.futurePlaceholder {
 		entries = append(entries, tdxfinancial.FileEntry{Filename: "gpcw20260930.zip", Size: 164})
@@ -54,7 +58,7 @@ func (f *fakeProfessionalFinancialSource) ProfessionalFinancialFileList(context.
 }
 
 func (f *fakeProfessionalFinancialSource) ProfessionalFinancialPackage(_ context.Context, entry tdxfinancial.FileEntry) ([]byte, error) {
-	if entry.Filename != "gpcw20260630.zip" {
+	if entry.Filename != f.packageFilename && !(f.packageFilename == "" && entry.Filename == "gpcw20260630.zip") {
 		return nil, fmt.Errorf("unexpected package %s", entry.Filename)
 	}
 	f.packageCalls++

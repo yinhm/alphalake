@@ -696,3 +696,27 @@ def test_batch_industry_rules_gate_age_conflict_and_override(exports,tmp_path,mo
     assert run_batch(scan,ambiguous,export)['companies'][0]['policy_route']=={'kind':'explicit_company_assignment'}
     broken=copy.deepcopy(scan);broken['companies'][0]['industry_memberships'][0]['observed_at']='bad-date'
     assert run_batch(broken,policy,export)['companies'][0]['status']=='rejected_industry_evidence'
+
+
+def test_source_conflict_blocks_old_usable_values(exports,tmp_path,monkeypatch):
+    from data_sources.alphalake import MissingInputs
+    from tools.batch_valuate_alphalake import BatchPolicy,run_batch
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    req=request_for(exports,'anker')
+    conflict=dict(code='300866',period='2025-12-31',artifact_id=123,artifact_sha256='a'*64,
+                  available_at='2026-09-06T00:00:00+00:00',reason='conflicting duplicate provider records: test')
+    req['data']['source_conflicts']=[conflict]
+    assert req['data']['facts'] and req['data']['windows']
+    with pytest.raises(MissingInputs,match='source_record_conflict:2025-12-31'):
+        build_inputs(AlphaLakeRequest.model_validate(req))
+    with TestClient(app) as client:
+        response=client.post('/api/valuation/from-alphalake',json=req)
+        assert response.status_code==422 and response.json()['detail']['status']=='blocked_missing_inputs'
+    policy=BatchPolicy(policy_version='blocked-source-test',review_note='old usable facts remain blocked',assignments={'300866':dict(policy=req['policy'])})
+    readiness=dict(contract_version='alphalake-readiness-v1',report_period=req['data']['report_period'],
+        information_as_of=req['data']['information_as_of'],universe_scope='test',universe_count=1,
+        companies=[dict(instrument_id=req['data']['facts'][0]['instrument_id'],name='Anker',symbols=['sz300866'],
+                        financial_status='blocked_source_record_conflict',missing_core_fields=[],source_conflicts=[conflict])])
+    result=run_batch(readiness,policy,lambda code:pytest.fail('conflict must not be exported for valuation'))
+    assert result['status_counts']=={'blocked_source_record_conflict':1}
+    assert not list(tmp_path.glob('*.json'))

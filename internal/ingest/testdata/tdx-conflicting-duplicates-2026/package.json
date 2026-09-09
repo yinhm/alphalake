@@ -1,0 +1,22 @@
+{
+  "source_locator": "http://down.tdx.com.cn:8001/tdxfin/gpcw20251231.zip",
+  "original_size": 5803767,
+  "original_md5": "2353d31b3dfc9270fee4d0faf3a3f79b",
+  "original_sha256": "4430a5b2187fbe08f4e61c0543a9b2b32dc8420655f581e927e6e7ed7d6f70f7",
+  "sample_sha256": "c4fa96b14bb28c6b6c39dd9cb61e42060adc169d98c9c31357fb74c70fbcb4b1",
+  "record_indices": [
+    1603,
+    2190,
+    2191,
+    4110
+  ],
+  "record_size": 2336,
+  "conflict": {
+    "code": "300750",
+    "field": "FN337",
+    "bits": [
+      1096464466,
+      1106247680
+    ]
+  }
+}

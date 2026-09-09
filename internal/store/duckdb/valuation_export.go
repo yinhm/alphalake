@@ -118,6 +118,13 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
 		name, query string
 		args        []any
 	}{
+		{"source_conflicts", `SELECT CAST(to_json(list(x)) AS VARCHAR) FROM (
+    SELECT provider_code AS code,CAST(report_period AS VARCHAR) AS period,artifact_id,artifact_sha256,
+    CAST(observed_at AS VARCHAR) AS available_at,reason
+    FROM fundamental.provider_conflicts_asof(CAST(? AS TIMESTAMPTZ))
+    WHERE source='tdx' AND provider_code=? AND report_period<=CAST(? AS DATE)
+      AND report_period>=make_date(year(CAST(? AS DATE))-1,1,1)
+    ORDER BY report_period,artifact_id) x`, []any{asof, code, end, end}},
 		{"facts", `SELECT CAST(to_json(list(x)) AS VARCHAR) FROM (
     SELECT f.instrument_id,f.provider_code AS code,CAST(f.report_period AS VARCHAR) AS period,f.source_provider_field AS field,
       f.canonical_field,CAST(f.value AS VARCHAR) AS value,f.unit,f.period_type,f.statement_scope,
