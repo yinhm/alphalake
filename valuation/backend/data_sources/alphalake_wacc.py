@@ -253,6 +253,16 @@ def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_o
         debt_key='debt_claim_proxy' if code=='300866' else 'lease_debt'
         if debt_key not in bridge.components: raise ValueError('missing debt scope bridge')
         offset=sum(Decimal(str(v)) for k,v in bridge.components.items() if k!=debt_key)
+        funding=market_audit.get('funding_cash_scenario')
+        if funding is not None:
+            if any(date.fromisoformat(r['listing_date'])<=period for r in binding.market_capital.funding_events):
+                raise ValueError('proceeds already inside financial reporting period; would double count')
+            if note is None: raise ValueError('financing fee disclosure required')
+            funding.update(financial_date_ipo_fee_asset_million_cny=note('ipo_prepaid'),
+                financial_date_ipo_payable_million_cny=note('ipo_payable'),
+                fee_overlap_status='unresolved_no_fee_reclassification_sensitivity_only')
+            funding['boundaries'].append('June fee assets/payables retained; overlap with estimated net proceeds unresolved, not an accounting cash rollforward')
+            offset+=Decimal(funding['cash_adjustment_million_cny'])
         operating=(common-offset)/Decimal(str(bridge.operating_ownership))
         if operating<=0: raise ValueError('nonpositive residual operating equity')
         market_e,market_d=float(operating),debt

@@ -72,6 +72,9 @@ func runMarketSource(ctx context.Context, command string, args []string) error {
 	if command == "sync-hkex-close" {
 		sync = ingest.SyncHKEXQuote
 	}
+	if command == "sync-equity-proceeds" {
+		sync = ingest.SyncEquityProceeds
+	}
 	out, e := sync(ctx, db, filepath.Join(filepath.Dir(args[0]), "raw"), args[1], ingest.ReferenceOptions{Python: *python, Offline: *offline})
 	return errors.Join(e, json.NewEncoder(os.Stdout).Encode(out))
 }
@@ -86,6 +89,8 @@ func runMarketCapitalExport(ctx context.Context, args []string) error {
 	shares := fs.Int64("share-release", 0, "share release")
 	hk := fs.Int64("hk-release", 0, "H price release")
 	fx := fs.Int64("fx-release", 0, "FX release")
+	ipo := fs.Int64("ipo-release", 0, "initial H offering proceeds release")
+	greenshoe := fs.Int64("greenshoe-release", 0, "over-allotment proceeds release")
 	if e := fs.Parse(args[2:]); e != nil {
 		return e
 	}
@@ -108,7 +113,11 @@ func runMarketCapitalExport(ctx context.Context, args []string) error {
 		return e
 	}
 	defer db.Close()
-	out, e := duckstore.ExportMarketCapital(ctx, db, args[1], day, at, *shares, *hk, *fx)
+	var funding []int64
+	if *ipo != 0 || *greenshoe != 0 {
+		funding = []int64{*ipo, *greenshoe}
+	}
+	out, e := duckstore.ExportMarketCapital(ctx, db, args[1], day, at, *shares, *hk, *fx, funding...)
 	if e != nil {
 		return e
 	}

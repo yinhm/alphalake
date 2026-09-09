@@ -327,7 +327,7 @@ def market_export(tmp_path_factory):
     output=tmp_path_factory.mktemp('market_capital')
     env=os.environ|{'ALPHALAKE_MARKET_EXPORT_DIR':str(output),'ALPHALAKE_TEST_PYTHON':sys.executable,'GOPROXY':'off','GOSUMDB':'off'}
     subprocess.run(['go','test','./internal/ingest','-run','^TestMarketCapitalArchiveReplay$','-count=1'],cwd=REPO,env=env,check=True,capture_output=True,text=True)
-    return {code:json.loads((output/(code+'.json')).read_text()) for code in ['300866','600519']}
+    return {code:json.loads((output/(code+'.json')).read_text()) for code in ['300866','600519','300866-funding']}
 
 
 def market_request(exports,reference_export,market_export,company):
@@ -434,3 +434,41 @@ def test_contractual_debt_wacc(exports,reference_export,market_export,tmp_path,m
     from data_sources.alphalake_market import contractual_debt_value
     value,zero=contractual_debt_value(lambda item:float(notes[item]),audit['standard_book_million_cny'],0)
     near(value,float(zero['lower_bound_million_cny']))
+
+
+def test_disclosed_funding_scenario(exports,reference_export,market_export,tmp_path,monkeypatch):
+    from decimal import Decimal as D
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    req=market_request(exports,reference_export,market_export,'anker')
+    req['wacc_binding']['market_capital']=copy.deepcopy(market_export['300866-funding'])
+    req['wacc_binding']['policy']=json.loads((REPO/'valuation/examples/wacc/anker-funding-scenario-policy.json').read_text())
+    with TestClient(app) as client:
+        r=client.post('/api/valuation/from-alphalake',json=req)
+        assert r.status_code==200,r.text
+        result=r.json()
+        audit=result['audit']['wacc_reference']['market_capital']
+        adjustment=D('4860860000')*D('0.86482')/1000000
+        near(float(audit['funding_cash_scenario']['cash_adjustment_million_cny']),float(adjustment))
+        assert audit['current_fair_value_complete'] is False
+        original=copy.deepcopy(req)
+        for retention in (0,.5):
+            req['wacc_binding']['policy']['market']['funding_cash_retention']=retention
+            response=client.post('/api/valuation/from-alphalake',json=req)
+            assert response.status_code==200,response.text
+            current=response.json()['audit']['wacc_reference']['market_capital']
+            near(float(current['operating_equity_million_cny'])-float(audit['operating_equity_million_cny']),float(adjustment)*(1-retention))
+        for case in ('missing','duplicate','currency','status','date_status','company','date','shares','release','no_policy','bad_retention'):
+            bad=copy.deepcopy(original);s=bad['wacc_binding']['market_capital'];p=bad['wacc_binding']['policy']['market'];row=s['funding_events'][0]
+            if case=='missing': s['funding_events'].pop()
+            elif case=='duplicate': s['funding_events'][1]=copy.deepcopy(row)
+            elif case=='currency': row['currency']='CNY'
+            elif case=='status': row['amount_status']='settled_cash'
+            elif case=='date_status': s['funding_events'][1]['date_status']='reported_listing_date_not_cash_settlement'
+            elif case=='company': row['company_id']+=1
+            elif case=='date': row['listing_date']='2026-09-09'
+            elif case=='shares': row['issued_shares']='1'
+            elif case=='release': row['release_id']=s['funding_events'][1]['release_id']
+            elif case=='no_policy': p.pop('funding_cash_retention');p.pop('funding_cash_reason')
+            else: p['funding_cash_retention']=1.1
+            assert client.post('/api/valuation/from-alphalake',json=bad).status_code==422,case
+        assert client.post('/api/valuation/from-alphalake',json=original).json()==result

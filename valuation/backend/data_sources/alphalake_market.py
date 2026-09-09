@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 import re
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class MarketPolicy(BaseModel):
@@ -18,6 +18,17 @@ class MarketPolicy(BaseModel):
     debt_value_reason: str = Field(min_length=1)
     operating_equity_basis: Literal['invert_reviewed_equity_bridge']
     scope_reason: str = Field(min_length=1)
+    funding_cash_retention: float | None = Field(default=None,ge=0,le=1)
+    funding_cash_reason: str | None = Field(default=None,min_length=1)
+    funding_fee_treatment: Literal['retain_financial_date_claims_sensitivity_only'] | None = None
+
+    @model_validator(mode='after')
+    def funding_policy(self):
+        if (self.funding_cash_retention is None)!=(self.funding_cash_reason is None):
+            raise ValueError('explicit proceeds cash-retention scenario and reason required together')
+        if (self.funding_cash_retention is None)!=(self.funding_fee_treatment is None):
+            raise ValueError('explicit unresolved financing-fee treatment required')
+        return self
 
 
 class MarketSnapshot(BaseModel):
@@ -32,6 +43,7 @@ class MarketSnapshot(BaseModel):
     a_quote: dict
     h_quote: dict | None = None
     fx: dict | None = None
+    funding_events: list[dict] | None = None
 
 
 def moment(value):
@@ -63,12 +75,18 @@ def _equity(s,p,code,asof):
     boundary=datetime.combine(s.market_date+timedelta(days=1),datetime.min.time(),china)
     if asof<boundary or not 0<=(asof.astimezone(china).date()-s.market_date).days<=p.max_price_age_days:
         raise ValueError('future/stale/unclosed market date')
-    expected={'issuer_disclosure':'reviewed-share-classes-v1/'+code}
-    if code=='300866': expected|={'hkex':'anker-unadjusted-close-v1','safe':'hkd-cny-central-parity-v1'}
+    expected={('issuer_disclosure','reviewed-share-classes-v1/'+code)}
+    if code=='300866': expected|={('hkex','anker-unadjusted-close-v1'),('safe','hkd-cny-central-parity-v1')}
+    if (s.funding_events is None)!=(p.funding_cash_retention is None):
+        raise ValueError('proceeds evidence and explicit cash-retention scenario required together')
+    if s.funding_events is not None:
+        if code!='300866' or len(s.funding_events)!=2: raise ValueError('unreviewed/incomplete proceeds scope')
+        expected|={('issuer_disclosure','reviewed-equity-proceeds-v1/'+e) for e in ('ipo','greenshoe')}
     releases={}
     for r in s.releases:
-        if r['source'] not in expected or r['dataset']!=expected.pop(r['source']):
-            raise ValueError('duplicate/unreviewed market release')
+        key=(r['source'],r['dataset'])
+        if key not in expected: raise ValueError('duplicate/unreviewed market release')
+        expected.remove(key)
         if type(r['release_id']) is not int or r['release_id']<=0 or r['release_id'] in releases or type(r['artifact_id']) is not int or r['artifact_id']<=0:
             raise ValueError('invalid market evidence IDs')
         if any(not re.fullmatch('[0-9a-f]{64}',r[k]) for k in ['content_key','artifact_sha256']):
@@ -142,7 +160,34 @@ def _equity(s,p,code,asof):
         seen.add(i['trading_currency'])
         value=r['outstanding']*close*rate;total+=value
         audit.append(dict(instrument_id=key,symbol=i['symbol'],shares=str(r['outstanding']),close=str(close),fx=str(rate),value_cny=str(value),share_age_days=(s.market_date-date.fromisoformat(i['effective_date'])).days))
-    return total/Decimal(1000000),dict(status='market_prices_with_disclosed_share_carry',market_date=s.market_date.isoformat(),classes=audit,common_equity_million_cny=str(total/Decimal(1000000))),s.model_dump(mode='json')
+    funding=None
+    if s.funding_events is not None:
+        amount=issued=Decimal(0);events=set();ids=set()
+        hclass=next(c for c in classes.values() if c['identity']['trading_currency']=='HKD')
+        for row in s.funding_events:
+            lineage(row,'issuer_disclosure')
+            event=row['event_code']
+            if type(row['observation_id']) is not int or row['observation_id']<=0 or event not in ('ipo','greenshoe') or event in events or row['observation_id'] in ids:
+                raise ValueError('duplicate/invalid proceeds observation')
+            events.add(event);ids.add(row['observation_id'])
+            if (row['company_id'] not in companies or row['currency']!='HKD' or row['amount_status']!='issuer_estimate_after_estimated_costs'
+                    or row['date_status']!=('reported_listing_date_not_cash_settlement' if event=='ipo' else 'expected_listing_date_not_cash_settlement')
+                    or releases[row['release_id']]['dataset']!='reviewed-equity-proceeds-v1/'+event):
+                raise ValueError('proceeds identity/currency/status mismatch')
+            if date.fromisoformat(row['listing_date'])>min(s.market_date,date.fromisoformat(hclass['identity']['effective_date'])):
+                raise ValueError('proceeds event beyond share evidence')
+            shares,value=number(row['issued_shares']),number(row['net_proceeds'])
+            if shares<=0 or shares!=shares.to_integral_value() or value<=0:
+                raise ValueError('invalid proceeds amounts')
+            amount+=value;issued+=shares
+        if issued!=hclass['rows']['issued']: raise ValueError('H issuance events do not reconcile to disclosed class')
+        funding=dict(status='issuer_estimated_proceeds_cash_retention_scenario_not_current_cash',
+            net_proceeds_hkd=str(amount),fx=str(fx),cash_retention=p.funding_cash_retention,
+            cash_adjustment_million_cny=str(amount*fx*Decimal(str(p.funding_cash_retention))/1000000),
+            boundaries=['issuer rounded estimates after estimated issuance costs, not settled net cash',
+                'same-day FX translates a scenario; not the historical cash settlement exchange rate',
+                'unobserved intervening deployment is represented by an explicit retention assumption, not asserted zero'])
+    return total/Decimal(1000000),dict(status='market_prices_with_disclosed_share_carry',market_date=s.market_date.isoformat(),classes=audit,common_equity_million_cny=str(total/Decimal(1000000)),funding_cash_scenario=funding),s.model_dump(mode='json')
 
 
 def contractual_debt_value(note, book_debt, rate):

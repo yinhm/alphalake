@@ -8,18 +8,22 @@ import (
 	"fmt"
 	"github.com/yinhm/alphalake/internal/source/capital"
 	"github.com/yinhm/alphalake/internal/source/hkex"
+	"github.com/yinhm/alphalake/internal/source/proceeds"
 	"github.com/yinhm/alphalake/internal/source/safe"
 	"time"
 )
 
 // ExportMarketCapital fixes issuer/class, quote and FX evidence in one read transaction.
 // Prices are exact-date. Share carry-forward is not hidden: the consumer must set an age limit.
-func ExportMarketCapital(ctx context.Context, db *sql.DB, code string, day, asof time.Time, shares, hk, fx int64) (map[string]any, error) {
+func ExportMarketCapital(ctx context.Context, db *sql.DB, code string, day, asof time.Time, shares, hk, fx int64, funding ...int64) (map[string]any, error) {
 	if capital.URL(code) == "" || day.IsZero() || asof.IsZero() || shares <= 0 {
 		return nil, errors.New("reviewed code, market date, cutoff and share release required")
 	}
 	if (code == "300866" && (hk <= 0 || fx <= 0)) || (code == "600519" && (hk != 0 || fx != 0)) {
 		return nil, errors.New("exact issuer-class release scope required")
+	}
+	if len(funding) != 0 && (code != "300866" || len(funding) != 2 || funding[0] <= 0 || funding[1] <= 0 || funding[0] == funding[1]) {
+		return nil, errors.New("both reviewed proceeds releases required for Anker")
 	}
 	tx, e := db.BeginTx(ctx, nil)
 	if e != nil {
@@ -41,10 +45,19 @@ func ExportMarketCapital(ctx context.Context, db *sql.DB, code string, day, asof
 	}
 	out := map[string]any{"contract_version": "alphalake-market-capital-v1", "code": code, "market_date": day.Format("2006-01-02"), "information_as_of": asof.UTC().Format(time.RFC3339Nano), "currency": "CNY"}
 	var releases []json.RawMessage
-	for _, pin := range []struct {
+	pins := []struct {
 		id              int64
 		source, dataset string
-	}{{shares, capital.Source, capital.Dataset + "/" + code}, {hk, hkex.Source, hkex.Dataset}, {fx, safe.Source, safe.Dataset}} {
+	}{{shares, capital.Source, capital.Dataset + "/" + code}, {hk, hkex.Source, hkex.Dataset}, {fx, safe.Source, safe.Dataset}}
+	if len(funding) == 2 {
+		for i, event := range []string{"ipo", "greenshoe"} {
+			pins = append(pins, struct {
+				id              int64
+				source, dataset string
+			}{funding[i], proceeds.Source, proceeds.Dataset + "/" + event})
+		}
+	}
+	for _, pin := range pins {
 		if pin.id == 0 {
 			continue
 		}
@@ -113,6 +126,18 @@ func ExportMarketCapital(ctx context.Context, db *sql.DB, code string, day, asof
 			return nil, errors.New("missing exact-date reviewed FX")
 		}
 		out["fx"] = rows[0]
+	}
+	if len(funding) == 2 {
+		rows, e = read(`SELECT o.observation_id,o.release_id,o.artifact_id,o.company_id,o.event_code,CAST(o.listing_date AS VARCHAR) AS listing_date,o.date_status,CAST(o.issued_shares AS VARCHAR) AS issued_shares,o.currency,CAST(o.net_proceeds AS VARCHAR) AS net_proceeds,o.amount_status,o.source_locator
+ FROM market.equity_proceeds_observation o JOIN meta.dataset_release_artifact a ON a.release_id=o.release_id AND a.artifact_id=o.artifact_id AND a.role='data'
+ WHERE o.release_id IN (?,?) AND o.listing_date<=? ORDER BY o.listing_date`, funding[0], funding[1], day)
+		if e != nil {
+			return nil, e
+		}
+		if len(rows) != 2 {
+			return nil, errors.New("incomplete proceeds events")
+		}
+		out["funding_events"] = rows
 	}
 	if e = tx.Commit(); e != nil {
 		return nil, e

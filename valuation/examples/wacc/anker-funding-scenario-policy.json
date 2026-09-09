@@ -1,0 +1,61 @@
+{
+  "policy_id": "anker-disclosed-funding-full-retention-scenario-v1",
+  "code": "300866",
+  "report_period": "2026-06-30",
+  "scope": "consolidated",
+  "currency": "CNY",
+  "review_note": "市场报价与最新披露股本驱动资本权重；债务、非经营资产和类别股数沿用的限制显式留痕。仅验证 WACC，原六月末 DCF 不成为当前目标价。",
+  "industries": [
+    {
+      "industry": "Electronics (Consumer & Office)",
+      "weight": 1,
+      "reason": "单行业示例代理；安克尚未闭合分业务权重，茅台仅用于酒业范围。"
+    }
+  ],
+  "countries": [
+    {
+      "country": "CN",
+      "weight": 1,
+      "exposure_scale": 1,
+      "reason": "显式中国风险暴露情景；不声称海外经营地域已经归因。"
+    }
+  ],
+  "weighting_basis": "explicit_analyst_weights",
+  "beta_metric": "beta_unlevered_cash_adjusted",
+  "minimum_sample_count": 30,
+  "government_tenor_months": 120,
+  "risk_free_method": "subtract_cn_default_spread",
+  "risk_free_reason": "示范将人民币国债利率扣除中国主权违约利差的定义；不是强制唯一口径。",
+  "capital_structure_basis": "market_equity_estimated_debt",
+  "capital_structure_reason": "市场经营权益配合已披露合同债务现值上界生成权重；上界不意味着WACC或股权估值保守。",
+  "debt_cost_reason": "由同一 TTM 政策营业 EBIT / TDX FN305 毛利息费用匹配参考利差；不是市场借款报价。",
+  "tax_shield_rate": 0.2,
+  "tax_shield_reason": "税盾情景；与经营利润税率独立，不声称每笔债务都可抵扣。",
+  "stable_wacc_policy": "hold_current",
+  "max_yield_age_days": 7,
+  "max_beta_age_days": 370,
+  "max_country_age_days": 200,
+  "synthetic_debt": {
+    "firm_type": "large_nonfinancial",
+    "coverage_basis": "policy_operating_ebit_over_tdx_gross_interest",
+    "applicability_reason": "桥接验证显式使用美国大型非金融企业表作安克代理；未验证中国样本校准、正式评级或公司体量门槛。",
+    "sovereign_spread_policy": "add_cn_default_spread",
+    "sovereign_spread_reason": "借款端显式加入中国违约利差；与 RF 扣除项分开保留，不用 CRP 替代。",
+    "max_credit_age_days": 370
+  },
+  "market": {
+    "max_price_age_days": 3,
+    "max_share_age_days": 10,
+    "share_carry_reason": "沿用八月底月报（8天）",
+    "fx_policy": "same_day_safe_central_parity",
+    "fx_reason": "港元中间价同日换算；不是市场收盘即期价",
+    "debt_value_basis": "contractual_cashflow_pv_upper_bound",
+    "debt_value_reason": "2026H1第154页合同现金流含利息，按参考Kd及各期限桶最早边界计算债务PV上界；开放尾期保留下确界，不假造平均到期日。财务日组合按新利率重估，不声称已滚动至行情日。",
+    "operating_equity_basis": "invert_reviewed_equity_bridge",
+    "scope_reason": "与现有财务期股权桥接一致反推经营权益；财务期后发行、现金、债务变化尚未完整滚动，故属条件估计而非实时公允价值。",
+    "max_financial_age_days": 90,
+    "funding_cash_retention": 1,
+    "funding_cash_reason": "仅作已知融资净额全额保留为非经营现金的敏感性情景，未披露资金使用不能推为零；0至1比例均为假设。不是当前现金余额或目标价。 六月末发行费用资产/应付款暂不重分类，净额的费用重叠仍待核实；仅估计敏感性，不构成会计现金滚动。",
+    "funding_fee_treatment": "retain_financial_date_claims_sensitivity_only"
+  }
+}

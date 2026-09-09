@@ -78,6 +78,47 @@ func TestMarketCapitalArchiveReplay(t *testing.T) {
 			t.Fatal(e)
 		}
 	}
+
+	var fundingIDs []int64
+	for _, event := range []string{"ipo", "greenshoe"} {
+		body, err := os.ReadFile("../source/proceeds/testdata/" + event + ".pdf")
+		if err != nil {
+			t.Fatal(err)
+		}
+		calls := 0
+		bad := false
+		options := ReferenceOptions{Python: python, Script: "../source/proceeds/parse.py", Client: &http.Client{Transport: countryTransport(func(r *http.Request) (*http.Response, error) {
+			calls++
+			b := body
+			if bad {
+				b = []byte("bad PDF")
+			}
+			return &http.Response{StatusCode: 200, Body: io.NopCloser(bytes.NewReader(b)), Header: make(http.Header)}, nil
+		})}}
+		result, err := SyncEquityProceeds(ctx, db, dir, event, options)
+		if err != nil || !result.Inserted || result.Observations != 1 {
+			t.Fatal(result, err)
+		}
+		fundingIDs = append(fundingIDs, result.ReleaseID)
+		bad = true
+		if _, err = SyncEquityProceeds(ctx, db, dir, event, options); err == nil {
+			t.Fatal("bad proceeds PDF accepted")
+		}
+		options.Offline = true
+		replay, err := SyncEquityProceeds(ctx, db, dir, event, options)
+		if err != nil || replay.Inserted || replay.ReleaseID != result.ReleaseID || calls != 2 {
+			t.Fatal(replay, err, calls)
+		}
+		if _, err = db.ExecContext(ctx, `UPDATE market.equity_proceeds_observation SET net_proceeds=net_proceeds+1 WHERE release_id=?`, result.ReleaseID); err != nil {
+			t.Fatal(err)
+		}
+		if _, err = SyncEquityProceeds(ctx, db, dir, event, options); err == nil {
+			t.Fatal("changed proceeds accepted")
+		}
+		if _, err = db.ExecContext(ctx, `UPDATE market.equity_proceeds_observation SET net_proceeds=net_proceeds-1 WHERE release_id=?`, result.ReleaseID); err != nil {
+			t.Fatal(err)
+		}
+	}
 	raw, e := os.ReadFile("../source/hkex/testdata/d260908e.html.gz")
 	if e != nil {
 		t.Fatal(e)
@@ -188,6 +229,26 @@ func TestMarketCapitalArchiveReplay(t *testing.T) {
 			t.Fatal("future available evidence accepted")
 		}
 	}
+
+	fundingPacket, err := duckstore.ExportMarketCapital(ctx, db, "300866", day, at, shareIDs["300866"], hkID, fxout.ReleaseID, fundingIDs...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if output := os.Getenv("ALPHALAKE_MARKET_EXPORT_DIR"); output != "" {
+		b, err := json.MarshalIndent(fundingPacket, "", "  ")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = os.WriteFile(filepath.Join(output, "300866-funding.json"), b, 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err = duckstore.ExportMarketCapital(ctx, db, "300866", day, at, shareIDs["300866"], hkID, fxout.ReleaseID, fundingIDs[0]); err == nil {
+		t.Fatal("partial funding pair accepted")
+	}
+	if _, err = duckstore.ExportMarketCapital(ctx, db, "300866", day, at, shareIDs["300866"], hkID, fxout.ReleaseID, fundingIDs[1], fundingIDs[0]); err == nil {
+		t.Fatal("wrong funding release role accepted")
+	}
 	_, e = db.ExecContext(ctx, `DELETE FROM market.share_count_observation WHERE release_id=? AND share_basis='treasury'`, shareIDs["300866"])
 	if e != nil {
 		t.Fatal(e)
@@ -203,10 +264,13 @@ func TestMarketCapitalArchiveReplay(t *testing.T) {
 	}
 	defer db.Close()
 	var n int
+	if e = db.QueryRowContext(ctx, `SELECT count(*) FROM market.equity_proceeds_observation`).Scan(&n); e != nil || n != 2 {
+		t.Fatal(n, e)
+	}
 	if e = db.QueryRowContext(ctx, `SELECT count(*) FROM market.share_count_observation`).Scan(&n); e != nil || n != 7 {
 		t.Fatal(n, e)
 	}
-	if e = db.QueryRowContext(ctx, `SELECT count(*) FROM meta.ingest_run WHERE status='failed'`).Scan(&n); e != nil || n != 5 {
+	if e = db.QueryRowContext(ctx, `SELECT count(*) FROM meta.ingest_run WHERE status='failed'`).Scan(&n); e != nil || n != 9 {
 		t.Fatal(n, e)
 	}
 }

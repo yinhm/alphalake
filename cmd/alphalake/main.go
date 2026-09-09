@@ -26,7 +26,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-industry-beta <db-path> [--offline] [--python executable] [--parser path]")
 	fmt.Fprintln(os.Stderr, "  sync-credit-spreads <db-path> [--python python3] [--parser path] [--offline]")
 	fmt.Fprintln(os.Stderr, "  export-market-capital <db-path> <code> --date YYYY-MM-DD --as-of RFC3339 --share-release N [--hk-release N --fx-release N]")
-	fmt.Fprintln(os.Stderr, "  sync-share-classes <db-path> <300866|600519> [--python path] [--offline]")
+	fmt.Fprintln(os.Stderr, "  sync-equity-proceeds <db-path> <ipo|greenshoe> [--python path] [--offline]\n  sync-share-classes <db-path> <300866|600519> [--python path] [--offline]")
 	fmt.Fprintln(os.Stderr, "  sync-hkex-close <db-path> <YYYY-MM-DD> [--python path] [--offline]")
 	fmt.Fprintln(os.Stderr, "  sync-hkd-cny <db-path> [--offline] [--python executable] [--parser path]")
 	fmt.Fprintln(os.Stderr, "  sync-cny-yield <db-path> [--offline] [--python executable] [--parser path]")

@@ -26,7 +26,7 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return true, runWACCReferenceExport(ctx, args[1:])
 	case "export-market-capital":
 		return true, runMarketCapitalExport(ctx, args[1:])
-	case "sync-share-classes", "sync-hkex-close":
+	case "sync-share-classes", "sync-hkex-close", "sync-equity-proceeds":
 		return true, runMarketSource(ctx, args[0], args[1:])
 	case "sync-industry-beta", "sync-cny-yield", "sync-credit-spreads", "sync-hkd-cny":
 		return true, runReferenceSync(ctx, args[0], args[1:])

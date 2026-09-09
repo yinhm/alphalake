@@ -14,7 +14,10 @@ def verify(path):
     cap/=D(1000000)
     bridge=run['inputs']['equity_bridge'];key='debt_claim_proxy' if s['code']=='300866' else 'lease_debt'
     ownership=D(str(bridge['operating_ownership']))
-    equity=(cap-sum(D(str(v)) for k,v in bridge['components'].items() if k!=key))/ownership
+    offset=sum(D(str(v)) for k,v in bridge['components'].items() if k!=key)
+    if p['market'].get('funding_cash_retention') is not None:
+        offset+=sum(D(r['net_proceeds']) for r in s['funding_events'])*D(s['fx']['raw_value'])/100*D(str(p['market']['funding_cash_retention']))/1000000
+    equity=(cap-offset)/ownership
     debt=-D(str(bridge['components'][key]))/ownership
     assert run['request']['policy']['parameters'].get('debt_multiple',1)==1,'verifier supports disclosed-book proxy only'
     country={(r['subject_code'],r['metric_code']):D(r['value']) for r in refs['country_risk']}
