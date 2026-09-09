@@ -52,6 +52,44 @@ func runValuationExport(ctx context.Context, args []string) error {
 	return encoder.Encode(result)
 }
 
+func runValuationReadiness(ctx context.Context, args []string) error {
+	if len(args) < 1 {
+		return errors.New("usage: valuation-readiness <db-path> --period YYYY-MM-DD --as-of RFC3339")
+	}
+	fs := flag.NewFlagSet("valuation-readiness", flag.ContinueOnError)
+	period := fs.String("period", "", "required quarter end")
+	asof := fs.String("as-of", "", "information cutoff")
+	if err := fs.Parse(args[1:]); err != nil {
+		return err
+	}
+	if fs.NArg() != 0 {
+		return errors.New("unexpected readiness arguments")
+	}
+	end, err := time.Parse("2006-01-02", *period)
+	if err != nil {
+		return err
+	}
+	at, err := time.Parse(time.RFC3339, *asof)
+	if err != nil {
+		return err
+	}
+	if _, err = os.Stat(args[0]); err != nil {
+		return err
+	}
+	db, err := duckstore.Open(ctx, args[0])
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	out, err := duckstore.ExportValuationReadiness(ctx, db, end, at)
+	if err != nil {
+		return err
+	}
+	encoder := json.NewEncoder(os.Stdout)
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(out)
+}
+
 func runSupplementImport(ctx context.Context, args []string) error {
 	if len(args) != 2 {
 		return errors.New("usage: import-supplements <db-path> <reviewed-json-file>")

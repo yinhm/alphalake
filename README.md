@@ -59,6 +59,8 @@ TDX 协议请求支持[自动换节点重试](docs/tdx-failover.md)：每个独�
 
 估值所需行情已支持[版本保留与未复权收盘价导出](docs/valuation-quotes.md)；已新增[类别股本、A/H 市值与市场权重 WACC 估计链](docs/market-wacc.md)，首批安克/茅台；新增[合同债务区间及H股融资事件链](docs/wacc-gap-review-20260909.md)，实际现金滚动、费用重叠及经营范围仍有明确缺口。
 
+面向全 A 股自动估值的[财务就绪度扫描与推进状态](docs/automated-valuation.md)已提供独立命令，缺事实公司也进入本地集合分母。
+
 ## WACC 参考数据
 
 已提供 `sync-country-risk`：归档达摩达兰 2026 年 7 月工作簿，发布 CN/HK/US 评级法与成熟市场 ERP 共 10 项，支持原子发布、幂等重放和离线核验。具体命令与范围见[国家风险同步](docs/country-risk-sync.md)。另已接入[全球行业 Beta 与人民币国债收益率](docs/beta-yield-sync.md)：94 个行业的 376 项指标和 8 个国债期限点。三条同步链均不改动公司财务事实；已有[固定版本到 WACC／估值桥接](docs/wacc-valuation-bridge.md)，须显式提供公司映射与政策；也可使用[市场权益／估计债务权重分支](docs/market-wacc.md)，不可省略代理假设。另支持[合成评级利差同步与借款成本桥接](docs/credit-spread-sync.md)，首批仅开放安克已审核财务口径。

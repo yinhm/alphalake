@@ -32,6 +32,8 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return true, runReferenceSync(ctx, args[0], args[1:])
 	case "sync-country-risk":
 		return true, runCountryRiskSync(ctx, args[1:])
+	case "valuation-readiness":
+		return true, runValuationReadiness(ctx, args[1:])
 	case "export-valuation":
 		return true, runValuationExport(ctx, args[1:])
 	case "import-supplements":
