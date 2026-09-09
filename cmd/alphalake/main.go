@@ -35,6 +35,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  schema")
 	fmt.Fprintln(os.Stderr, "  init <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-daily <db-path> <tdx-symbol>")
+	fmt.Fprintln(os.Stderr, "  sync-instruments <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-daily-all <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-actions <db-path> [--force]")
 	fmt.Fprintln(os.Stderr, "  calc-adjustments <db-path>")
@@ -96,6 +97,27 @@ func main() {
 			fatal(err)
 		}
 		fmt.Printf("initialized DuckDB: %s\n", path)
+
+	case "sync-instruments":
+		if len(os.Args) != 3 {
+			usage()
+			os.Exit(2)
+		}
+		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		if err != nil {
+			fatal(err)
+		}
+		defer db.Close()
+		source, err := tdxsource.DialDefault()
+		if err != nil {
+			fatal(err)
+		}
+		defer source.Close()
+		result, err := ingest.SyncTDXInstrumentMaster(ctx, db, source)
+		fmt.Printf("instrument master: instruments=%d partition_failures=%d\n", len(result.Observations), len(result.Failures))
+		if err != nil {
+			fatal(err)
+		}
 
 	case "sync-daily":
 		if len(os.Args) != 4 {

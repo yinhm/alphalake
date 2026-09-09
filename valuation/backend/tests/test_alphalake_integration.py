@@ -556,3 +556,30 @@ def test_revised_capital_scenario_moves_cash_and_shares_together(exports,referen
             elif case=='shares_only': bad['wacc_binding']['market_capital']=copy.deepcopy(market_export['300866']);bad['wacc_binding']['policy']=json.loads((REPO/'valuation/examples/wacc/anker-contractual-debt-policy.json').read_text())
             else: bad['policy'].pop('capital_carry_reason')
             assert client.post('/api/valuation/from-alphalake',json=bad).status_code==422,case
+
+
+def test_batch_keeps_denominator_and_isolates_missing_inputs(exports,tmp_path,monkeypatch):
+    from tools.batch_valuate_alphalake import BatchPolicy,run_batch
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    requests=[request_for(exports,c) for c in ('anker','moutai')]
+    policy=BatchPolicy(policy_version='reviewed-two-company-v1',review_note='真实标准链测试',
+        assignments={r['data']['code']:dict(policy=r['policy']) for r in requests})
+    companies=[]
+    for request,symbol in zip(requests,['sz300866','sh600519']):
+        companies.append(dict(instrument_id=request['data']['facts'][0]['instrument_id'],name=symbol,
+            symbols=[symbol],financial_status='financial_core_complete_requires_policy',missing_core_fields=[]))
+    companies.append(dict(instrument_id=999999,name='无事实',symbols=['sz999999'],
+        financial_status='blocked_no_standard_facts',missing_core_fields=['FN230']))
+    readiness=dict(contract_version='alphalake-readiness-v1',report_period=requests[0]['data']['report_period'],
+        information_as_of=requests[0]['data']['information_as_of'],universe_scope='test_known_universe',universe_count=3,companies=companies)
+    result=run_batch(readiness,policy,lambda code:exports[code])
+    assert result['status_counts']=={'illustrative_valuation_completed':2,'blocked_policy_not_assigned':1}
+    assert len(list(tmp_path.glob('*.json')))==2
+    assert run_batch(readiness,policy,lambda code:exports[code])==result
+    damaged=copy.deepcopy(exports)
+    damaged['300866']['supplements']=[]
+    result=run_batch(readiness,policy,lambda code:damaged[code])
+    assert result['status_counts']=={'illustrative_valuation_completed':1,'blocked_missing_inputs':1,'blocked_policy_not_assigned':1}
+    assert result['companies'][0]['missing']
+    bad=copy.deepcopy(readiness);bad['companies'][0]['instrument_id']=999
+    assert run_batch(bad,policy,lambda code:exports[code])['companies'][0]['status']=='rejected_input_or_policy'

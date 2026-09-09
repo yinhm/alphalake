@@ -23,3 +23,38 @@ alphalake valuation-readiness ./alphalake.duckdb \
 4. 根据实际阻塞补数据、行业映射和市场输入，做跨公司真实源验收，再扩增量调度。
 
 扫描入口已实现；其余步骤按实际提交更新，不将计划记为完成。安克、茅台验收库只有两家公司，不能将其中的完整率当作全 A 股完整率。
+
+## 独立刷新证券名单
+
+```bash
+alphalake sync-instruments ./alphalake.duckdb
+```
+
+复用既有分区主数据刷新与三节点重试，不下载日线。健康分区独立发布，分区失败使运行标为 partial 并返回非零退出码；失败诊断保留，不能把部分名单当完整市场。已有历史名单的保留和两次缺失确认规则不变。
+
+## 批量运行已有审核政策
+
+在 `valuation/backend` 下执行（使用已安装后端依赖的 Python）：
+
+```bash
+python -m tools.batch_valuate_alphalake /absolute/path/alphalake.duckdb \
+  --period 2026-06-30 --as-of 2026-09-09T18:00:00Z \
+  --policy batch-policy.json --output-dir ./data/batch_runs
+```
+
+`batch-policy.json` 包含 `policy_version`、`review_note`、`assignments`。`assignments` 按六位代码索引，每项包含现有完整 `policy` 和可选 `wacc_binding`，与单公司 API 契约一致。可将既有示例政策装入任务：
+
+```python
+import json
+from pathlib import Path
+policy = dict(policy_version='reviewed-2026H1-v1', review_note='仅已审核双公司，其他公司不外推', assignments={})
+for code, name in [('300866','anker-2026H1-revised.json'), ('600519','moutai-2026H1-central.json')]:
+    policy['assignments'][code] = dict(policy=json.loads(Path('../examples', name).read_text()))
+Path('batch-policy.json').write_text(json.dumps(policy, ensure_ascii=False, indent=2))
+```
+
+批量命令直接调用与 HTTP 相同的 `evaluate`，无需启动 API 服务。先扫描本地分母，再逐证券导出同一请求期间/信息截止的标准数据；每份证券导出有独立事务，整批不是跨证券/跨库原子快照，应在同步完成后运行。
+
+缺政策、缺项、错误身份/政策和执行失败分别列示。单公司成功结果继续保存在 `ALPHALAKE_VALUATION_RUN_DIR`（默认后端 `data/alphalake_runs`），按输入/政策/引擎版本寻址；每次批量尝试另存独立 JSON，保留失败记录。重跑会重新检查数据并重试失败，成功内容不覆盖；当前仍重新执行引擎，尚无计算缓存或守护调度进程。
+
+这一步自动化执行已有政策，尚不自动生成全市场政策。双公司实际数据库试跑成功、默认测试覆盖重放、缺附注隔离和身份错配；它们不代表新增行业已经验收。
