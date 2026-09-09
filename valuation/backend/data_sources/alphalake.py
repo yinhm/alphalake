@@ -8,6 +8,7 @@ import struct
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from data_sources.alphalake_wacc import WACCBinding, resolve_wacc
 from engine.data_dictionary import (CompanyValuationInput, PreparedTTM, RawFinancials,
     MacroInputs, IndustryData, MethodologyChoices, ValuationAssumptions, EquityBridgeInputs)
 
@@ -57,15 +58,15 @@ class Policy(BaseModel):
 
     @model_validator(mode='after')
     def validate_parameters(self):
-        common = {'growth', 'margin', 'tax_start', 'tax_terminal', 'wacc', 'terminal_growth',
+        common = {'growth', 'margin', 'tax_start', 'tax_terminal', 'terminal_growth',
                   'terminal_roic', 'sales_to_capital', 'operating_cash_ratio'}
         extra = ({'investment_recovery', 'cash_other_recovery', 'minority_multiple', 'debt_multiple', 'extra_dilution_rate'}
                  if self.policy_id.startswith('anker') else
                  {'financial_asset_recovery', 'risk_asset_recovery', 'finance_pb', 'minority_scale', 'finance_ownership'})
         p = self.parameters
-        if set(p) != common | extra or not all(math.isfinite(v) for v in p.values()):
+        if set(p) not in (common | extra, common | extra | {'wacc'}) or not all(math.isfinite(v) for v in p.values()):
             raise ValueError('policy requires exactly the explicit finite parameters')
-        if not (0 <= p['terminal_growth'] < p['wacc'] < 1 and p['terminal_growth'] < p['terminal_roic'] <= 1):
+        if not (0 <= p['terminal_growth'] < p['terminal_roic'] <= 1) or ('wacc' in p and not p['terminal_growth'] < p['wacc'] < 1):
             raise ValueError('invalid terminal growth/WACC/ROIC')
         for key in ['margin', 'tax_start', 'tax_terminal', 'operating_cash_ratio']:
             if not 0 <= p[key] <= 1:
@@ -82,6 +83,13 @@ class AlphaLakeRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     data: Snapshot
     policy: Policy
+    wacc_binding: WACCBinding | None = None
+
+    @model_validator(mode='after')
+    def wacc_source(self):
+        if (self.wacc_binding is None) != ('wacc' in self.policy.parameters):
+            raise ValueError('provide either direct WACC or reference binding, never both or neither')
+        return self
 
 
 class MissingInputs(ValueError):
@@ -100,7 +108,14 @@ def build_inputs(request: AlphaLakeRequest):
     anker = policy.policy_id == 'anker-consolidated-v1'
     if d.code != ('300866' if anker else '600519') or policy.approved_report_period != d.report_period:
         raise ValueError('policy is not approved for this security/report period')
-    p = policy.parameters
+    p = dict(policy.parameters)
+    reference_components = None
+    reference_audit = None
+    if request.wacc_binding is not None:
+        reference_components, reference_audit = resolve_wacc(request.wacc_binding, d.code, d.report_period, d.information_as_of)
+        p['wacc'] = reference_audit['result']['wacc']
+        if p['wacc'] <= p['terminal_growth']:
+            raise ValueError('reference WACC must exceed terminal growth')
     end = d.report_period.isoformat()
     prior = d.report_period.replace(year=d.report_period.year-1).isoformat()
     annual = f'{d.report_period.year-1}-12-31'
@@ -268,4 +283,13 @@ def build_inputs(request: AlphaLakeRequest):
         boundaries=['CNY only','reviewed security and report period only','explicit WACC; RF/ERP containers unused by direct WACC',
                     'RD expensed; leases not capitalized twice','book claim proxies; employee options not priced',
                     'uniform sales-to-capital forecast; not original inventory-vintage policy'] + ([] if anker else ['liquor/finance allocation is a policy proxy, not exact deconsolidation']))
+    if reference_components is not None:
+        inputs.methodology_choices = MethodologyChoices(cost_of_capital_approach='reference_snapshot', reference_capital_inputs=reference_components)
+        inputs.macro_inputs.risk_free_rate = reference_components.risk_free_rate
+        inputs.macro_inputs.equity_risk_premium = reference_components.mature_market_erp
+        audit['wacc_reference'] = reference_audit
+        audit['completeness_scope'] += '; reference selection audited separately in wacc_reference'
+        audit['boundaries'] = [b for b in audit['boundaries'] if not b.startswith('explicit WACC;')]
+        audit['boundaries'] += reference_audit['boundaries']
+        inputs.prepared_ttm.provenance['wacc_binding'] = content_hash(request.wacc_binding.model_dump(mode='json'))
     return inputs,audit

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 import math
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 # ---------------------------------------------------------------------------
@@ -127,23 +127,27 @@ class CostOfCapital(BaseModel):
     erp_branch_used: str = Field(default="country_of_incorporation")
     kd_branch_used: str = Field(default="industry_fallback")
 
+    capital_structure_basis: str = "market_values"
+    mature_market_erp: float | None = None
+    country_risk_contribution: float | None = None
+
     # Beta
     beta_u: float = Field(default=0.0, description="Unlevered beta")
     beta_l: float = Field(description="Levered beta")
 
     # MV debt decomposition
-    mv_straight_debt: float = Field(default=0.0)
-    mv_convertible_straight_part: float = Field(default=0.0)
-    equity_in_convertible: float = Field(default=0.0)
-    mv_leases: float = Field(default=0.0)
-    mv_debt_total: float = Field(default=0.0, description="Sum: straight + convertible-straight-part + leases")
-    book_debt: float = Field(default=0.0)
-    d_e_ratio: float = Field(description="Company D/E ratio (market values)")
+    mv_straight_debt: float | None = Field(default=0.0)
+    mv_convertible_straight_part: float | None = Field(default=0.0)
+    equity_in_convertible: float | None = Field(default=0.0)
+    mv_leases: float | None = Field(default=0.0)
+    mv_debt_total: float | None = Field(default=0.0, description="Sum: straight + convertible-straight-part + leases")
+    book_debt: float | None = Field(default=0.0)
+    d_e_ratio: float = Field(description="Company D/E ratio; target ratio when capital_structure_basis=target_weights")
 
     # Equity + preferred market values
-    mv_equity: float = Field(default=0.0)
-    mv_preferred: float = Field(default=0.0)
-    total_capital: float = Field(default=0.0, description="MV_E + MV_D + MV_P")
+    mv_equity: float | None = Field(default=0.0)
+    mv_preferred: float | None = Field(default=0.0)
+    total_capital: float | None = Field(default=0.0, description="MV_E + MV_D + MV_P")
 
     # Component costs
     cost_of_equity: float
@@ -284,6 +288,18 @@ class PreferredStock(BaseModel):
     dividend_per_share: float = Field(default=0.0)
 
 
+class ReferenceCapitalInputs(BaseModel):
+    """经 AlphaLake 输入选择验证后的数值；资本结构为显式目标权重。"""
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    risk_free_rate: float
+    beta_u: float
+    mature_market_erp: float = Field(ge=0, le=1)
+    country_risk_contribution: float = Field(ge=0)
+    debt_weight: float = Field(ge=0, lt=1)
+    tax_shield_rate: float = Field(ge=0, le=1)
+    debt_cost_pretax: float = Field(ge=0, lt=1)
+
+
 class MethodologyChoices(BaseModel):
     """Full Ginzu methodology-choice selectors — matches `Cost of capital worksheet`
     exactly. Every branch Ginzu offers exists as an option; not every branch is
@@ -296,11 +312,13 @@ class MethodologyChoices(BaseModel):
         description=(
             "'direct' = analyst types WACC (supported); "
             "'detailed' = build from CAPM (supported, default); "
+            "'reference_snapshot' = explicit reference inputs and target capital weights; "
             "'industry_average' = Damodaran industry WACC + RF adjustment (NOT IMPLEMENTED); "
             "'decile' = regional risk-quartile lookup (NOT IMPLEMENTED)."
         ),
     )
     wacc_direct_input: float | None = Field(default=None, description="Direct WACC when approach='direct'")
+    reference_capital_inputs: ReferenceCapitalInputs | None = None
 
     # --- Unlevered beta (Ginzu cell B21) ---
     beta_approach: str = Field(

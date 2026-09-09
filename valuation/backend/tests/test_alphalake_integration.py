@@ -180,3 +180,85 @@ def test_no_repeated_adjustments_or_employee_option_overlay(exports):
         data[group][key]=True
         with pytest.raises(ValueError):
             type(inputs).model_validate(data)
+
+
+@pytest.fixture(scope='module')
+def reference_export(tmp_path_factory):
+    output = tmp_path_factory.mktemp('wacc_references')
+    env = os.environ | {'ALPHALAKE_WACC_EXPORT_DIR':str(output),'GOPROXY':'off','GOSUMDB':'off'}
+    subprocess.run(['go','test','./internal/ingest','-run','^TestWACCReferenceExport$','-count=1'],
+                   cwd=REPO,env=env,check=True,capture_output=True,text=True)
+    return json.loads((output/'references.json').read_text())
+
+
+def reference_request(exports, reference_export, company):
+    req = request_for(exports,company)
+    req['policy'] = json.loads((REPO/f'valuation/examples/wacc/{company}-forecast-policy.json').read_text())
+    req['data']['information_as_of'] = reference_export['information_as_of']
+    req['wacc_binding'] = dict(references=copy.deepcopy(reference_export),
+        policy=json.loads((REPO/f'valuation/examples/wacc/{company}-target-policy.json').read_text()))
+    return req
+
+
+@pytest.mark.parametrize('company', ['anker','moutai'])
+def test_reference_wacc_through_real_financial_chain(exports,reference_export,tmp_path,monkeypatch,company):
+    from decimal import Decimal as D
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    req = reference_request(exports,reference_export,company)
+    with TestClient(app) as client:
+        response = client.post('/api/valuation/from-alphalake',json=req)
+        assert response.status_code == 200,response.text
+        result = response.json()
+        assert client.post('/api/valuation/from-alphalake',json=req).json() == result
+    p = req['wacc_binding']['policy']
+    # Independent Decimal reconstruction using exported rows, not engine helpers.
+    country = {(r['subject_code'],r['metric_code']):D(r['value']) for r in reference_export['country_risk']}
+    industry = {(r['industry'],r['metric_code']):D(r['value']) for r in reference_export['industry_stats']}
+    rf = next(D(r['value']) for r in reference_export['yield_curve'] if r['tenor_months']==120) - country['CN','sovereign_default_spread']
+    beta_u = sum(D(str(i['weight']))*industry[i['industry'],p['beta_metric']] for i in p['industries'])
+    dw, tax, kd = [D(str(p[k])) for k in ('target_debt_weight','tax_shield_rate','debt_cost_pretax')]
+    beta_l = beta_u*(1+(1-tax)*dw/(1-dw))
+    crp = sum(D(str(c['weight']))*D(str(c['exposure_scale']))*country[c['country'],'country_risk_premium'] for c in p['countries'])
+    ke = rf + beta_l*country['mature','mature_market_erp'] + crp
+    wacc = (1-dw)*ke + dw*kd*(1-tax)
+    coc = result['report']['cost_of_capital']
+    near(coc['wacc'],float(wacc));near(coc['cost_of_equity'],float(ke));near(coc['beta_l'],float(beta_l))
+    assert coc['approach_used']=='reference_snapshot' and coc['capital_structure_basis']=='target_weights'
+    assert coc['mv_equity'] is None and coc['mv_debt_total'] is None
+    assert coc['country_risk_contribution'] == float(crp)
+    near(result['inputs']['valuation_assumptions']['cost_of_capital_stable_override'],float(wacc))
+    assert result['report']['cashflow']['fcff'] is None
+    assert result['audit']['wacc_reference']['selected_observations']
+    # Only discounting changes: independently run the legacy direct branch with
+    # this computed WACC and compare the native equity bridge result.
+    direct = copy.deepcopy(req);direct.pop('wacc_binding');direct['policy']['parameters']['wacc']=float(wacc)
+    legacy = run_full_valuation(build_inputs(AlphaLakeRequest.model_validate(direct))[0])
+    near(result['report']['final']['value_per_share'],legacy.final.value_per_share)
+
+
+@pytest.mark.parametrize('mutation', ['dual_wacc','missing_reference','future_available','future_recorded',
+    'stale_curve','duplicate_industry','weights','wrong_scope','wrong_code','wrong_cutoff','wrong_unit','beta_method','sample','missing_key'])
+def test_reference_wacc_rejects_invalid_policy_and_snapshot(exports,reference_export,tmp_path,monkeypatch,mutation):
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    req = reference_request(exports,reference_export,'anker')
+    binding = req['wacc_binding'];p=binding['policy'];s=binding['references']
+    if mutation=='dual_wacc':req['policy']['parameters']['wacc']=.08
+    elif mutation=='missing_reference':s['yield_curve'].pop()
+    elif mutation=='future_available':s['releases'][0]['available_at']='2099-01-01T00:00:00Z'
+    elif mutation=='future_recorded':s['recorded_cutoff']='2000-01-01T00:00:00Z'
+    elif mutation=='stale_curve':p['max_beta_age_days']=1
+    elif mutation=='duplicate_industry':p['industries']*=2
+    elif mutation=='weights':p['industries'][0]['weight']=.5
+    elif mutation=='wrong_scope':p['scope']='liquor_proxy'
+    elif mutation=='wrong_code':p['code']='600519'
+    elif mutation=='wrong_cutoff':s['information_as_of']='2099-01-01T00:00:00Z'
+    elif mutation=='wrong_unit':
+        for r in s['yield_curve']:r['raw_unit']='fraction'
+    elif mutation=='beta_method':
+        for r in s['industry_stats']:r['method_code']='guessed'
+    elif mutation=='sample':p['minimum_sample_count']=1000000
+    elif mutation=='missing_key':s['releases'][0].pop('content_key')
+    with TestClient(app) as client:
+        response=client.post('/api/valuation/from-alphalake',json=req)
+        assert response.status_code==422,response.text
+    assert not list(tmp_path.glob('*.json'))

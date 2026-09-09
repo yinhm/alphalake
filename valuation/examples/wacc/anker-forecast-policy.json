@@ -1,0 +1,21 @@
+{
+  "policy_id": "anker-consolidated-v1",
+  "approved_report_period": "2026-06-30",
+  "scenario": "reference-wacc-bridge-demo",
+  "review_note": "示例：经营与股权桥接沿用原 central 参数，折现率仅由独立 WACC binding 提供。",
+  "parameters": {
+    "margin": 0.1,
+    "terminal_growth": 0.03,
+    "terminal_roic": 0.12,
+    "operating_cash_ratio": 0.02,
+    "growth": 0.12,
+    "tax_start": 0.2,
+    "tax_terminal": 0.25,
+    "sales_to_capital": 3.0,
+    "investment_recovery": 0.75,
+    "cash_other_recovery": 0.5,
+    "minority_multiple": 1.5,
+    "debt_multiple": 1.0,
+    "extra_dilution_rate": 0.01
+  }
+}

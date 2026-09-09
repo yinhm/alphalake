@@ -37,6 +37,7 @@ from pathlib import Path
 
 from .data_dictionary import (
     AdjustedFinancials,
+    ReferenceCapitalInputs,
     MacroInputs,
     IndustryData,
     CostOfCapital,
@@ -187,6 +188,27 @@ def _multi_location_weighted_erp(
 # Main entry
 # ---------------------------------------------------------------------------
 
+def compute_reference_cost_of_capital(c: ReferenceCapitalInputs, shift_bps: float = 0.0) -> CostOfCapital:
+    """Beta × 成熟 ERP + 独立国家风险暴露；不伪造市场资本金额。"""
+    de = c.debt_weight / (1 - c.debt_weight)
+    beta_l = c.beta_u * (1 + (1 - c.tax_shield_rate) * de)
+    ke = c.risk_free_rate + beta_l * c.mature_market_erp + c.country_risk_contribution
+    kd_after = c.debt_cost_pretax * (1 - c.tax_shield_rate)
+    wacc = (1 - c.debt_weight) * ke + c.debt_weight * kd_after + shift_bps / 10000
+    if not math.isfinite(wacc) or not 0 < wacc < 1:
+        raise ValueError('invalid reference-derived WACC')
+    return CostOfCapital(approach_used='reference_snapshot', capital_structure_basis='target_weights',
+        beta_branch_used='explicit_weighted_industries', erp_branch_used='beta_mature_plus_country',
+        kd_branch_used='explicit_policy', beta_u=c.beta_u, beta_l=beta_l, d_e_ratio=de,
+        mv_straight_debt=None, mv_convertible_straight_part=None, equity_in_convertible=None,
+        mv_leases=None, mv_debt_total=None, mv_equity=None, mv_preferred=None, total_capital=None, book_debt=None,
+        risk_free_rate=c.risk_free_rate, equity_risk_premium=c.mature_market_erp,
+        mature_market_erp=c.mature_market_erp, country_risk_contribution=c.country_risk_contribution,
+        cost_of_equity=ke, cost_of_debt_pretax=c.debt_cost_pretax, cost_of_debt_aftertax=kd_after,
+        weight_equity=1-c.debt_weight, weight_debt=c.debt_weight, wacc=wacc,
+        warnings=['Target capital weights and debt cost are explicit assumptions, not observed market values.'])
+
+
 def compute_cost_of_capital(
     adjusted: AdjustedFinancials,
     macro: MacroInputs,
@@ -204,6 +226,11 @@ def compute_cost_of_capital(
 
     m = methodology or MethodologyChoices()
     warnings: list[str] = []
+
+    if m.cost_of_capital_approach == 'reference_snapshot':
+        if m.reference_capital_inputs is None:
+            raise ValueError('reference_snapshot requires validated components')
+        return compute_reference_cost_of_capital(m.reference_capital_inputs, m.wacc_level_shift_bps or 0.0)
 
     # ───────────────────────────────────────────────────────────────────────
     # Approach 1 dispatch: short-circuits for non-detailed approaches.

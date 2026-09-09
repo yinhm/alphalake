@@ -1,0 +1,40 @@
+{
+  "policy_id": "anker-reference-target-demo-v1",
+  "code": "300866",
+  "report_period": "2026-06-30",
+  "scope": "consolidated",
+  "currency": "CNY",
+  "review_note": "验证性场景，非市场测算或推荐折现率；持有原经营预测，只检验 WACC 数据桥接。",
+  "industries": [
+    {
+      "industry": "Electronics (Consumer & Office)",
+      "weight": 1,
+      "reason": "单行业示例代理；安克尚未闭合分业务权重，茅台仅用于酒业范围。"
+    }
+  ],
+  "countries": [
+    {
+      "country": "CN",
+      "weight": 1,
+      "exposure_scale": 1,
+      "reason": "显式中国风险暴露情景；不声称海外经营地域已经归因。"
+    }
+  ],
+  "weighting_basis": "explicit_analyst_weights",
+  "beta_metric": "beta_unlevered_cash_adjusted",
+  "minimum_sample_count": 30,
+  "government_tenor_months": 120,
+  "risk_free_method": "subtract_cn_default_spread",
+  "risk_free_reason": "示范将人民币国债利率扣除中国主权违约利差的定义；不是强制唯一口径。",
+  "capital_structure_basis": "target_weights",
+  "target_debt_weight": 0.05,
+  "capital_structure_reason": "目标权重情景；未使用当前市值，不包含财务公司存款；零目标权重不等于不存在租赁负债。",
+  "debt_cost_pretax": 0.03,
+  "debt_cost_reason": "显式成本情景；尚未同步公司债券收益率，零债务权重时不参与 WACC。",
+  "tax_shield_rate": 0.2,
+  "tax_shield_reason": "税盾情景；与经营利润税率独立，不声称每笔债务都可抵扣。",
+  "stable_wacc_policy": "hold_current",
+  "max_yield_age_days": 7,
+  "max_beta_age_days": 370,
+  "max_country_age_days": 200
+}
