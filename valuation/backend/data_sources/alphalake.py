@@ -5,6 +5,7 @@ import hashlib
 import json
 import math
 import struct
+from statistics import median
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -107,17 +108,57 @@ class ScreenPolicy(BaseModel):
     tax_rate: float = Field(ge=0,le=1)
 
 
+class BookDCFPolicy(ScreenPolicy):
+    """财报日的普通企业账面索偿情景；所有估值取舍显式提供。"""
+    policy_id: Literal['nonfinancial-book-fcff-v1']
+    annual_forecast: list[ForecastYear] = Field(min_length=10,max_length=10)
+    sales_to_capital: float = Field(gt=0)
+    terminal_growth: float = Field(ge=0)
+    terminal_roic: float = Field(gt=0,le=1)
+    cash_recovery: float = Field(ge=0,le=1)
+    operating_cash_ratio: float = Field(ge=0,le=1)
+    minority_book_multiple: float = Field(ge=0)
+    debt_book_multiple: float = Field(gt=0)
+    extra_dilution_rate: float = Field(ge=0,le=1)
+    additional_claims_million_cny: float = Field(ge=0)
+    bridge_basis: Literal['report_date_book_debt_no_conversion_scenario']
+    financial_asset_policy: Literal['no_credit_pending_classification']
+    bridge_review: str = Field(min_length=1)
+
+    @model_validator(mode='after')
+    def check_terminal(self):
+        if self.terminal_growth>=min(self.wacc,self.terminal_roic):
+            raise ValueError('terminal growth must be below WACC and ROIC')
+        return self
+
+
+class HistoricalDCFPolicy(BookDCFPolicy):
+    """历史季度同比驱动的初始预测规则，仍是可覆盖的估值政策。"""
+    policy_id: Literal['nonfinancial-history-fcff-v1']
+    annual_forecast: None = None
+    growth_floor: float = Field(gt=-1,le=1)
+    growth_ceiling: float = Field(gt=-1,le=1)
+    growth_shift: float = Field(ge=-1,le=1)
+    margin_shift: float = Field(ge=-1,le=1)
+
+    @model_validator(mode='after')
+    def growth_bounds(self):
+        if self.growth_floor>self.growth_ceiling:
+            raise ValueError('growth floor exceeds ceiling')
+        return self
+
+
 class AlphaLakeRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     data: Snapshot
-    policy: Policy | ScreenPolicy
+    policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy
     wacc_binding: WACCBinding | None = None
 
     @model_validator(mode='after')
     def wacc_source(self):
         if isinstance(self.policy, ScreenPolicy):
             if self.wacc_binding is not None:
-                raise ValueError('earnings-power screening requires explicit scenario WACC')
+                raise ValueError('generic policy requires explicit scenario WACC')
             return self
         if (self.wacc_binding is None) != ('wacc' in self.policy.parameters):
             raise ValueError('provide either direct WACC or reference binding, never both or neither')
@@ -140,6 +181,21 @@ def amount(r):
     if not v.is_finite():
         raise ValueError('non-finite source value')
     return float(v / (1 if r['unit'] == 'CNY/share' else 1000000))
+
+
+def validated_source_value(f):
+    if not f.get('artifact_sha256') or not f.get('announcement_id'):
+        raise ValueError('missing standard provenance')
+    if f.get('available_at') is None:
+        raise ValueError('missing fact announcement time')
+    if f.get('multiplier') not in (1,10000):
+        raise ValueError('unreviewed source multiplier')
+    if not isinstance(f.get('bits'),int) or not 0 <= f['bits'] <= 0xffffffff:
+        raise ValueError('invalid float32 source bits')
+    raw = struct.unpack('<f',struct.pack('<I',f['bits']))[0]
+    if not math.isfinite(raw) or abs(Decimal.from_float(raw)*Decimal(f['multiplier'])-Decimal(f['value'])) > Decimal('.0000001'):
+        raise ValueError('standard value differs from preserved source bits')
+    return Decimal(f['value'])
 
 
 def standard_window_reader(d: Snapshot):
@@ -194,17 +250,7 @@ def standard_window_reader(d: Snapshot):
                              {3:'Q1',6:'H1',9:'9M' if basis == 'ytd' else 'Q3',12:'FY'}[month])
             if f['period_type'] != expected_type or r['period_type'] != ('instant' if basis == 'instant' else 'TTM'):
                 raise ValueError('incorrect financial period basis: '+field)
-            if not f.get('artifact_sha256') or not f.get('announcement_id'):
-                raise ValueError('missing standard provenance')
-            if f.get('available_at') is None:
-                raise ValueError('missing fact announcement time')
-            if f.get('multiplier') not in (1,10000):
-                raise ValueError('unreviewed source multiplier')
-            if not isinstance(f.get('bits'),int) or not 0 <= f['bits'] <= 0xffffffff:
-                raise ValueError('invalid float32 source bits')
-            raw = struct.unpack('<f',struct.pack('<I',f['bits']))[0]
-            if not math.isfinite(raw) or abs(Decimal.from_float(raw)*Decimal(f['multiplier'])-Decimal(f['value'])) > Decimal('.0000001'):
-                raise ValueError('standard value differs from preserved source bits')
+            validated_source_value(f)
             total += Decimal(f['value'])*coefficient
         if abs(total-Decimal(r['value'])) > Decimal('.0000001'):
             raise ValueError('window differs from source components: '+field)
@@ -216,6 +262,10 @@ def standard_window_reader(d: Snapshot):
 
 def build_inputs(request: AlphaLakeRequest):
     d, policy = request.data, request.policy
+    if isinstance(policy, HistoricalDCFPolicy):
+        return build_historical_dcf_inputs(d, policy)
+    if isinstance(policy, BookDCFPolicy):
+        return build_book_dcf_inputs(d, policy)
     if isinstance(policy, ScreenPolicy):
         return build_earnings_power_inputs(d, policy)
     anker = policy.policy_id.startswith('anker-')
@@ -431,4 +481,86 @@ def build_earnings_power_inputs(d, policy):
             'RD remains expensed; current operating lease expense retained',
             'no equity value or per-share price until cash/debt/minority/dilution bridge is reviewed',
             'WACC/tax are explicit sensitivity assumptions, not market estimates'])
+    return inputs,audit
+
+
+def build_book_dcf_inputs(d, policy):
+    inputs,audit=build_earnings_power_inputs(d,policy)
+    window,consumed=standard_window_reader(d)
+    fields='FN238 FN133 FN41 FN52 FN55 FN56 FN439 FN69'.split()
+    values={f:window(f,False) for f in fields}
+    missing=['TDX/'+f for f,v in values.items() if v is None]
+    if missing: raise MissingInputs(missing)
+    if values['FN238']<=0 or any(values[f]<0 for f in fields):
+        raise ValueError('positive shares and nonnegative book claims/cash required')
+    raw=inputs.prepared_ttm.financials
+    raw.shares_outstanding=values['FN238']
+    debt=sum(values[f] for f in ('FN41','FN52','FN55','FN56','FN439'))
+    components=dict(cash_recovery_scenario=values['FN133']*policy.cash_recovery,
+        operating_cash_reserve=-raw.revenues*policy.operating_cash_ratio,
+        debt_book_proxy=-debt*policy.debt_book_multiple,
+        minority_book_proxy=-values['FN69']*policy.minority_book_multiple,
+        additional_claims_scenario=-policy.additional_claims_million_cny)
+    inputs.equity_bridge=EquityBridgeInputs(policy_id=policy.policy_id,components=components,operating_ownership=1,
+        shares=values['FN238']*(1+policy.extra_dilution_rate),conversion_release=0,conversion_shares=0)
+    inputs.valuation_assumptions=ValuationAssumptions(projection_years=10,high_growth_years=5,
+        annual_forecast=policy.annual_forecast,sales_to_capital_high=policy.sales_to_capital,
+        sales_to_capital_stable=policy.sales_to_capital,override_reinvestment_lag=True,reinvestment_lag_years=0,
+        override_growth_perpetuity=True,growth_perpetuity_rate=policy.terminal_growth,
+        roic_stable_override=policy.terminal_roic,cost_of_capital_stable_override=policy.wacc)
+    audit['consumed_inputs']+=consumed
+    audit['required_input_count']+=len(fields);audit['available_required_input_count']+=len(fields)
+    audit['valuation_scope']='report_date_book_equity_scenario'
+    audit['assumptions']=dict(annual_forecast=[r.model_dump() for r in policy.annual_forecast],
+        sales_to_capital=policy.sales_to_capital,terminal_growth=policy.terminal_growth,
+        terminal_roic=policy.terminal_roic,wacc=policy.wacc,bridge=policy.model_dump(mode='json',exclude={'annual_forecast'}))
+    audit['boundaries']=[b for b in audit['boundaries'] if not b.startswith(('zero nominal','maintenance capex','no equity value'))]
+    audit['boundaries'] += ['report-date shares and book claims; not a current-date securities rollforward',
+        'all FN52 treated as debt proxy without maturity-note split',
+        'nonoperating financial investments receive no credit pending classification; not asserted zero',
+        'no-conversion scenario only; convertible choice and employee options not priced',
+        'additional claims amount is a policy scenario, not a claim that undisclosed obligations are absent',
+        'cash recovery and minority/debt multiples are assumptions, not fair-value observations']
+    return inputs,audit
+
+
+def build_historical_dcf_inputs(d, policy):
+    window,_=standard_window_reader(d)
+    revenue=window('FN230')
+    ebit=window('FN86')+window('FN305')-window('FN306')-window('FN83')-window('FN82')-window('FN301')
+    if revenue<=0 or ebit<=0:
+        raise ValueError('positive revenue and EBIT required for historical forecast rules')
+    quarters={}
+    for f in d.facts:
+        if f['field']!='FN230':continue
+        period=date.fromisoformat(f['period'])
+        if period>d.report_period:continue
+        if period.month%3 or (period+timedelta(days=1)).day!=1 or f['period_type']!=f'Q{period.month//3}' or f['unit']!='CNY' or f['statement_scope']!='provider_default':
+            raise ValueError('invalid quarterly revenue history')
+        if period in quarters:raise ValueError('duplicate quarterly revenue history')
+        quarters[period]=(validated_source_value(f),f['fact_id'])
+    pairs=[]
+    for period,(current,current_id) in sorted(quarters.items()):
+        if period<=d.report_period.replace(year=d.report_period.year-1):continue
+        previous=quarters.get(period.replace(year=period.year-1))
+        if previous is not None and previous[0]>0 and current>=0:
+            pairs.append(dict(period=period.isoformat(),growth=float(current/previous[0]-1),source_fact_ids=[current_id,previous[1]]))
+    if len(pairs)<2:
+        raise MissingInputs(['TDX/at_least_two_same_quarter_revenue_yoy_pairs'])
+    observed=median(r['growth'] for r in pairs)
+    growth=max(policy.growth_floor,min(policy.growth_ceiling,observed+policy.growth_shift))
+    margin=ebit/revenue;target=margin+policy.margin_shift
+    if not 0<target<=1:raise ValueError('rule-generated target margin outside (0,1]')
+    annual=[ForecastYear(growth=growth if year<=5 else growth+(policy.terminal_growth-growth)*(year-5)/5,
+        margin=margin+(target-margin)*min(year/5,1),tax=policy.tax_rate) for year in range(1,11)]
+    parameters=policy.model_dump(exclude={'policy_id','annual_forecast','growth_floor','growth_ceiling','growth_shift','margin_shift'})
+    generated=BookDCFPolicy(policy_id='nonfinancial-book-fcff-v1',annual_forecast=annual,**parameters)
+    inputs,audit=build_book_dcf_inputs(d,generated)
+    inputs.prepared_ttm.provenance['assumption_rules']=content_hash(policy.model_dump(mode='json'))
+    audit['generated_policy']=generated.model_dump(mode='json')
+    audit['forecast_rule_evidence']=dict(required_yoy_pairs=2,available_yoy_pairs=len(pairs),revenue_yoy_pairs=pairs,observed_median_growth=observed,
+        clipped_scenario_growth=growth,current_adjusted_margin=margin,target_margin=target)
+    audit['consumed_inputs'].append(dict(source='tdx',field='FN230',purpose='historical_growth_rule',
+        source_fact_ids=sorted({i for r in pairs for i in r['source_fact_ids']})))
+    audit['boundaries'].append('median recent quarterly YOY with policy cap/shift and five-year fade; mechanical starting scenario, not researched growth forecast')
     return inputs,audit

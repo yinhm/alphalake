@@ -603,3 +603,62 @@ def test_generic_earnings_power_has_no_unreviewed_equity_value(exports,tmp_path,
         assert client.post('/api/valuation/from-alphalake',json=dict(data=exports['600519'],policy=policy)).status_code==422
         missing=copy.deepcopy(exports['300866']);missing['windows']=[r for r in missing['windows'] if r['field']!='FN305']
         assert client.post('/api/valuation/from-alphalake',json=dict(data=missing,policy=policy)).status_code==422
+
+
+def test_generic_book_dcf_forecast_and_equity_bridge(exports,tmp_path,monkeypatch):
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    policy=dict(policy_id='nonfinancial-book-fcff-v1',approved_report_period='2026-06-30',scenario='book-scenario',
+        review_note='通用模型的生产链回归，非安克推荐假设',nonfinancial_scope_review='安克非金融主营；已知金融业务由数据门控',wacc=.1,tax_rate=.25,
+        annual_forecast=[dict(growth=.06 if i<5 else .02,margin=.09,tax=.25) for i in range(10)],
+        sales_to_capital=3,terminal_growth=.02,terminal_roic=.1,cash_recovery=.8,operating_cash_ratio=.03,
+        minority_book_multiple=1.5,debt_book_multiple=1,extra_dilution_rate=.02,additional_claims_million_cny=50,
+        bridge_basis='report_date_book_debt_no_conversion_scenario',financial_asset_policy='no_credit_pending_classification',
+        bridge_review='不转股、全部到期非流动负债作为债务；附加索偿50百万元是情景，未分类金融投资不计入')
+    with TestClient(app) as client:
+        response=client.post('/api/valuation/from-alphalake',json=dict(data=exports['300866'],policy=policy))
+        assert response.status_code==200,response.text
+        result=response.json();assert result['status']=='illustrative_book_equity_scenario'
+        w={r['field']:float(r['value'])/1e6 for r in exports['300866']['windows'] if r['value'] is not None}
+        rev=w['FN230'];pv=0
+        for year,row in enumerate(policy['annual_forecast'],1):
+            previous=rev;rev*=1+row['growth']
+            cash=rev*row['margin']*(1-row['tax'])-(rev-previous)/3
+            near(result['report']['dcf']['fcff_projections'][year-1],cash)
+            pv+=cash/1.1**year
+        terminal=rev*1.02*.09*.75*(1-.02/.1)/(.1-.02)
+        ev=pv+terminal/1.1**10
+        fixed=w['FN133']*.8-w['FN230']*.03-sum(w[f] for f in ('FN41','FN52','FN55','FN56','FN439'))-w['FN69']*1.5-50
+        near(result['report']['final']['value_per_share'],(ev+fixed)/(w['FN238']*1.02))
+        assert result['report']['cashflow']['fcff'] is None
+        assert client.post('/api/valuation/from-alphalake',json=dict(data=exports['600519'],policy=policy)).status_code==422
+        for field in ('FN238','FN52','FN133'):
+            bad=copy.deepcopy(exports['300866']);bad['windows']=[r for r in bad['windows'] if r['field']!=field]
+            assert client.post('/api/valuation/from-alphalake',json=dict(data=bad,policy=policy)).status_code==422
+        invalid=policy|dict(terminal_growth=.1)
+        assert client.post('/api/valuation/from-alphalake',json=dict(data=exports['300866'],policy=invalid)).status_code==422
+        automatic={k:v for k,v in policy.items() if k!='annual_forecast'}
+        automatic.update(policy_id='nonfinancial-history-fcff-v1',growth_floor=-.1,growth_ceiling=.2,growth_shift=0,margin_shift=0)
+        response=client.post('/api/valuation/from-alphalake',json=dict(data=exports['300866'],policy=automatic))
+        assert response.status_code==200,response.text
+        auto=response.json()
+        q={f['period']:float(f['value']) for f in exports['300866']['facts'] if f['field']=='FN230'}
+        expected=min(.2,max(-.1,((q['2026-03-31']/q['2025-03-31']-1)+(q['2026-06-30']/q['2025-06-30']-1))/2))
+        near(auto['audit']['forecast_rule_evidence']['clipped_scenario_growth'],expected)
+        generated=auto['audit']['generated_policy'];assert len(generated['annual_forecast'])==10
+        rev=w['FN230'];pv=0;ebit=w['FN86']+w['FN305']-w['FN306']-w['FN83']-w['FN82']-w['FN301'];margin=ebit/rev
+        for year in range(1,11):
+            growth=expected if year<=5 else expected+(.02-expected)*(year-5)/5
+            previous=rev;rev*=1+growth
+            cash=rev*margin*.75-(rev-previous)/3
+            near(auto['report']['dcf']['fcff_projections'][year-1],cash)
+            pv+=cash/1.1**year
+        ev=pv+rev*1.02*margin*.75*(1-.02/.1)/(.1-.02)/1.1**10
+        near(auto['report']['final']['value_per_share'],(ev+fixed)/(w['FN238']*1.02))
+        # 2025Q1 位于当前 TTM 窗口之外，历史规则也必须校验其源位。
+        corrupted=copy.deepcopy(exports['300866'])
+        next(f for f in corrupted['facts'] if f['field']=='FN230' and f['period']=='2025-03-31')['value']='1'
+        assert client.post('/api/valuation/from-alphalake',json=dict(data=corrupted,policy=automatic)).status_code==422
+        short=copy.deepcopy(exports['300866']);short['facts']=[f for f in short['facts'] if not(f['field']=='FN230' and f['period']=='2025-03-31')]
+        assert client.post('/api/valuation/from-alphalake',json=dict(data=short,policy=automatic)).status_code==422
+        distressed=automatic|dict(additional_claims_million_cny=1e9)
+        assert client.post('/api/valuation/from-alphalake',json=dict(data=exports['300866'],policy=distressed)).status_code==422

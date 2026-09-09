@@ -11,12 +11,12 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 from api.alphalake import evaluate, ENGINE_REVISION
-from data_sources.alphalake import Policy, ScreenPolicy, WACCBinding, AlphaLakeRequest, MissingInputs, content_hash
+from data_sources.alphalake import Policy, ScreenPolicy, BookDCFPolicy, HistoricalDCFPolicy, WACCBinding, AlphaLakeRequest, MissingInputs, content_hash
 
 
 class Assignment(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    policy: Policy | ScreenPolicy
+    policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy
     wacc_binding: WACCBinding | None = None
 
 
