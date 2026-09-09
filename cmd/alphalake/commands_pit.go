@@ -94,7 +94,7 @@ func runSyncFilings(ctx context.Context, args []string) error {
 	endText := fs.String("end", "", "inclusive catalogue end date")
 	metadataOnly := fs.Bool("metadata-only", false, "retain catalogue metadata without downloading filing documents")
 	rescan := fs.Bool("rescan", false, "ignore completed old-window checkpoints")
-	pageSize := fs.Int("page-size", 50, "CNINFO page size in [1,100]")
+	pageSize := fs.Int("page-size", 30, "CNINFO page size in [1,100]")
 	windowDays := fs.Int("window-days", 90, "catalogue window size in [1,366]")
 	if err := fs.Parse(args[1:]); err != nil {
 		return err
@@ -187,4 +187,27 @@ func parseCLIDate(value string) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("expected YYYY-MM-DD: %w", err)
 	}
 	return parsed.UTC(), nil
+}
+
+func parseFinancialLimit(args []string) (int, error) {
+	fs := flag.NewFlagSet("sync-financial", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	all := fs.Bool("all", false, "all past packages")
+	latest := fs.Int("latest", 1, "newest N past packages")
+	if err := fs.Parse(args); err != nil {
+		return 0, err
+	}
+	suppliedLatest := false
+	fs.Visit(func(f *flag.Flag) {
+		if f.Name == "latest" {
+			suppliedLatest = true
+		}
+	})
+	if fs.NArg() != 0 || *latest < 1 || (*all && suppliedLatest) {
+		return 0, fmt.Errorf("use either --all or --latest positive-N")
+	}
+	if *all {
+		return 0, nil
+	}
+	return *latest, nil
 }

@@ -22,7 +22,7 @@ const (
 	cninfoFilingDataset         = "filing"
 	cninfoCatalogueArtifactData = "filing_catalogue"
 	cninfoDocumentArtifactData  = "filing_document"
-	cninfoDefaultPageSize       = 50
+	cninfoDefaultPageSize       = 30
 	cninfoDefaultWindowDays     = 90
 	cninfoRecentRescanDays      = 180
 )
@@ -138,8 +138,8 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 		}
 		summary.Windows++
 		windowName := filingWindowName(window.start, window.end)
-		// Older checkpoints may omit documents or the final partial page.
-		checkpointKey := fmt.Sprintf("catalogue-window:v3:metadata-only=%t:%s", options.MetadataOnly, windowName)
+		// Older checkpoints may omit documents, final pages, or accept repeated pages.
+		checkpointKey := fmt.Sprintf("catalogue-window:v4:metadata-only=%t:%s", options.MetadataOnly, windowName)
 		if !options.Rescan && window.end.Before(dateUTCIngest(now.AddDate(0, 0, -cninfoRecentRescanDays))) {
 			if _, found, err := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, checkpointKey); err != nil {
 				summary.Failures = append(summary.Failures, CNINFOFilingFailure{Window: windowName, Err: err})
@@ -280,6 +280,7 @@ func acquireCNINFOFilingWindow(
 	var pageSHAs []string
 	var failures []CNINFOFilingFailure
 	var issues []cninfo.CatalogueIssue
+	seenFilings := map[string]bool{}
 	for pageNumber := 1; pageNumber <= 10000; pageNumber++ {
 		page, raw, err := source.CataloguePage(ctx, cninfo.CatalogueRequest{
 			Page: pageNumber, PageSize: pageSize, StartDate: start, EndDate: end,
@@ -301,6 +302,18 @@ func acquireCNINFOFilingWindow(
 		pageSHAs = append(pageSHAs, stored.SHA256)
 		for i := range page.Filings {
 			page.Filings[i].CatalogueArtifactID = stored.ArtifactID
+		}
+		newIdentities := 0
+		for _, filing := range page.Filings {
+			key := filing.ProviderCode + "/" + filing.SourceFilingID
+			if !seenFilings[key] {
+				newIdentities++
+				seenFilings[key] = true
+			}
+		}
+		if len(page.Filings) > 0 && newIdentities == 0 {
+			failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: fmt.Errorf("CNINFO pagination made no progress: page %d repeats previously observed announcement identities", pageNumber)})
+			break
 		}
 		filings = append(filings, page.Filings...)
 		issues = append(issues, page.Issues...)

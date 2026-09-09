@@ -1,9 +1,14 @@
 package ingest
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"fmt"
+	"io"
+	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -294,5 +299,100 @@ func TestCNINFOPaginationRejectsContradictoryPages(t *testing.T) {
 		if len(failures) == 0 {
 			t.Fatalf("accepted inconsistent page: %#v", page)
 		}
+	}
+}
+
+func TestRealCNINFORepeatedPagesInvalidateOldCompletion(t *testing.T) {
+	ctx := t.Context()
+	path := filepath.Join(t.TempDir(), "repeat.duckdb")
+	db, err := duckstore.OpenAndMigrate(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := &fakeCNINFOFilingSource{pages: map[int]cninfo.CataloguePage{}, raw: map[int][]byte{}}
+	for i := 1; i <= 2; i++ {
+		compressed, e := os.ReadFile(fmt.Sprintf("testdata/cninfo-repeated-pages-2026/page-%d.json.gz", i))
+		if e != nil {
+			t.Fatal(e)
+		}
+		reader, e := gzip.NewReader(bytes.NewReader(compressed))
+		if e != nil {
+			t.Fatal(e)
+		}
+		raw, e := io.ReadAll(reader)
+		reader.Close()
+		if e != nil {
+			t.Fatal(e)
+		}
+		page, e := cninfo.ParseCataloguePage(raw)
+		if e != nil {
+			t.Fatal(e)
+		}
+		page.Page = i
+		page.PageSize = 30
+		source.pages[i] = page
+		source.raw[i] = raw
+	}
+	_, _, defaultSize, _, e := normalizeCNINFOFilingOptions(CNINFOFilingOptions{}, time.Now())
+	if e != nil || defaultSize != 30 {
+		t.Fatalf("unsupported live default size %d %v", defaultSize, e)
+	}
+	compressed, e := os.ReadFile("testdata/cninfo-repeated-pages-2026/size-30-page-2.json.gz")
+	if e != nil {
+		t.Fatal(e)
+	}
+	reader, e := gzip.NewReader(bytes.NewReader(compressed))
+	if e != nil {
+		t.Fatal(e)
+	}
+	raw, e := io.ReadAll(reader)
+	reader.Close()
+	if e != nil {
+		t.Fatal(e)
+	}
+	good, e := cninfo.ParseCataloguePage(raw)
+	if e != nil {
+		t.Fatal(e)
+	}
+	firstIDs := map[string]bool{}
+	for _, f := range source.pages[1].Filings {
+		firstIDs[f.SourceFilingID] = true
+	}
+	if len(good.Filings) != 30 {
+		t.Fatal("expected 30 original announcements")
+	}
+	for _, f := range good.Filings {
+		if firstIDs[f.SourceFilingID] {
+			t.Fatal("size-30 page 2 did not advance")
+		}
+	}
+	start := time.Date(2025, 4, 1, 0, 0, 0, 0, time.UTC)
+	end := time.Date(2025, 6, 29, 0, 0, 0, 0, time.UTC)
+	oldKey := "catalogue-window:v3:metadata-only=true:" + filingWindowName(start, end)
+	if err = duckstore.SetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, oldKey, "incomplete-old-run"); err != nil {
+		t.Fatal(err)
+	}
+	result, err := SyncCNINFOFilingsWithOptions(ctx, db, source, filepath.Join(t.TempDir(), "raw"), CNINFOFilingOptions{StartDate: start, EndDate: end, MetadataOnly: true, Now: func() time.Time { return time.Date(2026, 9, 9, 0, 0, 0, 0, time.UTC) }})
+	if err == nil || source.catalogueCalls != 2 || result.SkippedWindows != 0 || len(result.Failures) != 1 || !strings.Contains(result.Failures[0].Err.Error(), "no progress") {
+		t.Fatalf("result=%+v calls=%d err=%v", result, source.catalogueCalls, err)
+	}
+	if err = db.Close(); err != nil {
+		t.Fatal(err)
+	}
+	db, err = duckstore.Open(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, strings.Replace(oldKey, ":v3:", ":v4:", 1)); e != nil || found {
+		t.Fatalf("false completion: %t %v", found, e)
+	}
+	var n int
+	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM meta.artifact WHERE source='cninfo'`).Scan(&n); err != nil || n != 2 {
+		t.Fatalf("raw evidence %d %v", n, err)
+	}
+	var status string
+	if err = db.QueryRowContext(ctx, `SELECT status FROM meta.ingest_run WHERE ingest_run_id=?`, result.RunID).Scan(&status); err != nil || status == "completed" {
+		t.Fatalf("run=%s %v", status, err)
 	}
 }

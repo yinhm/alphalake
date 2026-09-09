@@ -61,7 +61,12 @@ func (f financialReportFiles) GetReportFile(locator string) (body []byte, retErr
 			retErr = errors.Join(protocolErr, retErr)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(f.ctx, 45*time.Second)
+	timeout := 45 * time.Second
+	if locator != ProfessionalFinancialListLocator {
+		timeout = 10 * time.Minute
+	}
+	// 全市场 ZIP 数 MB，实测官方 HTTP 慢速传输可超过行情请求期限；仍受父上下文和大小/MD5校验约束。
+	ctx, cancel := context.WithTimeout(f.ctx, timeout)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, f.baseURL+locator, nil)
 	if err != nil {

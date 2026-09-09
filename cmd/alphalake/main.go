@@ -41,7 +41,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  calc-adjustments <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-classifications <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-industries <db-path>")
-	fmt.Fprintln(os.Stderr, "  sync-financial <db-path> [--all]")
+	fmt.Fprintln(os.Stderr, "  sync-financial <db-path> [--all | --latest N]")
 	fmt.Fprintln(os.Stderr, "  sync-filings <db-path> [--all] [--start YYYY-MM-DD] [--end YYYY-MM-DD] [--metadata-only] [--rescan]")
 	fmt.Fprintln(os.Stderr, "  materialize-fundamentals <db-path>")
 	fmt.Fprintln(os.Stderr, "  financial-unresolved <db-path> [--limit N] [--offset N]")
@@ -308,18 +308,15 @@ func main() {
 		}
 
 	case "sync-financial":
-		if len(os.Args) != 3 && len(os.Args) != 4 {
+		if len(os.Args) < 3 {
 			usage()
 			os.Exit(2)
 		}
-		all := false
-		if len(os.Args) == 4 {
-			if os.Args[3] != "--all" {
-				usage()
-				os.Exit(2)
-			}
-			all = true
+		maxPackages, err := parseFinancialLimit(os.Args[3:])
+		if err != nil {
+			fatal(err)
 		}
+		all := maxPackages == 0
 		dbPath := os.Args[2]
 		db, err := duckstore.OpenAndMigrate(ctx, dbPath)
 		if err != nil {
@@ -334,10 +331,6 @@ func main() {
 		defer source.Close()
 
 		artifactRoot := filepath.Join(filepath.Dir(dbPath), "raw")
-		maxPackages := 1
-		if all {
-			maxPackages = 0
-		}
 		lastFailures := 0
 		lastUnresolved := 0
 		options := ingest.TDXProfessionalFinancialOptions{
