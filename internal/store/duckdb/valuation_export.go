@@ -113,7 +113,7 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
 		return nil, err
 	}
 	defer tx.Rollback()
-	output := map[string]any{"contract_version": "alphalake-valuation-v1", "code": code, "report_period": end.Format("2006-01-02"), "information_as_of": asof.UTC().Format(time.RFC3339)}
+	output := map[string]any{"contract_version": "alphalake-valuation-v1", "code": code, "report_period": end.Format("2006-01-02"), "information_as_of": asof.UTC().Format(time.RFC3339Nano)}
 	queries := []struct {
 		name, query string
 		args        []any
