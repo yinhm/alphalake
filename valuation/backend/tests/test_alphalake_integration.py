@@ -583,3 +583,23 @@ def test_batch_keeps_denominator_and_isolates_missing_inputs(exports,tmp_path,mo
     assert result['companies'][0]['missing']
     bad=copy.deepcopy(readiness);bad['companies'][0]['instrument_id']=999
     assert run_batch(bad,policy,lambda code:exports[code])['companies'][0]['status']=='rejected_input_or_policy'
+
+
+def test_generic_earnings_power_has_no_unreviewed_equity_value(exports,tmp_path,monkeypatch):
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    policy=dict(policy_id='nonfinancial-earnings-power-v1',approved_report_period='2026-06-30',
+        scenario='zero-growth-10pct',review_note='零名义增长、维持投入等于折旧，仅经营价值敏感性',
+        nonfinancial_scope_review='安克合并主营业务；套期影响未恢复，不作为完整估值',wacc=.1,tax_rate=.25)
+    with TestClient(app) as client:
+        response=client.post('/api/valuation/from-alphalake',json=dict(data=exports['300866'],policy=policy))
+        assert response.status_code==200,response.text
+        result=response.json()
+        assert result['status']=='illustrative_enterprise_value_only'
+        assert result['report']['final']['value_per_share'] is None
+        assert result['report']['cashflow']['fcff'] is None
+        ebit=result['audit']['automatic_drivers']['adjusted_ebit']
+        near(result['report']['dcf']['value_of_operating_assets'],ebit*.75/.1)
+        assert result['report']['dcf']['reinvestment_projections']==[0]*10
+        assert client.post('/api/valuation/from-alphalake',json=dict(data=exports['600519'],policy=policy)).status_code==422
+        missing=copy.deepcopy(exports['300866']);missing['windows']=[r for r in missing['windows'] if r['field']!='FN305']
+        assert client.post('/api/valuation/from-alphalake',json=dict(data=missing,policy=policy)).status_code==422

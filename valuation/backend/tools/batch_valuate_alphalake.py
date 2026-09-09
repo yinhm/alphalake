@@ -11,12 +11,12 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 from api.alphalake import evaluate, ENGINE_REVISION
-from data_sources.alphalake import Policy, WACCBinding, AlphaLakeRequest, MissingInputs, content_hash
+from data_sources.alphalake import Policy, ScreenPolicy, WACCBinding, AlphaLakeRequest, MissingInputs, content_hash
 
 
 class Assignment(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    policy: Policy
+    policy: Policy | ScreenPolicy
     wacc_binding: WACCBinding | None = None
 
 
@@ -53,7 +53,8 @@ def run_batch(readiness, policy, export):
                     request = AlphaLakeRequest(data=data,**assignment.model_dump())
                     result = evaluate(request)
                     row.update(status=result['status'],run_id=result['run_id'],
-                        value_per_share=result['report']['final']['value_per_share'])
+                        value_per_share=result['report']['final']['value_per_share'],
+                        operating_enterprise_value_million_cny=result['report']['dcf']['value_of_operating_assets'])
                 except MissingInputs as error:
                     row.update(status='blocked_missing_inputs',missing=error.items)
                 except (ValueError,KeyError,TypeError,ArithmeticError) as error:

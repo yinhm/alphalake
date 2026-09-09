@@ -95,14 +95,30 @@ class Policy(BaseModel):
         return self
 
 
+class ScreenPolicy(BaseModel):
+    """普通非金融经营价值情景；不在证券索偿未闭合时输出每股值。"""
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    policy_id: Literal['nonfinancial-earnings-power-v1']
+    approved_report_period: date
+    scenario: str = Field(min_length=1)
+    review_note: str = Field(min_length=1)
+    nonfinancial_scope_review: str = Field(min_length=1)
+    wacc: float = Field(gt=0,lt=1)
+    tax_rate: float = Field(ge=0,le=1)
+
+
 class AlphaLakeRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     data: Snapshot
-    policy: Policy
+    policy: Policy | ScreenPolicy
     wacc_binding: WACCBinding | None = None
 
     @model_validator(mode='after')
     def wacc_source(self):
+        if isinstance(self.policy, ScreenPolicy):
+            if self.wacc_binding is not None:
+                raise ValueError('earnings-power screening requires explicit scenario WACC')
+            return self
         if (self.wacc_binding is None) != ('wacc' in self.policy.parameters):
             raise ValueError('provide either direct WACC or reference binding, never both or neither')
         return self
@@ -119,18 +135,15 @@ def content_hash(value):
         separators=(',', ':'), allow_nan=False).encode()).hexdigest()
 
 
-def build_inputs(request: AlphaLakeRequest):
-    d, policy = request.data, request.policy
-    anker = policy.policy_id.startswith('anker-')
-    revised = policy.policy_id == 'anker-consolidated-v2'
-    if d.code != ('300866' if anker else '600519') or policy.approved_report_period != d.report_period:
-        raise ValueError('policy is not approved for this security/report period')
-    p = dict(policy.parameters)
-    if revised:
-        first,last=policy.annual_forecast[0],policy.annual_forecast[-1]
-        p.update(growth=first.growth,margin=last.margin,tax_start=first.tax,tax_terminal=last.tax)
-    reference_components = None
-    reference_audit = None
+def amount(r):
+    v = Decimal(r['value'])
+    if not v.is_finite():
+        raise ValueError('non-finite source value')
+    return float(v / (1 if r['unit'] == 'CNY/share' else 1000000))
+
+
+def standard_window_reader(d: Snapshot):
+    """消费标准窗口前核验源位、期间、单位及完整血缘；供各估值政策复用。"""
     end = d.report_period.isoformat()
     prior = d.report_period.replace(year=d.report_period.year-1).isoformat()
     annual = f'{d.report_period.year-1}-12-31'
@@ -138,16 +151,9 @@ def build_inputs(request: AlphaLakeRequest):
     if len(fact_ids) != len(d.facts):
         raise ValueError('duplicate source fact identity')
     windows = {r['field']: r for r in d.windows}
-    notes = {(r['period'], r['item']): r for r in d.supplements}
-    if len(windows) != len(d.windows) or len(notes) != len(d.supplements):
+    if len(windows) != len(d.windows):
         raise ValueError('duplicate valuation inputs')
     consumed = []
-
-    def amount(r):
-        v = Decimal(r['value'])
-        if not v.is_finite():
-            raise ValueError('non-finite source value')
-        return float(v / (1 if r['unit'] == 'CNY/share' else 1000000))
 
     def window(field, required=True):
         r = windows.get(field)
@@ -204,6 +210,32 @@ def build_inputs(request: AlphaLakeRequest):
             raise ValueError('window differs from source components: '+field)
         consumed.append(dict(source='tdx',field=field,source_fact_ids=ids))
         return amount(r)
+
+    return window, consumed
+
+
+def build_inputs(request: AlphaLakeRequest):
+    d, policy = request.data, request.policy
+    if isinstance(policy, ScreenPolicy):
+        return build_earnings_power_inputs(d, policy)
+    anker = policy.policy_id.startswith('anker-')
+    revised = policy.policy_id == 'anker-consolidated-v2'
+    if d.code != ('300866' if anker else '600519') or policy.approved_report_period != d.report_period:
+        raise ValueError('policy is not approved for this security/report period')
+    p = dict(policy.parameters)
+    if revised:
+        first,last=policy.annual_forecast[0],policy.annual_forecast[-1]
+        p.update(growth=first.growth,margin=last.margin,tax_start=first.tax,tax_terminal=last.tax)
+    reference_components = None
+    reference_audit = None
+    end = d.report_period.isoformat()
+    prior = d.report_period.replace(year=d.report_period.year-1).isoformat()
+    annual = f'{d.report_period.year-1}-12-31'
+    window, consumed = standard_window_reader(d)
+    windows = {r['field']: r for r in d.windows}
+    notes = {(r['period'], r['item']): r for r in d.supplements}
+    if len(notes) != len(d.supplements):
+        raise ValueError('duplicate valuation inputs')
 
     def note(item, period=end):
         r = notes.get((period,item))
@@ -347,4 +379,56 @@ def build_inputs(request: AlphaLakeRequest):
         audit['boundaries'] = [b for b in audit['boundaries'] if not b.startswith('explicit WACC;')]
         audit['boundaries'] += reference_audit['boundaries']
         inputs.prepared_ttm.provenance['wacc_binding'] = content_hash(request.wacc_binding.model_dump(mode='json'))
+    return inputs,audit
+
+
+def build_earnings_power_inputs(d, policy):
+    if d.report_period != policy.approved_report_period:
+        raise ValueError('screening policy is not approved for report period')
+    window, consumed = standard_window_reader(d)
+    required = 'FN230 FN86 FN305 FN306 FN83 FN82 FN301'.split()
+    values = {f:window(f,False) for f in required}
+    missing = ['TDX/'+f for f,v in values.items() if v is None]
+    if missing:
+        raise MissingInputs(missing)
+    # 已知金融业务不得套用普通企业经营价值；缺字段不等于不存在，范围须另行审核。
+    for field in ('FN506','FN509','FN510','FN413'):
+        value = window(field,False)
+        if value is not None and value != 0:
+            raise ValueError('financial operations require separate model: '+field)
+    revenue = values['FN230']
+    ebit = values['FN86']+values['FN305']-values['FN306']-values['FN83']-values['FN82']-values['FN301']
+    if revenue <= 0 or ebit <= 0:
+        raise ValueError('positive revenue and adjusted EBIT required for earnings-power screen')
+    margin=ebit/revenue
+    if margin>1:
+        raise ValueError('EBIT exceeds revenue; review operating scope')
+    raw=RawFinancials(fiscal_year=d.report_period.year,revenues=revenue,ebit=ebit)
+    assumptions=ValuationAssumptions(projection_years=10,high_growth_years=5,
+        annual_forecast=[ForecastYear(growth=0,margin=margin,tax=policy.tax_rate) for _ in range(10)],
+        sales_to_capital_high=1,sales_to_capital_stable=1,override_reinvestment_lag=True,reinvestment_lag_years=0,
+        override_growth_perpetuity=True,growth_perpetuity_rate=0,
+        roic_stable_override=policy.wacc,cost_of_capital_stable_override=policy.wacc)
+    inputs=CompanyValuationInput(ticker=d.code,reporting_currency='CNY',stock_price_currency='CNY',fx_rate=1,
+        prepared_ttm=PreparedTTM(financials=raw,period_start=d.report_period.replace(year=d.report_period.year-1)+timedelta(days=1),
+            period_end=d.report_period,information_as_of=d.information_as_of,currency='CNY',
+            money_unit='million_reporting_currency',shares_unit='million_shares',
+            provenance={'alphalake_snapshot':content_hash(d.model_dump(mode='json')),'valuation_policy':content_hash(policy.model_dump(mode='json'))}),
+        macro_inputs=MacroInputs(risk_free_rate=0,equity_risk_premium=0,tax_rate_effective=policy.tax_rate,tax_rate_marginal=policy.tax_rate),
+        industry_data=IndustryData(industry_name='unused_direct_wacc',beta_u=0),
+        methodology_choices=MethodologyChoices(cost_of_capital_approach='direct',wacc_direct_input=policy.wacc),
+        valuation_assumptions=assumptions)
+    audit=dict(consumed_inputs=consumed,source='alphalake',policy_status='illustrative_model_not_reported_fact',
+        historical_fcff_status='missing_classification_not_zero',
+        valuation_scope='operating_enterprise_value_only_no_equity_bridge',
+        required_input_count=len(required),available_required_input_count=len(required),
+        automatic_drivers=dict(revenue=revenue,adjusted_ebit=ebit,operating_margin=margin),
+        assumptions=dict(nominal_growth=0,net_reinvestment=0,tax=policy.tax_rate,wacc=policy.wacc),
+        boundaries=['nonfinancial scope requires explicit review; missing financial-business fields do not prove absence',
+            'zero nominal growth and constant margin scenario, not growth forecast',
+            'maintenance capex equals depreciation is an assumption, not historical FCFF closure',
+            'investment/fair-value/disposal income excluded; operating hedges not restored',
+            'RD remains expensed; current operating lease expense retained',
+            'no equity value or per-share price until cash/debt/minority/dilution bridge is reviewed',
+            'WACC/tax are explicit sensitivity assumptions, not market estimates'])
     return inputs,audit

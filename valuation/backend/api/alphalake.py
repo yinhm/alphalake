@@ -39,7 +39,7 @@ def evaluate(request: AlphaLakeRequest):
     request_data = request.model_dump(mode='json')
     run_id = content_hash(dict(request=request_data,engine_revision=revision))
     report = run_full_valuation(inputs)
-    result = dict(run_id=run_id,engine_revision=revision,runtime_versions=runtime_versions(),status='illustrative_valuation_completed',
+    result = dict(run_id=run_id,engine_revision=revision,runtime_versions=runtime_versions(),status=('illustrative_enterprise_value_only' if audit.get('valuation_scope')=='operating_enterprise_value_only_no_equity_bridge' else 'illustrative_valuation_completed'),
         request=request_data,inputs=inputs.model_dump(mode='json'),audit=audit,
         report=jsonable_encoder(asdict(report)))
     # 保存输入/政策/引擎版本与输出。同内容重放不覆盖；失败不产生成功记录。
