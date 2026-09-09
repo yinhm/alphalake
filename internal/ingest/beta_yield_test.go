@@ -24,6 +24,7 @@ func TestBetaYieldRealArchiveReplay(t *testing.T) {
 		sync                                 func(context.Context, *sql.DB, string, ReferenceOptions) (ReferenceSummary, error)
 	}{
 		{"beta", "../source/damodaran/testdata/betaGlobal.xls", "../../valuation/backend/data_sources/damodaran_parsers/beta_parser.py", "reference.industry_stat", "damodaran", 376, SyncIndustryBeta},
+		{"credit", "../source/damodaran/testdata/ratings.html", "../source/damodaran/ratings.py", "reference.credit_spread_band", "damodaran", 15, SyncCreditSpreads},
 		{"yield", "../source/chinabond/testdata/curve.html", "../source/chinabond/parse.py", "market.yield_curve_point", "chinabond", 8, SyncCNYGovernmentYield},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

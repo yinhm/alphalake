@@ -30,6 +30,8 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 	switch command {
 	case "sync-industry-beta":
 		defaultScript = damodaran.BetaScript
+	case "sync-credit-spreads":
+		defaultScript = damodaran.CreditScript
 	case "sync-cny-yield":
 		defaultScript = chinabond.Script
 	}
@@ -50,6 +52,8 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 	switch command {
 	case "sync-industry-beta":
 		sync = ingest.SyncIndustryBeta
+	case "sync-credit-spreads":
+		sync = ingest.SyncCreditSpreads
 	case "sync-cny-yield":
 		sync = ingest.SyncCNYGovernmentYield
 	}
@@ -70,6 +74,7 @@ func runWACCReferenceExport(ctx context.Context, args []string) error {
 	recorded := fs.String("recorded-cutoff", "", "optional system knowledge cutoff")
 	country := fs.Int64("country-release", 0, "explicit country release")
 	beta := fs.Int64("beta-release", 0, "explicit beta release")
+	credit := fs.Int64("credit-release", 0, "optional explicit synthetic credit release")
 	yield := fs.Int64("yield-release", 0, "explicit yield release")
 	if err := fs.Parse(args[1:]); err != nil {
 		return err
@@ -97,7 +102,11 @@ func runWACCReferenceExport(ctx context.Context, args []string) error {
 		return err
 	}
 	defer db.Close()
-	result, err := duckstore.ExportWACCReferences(ctx, db, asof, cutoff, *country, *beta, *yield)
+	var credits []int64
+	if *credit != 0 {
+		credits = []int64{*credit}
+	}
+	result, err := duckstore.ExportWACCReferences(ctx, db, asof, cutoff, *country, *beta, *yield, credits...)
 	if err != nil {
 		return err
 	}

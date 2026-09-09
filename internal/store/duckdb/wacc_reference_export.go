@@ -14,9 +14,19 @@ import (
 
 // ExportWACCReferences selects explicit complete releases; it does not infer
 // 'latest' from arrival order. Optional recordedCutoff reproduces system knowledge.
-func ExportWACCReferences(ctx context.Context, db *sql.DB, asof time.Time, recordedCutoff *time.Time, country, beta, yield int64) (map[string]any, error) {
+func ExportWACCReferences(ctx context.Context, db *sql.DB, asof time.Time, recordedCutoff *time.Time, country, beta, yield int64, creditRelease ...int64) (map[string]any, error) {
 	if db == nil || asof.IsZero() || country <= 0 || beta <= 0 || yield <= 0 || country == beta || country == yield || beta == yield {
 		return nil, errors.New("ASOF and three distinct positive release IDs required")
+	}
+	var credit int64
+	if len(creditRelease) > 1 {
+		return nil, errors.New("at most one credit release")
+	}
+	if len(creditRelease) == 1 {
+		credit = creditRelease[0]
+		if credit <= 0 || credit == country || credit == beta || credit == yield {
+			return nil, errors.New("distinct positive credit release required")
+		}
 	}
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -26,7 +36,10 @@ func ExportWACCReferences(ctx context.Context, db *sql.DB, asof time.Time, recor
 	for _, selection := range []struct {
 		id              int64
 		source, dataset string
-	}{{country, damodaran.Source, damodaran.Dataset}, {beta, damodaran.Source, damodaran.BetaDataset}, {yield, chinabond.Source, chinabond.Dataset}} {
+	}{{country, damodaran.Source, damodaran.Dataset}, {beta, damodaran.Source, damodaran.BetaDataset}, {yield, chinabond.Source, chinabond.Dataset}, {credit, damodaran.Source, damodaran.CreditDataset}} {
+		if selection.id == 0 {
+			continue
+		}
 		var n int
 		err = tx.QueryRowContext(ctx, `SELECT count(*) FROM meta.dataset_release r
     JOIN meta.dataset_release_artifact l ON l.release_id=r.release_id AND l.role='data'
@@ -42,7 +55,7 @@ func ExportWACCReferences(ctx context.Context, db *sql.DB, asof time.Time, recor
 		}
 	}
 	output := map[string]any{"contract_version": "alphalake-wacc-references-v1", "information_as_of": asof.UTC().Format(time.RFC3339Nano), "recorded_cutoff": recordedCutoff}
-	for _, q := range []struct {
+	queries := []struct {
 		name, query string
 		args        []any
 		count       int
@@ -51,7 +64,7 @@ func ExportWACCReferences(ctx context.Context, db *sql.DB, asof time.Time, recor
     CAST(r.available_at AS VARCHAR) AS available_at,CAST(r.recorded_at AS VARCHAR) AS recorded_at,r.availability_basis,
     a.artifact_id,a.sha256 AS artifact_sha256,a.source_locator AS source_url
     FROM meta.dataset_release r JOIN meta.dataset_release_artifact l ON l.release_id=r.release_id AND l.role='data'
-    JOIN meta.artifact a ON a.artifact_id=l.artifact_id WHERE r.release_id IN (?,?,?) ORDER BY r.release_id`, []any{country, beta, yield}, 3},
+    JOIN meta.artifact a ON a.artifact_id=l.artifact_id WHERE r.release_id IN (?,?,?,?) ORDER BY r.release_id`, []any{country, beta, yield, credit}, 3},
 		{"country_risk", `SELECT o.observation_id,o.release_id,o.artifact_id,o.subject_kind,o.subject_code,o.metric_code,o.method_code,
     CAST(o.observation_date AS VARCHAR) AS observation_date,CAST(o.value AS VARCHAR) AS value,o.value_status,o.raw_value,o.raw_unit,o.source_locator
     FROM reference.country_risk o JOIN meta.dataset_release_artifact l ON l.release_id=o.release_id AND l.artifact_id=o.artifact_id AND l.role='data'
@@ -68,7 +81,18 @@ func ExportWACCReferences(ctx context.Context, db *sql.DB, asof time.Time, recor
     CAST(o.observation_date AS VARCHAR) AS observation_date,CAST(o.value AS VARCHAR) AS value,o.raw_value,o.raw_unit,o.source_locator
     FROM market.yield_curve_point o JOIN meta.dataset_release_artifact l ON l.release_id=o.release_id AND l.artifact_id=o.artifact_id AND l.role='data'
     WHERE o.release_id=? AND o.observation_date<=CAST(? AS DATE) ORDER BY o.tenor_months`, []any{yield, asof}, 8},
-	} {
+	}
+	if credit > 0 {
+		output["contract_version"] = "alphalake-wacc-references-v2"
+		queries[0].count = 4
+		queries = append(queries, struct {
+			name, query string
+			args        []any
+			count       int
+		}{"credit_spreads", `SELECT o.observation_id,o.release_id,o.artifact_id,o.source_locator,CAST(o.observation_date AS VARCHAR) AS observation_date,o.observation_precision,o.firm_type,o.method_code,CAST(o.coverage_lower AS VARCHAR) AS coverage_lower,CAST(o.coverage_upper AS VARCHAR) AS coverage_upper,o.raw_lower,o.raw_upper,o.rating,CAST(o.value AS VARCHAR) AS value,o.raw_value,o.raw_unit
+	 FROM reference.credit_spread_band o JOIN meta.dataset_release_artifact l ON l.release_id=o.release_id AND l.artifact_id=o.artifact_id AND l.role='data' WHERE o.release_id=? AND o.observation_date<=CAST(? AS DATE) ORDER BY o.coverage_lower`, []any{credit, asof}, 15})
+	}
+	for _, q := range queries {
 		var raw sql.NullString
 		if err := tx.QueryRowContext(ctx, `SELECT CAST(to_json(list(x)) AS VARCHAR) FROM (`+q.query+`) x`, q.args...).Scan(&raw); err != nil {
 			return nil, err

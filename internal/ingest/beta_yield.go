@@ -42,3 +42,18 @@ func SyncCNYGovernmentYield(ctx context.Context, db *sql.DB, root string, option
 		return id, inserted, len(s.Observations), err
 	})
 }
+
+func SyncCreditSpreads(ctx context.Context, db *sql.DB, root string, options ReferenceOptions) (ReferenceSummary, error) {
+	if options.Script == "" {
+		options.Script = damodaran.CreditScript
+	}
+	feed := referenceFeed{damodaran.Source, damodaran.CreditDataset, damodaran.CreditURL, "text/html; charset=utf-8", damodaran.CreditParserVersion}
+	return syncReference(ctx, db, root, options, feed, func(runID int64, stored artifact.Stored) (int64, bool, int, error) {
+		s, hash, err := damodaran.ParseCredit(ctx, defaultPython(options.Python), options.Script, artifact.Resolve(root, stored))
+		if err != nil {
+			return 0, false, 0, err
+		}
+		id, inserted, err := duckstore.PublishCreditSpreads(ctx, db, runID, stored.ArtifactID, hash, s)
+		return id, inserted, len(s.Observations), err
+	})
+}

@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// Shared by the three reviewed reference feeds, not a public arbitrary-table writer.
+// Shared by the reviewed reference feeds, not a public arbitrary-table writer.
 type referenceInput struct {
 	Source, Dataset, URL, Date, SHA, ParserVersion, Runtime, Normalization, ParserHash string
 }

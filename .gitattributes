@@ -1,2 +1,4 @@
 # 不可变原始 HTML 证据：保留源字节，不做换行转换或文本合并。
 internal/source/chinabond/testdata/curve.html binary
+
+internal/source/damodaran/testdata/ratings.html binary

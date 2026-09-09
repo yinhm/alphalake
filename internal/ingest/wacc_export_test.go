@@ -26,13 +26,16 @@ func TestWACCReferenceExport(t *testing.T) {
 	defer db.Close()
 	ids := []int64{}
 	firstSeen := time.Date(2026, 9, 9, 12, 0, 0, 123456000, time.UTC)
-	for _, kind := range []string{"country", "beta", "yield"} {
+	for _, kind := range []string{"country", "beta", "yield", "credit"} {
 		source, dataset, url, rawFile, jsonFile := damodaran.Source, damodaran.Dataset, damodaran.URL, "../source/damodaran/testdata/ctrypremJuly26.xlsx", "../source/damodaran/testdata/expected.json"
 		if kind == "beta" {
 			dataset, url, rawFile, jsonFile = damodaran.BetaDataset, damodaran.BetaURL, "../source/damodaran/testdata/betaGlobal.xls", "../source/damodaran/testdata/beta-expected.json"
 		}
 		if kind == "yield" {
 			source, dataset, url, rawFile, jsonFile = chinabond.Source, chinabond.Dataset, chinabond.URL, "../source/chinabond/testdata/curve.html", "../source/chinabond/testdata/expected.json"
+		}
+		if kind == "credit" {
+			source, dataset, url, rawFile, jsonFile = damodaran.Source, damodaran.CreditDataset, damodaran.CreditURL, "../source/damodaran/testdata/ratings.html", "../source/damodaran/testdata/ratings-expected.json"
 		}
 		raw, err := os.ReadFile(rawFile)
 		if err != nil {
@@ -62,6 +65,11 @@ func TestWACCReferenceExport(t *testing.T) {
 			var s damodaran.BetaSnapshot
 			if err = json.Unmarshal(body, &s); err == nil {
 				id, inserted, err = duckstore.PublishIndustryBeta(ctx, db, run, a.ArtifactID, strings.Repeat("b", 64), s)
+			}
+		case "credit":
+			var s damodaran.CreditSnapshot
+			if err = json.Unmarshal(body, &s); err == nil {
+				id, inserted, err = duckstore.PublishCreditSpreads(ctx, db, run, a.ArtifactID, strings.Repeat("d", 64), s)
 			}
 		case "yield":
 			var s chinabond.Snapshot
@@ -107,8 +115,16 @@ func TestWACCReferenceExport(t *testing.T) {
 	if string(want) != string(got) {
 		t.Fatal("unstable pinned export")
 	}
+	creditPacket, err := duckstore.ExportWACCReferences(ctx, db, firstSeen, nil, ids[0], ids[1], ids[2], ids[3])
+	if err != nil {
+		t.Fatal(err)
+	}
+	creditJSON, _ := json.Marshal(creditPacket)
 	if output := os.Getenv("ALPHALAKE_WACC_EXPORT_DIR"); output != "" {
 		if err := os.MkdirAll(output, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(output, "credit-references.json"), creditJSON, 0644); err != nil {
 			t.Fatal(err)
 		}
 		if err := os.WriteFile(filepath.Join(output, "references.json"), want, 0644); err != nil {

@@ -22,7 +22,7 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 	switch args[0] {
 	case "export-wacc-references":
 		return true, runWACCReferenceExport(ctx, args[1:])
-	case "sync-industry-beta", "sync-cny-yield":
+	case "sync-industry-beta", "sync-cny-yield", "sync-credit-spreads":
 		return true, runReferenceSync(ctx, args[0], args[1:])
 	case "sync-country-risk":
 		return true, runCountryRiskSync(ctx, args[1:])
