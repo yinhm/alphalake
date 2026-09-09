@@ -63,6 +63,28 @@ func TestApplyClassificationSnapshotTracksTemporalMembership(t *testing.T) {
 	if result.Opened != 0 || result.Closed != 0 {
 		t.Fatalf("repeat result = %#v", result)
 	}
+	// 未变化的成员也刷新观察时间；首次观察和区间不变。
+	var first, latest time.Time
+	var latestRun int64
+	if err := db.QueryRowContext(ctx, `SELECT observed_at,last_observed_at,last_observed_run_id
+		FROM classification.membership ORDER BY instrument_id LIMIT 1`).Scan(&first, &latest, &latestRun); err != nil {
+		t.Fatal(err)
+	}
+	if !first.Equal(day1.Add(12*time.Hour)) || !latest.Equal(day1.Add(13*time.Hour)) || latestRun != runSame {
+		t.Fatalf("observation timestamps: %v %v run=%d", first, latest, latestRun)
+	}
+	partial := classificationSnapshot("sh600001")
+	partial.Complete = false
+	if _, err := ApplyClassificationSnapshotForRun(ctx, db, runSame, day1, day1.Add(14*time.Hour), partial); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.QueryRowContext(ctx, `SELECT last_observed_at FROM classification.membership m
+		JOIN ref.instrument_identifier i USING(instrument_id) WHERE i.identifier_value='sh600002'`).Scan(&latest); err != nil {
+		t.Fatal(err)
+	}
+	if !latest.Equal(day1.Add(13 * time.Hour)) {
+		t.Fatal("partial snapshot refreshed absent member", latest)
+	}
 
 	// 600001 disappears, 600002 remains, 600003 appears.
 	run2, _ := StartIngestRun(ctx, db, "tdx", "classification", nil)

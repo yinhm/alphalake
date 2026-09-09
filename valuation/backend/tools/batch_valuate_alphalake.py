@@ -1,7 +1,7 @@
 """从本地主数据扫描、逐公司导出并调用既有估值入口；缺政策不猜、失败不中断其他公司。"""
 import argparse
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import os
 from pathlib import Path
@@ -20,11 +20,39 @@ class Assignment(BaseModel):
     wacc_binding: WACCBinding | None = None
 
 
+class IndustryRule(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    rule_id: str = Field(min_length=1)
+    source: str = Field(min_length=1)
+    taxonomy_code: str = Field(min_length=1)
+    node_codes: list[Annotated[str, Field(min_length=1)]] = Field(min_length=1)
+    max_age_days: int = Field(ge=1,le=366)
+    review_note: str = Field(min_length=1)
+    policy: HistoricalDCFPolicy
+
+
 class BatchPolicy(BaseModel):
     model_config = ConfigDict(extra='forbid')
     policy_version: str = Field(min_length=1)
     review_note: str = Field(min_length=1)
     assignments: dict[Annotated[str, Field(pattern=r'^\d{6}$')], Assignment]
+    industry_rules: list[IndustryRule] = Field(default_factory=list)
+
+
+def match_industry_rules(company, rules, cutoff):
+    matches=[]
+    for rule in rules:
+        evidence=[]
+        for member in company.get('industry_memberships') or []:
+            if (member.get('source'),member.get('taxonomy_code'))!=(rule.source,rule.taxonomy_code) or member.get('node_code') not in rule.node_codes:
+                continue
+            observed=datetime.fromisoformat(member['observed_at'])
+            finished=datetime.fromisoformat(member['run_finished_at'])
+            if observed.utcoffset() is None or finished.utcoffset() is None or not cutoff-timedelta(days=rule.max_age_days)<=observed<=cutoff or finished>cutoff:
+                continue
+            evidence.append(member)
+        if evidence:matches.append((rule,evidence))
+    return matches
 
 
 def run_batch(readiness, policy, export):
@@ -41,7 +69,22 @@ def run_batch(readiness, policy, export):
             assignment = policy.assignments.get(code)
             row['code'] = code
             row['status'] = 'blocked_policy_not_assigned'
+            if assignment is None and policy.industry_rules:
+                try:
+                    matches=match_industry_rules(company,policy.industry_rules,datetime.fromisoformat(readiness['information_as_of']))
+                except (ValueError,KeyError,TypeError) as error:
+                    row.update(status='rejected_industry_evidence',reason=str(error))
+                    results.append(row)
+                    continue
+                row['status']='blocked_no_reviewed_industry_policy'
+                if len(matches)>1:
+                    row.update(status='blocked_ambiguous_industry_policy',matching_rules=[r.rule_id for r,_ in matches])
+                elif matches:
+                    rule,evidence=matches[0]
+                    assignment=Assignment(policy=rule.policy)
+                    row['policy_route']=dict(rule_id=rule.rule_id,classification_evidence=evidence)
             if assignment is not None:
+                row.setdefault('policy_route',dict(kind='explicit_company_assignment'))
                 try:
                     data = export(code)
                     if data['code'] != code or data['report_period'] != readiness['report_period'] or datetime.fromisoformat(data['information_as_of']) != datetime.fromisoformat(readiness['information_as_of']):

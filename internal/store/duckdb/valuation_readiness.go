@@ -11,6 +11,7 @@ import (
 
 // ExportValuationReadiness 从本地证券主数据出发；无事实、无唯一代码也保留在分母。
 // 这里只检查标准财务窗口，不把字段齐全等同于模型或市场数据就绪。
+// ponytail: 行业仅保留最新观察，回溯早于该观察时保守不输出；历史行业回测需独立观察日志。
 func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Time) (map[string]any, error) {
 	if end.IsZero() || asof.IsZero() || end.After(asof) || end.AddDate(0, 0, 1).Day() != 1 || int(end.Month())%3 != 0 {
 		return nil, errors.New("quarter-end period and later information cutoff required")
@@ -44,11 +45,24 @@ func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
  required_inputs:=required_inputs,available_inputs:=available_inputs,missing_periods:=missing_periods,
  source_fact_ids:=source_fact_ids) ORDER BY source_provider_field,provider_code,statement_scope) AS fields
  FROM fundamental.ttm_asof(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE)) GROUP BY instrument_id
+ ), industries AS (
+ SELECT m.instrument_id,list(struct_pack(source:=t.source,taxonomy_code:=t.taxonomy_code,
+ node_code:=n.source_node_code,node_name:=n.name,node_id:=n.node_id,
+ observed_at:=CAST(m.last_observed_at AS VARCHAR),effective_from:=CAST(m.effective_from AS VARCHAR),
+ ingest_run_id:=m.last_observed_run_id,run_finished_at:=CAST(r.finished_at AS VARCHAR))
+ ORDER BY t.taxonomy_code,n.source_node_code) AS industry_memberships
+ FROM classification.membership m JOIN classification.node n USING(node_id)
+ JOIN classification.taxonomy t USING(taxonomy_id) JOIN meta.ingest_run r ON r.ingest_run_id=m.last_observed_run_id
+ WHERE t.taxonomy_type='industry' AND m.source=t.source AND r.source=m.source
+ AND r.dataset='classification_industry' AND r.status IN ('completed','partial')
+ AND m.last_observed_at<=CAST(? AS TIMESTAMPTZ) AND r.finished_at<=CAST(? AS TIMESTAMPTZ)
+ AND m.effective_from<=CAST(? AS DATE) AND (m.effective_to IS NULL OR m.effective_to>CAST(? AS DATE))
+ GROUP BY m.instrument_id
  ) SELECT CAST(to_json(list(r ORDER BY instrument_id)) AS VARCHAR) FROM (
- SELECT u.*,CAST(l.latest_report_period AS VARCHAR) AS latest_report_period,w.fields
- FROM universe u LEFT JOIN latest l USING(instrument_id) LEFT JOIN windows w USING(instrument_id)) r`,
+ SELECT u.*,CAST(l.latest_report_period AS VARCHAR) AS latest_report_period,w.fields,c.industry_memberships
+ FROM universe u LEFT JOIN latest l USING(instrument_id) LEFT JOIN windows w USING(instrument_id) LEFT JOIN industries c USING(instrument_id)) r`,
 		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"),
-		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof, end, asof, end).Scan(&raw)
+		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof, end, asof, end, asof, asof, asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02")).Scan(&raw)
 	if err != nil {
 		return nil, err
 	}

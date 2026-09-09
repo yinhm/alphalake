@@ -662,3 +662,37 @@ def test_generic_book_dcf_forecast_and_equity_bridge(exports,tmp_path,monkeypatc
         assert client.post('/api/valuation/from-alphalake',json=dict(data=short,policy=automatic)).status_code==422
         distressed=automatic|dict(additional_claims_million_cny=1e9)
         assert client.post('/api/valuation/from-alphalake',json=dict(data=exports['300866'],policy=distressed)).status_code==422
+
+
+def test_batch_industry_rules_gate_age_conflict_and_override(exports,tmp_path,monkeypatch):
+    from datetime import datetime,timedelta
+    from tools.batch_valuate_alphalake import BatchPolicy,run_batch
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    data=exports['300866'];at=datetime.fromisoformat(data['information_as_of'])
+    profile=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_text())
+    profile['nonfinancial_scope_review']='路由规则模拟、安克财务真实标准链；不声称实际行业归属验收'
+    policy=BatchPolicy(policy_version='routing-test-v1',review_note='routing unit check',assignments={},industry_rules=[dict(
+        rule_id='reviewed-node',source='tdx',taxonomy_code='tdx_industry',node_codes=['T010101'],max_age_days=30,review_note='test node only',policy=profile)])
+    member=dict(source='tdx',taxonomy_code='tdx_industry',node_code='T010101',node_id=1,ingest_run_id=1,
+        observed_at=(at-timedelta(hours=1)).isoformat(),run_finished_at=at.isoformat())
+    company=dict(instrument_id=data['facts'][0]['instrument_id'],name='anker',symbols=['sz300866'],
+        financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[member])
+    scan=dict(contract_version='alphalake-readiness-v1',report_period=data['report_period'],information_as_of=data['information_as_of'],
+        universe_scope='test',universe_count=1,companies=[company])
+    calls=[]
+    def export(code):calls.append(code);return exports[code]
+    result=run_batch(scan,policy,export)
+    assert result['companies'][0]['status']=='illustrative_book_equity_scenario'
+    assert result['companies'][0]['policy_route']['classification_evidence']==[member]
+    assert calls==['300866']
+    calls.clear();stale=copy.deepcopy(scan);stale['companies'][0]['industry_memberships'][0]['observed_at']=(at-timedelta(days=31)).isoformat()
+    assert run_batch(stale,policy,export)['companies'][0]['status']=='blocked_no_reviewed_industry_policy'
+    assert not calls
+    ambiguous=policy.model_copy(deep=True);ambiguous.industry_rules.append(policy.industry_rules[0].model_copy(update={'rule_id':'other'}))
+    assert run_batch(scan,ambiguous,export)['companies'][0]['status']=='blocked_ambiguous_industry_policy'
+    assert not calls
+    from tools.batch_valuate_alphalake import Assignment
+    ambiguous.assignments['300866']=Assignment(policy=profile)
+    assert run_batch(scan,ambiguous,export)['companies'][0]['policy_route']=={'kind':'explicit_company_assignment'}
+    broken=copy.deepcopy(scan);broken['companies'][0]['industry_memberships'][0]['observed_at']='bad-date'
+    assert run_batch(broken,policy,export)['companies'][0]['status']=='rejected_industry_evidence'

@@ -172,14 +172,21 @@ func ApplyClassificationSnapshotForRun(
 
 	for key := range current {
 		if _, exists := openMap[key]; exists {
+			if _, err := tx.ExecContext(ctx, `
+				UPDATE classification.membership SET last_observed_at=?, last_observed_run_id=?
+				WHERE instrument_id=? AND node_id=? AND source=? AND effective_to IS NULL
+				AND (last_observed_at IS NULL OR last_observed_at<=?)
+			`, observedAt, ingestRunID, key.instrumentID, key.nodeID, snapshot.Taxonomy.Source, observedAt); err != nil {
+				return result, fmt.Errorf("refresh classification observation: %w", err)
+			}
 			continue
 		}
 		if _, err := tx.ExecContext(ctx, `
 			INSERT INTO classification.membership (
 				instrument_id, node_id, effective_from, effective_to,
-				source, observed_at, ingest_run_id
-			) VALUES (?, ?, ?, NULL, ?, ?, ?)
-		`, key.instrumentID, key.nodeID, snapshotDate, snapshot.Taxonomy.Source, observedAt, ingestRunID); err != nil {
+				source, observed_at, ingest_run_id, last_observed_at, last_observed_run_id
+			) VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?)
+		`, key.instrumentID, key.nodeID, snapshotDate, snapshot.Taxonomy.Source, observedAt, ingestRunID, observedAt, ingestRunID); err != nil {
 			return result, fmt.Errorf("open classification membership: %w", err)
 		}
 		result.Opened++
