@@ -1,0 +1,129 @@
+{
+  "status": "conditional_market_weight_wacc_with_reviewed_proxies",
+  "verification": "independent Decimal formulas against actual database export and HTTP API; not independent re-extraction of every financial amount",
+  "companies": [
+    {
+      "code": "300866",
+      "market_date": "2026-09-08",
+      "common_equity_million_cny": "74353.9784439964000000",
+      "mv_equity": "68633.938842761400300",
+      "mv_debt_total": "3066.9158006750004",
+      "weight_debt": "0.04277376909838201323186740862",
+      "beta_l": "1.235219985253489397744726122",
+      "cost_of_equity": "0.07180850561664655470527849712",
+      "cost_of_debt_pretax": "0.020816000000",
+      "wacc": "0.06944928820014178305987914671",
+      "information_as_of": "2026-09-09T14:16:58.357054Z",
+      "run_id": "a6f7198ad4f3eb14d11fd94f1445167ed5453664594059051568c5f5d512d456",
+      "capital_basis": "market_equity_estimated_debt",
+      "a_close": "127.890000",
+      "h_close": "128.200000",
+      "fx": "0.864820000000",
+      "classes": [
+        {
+          "instrument_id": 45156,
+          "symbol": "sz300866",
+          "shares": "537978302.0000000000",
+          "close": "127.890000",
+          "fx": "1",
+          "value_cny": "68802045042.7800000000000000",
+          "share_age_days": 8
+        },
+        {
+          "instrument_id": 52481,
+          "symbol": "00668",
+          "shares": "50076100.0000000000",
+          "close": "128.200000",
+          "fx": "0.864820000000",
+          "value_cny": "5551933401.216400000000000000",
+          "share_age_days": 8
+        }
+      ],
+      "market_releases": [
+        {
+          "release_id": 5,
+          "source": "issuer_disclosure",
+          "dataset": "reviewed-share-classes-v1/300866",
+          "content_key": "5b2bc0c395c8d9ce39eee427733f2199ca04d99bb9cb7f9cc049aee45135abab",
+          "parser_version": "reviewed-issuer-capital-v1",
+          "normalization_version": "issued-minus-treasury-v1;8e3fe468afad066adc0453f0c9921bdfaa9feba28f7547a49ea3710b37590a37;python=3.12.3;pypdf=6.17.0;pdftotext version 24.02.0",
+          "available_at": "2026-09-09 13:59:56.152164+00",
+          "recorded_at": "2026-09-09 14:15:27.904667+00",
+          "artifact_id": 2,
+          "artifact_sha256": "e3e452aa415ba3044f0e84f7c7d008cb1ee54a304a297c4607e7274f7d6ddfad",
+          "source_url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-09-04/2db3ed6a-0a7e-4f37-82eb-a03ec2045ec8.PDF"
+        },
+        {
+          "release_id": 3,
+          "source": "hkex",
+          "dataset": "anker-unadjusted-close-v1",
+          "content_key": "6d3e5e8b425c45b85e686f6c573b6e9e7bc64a64189be9cd0a05e800c331d313",
+          "parser_version": "hkex-anker-close-v1",
+          "normalization_version": "unadjusted-closing-column-v1;c79fd637ea65f4b84cb00840c27a4a0617c21faae844d0992138da4725550a0a;python=3.12.3;stdlib",
+          "available_at": "2026-09-09 14:02:34.602835+00",
+          "recorded_at": "2026-09-09 14:02:35.007128+00",
+          "artifact_id": 3,
+          "artifact_sha256": "a2ebf76507442cf48d437ba0d07c5c5a17fbaebb086f8bc93c7d0059ce6538eb",
+          "source_url": "https://www.hkex.com.hk/eng/stat/smstat/dayquot/d260908e.htm"
+        },
+        {
+          "release_id": 1,
+          "source": "safe",
+          "dataset": "hkd-cny-central-parity-v1",
+          "content_key": "6db456f9491a18c2595633b00481e79eade10bee090e783d53732000ff407b83",
+          "parser_version": "safe-hkd-cny-v1",
+          "normalization_version": "100-hkd-to-cny-v1;b91133fcedadb794101fc563c6ec1d3e2964bf8338e0009b1318dd48dd50bcc6;python=3.12.3;stdlib-htmlparser",
+          "available_at": "2026-09-09 13:49:50.904659+00",
+          "recorded_at": "2026-09-09 13:49:51.092962+00",
+          "artifact_id": 1,
+          "artifact_sha256": "d1193cbcc6a1c825efe6146434374188ce7b3355a43b416573288101e121e8c0",
+          "source_url": "https://www.safe.gov.cn/AppStructured/hlw/RMBQuery.do"
+        }
+      ]
+    },
+    {
+      "code": "600519",
+      "market_date": "2026-09-08",
+      "common_equity_million_cny": "1636731.840189300000000",
+      "mv_equity": "1520269.552028488423470122409",
+      "mv_debt_total": "243.6848561874999954119066464",
+      "weight_debt": "0.0001602648699637610544138877607",
+      "beta_l": "0.7251315073113490400212122269",
+      "cost_of_equity": "0.05038478954307665968089091353",
+      "cost_of_debt_pretax": "0.020816000000",
+      "wacc": "0.05037921668648226126985525020",
+      "information_as_of": "2026-09-09T14:16:58.357054Z",
+      "run_id": "7fb5523a3a6a32c994462703f4cc3261fe518417d364026677c7235619f2d813",
+      "capital_basis": "market_equity_estimated_debt",
+      "a_close": "1309.300000",
+      "h_close": null,
+      "fx": null,
+      "classes": [
+        {
+          "instrument_id": 25406,
+          "symbol": "sh600519",
+          "shares": "1250081601.0000000000",
+          "close": "1309.300000",
+          "fx": "1",
+          "value_cny": "1636731840189.300000000000000",
+          "share_age_days": 70
+        }
+      ],
+      "market_releases": [
+        {
+          "release_id": 6,
+          "source": "issuer_disclosure",
+          "dataset": "reviewed-share-classes-v1/600519",
+          "content_key": "2443602954b92c27ea164b7c13832f3a97e51a0552153856a31ae4acd77ea1b2",
+          "parser_version": "reviewed-issuer-capital-v1",
+          "normalization_version": "issued-minus-treasury-v1;8e3fe468afad066adc0453f0c9921bdfaa9feba28f7547a49ea3710b37590a37;python=3.12.3;pypdf=6.17.0",
+          "available_at": "2026-09-09 14:03:31.703527+00",
+          "recorded_at": "2026-09-09 14:15:53.521388+00",
+          "artifact_id": 4,
+          "artifact_sha256": "0e10aa26be46b1cf3cd03f06e834c7fb98d5dd0d661b96f8fddd4af7e846a4f6",
+          "source_url": "https://static.cninfo.com.cn/finalpage/2026-08-15/1225475868.PDF"
+        }
+      ]
+    }
+  ]
+}
