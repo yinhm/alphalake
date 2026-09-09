@@ -20,6 +20,8 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return false, nil
 	}
 	switch args[0] {
+	case "sync-industry-beta", "sync-cny-yield":
+		return true, runReferenceSync(ctx, args[0], args[1:])
 	case "sync-country-risk":
 		return true, runCountryRiskSync(ctx, args[1:])
 	case "export-valuation":

@@ -20,3 +20,9 @@ python -m pytest -q tests/test_damodaran_country_snapshot.py
 ```
 
 后两项需要已安装 valuation Python 依赖；CI 在安装后显式运行。Go 集成测试使用 httptest 本地服务提供此完整工作簿，涵盖首次发布、在线重复获取、畸形新文件拒绝及随后离线重放；离线 HTTP 计数不增加，重开数据库后失败运行仍存在。
+
+## 全球行业 Beta
+
+新增完整 `betaGlobal.xls`（82,944 字节），来源 `https://pages.stern.nyu.edu/~adamodar/pc/datasets/betaGlobal.xls`，2026-09-09 获取；SHA-256：`10c33f46df2a35fa7e4e8c4386c01f9da636fc2ab3e1e98307a52a947c9ab52b`。工作表 B1 的基准日为 2026-01-05。
+
+`beta-expected.json` 固定 94 行 × 4 指标，排除两行总市场；`../industries-global-2026.txt` 是生产校验使用的来源行业目录。Python Beta 测试和 `TestBetaYieldRealArchiveReplay` 已入 CI。源值、公式核验边界与使用方法见[接入说明](../../../../docs/beta-yield-sync.md)。
