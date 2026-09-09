@@ -36,7 +36,7 @@ def build():
     disclosure=re.sub(r'\s+','',PdfReader(moutai).pages[90].extract_text())
     assert '不以公允价值计量的金融资产和金融负债的公允价值情况' in disclosure
     assert '租赁负债等，其账面价值与公允价值差异较小。' in disclosure
-    return json.dumps(rows,ensure_ascii=False,indent=2)+'\n' 
+    return json.dumps(rows,ensure_ascii=False,indent=2)+'\n'
 
 
 if __name__=='__main__':

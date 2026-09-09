@@ -3,9 +3,9 @@
   "runs": [
     {
       "name": "anker",
-      "run_id": "bc5ae9a99b1a445ddd2c818ab3339c5d6e5435dad4abc19fa9d50c71e93773bd",
+      "run_id": "619db17a2c18172882510ab8f5a1bd09ffb43dbbec5198247ae60a8c373f72c5",
       "engine_revision": "d3ef6bbc285c811a62735d8ce6490a62377fadf81e7178c17ac57a3698a8c350",
-      "information_as_of": "2026-09-09T14:59:03.849849Z",
+      "information_as_of": "2026-09-09T15:02:34.801603Z",
       "market_releases": [
         {
           "release_id": 5,
@@ -140,9 +140,9 @@
     },
     {
       "name": "anker-funding",
-      "run_id": "df14fb9899b9746d680aac957a3f1902d9479b4d1dc265ad20746527090564bb",
+      "run_id": "39172b2bcf35665d93d588bb13f019a3b3a3f97dcc44341eb0b978aa9e8c303d",
       "engine_revision": "d3ef6bbc285c811a62735d8ce6490a62377fadf81e7178c17ac57a3698a8c350",
-      "information_as_of": "2026-09-09T14:59:03.849849Z",
+      "information_as_of": "2026-09-09T15:02:34.801603Z",
       "market_releases": [
         {
           "release_id": 5,
@@ -184,27 +184,27 @@
           "source_url": "https://www.safe.gov.cn/AppStructured/hlw/RMBQuery.do"
         },
         {
-          "release_id": 7,
+          "release_id": 9,
           "source": "issuer_disclosure",
           "dataset": "reviewed-equity-proceeds-v1/ipo",
-          "content_key": "bbc705b2e469e32c99d4d4c6e09f5b134dd84a81c6006f603bbfbedf23f5ff2c",
+          "content_key": "76647112b54624ba64644449b9a2cf9cd3665aadd5ad07e8d8f804fdd25e6179",
           "parser_version": "reviewed-proceeds-v1",
-          "normalization_version": "issuer-estimated-net-proceeds-v1;b20f0ebc0072e3aef119ed79ae3f464bd0921fda541503ee0acbbdc3eabde855;pypdf/6.17.0",
+          "normalization_version": "issuer-estimated-net-proceeds-v1;bbf934f00c1a789b701d3aa80eca40661ef2820a7604c2018a55079aaa10b7fc;pypdf/6.17.0",
           "available_at": "2026-09-09 14:58:14.581247+00",
-          "recorded_at": "2026-09-09 14:58:14.836756+00",
+          "recorded_at": "2026-09-09 15:02:21.13562+00",
           "artifact_id": 5,
           "artifact_sha256": "5d156f26262d754d4278c9a8cbd3b9b5df81c9c43d3ac07359e9621a49069bc5",
           "source_url": "https://static.cninfo.com.cn/finalpage/2026-07-02/1225406962.PDF"
         },
         {
-          "release_id": 8,
+          "release_id": 10,
           "source": "issuer_disclosure",
           "dataset": "reviewed-equity-proceeds-v1/greenshoe",
-          "content_key": "eced0a2b7cde736e4ccbbee63c3ee5d965278379d6aad72d04dcedf6cc5265b4",
+          "content_key": "53eb619bcf650e29767c4e16b587b77aed71c067165190f4a77739e7781298eb",
           "parser_version": "reviewed-proceeds-v1",
-          "normalization_version": "issuer-estimated-net-proceeds-v1;b20f0ebc0072e3aef119ed79ae3f464bd0921fda541503ee0acbbdc3eabde855;pypdf/6.17.0",
+          "normalization_version": "issuer-estimated-net-proceeds-v1;bbf934f00c1a789b701d3aa80eca40661ef2820a7604c2018a55079aaa10b7fc;pypdf/6.17.0",
           "available_at": "2026-09-09 14:58:15.753871+00",
-          "recorded_at": "2026-09-09 14:58:16.000918+00",
+          "recorded_at": "2026-09-09 15:02:21.557078+00",
           "artifact_id": 6,
           "artifact_sha256": "3c5e19932ae266dae0b003b6029b10d0d38787eadc7cd4a1c206f4820bf6ad7f",
           "source_url": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-07-27/10d2e333-09f5-4b03-a51d-0f043257edff.PDF"
@@ -318,9 +318,9 @@
     },
     {
       "name": "moutai",
-      "run_id": "115ea420be078b776e350bf99025edefad91f8bad9e83f87014ac74e63bbec17",
+      "run_id": "a46c15a0551d74a5d9409af6f9f80e86ca533abc38b67da3bfec8d5d76b8aaff",
       "engine_revision": "d3ef6bbc285c811a62735d8ce6490a62377fadf81e7178c17ac57a3698a8c350",
-      "information_as_of": "2026-09-09T14:59:03.849849Z",
+      "information_as_of": "2026-09-09T15:02:34.801603Z",
       "market_releases": [
         {
           "release_id": 6,

@@ -22,7 +22,7 @@ def parse(path):
         amounts=re.findall(r'净额估计约为([\d.]+)亿港元',text)
         if len(shares)!=1 or len(amounts)!=1: raise ValueError('ambiguous IPO cells')
         shares=shares[0].replace(',','');value=str(int(Decimal(amounts[0])*100000000))
-        url='https://static.cninfo.com.cn/finalpage/2026-07-02/1225406962.PDF' 
+        url='https://static.cninfo.com.cn/finalpage/2026-07-02/1225406962.PDF'
     elif len(pages)==3 and '关于部分行使超额配股权、稳定价格行动及稳定价格期结束的公告' in text:
         if not all(x in text for x in ['3,443,300股','99.32港元','净额约337.86百万港元','预估承销费用','2026年7月29日','50,076,100']):
             raise ValueError('over-allotment terms changed')
@@ -31,7 +31,7 @@ def parse(path):
         amounts=re.findall(r'净额约([\d.]+)百万港元',text)
         if len(shares)!=2 or len(set(shares))!=1 or len(amounts)!=1: raise ValueError('ambiguous over-allotment cells')
         shares=shares[0].replace(',','');value=str(int(Decimal(amounts[0])*1000000))
-        url='https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-07-27/10d2e333-09f5-4b03-a51d-0f043257edff.PDF' 
+        url='https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-07-27/10d2e333-09f5-4b03-a51d-0f043257edff.PDF'
     else: raise ValueError('unreviewed financing document')
     return dict(contract='alphalake-equity-proceeds-v1',observation_date=day,sha256=hashlib.sha256(body).hexdigest(),
         parser_version='reviewed-proceeds-v1',runtime='pypdf/'+pypdf.__version__,url=url,

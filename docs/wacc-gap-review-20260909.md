@@ -73,7 +73,7 @@
 
 六月末发行费用资产41,461,101.58元、发行费用应付款14,743,520.00元同步从已审核附注消费。尚不清楚公告净额与这两项的现金结算/抵扣重叠，不能自动相加冲回。政策须明确 `retain_financial_date_claims_sensitivity_only`：保留原财务日分类，只测公告净额现金敏感性，审计标记费用重叠未解决，**不声称这是期后会计现金滚动**。0%、50%、100%留存均是情景，未赋发生概率。
 
-生产实测在隔离副本 `workspace/wacc-gaps-20260909/market-final.duckdb` 完成两次远程采集、发布7/8及离线重放零新增；原市场库未改写。财务副本 `financial.duckdb` 导入24项附注，重放0新增。实际CLI导出调用本地HTTP服务，三组请求重放逐字节一致；[验收摘要](../valuation/examples/wacc/gap-acceptance-20260909.json)保存截止、发布血缘与运行ID。实际报价仍来自上轮TDX/HKEX采集，不声称本轮重新抓取A/H行情。
+生产实测在隔离副本 `workspace/wacc-gaps-20260909/market-final.duckdb` 完成两次远程采集；最终解析器发布9/10，随后离线重放零新增（7/8保留为格式清理前的解析版本）；原市场库未改写。财务副本 `financial.duckdb` 导入24项附注，重放0新增。实际CLI导出调用本地HTTP服务，三组请求重放逐字节一致；[验收摘要](../valuation/examples/wacc/gap-acceptance-20260909.json)保存截止、发布血缘与运行ID。实际报价仍来自上轮TDX/HKEX采集，不声称本轮重新抓取A/H行情。
 
 | 选择 | WACC |
 | --- | ---: |
