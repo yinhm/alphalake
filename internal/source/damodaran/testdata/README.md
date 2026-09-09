@@ -26,3 +26,7 @@ python -m pytest -q tests/test_damodaran_country_snapshot.py
 新增完整 `betaGlobal.xls`（82,944 字节），来源 `https://pages.stern.nyu.edu/~adamodar/pc/datasets/betaGlobal.xls`，2026-09-09 获取；SHA-256：`10c33f46df2a35fa7e4e8c4386c01f9da636fc2ab3e1e98307a52a947c9ab52b`。工作表 B1 的基准日为 2026-01-05。
 
 `beta-expected.json` 固定 94 行 × 4 指标，排除两行总市场；`../industries-global-2026.txt` 是生产校验使用的来源行业目录。Python Beta 测试和 `TestBetaYieldRealArchiveReplay` 已入 CI。源值、公式核验边界与使用方法见[接入说明](../../../../docs/beta-yield-sync.md)。
+
+## 合成评级利差
+
+`ratings.html` 是 2026-09-09 获取的 NYU Stern 官方原页面，`ratings-expected.json` 固定左侧 15 档解析输出；`runtime` 仅为生成预期时的环境。来源、哈希、月份精度和开闭区间边界见 [接入说明](../../../../docs/credit-spread-sync.md)。
