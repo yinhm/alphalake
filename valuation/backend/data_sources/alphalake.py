@@ -111,11 +111,6 @@ def build_inputs(request: AlphaLakeRequest):
     p = dict(policy.parameters)
     reference_components = None
     reference_audit = None
-    if request.wacc_binding is not None:
-        reference_components, reference_audit = resolve_wacc(request.wacc_binding, d.code, d.report_period, d.information_as_of)
-        p['wacc'] = reference_audit['result']['wacc']
-        if p['wacc'] <= p['terminal_growth']:
-            raise ValueError('reference WACC must exceed terminal growth')
     end = d.report_period.isoformat()
     prior = d.report_period.replace(year=d.report_period.year-1).isoformat()
     annual = f'{d.report_period.year-1}-12-31'
@@ -262,6 +257,11 @@ def build_inputs(request: AlphaLakeRequest):
         bridge = EquityBridgeInputs(policy_id=policy.policy_id,components=components,operating_ownership=ownership,
             shares=shares,conversion_release=0,conversion_shares=0)
         raw = RawFinancials(fiscal_year=d.report_period.year,revenues=revenue,ebit=ebit,shares_outstanding=shares)
+    if request.wacc_binding is not None:
+        reference_components, reference_audit = resolve_wacc(request.wacc_binding, d.code, d.report_period, d.information_as_of, ebit=ebit, interest=w['FN305'])
+        p['wacc'] = reference_audit['result']['wacc']
+        if p['wacc'] <= p['terminal_growth']:
+            raise ValueError('reference WACC must exceed terminal growth')
     assumptions = ValuationAssumptions(projection_years=10,high_growth_years=5,revenue_growth_next_year=p['growth'],revenue_growth_years_2_5=p['growth'],
         operating_margin_next_year=ebit/revenue,target_operating_margin=p['margin'],margin_convergence_year=5,
         sales_to_capital_high=p['sales_to_capital'],sales_to_capital_stable=p['sales_to_capital'],override_reinvestment_lag=True,

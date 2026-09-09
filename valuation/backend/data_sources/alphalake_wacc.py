@@ -26,6 +26,15 @@ class CountryWeight(Strict):
     reason: str = Field(min_length=1)
 
 
+class SyntheticDebtPolicy(Strict):
+    firm_type: Literal['large_nonfinancial']
+    coverage_basis: Literal['policy_operating_ebit_over_tdx_gross_interest']
+    applicability_reason: str = Field(min_length=1)
+    sovereign_spread_policy: Literal['add_cn_default_spread', 'none']
+    sovereign_spread_reason: str = Field(min_length=1)
+    max_credit_age_days: int = Field(ge=0)
+
+
 class WACCPolicy(Strict):
     policy_id: str = Field(min_length=1)
     code: Literal['300866', '600519']
@@ -44,7 +53,8 @@ class WACCPolicy(Strict):
     capital_structure_basis: Literal['target_weights']
     target_debt_weight: float = Field(ge=0, lt=1)
     capital_structure_reason: str = Field(min_length=1)
-    debt_cost_pretax: float = Field(ge=0, lt=1)
+    debt_cost_pretax: float | None = Field(default=None, ge=0, lt=1)
+    synthetic_debt: SyntheticDebtPolicy | None = None
     debt_cost_reason: str = Field(min_length=1)
     tax_shield_rate: float = Field(ge=0, le=1)
     tax_shield_reason: str = Field(min_length=1)
@@ -55,6 +65,8 @@ class WACCPolicy(Strict):
 
     @model_validator(mode='after')
     def weights(self):
+        if (self.synthetic_debt is None) == (self.debt_cost_pretax is None):
+            raise ValueError("exactly one explicit or synthetic debt cost required")
         for rows, key in [(self.industries, 'industry'), (self.countries, 'country')]:
             if len({getattr(r, key) for r in rows}) != len(rows) or abs(sum(r.weight for r in rows)-1) > 1e-9:
                 raise ValueError('unique explicit weights summing to one required')
@@ -62,13 +74,14 @@ class WACCPolicy(Strict):
 
 
 class ReferenceSnapshot(Strict):
-    contract_version: Literal['alphalake-wacc-references-v1']
+    contract_version: Literal['alphalake-wacc-references-v1', 'alphalake-wacc-references-v2']
     information_as_of: datetime
     recorded_cutoff: datetime | None
     releases: list[dict]
     country_risk: list[dict]
     industry_stats: list[dict]
     yield_curve: list[dict]
+    credit_spreads: list[dict] = Field(default_factory=list)
 
     @model_validator(mode='after')
     def validate_packet(self):
@@ -85,11 +98,14 @@ class ReferenceSnapshot(Strict):
             if any(type(release[k]) is not int or release[k] <= 0 for k in ('release_id', 'artifact_id')):
                 raise ValueError('positive integer reference IDs required')
         releases = {r['release_id']: r for r in self.releases}
-        if len(releases) != 3 or len(self.releases) != 3:
-            raise ValueError('three distinct reference releases required')
+        count = 4 if self.contract_version.endswith("v2") else 3
+        if (count == 3 and self.credit_spreads) or len(releases) != count or len(self.releases) != count:
+            raise ValueError('reference release count does not match contract version')
         expected = [('country_risk', 'damodaran', 'country-risk-cn-hk-us-rating-v1', 10),
                     ('industry_stats', 'damodaran', 'global-industry-beta-2026-v1', 376),
                     ('yield_curve', 'chinabond', 'cny-government-eight-tenors-v1', 8)]
+        if count == 4:
+            expected.append(('credit_spreads', 'damodaran', 'synthetic-credit-large-2026-v1', 15))
         for field, source, dataset, count in expected:
             rows = getattr(self, field)
             selected = [r for r in self.releases if (r['source'], r['dataset']) == (source, dataset)]
@@ -113,10 +129,23 @@ class ReferenceSnapshot(Strict):
                 if not isinstance(r['value'], str) or not re.fullmatch(r'-?\d+\.\d{12}', r['value']):
                     raise ValueError('canonical decimal reference value required')
                 value, raw = Decimal(r['value']), Decimal(r['raw_value'])
-                if not raw.is_finite() or abs(raw/(100 if field == 'yield_curve' else 1)-value) > Decimal('0.0000000000005'):
+                if not raw.is_finite() or abs(raw/(100 if field in ('yield_curve', 'credit_spreads') else 1)-value) > Decimal('0.0000000000005'):
                     raise ValueError('reference raw/standard mismatch')
-                if field != 'yield_curve' and r['value_status'] != 'reported':
+                if field == 'credit_spreads':
+                    lo, hi = Decimal(r['coverage_lower']), Decimal(r['coverage_upper'])
+                    if (not lo.is_finite() or not hi.is_finite() or lo >= hi or lo != Decimal(r['raw_lower']) or hi != Decimal(r['raw_upper'])
+                            or r['observation_precision'] != 'month' or r['observation_date'] != '2026-01-01'
+                            or r['firm_type'] != 'large_nonfinancial' or r['method_code'] != 'us_synthetic_rating_source_open_closed'
+                            or r['raw_unit'] != 'percent' or not 0 <= value < 1):
+                        raise ValueError('invalid credit band semantics')
+                if field in ('country_risk', 'industry_stats') and r['value_status'] != 'reported':
                     raise ValueError('missing reference value')
+        if self.credit_spreads:
+            ordered = sorted(self.credit_spreads,key=lambda r: Decimal(r['coverage_lower']))
+            ratings = ['D2/D','C2/C','Ca2/CC','Caa/CCC','B3/B-','B2/B','B1/B+','Ba2/BB','Ba1/BB+','Baa2/BBB','A3/A-','A2/A','A1/A+','Aa2/AA','Aaa/AAA']
+            if ([r['rating'] for r in ordered] != ratings or
+                    any(Decimal(a['coverage_upper']) >= Decimal(b['coverage_lower']) for a,b in zip(ordered,ordered[1:]))):
+                raise ValueError('credit rating scope/overlap mismatch')
         return self
 
 
@@ -125,7 +154,7 @@ class WACCBinding(Strict):
     policy: WACCPolicy
 
 
-def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_of: datetime):
+def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_of: datetime, *, ebit: float | None = None, interest: float | None = None):
     s, p = binding.references, binding.policy
     expected_scope = 'consolidated' if code == '300866' else 'liquor_proxy'
     if p.code != code or p.report_period != period or p.scope != expected_scope or s.information_as_of != information_as_of:
@@ -167,12 +196,33 @@ def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_o
         _, value = select(s.country_risk, p.max_country_age_days, subject_code=exposure.country, subject_kind='country',
                           metric_code='country_risk_premium', method_code='rating', raw_unit='fraction')
         country += exposure.weight * exposure.exposure_scale * value
+    debt_audit = None
+    kd = p.debt_cost_pretax
+    if p.synthetic_debt is not None:
+        sp = p.synthetic_debt
+        # 茅台酒类分子与合并利息分母尚不具备同范围证据，不能套用。
+        if code != '300866' or ebit is None or interest is None or interest <= 0:
+            raise ValueError('synthetic debt requires approved consolidated EBIT and positive gross interest')
+        coverage = Decimal(str(ebit)) / Decimal(str(interest))
+        matches = [r for r in s.credit_spreads if Decimal(r['coverage_lower']) < coverage <= Decimal(r['coverage_upper'])]
+        if len(matches) != 1:
+            raise ValueError('coverage outside source bands or in source gap')
+        band, credit = select(s.credit_spreads, sp.max_credit_age_days, observation_id=matches[0]['observation_id'])
+        sovereign = 0.0
+        if sp.sovereign_spread_policy == 'add_cn_default_spread':
+            _, sovereign = select(s.country_risk, p.max_country_age_days, subject_code='CN', subject_kind='country',
+                metric_code='sovereign_default_spread', method_code='rating', raw_unit='fraction')
+        kd = government - spread + credit + sovereign
+        debt_audit = dict(status='synthetic_estimate_not_observed_rating', ebit_million_cny=ebit,
+            gross_interest_million_cny=interest, coverage_ratio=str(coverage), rating=band['rating'],
+            corporate_default_spread=credit, sovereign_spread_added=sovereign, debt_cost_pretax=kd,
+            financial_basis='same TTM policy operating EBIT and TDX FN305 gross interest; see consumed_inputs')
     components = ReferenceCapitalInputs(risk_free_rate=government-spread, beta_u=beta, mature_market_erp=mature,
         country_risk_contribution=country, debt_weight=p.target_debt_weight, tax_shield_rate=p.tax_shield_rate,
-        debt_cost_pretax=p.debt_cost_pretax)
+        debt_cost_pretax=kd, debt_cost_basis="synthetic_reference" if debt_audit else "explicit_policy")
     result = compute_reference_cost_of_capital(components)
     return components, dict(policy=p.model_dump(mode='json'), selected_observations=used,
-        government_yield=government, sovereign_default_spread_adjustment=spread,
+        synthetic_debt=debt_audit, government_yield=government, sovereign_default_spread_adjustment=spread,
         result=result.model_dump(mode='json'), boundaries=['explicit target weights, not observed market capital structure',
         'industry and country weights are analyst policy', 'constant WACC including terminal period',
         'reference packet provenance is validated structurally; not a cryptographic signature of the database'])

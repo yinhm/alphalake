@@ -8,6 +8,7 @@ All rates/ratios are decimal (0.05 = 5%). All monetary values in reporting curre
 from __future__ import annotations
 
 from datetime import date, datetime
+from typing import Literal
 import math
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -298,6 +299,7 @@ class ReferenceCapitalInputs(BaseModel):
     debt_weight: float = Field(ge=0, lt=1)
     tax_shield_rate: float = Field(ge=0, le=1)
     debt_cost_pretax: float = Field(ge=0, lt=1)
+    debt_cost_basis: Literal["explicit_policy", "synthetic_reference"] = "explicit_policy"
 
 
 class MethodologyChoices(BaseModel):

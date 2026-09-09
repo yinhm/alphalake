@@ -199,7 +199,7 @@ def compute_reference_cost_of_capital(c: ReferenceCapitalInputs, shift_bps: floa
         raise ValueError('invalid reference-derived WACC')
     return CostOfCapital(approach_used='reference_snapshot', capital_structure_basis='target_weights',
         beta_branch_used='explicit_weighted_industries', erp_branch_used='beta_mature_plus_country',
-        kd_branch_used='explicit_policy', beta_u=c.beta_u, beta_l=beta_l, d_e_ratio=de,
+        kd_branch_used=c.debt_cost_basis, beta_u=c.beta_u, beta_l=beta_l, d_e_ratio=de,
         mv_straight_debt=None, mv_convertible_straight_part=None, equity_in_convertible=None,
         mv_leases=None, mv_debt_total=None, mv_equity=None, mv_preferred=None, total_capital=None, book_debt=None,
         risk_free_rate=c.risk_free_rate, equity_risk_premium=c.mature_market_erp,

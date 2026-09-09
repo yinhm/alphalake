@@ -188,7 +188,7 @@ def reference_export(tmp_path_factory):
     env = os.environ | {'ALPHALAKE_WACC_EXPORT_DIR':str(output),'GOPROXY':'off','GOSUMDB':'off'}
     subprocess.run(['go','test','./internal/ingest','-run','^TestWACCReferenceExport$','-count=1'],
                    cwd=REPO,env=env,check=True,capture_output=True,text=True)
-    return json.loads((output/'references.json').read_text())
+    return json.loads((output/'credit-references.json').read_text())
 
 
 def reference_request(exports, reference_export, company):
@@ -262,3 +262,60 @@ def test_reference_wacc_rejects_invalid_policy_and_snapshot(exports,reference_ex
         response=client.post('/api/valuation/from-alphalake',json=req)
         assert response.status_code==422,response.text
     assert not list(tmp_path.glob('*.json'))
+
+
+def test_synthetic_debt_through_standard_financial_chain(exports,reference_export,tmp_path,monkeypatch):
+    from decimal import Decimal as D
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    req = reference_request(exports,reference_export,'anker')
+    p = req['wacc_binding']['policy']
+    p.pop('debt_cost_pretax')
+    p['synthetic_debt'] = dict(firm_type='large_nonfinancial',coverage_basis='policy_operating_ebit_over_tdx_gross_interest',
+        applicability_reason='explicit US large firm proxy for this reviewed consolidated sample',
+        sovereign_spread_policy='add_cn_default_spread',sovereign_spread_reason='explicit country borrowing overlay',max_credit_age_days=370)
+    with TestClient(app) as client:
+        response=client.post('/api/valuation/from-alphalake',json=req)
+        assert response.status_code==200,response.text
+        r=response.json(); a=r['audit']['wacc_reference']['synthetic_debt']
+        ebit=r['inputs']['prepared_ttm']['financials']['ebit']
+        interest=next(D(w['value'])/D(1000000) for w in req['data']['windows'] if w['field']=='FN305')
+        near(float(a['coverage_ratio']),float(D(str(ebit))/interest))
+        assert a['rating']=='Aaa/AAA'
+        # In this explicit policy RF deducts, then Kd adds the same country spread.
+        government=next(D(w['value']) for w in reference_export['yield_curve'] if w['tenor_months']==120)
+        near(a['debt_cost_pretax'],float(government+D('.004')))
+        near(r['report']['cost_of_capital']['cost_of_debt_pretax'],a['debt_cost_pretax'])
+        assert client.post('/api/valuation/from-alphalake',json=req).json()==r
+        for mode in ['dual','missing_table','stale','wrong_scope']:
+            bad=copy.deepcopy(req)
+            if mode=='dual':bad['wacc_binding']['policy']['debt_cost_pretax']=.03
+            elif mode=='missing_table':bad['wacc_binding']['references']['credit_spreads']=[]
+            elif mode=='stale':bad['wacc_binding']['policy']['synthetic_debt']['max_credit_age_days']=1
+            else:
+                bad=reference_request(exports,reference_export,'moutai')
+                bad['wacc_binding']['policy'].pop('debt_cost_pretax')
+                bad['wacc_binding']['policy']['synthetic_debt']=p['synthetic_debt']
+            assert client.post('/api/valuation/from-alphalake',json=bad).status_code==422
+    assert len(list(tmp_path.glob('*.json')))==1
+
+
+def test_synthetic_credit_source_boundaries(exports,reference_export):
+    from data_sources.alphalake_wacc import WACCBinding, resolve_wacc
+    from datetime import datetime, date
+    req=reference_request(exports,reference_export,'anker')
+    p=req['wacc_binding']['policy'];p.pop('debt_cost_pretax')
+    p['synthetic_debt']=dict(firm_type='large_nonfinancial',coverage_basis='policy_operating_ebit_over_tdx_gross_interest',
+        applicability_reason='boundary test',sovereign_spread_policy='none',sovereign_spread_reason='test',max_credit_age_days=370)
+    binding=WACCBinding.model_validate(req['wacc_binding'])
+    for ebit,interest in [(.2,1),(.1999995,1),(100001,1),(1,0),(1,-1)]:
+        with pytest.raises(ValueError):resolve_wacc(binding,'300866',date(2026,6,30),binding.references.information_as_of,ebit=ebit,interest=interest)
+    _,audit=resolve_wacc(binding,'300866',date(2026,6,30),binding.references.information_as_of,ebit=.199999,interest=1)
+    assert audit['synthetic_debt']['rating']=='D2/D'
+
+
+def test_v1_reference_packet_still_supported(exports,reference_export):
+    req=reference_request(exports,reference_export,'anker')
+    s=req['wacc_binding']['references'];s['contract_version']='alphalake-wacc-references-v1';s.pop('credit_spreads')
+    s['releases']=[r for r in s['releases'] if r['dataset']!='synthetic-credit-large-2026-v1']
+    inputs,_=build_inputs(AlphaLakeRequest.model_validate(req))
+    assert inputs.methodology_choices.cost_of_capital_approach=='reference_snapshot'
