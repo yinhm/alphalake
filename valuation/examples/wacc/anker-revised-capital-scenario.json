@@ -1,0 +1,72 @@
+{
+  "policy_id": "anker-consolidated-v2",
+  "approved_report_period": "2026-06-30",
+  "scenario": "revised-research-disclosed-share-cash-scenario",
+  "review_note": "使用2026-09-07假设研究第七节已重算的十年路径；增长是分品类分析假设，不是已实现收入。末年利润率/税率延续至终值；少数权益按15倍TTM损益情景。先保留六月末证券及财务桥接，便于复现153.50元研究中心。 本版本重新计算市场WACC，债务现值上界同时用于资本权重与股权扣减，转股释放额同步切为债券现金流现值；尚非当前目标价。",
+  "parameters": {
+    "terminal_growth": 0.02,
+    "terminal_roic": 0.1,
+    "operating_cash_ratio": 0.03,
+    "sales_to_capital": 3.0,
+    "investment_recovery": 0.75,
+    "cash_other_recovery": 0.5,
+    "debt_multiple": 1.0,
+    "extra_dilution_rate": 0.01,
+    "minority_earnings_multiple": 15
+  },
+  "debt_basis": "wacc_estimate",
+  "annual_forecast": [
+    {
+      "growth": 0.252567555620622,
+      "margin": 0.085,
+      "tax": 0.2
+    },
+    {
+      "growth": 0.20981036668203912,
+      "margin": 0.09,
+      "tax": 0.2
+    },
+    {
+      "growth": 0.18404630367316807,
+      "margin": 0.095,
+      "tax": 0.21
+    },
+    {
+      "growth": 0.1537248963450736,
+      "margin": 0.1,
+      "tax": 0.21
+    },
+    {
+      "growth": 0.12596107808559612,
+      "margin": 0.1,
+      "tax": 0.22
+    },
+    {
+      "growth": 0.1047688624684769,
+      "margin": 0.1,
+      "tax": 0.22
+    },
+    {
+      "growth": 0.08357664685135767,
+      "margin": 0.1,
+      "tax": 0.22
+    },
+    {
+      "growth": 0.062384431234238445,
+      "margin": 0.1,
+      "tax": 0.22
+    },
+    {
+      "growth": 0.04119221561711922,
+      "margin": 0.1,
+      "tax": 0.22
+    },
+    {
+      "growth": 0.02,
+      "margin": 0.1,
+      "tax": 0.22
+    }
+  ],
+  "capital_basis": "disclosed_share_scenario",
+  "capital_carry_reason": "类别股数取2026-08-31披露，现金只按明确募资留存情景增加。其他余额及转债剩余面值、转股价仍沿用六月末附注；不是已更新的转债条款，会错计期后转股的边际摊薄，不能当精确当前价格。保留1%奖励压力，未声称期权公允价值或已排除所有奖励重叠。 预测仍从六月末起算，未作七月至九月短期间滚动。"
+}

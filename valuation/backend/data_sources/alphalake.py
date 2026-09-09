@@ -10,7 +10,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from data_sources.alphalake_wacc import WACCBinding, resolve_wacc
 from engine.data_dictionary import (CompanyValuationInput, PreparedTTM, RawFinancials,
-    MacroInputs, IndustryData, MethodologyChoices, ValuationAssumptions, EquityBridgeInputs)
+    MacroInputs, IndustryData, MethodologyChoices, ValuationAssumptions, EquityBridgeInputs, ForecastYear)
 
 
 class Snapshot(BaseModel):
@@ -50,11 +50,15 @@ class Snapshot(BaseModel):
 
 class Policy(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    policy_id: Literal['anker-consolidated-v1', 'moutai-liquor-proxy-v1']
+    policy_id: Literal['anker-consolidated-v1', 'anker-consolidated-v2', 'moutai-liquor-proxy-v1']
     approved_report_period: date
     scenario: str = Field(min_length=1)
     review_note: str = Field(min_length=1)
     parameters: dict[str, float]
+    annual_forecast: list[ForecastYear] | None = None
+    debt_basis: Literal['financial_book','wacc_estimate'] = 'financial_book'
+    capital_basis: Literal['financial_date','disclosed_share_scenario'] = 'financial_date'
+    capital_carry_reason: str | None = Field(default=None,min_length=1)
 
     @model_validator(mode='after')
     def validate_parameters(self):
@@ -63,16 +67,28 @@ class Policy(BaseModel):
         extra = ({'investment_recovery', 'cash_other_recovery', 'minority_multiple', 'debt_multiple', 'extra_dilution_rate'}
                  if self.policy_id.startswith('anker') else
                  {'financial_asset_recovery', 'risk_asset_recovery', 'finance_pb', 'minority_scale', 'finance_ownership'})
+        revised = self.policy_id == 'anker-consolidated-v2'
+        if revised:
+            if self.annual_forecast is None or len(self.annual_forecast)!=10:
+                raise ValueError('revised Anker policy requires all ten forecast years')
+            common -= {'growth','margin','tax_start','tax_terminal'}
+            extra = (extra-{'minority_multiple'})|{'minority_earnings_multiple'}
+        elif self.annual_forecast is not None or self.debt_basis!='financial_book' or self.capital_basis!='financial_date' or self.capital_carry_reason is not None:
+            raise ValueError('versioned revised policy required for forecast/debt changes')
+        if (self.capital_basis=='disclosed_share_scenario')!=(self.capital_carry_reason is not None):
+            raise ValueError('disclosed-share scenario requires explicit financial/conversion carry reason')
         p = self.parameters
         if set(p) not in (common | extra, common | extra | {'wacc'}) or not all(math.isfinite(v) for v in p.values()):
             raise ValueError('policy requires exactly the explicit finite parameters')
         if not (0 <= p['terminal_growth'] < p['terminal_roic'] <= 1) or ('wacc' in p and not p['terminal_growth'] < p['wacc'] < 1):
             raise ValueError('invalid terminal growth/WACC/ROIC')
-        for key in ['margin', 'tax_start', 'tax_terminal', 'operating_cash_ratio']:
+        for key in (['operating_cash_ratio'] if revised else ['margin', 'tax_start', 'tax_terminal', 'operating_cash_ratio']):
             if not 0 <= p[key] <= 1:
                 raise ValueError('invalid policy ratio: '+key)
-        if not -1 < p['growth'] <= 1 or p['sales_to_capital'] <= 0:
+        if (not revised and not -1 < p['growth'] <= 1) or p['sales_to_capital'] <= 0:
             raise ValueError('invalid growth or sales-to-capital')
+        if self.debt_basis=='wacc_estimate' and p['debt_multiple']!=1:
+            raise ValueError('estimated debt cannot also receive a book multiplier')
         for key in extra:
             if p[key] < 0 or (('recovery' in key or key == 'finance_ownership') and p[key] > 1):
                 raise ValueError('invalid bridge parameter: '+key)
@@ -105,10 +121,14 @@ def content_hash(value):
 
 def build_inputs(request: AlphaLakeRequest):
     d, policy = request.data, request.policy
-    anker = policy.policy_id == 'anker-consolidated-v1'
+    anker = policy.policy_id.startswith('anker-')
+    revised = policy.policy_id == 'anker-consolidated-v2'
     if d.code != ('300866' if anker else '600519') or policy.approved_report_period != d.report_period:
         raise ValueError('policy is not approved for this security/report period')
     p = dict(policy.parameters)
+    if revised:
+        first,last=policy.annual_forecast[0],policy.annual_forecast[-1]
+        p.update(growth=first.growth,margin=last.margin,tax_start=first.tax,tax_terminal=last.tax)
     reference_components = None
     reference_audit = None
     end = d.report_period.isoformat()
@@ -203,6 +223,7 @@ def build_inputs(request: AlphaLakeRequest):
     required_windows = ('FN230 FN86 FN305 FN306 FN83 FN82 FN301 FN238 '+
         ('FN136 FN137 FN138 FN579 FN581 FN8 FN133 FN25 FN69 FN41 FN55 FN56 FN439 FN59 FN299 FN72' if anker else
          'FN506 FN509 FN510 FN520 FN97 FN8 FN403 FN409 FN19 FN411 FN430 FN431 FN433 FN25 FN413 FN52 FN439')).split()
+    if revised: required_windows.append('FN97')
     missing = ['TDX/'+f for f in required_windows if f not in windows or windows[f].get('coverage_status') != 'complete' or windows[f].get('value') is None]
     end_notes = ('extra_restricted_cash extra_current_financial_debt extra_noncurrent_financial_debt deposits extra_current_financial_equity extra_noncurrent_financial_equity loan_receivable loan_allowance income_tax_payable repurchase_payable capex_payable ipo_payable current_loans current_bonds current_leases convertible_face extra_conversion_price'.split()
                  if anker else ['finance_equity','income_tax_payable'])
@@ -227,8 +248,10 @@ def build_inputs(request: AlphaLakeRequest):
         convertible = w['FN56']+note('current_bonds')
         debt = w['FN41']+w['FN55']+w['FN56']+w['FN439']+sum(note(k) for k in ['current_loans','current_bonds','current_leases'])
         claims = sum(note(k) for k in ['income_tax_payable','repurchase_payable','capex_payable','ipo_payable'])+w['FN59']
+        minority_claim = w['FN97']*p['minority_earnings_multiple'] if revised else w['FN69']*p['minority_multiple']
+        if minority_claim<0: raise ValueError('negative minority earnings cannot value the claim with this policy')
         components = dict(excess_cash=excess,financial_assets_after_haircut=investments+risky*p['investment_recovery'],
-            debt_claim_proxy=-debt*p['debt_multiple'],minority_claim_proxy=-w['FN69']*p['minority_multiple'],
+            debt_claim_proxy=-debt*p['debt_multiple'],minority_claim_proxy=-minority_claim,
             convertible_option_book_proxy=-w['FN299'],existing_other_claims=-claims)
         conversion_price, face = note('extra_conversion_price'), note('convertible_face')
         if conversion_price <= 0 or face <= 0:
@@ -262,7 +285,32 @@ def build_inputs(request: AlphaLakeRequest):
         p['wacc'] = reference_audit['result']['wacc']
         if p['wacc'] <= p['terminal_growth']:
             raise ValueError('reference WACC must exceed terminal growth')
-    assumptions = ValuationAssumptions(projection_years=10,high_growth_years=5,revenue_growth_next_year=p['growth'],revenue_growth_years_2_5=p['growth'],
+    if policy.debt_basis=='wacc_estimate':
+        market = reference_audit.get('market_capital') if reference_audit else None
+        debt_value = market.get('debt_valuation') if market else None
+        if not debt_value or debt_value['selected_bound']!='upper':
+            raise ValueError('reviewed contractual debt upper bound required for equity bridge')
+        bridge.components['debt_claim_proxy']=-float(debt_value['upper_bound_million_cny'])
+        bond=debt_value['components']['bond']
+        rate=Decimal(1)+Decimal(str(debt_value['discount_rate']))
+        bond_pv=sum(Decimal(bond[i])/rate**t for i,t in enumerate((0,1,2,5)))
+        bridge.conversion_release=float(bond_pv)+w['FN299']
+    capital_audit=None
+    if revised:
+        market=reference_audit.get('market_capital') if reference_audit else None
+        funding=market.get('funding_cash_scenario') if market else None
+        if policy.capital_basis=='disclosed_share_scenario':
+            if funding is None or policy.debt_basis!='wacc_estimate':
+                raise ValueError('disclosed-share scenario requires paired funding evidence and debt valuation')
+            disclosed=sum(Decimal(c['shares']) for c in market['classes'])/1000000
+            bridge.shares=float(disclosed)*(1+p['extra_dilution_rate'])
+            bridge.components['post_report_funding_cash_scenario']=float(funding['cash_adjustment_million_cny'])
+            capital_audit=dict(status='disclosed_shares_and_assumed_cash_not_complete_rollforward',
+                disclosed_shares_million=str(disclosed),employee_dilution_assumption=p['extra_dilution_rate'],
+                funding_cash=funding,conversion_terms_period=end,carry_reason=policy.capital_carry_reason)
+        elif funding is not None:
+            raise ValueError('revised valuation must update shares and funding cash together')
+    assumptions = ValuationAssumptions(annual_forecast=policy.annual_forecast,projection_years=10,high_growth_years=5,revenue_growth_next_year=p['growth'],revenue_growth_years_2_5=p['growth'],
         operating_margin_next_year=ebit/revenue,target_operating_margin=p['margin'],margin_convergence_year=5,
         sales_to_capital_high=p['sales_to_capital'],sales_to_capital_stable=p['sales_to_capital'],override_reinvestment_lag=True,
         reinvestment_lag_years=0,cost_of_capital_stable_override=p['wacc'],roic_stable_override=p['terminal_roic'],
@@ -283,6 +331,13 @@ def build_inputs(request: AlphaLakeRequest):
         boundaries=['CNY only','reviewed security and report period only','explicit WACC; RF/ERP containers unused by direct WACC',
                     'RD expensed; leases not capitalized twice','book claim proxies; employee options not priced',
                     'uniform sales-to-capital forecast; not original inventory-vintage policy'] + ([] if anker else ['liquor/finance allocation is a policy proxy, not exact deconsolidation']))
+    if revised:
+        audit['forecast_basis']='reviewed_annual_policy_not_reported_financial_fact'
+        audit['capital_date_basis']=policy.capital_basis
+        audit['capital_scenario']=capital_audit
+        audit['boundaries'].append('conversion terms and non-funding financial balances carried from report date; current fair value is not complete')
+        audit['debt_basis']=policy.debt_basis
+        audit['minority_basis']='TTM minority income times explicit policy multiple'
     if reference_components is not None:
         inputs.methodology_choices = MethodologyChoices(cost_of_capital_approach='reference_snapshot', reference_capital_inputs=reference_components)
         inputs.macro_inputs.risk_free_rate = reference_components.risk_free_rate

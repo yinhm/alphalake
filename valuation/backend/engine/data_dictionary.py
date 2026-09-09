@@ -428,7 +428,23 @@ class MethodologyChoices(BaseModel):
     unsupported_branch_warnings: list[str] = Field(default_factory=list)
 
 
+class ForecastYear(BaseModel):
+    """显式逐年分析假设；最后一年利润率、税率延续至终值。"""
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    growth: float = Field(gt=-1, le=1)
+    margin: float = Field(ge=-1, le=1)
+    tax: float = Field(ge=0, le=1)
+
+
 class ValuationAssumptions(BaseModel):
+    annual_forecast: list[ForecastYear] | None = None
+
+    @model_validator(mode='after')
+    def forecast_length(self):
+        if self.annual_forecast is not None and (self.projection_years < 1 or len(self.annual_forecast) != self.projection_years):
+            raise ValueError('explicit forecast must cover every projection year')
+        return self
+
     projection_years: int = Field(default=10, description="Total projection years (high growth + transition)")
     high_growth_years: int = Field(default=5, description="High-growth period length")
     stable_growth_rate: float | None = Field(default=None, description="Terminal growth (defaults to risk_free_rate)")

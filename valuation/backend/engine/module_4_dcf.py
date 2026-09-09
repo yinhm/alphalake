@@ -295,6 +295,11 @@ def compute_dcf(
     tax_path_vals, tax_terminal = _tax_path(
         t_effective, t_marginal, assumptions.override_tax_convergence, high_growth_years, n
     )
+    if assumptions.annual_forecast is not None:
+        g_path = [r.growth for r in assumptions.annual_forecast]
+        margin_path_vals = [r.margin for r in assumptions.annual_forecast]
+        tax_path_vals = [r.tax for r in assumptions.annual_forecast]
+        margin_target, tax_terminal = margin_path_vals[-1], tax_path_vals[-1]
     wacc_path_vals = _wacc_path(wacc_initial, wacc_terminal, high_growth_years, n)
 
     # --- Revenue projections (base + years 1..n + padding for lag) ---

@@ -6,6 +6,7 @@ import math
 import os
 from pathlib import Path
 import subprocess
+import sys
 
 import pytest
 from fastapi.testclient import TestClient
@@ -472,3 +473,86 @@ def test_disclosed_funding_scenario(exports,reference_export,market_export,tmp_p
             else: p['funding_cash_retention']=1.1
             assert client.post('/api/valuation/from-alphalake',json=bad).status_code==422,case
         assert client.post('/api/valuation/from-alphalake',json=original).json()==result
+
+
+def test_revised_anker_annual_forecast(exports,reference_export,market_export,tmp_path,monkeypatch):
+    from decimal import Decimal as D
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    req=request_for(exports,'anker')
+    req['policy']=json.loads((REPO/'valuation/examples/anker-2026H1-revised.json').read_text())
+    with TestClient(app) as client:
+        direct=client.post('/api/valuation/from-alphalake',json=req)
+        assert direct.status_code==200,direct.text
+        assert abs(direct.json()['report']['final']['value_per_share']-153.50)<.005
+        bound=market_request(exports,reference_export,market_export,'anker')
+        bound['policy']=json.loads((REPO/'valuation/examples/wacc/anker-revised-forecast-policy.json').read_text())
+        bound['wacc_binding']['policy']=json.loads((REPO/'valuation/examples/wacc/anker-contractual-debt-policy.json').read_text())
+        response=client.post('/api/valuation/from-alphalake',json=bound)
+        assert response.status_code==200,response.text
+        assert client.post('/api/valuation/from-alphalake',json=bound).json()==response.json()
+        for request,result in [(req,direct.json()),(bound,response.json())]:
+            p=request['policy']['parameters'];forecast=request['policy']['annual_forecast']
+            windows={r['field']:D(r['value'])/1000000 for r in request['data']['windows'] if r['value'] is not None}
+            rev=windows['FN230'];pv=D(0);wacc=D(str(result['report']['cost_of_capital']['wacc']))
+            for i,row in enumerate(forecast):
+                before=rev;rev*=1+D(str(row['growth']))
+                reinv=(rev-before)/D(str(p['sales_to_capital']))
+                fcff=rev*D(str(row['margin']))*(1-D(str(row['tax'])))-reinv
+                pv+=fcff/(1+wacc)**(i+1)
+                near(float(rev),result['report']['dcf']['revenue_projections'][i])
+                near(float(fcff),result['report']['dcf']['fcff_projections'][i])
+            g=D(str(p['terminal_growth']))
+            tv=rev*(1+g)*D(str(forecast[-1]['margin']))*(1-D(str(forecast[-1]['tax'])))*(1-g/D(str(p['terminal_roic'])))/(wacc-g)/(1+wacc)**10
+            near(float(pv+tv),result['report']['dcf']['value_of_operating_assets'])
+            bridge=result['inputs']['equity_bridge'];eq=pv+tv+sum(D(str(x)) for x in bridge['components'].values())
+            plain=eq/D(str(bridge['shares']));converted=(eq+D(str(bridge['conversion_release'])))/(D(str(bridge['shares']))+D(str(bridge['conversion_shares'])))
+            near(float(min(plain,converted)),result['report']['final']['value_per_share'])
+            near(bridge['components']['minority_claim_proxy'],-float(windows['FN97']*15))
+            subprocess.run([sys.executable,str(REPO/'valuation/backend/tools/verify_revised_valuation.py'),str(tmp_path/(result['run_id']+'.json'))],check=True,capture_output=True,text=True)
+            assert result['report']['cashflow']['fcff'] is None
+        audit=response.json()['audit']['wacc_reference']['market_capital']['debt_valuation']
+        bridge=response.json()['inputs']['equity_bridge']
+        near(-bridge['components']['debt_claim_proxy'],float(audit['upper_bound_million_cny']))
+        for case in ('short','tax','growth','legacy_scalar','version','missing_nci','missing_binding'):
+            bad=copy.deepcopy(bound)
+            if case=='short': bad['policy']['annual_forecast'].pop()
+            elif case=='tax': bad['policy']['annual_forecast'][0]['tax']=1.1
+            elif case=='growth': bad['policy']['annual_forecast'][0]['growth']=-1
+            elif case=='legacy_scalar': bad['policy']['parameters']['growth']=.12
+            elif case=='version': bad['policy']['policy_id']='anker-consolidated-v1'
+            elif case=='missing_nci': bad['data']['windows']=[r for r in bad['data']['windows'] if r['field']!='FN97']
+            else: bad.pop('wacc_binding');bad['policy']['parameters']['wacc']=.075
+            assert client.post('/api/valuation/from-alphalake',json=bad).status_code==422,case
+
+
+def test_revised_capital_scenario_moves_cash_and_shares_together(exports,reference_export,market_export,tmp_path,monkeypatch):
+    from decimal import Decimal as D
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    req=market_request(exports,reference_export,market_export,'anker')
+    req['wacc_binding']['market_capital']=copy.deepcopy(market_export['300866-funding'])
+    req['wacc_binding']['policy']=json.loads((REPO/'valuation/examples/wacc/anker-funding-scenario-policy.json').read_text())
+    req['policy']=json.loads((REPO/'valuation/examples/wacc/anker-revised-capital-scenario.json').read_text())
+    with TestClient(app) as client:
+        for retention in (0,.5,1):
+            req['wacc_binding']['policy']['market']['funding_cash_retention']=retention
+            response=client.post('/api/valuation/from-alphalake',json=req)
+            assert response.status_code==200,response.text
+            result=response.json();bridge=result['inputs']['equity_bridge']
+            near(bridge['shares'],588.054402*1.01)
+            near(bridge['components']['post_report_funding_cash_scenario'],4860.86*.86482*retention)
+            near(bridge['conversion_shares'],1104.6608/108.86)
+            audit=result['audit']['wacc_reference']['market_capital']
+            equity=(D(audit['common_equity_million_cny'])-sum(D(str(v)) for k,v in bridge['components'].items() if k!='debt_claim_proxy'))
+            near(float(equity),result['report']['cost_of_capital']['mv_equity'])
+            eq=result['report']['dcf']['value_of_operating_assets']+sum(bridge['components'].values())
+            expected=min(eq/bridge['shares'],(eq+bridge['conversion_release'])/(bridge['shares']+bridge['conversion_shares']))
+            near(expected,result['report']['final']['value_per_share'])
+            assert result['audit']['capital_scenario']['conversion_terms_period']=='2026-06-30'
+            subprocess.run([sys.executable,str(REPO/'valuation/backend/tools/verify_revised_valuation.py'),str(tmp_path/(result['run_id']+'.json'))],check=True,capture_output=True,text=True)
+            assert result['report']['cashflow']['fcff'] is None
+        for case in ('cash_only','shares_only','missing_carry_reason'):
+            bad=copy.deepcopy(req)
+            if case=='cash_only': bad['policy']['capital_basis']='financial_date';bad['policy'].pop('capital_carry_reason')
+            elif case=='shares_only': bad['wacc_binding']['market_capital']=copy.deepcopy(market_export['300866']);bad['wacc_binding']['policy']=json.loads((REPO/'valuation/examples/wacc/anker-contractual-debt-policy.json').read_text())
+            else: bad['policy'].pop('capital_carry_reason')
+            assert client.post('/api/valuation/from-alphalake',json=bad).status_code==422,case
