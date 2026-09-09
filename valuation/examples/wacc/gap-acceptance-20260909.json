@@ -1,0 +1,419 @@
+{
+  "status": "conditional_market_wacc_not_current_fair_value_complete",
+  "runs": [
+    {
+      "name": "anker",
+      "run_id": "bc5ae9a99b1a445ddd2c818ab3339c5d6e5435dad4abc19fa9d50c71e93773bd",
+      "engine_revision": "d3ef6bbc285c811a62735d8ce6490a62377fadf81e7178c17ac57a3698a8c350",
+      "information_as_of": "2026-09-09T14:59:03.849849Z",
+      "market_releases": [
+        {
+          "release_id": 5,
+          "source": "issuer_disclosure",
+          "dataset": "reviewed-share-classes-v1/300866",
+          "content_key": "5b2bc0c395c8d9ce39eee427733f2199ca04d99bb9cb7f9cc049aee45135abab",
+          "parser_version": "reviewed-issuer-capital-v1",
+          "normalization_version": "issued-minus-treasury-v1;8e3fe468afad066adc0453f0c9921bdfaa9feba28f7547a49ea3710b37590a37;python=3.12.3;pypdf=6.17.0;pdftotext version 24.02.0",
+          "available_at": "2026-09-09 13:59:56.152164+00",
+          "recorded_at": "2026-09-09 14:15:27.904667+00",
+          "artifact_id": 2,
+          "artifact_sha256": "e3e452aa415ba3044f0e84f7c7d008cb1ee54a304a297c4607e7274f7d6ddfad",
+          "source_url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-09-04/2db3ed6a-0a7e-4f37-82eb-a03ec2045ec8.PDF"
+        },
+        {
+          "release_id": 3,
+          "source": "hkex",
+          "dataset": "anker-unadjusted-close-v1",
+          "content_key": "6d3e5e8b425c45b85e686f6c573b6e9e7bc64a64189be9cd0a05e800c331d313",
+          "parser_version": "hkex-anker-close-v1",
+          "normalization_version": "unadjusted-closing-column-v1;c79fd637ea65f4b84cb00840c27a4a0617c21faae844d0992138da4725550a0a;python=3.12.3;stdlib",
+          "available_at": "2026-09-09 14:02:34.602835+00",
+          "recorded_at": "2026-09-09 14:02:35.007128+00",
+          "artifact_id": 3,
+          "artifact_sha256": "a2ebf76507442cf48d437ba0d07c5c5a17fbaebb086f8bc93c7d0059ce6538eb",
+          "source_url": "https://www.hkex.com.hk/eng/stat/smstat/dayquot/d260908e.htm"
+        },
+        {
+          "release_id": 1,
+          "source": "safe",
+          "dataset": "hkd-cny-central-parity-v1",
+          "content_key": "6db456f9491a18c2595633b00481e79eade10bee090e783d53732000ff407b83",
+          "parser_version": "safe-hkd-cny-v1",
+          "normalization_version": "100-hkd-to-cny-v1;b91133fcedadb794101fc563c6ec1d3e2964bf8338e0009b1318dd48dd50bcc6;python=3.12.3;stdlib-htmlparser",
+          "available_at": "2026-09-09 13:49:50.904659+00",
+          "recorded_at": "2026-09-09 13:49:51.092962+00",
+          "artifact_id": 1,
+          "artifact_sha256": "d1193cbcc6a1c825efe6146434374188ce7b3355a43b416573288101e121e8c0",
+          "source_url": "https://www.safe.gov.cn/AppStructured/hlw/RMBQuery.do"
+        }
+      ],
+      "policy": "anker-contractual-debt-bound-v2",
+      "cost_of_capital": {
+        "approach_used": "reference_snapshot",
+        "beta_branch_used": "explicit_weighted_industries",
+        "erp_branch_used": "beta_mature_plus_country",
+        "kd_branch_used": "synthetic_reference",
+        "capital_structure_basis": "market_equity_estimated_debt",
+        "mature_market_erp": 0.042,
+        "country_risk_contribution": 0.008727858398,
+        "beta_u": 1.192587261247,
+        "beta_l": 1.2370757426232046,
+        "mv_straight_debt": null,
+        "mv_convertible_straight_part": null,
+        "equity_in_convertible": null,
+        "mv_leases": null,
+        "mv_debt_total": 3200.415400619214,
+        "book_debt": 3200.415400619214,
+        "d_e_ratio": 0.046630216108553585,
+        "mv_equity": 68633.9388427614,
+        "mv_preferred": null,
+        "total_capital": 71834.35424338061,
+        "cost_of_equity": 0.0718864474261746,
+        "cost_of_debt_pretax": 0.020816,
+        "cost_of_debt_aftertax": 0.016652800000000002,
+        "cost_of_preferred": 0.0,
+        "weight_equity": 0.9554472865479385,
+        "weight_debt": 0.04455271345206149,
+        "weight_preferred": 0.0,
+        "risk_free_rate": 0.011201407838000001,
+        "equity_risk_premium": 0.042,
+        "interest_coverage_ratio": null,
+        "synthetic_rating": null,
+        "wacc": 0.06942563855948405,
+        "warnings": [
+          "Market prices, carried disclosed shares, estimated debt and operating-scope bridge; not entirely observed fair values."
+        ]
+      },
+      "debt_valuation": {
+        "status": "contractual_cashflow_bound_not_observed_market_price",
+        "financial_book_million_cny": "3066.91577271",
+        "standard_book_million_cny": 3066.9158006750004,
+        "lower_bound_million_cny": "2778.092943986615260144544014",
+        "upper_bound_million_cny": "3200.415400619213748782512225",
+        "selected_bound": "upper",
+        "discount_rate": 0.020816,
+        "timing_origin": "financial_report_date_not_market_date",
+        "components": {
+          "short": [
+            "731.81299119",
+            "0.0",
+            "0.0",
+            "0.0",
+            "731.81299119",
+            "730.72324122"
+          ],
+          "long": [
+            "158.75436469",
+            "130.44951359",
+            "337.75992206",
+            "311.38008872",
+            "938.34388906",
+            "853.20404455"
+          ],
+          "lease": [
+            "103.024202",
+            "101.42633737",
+            "174.8308315",
+            "17.8562073",
+            "397.13757817",
+            "373.83888285"
+          ],
+          "bond": [
+            "4.4186432",
+            "6.6279648",
+            "1229.4874704",
+            "0.0",
+            "1240.5340784",
+            "1109.14960409"
+          ]
+        },
+        "boundaries": [
+          "June-end contractual portfolio repriced at selected Kd; intervening repayments and new borrowing unavailable",
+          "bucket boundaries bound payment timing; floating coupons held at disclosed report-date rates",
+          "convertible contractual cashflows exclude the conversion option; book option adjustment remains a separate proxy",
+          "one reference Kd for all debt currencies and tenors is a policy estimate",
+          "upper debt PV is not necessarily an upper or lower WACC or equity valuation"
+        ]
+      },
+      "funding_cash_scenario": null,
+      "current_fair_value_complete": false
+    },
+    {
+      "name": "anker-funding",
+      "run_id": "df14fb9899b9746d680aac957a3f1902d9479b4d1dc265ad20746527090564bb",
+      "engine_revision": "d3ef6bbc285c811a62735d8ce6490a62377fadf81e7178c17ac57a3698a8c350",
+      "information_as_of": "2026-09-09T14:59:03.849849Z",
+      "market_releases": [
+        {
+          "release_id": 5,
+          "source": "issuer_disclosure",
+          "dataset": "reviewed-share-classes-v1/300866",
+          "content_key": "5b2bc0c395c8d9ce39eee427733f2199ca04d99bb9cb7f9cc049aee45135abab",
+          "parser_version": "reviewed-issuer-capital-v1",
+          "normalization_version": "issued-minus-treasury-v1;8e3fe468afad066adc0453f0c9921bdfaa9feba28f7547a49ea3710b37590a37;python=3.12.3;pypdf=6.17.0;pdftotext version 24.02.0",
+          "available_at": "2026-09-09 13:59:56.152164+00",
+          "recorded_at": "2026-09-09 14:15:27.904667+00",
+          "artifact_id": 2,
+          "artifact_sha256": "e3e452aa415ba3044f0e84f7c7d008cb1ee54a304a297c4607e7274f7d6ddfad",
+          "source_url": "https://disc.static.szse.cn/disc/disk03/finalpage/2026-09-04/2db3ed6a-0a7e-4f37-82eb-a03ec2045ec8.PDF"
+        },
+        {
+          "release_id": 3,
+          "source": "hkex",
+          "dataset": "anker-unadjusted-close-v1",
+          "content_key": "6d3e5e8b425c45b85e686f6c573b6e9e7bc64a64189be9cd0a05e800c331d313",
+          "parser_version": "hkex-anker-close-v1",
+          "normalization_version": "unadjusted-closing-column-v1;c79fd637ea65f4b84cb00840c27a4a0617c21faae844d0992138da4725550a0a;python=3.12.3;stdlib",
+          "available_at": "2026-09-09 14:02:34.602835+00",
+          "recorded_at": "2026-09-09 14:02:35.007128+00",
+          "artifact_id": 3,
+          "artifact_sha256": "a2ebf76507442cf48d437ba0d07c5c5a17fbaebb086f8bc93c7d0059ce6538eb",
+          "source_url": "https://www.hkex.com.hk/eng/stat/smstat/dayquot/d260908e.htm"
+        },
+        {
+          "release_id": 1,
+          "source": "safe",
+          "dataset": "hkd-cny-central-parity-v1",
+          "content_key": "6db456f9491a18c2595633b00481e79eade10bee090e783d53732000ff407b83",
+          "parser_version": "safe-hkd-cny-v1",
+          "normalization_version": "100-hkd-to-cny-v1;b91133fcedadb794101fc563c6ec1d3e2964bf8338e0009b1318dd48dd50bcc6;python=3.12.3;stdlib-htmlparser",
+          "available_at": "2026-09-09 13:49:50.904659+00",
+          "recorded_at": "2026-09-09 13:49:51.092962+00",
+          "artifact_id": 1,
+          "artifact_sha256": "d1193cbcc6a1c825efe6146434374188ce7b3355a43b416573288101e121e8c0",
+          "source_url": "https://www.safe.gov.cn/AppStructured/hlw/RMBQuery.do"
+        },
+        {
+          "release_id": 7,
+          "source": "issuer_disclosure",
+          "dataset": "reviewed-equity-proceeds-v1/ipo",
+          "content_key": "bbc705b2e469e32c99d4d4c6e09f5b134dd84a81c6006f603bbfbedf23f5ff2c",
+          "parser_version": "reviewed-proceeds-v1",
+          "normalization_version": "issuer-estimated-net-proceeds-v1;b20f0ebc0072e3aef119ed79ae3f464bd0921fda541503ee0acbbdc3eabde855;pypdf/6.17.0",
+          "available_at": "2026-09-09 14:58:14.581247+00",
+          "recorded_at": "2026-09-09 14:58:14.836756+00",
+          "artifact_id": 5,
+          "artifact_sha256": "5d156f26262d754d4278c9a8cbd3b9b5df81c9c43d3ac07359e9621a49069bc5",
+          "source_url": "https://static.cninfo.com.cn/finalpage/2026-07-02/1225406962.PDF"
+        },
+        {
+          "release_id": 8,
+          "source": "issuer_disclosure",
+          "dataset": "reviewed-equity-proceeds-v1/greenshoe",
+          "content_key": "eced0a2b7cde736e4ccbbee63c3ee5d965278379d6aad72d04dcedf6cc5265b4",
+          "parser_version": "reviewed-proceeds-v1",
+          "normalization_version": "issuer-estimated-net-proceeds-v1;b20f0ebc0072e3aef119ed79ae3f464bd0921fda541503ee0acbbdc3eabde855;pypdf/6.17.0",
+          "available_at": "2026-09-09 14:58:15.753871+00",
+          "recorded_at": "2026-09-09 14:58:16.000918+00",
+          "artifact_id": 6,
+          "artifact_sha256": "3c5e19932ae266dae0b003b6029b10d0d38787eadc7cd4a1c206f4820bf6ad7f",
+          "source_url": "https://disc.static.szse.cn/download/disc/disk03/finalpage/2026-07-27/10d2e333-09f5-4b03-a51d-0f043257edff.PDF"
+        }
+      ],
+      "policy": "anker-disclosed-funding-full-retention-scenario-v1",
+      "cost_of_capital": {
+        "approach_used": "reference_snapshot",
+        "beta_branch_used": "explicit_weighted_industries",
+        "erp_branch_used": "beta_mature_plus_country",
+        "kd_branch_used": "synthetic_reference",
+        "capital_structure_basis": "market_equity_estimated_debt",
+        "mature_market_erp": 0.042,
+        "country_risk_contribution": 0.008727858398,
+        "beta_u": 1.192587261247,
+        "beta_l": 1.239978409133719,
+        "mv_straight_debt": null,
+        "mv_convertible_straight_part": null,
+        "equity_in_convertible": null,
+        "mv_leases": null,
+        "mv_debt_total": 3200.415400619214,
+        "book_debt": 3200.415400619214,
+        "d_e_ratio": 0.049672620849946655,
+        "mv_equity": 64430.1698975614,
+        "mv_preferred": null,
+        "total_capital": 67630.58529818061,
+        "cost_of_equity": 0.0720083594196162,
+        "cost_of_debt_pretax": 0.020816,
+        "cost_of_debt_aftertax": 0.016652800000000002,
+        "cost_of_preferred": 0.0,
+        "weight_equity": 0.9526779875331745,
+        "weight_debt": 0.04732201246682558,
+        "weight_preferred": 0.0,
+        "risk_free_rate": 0.011201407838000001,
+        "equity_risk_premium": 0.042,
+        "interest_coverage_ratio": null,
+        "synthetic_rating": null,
+        "wacc": 0.06938882294665302,
+        "warnings": [
+          "Market prices, carried disclosed shares, estimated debt and operating-scope bridge; not entirely observed fair values."
+        ]
+      },
+      "debt_valuation": {
+        "status": "contractual_cashflow_bound_not_observed_market_price",
+        "financial_book_million_cny": "3066.91577271",
+        "standard_book_million_cny": 3066.9158006750004,
+        "lower_bound_million_cny": "2778.092943986615260144544014",
+        "upper_bound_million_cny": "3200.415400619213748782512225",
+        "selected_bound": "upper",
+        "discount_rate": 0.020816,
+        "timing_origin": "financial_report_date_not_market_date",
+        "components": {
+          "short": [
+            "731.81299119",
+            "0.0",
+            "0.0",
+            "0.0",
+            "731.81299119",
+            "730.72324122"
+          ],
+          "long": [
+            "158.75436469",
+            "130.44951359",
+            "337.75992206",
+            "311.38008872",
+            "938.34388906",
+            "853.20404455"
+          ],
+          "lease": [
+            "103.024202",
+            "101.42633737",
+            "174.8308315",
+            "17.8562073",
+            "397.13757817",
+            "373.83888285"
+          ],
+          "bond": [
+            "4.4186432",
+            "6.6279648",
+            "1229.4874704",
+            "0.0",
+            "1240.5340784",
+            "1109.14960409"
+          ]
+        },
+        "boundaries": [
+          "June-end contractual portfolio repriced at selected Kd; intervening repayments and new borrowing unavailable",
+          "bucket boundaries bound payment timing; floating coupons held at disclosed report-date rates",
+          "convertible contractual cashflows exclude the conversion option; book option adjustment remains a separate proxy",
+          "one reference Kd for all debt currencies and tenors is a policy estimate",
+          "upper debt PV is not necessarily an upper or lower WACC or equity valuation"
+        ]
+      },
+      "funding_cash_scenario": {
+        "status": "issuer_estimated_proceeds_cash_retention_scenario_not_current_cash",
+        "net_proceeds_hkd": "4860860000.0000000000",
+        "fx": "0.864820000000",
+        "cash_retention": 1.0,
+        "cash_adjustment_million_cny": "4203.768945200000000000",
+        "boundaries": [
+          "issuer rounded estimates after estimated issuance costs, not settled net cash",
+          "same-day FX translates a scenario; not the historical cash settlement exchange rate",
+          "unobserved intervening deployment is represented by an explicit retention assumption, not asserted zero",
+          "June fee assets/payables retained; overlap with estimated net proceeds unresolved, not an accounting cash rollforward"
+        ],
+        "financial_date_ipo_fee_asset_million_cny": 41.46110158,
+        "financial_date_ipo_payable_million_cny": 14.74352,
+        "fee_overlap_status": "unresolved_no_fee_reclassification_sensitivity_only"
+      },
+      "current_fair_value_complete": false
+    },
+    {
+      "name": "moutai",
+      "run_id": "115ea420be078b776e350bf99025edefad91f8bad9e83f87014ac74e63bbec17",
+      "engine_revision": "d3ef6bbc285c811a62735d8ce6490a62377fadf81e7178c17ac57a3698a8c350",
+      "information_as_of": "2026-09-09T14:59:03.849849Z",
+      "market_releases": [
+        {
+          "release_id": 6,
+          "source": "issuer_disclosure",
+          "dataset": "reviewed-share-classes-v1/600519",
+          "content_key": "2443602954b92c27ea164b7c13832f3a97e51a0552153856a31ae4acd77ea1b2",
+          "parser_version": "reviewed-issuer-capital-v1",
+          "normalization_version": "issued-minus-treasury-v1;8e3fe468afad066adc0453f0c9921bdfaa9feba28f7547a49ea3710b37590a37;python=3.12.3;pypdf=6.17.0",
+          "available_at": "2026-09-09 14:03:31.703527+00",
+          "recorded_at": "2026-09-09 14:15:53.521388+00",
+          "artifact_id": 4,
+          "artifact_sha256": "0e10aa26be46b1cf3cd03f06e834c7fb98d5dd0d661b96f8fddd4af7e846a4f6",
+          "source_url": "https://static.cninfo.com.cn/finalpage/2026-08-15/1225475868.PDF"
+        }
+      ],
+      "policy": "moutai-market-capital-reviewed-proxies-v1",
+      "cost_of_capital": {
+        "approach_used": "reference_snapshot",
+        "beta_branch_used": "explicit_weighted_industries",
+        "erp_branch_used": "beta_mature_plus_country",
+        "kd_branch_used": "analyst_credit_reference",
+        "capital_structure_basis": "market_equity_estimated_debt",
+        "mature_market_erp": 0.042,
+        "country_risk_contribution": 0.008727858398,
+        "beta_u": 0.725044343989,
+        "beta_l": 0.725131507311349,
+        "mv_straight_debt": null,
+        "mv_convertible_straight_part": null,
+        "equity_in_convertible": null,
+        "mv_leases": null,
+        "mv_debt_total": 243.6848561875,
+        "book_debt": 243.6848561875,
+        "d_e_ratio": 0.0001602905589093411,
+        "mv_equity": 1520269.5520284884,
+        "mv_preferred": null,
+        "total_capital": 1520513.236884676,
+        "cost_of_equity": 0.05038478954307666,
+        "cost_of_debt_pretax": 0.020816,
+        "cost_of_debt_aftertax": 0.015612000000000001,
+        "cost_of_preferred": 0.0,
+        "weight_equity": 0.9998397351300362,
+        "weight_debt": 0.00016026486996376107,
+        "weight_preferred": 0.0,
+        "risk_free_rate": 0.011201407838000001,
+        "equity_risk_premium": 0.042,
+        "interest_coverage_ratio": null,
+        "synthetic_rating": null,
+        "wacc": 0.05037921668648226,
+        "warnings": [
+          "Market prices, carried disclosed shares, estimated debt and operating-scope bridge; not entirely observed fair values."
+        ]
+      },
+      "debt_valuation": null,
+      "funding_cash_scenario": null,
+      "current_fair_value_complete": false
+    }
+  ],
+  "independent_decimal": [
+    {
+      "code": "300866",
+      "market_date": "2026-09-08",
+      "common_equity_million_cny": "74353.9784439964000000",
+      "mv_equity": "68633.938842761400300",
+      "mv_debt_total": "3200.415400619213748782512226",
+      "weight_debt": "0.04455271345206148845273021195",
+      "beta_l": "1.237075742623204522669805493",
+      "cost_of_equity": "0.07188644742617458995213183071",
+      "cost_of_debt_pretax": "0.020816000000",
+      "wacc": "0.06942563855948403988995202132"
+    },
+    {
+      "code": "300866",
+      "market_date": "2026-09-08",
+      "common_equity_million_cny": "74353.9784439964000000",
+      "mv_equity": "64430.169897561400300",
+      "mv_debt_total": "3200.415400619213748782512226",
+      "weight_debt": "0.04732201246682557918729107165",
+      "beta_l": "1.239978409133718808498576183",
+      "cost_of_equity": "0.07200835941961618995694019969",
+      "cost_of_debt_pretax": "0.020816000000",
+      "wacc": "0.06938882294665300849310476220"
+    },
+    {
+      "code": "600519",
+      "market_date": "2026-09-08",
+      "common_equity_million_cny": "1636731.840189300000000",
+      "mv_equity": "1520269.552028488423470122409",
+      "mv_debt_total": "243.6848561874999954119066464",
+      "weight_debt": "0.0001602648699637610544138877607",
+      "beta_l": "0.7251315073113490400212122269",
+      "cost_of_equity": "0.05038478954307665968089091353",
+      "cost_of_debt_pretax": "0.020816000000",
+      "wacc": "0.05037921668648226126985525020"
+    }
+  ]
+}

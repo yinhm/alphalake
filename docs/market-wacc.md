@@ -89,4 +89,7 @@
 
 ## 合同债务补证
 
-新增安克可选 `anker-contractual-debt-policy.json`：导入24个已核验的合同期限表附注后，按参考Kd计算现值区间，显式选择上界用于WACC。茅台账面近似政策补充了半年报第91页的原文依据。完整计算、实际结果及仍未交付的期后融资事件链见[剩余缺口复核](wacc-gap-review-20260909.md)。API明确输出 `current_fair_value_complete=false`，不能因市场权重可算就宣称全部当前公允价值已闭合。
+新增安克可选 `anker-contractual-debt-policy.json`：导入24个已核验的合同期限表附注后，按参考Kd计算现值区间，显式选择上界用于WACC。茅台账面近似政策补充了半年报第91页的原文依据。完整计算、实际结果及已交付的期后融资事件链见[剩余缺口复核](wacc-gap-review-20260909.md)。API明确输出 `current_fair_value_complete=false`，不能因市场权重可算就宣称全部当前公允价值已闭合。
+
+
+迁移031独立发布两次安克H股融资的港元估计净额与发行股数。`sync-equity-proceeds <db> <ipo|greenshoe>` 支持归档、失败恢复和离线重放；`export-market-capital` 可额外固定 `--ipo-release` 与 `--greenshoe-release`。配对使用 `anker-funding-scenario-policy.json` 可测现金留存比例；实际留存和发行费用重叠尚未闭合，不能把该情景当当前现金余额。完整命令、原文和边界见上述复核文档。

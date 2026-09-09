@@ -2,7 +2,7 @@
 
 日期：2026-09-09
 
-状态：部分结构已实现。迁移 027 建立发布版本、归档关联及四类参考观测；后续已接入 CN/HK/US 国家风险的限定发布链（见[同步说明](../country-risk-sync.md)），全球行业 Beta 与人民币国债收益率也已接入（见[说明](../beta-yield-sync.md)），[WACC 固定版本选择器](../wacc-valuation-bridge.md)已实现；迁移 028 及[合成评级利差链](../credit-spread-sync.md)扩展大型非金融利差档位，[港元汇率](../fx-sync.md)已接入；迁移030及[市场WACC](../market-wacc.md)实现证据限定的公司、类别、listing与股本/报价链。
+状态：部分结构已实现。迁移 027 建立发布版本、归档关联及四类参考观测；后续已接入 CN/HK/US 国家风险的限定发布链（见[同步说明](../country-risk-sync.md)），全球行业 Beta 与人民币国债收益率也已接入（见[说明](../beta-yield-sync.md)），[WACC 固定版本选择器](../wacc-valuation-bridge.md)已实现；迁移 028 及[合成评级利差链](../credit-spread-sync.md)扩展大型非金融利差档位，[港元汇率](../fx-sync.md)已接入；迁移030及[市场WACC](../market-wacc.md)实现证据限定的公司、类别、listing与股本/报价链；迁移031补充[安克两次H股融资事件](../wacc-gap-review-20260909.md)，金额为发行人估计净额，日期明确区分已披露/预计挂牌日，不代表结算日。
 
 ## 范围与现有基础
 

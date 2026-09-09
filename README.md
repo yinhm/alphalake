@@ -57,7 +57,7 @@ TDX 协议请求支持[自动换节点重试](docs/tdx-failover.md)：每个独�
 
 证券主数据会发现指数和可转债，但初始股票/ETF 日线与复权流程暂不处理它们；需要先以专门测试验证请求和单位语义。
 
-估值所需行情已支持[版本保留与未复权收盘价导出](docs/valuation-quotes.md)；已新增[类别股本、A/H 市值与市场权重 WACC 估计链](docs/market-wacc.md)，首批安克/茅台；债务与经营范围仍有明确代理。
+估值所需行情已支持[版本保留与未复权收盘价导出](docs/valuation-quotes.md)；已新增[类别股本、A/H 市值与市场权重 WACC 估计链](docs/market-wacc.md)，首批安克/茅台；新增[合同债务区间及H股融资事件链](docs/wacc-gap-review-20260909.md)，实际现金滚动、费用重叠及经营范围仍有明确缺口。
 
 ## WACC 参考数据
 
