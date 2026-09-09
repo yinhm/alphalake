@@ -22,6 +22,16 @@ func ExportValuationQuote(ctx context.Context, db *sql.DB, symbol string, day, a
 		return nil, err
 	}
 	defer tx.Rollback()
+	out, err := exportValuationQuoteOnTx(ctx, tx, symbol, day, asof)
+	if err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+func exportValuationQuoteOnTx(ctx context.Context, tx *sql.Tx, symbol string, day, asof time.Time) (map[string]any, error) {
 	id, found, err := resolveInstrumentIdentifierAt(ctx, tx, "tdx", "symbol", symbol, day)
 	if err != nil {
 		return nil, err
@@ -69,9 +79,6 @@ func ExportValuationQuote(ctx context.Context, db *sql.DB, symbol string, day, a
 	var positive bool
 	if err = tx.QueryRowContext(ctx, `SELECT CAST(? AS DECIMAL(20,6))>0`, close).Scan(&positive); err != nil || !positive {
 		return nil, fmt.Errorf("invalid close: %s", close)
-	}
-	if err = tx.Commit(); err != nil {
-		return nil, err
 	}
 	return map[string]any{"contract_version": "alphalake-valuation-quote-v1", "symbol": symbol, "information_as_of": asof.UTC().Format(time.RFC3339Nano),
 		"currency": currency, "exchange_mic": mic, "adjustment": "unadjusted", "quote": row, "market_cap": nil,

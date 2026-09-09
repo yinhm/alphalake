@@ -79,7 +79,8 @@ func syncReference(ctx context.Context, db *sql.DB, root string, options Country
 		var id int64
 		err = db.QueryRowContext(ctx, `SELECT a.artifact_id FROM meta.dataset_release r
           JOIN meta.dataset_release_artifact a ON a.release_id=r.release_id AND a.role='data'
-          WHERE r.source=? AND r.dataset=? ORDER BY r.recorded_at DESC,r.release_id DESC LIMIT 1`, feed.source, feed.dataset).Scan(&id)
+          JOIN meta.artifact raw ON raw.artifact_id=a.artifact_id
+          WHERE r.source=? AND r.dataset=? AND raw.source_locator=? ORDER BY r.recorded_at DESC,r.release_id DESC LIMIT 1`, feed.source, feed.dataset, feed.url).Scan(&id)
 		if err != nil {
 			return out, fmt.Errorf("no published reference archive: %w", err)
 		}
@@ -105,8 +106,11 @@ func syncReference(ctx context.Context, db *sql.DB, root string, options Country
 		if resp.StatusCode != http.StatusOK {
 			return out, fmt.Errorf("reference HTTP %d", resp.StatusCode)
 		}
-		const limit = 16 << 20
-		body, readErr := io.ReadAll(io.LimitReader(resp.Body, limit+1))
+		limit := 16 << 20
+		if feed.source == "hkex" {
+			limit = 64 << 20
+		}
+		body, readErr := io.ReadAll(io.LimitReader(resp.Body, int64(limit)+1))
 		if readErr != nil {
 			return out, readErr
 		}
