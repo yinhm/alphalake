@@ -82,6 +82,15 @@ func UpsertInstruments(ctx context.Context, db *sql.DB, observations []domain.In
 // corruption rather than resolved with an arbitrary ORDER BY/LIMIT rule.
 func ResolveInstrumentIdentifierAt(ctx context.Context, db *sql.DB, provider, identifierType, value string, asOf time.Time) (int64, bool, error) {
 	if db == nil {
+		return 0, false, fmt.Errorf("duckdb is nil")
+	}
+	return resolveInstrumentIdentifierAt(ctx, db, provider, identifierType, value, asOf)
+}
+
+func resolveInstrumentIdentifierAt(ctx context.Context, db interface {
+	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
+}, provider, identifierType, value string, asOf time.Time) (int64, bool, error) {
+	if db == nil {
 		return 0, false, errors.New("duckdb is nil")
 	}
 	provider = strings.TrimSpace(provider)
