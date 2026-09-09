@@ -15,6 +15,20 @@ import (
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
 )
 
+func TestFinancialProgressKeepsCurrentFailure(t *testing.T) {
+	summary := TDXProfessionalFinancialSummary{Failures: []TDXProfessionalFinancialFailure{{Package: "bad.zip", Err: fmt.Errorf("capacity exhausted")}}}
+	var progress TDXProfessionalFinancialProgress
+	options := TDXProfessionalFinancialOptions{OnProgress: func(p TDXProfessionalFinancialProgress) { progress = p }}
+	reportProfessionalFinancialProgress(options, summary, 1, "bad.zip")
+	if progress.Error != "capacity exhausted" || progress.Failures != 1 {
+		t.Fatal(progress)
+	}
+	reportProfessionalFinancialProgress(options, summary, 2, "good.zip")
+	if progress.Error != "" {
+		t.Fatal("previous failure incorrectly attributed to current package", progress)
+	}
+}
+
 type fakeProfessionalFinancialSource struct {
 	instruments       []domain.InstrumentObservation
 	packageBytes      []byte

@@ -336,6 +336,9 @@ func main() {
 		options := ingest.TDXProfessionalFinancialOptions{
 			MaxPackages: maxPackages,
 			OnProgress: func(p ingest.TDXProfessionalFinancialProgress) {
+				if p.Error != "" {
+					fmt.Fprintf(os.Stderr, "TDX financial package failed: run=%d package=%s error=%q\n", p.RunID, p.Package, p.Error)
+				}
 				if p.Processed == p.Total || p.Failures > lastFailures || p.Unresolved > lastUnresolved {
 					fmt.Printf("TDX financial progress: run=%d %d/%d packages=%d skipped=%d facts_attempted=%d facts_inserted=%d facts_reassigned=%d facts_removed=%d unresolved=%d acknowledged=%d failed=%d current=%s\n",
 						p.RunID, p.Processed, p.Total, p.Packages, p.Skipped, p.FactsAttempted, p.FactsInserted,

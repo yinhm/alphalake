@@ -50,6 +50,7 @@ type TDXProfessionalFinancialProgress struct {
 	Unresolved      int
 	Acknowledged    int
 	Failures        int
+	Error           string // 当前包失败原因，采集期间立即记录，避免仅在最终摘要保留首个错误。
 }
 
 type TDXProfessionalFinancialFailure struct {
@@ -332,6 +333,10 @@ func reportProfessionalFinancialProgress(options TDXProfessionalFinancialOptions
 	if options.OnProgress == nil {
 		return
 	}
+	var failure string
+	if n := len(summary.Failures); n > 0 && summary.Failures[n-1].Package == name {
+		failure = summary.Failures[n-1].Err.Error()
+	}
 	options.OnProgress(TDXProfessionalFinancialProgress{
 		RunID: summary.RunID, Processed: processed, Total: summary.Selected,
 		Package: name, Packages: summary.Packages, Skipped: summary.Skipped,
@@ -339,6 +344,7 @@ func reportProfessionalFinancialProgress(options TDXProfessionalFinancialOptions
 		FactsReassigned: summary.FactsReassigned, FactsRemoved: summary.FactsRemoved,
 		Unresolved: summary.Unresolved, Acknowledged: summary.Acknowledged,
 		Failures: len(summary.Failures) + len(summary.MasterFailures),
+		Error:    failure,
 	})
 }
 
