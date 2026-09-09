@@ -20,6 +20,8 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return false, nil
 	}
 	switch args[0] {
+	case "sync-country-risk":
+		return true, runCountryRiskSync(ctx, args[1:])
 	case "export-valuation":
 		return true, runValuationExport(ctx, args[1:])
 	case "import-supplements":

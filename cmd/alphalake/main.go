@@ -21,6 +21,7 @@ const version = "0.0.0-dev"
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: alphalake <command> [args]")
 	fmt.Fprintln(os.Stderr, "commands:")
+	fmt.Fprintln(os.Stderr, "  sync-country-risk <db-path> [--offline] [--python executable] [--parser path]")
 	fmt.Fprintln(os.Stderr, "  version")
 	fmt.Fprintln(os.Stderr, "  schema")
 	fmt.Fprintln(os.Stderr, "  init <db-path>")

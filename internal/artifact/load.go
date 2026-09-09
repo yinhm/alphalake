@@ -126,3 +126,18 @@ func loadVerified(root string, stored Stored) ([]byte, error) {
 	}
 	return content, nil
 }
+
+// LoadByID verifies an explicitly selected archive; failed newer downloads do not
+// change the meaning of an existing published release.
+func LoadByID(ctx context.Context, db *sql.DB, root string, id int64) (Stored, []byte, error) {
+	if db == nil || strings.TrimSpace(root) == "" || id <= 0 {
+		return Stored{}, nil, errors.New("database, artifact root and positive ID required")
+	}
+	var s Stored
+	err := db.QueryRowContext(ctx, `SELECT artifact_id,sha256,content_length,local_path FROM meta.artifact WHERE artifact_id=?`, id).Scan(&s.ArtifactID, &s.SHA256, &s.ContentLength, &s.LocalPath)
+	if err != nil {
+		return Stored{}, nil, err
+	}
+	content, err := loadVerified(root, s)
+	return s, content, err
+}
