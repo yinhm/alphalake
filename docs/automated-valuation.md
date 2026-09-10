@@ -377,3 +377,21 @@ alphalake sync-company-industries ./references.duckdb --offline --python /absolu
 日常 `refresh_valuate_alphalake --sync-references` 现刷新六类来源：原有WACC四源、行业资本效率、公司行业。公司行业写入财务主库（身份查询所在库），其余写入指定参考库；单来源失败保留阶段失败状态，后续批次仍按已发布版本、时点和政策年龄门槛判断，不声称使用本轮失败的快照。调度测试覆盖目标库、绝对解析器路径、失败隔离和最终时点。
 
 新增 `valuation/examples/a-share-damodaran-five-2026H1.json`，仅采用来源名单中的Computers/Peripherals、Beverage (Alcoholic)、Food Processing、Furn/Home Furnishings、Machinery五个非金融行业。全球行业资本效率按相同来源目录绑定，固定10% WACC及既有历史经营外推仍为显式机械情景；保留三家公司审核隔离。七天首次取得采用窗口不等于来源名单更新日期。实际批次覆盖结果待验收，不把政策文件的存在计为完成。
+
+## 五行业真实批次验收
+
+`a-share-damodaran-five-2026H1.json` 已在真实主库、参考库及同一截止时点 `2026-09-10T04:42:23Z` 完成运行。报告为 `workspace/damodaran-five-batch-20260910/batches/batch-tzoypjky.json`，当前本地A股分母5,569：五行业覆盖687家，其中307家条件股权估值、13家缺输入、364家输入/政策拒绝、3家既有审核隔离；另外4,881家未分配行业政策、1家源冲突。没有执行失败或吞掉未返回公司的情况。
+
+| 来源行业 | 条件估值成功 | 缺输入 | 输入/政策拒绝 | 审核隔离 |
+| --- | ---: | ---: | ---: | ---: |
+| Computers/Peripherals | 16 | 1 | 27 | 0 |
+| Beverage (Alcoholic) | 21 | 2 | 14 | 0 |
+| Food Processing | 57 | 2 | 73 | 1 |
+| Furn/Home Furnishings | 29 | 1 | 46 | 1 |
+| Machinery | 184 | 7 | 204 | 1 |
+
+364家拒绝分为：收入/调整EBIT非正203、股权残值非正107、股本或账面索偿/现金符号检查47、金融业务字段FN506命中7。不能通过取消检查把这些公司计为成功。茅台属于金融业务拒绝，需要已审核的酒业/财务公司拆分；来源行业为酒类不证明合并口径可直接套普通模型。
+
+307份落盘请求均以独立Decimal程序重建标准事实TTM、季度同比中位数、十年收入/再投资/FCFF、终值及账面股权桥接，每年输出和每股值全部通过，且run ID集合与批次成功集合完全一致。程序及结果保留在同目录 `independent_check.py`、`independent-final.json`；它们是本地验收产物，依赖本地落盘请求，不是新增307家公司PDF语义验收。历史FCFF仍为空，所有未来现金流均来自显式政策。
+
+安克在本次固定10%机械情景为84.49046元/股；采用来源真实分类Computers/Peripherals的行业资本效率，与此前申万消费电子代理不同。这是批次链路对照，不替代安克专门研究估值或当前目标价。下一步比较参考驱动WACC，并针对实际缺项/模型边界继续扩展；成功覆盖率不能用核心财务完整率代替。
