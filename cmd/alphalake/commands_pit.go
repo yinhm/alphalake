@@ -24,6 +24,8 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 	switch args[0] {
 	case "export-valuation-quote":
 		return true, runValuationQuote(ctx, args[1:])
+	case "export-industry-capital":
+		return true, runIndustryCapitalExport(ctx, args[1:])
 	case "export-wacc-references":
 		return true, runWACCReferenceExport(ctx, args[1:])
 	case "export-market-capital":

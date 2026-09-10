@@ -8,13 +8,13 @@ import pytest
 from tools import refresh_valuate_alphalake as refresh
 
 
-@pytest.mark.parametrize('failed', ['sync-financial','materialize-fundamentals','repair-filings','materialize-after-filing-repair','sync-cny-yield'])
+@pytest.mark.parametrize('failed', ['sync-financial','materialize-fundamentals','repair-filings','materialize-after-filing-repair','sync-cny-yield','sync-industry-capital'])
 def test_refresh_preserves_stage_failures_and_gates_materialization(tmp_path,monkeypatch,failed):
     execute=refresh.execute
     seen=[]
     def stub(command,log,timeout):
         name=log.stem;seen.append(name)
-        if name in ('sync-country-risk','sync-industry-beta','sync-cny-yield','sync-credit-spreads'):
+        if name in ('sync-country-risk','sync-industry-beta','sync-industry-capital','sync-cny-yield','sync-credit-spreads'):
             assert command[2]=='references.duckdb'
             assert command[command.index('--python')+1]==sys.executable
             assert Path(command[command.index('--parser')+1]).is_absolute()
@@ -33,8 +33,8 @@ def test_refresh_preserves_stage_failures_and_gates_materialization(tmp_path,mon
         assert seen[4:6]==['repair-filings','materialize-after-filing-repair']
         assert report['information_as_of']>=report['stages'][5]['finished_at']
     if 'batch-valuation' in seen:
-        assert seen[6:10]==['sync-country-risk','sync-industry-beta','sync-cny-yield','sync-credit-spreads']
-        assert report['information_as_of']>=report['stages'][9]['finished_at']
+        assert seen[6:11]==['sync-country-risk','sync-industry-beta','sync-industry-capital','sync-cny-yield','sync-credit-spreads']
+        assert report['information_as_of']>=report['stages'][10]['finished_at']
     for stage in report['stages']:
         if stage['name']=='batch-valuation':assert stage['command'][-2:]==['--reference-database','references.duckdb']
     assert all(Path(r['log']).read_text().strip()==r['name'] for r in report['stages'])

@@ -130,3 +130,45 @@ func runWACCReferenceExport(ctx context.Context, args []string) error {
 	}
 	return json.NewEncoder(os.Stdout).Encode(result)
 }
+
+func runIndustryCapitalExport(ctx context.Context, args []string) error {
+	if len(args) < 1 {
+		return errors.New("usage: export-industry-capital <db-path> --as-of RFC3339 [--release N] [--recorded-cutoff RFC3339]; omitted release selects latest")
+	}
+	fs := flag.NewFlagSet("export-industry-capital", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	at := fs.String("as-of", "", "information cutoff")
+	known := fs.String("recorded-cutoff", "", "system knowledge cutoff")
+	id := fs.Int64("release", 0, "fixed release; zero selects latest")
+	if err := fs.Parse(args[1:]); err != nil {
+		return err
+	}
+	if fs.NArg() != 0 {
+		return errors.New("unexpected capital export arguments")
+	}
+	asof, err := time.Parse(time.RFC3339Nano, *at)
+	if err != nil {
+		return err
+	}
+	var recorded *time.Time
+	if *known != "" {
+		v, e := time.Parse(time.RFC3339Nano, *known)
+		if e != nil {
+			return e
+		}
+		recorded = &v
+	}
+	if _, err = os.Stat(args[0]); err != nil {
+		return err
+	}
+	db, err := duckstore.Open(ctx, args[0])
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	out, err := duckstore.ExportIndustryCapital(ctx, db, asof, recorded, *id)
+	if err != nil {
+		return err
+	}
+	return json.NewEncoder(os.Stdout).Encode(out)
+}

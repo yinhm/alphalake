@@ -3,6 +3,7 @@ package ingest
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
 	"net/http"
 	"net/http/httptest"
@@ -11,6 +12,7 @@ import (
 	"path/filepath"
 	"sync/atomic"
 	"testing"
+	"time"
 )
 
 func TestBetaYieldRealArchiveReplay(t *testing.T) {
@@ -115,6 +117,63 @@ func TestBetaYieldRealArchiveReplay(t *testing.T) {
 					t.Fatal("industry catalog must not assign companies", nodes, memberships, err)
 				}
 			}
+			if tc.name == "capital" {
+				at := time.Now().UTC()
+				fixed, err := duckstore.ExportIndustryCapital(ctx, db, at, nil, first.ReleaseID)
+				if err != nil {
+					t.Fatal(err)
+				}
+				latest, err := duckstore.ExportIndustryCapital(ctx, db, at, nil, 0)
+				if err != nil {
+					t.Fatal(err)
+				}
+				a, _ := json.Marshal(fixed)
+				b, _ := json.Marshal(latest)
+				if string(a) != string(b) {
+					t.Fatal("latest differs from fixed capital release")
+				}
+				var broken int64
+				err = db.QueryRowContext(ctx, `INSERT INTO meta.dataset_release(source,dataset,source_version,content_key,publication_precision,available_at,availability_basis,first_seen_at,parser_version,normalization_version,ingest_run_id)
+                  SELECT source,dataset,'2026-01-06',repeat('f',64),publication_precision,available_at,availability_basis,first_seen_at,parser_version,normalization_version,ingest_run_id FROM meta.dataset_release WHERE release_id=? RETURNING release_id`, first.ReleaseID).Scan(&broken)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err = duckstore.ExportIndustryCapital(ctx, db, at, nil, 0); err == nil {
+					t.Fatal("broken newer release silently fell back")
+				}
+				if _, err = duckstore.ExportIndustryCapital(ctx, db, at, nil, first.ReleaseID); err != nil {
+					t.Fatal("valid explicit old release unavailable", err)
+				}
+				if _, err = db.ExecContext(ctx, `DELETE FROM meta.dataset_release WHERE release_id=?`, broken); err != nil {
+					t.Fatal(err)
+				}
+				before := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+				if _, err = duckstore.ExportIndustryCapital(ctx, db, before, nil, 0); err == nil {
+					t.Fatal("future capital publication accepted")
+				}
+				if _, err = duckstore.ExportIndustryCapital(ctx, db, at, &before, 0); err == nil {
+					t.Fatal("future capital recording accepted")
+				}
+				if _, err = duckstore.ExportIndustryCapital(ctx, db, at, nil, first.ReleaseID+100); err == nil {
+					t.Fatal("unknown capital release accepted")
+				}
+				if _, err = db.ExecContext(ctx, `UPDATE reference.industry_stat SET raw_unit='percent' WHERE observation_id=(SELECT min(observation_id) FROM reference.industry_stat)`); err != nil {
+					t.Fatal(err)
+				}
+				if _, err = duckstore.ExportIndustryCapital(ctx, db, at, nil, 0); err == nil {
+					t.Fatal("corrupt selected capital release accepted")
+				}
+				if _, err = db.ExecContext(ctx, `UPDATE reference.industry_stat SET raw_unit='dimensionless'`); err != nil {
+					t.Fatal(err)
+				}
+				if _, err = db.ExecContext(ctx, `DELETE FROM meta.checkpoint`); err != nil {
+					t.Fatal(err)
+				}
+				if _, err = duckstore.ExportIndustryCapital(ctx, db, at, nil, 0); err == nil {
+					t.Fatal("broken capital completion key accepted")
+				}
+			}
+
 		})
 	}
 }

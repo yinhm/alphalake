@@ -10,6 +10,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from data_sources.alphalake_wacc import WACCBinding, resolve_wacc
+from data_sources.alphalake_capital import CapitalBinding, resolve_capital
 from engine.data_dictionary import (CompanyValuationInput, PreparedTTM, RawFinancials,
     MacroInputs, IndustryData, MethodologyChoices, ValuationAssumptions, EquityBridgeInputs, ForecastYear)
 
@@ -113,7 +114,7 @@ class BookDCFPolicy(ScreenPolicy):
     """财报日的普通企业账面索偿情景；所有估值取舍显式提供。"""
     policy_id: Literal['nonfinancial-book-fcff-v1']
     annual_forecast: list[ForecastYear] = Field(min_length=10,max_length=10)
-    sales_to_capital: float = Field(gt=0)
+    sales_to_capital: float | None = Field(default=None,gt=0)
     terminal_growth: float = Field(ge=0)
     terminal_roic: float = Field(gt=0,le=1)
     cash_recovery: float = Field(ge=0,le=1)
@@ -154,9 +155,15 @@ class AlphaLakeRequest(BaseModel):
     data: Snapshot
     policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy
     wacc_binding: WACCBinding | None = None
+    capital_binding: CapitalBinding | None = None
 
     @model_validator(mode='after')
     def wacc_source(self):
+        if isinstance(self.policy, BookDCFPolicy):
+            if (self.capital_binding is None) == (self.policy.sales_to_capital is None):
+                raise ValueError('provide either direct sales-to-capital or reference binding, never both or neither')
+        elif self.capital_binding is not None:
+            raise ValueError('capital reference requires generic book/history FCFF policy')
         if isinstance(self.policy, ScreenPolicy):
             if (self.wacc_binding is None) == (self.policy.wacc is None):
                 raise ValueError('provide either direct WACC or reference binding, never both or neither')
@@ -268,6 +275,10 @@ def build_inputs(request: AlphaLakeRequest):
         raise MissingInputs(['source_record_conflict:'+r['period'] for r in request.data.source_conflicts])
     d, policy = request.data, request.policy
     if isinstance(policy, ScreenPolicy):
+        capital_audit = None
+        if request.capital_binding is not None:
+            ratio,capital_audit=resolve_capital(request.capital_binding,d.code,d.report_period,d.information_as_of)
+            policy=type(policy).model_validate(policy.model_dump() | {'sales_to_capital':ratio})
         reference_components = reference_audit = None
         if request.wacc_binding is not None:
             window,_ = standard_window_reader(d)
@@ -280,6 +291,10 @@ def build_inputs(request: AlphaLakeRequest):
             inputs,audit = build_book_dcf_inputs(d,policy)
         else:
             inputs,audit = build_earnings_power_inputs(d,policy)
+        if capital_audit is not None:
+            audit['capital_reference']=capital_audit
+            audit['boundaries']+=capital_audit['boundaries']
+            inputs.prepared_ttm.provenance['capital_binding']=content_hash(request.capital_binding.model_dump(mode='json'))
         if reference_components is not None:
             inputs.methodology_choices = MethodologyChoices(cost_of_capital_approach='reference_snapshot',reference_capital_inputs=reference_components)
             inputs.macro_inputs.risk_free_rate = reference_components.risk_free_rate

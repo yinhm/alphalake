@@ -151,7 +151,7 @@ python -m tools.refresh_valuate_alphalake /absolute/path/alphalake.duckdb \
   --policy /absolute/path/batch-policy.json --output-dir ./data/refresh_runs
 ```
 
-顺序是 `sync-financial` → `sync-filings --metadata-only` → `sync-industries` → 首次 `materialize-fundamentals` → `repair-filings` → 再次物化 → 可选四类WACC参考源刷新 → 批量估值。证券名单由同步命令刷新；不另建常驻服务。可由本机 cron/systemd 定时调用此命令，尚未替用户安装周期任务。进程锁按数据库绝对路径保护同一入口的重叠运行，其他直接写库命令仍依赖 DuckDB 自身锁；不支持跨主机调度锁。
+顺序是 `sync-financial` → `sync-filings --metadata-only` → `sync-industries` → 首次 `materialize-fundamentals` → `repair-filings` → 再次物化 → 可选WACC与资本效率参考源刷新 → 批量估值。证券名单由同步命令刷新；不另建常驻服务。可由本机 cron/systemd 定时调用此命令，尚未替用户安装周期任务。进程锁按数据库绝对路径保护同一入口的重叠运行，其他直接写库命令仍依赖 DuckDB 自身锁；不支持跨主机调度锁。
 
 `--filings-end` 默认中国当日，`--as-of` 默认取本轮同步/物化结束后的实际时点，避免刚刷新的行业因晚于启动时点被误排除。报告期及对应审核政策仍须显式更新，默认六期回填不能保证任意历史报告期齐全。已嵌入的WACC参考包仍须符合本轮信息截止和陈旧约束；加 `--reference-database /absolute/references.duckdb --sync-references` 可自动刷新并固定四类参考版本。行情和所有公司市场股债结构尚未纳入该通用周期，行业风险暴露及目标权重仍属显式政策。
 
@@ -309,4 +309,20 @@ alphalake sync-industry-capital ./references.duckdb --offline --python /absolute
 
 真实参考库副本同步发布94条（新版本5），离线重放不新增；原有四源WACC在相同信息截止下导出与升级前完全一致。真实源观察日期2026-01-05，生产可用时间取2026-09-10首次取得时间，不把观察日期猜成发布日期。消费电子约1.91、食品加工约1.71，不能据此说任意同行公司必须采用该值。
 
-当前完成的是原始参考同步/存储，尚未加入`--sync-references`四源周期或自动替换批量政策中的`sales_to_capital`。下一步以显式行业映射和采用理由接入参考选择及政策构建；未来增量再投资使用行业历史比率仍属政策，不能伪装成公司报表事实。
+该阶段完成的是原始参考同步/存储，当时尚未加入`--sync-references`四源周期或自动替换批量政策中的`sales_to_capital`。下一步以显式行业映射和采用理由接入参考选择及政策构建；未来增量再投资使用行业历史比率仍属政策，不能伪装成公司报表事实。
+
+## 资本效率参考选择与估值绑定
+
+`export-industry-capital references.duckdb --as-of RFC3339 [--release N] [--recorded-cutoff RFC3339]` 导出完整94行业参考包。指定正版本号可重放；省略版本号按观察日期、同日修订入库时间选最新。公开/系统时点、完整性、源单元格、单位、数值转换和发布血缘均检查；最新候选损坏时失败，不退回旧版本隐藏问题。
+
+通用账面FCFF和历史规则FCFF请求新增 `capital_binding={references,policy}`。此时 `sales_to_capital` 必须留空；直接数值和参考绑定互斥。采用政策须明确证券、报告期、单个参考行业、映射理由、最低样本量、最大年龄、倍率及“以行业历史比率代理未来边际再投资”的理由。财务标准事实保持原样，采用值及完整参考/理由写入结果审计；绑定内容和新解析模块纳入输入/引擎版本哈希，重放可复现。
+
+行业规则可携带不含公司代码的 `capital_policy`，匹配已观察的分类后才绑定证券。批量政策的 `capital_references` 可固定参考包；使用 `--reference-database` 时，存在资本效率规则便自动导出该库参考，不能同时嵌入另一份包。缺参考时输出 `blocked_missing_capital_references`，不会改用3或跳过该条件。`--sync-references` 现顺序刷新原WACC四源和新增资本效率源，再取统一截止进入批次。
+
+可用政策示例见 [`a-share-capital-reference-2026H1.json`](../valuation/examples/a-share-capital-reference-2026H1.json)：保留四行业的其余机械假设及三家公司审核隔离，仅对消费电子、调味品分别明确采用全球消费/办公电子、食品加工的宽行业代理。没有声称Damodaran给这些A股公司作了该分类，也没有把固定10%WACC改称市场WACC。
+
+[来源方法说明](https://pages.stern.nyu.edu/adamodar/New_Home_Page/databreakdown.html)明确其资本化研发和经营租赁会影响投入资本等指标。通用模型仍费用化研发、保留报告的融资口径；本次采用属于带口径差异的政策代理，尚未自动协调，不称作公司已验证的实际边际资本效率。该边界进入审计并有回归断言。
+
+单公司真实主库导出→参考绑定→共享引擎已完成：同一安克财务快照与固定10%WACC机械情景，资本效率由3改为源参考1.905898248522；每股情景值由92.15变为71.01，仅用于检验这项假设的影响，不替代既有安克专项估值。独立Decimal从标准窗口、季度同比和原始参考值重建十年FCFF、终值及账面股权桥接，结果一致；不是新的PDF语义复核。
+
+2026-09-10 03:17:03 UTC，并发Go/Python全套与真实批次验收触发本机内存不足，内核终止AlphaLake进程2491816；没有生成完整批次报告，未计为成功。后续改为串行重跑，避免将1GiB DuckDB限制误当作整个进程或多进程的内存上限。

@@ -1,0 +1,172 @@
+{
+  "policy_version": "shenwan-capital-reference-2026H1-v1",
+  "review_note": "四行业机械情景；消费电子和调味品采用显式全球行业资本效率代理，其他参数/审核隔离不变，不是公允价结论。",
+  "assignments": {},
+  "industry_rules": [
+    {
+      "rule_id": "shenwan-X2104",
+      "source": "tdx",
+      "taxonomy_code": "tdx_shenwan_industry",
+      "node_codes": [
+        "X2104"
+      ],
+      "max_age_days": 7,
+      "review_note": "2026-09-09 生产 IndustrySnapshotResults 实取代码/名称 X2104 调味品；仅初始情景，不代表该行业全部公司参数已研究。",
+      "policy": {
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "approved_report_period": "2026-06-30",
+        "scenario": "industry-mechanical-initial",
+        "review_note": "模板参数仅为初始敏感性情景，不是行业研究结论；使用前应审核适用范围和参数。",
+        "nonfinancial_scope_review": "TDX 申万行业 X2104 调味品：按一般非金融经营模型作机械初始筛查；已知金融业务由标准字段继续拒绝，兼营范围仍需逐公司复核。",
+        "wacc": 0.1,
+        "tax_rate": 0.25,
+        "growth_floor": -0.1,
+        "growth_ceiling": 0.2,
+        "growth_shift": 0,
+        "margin_shift": 0,
+        "sales_to_capital": null,
+        "terminal_growth": 0.02,
+        "terminal_roic": 0.1,
+        "cash_recovery": 0.8,
+        "operating_cash_ratio": 0.03,
+        "minority_book_multiple": 1,
+        "debt_book_multiple": 1,
+        "extra_dilution_rate": 0.02,
+        "additional_claims_million_cny": 0,
+        "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+        "financial_asset_policy": "no_credit_pending_classification",
+        "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+      },
+      "capital_policy": {
+        "report_period": "2026-06-30",
+        "industry": "Food Processing",
+        "mapping_reason": "申万调味品属于食品加工链条，采用全球食品加工宽行业作为明确代理；不声称Damodaran对各公司作了此分类。",
+        "minimum_sample_count": 30,
+        "max_age_days": 370,
+        "ratio_multiplier": 1.0,
+        "adoption_basis": "historical_industry_ratio_as_marginal_reinvestment_proxy",
+        "adoption_reason": "采用行业历史比率作为未来增量投资代理；来源方法资本化研发与经营租赁，通用模型未自动协调该口径，倍率1仅为显式代理情景，不声称公司实际边际效率已闭合。"
+      }
+    },
+    {
+      "rule_id": "shenwan-X240301",
+      "source": "tdx",
+      "taxonomy_code": "tdx_shenwan_industry",
+      "node_codes": [
+        "X240301"
+      ],
+      "max_age_days": 7,
+      "review_note": "2026-09-09 生产 IndustrySnapshotResults 实取代码/名称 X240301 厨房小家电；仅初始情景，不代表该行业全部公司参数已研究。",
+      "policy": {
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "approved_report_period": "2026-06-30",
+        "scenario": "industry-mechanical-initial",
+        "review_note": "模板参数仅为初始敏感性情景，不是行业研究结论；使用前应审核适用范围和参数。",
+        "nonfinancial_scope_review": "TDX 申万行业 X240301 厨房小家电：按一般非金融经营模型作机械初始筛查；已知金融业务由标准字段继续拒绝，兼营范围仍需逐公司复核。",
+        "wacc": 0.1,
+        "tax_rate": 0.25,
+        "growth_floor": -0.1,
+        "growth_ceiling": 0.2,
+        "growth_shift": 0,
+        "margin_shift": 0,
+        "sales_to_capital": 3,
+        "terminal_growth": 0.02,
+        "terminal_roic": 0.1,
+        "cash_recovery": 0.8,
+        "operating_cash_ratio": 0.03,
+        "minority_book_multiple": 1,
+        "debt_book_multiple": 1,
+        "extra_dilution_rate": 0.02,
+        "additional_claims_million_cny": 0,
+        "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+        "financial_asset_policy": "no_credit_pending_classification",
+        "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+      }
+    },
+    {
+      "rule_id": "shenwan-X320502",
+      "source": "tdx",
+      "taxonomy_code": "tdx_shenwan_industry",
+      "node_codes": [
+        "X320502"
+      ],
+      "max_age_days": 7,
+      "review_note": "2026-09-09 生产 IndustrySnapshotResults 实取代码/名称 X320502 工业控制设备；仅初始情景，不代表该行业全部公司参数已研究。",
+      "policy": {
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "approved_report_period": "2026-06-30",
+        "scenario": "industry-mechanical-initial",
+        "review_note": "模板参数仅为初始敏感性情景，不是行业研究结论；使用前应审核适用范围和参数。",
+        "nonfinancial_scope_review": "TDX 申万行业 X320502 工业控制设备：按一般非金融经营模型作机械初始筛查；已知金融业务由标准字段继续拒绝，兼营范围仍需逐公司复核。",
+        "wacc": 0.1,
+        "tax_rate": 0.25,
+        "growth_floor": -0.1,
+        "growth_ceiling": 0.2,
+        "growth_shift": 0,
+        "margin_shift": 0,
+        "sales_to_capital": 3,
+        "terminal_growth": 0.02,
+        "terminal_roic": 0.1,
+        "cash_recovery": 0.8,
+        "operating_cash_ratio": 0.03,
+        "minority_book_multiple": 1,
+        "debt_book_multiple": 1,
+        "extra_dilution_rate": 0.02,
+        "additional_claims_million_cny": 0,
+        "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+        "financial_asset_policy": "no_credit_pending_classification",
+        "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+      }
+    },
+    {
+      "rule_id": "shenwan-X400202",
+      "source": "tdx",
+      "taxonomy_code": "tdx_shenwan_industry",
+      "node_codes": [
+        "X400202"
+      ],
+      "max_age_days": 7,
+      "review_note": "2026-09-09 生产 IndustrySnapshotResults 实取代码/名称 X400202 品牌消费电子；仅初始情景，不代表该行业全部公司参数已研究。",
+      "policy": {
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "approved_report_period": "2026-06-30",
+        "scenario": "industry-mechanical-initial",
+        "review_note": "模板参数仅为初始敏感性情景，不是行业研究结论；使用前应审核适用范围和参数。",
+        "nonfinancial_scope_review": "TDX 申万行业 X400202 品牌消费电子：按一般非金融经营模型作机械初始筛查；已知金融业务由标准字段继续拒绝，兼营范围仍需逐公司复核。",
+        "wacc": 0.1,
+        "tax_rate": 0.25,
+        "growth_floor": -0.1,
+        "growth_ceiling": 0.2,
+        "growth_shift": 0,
+        "margin_shift": 0,
+        "sales_to_capital": null,
+        "terminal_growth": 0.02,
+        "terminal_roic": 0.1,
+        "cash_recovery": 0.8,
+        "operating_cash_ratio": 0.03,
+        "minority_book_multiple": 1,
+        "debt_book_multiple": 1,
+        "extra_dilution_rate": 0.02,
+        "additional_claims_million_cny": 0,
+        "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+        "financial_asset_policy": "no_credit_pending_classification",
+        "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+      },
+      "capital_policy": {
+        "report_period": "2026-06-30",
+        "industry": "Electronics (Consumer & Office)",
+        "mapping_reason": "申万品牌消费电子采用全球消费/办公电子作为单行业代理，兼营业务未单独归因。",
+        "minimum_sample_count": 30,
+        "max_age_days": 370,
+        "ratio_multiplier": 1.0,
+        "adoption_basis": "historical_industry_ratio_as_marginal_reinvestment_proxy",
+        "adoption_reason": "采用行业历史比率作为未来增量投资代理；来源方法资本化研发与经营租赁，通用模型未自动协调该口径，倍率1仅为显式代理情景，不声称公司实际边际效率已闭合。"
+      }
+    }
+  ],
+  "exclusions": {
+    "300124": "generic-valuation-2026/values.json：原披露与后续比较列存在差异，可比历史尚待协调",
+    "603288": "generic-valuation-2026/values.json：原披露与后续比较列存在差异，可比历史尚待协调",
+    "002959": "bear-valuation-2026：年度主表利息与附注利息/租赁两行加总不同、半年相等；可比融资口径尚需审核"
+  }
+}

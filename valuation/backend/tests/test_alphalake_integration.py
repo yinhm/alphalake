@@ -888,3 +888,61 @@ def test_bear_standard_chain_preserves_interest_scope_review(tmp_path,monkeypatc
     policy=BatchPolicy(policy_version='bear-scope-review-v1',review_note='不能把主表位匹配当租赁口径统一',assignments={'002959':dict(policy=p)},
         exclusions={'002959':'年度主表利息不含附注另列租赁融资费用，半年报包含；政策尚待审核'})
     assert run_batch(scan,policy,lambda code:pytest.fail('known scope hold must block export'))['companies'][0]['status']=='blocked_review_exclusion'
+
+
+def test_capital_reference_binding_and_industry_route(exports,tmp_path,monkeypatch):
+    from datetime import datetime
+    from api.alphalake import evaluate
+    from tools.batch_valuate_alphalake import BatchPolicy,run_batch
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    refs=json.loads((REPO/'internal/source/damodaran/testdata/capital-export.json').read_text())
+    data=copy.deepcopy(exports['300866'])
+    # 财务取自真实Go标准链；本单元检查使用固定参考包时钟和受控行业成员。
+    data['information_as_of']=refs['information_as_of']
+    p=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_text())
+    p['sales_to_capital']=None
+    cp=dict(code='300866',report_period=data['report_period'],industry='Electronics (Consumer & Office)',
+        mapping_reason='test explicit single-industry proxy',minimum_sample_count=30,max_age_days=370,ratio_multiplier=1,
+        adoption_basis='historical_industry_ratio_as_marginal_reinvestment_proxy',adoption_reason='test forecast proxy, not a company reported fact')
+    req=dict(data=data,policy=p,capital_binding=dict(references=refs,policy=cp))
+    result=evaluate(AlphaLakeRequest(**req))
+    assert evaluate(AlphaLakeRequest(**req))==result
+    with TestClient(app) as client:
+        response=client.post('/api/valuation/from-alphalake',json=req)
+        assert response.status_code==200,response.text
+        assert response.json()==result
+    assert result['audit']['capital_reference']['sales_to_capital']==1.905898248522
+    assert result['inputs']['valuation_assumptions']['sales_to_capital_high']==1.905898248522
+    assert result['inputs']['prepared_ttm']['provenance']['capital_binding']
+    assert any('capitalizes R&D' in b for b in result['audit']['boundaries'])
+    assert result['request']['data']==AlphaLakeRequest(**req).data.model_dump(mode='json')
+    for mutate in (
+        lambda v:v['policy'].update(sales_to_capital=3),
+        lambda v:v.update(capital_binding=None),
+        lambda v:v['capital_binding']['policy'].update(code='600519'),
+        lambda v:v['capital_binding']['policy'].update(report_period='2026-03-31'),
+        lambda v:v['capital_binding']['policy'].update(industry='unknown'),
+        lambda v:v['capital_binding']['policy'].update(max_age_days=0),
+        lambda v:v['capital_binding']['policy'].update(minimum_sample_count=123),
+        lambda v:v['capital_binding']['references']['observations'].pop(),
+        lambda v:v['capital_binding']['references']['observations'][0].update(raw_unit='percent'),
+        lambda v:v['capital_binding']['references']['observations'][0].update(value='3.000000000000'),
+        lambda v:v['capital_binding']['references'].update(information_as_of='2020-01-01T00:00:00Z'),
+        lambda v:v['capital_binding']['references'].update(recorded_cutoff='2020-01-01T00:00:00Z'),
+    ):
+        bad=copy.deepcopy(req);mutate(bad)
+        with pytest.raises(ValueError):build_inputs(AlphaLakeRequest(**bad))
+    rule=dict(rule_id='capital-proxy-test',source='tdx',taxonomy_code='tdx_shenwan_industry',node_codes=['X400202'],
+        max_age_days=7,review_note='controlled route test',policy=p,capital_policy={k:v for k,v in cp.items() if k!='code'})
+    policy=BatchPolicy(policy_version='capital-test',review_note='controlled industry, real financial chain',assignments={},industry_rules=[rule],capital_references=refs)
+    at=datetime.fromisoformat(data['information_as_of'])
+    member=dict(source='tdx',taxonomy_code='tdx_shenwan_industry',node_code='X400202',node_id=1,ingest_run_id=1,observed_at=at.isoformat(),run_finished_at=at.isoformat())
+    company=dict(instrument_id=data['facts'][0]['instrument_id'],name='anker',symbols=['sz300866'],financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[member])
+    scan=dict(contract_version='alphalake-readiness-v1',report_period=data['report_period'],information_as_of=data['information_as_of'],universe_scope='controlled industry',universe_count=1,companies=[company])
+    row=run_batch(scan,policy,lambda code:data)['companies'][0]
+    assert row['status']=='illustrative_book_equity_scenario' and row['run_id']==result['run_id']
+    missing=policy.model_copy(update={'capital_references':None})
+    assert run_batch(scan,missing,lambda code:pytest.fail('missing reference must block before export'))['companies'][0]['status']=='blocked_missing_capital_references'
+    for change in ({'code':'300866'},{'report_period':'2026-03-31'}):
+        bad=copy.deepcopy(rule);bad['capital_policy'].update(change)
+        with pytest.raises(ValueError):BatchPolicy(policy_version='bad',review_note='bad',assignments={},industry_rules=[bad])

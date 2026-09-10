@@ -13,16 +13,22 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from api.alphalake import evaluate, ENGINE_REVISION
 from data_sources.alphalake import Policy, ScreenPolicy, BookDCFPolicy, HistoricalDCFPolicy, WACCBinding, AlphaLakeRequest, MissingInputs, content_hash
 from data_sources.alphalake_wacc import WACCPolicy, ReferenceSnapshot
+from data_sources.alphalake_capital import CapitalBinding, CapitalPolicy, CapitalReferences
 
 
 class Assignment(BaseModel):
     model_config = ConfigDict(extra='forbid')
     policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy
     wacc_binding: WACCBinding | None = None
+    capital_binding: CapitalBinding | None = None
 
 
 class IndustryWACCPolicy(WACCPolicy):
     # 行业模板不伪造公司身份，路由确认证券后才绑定具体代码。
+    code: None = None
+
+
+class IndustryCapitalPolicy(CapitalPolicy):
     code: None = None
 
 
@@ -36,9 +42,14 @@ class IndustryRule(BaseModel):
     review_note: str = Field(min_length=1)
     policy: HistoricalDCFPolicy
     wacc_policy: IndustryWACCPolicy | None = None
+    capital_policy: IndustryCapitalPolicy | None = None
 
     @model_validator(mode='after')
     def wacc_source(self):
+        if (self.capital_policy is None)==(self.policy.sales_to_capital is None):
+            raise ValueError('industry rule requires either direct capital ratio or reference policy')
+        if self.capital_policy is not None and self.capital_policy.report_period!=self.policy.approved_report_period:
+            raise ValueError('capital industry policy report period differs')
         if (self.wacc_policy is None) == (self.policy.wacc is None):
             raise ValueError('industry rule requires either fixed WACC or reference policy')
         if self.wacc_policy is not None and (self.wacc_policy.scope!='consolidated' or self.wacc_policy.market is not None or self.wacc_policy.report_period!=self.policy.approved_report_period):
@@ -53,6 +64,7 @@ class BatchPolicy(BaseModel):
     assignments: dict[Annotated[str, Field(pattern=r'^\d{6}$')], Assignment]
     industry_rules: list[IndustryRule] = Field(default_factory=list)
     wacc_references: ReferenceSnapshot | None = None
+    capital_references: CapitalReferences | None = None
     exclusions: dict[Annotated[str, Field(pattern=r'^\d{6}$')], Annotated[str, Field(min_length=1, pattern=r'\S')]] = Field(default_factory=dict)
 
 
@@ -120,7 +132,20 @@ def run_batch(readiness, policy, export):
                             row.update(status='rejected_input_or_policy',reason=str(error))
                             results.append(row)
                             continue
-                    assignment=Assignment(policy=rule.policy,wacc_binding=binding)
+                    capital_binding=None
+                    if rule.capital_policy is not None:
+                        if policy.capital_references is None:
+                            row.update(status='blocked_missing_capital_references')
+                            results.append(row)
+                            continue
+                        try:
+                            capital_binding=CapitalBinding(references=policy.capital_references,policy=CapitalPolicy.model_validate(
+                                rule.capital_policy.model_dump(exclude={'code'}) | {'code':code}))
+                        except ValueError as error:
+                            row.update(status='rejected_input_or_policy',reason=str(error))
+                            results.append(row)
+                            continue
+                    assignment=Assignment(policy=rule.policy,wacc_binding=binding,capital_binding=capital_binding)
             if assignment is not None:
                 row.setdefault('policy_route',dict(kind='explicit_company_assignment'))
                 if isinstance(assignment.policy,BookDCFPolicy) and company['missing_core_fields']:
@@ -173,6 +198,11 @@ def main():
             parser.error('reference database and embedded reference packet are mutually exclusive')
         raw_policy['wacc_references']=json.loads(subprocess.check_output([args.alphalake,'export-wacc-references',
             args.reference_database,'--as-of',args.as_of,'--latest'],text=True,timeout=300))
+    if args.reference_database and any(r.get('capital_policy') is not None for r in raw_policy.get('industry_rules',[])):
+        if raw_policy.get('capital_references') is not None:
+            parser.error('reference database and embedded capital packet are mutually exclusive')
+        raw_policy['capital_references']=json.loads(subprocess.check_output([args.alphalake,'export-industry-capital',
+            args.reference_database,'--as-of',args.as_of],text=True,timeout=300))
     policy=BatchPolicy.model_validate(raw_policy)
     def command(name,*extra):
         return json.loads(subprocess.check_output([args.alphalake,name,args.database,*extra,

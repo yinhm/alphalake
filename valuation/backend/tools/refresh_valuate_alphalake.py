@@ -75,6 +75,7 @@ def run_cycle(args, root):
             repo=Path(__file__).resolve().parents[3]
             for name,script in [('sync-country-risk','valuation/backend/data_sources/damodaran_parsers/country_risk_parser.py'),
                                 ('sync-industry-beta','valuation/backend/data_sources/damodaran_parsers/beta_parser.py'),
+                                ('sync-industry-capital','valuation/backend/data_sources/damodaran_parsers/capex_parser.py'),
                                 ('sync-cny-yield','internal/source/chinabond/parse.py'),
                                 ('sync-credit-spreads','internal/source/damodaran/ratings.py')]:
                 stage(name,[args.alphalake,name,args.reference_database,'--python',sys.executable,'--parser',str(repo/script)])
@@ -106,7 +107,7 @@ def main():
     parser.add_argument('--output-dir',required=True)
     parser.add_argument('--alphalake',default=str(Path(__file__).resolve().parents[3]/'alphalake'))
     parser.add_argument('--reference-database',help='批次运行时自动选择本地最新WACC参考版本')
-    parser.add_argument('--sync-references',action='store_true',help='批次前刷新四类参考源，需指定参考库')
+    parser.add_argument('--sync-references',action='store_true',help='批次前刷新WACC四源及行业资本效率参考，需指定参考库')
     args = parser.parse_args()
     period = date.fromisoformat(args.period)
     if args.latest<1 or args.stage_timeout<1 or period.month%3 or (period+timedelta(days=1)).day!=1:
