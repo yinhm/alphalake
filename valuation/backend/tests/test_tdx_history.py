@@ -659,3 +659,85 @@ def test_capex_trend_failure_and_forged_selection_cannot_open_holdout(tmp_path,m
     monkeypatch.setattr(sys,'argv',['backtest_tdx_capex',str(directory/'protocol-v3.json'),str(directory/'snapshot.json'),'--phase','holdout','--selection',str(receipt)])
     with pytest.raises(SystemExit) as error:module.main()
     assert error.value.code==1 and 'does not reproduce' in capsys.readouterr().out
+
+
+def test_capex_cip_original_evidence_and_source_bits():
+    import hashlib,re
+    from pypdf import PdfReader
+    from tools.backtest_tdx_history import value
+    directory=ROOT/'valuation/research/tdx-capex-forecast'
+    ledger=json.loads((directory/'driver-evidence.json').read_text());raw=(directory/'snapshot-v4.json').read_bytes();source=json.loads(raw)
+    assert hashlib.sha256(raw).hexdigest()==ledger['snapshot_sha256']
+    p=json.loads((directory/'protocol-v4.json').read_bytes())
+    assert source['study_sha256']==hashlib.sha256((directory/'protocol-v4.json').read_bytes()).hexdigest()
+    assert next(s for s in p['samples'] if s['code']=='688648')['split']=='evidence_review'
+    old=json.loads((directory/'snapshot.json').read_bytes());index={(r['code'],r['period']):r for r in source['records']}
+    for row in old['records']:
+        current=index[(row['code'],row['period'])]
+        assert current['artifact']==row['artifact']
+        assert {f:current['bits'][f] for f in row['bits']}==row['bits']
+    for report in ledger['reports']:
+        path=directory/ledger['pdf_directory']/report['file']
+        assert hashlib.sha256(path.read_bytes()).hexdigest()==report['sha256']
+        pdf=PdfReader(path)
+        def text(page):return re.sub(r'\s+','',pdf.pages[page-1].extract_text()).replace(':','：')
+        assert ledger['code'] in text(1) and report['title'] in text(1)
+        header=text(report['header_page'])
+        assert '合并资产负债表' in header and '单位：元币种：人民币' in header
+        y,m,d=map(int,report['period'].split('-'));assert f'{y}年{m}月{d}日' in header
+        def check(page,values,record):
+            matches=re.findall(r'在建工程七、22((?:[0-9,]+\.[0-9]{2})+)',text(page))
+            assert len(matches)==1
+            amounts=[s.replace(',','') for s in re.findall(r'[0-9,]+\.[0-9]{2}',matches[0])]
+            assert amounts==values
+            assert record['bits']['FN28']==bits(float(Decimal(amounts[0])))
+        record=index[(ledger['code'],report['period'])]
+        check(report['page'],report['values'],record)
+        changed=copy.deepcopy(record);changed['bits']['FN28']+=1
+        with pytest.raises(AssertionError):check(report['page'],report['values'],changed)
+        with pytest.raises(AssertionError):check(report['page'],['0',report['values'][1]],record)
+        capex=report['capex_row'];body=text(capex['page'])
+        matches=re.findall(re.escape(capex['label'])+r'((?:[0-9,]+\.[0-9]{2})+)',body)
+        assert len(matches)==1
+        assert [s.replace(',','') for s in re.findall(r'[0-9,]+\.[0-9]{2}',matches[0])]==capex['values']
+        assert record['bits']['FN114']==bits(float(capex['values'][capex['column']]))
+        if report['file']=='2025H1.pdf':
+            assert ledger['payment_note']['text'] in text(ledger['payment_note']['page'])
+            with pytest.raises(AssertionError):check(65,report['values'],record)
+
+
+def test_capex_cip_group_boundary_training_and_no_fallback():
+    from collections import defaultdict
+    from tools.backtest_tdx_capex import cip_group,fit_cip_scale,evaluate,BASE
+    directory=ROOT/'valuation/research/tdx-capex-forecast'
+    p=json.loads((directory/'protocol-v4.json').read_bytes());source=json.loads((directory/'snapshot-v4.json').read_bytes())
+    index=defaultdict(list)
+    for r in source['records']:index[(r['code'],r['period'])].append(r)
+    artifacts={a['file']:a for a in source['artifacts']};end=date(2025,6,30);row=index[('688648',end.isoformat())][0]
+    def group(capex):return cip_group(index,artifacts,'688648',end,'2025-09-01T00:00:00+08:00',Decimal(capex))
+    row['bits']['FN28']=bits(50)
+    assert group('100')['group']=='high' and group('101')['group']=='low'
+    for n in (0,-1):
+        row['bits']['FN28']=bits(n)
+        with pytest.raises(ValueError,match='nonpositive'):group('100')
+    row['bits'].pop('FN28')
+    with pytest.raises((KeyError,ValueError)):group('100')
+    source=json.loads((directory/'snapshot-v4.json').read_bytes())
+    fitted=fit_cip_scale(p,source,'2025-06-30')
+    assert fitted['forecast_as_of']=='2024-09-01T00:00:00+08:00'
+    assert all(r['driver']['period']=='2024-06-30' for r in fitted['results'] if r['status']=='evaluated')
+    changed=copy.deepcopy(source)
+    for r in changed['records']:
+        if r['period']>'2025-06-30' or r['code'] in {s['code'] for s in p['samples'] if s['split']=='holdout'}:r['bits']['FN28']=bits(999)
+    assert fit_cip_scale(p,changed,'2025-06-30')==fitted
+    small=dict(p,samples=[s for s in p['samples'] if s['split']=='development'][:9])
+    fit=fit_cip_scale(small,source,'2025-06-30')
+    assert all(g['multiplier'] is None for g in fit['groups'].values())
+    rows=evaluate(dict(small,origins=['2025-06-30']),source,'development',(BASE,'cip_group_scale_half'),{'2025-06-30':fit})
+    assert all(r['status']=='blocked' and 'forecasts_cny' not in r for r in rows)
+    from tools.backtest_tdx_capex import study
+    actual=study(p,source,'development');saved=json.loads((directory/'development-v4-summary.json').read_bytes())
+    assert {k:v for k,v in actual.items() if k!='results'}=={k:v for k,v in saved.items() if k!='evidence'}
+    assert actual['summary']['statuses']=={'blocked':38,'evaluated':142}
+    assert actual['decision']['selected'] is None
+    with pytest.raises(ValueError,match='passing development'):study(p,source,'holdout',actual)

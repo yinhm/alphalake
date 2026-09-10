@@ -1,0 +1,93 @@
+{
+  "code": "688648",
+  "pdf_directory": "../tdx-growth-expanded/depreciation-review-688648",
+  "snapshot_sha256": "62778ac58e5d974733638512faff87e125fc7978feb2915013d4589ecc8404f0",
+  "reports": [
+    {
+      "file": "2025H1.pdf",
+      "period": "2025-06-30",
+      "sha256": "4473f1cca22c1fef5fe1bfa7ad62fad5d8c07c3a1403811cbd0921ab84eefb78",
+      "source_url": "https://static.cninfo.com.cn/finalpage/2025-08-28/1224595568.PDF",
+      "first_acquired_at": null,
+      "title": "中邮科技股份有限公司2025年半年度报告",
+      "page": 62,
+      "header_page": 62,
+      "values": [
+        "10703081.47",
+        "335955.92"
+      ],
+      "capex_row": {
+        "key": "cash_capex",
+        "page": 143,
+        "label": "设备设施购置款",
+        "anchor": null,
+        "column": 0,
+        "values": [
+          "84599235.43",
+          "33474015.72"
+        ],
+        "header_page": 143,
+        "header_label": "支付的重要的投资活动有关的现金"
+      }
+    },
+    {
+      "file": "2025FY.pdf",
+      "period": "2025-12-31",
+      "sha256": "228baf77b21ad67b377d5e0eba2c588665ec751efdf8589212b5c91824e76b6f",
+      "source_url": "https://static.cninfo.com.cn/finalpage/2026-04-29/1225239416.PDF",
+      "first_acquired_at": "2026-09-10T23:01:12.121772+00:00",
+      "title": "中邮科技股份有限公司2025年年度报告",
+      "page": 121,
+      "header_page": 121,
+      "values": [
+        "110214.98",
+        "335955.92"
+      ],
+      "capex_row": {
+        "key": "cash_capex",
+        "page": 217,
+        "label": "房屋建筑物及设备设施购置款",
+        "anchor": null,
+        "column": 0,
+        "values": [
+          "180641754.35",
+          "43829699.53"
+        ],
+        "header_page": 217,
+        "header_label": "支付的重要的投资活动有关的现金"
+      }
+    },
+    {
+      "file": "2026H1.pdf",
+      "period": "2026-06-30",
+      "sha256": "86d6f75e1efa7f8ff6271740c13dd569068703f69551fd7b334e1aa677358131",
+      "source_url": "https://static.cninfo.com.cn/finalpage/2026-08-27/1225510142.PDF",
+      "first_acquired_at": "2026-09-10T23:01:14.521238+00:00",
+      "title": "中邮科技股份有限公司2026年半年度报告",
+      "page": 91,
+      "header_page": 90,
+      "values": [
+        "129483.59",
+        "110214.98"
+      ],
+      "capex_row": {
+        "key": "cash_capex",
+        "page": 183,
+        "label": "设备设施购置款",
+        "anchor": null,
+        "column": 0,
+        "values": [
+          "11559968.39",
+          "84599235.43"
+        ],
+        "header_page": 183,
+        "header_label": "支付的重要的投资活动有关的现金"
+      }
+    }
+  ],
+  "payment_note": {
+    "page": 56,
+    "text": "中邮信源研发及智能制造基地项目已于2023年11月达到预定可使用状态，因工程决算及合同付款条件影响，部分款项于2024年及2025年支付。"
+  },
+  "boundary": "在建工程是期末账面存量，不是剩余投资预算或未来现金承诺；本公司仅用于证据核验，不参与开发或留出评分。"
+}

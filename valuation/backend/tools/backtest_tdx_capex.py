@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from statistics import mean,median
 
-from tools.backtest_tdx_history import at,available,window,quarter_periods
+from tools.backtest_tdx_history import at,available,window,quarter_periods,value
 from data_sources.alphalake_calibration import weighted_median
 
 BASE='repeat_latest_capex'
@@ -30,6 +30,44 @@ def financial(index,artifacts,code,end,cutoff):
     if capex<0 or revenue<=0:raise ValueError('negative capex or nonpositive revenue: '+end.isoformat())
     return dict(period=end.isoformat(),capex_cny=str(capex),revenue_cny=str(revenue),source_inputs=refs+more)
 
+
+
+def cip_group(index,artifacts,code,end,cutoff,capex):
+    rows=index.get((code,end.isoformat()),[])
+    if len(rows)!=1:raise ValueError('CIP source identity not unique')
+    row=rows[0];artifact=artifacts[row['artifact']]
+    if artifact['report_period']!=end.isoformat() or available(row,artifact)>at(cutoff):raise ValueError('CIP period/cutoff differs')
+    cip=value(row,'FN28')
+    if cip<=0 or capex<=0:raise ValueError('nonpositive CIP or capex; group undefined')
+    ratio=cip/capex
+    return dict(group='low' if ratio<Decimal('.5') else 'high',cip_cny=str(cip),cip_to_capex=str(ratio),
+                period=end.isoformat(),artifact=row['artifact'],field='FN28',source_bits=row['bits']['FN28'])
+
+
+def fit_cip_scale(p,source,origin):
+    config=p['calibration']
+    if config['method']!='cip_group_weighted_median_actual_over_predicted' or config['group_minimum_pairs']!=10 or config['cip_to_capex_threshold']!=.5:raise ValueError('unsupported CIP calibration')
+    # Reuse the lagged financial/cutoff validation; regroup only eligible training rows.
+    plain=dict(p,calibration=dict(config,method='weighted_median_actual_over_predicted'))
+    fitted=fit_scale(plain,source,origin)
+    index=defaultdict(list);artifacts={a['file']:a for a in source['artifacts']}
+    for row in source['records']:index[(row['code'],row['period'])].append(row)
+    pairs={'low':[],'high':[]}
+    for row in fitted['results']:
+        if row['status']!='evaluated':continue
+        try:
+            amount=Decimal(row['base']['capex_cny'])
+            driver=cip_group(index,artifacts,row['code'],date.fromisoformat(fitted['origin']),fitted['forecast_as_of'],amount)
+            row['driver']=driver
+            pairs[driver['group']].append((float(Decimal(row['actual']['capex_cny'])/amount),float(amount/Decimal(row['actual']['revenue_cny']))))
+        except (ValueError,KeyError,ArithmeticError) as exc:row.update(status='blocked',reason=str(exc))
+    count=sum(map(len,pairs.values()));groups={}
+    for group,values in pairs.items():
+        raw=weighted_median(values) if count>=30 and len(values)>=10 else None
+        scale=max(.5,min(1.5,raw)) if raw is not None else None
+        groups[group]=dict(training_pairs=len(values),raw_scale=raw,clipped_scale=scale,multiplier=(1+scale)/2 if scale is not None else None)
+    return {**{k:v for k,v in fitted.items() if k not in ('raw_scale','clipped_scale','multiplier')},
+            'training_pairs':count,'statuses':dict(Counter(r['status'] for r in fitted['results'])),'groups':groups}
 
 
 def fit_scale(p,source,origin):
@@ -72,12 +110,19 @@ def evaluate(p,source,split,models,calibrations=None):
             row=dict(code=sample['code'],stratum=sample['stratum'],origin=origin,target=target.isoformat(),status='blocked',actual_fcff=None)
             results.append(row)
             try:
-                if calibrations is not None and calibrations[origin]['multiplier'] is None:raise ValueError('insufficient calibration training')
+                if calibrations is not None and 'groups' not in calibrations[origin] and calibrations[origin]['multiplier'] is None:raise ValueError('insufficient calibration training')
                 history=[financial(index,artifacts,sample['code'],d,cutoff) for d in (end,date(end.year-1,12,31),date(end.year-2,12,31))]
                 amounts=[Decimal(r['capex_cny']) for r in history];revenues=[Decimal(r['revenue_cny']) for r in history]
                 all_predictions={BASE:amounts[0],'median_capex':median(amounts),'median_intensity':median(c/r for c,r in zip(amounts,revenues))*revenues[0]}
                 all_predictions['recent_trend_half']=max(Decimal(0),2*amounts[0]-amounts[1])
-                if calibrations is not None:all_predictions['lagged_scale_half']=amounts[0]*Decimal(str(calibrations[origin]['multiplier']))
+                if calibrations is not None:
+                    calibration=calibrations[origin]
+                    if 'groups' in calibration:
+                        driver=cip_group(index,artifacts,sample['code'],end,cutoff,amounts[0]);row['driver']=driver
+                        multiplier=calibration['groups'][driver['group']]['multiplier']
+                        if multiplier is None:raise ValueError('insufficient CIP group training')
+                        all_predictions['cip_group_scale_half']=amounts[0]*Decimal(str(multiplier))
+                    else:all_predictions['lagged_scale_half']=amounts[0]*Decimal(str(calibration['multiplier']))
                 predictions={m:all_predictions[m] for m in models};row.update(history=history,forecast_as_of=cutoff,forecasts_cny={m:str(v) for m,v in predictions.items()})
                 # 预测已固定之后才读取目标期；目标缺失仍保留已有预测及拒绝原因。
                 actual=financial(index,artifacts,sample['code'],target,p['evaluation_as_of'])
@@ -111,12 +156,13 @@ def gates(p,rows,model):
 
 
 def study(p,source,phase,selection=None):
-    candidates={'tdx-capex-forecast-v1':CANDIDATES,'tdx-capex-forecast-v2':('lagged_scale_half',),'tdx-capex-forecast-v3':('recent_trend_half',)}.get(p['protocol_id'],())
+    candidates={'tdx-capex-forecast-v1':CANDIDATES,'tdx-capex-forecast-v2':('lagged_scale_half',),'tdx-capex-forecast-v3':('recent_trend_half',),'tdx-capex-forecast-v4':('cip_group_scale_half',)}.get(p['protocol_id'],())
     if not candidates or p['baseline']!=BASE or tuple(p['candidates'])!=candidates or source['contract_version']!='tdx-history-source-v1' or p['gates']['require_leave_one_company_out_nonworse'] is not True:raise ValueError('unsupported study')
     if phase=='development':models=(BASE,)+candidates
     elif phase=='holdout' and selection and selection['decision']['selected'] in candidates and selection['decision']['verdicts'][selection['decision']['selected']]['passed']:models=(BASE,selection['decision']['selected'])
     else:raise ValueError('holdout requires passing development selection')
     calibrations={o:fit_scale(p,source,o) for o in p['origins']} if p['protocol_id']=='tdx-capex-forecast-v2' else None
+    if p['protocol_id']=='tdx-capex-forecast-v4':calibrations={o:fit_cip_scale(p,source,o) for o in p['origins']}
     rows=evaluate(p,source,phase if phase=='development' else 'holdout',models,calibrations)
     summary=metrics(rows,models);verdicts={m:gates(p,rows,m) for m in models if m!=BASE}
     if phase=='development':

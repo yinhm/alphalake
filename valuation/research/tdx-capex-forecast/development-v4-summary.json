@@ -1,0 +1,190 @@
+{
+  "protocol_id": "tdx-capex-forecast-v4",
+  "phase": "development",
+  "summary": {
+    "candidates": 180,
+    "statuses": {
+      "blocked": 38,
+      "evaluated": 142
+    },
+    "models": {
+      "repeat_latest_capex": {
+        "n": 142,
+        "mae_pct_actual_revenue": 4.795175115022257,
+        "mean_bias_pct_actual_revenue": 0.4459021663477281,
+        "capex_wape_pct": 32.524249529217016
+      },
+      "cip_group_scale_half": {
+        "n": 142,
+        "mae_pct_actual_revenue": 4.597725104138449,
+        "mean_bias_pct_actual_revenue": -0.9422577592509835,
+        "capex_wape_pct": 33.85363555878786
+      }
+    }
+  },
+  "by_origin": {
+    "2023-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "blocked": 17,
+        "evaluated": 43
+      },
+      "models": {
+        "repeat_latest_capex": {
+          "n": 43,
+          "mae_pct_actual_revenue": 5.487212856681801,
+          "mean_bias_pct_actual_revenue": 2.071520340974366,
+          "capex_wape_pct": 30.133832927605365
+        },
+        "cip_group_scale_half": {
+          "n": 43,
+          "mae_pct_actual_revenue": 4.988214312046521,
+          "mean_bias_pct_actual_revenue": 0.20552513048810356,
+          "capex_wape_pct": 32.37875085902555
+        }
+      }
+    },
+    "2024-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "blocked": 11,
+        "evaluated": 49
+      },
+      "models": {
+        "repeat_latest_capex": {
+          "n": 49,
+          "mae_pct_actual_revenue": 5.08992719110461,
+          "mean_bias_pct_actual_revenue": 0.8287767727012574,
+          "capex_wape_pct": 38.052708903471945
+        },
+        "cip_group_scale_half": {
+          "n": 49,
+          "mae_pct_actual_revenue": 4.844110970112942,
+          "mean_bias_pct_actual_revenue": -0.7909322133800293,
+          "capex_wape_pct": 38.46328736955047
+        }
+      }
+    },
+    "2025-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "evaluated": 50,
+        "blocked": 10
+      },
+      "models": {
+        "repeat_latest_capex": {
+          "n": 50,
+          "mae_pct_actual_revenue": 3.9111656226343436,
+          "mean_bias_pct_actual_revenue": -1.3273465780576392,
+          "capex_wape_pct": 29.812238665289886
+        },
+        "cip_group_scale_half": {
+          "n": 50,
+          "mae_pct_actual_revenue": 4.020446236682503,
+          "mean_bias_pct_actual_revenue": -2.077650079380134,
+          "capex_wape_pct": 31.15319398422102
+        }
+      }
+    }
+  },
+  "decision": {
+    "selected": null,
+    "verdicts": {
+      "cip_group_scale_half": {
+        "passed": false,
+        "checks": {
+          "minimum_pairs": true,
+          "primary_improvement": false,
+          "capex_wape_nonworse": false,
+          "each_period_nonworse": true,
+          "leave_one_company_out_nonworse": true
+        }
+      }
+    }
+  },
+  "boundary": "报告资本开支现金预测，不是净再投资或FCFF；相同三历史窗口分母，亏损不剔除；TDX+FN314后来取得版本研究，不是严格PIT或生产政策",
+  "calibration_training": {
+    "2023-06-30": {
+      "origin": "2022-06-30",
+      "target": "2023-06-30",
+      "forecast_as_of": "2022-09-01T00:00:00+08:00",
+      "evaluation_as_of": "2023-09-01T00:00:00+08:00",
+      "training_pairs": 46,
+      "statuses": {
+        "blocked": 14,
+        "evaluated": 46
+      },
+      "groups": {
+        "low": {
+          "training_pairs": 23,
+          "raw_scale": 0.8714657452266198,
+          "clipped_scale": 0.8714657452266198,
+          "multiplier": 0.9357328726133098
+        },
+        "high": {
+          "training_pairs": 23,
+          "raw_scale": 0.463848520708848,
+          "clipped_scale": 0.5,
+          "multiplier": 0.75
+        }
+      }
+    },
+    "2024-06-30": {
+      "origin": "2023-06-30",
+      "target": "2024-06-30",
+      "forecast_as_of": "2023-09-01T00:00:00+08:00",
+      "evaluation_as_of": "2024-09-01T00:00:00+08:00",
+      "training_pairs": 50,
+      "statuses": {
+        "blocked": 10,
+        "evaluated": 50
+      },
+      "groups": {
+        "low": {
+          "training_pairs": 24,
+          "raw_scale": 0.5902576305476843,
+          "clipped_scale": 0.5902576305476843,
+          "multiplier": 0.7951288152738422
+        },
+        "high": {
+          "training_pairs": 26,
+          "raw_scale": 0.7598771131125137,
+          "clipped_scale": 0.7598771131125137,
+          "multiplier": 0.8799385565562569
+        }
+      }
+    },
+    "2025-06-30": {
+      "origin": "2024-06-30",
+      "target": "2025-06-30",
+      "forecast_as_of": "2024-09-01T00:00:00+08:00",
+      "evaluation_as_of": "2025-09-01T00:00:00+08:00",
+      "training_pairs": 52,
+      "statuses": {
+        "evaluated": 52,
+        "blocked": 8
+      },
+      "groups": {
+        "low": {
+          "training_pairs": 19,
+          "raw_scale": 0.8520778765905394,
+          "clipped_scale": 0.8520778765905394,
+          "multiplier": 0.9260389382952696
+        },
+        "high": {
+          "training_pairs": 33,
+          "raw_scale": 0.8649464396461182,
+          "clipped_scale": 0.8649464396461182,
+          "multiplier": 0.9324732198230591
+        }
+      }
+    }
+  },
+  "evidence": {
+    "protocol_sha256": "99d2cfa15f8d0dedb7dbd8dff3c45411604ca49119000f499100f57d767ab6e5",
+    "snapshot_sha256": "62778ac58e5d974733638512faff87e125fc7978feb2915013d4589ecc8404f0",
+    "code_sha256": "7ccc05b8e2325cf9009ed7fd629f6de7b8a5ffc7ab46082c51d95c42c777767d",
+    "dependency_sha256": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+    "calibration_dependency_sha256": "386cad4668caa2ee2e6a0fe8e94b11ea551506b90786cb69b8990acdbfea9570"
+  }
+}
