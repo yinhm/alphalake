@@ -696,6 +696,13 @@ def test_batch_industry_rules_gate_age_conflict_and_override(exports,tmp_path,mo
     assert run_batch(scan,ambiguous,export)['companies'][0]['policy_route']=={'kind':'explicit_company_assignment'}
     broken=copy.deepcopy(scan);broken['companies'][0]['industry_memberships'][0]['observed_at']='bad-date'
     assert run_batch(broken,policy,export)['companies'][0]['status']=='rejected_industry_evidence'
+    # 已知口径问题优先于公司指定和行业匹配，不导出、不生成估值文件。
+    calls.clear()
+    ambiguous.exclusions['300866']='真实审核发现历史口径未闭合；此处测试隔离优先级'
+    assert run_batch(scan,ambiguous,export)['companies'][0]['status']=='blocked_review_exclusion'
+    assert not calls
+    with pytest.raises(ValueError):
+        BatchPolicy(policy_version='invalid',review_note='invalid',assignments={},exclusions={'300866':'   '})
 
 
 def test_source_conflict_blocks_old_usable_values(exports,tmp_path,monkeypatch):
@@ -720,3 +727,54 @@ def test_source_conflict_blocks_old_usable_values(exports,tmp_path,monkeypatch):
     result=run_batch(readiness,policy,lambda code:pytest.fail('conflict must not be exported for valuation'))
     assert result['status_counts']=={'blocked_source_record_conflict':1}
     assert not list(tmp_path.glob('*.json'))
+
+
+def test_new_companies_standard_chain_and_review_hold(tmp_path,monkeypatch):
+    from decimal import Decimal
+    from api.alphalake import evaluate
+    from tools.batch_valuate_alphalake import BatchPolicy,run_batch
+    output=tmp_path/'exports'
+    env=os.environ|{'ALPHALAKE_GENERIC_EXPORT_DIR':str(output),'GOPROXY':'off','GOSUMDB':'off'}
+    subprocess.run(['go','test','./internal/ingest','-run','^TestRealGenericValuationSourceChain$','-count=1'],
+                   cwd=REPO,env=env,check=True,capture_output=True,text=True)
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path/'runs'))
+    profile=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_text())
+    profile['review_note']='管线数学回归：已知比较列差异保留，批量正式试跑隔离这两家公司；不确认可比增长率'
+    profile['nonfinancial_scope_review']='汇川工业自动化、海天调味品合并报表样本；仅作原披露混合版本的机械情景'
+    companies=[]
+    for code in ('300124','603288'):
+        data=json.loads((output/(code+'.json')).read_text())
+        result=evaluate(AlphaLakeRequest(data=data,policy=profile))
+        assert result['status']=='illustrative_book_equity_scenario'
+        w={r['field']:float(r['value'])/1e6 for r in data['windows'] if r['value'] is not None}
+        facts={(r['field'],r['period']):Decimal(r['value']) for r in data['facts']}
+        revenue=sum(facts['FN230',p] for p in ('2025-09-30','2025-12-31','2026-03-31','2026-06-30'))
+        near(w['FN230'],float(revenue)/1e6)
+        for field in ('FN86','FN305','FN306','FN83','FN82','FN301'):
+            expected=facts[field,'2025-12-31']+facts[field,'2026-06-30']-facts[field,'2025-06-30']
+            near(w[field],float(expected)/1e6)
+        for field in ('FN238','FN133','FN41','FN52','FN55','FN56','FN439','FN69'):
+            near(w[field],float(facts[field,'2026-06-30'])/1e6)
+        q={r['period']:float(r['value']) for r in data['facts'] if r['field']=='FN230'}
+        growth=min(.2,max(-.1,((q['2026-03-31']/q['2025-03-31']-1)+(q['2026-06-30']/q['2025-06-30']-1))/2))
+        near(result['audit']['forecast_rule_evidence']['clipped_scenario_growth'],growth)
+        rev=w['FN230'];margin=(w['FN86']+w['FN305']-w['FN306']-w['FN83']-w['FN82']-w['FN301'])/rev;pv=0
+        for year in range(1,11):
+            rate=growth if year<=5 else growth+(.02-growth)*(year-5)/5
+            previous=rev;rev*=1+rate
+            cash=rev*margin*.75-(rev-previous)/3
+            near(result['report']['dcf']['fcff_projections'][year-1],cash)
+            pv+=cash/1.1**year
+        ev=pv+rev*1.02*margin*.75*(1-.02/.1)/(.1-.02)/1.1**10
+        fixed=max(0,w['FN133']*.8-w['FN230']*.03)-sum(w[f] for f in ('FN41','FN52','FN55','FN56','FN439'))-w['FN69']
+        near(result['report']['final']['value_per_share'],(ev+fixed)/(w['FN238']*1.02))
+        assert result['report']['cashflow']['fcff'] is None
+        companies.append(dict(instrument_id=data['facts'][0]['instrument_id'],name=code,symbols=[('sz' if code=='300124' else 'sh')+code],
+                              financial_status='financial_core_complete_requires_policy',missing_core_fields=[]))
+    policy=BatchPolicy(policy_version='real-comparative-review-v1',review_note='已知原文比较列差异未协调',
+                       assignments={code:dict(policy=profile) for code in ('300124','603288')},
+                       exclusions={code:'generic-valuation-2026/values.json：旧披露与新比较列不一致，暂停自动历史预测' for code in ('300124','603288')})
+    scan=dict(contract_version='alphalake-readiness-v1',report_period=data['report_period'],information_as_of=data['information_as_of'],
+              universe_scope='real_two_company_sample',universe_count=2,companies=companies)
+    result=run_batch(scan,policy,lambda code:pytest.fail('review hold must precede export'))
+    assert result['status_counts']=={'blocked_review_exclusion':2}

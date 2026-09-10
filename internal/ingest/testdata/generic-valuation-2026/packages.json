@@ -1,0 +1,68 @@
+[
+  {
+    "file": "gpcw20260630.zip",
+    "original_sha256": "c715a00bbb5158f7d3fb33ddc796a793f257f437f734b6976a827517df95d4fb",
+    "original_md5": "db8710cf7a230582279d9694f870f0b5",
+    "original_size": 5744612,
+    "record_indices": [
+      1603,
+      4109
+    ],
+    "sha256": "f323613c6348c991dc11cba730b756e063d327925625d304de268de881ebeee7"
+  },
+  {
+    "file": "gpcw20260331.zip",
+    "original_sha256": "7d05f98f0d26f8cabb7070974b62b4e0b51bd0337df09921b1443688a78e82fa",
+    "original_md5": "511d9833535d7b8d15cde88f1facb36a",
+    "original_size": 5135012,
+    "record_indices": [
+      1603,
+      4104
+    ],
+    "sha256": "a4f377cb53da32068f459b69dc0ceeee98079fb8a3f438a88ec1a285f30f483b"
+  },
+  {
+    "file": "gpcw20251231.zip",
+    "original_sha256": "4430a5b2187fbe08f4e61c0543a9b2b32dc8420655f581e927e6e7ed7d6f70f7",
+    "original_md5": "2353d31b3dfc9270fee4d0faf3a3f79b",
+    "original_size": 5803767,
+    "record_indices": [
+      1603,
+      4110
+    ],
+    "sha256": "dfb0d9d78d4771792d72d812ce9a352d8af3c7a93be1e492bdd006b6bc2a1b67"
+  },
+  {
+    "file": "gpcw20250930.zip",
+    "original_sha256": "9d553c0ee59796bb6234c6629a438dd1f5cb4c37eea550bdd15f782ca9004883",
+    "original_md5": "34a93991fd39a78aa7d733857b0c8747",
+    "original_size": 5338186,
+    "record_indices": [
+      1596,
+      4083
+    ],
+    "sha256": "244c5fede6fa3f241e9318a543de78afeda6e2c8658a5a964ab705630985e856"
+  },
+  {
+    "file": "gpcw20250630.zip",
+    "original_sha256": "4a744d422e659ce75e608792259a969edd9e50377aaa5fde8bb1fd7d283e3534",
+    "original_md5": "f773eac5570cb4f69121ff4fda304242",
+    "original_size": 5685607,
+    "record_indices": [
+      1604,
+      4109
+    ],
+    "sha256": "69f6aa5041b5eb55df1af52cc620504c5225c199bd3492ace726d81fc65853e4"
+  },
+  {
+    "file": "gpcw20250331.zip",
+    "original_sha256": "50349ae09bbac7e52d2752e4d7449fa429d16997ec8a1ef5bfb6c914c3afc049",
+    "original_md5": "68087c4765411980c25fd4e39deb89ef",
+    "original_size": 4969290,
+    "record_indices": [
+      1588,
+      4061
+    ],
+    "sha256": "fa3bae55725fe32ce51c5e0e27b72f1bd0c8d24bf5d4d2800dfe7ffa402e4344"
+  }
+]

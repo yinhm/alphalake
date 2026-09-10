@@ -1,0 +1,66 @@
+{
+  "300124-1225524610": {
+    "file": "300124-1225524610.pdf",
+    "sha256": "9d4e8851dc5129228caaf3fee9febbef9f6cfbd0caeeea922f8d33968462e769",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-08-29/1225524610.PDF",
+    "announcement_id": "1225524610",
+    "title": "2026年半年度报告",
+    "announcement_time_ms": 1787932800000
+  },
+  "300124-1225208488": {
+    "file": "300124-1225208488.pdf",
+    "sha256": "622e4c655a31d41eca5e18fde18be214aeddef7d8a29a51d429efa1f322f8f01",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-04-28/1225208488.PDF",
+    "announcement_id": "1225208488",
+    "title": "2025年年度报告",
+    "announcement_time_ms": 1777305600000
+  },
+  "300124-1225208497": {
+    "file": "300124-1225208497.pdf",
+    "sha256": "b46cd264afdab99455b303240a702e729a4d3e6b57b97dca753c09695cf393ba",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-04-28/1225208497.PDF",
+    "announcement_id": "1225208497",
+    "title": "2026年一季度报告",
+    "announcement_time_ms": 1777305600000
+  },
+  "300124-1224573421": {
+    "file": "300124-1224573421.pdf",
+    "sha256": "fac46cbf9c34be9f16168c4c9ad21d2984c303e50ec47d0198e07e006f64cc30",
+    "url": "https://static.cninfo.com.cn/finalpage/2025-08-26/1224573421.PDF",
+    "announcement_id": "1224573421",
+    "title": "2025年半年度报告",
+    "announcement_time_ms": 1756137600000
+  },
+  "603288-1225510979": {
+    "file": "603288-1225510979.pdf",
+    "sha256": "34f98e7ae2e70f2cd958945a1cc5448b0d550dac2830f83efc6556f54cfcea38",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-08-27/1225510979.PDF",
+    "announcement_id": "1225510979",
+    "title": "<em>海天味业</em>2026年半年度报告",
+    "announcement_time_ms": 1787760000000
+  },
+  "603288-1225208194": {
+    "file": "603288-1225208194.pdf",
+    "sha256": "6434206dbf73c856fed9d272c7d577554ffc7c85f773f99d2bf6a341ba7768a0",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-04-28/1225208194.PDF",
+    "announcement_id": "1225208194",
+    "title": "<em>海天味业</em>2026年第一季度报告",
+    "announcement_time_ms": 1777305600000
+  },
+  "603288-1225038237": {
+    "file": "603288-1225038237.pdf",
+    "sha256": "2c7fba45257decc8edc4a0d8462c51accf146593f8c6097b26ed5ad52cf4115e",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-03-27/1225038237.PDF",
+    "announcement_id": "1225038237",
+    "title": "<em>海天味业</em>2025年年度报告",
+    "announcement_time_ms": 1774540800000
+  },
+  "603288-1224616067": {
+    "file": "603288-1224616067.pdf",
+    "sha256": "8880246312e07651721abf2563ff1451ab9c7692926bc42a4abee86bc88a5c6d",
+    "url": "https://static.cninfo.com.cn/finalpage/2025-08-29/1224616067.PDF",
+    "announcement_id": "1224616067",
+    "title": "<em>海天味业</em>2025年半年度报告",
+    "announcement_time_ms": 1756396800000
+  }
+}

@@ -37,6 +37,7 @@ class BatchPolicy(BaseModel):
     review_note: str = Field(min_length=1)
     assignments: dict[Annotated[str, Field(pattern=r'^\d{6}$')], Assignment]
     industry_rules: list[IndustryRule] = Field(default_factory=list)
+    exclusions: dict[Annotated[str, Field(pattern=r'^\d{6}$')], Annotated[str, Field(min_length=1, pattern=r'\S')]] = Field(default_factory=dict)
 
 
 def match_industry_rules(company, rules, cutoff):
@@ -72,6 +73,10 @@ def run_batch(readiness, policy, export):
             code = symbols[0][2:]
             assignment = policy.assignments.get(code)
             row['code'] = code
+            if code in policy.exclusions:
+                row.update(status='blocked_review_exclusion',reason=policy.exclusions[code])
+                results.append(row)
+                continue
             row['status'] = 'blocked_policy_not_assigned'
             if assignment is None and policy.industry_rules:
                 try:

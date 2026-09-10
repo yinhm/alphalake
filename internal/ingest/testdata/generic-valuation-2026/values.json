@@ -1,0 +1,1385 @@
+[
+  {
+    "code": "300124",
+    "period": "20250630",
+    "field": 86,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1224573421",
+        "page": 67,
+        "label": "三、营业利润",
+        "pattern": "^\\s*三\\s*、\\s*营\\s*业\\s*利\\s*润(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "3196575907.24"
+      }
+    ],
+    "pdf_value": "3196575907.24",
+    "encoded_pdf_value": "3196575907.24",
+    "source_bits": 1329498081,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20250630",
+    "field": 305,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1224573421",
+        "page": 67,
+        "label": "其中：利息费用",
+        "pattern": "^\\s*其\\s*中\\s*：\\s*利\\s*息\\s*费\\s*用(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "70423311.86"
+      }
+    ],
+    "pdf_value": "70423311.86",
+    "encoded_pdf_value": "70423311.86",
+    "source_bits": 1283871330,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20250630",
+    "field": 306,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1224573421",
+        "page": 67,
+        "label": "利息收入",
+        "pattern": "^\\s*利\\s*息\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "104969817.30"
+      }
+    ],
+    "pdf_value": "104969817.30",
+    "encoded_pdf_value": "104969817.30",
+    "source_bits": 1288189643,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20250630",
+    "field": 83,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1224573421",
+        "page": 67,
+        "label": "投资收益",
+        "pattern": "^\\s*投\\s*资\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "411714795.23"
+      }
+    ],
+    "pdf_value": "411714795.23",
+    "encoded_pdf_value": "411714795.23",
+    "source_bits": 1304711719,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20250630",
+    "field": 82,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1224573421",
+        "page": 67,
+        "label": "公允价值变动收益",
+        "pattern": "^\\s*公\\s*允\\s*价\\s*值\\s*变\\s*动\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "-70114048.73"
+      }
+    ],
+    "pdf_value": "-70114048.73",
+    "encoded_pdf_value": "-70114048.73",
+    "source_bits": 3431316320,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20250630",
+    "field": 301,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1224573421",
+        "page": 67,
+        "label": "资产处置收益",
+        "pattern": "^\\s*资\\s*产\\s*处\\s*置\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "-29964.79"
+      }
+    ],
+    "pdf_value": "-29964.79",
+    "encoded_pdf_value": "-29964.79",
+    "source_bits": 3337230740,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20251231",
+    "field": 86,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225208488",
+        "page": 121,
+        "label": "三、营业利润",
+        "pattern": "^\\s*三\\s*、\\s*营\\s*业\\s*利\\s*润(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "5435618041.69"
+      }
+    ],
+    "pdf_value": "5435618041.69",
+    "encoded_pdf_value": "5435618041.69",
+    "source_bits": 1336016505,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20251231",
+    "field": 305,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225208488",
+        "page": 121,
+        "label": "其中：利息费用",
+        "pattern": "^\\s*其\\s*中\\s*：\\s*利\\s*息\\s*费\\s*用(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "170396213.43"
+      }
+    ],
+    "pdf_value": "170396213.43",
+    "encoded_pdf_value": "170396213.43",
+    "source_bits": 1294106787,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20251231",
+    "field": 306,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225208488",
+        "page": 121,
+        "label": "利息收入",
+        "pattern": "^\\s*利\\s*息\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "229526367.93"
+      }
+    ],
+    "pdf_value": "229526367.93",
+    "encoded_pdf_value": "229526367.93",
+    "source_bits": 1297802422,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20251231",
+    "field": 83,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225208488",
+        "page": 121,
+        "label": "投资收益",
+        "pattern": "^\\s*投\\s*资\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "62776657.83"
+      }
+    ],
+    "pdf_value": "62776657.83",
+    "encoded_pdf_value": "62776657.83",
+    "source_bits": 1282373972,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20251231",
+    "field": 82,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225208488",
+        "page": 121,
+        "label": "公允价值变动收益",
+        "pattern": "^\\s*公\\s*允\\s*价\\s*值\\s*变\\s*动\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "-29129372.78"
+      }
+    ],
+    "pdf_value": "-29129372.78",
+    "encoded_pdf_value": "-29129372.78",
+    "source_bits": 3420339534,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20251231",
+    "field": 301,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225208488",
+        "page": 121,
+        "label": "资产处置收益",
+        "pattern": "^\\s*资\\s*产\\s*处\\s*置\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "2701199.52"
+      }
+    ],
+    "pdf_value": "2701199.52",
+    "encoded_pdf_value": "2701199.52",
+    "source_bits": 1243930174,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260630",
+    "field": 86,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 66,
+        "label": "三、营业利润",
+        "pattern": "^\\s*三\\s*、\\s*营\\s*业\\s*利\\s*润(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "3049096714.61"
+      }
+    ],
+    "pdf_value": "3049096714.61",
+    "encoded_pdf_value": "3049096714.61",
+    "source_bits": 1328921990,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260630",
+    "field": 305,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 66,
+        "label": "其中：利息费用",
+        "pattern": "^\\s*其\\s*中\\s*：\\s*利\\s*息\\s*费\\s*用(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "63312097.64"
+      }
+    ],
+    "pdf_value": "63312097.64",
+    "encoded_pdf_value": "63312097.64",
+    "source_bits": 1282507832,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260630",
+    "field": 306,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 66,
+        "label": "利息收入",
+        "pattern": "^\\s*利\\s*息\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "111419684.26"
+      }
+    ],
+    "pdf_value": "111419684.26",
+    "encoded_pdf_value": "111419684.26",
+    "source_bits": 1288995877,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260630",
+    "field": 83,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 66,
+        "label": "投资收益",
+        "pattern": "^\\s*投\\s*资\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "40618502.24"
+      }
+    ],
+    "pdf_value": "40618502.24",
+    "encoded_pdf_value": "40618502.24",
+    "source_bits": 1276834434,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260630",
+    "field": 82,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 66,
+        "label": "公允价值变动收益",
+        "pattern": "^\\s*公\\s*允\\s*价\\s*值\\s*变\\s*动\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "86109334.87"
+      }
+    ],
+    "pdf_value": "86109334.87",
+    "encoded_pdf_value": "86109334.87",
+    "source_bits": 1285832083,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260630",
+    "field": 301,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 66,
+        "label": "资产处置收益",
+        "pattern": "^\\s*资\\s*产\\s*处\\s*置\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "281601.71"
+      }
+    ],
+    "pdf_value": "281601.71",
+    "encoded_pdf_value": "281601.71",
+    "source_bits": 1216970807,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260630",
+    "field": 238,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 63,
+        "label": "股本",
+        "pattern": "^\\s*股\\s*本(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "2707671958.00"
+      }
+    ],
+    "pdf_value": "2707671958.00",
+    "encoded_pdf_value": "2707671958.00",
+    "source_bits": 1327588300,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260630",
+    "field": 133,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 69,
+        "label": "六、期末现金及现金等价物余额",
+        "pattern": "^\\s*六\\s*、\\s*期\\s*末\\s*现\\s*金\\s*及\\s*现\\s*金\\s*等\\s*价\\s*物\\s*余\\s*额(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "5974288193.67"
+      }
+    ],
+    "pdf_value": "5974288193.67",
+    "encoded_pdf_value": "5974288193.67",
+    "source_bits": 1337068596,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260630",
+    "field": 41,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 62,
+        "label": "短期借款",
+        "pattern": "^\\s*短\\s*期\\s*借\\s*款(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "763236191.88"
+      }
+    ],
+    "pdf_value": "763236191.88",
+    "encoded_pdf_value": "763236191.88",
+    "source_bits": 1312159805,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260630",
+    "field": 52,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 63,
+        "label": "一年内到期的非流动负债",
+        "pattern": "^\\s*一\\s*年\\s*内\\s*到\\s*期\\s*的\\s*非\\s*流\\s*动\\s*负\\s*债(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "1349008243.71"
+      }
+    ],
+    "pdf_value": "1349008243.71",
+    "encoded_pdf_value": "1349008243.71",
+    "source_bits": 1319161975,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260630",
+    "field": 55,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 63,
+        "label": "长期借款",
+        "pattern": "^\\s*长\\s*期\\s*借\\s*款(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "801884843.10"
+      }
+    ],
+    "pdf_value": "801884843.10",
+    "encoded_pdf_value": "801884843.10",
+    "source_bits": 1312763691,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260630",
+    "field": 439,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 63,
+        "label": "租赁负债",
+        "pattern": "^\\s*租\\s*赁\\s*负\\s*债(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "212889718.63"
+      }
+    ],
+    "pdf_value": "212889718.63",
+    "encoded_pdf_value": "21288.97",
+    "source_bits": 1185305073,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260630",
+    "field": 69,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 63,
+        "label": "少数股东权益",
+        "pattern": "^\\s*少\\s*数\\s*股\\s*东\\s*权\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "1750702560.00"
+      }
+    ],
+    "pdf_value": "1750702560.00",
+    "encoded_pdf_value": "1750702560.00",
+    "source_bits": 1322300212,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20250331",
+    "field": 230,
+    "kind": "annual_quarter_table",
+    "components": [
+      {
+        "pdf": "300124-1225208488",
+        "page": 10,
+        "label": "营业收入",
+        "pattern": "^\\s*营\\s*业\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "8977911730.21"
+      }
+    ],
+    "pdf_value": "8977911730.21",
+    "encoded_pdf_value": "8977911730.21",
+    "source_bits": 1342556164,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20250630",
+    "field": 230,
+    "kind": "annual_quarter_table",
+    "components": [
+      {
+        "pdf": "300124-1225208488",
+        "page": 10,
+        "label": "营业收入",
+        "pattern": "^\\s*营\\s*业\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 1,
+        "sign": 1,
+        "value": "11531446052.78"
+      }
+    ],
+    "pdf_value": "11531446052.78",
+    "encoded_pdf_value": "11531446052.78",
+    "source_bits": 1345049850,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20250930",
+    "field": 230,
+    "kind": "annual_quarter_table",
+    "components": [
+      {
+        "pdf": "300124-1225208488",
+        "page": 10,
+        "label": "营业收入",
+        "pattern": "^\\s*营\\s*业\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 2,
+        "sign": 1,
+        "value": "11153248686.70"
+      }
+    ],
+    "pdf_value": "11153248686.70",
+    "encoded_pdf_value": "11153248686.70",
+    "source_bits": 1344680516,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20251231",
+    "field": 230,
+    "kind": "annual_quarter_table",
+    "components": [
+      {
+        "pdf": "300124-1225208488",
+        "page": 10,
+        "label": "营业收入",
+        "pattern": "^\\s*营\\s*业\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 3,
+        "sign": 1,
+        "value": "13442237730.44"
+      }
+    ],
+    "pdf_value": "13442237730.44",
+    "encoded_pdf_value": "13442237730.44",
+    "source_bits": 1346915857,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260331",
+    "field": 230,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "300124-1225208497",
+        "page": 8,
+        "label": "一、营业总收入",
+        "pattern": "^\\s*一\\s*、\\s*营\\s*业\\s*总\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "10143223378.12"
+      }
+    ],
+    "pdf_value": "10143223378.12",
+    "encoded_pdf_value": "10143223378.12",
+    "source_bits": 1343694164,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20260630",
+    "field": 230,
+    "kind": "cumulative_minus_q1",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 66,
+        "label": "一、营业总收入",
+        "pattern": "^\\s*一\\s*、\\s*营\\s*业\\s*总\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "24675250997.63"
+      },
+      {
+        "pdf": "300124-1225208497",
+        "page": 8,
+        "label": "一、营业总收入",
+        "pattern": "^\\s*一\\s*、\\s*营\\s*业\\s*总\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": -1,
+        "value": "10143223378.12"
+      }
+    ],
+    "pdf_value": "14532027619.51",
+    "encoded_pdf_value": "14532027619.51",
+    "source_bits": 1347980105,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20250630",
+    "field": 86,
+    "kind": "next_year_comparative",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 66,
+        "label": "三、营业利润",
+        "pattern": "^\\s*三\\s*、\\s*营\\s*业\\s*利\\s*润(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 1,
+        "sign": 1,
+        "value": "3196965907.24"
+      }
+    ],
+    "pdf_value": "3196965907.24",
+    "encoded_pdf_value": "3196965907.24",
+    "source_bits": 1329498081,
+    "comparison": "different_float32"
+  },
+  {
+    "code": "300124",
+    "period": "20250630",
+    "field": 306,
+    "kind": "next_year_comparative",
+    "components": [
+      {
+        "pdf": "300124-1225524610",
+        "page": 66,
+        "label": "利息收入",
+        "pattern": "^\\s*利\\s*息\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 1,
+        "sign": 1,
+        "value": "104969817.30"
+      }
+    ],
+    "pdf_value": "104969817.30",
+    "encoded_pdf_value": "104969817.30",
+    "source_bits": 1288189643,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20250630",
+    "field": 86,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1224616067",
+        "page": 44,
+        "label": "三、营业利润",
+        "pattern": "^\\s*三\\s*、\\s*营\\s*业\\s*利\\s*润(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "4658979890.24"
+      }
+    ],
+    "pdf_value": "4658979890.24",
+    "encoded_pdf_value": "4658979890.24",
+    "source_bits": 1334499634,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20250630",
+    "field": 305,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1224616067",
+        "page": 44,
+        "label": "其中：利息费用",
+        "pattern": "^\\s*其\\s*中\\s*：\\s*利\\s*息\\s*费\\s*用(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "14651894.05"
+      }
+    ],
+    "pdf_value": "14651894.05",
+    "encoded_pdf_value": "14651894.05",
+    "source_bits": 1264554486,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20250630",
+    "field": 306,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1224616067",
+        "page": 44,
+        "label": "利息收入",
+        "pattern": "^\\s*利\\s*息\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "254608247.57"
+      }
+    ],
+    "pdf_value": "254608247.57",
+    "encoded_pdf_value": "254608247.57",
+    "source_bits": 1299370039,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20250630",
+    "field": 83,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1224616067",
+        "page": 44,
+        "label": "投资收益",
+        "pattern": "^\\s*投\\s*资\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "12323079.96"
+      }
+    ],
+    "pdf_value": "12323079.96",
+    "encoded_pdf_value": "12323079.96",
+    "source_bits": 1262225672,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20250630",
+    "field": 82,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1224616067",
+        "page": 44,
+        "label": "公允价值变动收益",
+        "pattern": "^\\s*公\\s*允\\s*价\\s*值\\s*变\\s*动\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "78385816.47"
+      }
+    ],
+    "pdf_value": "78385816.47",
+    "encoded_pdf_value": "78385816.47",
+    "source_bits": 1284866643,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20250630",
+    "field": 301,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1224616067",
+        "page": 44,
+        "label": "资产处置收益",
+        "pattern": "^\\s*资\\s*产\\s*处\\s*置\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "-247094.99"
+      }
+    ],
+    "pdf_value": "-247094.99",
+    "encoded_pdf_value": "-247094.99",
+    "source_bits": 3362868671,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20251231",
+    "field": 86,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225038237",
+        "page": 91,
+        "label": "三、营业利润",
+        "pattern": "^\\s*三\\s*、\\s*营\\s*业\\s*利\\s*润(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "8664302204.25"
+      }
+    ],
+    "pdf_value": "8664302204.25",
+    "encoded_pdf_value": "8664302204.25",
+    "source_bits": 1342249905,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20251231",
+    "field": 305,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225038237",
+        "page": 91,
+        "label": "其中：利息费用",
+        "pattern": "^\\s*其\\s*中\\s*：\\s*利\\s*息\\s*费\\s*用(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "25520066.67"
+      }
+    ],
+    "pdf_value": "25520066.67",
+    "encoded_pdf_value": "25520066.67",
+    "source_bits": 1271051233,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20251231",
+    "field": 306,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225038237",
+        "page": 91,
+        "label": "利息收入",
+        "pattern": "^\\s*利\\s*息\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "687912578.29"
+      }
+    ],
+    "pdf_value": "687912578.29",
+    "encoded_pdf_value": "687912578.29",
+    "source_bits": 1310982874,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20251231",
+    "field": 83,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225038237",
+        "page": 91,
+        "label": "投资收益",
+        "pattern": "^\\s*投\\s*资\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "18379808.31"
+      }
+    ],
+    "pdf_value": "18379808.31",
+    "encoded_pdf_value": "18379808.31",
+    "source_bits": 1267481104,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20251231",
+    "field": 82,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225038237",
+        "page": 91,
+        "label": "公允价值变动收益",
+        "pattern": "^\\s*公\\s*允\\s*价\\s*值\\s*变\\s*动\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "217347243.87"
+      }
+    ],
+    "pdf_value": "217347243.87",
+    "encoded_pdf_value": "217347243.87",
+    "source_bits": 1297041227,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20251231",
+    "field": 301,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225038237",
+        "page": 91,
+        "label": "资产处置收益",
+        "pattern": "^\\s*资\\s*产\\s*处\\s*置\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "-276891.19"
+      }
+    ],
+    "pdf_value": "-276891.19",
+    "encoded_pdf_value": "-276891.19",
+    "source_bits": 3364303718,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20260630",
+    "field": 86,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 48,
+        "label": "三、营业利润",
+        "pattern": "^\\s*三\\s*、\\s*营\\s*业\\s*利\\s*润(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "4961609941.89"
+      }
+    ],
+    "pdf_value": "4961609941.89",
+    "encoded_pdf_value": "4961609941.89",
+    "source_bits": 1335090708,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20260630",
+    "field": 305,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 48,
+        "label": "其中：利息费用",
+        "pattern": "^\\s*其\\s*中\\s*：\\s*利\\s*息\\s*费\\s*用(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "4786404.69"
+      }
+    ],
+    "pdf_value": "4786404.69",
+    "encoded_pdf_value": "4786404.69",
+    "source_bits": 1251086793,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20260630",
+    "field": 306,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 48,
+        "label": "利息收入",
+        "pattern": "^\\s*利\\s*息\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "445615848.53"
+      }
+    ],
+    "pdf_value": "445615848.53",
+    "encoded_pdf_value": "445615848.53",
+    "source_bits": 1305771127,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20260630",
+    "field": 83,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 48,
+        "label": "投资收益",
+        "pattern": "^\\s*投\\s*资\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "5066744.62"
+      }
+    ],
+    "pdf_value": "5066744.62",
+    "encoded_pdf_value": "5066744.62",
+    "source_bits": 1251647473,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20260630",
+    "field": 82,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 48,
+        "label": "公允价值变动收益",
+        "pattern": "^\\s*公\\s*允\\s*价\\s*值\\s*变\\s*动\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "253813346.70"
+      }
+    ],
+    "pdf_value": "253813346.70",
+    "encoded_pdf_value": "253813346.70",
+    "source_bits": 1299320358,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20260630",
+    "field": 301,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 48,
+        "label": "资产处置收益",
+        "pattern": "^\\s*资\\s*产\\s*处\\s*置\\s*收\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "748113.10"
+      }
+    ],
+    "pdf_value": "748113.10",
+    "encoded_pdf_value": "748113.10",
+    "source_bits": 1228317970,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20260630",
+    "field": 238,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 45,
+        "label": "实收资本（或股本）",
+        "pattern": "^\\s*实\\s*收\\s*资\\s*本\\s*（\\s*或\\s*股\\s*本\\s*）(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "5851824944.00"
+      }
+    ],
+    "pdf_value": "5851824944.00",
+    "encoded_pdf_value": "5851824944.00",
+    "source_bits": 1336829410,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20260630",
+    "field": 133,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 53,
+        "label": "六、期末现金及现金等价物余额",
+        "pattern": "^\\s*六\\s*、\\s*期\\s*末\\s*现\\s*金\\s*及\\s*现\\s*金\\s*等\\s*价\\s*物\\s*余\\s*额(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "5137133685.61"
+      }
+    ],
+    "pdf_value": "5137133685.61",
+    "encoded_pdf_value": "5137133685.61",
+    "source_bits": 1335433528,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20260630",
+    "field": 41,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 44,
+        "label": "短期借款",
+        "pattern": "^\\s*短\\s*期\\s*借\\s*款(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "329350000.00"
+      }
+    ],
+    "pdf_value": "329350000.00",
+    "encoded_pdf_value": "329350000.00",
+    "source_bits": 1302137820,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20260630",
+    "field": 52,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 44,
+        "label": "一年内到期的非流动负债",
+        "pattern": "^\\s*一\\s*年\\s*内\\s*到\\s*期\\s*的\\s*非\\s*流\\s*动\\s*负\\s*债(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "58160969.38"
+      }
+    ],
+    "pdf_value": "58160969.38",
+    "encoded_pdf_value": "58160969.38",
+    "source_bits": 1281220050,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20260630",
+    "field": 439,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 44,
+        "label": "租赁负债",
+        "pattern": "^\\s*租\\s*赁\\s*负\\s*债(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "51419223.87"
+      }
+    ],
+    "pdf_value": "51419223.87",
+    "encoded_pdf_value": "5141.92",
+    "source_bits": 1168158556,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20260630",
+    "field": 69,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 45,
+        "label": "少数股东权益",
+        "pattern": "^\\s*少\\s*数\\s*股\\s*东\\s*权\\s*益(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "510457246.21"
+      }
+    ],
+    "pdf_value": "510457246.21",
+    "encoded_pdf_value": "510457246.21",
+    "source_bits": 1307797421,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20250331",
+    "field": 230,
+    "kind": "annual_quarter_table",
+    "components": [
+      {
+        "pdf": "603288-1225038237",
+        "page": 9,
+        "label": "营业收入",
+        "pattern": "^\\s*营\\s*业\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "8316586445.90"
+      }
+    ],
+    "pdf_value": "8316586445.90",
+    "encoded_pdf_value": "8316586445.90",
+    "source_bits": 1341641083,
+    "comparison": "different_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20250630",
+    "field": 230,
+    "kind": "annual_quarter_table",
+    "components": [
+      {
+        "pdf": "603288-1225038237",
+        "page": 9,
+        "label": "营业收入",
+        "pattern": "^\\s*营\\s*业\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 1,
+        "sign": 1,
+        "value": "6914860317.77"
+      }
+    ],
+    "pdf_value": "6914860317.77",
+    "encoded_pdf_value": "6914860317.77",
+    "source_bits": 1338904989,
+    "comparison": "different_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20250930",
+    "field": 230,
+    "kind": "annual_quarter_table",
+    "components": [
+      {
+        "pdf": "603288-1225038237",
+        "page": 9,
+        "label": "营业收入",
+        "pattern": "^\\s*营\\s*业\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 2,
+        "sign": 1,
+        "value": "6398695466.22"
+      }
+    ],
+    "pdf_value": "6398695466.22",
+    "encoded_pdf_value": "6398695466.22",
+    "source_bits": 1337896103,
+    "comparison": "different_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20251231",
+    "field": 230,
+    "kind": "annual_quarter_table",
+    "components": [
+      {
+        "pdf": "603288-1225038237",
+        "page": 9,
+        "label": "营业收入",
+        "pattern": "^\\s*营\\s*业\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 3,
+        "sign": 1,
+        "value": "7243238236.87"
+      }
+    ],
+    "pdf_value": "7243238236.87",
+    "encoded_pdf_value": "7243238236.87",
+    "source_bits": 1339551402,
+    "comparison": "different_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20260331",
+    "field": 230,
+    "kind": "reported_current",
+    "components": [
+      {
+        "pdf": "603288-1225208194",
+        "page": 7,
+        "label": "一、营业总收入",
+        "pattern": "^\\s*一\\s*、\\s*营\\s*业\\s*总\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "9028967209.89"
+      }
+    ],
+    "pdf_value": "9028967209.89",
+    "encoded_pdf_value": "9028967209.89",
+    "source_bits": 1342606023,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20260630",
+    "field": 230,
+    "kind": "cumulative_minus_q1",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 47,
+        "label": "一、营业总收入",
+        "pattern": "^\\s*一\\s*、\\s*营\\s*业\\s*总\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": 1,
+        "value": "16146273837.53"
+      },
+      {
+        "pdf": "603288-1225208194",
+        "page": 7,
+        "label": "一、营业总收入",
+        "pattern": "^\\s*一\\s*、\\s*营\\s*业\\s*总\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 0,
+        "sign": -1,
+        "value": "9028967209.89"
+      }
+    ],
+    "pdf_value": "7117306627.64",
+    "encoded_pdf_value": "7117306627.64",
+    "source_bits": 1339301054,
+    "comparison": "equal_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20250630",
+    "field": 86,
+    "kind": "next_year_comparative",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 48,
+        "label": "三、营业利润",
+        "pattern": "^\\s*三\\s*、\\s*营\\s*业\\s*利\\s*润(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 1,
+        "sign": 1,
+        "value": "4656434759.44"
+      }
+    ],
+    "pdf_value": "4656434759.44",
+    "encoded_pdf_value": "4656434759.44",
+    "source_bits": 1334499634,
+    "comparison": "different_float32"
+  },
+  {
+    "code": "603288",
+    "period": "20250630",
+    "field": 306,
+    "kind": "next_year_comparative",
+    "components": [
+      {
+        "pdf": "603288-1225510979",
+        "page": 48,
+        "label": "利息收入",
+        "pattern": "^\\s*利\\s*息\\s*收\\s*入(?:\\s*[（(][^）)]*[）)])?\\s*(?:七、\\s*\\d+)?\\s*(-?[\\d,]+\\.\\d{2}(?:\\s+-?[\\d,]+\\.\\d{2})*)[ \\t]*$",
+        "column": 1,
+        "sign": 1,
+        "value": "254646064.26"
+      }
+    ],
+    "pdf_value": "254646064.26",
+    "encoded_pdf_value": "254646064.26",
+    "source_bits": 1299370039,
+    "comparison": "different_float32"
+  }
+]
