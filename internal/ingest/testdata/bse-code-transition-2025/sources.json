@@ -1,0 +1,22 @@
+{
+  "mapping": {
+    "url": "https://www.bse.cn/service/code_mapping.html",
+    "sha256": "95d43bba3b5ca2d6e5a2654755ea732ef52fa8d2c39fe667b5d4eab533a3b877",
+    "fetched_at": "2026-09-10T02:22:58.949086+00:00"
+  },
+  "rollout": {
+    "url": "https://www.bse.cn/important_news/200026735.html",
+    "sha256": "a027a70eb499d3e8d31ede2b5045ecf3aee3ba02f221743f996fed261a6cc125",
+    "fetched_at": "2026-09-10T02:22:59.364118+00:00"
+  },
+  "pilot-start": {
+    "url": "https://www.bse.cn/important_news/200025603.html",
+    "sha256": "01856bf1a2049714253f469fe6c11efad00a62006bac6f5821b99264e89932b7",
+    "fetched_at": "2026-09-10T02:22:59.764750+00:00"
+  },
+  "pilot-list": {
+    "url": "https://www.bse.cn/important_news/200025487.html",
+    "sha256": "4ee4e1b8573fa83e9e01644834abdbe459ffe8add1db0b2e80e5f9e028bb3df4",
+    "fetched_at": "2026-09-10T02:23:00.241367+00:00"
+  }
+}
