@@ -2,10 +2,66 @@ package duckdb
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"testing"
 	"time"
 )
+
+func TestReadinessBatchesKeepFieldsAndLargeIDs(t *testing.T) {
+	t.Setenv("ALPHALAKE_DUCKDB_MEMORY_LIMIT", "128MiB")
+	t.Setenv("ALPHALAKE_DUCKDB_THREADS", "1")
+	ctx := t.Context()
+	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "batches.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	// 合成事实验证跨批次拼接、稀疏大ID及JSON精度；不作为真实来源证据。
+	_, err = db.ExecContext(ctx, `INSERT INTO ref.instrument(instrument_id,instrument_type,exchange_mic,currency,name)
+ SELECT CASE WHEN i=129 THEN 9007199254740993 ELSE i END,'equity','XSHG','CNY','test-'||i FROM range(1,130) r(i);
+ INSERT INTO ref.instrument_identifier(instrument_id,provider,identifier_type,identifier_value)
+ SELECT instrument_id,'tdx','symbol','sh'||CAST(600000+CAST(substr(name,6) AS INTEGER) AS VARCHAR) FROM ref.instrument;
+ INSERT INTO fundamental.fact(fact_id,instrument_id,canonical_field,report_period,announcement_time,period_type,
+ statement_scope,currency,unit,value,primary_source,source_provider_field,provider_code,source_filing_id,revision_key,normalization_rule,materializer_version)
+ SELECT 9007199254741100+CAST(substr(name,6) AS INTEGER),instrument_id,'monetary_funds','2026-06-30','2026-07-01','instant',
+ 'provider_default','CNY','CNY',CAST(substr(name,6) AS INTEGER),'tdx','FN8',CAST(600000+CAST(substr(name,6) AS INTEGER) AS VARCHAR),1,name,'test','test' FROM ref.instrument`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := ExportValuationReadiness(ctx, db, time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC), time.Date(2026, 9, 10, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows := result["companies"].([]map[string]any)
+	if len(rows) != 129 {
+		t.Fatal("lost company", len(rows))
+	}
+	for i, row := range rows {
+		id := int64(i + 1)
+		if i == 128 {
+			id = 9007199254740993
+		}
+		if row["instrument_id"] != json.Number(fmt.Sprint(id)) {
+			t.Fatal("identity/order changed", row["instrument_id"])
+		}
+		found := false
+		for _, value := range row["fields"].([]any) {
+			field := value.(map[string]any)
+			if field["field"] != "FN8" {
+				continue
+			}
+			found = true
+			if field["status"] != "complete" || field["value"] != fmt.Sprintf("%d.0000000000", i+1) || field["source_fact_ids"].([]any)[0] != json.Number(fmt.Sprint(int64(9007199254741101)+int64(i))) {
+				t.Fatal("field or lineage crossed company/batch", row)
+			}
+		}
+		if !found {
+			t.Fatal("lost window", id)
+		}
+	}
+}
 
 func TestValuationReadinessKeepsMissingCompanies(t *testing.T) {
 	ctx := context.Background()

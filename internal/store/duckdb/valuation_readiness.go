@@ -21,8 +21,7 @@ func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 		return nil, err
 	}
 	defer tx.Rollback()
-	var raw sql.NullString
-	err = tx.QueryRowContext(ctx, `WITH universe AS (
+	queryRows, err := tx.QueryContext(ctx, `WITH universe AS (
  SELECT i.instrument_id,i.name,i.exchange_mic,
  list(DISTINCT d.identifier_value ORDER BY d.identifier_value) FILTER (WHERE d.identifier_value IS NOT NULL) AS symbols,
  count(DISTINCT d.identifier_value) AS symbol_count,
@@ -39,12 +38,6 @@ func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
  ), latest AS (
  SELECT instrument_id,max(report_period) AS latest_report_period FROM fundamental.fact_asof(CAST(? AS TIMESTAMPTZ))
  WHERE primary_source='tdx' AND report_period<=CAST(? AS DATE) GROUP BY instrument_id
- ), windows AS (
- SELECT instrument_id,list(struct_pack(field:=source_provider_field,canonical_field:=canonical_field,
- value:=CAST(value AS VARCHAR),unit:=unit,scope:=statement_scope,status:=coverage_status,
- required_inputs:=required_inputs,available_inputs:=available_inputs,missing_periods:=missing_periods,
- source_fact_ids:=source_fact_ids) ORDER BY source_provider_field,provider_code,statement_scope) AS fields
- FROM fundamental.ttm_asof(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE)) GROUP BY instrument_id
  ), industries AS (
  SELECT m.instrument_id,list(struct_pack(source:=t.source,taxonomy_code:=t.taxonomy_code,
  node_code:=n.source_node_code,node_name:=n.name,node_id:=n.node_id,
@@ -65,22 +58,80 @@ func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
  FROM fundamental.provider_conflicts_asof(CAST(? AS TIMESTAMPTZ))
  WHERE source='tdx' AND report_period<=CAST(? AS DATE) AND report_period>=make_date(year(CAST(? AS DATE))-1,1,1)
  GROUP BY provider_code
- ) SELECT CAST(to_json(list(r ORDER BY instrument_id)) AS VARCHAR) FROM (
- SELECT u.*,CAST(l.latest_report_period AS VARCHAR) AS latest_report_period,w.fields,c.industry_memberships,q.source_conflicts
- FROM universe u LEFT JOIN latest l USING(instrument_id) LEFT JOIN windows w USING(instrument_id) LEFT JOIN industries c USING(instrument_id) LEFT JOIN conflicts q ON q.provider_code=substr(u.symbols[1],3)) r`,
+ ) SELECT CAST(to_json(r) AS VARCHAR) FROM (
+ SELECT u.*,CAST(l.latest_report_period AS VARCHAR) AS latest_report_period,NULL AS fields,c.industry_memberships,q.source_conflicts
+ FROM universe u LEFT JOIN latest l USING(instrument_id) LEFT JOIN industries c USING(instrument_id) LEFT JOIN conflicts q ON q.provider_code=substr(u.symbols[1],3)) r ORDER BY instrument_id`,
 		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"),
-		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof, end, asof, end, asof, asof, asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof, end, end).Scan(&raw)
+		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof, end, asof, asof, asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof, end, end)
 	if err != nil {
 		return nil, err
 	}
-	if !raw.Valid {
-		raw.String = "[]"
+	defer queryRows.Close()
+	// 按证券读取，避免在 DuckDB 中构造整份市场 JSON 巨型列表。
+	rows := make([]map[string]any, 0)
+	for queryRows.Next() {
+		var raw string
+		if err := queryRows.Scan(&raw); err != nil {
+			return nil, err
+		}
+		var row map[string]any
+		decoder := json.NewDecoder(strings.NewReader(raw))
+		decoder.UseNumber()
+		if err := decoder.Decode(&row); err != nil {
+			return nil, err
+		}
+		rows = append(rows, row)
 	}
-	var rows []map[string]any
-	decoder := json.NewDecoder(strings.NewReader(raw.String))
-	decoder.UseNumber()
-	if err = decoder.Decode(&rows); err != nil {
+	if err := queryRows.Err(); err != nil {
 		return nil, err
+	}
+	if err = queryRows.Close(); err != nil {
+		return nil, err
+	}
+	ids := make([]int64, len(rows))
+	byID := make(map[int64]map[string]any, len(rows))
+	for i, row := range rows {
+		id, err := row["instrument_id"].(json.Number).Int64()
+		if err != nil {
+			return nil, err
+		}
+		ids[i], byID[id] = id, row
+	}
+	// 单个全市场 TTM 分组在真实库超过1 GiB；同一事务中分批限制聚合规模。
+	// ponytail: 每批重读标准事实；若扫描延迟成为瓶颈，再在事务内暂存一次ASOF。
+	const batchSize = 128
+	for start := 0; start < len(ids); start += batchSize {
+		if err := func() error {
+			windowRows, err := tx.QueryContext(ctx, `SELECT instrument_id,CAST(to_json(list(struct_pack(
+ field:=source_provider_field,canonical_field:=canonical_field,value:=CAST(value AS VARCHAR),unit:=unit,
+ scope:=statement_scope,status:=coverage_status,required_inputs:=required_inputs,available_inputs:=available_inputs,
+ missing_periods:=missing_periods,source_fact_ids:=source_fact_ids) ORDER BY source_provider_field,provider_code,statement_scope)) AS VARCHAR)
+ FROM fundamental.ttm_asof(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE))
+ WHERE instrument_id BETWEEN ? AND ? GROUP BY instrument_id`, asof, end, ids[start], ids[min(start+batchSize, len(ids))-1])
+			if err != nil {
+				return err
+			}
+			defer windowRows.Close()
+			for windowRows.Next() {
+				var id int64
+				var raw string
+				if err := windowRows.Scan(&id, &raw); err != nil {
+					return err
+				}
+				if row, ok := byID[id]; ok {
+					var fields []any
+					decoder := json.NewDecoder(strings.NewReader(raw))
+					decoder.UseNumber()
+					if err := decoder.Decode(&fields); err != nil {
+						return err
+					}
+					row["fields"] = fields
+				}
+			}
+			return windowRows.Err()
+		}(); err != nil {
+			return nil, err
+		}
 	}
 	required := []string{"FN230", "FN86", "FN305", "FN306", "FN83", "FN82", "FN301", "FN238", "FN133", "FN41", "FN52", "FN55", "FN56", "FN439", "FN69"}
 	counts := map[string]int{}
