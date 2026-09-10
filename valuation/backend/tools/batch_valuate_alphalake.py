@@ -38,6 +38,8 @@ class IndustryRule(BaseModel):
     source: str = Field(min_length=1)
     taxonomy_code: str = Field(min_length=1)
     node_codes: list[Annotated[str, Field(min_length=1)]] = Field(min_length=1)
+    exchange_mic: Annotated[str, Field(pattern=r'^[A-Z0-9]{4}$')] | None = None
+    node_names: dict[str, Annotated[str, Field(min_length=1)]] | None = None
     max_age_days: int = Field(ge=1,le=366)
     review_note: str = Field(min_length=1)
     policy: HistoricalDCFPolicy
@@ -46,6 +48,8 @@ class IndustryRule(BaseModel):
 
     @model_validator(mode='after')
     def wacc_source(self):
+        if self.node_names is not None and set(self.node_names)!=set(self.node_codes):
+            raise ValueError('reviewed node names must cover exactly the rule codes')
         if (self.capital_policy is None)==(self.policy.sales_to_capital is None):
             raise ValueError('industry rule requires either direct capital ratio or reference policy')
         if self.capital_policy is not None and self.capital_policy.report_period!=self.policy.approved_report_period:
@@ -71,6 +75,8 @@ class BatchPolicy(BaseModel):
 def match_industry_rules(company, rules, cutoff):
     matches=[]
     for rule in rules:
+        if rule.exchange_mic is not None and company.get('exchange_mic')!=rule.exchange_mic:
+            continue
         evidence=[]
         for member in company.get('industry_memberships') or []:
             if (member.get('source'),member.get('taxonomy_code'))!=(rule.source,rule.taxonomy_code) or member.get('node_code') not in rule.node_codes:
@@ -79,6 +85,8 @@ def match_industry_rules(company, rules, cutoff):
             finished=datetime.fromisoformat(member['run_finished_at'])
             if observed.utcoffset() is None or finished.utcoffset() is None or not cutoff-timedelta(days=rule.max_age_days)<=observed<=cutoff or finished>cutoff:
                 continue
+            if rule.node_names is not None and member.get('node_name')!=rule.node_names[member['node_code']]:
+                raise ValueError('industry name differs from reviewed policy mapping: '+member['node_code'])
             evidence.append(member)
         if evidence:matches.append((rule,evidence))
     return matches

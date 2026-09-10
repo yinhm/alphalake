@@ -1,0 +1,3030 @@
+instrument_id,symbol,tdx_node_code,tdx_node_name,damodaran_industry
+25750,sh600968,X110201,油田服务,Oilfield Svcs/Equip.
+26413,sh603619,X110201,油田服务,Oilfield Svcs/Equip.
+29009,sz002207,X110201,油田服务,Oilfield Svcs/Equip.
+29399,sz002629,X110201,油田服务,Oilfield Svcs/Equip.
+29576,sz002828,X110201,油田服务,Oil/Gas (Production and Exploration)
+44521,sz300191,X110201,油田服务,Oilfield Svcs/Equip.
+25196,sh600223,X120102,化妆品,Household Products
+26400,sh603605,X120102,化妆品,Household Products
+26605,sh603983,X120102,化妆品,Household Products
+28900,sz002094,X120102,化妆品,Household Products
+44465,sz300132,X120102,化妆品,Chemical (Basic)
+45036,sz300740,X120102,化妆品,Household Products
+45146,sz300856,X120102,化妆品,Chemical (Specialty)
+45239,sz300955,X120102,化妆品,Packaging & Container
+45241,sz300957,X120102,化妆品,Household Products
+45596,sz301371,X120102,化妆品,Healthcare Products
+26985,sh688295,X120205,碳纤维,Chemical (Basic)
+44999,sz300699,X120205,碳纤维,Chemical (Basic)
+45069,sz300777,X120205,碳纤维,Chemical (Basic)
+25076,sh600063,X120306,有机化工原料,Chemical (Basic)
+25233,sh600273,X120306,有机化工原料,Chemical (Basic)
+25342,sh600423,X120306,有机化工原料,Chemical (Specialty)
+25481,sh600610,X120306,有机化工原料,Chemical (Basic)
+25636,sh600800,X120306,有机化工原料,Electronics (General)
+25739,sh600955,X120306,有机化工原料,Chemical (Basic)
+26114,sh603125,X120306,有机化工原料,Chemical (Basic)
+26187,sh603217,X120306,有机化工原料,Chemical (Basic)
+26226,sh603276,X120306,有机化工原料,Chemical (Basic)
+26473,sh603722,X120306,有机化工原料,Chemical (Basic)
+26538,sh603867,X120306,有机化工原料,Chemical (Basic)
+26586,sh603948,X120306,有机化工原料,Chemical (Basic)
+26786,sh688065,X120306,有机化工原料,Chemical (Specialty)
+29199,sz002408,X120306,有机化工原料,Chemical (Basic)
+29240,sz002455,X120306,有机化工原料,Chemical (Basic)
+29253,sz002469,X120306,有机化工原料,Oilfield Svcs/Equip.
+29418,sz002648,X120306,有机化工原料,Chemical (Basic)
+29720,sz002986,X120306,有机化工原料,Chemical (Basic)
+44422,sz300082,X120306,有机化工原料,Chemical (Specialty)
+44942,sz300641,X120306,有机化工原料,Chemical (Specialty)
+45019,sz300721,X120306,有机化工原料,Chemical (Basic)
+45214,sz300927,X120306,有机化工原料,Chemical (Specialty)
+45614,sz301393,X120306,有机化工原料,Drugs (Pharmaceutical)
+26103,sh603113,X120399,其他化学原料,Steel
+26584,sh603938,X120399,其他化学原料,Chemical (Basic)
+27301,sh688758,X120399,其他化学原料,Heathcare Information and Technology
+28494,sz000691,X120399,其他化学原料,Chemical (Specialty)
+28707,sz001217,X120399,其他化学原料,Chemical (Basic)
+28777,sz001335,X120399,其他化学原料,Chemical (Specialty)
+28929,sz002125,X120399,其他化学原料,Chemical (Basic)
+45338,sz301059,X120399,其他化学原料,Chemical (Basic)
+45347,sz301069,X120399,其他化学原料,Chemical (Specialty)
+45501,sz301256,X120399,其他化学原料,Chemical (Basic)
+45540,sz301300,X120399,其他化学原料,Chemical (Basic)
+45598,sz301373,X120399,其他化学原料,Chemical (Specialty)
+25201,sh600230,X120401,聚氨酯,Chemical (Specialty)
+25258,sh600309,X120401,聚氨酯,Chemical (Specialty)
+26041,sh603041,X120401,聚氨酯,Chemical (Basic)
+26163,sh603192,X120401,聚氨酯,Chemical (Basic)
+28967,sz002165,X120401,聚氨酯,Chemical (Basic)
+45138,sz300848,X120401,聚氨酯,Chemical (Basic)
+26057,sh603062,X120402,涂料油墨,Chemical (Specialty)
+26100,sh603110,X120402,涂料油墨,Chemical (Specialty)
+26519,sh603823,X120402,涂料油墨,Chemical (Basic)
+26845,sh688129,X120402,涂料油墨,Chemical (Specialty)
+26866,sh688157,X120402,涂料油墨,Chemical (Specialty)
+27175,sh688571,X120402,涂料油墨,Chemical (Specialty)
+28420,sz000565,X120402,涂料油墨,Chemical (Basic)
+29114,sz002319,X120402,涂料油墨,Chemical (Specialty)
+44552,sz300225,X120402,涂料油墨,Chemical (Specialty)
+44828,sz300522,X120402,涂料油墨,Chemical (Specialty)
+44965,sz300665,X120402,涂料油墨,Chemical (Specialty)
+45051,sz300758,X120402,涂料油墨,Chemical (Specialty)
+45317,sz301036,X120402,涂料油墨,Chemical (Specialty)
+45318,sz301037,X120402,涂料油墨,Chemical (Specialty)
+45467,sz301209,X120402,涂料油墨,Chemical (Specialty)
+25290,sh600352,X120404,纺织化学品,Chemical (Specialty)
+26145,sh603172,X120404,纺织化学品,Chemical (Specialty)
+26159,sh603188,X120404,纺织化学品,Chemical (Specialty)
+26500,sh603790,X120404,纺织化学品,Chemical (Specialty)
+26603,sh603980,X120404,纺织化学品,Chemical (Specialty)
+26723,sh605566,X120404,纺织化学品,Chemical (Specialty)
+28864,sz002054,X120404,纺织化学品,Chemical (Specialty)
+29227,sz002440,X120404,纺织化学品,Chemical (Specialty)
+44407,sz300067,X120404,纺织化学品,Chemical (Specialty)
+44444,sz300107,X120404,纺织化学品,Chemical (Specialty)
+45089,sz300798,X120404,纺织化学品,Chemical (Specialty)
+45194,sz300905,X120404,纺织化学品,Chemical (Basic)
+45450,sz301190,X120404,纺织化学品,Chemical (Basic)
+45696,sz301585,X120404,纺织化学品,Chemical (Specialty)
+45720,sz301618,X120404,纺织化学品,Chemical (Specialty)
+25250,sh600299,X120406,食品助剂,Chemical (Basic)
+26072,sh603079,X120406,食品助剂,Drugs (Pharmaceutical)
+26596,sh603968,X120406,食品助剂,Chemical (Specialty)
+26627,sh605016,X120406,食品助剂,Food Processing
+26808,sh688089,X120406,食品助剂,Chemical (Specialty)
+27233,sh688639,X120406,食品助剂,Chemical (Basic)
+28814,sz002001,X120406,食品助剂,Chemical (Specialty)
+29337,sz002562,X120406,食品助剂,Chemical (Specialty)
+29372,sz002597,X120406,食品助剂,Chemical (Diversified)
+45037,sz300741,X120406,食品助剂,Chemical (Specialty)
+45119,sz300829,X120406,食品助剂,Chemical (Basic)
+45148,sz300858,X120406,食品助剂,Food Processing
+45419,sz301156,X120406,食品助剂,Farming/Agriculture
+25151,sh600165,X120499,其他化学制品,Chemical (Basic)
+25389,sh600500,X120499,其他化学制品,Retail (Distributors)
+26006,sh603004,X120499,其他化学制品,Chemical (Specialty)
+26109,sh603120,X120499,其他化学制品,Chemical (Basic)
+26153,sh603181,X120499,其他化学制品,Chemical (Specialty)
+26235,sh603285,X120499,其他化学制品,Chemical (Specialty)
+26277,sh603334,X120499,其他化学制品,Chemical (Basic)
+26570,sh603916,X120499,其他化学制品,Chemical (Specialty)
+26849,sh688133,X120499,其他化学制品,Chemical (Specialty)
+26886,sh688179,X120499,其他化学制品,Chemical (Specialty)
+26961,sh688267,X120499,其他化学制品,Chemical (Specialty)
+26963,sh688269,X120499,其他化学制品,Chemical (Specialty)
+27033,sh688350,X120499,其他化学制品,Chemical (Specialty)
+27202,sh688602,X120499,其他化学制品,Chemical (Specialty)
+27266,sh688690,X120499,其他化学制品,Chemical (Specialty)
+28609,sz000881,X120499,其他化学制品,Chemical (Specialty)
+28708,sz001218,X120499,其他化学制品,Household Products
+28776,sz001333,X120499,其他化学制品,Chemical (Basic)
+28783,sz001358,X120499,其他化学制品,Chemical (Basic)
+29238,sz002453,X120499,其他化学制品,Software (System & Application)
+29259,sz002476,X120499,其他化学制品,Chemical (Specialty)
+29435,sz002666,X120499,其他化学制品,Chemical (Specialty)
+29558,sz002809,X120499,其他化学制品,Chemical (Specialty)
+29559,sz002810,X120499,其他化学制品,Chemical (Basic)
+29706,sz002971,X120499,其他化学制品,Chemical (Specialty)
+44412,sz300072,X120499,其他化学制品,Chemical (Basic)
+44445,sz300109,X120499,其他化学制品,Chemical (Basic)
+44506,sz300174,X120499,其他化学制品,Chemical (Basic)
+44713,sz300405,X120499,其他化学制品,Chemical (Specialty)
+44839,sz300535,X120499,其他化学制品,Chemical (Basic)
+44912,sz300610,X120499,其他化学制品,Chemical (Basic)
+44938,sz300637,X120499,其他化学制品,Chemical (Specialty)
+45091,sz300801,X120499,其他化学制品,Chemical (Specialty)
+45137,sz300847,X120499,其他化学制品,Office Equipment & Services
+45175,sz300886,X120499,其他化学制品,Chemical (Specialty)
+45199,sz300910,X120499,其他化学制品,Chemical (Specialty)
+45353,sz301076,X120499,其他化学制品,Chemical (Specialty)
+45354,sz301077,X120499,其他化学制品,Apparel
+45413,sz301149,X120499,其他化学制品,Chemical (Basic)
+45470,sz301212,X120499,其他化学制品,Chemical (Specialty)
+45477,sz301220,X120499,其他化学制品,Chemical (Specialty)
+45527,sz301286,X120499,其他化学制品,Chemical (Specialty)
+45659,sz301518,X120499,其他化学制品,Chemical (Specialty)
+45719,sz301617,X120499,其他化学制品,Chemical (Specialty)
+25135,sh600143,X120503,改性塑料,Chemical (Basic)
+26474,sh603725,X120503,改性塑料,Chemical (Basic)
+26909,sh688203,X120503,改性塑料,Chemical (Basic)
+26923,sh688219,X120503,改性塑料,Chemical (Basic)
+27251,sh688669,X120503,改性塑料,Chemical (Basic)
+29119,sz002324,X120503,改性塑料,Chemical (Basic)
+29524,sz002768,X120503,改性塑料,Chemical (Basic)
+29585,sz002838,X120503,改性塑料,Chemical (Basic)
+29630,sz002886,X120503,改性塑料,Chemical (Basic)
+44548,sz300221,X120503,改性塑料,Chemical (Basic)
+44785,sz300478,X120503,改性塑料,Chemical (Basic)
+44842,sz300538,X120503,改性塑料,Retail (Distributors)
+44945,sz300644,X120503,改性塑料,Chemical (Specialty)
+45014,sz300716,X120503,改性塑料,Chemical (Basic)
+45278,sz300995,X120503,改性塑料,Chemical (Specialty)
+45286,sz301003,X120503,改性塑料,Chemical (Basic)
+45403,sz301131,X120503,改性塑料,Chemical (Basic)
+45671,sz301538,X120503,改性塑料,Chemical (Basic)
+25592,sh600746,X120505,塑料助剂,Chemical (Basic)
+26012,sh603010,X120505,塑料助剂,Chemical (Basic)
+26059,sh603065,X120505,塑料助剂,Chemical (Specialty)
+26209,sh603255,X120505,塑料助剂,Chemical (Basic)
+26518,sh603822,X120505,塑料助剂,Chemical (Basic)
+26905,sh688199,X120505,塑料助剂,Chemical (Specialty)
+27222,sh688625,X120505,塑料助剂,Chemical (Specialty)
+29508,sz002748,X120505,塑料助剂,Chemical (Specialty)
+44542,sz300214,X120505,塑料助剂,Chemical (Basic)
+44570,sz300243,X120505,塑料助剂,Chemical (Specialty)
+44888,sz300586,X120505,塑料助剂,Chemical (Basic)
+44898,sz300596,X120505,塑料助剂,Chemical (Basic)
+45301,sz301019,X120505,塑料助剂,Chemical (Basic)
+45375,sz301100,X120505,塑料助剂,Chemical (Specialty)
+25130,sh600135,X120506,其他塑料制品,Chemical (Basic)
+26127,sh603150,X120506,其他塑料制品,Chemical (Basic)
+26385,sh603580,X120506,其他塑料制品,Machinery
+26718,sh605488,X120506,其他塑料制品,Chemical (Specialty)
+27286,sh688718,X120506,其他塑料制品,Machinery
+28639,sz000920,X120506,其他塑料制品,Chemical (Basic)
+28782,sz001356,X120506,其他塑料制品,Household Products
+29573,sz002825,X120506,其他塑料制品,Publishing & Newspapers
+44501,sz300169,X120506,其他塑料制品,Chemical (Basic)
+44557,sz300230,X120506,其他塑料制品,Machinery
+44843,sz300539,X120506,其他塑料制品,Chemical (Basic)
+45015,sz300717,X120506,其他塑料制品,Chemical (Basic)
+45076,sz300784,X120506,其他塑料制品,Chemical (Basic)
+45208,sz300920,X120506,其他塑料制品,Chemical (Basic)
+45263,sz300980,X120506,其他塑料制品,Chemical (Basic)
+45702,sz301591,X120506,其他塑料制品,Chemical (Basic)
+26034,sh603033,X120603,橡胶制品,Chemical (Basic)
+26624,sh605008,X120603,橡胶制品,Chemical (Specialty)
+28770,sz001325,X120603,橡胶制品,Chemical (Basic)
+29025,sz002224,X120603,橡胶制品,Machinery
+29172,sz002381,X120603,橡胶制品,Chemical (Basic)
+44640,sz300320,X120603,橡胶制品,Chemical (Basic)
+44889,sz300587,X120603,橡胶制品,Chemical (Basic)
+45028,sz300731,X120603,橡胶制品,Chemical (Basic)
+45059,sz300767,X120603,橡胶制品,Construction Supplies
+45562,sz301323,X120603,橡胶制品,Chemical (Specialty)
+45704,sz301595,X120603,橡胶制品,Packaging & Container
+25320,sh600389,X120701,农药,Chemical (Specialty)
+25377,sh600486,X120701,农药,Chemical (Specialty)
+25577,sh600731,X120701,农药,Chemical (Specialty)
+26078,sh603086,X120701,农药,Chemical (Specialty)
+26296,sh603360,X120701,农药,Chemical (Basic)
+26387,sh603585,X120701,农药,Chemical (Specialty)
+26396,sh603599,X120701,农药,Chemical (Specialty)
+26422,sh603639,X120701,农药,Chemical (Specialty)
+26510,sh603810,X120701,农药,Chemical (Specialty)
+26598,sh603970,X120701,农药,Chemical (Specialty)
+26631,sh605033,X120701,农药,Chemical (Specialty)
+28387,sz000525,X120701,农药,Chemical (Specialty)
+28410,sz000553,X120701,农药,Chemical (Specialty)
+28720,sz001231,X120701,农药,Chemical (Specialty)
+28816,sz002004,X120701,农药,Chemical (Specialty)
+29017,sz002215,X120701,农药,Chemical (Specialty)
+29050,sz002250,X120701,农药,Chemical (Specialty)
+29057,sz002258,X120701,农药,Chemical (Specialty)
+29182,sz002391,X120701,农药,Chemical (Specialty)
+29278,sz002496,X120701,农药,Chemical (Specialty)
+29496,sz002734,X120701,农药,Chemical (Specialty)
+29509,sz002749,X120701,农药,Chemical (Specialty)
+29680,sz002942,X120701,农药,Chemical (Specialty)
+29772,sz003042,X120701,农药,Chemical (Specialty)
+44588,sz300261,X120701,农药,Chemical (Specialty)
+44877,sz300575,X120701,农药,Chemical (Specialty)
+45087,sz300796,X120701,农药,Chemical (Specialty)
+45094,sz300804,X120701,农药,Chemical (Specialty)
+45316,sz301035,X120701,农药,Chemical (Specialty)
+45735,sz301665,X120701,农药,Chemical (Specialty)
+26322,sh603395,X120705,复合肥,Chemical (Specialty)
+28626,sz000902,X120705,复合肥,Chemical (Specialty)
+28972,sz002170,X120705,复合肥,Chemical (Specialty)
+29072,sz002274,X120705,复合肥,Chemical (Specialty)
+29254,sz002470,X120705,复合肥,Chemical (Specialty)
+29313,sz002538,X120705,复合肥,Chemical (Specialty)
+29314,sz002539,X120705,复合肥,Chemical (Specialty)
+29331,sz002556,X120705,复合肥,Chemical (Specialty)
+29363,sz002588,X120705,复合肥,Chemical (Specialty)
+29732,sz002999,X120705,复合肥,Chemical (Specialty)
+44697,sz300387,X120705,复合肥,Chemical (Specialty)
+26407,sh603612,X1208,非金属材料,Chemical (Basic)
+26450,sh603688,X1208,非金属材料,Semiconductor Equip
+26521,sh603826,X1208,非金属材料,Chemical (Specialty)
+26642,sh605086,X1208,非金属材料,Construction Supplies
+26990,sh688300,X1208,非金属材料,Chemical (Basic)
+27039,sh688357,X1208,非金属材料,Chemical (Specialty)
+27075,sh688398,X1208,非金属材料,Machinery
+28751,sz001296,X1208,非金属材料,Construction Supplies
+28784,sz001359,X1208,非金属材料,Electrical Equipment
+45349,sz301071,X1208,非金属材料,Chemical (Basic)
+25281,sh600338,X140103,铅锌,Metals & Mining
+25386,sh600497,X140103,铅锌,Metals & Mining
+25417,sh600531,X140103,铅锌,Metals & Mining
+25744,sh600961,X140103,铅锌,Metals & Mining
+25793,sh601020,X140103,铅锌,Metals & Mining
+26121,sh603132,X140103,铅锌,Metals & Mining
+28318,sz000060,X140103,铅锌,Metals & Mining
+28363,sz000426,X140103,铅锌,Metals & Mining
+28492,sz000688,X140103,铅锌,Metals & Mining
+28533,sz000751,X140103,铅锌,Metals & Mining
+28539,sz000758,X140103,铅锌,Metals & Mining
+28919,sz002114,X140103,铅锌,Metals & Mining
+25358,sh600456,X140403,钛,Metals & Mining
+26839,sh688122,X140403,钛,Metals & Mining
+27298,sh688750,X140403,钛,Metals & Mining
+28951,sz002149,X140403,钛,Metals & Mining
+29712,sz002978,X140403,钛,Metals & Mining
+25219,sh600255,X140502,其他金属新材料,Metals & Mining
+25832,sh601137,X140502,其他金属新材料,Metals & Mining
+26044,sh603045,X140502,其他金属新材料,Electrical Equipment
+26113,sh603124,X140502,其他金属新材料,Electronics (General)
+26601,sh603978,X140502,其他金属新材料,Metals & Mining
+27316,sh688786,X140502,其他金属新材料,Metals & Mining
+28463,sz000633,X140502,其他金属新材料,Metals & Mining
+28673,sz000969,X140502,其他金属新材料,Metals & Mining
+45145,sz300855,X140502,其他金属新材料,Metals & Mining
+45217,sz300930,X140502,其他金属新材料,Steel
+45247,sz300963,X140502,其他金属新材料,Metals & Mining
+45662,sz301522,X140502,其他金属新材料,Steel
+26836,sh688119,X150303,耐火材料,Construction Supplies
+28876,sz002066,X150303,耐火材料,Construction Supplies
+28895,sz002088,X150303,耐火材料,Chemical (Basic)
+29026,sz002225,X150303,耐火材料,Chemical (Basic)
+29183,sz002392,X150303,耐火材料,Steel
+25261,sh600313,X200103,种子,Chemical (Specialty)
+25292,sh600354,X200103,种子,Farming/Agriculture
+25306,sh600371,X200103,种子,Farming/Agriculture
+28510,sz000713,X200103,种子,Chemical (Specialty)
+28691,sz000998,X200103,种子,Farming/Agriculture
+28851,sz002041,X200103,种子,Farming/Agriculture
+44427,sz300087,X200103,种子,Farming/Agriculture
+44519,sz300189,X200103,种子,Farming/Agriculture
+25689,sh600866,X200501,畜禽饲料,Food Processing
+26128,sh603151,X200501,畜禽饲料,Farming/Agriculture
+26297,sh603363,X200501,畜禽饲料,Farming/Agriculture
+26404,sh603609,X200501,畜禽饲料,Farming/Agriculture
+26865,sh688156,X200501,畜禽饲料,Environmental & Waste Services
+28501,sz000702,X200501,畜禽饲料,Farming/Agriculture
+28605,sz000876,X200501,畜禽饲料,Farming/Agriculture
+28787,sz001366,X200501,畜禽饲料,Farming/Agriculture
+28906,sz002100,X200501,畜禽饲料,Farming/Agriculture
+29176,sz002385,X200501,畜禽饲料,Farming/Agriculture
+29323,sz002548,X200501,畜禽饲料,Food Processing
+29342,sz002567,X200501,畜禽饲料,Food Processing
+29635,sz002891,X200503,宠物食品,Food Processing
+44973,sz300673,X200503,宠物食品,Food Processing
+45642,sz301498,X200503,宠物食品,Food Processing
+25217,sh600251,X200602,果蔬加工,Farming/Agriculture
+26279,sh603336,X200602,果蔬加工,Food Processing
+28675,sz000972,X200602,果蔬加工,Food Processing
+44507,sz300175,X200602,果蔬加工,Farming/Agriculture
+25175,sh600195,X2007,动物保健,Drugs (Pharmaceutical)
+25180,sh600201,X2007,动物保健,Drugs (Biotechnology)
+26378,sh603566,X2007,动物保健,Drugs (Pharmaceutical)
+26483,sh603739,X2007,动物保健,Drugs (Biotechnology)
+26816,sh688098,X2007,动物保健,Drugs (Pharmaceutical)
+27143,sh688526,X2007,动物保健,Drugs (Pharmaceutical)
+29455,sz002688,X2007,动物保健,Drugs (Pharmaceutical)
+29613,sz002868,X2007,动物保健,Drugs (Biotechnology)
+44452,sz300119,X2007,动物保健,Drugs (Pharmaceutical)
+45161,sz300871,X2007,动物保健,Drugs (Pharmaceutical)
+25339,sh600419,X210302,乳制品,Farming/Agriculture
+25346,sh600429,X210302,乳制品,Food Processing
+25471,sh600597,X210302,乳制品,Food Processing
+25703,sh600882,X210302,乳制品,Food Processing
+25708,sh600887,X210302,乳制品,Food Processing
+26670,sh605179,X210302,乳制品,Food Processing
+26696,sh605300,X210302,乳制品,Food Processing
+26703,sh605337,X210302,乳制品,Food Processing
+26714,sh605388,X210302,乳制品,Food Processing
+28765,sz001318,X210302,乳制品,Food Processing
+29123,sz002329,X210302,乳制品,Food Processing
+29345,sz002570,X210302,乳制品,Food Processing
+29482,sz002719,X210302,乳制品,Food Processing
+29494,sz002732,X210302,乳制品,Food Processing
+29651,sz002910,X210302,乳制品,Food Processing
+29683,sz002946,X210302,乳制品,Food Processing
+44443,sz300106,X210302,乳制品,Food Processing
+45181,sz300892,X210302,乳制品,Food Processing
+45187,sz300898,X210302,乳制品,Food Processing
+45203,sz300915,X210302,乳制品,Food Processing
+25169,sh600186,X2104,调味品,Food Processing
+25249,sh600298,X2104,调味品,Food Processing
+25255,sh600305,X2104,调味品,Food Processing
+25694,sh600872,X2104,调味品,Food Processing
+25695,sh600873,X2104,调味品,Chemical (Specialty)
+26022,sh603020,X2104,调味品,Chemical (Specialty)
+26028,sh603027,X2104,调味品,Food Processing
+26143,sh603170,X2104,调味品,Food Processing
+26237,sh603288,X2104,调味品,Food Processing
+26260,sh603317,X2104,调味品,Food Processing
+26454,sh603696,X2104,调味品,Food Processing
+26484,sh603755,X2104,调味品,Food Processing
+29277,sz002495,X2104,调味品,Food Processing
+29284,sz002507,X2104,调味品,Food Processing
+29420,sz002650,X2104,调味品,Food Processing
+45197,sz300908,X2104,调味品,Food Processing
+26285,sh603345,X210603,预加工食品,Food Processing
+26370,sh603536,X210603,预加工食品,Food Processing
+26644,sh605089,X210603,预加工食品,Food Processing
+26704,sh605338,X210603,预加工食品,Food Processing
+28705,sz001215,X210603,预加工食品,Food Processing
+29018,sz002216,X210603,预加工食品,Food Processing
+29468,sz002702,X210603,预加工食品,Food Processing
+26205,sh603237,X210605,其他食品,Food Processing
+28512,sz000716,X210605,其他食品,Food Processing
+29692,sz002956,X210605,其他食品,Food Processing
+28815,sz002003,X220103,辅料,Apparel
+28904,sz002098,X220103,辅料,Apparel
+29443,sz002674,X220103,辅料,Apparel
+26298,sh603365,X220201,家纺,Apparel
+26620,sh605003,X220201,家纺,Apparel
+28891,sz002083,X220201,家纺,Apparel
+29089,sz002293,X220201,家纺,Apparel
+29121,sz002327,X220201,家纺,Apparel
+29188,sz002397,X220201,家纺,Apparel
+29771,sz003041,X220201,家纺,Apparel
+25102,sh600103,X230103,特种纸,Paper/Forest Products
+25206,sh600235,X230103,特种纸,Paper/Forest Products
+25293,sh600356,X230103,特种纸,Paper/Forest Products
+25347,sh600433,X230103,特种纸,Paper/Forest Products
+25630,sh600793,X230103,特种纸,Paper/Forest Products
+26480,sh603733,X230103,特种纸,Paper/Forest Products
+26623,sh605007,X230103,特种纸,Paper/Forest Products
+26712,sh605377,X230103,特种纸,Paper/Forest Products
+28824,sz002012,X230103,特种纸,Paper/Forest Products
+29035,sz002235,X230103,特种纸,Paper/Forest Products
+29297,sz002521,X230103,特种纸,Paper/Forest Products
+45635,sz301469,X230103,特种纸,Packaging & Container
+28742,sz001279,X230201,印刷,Machinery
+28922,sz002117,X230201,印刷,Publishing & Newspapers
+29030,sz002229,X230201,印刷,Publishing & Newspapers
+29374,sz002599,X230201,印刷,Publishing & Newspapers
+25186,sh600210,X230203,塑料包装,Packaging & Container
+28474,sz000659,X230203,塑料包装,Packaging & Container
+28825,sz002014,X230203,塑料包装,Packaging & Container
+29497,sz002735,X230203,塑料包装,Packaging & Container
+29750,sz003018,X230203,塑料包装,Packaging & Container
+45139,sz300849,X230203,塑料包装,Packaging & Container
+45457,sz301198,X230203,塑料包装,Packaging & Container
+25890,sh601515,X230204,纸包装,Packaging & Container
+26053,sh603058,X230204,纸包装,Packaging & Container
+26335,sh603429,X230204,纸包装,Tobacco
+26350,sh603499,X230204,纸包装,Packaging & Container
+26449,sh603687,X230204,纸包装,Packaging & Container
+28573,sz000812,X230204,纸包装,Publishing & Newspapers
+28993,sz002191,X230204,纸包装,Packaging & Container
+29029,sz002228,X230204,纸包装,Packaging & Container
+29099,sz002303,X230204,纸包装,Packaging & Container
+29340,sz002565,X230204,纸包装,Packaging & Container
+29550,sz002799,X230204,纸包装,Packaging & Container
+29579,sz002831,X230204,纸包装,Packaging & Container
+29583,sz002836,X230204,纸包装,Packaging & Container
+29688,sz002951,X230204,纸包装,Publishing & Newspapers
+45172,sz300883,X230204,纸包装,Packaging & Container
+45341,sz301062,X230204,纸包装,Packaging & Container
+45480,sz301223,X230204,纸包装,Packaging & Container
+45536,sz301296,X230204,纸包装,Packaging & Container
+45581,sz301355,X230204,纸包装,Packaging & Container
+25084,sh600076,X230205,其他包装,Paper/Forest Products
+26024,sh603022,X230205,其他包装,Packaging & Container
+26402,sh603607,X230205,其他包装,Paper/Forest Products
+29043,sz002243,X230205,其他包装,Packaging & Container
+29736,sz003003,X230205,其他包装,Packaging & Container
+44807,sz300501,X230205,其他包装,Metals & Mining
+25999,sh601996,X230302,其他家居,Paper/Forest Products
+26023,sh603021,X230302,其他家居,Packaging & Container
+26083,sh603091,X230302,其他家居,Packaging & Container
+26166,sh603195,X230302,其他家居,Electrical Equipment
+26223,sh603272,X230302,其他家居,Furn/Home Furnishings
+26314,sh603385,X230302,其他家居,Building Materials
+26330,sh603408,X230302,其他家居,Building Materials
+26409,sh603615,X230302,其他家居,Household Products
+26526,sh603838,X230302,其他家居,Household Products
+26529,sh603848,X230302,其他家居,Household Products
+26613,sh603992,X230302,其他家居,Building Materials
+26647,sh605099,X230302,其他家居,Recreation
+26661,sh605155,X230302,其他家居,Building Materials
+26687,sh605268,X230302,其他家居,Building Materials
+28702,sz001211,X230302,其他家居,Household Products
+28706,sz001216,X230302,其他家居,Household Products
+28711,sz001221,X230302,其他家居,Building Materials
+28767,sz001322,X230302,其他家居,Building Materials
+28797,sz001386,X230302,其他家居,Building Materials
+28892,sz002084,X230302,其他家居,Building Materials
+29346,sz002571,X230302,其他家居,Household Products
+29388,sz002615,X230302,其他家居,Household Products
+29542,sz002790,X230302,其他家居,Building Materials
+29549,sz002798,X230302,其他家居,Building Materials
+44495,sz300163,X230302,其他家居,Apparel
+44941,sz300640,X230302,其他家居,Furn/Home Furnishings
+45276,sz300993,X230302,其他家居,Furn/Home Furnishings
+45287,sz301004,X230302,其他家居,Household Products
+45334,sz301055,X230302,其他家居,Household Products
+45387,sz301113,X230302,其他家居,Furn/Home Furnishings
+45453,sz301193,X230302,其他家居,Household Products
+45645,sz301501,X230302,其他家居,Packaging & Container
+45689,sz301575,X230302,其他家居,Building Materials
+26185,sh603215,X240301,厨房小家电,Furn/Home Furnishings
+28733,sz001259,X240301,厨房小家电,Furn/Home Furnishings
+28817,sz002005,X240301,厨房小家电,Furn/Home Furnishings
+28842,sz002032,X240301,厨房小家电,Furn/Home Furnishings
+29042,sz002242,X240301,厨房小家电,Furn/Home Furnishings
+29194,sz002403,X240301,厨房小家电,Household Products
+29470,sz002705,X240301,厨房小家电,Furn/Home Furnishings
+29695,sz002959,X240301,厨房小家电,Furn/Home Furnishings
+44598,sz300272,X240301,厨房小家电,Furn/Home Furnishings
+45114,sz300824,X240301,厨房小家电,Furn/Home Furnishings
+26189,sh603219,X240302,清洁小家电,Furn/Home Furnishings
+26291,sh603355,X240302,清洁小家电,Furn/Home Furnishings
+26346,sh603486,X240302,清洁小家电,Furn/Home Furnishings
+26722,sh605555,X240302,清洁小家电,Furn/Home Furnishings
+26877,sh688169,X240302,清洁小家电,Furn/Home Furnishings
+45447,sz301187,X240302,清洁小家电,Furn/Home Furnishings
+45570,sz301332,X240302,清洁小家电,Furn/Home Furnishings
+26384,sh603579,X240303,个护小家电,Recreation
+26539,sh603868,X240303,个护小家电,Household Products
+27321,sh688793,X240303,个护小家电,Household Products
+29387,sz002614,X240303,个护小家电,Recreation
+29485,sz002723,X240303,个护小家电,Electrical Equipment
+29755,sz003023,X240303,个护小家电,Furn/Home Furnishings
+44574,sz300247,X240303,个护小家电,Recreation
+25489,sh600619,X2406,家电零部件,Machinery
+25985,sh601956,X2406,家电零部件,Machinery
+26068,sh603075,X2406,家电零部件,Furn/Home Furnishings
+26255,sh603311,X2406,家电零部件,Building Materials
+26362,sh603519,X2406,家电零部件,Chemical (Specialty)
+26383,sh603578,X2406,家电零部件,Building Materials
+26427,sh603657,X2406,家电零部件,Furn/Home Furnishings
+26440,sh603677,X2406,家电零部件,Electronics (General)
+26475,sh603726,X2406,家电零部件,Machinery
+28349,sz000404,X2406,家电零部件,Machinery
+28823,sz002011,X2406,家电零部件,Building Materials
+28860,sz002050,X2406,家电零部件,Machinery
+29086,sz002290,X2406,家电零部件,Steel
+29207,sz002418,X2406,家电零部件,Steel
+29209,sz002420,X2406,家电零部件,Furn/Home Furnishings
+29445,sz002676,X2406,家电零部件,Chemical (Basic)
+29605,sz002860,X2406,家电零部件,Electrical Equipment
+44492,sz300160,X2406,家电零部件,Household Products
+44544,sz300217,X2406,家电零部件,Furn/Home Furnishings
+44659,sz300342,X2406,家电零部件,Electrical Equipment
+44711,sz300403,X2406,家电零部件,Machinery
+45291,sz301008,X2406,家电零部件,Electrical Equipment
+45663,sz301525,X2406,家电零部件,Electrical Equipment
+29110,sz002315,X250602,跨境电商,Software (Entertainment)
+29410,sz002640,X250602,跨境电商,Retail (General)
+29554,sz002803,X250602,跨境电商,Advertising
+44537,sz300209,X250602,跨境电商,Retail (General)
+44771,sz300464,X250602,跨境电商,Machinery
+44894,sz300592,X250602,跨境电商,Business & Consumer Services
+45604,sz301381,X250602,跨境电商,Retail (General)
+45680,sz301558,X250602,跨境电商,Retail (General)
+25480,sh600609,X260301,车身附件及饰件,Auto Parts
+25495,sh600626,X260301,车身附件及饰件,Retail (Distributors)
+25519,sh600660,X260301,车身附件及饰件,Auto Parts
+25587,sh600741,X260301,车身附件及饰件,Auto Parts
+25588,sh600742,X260301,车身附件及饰件,Auto Parts
+25865,sh601279,X260301,车身附件及饰件,Auto Parts
+25927,sh601689,X260301,车身附件及饰件,Auto Parts
+25943,sh601799,X260301,车身附件及饰件,Auto Parts
+26008,sh603006,X260301,车身附件及饰件,Auto Parts
+26035,sh603035,X260301,车身附件及饰件,Auto Parts
+26077,sh603085,X260301,车身附件及饰件,Auto Parts
+26207,sh603239,X260301,车身附件及饰件,Auto Parts
+26236,sh603286,X260301,车身附件及饰件,Auto Parts
+26250,sh603306,X260301,车身附件及饰件,Apparel
+26294,sh603358,X260301,车身附件及饰件,Auto Parts
+26333,sh603418,X260301,车身附件及饰件,Auto Parts
+26479,sh603730,X260301,车身附件及饰件,Auto Parts
+26490,sh603768,X260301,车身附件及饰件,Auto Parts
+26575,sh603922,X260301,车身附件及饰件,Auto Parts
+26616,sh603997,X260301,车身附件及饰件,Auto Parts
+26638,sh605068,X260301,车身附件及饰件,Apparel
+26656,sh605128,X260301,车身附件及饰件,Auto Parts
+26660,sh605151,X260301,车身附件及饰件,Auto Parts
+26682,sh605228,X260301,车身附件及饰件,Auto Parts
+28499,sz000700,X260301,车身附件及饰件,Auto Parts
+28734,sz001260,X260301,车身附件及饰件,Auto Parts
+28741,sz001278,X260301,车身附件及饰件,Auto Parts
+28766,sz001319,X260301,车身附件及饰件,Auto Parts
+28858,sz002048,X260301,车身附件及饰件,Auto Parts
+28907,sz002101,X260301,车身附件及饰件,Machinery
+29122,sz002328,X260301,车身附件及饰件,Auto Parts
+29292,sz002516,X260301,车身附件及饰件,Apparel
+29312,sz002537,X260301,车身附件及饰件,Auto Parts
+29367,sz002592,X260301,车身附件及饰件,Auto Parts
+29432,sz002662,X260301,车身附件及饰件,Auto Parts
+29615,sz002870,X260301,车身附件及饰件,Electronics (General)
+44438,sz300100,X260301,车身附件及饰件,Auto Parts
+44753,sz300446,X260301,车身附件及饰件,Chemical (Basic)
+45405,sz301133,X260301,车身附件及饰件,Auto Parts
+45435,sz301173,X260301,车身附件及饰件,Auto Parts
+45489,sz301233,X260301,车身附件及饰件,Chemical (Basic)
+45618,sz301398,X260301,车身附件及饰件,Auto Parts
+45666,sz301529,X260301,车身附件及饰件,Auto Parts
+45676,sz301552,X260301,车身附件及饰件,Auto Parts
+25136,sh600148,X260302,底盘与发动机系统,Auto Parts
+25162,sh600178,X260302,底盘与发动机系统,Auto Parts
+25549,sh600698,X260302,底盘与发动机系统,Auto Parts
+25668,sh600841,X260302,底盘与发动机系统,Construction Supplies
+25733,sh600933,X260302,底盘与发动机系统,Auto Parts
+25743,sh600960,X260302,底盘与发动机系统,Auto Parts
+26011,sh603009,X260302,底盘与发动机系统,Auto Parts
+26015,sh603013,X260302,底盘与发动机系统,Auto Parts
+26037,sh603037,X260302,底盘与发动机系统,Auto Parts
+26040,sh603040,X260302,底盘与发动机系统,Auto Parts
+26045,sh603048,X260302,底盘与发动机系统,Auto Parts
+26081,sh603089,X260302,底盘与发动机系统,Auto Parts
+26097,sh603107,X260302,底盘与发动机系统,Auto Parts
+26110,sh603121,X260302,底盘与发动机系统,Auto Parts
+26132,sh603158,X260302,底盘与发动机系统,Auto Parts
+26135,sh603161,X260302,底盘与发动机系统,Auto Parts
+26139,sh603166,X260302,底盘与发动机系统,Auto Parts
+26150,sh603178,X260302,底盘与发动机系统,Auto Parts
+26249,sh603305,X260302,底盘与发动机系统,Auto Parts
+26262,sh603319,X260302,底盘与发动机系统,Machinery
+26388,sh603586,X260302,底盘与发动机系统,Auto Parts
+26394,sh603596,X260302,底盘与发动机系统,Auto Parts
+26459,sh603701,X260302,底盘与发动机系统,Auto Parts
+26486,sh603758,X260302,底盘与发动机系统,Auto Parts
+26489,sh603767,X260302,底盘与发动机系统,Auto Parts
+26498,sh603788,X260302,底盘与发动机系统,Auto Parts
+26509,sh603809,X260302,底盘与发动机系统,Auto Parts
+26576,sh603926,X260302,底盘与发动机系统,Auto Parts
+26587,sh603949,X260302,底盘与发动机系统,Auto Parts
+26588,sh603950,X260302,底盘与发动机系统,Auto Parts
+26604,sh603982,X260302,底盘与发动机系统,Auto Parts
+26643,sh605088,X260302,底盘与发动机系统,Auto Parts
+26657,sh605133,X260302,底盘与发动机系统,Auto Parts
+26683,sh605255,X260302,底盘与发动机系统,Auto Parts
+26973,sh688280,X260302,底盘与发动机系统,Auto Parts
+28301,sz000030,X260302,底盘与发动机系统,Auto Parts
+28415,sz000559,X260302,底盘与发动机系统,Auto Parts
+28429,sz000581,X260302,底盘与发动机系统,Auto Parts
+28484,sz000678,X260302,底盘与发动机系统,Auto Parts
+28627,sz000903,X260302,底盘与发动机系统,Construction Supplies
+28681,sz000981,X260302,底盘与发动机系统,Auto Parts
+28746,sz001285,X260302,底盘与发动机系统,Auto Parts
+28795,sz001380,X260302,底盘与发动机系统,Machinery
+28930,sz002126,X260302,底盘与发动机系统,Auto Parts
+29080,sz002283,X260302,底盘与发动机系统,Construction Supplies
+29081,sz002284,X260302,底盘与发动机系统,Auto Parts
+29154,sz002363,X260302,底盘与发动机系统,Auto Parts
+29197,sz002406,X260302,底盘与发动机系统,Auto Parts
+29222,sz002434,X260302,底盘与发动机系统,Construction Supplies
+29234,sz002448,X260302,底盘与发动机系统,Auto Parts
+29256,sz002472,X260302,底盘与发动机系统,Auto Parts
+29311,sz002536,X260302,底盘与发动机系统,Auto Parts
+29328,sz002553,X260302,底盘与发动机系统,Machinery
+29365,sz002590,X260302,底盘与发动机系统,Auto Parts
+29473,sz002708,X260302,底盘与发动机系统,Machinery
+29478,sz002715,X260302,底盘与发动机系统,Auto Parts
+44508,sz300176,X260302,底盘与发动机系统,Auto Parts
+44585,sz300258,X260302,底盘与发动机系统,Auto Parts
+44686,sz300375,X260302,底盘与发动机系统,Rubber& Tires
+44739,sz300432,X260302,底盘与发动机系统,Auto Parts
+44780,sz300473,X260302,底盘与发动机系统,Auto Parts
+44813,sz300507,X260302,底盘与发动机系统,Auto Parts
+44850,sz300547,X260302,底盘与发动机系统,Rubber& Tires
+44882,sz300580,X260302,底盘与发动机系统,Auto Parts
+44887,sz300585,X260302,底盘与发动机系统,Auto Parts
+44980,sz300680,X260302,底盘与发动机系统,Auto Parts
+44994,sz300694,X260302,底盘与发动机系统,Auto Parts
+45030,sz300733,X260302,底盘与发动机系统,Auto Parts
+45290,sz301007,X260302,底盘与发动机系统,Auto Parts
+45302,sz301020,X260302,底盘与发动机系统,Chemical (Basic)
+45350,sz301072,X260302,底盘与发动机系统,Auto Parts
+45392,sz301119,X260302,底盘与发动机系统,Auto Parts
+45432,sz301170,X260302,底盘与发动机系统,Auto Parts
+45452,sz301192,X260302,底盘与发动机系统,Auto Parts
+45538,sz301298,X260302,底盘与发动机系统,Auto Parts
+45617,sz301397,X260302,底盘与发动机系统,Auto Parts
+45633,sz301459,X260302,底盘与发动机系统,Machinery
+45682,sz301560,X260302,底盘与发动机系统,Auto Parts
+45737,sz301667,X260302,底盘与发动机系统,Electronics (General)
+25165,sh600182,X260303,轮胎轮毂,Rubber& Tires
+25366,sh600469,X260303,轮胎轮毂,Rubber& Tires
+25799,sh601058,X260303,轮胎轮毂,Rubber& Tires
+25839,sh601163,X260303,轮胎轮毂,Rubber& Tires
+25888,sh601500,X260303,轮胎轮毂,Rubber& Tires
+25989,sh601966,X260303,轮胎轮毂,Rubber& Tires
+26046,sh603049,X260303,轮胎轮毂,Rubber& Tires
+26278,sh603335,X260303,轮胎轮毂,Auto Parts
+28432,sz000589,X260303,轮胎轮毂,Rubber& Tires
+28441,sz000599,X260303,轮胎轮毂,Rubber& Tires
+28722,sz001233,X260303,轮胎轮毂,Construction Supplies
+28893,sz002085,X260303,轮胎轮毂,Auto Parts
+29147,sz002355,X260303,轮胎轮毂,Auto Parts
+29270,sz002488,X260303,轮胎轮毂,Auto Parts
+29487,sz002725,X260303,轮胎轮毂,Auto Parts
+29608,sz002863,X260303,轮胎轮毂,Auto Parts
+29718,sz002984,X260303,轮胎轮毂,Rubber& Tires
+44736,sz300428,X260303,轮胎轮毂,Metals & Mining
+44952,sz300652,X260303,轮胎轮毂,Auto Parts
+44995,sz300695,X260303,轮胎轮毂,Auto Parts
+45672,sz301539,X260303,轮胎轮毂,Auto Parts
+45674,sz301550,X260303,轮胎轮毂,Auto Parts
+25088,sh600081,X260304,其他汽车零部件,Auto Parts
+25373,sh600480,X260304,其他汽车零部件,Auto Parts
+25410,sh600523,X260304,其他汽车零部件,Auto Parts
+26108,sh603119,X260304,其他汽车零部件,Electrical Equipment
+26161,sh603190,X260304,其他汽车零部件,Auto Parts
+26172,sh603201,X260304,其他汽车零部件,Machinery
+26180,sh603210,X260304,其他汽车零部件,Auto Parts
+26181,sh603211,X260304,其他汽车零部件,Metals & Mining
+26217,sh603266,X260304,其他汽车零部件,Chemical (Basic)
+26286,sh603348,X260304,其他汽车零部件,Auto Parts
+26331,sh603409,X260304,其他汽车零部件,Auto Parts
+26425,sh603655,X260304,其他汽车零部件,Rubber& Tires
+26571,sh603917,X260304,其他汽车零部件,Auto Parts
+26628,sh605018,X260304,其他汽车零部件,Auto Parts
+26700,sh605319,X260304,其他汽车零部件,Auto Parts
+26750,sh688021,X260304,其他汽车零部件,Machinery
+27296,sh688737,X260304,其他汽车零部件,Chemical (Basic)
+28614,sz000887,X260304,其他汽车零部件,Rubber& Tires
+28680,sz000980,X260304,其他汽车零部件,Auto & Truck
+28744,sz001282,X260304,其他汽车零部件,Auto Parts
+28759,sz001311,X260304,其他汽车零部件,Auto Parts
+28992,sz002190,X260304,其他汽车零部件,Auto Parts
+29286,sz002510,X260304,其他汽车零部件,Auto Parts
+29322,sz002547,X260304,其他汽车零部件,Metals & Mining
+29556,sz002806,X260304,其他汽车零部件,Electrical Equipment
+29661,sz002921,X260304,其他汽车零部件,Steel
+29700,sz002965,X260304,其他汽车零部件,Machinery
+29710,sz002976,X260304,其他汽车零部件,Machinery
+29730,sz002997,X260304,其他汽车零部件,Machinery
+29764,sz003033,X260304,其他汽车零部件,Auto Parts
+44564,sz300237,X260304,其他汽车零部件,Environmental & Waste Services
+44913,sz300611,X260304,其他汽车零部件,Auto Parts
+44944,sz300643,X260304,其他汽车零部件,Auto Parts
+45006,sz300707,X260304,其他汽车零部件,Auto Parts
+45039,sz300745,X260304,其他汽车零部件,Auto Parts
+45106,sz300816,X260304,其他汽车零部件,Construction Supplies
+45182,sz300893,X260304,其他汽车零部件,Auto Parts
+45201,sz300912,X260304,其他汽车零部件,Machinery
+45213,sz300926,X260304,其他汽车零部件,Auto Parts
+45261,sz300978,X260304,其他汽车零部件,Auto Parts
+45268,sz300985,X260304,其他汽车零部件,Construction Supplies
+45283,sz301000,X260304,其他汽车零部件,Chemical (Basic)
+45288,sz301005,X260304,其他汽车零部件,Auto Parts
+45442,sz301181,X260304,其他汽车零部件,Auto Parts
+45481,sz301225,X260304,其他汽车零部件,Auto Parts
+45485,sz301229,X260304,其他汽车零部件,Auto Parts
+45549,sz301310,X260304,其他汽车零部件,Electrical Equipment
+45669,sz301535,X260304,其他汽车零部件,Auto Parts
+45717,sz301613,X260304,其他汽车零部件,Auto Parts
+25550,sh600699,X260305,汽车电子电气系统,Auto Parts
+26025,sh603023,X260305,汽车电子电气系统,Auto Parts
+26151,sh603179,X260305,汽车电子电气系统,Auto Parts
+26168,sh603197,X260305,汽车电子电气系统,Auto Parts
+26173,sh603202,X260305,汽车电子电气系统,Auto Parts
+26306,sh603376,X260305,汽车电子电气系统,Auto Parts
+26318,sh603390,X260305,汽车电子电气系统,Auto Parts
+26418,sh603633,X260305,汽车电子电气系统,Electrical Equipment
+26496,sh603786,X260305,汽车电子电气系统,Auto Parts
+26593,sh603960,X260305,汽车电子电气系统,Machinery
+26621,sh605005,X260305,汽车电子电气系统,Auto Parts
+26701,sh605333,X260305,汽车电子电气系统,Auto Parts
+27014,sh688326,X260305,汽车电子电气系统,Auto Parts
+27148,sh688533,X260305,汽车电子电气系统,Electronics (Consumer & Office)
+27211,sh688612,X260305,汽车电子电气系统,Auto Parts
+27249,sh688667,X260305,汽车电子电气系统,Auto Parts
+28625,sz000901,X260305,汽车电子电气系统,Auto Parts
+29039,sz002239,X260305,汽车电子电气系统,Auto Parts
+29239,sz002454,X260305,汽车电子电气系统,Auto Parts
+29434,sz002664,X260305,汽车电子电气系统,Auto Parts
+29522,sz002766,X260305,汽车电子电气系统,Auto Parts
+29562,sz002813,X260305,汽车电子电气系统,Auto Parts
+29647,sz002906,X260305,汽车电子电气系统,Auto Parts
+29660,sz002920,X260305,汽车电子电气系统,Auto Parts
+44626,sz300304,X260305,汽车电子电气系统,Auto Parts
+44981,sz300681,X260305,汽车电子电气系统,Auto Parts
+45153,sz300863,X260305,汽车电子电气系统,Auto Parts
+45215,sz300928,X260305,汽车电子电气系统,Auto Parts
+45253,sz300969,X260305,汽车电子电气系统,Auto Parts
+45478,sz301221,X260305,汽车电子电气系统,Software (System & Application)
+45639,sz301488,X260305,汽车电子电气系统,Auto Parts
+45643,sz301499,X260305,汽车电子电气系统,Auto Parts
+45713,sz301607,X260305,汽车电子电气系统,Auto Parts
+45732,sz301656,X260305,汽车电子电气系统,Auto Parts
+25278,sh600335,X260401,汽车经销商,Retail (Distributors)
+25514,sh600653,X260401,汽车经销商,Retail (Distributors)
+25654,sh600822,X260401,汽车经销商,Retail (Distributors)
+25938,sh601777,X260501,摩托车,Auto & Truck
+26118,sh603129,X260501,摩托车,Recreation
+26488,sh603766,X260501,摩托车,Auto & Truck
+26497,sh603787,X260501,摩托车,Auto & Truck
+28635,sz000913,X260501,摩托车,Auto & Truck
+25075,sh600062,X270101,化学制剂,Drugs (Pharmaceutical)
+25086,sh600079,X270101,化学制剂,Drugs (Pharmaceutical)
+25176,sh600196,X270101,化学制剂,Drugs (Pharmaceutical)
+25228,sh600267,X270101,化学制剂,Drugs (Pharmaceutical)
+25234,sh600276,X270101,化学制剂,Drugs (Pharmaceutical)
+25314,sh600380,X270101,化学制剂,Drugs (Pharmaceutical)
+25340,sh600420,X270101,化学制剂,Drugs (Pharmaceutical)
+25401,sh600513,X270101,化学制剂,Drugs (Pharmaceutical)
+25408,sh600521,X270101,化学制剂,Drugs (Pharmaceutical)
+25494,sh600624,X270101,化学制剂,Drugs (Pharmaceutical)
+25523,sh600664,X270101,化学制剂,Drugs (Pharmaceutical)
+25614,sh600774,X270101,化学制剂,Drugs (Pharmaceutical)
+25626,sh600789,X270101,化学制剂,Drugs (Pharmaceutical)
+25645,sh600812,X270101,化学制剂,Drugs (Pharmaceutical)
+25676,sh600851,X270101,化学制剂,Drugs (Pharmaceutical)
+25810,sh601089,X270101,化学制剂,Drugs (Pharmaceutical)
+26141,sh603168,X270101,化学制剂,Drugs (Pharmaceutical)
+26177,sh603207,X270101,化学制剂,Drugs (Pharmaceutical)
+26300,sh603367,X270101,化学制剂,Drugs (Pharmaceutical)
+26438,sh603669,X270101,化学制剂,Drugs (Pharmaceutical)
+26439,sh603676,X270101,化学制剂,Drugs (Pharmaceutical)
+26511,sh603811,X270101,化学制剂,Drugs (Pharmaceutical)
+26810,sh688091,X270101,化学制剂,Drugs (Pharmaceutical)
+26896,sh688189,X270101,化学制剂,Drugs (Pharmaceutical)
+26903,sh688197,X270101,化学制剂,Drugs (Pharmaceutical)
+26945,sh688247,X270101,化学制剂,Drugs (Pharmaceutical)
+27010,sh688321,X270101,化学制剂,Drugs (Pharmaceutical)
+27054,sh688373,X270101,化学制剂,Drugs (Biotechnology)
+27125,sh688506,X270101,化学制剂,Drugs (Pharmaceutical)
+27132,sh688513,X270101,化学制剂,Drugs (Pharmaceutical)
+27160,sh688553,X270101,化学制剂,Drugs (Pharmaceutical)
+27170,sh688566,X270101,化学制剂,Drugs (Pharmaceutical)
+27242,sh688658,X270101,化学制剂,Drugs (Pharmaceutical)
+27326,sh688799,X270101,化学制剂,Drugs (Pharmaceutical)
+28335,sz000153,X270101,化学制剂,Drugs (Pharmaceutical)
+28377,sz000513,X270101,化学制剂,Drugs (Pharmaceutical)
+28421,sz000566,X270101,化学制剂,Drugs (Pharmaceutical)
+28439,sz000597,X270101,化学制剂,Drugs (Pharmaceutical)
+28543,sz000766,X270101,化学制剂,Drugs (Pharmaceutical)
+28554,sz000788,X270101,化学制剂,Drugs (Pharmaceutical)
+28574,sz000813,X270101,化学制剂,Drugs (Pharmaceutical)
+28630,sz000908,X270101,化学制剂,Drugs (Pharmaceutical)
+28636,sz000915,X270101,化学制剂,Drugs (Pharmaceutical)
+28638,sz000919,X270101,化学制剂,Drugs (Pharmaceutical)
+28649,sz000931,X270101,化学制剂,Real Estate (Development)
+28668,sz000963,X270101,化学制剂,Healthcare Support Services
+28829,sz002019,X270101,化学制剂,Drugs (Pharmaceutical)
+28830,sz002020,X270101,化学制剂,Drugs (Pharmaceutical)
+29060,sz002262,X270101,化学制剂,Drugs (Pharmaceutical)
+29090,sz002294,X270101,化学制剂,Drugs (Pharmaceutical)
+29126,sz002332,X270101,化学制剂,Drugs (Pharmaceutical)
+29161,sz002370,X270101,化学制剂,Drugs (Pharmaceutical)
+29184,sz002393,X270101,化学制剂,Drugs (Pharmaceutical)
+29211,sz002422,X270101,化学制剂,Drugs (Pharmaceutical)
+29224,sz002437,X270101,化学制剂,Drugs (Pharmaceutical)
+29423,sz002653,X270101,化学制剂,Drugs (Pharmaceutical)
+29444,sz002675,X270101,化学制剂,Drugs (Biotechnology)
+29503,sz002742,X270101,化学制剂,Chemical (Specialty)
+29512,sz002755,X270101,化学制剂,Drugs (Pharmaceutical)
+29528,sz002773,X270101,化学制剂,Drugs (Pharmaceutical)
+29545,sz002793,X270101,化学制剂,Drugs (Pharmaceutical)
+29574,sz002826,X270101,化学制剂,Drugs (Pharmaceutical)
+29642,sz002900,X270101,化学制剂,Drugs (Pharmaceutical)
+29663,sz002923,X270101,化学制剂,Drugs (Pharmaceutical)
+29678,sz002940,X270101,化学制剂,Drugs (Pharmaceutical)
+29752,sz003020,X270101,化学制剂,Drugs (Pharmaceutical)
+44352,sz300006,X270101,化学制剂,Drugs (Pharmaceutical)
+44362,sz300016,X270101,化学制剂,Drugs (Pharmaceutical)
+44426,sz300086,X270101,化学制剂,Drugs (Pharmaceutical)
+44446,sz300110,X270101,化学制剂,Drugs (Pharmaceutical)
+44447,sz300111,X270101,化学制剂,Drugs (Pharmaceutical)
+44490,sz300158,X270101,化学制剂,Drugs (Pharmaceutical)
+44524,sz300194,X270101,化学制剂,Drugs (Pharmaceutical)
+44529,sz300199,X270101,化学制剂,Drugs (Pharmaceutical)
+44560,sz300233,X270101,化学制剂,Drugs (Pharmaceutical)
+44581,sz300254,X270101,化学制剂,Drugs (Pharmaceutical)
+44741,sz300434,X270101,化学制剂,Drugs (Pharmaceutical)
+44743,sz300436,X270101,化学制剂,Drugs (Pharmaceutical)
+44861,sz300558,X270101,化学制剂,Drugs (Pharmaceutical)
+44876,sz300573,X270101,化学制剂,Drugs (Pharmaceutical)
+44886,sz300584,X270101,化学制剂,Drugs (Pharmaceutical)
+45004,sz300705,X270101,化学制剂,Drugs (Pharmaceutical)
+45021,sz300723,X270101,化学制剂,Drugs (Pharmaceutical)
+45352,sz301075,X270101,化学制剂,Drugs (Pharmaceutical)
+45402,sz301130,X270101,化学制剂,Drugs (Pharmaceutical)
+45649,sz301507,X270101,化学制剂,Household Products
+25190,sh600216,X270102,原料药,Drugs (Pharmaceutical)
+25379,sh600488,X270102,原料药,Drugs (Pharmaceutical)
+26198,sh603229,X270102,原料药,Drugs (Pharmaceutical)
+26203,sh603235,X270102,原料药,Household Products
+26288,sh603351,X270102,原料药,Chemical (Basic)
+26363,sh603520,X270102,原料药,Drugs (Pharmaceutical)
+26371,sh603538,X270102,原料药,Drugs (Pharmaceutical)
+26651,sh605116,X270102,原料药,Drugs (Pharmaceutical)
+26668,sh605177,X270102,原料药,Drugs (Pharmaceutical)
+26721,sh605507,X270102,原料药,Drugs (Pharmaceutical)
+26874,sh688166,X270102,原料药,Drugs (Pharmaceutical)
+27038,sh688356,X270102,原料药,Drugs (Pharmaceutical)
+28531,sz000739,X270102,原料药,Drugs (Pharmaceutical)
+28660,sz000952,X270102,原料药,Drugs (Pharmaceutical)
+28661,sz000953,X270102,原料药,Chemical (Specialty)
+28788,sz001367,X270102,原料药,Drugs (Pharmaceutical)
+28905,sz002099,X270102,原料药,Drugs (Pharmaceutical)
+28908,sz002102,X270102,原料药,Retail (Distributors)
+29156,sz002365,X270102,原料药,Drugs (Pharmaceutical)
+29190,sz002399,X270102,原料药,Drugs (Pharmaceutical)
+29565,sz002817,X270102,原料药,Chemical (Basic)
+44593,sz300267,X270102,原料药,Drugs (Pharmaceutical)
+44691,sz300381,X270102,原料药,Drugs (Biotechnology)
+44709,sz300401,X270102,原料药,Drugs (Pharmaceutical)
+44759,sz300452,X270102,原料药,Drugs (Pharmaceutical)
+44803,sz300497,X270102,原料药,Drugs (Pharmaceutical)
+44885,sz300583,X270102,原料药,Drugs (Pharmaceutical)
+44937,sz300636,X270102,原料药,Drugs (Pharmaceutical)
+45002,sz300702,X270102,原料药,Drugs (Pharmaceutical)
+45250,sz300966,X270102,原料药,Drugs (Biotechnology)
+45343,sz301065,X270102,原料药,Drugs (Pharmaceutical)
+45365,sz301089,X270102,原料药,Drugs (Pharmaceutical)
+45469,sz301211,X270102,原料药,Drugs (Pharmaceutical)
+45496,sz301246,X270102,原料药,Drugs (Pharmaceutical)
+45503,sz301258,X270102,原料药,Drugs (Pharmaceutical)
+45519,sz301277,X270102,原料药,Drugs (Pharmaceutical)
+45523,sz301281,X270102,原料药,Drugs (Pharmaceutical)
+45541,sz301301,X270102,原料药,Drugs (Biotechnology)
+25585,sh600739,X270202,疫苗,Retail (Distributors)
+26320,sh603392,X270202,疫苗,Drugs (Biotechnology)
+26969,sh688276,X270202,疫苗,Drugs (Biotechnology)
+27008,sh688319,X270202,疫苗,Drugs (Biotechnology)
+27252,sh688670,X270202,疫苗,Drugs (Biotechnology)
+27297,sh688739,X270202,疫苗,Drugs (Biotechnology)
+44455,sz300122,X270202,疫苗,Drugs (Biotechnology)
+44475,sz300142,X270202,疫苗,Drugs (Biotechnology)
+44903,sz300601,X270202,疫苗,Drugs (Biotechnology)
+45131,sz300841,X270202,疫苗,Drugs (Biotechnology)
+45465,sz301207,X270202,疫苗,Drugs (Biotechnology)
+25690,sh600867,X270205,基因药物,Drugs (Pharmaceutical)
+26079,sh603087,X270205,基因药物,Drugs (Biotechnology)
+26851,sh688136,X270205,基因药物,Drugs (Biotechnology)
+27264,sh688687,X270205,基因药物,Drugs (Biotechnology)
+28381,sz000518,X270205,基因药物,Drugs (Biotechnology)
+28475,sz000661,X270205,基因药物,Drugs (Pharmaceutical)
+28848,sz002038,X270205,基因药物,Drugs (Biotechnology)
+44355,sz300009,X270205,基因药物,Drugs (Biotechnology)
+25187,sh600211,X270206,其他生物制药,Healthcare Support Services
+26392,sh603590,X270206,其他生物制药,Drugs (Pharmaceutical)
+26462,sh603707,X270206,其他生物制药,Drugs (Pharmaceutical)
+26784,sh688062,X270206,其他生物制药,Drugs (Biotechnology)
+26822,sh688105,X270206,其他生物制药,Drugs (Biotechnology)
+26834,sh688117,X270206,其他生物制药,Drugs (Pharmaceutical)
+26852,sh688137,X270206,其他生物制药,Drugs (Biotechnology)
+26872,sh688163,X270206,其他生物制药,Drugs (Biotechnology)
+26883,sh688176,X270206,其他生物制药,Drugs (Pharmaceutical)
+26884,sh688177,X270206,其他生物制药,Drugs (Biotechnology)
+26899,sh688192,X270206,其他生物制药,Drugs (Biotechnology)
+26925,sh688221,X270206,其他生物制药,Drugs (Biotechnology)
+26960,sh688266,X270206,其他生物制药,Drugs (Biotechnology)
+26971,sh688278,X270206,其他生物制药,Drugs (Biotechnology)
+26992,sh688302,X270206,其他生物制药,Drugs (Pharmaceutical)
+27062,sh688382,X270206,其他生物制药,Drugs (Biotechnology)
+27096,sh688443,X270206,其他生物制药,Drugs (Biotechnology)
+27115,sh688488,X270206,其他生物制药,Drugs (Biotechnology)
+27302,sh688759,X270206,其他生物制药,Drugs (Biotechnology)
+28395,sz000534,X270206,其他生物制药,Drugs (Biotechnology)
+29325,sz002550,X270206,其他生物制药,Drugs (Pharmaceutical)
+29356,sz002581,X270206,其他生物制药,Drugs (Pharmaceutical)
+29460,sz002693,X270206,其他生物制药,Drugs (Pharmaceutical)
+44533,sz300204,X270206,其他生物制药,Drugs (Biotechnology)
+44566,sz300239,X270206,其他生物制药,Chemical (Specialty)
+44582,sz300255,X270206,其他生物制药,Drugs (Pharmaceutical)
+44672,sz300357,X270206,其他生物制药,Drugs (Pharmaceutical)
+44983,sz300683,X270206,其他生物制药,Drugs (Biotechnology)
+45327,sz301047,X270206,其他生物制药,Drugs (Biotechnology)
+45357,sz301080,X270206,其他生物制药,Drugs (Biotechnology)
+29024,sz002223,X270301,家用器械,Healthcare Products
+29221,sz002432,X270301,家用器械,Healthcare Products
+44620,sz300298,X270301,家用器械,Healthcare Products
+44865,sz300562,X270301,家用器械,Healthcare Products
+45363,sz301087,X270301,家用器械,Healthcare Products
+25068,sh600055,X270302,医疗设备,Healthcare Products
+25462,sh600587,X270302,医疗设备,Healthcare Products
+26016,sh603014,X270302,医疗设备,Healthcare Products
+26831,sh688114,X270302,医疗设备,Heathcare Information and Technology
+26854,sh688139,X270302,医疗设备,Healthcare Products
+26917,sh688212,X270302,医疗设备,Healthcare Products
+26965,sh688271,X270302,医疗设备,Healthcare Products
+26967,sh688273,X270302,医疗设备,Healthcare Products
+26970,sh688277,X270302,医疗设备,Healthcare Products
+26991,sh688301,X270302,医疗设备,Healthcare Products
+27040,sh688358,X270302,医疗设备,Healthcare Products
+27082,sh688410,X270302,医疗设备,Healthcare Products
+27178,sh688576,X270302,医疗设备,Healthcare Products
+27182,sh688580,X270302,医疗设备,Healthcare Products
+27183,sh688581,X270302,医疗设备,Healthcare Products
+27206,sh688607,X270302,医疗设备,Healthcare Products
+27223,sh688626,X270302,医疗设备,Healthcare Products
+27255,sh688677,X270302,医疗设备,Healthcare Products
+27329,sh688805,X270302,医疗设备,Computers/Peripherals
+44373,sz300030,X270302,医疗设备,Heathcare Information and Technology
+44391,sz300049,X270302,医疗设备,Drugs (Pharmaceutical)
+44535,sz300206,X270302,医疗设备,Healthcare Products
+44573,sz300246,X270302,医疗设备,Healthcare Products
+44634,sz300314,X270302,医疗设备,Healthcare Products
+44934,sz300633,X270302,医疗设备,Healthcare Products
+45047,sz300753,X270302,医疗设备,Healthcare Products
+45053,sz300760,X270302,医疗设备,Healthcare Products
+45159,sz300869,X270302,医疗设备,Healthcare Products
+45589,sz301363,X270302,医疗设备,Healthcare Products
+45592,sz301367,X270302,医疗设备,Healthcare Products
+45656,sz301515,X270302,医疗设备,Healthcare Products
+45710,sz301602,X270302,医疗设备,Healthcare Products
+25415,sh600529,X270303,医疗耗材,Healthcare Products
+26175,sh603205,X270303,医疗耗材,Healthcare Products
+26192,sh603222,X270303,医疗耗材,Drugs (Pharmaceutical)
+26247,sh603301,X270303,医疗耗材,Healthcare Products
+26253,sh603309,X270303,医疗耗材,Healthcare Products
+26470,sh603718,X270303,医疗耗材,Drugs (Pharmaceutical)
+26546,sh603880,X270303,医疗耗材,Healthcare Products
+26599,sh603976,X270303,医疗耗材,Healthcare Products
+26608,sh603987,X270303,医疗耗材,Healthcare Products
+26710,sh605369,X270303,医疗耗材,Healthcare Products
+26743,sh688013,X270303,医疗耗材,Healthcare Products
+26745,sh688016,X270303,医疗耗材,Healthcare Products
+26754,sh688026,X270303,医疗耗材,Healthcare Products
+26757,sh688029,X270303,医疗耗材,Healthcare Products
+26773,sh688050,X270303,医疗耗材,Healthcare Products
+26805,sh688085,X270303,医疗耗材,Healthcare Products
+26825,sh688108,X270303,医疗耗材,Healthcare Products
+26861,sh688151,X270303,医疗耗材,Healthcare Products
+26870,sh688161,X270303,医疗耗材,Healthcare Products
+26904,sh688198,X270303,医疗耗材,Healthcare Products
+27003,sh688314,X270303,医疗耗材,Healthcare Products
+27034,sh688351,X270303,医疗耗材,Healthcare Products
+27212,sh688613,X270303,医疗耗材,Healthcare Products
+27215,sh688617,X270303,医疗耗材,Healthcare Products
+29173,sz002382,X270303,医疗耗材,Healthcare Products
+29643,sz002901,X270303,医疗耗材,Healthcare Products
+29687,sz002950,X270303,医疗耗材,Healthcare Products
+44349,sz300003,X270303,医疗耗材,Healthcare Products
+44565,sz300238,X270303,医疗耗材,Drugs (Biotechnology)
+44645,sz300326,X270303,医疗耗材,Healthcare Products
+44760,sz300453,X270303,医疗耗材,Healthcare Products
+44833,sz300529,X270303,医疗耗材,Healthcare Products
+44897,sz300595,X270303,医疗耗材,Healthcare Products
+44953,sz300653,X270303,医疗耗材,Drugs (Biotechnology)
+44977,sz300677,X270303,医疗耗材,Healthcare Products
+45177,sz300888,X270303,医疗耗材,Healthcare Products
+45264,sz300981,X270303,医疗耗材,Healthcare Products
+45315,sz301033,X270303,医疗耗材,Healthcare Products
+45369,sz301093,X270303,医疗耗材,Healthcare Products
+45372,sz301097,X270303,医疗耗材,Healthcare Products
+45395,sz301122,X270303,医疗耗材,Healthcare Products
+45490,sz301234,X270303,医疗耗材,Healthcare Products
+45531,sz301290,X270303,医疗耗材,Healthcare Products
+45692,sz301580,X270303,医疗耗材,Healthcare Products
+26788,sh688067,X270304,体外诊断,Healthcare Products
+26950,sh688253,X270304,体外诊断,Healthcare Products
+27068,sh688389,X270304,体外诊断,Healthcare Products
+44704,sz300396,X270304,体外诊断,Healthcare Products
+44789,sz300482,X270304,体外诊断,Healthcare Products
+26999,sh688310,X270305,制药装备,Healthcare Products
+44503,sz300171,X270305,制药装备,Healthcare Products
+44673,sz300358,X270305,制药装备,Healthcare Products
+44720,sz300412,X270305,制药装备,Healthcare Products
+45103,sz300813,X270305,制药装备,Heathcare Information and Technology
+45246,sz300962,X270305,制药装备,Healthcare Support Services
+25087,sh600080,X2706,中药,Drugs (Pharmaceutical)
+25091,sh600085,X2706,中药,Drugs (Pharmaceutical)
+25125,sh600129,X2706,中药,Drugs (Pharmaceutical)
+25195,sh600222,X2706,中药,Drugs (Pharmaceutical)
+25218,sh600252,X2706,中药,Drugs (Pharmaceutical)
+25242,sh600285,X2706,中药,Drugs (Pharmaceutical)
+25273,sh600329,X2706,中药,Drugs (Pharmaceutical)
+25276,sh600332,X2706,中药,Healthcare Support Services
+25289,sh600351,X2706,中药,Drugs (Pharmaceutical)
+25341,sh600422,X2706,中药,Drugs (Pharmaceutical)
+25349,sh600436,X2706,中药,Drugs (Pharmaceutical)
+25372,sh600479,X2706,中药,Drugs (Pharmaceutical)
+25405,sh600518,X2706,中药,Drugs (Pharmaceutical)
+25419,sh600535,X2706,中药,Drugs (Pharmaceutical)
+25435,sh600557,X2706,中药,Drugs (Pharmaceutical)
+25442,sh600566,X2706,中药,Drugs (Pharmaceutical)
+25448,sh600572,X2706,中药,Drugs (Pharmaceutical)
+25468,sh600594,X2706,中药,Drugs (Pharmaceutical)
+25484,sh600613,X2706,中药,Drugs (Pharmaceutical)
+25528,sh600671,X2706,中药,Drugs (Pharmaceutical)
+25595,sh600750,X2706,中药,Drugs (Pharmaceutical)
+25612,sh600771,X2706,中药,Drugs (Pharmaceutical)
+25756,sh600976,X2706,中药,Drugs (Pharmaceutical)
+25771,sh600993,X2706,中药,Drugs (Pharmaceutical)
+26126,sh603139,X2706,中药,Drugs (Pharmaceutical)
+26337,sh603439,X2706,中药,Drugs (Pharmaceutical)
+26379,sh603567,X2706,中药,Drugs (Pharmaceutical)
+26532,sh603858,X2706,中药,Drugs (Pharmaceutical)
+26558,sh603896,X2706,中药,Household Products
+26617,sh603998,X2706,中药,Drugs (Pharmaceutical)
+26678,sh605199,X2706,中药,Drugs (Pharmaceutical)
+28361,sz000423,X2706,中药,Drugs (Pharmaceutical)
+28398,sz000538,X2706,中药,Drugs (Pharmaceutical)
+28433,sz000590,X2706,中药,Drugs (Pharmaceutical)
+28455,sz000623,X2706,中药,Drugs (Pharmaceutical)
+28468,sz000650,X2706,中药,Drugs (Pharmaceutical)
+28556,sz000790,X2706,中药,Drugs (Pharmaceutical)
+28686,sz000989,X2706,中药,Drugs (Pharmaceutical)
+28692,sz000999,X2706,中药,Drugs (Pharmaceutical)
+28890,sz002082,X2706,中药,Drugs (Pharmaceutical)
+28913,sz002107,X2706,中药,Drugs (Pharmaceutical)
+28968,sz002166,X2706,中药,Farming/Agriculture
+29000,sz002198,X2706,中药,Drugs (Pharmaceutical)
+29073,sz002275,X2706,中药,Drugs (Pharmaceutical)
+29084,sz002287,X2706,中药,Drugs (Pharmaceutical)
+29112,sz002317,X2706,中药,Drugs (Pharmaceutical)
+29141,sz002349,X2706,中药,Drugs (Pharmaceutical)
+29202,sz002412,X2706,中药,Drugs (Pharmaceutical)
+29213,sz002424,X2706,中药,Drugs (Pharmaceutical)
+29341,sz002566,X2706,中药,Drugs (Pharmaceutical)
+29378,sz002603,X2706,中药,Drugs (Pharmaceutical)
+29414,sz002644,X2706,中药,Drugs (Pharmaceutical)
+29490,sz002728,X2706,中药,Drugs (Pharmaceutical)
+29499,sz002737,X2706,中药,Drugs (Pharmaceutical)
+29609,sz002864,X2706,中药,Drugs (Pharmaceutical)
+29618,sz002873,X2706,中药,Drugs (Pharmaceutical)
+29648,sz002907,X2706,中药,Drugs (Pharmaceutical)
+44371,sz300026,X2706,中药,Drugs (Pharmaceutical)
+44381,sz300039,X2706,中药,Drugs (Pharmaceutical)
+44480,sz300147,X2706,中药,Drugs (Pharmaceutical)
+44512,sz300181,X2706,中药,Drugs (Pharmaceutical)
+44825,sz300519,X2706,中药,Drugs (Pharmaceutical)
+44838,sz300534,X2706,中药,Drugs (Pharmaceutical)
+45167,sz300878,X2706,中药,Drugs (Pharmaceutical)
+45385,sz301111,X2706,中药,Drugs (Pharmaceutical)
+45569,sz301331,X2706,中药,Drugs (Pharmaceutical)
+27045,sh688363,X270701,医美耗材,Household Products
+45185,sz300896,X270701,医美耗材,Drugs (Biotechnology)
+25337,sh600416,X3001,电机制造,Electrical Equipment
+25455,sh600580,X3001,电机制造,Electrical Equipment
+26099,sh603109,X3001,电机制造,Electrical Equipment
+26263,sh603320,X3001,电机制造,Machinery
+26284,sh603344,X3001,电机制造,Electrical Equipment
+26287,sh603350,X3001,电机制造,Auto Parts
+26303,sh603370,X3001,电机制造,Auto Parts
+26348,sh603489,X3001,电机制造,Recreation
+26477,sh603728,X3001,电机制造,Electrical Equipment
+26517,sh603819,X3001,电机制造,Electrical Equipment
+26609,sh603988,X3001,电机制造,Electrical Equipment
+28641,sz000922,X3001,电机制造,Electrical Equipment
+28998,sz002196,X3001,电机制造,Auto Parts
+29049,sz002249,X3001,电机制造,Electrical Equipment
+29351,sz002576,X3001,电机制造,Electrical Equipment
+29552,sz002801,X3001,电机制造,Electrical Equipment
+29571,sz002823,X3001,电机制造,Electrical Equipment
+29636,sz002892,X3001,电机制造,Electrical Equipment
+29753,sz003021,X3001,电机制造,Electrical Equipment
+44928,sz300626,X3001,电机制造,Electrical Equipment
+44960,sz300660,X3001,电机制造,Electrical Equipment
+45196,sz300907,X3001,电机制造,Electrical Equipment
+45305,sz301023,X3001,电机制造,Electrical Equipment
+45482,sz301226,X3001,电机制造,Electrical Equipment
+45646,sz301502,X3001,电机制造,Electrical Equipment
+25109,sh600110,X300201,锂电池,Electrical Equipment
+25140,sh600152,X300201,锂电池,Electrical Equipment
+25211,sh600241,X300201,锂电池,Electrical Equipment
+25371,sh600478,X300201,锂电池,Electrical Equipment
+26785,sh688063,X300201,锂电池,Electrical Equipment
+27029,sh688345,X300201,锂电池,Electrical Equipment
+27067,sh688388,X300201,锂电池,Electrical Equipment
+27171,sh688567,X300201,锂电池,Electrical Equipment
+27307,sh688772,X300201,锂电池,Electrical Equipment
+28312,sz000049,X300201,锂电池,Electrical Equipment
+28745,sz001283,X300201,锂电池,Electrical Equipment
+28868,sz002058,X300201,锂电池,Electronics (General)
+28882,sz002074,X300201,锂电池,Electrical Equipment
+29045,sz002245,X300201,锂电池,Transportation
+29596,sz002850,X300201,锂电池,Auto Parts
+44360,sz300014,X300201,锂电池,Electrical Equipment
+44536,sz300207,X300201,锂电池,Electrical Equipment
+44745,sz300438,X300201,锂电池,Electrical Equipment
+44834,sz300530,X300201,锂电池,Chemical (Specialty)
+45044,sz300750,X300201,锂电池,Electrical Equipment
+45238,sz300953,X300201,锂电池,Machinery
+45394,sz301121,X300201,锂电池,Electrical Equipment
+45414,sz301150,X300201,锂电池,Electronics (General)
+45468,sz301210,X300201,锂电池,Electrical Equipment
+45565,sz301327,X300201,锂电池,Household Products
+45653,sz301511,X300201,锂电池,Electrical Equipment
+45698,sz301587,X300201,锂电池,Electrical Equipment
+25705,sh600884,X300202,电池化学品,Chemical (Specialty)
+26027,sh603026,X300202,电池化学品,Chemical (Basic)
+26429,sh603659,X300202,电池化学品,Chemical (Specialty)
+26565,sh603906,X300202,电池化学品,Chemical (Basic)
+26735,sh688005,X300202,电池化学品,Electrical Equipment
+26833,sh688116,X300202,电池化学品,Chemical (Specialty)
+26859,sh688148,X300202,电池化学品,Chemical (Basic)
+26891,sh688184,X300202,电池化学品,Chemical (Specialty)
+26968,sh688275,X300202,电池化学品,Electrical Equipment
+27036,sh688353,X300202,电池化学品,Chemical (Specialty)
+27278,sh688707,X300202,电池化学品,Electrical Equipment
+27295,sh688733,X300202,电池化学品,Chemical (Specialty)
+27311,sh688778,X300202,电池化学品,Electrical Equipment
+27312,sh688779,X300202,电池化学品,Electrical Equipment
+28286,sz000009,X300202,电池化学品,Diversified
+28496,sz000695,X300202,电池化学品,Publishing & Newspapers
+28755,sz001301,X300202,电池化学品,Electrical Equipment
+29133,sz002340,X300202,电池化学品,Electrical Equipment
+29474,sz002709,X300202,电池化学品,Chemical (Basic)
+29516,sz002759,X300202,电池化学品,Furn/Home Furnishings
+29555,sz002805,X300202,电池化学品,Chemical (Basic)
+29561,sz002812,X300202,电池化学品,Chemical (Basic)
+44378,sz300035,X300202,电池化学品,Machinery
+44380,sz300037,X300202,电池化学品,Chemical (Specialty)
+44413,sz300073,X300202,电池化学品,Electrical Equipment
+44657,sz300340,X300202,电池化学品,Chemical (Specialty)
+44717,sz300409,X300202,电池化学品,Chemical (Specialty)
+44871,sz300568,X300202,电池化学品,Chemical (Basic)
+44947,sz300647,X300202,电池化学品,Electronics (General)
+45061,sz300769,X300202,电池化学品,Chemical (Basic)
+45179,sz300890,X300202,电池化学品,Electrical Equipment
+45207,sz300919,X300202,电池化学品,Electrical Equipment
+45416,sz301152,X300202,电池化学品,Electrical Equipment
+45494,sz301238,X300202,电池化学品,Electrical Equipment
+45533,sz301292,X300202,电池化学品,Chemical (Specialty)
+45579,sz301349,X300202,电池化学品,Chemical (Specialty)
+45584,sz301358,X300202,电池化学品,Electrical Equipment
+45638,sz301487,X300202,电池化学品,Electrical Equipment
+26736,sh688006,X300203,锂电设备,Electrical Equipment
+26864,sh688155,X300203,锂电设备,Auto Parts
+27119,sh688499,X300203,锂电设备,Machinery
+27176,sh688573,X300203,锂电设备,Machinery
+27232,sh688638,X300203,锂电设备,Machinery
+44505,sz300173,X300203,锂电设备,Machinery
+44718,sz300410,X300203,锂电设备,Electronics (General)
+44757,sz300450,X300203,锂电设备,Machinery
+44764,sz300457,X300203,锂电设备,Machinery
+44797,sz300490,X300203,锂电设备,Electrical Equipment
+44921,sz300619,X300203,锂电设备,Machinery
+44948,sz300648,X300203,锂电设备,Electrical Equipment
+27027,sh688339,X300204,燃料电池,Construction Supplies
+29495,sz002733,X300204,燃料电池,Electrical Equipment
+26373,sh603556,X300301,电工仪器,Electronics (General)
+27197,sh688597,X300301,电工仪器,Electrical Equipment
+27214,sh688616,X300301,电工仪器,Electronics (General)
+28925,sz002121,X300301,电工仪器,Electrical Equipment
+29321,sz002546,X300301,电工仪器,Electronics (General)
+29602,sz002857,X300301,电工仪器,Electronics (General)
+29714,sz002980,X300301,电工仪器,Electronics (General)
+44609,sz300286,X300301,电工仪器,Electrical Equipment
+44675,sz300360,X300301,电工仪器,Electronics (General)
+44820,sz300514,X300301,电工仪器,Telecom. Equipment
+45169,sz300880,X300301,电工仪器,Electronics (General)
+45171,sz300882,X300301,电工仪器,Electronics (General)
+25229,sh600268,X300302,电网自动化,Electrical Equipment
+25332,sh600406,X300302,电网自动化,Electrical Equipment
+25827,sh601126,X300302,电网自动化,Electrical Equipment
+26047,sh603050,X300302,电网自动化,Electrical Equipment
+26898,sh688191,X300302,电网自动化,Electrical Equipment
+26946,sh688248,X300302,电网自动化,Engineering/Construction
+27018,sh688330,X300302,电网自动化,Electronics (General)
+27210,sh688611,X300302,电网自动化,Electrical Equipment
+27247,sh688663,X300302,电网自动化,Electrical Equipment
+27259,sh688681,X300302,电网自动化,Electronics (General)
+28345,sz000400,X300302,电网自动化,Electrical Equipment
+28488,sz000682,X300302,电网自动化,Electrical Equipment
+28799,sz001388,X300302,电网自动化,Electronics (General)
+28896,sz002090,X300302,电网自动化,Computer Services
+28971,sz002169,X300302,电网自动化,Electrical Equipment
+29132,sz002339,X300302,电网自动化,Electrical Equipment
+44364,sz300018,X300302,电网自动化,Electrical Equipment
+44549,sz300222,X300302,电网自动化,Electrical Equipment
+44715,sz300407,X300302,电网自动化,Electrical Equipment
+44735,sz300427,X300302,电网自动化,Electronics (General)
+44816,sz300510,X300302,电网自动化,Electrical Equipment
+45143,sz300853,X300302,电网自动化,Electronics (General)
+45440,sz301179,X300302,电网自动化,Computer Services
+45715,sz301609,X300302,电网自动化,Electrical Equipment
+25093,sh600089,X300303,输变电设备,Electrical Equipment
+25174,sh600192,X300303,输变电设备,Electrical Equipment
+25188,sh600212,X300303,输变电设备,Power
+25260,sh600312,X300303,输变电设备,Electrical Equipment
+25313,sh600379,X300303,输变电设备,Electrical Equipment
+25411,sh600525,X300303,输变电设备,Electrical Equipment
+25431,sh600550,X300303,输变电设备,Electrical Equipment
+25706,sh600885,X300303,输变电设备,Electrical Equipment
+25844,sh601179,X300303,输变电设备,Electrical Equipment
+26088,sh603097,X300303,输变电设备,Electrical Equipment
+26162,sh603191,X300303,输变电设备,Electrical Equipment
+26256,sh603312,X300303,输变电设备,Electrical Equipment
+27254,sh688676,X300303,输变电设备,Electrical Equipment
+28394,sz000533,X300303,输变电设备,Electrical Equipment
+28838,sz002028,X300303,输变电设备,Electrical Equipment
+28918,sz002112,X300303,输变电设备,Electrical Equipment
+29068,sz002270,X300303,输变电设备,Machinery
+29094,sz002298,X300303,输变电设备,Electrical Equipment
+29150,sz002358,X300303,输变电设备,Electrical Equipment
+29237,sz002452,X300303,输变电设备,Electrical Equipment
+29662,sz002922,X300303,输变电设备,Electrical Equipment
+44347,sz300001,X300303,输变电设备,Electrical Equipment
+44403,sz300062,X300303,输变电设备,Electrical Equipment
+44658,sz300341,X300303,输变电设备,Electrical Equipment
+44731,sz300423,X300303,输变电设备,Electrical Equipment
+44751,sz300444,X300303,输变电设备,Electrical Equipment
+45285,sz301002,X300303,输变电设备,Electrical Equipment
+45295,sz301012,X300303,输变电设备,Electrical Equipment
+45393,sz301120,X300303,输变电设备,Electrical Equipment
+45532,sz301291,X300303,输变电设备,Electrical Equipment
+45535,sz301295,X300303,输变电设备,Electrical Equipment
+25365,sh600468,X300304,配电设备,Machinery
+25896,sh601567,X300304,配电设备,Electrical Equipment
+25912,sh601616,X300304,配电设备,Electrical Equipment
+25962,sh601877,X300304,配电设备,Electrical Equipment
+26018,sh603016,X300304,配电设备,Electrical Equipment
+26064,sh603070,X300304,配电设备,Electrical Equipment
+26523,sh603829,X300304,配电设备,Electronics (General)
+26535,sh603861,X300304,配电设备,Electrical Equipment
+26637,sh605066,X300304,配电设备,Electrical Equipment
+27135,sh688517,X300304,配电设备,Electrical Equipment
+28970,sz002168,X300304,配电设备,Electrical Equipment
+29138,sz002346,X300304,配电设备,Electrical Equipment
+29142,sz002350,X300304,配电设备,Electrical Equipment
+29228,sz002441,X300304,配电设备,Retail (Distributors)
+29471,sz002706,X300304,配电设备,Electrical Equipment
+29666,sz002927,X300304,配电设备,Electrical Equipment
+44474,sz300141,X300304,配电设备,Electrical Equipment
+44606,sz300283,X300304,配电设备,Electronics (General)
+44784,sz300477,X300304,配电设备,Electrical Equipment
+44970,sz300670,X300304,配电设备,Electrical Equipment
+45219,sz300932,X300304,配电设备,Electrical Equipment
+45313,sz301031,X300304,配电设备,Electrical Equipment
+45587,sz301361,X300304,配电设备,Electronics (General)
+45607,sz301386,X300304,配电设备,Electrical Equipment
+45609,sz301388,X300304,配电设备,Electrical Equipment
+45738,sz301668,X300304,配电设备,Electrical Equipment
+25079,sh600067,X300305,线缆部件及其他,Real Estate (Development)
+25452,sh600577,X300305,线缆部件及其他,Electrical Equipment
+25692,sh600869,X300305,线缆部件及其他,Electrical Equipment
+25754,sh600973,X300305,线缆部件及其他,Electrical Equipment
+25931,sh601700,X300305,线缆部件及其他,Electrical Equipment
+26276,sh603333,X300305,线缆部件及其他,Electrical Equipment
+26367,sh603530,X300305,线缆部件及其他,Electrical Equipment
+26382,sh603577,X300305,线缆部件及其他,Steel
+26401,sh603606,X300305,线缆部件及其他,Electrical Equipment
+26412,sh603618,X300305,线缆部件及其他,Electrical Equipment
+26559,sh603897,X300305,线缆部件及其他,Electrical Equipment
+26676,sh605196,X300305,线缆部件及其他,Electrical Equipment
+26681,sh605222,X300305,线缆部件及其他,Electrical Equipment
+26929,sh688226,X300305,线缆部件及其他,Electrical Equipment
+28516,sz000720,X300305,线缆部件及其他,Transportation
+28699,sz001208,X300305,线缆部件及其他,Electrical Equipment
+28729,sz001255,X300305,线缆部件及其他,Chemical (Basic)
+28796,sz001382,X300305,线缆部件及其他,Electrical Equipment
+29074,sz002276,X300305,线缆部件及其他,Electrical Equipment
+29096,sz002300,X300305,线缆部件及其他,Electrical Equipment
+29236,sz002451,X300305,线缆部件及其他,Electrical Equipment
+29255,sz002471,X300305,线缆部件及其他,Electrical Equipment
+29280,sz002498,X300305,线缆部件及其他,Electrical Equipment
+29308,sz002533,X300305,线缆部件及其他,Electrical Equipment
+29335,sz002560,X300305,线缆部件及其他,Electrical Equipment
+29380,sz002606,X300305,线缆部件及其他,Electrical Equipment
+29390,sz002617,X300305,线缆部件及其他,Electrical Equipment
+29459,sz002692,X300305,线缆部件及其他,Electrical Equipment
+29623,sz002879,X300305,线缆部件及其他,Electrical Equipment
+29626,sz002882,X300305,线缆部件及其他,Electrical Equipment
+29690,sz002953,X300305,线缆部件及其他,Electrical Equipment
+44409,sz300069,X300305,线缆部件及其他,Machinery
+44591,sz300265,X300305,线缆部件及其他,Electrical Equipment
+44919,sz300617,X300305,线缆部件及其他,Electrical Equipment
+45220,sz300933,X300305,线缆部件及其他,Electrical Equipment
+45359,sz301082,X300305,线缆部件及其他,Electrical Equipment
+45627,sz301439,X300305,线缆部件及其他,Electrical Equipment
+25139,sh600151,X300403,光伏电池组件,Auto Parts
+25421,sh600537,X300403,光伏电池组件,Semiconductor
+25578,sh600732,X300403,光伏电池组件,Semiconductor
+25788,sh601012,X300403,光伏电池组件,Semiconductor
+26494,sh603778,X300403,光伏电池组件,Environmental & Waste Services
+26927,sh688223,X300403,光伏电池组件,Semiconductor
+27091,sh688429,X300403,光伏电池组件,Semiconductor Equip
+27107,sh688472,X300403,光伏电池组件,Semiconductor
+27199,sh688599,X300403,光伏电池组件,Semiconductor
+28866,sz002056,X300403,光伏电池组件,Electronics (General)
+29104,sz002309,X300403,光伏电池组件,Electrical Equipment
+29244,sz002459,X300403,光伏电池组件,Semiconductor
+29283,sz002506,X300403,光伏电池组件,Semiconductor
+29289,sz002513,X300403,光伏电池组件,Chemical (Specialty)
+29610,sz002865,X300403,光伏电池组件,Semiconductor
+44420,sz300080,X300403,光伏电池组件,Chemical (Specialty)
+44451,sz300118,X300403,光伏电池组件,Semiconductor
+44458,sz300125,X300403,光伏电池组件,Semiconductor
+44701,sz300393,X300403,光伏电池组件,Semiconductor
+25184,sh600207,X300405,光伏辅材,Electronics (General)
+26182,sh603212,X300405,光伏辅材,Semiconductor Equip
+26311,sh603381,X300405,光伏辅材,Building Materials
+26415,sh603628,X300405,光伏辅材,Electrical Equipment
+26507,sh603806,X300405,光伏辅材,Semiconductor Equip
+27080,sh688408,X300405,光伏辅材,Electrical Equipment
+27123,sh688503,X300405,光伏辅材,Semiconductor Equip
+27165,sh688560,X300405,光伏辅材,Chemical (Basic)
+27198,sh688598,X300405,光伏辅材,Chemical (Basic)
+27258,sh688680,X300405,光伏辅材,Chemical (Basic)
+28738,sz001269,X300405,光伏辅材,Semiconductor Equip
+28887,sz002079,X300405,光伏辅材,Semiconductor
+29393,sz002623,X300405,光伏辅材,Semiconductor
+29754,sz003022,X300405,光伏辅材,Chemical (Specialty)
+44431,sz300093,X300405,光伏辅材,Building Materials
+45132,sz300842,X300405,光伏辅材,Semiconductor Equip
+45430,sz301168,X300405,光伏辅材,Electrical Equipment
+45510,sz301266,X300405,光伏辅材,Electronics (General)
+45520,sz301278,X300405,光伏辅材,Electrical Equipment
+45729,sz301636,X300405,光伏辅材,Semiconductor
+26323,sh603396,X300406,光伏加工设备,Semiconductor Equip
+26761,sh688033,X300406,光伏加工设备,Construction Supplies
+26858,sh688147,X300406,光伏加工设备,Semiconductor Equip
+27134,sh688516,X300406,光伏加工设备,Semiconductor Equip
+27161,sh688556,X300406,光伏加工设备,Semiconductor Equip
+27291,sh688726,X300406,光伏加工设备,Semiconductor Equip
+28580,sz000821,X300406,光伏加工设备,Machinery
+44636,sz300316,X300406,光伏加工设备,Semiconductor Equip
+45022,sz300724,X300406,光伏加工设备,Semiconductor Equip
+45045,sz300751,X300406,光伏加工设备,Semiconductor Equip
+45068,sz300776,X300406,光伏加工设备,Semiconductor Equip
+25081,sh600072,X300502,风电零部件,Engineering/Construction
+25359,sh600458,X300502,风电零部件,Chemical (Basic)
+25796,sh601026,X300502,风电零部件,Chemical (Basic)
+25855,sh601218,X300502,风电零部件,Electrical Equipment
+26058,sh603063,X300502,风电零部件,Electrical Equipment
+26188,sh603218,X300502,风电零部件,Machinery
+26208,sh603248,X300502,风电零部件,Electrical Equipment
+26355,sh603507,X300502,风电零部件,Machinery
+26606,sh603985,X300502,风电零部件,Machinery
+26893,sh688186,X300502,风电零部件,Steel
+28570,sz000809,X300502,风电零部件,Engineering/Construction
+29269,sz002487,X300502,风电零部件,Electrical Equipment
+29306,sz002531,X300502,风电零部件,Electrical Equipment
+44462,sz300129,X300502,风电零部件,Electrical Equipment
+44516,sz300185,X300502,风电零部件,Machinery
+44750,sz300443,X300502,风电零部件,Electrical Equipment
+44872,sz300569,X300502,风电零部件,Electrical Equipment
+44990,sz300690,X300502,风电零部件,Machinery
+45140,sz300850,X300502,风电零部件,Machinery
+45193,sz300904,X300502,风电零部件,Electrical Equipment
+45321,sz301040,X300502,风电零部件,Steel
+45342,sz301063,X300502,风电零部件,Steel
+45418,sz301155,X300502,风电零部件,Electrical Equipment
+45488,sz301232,X300502,风电零部件,Machinery
+45631,sz301456,X300502,风电零部件,Machinery
+45679,sz301557,X300502,风电零部件,Electrical Equipment
+25331,sh600405,X3006,其他发电设备,Electrical Equipment
+27158,sh688551,X3006,其他发电设备,Electronics (General)
+27287,sh688719,X3006,其他发电设备,Semiconductor Equip
+29028,sz002227,X3006,其他发电设备,Electrical Equipment
+29055,sz002255,X3006,其他发电设备,Machinery
+29129,sz002335,X3006,其他发电设备,Electrical Equipment
+29155,sz002364,X3006,其他发电设备,Electrical Equipment
+29294,sz002518,X3006,其他发电设备,Electrical Equipment
+29309,sz002534,X3006,其他发电设备,Machinery
+29400,sz002630,X3006,其他发电设备,Machinery
+29597,sz002851,X3006,其他发电设备,Electrical Equipment
+44486,sz300153,X3006,其他发电设备,Electrical Equipment
+44687,sz300376,X3006,其他发电设备,Electrical Equipment
+44798,sz300491,X3006,其他发电设备,Electrical Equipment
+44895,sz300593,X3006,其他发电设备,Electrical Equipment
+44993,sz300693,X3006,其他发电设备,Electrical Equipment
+45012,sz300713,X3006,其他发电设备,Electrical Equipment
+45110,sz300820,X3006,其他发电设备,Electrical Equipment
+45160,sz300870,X3006,其他发电设备,Electrical Equipment
+45420,sz301157,X3006,其他发电设备,Electrical Equipment
+45657,sz301516,X3006,其他发电设备,Electrical Equipment
+45701,sz301590,X3006,其他发电设备,Electrical Equipment
+25060,sh600038,X3102,航空装备,Aerospace/Defense
+25263,sh600316,X3102,航空装备,Aerospace/Defense
+25307,sh600372,X3102,航空装备,Aerospace/Defense
+25322,sh600391,X3102,航空装备,Aerospace/Defense
+25604,sh600760,X3102,航空装备,Aerospace/Defense
+25608,sh600765,X3102,航空装备,Machinery
+25685,sh600862,X3102,航空装备,Machinery
+25712,sh600893,X3102,航空装备,Aerospace/Defense
+26215,sh603261,X3102,航空装备,Aerospace/Defense
+26655,sh605123,X3102,航空装备,Metals & Mining
+26791,sh688070,X3102,航空装备,Aerospace/Defense
+26940,sh688237,X3102,航空装备,Aerospace/Defense
+26942,sh688239,X3102,航空装备,Aerospace/Defense
+26974,sh688281,X3102,航空装备,Chemical (Specialty)
+26987,sh688297,X3102,航空装备,Aerospace/Defense
+27129,sh688510,X3102,航空装备,Aerospace/Defense
+27168,sh688563,X3102,航空装备,Aerospace/Defense
+27188,sh688586,X3102,航空装备,Aerospace/Defense
+27262,sh688685,X3102,航空装备,Aerospace/Defense
+27279,sh688708,X3102,航空装备,Aerospace/Defense
+28497,sz000697,X3102,航空装备,Aerospace/Defense
+28530,sz000738,X3102,航空装备,Aerospace/Defense
+28545,sz000768,X3102,航空装备,Aerospace/Defense
+28833,sz002023,X3102,航空装备,Air Transport
+28917,sz002111,X3102,航空装备,Construction Supplies
+29093,sz002297,X3102,航空装备,Aerospace/Defense
+29180,sz002389,X3102,航空装备,Electronics (General)
+29395,sz002625,X3102,航空装备,Aerospace/Defense
+29421,sz002651,X3102,航空装备,Machinery
+29672,sz002933,X3102,航空装备,Aerospace/Defense
+29719,sz002985,X3102,航空装备,Aerospace/Defense
+44377,sz300034,X3102,航空装备,Aerospace/Defense
+44732,sz300424,X3102,航空装备,Air Transport
+44883,sz300581,X3102,航空装备,Aerospace/Defense
+44996,sz300696,X3102,航空装备,Aerospace/Defense
+45017,sz300719,X3102,航空装备,Aerospace/Defense
+45067,sz300775,X3102,航空装备,Aerospace/Defense
+45189,sz300900,X3102,航空装备,Aerospace/Defense
+45249,sz300965,X3102,航空装备,Aerospace/Defense
+45697,sz301586,X3102,航空装备,Aerospace/Defense
+25440,sh600562,X3105,军工电子,Telecom. Equipment
+25465,sh600590,X3105,军工电子,Electrical Equipment
+25679,sh600855,X3105,军工电子,Diversified
+25769,sh600990,X3105,军工电子,Telecom. Equipment
+26218,sh603267,X3105,军工电子,Electronics (General)
+26441,sh603678,X3105,军工电子,Electronics (General)
+26466,sh603712,X3105,军工电子,Telecom. Equipment
+26732,sh688002,X3105,军工电子,Electronics (General)
+26741,sh688011,X3105,军工电子,Electronics (General)
+26801,sh688081,X3105,军工电子,Aerospace/Defense
+26848,sh688132,X3105,军工电子,Aerospace/Defense
+26966,sh688272,X3105,军工电子,Electronics (General)
+26975,sh688282,X3105,军工电子,Aerospace/Defense
+27000,sh688311,X3105,军工电子,Aerospace/Defense
+27055,sh688375,X3105,军工电子,Semiconductor
+27095,sh688439,X3105,军工电子,Semiconductor
+27130,sh688511,X3105,军工电子,Aerospace/Defense
+27140,sh688522,X3105,军工电子,Electronics (General)
+27159,sh688552,X3105,军工电子,Aerospace/Defense
+27226,sh688629,X3105,军工电子,Electrical Equipment
+27231,sh688636,X3105,军工电子,Computers/Peripherals
+27260,sh688682,X3105,军工电子,Software (System & Application)
+27309,sh688776,X3105,军工电子,Electrical Equipment
+27318,sh688788,X3105,军工电子,Aerospace/Defense
+28405,sz000547,X3105,军工电子,Telecom. Equipment
+28526,sz000733,X3105,军工电子,Electronics (General)
+28739,sz001270,X3105,军工电子,Semiconductor
+28835,sz002025,X3105,军工电子,Aerospace/Defense
+28953,sz002151,X3105,军工电子,Telecom. Equipment
+28981,sz002179,X3105,军工电子,Electronics (General)
+29016,sz002214,X3105,军工电子,Electronics (General)
+29131,sz002338,X3105,军工电子,Aerospace/Defense
+29203,sz002413,X3105,军工电子,Aerospace/Defense
+29204,sz002414,X3105,军工电子,Electronics (General)
+29233,sz002446,X3105,军工电子,Telecom. Equipment
+29249,sz002465,X3105,军工电子,Telecom. Equipment
+29673,sz002935,X3105,军工电子,Telecom. Equipment
+29711,sz002977,X3105,军工电子,Aerospace/Defense
+44387,sz300045,X3105,军工电子,Aerospace/Defense
+44439,sz300101,X3105,军工电子,Telecom. Equipment
+44456,sz300123,X3105,军工电子,Aerospace/Defense
+44509,sz300177,X3105,军工电子,Electronics (General)
+44579,sz300252,X3105,军工电子,Telecom. Equipment
+44705,sz300397,X3105,军工电子,Aerospace/Defense
+44754,sz300447,X3105,军工电子,Aerospace/Defense
+44781,sz300474,X3105,军工电子,Semiconductor
+44822,sz300516,X3105,军工电子,Electronics (General)
+44931,sz300629,X3105,军工电子,Building Materials
+45024,sz300726,X3105,军工电子,Electronics (General)
+45055,sz300762,X3105,军工电子,Telecom. Equipment
+45330,sz301050,X3105,军工电子,Aerospace/Defense
+45471,sz301213,X3105,军工电子,Software (System & Application)
+45542,sz301302,X3105,军工电子,Software (System & Application)
+45658,sz301517,X3105,军工电子,Electrical Equipment
+45703,sz301592,X3105,军工电子,Aerospace/Defense
+45752,sz302132,X3105,军工电子,Electronics (General)
+25384,sh600495,X3201,轨交设备,Construction Supplies
+25414,sh600528,X3201,轨交设备,Engineering/Construction
+25937,sh601766,X3201,轨交设备,Construction Supplies
+26101,sh603111,X3201,轨交设备,Construction Supplies
+26351,sh603500,X3201,轨交设备,Construction Supplies
+26443,sh603680,X3201,轨交设备,Construction Supplies
+26619,sh605001,X3201,轨交设备,Construction Supplies
+26694,sh605298,X3201,轨交设备,Construction Supplies
+26744,sh688015,X3201,轨交设备,Electronics (General)
+26977,sh688285,X3201,轨交设备,Construction Supplies
+27048,sh688367,X3201,轨交设备,Electronics (General)
+27103,sh688459,X3201,轨交设备,Electronics (General)
+27113,sh688485,X3201,轨交设备,Construction Supplies
+27173,sh688569,X3201,轨交设备,Construction Supplies
+28285,sz000008,X3201,轨交设备,Transportation (Railroads)
+28643,sz000925,X3201,轨交设备,Electronics (General)
+28769,sz001324,X3201,轨交设备,Construction Supplies
+29262,sz002480,X3201,轨交设备,Construction Supplies
+29707,sz002972,X3201,轨交设备,Electronics (General)
+44357,sz300011,X3201,轨交设备,Electrical Equipment
+44667,sz300351,X3201,轨交设备,Electrical Equipment
+44896,sz300594,X3201,轨交设备,Construction Supplies
+45081,sz300789,X3201,轨交设备,Electronics (General)
+45141,sz300851,X3201,轨交设备,Electronics (General)
+45195,sz300906,X3201,轨交设备,Electronics (General)
+45211,sz300923,X3201,轨交设备,Construction Supplies
+45244,sz300960,X3201,轨交设备,Construction Supplies
+45298,sz301016,X3201,轨交设备,Construction Supplies
+45328,sz301048,X3201,轨交设备,Construction Supplies
+26091,sh603100,X320201,仪器仪表,Electronics (General)
+26432,sh603662,X320201,仪器仪表,Electrical Equipment
+26458,sh603700,X320201,仪器仪表,Electronics (General)
+26634,sh605056,X320201,仪器仪表,Machinery
+26778,sh688056,X320201,仪器仪表,Electronics (General)
+26829,sh688112,X320201,仪器仪表,Electronics (General)
+26832,sh688115,X320201,仪器仪表,Electronics (General)
+26976,sh688283,X320201,仪器仪表,Telecom. Equipment
+27025,sh688337,X320201,仪器仪表,Electronics (General)
+27099,sh688450,X320201,仪器仪表,Electronics (General)
+27144,sh688528,X320201,仪器仪表,Electronics (General)
+27152,sh688539,X320201,仪器仪表,Electronics (General)
+27185,sh688583,X320201,仪器仪表,Computers/Peripherals
+27200,sh688600,X320201,仪器仪表,Electronics (General)
+27209,sh688610,X320201,仪器仪表,Electronics (General)
+27220,sh688622,X320201,仪器仪表,Electronics (General)
+27225,sh688628,X320201,仪器仪表,Electronics (General)
+27248,sh688665,X320201,仪器仪表,Electronics (General)
+27306,sh688768,X320201,仪器仪表,Electronics (General)
+28977,sz002175,X320201,仪器仪表,Electronics (General)
+29523,sz002767,X320201,仪器仪表,Electronics (General)
+29567,sz002819,X320201,仪器仪表,Computer Services
+29595,sz002849,X320201,仪器仪表,Electronics (General)
+44353,sz300007,X320201,仪器仪表,Electronics (General)
+44406,sz300066,X320201,仪器仪表,Electronics (General)
+44448,sz300112,X320201,仪器仪表,Electrical Equipment
+44497,sz300165,X320201,仪器仪表,Healthcare Products
+44532,sz300203,X320201,仪器仪表,Environmental & Waste Services
+44586,sz300259,X320201,仪器仪表,Electronics (General)
+44628,sz300306,X320201,仪器仪表,Electronics (General)
+44665,sz300349,X320201,仪器仪表,Electronics (General)
+44670,sz300354,X320201,仪器仪表,Electronics (General)
+44682,sz300370,X320201,仪器仪表,Electronics (General)
+44683,sz300371,X320201,仪器仪表,Electronics (General)
+44725,sz300417,X320201,仪器仪表,Electronics (General)
+44752,sz300445,X320201,仪器仪表,Electronics (General)
+44773,sz300466,X320201,仪器仪表,Machinery
+44821,sz300515,X320201,仪器仪表,Electronics (General)
+44856,sz300553,X320201,仪器仪表,Electronics (General)
+44860,sz300557,X320201,仪器仪表,Electronics (General)
+44870,sz300567,X320201,仪器仪表,Electronics (General)
+44967,sz300667,X320201,仪器仪表,Electronics (General)
+45018,sz300720,X320201,仪器仪表,Electronics (General)
+45152,sz300862,X320201,仪器仪表,Electronics (General)
+45186,sz300897,X320201,仪器仪表,Electronics (General)
+45289,sz301006,X320201,仪器仪表,Electronics (General)
+45401,sz301129,X320201,仪器仪表,Electronics (General)
+45543,sz301303,X320201,仪器仪表,Electronics (General)
+45621,sz301413,X320201,仪器仪表,Electronics (General)
+45665,sz301528,X320201,仪器仪表,Electronics (General)
+25966,sh601882,X320202,机床制造,Machinery
+26080,sh603088,X320202,机床制造,Machinery
+26994,sh688305,X320202,机床制造,Machinery
+27163,sh688558,X320202,机床制造,Machinery
+27179,sh688577,X320202,机床制造,Machinery
+27272,sh688697,X320202,机床制造,Machinery
+28353,sz000410,X320202,机床制造,Machinery
+28590,sz000837,X320202,机床制造,Machinery
+28926,sz002122,X320202,机床制造,Machinery
+29048,sz002248,X320202,机床制造,Machinery
+29296,sz002520,X320202,机床制造,Machinery
+29334,sz002559,X320202,机床制造,Machinery
+29452,sz002685,X320202,机床制造,Machinery
+29645,sz002903,X320202,机床制造,Machinery
+29681,sz002943,X320202,机床制造,Machinery
+29756,sz003025,X320202,机床制造,Machinery
+44423,sz300083,X320202,机床制造,Machinery
+44493,sz300161,X320202,机床制造,Electronics (General)
+45099,sz300809,X320202,机床制造,Machinery
+45711,sz301603,X320202,机床制造,Machinery
+25466,sh600592,X320203,机械基础件,Machinery
+25710,sh600889,X320203,机械基础件,Chemical (Basic)
+25779,sh601002,X320203,机械基础件,Machinery
+25843,sh601177,X320203,机械基础件,Machinery
+26252,sh603308,X320203,机械基础件,Machinery
+26411,sh603617,X320203,机械基础件,Machinery
+26436,sh603667,X320203,机械基础件,Machinery
+26457,sh603699,X320203,机械基础件,Machinery
+26485,sh603757,X320203,机械基础件,Machinery
+26569,sh603915,X320203,机械基础件,Machinery
+26636,sh605060,X320203,机械基础件,Machinery
+26648,sh605100,X320203,机械基础件,Construction Supplies
+26756,sh688028,X320203,机械基础件,Machinery
+28547,sz000777,X320203,机械基础件,Machinery
+28737,sz001268,X320203,机械基础件,Machinery
+28756,sz001306,X320203,机械基础件,Machinery
+28836,sz002026,X320203,机械基础件,Machinery
+28856,sz002046,X320203,机械基础件,Machinery
+28966,sz002164,X320203,机械基础件,Machinery
+29139,sz002347,X320203,机械基础件,Machinery
+29225,sz002438,X320203,机械基础件,Machinery
+29403,sz002633,X320203,机械基础件,Machinery
+29546,sz002795,X320203,机械基础件,Machinery
+29616,sz002871,X320203,机械基础件,Machinery
+29621,sz002877,X320203,机械基础件,Machinery
+29628,sz002884,X320203,机械基础件,Machinery
+29639,sz002896,X320203,机械基础件,Electrical Equipment
+29670,sz002931,X320203,机械基础件,Machinery
+44478,sz300145,X320203,机械基础件,Machinery
+44729,sz300421,X320203,机械基础件,Auto Parts
+44777,sz300470,X320203,机械基础件,Machinery
+44809,sz300503,X320203,机械基础件,Machinery
+45016,sz300718,X320203,机械基础件,Machinery
+45072,sz300780,X320203,机械基础件,Machinery
+45107,sz300817,X320203,机械基础件,Machinery
+45128,sz300838,X320203,机械基础件,Machinery
+45174,sz300885,X320203,机械基础件,Furn/Home Furnishings
+45229,sz300943,X320203,机械基础件,Machinery
+45255,sz300971,X320203,机械基础件,Machinery
+45267,sz300984,X320203,机械基础件,Machinery
+45275,sz300992,X320203,机械基础件,Machinery
+45397,sz301125,X320203,机械基础件,Machinery
+45415,sz301151,X320203,机械基础件,Machinery
+45500,sz301255,X320203,机械基础件,Machinery
+45506,sz301261,X320203,机械基础件,Steel
+45593,sz301368,X320203,机械基础件,Machinery
+45673,sz301548,X320203,机械基础件,Machinery
+45705,sz301596,X320203,机械基础件,Machinery
+45718,sz301616,X320203,机械基础件,Machinery
+25112,sh600114,X320204,金属制品,Auto Parts
+25436,sh600558,X320204,金属制品,Machinery
+25683,sh600860,X320204,金属制品,Machinery
+25770,sh600992,X320204,金属制品,Steel
+26029,sh603028,X320204,金属制品,Steel
+26102,sh603112,X320204,金属制品,Machinery
+26221,sh603270,X320204,金属制品,Machinery
+26228,sh603278,X320204,金属制品,Steel
+26597,sh603969,X320204,金属制品,Steel
+26781,sh688059,X320204,金属制品,Machinery
+26953,sh688257,X320204,金属制品,Machinery
+26997,sh688308,X320204,金属制品,Machinery
+27037,sh688355,X320204,金属制品,Metals & Mining
+27059,sh688379,X320204,金属制品,Metals & Mining
+28308,sz000039,X320204,金属制品,Machinery
+28794,sz001379,X320204,金属制品,Machinery
+28936,sz002132,X320204,金属制品,Steel
+28952,sz002150,X320204,金属制品,Furn/Home Furnishings
+29134,sz002342,X320204,金属制品,Steel
+29232,sz002445,X320204,金属制品,Steel
+29290,sz002514,X320204,金属制品,Machinery
+29484,sz002722,X320204,金属制品,Machinery
+29590,sz002843,X320204,金属制品,Machinery
+44587,sz300260,X320204,金属制品,Machinery
+44710,sz300402,X320204,金属制品,Machinery
+44795,sz300488,X320204,金属制品,Machinery
+45118,sz300828,X320204,金属制品,Metals & Mining
+45231,sz300946,X320204,金属制品,Machinery
+45271,sz300988,X320204,金属制品,Auto Parts
+45408,sz301137,X320204,金属制品,Machinery
+45423,sz301160,X320204,金属制品,Steel
+45461,sz301202,X320204,金属制品,Computers/Peripherals
+45512,sz301268,X320204,金属制品,Machinery
+45548,sz301309,X320204,金属制品,Building Materials
+45600,sz301377,X320204,金属制品,Machinery
+45681,sz301559,X320204,金属制品,Machinery
+25181,sh600202,X320206,制冷空调设备,Building Materials
+26158,sh603187,X320206,制冷空调设备,Machinery
+26227,sh603277,X320206,制冷空调设备,Machinery
+26274,sh603331,X320206,制冷空调设备,Machinery
+26282,sh603339,X320206,制冷空调设备,Machinery
+28391,sz000530,X320206,制冷空调设备,Machinery
+28572,sz000811,X320206,制冷空调设备,Machinery
+28960,sz002158,X320206,制冷空调设备,Machinery
+29409,sz002639,X320206,制冷空调设备,Machinery
+44748,sz300441,X320206,制冷空调设备,Machinery
+45273,sz300990,X320206,制冷空调设备,Machinery
+45300,sz301018,X320206,制冷空调设备,Building Materials
+45499,sz301252,X320206,制冷空调设备,Machinery
+45515,sz301272,X320206,制冷空调设备,Machinery
+45619,sz301399,X320206,制冷空调设备,Machinery
+25158,sh600172,X320207,磨具磨料,Machinery
+25622,sh600783,X320207,磨具磨料,Chemical (Specialty)
+29079,sz002282,X320207,磨具磨料,Machinery
+29517,sz002760,X320207,磨具磨料,Steel
+44510,sz300179,X320207,磨具磨料,Machinery
+44857,sz300554,X320207,磨具磨料,Semiconductor Equip
+44908,sz300606,X320207,磨具磨料,Paper/Forest Products
+45000,sz300700,X320207,磨具磨料,Machinery
+45108,sz300818,X320207,磨具磨料,Construction Supplies
+45151,sz300861,X320207,磨具磨料,Semiconductor Equip
+25284,sh600343,X320299,其他通用设备,Machinery
+25880,sh601369,X320299,其他通用设备,Electrical Equipment
+26082,sh603090,X320299,其他通用设备,Machinery
+26084,sh603092,X320299,其他通用设备,Electrical Equipment
+26120,sh603131,X320299,其他通用设备,Machinery
+26220,sh603269,X320299,其他通用设备,Engineering/Construction
+26326,sh603400,X320299,其他通用设备,Electrical Equipment
+26685,sh605259,X320299,其他通用设备,Machinery
+26948,sh688251,X320299,其他通用设备,Machinery
+27021,sh688333,X320299,其他通用设备,Machinery
+27100,sh688455,X320299,其他通用设备,Machinery
+28807,sz001400,X320299,其他通用设备,Metals & Mining
+28808,sz001696,X320299,其他通用设备,Auto Parts
+29070,sz002272,X320299,其他通用设备,Machinery
+29231,sz002444,X320299,其他通用设备,Furn/Home Furnishings
+29305,sz002530,X320299,其他通用设备,Machinery
+29373,sz002598,X320299,其他通用设备,Machinery
+29453,sz002686,X320299,其他通用设备,Building Materials
+44350,sz300004,X320299,其他通用设备,Building Materials
+44429,sz300091,X320299,其他通用设备,Machinery
+44459,sz300126,X320299,其他通用设备,Machinery
+44487,sz300154,X320299,其他通用设备,Machinery
+44489,sz300157,X320299,其他通用设备,Oilfield Svcs/Equip.
+44523,sz300193,X320299,其他通用设备,Machinery
+44584,sz300257,X320299,其他通用设备,Machinery
+44589,sz300263,X320299,其他通用设备,Machinery
+44602,sz300277,X320299,其他通用设备,Electrical Equipment
+44719,sz300411,X320299,其他通用设备,Machinery
+45310,sz301028,X320299,其他通用设备,Machinery
+45324,sz301043,X320299,其他通用设备,Building Materials
+45348,sz301070,X320299,其他通用设备,Machinery
+45381,sz301107,X320299,其他通用设备,Electrical Equipment
+45516,sz301273,X320299,其他通用设备,Machinery
+45556,sz301317,X320299,其他通用设备,Machinery
+45580,sz301353,X320299,其他通用设备,Furn/Home Furnishings
+45629,sz301448,X320299,其他通用设备,Furn/Home Furnishings
+25155,sh600169,X320301,能源及重型设备,Construction Supplies
+25225,sh600262,X320301,能源及重型设备,Construction Supplies
+25266,sh600320,X320301,能源及重型设备,Construction Supplies
+25326,sh600397,X320301,能源及重型设备,Coal & Related Energy
+25457,sh600582,X320301,能源及重型设备,Machinery
+25759,sh600980,X320301,能源及重型设备,Steel
+25816,sh601106,X320301,能源及重型设备,Machinery
+25886,sh601399,X320301,能源及重型设备,Machinery
+25908,sh601608,X320301,能源及重型设备,Machinery
+25933,sh601717,X320301,能源及重型设备,Construction Supplies
+25942,sh601798,X320301,能源及重型设备,Oilfield Svcs/Equip.
+26014,sh603012,X320301,能源及重型设备,Construction Supplies
+26036,sh603036,X320301,能源及重型设备,Oilfield Svcs/Equip.
+26142,sh603169,X320301,能源及重型设备,Machinery
+26268,sh603325,X320301,能源及重型设备,Machinery
+26319,sh603391,X320301,能源及重型设备,Machinery
+26456,sh603698,X320301,能源及重型设备,Oilfield Svcs/Equip.
+26504,sh603800,X320301,能源及重型设备,Oilfield Svcs/Equip.
+26594,sh603966,X320301,能源及重型设备,Construction Supplies
+26838,sh688121,X320301,能源及重型设备,Machinery
+27057,sh688377,X320301,能源及重型设备,Oilfield Svcs/Equip.
+27229,sh688633,X320301,能源及重型设备,Machinery
+28595,sz000852,X320301,能源及重型设备,Oilfield Svcs/Equip.
+28775,sz001332,X320301,能源及重型设备,Machinery
+28785,sz001360,X320301,能源及重型设备,Construction Supplies
+29006,sz002204,X320301,能源及重型设备,Machinery
+29076,sz002278,X320301,能源及重型设备,Oilfield Svcs/Equip.
+29145,sz002353,X320301,能源及重型设备,Oilfield Svcs/Equip.
+29157,sz002366,X320301,能源及重型设备,Machinery
+29265,sz002483,X320301,能源及重型设备,Machinery
+29299,sz002523,X320301,能源及重型设备,Construction Supplies
+29301,sz002526,X320301,能源及重型设备,Construction Supplies
+29310,sz002535,X320301,能源及重型设备,Machinery
+29458,sz002691,X320301,能源及重型设备,Construction Supplies
+29492,sz002730,X320301,能源及重型设备,Electrical Equipment
+44424,sz300084,X320301,能源及重型设备,Oilfield Svcs/Equip.
+44430,sz300092,X320301,能源及重型设备,Machinery
+44433,sz300095,X320301,能源及重型设备,Machinery
+44437,sz300099,X320301,能源及重型设备,Construction Supplies
+44600,sz300275,X320301,能源及重型设备,Machinery
+44787,sz300480,X320301,能源及重型设备,Electronics (General)
+45127,sz300837,X320301,能源及重型设备,Construction Supplies
+45155,sz300865,X320301,能源及重型设备,Construction Supplies
+45421,sz301158,X320301,能源及重型设备,Oilfield Svcs/Equip.
+26563,sh603901,X320302,印刷包装机械,Machinery
+27319,sh688789,X320302,印刷包装机械,Machinery
+28730,sz001256,X320302,印刷包装机械,Machinery
+29011,sz002209,X320302,印刷包装机械,Machinery
+29384,sz002611,X320302,印刷包装机械,Auto Parts
+44525,sz300195,X320302,印刷包装机械,Machinery
+44692,sz300382,X320302,印刷包装机械,Machinery
+44815,sz300509,X320302,印刷包装机械,Machinery
+44818,sz300512,X320302,印刷包装机械,Machinery
+44827,sz300521,X320302,印刷包装机械,Machinery
+45379,sz301105,X320302,印刷包装机械,Machinery
+45409,sz301138,X320302,印刷包装机械,Machinery
+25203,sh600232,X320303,纺织服装设备,Apparel
+25253,sh600302,X320303,纺织服装设备,Machinery
+25426,sh600545,X320303,纺织服装设备,Machinery
+25669,sh600843,X320303,纺织服装设备,Machinery
+26086,sh603095,X320303,纺织服装设备,Machinery
+26280,sh603337,X320303,纺织服装设备,Machinery
+28818,sz002006,X320303,纺织服装设备,Machinery
+28831,sz002021,X320303,纺织服装设备,Machinery
+29766,sz003036,X320303,纺织服装设备,Machinery
+44629,sz300307,X320303,纺织服装设备,Machinery
+45333,sz301053,X320303,纺织服装设备,Machinery
+26030,sh603029,X320304,农用机械,Machinery
+26499,sh603789,X320304,农用机械,Farming/Agriculture
+29533,sz002779,X320304,农用机械,Furn/Home Furnishings
+29634,sz002890,X320304,农用机械,Farming/Agriculture
+44491,sz300159,X320304,农用机械,Farming/Agriculture
+45168,sz300879,X320304,农用机械,Furn/Home Furnishings
+45505,sz301260,X320304,农用机械,Furn/Home Furnishings
+45668,sz301533,X320304,农用机械,Farming/Agriculture
+25352,sh600444,X320399,其他专用设备,Building Materials
+25388,sh600499,X320399,其他专用设备,Machinery
+25390,sh600501,X320399,其他专用设备,Construction Supplies
+25454,sh600579,X320399,其他专用设备,Machinery
+26013,sh603011,X320399,其他专用设备,Machinery
+26033,sh603032,X320399,其他专用设备,Machinery
+26069,sh603076,X320399,其他专用设备,Machinery
+26074,sh603081,X320399,其他专用设备,Business & Consumer Services
+26122,sh603135,X320399,其他专用设备,Machinery
+26133,sh603159,X320399,其他专用设备,Chemical (Basic)
+26146,sh603173,X320399,其他专用设备,Machinery
+26174,sh603203,X320399,其他专用设备,Machinery
+26224,sh603273,X320399,其他专用设备,Machinery
+26232,sh603282,X320399,其他专用设备,Machinery
+26238,sh603289,X320399,其他专用设备,Machinery
+26406,sh603611,X320399,其他专用设备,Machinery
+26426,sh603656,X320399,其他专用设备,Machinery
+26530,sh603855,X320399,其他专用设备,Electrical Equipment
+26557,sh603895,X320399,其他专用设备,Machinery
+26568,sh603912,X320399,其他专用设备,Machinery
+26590,sh603956,X320399,其他专用设备,Machinery
+26731,sh688001,X320399,其他专用设备,Electronics (General)
+26733,sh688003,X320399,其他专用设备,Electronics (General)
+26751,sh688022,X320399,其他专用设备,Machinery
+26792,sh688071,X320399,其他专用设备,Electronics (General)
+26811,sh688092,X320399,其他专用设备,Machinery
+26830,sh688113,X320399,其他专用设备,Electronics (General)
+26841,sh688125,X320399,其他专用设备,Machinery
+26844,sh688128,X320399,其他专用设备,Electrical Equipment
+26871,sh688162,X320399,其他专用设备,Machinery
+26916,sh688211,X320399,其他专用设备,Machinery
+26919,sh688215,X320399,其他专用设备,Machinery
+26995,sh688306,X320399,其他专用设备,Machinery
+27001,sh688312,X320399,其他专用设备,Electronics (General)
+27016,sh688328,X320399,其他专用设备,Semiconductor Equip
+27042,sh688360,X320399,其他专用设备,Machinery
+27058,sh688378,X320399,其他专用设备,Electronics (General)
+27063,sh688383,X320399,其他专用设备,Semiconductor Equip
+27071,sh688392,X320399,其他专用设备,Machinery
+27077,sh688400,X320399,其他专用设备,Electronics (General)
+27087,sh688420,X320399,其他专用设备,Construction Supplies
+27093,sh688433,X320399,其他专用设备,Machinery
+27097,sh688448,X320399,其他专用设备,Machinery
+27145,sh688529,X320399,其他专用设备,Machinery
+27147,sh688531,X320399,其他专用设备,Electronics (General)
+27162,sh688557,X320399,其他专用设备,Machinery
+27224,sh688627,X320399,其他专用设备,Electronics (General)
+27227,sh688630,X320399,其他专用设备,Semiconductor Equip
+27235,sh688648,X320399,其他专用设备,Machinery
+27275,sh688700,X320399,其他专用设备,Machinery
+27299,sh688755,X320399,其他专用设备,Heathcare Information and Technology
+28596,sz000856,X320399,其他专用设备,Machinery
+28713,sz001223,X320399,其他专用设备,Machinery
+28714,sz001225,X320399,其他专用设备,Machinery
+28749,sz001288,X320399,其他专用设备,Machinery
+28804,sz001395,X320399,其他专用设备,Machinery
+28821,sz002009,X320399,其他专用设备,Machinery
+28841,sz002031,X320399,其他专用设备,Auto Parts
+28881,sz002073,X320399,其他专用设备,Machinery
+29130,sz002337,X320399,其他专用设备,Machinery
+29219,sz002430,X320399,其他专用设备,Chemical (Specialty)
+29304,sz002529,X320399,其他专用设备,Machinery
+29339,sz002564,X320399,其他专用设备,Engineering/Construction
+29370,sz002595,X320399,其他专用设备,Machinery
+29386,sz002613,X320399,其他专用设备,Machinery
+29457,sz002690,X320399,其他专用设备,Machinery
+29465,sz002698,X320399,其他专用设备,Machinery
+29514,sz002757,X320399,其他专用设备,Machinery
+29538,sz002786,X320399,其他专用设备,Machinery
+29564,sz002816,X320399,其他专用设备,Machinery
+29581,sz002833,X320399,其他专用设备,Machinery
+29584,sz002837,X320399,其他专用设备,Machinery
+44435,sz300097,X320399,其他专用设备,Machinery
+44441,sz300103,X320399,其他专用设备,Construction Supplies
+44484,sz300151,X320399,其他专用设备,Machinery
+44538,sz300210,X320399,其他专用设备,Construction Supplies
+44555,sz300228,X320399,其他专用设备,Machinery
+44601,sz300276,X320399,其他专用设备,Machinery
+44605,sz300281,X320399,其他专用设备,Machinery
+44616,sz300293,X320399,其他专用设备,Machinery
+44708,sz300400,X320399,其他专用设备,Machinery
+44723,sz300415,X320399,其他专用设备,Machinery
+44728,sz300420,X320399,其他专用设备,Machinery
+44778,sz300471,X320399,其他专用设备,Oilfield Svcs/Equip.
+44779,sz300472,X320399,其他专用设备,Machinery
+44793,sz300486,X320399,其他专用设备,Machinery
+44805,sz300499,X320399,其他专用设备,Machinery
+44844,sz300540,X320399,其他专用设备,Machinery
+44848,sz300545,X320399,其他专用设备,Machinery
+44852,sz300549,X320399,其他专用设备,Machinery
+45049,sz300756,X320399,其他专用设备,Machinery
+45102,sz300812,X320399,其他专用设备,Semiconductor Equip
+45113,sz300823,X320399,其他专用设备,Machinery
+45123,sz300833,X320399,其他专用设备,Electrical Equipment
+45126,sz300836,X320399,其他专用设备,Machinery
+45191,sz300902,X320399,其他专用设备,Electronics (General)
+45235,sz300950,X320399,其他专用设备,Machinery
+45281,sz300998,X320399,其他专用设备,Auto Parts
+45296,sz301013,X320399,其他专用设备,Electronics (General)
+45304,sz301022,X320399,其他专用设备,Auto Parts
+45311,sz301029,X320399,其他专用设备,Machinery
+45360,sz301083,X320399,其他专用设备,Machinery
+45386,sz301112,X320399,其他专用设备,Machinery
+45400,sz301128,X320399,其他专用设备,Machinery
+45446,sz301186,X320399,其他专用设备,Auto Parts
+45455,sz301196,X320399,其他专用设备,Machinery
+45459,sz301200,X320399,其他专用设备,Machinery
+45550,sz301311,X320399,其他专用设备,Machinery
+45563,sz301325,X320399,其他专用设备,Machinery
+45575,sz301338,X320399,其他专用设备,Machinery
+45586,sz301360,X320399,其他专用设备,Machinery
+45613,sz301392,X320399,其他专用设备,Machinery
+45634,sz301468,X320399,其他专用设备,Machinery
+45687,sz301568,X320399,其他专用设备,Electronics (General)
+45706,sz301598,X320399,其他专用设备,Machinery
+45709,sz301601,X320399,其他专用设备,Machinery
+45734,sz301662,X320399,其他专用设备,Machinery
+25054,sh600031,X320401,工程机械整机,Construction Supplies
+25605,sh600761,X320401,工程机械整机,Construction Supplies
+25647,sh600815,X320401,工程机械整机,Construction Supplies
+25763,sh600984,X320401,工程机械整机,Construction Supplies
+26165,sh603194,X320401,工程机械整机,Machinery
+26230,sh603280,X320401,工程机械整机,Construction Supplies
+26244,sh603298,X320401,工程机械整机,Construction Supplies
+26281,sh603338,X320401,工程机械整机,Construction Supplies
+26698,sh605305,X320401,工程机械整机,Construction Supplies
+27088,sh688425,X320401,工程机械整机,Construction Supplies
+28338,sz000157,X320401,工程机械整机,Construction Supplies
+28362,sz000425,X320401,工程机械整机,Construction Supplies
+28389,sz000528,X320401,工程机械整机,Construction Supplies
+28486,sz000680,X320401,工程机械整机,Construction Supplies
+28903,sz002097,X320401,工程机械整机,Construction Supplies
+44531,sz300201,X320401,工程机械整机,Construction Supplies
+25814,sh601100,X320402,工程机械零件,Machinery
+26421,sh603638,X320402,工程机械零件,Machinery
+26715,sh605389,X320402,工程机械零件,Construction Supplies
+28715,sz001226,X320402,工程机械零件,Construction Supplies
+28727,sz001239,X320402,工程机械零件,Construction Supplies
+45356,sz301079,X320402,工程机械零件,Machinery
+45424,sz301161,X320402,工程机械零件,Machinery
+45521,sz301279,X320402,工程机械零件,Auto Parts
+45628,sz301446,X320402,工程机械零件,Construction Supplies
+25189,sh600215,X320501,机器人,Real Estate (Development)
+26435,sh603666,X320501,机器人,Machinery
+26746,sh688017,X320501,机器人,Machinery
+26809,sh688090,X320501,机器人,Machinery
+26873,sh688165,X320501,机器人,Machinery
+26922,sh688218,X320501,机器人,Machinery
+26951,sh688255,X320501,机器人,Machinery
+26981,sh688290,X320501,机器人,Machinery
+29507,sz002747,X320501,机器人,Machinery
+44369,sz300024,X320501,机器人,Machinery
+44909,sz300607,X320501,机器人,Machinery
+45458,sz301199,X320501,机器人,Machinery
+25438,sh600560,X320502,工业控制设备,Electrical Equipment
+26017,sh603015,X320502,工业控制设备,Electronics (General)
+26026,sh603025,X320502,工业控制设备,Electronics (General)
+26225,sh603275,X320502,工业控制设备,Electrical Equipment
+26233,sh603283,X320502,工业控制设备,Machinery
+26332,sh603416,X320502,工业控制设备,Electronics (General)
+26386,sh603583,X320502,工业控制设备,Electronics (General)
+26691,sh605288,X320502,工业控制设备,Electrical Equipment
+26815,sh688097,X320502,工业控制设备,Machinery
+26869,sh688160,X320502,工业控制设备,Electronics (General)
+26895,sh688188,X320502,工业控制设备,Electronics (General)
+27009,sh688320,X320502,工业控制设备,Electronics (General)
+27073,sh688395,X320502,工业控制设备,Electrical Equipment
+27174,sh688570,X320502,工业控制设备,Construction Supplies
+27263,sh688686,X320502,工业控制设备,Electronics (General)
+27273,sh688698,X320502,工业控制设备,Electrical Equipment
+27310,sh688777,X320502,工业控制设备,Electronics (General)
+28735,sz001266,X320502,工业控制设备,Electronics (General)
+28986,sz002184,X320502,工业控制设备,Computer Services
+29128,sz002334,X320502,工业控制设备,Electrical Equipment
+29302,sz002527,X320502,工业控制设备,Machinery
+29693,sz002957,X320502,工业控制设备,Machinery
+29709,sz002975,X320502,工业控制设备,Electronics (General)
+29713,sz002979,X320502,工业控制设备,Electronics (General)
+44457,sz300124,X320502,工业控制设备,Machinery
+44603,sz300278,X320502,工业控制设备,Machinery
+44738,sz300430,X320502,工业控制设备,Machinery
+44768,sz300461,X320502,工业控制设备,Machinery
+44791,sz300484,X320502,工业控制设备,Electrical Equipment
+45050,sz300757,X320502,工业控制设备,Machinery
+45092,sz300802,X320502,工业控制设备,Electronics (General)
+45426,sz301163,X320502,工业控制设备,Steel
+45559,sz301320,X320502,工业控制设备,Electrical Equipment
+45622,sz301418,X320502,工业控制设备,Electrical Equipment
+45652,sz301510,X320502,工业控制设备,Electronics (General)
+45728,sz301633,X320502,工业控制设备,Electrical Equipment
+26075,sh603082,X320599,其他自动化设备,Machinery
+26673,sh605186,X320599,其他自动化设备,Healthcare Products
+27017,sh688329,X320599,其他自动化设备,Healthcare Products
+27221,sh688623,X320599,其他自动化设备,Electronics (General)
+45551,sz301312,X320599,其他自动化设备,Electronics (General)
+45654,sz301512,X320599,其他自动化设备,Machinery
+25183,sh600206,X400101,半导体材料,Semiconductor
+25505,sh600641,X400101,半导体材料,Real Estate (Development)
+25525,sh600666,X400101,半导体材料,Machinery
+26612,sh603991,X400101,半导体材料,Chemical (Specialty)
+26706,sh605358,X400101,半导体材料,Semiconductor Equip
+26842,sh688126,X400101,半导体材料,Semiconductor Equip
+26853,sh688138,X400101,半导体材料,Electronics (General)
+26936,sh688233,X400101,半导体材料,Semiconductor Equip
+26937,sh688234,X400101,半导体材料,Semiconductor Equip
+27078,sh688401,X400101,半导体材料,Electronics (General)
+27092,sh688432,X400101,半导体材料,Semiconductor Equip
+27146,sh688530,X400101,半导体材料,Semiconductor Equip
+27149,sh688535,X400101,半导体材料,Semiconductor Equip
+27186,sh688584,X400101,半导体材料,Semiconductor
+27288,sh688720,X400101,半导体材料,Semiconductor Equip
+27289,sh688721,X400101,半导体材料,Semiconductor Equip
+27292,sh688727,X400101,半导体材料,Semiconductor Equip
+27314,sh688783,X400101,半导体材料,Semiconductor Equip
+27333,sh688809,X400101,半导体材料,Semiconductor
+28923,sz002119,X400101,半导体材料,Semiconductor Equip
+29200,sz002409,X400101,半导体材料,Chemical (Basic)
+29757,sz003026,X400101,半导体材料,Semiconductor
+44966,sz300666,X400101,半导体材料,Semiconductor
+45005,sz300706,X400101,半导体材料,Chemical (Basic)
+45693,sz301581,X400101,半导体材料,Semiconductor Equip
+45716,sz301611,X400101,半导体材料,Machinery
+45741,sz301678,X400101,半导体材料,Semiconductor
+25157,sh600171,X400103,集成电路设计,Semiconductor
+25699,sh600877,X400103,集成电路设计,Semiconductor
+26062,sh603068,X400103,集成电路设计,Semiconductor
+26134,sh603160,X400103,集成电路设计,Semiconductor
+26305,sh603375,X400103,集成电路设计,Electronics (General)
+26352,sh603501,X400103,集成电路设计,Semiconductor
+26556,sh603893,X400103,集成电路设计,Semiconductor
+26607,sh603986,X400103,集成电路设计,Semiconductor
+26738,sh688008,X400103,集成电路设计,Semiconductor
+26747,sh688018,X400103,集成电路设计,Semiconductor
+26767,sh688041,X400103,集成电路设计,Semiconductor
+26768,sh688045,X400103,集成电路设计,Semiconductor
+26770,sh688047,X400103,集成电路设计,Semiconductor
+26772,sh688049,X400103,集成电路设计,Semiconductor
+26775,sh688052,X400103,集成电路设计,Semiconductor
+26783,sh688061,X400103,集成电路设计,Semiconductor
+26817,sh688099,X400103,集成电路设计,Semiconductor
+26824,sh688107,X400103,集成电路设计,Semiconductor
+26827,sh688110,X400103,集成电路设计,Semiconductor
+26840,sh688123,X400103,集成电路设计,Semiconductor
+26846,sh688130,X400103,集成电路设计,Semiconductor
+26855,sh688141,X400103,集成电路设计,Semiconductor
+26863,sh688153,X400103,集成电路设计,Semiconductor
+26881,sh688173,X400103,集成电路设计,Semiconductor
+26911,sh688206,X400103,集成电路设计,Semiconductor
+26914,sh688209,X400103,集成电路设计,Semiconductor
+26918,sh688213,X400103,集成电路设计,Semiconductor
+26924,sh688220,X400103,集成电路设计,Semiconductor
+26949,sh688252,X400103,集成电路设计,Semiconductor
+26952,sh688256,X400103,集成电路设计,Semiconductor
+26955,sh688259,X400103,集成电路设计,Semiconductor
+26958,sh688262,X400103,集成电路设计,Semiconductor
+26964,sh688270,X400103,集成电路设计,Semiconductor
+26972,sh688279,X400103,集成电路设计,Semiconductor
+26978,sh688286,X400103,集成电路设计,Electronics (General)
+27013,sh688325,X400103,集成电路设计,Semiconductor
+27020,sh688332,X400103,集成电路设计,Semiconductor
+27049,sh688368,X400103,集成电路设计,Semiconductor
+27060,sh688380,X400103,集成电路设计,Semiconductor
+27061,sh688381,X400103,集成电路设计,Semiconductor
+27070,sh688391,X400103,集成电路设计,Semiconductor
+27084,sh688416,X400103,集成电路设计,Semiconductor
+27098,sh688449,X400103,集成电路设计,Semiconductor
+27102,sh688458,X400103,集成电路设计,Semiconductor
+27112,sh688484,X400103,集成电路设计,Semiconductor
+27114,sh688486,X400103,集成电路设计,Semiconductor
+27118,sh688498,X400103,集成电路设计,Semiconductor
+27127,sh688508,X400103,集成电路设计,Semiconductor
+27131,sh688512,X400103,集成电路设计,Semiconductor
+27133,sh688515,X400103,集成电路设计,Semiconductor
+27139,sh688521,X400103,集成电路设计,Semiconductor
+27142,sh688525,X400103,集成电路设计,Semiconductor
+27150,sh688536,X400103,集成电路设计,Semiconductor
+27190,sh688589,X400103,集成电路设计,Semiconductor
+27192,sh688591,X400103,集成电路设计,Semiconductor
+27194,sh688593,X400103,集成电路设计,Semiconductor
+27195,sh688595,X400103,集成电路设计,Semiconductor
+27201,sh688601,X400103,集成电路设计,Semiconductor
+27207,sh688608,X400103,集成电路设计,Semiconductor
+27218,sh688620,X400103,集成电路设计,Semiconductor
+27238,sh688653,X400103,集成电路设计,Semiconductor
+27274,sh688699,X400103,集成电路设计,Semiconductor
+27277,sh688702,X400103,集成电路设计,Semiconductor
+27280,sh688709,X400103,集成电路设计,Semiconductor
+27293,sh688728,X400103,集成电路设计,Semiconductor
+27304,sh688766,X400103,集成电路设计,Semiconductor
+27320,sh688790,X400103,集成电路设计,Semiconductor
+27322,sh688795,X400103,集成电路设计,Semiconductor
+27325,sh688798,X400103,集成电路设计,Semiconductor
+27328,sh688802,X400103,集成电路设计,Semiconductor
+27331,sh688807,X400103,集成电路设计,Electronics (General)
+28758,sz001309,X400103,集成电路设计,Semiconductor
+28859,sz002049,X400103,集成电路设计,Semiconductor
+29015,sz002213,X400103,集成电路设计,Auto Parts
+44395,sz300053,X400103,集成电路设计,Semiconductor
+44417,sz300077,X400103,集成电路设计,Semiconductor
+44550,sz300223,X400103,集成电路设计,Semiconductor
+44646,sz300327,X400103,集成电路设计,Semiconductor
+44765,sz300458,X400103,集成电路设计,Semiconductor
+44915,sz300613,X400103,集成电路设计,Semiconductor
+44961,sz300661,X400103,集成电路设计,Semiconductor
+44971,sz300671,X400103,集成电路设计,Semiconductor
+44972,sz300672,X400103,集成电路设计,Semiconductor
+45074,sz300782,X400103,集成电路设计,Electronics (General)
+45370,sz301095,X400103,集成电路设计,Software (System & Application)
+45513,sz301269,X400103,集成电路设计,Software (System & Application)
+45547,sz301308,X400103,集成电路设计,Computers/Peripherals
+45670,sz301536,X400103,集成电路设计,Semiconductor
+25459,sh600584,X400106,半导体封测,Semiconductor
+25526,sh600667,X400106,半导体封测,Semiconductor
+26007,sh603005,X400106,半导体封测,Semiconductor
+26850,sh688135,X400106,半导体封测,Semiconductor
+26920,sh688216,X400106,半导体封测,Semiconductor
+27035,sh688352,X400106,半导体封测,Semiconductor
+27044,sh688362,X400106,半导体封测,Semiconductor
+27053,sh688372,X400106,半导体封测,Semiconductor
+27079,sh688403,X400106,半导体封测,Semiconductor
+28885,sz002077,X400106,半导体封测,Real Estate (General/Diversified)
+28958,sz002156,X400106,半导体封测,Semiconductor
+28987,sz002185,X400106,半导体封测,Semiconductor
+45578,sz301348,X400106,半导体封测,Semiconductor
+25126,sh600130,X400201,消费电子组件,Computers/Peripherals
+25182,sh600203,X400201,消费电子组件,Retail (Distributors)
+25833,sh601138,X400201,消费电子组件,Electronics (General)
+25861,sh601231,X400201,消费电子组件,Electronics (General)
+26049,sh603052,X400201,消费电子组件,Electronics (General)
+26242,sh603296,X400201,消费电子组件,Computers/Peripherals
+26270,sh603327,X400201,消费电子组件,Metals & Mining
+26310,sh603380,X400201,消费电子组件,Electronics (General)
+26393,sh603595,X400201,消费电子组件,Electrical Equipment
+26414,sh603626,X400201,消费电子组件,Electronics (General)
+26416,sh603629,X400201,消费电子组件,Electronics (General)
+26555,sh603890,X400201,消费电子组件,Electronics (General)
+26688,sh605277,X400201,消费电子组件,Electrical Equipment
+26915,sh688210,X400201,消费电子组件,Electronics (General)
+26956,sh688260,X400201,消费电子组件,Electronics (General)
+27245,sh688661,X400201,消费电子组件,Electronics (General)
+27256,sh688678,X400201,消费电子组件,Machinery
+28295,sz000021,X400201,消费电子组件,Electronics (General)
+28762,sz001314,X400201,消费电子组件,Computers/Peripherals
+28855,sz002045,X400201,消费电子组件,Electronics (Consumer & Office)
+28865,sz002055,X400201,消费电子组件,Electronics (General)
+29019,sz002217,X400201,消费电子组件,Electronics (General)
+29041,sz002241,X400201,消费电子组件,Electronics (General)
+29143,sz002351,X400201,消费电子组件,Electronics (Consumer & Office)
+29215,sz002426,X400201,消费电子组件,Electronics (General)
+29241,sz002456,X400201,消费电子组件,Electronics (General)
+29258,sz002475,X400201,消费电子组件,Electronics (General)
+29375,sz002600,X400201,消费电子组件,Electronics (General)
+29405,sz002635,X400201,消费电子组件,Electrical Equipment
+29425,sz002655,X400201,消费电子组件,Electronics (General)
+29430,sz002660,X400201,消费电子组件,Electrical Equipment
+29449,sz002681,X400201,消费电子组件,Furn/Home Furnishings
+29535,sz002782,X400201,消费电子组件,Electrical Equipment
+29600,sz002855,X400201,消费电子组件,Machinery
+29606,sz002861,X400201,消费电子组件,Electrical Equipment
+29611,sz002866,X400201,消费电子组件,Electronics (General)
+29625,sz002881,X400201,消费电子组件,Telecom. Equipment
+29632,sz002888,X400201,消费电子组件,Electronics (Consumer & Office)
+29664,sz002925,X400201,消费电子组件,Electronics (Consumer & Office)
+29675,sz002937,X400201,消费电子组件,Electronics (General)
+29684,sz002947,X400201,消费电子组件,Electronics (General)
+29715,sz002981,X400201,消费电子组件,Electronics (Consumer & Office)
+29727,sz002993,X400201,消费电子组件,Computers/Peripherals
+44375,sz300032,X400201,消费电子组件,Electrical Equipment
+44450,sz300115,X400201,消费电子组件,Electronics (General)
+44469,sz300136,X400201,消费电子组件,Telecom. Equipment
+44604,sz300279,X400201,消费电子组件,Electronics (General)
+44642,sz300322,X400201,消费电子组件,Telecom. Equipment
+44740,sz300433,X400201,消费电子组件,Electronics (General)
+44904,sz300602,X400201,消费电子组件,Electrical Equipment
+44979,sz300679,X400201,消费电子组件,Electronics (General)
+44986,sz300686,X400201,消费电子组件,Electronics (General)
+45008,sz300709,X400201,消费电子组件,Electrical Equipment
+45031,sz300735,X400201,消费电子组件,Electronics (Consumer & Office)
+45079,sz300787,X400201,消费电子组件,Computers/Peripherals
+45085,sz300793,X400201,消费电子组件,Electronics (Consumer & Office)
+45133,sz300843,X400201,消费电子组件,Electronics (General)
+45147,sz300857,X400201,消费电子组件,Computers/Peripherals
+45158,sz300868,X400201,消费电子组件,Computers/Peripherals
+45236,sz300951,X400201,消费电子组件,Electronics (General)
+45240,sz300956,X400201,消费电子组件,Computers/Peripherals
+45252,sz300968,X400201,消费电子组件,Computers/Peripherals
+45259,sz300976,X400201,消费电子组件,Electronics (General)
+45274,sz300991,X400201,消费电子组件,Electronics (General)
+45331,sz301051,X400201,消费电子组件,Electronics (General)
+45345,sz301067,X400201,消费电子组件,Computers/Peripherals
+45362,sz301086,X400201,消费电子组件,Electronics (General)
+45396,sz301123,X400201,消费电子组件,Electronics (General)
+45441,sz301180,X400201,消费电子组件,Electronics (General)
+45443,sz301182,X400201,消费电子组件,Electronics (General)
+45522,sz301280,X400201,消费电子组件,Electronics (General)
+45526,sz301285,X400201,消费电子组件,Electronics (General)
+45564,sz301326,X400201,消费电子组件,Electronics (General)
+45567,sz301329,X400201,消费电子组件,Electronics (General)
+45606,sz301383,X400201,消费电子组件,Electronics (Consumer & Office)
+45608,sz301387,X400201,消费电子组件,Electronics (General)
+45610,sz301389,X400201,消费电子组件,Electronics (General)
+45637,sz301486,X400201,消费电子组件,Electronics (General)
+45641,sz301491,X400201,消费电子组件,Electronics (Consumer & Office)
+45686,sz301567,X400201,消费电子组件,Electronics (General)
+45722,sz301626,X400201,消费电子组件,Electronics (General)
+45726,sz301631,X400201,消费电子组件,Electronics (General)
+26737,sh688007,X400202,品牌消费电子,Electronics (General)
+26763,sh688036,X400202,品牌消费电子,Computers/Peripherals
+27108,sh688475,X400202,品牌消费电子,Electronics (General)
+27308,sh688775,X400202,品牌消费电子,Electronics (Consumer & Office)
+28757,sz001308,X400202,品牌消费电子,Electronics (General)
+29588,sz002841,X400202,品牌消费电子,Electronics (General)
+29691,sz002955,X400202,品牌消费电子,Electronics (General)
+45156,sz300866,X400202,品牌消费电子,Computers/Peripherals
+45449,sz301189,X400202,品牌消费电子,Electronics (Consumer & Office)
+45712,sz301606,X400202,品牌消费电子,Computers/Peripherals
+25080,sh600071,X400302,光学元件,Electronics (General)
+26243,sh603297,X400302,光学元件,Electronics (General)
+26491,sh603773,X400302,光学元件,Electronics (General)
+26653,sh605118,X400302,光学元件,Electronics (General)
+26727,sh605588,X400302,光学元件,Electronics (General)
+26740,sh688010,X400302,光学元件,Electronics (General)
+26799,sh688079,X400302,光学元件,Electronics (General)
+26843,sh688127,X400302,光学元件,Electronics (General)
+26875,sh688167,X400302,光学元件,Semiconductor
+26888,sh688181,X400302,光学元件,Electronics (General)
+26901,sh688195,X400302,光学元件,Electronics (General)
+26989,sh688299,X400302,光学元件,Chemical (Basic)
+26996,sh688307,X400302,光学元件,Electronics (General)
+27011,sh688322,X400302,光学元件,Electronics (General)
+27122,sh688502,X400302,光学元件,Electronics (General)
+28310,sz000045,X400302,光学元件,Electronics (General)
+28791,sz001373,X400302,光学元件,Electronics (General)
+28846,sz002036,X400302,光学元件,Electronics (General)
+28912,sz002106,X400302,光学元件,Electronics (General)
+28991,sz002189,X400302,光学元件,Electronics (General)
+29023,sz002222,X400302,光学元件,Electronics (General)
+29071,sz002273,X400302,光学元件,Electronics (General)
+29620,sz002876,X400302,光学元件,Electronics (General)
+29698,sz002962,X400302,光学元件,Retail (Distributors)
+29747,sz003015,X400302,光学元件,Electronics (General)
+44428,sz300088,X400302,光学元件,Electronics (General)
+44461,sz300128,X400302,光学元件,Electronics (General)
+44649,sz300331,X400302,光学元件,Electronics (General)
+44869,sz300566,X400302,光学元件,Chemical (Basic)
+44991,sz300691,X400302,光学元件,Electronics (General)
+45001,sz300701,X400302,光学元件,Electronics (General)
+45082,sz300790,X400302,光学元件,Electronics (General)
+45198,sz300909,X400302,光学元件,Electronics (General)
+45325,sz301045,X400302,光学元件,Electronics (General)
+45444,sz301183,X400302,光学元件,Electronics (General)
+45624,sz301421,X400302,光学元件,Electronics (General)
+45636,sz301479,X400302,光学元件,Electronics (Consumer & Office)
+25224,sh600261,X400303,LED,Electrical Equipment
+25513,sh600651,X400303,LED,Household Products
+25552,sh600703,X400303,LED,Semiconductor
+26248,sh603303,X400303,LED,Electrical Equipment
+26358,sh603515,X400303,LED,Household Products
+26442,sh603679,X400303,LED,Electrical Equipment
+26447,sh603685,X400303,LED,Electrical Equipment
+26680,sh605218,X400303,LED,Electronics (General)
+26707,sh605365,X400303,LED,Electrical Equipment
+28400,sz000541,X400303,LED,Electrical Equipment
+28771,sz001326,X400303,LED,Electrical Equipment
+28884,sz002076,X400303,LED,Electrical Equipment
+28941,sz002137,X400303,LED,Software (System & Application)
+29235,sz002449,X400303,LED,Electronics (General)
+29362,sz002587,X400303,LED,Electronics (General)
+29408,sz002638,X400303,LED,Electrical Equipment
+29486,sz002724,X400303,LED,Electrical Equipment
+29505,sz002745,X400303,LED,Semiconductor
+29717,sz002983,X400303,LED,Electrical Equipment
+29726,sz002992,X400303,LED,Semiconductor
+44440,sz300102,X400303,LED,Semiconductor
+44494,sz300162,X400303,LED,Semiconductor
+44546,sz300219,X400303,LED,Semiconductor
+44559,sz300232,X400303,LED,Electronics (General)
+44568,sz300241,X400303,LED,Semiconductor
+44595,sz300269,X400303,LED,Electronics (General)
+44619,sz300296,X400303,LED,Electronics (General)
+44623,sz300301,X400303,LED,Semiconductor
+44625,sz300303,X400303,LED,Semiconductor
+44643,sz300323,X400303,LED,Semiconductor
+44699,sz300389,X400303,LED,Electronics (General)
+44884,sz300582,X400303,LED,Electrical Equipment
+44927,sz300625,X400303,LED,Electrical Equipment
+44933,sz300632,X400303,LED,Electrical Equipment
+45007,sz300708,X400303,LED,Semiconductor
+45046,sz300752,X400303,LED,Semiconductor
+45098,sz300808,X400303,LED,Electrical Equipment
+45178,sz300889,X400303,LED,Electrical Equipment
+45226,sz300940,X400303,LED,Semiconductor
+45588,sz301362,X400303,LED,Electrical Equipment
+25166,sh600183,X400401,PCB,Electronics (General)
+25474,sh600601,X400401,PCB,Computers/Peripherals
+26147,sh603175,X400401,PCB,Electronics (General)
+26157,sh603186,X400401,PCB,Electronics (General)
+26197,sh603228,X400401,PCB,Electronics (General)
+26271,sh603328,X400401,PCB,Electronics (General)
+26315,sh603386,X400401,PCB,Electronics (General)
+26574,sh603920,X400401,PCB,Electronics (General)
+26582,sh603936,X400401,PCB,Electronics (General)
+26635,sh605058,X400401,PCB,Electronics (General)
+26684,sh605258,X400401,PCB,Electronics (General)
+26749,sh688020,X400401,PCB,Electronics (General)
+26890,sh688183,X400401,PCB,Electronics (General)
+27137,sh688519,X400401,PCB,Electronics (General)
+27239,sh688655,X400401,PCB,Electronics (General)
+28582,sz000823,X400401,PCB,Electronics (General)
+28800,sz001389,X400401,PCB,Electronics (General)
+28938,sz002134,X400401,PCB,Electronics (General)
+28945,sz002141,X400401,PCB,Electrical Equipment
+29175,sz002384,X400401,PCB,Electronics (General)
+29223,sz002436,X400401,PCB,Electronics (General)
+29248,sz002463,X400401,PCB,Electronics (General)
+29327,sz002552,X400401,PCB,Steel
+29354,sz002579,X400401,PCB,Electronics (General)
+29406,sz002636,X400401,PCB,Electronics (General)
+29563,sz002815,X400401,PCB,Electronics (General)
+29654,sz002913,X400401,PCB,Electronics (General)
+29656,sz002916,X400401,PCB,Electronics (General)
+29676,sz002938,X400401,PCB,Electronics (General)
+44783,sz300476,X400401,PCB,Electronics (General)
+44957,sz300657,X400401,PCB,Electronics (General)
+45035,sz300739,X400401,PCB,Electronics (General)
+45104,sz300814,X400401,PCB,Electronics (General)
+45142,sz300852,X400401,PCB,Electronics (General)
+45192,sz300903,X400401,PCB,Electronics (General)
+45222,sz300936,X400401,PCB,Electronics (General)
+45248,sz300964,X400401,PCB,Electronics (General)
+45322,sz301041,X400401,PCB,Electronics (General)
+45404,sz301132,X400401,PCB,Electronics (General)
+45437,sz301176,X400401,PCB,Electronics (General)
+45498,sz301251,X400401,PCB,Electronics (General)
+45524,sz301282,X400401,PCB,Electronics (General)
+45591,sz301366,X400401,PCB,Electronics (General)
+45723,sz301628,X400401,PCB,Electronics (General)
+25208,sh600237,X400402,被动元件,Electronics (General)
+25441,sh600563,X400402,被动元件,Electronics (General)
+26482,sh603738,X400402,被动元件,Electrical Equipment
+26610,sh603989,X400402,被动元件,Electronics (General)
+27184,sh688582,X400402,被动元件,Electronics (General)
+28465,sz000636,X400402,被动元件,Electronics (General)
+28942,sz002138,X400402,被动元件,Electronics (General)
+29001,sz002199,X400402,被动元件,Electronics (General)
+29266,sz002484,X400402,被动元件,Electrical Equipment
+29604,sz002859,X400402,被动元件,Packaging & Container
+44639,sz300319,X400402,被动元件,Electronics (General)
+44716,sz300408,X400402,被动元件,Electronics (General)
+44767,sz300460,X400402,被动元件,Electronics (General)
+45632,sz301458,X400402,被动元件,Electronics (General)
+45685,sz301566,X400402,被动元件,Electronics (General)
+25244,sh600288,X4005,其他电子,Computer Services
+25291,sh600353,X4005,其他电子,Electronics (General)
+25299,sh600363,X4005,其他电子,Semiconductor
+26581,sh603933,X4005,其他电子,Semiconductor
+26812,sh688093,X4005,其他电子,Chemical (Specialty)
+26821,sh688103,X4005,其他电子,Electrical Equipment
+27246,sh688662,X4005,其他电子,Semiconductor
+27327,sh688800,X4005,其他电子,Electrical Equipment
+28320,sz000062,X4005,其他电子,Computer Services
+28480,sz000670,X4005,其他电子,Semiconductor
+28748,sz001287,X4005,其他电子,Computer Services
+28752,sz001298,X4005,其他电子,Computer Services
+28934,sz002130,X4005,其他电子,Electrical Equipment
+28943,sz002139,X4005,其他电子,Electronics (General)
+29179,sz002388,X4005,其他电子,Electronics (General)
+29193,sz002402,X4005,其他电子,Electronics (General)
+29491,sz002729,X4005,其他电子,Electronics (General)
+29614,sz002869,X4005,其他电子,Electronics (General)
+29629,sz002885,X4005,其他电子,Electronics (General)
+29759,sz003028,X4005,其他电子,Electrical Equipment
+29762,sz003031,X4005,其他电子,Electronics (General)
+44464,sz300131,X4005,其他电子,Electronics (General)
+44515,sz300184,X4005,其他电子,Computer Services
+44782,sz300475,X4005,其他电子,Computer Services
+44800,sz300493,X4005,其他电子,Semiconductor
+44847,sz300543,X4005,其他电子,Electronics (General)
+44950,sz300650,X4005,其他电子,Electrical Equipment
+44956,sz300656,X4005,其他电子,Electronics (General)
+45112,sz300822,X4005,其他电子,Electrical Equipment
+45204,sz300916,X4005,其他电子,Electronics (General)
+45258,sz300975,X4005,其他电子,Computer Services
+45374,sz301099,X4005,其他电子,Computer Services
+45406,sz301135,X4005,其他电子,Electrical Equipment
+45517,sz301275,X4005,其他电子,Electronics (General)
+45553,sz301314,X4005,其他电子,Electronics (General)
+45566,sz301328,X4005,其他电子,Electronics (General)
+45585,sz301359,X4005,其他电子,Electrical Equipment
+45683,sz301563,X4005,其他电子,Computer Services
+45688,sz301571,X4005,其他电子,Aerospace/Defense
+45690,sz301577,X4005,其他电子,Electronics (General)
+45691,sz301578,X4005,其他电子,Electronics (Consumer & Office)
+25274,sh600330,X4006,电子化学品,Electronics (General)
+26005,sh603002,X4006,电子化学品,Chemical (Basic)
+26071,sh603078,X4006,电子化学品,Chemical (Basic)
+26104,sh603115,X4006,电子化学品,Electrical Equipment
+26580,sh603931,X4006,电子化学品,Chemical (Specialty)
+26748,sh688019,X4006,电子化学品,Semiconductor Equip
+26762,sh688035,X4006,电子化学品,Chemical (Basic)
+26823,sh688106,X4006,电子化学品,Chemical (Specialty)
+26857,sh688146,X4006,电子化学品,Chemical (Specialty)
+26860,sh688150,X4006,电子化学品,Semiconductor Equip
+26962,sh688268,X4006,电子化学品,Chemical (Specialty)
+27041,sh688359,X4006,电子化学品,Chemical (Specialty)
+27052,sh688371,X4006,电子化学品,Chemical (Specialty)
+27154,sh688545,X4006,电子化学品,Chemical (Basic)
+27155,sh688548,X4006,电子化学品,Chemical (Specialty)
+27156,sh688549,X4006,电子化学品,Chemical (Basic)
+27157,sh688550,X4006,电子化学品,Chemical (Specialty)
+27203,sh688603,X4006,电子化学品,Chemical (Specialty)
+27261,sh688683,X4006,电子化学品,Chemical (Basic)
+29359,sz002584,X4006,电子化学品,Chemical (Basic)
+29413,sz002643,X4006,电子化学品,Chemical (Specialty)
+29502,sz002741,X4006,电子化学品,Chemical (Specialty)
+44396,sz300054,X4006,电子化学品,Chemical (Specialty)
+44563,sz300236,X4006,电子化学品,Semiconductor Equip
+44608,sz300285,X4006,电子化学品,Chemical (Specialty)
+44662,sz300346,X4006,电子化学品,Chemical (Specialty)
+44706,sz300398,X4006,电子化学品,Chemical (Specialty)
+44737,sz300429,X4006,电子化学品,Chemical (Specialty)
+44788,sz300481,X4006,电子化学品,Chemical (Specialty)
+44841,sz300537,X4006,电子化学品,Chemical (Specialty)
+44878,sz300576,X4006,电子化学品,Chemical (Specialty)
+44955,sz300655,X4006,电子化学品,Chemical (Basic)
+44984,sz300684,X4006,电子化学品,Electronics (General)
+45558,sz301319,X4006,电子化学品,Electronics (General)
+45640,sz301489,X4006,电子化学品,Electrical Equipment
+45725,sz301630,X4006,电子化学品,Electronics (General)
+26889,sh688182,X410102,网络接配及塔设,Electronics (General)
+26910,sh688205,X410102,网络接配及塔设,Electronics (General)
+27002,sh688313,X410102,网络接配及塔设,Semiconductor
+27250,sh688668,X410102,网络接配及塔设,Electrical Equipment
+28736,sz001267,X410102,网络接配及塔设,Environmental & Waste Services
+28996,sz002194,X410102,网络接配及塔设,Telecom. Equipment
+29078,sz002281,X410102,网络接配及塔设,Electronics (General)
+29544,sz002792,X410102,网络接配及塔设,Telecom. Equipment
+29640,sz002897,X410102,网络接配及塔设,Electronics (General)
+29644,sz002902,X410102,网络接配及塔设,Electronics (General)
+44467,sz300134,X410102,网络接配及塔设,Telecom. Equipment
+44630,sz300308,X410102,网络接配及塔设,Telecom. Equipment
+44702,sz300394,X410102,网络接配及塔设,Telecom. Equipment
+44808,sz300502,X410102,网络接配及塔设,Electronics (General)
+44851,sz300548,X410102,网络接配及塔设,Telecom. Equipment
+44868,sz300565,X410102,网络接配及塔设,Telecom. Equipment
+44873,sz300570,X410102,网络接配及塔设,Telecom. Equipment
+44917,sz300615,X410102,网络接配及塔设,Electronics (General)
+44922,sz300620,X410102,网络接配及塔设,Telecom. Equipment
+44998,sz300698,X410102,网络接配及塔设,Telecom. Equipment
+45009,sz300710,X410102,网络接配及塔设,Telecom. Equipment
+45427,sz301165,X410102,网络接配及塔设,Telecom. Equipment
+45451,sz301191,X410102,网络接配及塔设,Telecom. Equipment
+45463,sz301205,X410102,网络接配及塔设,Electronics (General)
+25615,sh600775,X410104,通信终端及配件,Telecom. Equipment
+26076,sh603083,X410104,通信终端及配件,Telecom. Equipment
+26107,sh603118,X410104,通信终端及配件,Telecom. Equipment
+26204,sh603236,X410104,通信终端及配件,Electronics (General)
+26283,sh603341,X410104,通信终端及配件,Computers/Peripherals
+26506,sh603803,X410104,通信终端及配件,Telecom. Equipment
+26755,sh688027,X410104,通信终端及配件,Telecom. Equipment
+26818,sh688100,X410104,通信终端及配件,Electronics (General)
+26868,sh688159,X410104,通信终端及配件,Telecom. Equipment
+27193,sh688592,X410104,通信终端及配件,Telecom. Equipment
+28828,sz002017,X410104,通信终端及配件,Computers/Peripherals
+28910,sz002104,X410104,通信终端及配件,Computers/Peripherals
+29108,sz002313,X410104,通信终端及配件,Telecom. Equipment
+29160,sz002369,X410104,通信终端及配件,Telecom. Equipment
+29770,sz003040,X410104,通信终端及配件,Semiconductor
+44534,sz300205,X410104,通信终端及配件,Computers/Peripherals
+44810,sz300504,X410104,通信终端及配件,Telecom. Equipment
+44892,sz300590,X410104,通信终端及配件,Telecom. Equipment
+44930,sz300628,X410104,通信终端及配件,Telecom. Equipment
+44939,sz300638,X410104,通信终端及配件,Telecom. Equipment
+44989,sz300689,X410104,通信终端及配件,Computers/Peripherals
+45708,sz301600,X410104,通信终端及配件,Telecom. Equipment
+45714,sz301608,X410104,通信终端及配件,Telecom. Equipment
+25285,sh600345,X410105,其他通信设备,Telecom. Equipment
+25616,sh600776,X410105,其他通信设备,Telecom. Equipment
+26334,sh603421,X410105,其他通信设备,Semiconductor
+26800,sh688080,X410105,其他通信设备,Telecom. Equipment
+26882,sh688175,X410105,其他通信设备,Telecom. Equipment
+26983,sh688292,X410105,其他通信设备,Telecom. Equipment
+27085,sh688418,X410105,其他通信设备,Telecom. Equipment
+27216,sh688618,X410105,其他通信设备,Telecom. Equipment
+28963,sz002161,X410105,其他通信设备,Electronics (General)
+29092,sz002296,X410105,其他通信设备,Telecom. Equipment
+29174,sz002383,X410105,其他通信设备,Telecom. Equipment
+29358,sz002583,X410105,其他通信设备,Telecom. Equipment
+29547,sz002796,X410105,其他通信设备,Machinery
+44514,sz300183,X410105,其他通信设备,Telecom. Equipment
+44539,sz300211,X410105,其他通信设备,Telecom. Equipment
+44541,sz300213,X410105,其他通信设备,Telecom. Equipment
+44669,sz300353,X410105,其他通信设备,Telecom. Equipment
+44722,sz300414,X410105,其他通信设备,Electrical Equipment
+44858,sz300555,X410105,其他通信设备,Telecom. Equipment
+44929,sz300627,X410105,其他通信设备,Telecom. Equipment
+45010,sz300711,X410105,其他通信设备,Telecom. Equipment
+45546,sz301307,X410105,其他通信设备,Metals & Mining
+45623,sz301419,X410105,其他通信设备,Telecom. Equipment
+26176,sh603206,X410302,网络工程施工,Computer Services
+26190,sh603220,X410302,网络工程施工,Telecom. Services
+26376,sh603559,X410302,网络工程施工,Computer Services
+26399,sh603602,X410302,网络工程施工,Engineering/Construction
+29668,sz002929,X410302,网络工程施工,Engineering/Construction
+26356,sh603508,X420101,安防设备,Construction Supplies
+27116,sh688489,X420101,安防设备,Computers/Peripherals
+27217,sh688619,X420101,安防设备,Electronics (General)
+29036,sz002236,X420101,安防设备,Electronics (General)
+29205,sz002415,X420101,安防设备,Electronics (General)
+29303,sz002528,X420101,安防设备,Electronics (General)
+29582,sz002835,X420101,安防设备,Electronics (General)
+29737,sz003004,X420101,安防设备,Business & Consumer Services
+44488,sz300155,X420101,安防设备,Electronics (Consumer & Office)
+44596,sz300270,X420101,安防设备,Electronics (General)
+44756,sz300449,X420101,安防设备,Electronics (General)
+44890,sz300588,X420101,安防设备,Computer Services
+45173,sz300884,X420101,安防设备,Telecom. Equipment
+45323,sz301042,X420101,安防设备,Electronics (General)
+45557,sz301318,X420101,安防设备,Telecom. Equipment
+45568,sz301330,X420101,安防设备,Electronics (General)
+25100,sh600100,X420102,其他IT设备,Computers/Peripherals
+26021,sh603019,X420102,其他IT设备,Computers/Peripherals
+26096,sh603106,X420102,其他IT设备,Computers/Peripherals
+26349,sh603496,X420102,其他IT设备,Telecom. Equipment
+26359,sh603516,X420102,其他IT设备,Electronics (General)
+26430,sh603660,X420102,其他IT设备,Telecom. Equipment
+26782,sh688060,X420102,其他IT设备,Electronics (General)
+26913,sh688208,X420102,其他IT设备,Auto Parts
+26979,sh688288,X420102,其他IT设备,Software (System & Application)
+28323,sz000066,X420102,其他IT设备,Computers/Peripherals
+28655,sz000938,X420102,其他IT设备,Computer Services
+28678,sz000977,X420102,其他IT设备,Computers/Peripherals
+28690,sz000997,X420102,其他IT设备,Software (System & Application)
+28718,sz001229,X420102,其他IT设备,Telecom. Equipment
+28781,sz001339,X420102,其他IT设备,Computers/Peripherals
+28954,sz002152,X420102,其他IT设备,Computers/Peripherals
+28982,sz002180,X420102,其他IT设备,Computers/Peripherals
+29066,sz002268,X420102,其他IT设备,Software (System & Application)
+29167,sz002376,X420102,其他IT设备,Computers/Peripherals
+29288,sz002512,X420102,其他IT设备,Electronics (General)
+29352,sz002577,X420102,其他IT设备,Computers/Peripherals
+29653,sz002912,X420102,其他IT设备,Computers/Peripherals
+29705,sz002970,X420102,其他IT设备,Auto Parts
+44384,sz300042,X420102,其他IT设备,Computers/Peripherals
+44463,sz300130,X420102,其他IT设备,Electronics (General)
+44576,sz300249,X420102,其他IT设备,Furn/Home Furnishings
+44624,sz300302,X420102,其他IT设备,Software (System & Application)
+44651,sz300333,X420102,其他IT设备,Electronics (General)
+44680,sz300368,X420102,其他IT设备,Electronics (General)
+44696,sz300386,X420102,其他IT设备,Computers/Peripherals
+44762,sz300455,X420102,其他IT设备,Construction Supplies
+44769,sz300462,X420102,其他IT设备,Machinery
+44786,sz300479,X420102,其他IT设备,Electronics (General)
+44835,sz300531,X420102,其他IT设备,Electronics (General)
+44849,sz300546,X420102,其他IT设备,Electronics (General)
+44855,sz300552,X420102,其他IT设备,Electronics (General)
+44959,sz300659,X420102,其他IT设备,Software (System & Application)
+45038,sz300743,X420102,其他IT设备,Chemical (Basic)
+45063,sz300771,X420102,其他IT设备,Electronics (General)
+45227,sz300941,X420102,其他IT设备,Electronics (General)
+45576,sz301339,X420102,其他IT设备,Electronics (General)
+45612,sz301391,X420102,其他IT设备,Electronics (General)
+45647,sz301503,X420102,其他IT设备,Computers/Peripherals
+45700,sz301589,X420102,其他IT设备,Electronics (General)
+25231,sh600271,X420202,行业应用软件,Software (System & Application)
+25245,sh600289,X420202,行业应用软件,Computer Services
+25353,sh600446,X420202,行业应用软件,Software (System & Application)
+25369,sh600476,X420202,行业应用软件,Computer Services
+25420,sh600536,X420202,行业应用软件,Software (System & Application)
+25446,sh600570,X420202,行业应用软件,Software (System & Application)
+25447,sh600571,X420202,行业应用软件,Software (System & Application)
+25565,sh600718,X420202,行业应用软件,Software (System & Application)
+25574,sh600728,X420202,行业应用软件,Computer Services
+25600,sh600756,X420202,行业应用软件,Software (System & Application)
+25634,sh600797,X420202,行业应用软件,Computer Services
+25671,sh600845,X420202,行业应用软件,Software (System & Application)
+25735,sh600936,X420202,行业应用软件,Cable TV
+25892,sh601519,X420202,行业应用软件,Financial Svcs. (Non-bank & Insurance)
+26144,sh603171,X420202,行业应用软件,Software (System & Application)
+26160,sh603189,X420202,行业应用软件,Software (System & Application)
+26313,sh603383,X420202,行业应用软件,Software (System & Application)
+26365,sh603528,X420202,行业应用软件,Electronics (General)
+26419,sh603636,X420202,行业应用软件,Software (System & Application)
+26533,sh603859,X420202,行业应用软件,Machinery
+26540,sh603869,X420202,行业应用软件,Computer Services
+26572,sh603918,X420202,行业应用软件,Software (System & Application)
+26577,sh603927,X420202,行业应用软件,Software (System & Application)
+26611,sh603990,X420202,行业应用软件,Heathcare Information and Technology
+26734,sh688004,X420202,行业应用软件,Software (System & Application)
+26759,sh688031,X420202,行业应用软件,Software (System & Application)
+26766,sh688039,X420202,行业应用软件,Software (System & Application)
+26774,sh688051,X420202,行业应用软件,Computer Services
+26787,sh688066,X420202,行业应用软件,Software (System & Application)
+26798,sh688078,X420202,行业应用软件,Software (System & Application)
+26803,sh688083,X420202,行业应用软件,Software (System & Application)
+26826,sh688109,X420202,行业应用软件,Software (System & Application)
+26879,sh688171,X420202,行业应用软件,Telecom. Equipment
+26928,sh688225,X420202,行业应用软件,Software (System & Application)
+26931,sh688228,X420202,行业应用软件,Software (Internet)
+26932,sh688229,X420202,行业应用软件,Software (System & Application)
+26935,sh688232,X420202,行业应用软件,Software (System & Application)
+26943,sh688244,X420202,行业应用软件,Software (System & Application)
+26944,sh688246,X420202,行业应用软件,Heathcare Information and Technology
+26982,sh688291,X420202,行业应用软件,Electronics (General)
+26986,sh688296,X420202,行业应用软件,Software (System & Application)
+27007,sh688318,X420202,行业应用软件,Software (System & Application)
+27015,sh688327,X420202,行业应用软件,Software (System & Application)
+27028,sh688343,X420202,行业应用软件,Software (System & Application)
+27050,sh688369,X420202,行业应用软件,Software (System & Application)
+27094,sh688435,X420202,行业应用软件,Software (System & Application)
+27110,sh688479,X420202,行业应用软件,Software (System & Application)
+27120,sh688500,X420202,行业应用软件,Business & Consumer Services
+27126,sh688507,X420202,行业应用软件,Software (System & Application)
+27128,sh688509,X420202,行业应用软件,Business & Consumer Services
+27167,sh688562,X420202,行业应用软件,Computer Services
+27181,sh688579,X420202,行业应用软件,Software (System & Application)
+27189,sh688588,X420202,行业应用软件,Software (System & Application)
+27213,sh688615,X420202,行业应用软件,Software (System & Application)
+27228,sh688631,X420202,行业应用软件,Aerospace/Defense
+27236,sh688651,X420202,行业应用软件,Software (System & Application)
+27241,sh688657,X420202,行业应用软件,Software (System & Application)
+28339,sz000158,X420202,行业应用软件,Apparel
+28352,sz000409,X420202,行业应用软件,Steel
+28370,sz000503,X420202,行业应用软件,Healthcare Support Services
+28412,sz000555,X420202,行业应用软件,Computer Services
+28656,sz000948,X420202,行业应用软件,Computer Services
+28873,sz002063,X420202,行业应用软件,Software (System & Application)
+28875,sz002065,X420202,行业应用软件,Computer Services
+28980,sz002178,X420202,行业应用软件,Engineering/Construction
+29032,sz002232,X420202,行业应用软件,Software (System & Application)
+29053,sz002253,X420202,行业应用软件,Software (System & Application)
+29117,sz002322,X420202,行业应用软件,Electrical Equipment
+29125,sz002331,X420202,行业应用软件,Computer Services
+29159,sz002368,X420202,行业应用软件,Computer Services
+29164,sz002373,X420202,行业应用软件,Computer Services
+29171,sz002380,X420202,行业应用软件,Software (System & Application)
+29192,sz002401,X420202,行业应用软件,Computer Services
+29196,sz002405,X420202,行业应用软件,Software (System & Application)
+29210,sz002421,X420202,行业应用软件,Computer Services
+29257,sz002474,X420202,行业应用软件,Computer Services
+29383,sz002609,X420202,行业应用软件,Electronics (General)
+29412,sz002642,X420202,行业应用软件,Computer Services
+29419,sz002649,X420202,行业应用软件,Computer Services
+29427,sz002657,X420202,行业应用软件,Software (System & Application)
+29526,sz002771,X420202,行业应用软件,Computer Services
+29531,sz002777,X420202,行业应用软件,Software (System & Application)
+29649,sz002908,X420202,行业应用软件,Electronics (General)
+29721,sz002987,X420202,行业应用软件,Computer Services
+29724,sz002990,X420202,行业应用软件,Electronics (General)
+29738,sz003005,X420202,行业应用软件,Computer Services
+44366,sz300020,X420202,行业应用软件,Computer Services
+44376,sz300033,X420202,行业应用软件,Financial Svcs. (Non-bank & Insurance)
+44379,sz300036,X420202,行业应用软件,Software (System & Application)
+44386,sz300044,X420202,行业应用软件,Computer Services
+44389,sz300047,X420202,行业应用软件,Software (System & Application)
+44414,sz300074,X420202,行业应用软件,Telecom. Equipment
+44415,sz300075,X420202,行业应用软件,Computer Services
+44418,sz300078,X420202,行业应用软件,Electronics (General)
+44419,sz300079,X420202,行业应用软件,Telecom. Equipment
+44425,sz300085,X420202,行业应用软件,Software (System & Application)
+44434,sz300096,X420202,行业应用软件,Software (System & Application)
+44436,sz300098,X420202,行业应用软件,Telecom. Equipment
+44483,sz300150,X420202,行业应用软件,Electronics (General)
+44498,sz300166,X420202,行业应用软件,Software (System & Application)
+44499,sz300167,X420202,行业应用软件,Telecom. Equipment
+44500,sz300168,X420202,行业应用软件,Computer Services
+44540,sz300212,X420202,行业应用软件,Software (System & Application)
+44556,sz300229,X420202,行业应用软件,Software (System & Application)
+44558,sz300231,X420202,行业应用软件,Computer Services
+44562,sz300235,X420202,行业应用软件,Entertainment
+44572,sz300245,X420202,行业应用软件,Computer Services
+44575,sz300248,X420202,行业应用软件,Electronics (General)
+44577,sz300250,X420202,行业应用软件,Telecom. Equipment
+44580,sz300253,X420202,行业应用软件,Heathcare Information and Technology
+44590,sz300264,X420202,行业应用软件,Computer Services
+44597,sz300271,X420202,行业应用软件,Software (System & Application)
+44610,sz300287,X420202,行业应用软件,Computer Services
+44611,sz300288,X420202,行业应用软件,Heathcare Information and Technology
+44613,sz300290,X420202,行业应用软件,Computer Services
+44622,sz300300,X420202,行业应用软件,Computer Services
+44644,sz300324,X420202,行业应用软件,Aerospace/Defense
+44656,sz300339,X420202,行业应用软件,Software (System & Application)
+44664,sz300348,X420202,行业应用软件,Computer Services
+44678,sz300365,X420202,行业应用软件,Software (System & Application)
+44679,sz300366,X420202,行业应用软件,Computer Services
+44688,sz300377,X420202,行业应用软件,Software (System & Application)
+44690,sz300380,X420202,行业应用软件,Software (System & Application)
+44707,sz300399,X420202,行业应用软件,Software (System & Application)
+44727,sz300419,X420202,行业应用软件,Computer Services
+44747,sz300440,X420202,行业应用软件,Electronics (General)
+44755,sz300448,X420202,行业应用软件,Software (System & Application)
+44758,sz300451,X420202,行业应用软件,Heathcare Information and Technology
+44772,sz300465,X420202,行业应用软件,Software (System & Application)
+44775,sz300468,X420202,行业应用软件,Computer Services
+44776,sz300469,X420202,行业应用软件,Computer Services
+44802,sz300496,X420202,行业应用软件,Software (System & Application)
+44814,sz300508,X420202,行业应用软件,Electrical Equipment
+44819,sz300513,X420202,行业应用软件,Software (System & Application)
+44826,sz300520,X420202,行业应用软件,Software (System & Application)
+44829,sz300523,X420202,行业应用软件,Software (System & Application)
+44830,sz300525,X420202,行业应用软件,Computer Services
+44836,sz300532,X420202,行业应用软件,Software (System & Application)
+44845,sz300541,X420202,行业应用软件,Software (Internet)
+44846,sz300542,X420202,行业应用软件,Computer Services
+44853,sz300550,X420202,行业应用软件,Heathcare Information and Technology
+44854,sz300551,X420202,行业应用软件,Computers/Peripherals
+44859,sz300556,X420202,行业应用软件,Business & Consumer Services
+44862,sz300559,X420202,行业应用软件,Telecom. Equipment
+44864,sz300561,X420202,行业应用软件,Electronics (General)
+44900,sz300598,X420202,行业应用软件,Software (System & Application)
+44907,sz300605,X420202,行业应用软件,Computer Services
+44910,sz300608,X420202,行业应用软件,Software (System & Application)
+44911,sz300609,X420202,行业应用软件,Computer Services
+44935,sz300634,X420202,行业应用软件,Computer Services
+44946,sz300645,X420202,行业应用软件,Computer Services
+44963,sz300663,X420202,行业应用软件,Software (System & Application)
+44974,sz300674,X420202,行业应用软件,Computer Services
+44978,sz300678,X420202,行业应用软件,Computer Services
+44982,sz300682,X420202,行业应用软件,Software (System & Application)
+45027,sz300730,X420202,行业应用软件,Computer Services
+45058,sz300766,X420202,行业应用软件,Computer Services
+45093,sz300803,X420202,行业应用软件,Financial Svcs. (Non-bank & Insurance)
+45097,sz300807,X420202,行业应用软件,Electronics (General)
+45120,sz300830,X420202,行业应用软件,Software (System & Application)
+45135,sz300845,X420202,行业应用软件,Software (System & Application)
+45221,sz300935,X420202,行业应用软件,Software (System & Application)
+45279,sz300996,X420202,行业应用软件,Software (System & Application)
+45390,sz301117,X420202,行业应用软件,Computer Services
+45417,sz301153,X420202,行业应用软件,Software (System & Application)
+45422,sz301159,X420202,行业应用软件,Software (System & Application)
+45425,sz301162,X420202,行业应用软件,Software (System & Application)
+45434,sz301172,X420202,行业应用软件,Computer Services
+45439,sz301178,X420202,行业应用软件,Computer Services
+45445,sz301185,X420202,行业应用软件,Software (System & Application)
+45454,sz301195,X420202,行业应用软件,Electronics (General)
+45456,sz301197,X420202,行业应用软件,Software (System & Application)
+45466,sz301208,X420202,行业应用软件,Computer Services
+45475,sz301218,X420202,行业应用软件,Computer Services
+45492,sz301236,X420202,行业应用软件,Computer Services
+45497,sz301248,X420202,行业应用软件,Software (System & Application)
+45514,sz301270,X420202,行业应用软件,Business & Consumer Services
+45554,sz301315,X420202,行业应用软件,Computer Services
+45555,sz301316,X420202,行业应用软件,Computer Services
+45574,sz301337,X420202,行业应用软件,Heathcare Information and Technology
+45601,sz301378,X420202,行业应用软件,Software (System & Application)
+45616,sz301396,X420202,行业应用软件,Software (System & Application)
+45678,sz301556,X420202,行业应用软件,Electronics (General)
+45730,sz301638,X420202,行业应用软件,Computer Services
+25463,sh600588,X420303,云软件服务,Software (System & Application)
+26828,sh688111,X420303,云软件服务,Software (System & Application)
+27046,sh688365,X420303,云软件服务,Software (System & Application)
+28955,sz002153,X420303,云软件服务,Software (System & Application)
+29059,sz002261,X420303,云软件服务,Entertainment
+29201,sz002410,X420303,云软件服务,Software (System & Application)
+29740,sz003007,X420303,云软件服务,Software (System & Application)
+45212,sz300925,X420303,云软件服务,Computer Services
+25059,sh600037,X4307,广播电视,Cable TV
+25501,sh600637,X4307,广播电视,Cable TV
+25662,sh600831,X4307,广播电视,Cable TV
+25742,sh600959,X4307,广播电视,Broadcasting
+25773,sh600996,X4307,广播电视,Cable TV
+25980,sh601929,X4307,广播电视,Cable TV
+28337,sz000156,X4307,广播电视,Cable TV
+28477,sz000665,X4307,广播电视,Broadcasting
+29038,sz002238,X4307,广播电视,Cable TV
+45062,sz300770,X4307,广播电视,Broadcasting
+45507,sz301262,X4307,广播电视,Software (Entertainment)
+45675,sz301551,X4307,广播电视,Cable TV
+25370,sh600477,X520302,钢结构,Engineering/Construction
+25385,sh600496,X520302,钢结构,Engineering/Construction
+25811,sh601096,X520302,钢结构,Electrical Equipment
+26089,sh603098,X520302,钢结构,Engineering/Construction
+28939,sz002135,X520302,钢结构,Engineering/Construction
+29118,sz002323,X520302,钢结构,Electrical Equipment
+29316,sz002541,X520302,钢结构,Steel
+29368,sz002593,X520302,钢结构,Auto Parts
+29504,sz002743,X520302,钢结构,Steel
+44823,sz300517,X520302,钢结构,Engineering/Construction
+25804,sh601068,X520304,其他专业工程,Engineering/Construction
+25830,sh601133,X520304,其他专业工程,Engineering/Construction
+25858,sh601226,X520304,其他专业工程,Engineering/Construction
+26137,sh603163,X520304,其他专业工程,Engineering/Construction
+26579,sh603929,X520304,其他专业工程,Engineering/Construction
+26692,sh605289,X520304,其他专业工程,Engineering/Construction
+26729,sh605598,X520304,其他专业工程,Engineering/Construction
+28303,sz000032,X520304,其他专业工程,Engineering/Construction
+28921,sz002116,X520304,其他专业工程,Engineering/Construction
+29317,sz002542,X520304,其他专业工程,Engineering/Construction
+29734,sz003001,X520304,其他专业工程,Engineering/Construction
+44367,sz300021,X520304,其他专业工程,Machinery
+45011,sz300712,X520304,其他专业工程,Business & Consumer Services
+45269,sz300986,X520304,其他专业工程,Metals & Mining
+45326,sz301046,X520304,其他专业工程,Engineering/Construction
+45611,sz301390,X520304,其他专业工程,Engineering/Construction
+25497,sh600629,X5204,工程咨询服务,Business & Consumer Services
+25567,sh600720,X5204,工程咨询服务,Engineering/Construction
+25672,sh600846,X5204,工程咨询服务,Engineering/Construction
+26019,sh603017,X5204,工程咨询服务,Business & Consumer Services
+26020,sh603018,X5204,工程咨询服务,Business & Consumer Services
+26129,sh603153,X5204,工程咨询服务,Engineering/Construction
+26211,sh603257,X5204,工程咨询服务,Engineering/Construction
+26293,sh603357,X5204,工程咨询服务,Business & Consumer Services
+26341,sh603458,X5204,工程咨询服务,Business & Consumer Services
+26534,sh603860,X5204,工程咨询服务,Business & Consumer Services
+26567,sh603909,X5204,工程咨询服务,Business & Consumer Services
+28549,sz000779,X5204,工程咨询服务,Business & Consumer Services
+29627,sz002883,X5204,工程咨询服务,Engineering/Construction
+29686,sz002949,X5204,工程咨询服务,Business & Consumer Services
+29746,sz003013,X5204,工程咨询服务,Engineering/Construction
+44607,sz300284,X5204,工程咨询服务,Engineering/Construction
+44806,sz300500,X5204,工程咨询服务,Business & Consumer Services
+44867,sz300564,X5204,工程咨询服务,Business & Consumer Services
+44936,sz300635,X5204,工程咨询服务,Engineering/Construction
+44968,sz300668,X5204,工程咨询服务,Business & Consumer Services
+44975,sz300675,X5204,工程咨询服务,Business & Consumer Services
+45029,sz300732,X5204,工程咨询服务,Engineering/Construction
+45040,sz300746,X5204,工程咨询服务,Business & Consumer Services
+45070,sz300778,X5204,工程咨询服务,Business & Consumer Services
+45116,sz300826,X5204,工程咨询服务,Business & Consumer Services
+45134,sz300844,X5204,工程咨询服务,Environmental & Waste Services
+45260,sz300977,X5204,工程咨询服务,Engineering/Construction
+45266,sz300983,X5204,工程咨询服务,Business & Consumer Services
+45272,sz300989,X5204,工程咨询服务,Business & Consumer Services
+45306,sz301024,X5204,工程咨询服务,Business & Consumer Services
+45309,sz301027,X5204,工程咨询服务,Engineering/Construction
+45319,sz301038,X5204,工程咨询服务,Environmental & Waste Services
+45337,sz301058,X5204,工程咨询服务,Engineering/Construction
+45367,sz301091,X5204,工程咨询服务,Business & Consumer Services
+45407,sz301136,X5204,工程咨询服务,Engineering/Construction
+45429,sz301167,X5204,工程咨询服务,Business & Consumer Services
+45590,sz301365,X5204,工程咨询服务,Business & Consumer Services
+45648,sz301505,X5204,工程咨询服务,Engineering/Construction
+26055,sh603060,X600602,检测服务,Business & Consumer Services
+26155,sh603183,X600602,检测服务,Engineering/Construction
+26776,sh688053,X600602,检测服务,Electronics (General)
+27022,sh688334,X600602,检测服务,Business & Consumer Services
+27300,sh688757,X600602,检测服务,Semiconductor
+29702,sz002967,X600602,检测服务,Business & Consumer Services
+29741,sz003008,X600602,检测服务,Business & Consumer Services
+44358,sz300012,X600602,检测服务,Business & Consumer Services
+44543,sz300215,X600602,检测服务,Business & Consumer Services
+44724,sz300416,X600602,检测服务,Electronics (General)
+44875,sz300572,X600602,检测服务,Electronics (General)
+45088,sz300797,X600602,检测服务,Business & Consumer Services
+45176,sz300887,X600602,检测服务,Business & Consumer Services
+45224,sz300938,X600602,检测服务,Business & Consumer Services
+45388,sz301115,X600602,检测服务,Business & Consumer Services
+45484,sz301228,X600602,检测服务,Business & Consumer Services
+45530,sz301289,X600602,检测服务,Business & Consumer Services
+45545,sz301306,X600602,检测服务,Business & Consumer Services
+45630,sz301449,X600602,检测服务,Business & Consumer Services
+45650,sz301508,X600602,检测服务,Business & Consumer Services
+45727,sz301632,X600602,检测服务,Engineering/Construction
+25515,sh600654,X600604,其他专业服务,Electronics (General)
+26304,sh603373,X600604,其他专业服务,Business & Consumer Services
+45032,sz300736,X600604,其他专业服务,Retail (Special Lines)
+45431,sz301169,X600604,其他专业服务,Computer Services
+45552,sz301313,X600604,其他专业服务,Advertising
+25163,sh600179,X610302,航运,Shipbuilding & Marine
+25345,sh600428,X610302,航运,Shipbuilding & Marine
+25596,sh600751,X610302,航运,Computer Services
+25635,sh600798,X610302,航运,Shipbuilding & Marine
+25795,sh601022,X610302,航运,Shipbuilding & Marine
+25807,sh601083,X610302,航运,Shipbuilding & Marine
+25961,sh601872,X610302,航运,Oil/Gas Distribution
+25992,sh601975,X610302,航运,Oil/Gas Distribution
+26136,sh603162,X610302,航运,Shipbuilding & Marine
+26140,sh603167,X610302,航运,Shipbuilding & Marine
+26179,sh603209,X610302,航运,Shipbuilding & Marine
+26377,sh603565,X610302,航运,Shipbuilding & Marine
+28383,sz000520,X610302,航运,Shipbuilding & Marine
+28696,sz001205,X610302,航运,Shipbuilding & Marine
+29115,sz002320,X610302,航运,Shipbuilding & Marine
+25070,sh600057,X610401,供应链服务,Transportation
+25141,sh600153,X610401,供应链服务,Retail (Distributors)
+25164,sh600180,X610401,供应链服务,Retail (Distributors)
+25476,sh600603,X610401,供应链服务,Real Estate (General/Diversified)
+25553,sh600704,X610401,供应链服务,Retail (Distributors)
+25599,sh600755,X610401,供应链服务,Retail (Distributors)
+26272,sh603329,X610401,供应链服务,Transportation
+26423,sh603648,X610401,供应链服务,Transportation
+26632,sh605050,X610401,供应链服务,Steel
+28629,sz000906,X610401,供应链服务,Retail (Distributors)
+28645,sz000927,X610401,供应链服务,Transportation
+28694,sz001202,X610401,供应链服务,Trucking
+28717,sz001228,X610401,供应链服务,Transportation
+28822,sz002010,X610401,供应链服务,Chemical (Specialty)
+28985,sz002183,X610401,供应链服务,Business & Consumer Services
+29450,sz002682,X610401,供应链服务,Trucking
+29525,sz002769,X610401,供应链服务,Transportation
+29551,sz002800,X610401,供应链服务,Transportation
+29633,sz002889,X610401,供应链服务,Transportation
+44359,sz300013,X610401,供应链服务,Transportation
+44567,sz300240,X610401,供应链服务,Transportation
+44666,sz300350,X610401,供应链服务,Transportation
+45163,sz300873,X610401,供应链服务,Transportation
+25277,sh600333,X6202,燃气,Power
+25487,sh600617,X6202,燃气,Oil/Gas (Integrated)
+25500,sh600635,X6202,燃气,Power
+25535,sh600681,X6202,燃气,Power
+25639,sh600803,X6202,燃气,Power
+25718,sh600903,X6202,燃气,Oil/Gas Distribution
+25724,sh600917,X6202,燃气,Power
+25834,sh601139,X6202,燃气,Power
+26050,sh603053,X6202,燃气,Power
+26073,sh603080,X6202,燃气,Power
+26261,sh603318,X6202,燃气,Oilfield Svcs/Equip.
+26451,sh603689,X6202,燃气,Oil/Gas Distribution
+26461,sh603706,X6202,燃气,Power
+26645,sh605090,X6202,燃气,Oil/Gas Distribution
+26667,sh605169,X6202,燃气,Oilfield Svcs/Equip.
+26709,sh605368,X6202,燃气,Power
+28350,sz000407,X6202,燃气,Power
+28359,sz000421,X6202,燃气,Power
+28436,sz000593,X6202,燃气,Power
+28479,sz000669,X6202,燃气,Oil/Gas Distribution
+28753,sz001299,X6202,燃气,Power
+28774,sz001331,X6202,燃气,Power
+29058,sz002259,X6202,燃气,Oil/Gas Distribution
+29065,sz002267,X6202,燃气,Power
+29466,sz002700,X6202,燃气,Power
+29652,sz002911,X6202,燃气,Power
+44650,sz300332,X6202,燃气,Power
+44742,sz300435,X6202,燃气,Machinery
+25319,sh600388,X6301,环保设备,Machinery
+25412,sh600526,X6301,环保设备,Machinery
+25649,sh600817,X6301,环保设备,Construction Supplies
+26229,sh603279,X6301,环保设备,Machinery
+26267,sh603324,X6301,环保设备,Machinery
+26448,sh603686,X6301,环保设备,Construction Supplies
+26998,sh688309,X6301,环保设备,Environmental & Waste Services
+27023,sh688335,X6301,环保设备,Machinery
+27056,sh688376,X6301,环保设备,Building Materials
+27121,sh688501,X6301,环保设备,Machinery
+27243,sh688659,X6301,环保设备,Machinery
+28408,sz000551,X6301,环保设备,Machinery
+28671,sz000967,X6301,环保设备,Machinery
+28778,sz001336,X6301,环保设备,Environmental & Waste Services
+29366,sz002591,X6301,环保设备,Chemical (Specialty)
+29415,sz002645,X6301,环保设备,Machinery
+44442,sz300105,X6301,环保设备,Electrical Equipment
+44485,sz300152,X6301,环保设备,Machinery
+44652,sz300334,X6301,环保设备,Environmental & Waste Services
+44932,sz300631,X6301,环保设备,Environmental & Waste Services
+45078,sz300786,X6301,环保设备,Electrical Equipment
+45312,sz301030,X6301,环保设备,Machinery
+45358,sz301081,X6301,环保设备,Apparel
+45529,sz301288,X6301,环保设备,Machinery
+45660,sz301519,X6301,环保设备,Machinery
+25129,sh600133,X630201,大气治理,Engineering/Construction
+26149,sh603177,X630201,大气治理,Environmental & Waste Services
+26258,sh603315,X630201,大气治理,Steel
+29324,sz002549,X630201,大气治理,Chemical (Specialty)
+29758,sz003027,X630201,大气治理,Environmental & Waste Services
+44398,sz300056,X630201,大气治理,Machinery
+44695,sz300385,X630201,大气治理,Machinery
+25191,sh600217,X630203,固废治理,Environmental & Waste Services
+25268,sh600323,X630203,固废治理,Utility (Water)
+25797,sh601033,X630203,固废治理,Green & Renewable Energy
+25850,sh601200,X630203,固废治理,Environmental & Waste Services
+25951,sh601827,X630203,固废治理,Power
+26115,sh603126,X630203,固废治理,Environmental & Waste Services
+26380,sh603568,X630203,固废治理,Environmental & Waste Services
+26390,sh603588,X630203,固废治理,Environmental & Waste Services
+26806,sh688087,X630203,固废治理,Chemical (Basic)
+26902,sh688196,X630203,固废治理,Oilfield Svcs/Equip.
+27051,sh688370,X630203,固废治理,Environmental & Waste Services
+27257,sh688679,X630203,固废治理,Environmental & Waste Services
+28305,sz000035,X630203,固废治理,Environmental & Waste Services
+28404,sz000546,X630203,固废治理,Construction Supplies
+28568,sz000803,X630203,固废治理,Machinery
+28584,sz000826,X630203,固废治理,Environmental & Waste Services
+28612,sz000885,X630203,固废治理,Construction Supplies
+28719,sz001230,X630203,固废治理,Environmental & Waste Services
+28844,sz002034,X630203,固废治理,Environmental & Waste Services
+29012,sz002210,X630203,固废治理,Green & Renewable Energy
+29064,sz002266,X630203,固废治理,Environmental & Waste Services
+29708,sz002973,X630203,固废治理,Environmental & Waste Services
+44473,sz300140,X630203,固废治理,Machinery
+44520,sz300190,X630203,固废治理,Machinery
+44916,sz300614,X630203,固废治理,Green & Renewable Energy
+45071,sz300779,X630203,固废治理,Environmental & Waste Services
+45105,sz300815,X630203,固废治理,Environmental & Waste Services
+45144,sz300854,X630203,固废治理,Environmental & Waste Services
+45157,sz300867,X630203,固废治理,Environmental & Waste Services
+45329,sz301049,X630203,固废治理,Environmental & Waste Services
+45346,sz301068,X630203,固废治理,Environmental & Waste Services
+45383,sz301109,X630203,固废治理,Environmental & Waste Services
+45436,sz301175,X630203,固废治理,Environmental & Waste Services
+45509,sz301265,X630203,固废治理,Environmental & Waste Services
+45544,sz301305,X630203,固废治理,Environmental & Waste Services
+45644,sz301500,X630203,固废治理,Environmental & Waste Services

@@ -1,0 +1,19 @@
+{
+  "kind": "explicit_valuation_proxy_policy_evidence_not_company_classification",
+  "report_period": "2026-06-30",
+  "information_as_of": "2026-09-10T04:42:23Z",
+  "readiness_file": "workspace/bse-publication-20260910/main-copy-readiness.json",
+  "readiness_sha256": "47b17c02b232bc8c137800998d95425b7fddf2c26194bf33930039622c836473",
+  "source_scope": "same verified local snapshot; XSHG/XSHE equities with exactly one TDX Shenwan membership and one Damodaran membership; only categories observed in XBSE",
+  "cohort_rows": 3029,
+  "bse_nodes": 128,
+  "admitted_nodes": 48,
+  "excluded_nodes": 80,
+  "minimum_companies": 5,
+  "minimum_agreement_fraction": 0.8,
+  "boundary": "thresholds are explicit policy, not confidence or BJ company business weights; cross-source taxonomy proxy is not reported fact",
+  "files": {
+    "bse-shenwan-cohort-2026H1.csv": "2a693e6219ec9da9b9b7a5d721e152124ff76fd04dacc941f4e86ffab8ea701c",
+    "bse-shenwan-proxies-2026H1.csv": "4e44520964c0411f787ffebbe3ac9ff6ba68b10865327bad75c3d44b2206ffe2"
+  }
+}
