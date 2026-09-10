@@ -1,0 +1,210 @@
+{
+  "contract_version": "alphalake-comparison-acceptance-v1",
+  "cases": [
+    {
+      "case": "wacc",
+      "path": "workspace/valuation-comparison-20260910/wacc.json",
+      "sha256": "967f3a557931ff968312bf60b2e62f6c0aa499c5381911f96cea5181c814819e",
+      "before": {
+        "run_id": "74f748d820dc01a5dfd6c60535db8b707cf1f37e2105905fd7e9aa5be7249371",
+        "engine_revision": "06e5fa0f3ac44fecc5639679f5f552d362e6909135d12253bcb9e250d1cfb55f",
+        "runtime_versions": {
+          "fastapi": "0.141.1",
+          "numpy": "2.5.3",
+          "pydantic": "2.12.5",
+          "python": "3.12.3",
+          "scipy": "1.18.1"
+        },
+        "code": "300866",
+        "report_period": "2026-06-30",
+        "information_as_of": "2026-09-10T04:42:23Z",
+        "instrument_ids": [
+          45156
+        ],
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "scenario": "industry-mechanical-initial",
+        "capital_basis": "report_date_book_debt_no_conversion_scenario",
+        "value_per_share": 84.49046056592367,
+        "wacc": 0.1
+      },
+      "after": {
+        "run_id": "3799667f328cea36549c20650fdf2d12eef0f3dd9ebfecfeb09f2d0bf74199df",
+        "engine_revision": "a8a2ad5ce82f5c659bee62be97388b2847745d30a8c79b310ab4f26693f0de5a",
+        "runtime_versions": {
+          "fastapi": "0.141.1",
+          "numpy": "2.5.3",
+          "pydantic": "2.12.5",
+          "python": "3.12.3",
+          "scipy": "1.18.1"
+        },
+        "code": "300866",
+        "report_period": "2026-06-30",
+        "information_as_of": "2026-09-10T04:42:23Z",
+        "instrument_ids": [
+          45156
+        ],
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "scenario": "industry-mechanical-initial",
+        "capital_basis": "report_date_book_debt_no_conversion_scenario",
+        "value_per_share": 126.13784833230838,
+        "wacc": 0.08075367197021832
+      },
+      "value_difference": {
+        "after_minus_before": "41.64738776638471",
+        "currency": "CNY",
+        "unit": "CNY/share"
+      },
+      "attribution": {
+        "status": "verified_wacc_only",
+        "wacc_contribution_per_share": "41.64738776638471",
+        "reason": "同一当前引擎重现两端；除WACC配置外请求相同，逐年现金流及股权桥接输入相同。"
+      },
+      "verification": {
+        "method": "current_engine_report_replay_exact",
+        "engine_revision": "a8a2ad5ce82f5c659bee62be97388b2847745d30a8c79b310ab4f26693f0de5a",
+        "runtime_versions": {
+          "python": "3.12.3",
+          "pydantic": "2.12.5",
+          "numpy": "2.5.3",
+          "scipy": "1.18.1",
+          "fastapi": "0.141.1"
+        },
+        "normalization_changes": [
+          {
+            "count": 0,
+            "omitted_count": 0,
+            "items": []
+          },
+          {
+            "count": 0,
+            "omitted_count": 0,
+            "items": []
+          }
+        ],
+        "saved_engine_changed": true
+      },
+      "change_counts": {
+        "wacc_and_market_inputs": 2
+      },
+      "evidence": {
+        "before": {
+          "path": "/root/alphalake/valuation/backend/data/alphalake_runs/74f748d820dc01a5dfd6c60535db8b707cf1f37e2105905fd7e9aa5be7249371.json",
+          "sha256": "765678417f8b0eff5cff086c72f43c95b0eee54fb8789a12606ef9330533cd45"
+        },
+        "after": {
+          "path": "/root/alphalake/valuation/backend/data/alphalake_runs/3799667f328cea36549c20650fdf2d12eef0f3dd9ebfecfeb09f2d0bf74199df.json",
+          "sha256": "a199988403f5a3d1bb6795a3b9ce99297f4478d876d36be60bf12d238c1cec6a"
+        }
+      }
+    },
+    {
+      "case": "models",
+      "path": "workspace/valuation-comparison-20260910/models.json",
+      "sha256": "4a450670c293df1812be92f8f9b6e1b2ac3a810bea3e7832ace8a5dc5dbdc7fb",
+      "before": {
+        "run_id": "3799667f328cea36549c20650fdf2d12eef0f3dd9ebfecfeb09f2d0bf74199df",
+        "engine_revision": "a8a2ad5ce82f5c659bee62be97388b2847745d30a8c79b310ab4f26693f0de5a",
+        "runtime_versions": {
+          "fastapi": "0.141.1",
+          "numpy": "2.5.3",
+          "pydantic": "2.12.5",
+          "python": "3.12.3",
+          "scipy": "1.18.1"
+        },
+        "code": "300866",
+        "report_period": "2026-06-30",
+        "information_as_of": "2026-09-10T04:42:23Z",
+        "instrument_ids": [
+          45156
+        ],
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "scenario": "industry-mechanical-initial",
+        "capital_basis": "report_date_book_debt_no_conversion_scenario",
+        "value_per_share": 126.13784833230838,
+        "wacc": 0.08075367197021832
+      },
+      "after": {
+        "run_id": "6af4e035c2c84ef0294ccf80d515a4a1fdfc101c45f19d41706712217d687548",
+        "engine_revision": "9edf38cd6410c2050dd8db2d27c010d577a31157a1d498c2815bbb09c37e79b7",
+        "runtime_versions": {
+          "fastapi": "0.141.1",
+          "numpy": "2.5.3",
+          "pydantic": "2.12.5",
+          "python": "3.12.3",
+          "scipy": "1.18.1"
+        },
+        "code": "300866",
+        "report_period": "2026-06-30",
+        "information_as_of": "2026-09-09T15:02:34.801603Z",
+        "instrument_ids": [
+          2
+        ],
+        "policy_id": "anker-consolidated-v2",
+        "scenario": "revised-research-market-wacc",
+        "capital_basis": "financial_date",
+        "value_per_share": 173.7471143724725,
+        "wacc": 0.06944037447255733
+      },
+      "value_difference": {
+        "after_minus_before": "47.60926604016412",
+        "currency": "CNY",
+        "unit": "CNY/share"
+      },
+      "attribution": {
+        "status": "not_attributed",
+        "wacc_contribution_per_share": null,
+        "reason": "仅列差异；未满足限定的通用模型WACC单因素条件，不分摊贡献。"
+      },
+      "verification": {
+        "method": "current_engine_report_replay_exact",
+        "engine_revision": "a8a2ad5ce82f5c659bee62be97388b2847745d30a8c79b310ab4f26693f0de5a",
+        "runtime_versions": {
+          "python": "3.12.3",
+          "pydantic": "2.12.5",
+          "numpy": "2.5.3",
+          "scipy": "1.18.1",
+          "fastapi": "0.141.1"
+        },
+        "normalization_changes": [
+          {
+            "count": 0,
+            "omitted_count": 0,
+            "items": []
+          },
+          {
+            "count": 1,
+            "omitted_count": 0,
+            "items": [
+              {
+                "path": "/prepared_ttm/provenance/alphalake_snapshot",
+                "before_present": true,
+                "after_present": true,
+                "before": "505efae00b18ccb9f36a3b5cd766f8b159f5f45237242b5f6bda60a31c0cee05",
+                "after": "0fc37aee83cf66e816dd1e50b90a0ea7eb8d5e525a1ad9a793d3df2030310c48"
+              }
+            ]
+          }
+        ],
+        "saved_engine_changed": true
+      },
+      "change_counts": {
+        "capital_efficiency_reference": 1,
+        "financial_data_and_evidence": 2168,
+        "time_and_identity": 1,
+        "equity_and_share_policy": 12,
+        "model_and_policy": 14,
+        "wacc_and_market_inputs": 15
+      },
+      "evidence": {
+        "before": {
+          "path": "/root/alphalake/valuation/backend/data/alphalake_runs/3799667f328cea36549c20650fdf2d12eef0f3dd9ebfecfeb09f2d0bf74199df.json",
+          "sha256": "a199988403f5a3d1bb6795a3b9ce99297f4478d876d36be60bf12d238c1cec6a"
+        },
+        "after": {
+          "path": "/root/alphalake/workspace/anker-revised-20260909/runs/6af4e035c2c84ef0294ccf80d515a4a1fdfc101c45f19d41706712217d687548.json",
+          "sha256": "24fa146d29a1e1fcc386a9170e1f7f0d63a6687c37bf562952310f9718c77da7"
+        }
+      }
+    }
+  ]
+}

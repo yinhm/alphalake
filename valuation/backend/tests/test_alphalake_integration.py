@@ -1053,3 +1053,39 @@ def test_company_entry_moutai_and_corrupt_saved_result(exports,tmp_path,monkeypa
     p=tmp_path/(run_id+'.json');saved=json.loads(p.read_text());saved['request']['policy']['scenario']='tampered'
     p.write_text(json.dumps(saved))
     with pytest.raises(ValueError,match='differs'):summarize_run(row,tmp_path)
+
+
+def test_compare_runs_replays_and_limits_attribution(exports,tmp_path,monkeypatch):
+    from api.alphalake import evaluate
+    from tools.compare_valuations import compare_runs,load_run,changes
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    p=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_text())
+    def compute(policy):
+        r=evaluate(AlphaLakeRequest(data=exports['300866'],policy=policy))
+        return load_run(tmp_path,r['run_id'])[0]
+    before=compute(p);after=compute(p|dict(wacc=.09))
+    stored={f.name:f.read_bytes() for f in tmp_path.glob('*.json')}
+    result=compare_runs(before,after)
+    assert result['attribution']['status']=='verified_wacc_only'
+    near(float(result['attribution']['wacc_contribution_per_share']),after['report']['final']['value_per_share']-before['report']['final']['value_per_share'])
+    assert result['derived']['forecast_unchanged']
+    assert result['verification']['normalization_changes'][0]['count']==0
+    multiple=compute(p|dict(wacc=.09,tax_rate=.2))
+    assert compare_runs(before,multiple)['attribution']['wacc_contribution_per_share'] is None
+    assert float(compare_runs(before,before)['value_difference']['after_minus_before'])==0
+    altered=copy.deepcopy(after);altered['report']['final']['value_per_share']+=.01
+    with pytest.raises(ValueError,match='reproduce'):compare_runs(before,altered)
+    # 历史规范化字段不同须显式披露；即使价格仍可重现也不能声称单因素。
+    normalized=copy.deepcopy(after);normalized['inputs']['prepared_ttm']['provenance']['legacy']='test'
+    result=compare_runs(before,normalized,max_changes=1)
+    assert result['verification']['normalization_changes'][1]['count']==1
+    assert result['attribution']['status']=='not_attributed'
+    altered=copy.deepcopy(after);altered['request']['data']['code']='600519'
+    with pytest.raises(ValueError,match='different security'):compare_runs(before,altered)
+    diff=list(changes({'a':None,'b':[1,2]}, {'b':[1,3],'c':None}))
+    assert diff[0]['before_present'] and not diff[0]['after_present'] and diff[0]['before'] is None
+    assert diff[1]['path']=='/b/1'
+    for filename,raw in stored.items():assert (tmp_path/filename).read_bytes()==raw
+    with pytest.raises(ValueError,match='64 lowercase'):load_run(tmp_path,'../not-a-run')
+    corrupt=tmp_path/(after['run_id']+'.json');body=json.loads(corrupt.read_text());body['request']['policy']['wacc']=.08;corrupt.write_text(json.dumps(body))
+    with pytest.raises(ValueError,match='hash differs'):load_run(tmp_path,after['run_id'])
