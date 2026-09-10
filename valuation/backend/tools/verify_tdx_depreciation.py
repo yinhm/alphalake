@@ -53,6 +53,7 @@ def verify(ledger,directory,source):
     if ledger['code']!='688648' or {r['period'] for r in ledger['reports']}!={'2025-06-30','2025-12-31','2026-06-30'} or len(ledger['reports'])!=3:
         raise ValueError('unsupported company/period scope')
     if any('cash_rows' in r for r in ledger['reports']) and not all('cash_rows' in r for r in ledger['reports']):raise ValueError('partial cash report set')
+    if any('adjustment_rows' in r for r in ledger['reports']) and not all('adjustment_rows' in r and 'cash_rows' in r for r in ledger['reports']):raise ValueError('partial adjustment report set')
     results=[]
     for report in ledger['reports']:
         path=Path(directory)/report['file']
@@ -64,7 +65,7 @@ def verify(ledger,directory,source):
         expected_title='中邮科技股份有限公司'+report['period'][:4]+('年年度报告' if report['period'].endswith('12-31') else '年半年度报告')
         if ledger['code'] not in text(1) or report['title']!=expected_title or expected_title not in text(1):raise ValueError('company/title differs')
         amounts={}
-        for row in report['rows']+report.get('cash_rows',[]):
+        for row in report['rows']+report.get('cash_rows',[])+report.get('adjustment_rows',[]):
             header=text(row['header_page']).replace(':','：')
             if row['header_label'] not in header or '单位：元币种：人民币' not in header:raise ValueError('section/unit differs')
             body=text(row['page'])
@@ -77,6 +78,16 @@ def verify(ledger,directory,source):
             if values!=row['values']:raise ValueError('PDF row amounts differ')
             if row['key'] in amounts:raise ValueError('duplicate row key')
             amounts[row['key']]=Decimal(values[row['column']])
+        if 'adjustment_rows' in report:
+            for blank in report['adjustment_blanks']:
+                if blank['key'] not in ('adj_other','adj_disposal') or (blank['key']=='adj_disposal' and report['period']!='2026-06-30'):raise ValueError('unsupported blank adjustment')
+                lines=pdf.pages[blank['page']-1].extract_text(extraction_mode='layout').splitlines()
+                expected_range=[40,62] if blank['key']=='adj_disposal' else [2,2]
+                start,end=blank['current_columns']
+                if blank['status']!='reported_blank_not_zero' or [start,end]!=expected_range or lines.count(blank['layout_line'])!=1 or blank['layout_line'][start:end].strip():
+                    raise ValueError('blank current column differs')
+                if blank['key']=='adj_other' and blank['layout_line']!='其他':raise ValueError('other blank row differs')
+                if blank['key']=='adj_disposal' and not blank['layout_line'].startswith('处置固定资产、无形资产和其他长期资产的损'):raise ValueError('disposal blank row differs')
         labels={r['key']:r['label'] for r in report['rows']}
         included_rou='使用权资产折旧' in labels['cf_depreciation']
         expected_components=['ppe','investment_property']+(['right_of_use'] if included_rou else [])
@@ -106,6 +117,20 @@ def verify(ledger,directory,source):
                             unconsumed_source_fields=combined,reported_da_cny=str(tdx_total),pdf_reported_da_cny=str(pdf_total),source_minus_pdf_cny=str(tdx_total-pdf_total)))
         if 'cash_rows' in report:
             results[-1]['cash_bridge']=cash_bridge(amounts,record,source,ledger['code'],report['period'],tdx_total,pdf_total,ledger['evaluation_as_of'])
+        if 'adjustment_rows' in report:
+            required={'adj_asset_impairment','adj_credit_impairment','adj_disposal','adj_retirement','adj_fair_value','adj_finance','adj_investment','adj_deferred_tax_asset','adj_deferred_tax_liability','adj_other'}
+            items={k:v for k,v in amounts.items() if k.startswith('adj_')};blanks=[b['key'] for b in report['adjustment_blanks']]
+            if set(items)|set(blanks)!=required or set(items)&set(blanks) or len(set(blanks))!=len(blanks):raise ValueError('adjustment items incomplete or overlapping')
+            total=sum(items.values(),Decimal(0))
+            if total!=Decimal(results[-1]['cash_bridge']['pdf']['unclassified_other_adjustments']):raise ValueError('disclosed adjustments do not reconcile residual')
+            checked=[]
+            for field,key in [('FN301','adj_disposal'),('FN82','adj_fair_value'),('FN83','adj_investment')]:
+                if key not in items:continue
+                bits=struct.unpack('<I',struct.pack('<f',float(-items[key])))[0]
+                if record['bits'][field]!=bits:raise ValueError('adjustment TDX bits differ: '+field)
+                checked.append(dict(field=field,source_bits=bits,pdf_adjustment_key=key,pdf_to_source_sign=-1,artifact=record['artifact']))
+            results[-1]['adjustment_breakdown']=dict(disclosed_items_cny={k:str(v) for k,v in items.items()},reported_blank_not_zero=blanks,
+                disclosed_total_cny=str(total),checked_source_inputs=checked,other_explanation_status='unexplained_reported_amount' if 'adj_other' in items else 'reported_blank_not_zero')
     by_period={r['period']:r for r in results};coefficients={'2025-12-31':1,'2026-06-30':1,'2025-06-30':-1}
     tdx_ttm=sum((Decimal(by_period[p]['reported_da_cny'])*c for p,c in coefficients.items()),Decimal(0))
     pdf_ttm=sum((Decimal(by_period[p]['pdf_reported_da_cny'])*c for p,c in coefficients.items()),Decimal(0))
@@ -115,6 +140,11 @@ def verify(ledger,directory,source):
     if all('cash_bridge' in r for r in results):
         result['cash_bridge_ttm']={basis:{k:str(sum((Decimal(by_period[p]['cash_bridge'][basis][k])*c for p,c in coefficients.items()),Decimal(0))) for k in results[0]['cash_bridge'][basis]} for basis in ('source','pdf')}
         result['cash_bridge_status']='partial_cash_reconciliation_not_classified_FCFF'
+    if all('adjustment_breakdown' in r for r in results):
+        keys=set().union(*(r['adjustment_breakdown']['disclosed_items_cny'].keys() for r in results))
+        result['adjustment_ttm_terms']={k:dict(complete=all(k in r['adjustment_breakdown']['disclosed_items_cny'] for r in results),observed_terms_sum_cny=str(sum((Decimal(by_period[p]['adjustment_breakdown']['disclosed_items_cny'][k])*c for p,c in coefficients.items() if k in by_period[p]['adjustment_breakdown']['disclosed_items_cny']),Decimal(0))),
+            reported_blank_periods=[p for p in coefficients if k in by_period[p]['adjustment_breakdown']['reported_blank_not_zero']]) for k in sorted(keys)}
+        result['adjustment_status']='reported_numeric_adjustments_reconciled_not_classified_FCFF'
     return result
 
 

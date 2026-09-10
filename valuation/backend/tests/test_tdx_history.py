@@ -541,3 +541,30 @@ def test_cash_bridge_keeps_residual_and_quarter_rounding_limits():
     with pytest.raises(ValueError,match='rounding bound'):verify(ledger,directory,bad)
     bad=copy.deepcopy(ledger);bad['evaluation_as_of']='2026-07-01T00:00:00+08:00'
     with pytest.raises(ValueError,match='cutoff'):verify(bad,directory,source)
+
+
+def test_disclosed_cash_adjustments_keep_blank_and_unexplained_items():
+    from tools.verify_tdx_depreciation import verify
+    directory=ROOT/'valuation/research/tdx-growth-expanded/depreciation-review-688648'
+    ledger=json.loads((directory/'adjustment-evidence.json').read_bytes())
+    source=json.loads((directory.parent/'snapshot-reinvestment.json').read_bytes())
+    result=verify(ledger,directory,source)
+    expected=json.loads((directory/'adjustment-reconciled.json').read_bytes())
+    assert result=={k:v for k,v in expected.items() if k!='evidence'}
+    assert result['actual_fcff'] is None
+    terms=result['adjustment_ttm_terms']
+    assert sum(Decimal(r['observed_terms_sum_cny']) for r in terms.values())==Decimal('5582391.58')
+    assert terms['adj_other']==dict(complete=False,observed_terms_sum_cny='-1030263.34',reported_blank_periods=['2026-06-30','2025-06-30'])
+    assert terms['adj_disposal']['complete'] is False
+    assert terms['adj_disposal']['reported_blank_periods']==['2026-06-30']
+    assert sum(len(r['adjustment_breakdown']['checked_source_inputs']) for r in result['periods'])==8
+    bad=copy.deepcopy(ledger);bad['reports'][0]['adjustment_rows'].pop()
+    with pytest.raises(ValueError,match='incomplete'):verify(bad,directory,source)
+    bad=copy.deepcopy(ledger);bad['reports'][1]['adjustment_rows'][-1]['values'][0]='0.00'
+    with pytest.raises(ValueError,match='amounts'):verify(bad,directory,source)
+    bad=copy.deepcopy(ledger)
+    next(r for r in bad['reports'][2]['adjustment_blanks'] if r['key']=='adj_disposal')['current_columns']=[62,85]
+    with pytest.raises(ValueError,match='blank current'):verify(bad,directory,source)
+    bad=copy.deepcopy(source)
+    next(r for r in bad['records'] if (r['code'],r['period'])==('688648','2025-06-30'))['bits']['FN301']^=1
+    with pytest.raises(ValueError,match='adjustment TDX bits'):verify(ledger,directory,bad)
