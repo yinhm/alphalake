@@ -4,6 +4,7 @@ from datetime import date
 import hashlib
 import json
 from pathlib import Path
+from statistics import median
 
 from tools.backtest_tdx_history import at, available, operating, error, metrics, run
 
@@ -16,7 +17,7 @@ DEFAULT_WEIGHTS={'half_growth':dict(growth_weight=.5,prior_margin_weight=0),
 def digest(raw):return hashlib.sha256(raw).hexdigest()
 
 
-def evaluate(protocol,snapshot,split,origins,models):
+def evaluate(protocol,snapshot,split,origins,models,calibrations=None):
     samples=[s for s in protocol['samples'] if s['split']==split]
     output=[]
     for origin in origins:
@@ -33,6 +34,8 @@ def evaluate(protocol,snapshot,split,origins,models):
             if row['status']!='evaluated':
                 result['reason']=row.get('reason');result['diagnostics']=row['diagnostics'];continue
             try:
+                calibration=calibrations[origin] if calibrations is not None else None
+                if calibration and calibration['status']!='fitted':raise ValueError('insufficient past calibration pairs')
                 # 只读取起点前且FN314不晚于起点的记录；不使用未来年度利润率。
                 history={r['period']:r for r in source['records'] if r['code']==row['code'] and date.fromisoformat(r['period'])<=end
                          and available(r,artifacts[r['artifact']])<=at(study['forecast_as_of'])}
@@ -49,6 +52,9 @@ def evaluate(protocol,snapshot,split,origins,models):
                     m=(1-w)*margin+w*prior_margin
                     if 'margin_change_cap' in weights:
                         cap=weights['margin_change_cap'];m=margin+max(-cap,min(cap,m-margin))
+                    if 'calibration_weight' in weights:
+                        if 'ebit_scale' in calibration:m*=1+weights['calibration_weight']*(calibration['ebit_scale']-1)
+                        else:m-=weights['calibration_weight']*calibration['margin_shift']
                     revenue=base['revenue']*(1+g);forecasts[model]=dict(revenue=revenue,ebit=revenue*m)
                 result.update(actual=row['actual'],base=row['base'],prior_full_year=prior,forecasts=forecasts,
                               profit_scope=row['profit_scope'],financial_scope_flags=row['financial_scope_flags'],
@@ -57,6 +63,40 @@ def evaluate(protocol,snapshot,split,origins,models):
                 # 所有候选在同一可评价集合比较，不只丢弃某个候选的坏案例。
                 result.update(status='blocked',reason=str(exc))
     return output
+
+
+def fit_calibration(protocol,snapshot,origin):
+    """只用当前起点前已结束的开发窗口；源版本的后修订风险仍保留。"""
+    end=date.fromisoformat(origin);previous=end.replace(year=end.year-1).isoformat()
+    training={k:v for k,v in protocol.items() if k!='calibration'}
+    training['evaluation_as_of']=f'{end.year}-09-01T00:00:00+08:00'
+    rows=evaluate(training,snapshot,'development',[previous],('current_rule','zero_growth'))
+    errors=[r['errors']['current_rule']['margin_error_pp']/100 for r in rows if r['status']=='evaluated']
+    config=protocol['calibration'];raw=median(errors) if errors else None
+    scaled=config['method']=='previous_origin_development_weighted_ebit_scale'
+    if errors and config['method']!='previous_origin_development_median_margin_error':
+        observations=[]
+        for row in rows:
+            if row['status']!='evaluated':continue
+            f=row['forecasts']['current_rule'];a=row['actual']
+            observations.append((a['ebit']/f['ebit'],f['ebit']/a['revenue']) if scaled else
+                                ((f['ebit']-a['ebit'])/f['revenue'],f['revenue']/a['revenue']))
+        observations.sort()
+        half=sum(w for _,w in observations)/2;weight=0
+        for residual,w in observations:
+            weight+=w
+            if weight>=half:raw=residual;break
+    ready=len(errors)>=config['minimum_training_pairs']
+    if scaled:
+        fitted=dict(weighted_ebit_scale=raw,ebit_scale=max(config['minimum_ebit_scale'],min(config['maximum_ebit_scale'],raw)) if ready else None)
+    else:
+        cap=config['maximum_absolute_margin_shift']
+        fitted={('median_margin_error' if config['method']=='previous_origin_development_median_margin_error' else 'weighted_ebit_margin_error'):raw,
+                'margin_shift':max(-cap,min(cap,raw)) if ready else None}
+    return dict(origin=previous,target=origin,evaluation_as_of=training['evaluation_as_of'],
+                status='fitted' if ready else 'insufficient_training_pairs',training_pairs=len(errors),
+                **fitted,
+                summary=metrics(rows),results=rows)
 
 
 def summarize(rows,models):
@@ -90,7 +130,7 @@ def study(protocol,snapshot,phase,selection=None):
     if tuple(protocol['candidates'])!=candidates or len(set(candidates))!=len(candidates):raise ValueError('candidate definitions differ')
     for values in weights.values():
         required={'growth_weight','prior_margin_weight'}
-        if not required<=set(values)<=required|{'margin_change_cap'}:
+        if not required<=set(values)<=required|{'margin_change_cap','calibration_weight'}:
             raise ValueError('invalid candidate parameters')
         for key,value in values.items():
             lower=-1 if key=='prior_margin_weight' else 0
@@ -98,6 +138,23 @@ def study(protocol,snapshot,phase,selection=None):
                 raise ValueError('candidate parameters outside finite bounds')
         if values['prior_margin_weight']<0 and not values.get('margin_change_cap',0)>0:
             raise ValueError('margin extrapolation requires positive change cap')
+    config=protocol.get('calibration')
+    if config is not None:
+        if (config.get('method') not in ('previous_origin_development_median_margin_error','previous_origin_development_weighted_ebit_error','previous_origin_development_weighted_ebit_scale')
+                or config.get('origin_lag_years')!=1 or config.get('training_split')!='development'
+                or config.get('training_evaluation_cutoff')!='current forecast cutoff'
+                or type(config.get('minimum_training_pairs')) is not int or config['minimum_training_pairs']<1):
+            raise ValueError('invalid past calibration policy')
+        if config['method']=='previous_origin_development_weighted_ebit_scale':
+            low,high=config.get('minimum_ebit_scale'),config.get('maximum_ebit_scale')
+            if any(isinstance(v,bool) or not isinstance(v,(int,float)) for v in (low,high)) or not 0<low<=1<=high<=2:
+                raise ValueError('invalid EBIT scale bounds')
+        else:
+            cap=config.get('maximum_absolute_margin_shift')
+            if isinstance(cap,bool) or not isinstance(cap,(int,float)) or not 0<cap<=1:raise ValueError('invalid margin shift bound')
+        if any(v.get('growth_weight')!=1 or v.get('prior_margin_weight')!=0 or 'calibration_weight' not in v for v in weights.values()):
+            raise ValueError('calibration candidates must keep growth and base margin')
+    elif any('calibration_weight' in v for v in weights.values()):raise ValueError('missing calibration policy')
     if phase=='development':
         models=candidates;split='development';origins=protocol['selection']['periods']
     elif phase=='holdout':
@@ -106,9 +163,11 @@ def study(protocol,snapshot,phase,selection=None):
         if selected is not None and (selected not in candidates[2:] or not selection['selection']['gates'][selected]['passed']):raise ValueError('invalid selected candidate')
         models=tuple(dict.fromkeys(['current_rule','zero_growth']+([selected] if selected else [])));split='holdout';origins=protocol['origins']
     else:raise ValueError('unsupported phase')
-    rows=evaluate(protocol,snapshot,split,origins,models);summary=summarize(rows,models)
+    calibrations={origin:fit_calibration(protocol,snapshot,origin) for origin in origins} if config is not None else None
+    rows=evaluate(protocol,snapshot,split,origins,models,calibrations);summary=summarize(rows,models)
     result=dict(contract_version=CONTRACT,protocol_id=protocol['protocol_id'],phase=phase,summary=summary,results=rows,
                 boundary='简化源数据回溯、一个目的样本的多个起点；非严格PIT或DCF公允价值证明；2025已知结果未用于本轮选择或验证')
+    if calibrations is not None:result['calibration_training']=calibrations
     if phase=='development':
         verdicts={m:gates(summary,m,protocol['selection'],rows) for m in candidates[2:]}
         passed=[m for m in candidates[2:] if verdicts[m]['passed']]

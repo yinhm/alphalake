@@ -194,3 +194,94 @@ def test_expanded_sample_freeze_and_bounded_margin_trials():
     for row in changed['records']:
         if row['code'] in held:row['bits']['FN86']=bits(999e12)
     assert multi(protocol,changed,'development')==actual
+
+
+def test_lagged_calibration_only_uses_past_development_labels():
+    from tools.backtest_tdx_origins import study as multi
+    original,source=fixture()
+    for r in copy.deepcopy(source['records'][:4]):
+        r['period']=r['period'].replace('2024','2023');r['artifact']=r['artifact'].replace('2024','2023')
+        r['bits']['FN314']=bits(int(struct.unpack('<f',struct.pack('<I',r['bits']['FN314']))[0])-10000)
+        source['records'].append(r)
+        source['artifacts'].append(dict(file=r['artifact'],report_period=r['period'],fetched_at='2026-09-10T12:00:00Z'))
+    for r in source['records']:
+        if r['period']=='2025-06-30':r['bits']['FN86']=bits(11e6)
+    source['records'] += [dict(r,code='000858') for r in copy.deepcopy(source['records'])]
+    p=json.loads((ROOT/'valuation/research/tdx-growth-expanded/protocol-v4.json').read_bytes())
+    p['samples']=[dict(code='600519',split='development',stratum='test'),dict(code='000858',split='holdout',stratum='test')]
+    p['origins']=['2025-06-30'];p['selection']['periods']=p['origins'];p['base_policy']=original['policy']
+    p['calibration']['minimum_training_pairs']=1
+    result=multi(p,source,'development');training=result['calibration_training']['2025-06-30']
+    assert training['training_pairs']==1 and training['evaluation_as_of']=='2025-09-01T00:00:00+08:00'
+    assert {r['code'] for r in training['results']}=={'600519'}
+    assert training['margin_shift']==pytest.approx(.1-31/420)
+    row=result['results'][0]
+    assert row['status']=='evaluated'
+    for name,w in [('bias_half',.5),('bias_full',1)]:
+        f=row['forecasts'][name];baseline=row['forecasts']['current_rule']
+        assert f['revenue']==baseline['revenue']
+        assert f['ebit']==pytest.approx(baseline['ebit']-baseline['revenue']*w*training['margin_shift'])
+    altered=copy.deepcopy(source)
+    for r in altered['records']:
+        if r['period']>'2025-06-30' or r['code']=='000858':r['bits']['FN86']=bits(999e9)
+    changed=multi(p,altered,'development')
+    assert changed['calibration_training']==result['calibration_training']
+    assert changed['results'][0]['forecasts']==row['forecasts']
+    assert changed['results'][0]['actual']!=row['actual']
+    late=copy.deepcopy(source)
+    for r in late['records']:
+        if r['period']=='2023-12-31':r['bits']['FN314']=bits(240902)
+    unavailable=multi(p,late,'development')
+    assert unavailable['calibration_training']['2025-06-30']['training_pairs']==0
+    assert unavailable['results'][0]['reason']=='insufficient past calibration pairs'
+    p['calibration']['minimum_training_pairs']=2
+    blocked=multi(p,source,'development')
+    assert blocked['summary']['total']['statuses']=={'blocked':1}
+    assert blocked['calibration_training']['2025-06-30']['margin_shift'] is None
+    assert blocked['results'][0]['reason']=='insufficient past calibration pairs'
+    p['calibration']['training_split']='holdout'
+    with pytest.raises(ValueError,match='calibration policy'):multi(p,source,'development')
+
+
+def test_archived_lagged_calibration_and_weighted_loss():
+    import hashlib
+    import math
+    from tools.backtest_tdx_origins import study as multi
+    directory=ROOT/'valuation/research/tdx-growth-expanded'
+    raw=(directory/'snapshot-v4.json').read_bytes();source=json.loads(raw)
+    original=json.loads((directory/'snapshot.json').read_bytes())
+    assert [r for r in source['records'] if r['period']>='2022-01-01']==original['records']
+    assert [a for a in source['artifacts'] if a['report_period']>='2022-01-01']==original['artifacts']
+    assert source['study_sha256']==hashlib.sha256((directory/'protocol-v4.json').read_bytes()).hexdigest()
+    for version in (4,5,6):
+        p=json.loads((directory/f'protocol-v{version}.json').read_bytes())
+        expected=json.loads((directory/f'development-v{version}-summary.json').read_bytes())
+        assert hashlib.sha256(raw).hexdigest()==expected['evidence']['snapshot_sha256']
+        result=multi(p,source,'development')
+        assert result['summary']==expected['summary'] and result['selection']==expected['selection']
+        assert {k:{a:b for a,b in v.items() if a!='results'} for k,v in result['calibration_training'].items()}==expected['calibration_training']
+        assert [t['training_pairs'] for t in result['calibration_training'].values()]==[36,44]
+        for origin,t in result['calibration_training'].items():
+            assert t['target']==origin and t['origin']<origin
+            for r in t['results']:
+                assert r['split']=='development'
+                if r['status']=='evaluated':
+                    assert all(ref['period']<=origin for ref in r['actual']['source_inputs'])
+            if version==4:continue
+            observations=[]
+            for r in t['results']:
+                if r['status']!='evaluated':continue
+                f=r['forecasts']['current_rule'];a=r['actual']
+                observations.append(((f['ebit']-a['ebit'])/f['revenue'],f['revenue']/a['revenue']) if version==5 else (a['ebit']/f['ebit'],f['ebit']/a['revenue']))
+            estimate=t['weighted_ebit_margin_error' if version==5 else 'weighted_ebit_scale']
+            # 枚举所有残差断点，独立检验加权绝对损失的最小值。
+            loss=lambda c:math.fsum(w*abs(x-c) for x,w in observations)
+            assert loss(estimate)==pytest.approx(min(loss(x) for x,_ in observations),abs=1e-12)
+    assert result['selection']['model']=='bias_half'
+    assert result['selection']['gates']['bias_half']['passed']
+    assert result['calibration_training']['2023-06-30']['ebit_scale']==.5
+    assert result['calibration_training']['2023-06-30']['weighted_ebit_scale']<.5
+    for r in result['results']:
+        if r['status']=='evaluated':
+            scale=result['calibration_training'][r['origin']]['ebit_scale']
+            assert r['forecasts']['bias_half']['ebit']==pytest.approx(r['forecasts']['current_rule']['ebit']*(1+scale)/2)
