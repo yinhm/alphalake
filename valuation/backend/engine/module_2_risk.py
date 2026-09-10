@@ -206,7 +206,7 @@ def compute_reference_cost_of_capital(c: ReferenceCapitalInputs, shift_bps: floa
         mature_market_erp=c.mature_market_erp, country_risk_contribution=c.country_risk_contribution,
         cost_of_equity=ke, cost_of_debt_pretax=c.debt_cost_pretax, cost_of_debt_aftertax=kd_after,
         weight_equity=1-c.debt_weight, weight_debt=c.debt_weight, wacc=wacc,
-        warnings=[('Target capital weights and debt cost are explicit assumptions, not observed market values.' if c.capital_structure_basis=='target_weights' else 'Market prices, carried disclosed shares, estimated debt and operating-scope bridge; not entirely observed fair values.')])
+        warnings=[('Industry reference weights are a target proxy, not company market capital structure.' if c.capital_structure_basis=='industry_reference_weights' else 'Target capital weights and debt cost are explicit assumptions, not observed market values.' if c.capital_structure_basis=='target_weights' else 'Market prices, carried disclosed shares, estimated debt and operating-scope bridge; not entirely observed fair values.')])
 
 
 def compute_cost_of_capital(

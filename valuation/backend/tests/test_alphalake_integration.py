@@ -785,7 +785,7 @@ def test_new_companies_standard_chain_and_review_hold(tmp_path,monkeypatch):
     assert result['status_counts']=={'blocked_review_exclusion':2}
 
 
-@pytest.mark.parametrize('kind',['history','screen'])
+@pytest.mark.parametrize('kind',['history','screen','industry_weights'])
 def test_generic_reference_wacc_real_chain(exports,reference_export,tmp_path,monkeypatch,kind):
     from decimal import Decimal as D
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
@@ -797,6 +797,10 @@ def test_generic_reference_wacc_real_chain(exports,reference_export,tmp_path,mon
         policy={k:v for k,v in policy.items() if k in ('approved_report_period','scenario','review_note','nonfinancial_scope_review','tax_rate')}
         policy['policy_id']='nonfinancial-earnings-power-v1'
     req['policy']=policy
+    if kind=='industry_weights':
+        req['wacc_binding']['policy'].update(capital_structure_basis='industry_reference_weights',target_debt_weight=None)
+        req['wacc_binding']['policy']['industries'][0]['weight']=.35
+        req['wacc_binding']['policy']['industries'].append(dict(industry='Machinery',weight=.65,reason='验证多行业加权D/E代理；不是安克业务分类结论'))
     with TestClient(app) as client:
         response=client.post('/api/valuation/from-alphalake',json=req)
         assert response.status_code==200,response.text
@@ -805,7 +809,25 @@ def test_generic_reference_wacc_real_chain(exports,reference_export,tmp_path,mon
         industries={(r['industry'],r['metric_code']):D(r['value']) for r in reference_export['industry_stats']}
         rf=next(D(r['value']) for r in reference_export['yield_curve'] if r['tenor_months']==120)-country['CN','sovereign_default_spread']
         beta=sum(D(str(i['weight']))*industries[i['industry'],p['beta_metric']] for i in p['industries'])
-        dw,tax,kd=[D(str(p[k])) for k in ('target_debt_weight','tax_shield_rate','debt_cost_pretax')]
+        tax,kd=[D(str(p[k])) for k in ('tax_shield_rate','debt_cost_pretax')]
+        if kind=='industry_weights':
+            de=sum(D(str(i['weight']))*industries[i['industry'],'debt_equity_ratio'] for i in p['industries'])
+            dw=de/(1+de)
+            assert result['report']['cost_of_capital']['capital_structure_basis']=='industry_reference_weights'
+            assert result['report']['cost_of_capital']['mv_equity'] is None
+            assert result['audit']['wacc_reference']['industry_capital']['status']=='industry_target_proxy_not_company_market_structure'
+            near(result['audit']['wacc_reference']['industry_capital']['debt_weight'],float(dw))
+            for invalid in ('override','negative','sample','unit'):
+                bad=copy.deepcopy(req)
+                if invalid=='override':bad['wacc_binding']['policy']['target_debt_weight']=.1
+                else:
+                    row=next(r for r in bad['wacc_binding']['references']['industry_stats'] if r['industry']==p['industries'][0]['industry'] and r['metric_code']=='debt_equity_ratio')
+                    if invalid=='negative':row.update(value='-0.100000000000',raw_value='-0.1')
+                    elif invalid=='unit':row['raw_unit']='percent'
+                    else:row['sample_count']+=1
+                assert client.post('/api/valuation/from-alphalake',json=bad).status_code==422
+        else:
+            dw=D(str(p['target_debt_weight']))
         crp=sum(D(str(c['weight']))*D(str(c['exposure_scale']))*country[c['country'],'country_risk_premium'] for c in p['countries'])
         wacc=(rf+beta*(1+(1-tax)*dw/(1-dw))*country['mature','mature_market_erp']+crp)*(1-dw)+kd*(1-tax)*dw
         near(result['report']['cost_of_capital']['wacc'],float(wacc))

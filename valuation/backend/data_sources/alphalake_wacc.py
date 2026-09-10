@@ -59,7 +59,7 @@ class WACCPolicy(Strict):
     government_tenor_months: Literal[3, 6, 12, 36, 60, 84, 120, 360]
     risk_free_method: Literal['government_proxy', 'subtract_cn_default_spread']
     risk_free_reason: str = Field(min_length=1)
-    capital_structure_basis: Literal['target_weights','market_equity_estimated_debt']
+    capital_structure_basis: Literal['target_weights','industry_reference_weights','market_equity_estimated_debt']
     target_debt_weight: float | None = Field(default=None,ge=0, lt=1)
     market: MarketPolicy | None = None
     capital_structure_reason: str = Field(min_length=1)
@@ -78,6 +78,8 @@ class WACCPolicy(Strict):
     def weights(self):
         if self.capital_structure_basis=='target_weights':
             if self.target_debt_weight is None or self.market is not None: raise ValueError('target weight required without market policy')
+        elif self.capital_structure_basis=='industry_reference_weights':
+            if self.target_debt_weight is not None or self.market is not None: raise ValueError('industry weights must be derived without target override or market policy')
         elif self.market is None or self.target_debt_weight is not None: raise ValueError('market weights must be derived; no target weight')
         if sum(x is not None for x in [self.synthetic_debt,self.debt_cost_pretax,self.credit_band_debt])!=1:
             raise ValueError("exactly one explicit, synthetic or analyst credit-band debt cost required")
@@ -197,6 +199,7 @@ def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_o
         _, spread = select(s.country_risk, p.max_country_age_days, subject_code='CN', subject_kind='country',
                            metric_code='sovereign_default_spread', method_code='rating', raw_unit='fraction')
     beta = 0.0
+    industry_de = 0.0
     for industry in p.industries:
         row, value = select(s.industry_stats, p.max_beta_age_days, industry=industry.industry, industry_name=industry.industry,
                             taxonomy_code='damodaran_industry_2026', sample_region='global', metric_code=p.beta_metric,
@@ -206,6 +209,14 @@ def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_o
                 or type(row['sample_count']) is not int or row['sample_count'] < p.minimum_sample_count):
             raise ValueError('unsupported beta method/insufficient sample')
         beta += industry.weight * value
+        if p.capital_structure_basis == 'industry_reference_weights':
+            capital_row, de = select(s.industry_stats, p.max_beta_age_days, industry=industry.industry,
+                industry_name=industry.industry, taxonomy_code='damodaran_industry_2026', sample_region='global',
+                metric_code='debt_equity_ratio', statistic_code='provider_estimate', raw_unit='fraction',
+                method_code='provider_reported')
+            if de < 0 or type(capital_row['sample_count']) is not int or capital_row['sample_count'] != row['sample_count']:
+                raise ValueError('invalid industry debt/equity ratio or inconsistent sample')
+            industry_de += industry.weight * de
     country = 0.0
     for exposure in p.countries:
         _, value = select(s.country_risk, p.max_country_age_days, subject_code=exposure.country, subject_kind='country',
@@ -243,6 +254,12 @@ def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_o
     market_audit=None
     market_e=market_d=None
     weight=p.target_debt_weight
+    industry_capital_audit=None
+    if p.capital_structure_basis == 'industry_reference_weights':
+        weight=industry_de/(1+industry_de)
+        industry_capital_audit=dict(status='industry_target_proxy_not_company_market_structure',
+            weighted_debt_equity_ratio=industry_de, debt_weight=weight,
+            method='sum(policy industry weight * source D/E), then D/(D+E)=D/E/(1+D/E)')
     if p.market is not None:
         if binding.market_capital is None or debt is None or debt<0 or bridge is None:
             raise ValueError('market WACC requires standard capital evidence and reviewed debt/scope bridge')
@@ -288,7 +305,7 @@ def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_o
         debt_cost_pretax=kd, debt_cost_basis=("analyst_credit_reference" if p.credit_band_debt else "synthetic_reference" if debt_audit else "explicit_policy"))
     result = compute_reference_cost_of_capital(components)
     return components, dict(policy=p.model_dump(mode='json'), selected_observations=used,
-        market_capital=market_audit, synthetic_debt=debt_audit, government_yield=government, sovereign_default_spread_adjustment=spread,
-        result=result.model_dump(mode='json'), boundaries=[('explicit target weights, not observed market capital structure' if market_audit is None else 'market equity with estimated debt and operating scope adjustments'),
+        market_capital=market_audit, industry_capital=industry_capital_audit, synthetic_debt=debt_audit, government_yield=government, sovereign_default_spread_adjustment=spread,
+        result=result.model_dump(mode='json'), boundaries=[('industry reference target proxy, not company market capital structure' if industry_capital_audit is not None else 'explicit target weights, not observed market capital structure' if market_audit is None else 'market equity with estimated debt and operating scope adjustments'),
         'industry and country weights are analyst policy', 'constant WACC including terminal period',
         'reference packet provenance is validated structurally; not a cryptographic signature of the database'])

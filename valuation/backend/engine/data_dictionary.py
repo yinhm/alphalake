@@ -300,13 +300,13 @@ class ReferenceCapitalInputs(BaseModel):
     tax_shield_rate: float = Field(ge=0, le=1)
     debt_cost_pretax: float = Field(ge=0, lt=1)
     debt_cost_basis: Literal["explicit_policy", "synthetic_reference", "analyst_credit_reference"] = "explicit_policy"
-    capital_structure_basis: Literal["target_weights","market_equity_estimated_debt"] = "target_weights"
+    capital_structure_basis: Literal["target_weights","industry_reference_weights","market_equity_estimated_debt"] = "target_weights"
     market_equity: float | None = Field(default=None,gt=0)
     estimated_debt: float | None = Field(default=None,ge=0)
 
     @model_validator(mode='after')
     def capital_amounts(self):
-        if self.capital_structure_basis=='target_weights':
+        if self.capital_structure_basis in ('target_weights','industry_reference_weights'):
             if self.market_equity is not None or self.estimated_debt is not None:
                 raise ValueError('target weights cannot claim market amounts')
         elif self.market_equity is None or self.estimated_debt is None or abs(self.debt_weight-self.estimated_debt/(self.market_equity+self.estimated_debt))>1e-12:
