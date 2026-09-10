@@ -97,6 +97,18 @@ func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 		}
 		ids[i], byID[id] = id, row
 	}
+	companyMemberships, companyReference, referenceErr := companyIndustriesAsOf(ctx, tx, asof)
+	if referenceErr != nil {
+		companyReference["status"] = "blocked_invalid_reference"
+		companyReference["reason"] = referenceErr.Error()
+	} else {
+		for id, members := range companyMemberships {
+			if row, ok := byID[id]; ok {
+				existing, _ := row["industry_memberships"].([]any)
+				row["industry_memberships"] = append(existing, members...)
+			}
+		}
+	}
 	// 单个全市场 TTM 分组在真实库超过1 GiB；同一事务中分批限制聚合规模。
 	// 证券范围直接传入共享事实CTE，避免每批重新排序全市场版本。
 	const batchSize = 128
@@ -192,6 +204,7 @@ func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 		return nil, err
 	}
 	return map[string]any{"contract_version": "alphalake-readiness-v1", "report_period": end.Format("2006-01-02"), "information_as_of": asof.UTC().Format(time.RFC3339Nano),
-		"universe_scope":       "local_known_mainland_CNY_equities_not_verified_exchange_census_or_historical_master_snapshot",
-		"required_core_fields": required, "universe_count": len(rows), "financial_status_counts": counts, "missing_core_field_counts": gaps, "companies": rows}, nil
+		"company_industry_reference": companyReference,
+		"universe_scope":             "local_known_mainland_CNY_equities_not_verified_exchange_census_or_historical_master_snapshot",
+		"required_core_fields":       required, "universe_count": len(rows), "financial_status_counts": counts, "missing_core_field_counts": gaps, "companies": rows}, nil
 }

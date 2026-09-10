@@ -175,7 +175,7 @@ def run_batch(readiness, policy, export):
     if len(results) != readiness['universe_count']:
         raise ValueError('universe count does not match company rows')
     return dict(contract_version='alphalake-batch-v1',engine_revision=ENGINE_REVISION,
-        readiness_sha256=content_hash(readiness),policy=policy.model_dump(mode='json'),
+        readiness_sha256=content_hash(readiness),company_industry_reference=readiness.get('company_industry_reference'),policy=policy.model_dump(mode='json'),
         report_period=readiness['report_period'],information_as_of=readiness['information_as_of'],
         universe_scope=readiness['universe_scope'],universe_count=len(results),
         status_counts=dict(sorted(Counter(r['status'] for r in results).items())),companies=results,

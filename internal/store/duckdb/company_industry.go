@@ -14,7 +14,7 @@ func PublishCompanyIndustries(ctx context.Context, db *sql.DB, runID, artifactID
 	if err := damodaran.ValidateCompanyIndustries(s); err != nil {
 		return 0, false, err
 	}
-	p, err := beginReferencePublication(ctx, db, runID, artifactID, referenceInput{Source: damodaran.Source, Dataset: damodaran.CompanyIndustryDataset, URL: damodaran.CompanyIndustryURL, SHA: s.SHA256, ParserVersion: s.ParserVersion, Runtime: s.Runtime, Normalization: "source-company-industries-undated-v1", ParserHash: parserHash})
+	p, err := beginReferencePublication(ctx, db, runID, artifactID, referenceInput{Source: damodaran.Source, Dataset: damodaran.CompanyIndustryDataset, URL: damodaran.CompanyIndustryURL, SHA: s.SHA256, ParserVersion: s.ParserVersion, Runtime: s.Runtime, Normalization: "source-company-industries-undated-v2:" + damodaran.CompanyIndustryDigest(s), ParserHash: parserHash})
 	if err != nil {
 		return 0, false, err
 	}

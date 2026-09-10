@@ -2,6 +2,7 @@ package damodaran
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -89,4 +90,10 @@ func ValidateCompanyIndustries(s CompanyIndustrySnapshot) error {
 		tickers[c.Ticker], rows[row] = true, true
 	}
 	return nil
+}
+
+// CompanyIndustryDigest 锁定已解析内容；不是独立的行业语义核验。
+func CompanyIndustryDigest(s CompanyIndustrySnapshot) string {
+	raw, _ := json.Marshal(s)
+	return fmt.Sprintf("%x", sha256.Sum256(raw))
 }
