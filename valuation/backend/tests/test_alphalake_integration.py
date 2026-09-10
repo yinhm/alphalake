@@ -1089,3 +1089,61 @@ def test_compare_runs_replays_and_limits_attribution(exports,tmp_path,monkeypatc
     with pytest.raises(ValueError,match='64 lowercase'):load_run(tmp_path,'../not-a-run')
     corrupt=tmp_path/(after['run_id']+'.json');body=json.loads(corrupt.read_text());body['request']['policy']['wacc']=.08;corrupt.write_text(json.dumps(body))
     with pytest.raises(ValueError,match='hash differs'):load_run(tmp_path,after['run_id'])
+
+
+def test_run_query_retains_ties_duplicates_and_corruption(exports,tmp_path,monkeypatch):
+    from api.alphalake import evaluate
+    from tools.list_valuation_runs import list_runs
+    from tools.compare_valuations import load_run,compare_runs
+    first=tmp_path/'first';second=tmp_path/'second';first.mkdir();second.mkdir()
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(first))
+    p=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_text())
+    a=evaluate(AlphaLakeRequest(data=exports['300866'],policy=p))
+    b=evaluate(AlphaLakeRequest(data=exports['300866'],policy=p|dict(wacc=.09)))
+    revised=json.loads((REPO/'valuation/examples/anker-2026H1-revised.json').read_text())
+    c=evaluate(AlphaLakeRequest(data=exports['300866'],policy=revised))
+    snapshot={f.name:f.read_bytes() for f in first.iterdir()}
+    # 修改mtime不改变信息截止下的并列；不运行引擎便能查询既有结果。
+    os.utime(first/(a['run_id']+'.json'),(1,1))
+    (second/(a['run_id']+'.json')).write_bytes(snapshot[a['run_id']+'.json'])
+    query=list_runs([first,second],'300866',latest_per_model=True,limit=1)
+    assert query['status']=='ok' and query['matched_count']==query['result_count']==3
+    assert query['has_more'] and len(query['results'])==1
+    groups={g['policy_id']:g for g in query['model_groups']}
+    assert groups[p['policy_id']]['latest_count']==2 and groups[p['policy_id']]['unique_latest_run_id'] is None
+    assert groups[revised['policy_id']]['unique_latest_run_id']==c['run_id']
+    all_rows=list_runs([first,second],'300866',limit=50)['results']
+    assert len(next(r for r in all_rows if r['run_id']==a['run_id'])['locations'])==2
+    assert list_runs([first],'300866',models=[revised['policy_id']])['result_count']==1
+    assert list_runs([first],'300866',as_of='2020-01-01T00:00:00Z')['status']=='no_matches'
+    assert list_runs([first],'300866',period='2025-12-31')['status']=='no_matches'
+    assert list_runs([first],'600519')['status']=='no_matches'
+    with pytest.raises(ValueError):list_runs([first],'300866',as_of='2026-09-10')
+    # 同run ID不同报告内容不能任意保留一份；所有唯一最新选择同时失效。
+    bad=json.loads(snapshot[a['run_id']+'.json']);bad['report']['final']['value_per_share']+=1
+    (second/(a['run_id']+'.json')).write_text(json.dumps(bad))
+    partial=list_runs([first,second],'300866',latest_per_model=True)
+    assert partial['status']=='partial' and not partial['latest_selection_complete']
+    assert a['run_id'] not in {r['run_id'] for r in partial['results']}
+    assert all(g['unique_latest_run_id'] is None for g in partial['model_groups'])
+    (second/'broken.json').write_text('{')
+    assert len(list_runs([first,second],'300866')['issues'])==2
+    assert list_runs([first,tmp_path/'absent'],'300866')['status']=='partial'
+    # 从查询结果取ID可直接进入既有比较链，无硬编码测试run ID。
+    found=list_runs([first],'300866')['results']
+    ids={r['value_per_share']['value']:r['run_id'] for r in found if r['policy_id']==p['policy_id']}
+    left=load_run(first,ids[a['report']['final']['value_per_share']])[0]
+    right=load_run(first,ids[b['report']['final']['value_per_share']])[0]
+    assert compare_runs(left,right)['attribution']['status']=='verified_wacc_only'
+    assert {f.name:f.read_bytes() for f in first.iterdir()}==snapshot
+    from datetime import datetime,timedelta,timezone
+    later=copy.deepcopy(exports['300866'])
+    at=datetime.fromisoformat(later['information_as_of'])+timedelta(hours=1)
+    later['information_as_of']=at.isoformat()
+    newer=evaluate(AlphaLakeRequest(data=later,policy=p))
+    latest=list_runs([first],'300866',models=[p['policy_id']],latest_per_model=True)
+    assert latest['result_count']==1 and latest['results'][0]['run_id']==newer['run_id']
+    later['information_as_of']=at.astimezone(timezone(timedelta(hours=8))).isoformat()
+    evaluate(AlphaLakeRequest(data=later,policy=p))
+    same_instant=list_runs([first],'300866',models=[p['policy_id']],latest_per_model=True)
+    assert same_instant['result_count']==2 and same_instant['model_groups'][0]['unique_latest_run_id'] is None
