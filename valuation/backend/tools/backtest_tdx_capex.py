@@ -76,6 +76,7 @@ def evaluate(p,source,split,models,calibrations=None):
                 history=[financial(index,artifacts,sample['code'],d,cutoff) for d in (end,date(end.year-1,12,31),date(end.year-2,12,31))]
                 amounts=[Decimal(r['capex_cny']) for r in history];revenues=[Decimal(r['revenue_cny']) for r in history]
                 all_predictions={BASE:amounts[0],'median_capex':median(amounts),'median_intensity':median(c/r for c,r in zip(amounts,revenues))*revenues[0]}
+                all_predictions['recent_trend_half']=max(Decimal(0),2*amounts[0]-amounts[1])
                 if calibrations is not None:all_predictions['lagged_scale_half']=amounts[0]*Decimal(str(calibrations[origin]['multiplier']))
                 predictions={m:all_predictions[m] for m in models};row.update(history=history,forecast_as_of=cutoff,forecasts_cny={m:str(v) for m,v in predictions.items()})
                 # 预测已固定之后才读取目标期；目标缺失仍保留已有预测及拒绝原因。
@@ -110,8 +111,8 @@ def gates(p,rows,model):
 
 
 def study(p,source,phase,selection=None):
-    candidates=CANDIDATES if p['protocol_id']=='tdx-capex-forecast-v1' else ('lagged_scale_half',)
-    if p['protocol_id'] not in ('tdx-capex-forecast-v1','tdx-capex-forecast-v2') or p['baseline']!=BASE or tuple(p['candidates'])!=candidates or source['contract_version']!='tdx-history-source-v1' or p['gates']['require_leave_one_company_out_nonworse'] is not True:raise ValueError('unsupported study')
+    candidates={'tdx-capex-forecast-v1':CANDIDATES,'tdx-capex-forecast-v2':('lagged_scale_half',),'tdx-capex-forecast-v3':('recent_trend_half',)}.get(p['protocol_id'],())
+    if not candidates or p['baseline']!=BASE or tuple(p['candidates'])!=candidates or source['contract_version']!='tdx-history-source-v1' or p['gates']['require_leave_one_company_out_nonworse'] is not True:raise ValueError('unsupported study')
     if phase=='development':models=(BASE,)+candidates
     elif phase=='holdout' and selection and selection['decision']['selected'] in candidates and selection['decision']['verdicts'][selection['decision']['selected']]['passed']:models=(BASE,selection['decision']['selected'])
     else:raise ValueError('holdout requires passing development selection')

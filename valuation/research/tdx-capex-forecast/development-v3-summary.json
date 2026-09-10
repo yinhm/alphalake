@@ -1,0 +1,113 @@
+{
+  "protocol_id": "tdx-capex-forecast-v3",
+  "phase": "development",
+  "summary": {
+    "candidates": 180,
+    "statuses": {
+      "blocked": 22,
+      "evaluated": 158
+    },
+    "models": {
+      "repeat_latest_capex": {
+        "n": 158,
+        "mae_pct_actual_revenue": 4.5261299471177745,
+        "mean_bias_pct_actual_revenue": 0.47138090505765506,
+        "capex_wape_pct": 32.71094439027836
+      },
+      "recent_trend_half": {
+        "n": 158,
+        "mae_pct_actual_revenue": 5.677883897310047,
+        "mean_bias_pct_actual_revenue": 0.4538691049117553,
+        "capex_wape_pct": 36.79149759302845
+      }
+    }
+  },
+  "by_origin": {
+    "2023-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "blocked": 12,
+        "evaluated": 48
+      },
+      "models": {
+        "repeat_latest_capex": {
+          "n": 48,
+          "mae_pct_actual_revenue": 4.955216743560524,
+          "mean_bias_pct_actual_revenue": 1.879577046805837,
+          "capex_wape_pct": 30.178400314841348
+        },
+        "recent_trend_half": {
+          "n": 48,
+          "mae_pct_actual_revenue": 6.285683756938711,
+          "mean_bias_pct_actual_revenue": 2.293900438184101,
+          "capex_wape_pct": 31.764263085987682
+        }
+      }
+    },
+    "2024-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "blocked": 6,
+        "evaluated": 54
+      },
+      "models": {
+        "repeat_latest_capex": {
+          "n": 54,
+          "mae_pct_actual_revenue": 4.828819310463055,
+          "mean_bias_pct_actual_revenue": 0.5493001777468547,
+          "capex_wape_pct": 38.214534305407035
+        },
+        "recent_trend_half": {
+          "n": 54,
+          "mae_pct_actual_revenue": 5.610216245664696,
+          "mean_bias_pct_actual_revenue": 0.05982913674521487,
+          "capex_wape_pct": 43.56198309028909
+        }
+      }
+    },
+    "2025-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "evaluated": 56,
+        "blocked": 4
+      },
+      "models": {
+        "repeat_latest_capex": {
+          "n": 56,
+          "mae_pct_actual_revenue": 3.8664622355124703,
+          "mean_bias_pct_actual_revenue": -0.8107808008196576,
+          "capex_wape_pct": 30.140886644252532
+        },
+        "recent_trend_half": {
+          "n": 56,
+          "mae_pct_actual_revenue": 5.222163538857781,
+          "mean_bias_pct_actual_revenue": -0.743333497161091,
+          "capex_wape_pct": 35.24678012732036
+        }
+      }
+    }
+  },
+  "decision": {
+    "selected": null,
+    "verdicts": {
+      "recent_trend_half": {
+        "passed": false,
+        "checks": {
+          "minimum_pairs": true,
+          "primary_improvement": false,
+          "capex_wape_nonworse": false,
+          "each_period_nonworse": false,
+          "leave_one_company_out_nonworse": false
+        }
+      }
+    }
+  },
+  "boundary": "报告资本开支现金预测，不是净再投资或FCFF；相同三历史窗口分母，亏损不剔除；TDX+FN314后来取得版本研究，不是严格PIT或生产政策",
+  "evidence": {
+    "protocol_sha256": "adb815679213fccdaf342a5f000b637e48fbc331b701280a614b222cbbdf9079",
+    "snapshot_sha256": "3db5fd1f852bba0d45365d8092b1f4195f325184e35eb5801cfbe0c1de19df1c",
+    "code_sha256": "b3997372baf81cc3702abd8dd71e9758ee7c021571b31aba43e48715363c656e",
+    "dependency_sha256": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+    "calibration_dependency_sha256": "386cad4668caa2ee2e6a0fe8e94b11ea551506b90786cb69b8990acdbfea9570"
+  }
+}

@@ -633,3 +633,29 @@ def test_capex_lagged_calibration_keeps_past_forecast_cutoff():
     changed=copy.deepcopy(source)
     next(r for r in changed['records'] if (r['code'],r['period'])==(code,'2024-06-30'))['bits']['FN114']=bits(999e9)
     assert fit_scale(p,changed,'2023-06-30')==training
+
+
+def test_capex_trend_failure_and_forged_selection_cannot_open_holdout(tmp_path,monkeypatch,capsys):
+    import sys
+    import tools.backtest_tdx_capex as module
+    directory=ROOT/'valuation/research/tdx-capex-forecast'
+    p=json.loads((directory/'protocol-v3.json').read_bytes());source=json.loads((directory/'snapshot.json').read_bytes())
+    result=module.study(p,source,'development');expected=json.loads((directory/'development-v3-summary.json').read_bytes())
+    assert {k:v for k,v in result.items() if k!='results'}=={k:v for k,v in expected.items() if k!='evidence'}
+    assert result['decision']['selected'] is None
+    candidate='recent_trend_half'
+    assert not result['decision']['verdicts'][candidate]['checks']['primary_improvement']
+    perfect=copy.deepcopy(result['results'])
+    for r in perfect:
+        if r['status']=='evaluated':r['errors'][candidate]=dict(error_cny='0',error_pct_actual_revenue=0)
+    assert module.gates(p,perfect,candidate)['passed']
+    bad=copy.deepcopy(expected);bad['decision']['selected']=candidate;bad['decision']['verdicts'][candidate]['passed']=True
+    receipt=tmp_path/'forged-selection.json';receipt.write_text(json.dumps(bad))
+    evaluate=module.evaluate
+    def guarded(protocol,snapshot,split,models,calibrations=None):
+        assert split=='development','holdout must not be evaluated after forged selection'
+        return evaluate(protocol,snapshot,split,models,calibrations)
+    monkeypatch.setattr(module,'evaluate',guarded)
+    monkeypatch.setattr(sys,'argv',['backtest_tdx_capex',str(directory/'protocol-v3.json'),str(directory/'snapshot.json'),'--phase','holdout','--selection',str(receipt)])
+    with pytest.raises(SystemExit) as error:module.main()
+    assert error.value.code==1 and 'does not reproduce' in capsys.readouterr().out
