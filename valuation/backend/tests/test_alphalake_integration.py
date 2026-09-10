@@ -687,6 +687,11 @@ def test_batch_industry_rules_gate_age_conflict_and_override(exports,tmp_path,mo
     assert calls==['300866']
     calls.clear();stale=copy.deepcopy(scan);stale['companies'][0]['industry_memberships'][0]['observed_at']=(at-timedelta(days=31)).isoformat()
     assert run_batch(stale,policy,export)['companies'][0]['status']=='blocked_no_reviewed_industry_policy'
+    incomplete=copy.deepcopy(scan);incomplete['companies'][0]['missing_core_fields']=['FN238']
+    blocked=run_batch(incomplete,policy,lambda code:pytest.fail('known core gap must not repeat TTM export'))
+    assert blocked['companies'][0]['missing']==['TDX/FN238']
+    assert blocked['companies'][0]['status']=='blocked_missing_inputs'
+
     assert not calls
     ambiguous=policy.model_copy(deep=True);ambiguous.industry_rules.append(policy.industry_rules[0].model_copy(update={'rule_id':'other'}))
     assert run_batch(scan,ambiguous,export)['companies'][0]['status']=='blocked_ambiguous_industry_policy'

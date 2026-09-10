@@ -94,6 +94,10 @@ def run_batch(readiness, policy, export):
                     row['policy_route']=dict(rule_id=rule.rule_id,classification_evidence=evidence)
             if assignment is not None:
                 row.setdefault('policy_route',dict(kind='explicit_company_assignment'))
+                if isinstance(assignment.policy,BookDCFPolicy) and company['missing_core_fields']:
+                    row.update(status='blocked_missing_inputs',missing=['TDX/'+f for f in company['missing_core_fields']])
+                    results.append(row)
+                    continue
                 try:
                     data = export(code)
                     if data['code'] != code or data['report_period'] != readiness['report_period'] or datetime.fromisoformat(data['information_as_of']) != datetime.fromisoformat(readiness['information_as_of']):
