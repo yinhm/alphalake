@@ -1,0 +1,506 @@
+{
+  "contract_version": "tdx-multi-origin-v1",
+  "protocol_id": "tdx-growth-expanded-v4-lagged-calibration",
+  "phase": "development",
+  "summary": {
+    "total": {
+      "candidates": 120,
+      "statuses": {
+        "blocked": 34,
+        "evaluated": 86
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 86,
+          "ebit_n": 86,
+          "revenue_median_ape_pct": 9.37808194899398,
+          "revenue_mean_bias_pct": 7.591997415246422,
+          "revenue_wape_pct": 11.8892962049206,
+          "margin_mae_pp": 4.435993026109756,
+          "ebit_mae_pct_actual_revenue": 5.230283155682656
+        },
+        "zero_growth": {
+          "revenue_n": 86,
+          "ebit_n": 86,
+          "revenue_median_ape_pct": 12.625332451845075,
+          "revenue_mean_bias_pct": 2.7253743228646674,
+          "revenue_wape_pct": 16.668966822091786,
+          "margin_mae_pp": 4.435993026109756,
+          "ebit_mae_pct_actual_revenue": 5.202806850663691
+        },
+        "bias_half": {
+          "revenue_n": 86,
+          "ebit_n": 86,
+          "revenue_median_ape_pct": 9.37808194899398,
+          "revenue_mean_bias_pct": 7.591997415246422,
+          "revenue_wape_pct": 11.8892962049206,
+          "margin_mae_pp": 4.406317925443587,
+          "ebit_mae_pct_actual_revenue": 5.111265994170905
+        },
+        "bias_full": {
+          "revenue_n": 86,
+          "ebit_n": 86,
+          "revenue_median_ape_pct": 9.37808194899398,
+          "revenue_mean_bias_pct": 7.591997415246422,
+          "revenue_wape_pct": 11.8892962049206,
+          "margin_mae_pp": 4.449025302627908,
+          "ebit_mae_pct_actual_revenue": 5.088100574473992
+        }
+      }
+    },
+    "by_origin": {
+      "2023-06-30": {
+        "candidates": 60,
+        "statuses": {
+          "blocked": 16,
+          "evaluated": 44
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 44,
+            "ebit_n": 44,
+            "revenue_median_ape_pct": 13.54544770300295,
+            "revenue_mean_bias_pct": 13.091331770292818,
+            "revenue_wape_pct": 11.57644330596421,
+            "margin_mae_pp": 4.367571882310692,
+            "ebit_mae_pct_actual_revenue": 5.548684995721894
+          },
+          "zero_growth": {
+            "revenue_n": 44,
+            "ebit_n": 44,
+            "revenue_median_ape_pct": 12.555989474477304,
+            "revenue_mean_bias_pct": 6.2968013450821205,
+            "revenue_wape_pct": 13.125288206892716,
+            "margin_mae_pp": 4.367571882310692,
+            "ebit_mae_pct_actual_revenue": 5.336506941990757
+          },
+          "bias_half": {
+            "revenue_n": 44,
+            "ebit_n": 44,
+            "revenue_median_ape_pct": 13.54544770300295,
+            "revenue_mean_bias_pct": 13.091331770292818,
+            "revenue_wape_pct": 11.57644330596421,
+            "margin_mae_pp": 4.238355396875116,
+            "ebit_mae_pct_actual_revenue": 5.368698659648725
+          },
+          "bias_full": {
+            "revenue_n": 44,
+            "ebit_n": 44,
+            "revenue_median_ape_pct": 13.54544770300295,
+            "revenue_mean_bias_pct": 13.091331770292818,
+            "revenue_wape_pct": 11.57644330596421,
+            "margin_mae_pp": 4.160490907150111,
+            "ebit_mae_pct_actual_revenue": 5.217865402872448
+          }
+        }
+      },
+      "2024-06-30": {
+        "candidates": 60,
+        "statuses": {
+          "blocked": 18,
+          "evaluated": 42
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 42,
+            "ebit_n": 42,
+            "revenue_median_ape_pct": 7.7005657841809,
+            "revenue_mean_bias_pct": 1.830789995674006,
+            "revenue_wape_pct": 12.165987179186963,
+            "margin_mae_pp": 4.507672319613538,
+            "ebit_mae_pct_actual_revenue": 4.896719323260597
+          },
+          "zero_growth": {
+            "revenue_n": 42,
+            "ebit_n": 42,
+            "revenue_median_ape_pct": 12.630150725065228,
+            "revenue_mean_bias_pct": -1.0161206527917122,
+            "revenue_wape_pct": 19.803040029650518,
+            "margin_mae_pp": 4.507672319613538,
+            "ebit_mae_pct_actual_revenue": 5.06274008832105
+          },
+          "bias_half": {
+            "revenue_n": 42,
+            "ebit_n": 42,
+            "revenue_median_ape_pct": 7.7005657841809,
+            "revenue_mean_bias_pct": 1.830789995674006,
+            "revenue_wape_pct": 12.165987179186963,
+            "margin_mae_pp": 4.582278669658176,
+            "ebit_mae_pct_actual_revenue": 4.841574630336998
+          },
+          "bias_full": {
+            "revenue_n": 42,
+            "ebit_n": 42,
+            "revenue_median_ape_pct": 7.7005657841809,
+            "revenue_mean_bias_pct": 1.830789995674006,
+            "revenue_wape_pct": 12.165987179186963,
+            "margin_mae_pp": 4.751299431223696,
+            "ebit_mae_pct_actual_revenue": 4.952156468532752
+          }
+        }
+      }
+    },
+    "by_profit_scope": {
+      "no_financial_fields_detected": {
+        "candidates": 86,
+        "statuses": {
+          "evaluated": 86
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 86,
+            "ebit_n": 86,
+            "revenue_median_ape_pct": 9.37808194899398,
+            "revenue_mean_bias_pct": 7.591997415246422,
+            "revenue_wape_pct": 11.8892962049206,
+            "margin_mae_pp": 4.435993026109756,
+            "ebit_mae_pct_actual_revenue": 5.230283155682656
+          },
+          "zero_growth": {
+            "revenue_n": 86,
+            "ebit_n": 86,
+            "revenue_median_ape_pct": 12.625332451845075,
+            "revenue_mean_bias_pct": 2.7253743228646674,
+            "revenue_wape_pct": 16.668966822091786,
+            "margin_mae_pp": 4.435993026109756,
+            "ebit_mae_pct_actual_revenue": 5.202806850663691
+          },
+          "bias_half": {
+            "revenue_n": 86,
+            "ebit_n": 86,
+            "revenue_median_ape_pct": 9.37808194899398,
+            "revenue_mean_bias_pct": 7.591997415246422,
+            "revenue_wape_pct": 11.8892962049206,
+            "margin_mae_pp": 4.406317925443587,
+            "ebit_mae_pct_actual_revenue": 5.111265994170905
+          },
+          "bias_full": {
+            "revenue_n": 86,
+            "ebit_n": 86,
+            "revenue_median_ape_pct": 9.37808194899398,
+            "revenue_mean_bias_pct": 7.591997415246422,
+            "revenue_wape_pct": 11.8892962049206,
+            "margin_mae_pp": 4.449025302627908,
+            "ebit_mae_pct_actual_revenue": 5.088100574473992
+          }
+        }
+      },
+      "financial_fields_present": {
+        "candidates": 0,
+        "statuses": {},
+        "models": {
+          "current_rule": {
+            "revenue_n": 0,
+            "ebit_n": 0,
+            "revenue_median_ape_pct": null,
+            "revenue_mean_bias_pct": null,
+            "revenue_wape_pct": null,
+            "margin_mae_pp": null,
+            "ebit_mae_pct_actual_revenue": null
+          },
+          "zero_growth": {
+            "revenue_n": 0,
+            "ebit_n": 0,
+            "revenue_median_ape_pct": null,
+            "revenue_mean_bias_pct": null,
+            "revenue_wape_pct": null,
+            "margin_mae_pp": null,
+            "ebit_mae_pct_actual_revenue": null
+          },
+          "bias_half": {
+            "revenue_n": 0,
+            "ebit_n": 0,
+            "revenue_median_ape_pct": null,
+            "revenue_mean_bias_pct": null,
+            "revenue_wape_pct": null,
+            "margin_mae_pp": null,
+            "ebit_mae_pct_actual_revenue": null
+          },
+          "bias_full": {
+            "revenue_n": 0,
+            "ebit_n": 0,
+            "revenue_median_ape_pct": null,
+            "revenue_mean_bias_pct": null,
+            "revenue_wape_pct": null,
+            "margin_mae_pp": null,
+            "ebit_mae_pct_actual_revenue": null
+          }
+        }
+      },
+      "not_evaluated": {
+        "candidates": 34,
+        "statuses": {
+          "blocked": 34
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 0,
+            "ebit_n": 0,
+            "revenue_median_ape_pct": null,
+            "revenue_mean_bias_pct": null,
+            "revenue_wape_pct": null,
+            "margin_mae_pp": null,
+            "ebit_mae_pct_actual_revenue": null
+          },
+          "zero_growth": {
+            "revenue_n": 0,
+            "ebit_n": 0,
+            "revenue_median_ape_pct": null,
+            "revenue_mean_bias_pct": null,
+            "revenue_wape_pct": null,
+            "margin_mae_pp": null,
+            "ebit_mae_pct_actual_revenue": null
+          },
+          "bias_half": {
+            "revenue_n": 0,
+            "ebit_n": 0,
+            "revenue_median_ape_pct": null,
+            "revenue_mean_bias_pct": null,
+            "revenue_wape_pct": null,
+            "margin_mae_pp": null,
+            "ebit_mae_pct_actual_revenue": null
+          },
+          "bias_full": {
+            "revenue_n": 0,
+            "ebit_n": 0,
+            "revenue_median_ape_pct": null,
+            "revenue_mean_bias_pct": null,
+            "revenue_wape_pct": null,
+            "margin_mae_pp": null,
+            "ebit_mae_pct_actual_revenue": null
+          }
+        }
+      }
+    }
+  },
+  "boundary": "简化源数据回溯、一个目的样本的多个起点；非严格PIT或DCF公允价值证明；2025已知结果未用于本轮选择或验证",
+  "calibration_training": {
+    "2023-06-30": {
+      "origin": "2022-06-30",
+      "target": "2023-06-30",
+      "evaluation_as_of": "2023-09-01T00:00:00+08:00",
+      "status": "fitted",
+      "training_pairs": 36,
+      "median_margin_error": 0.008182514348580385,
+      "margin_shift": 0.008182514348580385,
+      "summary": {
+        "candidates": 60,
+        "statuses": {
+          "blocked": 24,
+          "evaluated": 36
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 36,
+            "ebit_n": 36,
+            "revenue_median_ape_pct": 13.42348826049848,
+            "revenue_mean_bias_pct": 19.568340459588683,
+            "revenue_wape_pct": 33.84619020384116,
+            "margin_mae_pp": 8.757193414728622,
+            "ebit_mae_pct_actual_revenue": 19.743389549744165
+          },
+          "zero_growth": {
+            "revenue_n": 36,
+            "ebit_n": 36,
+            "revenue_median_ape_pct": 15.481305794982571,
+            "revenue_mean_bias_pct": 12.430287645565624,
+            "revenue_wape_pct": 25.649843166229424,
+            "margin_mae_pp": 8.757193414728622,
+            "ebit_mae_pct_actual_revenue": 17.393547973837503
+          }
+        }
+      }
+    },
+    "2024-06-30": {
+      "origin": "2023-06-30",
+      "target": "2024-06-30",
+      "evaluation_as_of": "2024-09-01T00:00:00+08:00",
+      "status": "fitted",
+      "training_pairs": 44,
+      "median_margin_error": 0.015157042642748782,
+      "margin_shift": 0.015157042642748782,
+      "summary": {
+        "candidates": 60,
+        "statuses": {
+          "blocked": 16,
+          "evaluated": 44
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 44,
+            "ebit_n": 44,
+            "revenue_median_ape_pct": 13.54544770300295,
+            "revenue_mean_bias_pct": 13.091331770292818,
+            "revenue_wape_pct": 11.57644330596421,
+            "margin_mae_pp": 4.367571882310692,
+            "ebit_mae_pct_actual_revenue": 5.548684995721894
+          },
+          "zero_growth": {
+            "revenue_n": 44,
+            "ebit_n": 44,
+            "revenue_median_ape_pct": 12.555989474477304,
+            "revenue_mean_bias_pct": 6.2968013450821205,
+            "revenue_wape_pct": 13.125288206892716,
+            "margin_mae_pp": 4.367571882310692,
+            "ebit_mae_pct_actual_revenue": 5.336506941990757
+          }
+        }
+      }
+    }
+  },
+  "selection": {
+    "model": null,
+    "gates": {
+      "bias_half": {
+        "passed": false,
+        "checks": {
+          "minimum_pairs": true,
+          "primary_improvement": false,
+          "revenue_wape": true,
+          "period_2023-06-30": true,
+          "period_2024-06-30": true,
+          "company_removal_available": true,
+          "without_000557": true,
+          "without_000716": true,
+          "without_000788": true,
+          "without_000821": true,
+          "without_000925": true,
+          "without_002082": true,
+          "without_002217": true,
+          "without_002265": true,
+          "without_002432": true,
+          "without_002434": true,
+          "without_002462": true,
+          "without_002468": true,
+          "without_002613": true,
+          "without_002723": true,
+          "without_002759": true,
+          "without_300065": true,
+          "without_300095": true,
+          "without_300140": true,
+          "without_300225": true,
+          "without_300449": true,
+          "without_300475": true,
+          "without_300553": true,
+          "without_300650": true,
+          "without_300941": true,
+          "without_301013": true,
+          "without_301040": true,
+          "without_301059": true,
+          "without_301175": true,
+          "without_301221": true,
+          "without_301282": true,
+          "without_301305": true,
+          "without_301687": true,
+          "without_600033": true,
+          "without_600327": true,
+          "without_600359": true,
+          "without_600458": true,
+          "without_600469": true,
+          "without_600487": true,
+          "without_600538": true,
+          "without_600580": true,
+          "without_600590": true,
+          "without_600860": true,
+          "without_603076": true,
+          "without_603127": true,
+          "without_603169": true,
+          "without_603183": true,
+          "without_603728": true,
+          "without_603798": true,
+          "without_603833": true,
+          "without_603836": true,
+          "without_605567": true,
+          "without_688082": true,
+          "without_688256": true,
+          "without_688551": true,
+          "without_688591": true,
+          "without_688608": true,
+          "without_688610": true,
+          "without_688622": true,
+          "without_688663": true,
+          "without_688790": true
+        }
+      },
+      "bias_full": {
+        "passed": false,
+        "checks": {
+          "minimum_pairs": true,
+          "primary_improvement": false,
+          "revenue_wape": true,
+          "period_2023-06-30": true,
+          "period_2024-06-30": true,
+          "company_removal_available": true,
+          "without_000557": true,
+          "without_000716": true,
+          "without_000788": true,
+          "without_000821": true,
+          "without_000925": true,
+          "without_002082": true,
+          "without_002217": true,
+          "without_002265": true,
+          "without_002432": true,
+          "without_002434": true,
+          "without_002462": true,
+          "without_002468": true,
+          "without_002613": true,
+          "without_002723": true,
+          "without_002759": true,
+          "without_300065": true,
+          "without_300095": true,
+          "without_300140": true,
+          "without_300225": true,
+          "without_300449": true,
+          "without_300475": true,
+          "without_300553": true,
+          "without_300650": true,
+          "without_300941": true,
+          "without_301013": true,
+          "without_301040": true,
+          "without_301059": true,
+          "without_301175": true,
+          "without_301221": true,
+          "without_301282": true,
+          "without_301305": true,
+          "without_301687": true,
+          "without_600033": true,
+          "without_600327": true,
+          "without_600359": true,
+          "without_600458": true,
+          "without_600469": true,
+          "without_600487": true,
+          "without_600538": true,
+          "without_600580": true,
+          "without_600590": true,
+          "without_600860": true,
+          "without_603076": true,
+          "without_603127": true,
+          "without_603169": true,
+          "without_603183": true,
+          "without_603728": true,
+          "without_603798": true,
+          "without_603833": true,
+          "without_603836": true,
+          "without_605567": true,
+          "without_688082": true,
+          "without_688256": true,
+          "without_688551": true,
+          "without_688591": true,
+          "without_688608": true,
+          "without_688610": true,
+          "without_688622": true,
+          "without_688663": true,
+          "without_688790": true
+        }
+      }
+    },
+    "status": "no_candidate_passed_development"
+  },
+  "evidence": {
+    "protocol_sha256": "5edd469a2f27c362b5657eaee75af125853cc3381342bf173387f98226ccd294",
+    "snapshot_sha256": "2377d75942c33f816213335612bcf85676e790333de3e35604203aee6011107b",
+    "rule_code_sha256": "fb303384e981648b3c9f91d1ee2ceaab5503812e3bfb60c908244e4f3c246c2a",
+    "base_backtest_sha256": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+    "code_sha256": "dfeb92e50795faaf2a348d6155ccd08bdaade952cafac75d16c1832c86c77685"
+  }
+}
