@@ -29,7 +29,7 @@ func write(path string, b []byte) {
 }
 func main() {
 	if len(os.Args) != 4 {
-		panic("usage: go run ./valuation/research/tdx-history/prepare.go study.json source-manifest.json NEW_ARCHIVE_DIR")
+		panic("usage: go run ./cmd/prepare-tdx-history study.json source-manifest.json NEW_ARCHIVE_DIR")
 	}
 	studyRaw, e := os.ReadFile(os.Args[1])
 	check(e)

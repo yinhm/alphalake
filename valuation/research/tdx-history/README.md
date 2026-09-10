@@ -14,6 +14,8 @@
 
 FN506/509/510的TTM或FN413期末非零只产生`financial_scope_flags`及`profit_scope=financial_fields_present`研究分组，零字段不证明没有兼营。这6家是茅台、伊利、双汇、美的、格力、三一；它们的代理利润仍包含未拆分金融业务，`profit_basis=consolidated_adjusted_ebit_proxy`不代表纯实业EBIT，不推广为银行/保险公司的模型。分组依据含起点与实际期字段，是回溯评价信号，不是当时已知的行业分类。
 
+工具代码分别位于[`cmd/prepare-tdx-history`](../../../cmd/prepare-tdx-history/main.go)（Go数据准备）和[`valuation/backend/tools/backtest_tdx_history.py`](../../backend/tools/backtest_tdx_history.py)（Python回溯）；本目录只保存研究配置、证据与结果。
+
 ## 复现
 
 已有依赖的Python，在`valuation/backend`运行：
@@ -30,7 +32,7 @@ python -m tools.backtest_tdx_history ../research/tdx-history/study.json \
 准备来源清单JSON数组，每项为`file`（如gpcw20240331.zip）、`path`（已下载原包路径）、`list`（对应原gpcw.txt路径）、`fetched_at`（带时区的真实取得时间）。路径相对执行目录或使用绝对路径。在仓库根目录：
 
 ```bash
-go run ./valuation/research/tdx-history/prepare.go \
+go run ./cmd/prepare-tdx-history \
   valuation/research/tdx-history/study.json /absolute/source-manifest.json \
   /absolute/new-archive-directory
 ```
