@@ -1,0 +1,105 @@
+{
+  "audit_date": "2026-09-10",
+  "database": "workspace/auto-valuation-20260909/market.duckdb",
+  "access": "DuckDB ATTACH AS alphalake (READ_ONLY); USE alphalake",
+  "queries": {
+    "standard_periods": "SELECT CAST(report_period AS VARCHAR) period,count(*) facts,count(DISTINCT instrument_id) instruments,count(DISTINCT instrument_id) FILTER(WHERE source_provider_field='FN230') revenue_instruments FROM fundamental.fact GROUP BY report_period ORDER BY report_period",
+    "provider_periods": "SELECT CAST(report_period AS VARCHAR) period,count(DISTINCT provider_code) codes FROM fundamental.provider_fact WHERE provider_field='FN230' GROUP BY report_period ORDER BY report_period",
+    "observation_bounds": "SELECT CAST(min(ingested_at) AS VARCHAR) first_standard_ingestion,CAST(max(ingested_at) AS VARCHAR) last_standard_ingestion,CAST(min(announcement_time) AS VARCHAR) first_announcement,CAST(max(announcement_time) AS VARCHAR) last_announcement FROM fundamental.fact",
+    "source_observations": "SELECT CAST(min(a.fetched_at) AS VARCHAR) earliest_retained_artifact_fetch,CAST(max(a.fetched_at) AS VARCHAR) latest_retained_artifact_fetch,count(DISTINCT a.artifact_id) artifacts FROM meta.artifact a JOIN (SELECT DISTINCT artifact_id FROM fundamental.provider_fact WHERE provider_field='FN230') p USING(artifact_id)",
+    "schema": "SELECT max(version) AS schema_version FROM meta.schema_version"
+  },
+  "results": {
+    "observation_bounds": [
+      {
+        "first_announcement": "2025-04-08 16:00:00+00",
+        "first_standard_ingestion": "2026-09-10 06:58:36.39414+00",
+        "last_announcement": "2026-09-05 16:00:00+00",
+        "last_standard_ingestion": "2026-09-10 06:58:36.39414+00"
+      }
+    ],
+    "provider_periods": [
+      {
+        "codes": 5401,
+        "period": "2025-03-31"
+      },
+      {
+        "codes": 5538,
+        "period": "2025-06-30"
+      },
+      {
+        "codes": 5464,
+        "period": "2025-09-30"
+      },
+      {
+        "codes": 5559,
+        "period": "2025-12-31"
+      },
+      {
+        "codes": 5541,
+        "period": "2026-03-31"
+      },
+      {
+        "codes": 5559,
+        "period": "2026-06-30"
+      }
+    ],
+    "schema": [
+      {
+        "schema_version": 37
+      }
+    ],
+    "source_observations": [
+      {
+        "artifacts": 6,
+        "earliest_retained_artifact_fetch": "2026-09-09 23:09:57.583031+00",
+        "latest_retained_artifact_fetch": "2026-09-09 23:09:57.583031+00"
+      }
+    ],
+    "standard_periods": [
+      {
+        "facts": 313890,
+        "instruments": 5355,
+        "period": "2025-03-31",
+        "revenue_instruments": 5355
+      },
+      {
+        "facts": 351037,
+        "instruments": 5363,
+        "period": "2025-06-30",
+        "revenue_instruments": 5363
+      },
+      {
+        "facts": 316718,
+        "instruments": 5391,
+        "period": "2025-09-30",
+        "revenue_instruments": 5391
+      },
+      {
+        "facts": 357676,
+        "instruments": 5453,
+        "period": "2025-12-31",
+        "revenue_instruments": 5453
+      },
+      {
+        "facts": 321589,
+        "instruments": 5480,
+        "period": "2026-03-31",
+        "revenue_instruments": 5480
+      },
+      {
+        "facts": 362245,
+        "instruments": 5527,
+        "period": "2026-06-30",
+        "revenue_instruments": 5527
+      }
+    ]
+  },
+  "raw_result_sha256": "47b92c061e78ec0a813f4e75f171412324f69ceb53bd3f08ccb715708281a823",
+  "boundaries": [
+    "主库留存覆盖审计，不是预测误差或原文逐公司验收",
+    "ingested_at为当前物化记录时间，不据此推断首次取得",
+    "源artifact取得不证明历史报告期当时已留存该版本"
+  ],
+  "next_step": "补固定样本2024Q1至Q4的TDX→公告→标准链，尝试2025H1起点至2026H1一年复验；先核验源版本可用性"
+}
