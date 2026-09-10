@@ -1,0 +1,79 @@
+# 统一公司估值入口
+
+`tools.company_valuation` 从实际数据库扫描证券身份、读取一次标准估值输入，按显式提供的政策集合计算候选结果并输出JSON。复用`run_batch`、参考版本选择及共享估值引擎；不启动HTTP服务，不读取样本PDF直算，不自动发现或批准目录中的政策。
+
+## 使用
+
+在`valuation/backend`下，使用已安装后端依赖的Python。行业政策可按[全市场运行说明](a-share-automation-acceptance-20260910.md)展开；`--policy`接受现有`BatchPolicy`格式，可重复传入不同版本。
+
+```bash
+python -m tools.company_valuation /absolute/market.duckdb 300866 \
+  --period 2026-06-30 --as-of 2026-09-10T04:42:23Z \
+  --policy data/combined-policy.json \
+  --reference-database /absolute/references.duckdb > company.json
+```
+
+将已有双公司专项政策装入单独配置，无需复制计算逻辑：
+
+```python
+import json
+from pathlib import Path
+bundle = dict(policy_version='reviewed-companies-2026H1-v1',
+              review_note='已审核双公司政策，实际输入和时点仍须通过检查', assignments={})
+for code, filename in [('300866', 'anker-2026H1-revised.json'),
+                       ('600519', 'moutai-2026H1-central.json')]:
+    bundle['assignments'][code] = dict(policy=json.loads(Path('../examples', filename).read_text()))
+Path('data/reviewed-policy.json').write_text(json.dumps(bundle, ensure_ascii=False, indent=2))
+```
+
+然后同时传入`--policy data/combined-policy.json --policy data/reviewed-policy.json`。这是安克7.5%固定WACC的修正专项政策，不是173.75元所用的市场WACC/债务现值政策；后者须按既有`Assignment.wacc_binding`提供匹配的参考及市场资本输入，不能靠改政策名称替换。
+
+默认选择规则：
+
+1. 本地证券身份或源记录冲突先阻断。
+2. 配置中有该代码的显式公司assignment时，优先于行业配置；不等于程序自动认定该政策更准确。
+3. 同级多个公司配置，或多个命中/待核验的行业候选，返回`blocked_ambiguous_policy`；不按价格高低或文件顺序选取。
+4. 公司政策过期、缺补充输入或不适用时，保留其阻断；行业候选即使成功也不会悄悄成为默认结果。
+5. 可用`--select reviewed-companies-2026H1-v1`显式选择传入的版本。被选政策仍执行全部生产校验，不会因手动选择绕过缺项和时点规则。
+
+同一份BatchPolicy内部沿用现有公司assignment优先、公司排除优先及行业歧义拒绝规则。若要并列展示专项和行业结果，应提供独立配置。所有候选都会尝试计算，`--select`只决定顶层选中结果，不跳过候选的校验。
+
+## JSON契约
+
+`contract_version`固定为`alphalake-company-valuation-v1`；stdout只输出JSON，诊断留stderr。CLI语法错误仍遵循argparse的帮助/错误输出。
+
+| 字段 | 含义 |
+| --- | --- |
+| `status` | 选中结果的真实状态，或身份/政策歧义等阻断；`failed_request`表示配置、文件、导出或结果读取失败。 |
+| `code`、`security` | 请求代码及本地标准证券ID、市场、名称、财务状态和缺项；身份不能唯一定位时无`security`。 |
+| `report_period`、`information_as_of` | 明确请求的财报期及带时区信息截止；不是运行当前时间。 |
+| `readiness_sha256`、`universe_count`、`universe_scope` | 完整扫描快照摘要及本地集合分母；实际只计算所选证券。 |
+| `selection` | 选中的`policy_version`和理由；选中阻断政策也保留，`fallback_applied=false`。 |
+| `valuation` | 成功时为紧凑估值摘要，否则为`null`；不能把其他候选的成功值填到这里。 |
+| `candidates` | 每份配置的版本/摘要、类型、实际配置政策、路由、状态、缺项/原因及成功摘要。 |
+| `boundary` | 条件估值及显式政策集合的适用范围。 |
+
+成功摘要含`run_id`、引擎摘要、政策ID/情景、财务与信息时点、`value_per_share`（数值、CNY、CNY/share）、经营企业价值（百万人民币）、WACC（小数比例）、资本结构依据、股本依据、股权桥接、假设、边界及证据文件路径。仅经营价值模型的每股值可以为空，不能当成0。`share_date`仅在财报日股本桥接时直接使用财报期；期后股本情景留空并按运行请求中的市场股本证据追溯，不猜日期。
+
+退出码：`0`选中条件估值成功；`2`身份/数据/政策等业务阻断；`1`运行或请求失败。即使退出非零也先读JSON状态，不把业务拒绝当网络故障自动重试。`--policy`的版本名必须唯一；相同名称的不同内容不能混为候选。
+
+完整请求、输入、政策、参考和计算结果仍按原机制保存到`ALPHALAKE_VALUATION_RUN_DIR`，默认`valuation/backend/data/alphalake_runs`。入口核对保存运行的请求/引擎内容标识及返回值，再输出摘要；这些完整文件不是新建的一套估值事实库。
+
+## 当前边界与验证
+
+这是**实时计算并展示候选**的CLI入口，不是只读检索全部历史结果的服务；重复请求复用同一标准导出供候选计算，但仍重新执行引擎。尚无跨模型自动归因、自动政策批准/跨期延用、MCP或Skill。仍使用现有全本地集合就绪度扫描，单公司首次查询可能较慢；没有新增缓存或常驻任务服务。
+
+离线回归使用真实Go标准链导出的安克/茅台输入，分别复现153.50/1269.02元；行业路由部分为显式合成分类，不冒称新的来源行业验收。覆盖候选顺序不影响结果、同级歧义、显式选择、过期专项不降级、未知证券、重复版本及保存请求篡改拒绝。新增入口不改变任何模型公式、数据库事实或全市场完成率。
+
+真实CLI验收见[运行摘要](acceptance/company-entry-20260910.json)：
+
+| 数据库范围 | 公司 | 默认处理结果 |
+| --- | --- | --- |
+| 全市场主库 | 安克 | 专项缺审核附注，`blocked_missing_inputs`、退出2；行业候选126.14元仍单列，不降级。 |
+| 全市场主库 | 安徽凤凰 | 唯一行业候选9.14元、退出0；与此前验收run ID相同。 |
+| 审核隔离库的迁移副本 | 安克 | 专项153.50元、退出0。 |
+| 审核隔离库的迁移副本 | 茅台 | 专项1269.02元、退出0。 |
+
+隔离原库SHA在复制前后及验收结束保持相同，未改原研究库；主库仅只读查询。主库安克行业候选也与既有run ID相同，说明统一入口没有改变该模型输入或公式。不能把隔离库有附注的成功结果当成主库专项已自动补齐。
+
+验证：Python全套239通过、4项既有外部环境跳过；新增入口定向回归覆盖最终错误JSON字段。`go test ./...`、构建、`go vet ./...`及文档链接/差异检查通过。无依赖、迁移或Go代码变更。

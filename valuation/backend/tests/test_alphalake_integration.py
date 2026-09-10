@@ -968,3 +968,88 @@ def test_capital_reference_binding_and_industry_route(exports,tmp_path,monkeypat
     for change in ({'code':'300866'},{'report_period':'2026-03-31'}):
         bad=copy.deepcopy(rule);bad['capital_policy'].update(change)
         with pytest.raises(ValueError):BatchPolicy(policy_version='bad',review_note='bad',assignments={},industry_rules=[bad])
+
+
+def test_company_entry_selection_summary_and_no_fallback(exports,tmp_path,monkeypatch):
+    from tools.batch_valuate_alphalake import BatchPolicy
+    from tools.company_valuation import company_valuation
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    data=exports['300866']
+    company=dict(instrument_id=data['facts'][0]['instrument_id'],name='安克创新',symbols=['sz300866'],exchange_mic='XSHE',
+                 financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[dict(
+                     source='tdx',taxonomy_code='tdx_industry',node_code='test',observed_at=data['information_as_of'],run_finished_at=data['information_as_of'])])
+    scan=dict(contract_version='alphalake-readiness-v1',report_period=data['report_period'],information_as_of=data['information_as_of'],
+              universe_scope='real financial sample with synthetic classification',universe_count=1,companies=[company])
+    profile=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_text())
+    generic=BatchPolicy(policy_version='industry-v1',review_note='synthetic industry routing; real financial input',assignments={},industry_rules=[dict(
+        rule_id='test',source='tdx',taxonomy_code='tdx_industry',node_codes=['test'],max_age_days=30,review_note='test only',policy=profile)])
+    specific=BatchPolicy(policy_version='anker-v2',review_note='reviewed company policy',assignments={'300866':dict(
+        policy=json.loads((REPO/'valuation/examples/anker-2026H1-revised.json').read_text()))})
+    calls=[]
+    def export(code):calls.append(code);return exports[code]
+    result=company_valuation(scan,'300866',[generic,specific],export,tmp_path)
+    assert calls==['300866']  # 两个候选共享同一标准导出。
+    assert result['selection']==dict(policy_version='anker-v2',reason='configured_company_assignment_precedes_industry',fallback_applied=False)
+    assert len(result['candidates'])==2
+    assert result['valuation']['policy_id']=='anker-consolidated-v2'
+    assert round(result['valuation']['value_per_share']['value'],2)==153.50
+    assert result['valuation']['value_per_share']['unit']=='CNY/share'
+    assert result['valuation']['share_date']==data['report_period']
+    assert result['valuation']['historical_fcff_status'] is not None
+    assert Path(result['valuation']['evidence']['run_file']).exists()
+    assert company_valuation(scan,'300866',[specific,generic],export,tmp_path)['valuation']==result['valuation']
+    explicit=company_valuation(scan,'300866',[specific,generic],export,tmp_path,select='industry-v1')
+    assert explicit['selection']['policy_version']=='industry-v1'
+    assert explicit['valuation']['policy_id']=='nonfinancial-history-fcff-v1'
+    # 同级专项绝不按价格或传入顺序取一个。
+    other=specific.model_copy(update={'policy_version':'another-reviewed-scenario'})
+    ambiguous=company_valuation(scan,'300866',[specific,other],export,tmp_path)
+    assert ambiguous['status']=='blocked_ambiguous_policy' and ambiguous['valuation'] is None
+    # 过期专项不会悄悄替换为成功行业值。
+    expired=specific.model_copy(deep=True)
+    from datetime import date
+    expired.assignments['300866'].policy.approved_report_period=date(2025,12,31)
+    blocked=company_valuation(scan,'300866',[expired,generic],export,tmp_path)
+    assert blocked['selection']['policy_version']=='anker-v2'
+    assert blocked['status']=='rejected_input_or_policy' and blocked['valuation'] is None
+    assert blocked['candidates'][1]['valuation'] is not None
+    for code in ('999999','abc'):
+        if code=='abc':
+            with pytest.raises(ValueError):company_valuation(scan,code,[specific],export,tmp_path)
+        else:
+            assert company_valuation(scan,code,[specific],lambda _:pytest.fail('unknown identity'),tmp_path)['status']=='blocked_security_identity'
+    with pytest.raises(ValueError,match='uniquely'):
+        company_valuation(scan,'300866',[specific,specific],export,tmp_path)
+    with pytest.raises(ValueError,match='not supplied'):
+        company_valuation(scan,'300866',[specific],export,tmp_path,select='missing')
+    conflict=copy.deepcopy(scan);conflict['companies'][0]['source_conflicts']=[dict(reason='conflicting source rows')]
+    rejected=company_valuation(conflict,'300866',[specific,generic],lambda _:pytest.fail('source conflict must not export'),tmp_path)
+    assert rejected['status']=='blocked_source_record_conflict' and rejected['valuation'] is None
+    cli=subprocess.run([sys.executable,'-m','tools.company_valuation','unused.duckdb','bad-code',
+                        '--period','2026-06-30','--as-of',data['information_as_of'],'--policy','unused.json'],
+                       cwd=REPO/'valuation/backend',text=True,capture_output=True)
+    assert cli.returncode==1
+    failure=json.loads(cli.stdout)
+    assert failure['status']=='failed_request' and failure['valuation'] is None
+    assert failure['code']=='bad-code' and failure['candidates']==[]
+
+
+
+def test_company_entry_moutai_and_corrupt_saved_result(exports,tmp_path,monkeypatch):
+    from tools.batch_valuate_alphalake import BatchPolicy
+    from tools.company_valuation import company_valuation, summarize_run
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    data=exports['600519']
+    company=dict(instrument_id=data['facts'][0]['instrument_id'],name='贵州茅台',symbols=['sh600519'],exchange_mic='XSHG',
+                 financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[])
+    scan=dict(contract_version='alphalake-readiness-v1',report_period=data['report_period'],information_as_of=data['information_as_of'],
+              universe_scope='real financial sample',universe_count=1,companies=[company])
+    policy=BatchPolicy(policy_version='moutai-reviewed-v1',review_note='reviewed company policy',assignments={'600519':dict(
+        policy=json.loads((REPO/'valuation/examples/moutai-2026H1-central.json').read_text()))})
+    result=company_valuation(scan,'600519',[policy],lambda _:data,tmp_path)
+    assert round(result['valuation']['value_per_share']['value'],2)==1269.02
+    run_id=result['valuation']['run_id']
+    row=dict(run_id=run_id,status=result['status'],value_per_share=result['valuation']['value_per_share']['value'])
+    p=tmp_path/(run_id+'.json');saved=json.loads(p.read_text());saved['request']['policy']['scenario']='tampered'
+    p.write_text(json.dumps(saved))
+    with pytest.raises(ValueError,match='differs'):summarize_run(row,tmp_path)

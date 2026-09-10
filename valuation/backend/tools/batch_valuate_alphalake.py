@@ -190,6 +190,22 @@ def run_batch(readiness, policy, export):
         boundary='conditional valuations; independent per-security snapshots; no implied market target')
 
 
+def load_policy(raw_policy, reference_database, alphalake, as_of):
+    """单公司与批次共用参考版本选择；不修改调用方传入的政策。"""
+    raw_policy=dict(raw_policy)
+    if reference_database:
+        if raw_policy.get('wacc_references') is not None:
+            raise ValueError('reference database and embedded reference packet are mutually exclusive')
+        raw_policy['wacc_references']=json.loads(subprocess.check_output([alphalake,'export-wacc-references',
+            reference_database,'--as-of',as_of,'--latest'],text=True,timeout=300))
+    if reference_database and any(r.get('capital_policy') is not None for r in raw_policy.get('industry_rules',[])):
+        if raw_policy.get('capital_references') is not None:
+            raise ValueError('reference database and embedded capital packet are mutually exclusive')
+        raw_policy['capital_references']=json.loads(subprocess.check_output([alphalake,'export-industry-capital',
+            reference_database,'--as-of',as_of],text=True,timeout=300))
+    return BatchPolicy.model_validate(raw_policy)
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('database')
@@ -200,18 +216,10 @@ def main():
     parser.add_argument('--alphalake',default=str(Path(__file__).resolve().parents[3]/'alphalake'))
     parser.add_argument('--reference-database',help='按同一信息时点自动选择此库四类WACC参考版本')
     args=parser.parse_args()
-    raw_policy=json.loads(Path(args.policy).read_text())
-    if args.reference_database:
-        if raw_policy.get('wacc_references') is not None:
-            parser.error('reference database and embedded reference packet are mutually exclusive')
-        raw_policy['wacc_references']=json.loads(subprocess.check_output([args.alphalake,'export-wacc-references',
-            args.reference_database,'--as-of',args.as_of,'--latest'],text=True,timeout=300))
-    if args.reference_database and any(r.get('capital_policy') is not None for r in raw_policy.get('industry_rules',[])):
-        if raw_policy.get('capital_references') is not None:
-            parser.error('reference database and embedded capital packet are mutually exclusive')
-        raw_policy['capital_references']=json.loads(subprocess.check_output([args.alphalake,'export-industry-capital',
-            args.reference_database,'--as-of',args.as_of],text=True,timeout=300))
-    policy=BatchPolicy.model_validate(raw_policy)
+    try:
+        policy=load_policy(json.loads(Path(args.policy).read_text()),args.reference_database,args.alphalake,args.as_of)
+    except ValueError as error:
+        parser.error(str(error))
     def command(name,*extra):
         return json.loads(subprocess.check_output([args.alphalake,name,args.database,*extra,
             '--period',args.period,'--as-of',args.as_of],text=True,timeout=300))

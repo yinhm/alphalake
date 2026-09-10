@@ -1,0 +1,116 @@
+{
+  "contract_version": "alphalake-company-entry-acceptance-v1",
+  "report_period": "2026-06-30",
+  "information_as_of": "2026-09-10T04:42:23Z",
+  "reviewed_database_copy": {
+    "original": "workspace/wacc-gaps-20260909/financial.duckdb",
+    "sha256": "329ce26d965f97aff75c146962c00966a2a65b5fc057027ef88171df55f2075d",
+    "copy": "workspace/company-entry-20260910/reviewed.duckdb"
+  },
+  "original_database_unchanged": true,
+  "boundary": "主库与审核隔离库分别验收，不把隔离库专项附注计入主库完成率；未改变估值公式。",
+  "results": [
+    {
+      "path": "workspace/company-entry-20260910/anker.json",
+      "sha256": "c66378d3433b9eb6a72957ee2896ca186216d11f7a7f1ed718dee5f23d665aaf",
+      "code": "300866",
+      "status": "blocked_missing_inputs",
+      "selection": {
+        "policy_version": "reviewed-companies-2026H1-v1",
+        "reason": "configured_company_assignment_precedes_industry",
+        "fallback_applied": false
+      },
+      "value_per_share": null,
+      "run_id": null,
+      "candidates": [
+        {
+          "policy_version": "damodaran-nonfinancial-reference-2026H1-v1-bse-proxies-v1",
+          "status": "illustrative_book_equity_scenario",
+          "run_id": "6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b"
+        },
+        {
+          "policy_version": "reviewed-companies-2026H1-v1",
+          "status": "blocked_missing_inputs",
+          "run_id": null
+        }
+      ]
+    },
+    {
+      "path": "workspace/company-entry-20260910/phoenix.json",
+      "sha256": "0fc61344fc43c1fe611b87e9d446784044c3294242ffb9f91d861ea81481add9",
+      "code": "920000",
+      "status": "illustrative_book_equity_scenario",
+      "selection": {
+        "policy_version": "damodaran-nonfinancial-reference-2026H1-v1-bse-proxies-v1",
+        "reason": "unique_industry_candidate",
+        "fallback_applied": false
+      },
+      "value_per_share": {
+        "value": 9.143257412064944,
+        "currency": "CNY",
+        "unit": "CNY/share"
+      },
+      "run_id": "66994eaca654f190aba3b695b313643bfd6c92ce6d1f2511b9dad03d57391545",
+      "candidates": [
+        {
+          "policy_version": "damodaran-nonfinancial-reference-2026H1-v1-bse-proxies-v1",
+          "status": "illustrative_book_equity_scenario",
+          "run_id": "66994eaca654f190aba3b695b313643bfd6c92ce6d1f2511b9dad03d57391545"
+        },
+        {
+          "policy_version": "reviewed-companies-2026H1-v1",
+          "status": "blocked_policy_not_assigned",
+          "run_id": null
+        }
+      ]
+    },
+    {
+      "path": "workspace/company-entry-20260910/reviewed-300866.json",
+      "sha256": "692832247c723a41ab4d6407df776f02663e50aed9142f880714358914102f5e",
+      "code": "300866",
+      "status": "illustrative_valuation_completed",
+      "selection": {
+        "policy_version": "reviewed-companies-2026H1-v1",
+        "reason": "configured_company_assignment_precedes_industry",
+        "fallback_applied": false
+      },
+      "value_per_share": {
+        "value": 153.5042993536252,
+        "currency": "CNY",
+        "unit": "CNY/share"
+      },
+      "run_id": "679cf0368aa2a059e9c1b78cb5c6653734d31d757981e9a0dcf2a677fbe03100",
+      "candidates": [
+        {
+          "policy_version": "reviewed-companies-2026H1-v1",
+          "status": "illustrative_valuation_completed",
+          "run_id": "679cf0368aa2a059e9c1b78cb5c6653734d31d757981e9a0dcf2a677fbe03100"
+        }
+      ]
+    },
+    {
+      "path": "workspace/company-entry-20260910/reviewed-600519.json",
+      "sha256": "80b403b42caf1e2481b253b225cc8742bed3eb86ac0478cd577461bdb2719a52",
+      "code": "600519",
+      "status": "illustrative_valuation_completed",
+      "selection": {
+        "policy_version": "reviewed-companies-2026H1-v1",
+        "reason": "configured_company_assignment_precedes_industry",
+        "fallback_applied": false
+      },
+      "value_per_share": {
+        "value": 1269.0198645679757,
+        "currency": "CNY",
+        "unit": "CNY/share"
+      },
+      "run_id": "40753ca64a86b401eb0ef6411eae27ceaefe8f170bedbdd9631636d0f2a9c11c",
+      "candidates": [
+        {
+          "policy_version": "reviewed-companies-2026H1-v1",
+          "status": "illustrative_valuation_completed",
+          "run_id": "40753ca64a86b401eb0ef6411eae27ceaefe8f170bedbdd9631636d0f2a9c11c"
+        }
+      ]
+    }
+  ]
+}
