@@ -513,3 +513,31 @@ def test_depreciation_scope_reconciliation_and_tampering():
     bad=copy.deepcopy(source)
     next(r for r in bad['records'] if (r['code'],r['period'])==('688648','2025-12-31'))['bits']['FN581']=bits(529.9)
     with pytest.raises(ValueError,match='combined-row'):verify(ledger,directory,bad)
+
+
+def test_cash_bridge_keeps_residual_and_quarter_rounding_limits():
+    from tools.verify_tdx_depreciation import verify
+    directory=ROOT/'valuation/research/tdx-growth-expanded/depreciation-review-688648'
+    ledger=json.loads((directory/'cash-evidence.json').read_bytes())
+    source=json.loads((directory.parent/'snapshot-reinvestment.json').read_bytes())
+    result=verify(ledger,directory,source)
+    expected=json.loads((directory/'cash-reconciled.json').read_bytes())
+    assert result=={k:v for k,v in expected.items() if k!='evidence'}
+    assert result['actual_fcff'] is None
+    ttm=result['cash_bridge_ttm']['source']
+    assert Decimal(ttm['operating_cashflow'])==Decimal('-312692516')
+    assert Decimal(ttm['working_capital_cash_adjustment'])==Decimal('-287512928')
+    assert Decimal(ttm['unclassified_other_adjustments'])==Decimal('5582351.8076171875')
+    assert [len(r['cash_bridge']['ocf_quarters']) for r in result['periods']]==[2,4,2]
+    bad=copy.deepcopy(ledger);bad['reports'][0]['cash_rows'].pop()
+    with pytest.raises(ValueError,match='rows incomplete'):verify(bad,directory,source)
+    bad=copy.deepcopy(ledger);bad['reports'][0]['cash_rows'][1]['values'][0]='0.00'
+    with pytest.raises(ValueError,match='amounts'):verify(bad,directory,source)
+    bad=copy.deepcopy(source)
+    next(r for r in bad['records'] if (r['code'],r['period'])==('688648','2025-06-30'))['bits']['FN146']^=1
+    with pytest.raises(ValueError,match='cash TDX bits'):verify(ledger,directory,bad)
+    bad=copy.deepcopy(source)
+    next(r for r in bad['records'] if (r['code'],r['period'])==('688648','2025-03-31'))['bits']['FN234']=bits(0)
+    with pytest.raises(ValueError,match='rounding bound'):verify(ledger,directory,bad)
+    bad=copy.deepcopy(ledger);bad['evaluation_as_of']='2026-07-01T00:00:00+08:00'
+    with pytest.raises(ValueError,match='cutoff'):verify(bad,directory,source)

@@ -1,0 +1,403 @@
+{
+  "code": "688648",
+  "period": "2026-06-30",
+  "status": "reported_depreciation_scope_reconciled",
+  "periods": [
+    {
+      "period": "2025-06-30",
+      "fn136_components": [
+        "ppe",
+        "investment_property"
+      ],
+      "source_inputs": [
+        {
+          "field": "FN136",
+          "source_bits": 1268056688,
+          "multiplier": 1,
+          "value_cny": "19530976",
+          "artifact": "gpcw20250630.zip"
+        },
+        {
+          "field": "FN137",
+          "source_bits": 1240395715,
+          "multiplier": 1,
+          "value_cny": "1957368.375",
+          "artifact": "gpcw20250630.zip"
+        },
+        {
+          "field": "FN138",
+          "source_bits": 1191790213,
+          "multiplier": 1,
+          "value_cny": "35142.51953125",
+          "artifact": "gpcw20250630.zip"
+        },
+        {
+          "field": "FN581",
+          "source_bits": 1132853330,
+          "multiplier": 10000,
+          "value_cny": "2679400.02441406250000",
+          "artifact": "gpcw20250630.zip"
+        }
+      ],
+      "unconsumed_source_fields": {
+        "FN579": "included_in_FN136"
+      },
+      "reported_da_cny": "24202886.91894531250000",
+      "pdf_reported_da_cny": "24202927.43",
+      "source_minus_pdf_cny": "-40.51105468750000",
+      "cash_bridge": {
+        "checked_source_inputs": [
+          {
+            "field": "FN146",
+            "source_bits": 3434709460,
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "field": "FN147",
+            "source_bits": 1301688234,
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "field": "FN148",
+            "source_bits": 3433453250,
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "field": "FN114",
+            "source_bits": 1285643320,
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "field": "FN92",
+            "source_bits": 1313081902,
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "field": "FN93",
+            "source_bits": 1291012056,
+            "artifact": "gpcw20250630.zip"
+          }
+        ],
+        "ocf_quarters": [
+          {
+            "period": "2025-06-30",
+            "artifact": "gpcw20250630.zip",
+            "field": "FN234",
+            "source_bits": 1286521411,
+            "value_cny": "91623960"
+          },
+          {
+            "period": "2025-03-31",
+            "artifact": "gpcw20250331.zip",
+            "field": "FN234",
+            "source_bits": 3437449394,
+            "value_cny": "-119178640"
+          }
+        ],
+        "ocf_rounding_bound_cny": "8.01",
+        "source": {
+          "operating_cashflow": "-27554680",
+          "net_income_derived": "694701248",
+          "reported_da": "24202886.91894531250000",
+          "working_capital_cash_adjustment": "130494608",
+          "unclassified_other_adjustments": "-876953422.91894531250000",
+          "capex_cash": "84599232",
+          "reported_ocf_less_capex": "-112153912"
+        },
+        "pdf": {
+          "operating_cashflow": "-27554677.38",
+          "net_income_derived": "694701224.60",
+          "reported_da": "24202927.43",
+          "working_capital_cash_adjustment": "130494599.33",
+          "unclassified_other_adjustments": "-876953428.74",
+          "capex_cash": "84599235.43",
+          "reported_ocf_less_capex": "-112153912.81"
+        },
+        "tax_note": {
+          "current_income_tax_expense": "104165743.29",
+          "deferred_income_tax_expense": "23383380.52"
+        },
+        "status": "partial_cash_reconciliation_not_classified_FCFF"
+      }
+    },
+    {
+      "period": "2025-12-31",
+      "fn136_components": [
+        "ppe",
+        "investment_property",
+        "right_of_use"
+      ],
+      "source_inputs": [
+        {
+          "field": "FN136",
+          "source_bits": 1279011936,
+          "multiplier": 1,
+          "value_cny": "49328512",
+          "artifact": "gpcw20251231.zip"
+        },
+        {
+          "field": "FN137",
+          "source_bits": 1247646147,
+          "multiplier": 1,
+          "value_cny": "3630192.75",
+          "artifact": "gpcw20251231.zip"
+        },
+        {
+          "field": "FN138",
+          "source_bits": 1219725608,
+          "multiplier": 1,
+          "value_cny": "367689.25",
+          "artifact": "gpcw20251231.zip"
+        }
+      ],
+      "unconsumed_source_fields": {
+        "FN579": "included_in_FN136",
+        "FN581": "included_in_FN136"
+      },
+      "reported_da_cny": "53326394.00",
+      "pdf_reported_da_cny": "53326394.25",
+      "source_minus_pdf_cny": "-0.25",
+      "cash_bridge": {
+        "checked_source_inputs": [
+          {
+            "field": "FN146",
+            "source_bits": 3448413439,
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "field": "FN147",
+            "source_bits": 3436470274,
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "field": "FN148",
+            "source_bits": 1302825700,
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "field": "FN114",
+            "source_bits": 1294747134,
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "field": "FN92",
+            "source_bits": 1311908059,
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "field": "FN93",
+            "source_bits": 1290120458,
+            "artifact": "gpcw20251231.zip"
+          }
+        ],
+        "ocf_quarters": [
+          {
+            "period": "2025-12-31",
+            "artifact": "gpcw20251231.zip",
+            "field": "FN234",
+            "source_bits": 3438212881,
+            "value_cny": "-125286536"
+          },
+          {
+            "period": "2025-09-30",
+            "artifact": "gpcw20250930.zip",
+            "field": "FN234",
+            "source_bits": 3432305604,
+            "value_cny": "-78028320"
+          },
+          {
+            "period": "2025-06-30",
+            "artifact": "gpcw20250630.zip",
+            "field": "FN234",
+            "source_bits": 1286521411,
+            "value_cny": "91623960"
+          },
+          {
+            "period": "2025-03-31",
+            "artifact": "gpcw20250331.zip",
+            "field": "FN234",
+            "source_bits": 3437449394,
+            "value_cny": "-119178640"
+          }
+        ],
+        "ocf_rounding_bound_cny": "16.01",
+        "source": {
+          "operating_cashflow": "-230869536",
+          "net_income_derived": "626708080",
+          "reported_da": "53326394.00",
+          "working_capital_cash_adjustment": "-50676592",
+          "unclassified_other_adjustments": "-860227418.00",
+          "capex_cash": "180641760",
+          "reported_ocf_less_capex": "-411511296"
+        },
+        "pdf": {
+          "operating_cashflow": "-230869531.82",
+          "net_income_derived": "626708071.09",
+          "reported_da": "53326394.25",
+          "working_capital_cash_adjustment": "-50676582.80",
+          "unclassified_other_adjustments": "-860227414.36",
+          "capex_cash": "180641754.35",
+          "reported_ocf_less_capex": "-411511286.17"
+        },
+        "tax_note": {
+          "current_income_tax_expense": "103245229.39",
+          "deferred_income_tax_expense": "17171107.04"
+        },
+        "status": "partial_cash_reconciliation_not_classified_FCFF"
+      }
+    },
+    {
+      "period": "2026-06-30",
+      "fn136_components": [
+        "ppe",
+        "investment_property"
+      ],
+      "source_inputs": [
+        {
+          "field": "FN136",
+          "source_bits": 1271366231,
+          "multiplier": 1,
+          "value_cny": "26150062",
+          "artifact": "gpcw20260630.zip"
+        },
+        {
+          "field": "FN137",
+          "source_bits": 1240544090,
+          "multiplier": 1,
+          "value_cny": "1975915.25",
+          "artifact": "gpcw20260630.zip"
+        },
+        {
+          "field": "FN138",
+          "source_bits": 1226157177,
+          "multiplier": 1,
+          "value_cny": "613063.5625",
+          "artifact": "gpcw20260630.zip"
+        },
+        {
+          "field": "FN581",
+          "source_bits": 1133097124,
+          "multiplier": 10000,
+          "value_cny": "2753800.0488281250000",
+          "artifact": "gpcw20260630.zip"
+        }
+      ],
+      "unconsumed_source_fields": {
+        "FN579": "included_in_FN136"
+      },
+      "reported_da_cny": "31492840.8613281250000",
+      "pdf_reported_da_cny": "31492819.47",
+      "source_minus_pdf_cny": "21.3913281250000",
+      "cash_bridge": {
+        "checked_source_inputs": [
+          {
+            "field": "FN146",
+            "source_bits": 1284374603,
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "field": "FN147",
+            "source_bits": 1266839692,
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "field": "FN148",
+            "source_bits": 3443308685,
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "field": "FN114",
+            "source_bits": 1261462560,
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "field": "FN92",
+            "source_bits": 3418027766,
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "field": "FN93",
+            "source_bits": 3381186146,
+            "artifact": "gpcw20260630.zip"
+          }
+        ],
+        "ocf_quarters": [
+          {
+            "period": "2026-06-30",
+            "artifact": "gpcw20260630.zip",
+            "field": "FN234",
+            "source_bits": 3426594409,
+            "value_cny": "-49723812"
+          },
+          {
+            "period": "2026-03-31",
+            "artifact": "gpcw20260331.zip",
+            "field": "FN234",
+            "source_bits": 3429076918,
+            "value_cny": "-59653848"
+          }
+        ],
+        "ocf_rounding_bound_cny": "4.01",
+        "source": {
+          "operating_cashflow": "-109377660",
+          "net_income_derived": "-23385119.75",
+          "reported_da": "31492840.8613281250000",
+          "working_capital_cash_adjustment": "-106341728",
+          "unclassified_other_adjustments": "-11143653.1113281250000",
+          "capex_cash": "11559968",
+          "reported_ocf_less_capex": "-120937628"
+        },
+        "pdf": {
+          "operating_cashflow": "-109377659.80",
+          "net_income_derived": "-23385119.98",
+          "reported_da": "31492819.47",
+          "working_capital_cash_adjustment": "-106341736.49",
+          "unclassified_other_adjustments": "-11143622.80",
+          "capex_cash": "11559968.39",
+          "reported_ocf_less_capex": "-120937628.19"
+        },
+        "tax_note": {
+          "current_income_tax_expense": "839143.29",
+          "deferred_income_tax_expense": "-1959859.59"
+        },
+        "status": "partial_cash_reconciliation_not_classified_FCFF"
+      }
+    }
+  ],
+  "coefficients": {
+    "2025-12-31": 1,
+    "2026-06-30": 1,
+    "2025-06-30": -1
+  },
+  "reported_da_ttm_cny": "60616347.94238281250000",
+  "pdf_reported_da_ttm_cny": "60616286.29",
+  "source_minus_pdf_cny": "61.65238281250000",
+  "actual_fcff": null,
+  "boundary": "仅三期合并报表D&A列示；TDX数值逐期按已核对范围聚合，未恢复源精度；未闭合经营分类/税费/非现金再投资，不新增标准事实或估值结论",
+  "cash_bridge_ttm": {
+    "source": {
+      "operating_cashflow": "-312692516",
+      "net_income_derived": "-91378287.75",
+      "reported_da": "60616347.94238281250000",
+      "working_capital_cash_adjustment": "-287512928",
+      "unclassified_other_adjustments": "5582351.80761718750000",
+      "capex_cash": "107602496",
+      "reported_ocf_less_capex": "-420295012"
+    },
+    "pdf": {
+      "operating_cashflow": "-312692514.24",
+      "net_income_derived": "-91378273.49",
+      "reported_da": "60616286.29",
+      "working_capital_cash_adjustment": "-287512918.62",
+      "unclassified_other_adjustments": "5582391.58",
+      "capex_cash": "107602487.31",
+      "reported_ocf_less_capex": "-420295001.55"
+    }
+  },
+  "cash_bridge_status": "partial_cash_reconciliation_not_classified_FCFF",
+  "evidence": {
+    "ledger_sha256": "b67deb1dc5745d8dc24b2c05140afdb49de4c531030e230e8c7405032bd1cc67",
+    "snapshot_sha256": "fade80cf0a11469a96f8fec1ea317a4c88d18a5fd23789946bdfbde621fdf58b",
+    "code_sha256": "a6c809766b4e0174dc88735abfbb71d730196c4f72eb080c263ac4cdd021da36"
+  }
+}

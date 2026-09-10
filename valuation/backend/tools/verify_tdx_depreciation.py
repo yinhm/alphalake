@@ -1,5 +1,6 @@
-"""中邮科技三期折旧列示核验：先闭合逐期范围，再聚合TTM，禁止重复加入分量。"""
+"""中邮科技三期折旧与现金调节核验：先核对逐期范围，再聚合TTM，保留未分类残余。"""
 import argparse
+from datetime import date
 from decimal import Decimal,ROUND_HALF_UP
 import hashlib
 import json
@@ -8,12 +9,50 @@ import re
 import struct
 
 from pypdf import PdfReader
-from tools.backtest_tdx_history import value
+from tools.backtest_tdx_history import value,quarter_periods,available,at
+
+
+
+def cash_bridge(amounts,record,source,code,period,tdx_da,pdf_da,cutoff):
+    expected={'cash_net_income','cash_inventory','cash_receivables','cash_payables','cash_ocf','cash_current_tax','cash_deferred_tax','cash_pretax_profit','cash_capex'}
+    if {k for k in amounts if k.startswith('cash_')}!=expected:raise ValueError('cash bridge rows incomplete')
+    tax=amounts['cash_current_tax']+amounts['cash_deferred_tax']
+    if amounts['cash_pretax_profit']-tax!=amounts['cash_net_income']:raise ValueError('net income/tax identity differs')
+    mapping={'FN146':'cash_inventory','FN147':'cash_receivables','FN148':'cash_payables','FN114':'cash_capex','FN92':'cash_pretax_profit'}
+    checked=[]
+    for field,amount in [(f,amounts[k]) for f,k in mapping.items()]+[('FN93',tax)]:
+        bits=struct.unpack('<I',struct.pack('<f',float(amount)))[0]
+        if record['bits'][field]!=bits:raise ValueError('cash TDX bits differ: '+field)
+        checked.append(dict(field=field,source_bits=bits,artifact=record['artifact']))
+    end=date.fromisoformat(period);ocf=Decimal(0);bound=Decimal('.01');quarters=[]
+    artifacts={a['file']:a for a in source['artifacts']}
+    for p in quarter_periods(end)[:end.month//3]:
+        rows=[r for r in source['records'] if (r['code'],r['period'])==(code,p)]
+        if len(rows)!=1:raise ValueError('cash quarter identity not unique')
+        r=rows[0];a=artifacts[r['artifact']]
+        if a['report_period']!=p or available(r,a)>at(cutoff):raise ValueError('cash quarter period/cutoff differs')
+        n=value(r,'FN234');bits=r['bits']['FN234'];ocf+=n
+        bound+=Decimal(2)**(max(((bits>>23)&255)-127,-126)-24)
+        quarters.append(dict(period=p,artifact=r['artifact'],field='FN234',source_bits=bits,value_cny=str(n)))
+    if abs(ocf-amounts['cash_ocf'])>bound:raise ValueError('quarter OCF exceeds source rounding bound')
+    source_wc=sum((value(record,f) for f in ('FN146','FN147','FN148')),Decimal(0))
+    pdf_wc=sum((amounts[k] for k in ('cash_inventory','cash_receivables','cash_payables')),Decimal(0))
+    source_net=value(record,'FN92')-value(record,'FN93')
+    return dict(checked_source_inputs=checked,ocf_quarters=quarters,ocf_rounding_bound_cny=str(bound),
+                source=dict(operating_cashflow=str(ocf),net_income_derived=str(source_net),reported_da=str(tdx_da),
+                            working_capital_cash_adjustment=str(source_wc),unclassified_other_adjustments=str(ocf-source_net-tdx_da-source_wc),
+                            capex_cash=str(value(record,'FN114')),reported_ocf_less_capex=str(ocf-value(record,'FN114'))),
+                pdf=dict(operating_cashflow=str(amounts['cash_ocf']),net_income_derived=str(amounts['cash_net_income']),reported_da=str(pdf_da),
+                         working_capital_cash_adjustment=str(pdf_wc),unclassified_other_adjustments=str(amounts['cash_ocf']-amounts['cash_net_income']-pdf_da-pdf_wc),
+                         capex_cash=str(amounts['cash_capex']),reported_ocf_less_capex=str(amounts['cash_ocf']-amounts['cash_capex'])),
+                tax_note=dict(current_income_tax_expense=str(amounts['cash_current_tax']),deferred_income_tax_expense=str(amounts['cash_deferred_tax'])),
+                status='partial_cash_reconciliation_not_classified_FCFF')
 
 
 def verify(ledger,directory,source):
     if ledger['code']!='688648' or {r['period'] for r in ledger['reports']}!={'2025-06-30','2025-12-31','2026-06-30'} or len(ledger['reports'])!=3:
         raise ValueError('unsupported company/period scope')
+    if any('cash_rows' in r for r in ledger['reports']) and not all('cash_rows' in r for r in ledger['reports']):raise ValueError('partial cash report set')
     results=[]
     for report in ledger['reports']:
         path=Path(directory)/report['file']
@@ -25,7 +64,7 @@ def verify(ledger,directory,source):
         expected_title='中邮科技股份有限公司'+report['period'][:4]+('年年度报告' if report['period'].endswith('12-31') else '年半年度报告')
         if ledger['code'] not in text(1) or report['title']!=expected_title or expected_title not in text(1):raise ValueError('company/title differs')
         amounts={}
-        for row in report['rows']:
+        for row in report['rows']+report.get('cash_rows',[]):
             header=text(row['header_page']).replace(':','：')
             if row['header_label'] not in header or '单位：元币种：人民币' not in header:raise ValueError('section/unit differs')
             body=text(row['page'])
@@ -65,12 +104,18 @@ def verify(ledger,directory,source):
         pdf_total=amounts['cf_depreciation']+amounts['cf_intangible']+amounts['cf_deferred']+(0 if included_rou else amounts['cf_rou'])
         results.append(dict(period=report['period'],fn136_components=expected_components,source_inputs=consumed,
                             unconsumed_source_fields=combined,reported_da_cny=str(tdx_total),pdf_reported_da_cny=str(pdf_total),source_minus_pdf_cny=str(tdx_total-pdf_total)))
+        if 'cash_rows' in report:
+            results[-1]['cash_bridge']=cash_bridge(amounts,record,source,ledger['code'],report['period'],tdx_total,pdf_total,ledger['evaluation_as_of'])
     by_period={r['period']:r for r in results};coefficients={'2025-12-31':1,'2026-06-30':1,'2025-06-30':-1}
     tdx_ttm=sum((Decimal(by_period[p]['reported_da_cny'])*c for p,c in coefficients.items()),Decimal(0))
     pdf_ttm=sum((Decimal(by_period[p]['pdf_reported_da_cny'])*c for p,c in coefficients.items()),Decimal(0))
-    return dict(code=ledger['code'],period='2026-06-30',status='reported_depreciation_scope_reconciled',periods=results,coefficients=coefficients,
+    result=dict(code=ledger['code'],period='2026-06-30',status='reported_depreciation_scope_reconciled',periods=results,coefficients=coefficients,
                 reported_da_ttm_cny=str(tdx_ttm),pdf_reported_da_ttm_cny=str(pdf_ttm),source_minus_pdf_cny=str(tdx_ttm-pdf_ttm),
                 actual_fcff=None,boundary='仅三期合并报表D&A列示；TDX数值逐期按已核对范围聚合，未恢复源精度；未闭合经营分类/税费/非现金再投资，不新增标准事实或估值结论')
+    if all('cash_bridge' in r for r in results):
+        result['cash_bridge_ttm']={basis:{k:str(sum((Decimal(by_period[p]['cash_bridge'][basis][k])*c for p,c in coefficients.items()),Decimal(0))) for k in results[0]['cash_bridge'][basis]} for basis in ('source','pdf')}
+        result['cash_bridge_status']='partial_cash_reconciliation_not_classified_FCFF'
+    return result
 
 
 def main():
