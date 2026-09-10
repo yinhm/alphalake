@@ -37,15 +37,16 @@ type CNINFOFilingSource interface {
 }
 
 type CNINFOFilingOptions struct {
-	Code         string
-	StartDate    time.Time
-	EndDate      time.Time
-	PageSize     int
-	WindowDays   int
-	MetadataOnly bool
-	Rescan       bool
-	Now          func() time.Time
-	OnProgress   func(CNINFOFilingProgress)
+	Code           string
+	organizationID string
+	StartDate      time.Time
+	EndDate        time.Time
+	PageSize       int
+	WindowDays     int
+	MetadataOnly   bool
+	Rescan         bool
+	Now            func() time.Time
+	OnProgress     func(CNINFOFilingProgress)
 }
 
 type CNINFOFilingProgress struct {
@@ -135,6 +136,12 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 	defer func() {
 		finalizeTrackedRun(ctx, db, runID, cninfoFilingRunStatus(summary, retErr), &retErr)
 	}()
+	if options.Code != "" {
+		options.organizationID, err = resolveCNINFOOrganization(ctx, db, source, artifactRoot, runID, now, start, end, options.Code, &summary)
+		if err != nil {
+			return summary, err
+		}
+	}
 
 	windows := filingWindows(start, end, windowDays)
 	for index := 0; index < len(windows); index++ {
@@ -147,7 +154,7 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 		// Older checkpoints may omit documents, final pages, or accept repeated pages.
 		checkpointKey := fmt.Sprintf("catalogue-window:v5:metadata-only=%t:%s", options.MetadataOnly, windowName)
 		if options.Code != "" {
-			checkpointKey += ":code=" + options.Code
+			checkpointKey += ":code=" + options.Code + ":org=" + options.organizationID
 		}
 		if !options.Rescan && window.end.Before(dateUTCIngest(now.AddDate(0, 0, -cninfoRecentRescanDays))) {
 			if _, found, err := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, checkpointKey); err != nil {
@@ -235,6 +242,47 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 	return summary, nil
 }
 
+func resolveCNINFOOrganization(ctx context.Context, db *sql.DB, source CNINFOFilingSource, root string, runID int64, now, start, end time.Time, code string, summary *CNINFOFilingSummary) (string, error) {
+	id, err := duckstore.CNINFOOrganizationID(ctx, db, code)
+	if err != nil {
+		return "", err
+	}
+	if id == "" {
+		// 关键词只用于身份发现，不发布其中的公告，也不作为代码目录完成依据。
+		page, raw, fetchErr := source.CataloguePage(ctx, cninfo.CatalogueRequest{Code: code, Page: 1, PageSize: 30, StartDate: start, EndDate: end})
+		if len(raw) > 0 {
+			_, err := artifact.Persist(ctx, db, root, artifact.Input{Source: cninfo.Source, Dataset: cninfoCatalogueArtifactData,
+				SourceLocator: "organization-discovery/" + code + "/" + filingWindowName(start, end) + ".json", FetchedAt: now, MediaType: "application/json", ParserVersion: cninfo.CatalogueParserVersion, IngestRunID: &runID, Content: raw})
+			if err != nil {
+				return "", err
+			}
+			summary.Pages++
+		}
+		if fetchErr != nil {
+			return "", fetchErr
+		}
+		if page.Page != 1 || page.HasMore || page.TotalPages > 1 || len(page.Issues) > 0 || page.TotalRecords != len(page.Filings) {
+			return "", fmt.Errorf("CNINFO organization discovery for %s is incomplete; no identity selected", code)
+		}
+		ids := map[string]bool{}
+		for _, f := range page.Filings {
+			if f.ProviderCode == code && f.ProviderOrgID != "" {
+				ids[f.ProviderOrgID] = true
+			}
+		}
+		if len(ids) != 1 {
+			return "", fmt.Errorf("CNINFO organization discovery for %s found %d identities", code, len(ids))
+		}
+		for value := range ids {
+			id = value
+		}
+	}
+	if err := cninfo.ValidateCatalogueRequest(cninfo.CatalogueRequest{Code: code, OrganizationID: id, Page: 1, PageSize: 30, StartDate: start, EndDate: end}); err != nil {
+		return "", err
+	}
+	return id, nil
+}
+
 type filingWindow struct {
 	start time.Time
 	end   time.Time
@@ -307,7 +355,7 @@ func acquireCNINFOFilingWindow(
 	expectedRows := 0
 	for pageNumber := 1; pageNumber <= 10000; pageNumber++ {
 		page, raw, err := source.CataloguePage(ctx, cninfo.CatalogueRequest{
-			Code: options.Code, Page: pageNumber, PageSize: pageSize, StartDate: start, EndDate: end,
+			Code: options.Code, OrganizationID: options.organizationID, Page: pageNumber, PageSize: pageSize, StartDate: start, EndDate: end,
 		})
 		if err != nil {
 			failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: err})
@@ -315,7 +363,7 @@ func acquireCNINFOFilingWindow(
 		}
 		locator := fmt.Sprintf("periodic/%s/page-%05d-size-%d.json", windowName, pageNumber, pageSize)
 		if options.Code != "" {
-			locator = "security/" + options.Code + "/" + locator
+			locator = "security/" + options.Code + "/org/" + options.organizationID + "/" + locator
 		}
 		stored, err := artifact.Persist(ctx, db, artifactRoot, artifact.Input{
 			Source: cninfo.Source, Dataset: cninfoCatalogueArtifactData,
@@ -331,6 +379,10 @@ func acquireCNINFOFilingWindow(
 			for _, filing := range page.Filings {
 				if filing.ProviderCode != options.Code {
 					failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: fmt.Errorf("CNINFO code query %s returned another security %q", options.Code, filing.ProviderCode)})
+					break
+				}
+				if filing.ProviderOrgID != options.organizationID {
+					failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: fmt.Errorf("CNINFO code query %s returned another organization %q", options.Code, filing.ProviderOrgID)})
 					break
 				}
 			}

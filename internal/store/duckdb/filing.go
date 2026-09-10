@@ -13,6 +13,33 @@ import (
 
 const filingResolverVersion = "filing-identity-v1"
 
+// CNINFOOrganizationID 只复用带原始目录归档的机构标识；不按证券代码拼接机构ID。
+func CNINFOOrganizationID(ctx context.Context, db *sql.DB, code string) (string, error) {
+	rows, err := db.QueryContext(ctx, `SELECT DISTINCT f.provider_org_id FROM fundamental.filing f
+ JOIN meta.artifact a ON a.artifact_id=f.catalogue_artifact_id
+ WHERE f.source='cninfo' AND f.provider_code=? AND coalesce(trim(f.provider_org_id),'')<>''
+ AND a.source='cninfo' AND a.dataset='filing_catalogue'`, code)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+	var id string
+	count := 0
+	for rows.Next() {
+		if err := rows.Scan(&id); err != nil {
+			return "", err
+		}
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		return "", err
+	}
+	if count > 1 {
+		return "", fmt.Errorf("multiple archived CNINFO organizations for %s", code)
+	}
+	return id, nil
+}
+
 type FilingWriteResult struct {
 	Attempted int
 	Inserted  int

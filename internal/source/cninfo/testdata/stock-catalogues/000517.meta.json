@@ -1,0 +1,25 @@
+{
+  "form": {
+    "pageNum": 1,
+    "pageSize": 30,
+    "column": "szse",
+    "tabName": "fulltext",
+    "plate": "",
+    "stock": "000517,gssz0000517",
+    "searchkey": "",
+    "secid": "",
+    "category": "category_ndbg_szsh;category_bndbg_szsh;category_yjdbg_szsh;category_sjdbg_szsh;category_ndbg_bj;category_bndbg_bj;category_yjdbg_bj;category_sjdbg_bj",
+    "trade": "",
+    "seDate": "2025-03-31~2026-09-10",
+    "sortName": "time",
+    "sortType": "desc",
+    "isHLtitle": "true"
+  },
+  "org_evidence": {
+    "gssz0000517": {
+      "path": "workspace/auto-valuation-20260909/raw/cninfo/filing_catalogue/2f/2f87cbb1cbd67735b59f2c9224ed51beaef3ae6ee447c7971c120cfa889d84c5.json",
+      "sha256": "2f87cbb1cbd67735b59f2c9224ed51beaef3ae6ee447c7971c120cfa889d84c5"
+    }
+  },
+  "sha256": "c487616f9bb2c4d09964c3b2714d69809eee6189f4f603c0fb398c5518e8813f"
+}

@@ -93,12 +93,13 @@ func TestRealCNINFOPartialOverlapCannotComplete(t *testing.T) {
 }
 
 type fakeCNINFOFilingSource struct {
-	requests       []cninfo.CatalogueRequest
-	pages          map[int]cninfo.CataloguePage
-	raw            map[int][]byte
-	documents      map[string][]byte
-	catalogueCalls int
-	documentCalls  int
+	foreignStockCode string
+	requests         []cninfo.CatalogueRequest
+	pages            map[int]cninfo.CataloguePage
+	raw              map[int][]byte
+	documents        map[string][]byte
+	catalogueCalls   int
+	documentCalls    int
 }
 
 func (f *fakeCNINFOFilingSource) CataloguePage(_ context.Context, request cninfo.CatalogueRequest) (cninfo.CataloguePage, []byte, error) {
@@ -107,6 +108,10 @@ func (f *fakeCNINFOFilingSource) CataloguePage(_ context.Context, request cninfo
 	page, ok := f.pages[request.Page]
 	if !ok {
 		return cninfo.CataloguePage{}, nil, fmt.Errorf("unexpected page %d", request.Page)
+	}
+	if request.OrganizationID != "" && f.foreignStockCode != "" {
+		page.Filings = append([]domain.FilingObservation(nil), page.Filings...)
+		page.Filings[0].ProviderCode = f.foreignStockCode
 	}
 	return page, append([]byte(nil), f.raw[request.Page]...), nil
 }
@@ -124,11 +129,11 @@ func TestCNINFOCodeCheckpointsAndForeignResponse(t *testing.T) {
 	options := CNINFOFilingOptions{StartDate: day, EndDate: day, MetadataOnly: true, Now: func() time.Time { return time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC) }}
 	root := filepath.Join(t.TempDir(), "raw")
 	for _, code := range []string{"000001", "000002"} {
-		f := domain.FilingObservation{Source: cninfo.Source, SourceFilingID: "test-" + code, ProviderCode: code, Title: "2025年第一季度报告", FilingType: domain.FilingTypeQ1, FilingVariant: domain.FilingVariantFull, ReportPeriod: &period, AnnouncementTime: day, ClassifierVersion: cninfo.FilingClassifierVersion}
+		f := domain.FilingObservation{Source: cninfo.Source, SourceFilingID: "test-" + code, ProviderCode: code, ProviderOrgID: "org" + code, Title: "2025年第一季度报告", FilingType: domain.FilingTypeQ1, FilingVariant: domain.FilingVariantFull, ReportPeriod: &period, AnnouncementTime: day, ClassifierVersion: cninfo.FilingClassifierVersion}
 		source.pages[1] = cninfo.CataloguePage{Page: 1, TotalPages: 1, TotalRecords: 1, Filings: []domain.FilingObservation{f}}
 		options.Code = code
 		result, err := SyncCNINFOFilingsWithOptions(ctx, db, source, root, options)
-		if err != nil || result.SkippedWindows != 0 || source.requests[len(source.requests)-1].Code != code {
+		if err != nil || result.SkippedWindows != 0 || source.requests[len(source.requests)-1].Code != code || source.requests[len(source.requests)-1].OrganizationID != "org"+code {
 			t.Fatalf("scope failed: %+v %v", result, err)
 		}
 	}
@@ -138,16 +143,34 @@ func TestCNINFOCodeCheckpointsAndForeignResponse(t *testing.T) {
 	}
 	options.Code = "000001"
 	result, err := SyncCNINFOFilingsWithOptions(ctx, db, source, root, options)
-	if err != nil || result.SkippedWindows != 1 || source.catalogueCalls != 2 {
+	if err != nil || result.SkippedWindows != 1 || source.catalogueCalls != 4 {
 		t.Fatalf("scoped replay: %+v %v", result, err)
 	}
 	options.Code = "000003"
+	source.pages[1].Filings[0].ProviderCode = "000003"
+	source.pages[1].Filings[0].ProviderOrgID = "org000003"
+	source.foreignStockCode = "000002"
 	result, err = SyncCNINFOFilingsWithOptions(ctx, db, source, root, options)
 	if err == nil || len(result.Failures) != 1 || !strings.Contains(result.Failures[0].Err.Error(), "returned another security") {
 		t.Fatalf("foreign security accepted: %+v %v", result, err)
 	}
-	if _, found, err := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, key+":code=000003"); err != nil || found {
+	if _, found, err := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, key+":code=000003:org=org000003"); err != nil || found {
 		t.Fatalf("foreign response completed: %t %v", found, err)
+	}
+	// 同一代码存在两份有原始归档的机构身份，不能任意择一或继续触网。
+	var artifactID int64
+	if err := db.QueryRowContext(ctx, `SELECT catalogue_artifact_id FROM fundamental.filing WHERE provider_code='000001' LIMIT 1`).Scan(&artifactID); err != nil {
+		t.Fatal(err)
+	}
+	_, err = duckstore.UpsertFilings(ctx, db, 1, []domain.FilingObservation{{Source: cninfo.Source, SourceFilingID: "other-org", ProviderCode: "000001", ProviderOrgID: "different-org", ClassifierVersion: cninfo.FilingClassifierVersion, AnnouncementTime: day, CatalogueArtifactID: artifactID}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	calls := source.catalogueCalls
+	options.Code = "000001"
+	_, err = SyncCNINFOFilingsWithOptions(ctx, db, source, root, options)
+	if err == nil || !strings.Contains(err.Error(), "multiple archived") || source.catalogueCalls != calls {
+		t.Fatalf("ambiguous organization accepted: %v", err)
 	}
 }
 

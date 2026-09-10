@@ -23,11 +23,12 @@ const (
 )
 
 type CatalogueRequest struct {
-	Code      string
-	Page      int
-	PageSize  int
-	StartDate time.Time
-	EndDate   time.Time
+	Code           string
+	OrganizationID string
+	Page           int
+	PageSize       int
+	StartDate      time.Time
+	EndDate        time.Time
 }
 
 type CatalogueIssue struct {
@@ -205,6 +206,7 @@ func normalizeAnnouncement(item rawAnnouncement) (domain.FilingObservation, *Cat
 
 var yearPattern = regexp.MustCompile(`(?:19|20)\d{2}`)
 var securityCodePattern = regexp.MustCompile(`^[0-9]{6}$`)
+var organizationIDPattern = regexp.MustCompile(`^[0-9A-Za-z_-]{1,64}$`)
 
 // ClassifyPeriodicTitle derives report-period semantics only from explicit
 // periodic-report wording. It does not classify forecasts, earnings flashes,
@@ -317,6 +319,9 @@ func containsAny(value string, needles ...string) bool {
 }
 
 func ValidateCatalogueRequest(request CatalogueRequest) error {
+	if request.OrganizationID != "" && (request.Code == "" || !organizationIDPattern.MatchString(request.OrganizationID)) {
+		return errors.New("CNINFO organization requires a security code and a valid opaque ID")
+	}
 	if request.Code != "" && !securityCodePattern.MatchString(request.Code) {
 		return errors.New("CNINFO security code must contain six digits")
 	}

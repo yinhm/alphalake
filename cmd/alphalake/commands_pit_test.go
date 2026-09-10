@@ -28,6 +28,9 @@ func (s *repairCatalogueSource) CataloguePage(ctx context.Context, r cninfo.Cata
 	if r.Code == "000001" {
 		return cninfo.CataloguePage{}, nil, errors.New("simulated first security failure")
 	}
+	if r.OrganizationID == "" {
+		return cninfo.CataloguePage{Page: 1, TotalPages: 1, TotalRecords: 1, Filings: []domain.FilingObservation{{ProviderCode: r.Code, ProviderOrgID: "org" + r.Code}}}, []byte(`{"fixture":"identity-discovery"}`), nil
+	}
 	return cninfo.CataloguePage{Page: 1, TotalPages: 1}, []byte(`{"announcements":[]}`), nil
 }
 func (*repairCatalogueSource) FilingDocumentURL(locator string) (string, error) { return locator, nil }
@@ -47,7 +50,7 @@ func TestRepairFilingsContinuesAndCountsCancellation(t *testing.T) {
 	queries := []duckstore.FilingRepairQuery{{Code: "000001", StartDate: day, MissingPeriods: 1}, {Code: "000002", StartDate: day, MissingPeriods: 1}}
 	source := &repairCatalogueSource{}
 	attempted, failed, err := repairFilingQueries(ctx, db, source, filepath.Join(t.TempDir(), "raw"), queries, day)
-	if err != nil || attempted != 2 || failed != 1 || len(source.calls) != 2 {
+	if err != nil || attempted != 2 || failed != 1 || len(source.calls) != 3 {
 		t.Fatalf("repair did not isolate failure: %d %d %v %v", attempted, failed, err, source.calls)
 	}
 	if err := db.Close(); err != nil {

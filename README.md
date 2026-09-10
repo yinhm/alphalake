@@ -157,7 +157,7 @@ alphalake sync-filings ./alphalake.duckdb
 alphalake materialize-fundamentals ./alphalake.duckdb
 ```
 
-`sync-filings --all` 从 1990-01-01 回填；也可用 `--start YYYY-MM-DD --end YYYY-MM-DD` 指定日期区间。`--metadata-only` 只抓元数据，`--rescan` 强制重扫旧窗口。可加 `--code 600519` 定向补采单只证券，原始响应仍归档，意外返回其他证券则拒绝完成。代码范围、元数据模式和完整文档模式使用独立检查点；旧版未区分范围/模式或未检查部分分页重叠的完成键不会代替当前验收。
+`sync-filings --all` 从 1990-01-01 回填；也可用 `--start YYYY-MM-DD --end YYYY-MM-DD` 指定日期区间。`--metadata-only` 只抓元数据，`--rescan` 强制重扫旧窗口。可加 `--code 600519` 定向补采单只证券：复用目录原始证据中的机构标识，通过 `stock=代码,orgId` 精确筛选；缺失时仅用完整单页关键词响应发现唯一机构，未知或歧义则失败。原始响应仍归档，意外返回其他证券或机构则拒绝完成。代码范围、元数据模式和完整文档模式使用独立检查点；旧版未区分范围/模式或未检查部分分页重叠的完成键不会代替当前验收。
 
 分页检查待解析的财务与公告身份记录：
 

@@ -129,6 +129,10 @@ func (c *Client) CataloguePage(ctx context.Context, request CatalogueRequest) (C
 		"sortType":  {"desc"},
 		"isHLtitle": {"true"},
 	}
+	if request.OrganizationID != "" {
+		form.Set("stock", request.Code+","+request.OrganizationID)
+		form.Set("searchkey", "")
+	}
 	endpoint := c.baseURL.ResolveReference(&url.URL{Path: cataloguePath}).String()
 	headers := map[string]string{
 		"Accept":           "application/json, text/javascript, */*; q=0.01",

@@ -18,6 +18,88 @@ import (
 	"github.com/yinhm/alphalake/internal/domain"
 )
 
+func TestStockCatalogueRealResponses(t *testing.T) {
+	for _, code := range []string{"000001", "000016", "000517", "300124"} {
+		t.Run(code, func(t *testing.T) {
+			var meta struct {
+				Form   map[string]any
+				SHA256 string
+			}
+			data, err := os.ReadFile("testdata/stock-catalogues/" + code + ".meta.json")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err = json.Unmarshal(data, &meta); err != nil {
+				t.Fatal(err)
+			}
+			data, err = os.ReadFile("testdata/stock-catalogues/" + code + ".json.gz")
+			if err != nil {
+				t.Fatal(err)
+			}
+			r, err := gzip.NewReader(bytes.NewReader(data))
+			if err != nil {
+				t.Fatal(err)
+			}
+			raw, err := io.ReadAll(r)
+			r.Close()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if fmt.Sprintf("%x", sha256.Sum256(raw)) != meta.SHA256 {
+				t.Fatal("source hash")
+			}
+			calls := 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				calls++
+				if err := r.ParseForm(); err != nil {
+					t.Error(err)
+				}
+				for key, value := range meta.Form {
+					if r.Form.Get(key) != fmt.Sprint(value) {
+						t.Errorf("form %s: %q != %v", key, r.Form.Get(key), value)
+					}
+				}
+				_, _ = w.Write(raw)
+			}))
+			defer server.Close()
+			client, err := NewClient(server.Client(), ClientOptions{BaseURL: server.URL, DocumentBaseURL: server.URL + "/"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			org := strings.Split(meta.Form["stock"].(string), ",")[1]
+			request := CatalogueRequest{Code: code, OrganizationID: org, Page: 1, PageSize: 30, StartDate: time.Date(2025, 3, 31, 0, 0, 0, 0, time.UTC), EndDate: time.Date(2026, 9, 10, 0, 0, 0, 0, time.UTC)}
+			page, _, err := client.CataloguePage(t.Context(), request)
+			if err != nil {
+				t.Fatal(err)
+			}
+			want := 11
+			if code == "000001" {
+				want = 9
+			}
+			if len(page.Filings) != want || page.TotalRecords != want || len(page.Issues) != 0 {
+				t.Fatalf("unexpected catalogue %+v", page)
+			}
+			for _, f := range page.Filings {
+				if f.ProviderCode != code || f.ProviderOrgID != org {
+					t.Fatal("foreign identity", f)
+				}
+			}
+			request.OrganizationID = "bad,org"
+			if _, _, err := client.CataloguePage(t.Context(), request); err == nil {
+				t.Fatal("invalid org accepted")
+			}
+			request.OrganizationID = org
+			request.Code = ""
+			if _, _, err := client.CataloguePage(t.Context(), request); err == nil {
+				t.Fatal("org without code accepted")
+			}
+			if calls != 1 {
+				t.Fatal("invalid request reached HTTP", calls)
+			}
+		})
+	}
+}
+
 func TestCodeCatalogueRealResponses(t *testing.T) {
 	var hashes map[string]string
 	meta, err := os.ReadFile("testdata/code-catalogues/hashes.json")
