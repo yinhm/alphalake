@@ -88,3 +88,19 @@ func SyncIndustryCapital(ctx context.Context, db *sql.DB, root string, options R
 		return id, inserted, len(s.Observations), err
 	})
 }
+
+// SyncCompanyIndustries 发布来源名单；本地证券分类物化属于独立阶段。
+func SyncCompanyIndustries(ctx context.Context, db *sql.DB, root string, options ReferenceOptions) (ReferenceSummary, error) {
+	if options.Script == "" {
+		options.Script = damodaran.CompanyIndustryScript
+	}
+	feed := referenceFeed{damodaran.Source, damodaran.CompanyIndustryDataset, damodaran.CompanyIndustryURL, "application/vnd.ms-excel", damodaran.CompanyIndustryParserVersion}
+	return syncReference(ctx, db, root, options, feed, func(runID int64, stored artifact.Stored) (int64, bool, int, error) {
+		s, hash, err := damodaran.ParseCompanyIndustries(ctx, defaultPython(options.Python), options.Script, artifact.Resolve(root, stored))
+		if err != nil {
+			return 0, false, 0, err
+		}
+		id, inserted, err := duckstore.PublishCompanyIndustries(ctx, db, runID, stored.ArtifactID, hash, s)
+		return id, inserted, len(s.Companies), err
+	})
+}

@@ -12,7 +12,7 @@ import (
 	"github.com/yinhm/alphalake/internal/source/reference"
 )
 
-const CompanyIndustryDataset = "classification_industry"
+const CompanyIndustryDataset = "shse-szse-company-industries-v1"
 const CompanyIndustryURL = "https://pages.stern.nyu.edu/~adamodar/pc/datasets/indname.xls"
 const CompanyIndustryParserVersion = "damodaran-company-industries-v1"
 const CompanyIndustryScript = "valuation/backend/data_sources/damodaran_parsers/company_industry_parser.py"

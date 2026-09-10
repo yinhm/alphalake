@@ -346,3 +346,18 @@ Go全套/构建/vet及diff检查通过；组合、更正、缺期、单位错误
 该名单提供的是来源分类：安克为`Computers/Peripherals`、小熊为`Furn/Home Furnishings`、汇川为`Machinery`，不等于此前为特定情景明确选定的宽行业代理。不会静默覆盖已有政策。`Country`也不能替代上市地；安道麦和中国中铁分别保留Israel/Hong Kong及其沪深上市标识。源SIC中的两个数值0保留原类型，不转成空值。
 
 此阶段尚未写入生产分类或增加估值成功计数。接续链路须先独立发布来源分类观察，再按业务时点匹配本地证券，分别记录源快照完成与身份未解析；不能在存在未解析身份时推进“全部分类完成”检查点。匹配后仍须审核模型适用范围、风险/再投资采用政策及已有三家公司隔离，不能把5,100条标识直接视为可估值A股数。
+
+## 公司行业名单来源发布（迁移036）
+
+```bash
+alphalake sync-company-industries ./references.duckdb --python /absolute/valuation-python
+alphalake sync-company-industries ./references.duckdb --offline --python /absolute/valuation-python
+```
+
+命令复用原始归档、冻结解析器、参考版本及原子发布链。5,100条来源观察进入`reference.security_industry`，保存版本、归档、来源行、原始交易所ticker、行业节点和保留类型的原始行载荷；Beta、资本效率和该名单复用94个行业节点。没有在来源表填入推测的标准证券ID，也没有修改`classification.membership`、财务事实或估值政策。
+
+数据集为`shse-szse-company-industries-v1`，与后续本地分类物化的运行/完成状态分开。版本的`source_version`和`source_published_at`为NULL，首次归档时间仅作`first_seen`可用时间，不声称是来源发布日期或行业生效日。该名单与2026行业目录相容不等于已证明名单日期。重放逐条检查原始行及行业映射，并核验完成键；不能靠重放修复被篡改的既有观察。
+
+离线参考重放先选择最新已发布版本，再检查其归档关联；最新版本缺血缘时明确失败，不通过内连接默默选回旧版本。下载失败/坏工作簿仍保留失败证据，不发布新版本、不推进该来源完成键。公司名单真实文件大于16MiB，下载上限仅为该已审核数据集扩展到64MiB；其他Damodaran源保持既有上限。全部来源发布完成不等于本地证券身份全部匹配。
+
+真实独立库在线同步运行1发布5,100条、版本1，离线运行2仍为版本1且无新增；重开直查schema36、94节点、1个来源完成键、0个标准分类成员。实际原始SHA256与提交压缩归档完全一致，`source_version=NULL`，`available_at=first_seen_at=2026-09-10T04:14:24.014653Z`。Go全套（含实际归档重放、坏响应、观察行/检查点篡改、损坏最新版本拒绝）、构建和vet通过；无依赖变化。此验收证明来源观察链，不将其计入估值公司覆盖率。

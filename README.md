@@ -65,6 +65,8 @@ TDX 协议请求支持[自动换节点重试](docs/tdx-failover.md)：每个独�
 
 已提供 `sync-country-risk`：归档达摩达兰 2026 年 7 月工作簿，发布 CN/HK/US 评级法与成熟市场 ERP 共 10 项，支持原子发布、幂等重放和离线核验。具体命令与范围见[国家风险同步](docs/country-risk-sync.md)。另已接入[全球行业 Beta 与人民币国债收益率](docs/beta-yield-sync.md)：94 个行业的 376 项指标和 8 个国债期限点。三条同步链均不改动公司财务事实；已有[固定版本到 WACC／估值桥接](docs/wacc-valuation-bridge.md)，须显式提供公司映射与政策；也可使用[市场权益／估计债务权重分支](docs/market-wacc.md)，不可省略代理假设。另支持[合成评级利差同步与借款成本桥接](docs/credit-spread-sync.md)，首批仅开放安克已审核财务口径。
 
+官方公司行业名单现可用 `alphalake sync-company-industries DB --python /absolute/valuation-python` 归档和发布来源观察，支持 `--offline` 重放；尚未自动写入本地证券分类或分配估值政策，范围和边界见[自动估值主线](docs/automated-valuation.md)。
+
 ## 构建与测试
 
 当前项目使用 Go 1.25，这是当前 `github.com/injoyai/tdx` 依赖的要求。

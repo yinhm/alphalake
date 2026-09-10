@@ -1,10 +1,13 @@
 package ingest
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"database/sql"
 	"encoding/json"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -25,6 +28,7 @@ func TestBetaYieldRealArchiveReplay(t *testing.T) {
 		count                                int
 		sync                                 func(context.Context, *sql.DB, string, ReferenceOptions) (ReferenceSummary, error)
 	}{
+		{"companies", "../source/damodaran/testdata/indname.xls.gz", "../../valuation/backend/data_sources/damodaran_parsers/company_industry_parser.py", "reference.security_industry", "damodaran", 5100, SyncCompanyIndustries},
 		{"capital", "../source/damodaran/testdata/capexGlobal.xls", "../../valuation/backend/data_sources/damodaran_parsers/capex_parser.py", "reference.industry_stat", "damodaran", 94, SyncIndustryCapital},
 		{"beta", "../source/damodaran/testdata/betaGlobal.xls", "../../valuation/backend/data_sources/damodaran_parsers/beta_parser.py", "reference.industry_stat", "damodaran", 376, SyncIndustryBeta},
 		{"credit", "../source/damodaran/testdata/ratings.html", "../source/damodaran/ratings.py", "reference.credit_spread_band", "damodaran", 15, SyncCreditSpreads},
@@ -47,6 +51,17 @@ func TestBetaYieldRealArchiveReplay(t *testing.T) {
 			raw, err := os.ReadFile(tc.fixture)
 			if err != nil {
 				t.Fatal(err)
+			}
+			if tc.name == "companies" {
+				z, e := gzip.NewReader(bytes.NewReader(raw))
+				if e != nil {
+					t.Fatal(e)
+				}
+				raw, e = io.ReadAll(z)
+				z.Close()
+				if e != nil {
+					t.Fatal(e)
+				}
 			}
 			var bad atomic.Bool
 			var calls atomic.Int32
@@ -110,11 +125,57 @@ func TestBetaYieldRealArchiveReplay(t *testing.T) {
 			if err != nil || rows != tc.count || releases != 1 || checks != 1 || failed != 1 || diagnostics != 1 {
 				t.Fatal(rows, releases, checks, failed, diagnostics, err)
 			}
-			if tc.name == "beta" || tc.name == "capital" {
+			if tc.name == "beta" || tc.name == "capital" || tc.name == "companies" {
 				var nodes, memberships int
 				err = db.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM classification.node),(SELECT count(*) FROM classification.membership)`).Scan(&nodes, &memberships)
 				if err != nil || nodes != 94 || memberships != 0 {
 					t.Fatal("industry catalog must not assign companies", nodes, memberships, err)
+				}
+			}
+			if tc.name == "companies" {
+				var undated, rawZero int
+				err = db.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM meta.dataset_release WHERE source_version IS NULL AND source_published_at IS NULL AND publication_precision='unknown' AND available_at=first_seen_at),
+                 (SELECT count(*) FROM reference.security_industry WHERE exchange_ticker='SHSE:601888' AND json_type(CAST(raw_payload AS JSON),'$.sic_code')='DOUBLE' AND json_extract_string(raw_payload,'$.sic_code')='0.0')`).Scan(&undated, &rawZero)
+				if err != nil || undated != 1 || rawZero != 1 {
+					t.Fatal("source date/type invented", undated, rawZero, err)
+				}
+				var id, node int64
+				err = db.QueryRowContext(ctx, `SELECT observation_id,industry_node_id FROM reference.security_industry WHERE exchange_ticker='SZSE:300866'`).Scan(&id, &node)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err = db.ExecContext(ctx, `UPDATE reference.security_industry SET industry_node_id=-1 WHERE observation_id=?`, id); err != nil {
+					t.Fatal(err)
+				}
+				if _, err = tc.sync(ctx, db, root, opts); err == nil {
+					t.Fatal("changed industry accepted")
+				}
+				if _, err = db.ExecContext(ctx, `UPDATE reference.security_industry SET industry_node_id=? WHERE observation_id=?`, node, id); err != nil {
+					t.Fatal(err)
+				}
+				if _, err = db.ExecContext(ctx, `UPDATE meta.checkpoint SET checkpoint_value='invented-version'`); err != nil {
+					t.Fatal(err)
+				}
+				if _, err = tc.sync(ctx, db, root, opts); err == nil {
+					t.Fatal("changed completion checkpoint accepted")
+				}
+				if _, err = db.ExecContext(ctx, `UPDATE meta.checkpoint SET checkpoint_value=CAST(? AS VARCHAR)`, first.ReleaseID); err != nil {
+					t.Fatal(err)
+				}
+				if _, err = tc.sync(ctx, db, root, opts); err != nil {
+					t.Fatal("restored evidence cannot replay", err)
+				}
+				var broken int64
+				err = db.QueryRowContext(ctx, `INSERT INTO meta.dataset_release(source,dataset,content_key,publication_precision,available_at,availability_basis,first_seen_at,parser_version,normalization_version,ingest_run_id)
+                  SELECT source,dataset,repeat('f',64),publication_precision,available_at,availability_basis,first_seen_at,parser_version,normalization_version,ingest_run_id FROM meta.dataset_release WHERE release_id=? RETURNING release_id`, first.ReleaseID).Scan(&broken)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err = tc.sync(ctx, db, root, opts); err == nil {
+					t.Fatal("offline silently fell back from broken latest release")
+				}
+				if _, err = db.ExecContext(ctx, `DELETE FROM meta.dataset_release WHERE release_id=?`, broken); err != nil {
+					t.Fatal(err)
 				}
 			}
 			if tc.name == "capital" {

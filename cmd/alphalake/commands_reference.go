@@ -29,6 +29,8 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 	python := fs.String("python", "python3", "Python with the selected parser dependencies")
 	defaultScript := damodaran.DefaultScript
 	switch command {
+	case "sync-company-industries":
+		defaultScript = damodaran.CompanyIndustryScript
 	case "sync-industry-capital":
 		defaultScript = damodaran.CapitalScript
 	case "sync-industry-beta":
@@ -46,7 +48,7 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 		return err
 	}
 	if fs.NArg() != 0 {
-		return errors.New("unexpected country-risk arguments")
+		return errors.New("unexpected reference arguments")
 	}
 	db, err := duckstore.OpenAndMigrate(ctx, args[0])
 	if err != nil {
@@ -55,6 +57,8 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 	defer db.Close()
 	sync := ingest.SyncCountryRisk
 	switch command {
+	case "sync-company-industries":
+		sync = ingest.SyncCompanyIndustries
 	case "sync-industry-capital":
 		sync = ingest.SyncIndustryCapital
 	case "sync-industry-beta":

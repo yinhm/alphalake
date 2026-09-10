@@ -48,9 +48,14 @@ func beginReferencePublication(ctx context.Context, db *sql.DB, runID, artifactI
 	if hash != in.SHA || source != in.Source || dataset != in.Dataset || locator != in.URL || runSource != source || runDataset != dataset || status != IngestRunRunning {
 		return p, errors.New("reference artifact/run lineage mismatch")
 	}
-	date, dateErr := time.Parse("2006-01-02", in.Date)
-	if dateErr != nil || date.After(firstSeen) {
-		return p, errors.New("invalid observation date or exceeds first seen")
+	// 未标日期的来源保留 NULL 版本；各具体解析器仍负责其日期契约。
+	var version any
+	if in.Date != "" {
+		date, dateErr := time.Parse("2006-01-02", in.Date)
+		if dateErr != nil || date.After(firstSeen) {
+			return p, errors.New("invalid observation date or exceeds first seen")
+		}
+		version = in.Date
 	}
 	normalization := in.Normalization + ";" + in.ParserHash + ";" + in.Runtime
 	digest := sha256.Sum256([]byte(hash + "\n" + in.ParserVersion + "\n" + normalization))
@@ -62,8 +67,9 @@ func beginReferencePublication(ctx context.Context, db *sql.DB, runID, artifactI
 		err = p.tx.QueryRowContext(ctx, `SELECT count(*) FROM meta.dataset_release r
    JOIN meta.dataset_release_artifact a ON a.release_id=r.release_id AND a.artifact_id=? AND a.role='data'
    JOIN meta.checkpoint c ON c.source=r.source AND c.dataset=r.dataset AND c.checkpoint_key=r.content_key AND c.checkpoint_value=CAST(r.release_id AS VARCHAR)
-   WHERE r.release_id=? AND r.source_version=? AND r.parser_version=? AND r.normalization_version=?
-   AND r.availability_basis='first_seen' AND r.available_at=? AND r.first_seen_at=?`, artifactID, p.id, in.Date, in.ParserVersion, normalization, firstSeen, firstSeen).Scan(&linked)
+   WHERE r.release_id=? AND r.source_version IS NOT DISTINCT FROM ? AND r.parser_version=? AND r.normalization_version=?
+   AND r.publication_precision='unknown' AND r.source_published_at IS NULL
+   AND r.availability_basis='first_seen' AND r.available_at=? AND r.first_seen_at=?`, artifactID, p.id, version, in.ParserVersion, normalization, firstSeen, firstSeen).Scan(&linked)
 		if err == nil && linked != 1 {
 			err = errors.New("published reference lineage/checkpoint changed")
 		}
@@ -73,7 +79,7 @@ func beginReferencePublication(ctx context.Context, db *sql.DB, runID, artifactI
 		return
 	}
 	err = p.tx.QueryRowContext(ctx, `INSERT INTO meta.dataset_release(source,dataset,source_version,content_key,publication_precision,available_at,availability_basis,first_seen_at,parser_version,normalization_version,ingest_run_id)
- VALUES (?,?,?,?,'unknown',?,'first_seen',?,?,?,?) RETURNING release_id`, source, dataset, in.Date, p.key, firstSeen, firstSeen, in.ParserVersion, normalization, runID).Scan(&p.id)
+ VALUES (?,?,?,?,'unknown',?,'first_seen',?,?,?,?) RETURNING release_id`, source, dataset, version, p.key, firstSeen, firstSeen, in.ParserVersion, normalization, runID).Scan(&p.id)
 	if err != nil {
 		return
 	}

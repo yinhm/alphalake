@@ -30,34 +30,13 @@ func publishIndustryStats(ctx context.Context, db *sql.DB, runID, artifactID int
 		return 0, false, err
 	}
 	defer p.tx.Rollback()
-	var taxonomy int64
-	if !p.existing {
-		_, err = p.tx.ExecContext(ctx, `INSERT INTO classification.taxonomy(source,taxonomy_code,name,taxonomy_type) VALUES (?,?,?,'industry') ON CONFLICT(source,taxonomy_code) DO NOTHING`, damodaran.Source, damodaran.BetaTaxonomy, "Damodaran industries 2026")
-		if err != nil {
-			return 0, false, err
-		}
+	names := make([]string, 0, len(observations))
+	for _, o := range observations {
+		names = append(names, o.Industry)
 	}
-	err = p.tx.QueryRowContext(ctx, `SELECT taxonomy_id FROM classification.taxonomy WHERE source=? AND taxonomy_code=? AND name=? AND taxonomy_type='industry'`, damodaran.Source, damodaran.BetaTaxonomy, "Damodaran industries 2026").Scan(&taxonomy)
+	nodes, err := damodaranIndustryNodes(ctx, p.tx, p.existing, names)
 	if err != nil {
 		return 0, false, err
-	}
-	nodes := map[string]int64{}
-	for _, o := range observations {
-		if _, ok := nodes[o.Industry]; ok {
-			continue
-		}
-		if !p.existing {
-			_, err = p.tx.ExecContext(ctx, `INSERT INTO classification.node(taxonomy_id,source_node_code,name,level) VALUES (?,?,?,1) ON CONFLICT(taxonomy_id,source_node_code) DO NOTHING`, taxonomy, o.Industry, o.Industry)
-			if err != nil {
-				return 0, false, err
-			}
-		}
-		var id int64
-		err = p.tx.QueryRowContext(ctx, `SELECT node_id FROM classification.node WHERE taxonomy_id=? AND source_node_code=? AND name=? AND level=1 AND parent_node_id IS NULL`, taxonomy, o.Industry, o.Industry).Scan(&id)
-		if err != nil {
-			return 0, false, err
-		}
-		nodes[o.Industry] = id
 	}
 	if p.existing {
 		var n int
@@ -130,4 +109,40 @@ func PublishCNYGovernmentYield(ctx context.Context, db *sql.DB, runID, artifactI
 		}
 	}
 	return p.finish(ctx)
+}
+
+// 已审核的统计与公司名单共享同一行业目录，重放时核验而非改写节点。
+func damodaranIndustryNodes(ctx context.Context, tx *sql.Tx, existing bool, names []string) (map[string]int64, error) {
+	var taxonomy int64
+	var err error
+	if !existing {
+		_, err = tx.ExecContext(ctx, `INSERT INTO classification.taxonomy(source,taxonomy_code,name,taxonomy_type) VALUES (?,?,?,'industry') ON CONFLICT(source,taxonomy_code) DO NOTHING`, damodaran.Source, damodaran.BetaTaxonomy, "Damodaran industries 2026")
+		if err != nil {
+			return nil, err
+		}
+	}
+	err = tx.QueryRowContext(ctx, `SELECT taxonomy_id FROM classification.taxonomy WHERE source=? AND taxonomy_code=? AND name=? AND taxonomy_type='industry'`, damodaran.Source, damodaran.BetaTaxonomy, "Damodaran industries 2026").Scan(&taxonomy)
+	if err != nil {
+		return nil, err
+	}
+	nodes := map[string]int64{}
+	for _, name := range names {
+		if _, ok := nodes[name]; ok {
+			continue
+		}
+		if !existing {
+			_, err = tx.ExecContext(ctx, `INSERT INTO classification.node(taxonomy_id,source_node_code,name,level) VALUES (?,?,?,1) ON CONFLICT(taxonomy_id,source_node_code) DO NOTHING`, taxonomy, name, name)
+			if err != nil {
+				return nil, err
+			}
+		}
+		var id int64
+		err = tx.QueryRowContext(ctx, `SELECT node_id FROM classification.node WHERE taxonomy_id=? AND source_node_code=? AND name=? AND level=1 AND parent_node_id IS NULL`, taxonomy, name, name).Scan(&id)
+		if err != nil {
+			return nil, err
+		}
+		nodes[name] = id
+	}
+
+	return nodes, nil
 }
