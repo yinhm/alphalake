@@ -71,3 +71,34 @@ def test_curve_rejects_bad_dates_units_tenors_and_identity(tmp_path, old, new):
     path.write_text(body.replace(old, new))
     with pytest.raises(ValueError):
         curve.parse_curve(path)
+
+
+def test_global_capital_real_source_and_quantization():
+    from data_sources.damodaran_parsers.capex_parser import alphalake_capital_snapshot
+    path = ROOT / 'internal/source/damodaran/testdata/capexGlobal.xls'
+    actual = alphalake_capital_snapshot(path)
+    expected = json.loads(path.with_name('capital-snapshot.json').read_text())
+    actual.pop('runtime'); expected.pop('runtime')
+    assert actual == expected
+    assert len(actual['observations']) == 94
+    # 独立直接读J列，证明不是百分数，也不误用I列净资本开支/NOPAT。
+    wb = xlrd.open_workbook(path); ws = wb.sheet_by_name('Industry Averages')
+    for row, observation in enumerate(actual['observations'], 8):
+        source = Decimal(str(ws.cell_value(row, 9)))
+        assert source == Decimal(observation['raw_value'])
+        assert abs(source - Decimal(observation['value'])) <= Decimal('0.0000000000005')
+    assert actual['observations'][27]['industry'] == 'Electronics (Consumer & Office)'
+    assert actual['observations'][27]['value'] == '1.905898248522'
+    wb.release_resources()
+
+
+@pytest.mark.parametrize('row,column,value', [(2,5,'China'),(8,0,'Aerospace/Defense'),(8,1,0),(8,9,0),(8,9,float('nan'))])
+def test_capital_rejects_region_duplicate_sample_and_bad_ratios(monkeypatch,row,column,value):
+    from data_sources.damodaran_parsers.capex_parser import alphalake_capital_snapshot
+    path = ROOT / 'internal/source/damodaran/testdata/capexGlobal.xls'
+    real = xlrd.open_workbook(path); ws = real.sheet_by_name('Industry Averages')
+    original = ws.cell_value
+    monkeypatch.setattr(ws,'cell_value',lambda r,c: value if (r,c)==(row,column) else original(r,c))
+    monkeypatch.setattr(xlrd,'open_workbook',lambda *a,**k:SimpleNamespace(sheet_by_name=lambda name:ws,datemode=real.datemode,release_resources=lambda:None))
+    with pytest.raises(ValueError):
+        alphalake_capital_snapshot(path)

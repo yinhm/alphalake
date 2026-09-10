@@ -30,6 +30,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-hkex-close <db-path> <YYYY-MM-DD> [--python path] [--offline]")
 	fmt.Fprintln(os.Stderr, "  sync-hkd-cny <db-path> [--offline] [--python executable] [--parser path]")
 	fmt.Fprintln(os.Stderr, "  sync-cny-yield <db-path> [--offline] [--python executable] [--parser path]")
+	fmt.Fprintln(os.Stderr, "  sync-industry-capital <db-path> [--offline] [--python executable] [--parser path]")
 	fmt.Fprintln(os.Stderr, "  sync-country-risk <db-path> [--offline] [--python executable] [--parser path]")
 	fmt.Fprintln(os.Stderr, "  version")
 	fmt.Fprintln(os.Stderr, "  schema")

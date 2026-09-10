@@ -23,6 +23,7 @@ func TestBetaYieldRealArchiveReplay(t *testing.T) {
 		count                                int
 		sync                                 func(context.Context, *sql.DB, string, ReferenceOptions) (ReferenceSummary, error)
 	}{
+		{"capital", "../source/damodaran/testdata/capexGlobal.xls", "../../valuation/backend/data_sources/damodaran_parsers/capex_parser.py", "reference.industry_stat", "damodaran", 94, SyncIndustryCapital},
 		{"beta", "../source/damodaran/testdata/betaGlobal.xls", "../../valuation/backend/data_sources/damodaran_parsers/beta_parser.py", "reference.industry_stat", "damodaran", 376, SyncIndustryBeta},
 		{"credit", "../source/damodaran/testdata/ratings.html", "../source/damodaran/ratings.py", "reference.credit_spread_band", "damodaran", 15, SyncCreditSpreads},
 		{"fx", "../source/safe/testdata/rates.html", "../source/safe/parse.py", "market.fx_rate", "safe", 10, SyncHKDCNY},
@@ -107,7 +108,7 @@ func TestBetaYieldRealArchiveReplay(t *testing.T) {
 			if err != nil || rows != tc.count || releases != 1 || checks != 1 || failed != 1 || diagnostics != 1 {
 				t.Fatal(rows, releases, checks, failed, diagnostics, err)
 			}
-			if tc.name == "beta" {
+			if tc.name == "beta" || tc.name == "capital" {
 				var nodes, memberships int
 				err = db.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM classification.node),(SELECT count(*) FROM classification.membership)`).Scan(&nodes, &memberships)
 				if err != nil || nodes != 94 || memberships != 0 {

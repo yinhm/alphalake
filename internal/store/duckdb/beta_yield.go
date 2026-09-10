@@ -13,7 +13,19 @@ func PublishIndustryBeta(ctx context.Context, db *sql.DB, runID, artifactID int6
 	if err := damodaran.ValidateBeta(s); err != nil {
 		return 0, false, err
 	}
-	p, err := beginReferencePublication(ctx, db, runID, artifactID, referenceInput{Source: damodaran.Source, Dataset: damodaran.BetaDataset, URL: damodaran.BetaURL, Date: s.ObservationDate, SHA: s.SHA256, ParserVersion: s.ParserVersion, Runtime: s.Runtime, Normalization: "global-beta-decimal12-v1", ParserHash: parserHash})
+	return publishIndustryStats(ctx, db, runID, artifactID, referenceInput{Source: damodaran.Source, Dataset: damodaran.BetaDataset, URL: damodaran.BetaURL, Date: s.ObservationDate, SHA: s.SHA256, ParserVersion: s.ParserVersion, Runtime: s.Runtime, Normalization: "global-beta-decimal12-v1", ParserHash: parserHash}, s.Observations, func(o damodaran.IndustryObservation) string { return damodaran.BetaMethod(s, o) })
+}
+
+func PublishIndustryCapital(ctx context.Context, db *sql.DB, runID, artifactID int64, parserHash string, s damodaran.CapitalSnapshot) (int64, bool, error) {
+	if err := damodaran.ValidateCapital(s); err != nil {
+		return 0, false, err
+	}
+	return publishIndustryStats(ctx, db, runID, artifactID, referenceInput{Source: damodaran.Source, Dataset: damodaran.CapitalDataset, URL: damodaran.CapitalURL, Date: s.ObservationDate, SHA: s.SHA256, ParserVersion: s.ParserVersion, Runtime: s.Runtime, Normalization: "global-capital-decimal12-v1", ParserHash: parserHash}, s.Observations, func(damodaran.IndustryObservation) string { return damodaran.CapitalMethod })
+}
+
+// 两个已审核全球行业源复用相同的分类节点、不可变统计和原子完成键。
+func publishIndustryStats(ctx context.Context, db *sql.DB, runID, artifactID int64, in referenceInput, observations []damodaran.IndustryObservation, method func(damodaran.IndustryObservation) string) (int64, bool, error) {
+	p, err := beginReferencePublication(ctx, db, runID, artifactID, in)
 	if err != nil {
 		return 0, false, err
 	}
@@ -30,7 +42,7 @@ func PublishIndustryBeta(ctx context.Context, db *sql.DB, runID, artifactID int6
 		return 0, false, err
 	}
 	nodes := map[string]int64{}
-	for _, o := range s.Observations {
+	for _, o := range observations {
 		if _, ok := nodes[o.Industry]; ok {
 			continue
 		}
@@ -52,16 +64,16 @@ func PublishIndustryBeta(ctx context.Context, db *sql.DB, runID, artifactID int6
 		if err := p.tx.QueryRowContext(ctx, `SELECT count(*) FROM reference.industry_stat WHERE release_id=?`, p.id).Scan(&n); err != nil {
 			return 0, false, err
 		}
-		if n != len(s.Observations) {
-			return 0, false, errors.New("published beta count changed")
+		if n != len(observations) {
+			return 0, false, errors.New("published industry statistic count changed")
 		}
 	}
-	for _, o := range s.Observations {
+	for _, o := range observations {
 		unit := "fraction"
-		if o.MetricCode == "beta_unlevered" || o.MetricCode == "beta_unlevered_cash_adjusted" {
+		if o.MetricCode == "beta_unlevered" || o.MetricCode == "beta_unlevered_cash_adjusted" || o.MetricCode == damodaran.CapitalMetric {
 			unit = "dimensionless"
 		}
-		args := []any{p.id, artifactID, o.SourceLocator, o.RawValue, unit, nodes[o.Industry], s.ObservationDate, o.MetricCode, damodaran.BetaMethod(s, o), o.SampleCount, o.Value}
+		args := []any{p.id, artifactID, o.SourceLocator, o.RawValue, unit, nodes[o.Industry], in.Date, o.MetricCode, method(o), o.SampleCount, o.Value}
 		if p.existing {
 			var n int
 			err = p.tx.QueryRowContext(ctx, `SELECT count(*) FROM reference.industry_stat WHERE release_id=? AND artifact_id=? AND source_locator=? AND raw_value=? AND raw_unit=? AND industry_node_id=? AND observation_date=? AND metric_code=? AND method_code=? AND sample_count=? AND value=CAST(? AS DECIMAL(38,12)) AND sample_region='global' AND statistic_code='provider_estimate' AND value_status='reported'`, args...).Scan(&n)
@@ -69,7 +81,7 @@ func PublishIndustryBeta(ctx context.Context, db *sql.DB, runID, artifactID int6
 				return 0, false, err
 			}
 			if n != 1 {
-				return 0, false, errors.New("published beta interpretation changed")
+				return 0, false, errors.New("published industry statistic interpretation changed")
 			}
 		} else {
 			_, err = p.tx.ExecContext(ctx, `INSERT INTO reference.industry_stat(release_id,artifact_id,source_locator,raw_value,raw_unit,industry_node_id,observation_date,metric_code,method_code,sample_count,value,sample_region,statistic_code,value_status) VALUES (?,?,?,?,?,?,?,?,?,?,CAST(? AS DECIMAL(38,12)),'global','provider_estimate','reported')`, args...)

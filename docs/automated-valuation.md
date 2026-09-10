@@ -295,3 +295,18 @@ python -m tools.batch_valuate_alphalake /absolute/financial.duckdb \
 本次原样使用的政策已提交为 [`valuation/examples/a-share-initial-2026H1.json`](../valuation/examples/a-share-initial-2026H1.json)，可传给批量/刷新入口的 `--policy`。它明确包含固定10%折现率等机械假设和三家公司审核隔离，并非市场WACC配置或已研究的行业合理参数；43个结果不是43家公司原文语义验收。参考WACC自动选择/同步的真实验收仍见上面的独立参考库链，不能说本批43家已全部改用市场化WACC。
 
 下一主线按当前阻塞排序：扩展有依据的行业模型和参考风险政策；补齐适用公司的输入/可比口径；将北交所已核验的代码变更证据接入有时点和血缘的身份链。金融、亏损/困境和复合业务模型继续单独处理，不靠放宽门槛增加成功计数。
+
+## 行业资本效率参考同步
+
+为替代仅由人工指定的统一资本效率情景，新增原始参考入口：
+
+```bash
+alphalake sync-industry-capital ./references.duckdb --python /absolute/valuation-python
+alphalake sync-industry-capital ./references.duckdb --offline --python /absolute/valuation-python
+```
+
+复用既有资本开支解析器、原始归档及参考发布事务，94个全球行业的收入/投入资本比进入`reference.industry_stat`，字段为`sales_to_invested_capital_ltm`、无量纲倍数，保留源样本量、单元格和原始浮点字符串。迁移034仅扩充该表白名单，保留旧观察ID和所有血缘；Beta和资本效率共用既有行业节点，没有自动创建A股行业映射。原文及[核验边界](../internal/source/damodaran/testdata/capexGlobal.README.md)随库保存。
+
+真实参考库副本同步发布94条（新版本5），离线重放不新增；原有四源WACC在相同信息截止下导出与升级前完全一致。真实源观察日期2026-01-05，生产可用时间取2026-09-10首次取得时间，不把观察日期猜成发布日期。消费电子约1.91、食品加工约1.71，不能据此说任意同行公司必须采用该值。
+
+当前完成的是原始参考同步/存储，尚未加入`--sync-references`四源周期或自动替换批量政策中的`sales_to_capital`。下一步以显式行业映射和采用理由接入参考选择及政策构建；未来增量再投资使用行业历史比率仍属政策，不能伪装成公司报表事实。

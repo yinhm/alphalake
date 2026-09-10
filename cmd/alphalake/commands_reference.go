@@ -29,6 +29,8 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 	python := fs.String("python", "python3", "Python with the selected parser dependencies")
 	defaultScript := damodaran.DefaultScript
 	switch command {
+	case "sync-industry-capital":
+		defaultScript = damodaran.CapitalScript
 	case "sync-industry-beta":
 		defaultScript = damodaran.BetaScript
 	case "sync-credit-spreads":
@@ -53,6 +55,8 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 	defer db.Close()
 	sync := ingest.SyncCountryRisk
 	switch command {
+	case "sync-industry-capital":
+		sync = ingest.SyncIndustryCapital
 	case "sync-industry-beta":
 		sync = ingest.SyncIndustryBeta
 	case "sync-credit-spreads":

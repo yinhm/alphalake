@@ -73,3 +73,18 @@ func SyncHKDCNY(ctx context.Context, db *sql.DB, root string, options ReferenceO
 		return id, inserted, len(s.Observations), err
 	})
 }
+
+func SyncIndustryCapital(ctx context.Context, db *sql.DB, root string, options ReferenceOptions) (ReferenceSummary, error) {
+	if options.Script == "" {
+		options.Script = damodaran.CapitalScript
+	}
+	feed := referenceFeed{damodaran.Source, damodaran.CapitalDataset, damodaran.CapitalURL, "application/vnd.ms-excel", damodaran.CapitalParserVersion}
+	return syncReference(ctx, db, root, options, feed, func(runID int64, stored artifact.Stored) (int64, bool, int, error) {
+		s, hash, err := damodaran.ParseCapital(ctx, defaultPython(options.Python), options.Script, artifact.Resolve(root, stored))
+		if err != nil {
+			return 0, false, 0, err
+		}
+		id, inserted, err := duckstore.PublishIndustryCapital(ctx, db, runID, stored.ArtifactID, hash, s)
+		return id, inserted, len(s.Observations), err
+	})
+}

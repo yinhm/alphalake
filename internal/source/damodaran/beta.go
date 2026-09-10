@@ -21,7 +21,7 @@ const BetaTaxonomy = "damodaran_industry_2026"
 //go:embed industries-global-2026.txt
 var betaIndustries string
 
-type BetaObservation struct {
+type IndustryObservation struct {
 	Industry      string `json:"industry"`
 	SampleCount   int    `json:"sample_count"`
 	MetricCode    string `json:"metric_code"`
@@ -31,8 +31,8 @@ type BetaObservation struct {
 }
 type BetaSnapshot struct {
 	reference.Header
-	UnleveringTaxRate string            `json:"unlevering_tax_rate"`
-	Observations      []BetaObservation `json:"observations"`
+	UnleveringTaxRate string                `json:"unlevering_tax_rate"`
+	Observations      []IndustryObservation `json:"observations"`
 }
 
 func ParseBeta(ctx context.Context, python, script, path string) (BetaSnapshot, string, error) {
@@ -96,7 +96,7 @@ func ValidateBeta(s BetaSnapshot) error {
 	}
 	return nil
 }
-func BetaMethod(s BetaSnapshot, o BetaObservation) string {
+func BetaMethod(s BetaSnapshot, o IndustryObservation) string {
 	if strings.HasPrefix(o.MetricCode, "beta_") {
 		return "provider_marginal_tax_" + s.UnleveringTaxRate
 	}
