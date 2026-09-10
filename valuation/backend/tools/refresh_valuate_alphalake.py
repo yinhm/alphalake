@@ -61,8 +61,10 @@ def run_cycle(args, root):
             record['finished_at'] = timestamp(); save()
         return code
 
+    repo=Path(__file__).resolve().parents[3]
     try:
         for name, extra in [('sync-financial',['--latest',str(args.latest)]),
+                            ('sync-bse-code-transitions',['--python',sys.executable,'--parser',str(repo/'internal/source/bse/parse.py')]),
                             ('sync-filings',['--start',args.filings_start,'--end',args.filings_end,'--metadata-only']),
                             ('sync-industries',[])]:
             stage(name, [args.alphalake,name,args.database,*extra])
@@ -72,7 +74,6 @@ def run_cycle(args, root):
             stage('repair-filings',[args.alphalake,'repair-filings',args.database,'--period',args.period])
             materialized = stage('materialize-after-filing-repair',[args.alphalake,'materialize-fundamentals',args.database]) == 0
         if materialized and getattr(args,'sync_references',False):
-            repo=Path(__file__).resolve().parents[3]
             for name,script in [('sync-country-risk','valuation/backend/data_sources/damodaran_parsers/country_risk_parser.py'),
                                 ('sync-industry-beta','valuation/backend/data_sources/damodaran_parsers/beta_parser.py'),
                                 ('sync-industry-capital','valuation/backend/data_sources/damodaran_parsers/capex_parser.py'),

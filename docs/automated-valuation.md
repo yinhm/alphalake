@@ -151,7 +151,7 @@ python -m tools.refresh_valuate_alphalake /absolute/path/alphalake.duckdb \
   --policy /absolute/path/batch-policy.json --output-dir ./data/refresh_runs
 ```
 
-顺序是 `sync-financial` → `sync-filings --metadata-only` → `sync-industries` → 首次 `materialize-fundamentals` → `repair-filings` → 再次物化 → 可选WACC与资本效率参考源刷新 → 批量估值。证券名单由同步命令刷新；不另建常驻服务。可由本机 cron/systemd 定时调用此命令，尚未替用户安装周期任务。进程锁按数据库绝对路径保护同一入口的重叠运行，其他直接写库命令仍依赖 DuckDB 自身锁；不支持跨主机调度锁。
+顺序是 `sync-financial` → `sync-bse-code-transitions` → `sync-filings --metadata-only` → `sync-industries` → 首次 `materialize-fundamentals` → `repair-filings` → 再次物化 → 可选WACC与资本效率参考源刷新 → 批量估值。证券名单由同步命令刷新；不另建常驻服务。可由本机 cron/systemd 定时调用此命令，尚未替用户安装周期任务。进程锁按数据库绝对路径保护同一入口的重叠运行，其他直接写库命令仍依赖 DuckDB 自身锁；不支持跨主机调度锁。
 
 `--filings-end` 默认中国当日，`--as-of` 默认取本轮同步/物化结束后的实际时点，避免刚刷新的行业因晚于启动时点被误排除。报告期及对应审核政策仍须显式更新，默认六期回填不能保证任意历史报告期齐全。已嵌入的WACC参考包仍须符合本轮信息截止和陈旧约束；加 `--reference-database /absolute/references.duckdb --sync-references` 可自动刷新并固定四类参考版本。行情和所有公司市场股债结构尚未纳入该通用周期，行业风险暴露及目标权重仍属显式政策。
 
@@ -430,3 +430,6 @@ python -m tools.prepare_industry_policy ../examples/a-share-nonfinancial-recipe-
 
 
 上述北交所来源解析现进一步接入迁移037发布与公告身份解析，详见[证据、规则和验收边界](bse-code-transitions.md)。目录跨代码接收需官方关系、公告日、机构及唯一标准身份共同成立；物化会重新核验已解析的北交所公告。真实目录27条持久化回归和标准事实失效/恢复机制通过，主库244项修复尚未执行，不修改前文完成率。78行业真实批次仍在执行，最终全分母结果及独立估值复算待批次结束。
+
+
+北交所代码关系现为日常刷新入口的固定身份准备阶段，置于财务同步之后、公告采集之前，使用当前Python解释器和绝对解析器路径发布到财务主库；不依赖可选的`--sync-references`。四原文取得或发布失败会使周期保留失败状态，仍核验既有可信发布及后续可用数据；失败文件不会替换已发布关系。阶段调度回归使用真实子进程控制退出码，不冒充新增在线源验收。
