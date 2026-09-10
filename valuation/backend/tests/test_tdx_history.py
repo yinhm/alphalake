@@ -88,3 +88,38 @@ def test_archived_tdx_baseline():
     assert {r['code'] for r in actual['results'] if r.get('profit_scope')=='financial_fields_present'}=={'600519','600887','000895','000333','000651','600031'}
     assert actual['by_profit_scope']['not_evaluated']['candidates']==1
     assert actual['by_split']['holdout']['models']['current_rule']['revenue_median_ape_pct']>actual['by_split']['holdout']['models']['zero_growth']['revenue_median_ape_pct']
+
+
+def test_multi_origin_selection_is_separate_from_holdout():
+    from tools.backtest_tdx_origins import study as multi, gates
+    # 已有2025合成数据只测研究流程，不作为新增真实留出证据。
+    original,source=fixture();source['records'] += [dict(r,code='000858') for r in copy.deepcopy(source['records'])]
+    protocol=json.loads((ROOT/'valuation/research/tdx-multi-origin/protocol.json').read_text())
+    protocol['samples']=[dict(code='600519',split='development',stratum='test'),dict(code='000858',split='holdout',stratum='test')]
+    protocol['origins']=['2025-06-30'];protocol['selection']['periods']=['2025-06-30']
+    protocol['base_policy']=original['policy']
+    dev=multi(protocol,source,'development')
+    assert {r['code'] for r in dev['results']}=={'600519'}
+    assert dev['selection']['model'] is None
+    altered=copy.deepcopy(source)
+    for r in altered['records']:
+        if r['code']=='000858':r['bits']['FN230']=bits(999e6)
+    assert multi(protocol,altered,'development')==dev
+    held=multi(protocol,source,'holdout',dev)
+    assert {r['code'] for r in held['results']}=={'000858'}
+    assert set(held['summary']['total']['models'])=={'current_rule','zero_growth'}
+    changed=copy.deepcopy(source)
+    for r in changed['records']:
+        if r['period']=='2026-06-30':r['bits']['FN86']=bits(999e6)
+    later=multi(protocol,changed,'development')
+    assert later['results'][0]['forecasts']==dev['results'][0]['forecasts']
+    assert later['results'][0]['actual']!=dev['results'][0]['actual']
+    assert dev['results'][0]['prior_full_year']['revenue']==pytest.approx(400)
+    summary=copy.deepcopy(dev['summary'])
+    for group in [summary['total'],*summary['by_origin'].values()]:
+        for model in group['models'].values():
+            model.update(ebit_n=24,ebit_mae_pct_actual_revenue=10,revenue_wape_pct=10)
+        group['models']['half_growth']['ebit_mae_pct_actual_revenue']=9
+    assert gates(summary,'half_growth',protocol['selection'])['passed']
+    summary['by_origin']['2025-06-30']['models']['half_growth']['ebit_mae_pct_actual_revenue']=11
+    assert not gates(summary,'half_growth',protocol['selection'])['passed']

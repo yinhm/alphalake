@@ -72,9 +72,9 @@ def error(predicted,actual):
                 margin_error_pp=100*(predicted['ebit']/predicted['revenue']-actual['ebit']/actual['revenue']))
 
 
-def metrics(rows):
+def metrics(rows,models=('current_rule','zero_growth')):
     result={}
-    for model in ('current_rule','zero_growth'):
+    for model in models:
         valid=[r for r in rows if r['status']=='evaluated']
         eligible=valid
         errors=[r['errors'][model] for r in valid]
