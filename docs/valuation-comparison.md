@@ -2,6 +2,8 @@
 
 `tools.compare_valuations`按两个run ID读取已有请求，分组输出差异，并用当前共享引擎重算核验两端。它不访问数据库或网络，不调用会保存新运行的`evaluate`，不覆盖原始文件。
 
+不知道run ID时，先用[历史查询](valuation-run-query.md)按公司和口径取得ID及实际目录；同一信息截止的并列运行不能自动任选。
+
 在`valuation/backend`下使用已安装依赖的Python：
 
 ```bash

@@ -1,6 +1,6 @@
 ---
 name: alphalake-valuation
-description: 使用 AlphaLake 已有数据库和显式政策进行 A 股公司条件估值，解释专项与行业候选、缺项和来源证据。适用于公司估值、已有估值结果解读、两次估值比较和口径核对；不用于一般股价预测、仓库开发或全市场同步维护。
+description: 使用 AlphaLake 已有数据库和显式政策进行 A 股公司条件估值，解释专项与行业候选、缺项和来源证据。适用于公司估值、历史估值发现、已有估值结果解读、两次估值比较和口径核对；不用于一般股价预测、仓库开发或全市场同步维护。
 ---
 
 # AlphaLake 公司估值
@@ -45,6 +45,25 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 必要时读取`valuation.evidence.run_file`或候选对应运行文件中的`request`、`audit`和`report`，按`run_id`追溯。先读摘要，按问题展开证据，避免把整个财务快照或全部历史运行塞入上下文。文件缺失如实报告，不根据文档数字伪造运行。
 
 回答通常给一张简短结果表，加关键假设/阻断和运行引用。不得把条件估值称为当前目标价；`share_date=null`不等于股本日期就是财报期。区分主库与审核隔离库：另一库拥有专项附注，不证明当前库已补齐。
+
+## 发现历史运行
+
+用户未提供run ID时，先读`docs/valuation-run-query.md`，从已确认的运行目录查询；不要求用户查找哈希，不为了获得ID重新计算。
+
+```bash
+cd "$ALPHALAKE_ROOT/valuation/backend"
+"$ALPHALAKE_PYTHON" -m tools.list_valuation_runs "$ALPHALAKE_CODE" \
+  --run-dir "$ALPHALAKE_RUN_DIR" --period "$ALPHALAKE_PERIOD" \
+  --latest-per-model > "$ALPHALAKE_HISTORY"
+```
+
+目录和模型可用重复的`--run-dir`、`--model`限定；`--as-of`是带时区的信息截止上限。仅使用已确认目录，不递归搜索整个workspace或静默切到另一个库的结果。
+
+检查`contract_version=alphalake-run-query-v1`、查询条件及`status`。退出2/`partial`或`latest_selection_complete=false`时先报告具体不完整原因，不断言哪个最新；`no_matches`只代表配置范围内无匹配。退出1报告请求/环境问题。
+
+`has_more=true`时按`offset/limit`继续取页，取得所需候选及元数据。只有模型组的`unique_latest_run_id`非空且证券、模型、期间、情景、资本口径符合用户意图，才可直接选取；从对应`results[].locations[].path`取得比较目录。最新按`information_as_of`，不是计算创建时间；同截止并列时展示模型、情景、WACC、资本口径及证据差异，请用户明确业务口径，不按文件时间、ID顺序或估值高低裁决。即使价格相同，不同run ID也不是重复记录。
+
+查询只验证保存请求与引擎哈希，摘要金额尚未重算；需要核验两端报告和解释差额时再调用比较入口。记录扫描不是原子快照，运行目录有并发发布时重新查询。
 
 ## 比较已有估值
 
