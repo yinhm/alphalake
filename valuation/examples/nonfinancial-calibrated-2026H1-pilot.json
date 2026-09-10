@@ -1,0 +1,325 @@
+{
+  "policy_version": "nonfinancial-calibrated-2026H1-pilot-v1",
+  "review_note": "固定10%WACC的统一普通模型对照，用于检验一年期利润校准的单因素影响；不是当前目标价。",
+  "assignments": {
+    "300866": {
+      "policy": {
+        "policy_id": "nonfinancial-history-fcff-calibrated-v1",
+        "approved_report_period": "2026-06-30",
+        "scenario": "mechanical_starting_scenario",
+        "review_note": "固定10%WACC的统一普通模型对照，用于检验一年期利润校准的单因素影响；不是当前目标价。",
+        "nonfinancial_scope_review": "安克合并普通经营模型；标准链及已审核原文见valuation-chain-2026，仍执行金融业务字段拒绝，不替代专项研发/套保估值。",
+        "wacc": 0.1,
+        "tax_rate": 0.25,
+        "growth_floor": -0.1,
+        "growth_ceiling": 0.2,
+        "growth_shift": 0,
+        "margin_shift": 0,
+        "sales_to_capital": 3,
+        "terminal_growth": 0.02,
+        "terminal_roic": 0.1,
+        "cash_recovery": 0.8,
+        "operating_cash_ratio": 0.03,
+        "minority_book_multiple": 1,
+        "debt_book_multiple": 1,
+        "extra_dilution_rate": 0.02,
+        "additional_claims_million_cny": 0,
+        "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+        "financial_asset_policy": "no_credit_pending_classification",
+        "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。",
+        "calibration": {
+          "model_id": "lagged-weighted-ebit-scale-half-v1",
+          "forecast_year": 1,
+          "report_period": "2026-06-30",
+          "training_origin": "2025-06-30",
+          "training_as_of": "2026-09-01T00:00:00+08:00",
+          "prepared_at": "2026-09-10T22:14:42.451866Z",
+          "approved_codes": [
+            "300866"
+          ],
+          "source_snapshot_sha256": "56d8019d94a599c2baf1340ff5c08a4b94478c96bb6849e46ebb779fb1658b3c",
+          "validation_protocol_sha256": "e1f303382fcc7c2aa0db74e79a69d215756f80efcc0e2e3c5e7cf4d9025c9332",
+          "validation_result_sha256": "89cf994c0109a6b830cdb0ce7fbacffbe785ddfb2167b318e6dc9d991d778a5b",
+          "evidence_basis": "research_tdx_fn314_not_strict_pit",
+          "amount_unit": "million_CNY",
+          "observations": [
+            {
+              "code": "688610",
+              "predicted_ebit": 14.276509687499994,
+              "actual_ebit": 87.32522534375,
+              "actual_revenue": 610.824936
+            },
+            {
+              "code": "688591",
+              "predicted_ebit": 165.67347565825196,
+              "actual_ebit": 39.33840846874998,
+              "actual_revenue": 1052.132832
+            },
+            {
+              "code": "301221",
+              "predicted_ebit": 75.90957300000001,
+              "actual_ebit": -6.364987287811281,
+              "actual_revenue": 737.950176
+            },
+            {
+              "code": "002613",
+              "predicted_ebit": 44.90301666930932,
+              "actual_ebit": -16.459726906249998,
+              "actual_revenue": 1387.276288
+            },
+            {
+              "code": "688256",
+              "predicted_ebit": 1321.6151457919918,
+              "actual_ebit": 3238.3563673974613,
+              "actual_revenue": 9612.126464
+            },
+            {
+              "code": "600469",
+              "predicted_ebit": 334.8362797200234,
+              "actual_ebit": 387.20597549999997,
+              "actual_revenue": 7695.662464
+            },
+            {
+              "code": "301305",
+              "predicted_ebit": 320.2020245468486,
+              "actual_ebit": 408.02250614062507,
+              "actual_revenue": 1983.521376
+            },
+            {
+              "code": "300941",
+              "predicted_ebit": 11.316762759199568,
+              "actual_ebit": 0.12710392761230582,
+              "actual_revenue": 260.88408
+            },
+            {
+              "code": "300475",
+              "predicted_ebit": 674.6398728902344,
+              "actual_ebit": 6360.434987577149,
+              "actual_revenue": 78332.138496
+            },
+            {
+              "code": "002432",
+              "predicted_ebit": 36.27824096250013,
+              "actual_ebit": -380.5652002773432,
+              "actual_revenue": 1131.593088
+            },
+            {
+              "code": "002468",
+              "predicted_ebit": 1849.3769491186818,
+              "actual_ebit": 2746.8424393125,
+              "actual_revenue": 63052.210176
+            },
+            {
+              "code": "000821",
+              "predicted_ebit": 392.1155600137274,
+              "actual_ebit": 8.679945492187501,
+              "actual_revenue": 5637.273152
+            },
+            {
+              "code": "300140",
+              "predicted_ebit": 1371.8770543870367,
+              "actual_ebit": 1601.501326602539,
+              "actual_revenue": 5908.800896
+            },
+            {
+              "code": "603076",
+              "predicted_ebit": 25.41643207831109,
+              "actual_ebit": 19.596708148437504,
+              "actual_revenue": 1745.652896
+            },
+            {
+              "code": "300650",
+              "predicted_ebit": 63.51510227032975,
+              "actual_ebit": 55.46110360473633,
+              "actual_revenue": 2978.207552
+            },
+            {
+              "code": "000925",
+              "predicted_ebit": 104.1545532954606,
+              "actual_ebit": 81.52875576953123,
+              "actual_revenue": 2481.409344
+            },
+            {
+              "code": "600487",
+              "predicted_ebit": 4304.787203803148,
+              "actual_ebit": 5035.2470865,
+              "actual_revenue": 76832.188416
+            },
+            {
+              "code": "002462",
+              "predicted_ebit": 433.9288439332032,
+              "actual_ebit": 277.88681609375,
+              "actual_revenue": 18103.96544
+            },
+            {
+              "code": "688608",
+              "predicted_ebit": 633.9624305460937,
+              "actual_ebit": 271.297713375,
+              "actual_revenue": 2937.557696
+            },
+            {
+              "code": "603833",
+              "predicted_ebit": 2741.856410269135,
+              "actual_ebit": 1270.0795054999999,
+              "actual_revenue": 14941.591808
+            },
+            {
+              "code": "600580",
+              "predicted_ebit": 1233.8107172439065,
+              "actual_ebit": 937.0308023749999,
+              "actual_revenue": 14889.690368
+            },
+            {
+              "code": "002434",
+              "predicted_ebit": 344.04335635647084,
+              "actual_ebit": -193.23824398046875,
+              "actual_revenue": 4598.423616
+            },
+            {
+              "code": "603798",
+              "predicted_ebit": 69.9582012780137,
+              "actual_ebit": 52.3284305,
+              "actual_revenue": 901.992496
+            },
+            {
+              "code": "301059",
+              "predicted_ebit": 82.41186219712417,
+              "actual_ebit": 108.55780463256836,
+              "actual_revenue": 523.824368
+            },
+            {
+              "code": "603169",
+              "predicted_ebit": 233.6215365622559,
+              "actual_ebit": -742.4096380671997,
+              "actual_revenue": 5865.505088
+            },
+            {
+              "code": "600327",
+              "predicted_ebit": 93.40544311921293,
+              "actual_ebit": -15.349876812500007,
+              "actual_revenue": 2756.710592
+            },
+            {
+              "code": "603127",
+              "predicted_ebit": 19.572416680078113,
+              "actual_ebit": -188.541993402344,
+              "actual_revenue": 1692.868128
+            },
+            {
+              "code": "600033",
+              "predicted_ebit": 1458.2899640183732,
+              "actual_ebit": 1469.9151687031251,
+              "actual_revenue": 3005.420416
+            },
+            {
+              "code": "000788",
+              "predicted_ebit": 171.64995103152808,
+              "actual_ebit": 61.79832760351563,
+              "actual_revenue": 972.173136
+            },
+            {
+              "code": "000557",
+              "predicted_ebit": 252.11017528365053,
+              "actual_ebit": 88.01796692004395,
+              "actual_revenue": 1394.824
+            },
+            {
+              "code": "301282",
+              "predicted_ebit": 99.50470439882812,
+              "actual_ebit": 86.58612316894532,
+              "actual_revenue": 2466.44816
+            },
+            {
+              "code": "000716",
+              "predicted_ebit": 128.92177149203468,
+              "actual_ebit": 53.89224426074219,
+              "actual_revenue": 2520.46304
+            },
+            {
+              "code": "603183",
+              "predicted_ebit": 65.02405119169923,
+              "actual_ebit": 38.599058874023434,
+              "actual_revenue": 771.488576
+            },
+            {
+              "code": "688663",
+              "predicted_ebit": 200.98723456874998,
+              "actual_ebit": 85.962447995,
+              "actual_revenue": 1863.281568
+            },
+            {
+              "code": "688082",
+              "predicted_ebit": 1847.2156218254881,
+              "actual_ebit": 1032.468182875,
+              "actual_revenue": 7238.975488
+            },
+            {
+              "code": "605567",
+              "predicted_ebit": 49.46414148200604,
+              "actual_ebit": 61.7833373671875,
+              "actual_revenue": 2748.9728
+            },
+            {
+              "code": "300225",
+              "predicted_ebit": 23.55174946272743,
+              "actual_ebit": 28.75861548828125,
+              "actual_revenue": 874.91184
+            },
+            {
+              "code": "002265",
+              "predicted_ebit": 129.07712894062502,
+              "actual_ebit": 200.873910484375,
+              "actual_revenue": 5120.96736
+            },
+            {
+              "code": "600860",
+              "predicted_ebit": 33.438751890175034,
+              "actual_ebit": -117.16894225732422,
+              "actual_revenue": 1499.742432
+            },
+            {
+              "code": "600458",
+              "predicted_ebit": 690.901011539764,
+              "actual_ebit": 749.48903425,
+              "actual_revenue": 22681.931776
+            },
+            {
+              "code": "002082",
+              "predicted_ebit": 44.214018482812506,
+              "actual_ebit": -79.32263187499998,
+              "actual_revenue": 1127.585864
+            },
+            {
+              "code": "301175",
+              "predicted_ebit": 527.2756090330315,
+              "actual_ebit": 578.2133047998046,
+              "actual_revenue": 2178.388704
+            },
+            {
+              "code": "300553",
+              "predicted_ebit": 41.546897664257806,
+              "actual_ebit": 0.4958112109374984,
+              "actual_revenue": 298.591928
+            },
+            {
+              "code": "603728",
+              "predicted_ebit": 81.10962568992294,
+              "actual_ebit": 57.221936109374994,
+              "actual_revenue": 3014.537344
+            },
+            {
+              "code": "603836",
+              "predicted_ebit": 81.85911778582269,
+              "actual_ebit": 105.68359351562498,
+              "actual_revenue": 9471.320832
+            }
+          ],
+          "raw_scale": 0.5936120276515603,
+          "scale": 0.5936120276515603,
+          "weight": 0.5,
+          "review_note": "独立复验支持一年期合并调整利润代理校准；仅限显式指定公司与报告期。源层简化回溯及当前名单抽样，非严格PIT；第2至10年、再投资和终值无本研究验证。"
+        }
+      }
+    }
+  }
+}

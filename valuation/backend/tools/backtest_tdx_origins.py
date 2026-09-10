@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 from statistics import median
+from data_sources.alphalake_calibration import weighted_median
 
 from tools.backtest_tdx_history import at, available, operating, error, metrics, run
 
@@ -81,11 +82,7 @@ def fit_calibration(protocol,snapshot,origin):
             f=row['forecasts']['current_rule'];a=row['actual']
             observations.append((a['ebit']/f['ebit'],f['ebit']/a['revenue']) if scaled else
                                 ((f['ebit']-a['ebit'])/f['revenue'],f['revenue']/a['revenue']))
-        observations.sort()
-        half=sum(w for _,w in observations)/2;weight=0
-        for residual,w in observations:
-            weight+=w
-            if weight>=half:raw=residual;break
+        raw=weighted_median(observations)
     ready=len(errors)>=config['minimum_training_pairs']
     if scaled:
         fitted=dict(weighted_ebit_scale=raw,ebit_scale=max(config['minimum_ebit_scale'],min(config['maximum_ebit_scale'],raw)) if ready else None)
@@ -191,6 +188,7 @@ def main():
         if 'source_snapshot_sha256' in protocol and protocol['source_snapshot_sha256']!=digest(source):raise ValueError('source snapshot differs from protocol')
         evidence=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(source),
                       rule_code_sha256=digest((Path(__file__).resolve().parents[1]/'data_sources/alphalake.py').read_bytes()),
+                      calibration_code_sha256=digest((Path(__file__).resolve().parents[1]/'data_sources/alphalake_calibration.py').read_bytes()),
                       base_backtest_sha256=digest((Path(__file__).parent/'backtest_tdx_history.py').read_bytes()),code_sha256=digest(Path(__file__).read_bytes()))
         selection=json.loads(a.selection.read_bytes()) if a.selection else None
         if selection and selection['evidence']!=evidence:raise ValueError('selection code, source or protocol differs')

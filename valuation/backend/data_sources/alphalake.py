@@ -11,6 +11,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from data_sources.alphalake_wacc import WACCBinding, resolve_wacc
 from data_sources.alphalake_capital import CapitalBinding, resolve_capital
+from data_sources.alphalake_calibration import FirstYearCalibration
 from engine.data_dictionary import (CompanyValuationInput, PreparedTTM, RawFinancials,
     MacroInputs, IndustryData, MethodologyChoices, ValuationAssumptions, EquityBridgeInputs, ForecastYear)
 
@@ -150,10 +151,23 @@ class HistoricalDCFPolicy(BookDCFPolicy):
         return self
 
 
+class CalibratedHistoricalDCFPolicy(HistoricalDCFPolicy):
+    policy_id: Literal['nonfinancial-history-fcff-calibrated-v1']
+    calibration: FirstYearCalibration
+
+    @model_validator(mode='after')
+    def calibration_scope(self):
+        if self.calibration.report_period!=self.approved_report_period:
+            raise ValueError('calibration report period differs from policy')
+        if (self.growth_floor,self.growth_ceiling,self.growth_shift,self.margin_shift)!=(-.1,.2,0,0):
+            raise ValueError('calibration requires validated base forecast rules')
+        return self
+
+
 class AlphaLakeRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     data: Snapshot
-    policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy
+    policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy | CalibratedHistoricalDCFPolicy
     wacc_binding: WACCBinding | None = None
     capital_binding: CapitalBinding | None = None
 
@@ -578,12 +592,22 @@ def historical_forecast(revenue, ebit, quarters, report_period, policy):
     if not 0<target<=1:raise ValueError('rule-generated target margin outside (0,1]')
     annual=[ForecastYear(growth=growth if year<=5 else growth+(policy.terminal_growth-growth)*(year-5)/5,
         margin=margin+(target-margin)*min(year/5,1),tax=policy.tax_rate) for year in range(1,11)]
-    return annual, dict(required_yoy_pairs=2,available_yoy_pairs=len(pairs),revenue_yoy_pairs=pairs,
+    evidence=dict(required_yoy_pairs=2,available_yoy_pairs=len(pairs),revenue_yoy_pairs=pairs,
                         observed_median_growth=observed,clipped_scenario_growth=growth,
                         current_adjusted_margin=margin,target_margin=target)
+    if isinstance(policy,CalibratedHistoricalDCFPolicy):
+        before=annual[0].margin
+        annual[0]=ForecastYear(growth=annual[0].growth,margin=before*policy.calibration.multiplier,tax=annual[0].tax)
+        evidence['first_year_calibration']=dict(model_id=policy.calibration.model_id,multiplier=policy.calibration.multiplier,
+            margin_before=before,margin_after=annual[0].margin,training_pairs=len(policy.calibration.observations),
+            evidence_basis=policy.calibration.evidence_basis,policy_sha256=content_hash(policy.calibration.model_dump(mode='json')))
+    return annual,evidence
 
 
 def build_historical_dcf_inputs(d, policy):
+    if isinstance(policy,CalibratedHistoricalDCFPolicy):
+        if d.code not in policy.calibration.approved_codes or policy.calibration.prepared_at>d.information_as_of:
+            raise ValueError('calibration not approved or not yet available for valuation')
     window,_=standard_window_reader(d)
     revenue=window('FN230')
     ebit=window('FN86')+window('FN305')-window('FN306')-window('FN83')-window('FN82')-window('FN301')
@@ -599,12 +623,14 @@ def build_historical_dcf_inputs(d, policy):
         if period in quarters:raise ValueError('duplicate quarterly revenue history')
         quarters[period]=(validated_source_value(f),f['fact_id'])
     annual,evidence=historical_forecast(revenue,ebit,quarters,d.report_period,policy)
-    parameters=policy.model_dump(exclude={'policy_id','annual_forecast','growth_floor','growth_ceiling','growth_shift','margin_shift'})
+    parameters=policy.model_dump(exclude={'policy_id','annual_forecast','growth_floor','growth_ceiling','growth_shift','margin_shift','calibration'})
     generated=BookDCFPolicy(policy_id='nonfinancial-book-fcff-v1',annual_forecast=annual,**parameters)
     inputs,audit=build_book_dcf_inputs(d,generated)
     inputs.prepared_ttm.provenance['assumption_rules']=content_hash(policy.model_dump(mode='json'))
     audit['generated_policy']=generated.model_dump(mode='json')
     audit['forecast_rule_evidence']=evidence
+    if isinstance(policy,CalibratedHistoricalDCFPolicy):
+        audit['boundaries'].append('research-estimated calibration changes first-year EBIT only; later years and terminal assumptions are unvalidated baseline policies, not calibrated forecasts')
     audit['consumed_inputs'].append(dict(source='tdx',field='FN230',purpose='historical_growth_rule',
         source_fact_ids=sorted({i for r in evidence['revenue_yoy_pairs'] for i in r['source_fact_ids']})))
     audit['boundaries'].append('median recent quarterly YOY with policy cap/shift and five-year fade; mechanical starting scenario, not researched growth forecast')

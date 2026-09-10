@@ -11,14 +11,14 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from api.alphalake import evaluate, ENGINE_REVISION
-from data_sources.alphalake import Policy, ScreenPolicy, BookDCFPolicy, HistoricalDCFPolicy, WACCBinding, AlphaLakeRequest, MissingInputs, content_hash
+from data_sources.alphalake import Policy, ScreenPolicy, BookDCFPolicy, HistoricalDCFPolicy, CalibratedHistoricalDCFPolicy, WACCBinding, AlphaLakeRequest, MissingInputs, content_hash
 from data_sources.alphalake_wacc import WACCPolicy, ReferenceSnapshot
 from data_sources.alphalake_capital import CapitalBinding, CapitalPolicy, CapitalReferences
 
 
 class Assignment(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy
+    policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy | CalibratedHistoricalDCFPolicy
     wacc_binding: WACCBinding | None = None
     capital_binding: CapitalBinding | None = None
 
@@ -42,7 +42,7 @@ class IndustryRule(BaseModel):
     node_names: dict[str, Annotated[str, Field(min_length=1)]] | None = None
     max_age_days: int = Field(ge=1,le=366)
     review_note: str = Field(min_length=1)
-    policy: HistoricalDCFPolicy
+    policy: HistoricalDCFPolicy | CalibratedHistoricalDCFPolicy
     wacc_policy: IndustryWACCPolicy | None = None
     capital_policy: IndustryCapitalPolicy | None = None
 

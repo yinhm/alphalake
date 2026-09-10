@@ -1147,3 +1147,61 @@ def test_run_query_retains_ties_duplicates_and_corruption(exports,tmp_path,monke
     evaluate(AlphaLakeRequest(data=later,policy=p))
     same_instant=list_runs([first],'300866',models=[p['policy_id']],latest_per_model=True)
     assert same_instant['result_count']==2 and same_instant['model_groups'][0]['unique_latest_run_id'] is None
+
+
+@pytest.mark.parametrize('code',['300866','600519'])
+def test_first_year_calibration_standard_chain(exports,tmp_path,monkeypatch,code):
+    from api.alphalake import evaluate
+    from tools.batch_valuate_alphalake import Assignment
+    from tools.prepare_forecast_calibration import prepare
+    root=REPO/'valuation/research/tdx-growth-expanded'
+    calibration=json.loads((root/'calibration-2026H1.json').read_bytes())
+    rebuilt=prepare((root/'protocol-v7.json').read_bytes(),(root/'snapshot-v7.json').read_bytes(),(root/'holdout-v7-summary.json').read_bytes(),
+                    '2026-06-30',calibration['approved_codes'],calibration['prepared_at'])
+    assert rebuilt.model_dump(mode='json')==calibration
+    policy=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_bytes())
+    corrected=policy|dict(policy_id='nonfinancial-history-fcff-calibrated-v1',calibration=calibration)
+    assert Assignment(policy=corrected).policy.calibration.multiplier==rebuilt.multiplier
+    data=copy.deepcopy(exports[code]);data['information_as_of']=calibration['prepared_at']
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    if code=='600519':
+        corrected['calibration']['approved_codes'].append(code)
+        for candidate in (policy,corrected):
+            with pytest.raises(ValueError,match='financial operations require separate model'):
+                evaluate(AlphaLakeRequest(data=data,policy=candidate))
+        assert not list(tmp_path.glob('*.json'))
+        return
+    base=evaluate(AlphaLakeRequest(data=data,policy=policy))
+    with TestClient(app) as client:
+        response=client.post('/api/valuation/from-alphalake',json=dict(data=data,policy=corrected))
+        assert response.status_code==200,response.text
+        result=response.json()
+        assert client.post('/api/valuation/from-alphalake',json=dict(data=data,policy=corrected)).json()==result
+    assert result['request']['data']==base['request']['data']
+    before=base['inputs']['valuation_assumptions']['annual_forecast'];after=result['inputs']['valuation_assumptions']['annual_forecast']
+    assert before[1:]==after[1:]
+    assert before[0]['growth']==after[0]['growth'] and before[0]['tax']==after[0]['tax']
+    near(after[0]['margin'],before[0]['margin']*rebuilt.multiplier)
+    assert result['inputs']['equity_bridge']==base['inputs']['equity_bridge']
+    left=base['report'];right=result['report']
+    assert left['cost_of_capital']==right['cost_of_capital']
+    for key in ('revenue_projections','reinvestment_projections'):
+        assert left['dcf'][key]==right['dcf'][key]
+    for key in ('ebit_projections','fcff_projections'):
+        assert left['dcf'][key][1:]==right['dcf'][key][1:]
+    delta=(right['dcf']['ebit_projections'][0]-left['dcf']['ebit_projections'][0])*(1-before[0]['tax'])/(1+left['cost_of_capital']['wacc'])
+    near(right['dcf']['value_of_operating_assets']-left['dcf']['value_of_operating_assets'],delta)
+    near(right['final']['value_per_share']-left['final']['value_per_share'],delta/result['inputs']['equity_bridge']['shares'])
+    assert result['run_id']!=base['run_id'] and len(list(tmp_path.glob('*.json')))==2
+    for change in ('coefficient','horizon','weight','unapproved','future','period','base_rule','old_version'):
+        bad=copy.deepcopy(corrected)
+        if change=='coefficient':bad['calibration']['scale']+=.01
+        elif change=='horizon':bad['calibration']['forecast_year']=5
+        elif change=='weight':bad['calibration']['weight']=1
+        elif change=='unapproved':bad['calibration']['approved_codes']=['999999']
+        elif change=='future':bad['calibration']['prepared_at']='2027-01-01T00:00:00Z'
+        elif change=='period':bad['approved_report_period']='2025-06-30'
+        elif change=='base_rule':bad['margin_shift']=.01
+        else:bad['policy_id']='nonfinancial-history-fcff-v1'
+        with pytest.raises(ValueError):evaluate(AlphaLakeRequest(data=data,policy=bad))
+    assert len(list(tmp_path.glob('*.json')))==2

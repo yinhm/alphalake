@@ -330,3 +330,16 @@ def test_training_company_influence_is_a_fixed_model_diagnostic():
         assert 1-saved['ebit_error']/m['current_rule']['ebit_mae_pct_actual_revenue']==saved['improvement_fraction']
         assert {o:v['models']['bias_half']['ebit_mae_pct_actual_revenue'] for o,v in summary['by_origin'].items()}==saved['by_origin']
     assert min(r['improvement_fraction'] for r in expected)>.07
+
+
+def test_calibration_publication_rejects_tampered_evidence_and_weights():
+    from tools.prepare_forecast_calibration import prepare
+    from data_sources.alphalake_calibration import weighted_median
+    directory=ROOT/'valuation/research/tdx-growth-expanded'
+    protocol=(directory/'protocol-v7.json').read_bytes();source=(directory/'snapshot-v7.json').read_bytes();validation=(directory/'holdout-v7-summary.json').read_bytes()
+    args=('2026-06-30',['300866'],'2026-09-10T23:00:00Z')
+    with pytest.raises(ValueError,match='hash differs'):prepare(protocol,source+b' ',validation,*args)
+    changed=json.loads(validation);changed['validation']['verdict']['passed']=False
+    with pytest.raises(ValueError,match='validation does not reproduce'):prepare(protocol,source,json.dumps(changed).encode(),*args)
+    for pairs in ([],[(1,float('inf'))],[(1,0)],[(1,1e308)]*30):
+        with pytest.raises(ValueError):weighted_median(pairs)
