@@ -1,0 +1,55 @@
+{
+  "contract_version": "alphalake-split-batch-acceptance-v1",
+  "report_period": "2026-06-30",
+  "information_as_of": "2026-09-10T04:42:23Z",
+  "engine_revision": "a8a2ad5ce82f5c659bee62be97388b2847745d30a8c79b310ab4f26693f0de5a",
+  "universe_scope": "local_known_mainland_CNY_equities_not_verified_exchange_census_or_historical_master_snapshot",
+  "universe_count": 5569,
+  "financial_status_counts": {
+    "blocked_financial_inputs": 235,
+    "blocked_no_standard_facts": 29,
+    "blocked_source_record_conflict": 1,
+    "financial_core_complete_requires_policy": 5304
+  },
+  "status_counts": {
+    "blocked_missing_inputs": 166,
+    "blocked_no_reviewed_industry_policy": 598,
+    "blocked_review_exclusion": 3,
+    "blocked_source_record_conflict": 1,
+    "illustrative_book_equity_scenario": 2461,
+    "rejected_input_or_policy": 2340
+  },
+  "source_batches": [
+    {
+      "path": "workspace/nonfinancial-batch-20260910/batches/batch-viebswso.json",
+      "sha256": "a12c74a482913d983a84ade8b65bf0a6d4a5ac5ad5d952c33e020a7a9e0b808a"
+    },
+    {
+      "path": "workspace/bse-publication-20260910/batches/batch-3vthj_qr.json",
+      "sha256": "325d4b08492aaeda2b171324b2b0ef9f29d1917fd7af277313af6750755fdc06"
+    }
+  ],
+  "independent_checks": [
+    {
+      "path": "workspace/nonfinancial-batch-20260910/independent-final.json",
+      "sha256": "36c03cb9ba7f6846d4214bace32ff9304416dca29fd4f6e881307c25a458de3c"
+    },
+    {
+      "path": "workspace/bse-publication-20260910/bse-independent.json",
+      "sha256": "fe31aadd606f4b6dfea59f7c04cfe30c178fa6acbb9e0163aabe50b077a85627"
+    }
+  ],
+  "readiness": {
+    "path": "workspace/bse-publication-20260910/promoted-readiness.json",
+    "sha256": "47b17c02b232bc8c137800998d95425b7fddf2c26194bf33930039622c836473"
+  },
+  "promotion": {
+    "path": "workspace/bse-publication-20260910/promotion.json",
+    "sha256": "698a4ad8121b7466ea8a8a76fc231d56dc8b88559a8c2cbe84abb98dcb97b2c2"
+  },
+  "combined_policy": {
+    "path": "workspace/bse-publication-20260910/combined-policy.json",
+    "sha256": "6614c07b3ae4c1522c29acc3a14fb67044384fd8ea864352bc6e3f291caf87f4"
+  },
+  "boundary": "分区实测汇总；非单次原子全市场运行，非逐公司PDF验收，非当前目标价。沪深估值导出内容无变化；物化运行编号及写入时间更新。"
+}
