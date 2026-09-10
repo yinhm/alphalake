@@ -1,0 +1,137 @@
+{
+  "study_id": "tdx-history-2025H1-one-year-v1",
+  "frozen_before_scoring": "2026-09-10",
+  "origin": "2025-06-30",
+  "forecast_as_of": "2025-09-01T00:00:00+08:00",
+  "target": "2026-06-30",
+  "evaluation_as_of": "2026-09-10T00:00:00+08:00",
+  "policy": {
+    "policy_id": "nonfinancial-history-fcff-v1",
+    "approved_report_period": "2025-06-30",
+    "scenario": "mechanical_starting_scenario",
+    "review_note": "模板参数仅为初始敏感性情景，不是行业研究结论；使用前应审核适用范围和参数。",
+    "nonfinancial_scope_review": "使用时替换为公司非金融经营范围的实际审核依据。",
+    "wacc": 0.1,
+    "tax_rate": 0.25,
+    "growth_floor": -0.1,
+    "growth_ceiling": 0.2,
+    "growth_shift": 0,
+    "margin_shift": 0,
+    "sales_to_capital": 3,
+    "terminal_growth": 0.02,
+    "terminal_roic": 0.1,
+    "cash_recovery": 0.8,
+    "operating_cash_ratio": 0.03,
+    "minority_book_multiple": 1,
+    "debt_book_multiple": 1,
+    "extra_dilution_rate": 0.02,
+    "additional_claims_million_cny": 0,
+    "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+    "financial_asset_policy": "no_credit_pending_classification",
+    "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+  },
+  "samples": [
+    {
+      "code": "600519",
+      "stratum": "稳定消费",
+      "split": "development"
+    },
+    {
+      "code": "000858",
+      "stratum": "稳定消费",
+      "split": "development"
+    },
+    {
+      "code": "603288",
+      "stratum": "稳定消费",
+      "split": "development"
+    },
+    {
+      "code": "600887",
+      "stratum": "稳定消费",
+      "split": "holdout"
+    },
+    {
+      "code": "000895",
+      "stratum": "稳定消费",
+      "split": "holdout"
+    },
+    {
+      "code": "300866",
+      "stratum": "制造与出口",
+      "split": "development"
+    },
+    {
+      "code": "000333",
+      "stratum": "制造与出口",
+      "split": "development"
+    },
+    {
+      "code": "000651",
+      "stratum": "制造与出口",
+      "split": "development"
+    },
+    {
+      "code": "002032",
+      "stratum": "制造与出口",
+      "split": "holdout"
+    },
+    {
+      "code": "002508",
+      "stratum": "制造与出口",
+      "split": "holdout"
+    },
+    {
+      "code": "300124",
+      "stratum": "科技与设备",
+      "split": "development"
+    },
+    {
+      "code": "002415",
+      "stratum": "科技与设备",
+      "split": "development"
+    },
+    {
+      "code": "002475",
+      "stratum": "科技与设备",
+      "split": "development"
+    },
+    {
+      "code": "300750",
+      "stratum": "科技与设备",
+      "split": "holdout"
+    },
+    {
+      "code": "002371",
+      "stratum": "科技与设备",
+      "split": "holdout"
+    },
+    {
+      "code": "600031",
+      "stratum": "周期业务",
+      "split": "development"
+    },
+    {
+      "code": "000425",
+      "stratum": "周期业务",
+      "split": "development"
+    },
+    {
+      "code": "600309",
+      "stratum": "周期业务",
+      "split": "development"
+    },
+    {
+      "code": "601899",
+      "stratum": "周期业务",
+      "split": "holdout"
+    },
+    {
+      "code": "600019",
+      "stratum": "周期业务",
+      "split": "holdout"
+    }
+  ],
+  "selection": "预先目的抽样，当前熟悉公司；类别为研究分层而非数据库行业映射，存在幸存者偏差，不代表全市场",
+  "comparison": "预先固定零增长/利润率不变基线，不调参；经营预测子规则试验，不进行DCF或全模型准入"
+}
