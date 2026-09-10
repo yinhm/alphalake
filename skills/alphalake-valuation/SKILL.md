@@ -1,6 +1,6 @@
 ---
 name: alphalake-valuation
-description: 使用 AlphaLake 已有数据库和显式政策进行 A 股公司条件估值，解释专项与行业候选、缺项和来源证据。适用于公司估值、已有估值结果解读和口径核对；不用于一般股价预测、仓库开发或全市场同步维护。
+description: 使用 AlphaLake 已有数据库和显式政策进行 A 股公司条件估值，解释专项与行业候选、缺项和来源证据。适用于公司估值、已有估值结果解读、两次估值比较和口径核对；不用于一般股价预测、仓库开发或全市场同步维护。
 ---
 
 # AlphaLake 公司估值
@@ -46,4 +46,18 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 回答通常给一张简短结果表，加关键假设/阻断和运行引用。不得把条件估值称为当前目标价；`share_date=null`不等于股本日期就是财报期。区分主库与审核隔离库：另一库拥有专项附注，不证明当前库已补齐。
 
-如果用户要解释估值变化，比较两个明确run ID的财务、预测、WACC、股权调整和股本基期；当前没有自动归因命令。未控制其他输入相同时，只能说明哪些因素变了，不能把全部差额归于WACC。若仅解释已有运行，直接读取其已保存证据并注明原时点，不必启动一次新计算，也不能声称旧运行代表最新数据。
+## 比较已有估值
+
+需要比较两个已知运行时，先读仓库的`docs/valuation-comparison.md`，使用已有run ID及其实际目录：
+
+```bash
+cd "$ALPHALAKE_ROOT/valuation/backend"
+"$ALPHALAKE_PYTHON" -m tools.compare_valuations "$ALPHALAKE_BEFORE_RUN" "$ALPHALAKE_AFTER_RUN" \
+  --run-dir "$ALPHALAKE_RUN_DIR" > "$ALPHALAKE_COMPARISON"
+```
+
+另一端不在同目录时提供`--after-run-dir`。命令从保存请求在当前引擎重算核验，但不访问数据库、不写新估值。未找到运行或不能复现历史报告时报告拒绝，不照文档数字拼接结果。
+
+检查`alphalake-valuation-comparison-v1`及`attribution.status`。只有`verified_wacc_only`可引用其WACC贡献；`not_attributed`只说明变化因素与总差额，不能全部归于WACC。同时列明双方模型、财务/截止/股本口径、标准ID差异和规范化变化；差异被截断时按JSON Pointer到原文件查明，不把差异条数当作金额变化条数。
+
+若仅解释一个已有运行，直接读取其已保存证据并注明原时点，不必启动一次新计算，也不能声称旧运行代表最新数据。
