@@ -1,0 +1,332 @@
+{
+  "code": "688648",
+  "selection": "protocol-reinvestment固定holdout名单第一家；未按预测误差、附注可闭合性或是否盈利替换",
+  "snapshot_sha256": "fade80cf0a11469a96f8fec1ea317a4c88d18a5fd23789946bdfbde621fdf58b",
+  "reports": [
+    {
+      "file": "2025H1.pdf",
+      "period": "2025-06-30",
+      "sha256": "4473f1cca22c1fef5fe1bfa7ad62fad5d8c07c3a1403811cbd0921ab84eefb78",
+      "source_url": "https://static.cninfo.com.cn/finalpage/2025-08-28/1224595568.PDF",
+      "announcement_id": "1224595568",
+      "first_acquired_at": null,
+      "acquisition_note": "本次会话下载；原下载未持久保存精确完成时间，不以URL日期或文件mtime补造",
+      "title": "中邮科技股份有限公司2025年半年度报告",
+      "rows": [
+        {
+          "key": "cf_depreciation",
+          "page": 145,
+          "label": "固定资产折旧、油气资产折耗、生产性生物资产折旧",
+          "anchor": null,
+          "column": 0,
+          "values": [
+            "19530975.16",
+            "17266929.64"
+          ],
+          "header_page": 144,
+          "header_label": "现金流量表补充资料"
+        },
+        {
+          "key": "cf_intangible",
+          "page": 145,
+          "label": "无形资产摊销",
+          "anchor": null,
+          "column": 0,
+          "values": [
+            "1957368.43",
+            "1937637.98"
+          ],
+          "header_page": 144,
+          "header_label": "现金流量表补充资料"
+        },
+        {
+          "key": "cf_deferred",
+          "page": 145,
+          "label": "长期待摊费用摊销",
+          "anchor": null,
+          "column": 0,
+          "values": [
+            "35142.52",
+            "15351.70"
+          ],
+          "header_page": 144,
+          "header_label": "现金流量表补充资料"
+        },
+        {
+          "key": "cf_rou",
+          "page": 145,
+          "label": "使用权资产摊销",
+          "anchor": null,
+          "column": 0,
+          "values": [
+            "2679441.32",
+            "2604075.75"
+          ],
+          "header_page": 144,
+          "header_label": "现金流量表补充资料"
+        },
+        {
+          "key": "note_ppe",
+          "page": 122,
+          "label": "（1）计提",
+          "anchor": "二、累计折旧",
+          "column": -1,
+          "values": [
+            "6250049.91",
+            "7043987.06",
+            "5364936.40",
+            "808136.92",
+            "1259.85",
+            "19468370.14"
+          ],
+          "header_page": 121,
+          "header_label": "固定资产情况"
+        },
+        {
+          "key": "note_property",
+          "page": 121,
+          "label": "（1）计提或摊销",
+          "anchor": null,
+          "column": -1,
+          "values": [
+            "62605.02",
+            "62605.02"
+          ],
+          "header_page": 120,
+          "header_label": "投资性房地产计量模式"
+        },
+        {
+          "key": "note_rou",
+          "page": 125,
+          "label": "(1)计提",
+          "anchor": "二、累计折旧",
+          "column": -1,
+          "values": [
+            "2606027.52",
+            "73413.80",
+            "2679441.32"
+          ],
+          "header_page": 124,
+          "header_label": "使用权资产情况"
+        }
+      ],
+      "fn136_components": [
+        "ppe",
+        "investment_property"
+      ]
+    },
+    {
+      "file": "2025FY.pdf",
+      "period": "2025-12-31",
+      "sha256": "228baf77b21ad67b377d5e0eba2c588665ec751efdf8589212b5c91824e76b6f",
+      "source_url": "https://static.cninfo.com.cn/finalpage/2026-04-29/1225239416.PDF",
+      "announcement_id": "1225239416",
+      "first_acquired_at": "2026-09-10T23:01:12.121772+00:00",
+      "acquisition_note": "本次会话首次成功下载PDF后记录的UTC时间；非公告时间",
+      "title": "中邮科技股份有限公司2025年年度报告",
+      "rows": [
+        {
+          "key": "cf_depreciation",
+          "page": 219,
+          "label": "固定资产折旧、使用权资产折旧",
+          "anchor": null,
+          "column": 0,
+          "values": [
+            "49328512.15",
+            "41503580.43"
+          ],
+          "header_page": 218,
+          "header_label": "现金流量表补充资料"
+        },
+        {
+          "key": "cf_intangible",
+          "page": 219,
+          "label": "无形资产摊销",
+          "anchor": null,
+          "column": 0,
+          "values": [
+            "3630192.85",
+            "3829888.44"
+          ],
+          "header_page": 218,
+          "header_label": "现金流量表补充资料"
+        },
+        {
+          "key": "cf_deferred",
+          "page": 219,
+          "label": "长期待摊费用摊销",
+          "anchor": null,
+          "column": 0,
+          "values": [
+            "367689.25",
+            "52160.96"
+          ],
+          "header_page": 218,
+          "header_label": "现金流量表补充资料"
+        },
+        {
+          "key": "note_ppe",
+          "page": 191,
+          "label": "（1）计提",
+          "anchor": "二、累计折旧",
+          "column": -1,
+          "values": [
+            "12644730.36",
+            "17092316.88",
+            "9700255.29",
+            "1284372.40",
+            "40977.65",
+            "3141673.09",
+            "43904325.67"
+          ],
+          "header_page": 191,
+          "header_label": "固定资产情况"
+        },
+        {
+          "key": "note_property",
+          "page": 189,
+          "label": "（1）计提或摊销",
+          "anchor": null,
+          "column": -1,
+          "values": [
+            "125210.04",
+            "125210.04"
+          ],
+          "header_page": 189,
+          "header_label": "投资性房地产计量模式"
+        },
+        {
+          "key": "note_rou",
+          "page": 196,
+          "label": "（1）计提",
+          "anchor": "二、累计折旧",
+          "column": -1,
+          "values": [
+            "5212055.04",
+            "86921.40",
+            "5298976.44"
+          ],
+          "header_page": 195,
+          "header_label": "使用权资产情况"
+        }
+      ],
+      "fn136_components": [
+        "ppe",
+        "investment_property",
+        "right_of_use"
+      ]
+    },
+    {
+      "file": "2026H1.pdf",
+      "period": "2026-06-30",
+      "sha256": "86d6f75e1efa7f8ff6271740c13dd569068703f69551fd7b334e1aa677358131",
+      "source_url": "https://static.cninfo.com.cn/finalpage/2026-08-27/1225510142.PDF",
+      "announcement_id": "1225510142",
+      "first_acquired_at": "2026-09-10T23:01:14.521238+00:00",
+      "acquisition_note": "本次会话首次成功下载PDF后记录的UTC时间；非公告时间",
+      "title": "中邮科技股份有限公司2026年半年度报告",
+      "rows": [
+        {
+          "key": "cf_depreciation",
+          "page": 184,
+          "label": "固定资产折旧、油气资产折耗、生产性生物资产折旧",
+          "anchor": null,
+          "column": 0,
+          "values": [
+            "26150062.54",
+            "19530975.16"
+          ],
+          "header_page": 184,
+          "header_label": "现金流量表补充资料"
+        },
+        {
+          "key": "cf_intangible",
+          "page": 184,
+          "label": "无形资产摊销",
+          "anchor": null,
+          "column": 0,
+          "values": [
+            "1975915.24",
+            "1957368.43"
+          ],
+          "header_page": 184,
+          "header_label": "现金流量表补充资料"
+        },
+        {
+          "key": "cf_deferred",
+          "page": 184,
+          "label": "长期待摊费用摊销",
+          "anchor": null,
+          "column": 0,
+          "values": [
+            "613063.59",
+            "35142.52"
+          ],
+          "header_page": 184,
+          "header_label": "现金流量表补充资料"
+        },
+        {
+          "key": "cf_rou",
+          "page": 184,
+          "label": "使用权资产摊销",
+          "anchor": null,
+          "column": 0,
+          "values": [
+            "2753778.10",
+            "2679441.32"
+          ],
+          "header_page": 184,
+          "header_label": "现金流量表补充资料"
+        },
+        {
+          "key": "note_ppe",
+          "page": 159,
+          "label": "（1）计提",
+          "anchor": "二、累计折旧",
+          "column": -1,
+          "values": [
+            "6433663.38",
+            "6484168.19",
+            "5509599.24",
+            "892238.45",
+            "6767788.26",
+            "26087457.52"
+          ],
+          "header_page": 159,
+          "header_label": "固定资产情况"
+        },
+        {
+          "key": "note_property",
+          "page": 157,
+          "label": "（1）计提或摊销",
+          "anchor": null,
+          "column": -1,
+          "values": [
+            "62605.02",
+            "62605.02"
+          ],
+          "header_page": 157,
+          "header_label": "投资性房地产计量模式"
+        },
+        {
+          "key": "note_rou",
+          "page": 162,
+          "label": "(1)计提",
+          "anchor": "二、累计折旧",
+          "column": -1,
+          "values": [
+            "2753778.10",
+            "2753778.10"
+          ],
+          "header_page": 162,
+          "header_label": "使用权资产情况"
+        }
+      ],
+      "fn136_components": [
+        "ppe",
+        "investment_property"
+      ]
+    }
+  ],
+  "boundary": "公司期间限定的合并报表D&A列示归因；不代表全经营D&A或FCFF，不覆盖TDX，不将零值认定为零折旧"
+}

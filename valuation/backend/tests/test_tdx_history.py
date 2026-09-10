@@ -482,3 +482,34 @@ def test_reinvestment_coverage_preserves_sources_and_rejects_ambiguous_inputs():
     assert part('FN581','2026-07-01T00:00:00+08:00')['issues']==['unavailable_at_cutoff']
     index[('600519','2026-06-30')].append(copy.deepcopy(row))
     assert part('FN581')['issues']==['duplicate_identity']
+
+
+def test_depreciation_scope_reconciliation_and_tampering():
+    import hashlib
+    from tools.verify_tdx_depreciation import verify
+    directory=ROOT/'valuation/research/tdx-growth-expanded/depreciation-review-688648'
+    ledger=json.loads((directory/'evidence.json').read_bytes())
+    raw=(directory.parent/'snapshot-reinvestment.json').read_bytes();source=json.loads(raw)
+    assert hashlib.sha256(raw).hexdigest()==ledger['snapshot_sha256']
+    result=verify(ledger,directory,source)
+    expected=json.loads((directory/'reconciled.json').read_bytes())
+    assert result=={k:v for k,v in expected.items() if k!='evidence'}
+    assert Decimal(result['reported_da_ttm_cny'])==Decimal('60616347.9423828125')
+    assert Decimal(result['pdf_reported_da_ttm_cny'])==Decimal('60616286.29')
+    assert result['actual_fcff'] is None
+    yearly=next(r for r in result['periods'] if r['period']=='2025-12-31')
+    assert [r['field'] for r in yearly['source_inputs']]==['FN136','FN137','FN138']
+    assert yearly['unconsumed_source_fields']=={'FN579':'included_in_FN136','FN581':'included_in_FN136'}
+    for key,change,message in [('sha256','0'*64,'hash'),('fn136_components',['ppe','investment_property','right_of_use'],'scope')]:
+        bad=copy.deepcopy(ledger);bad['reports'][0][key]=change
+        with pytest.raises(ValueError,match=message):verify(bad,directory,source)
+    bad=copy.deepcopy(ledger);bad['reports'][0]['rows'][0]['values'][0]='0.01'
+    with pytest.raises(ValueError,match='amounts'):verify(bad,directory,source)
+    bad=copy.deepcopy(ledger);bad['reports'][0]['rows'][0]['header_page']=1
+    with pytest.raises(ValueError,match='section/unit'):verify(bad,directory,source)
+    bad=copy.deepcopy(source)
+    next(r for r in bad['records'] if (r['code'],r['period'])==('688648','2025-06-30'))['bits']['FN581']^=1
+    with pytest.raises(ValueError,match='TDX bits'):verify(ledger,directory,bad)
+    bad=copy.deepcopy(source)
+    next(r for r in bad['records'] if (r['code'],r['period'])==('688648','2025-12-31'))['bits']['FN581']=bits(529.9)
+    with pytest.raises(ValueError,match='combined-row'):verify(ledger,directory,bad)

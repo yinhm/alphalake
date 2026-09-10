@@ -1,0 +1,146 @@
+{
+  "code": "688648",
+  "period": "2026-06-30",
+  "status": "reported_depreciation_scope_reconciled",
+  "periods": [
+    {
+      "period": "2025-06-30",
+      "fn136_components": [
+        "ppe",
+        "investment_property"
+      ],
+      "source_inputs": [
+        {
+          "field": "FN136",
+          "source_bits": 1268056688,
+          "multiplier": 1,
+          "value_cny": "19530976",
+          "artifact": "gpcw20250630.zip"
+        },
+        {
+          "field": "FN137",
+          "source_bits": 1240395715,
+          "multiplier": 1,
+          "value_cny": "1957368.375",
+          "artifact": "gpcw20250630.zip"
+        },
+        {
+          "field": "FN138",
+          "source_bits": 1191790213,
+          "multiplier": 1,
+          "value_cny": "35142.51953125",
+          "artifact": "gpcw20250630.zip"
+        },
+        {
+          "field": "FN581",
+          "source_bits": 1132853330,
+          "multiplier": 10000,
+          "value_cny": "2679400.02441406250000",
+          "artifact": "gpcw20250630.zip"
+        }
+      ],
+      "unconsumed_source_fields": {
+        "FN579": "included_in_FN136"
+      },
+      "reported_da_cny": "24202886.91894531250000",
+      "pdf_reported_da_cny": "24202927.43",
+      "source_minus_pdf_cny": "-40.51105468750000"
+    },
+    {
+      "period": "2025-12-31",
+      "fn136_components": [
+        "ppe",
+        "investment_property",
+        "right_of_use"
+      ],
+      "source_inputs": [
+        {
+          "field": "FN136",
+          "source_bits": 1279011936,
+          "multiplier": 1,
+          "value_cny": "49328512",
+          "artifact": "gpcw20251231.zip"
+        },
+        {
+          "field": "FN137",
+          "source_bits": 1247646147,
+          "multiplier": 1,
+          "value_cny": "3630192.75",
+          "artifact": "gpcw20251231.zip"
+        },
+        {
+          "field": "FN138",
+          "source_bits": 1219725608,
+          "multiplier": 1,
+          "value_cny": "367689.25",
+          "artifact": "gpcw20251231.zip"
+        }
+      ],
+      "unconsumed_source_fields": {
+        "FN579": "included_in_FN136",
+        "FN581": "included_in_FN136"
+      },
+      "reported_da_cny": "53326394.00",
+      "pdf_reported_da_cny": "53326394.25",
+      "source_minus_pdf_cny": "-0.25"
+    },
+    {
+      "period": "2026-06-30",
+      "fn136_components": [
+        "ppe",
+        "investment_property"
+      ],
+      "source_inputs": [
+        {
+          "field": "FN136",
+          "source_bits": 1271366231,
+          "multiplier": 1,
+          "value_cny": "26150062",
+          "artifact": "gpcw20260630.zip"
+        },
+        {
+          "field": "FN137",
+          "source_bits": 1240544090,
+          "multiplier": 1,
+          "value_cny": "1975915.25",
+          "artifact": "gpcw20260630.zip"
+        },
+        {
+          "field": "FN138",
+          "source_bits": 1226157177,
+          "multiplier": 1,
+          "value_cny": "613063.5625",
+          "artifact": "gpcw20260630.zip"
+        },
+        {
+          "field": "FN581",
+          "source_bits": 1133097124,
+          "multiplier": 10000,
+          "value_cny": "2753800.0488281250000",
+          "artifact": "gpcw20260630.zip"
+        }
+      ],
+      "unconsumed_source_fields": {
+        "FN579": "included_in_FN136"
+      },
+      "reported_da_cny": "31492840.8613281250000",
+      "pdf_reported_da_cny": "31492819.47",
+      "source_minus_pdf_cny": "21.3913281250000"
+    }
+  ],
+  "coefficients": {
+    "2025-12-31": 1,
+    "2026-06-30": 1,
+    "2025-06-30": -1
+  },
+  "reported_da_ttm_cny": "60616347.94238281250000",
+  "pdf_reported_da_ttm_cny": "60616286.29",
+  "source_minus_pdf_cny": "61.65238281250000",
+  "actual_fcff": null,
+  "boundary": "仅三期合并报表D&A列示；TDX数值逐期按已核对范围聚合，未恢复源精度；未闭合经营分类/税费/非现金再投资，不新增标准事实或估值结论",
+  "evidence": {
+    "ledger_sha256": "083aa32f50bbe9b6bab075fb69a0414da1bf7e3e87643bb916e3bf44aa6cea83",
+    "snapshot_sha256": "fade80cf0a11469a96f8fec1ea317a4c88d18a5fd23789946bdfbde621fdf58b",
+    "code_sha256": "3fc1cabb714dc4e4c1eea90fa662549734f751a3fa4543b124a43d2e173cca01"
+  }
+}
