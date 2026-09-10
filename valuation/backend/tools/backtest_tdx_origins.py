@@ -161,6 +161,8 @@ def study(protocol,snapshot,phase,selection=None):
         if not selection or selection['phase']!='development':raise ValueError('development selection required')
         selected=selection['selection']['model']
         if selected is not None and (selected not in candidates[2:] or not selection['selection']['gates'][selected]['passed']):raise ValueError('invalid selected candidate')
+        if 'fixed_validation_model' in protocol and selected!=protocol['fixed_validation_model']:
+            raise ValueError('selection differs from frozen replication model')
         models=tuple(dict.fromkeys(['current_rule','zero_growth']+([selected] if selected else [])));split='holdout';origins=protocol['origins']
     else:raise ValueError('unsupported phase')
     calibrations={origin:fit_calibration(protocol,snapshot,origin) for origin in origins} if config is not None else None
