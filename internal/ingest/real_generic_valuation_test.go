@@ -20,7 +20,17 @@ import (
 )
 
 func TestRealGenericValuationSourceChain(t *testing.T) {
-	const dir = "testdata/generic-valuation-2026"
+	verifyGenericValuationSample(t, "testdata/generic-valuation-2026", `[
+	 {"Instrument":{"Type":"equity","ExchangeMIC":"XSHE","Currency":"CNY","Name":"汇川技术"},"Identifier":{"Provider":"tdx","Type":"symbol","Value":"sz300124"}},
+	 {"Instrument":{"Type":"equity","ExchangeMIC":"XSHG","Currency":"CNY","Name":"海天味业"},"Identifier":{"Provider":"tdx","Type":"symbol","Value":"sh603288"}}
+	]`, 8, 65, 7, "ALPHALAKE_GENERIC_EXPORT_DIR")
+}
+
+func TestRealBearValuationSourceChain(t *testing.T) {
+	verifyGenericValuationSample(t, "testdata/bear-valuation-2026", `[{"Instrument":{"Type":"equity","ExchangeMIC":"XSHE","Currency":"CNY","Name":"小熊电器"},"Identifier":{"Provider":"tdx","Type":"symbol","Value":"sz002959"}}]`, 5, 35, 1, "ALPHALAKE_BEAR_EXPORT_DIR")
+}
+
+func verifyGenericValuationSample(t *testing.T, dir, instrumentsJSON string, reportCount, comparisonCount, expectedDifferences int, exportEnv string) {
 	ctx := t.Context()
 	check := func(err error) {
 		t.Helper()
@@ -36,10 +46,11 @@ func TestRealGenericValuationSourceChain(t *testing.T) {
 	check(err)
 	defer db.Close()
 	var instruments []domain.InstrumentObservation
-	check(json.Unmarshal([]byte(`[
-	 {"Instrument":{"Type":"equity","ExchangeMIC":"XSHE","Currency":"CNY","Name":"汇川技术"},"Identifier":{"Provider":"tdx","Type":"symbol","Value":"sz300124"}},
-	 {"Instrument":{"Type":"equity","ExchangeMIC":"XSHG","Currency":"CNY","Name":"海天味业"},"Identifier":{"Provider":"tdx","Type":"symbol","Value":"sh603288"}}
-	]`), &instruments))
+	check(json.Unmarshal([]byte(instrumentsJSON), &instruments))
+	codes := []string{}
+	for _, instrument := range instruments {
+		codes = append(codes, instrument.Identifier.Value[2:])
+	}
 	_, err = duckstore.UpsertInstruments(ctx, db, instruments)
 	check(err)
 	run, err := duckstore.StartIngestRun(ctx, db, "tdx", "generic_acceptance_sample", nil)
@@ -58,8 +69,8 @@ func TestRealGenericValuationSourceChain(t *testing.T) {
 		AnnouncementID    string `json:"announcement_id"`
 	}
 	read("reports.json", &reports)
-	if len(reports) != 8 {
-		t.Fatal("eight PDFs required")
+	if len(reports) != reportCount {
+		t.Fatal("PDF count", len(reports), reportCount)
 	}
 	documents := map[string]int64{}
 	hashes := map[string]string{}
@@ -73,7 +84,7 @@ func TestRealGenericValuationSourceChain(t *testing.T) {
 	}
 	docClient, err := cninfo.NewDefaultClient()
 	check(err)
-	for _, code := range []string{"300124", "603288"} {
+	for _, code := range codes {
 		raw := readFinancialSample(t, dir, code+"-catalogue.json")
 		id := persist("cninfo", "filing_catalogue", code+"-catalogue.json", "application/json", raw)
 		page, err := cninfo.ParseCataloguePage(raw)
@@ -104,8 +115,8 @@ func TestRealGenericValuationSourceChain(t *testing.T) {
 		}
 		pkg, err := financial.ParsePackage(p.File, raw)
 		check(err)
-		if len(pkg.Records) != 2 {
-			t.Fatal("two companies required", p.File)
+		if len(pkg.Records) != len(instruments) {
+			t.Fatal("company count", p.File)
 		}
 		for _, record := range pkg.Records {
 			records[record.Code+record.ReportPeriod.Format("20060102")] = record
@@ -115,7 +126,7 @@ func TestRealGenericValuationSourceChain(t *testing.T) {
 		check(err)
 		resolved, _, err := resolveProviderFinancialRecords(ctx, db, normalized)
 		check(err)
-		if len(resolved) != 2 {
+		if len(resolved) != len(instruments) {
 			t.Fatal("unresolved sample")
 		}
 		_, err = duckstore.ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", p.SHA256, resolved)
@@ -128,8 +139,8 @@ func TestRealGenericValuationSourceChain(t *testing.T) {
 		Encoded                  string `json:"encoded_pdf_value"`
 	}
 	read("values.json", &ledger)
-	if len(ledger) != 65 {
-		t.Fatal("65 comparisons required")
+	if len(ledger) != comparisonCount {
+		t.Fatal("comparison count", len(ledger), comparisonCount)
 	}
 	differences := 0
 	for _, row := range ledger {
@@ -147,13 +158,13 @@ func TestRealGenericValuationSourceChain(t *testing.T) {
 			differences++
 		}
 	}
-	if differences != 7 {
-		t.Fatal("retain seven version differences", differences)
+	if differences != expectedDifferences {
+		t.Fatal("retain reviewed differences", differences, expectedDifferences)
 	}
 	check(duckstore.FinishIngestRun(ctx, db, run, duckstore.IngestRunCompleted, nil, nil))
 	result, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if result.Linked != 12 {
+	if result.Linked != 6*len(instruments) {
 		t.Fatalf("all source periods must link: %+v", result)
 	}
 	replay, err := MaterializeProviderFundamentals(ctx, db, "tdx")
@@ -161,7 +172,7 @@ func TestRealGenericValuationSourceChain(t *testing.T) {
 	if replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 {
 		t.Fatalf("unchanged source must replay without fact changes: %+v", replay)
 	}
-	for _, code := range []string{"300124", "603288"} {
+	for _, code := range codes {
 		snapshot, err := duckstore.ExportValuationData(ctx, db, code, time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC), at)
 		check(err)
 		payload, err := json.MarshalIndent(snapshot, "", "  ")
@@ -208,7 +219,7 @@ func TestRealGenericValuationSourceChain(t *testing.T) {
 				t.Fatal("one standard fact required", row, found)
 			}
 		}
-		if output := os.Getenv("ALPHALAKE_GENERIC_EXPORT_DIR"); output != "" {
+		if output := os.Getenv(exportEnv); output != "" {
 			check(os.MkdirAll(output, 0755))
 			check(os.WriteFile(filepath.Join(output, code+".json"), payload, 0644))
 		}

@@ -862,3 +862,29 @@ def test_industry_wacc_routes_real_reference_and_financial_packets(exports,refer
         with pytest.raises(ValueError):BatchPolicy(policy_version='bad',review_note='bad',assignments={},industry_rules=[bad])
     bad=copy.deepcopy(rule);bad['policy']['wacc']=.1
     with pytest.raises(ValueError):BatchPolicy(policy_version='dual',review_note='dual',assignments={},industry_rules=[bad])
+
+
+def test_bear_standard_chain_preserves_interest_scope_review(tmp_path,monkeypatch):
+    from api.alphalake import evaluate
+    from tools.batch_valuate_alphalake import BatchPolicy,run_batch
+    exports=tmp_path/'exports'
+    env=os.environ|{'ALPHALAKE_BEAR_EXPORT_DIR':str(exports),'GOPROXY':'off','GOSUMDB':'off'}
+    subprocess.run(['go','test','./internal/ingest','-run','^TestRealBearValuationSourceChain$','-count=1'],cwd=REPO,env=env,check=True,capture_output=True,text=True)
+    d=json.loads((exports/'002959.json').read_text())
+    p=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_text())
+    p['nonfinancial_scope_review']='小熊真实源链机械验算；年度与半年报租赁利息口径差异另列审核'
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path/'runs'))
+    result=evaluate(AlphaLakeRequest(data=d,policy=p))
+    assert result['status']=='illustrative_book_equity_scenario'
+    assert result['report']['cashflow']['fcff'] is None
+    ledger=json.loads((REPO/'internal/ingest/testdata/bear-valuation-2026/values.json').read_text())
+    scope=next(r for r in ledger if r['comparison']=='different_float32')
+    assert scope['kind']=='interest_including_separate_lease'
+    fact=next(f for f in result['request']['data']['facts'] if f['field']=='FN305' and f['period']=='2025-12-31')
+    assert fact['bits']==scope['source_bits']
+    assert float(fact['value'])!=float(scope['pdf_value'])
+    scan=dict(contract_version='alphalake-readiness-v1',report_period=d['report_period'],information_as_of=d['information_as_of'],universe_scope='test',universe_count=1,
+        companies=[dict(instrument_id=fact['instrument_id'],name='小熊电器',symbols=['sz002959'],financial_status='financial_core_complete_requires_policy',missing_core_fields=[])])
+    policy=BatchPolicy(policy_version='bear-scope-review-v1',review_note='不能把主表位匹配当租赁口径统一',assignments={'002959':dict(policy=p)},
+        exclusions={'002959':'年度主表利息不含附注另列租赁融资费用，半年报包含；政策尚待审核'})
+    assert run_batch(scan,policy,lambda code:pytest.fail('known scope hold must block export'))['companies'][0]['status']=='blocked_review_exclusion'

@@ -1,0 +1,42 @@
+{
+  "1225471529": {
+    "title": "2026年半年度报告",
+    "file": "002959-1225471529.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-08-14/1225471529.PDF",
+    "sha256": "870f6d1565c21839c2e4c4f348a90f8323d06b156dd6c1483d413919f2d1971a",
+    "downloaded_at": "2026-09-10T02:00:05.993119+00:00",
+    "announcement_id": "1225471529"
+  },
+  "1225259657": {
+    "title": "2026年一季度报告",
+    "file": "002959-1225259657.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225259657.PDF",
+    "sha256": "bb490fcdd95a5f6fa5b1cf64cfd51dd408318dadd9a1eecda6de026f0cc655cd",
+    "downloaded_at": "2026-09-10T02:00:09.532533+00:00",
+    "announcement_id": "1225259657"
+  },
+  "1225085711": {
+    "title": "2025年年度报告",
+    "file": "002959-1225085711.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-04-09/1225085711.PDF",
+    "sha256": "d3c6320f3e8fb93b038a8c88b6902b2d2e82d4a52c81524f6a68186718ee2c44",
+    "downloaded_at": "2026-09-10T02:00:11.709567+00:00",
+    "announcement_id": "1225085711"
+  },
+  "1224609221": {
+    "title": "2025年半年度报告",
+    "file": "002959-1224609221.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2025-08-29/1224609221.PDF",
+    "sha256": "741739c452ed2697bae7a37c18f0442ec340fd1354fa97c881dea2d913132fee",
+    "downloaded_at": "2026-09-10T02:00:15.232240+00:00",
+    "announcement_id": "1224609221"
+  },
+  "1223413258": {
+    "title": "2025年一季度报告",
+    "file": "002959-1223413258.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223413258.PDF",
+    "sha256": "f2201e906038dce908401b7e2c3cc4892d4d9bff81f34b3d08f573613932ff82",
+    "downloaded_at": "2026-09-10T02:00:16.444657+00:00",
+    "announcement_id": "1223413258"
+  }
+}

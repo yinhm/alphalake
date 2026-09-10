@@ -499,7 +499,7 @@ def build_earnings_power_inputs(d, policy):
             'zero nominal growth and constant margin scenario, not growth forecast',
             'maintenance capex equals depreciation is an assumption, not historical FCFF closure',
             'investment/fair-value/disposal income excluded; operating hedges not restored',
-            'RD remains expensed; current operating lease expense retained',
+            'RD remains expensed; reported interest may not consistently include lease finance costs',
             'no equity value or per-share price until cash/debt/minority/dilution bridge is reviewed',
             'WACC/tax are explicit sensitivity assumptions, not market estimates'])
     return inputs,audit

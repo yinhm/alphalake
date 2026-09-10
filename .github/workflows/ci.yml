@@ -44,6 +44,8 @@ jobs:
         run: python internal/ingest/testdata/valuation-chain-2026/verify.py
       - name: Verify generic company evidence and restatement differences offline
         run: python internal/ingest/testdata/generic-valuation-2026/verify.py
+      - name: Verify Bear valuation evidence
+        run: python internal/ingest/testdata/bear-valuation-2026/verify.py
       - name: Verify contractual debt maturity evidence offline
         run: python internal/ingest/testdata/wacc-debt-2026/verify.py
       - name: Install valuation dependencies
