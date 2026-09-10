@@ -68,6 +68,9 @@ def run_cycle(args, root):
             stage(name, [args.alphalake,name,args.database,*extra])
         # 物化失败时不拿旧标准事实冒充本轮结果；独立采集阶段失败则仍检查成功发布的部分。
         materialized = stage('materialize-fundamentals',[args.alphalake,'materialize-fundamentals',args.database]) == 0
+        if materialized:
+            stage('repair-filings',[args.alphalake,'repair-filings',args.database,'--period',args.period])
+            materialized = stage('materialize-after-filing-repair',[args.alphalake,'materialize-fundamentals',args.database]) == 0
         ledger['information_as_of'] = args.as_of or timestamp()
         if materialized:
             stage('batch-valuation',[sys.executable,'-m','tools.batch_valuate_alphalake',args.database,

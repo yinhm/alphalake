@@ -43,6 +43,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-industries <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-financial <db-path> [--all | --latest N]")
 	fmt.Fprintln(os.Stderr, "  sync-filings <db-path> [--all] [--start YYYY-MM-DD] [--end YYYY-MM-DD] [--metadata-only] [--rescan] [--code 600519]")
+	fmt.Fprintln(os.Stderr, "  repair-filings <db-path> --period YYYY-MM-DD [--limit N]")
 	fmt.Fprintln(os.Stderr, "  materialize-fundamentals <db-path>")
 	fmt.Fprintln(os.Stderr, "  financial-unresolved <db-path> [--limit N] [--offset N]")
 	fmt.Fprintln(os.Stderr, "  filing-unresolved <db-path> [--limit N] [--offset N]")

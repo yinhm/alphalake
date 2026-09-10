@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -8,8 +10,66 @@ import (
 	"time"
 
 	"github.com/yinhm/alphalake/internal/domain"
+	"github.com/yinhm/alphalake/internal/source/cninfo"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
 )
+
+type repairCatalogueSource struct {
+	calls  []string
+	cancel context.CancelFunc
+}
+
+func (s *repairCatalogueSource) CataloguePage(ctx context.Context, r cninfo.CatalogueRequest) (cninfo.CataloguePage, []byte, error) {
+	s.calls = append(s.calls, r.Code)
+	if s.cancel != nil {
+		s.cancel()
+		return cninfo.CataloguePage{}, nil, ctx.Err()
+	}
+	if r.Code == "000001" {
+		return cninfo.CataloguePage{}, nil, errors.New("simulated first security failure")
+	}
+	return cninfo.CataloguePage{Page: 1, TotalPages: 1}, []byte(`{"announcements":[]}`), nil
+}
+func (*repairCatalogueSource) FilingDocumentURL(locator string) (string, error) { return locator, nil }
+func (*repairCatalogueSource) FilingDocument(context.Context, string) ([]byte, string, string, error) {
+	return nil, "", "", errors.New("metadata repair must not fetch PDF")
+}
+
+func TestRepairFilingsContinuesAndCountsCancellation(t *testing.T) {
+	ctx := t.Context()
+	path := filepath.Join(t.TempDir(), "repair.duckdb")
+	db, err := duckstore.OpenAndMigrate(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	day := time.Date(2025, 4, 29, 0, 0, 0, 0, time.UTC)
+	queries := []duckstore.FilingRepairQuery{{Code: "000001", StartDate: day, MissingPeriods: 1}, {Code: "000002", StartDate: day, MissingPeriods: 1}}
+	source := &repairCatalogueSource{}
+	attempted, failed, err := repairFilingQueries(ctx, db, source, filepath.Join(t.TempDir(), "raw"), queries, day)
+	if err != nil || attempted != 2 || failed != 1 || len(source.calls) != 2 {
+		t.Fatalf("repair did not isolate failure: %d %d %v %v", attempted, failed, err, source.calls)
+	}
+	if err := db.Close(); err != nil {
+		t.Fatal(err)
+	}
+	db, err = duckstore.Open(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	var failures, completed int
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FILTER(WHERE status='failed'),count(*) FILTER(WHERE status='completed') FROM meta.ingest_run WHERE dataset='filing'`).Scan(&failures, &completed); err != nil || failures != 1 || completed != 1 {
+		t.Fatalf("run persistence: %d %d %v", failures, completed, err)
+	}
+	canceled, cancel := context.WithCancel(ctx)
+	defer cancel()
+	source = &repairCatalogueSource{cancel: cancel}
+	attempted, failed, err = repairFilingQueries(canceled, db, source, filepath.Join(t.TempDir(), "raw"), queries, day)
+	if !errors.Is(err, context.Canceled) || attempted != 1 || failed != 1 || len(source.calls) != 1 {
+		t.Fatalf("false attempted count after cancellation: %d %d %v", attempted, failed, err)
+	}
+}
 
 func TestFilingUnresolvedCommand(t *testing.T) {
 	ctx := t.Context()

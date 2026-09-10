@@ -3,12 +3,48 @@ package duckdb
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/yinhm/alphalake/internal/domain"
 )
+
+func TestFilingRepairQueueUsesLatestRevisionAndPeriod(t *testing.T) {
+	ctx := t.Context()
+	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "repair.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	newer := insertTestArtifact(t, ctx, db, "newer", time.Date(2026, 9, 2, 0, 0, 0, 0, time.UTC))
+	older := insertTestArtifact(t, ctx, db, "older", time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC))
+	for n, r := range []struct {
+		code, period, status, source string
+		artifact                     int64
+	}{
+		{"000001", "2025-12-31", "pending", "tdx", older}, {"000001", "2025-12-31", "linked", "tdx", newer},
+		{"000002", "2025-06-30", "pending", "tdx", newer}, {"000002", "2026-06-30", "pending", "tdx", newer},
+		{"000003", "2025-12-31", "ambiguous", "tdx", newer}, {"000004", "2024-12-31", "pending", "tdx", newer},
+		{"000005", "2026-09-30", "pending", "tdx", newer}, {"000006", "2025-12-31", "pending", "other", newer},
+	} {
+		_, err := db.ExecContext(ctx, `INSERT INTO fundamental.provider_filing_link(provider_source,provider_revision_key,provider_artifact_id,provider_code,report_period,status,linker_version) VALUES (?,?,?,?,CAST(? AS DATE),?,'test')`, r.source, fmt.Sprint(n), r.artifact, r.code, r.period, r.status)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	queries, err := PendingFilingRepairQueries(ctx, db, time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(queries) != 1 || queries[0].Code != "000002" || queries[0].MissingPeriods != 2 || queries[0].StartDate.Format("2006-01-02") != "2025-06-30" {
+		t.Fatal(queries)
+	}
+	if _, err := PendingFilingRepairQueries(ctx, db, time.Date(2026, 5, 31, 0, 0, 0, 0, time.UTC)); err == nil {
+		t.Fatal("non-quarter period accepted")
+	}
+}
 
 func TestRefreshProviderFilingLinksUsesObservationTimeAndCorrections(t *testing.T) {
 	ctx := context.Background()

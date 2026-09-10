@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"io"
@@ -43,6 +44,8 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return true, runFilingUnresolved(ctx, args[1:])
 	case "sync-filings":
 		return true, runSyncFilings(ctx, args[1:])
+	case "repair-filings":
+		return true, runRepairFilings(ctx, args[1:])
 	case "materialize-fundamentals":
 		return true, runMaterializeFundamentals(ctx, args[1:])
 	default:
@@ -167,6 +170,80 @@ func runSyncFilings(ctx context.Context, args []string) error {
 		fmt.Fprintf(os.Stderr, "CNINFO filing issue: run=%d code=%s window=%s page=%d filing=%s error=%q\n", summary.RunID, *code, failure.Window, failure.Page, failure.SourceFilingID, failure.Err)
 	}
 	return syncErr
+}
+
+func runRepairFilings(ctx context.Context, args []string) error {
+	if len(args) < 1 {
+		return fmt.Errorf("usage: alphalake repair-filings <db-path> --period YYYY-MM-DD [--limit N]")
+	}
+	dbPath := strings.TrimSpace(args[0])
+	if dbPath == "" {
+		return fmt.Errorf("database path is required")
+	}
+	fs := flag.NewFlagSet("repair-filings", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	periodText := fs.String("period", "", "quarter-end report period")
+	limit := fs.Int("limit", 0, "maximum securities to attempt; zero attempts all pending codes")
+	if err := fs.Parse(args[1:]); err != nil {
+		return err
+	}
+	if len(fs.Args()) != 0 || *limit < 0 {
+		return fmt.Errorf("invalid repair-filings arguments")
+	}
+	period, err := parseCLIDate(*periodText)
+	if err != nil {
+		return err
+	}
+	local := time.Now().In(domain.ChinaDisclosureLocation)
+	end := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, time.UTC)
+	if period.After(end) {
+		return fmt.Errorf("report period is in the future")
+	}
+	db, err := duckstore.OpenAndMigrate(ctx, dbPath)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	queries, err := duckstore.PendingFilingRepairQueries(ctx, db, period)
+	if err != nil {
+		return err
+	}
+	total := len(queries)
+	if *limit > 0 && len(queries) > *limit {
+		queries = queries[:*limit]
+	}
+	client, err := cninfo.NewDefaultClient()
+	if err != nil {
+		return err
+	}
+	attempted, failed, err := repairFilingQueries(ctx, db, client, filepath.Join(filepath.Dir(dbPath), "raw"), queries, end)
+	fmt.Printf("CNINFO filing repair: pending_codes=%d attempted=%d failed=%d unattempted=%d; rematerialize to verify remaining links\n", total, attempted, failed, total-attempted)
+	if err != nil {
+		return err
+	}
+	if failed > 0 {
+		return fmt.Errorf("%d security filing repairs failed", failed)
+	}
+	return nil
+}
+
+func repairFilingQueries(ctx context.Context, db *sql.DB, source ingest.CNINFOFilingSource, root string, queries []duckstore.FilingRepairQuery, end time.Time) (attempted, failed int, err error) {
+	for i, q := range queries {
+		if err := ctx.Err(); err != nil {
+			return attempted, failed, err
+		}
+		result, err := ingest.SyncCNINFOFilingsWithOptions(ctx, db, source, root, ingest.CNINFOFilingOptions{
+			Code: q.Code, StartDate: q.StartDate, EndDate: end, WindowDays: 366, MetadataOnly: true, Rescan: true})
+		attempted++
+		if err != nil || result.Pending > 0 {
+			failed++
+		}
+		fmt.Printf("CNINFO filing repair progress: security=%d/%d code=%s missing_periods=%d run=%d pages=%d inserted=%d updated=%d pending=%d failures=%d\n", i+1, len(queries), q.Code, q.MissingPeriods, result.RunID, result.Pages, result.Inserted, result.Updated, result.Pending, len(result.Failures))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "CNINFO filing repair issue: code=%s error=%q\n", q.Code, err)
+		}
+	}
+	return attempted, failed, ctx.Err()
 }
 
 func runMaterializeFundamentals(ctx context.Context, args []string) error {

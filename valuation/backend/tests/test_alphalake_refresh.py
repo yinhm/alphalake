@@ -8,7 +8,7 @@ import pytest
 from tools import refresh_valuate_alphalake as refresh
 
 
-@pytest.mark.parametrize('failed', ['sync-financial','materialize-fundamentals'])
+@pytest.mark.parametrize('failed', ['sync-financial','materialize-fundamentals','repair-filings','materialize-after-filing-repair'])
 def test_refresh_preserves_stage_failures_and_gates_materialization(tmp_path,monkeypatch,failed):
     execute=refresh.execute
     seen=[]
@@ -23,7 +23,10 @@ def test_refresh_preserves_stage_failures_and_gates_materialization(tmp_path,mon
     report=json.loads((tmp_path/'run.json').read_text())
     assert report['status']=='partial_or_failed'
     assert [r['name'] for r in report['stages'] if r['status']=='failed']==[failed]
-    assert ('batch-valuation' in seen)==(failed!='materialize-fundamentals')
+    assert ('batch-valuation' in seen)==(failed not in ('materialize-fundamentals','materialize-after-filing-repair'))
+    if failed!='materialize-fundamentals':
+        assert seen[4:6]==['repair-filings','materialize-after-filing-repair']
+        assert report['information_as_of']>=report['stages'][5]['finished_at']
     assert all(Path(r['log']).read_text().strip()==r['name'] for r in report['stages'])
     assert report['information_as_of']>=report['stages'][3]['finished_at']
 

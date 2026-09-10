@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 const (
@@ -22,6 +23,39 @@ type ProviderFilingLinkResult struct {
 	Pending   int
 	Ambiguous int
 	Removed   int
+}
+
+type FilingRepairQuery struct {
+	Code           string
+	StartDate      time.Time
+	MissingPeriods int
+}
+
+// PendingFilingRepairQueries 只补最新源版本的缺公告记录，不把旧版本或歧义当采集缺口。
+func PendingFilingRepairQueries(ctx context.Context, db *sql.DB, end time.Time) ([]FilingRepairQuery, error) {
+	if end.IsZero() || end.AddDate(0, 0, 1).Day() != 1 || int(end.Month())%3 != 0 {
+		return nil, errors.New("quarter-end report period required")
+	}
+	rows, err := db.QueryContext(ctx, `WITH revisions AS (
+ SELECT l.*,row_number() OVER(PARTITION BY l.provider_source,l.provider_code,l.report_period
+ ORDER BY a.fetched_at DESC,a.artifact_id DESC) AS revision_rank
+ FROM fundamental.provider_filing_link l JOIN meta.artifact a ON a.artifact_id=l.provider_artifact_id
+ WHERE l.provider_source='tdx' AND l.report_period>=make_date(year(CAST(? AS DATE))-1,1,1) AND l.report_period<=CAST(? AS DATE)
+ ) SELECT provider_code,min(report_period),count(*) FROM revisions
+ WHERE revision_rank=1 AND status='pending' GROUP BY provider_code ORDER BY provider_code`, end, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []FilingRepairQuery
+	for rows.Next() {
+		var q FilingRepairQuery
+		if err := rows.Scan(&q.Code, &q.StartDate, &q.MissingPeriods); err != nil {
+			return nil, err
+		}
+		out = append(out, q)
+	}
+	return out, rows.Err()
 }
 
 // RefreshProviderFilingLinks deterministically links each immutable provider
