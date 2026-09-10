@@ -77,8 +77,10 @@ def run_cycle(args, root):
                                 ('sync-industry-beta','valuation/backend/data_sources/damodaran_parsers/beta_parser.py'),
                                 ('sync-industry-capital','valuation/backend/data_sources/damodaran_parsers/capex_parser.py'),
                                 ('sync-cny-yield','internal/source/chinabond/parse.py'),
-                                ('sync-credit-spreads','internal/source/damodaran/ratings.py')]:
-                stage(name,[args.alphalake,name,args.reference_database,'--python',sys.executable,'--parser',str(repo/script)])
+                                ('sync-credit-spreads','internal/source/damodaran/ratings.py'),
+                                ('sync-company-industries','valuation/backend/data_sources/damodaran_parsers/company_industry_parser.py')]:
+                database = args.database if name == 'sync-company-industries' else args.reference_database
+                stage(name,[args.alphalake,name,database,'--python',sys.executable,'--parser',str(repo/script)])
         ledger['information_as_of'] = args.as_of or timestamp()
         if materialized:
             reference_args = ['--reference-database',args.reference_database] if getattr(args,'reference_database',None) else []
@@ -107,7 +109,7 @@ def main():
     parser.add_argument('--output-dir',required=True)
     parser.add_argument('--alphalake',default=str(Path(__file__).resolve().parents[3]/'alphalake'))
     parser.add_argument('--reference-database',help='批次运行时自动选择本地最新WACC参考版本')
-    parser.add_argument('--sync-references',action='store_true',help='批次前刷新WACC四源及行业资本效率参考，需指定参考库')
+    parser.add_argument('--sync-references',action='store_true',help='批次前刷新WACC四源、行业资本效率及公司行业，需指定参考库')
     args = parser.parse_args()
     period = date.fromisoformat(args.period)
     if args.latest<1 or args.stage_timeout<1 or period.month%3 or (period+timedelta(days=1)).day!=1:

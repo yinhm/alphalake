@@ -1,0 +1,237 @@
+{
+  "policy_version": "damodaran-five-industries-2026H1-v1",
+  "review_note": "官方名单五个非金融行业的自动路由验收；固定10% WACC及历史经营外推为机械情景，不是逐公司研究、公允价或市场化WACC。来源名单日期未知，首次取得后七天的采用窗口不证明名单新鲜度。",
+  "assignments": {},
+  "industry_rules": [
+    {
+      "rule_id": "damodaran-five-1",
+      "source": "damodaran",
+      "taxonomy_code": "damodaran_industry_2026",
+      "node_codes": [
+        "Computers/Peripherals"
+      ],
+      "max_age_days": 7,
+      "review_note": "采用经归档与标准身份查询核验的来源行业，不使用申万代理；名单生效日未知，兼营业务仍需复核。",
+      "policy": {
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "approved_report_period": "2026-06-30",
+        "scenario": "industry-mechanical-initial",
+        "review_note": "模板参数仅为初始敏感性情景，不是行业研究结论；使用前应审核适用范围和参数。",
+        "nonfinancial_scope_review": "Computers/Peripherals：限一般非金融经营FCFF机械情景；金融字段、缺项及可比历史审核隔离继续执行，不证明兼营业务完全适配。",
+        "wacc": 0.1,
+        "tax_rate": 0.25,
+        "growth_floor": -0.1,
+        "growth_ceiling": 0.2,
+        "growth_shift": 0,
+        "margin_shift": 0,
+        "sales_to_capital": null,
+        "terminal_growth": 0.02,
+        "terminal_roic": 0.1,
+        "cash_recovery": 0.8,
+        "operating_cash_ratio": 0.03,
+        "minority_book_multiple": 1,
+        "debt_book_multiple": 1,
+        "extra_dilution_rate": 0.02,
+        "additional_claims_million_cny": 0,
+        "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+        "financial_asset_policy": "no_credit_pending_classification",
+        "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+      },
+      "capital_policy": {
+        "report_period": "2026-06-30",
+        "industry": "Computers/Peripherals",
+        "mapping_reason": "使用同一Damodaran目录下的公司来源分类与全球行业资本效率；不是公司实测边际资本效率。",
+        "minimum_sample_count": 30,
+        "max_age_days": 370,
+        "ratio_multiplier": 1.0,
+        "adoption_basis": "historical_industry_ratio_as_marginal_reinvestment_proxy",
+        "adoption_reason": "采用行业历史比率作为未来增量投资代理；来源方法资本化研发与经营租赁，通用模型未自动协调该口径，倍率1仅为显式代理情景，不声称公司实际边际效率已闭合。"
+      }
+    },
+    {
+      "rule_id": "damodaran-five-2",
+      "source": "damodaran",
+      "taxonomy_code": "damodaran_industry_2026",
+      "node_codes": [
+        "Beverage (Alcoholic)"
+      ],
+      "max_age_days": 7,
+      "review_note": "采用经归档与标准身份查询核验的来源行业，不使用申万代理；名单生效日未知，兼营业务仍需复核。",
+      "policy": {
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "approved_report_period": "2026-06-30",
+        "scenario": "industry-mechanical-initial",
+        "review_note": "模板参数仅为初始敏感性情景，不是行业研究结论；使用前应审核适用范围和参数。",
+        "nonfinancial_scope_review": "Beverage (Alcoholic)：限一般非金融经营FCFF机械情景；金融字段、缺项及可比历史审核隔离继续执行，不证明兼营业务完全适配。",
+        "wacc": 0.1,
+        "tax_rate": 0.25,
+        "growth_floor": -0.1,
+        "growth_ceiling": 0.2,
+        "growth_shift": 0,
+        "margin_shift": 0,
+        "sales_to_capital": null,
+        "terminal_growth": 0.02,
+        "terminal_roic": 0.1,
+        "cash_recovery": 0.8,
+        "operating_cash_ratio": 0.03,
+        "minority_book_multiple": 1,
+        "debt_book_multiple": 1,
+        "extra_dilution_rate": 0.02,
+        "additional_claims_million_cny": 0,
+        "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+        "financial_asset_policy": "no_credit_pending_classification",
+        "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+      },
+      "capital_policy": {
+        "report_period": "2026-06-30",
+        "industry": "Beverage (Alcoholic)",
+        "mapping_reason": "使用同一Damodaran目录下的公司来源分类与全球行业资本效率；不是公司实测边际资本效率。",
+        "minimum_sample_count": 30,
+        "max_age_days": 370,
+        "ratio_multiplier": 1.0,
+        "adoption_basis": "historical_industry_ratio_as_marginal_reinvestment_proxy",
+        "adoption_reason": "采用行业历史比率作为未来增量投资代理；来源方法资本化研发与经营租赁，通用模型未自动协调该口径，倍率1仅为显式代理情景，不声称公司实际边际效率已闭合。"
+      }
+    },
+    {
+      "rule_id": "damodaran-five-3",
+      "source": "damodaran",
+      "taxonomy_code": "damodaran_industry_2026",
+      "node_codes": [
+        "Food Processing"
+      ],
+      "max_age_days": 7,
+      "review_note": "采用经归档与标准身份查询核验的来源行业，不使用申万代理；名单生效日未知，兼营业务仍需复核。",
+      "policy": {
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "approved_report_period": "2026-06-30",
+        "scenario": "industry-mechanical-initial",
+        "review_note": "模板参数仅为初始敏感性情景，不是行业研究结论；使用前应审核适用范围和参数。",
+        "nonfinancial_scope_review": "Food Processing：限一般非金融经营FCFF机械情景；金融字段、缺项及可比历史审核隔离继续执行，不证明兼营业务完全适配。",
+        "wacc": 0.1,
+        "tax_rate": 0.25,
+        "growth_floor": -0.1,
+        "growth_ceiling": 0.2,
+        "growth_shift": 0,
+        "margin_shift": 0,
+        "sales_to_capital": null,
+        "terminal_growth": 0.02,
+        "terminal_roic": 0.1,
+        "cash_recovery": 0.8,
+        "operating_cash_ratio": 0.03,
+        "minority_book_multiple": 1,
+        "debt_book_multiple": 1,
+        "extra_dilution_rate": 0.02,
+        "additional_claims_million_cny": 0,
+        "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+        "financial_asset_policy": "no_credit_pending_classification",
+        "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+      },
+      "capital_policy": {
+        "report_period": "2026-06-30",
+        "industry": "Food Processing",
+        "mapping_reason": "使用同一Damodaran目录下的公司来源分类与全球行业资本效率；不是公司实测边际资本效率。",
+        "minimum_sample_count": 30,
+        "max_age_days": 370,
+        "ratio_multiplier": 1.0,
+        "adoption_basis": "historical_industry_ratio_as_marginal_reinvestment_proxy",
+        "adoption_reason": "采用行业历史比率作为未来增量投资代理；来源方法资本化研发与经营租赁，通用模型未自动协调该口径，倍率1仅为显式代理情景，不声称公司实际边际效率已闭合。"
+      }
+    },
+    {
+      "rule_id": "damodaran-five-4",
+      "source": "damodaran",
+      "taxonomy_code": "damodaran_industry_2026",
+      "node_codes": [
+        "Furn/Home Furnishings"
+      ],
+      "max_age_days": 7,
+      "review_note": "采用经归档与标准身份查询核验的来源行业，不使用申万代理；名单生效日未知，兼营业务仍需复核。",
+      "policy": {
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "approved_report_period": "2026-06-30",
+        "scenario": "industry-mechanical-initial",
+        "review_note": "模板参数仅为初始敏感性情景，不是行业研究结论；使用前应审核适用范围和参数。",
+        "nonfinancial_scope_review": "Furn/Home Furnishings：限一般非金融经营FCFF机械情景；金融字段、缺项及可比历史审核隔离继续执行，不证明兼营业务完全适配。",
+        "wacc": 0.1,
+        "tax_rate": 0.25,
+        "growth_floor": -0.1,
+        "growth_ceiling": 0.2,
+        "growth_shift": 0,
+        "margin_shift": 0,
+        "sales_to_capital": null,
+        "terminal_growth": 0.02,
+        "terminal_roic": 0.1,
+        "cash_recovery": 0.8,
+        "operating_cash_ratio": 0.03,
+        "minority_book_multiple": 1,
+        "debt_book_multiple": 1,
+        "extra_dilution_rate": 0.02,
+        "additional_claims_million_cny": 0,
+        "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+        "financial_asset_policy": "no_credit_pending_classification",
+        "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+      },
+      "capital_policy": {
+        "report_period": "2026-06-30",
+        "industry": "Furn/Home Furnishings",
+        "mapping_reason": "使用同一Damodaran目录下的公司来源分类与全球行业资本效率；不是公司实测边际资本效率。",
+        "minimum_sample_count": 30,
+        "max_age_days": 370,
+        "ratio_multiplier": 1.0,
+        "adoption_basis": "historical_industry_ratio_as_marginal_reinvestment_proxy",
+        "adoption_reason": "采用行业历史比率作为未来增量投资代理；来源方法资本化研发与经营租赁，通用模型未自动协调该口径，倍率1仅为显式代理情景，不声称公司实际边际效率已闭合。"
+      }
+    },
+    {
+      "rule_id": "damodaran-five-5",
+      "source": "damodaran",
+      "taxonomy_code": "damodaran_industry_2026",
+      "node_codes": [
+        "Machinery"
+      ],
+      "max_age_days": 7,
+      "review_note": "采用经归档与标准身份查询核验的来源行业，不使用申万代理；名单生效日未知，兼营业务仍需复核。",
+      "policy": {
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "approved_report_period": "2026-06-30",
+        "scenario": "industry-mechanical-initial",
+        "review_note": "模板参数仅为初始敏感性情景，不是行业研究结论；使用前应审核适用范围和参数。",
+        "nonfinancial_scope_review": "Machinery：限一般非金融经营FCFF机械情景；金融字段、缺项及可比历史审核隔离继续执行，不证明兼营业务完全适配。",
+        "wacc": 0.1,
+        "tax_rate": 0.25,
+        "growth_floor": -0.1,
+        "growth_ceiling": 0.2,
+        "growth_shift": 0,
+        "margin_shift": 0,
+        "sales_to_capital": null,
+        "terminal_growth": 0.02,
+        "terminal_roic": 0.1,
+        "cash_recovery": 0.8,
+        "operating_cash_ratio": 0.03,
+        "minority_book_multiple": 1,
+        "debt_book_multiple": 1,
+        "extra_dilution_rate": 0.02,
+        "additional_claims_million_cny": 0,
+        "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+        "financial_asset_policy": "no_credit_pending_classification",
+        "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+      },
+      "capital_policy": {
+        "report_period": "2026-06-30",
+        "industry": "Machinery",
+        "mapping_reason": "使用同一Damodaran目录下的公司来源分类与全球行业资本效率；不是公司实测边际资本效率。",
+        "minimum_sample_count": 30,
+        "max_age_days": 370,
+        "ratio_multiplier": 1.0,
+        "adoption_basis": "historical_industry_ratio_as_marginal_reinvestment_proxy",
+        "adoption_reason": "采用行业历史比率作为未来增量投资代理；来源方法资本化研发与经营租赁，通用模型未自动协调该口径，倍率1仅为显式代理情景，不声称公司实际边际效率已闭合。"
+      }
+    }
+  ],
+  "exclusions": {
+    "300124": "generic-valuation-2026/values.json：原披露与后续比较列存在差异，可比历史尚待协调",
+    "603288": "generic-valuation-2026/values.json：原披露与后续比较列存在差异，可比历史尚待协调",
+    "002959": "bear-valuation-2026：年度主表利息与附注利息/租赁两行加总不同、半年相等；可比融资口径尚需审核"
+  }
+}
