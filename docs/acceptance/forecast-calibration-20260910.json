@@ -1,0 +1,32 @@
+{
+  "code": "300866",
+  "database": "/root/alphalake/workspace/auto-valuation-20260909/market.duckdb",
+  "report_period": "2026-06-30",
+  "information_as_of": "2026-09-10T22:18:56.906406Z",
+  "company_count": 1,
+  "run_ids": [
+    "c03a391c27c7d803d09d6fe166daa9b2bef8b9227a6c79cc7c931f11bb6a653c",
+    "8454dbeb6f64efa8500491fffb98c6cdafd33dce691d8ded55a4111b7b399c94"
+  ],
+  "engine_revision": "d5e5e694c03356905f58cf151cb7bc9281127d2713e749dccf3b960df7534867",
+  "data_sha256": "92bad908414f454e1fa6fabf174bc1bdd7e0cf983b58ba8090fd1f491aa38b1d",
+  "first_year_profit_multiplier": 0.7968060138257802,
+  "per_share_before": 92.15042148953913,
+  "per_share_after": 91.16260456040543,
+  "independent_delta_per_share": "-0.9878169291337033619697133641",
+  "checks": {
+    "same_standard_inputs": true,
+    "same_wacc": true,
+    "same_bridge": true,
+    "same_revenue_and_reinvestment": true,
+    "same_forecast_years2_to10": true,
+    "first_year_nopat_pv_delta_matches": true
+  },
+  "boundary": "单公司主库标准查询及统一CLI验收；固定10%WACC的普通模型对照，不是安克专项估值更新、当前目标价或全市场推广结果",
+  "verification": {
+    "python_suite": "253 passed, 4 existing TEST_DATA skips",
+    "go": "test ./..., build ./cmd/alphalake, vet ./... passed",
+    "current_engine_report_replay": "exact",
+    "database_mutations": "none; read-only standard export, valuation files separately archived"
+  }
+}

@@ -6,7 +6,7 @@ AlphaLake 是面向投资研究、本地优先且可复现的金融市场数据�
 
 它通过多个数据源适配器采集数据，将记录归一化为标准模型，在 DuckDB 中存储分析数据，并保留重建、校验和派生数据集所需的血缘信息。数据源提供稳定文件时，系统将其保存为不可变的原始证据。
 
-下一阶段主线是[估值准确度与历史预测复验](docs/valuation-accuracy.md)：已完成[多个历史起点与独立样本复验](valuation/research/tdx-growth-expanded/README.md)，半量利润校准通过限定范围验证，尚未接入生产；分别报告数据齐备、计算正确和预测有效性。
+下一阶段主线是[估值准确度与历史预测复验](docs/valuation-accuracy.md)：已完成[多个历史起点与独立样本复验](valuation/research/tdx-growth-expanded/README.md)，半量利润校准通过限定范围验证，已接入[显式一年期政策](docs/forecast-calibration.md)并完成单公司主库对照；分别报告数据齐备、计算正确和预测有效性。
 
 ## 初始范围
 

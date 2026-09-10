@@ -59,6 +59,8 @@ Path('data/reviewed-policy.json').write_text(json.dumps(bundle, ensure_ascii=Fal
 
 完整请求、输入、政策、参考和计算结果仍按原机制保存到`ALPHALAKE_VALUATION_RUN_DIR`，默认`valuation/backend/data/alphalake_runs`。入口核对保存运行的请求/引擎内容标识及返回值，再输出摘要；这些完整文件不是新建的一套估值事实库。
 
+已支持[显式一年期利润校准政策](forecast-calibration.md)：沿用同一入口及运行记录，只按批准的公司、报告期和可用时间生效；没有新增自动政策选择规则。
+
 ## 当前边界与验证
 
 这是**实时计算并展示候选**的CLI入口，不是只读检索全部历史结果的服务；重复请求复用同一标准导出供候选计算，但仍重新执行引擎。已有[估值使用Skill](../skills/alphalake-valuation/SKILL.md)指导调用与结果解释；另有[只读历史查询](valuation-run-query.md)发现已有run ID，以及[运行比较CLI](valuation-comparison.md)输出差异及限定WACC归因；尚无多因素贡献分解、自动政策批准/跨期延用或MCP。仍使用现有全本地集合就绪度扫描，单公司首次查询可能较慢；没有新增缓存或常驻任务服务。

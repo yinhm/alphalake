@@ -1,6 +1,6 @@
 # 扩展样本的经营预测规则研究
 
-当前结论：经过六轮开发试验，滞后半量乘性利润校准通过开发门槛；首次留出有改善但样本不足，随后固定同一规则的120家公司独立复验通过。证据支持两个历史起点的一年期利润预测改善，尚未接入生产，不等于完整DCF准确度提升。
+当前结论：经过六轮开发试验，滞后半量乘性利润校准通过开发门槛；首次留出有改善但样本不足，随后固定同一规则的120家公司独立复验通过。证据支持两个历史起点的一年期利润预测改善，已接入[显式一年期政策](../../../docs/forecast-calibration.md)并完成安克主库对照，不等于完整DCF准确度提升。
 
 ## 抽样与源数据
 
@@ -83,6 +83,6 @@ python -m tools.backtest_tdx_origins ../research/tdx-growth-expanded/protocol-v7
 python -m tools.backtest_tdx_origins ../research/tdx-growth-expanded/protocol-v7.json ../research/tdx-growth-expanded/snapshot-v7.json --phase holdout --selection /tmp/alphalake-replication-selection.json > /tmp/alphalake-replication-holdout.json
 ```
 
-下一步：把证据支持的一年期校准接入显式版本化预测政策，逐项比较标准财务输入、第一年预测及DCF变化。不得将一年证据外推为五年统一打折，或把研究源数值回写标准事实。生产采用、后续期间检验和完整DCF验证仍未完成。
+一年期校准已接入显式版本化预测政策，并逐项比较了安克标准财务输入、第一年预测及DCF变化；参见上述生产接入说明。不得将一年证据外推为五年统一打折，或把研究源数值回写标准事实。当前仅有显式单公司生产采用验收；更多期间检验和完整DCF验证仍未完成。
 
 补充[训练影响诊断](training-influence-v7.json)：逐一删除60家训练公司全部历史、重拟合并固定在同一171个验证组合上评分，最小利润误差改善约7.14%，发生在删除002432时（两起点系数变为0.75655、0.80348）。因此改善并非完全依赖该公司的训练权重。这是复验后敏感性诊断，不是另一组独立留出，也不据此调整最终系数。
