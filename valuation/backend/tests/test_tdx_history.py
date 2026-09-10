@@ -285,3 +285,48 @@ def test_archived_lagged_calibration_and_weighted_loss():
         if r['status']=='evaluated':
             scale=result['calibration_training'][r['origin']]['ebit_scale']
             assert r['forecasts']['bias_half']['ebit']==pytest.approx(r['forecasts']['current_rule']['ebit']*(1+scale)/2)
+
+
+def test_fixed_replication_preserves_training_and_holdout_denominators():
+    import hashlib
+    from tools.backtest_tdx_origins import study as multi
+    directory=ROOT/'valuation/research/tdx-growth-expanded'
+    old_protocol=json.loads((directory/'protocol-v6.json').read_bytes())
+    old_source=json.loads((directory/'snapshot-v4.json').read_bytes())
+    p=json.loads((directory/'protocol-v7.json').read_bytes());source=json.loads((directory/'snapshot-v7.json').read_bytes())
+    universe=json.loads((directory/'sampling-universe.json').read_bytes())
+    ranked=sorted(universe['companies'],key=lambda r:hashlib.sha256((p['sampling']['seed']+r['code']).encode()).hexdigest())
+    assert [s for s in p['samples'] if s['split']=='holdout']==[dict(r,split='holdout') for r in ranked[120:240]]
+    train_codes={s['code'] for s in p['samples'] if s['split']=='development'}
+    assert [r for r in source['records'] if r['code'] in train_codes]==[r for r in old_source['records'] if r['code'] in train_codes]
+    assert not {s['code'] for s in p['samples'] if s['split']=='holdout'}&{s['code'] for s in old_protocol['samples']}
+    old_dev=multi(old_protocol,old_source,'development');new_dev=multi(p,source,'development')
+    assert old_dev['selection']==new_dev['selection'] and old_dev['calibration_training']==new_dev['calibration_training']
+    for version,protocol,snapshot,dev in [(6,old_protocol,old_source,old_dev),(7,p,source,new_dev)]:
+        actual=multi(protocol,snapshot,'holdout',dev)
+        expected=json.loads((directory/f'holdout-v{version}-summary.json').read_bytes())
+        assert actual['summary']==expected['summary'] and actual['validation']==expected['validation']
+        assert actual['calibration_training']==dev['calibration_training']
+        assert actual['validation']['verdict']['passed']==(version==7)
+    assert actual['summary']['total']['statuses']=={'blocked':69,'evaluated':171}
+    p['fixed_validation_model']='bias_full'
+    with pytest.raises(ValueError,match='frozen replication model'):multi(p,source,'holdout',new_dev)
+
+
+def test_training_company_influence_is_a_fixed_model_diagnostic():
+    from tools.backtest_tdx_origins import fit_calibration,evaluate,summarize
+    directory=ROOT/'valuation/research/tdx-growth-expanded'
+    p=json.loads((directory/'protocol-v7.json').read_bytes());source=json.loads((directory/'snapshot-v7.json').read_bytes())
+    expected=json.loads((directory/'training-influence-v7.json').read_bytes())['results']
+    assert {r['excluded_training_code'] for r in expected}=={s['code'] for s in p['samples'] if s['split']=='development'}
+    for saved in expected:
+        changed=p|dict(samples=[s for s in p['samples'] if s['code']!=saved['excluded_training_code']])
+        fits={o:fit_calibration(changed,source,o) for o in p['origins']}
+        assert {o:v['ebit_scale'] for o,v in fits.items()}==saved['scales']
+        rows=evaluate(changed,source,'holdout',p['origins'],('current_rule','zero_growth','bias_half'),fits)
+        summary=summarize(rows,('current_rule','zero_growth','bias_half'));m=summary['total']['models']
+        assert m['bias_half']['ebit_n']==saved['evaluated_pairs']==171
+        assert m['bias_half']['ebit_mae_pct_actual_revenue']==saved['ebit_error']
+        assert 1-saved['ebit_error']/m['current_rule']['ebit_mae_pct_actual_revenue']==saved['improvement_fraction']
+        assert {o:v['models']['bias_half']['ebit_mae_pct_actual_revenue'] for o,v in summary['by_origin'].items()}==saved['by_origin']
+    assert min(r['improvement_fraction'] for r in expected)>.07
