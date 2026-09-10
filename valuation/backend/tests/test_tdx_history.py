@@ -343,3 +343,34 @@ def test_calibration_publication_rejects_tampered_evidence_and_weights():
     with pytest.raises(ValueError,match='validation does not reproduce'):prepare(protocol,source,json.dumps(changed).encode(),*args)
     for pairs in ([],[(1,float('inf'))],[(1,0)],[(1,1e308)]*30):
         with pytest.raises(ValueError):weighted_median(pairs)
+
+
+def test_additional_temporal_window_keeps_failed_effect_gate():
+    from tools.backtest_tdx_origins import study as multi
+    directory=ROOT/'valuation/research/tdx-growth-expanded'
+    p=json.loads((directory/'protocol-v8.json').read_bytes());source=json.loads((directory/'snapshot-v7.json').read_bytes())
+    dev=multi(p,source,'development');old=json.loads((directory/'development-v7-summary.json').read_bytes())
+    assert dev['selection']==old['selection'] and dev['summary']==old['summary']
+    result=multi(p,source,'holdout',dev);expected=json.loads((directory/'holdout-v8-summary.json').read_bytes())
+    assert result['summary']==expected['summary'] and result['validation']==expected['validation']
+    assert result['summary']['total']['statuses']=={'blocked':35,'evaluated':85}
+    assert [k for k,v in result['validation']['verdict']['checks'].items() if not v]==['primary_improvement']
+    training=result['calibration_training']['2025-06-30']
+    assert training['origin']=='2024-06-30' and training['target']=='2025-06-30'
+    assert training['evaluation_as_of']=='2025-09-01T00:00:00+08:00'
+    assert training['training_pairs']==42
+    assert '追加2025时间窗口' in result['boundary']
+
+
+def test_cash_source_additions_preserve_existing_evidence():
+    import hashlib
+    directory=ROOT/'valuation/research/tdx-growth-expanded'
+    raw=(directory/'snapshot-cash-proxy.json').read_bytes();source=json.loads(raw)
+    old=json.loads((directory/'snapshot-v7.json').read_bytes());summary=json.loads((directory/'cash-source-summary.json').read_bytes())
+    assert hashlib.sha256(raw).hexdigest()==summary['snapshot_sha256']
+    assert hashlib.sha256((directory/'protocol-cash-proxy.json').read_bytes()).hexdigest()==summary['protocol_sha256']==source['study_sha256']
+    assert source['artifacts']==old['artifacts'] and source['source_lists']==old['source_lists']
+    assert len(source['records'])==summary['records']==3861
+    for before,after in zip(old['records'],source['records'],strict=True):
+        assert {'FN234','FN114'}<=after['bits'].keys()
+        assert before==after|dict(bits={k:v for k,v in after['bits'].items() if k not in ('FN234','FN114')})

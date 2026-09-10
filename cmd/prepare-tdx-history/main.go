@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 
 	"github.com/yinhm/alphalake/internal/source/tdx/financial"
@@ -34,7 +35,8 @@ func main() {
 	studyRaw, e := os.ReadFile(os.Args[1])
 	check(e)
 	var study struct {
-		Samples []struct {
+		AdditionalSourceFields []int `json:"additional_source_fields"`
+		Samples                []struct {
 			Code string `json:"code"`
 		} `json:"samples"`
 	}
@@ -45,6 +47,13 @@ func main() {
 	}
 	if len(codes) == 0 {
 		panic("empty sample")
+	}
+	fields := []int{230, 86, 305, 306, 83, 82, 301, 314, 506, 509, 510, 413}
+	for _, n := range study.AdditionalSourceFields {
+		if n < 1 || n > 4096 || slices.Contains(fields, n) {
+			panic("invalid or duplicate additional source field")
+		}
+		fields = append(fields, n)
 	}
 	dir := os.Args[3]
 	check(os.Mkdir(dir, 0755)) // 不覆盖已存在的研究归档。
@@ -63,7 +72,6 @@ func main() {
 	}
 	write(filepath.Join(dir, "source-manifest.json"), manifestRaw)
 	lists := map[string]string{}
-	fields := []int{230, 86, 305, 306, 83, 82, 301, 314, 506, 509, 510, 413}
 	artifacts := []any{}
 	records := []any{}
 	seen := map[string]bool{}

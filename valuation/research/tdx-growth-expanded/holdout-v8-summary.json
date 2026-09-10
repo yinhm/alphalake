@@ -1,0 +1,370 @@
+{
+  "contract_version": "tdx-multi-origin-v1",
+  "protocol_id": "tdx-growth-expanded-v8-temporal-2025",
+  "phase": "holdout",
+  "summary": {
+    "total": {
+      "candidates": 120,
+      "statuses": {
+        "blocked": 35,
+        "evaluated": 85
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 85,
+          "ebit_n": 85,
+          "revenue_median_ape_pct": 8.852983804412707,
+          "revenue_mean_bias_pct": 2.9307491457331434,
+          "revenue_wape_pct": 12.171552433951474,
+          "margin_mae_pp": 6.991954987994835,
+          "ebit_mae_pct_actual_revenue": 7.740288104335014
+        },
+        "zero_growth": {
+          "revenue_n": 85,
+          "ebit_n": 85,
+          "revenue_median_ape_pct": 10.923043279945393,
+          "revenue_mean_bias_pct": -2.5840661087472645,
+          "revenue_wape_pct": 13.593286273809074,
+          "margin_mae_pp": 6.991954987994835,
+          "ebit_mae_pct_actual_revenue": 7.703922466666424
+        },
+        "bias_half": {
+          "revenue_n": 85,
+          "ebit_n": 85,
+          "revenue_median_ape_pct": 8.852983804412707,
+          "revenue_mean_bias_pct": 2.9307491457331434,
+          "revenue_wape_pct": 12.171552433951474,
+          "margin_mae_pp": 6.843682630873573,
+          "ebit_mae_pct_actual_revenue": 7.591722015737246
+        }
+      }
+    },
+    "by_origin": {
+      "2025-06-30": {
+        "candidates": 120,
+        "statuses": {
+          "blocked": 35,
+          "evaluated": 85
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 85,
+            "ebit_n": 85,
+            "revenue_median_ape_pct": 8.852983804412707,
+            "revenue_mean_bias_pct": 2.9307491457331434,
+            "revenue_wape_pct": 12.171552433951474,
+            "margin_mae_pp": 6.991954987994835,
+            "ebit_mae_pct_actual_revenue": 7.740288104335014
+          },
+          "zero_growth": {
+            "revenue_n": 85,
+            "ebit_n": 85,
+            "revenue_median_ape_pct": 10.923043279945393,
+            "revenue_mean_bias_pct": -2.5840661087472645,
+            "revenue_wape_pct": 13.593286273809074,
+            "margin_mae_pp": 6.991954987994835,
+            "ebit_mae_pct_actual_revenue": 7.703922466666424
+          },
+          "bias_half": {
+            "revenue_n": 85,
+            "ebit_n": 85,
+            "revenue_median_ape_pct": 8.852983804412707,
+            "revenue_mean_bias_pct": 2.9307491457331434,
+            "revenue_wape_pct": 12.171552433951474,
+            "margin_mae_pp": 6.843682630873573,
+            "ebit_mae_pct_actual_revenue": 7.591722015737246
+          }
+        }
+      }
+    },
+    "by_profit_scope": {
+      "no_financial_fields_detected": {
+        "candidates": 84,
+        "statuses": {
+          "evaluated": 84
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 84,
+            "ebit_n": 84,
+            "revenue_median_ape_pct": 8.850533055698302,
+            "revenue_mean_bias_pct": 2.3954705020343594,
+            "revenue_wape_pct": 12.085938582899415,
+            "margin_mae_pp": 7.055532473570657,
+            "ebit_mae_pct_actual_revenue": 7.820520740533794
+          },
+          "zero_growth": {
+            "revenue_n": 84,
+            "ebit_n": 84,
+            "revenue_median_ape_pct": 10.785725660813622,
+            "revenue_mean_bias_pct": -2.9276350943988323,
+            "revenue_wape_pct": 13.562891155562404,
+            "margin_mae_pp": 7.055532473570657,
+            "ebit_mae_pct_actual_revenue": 7.793297756886762
+          },
+          "bias_half": {
+            "revenue_n": 84,
+            "ebit_n": 84,
+            "revenue_median_ape_pct": 8.850533055698302,
+            "revenue_mean_bias_pct": 2.3954705020343594,
+            "revenue_wape_pct": 12.085938582899415,
+            "margin_mae_pp": 6.90243324869065,
+            "ebit_mae_pct_actual_revenue": 7.674714113914788
+          }
+        }
+      },
+      "financial_fields_present": {
+        "candidates": 1,
+        "statuses": {
+          "evaluated": 1
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 1,
+            "ebit_n": 1,
+            "revenue_median_ape_pct": 47.894155216431,
+            "revenue_mean_bias_pct": 47.894155216431,
+            "revenue_wape_pct": 47.894155216431,
+            "margin_mae_pp": 1.651446199625816,
+            "ebit_mae_pct_actual_revenue": 1.0007466636374827
+          },
+          "zero_growth": {
+            "revenue_n": 1,
+            "ebit_n": 1,
+            "revenue_median_ape_pct": 26.275728685984454,
+            "revenue_mean_bias_pct": 26.275728685984454,
+            "revenue_wape_pct": 26.275728685984454,
+            "margin_mae_pp": 1.651446199625816,
+            "ebit_mae_pct_actual_revenue": 0.19639808815807624
+          },
+          "bias_half": {
+            "revenue_n": 1,
+            "ebit_n": 1,
+            "revenue_median_ape_pct": 47.894155216431,
+            "revenue_mean_bias_pct": 47.894155216431,
+            "revenue_wape_pct": 47.894155216431,
+            "margin_mae_pp": 1.908630734239189,
+            "ebit_mae_pct_actual_revenue": 0.6203857688237253
+          }
+        }
+      },
+      "not_evaluated": {
+        "candidates": 35,
+        "statuses": {
+          "blocked": 35
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 0,
+            "ebit_n": 0,
+            "revenue_median_ape_pct": null,
+            "revenue_mean_bias_pct": null,
+            "revenue_wape_pct": null,
+            "margin_mae_pp": null,
+            "ebit_mae_pct_actual_revenue": null
+          },
+          "zero_growth": {
+            "revenue_n": 0,
+            "ebit_n": 0,
+            "revenue_median_ape_pct": null,
+            "revenue_mean_bias_pct": null,
+            "revenue_wape_pct": null,
+            "margin_mae_pp": null,
+            "ebit_mae_pct_actual_revenue": null
+          },
+          "bias_half": {
+            "revenue_n": 0,
+            "ebit_n": 0,
+            "revenue_median_ape_pct": null,
+            "revenue_mean_bias_pct": null,
+            "revenue_wape_pct": null,
+            "margin_mae_pp": null,
+            "ebit_mae_pct_actual_revenue": null
+          }
+        }
+      }
+    }
+  },
+  "boundary": "简化源数据回溯、一个目的样本的多个起点；非严格PIT或DCF公允价值证明；追加2025时间窗口；同公司旧窗口已评分，不称新公司独立验证",
+  "calibration_training": {
+    "2025-06-30": {
+      "origin": "2024-06-30",
+      "target": "2025-06-30",
+      "evaluation_as_of": "2025-09-01T00:00:00+08:00",
+      "status": "fitted",
+      "training_pairs": 42,
+      "weighted_ebit_scale": 0.907113572390187,
+      "ebit_scale": 0.907113572390187,
+      "summary": {
+        "candidates": 60,
+        "statuses": {
+          "blocked": 18,
+          "evaluated": 42
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 42,
+            "ebit_n": 42,
+            "revenue_median_ape_pct": 7.7005657841809,
+            "revenue_mean_bias_pct": 1.830789995674006,
+            "revenue_wape_pct": 12.165987179186963,
+            "margin_mae_pp": 4.507672319613538,
+            "ebit_mae_pct_actual_revenue": 4.896719323260597
+          },
+          "zero_growth": {
+            "revenue_n": 42,
+            "ebit_n": 42,
+            "revenue_median_ape_pct": 12.630150725065228,
+            "revenue_mean_bias_pct": -1.0161206527917122,
+            "revenue_wape_pct": 19.803040029650518,
+            "margin_mae_pp": 4.507672319613538,
+            "ebit_mae_pct_actual_revenue": 5.06274008832105
+          }
+        }
+      }
+    }
+  },
+  "validation": {
+    "model": "bias_half",
+    "verdict": {
+      "passed": false,
+      "checks": {
+        "minimum_pairs": true,
+        "primary_improvement": false,
+        "revenue_wape": true,
+        "revenue_median_ape": true,
+        "period_2025-06-30": true,
+        "company_removal_available": true,
+        "without_000066": true,
+        "without_000419": true,
+        "without_000553": true,
+        "without_000591": true,
+        "without_000738": true,
+        "without_000777": true,
+        "without_000785": true,
+        "without_000798": true,
+        "without_000813": true,
+        "without_000908": true,
+        "without_000922": true,
+        "without_000935": true,
+        "without_001213": true,
+        "without_001299": true,
+        "without_002014": true,
+        "without_002075": true,
+        "without_002084": true,
+        "without_002127": true,
+        "without_002157": true,
+        "without_002185": true,
+        "without_002207": true,
+        "without_002240": true,
+        "without_002276": true,
+        "without_002329": true,
+        "without_002350": true,
+        "without_002360": true,
+        "without_002449": true,
+        "without_002569": true,
+        "without_002573": true,
+        "without_002590": true,
+        "without_002691": true,
+        "without_002755": true,
+        "without_002799": true,
+        "without_002800": true,
+        "without_002824": true,
+        "without_002825": true,
+        "without_002843": true,
+        "without_002943": true,
+        "without_002969": true,
+        "without_002998": true,
+        "without_003023": true,
+        "without_003029": true,
+        "without_300013": true,
+        "without_300043": true,
+        "without_300053": true,
+        "without_300100": true,
+        "without_300132": true,
+        "without_300164": true,
+        "without_300168": true,
+        "without_300176": true,
+        "without_300254": true,
+        "without_300318": true,
+        "without_300395": true,
+        "without_300568": true,
+        "without_300621": true,
+        "without_300639": true,
+        "without_300655": true,
+        "without_300657": true,
+        "without_300672": true,
+        "without_300751": true,
+        "without_300782": true,
+        "without_300796": true,
+        "without_300825": true,
+        "without_300867": true,
+        "without_300899": true,
+        "without_301007": true,
+        "without_301120": true,
+        "without_301185": true,
+        "without_301511": true,
+        "without_301536": true,
+        "without_301580": true,
+        "without_600025": true,
+        "without_600039": true,
+        "without_600201": true,
+        "without_600505": true,
+        "without_600527": true,
+        "without_600567": true,
+        "without_600717": true,
+        "without_600727": true,
+        "without_600783": true,
+        "without_600822": true,
+        "without_600885": true,
+        "without_600981": true,
+        "without_601611": true,
+        "without_603009": true,
+        "without_603029": true,
+        "without_603137": true,
+        "without_603192": true,
+        "without_603221": true,
+        "without_603237": true,
+        "without_603315": true,
+        "without_603327": true,
+        "without_603332": true,
+        "without_603636": true,
+        "without_603696": true,
+        "without_603788": true,
+        "without_603926": true,
+        "without_603960": true,
+        "without_603985": true,
+        "without_603991": true,
+        "without_605058": true,
+        "without_605090": true,
+        "without_605117": true,
+        "without_605208": true,
+        "without_605277": true,
+        "without_605305": true,
+        "without_688067": true,
+        "without_688111": true,
+        "without_688117": true,
+        "without_688131": true,
+        "without_688205": true,
+        "without_688233": true,
+        "without_688345": true,
+        "without_688361": true,
+        "without_688576": true,
+        "without_688596": true,
+        "without_688648": true,
+        "without_688658": true,
+        "without_688678": true,
+        "without_688685": true
+      }
+    },
+    "status": "evaluated"
+  },
+  "evidence": {
+    "protocol_sha256": "a0c7f69bbe8d29f830a9af2684726b7e08f04161ca58fffd837a9decae9c13b1",
+    "snapshot_sha256": "56d8019d94a599c2baf1340ff5c08a4b94478c96bb6849e46ebb779fb1658b3c",
+    "rule_code_sha256": "7250a086357095d2c58be7bdaddde773287545b729fba27a6b68feece7f550ee",
+    "calibration_code_sha256": "386cad4668caa2ee2e6a0fe8e94b11ea551506b90786cb69b8990acdbfea9570",
+    "base_backtest_sha256": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+    "code_sha256": "58f7254ebba472e51fab54ee98dec618cb3c69abcb26046a09a1c71f857f333d"
+  }
+}
