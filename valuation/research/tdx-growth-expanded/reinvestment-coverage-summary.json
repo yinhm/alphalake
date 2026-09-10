@@ -1,0 +1,629 @@
+{
+  "protocol_id": "tdx-reinvestment-coverage-v1",
+  "scope": {
+    "securities": 120,
+    "periods": [
+      "2023-06-30",
+      "2024-06-30",
+      "2025-06-30",
+      "2026-06-30"
+    ],
+    "evaluation_as_of": "2026-09-10T00:00:00+08:00",
+    "database": "none_research_source_snapshot"
+  },
+  "summary": {
+    "candidates": 480,
+    "source_groups_available": {
+      "capital_expenditure_cash": 476,
+      "reported_operating_cashflow": 471,
+      "depreciation_core": 414,
+      "depreciation_extensions": 0,
+      "cashflow_wc_reconciliation": 478,
+      "partial_balance_changes": 479,
+      "income_tax_accrual": 479,
+      "all_taxes_paid": 479
+    },
+    "components": {
+      "FN114": {
+        "available": 476,
+        "issues": {
+          "missing_record": 1,
+          "negative_cumulative_capex": 3
+        }
+      },
+      "FN234": {
+        "available": 471,
+        "issues": {
+          "missing_record": 9
+        }
+      },
+      "FN136": {
+        "available": 478,
+        "issues": {
+          "missing_record": 1,
+          "source_zero_ambiguous": 1
+        }
+      },
+      "FN137": {
+        "available": 478,
+        "issues": {
+          "missing_record": 1,
+          "source_zero_ambiguous": 1
+        }
+      },
+      "FN138": {
+        "available": 414,
+        "issues": {
+          "source_zero_ambiguous": 65,
+          "missing_record": 1
+        }
+      },
+      "FN579": {
+        "available": 0,
+        "issues": {
+          "source_zero_ambiguous": 480,
+          "missing_record": 1
+        }
+      },
+      "FN581": {
+        "available": 381,
+        "issues": {
+          "source_zero_ambiguous": 99,
+          "missing_record": 1
+        }
+      },
+      "FN146": {
+        "available": 478,
+        "issues": {
+          "missing_record": 1,
+          "source_zero_ambiguous": 1
+        }
+      },
+      "FN147": {
+        "available": 478,
+        "issues": {
+          "missing_record": 1,
+          "source_zero_ambiguous": 1
+        }
+      },
+      "FN148": {
+        "available": 478,
+        "issues": {
+          "missing_record": 1,
+          "source_zero_ambiguous": 1
+        }
+      },
+      "FN11": {
+        "available": 479,
+        "issues": {
+          "missing_record": 1
+        }
+      },
+      "FN12": {
+        "available": 479,
+        "issues": {
+          "missing_record": 1
+        }
+      },
+      "FN13": {
+        "available": 479,
+        "issues": {
+          "missing_record": 1
+        }
+      },
+      "FN17": {
+        "available": 479,
+        "issues": {
+          "missing_record": 1
+        }
+      },
+      "FN44": {
+        "available": 479,
+        "issues": {
+          "missing_record": 1
+        }
+      },
+      "FN46": {
+        "available": 479,
+        "issues": {
+          "missing_record": 1
+        }
+      },
+      "FN47": {
+        "available": 479,
+        "issues": {
+          "missing_record": 1
+        }
+      },
+      "FN92": {
+        "available": 479,
+        "issues": {
+          "missing_record": 1
+        }
+      },
+      "FN93": {
+        "available": 479,
+        "issues": {
+          "missing_record": 1
+        }
+      },
+      "FN104": {
+        "available": 479,
+        "issues": {
+          "missing_record": 1
+        }
+      }
+    },
+    "actual_fcff_complete": 0
+  },
+  "by_period": {
+    "2023-06-30": {
+      "candidates": 120,
+      "source_groups_available": {
+        "capital_expenditure_cash": 117,
+        "reported_operating_cashflow": 113,
+        "depreciation_core": 99,
+        "depreciation_extensions": 0,
+        "cashflow_wc_reconciliation": 118,
+        "partial_balance_changes": 119,
+        "income_tax_accrual": 119,
+        "all_taxes_paid": 119
+      },
+      "components": {
+        "FN114": {
+          "available": 117,
+          "issues": {
+            "missing_record": 1,
+            "negative_cumulative_capex": 2
+          }
+        },
+        "FN234": {
+          "available": 113,
+          "issues": {
+            "missing_record": 7
+          }
+        },
+        "FN136": {
+          "available": 118,
+          "issues": {
+            "missing_record": 1,
+            "source_zero_ambiguous": 1
+          }
+        },
+        "FN137": {
+          "available": 118,
+          "issues": {
+            "missing_record": 1,
+            "source_zero_ambiguous": 1
+          }
+        },
+        "FN138": {
+          "available": 99,
+          "issues": {
+            "source_zero_ambiguous": 20,
+            "missing_record": 1
+          }
+        },
+        "FN579": {
+          "available": 0,
+          "issues": {
+            "source_zero_ambiguous": 120,
+            "missing_record": 1
+          }
+        },
+        "FN581": {
+          "available": 88,
+          "issues": {
+            "source_zero_ambiguous": 32,
+            "missing_record": 1
+          }
+        },
+        "FN146": {
+          "available": 118,
+          "issues": {
+            "missing_record": 1,
+            "source_zero_ambiguous": 1
+          }
+        },
+        "FN147": {
+          "available": 118,
+          "issues": {
+            "missing_record": 1,
+            "source_zero_ambiguous": 1
+          }
+        },
+        "FN148": {
+          "available": 118,
+          "issues": {
+            "missing_record": 1,
+            "source_zero_ambiguous": 1
+          }
+        },
+        "FN11": {
+          "available": 119,
+          "issues": {
+            "missing_record": 1
+          }
+        },
+        "FN12": {
+          "available": 119,
+          "issues": {
+            "missing_record": 1
+          }
+        },
+        "FN13": {
+          "available": 119,
+          "issues": {
+            "missing_record": 1
+          }
+        },
+        "FN17": {
+          "available": 119,
+          "issues": {
+            "missing_record": 1
+          }
+        },
+        "FN44": {
+          "available": 119,
+          "issues": {
+            "missing_record": 1
+          }
+        },
+        "FN46": {
+          "available": 119,
+          "issues": {
+            "missing_record": 1
+          }
+        },
+        "FN47": {
+          "available": 119,
+          "issues": {
+            "missing_record": 1
+          }
+        },
+        "FN92": {
+          "available": 119,
+          "issues": {
+            "missing_record": 1
+          }
+        },
+        "FN93": {
+          "available": 119,
+          "issues": {
+            "missing_record": 1
+          }
+        },
+        "FN104": {
+          "available": 119,
+          "issues": {
+            "missing_record": 1
+          }
+        }
+      },
+      "actual_fcff_complete": 0
+    },
+    "2024-06-30": {
+      "candidates": 120,
+      "source_groups_available": {
+        "capital_expenditure_cash": 120,
+        "reported_operating_cashflow": 118,
+        "depreciation_core": 103,
+        "depreciation_extensions": 0,
+        "cashflow_wc_reconciliation": 120,
+        "partial_balance_changes": 120,
+        "income_tax_accrual": 120,
+        "all_taxes_paid": 120
+      },
+      "components": {
+        "FN114": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN234": {
+          "available": 118,
+          "issues": {
+            "missing_record": 2
+          }
+        },
+        "FN136": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN137": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN138": {
+          "available": 103,
+          "issues": {
+            "source_zero_ambiguous": 17
+          }
+        },
+        "FN579": {
+          "available": 0,
+          "issues": {
+            "source_zero_ambiguous": 120
+          }
+        },
+        "FN581": {
+          "available": 95,
+          "issues": {
+            "source_zero_ambiguous": 25
+          }
+        },
+        "FN146": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN147": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN148": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN11": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN12": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN13": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN17": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN44": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN46": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN47": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN92": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN93": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN104": {
+          "available": 120,
+          "issues": {}
+        }
+      },
+      "actual_fcff_complete": 0
+    },
+    "2025-06-30": {
+      "candidates": 120,
+      "source_groups_available": {
+        "capital_expenditure_cash": 120,
+        "reported_operating_cashflow": 120,
+        "depreciation_core": 105,
+        "depreciation_extensions": 0,
+        "cashflow_wc_reconciliation": 120,
+        "partial_balance_changes": 120,
+        "income_tax_accrual": 120,
+        "all_taxes_paid": 120
+      },
+      "components": {
+        "FN114": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN234": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN136": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN137": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN138": {
+          "available": 105,
+          "issues": {
+            "source_zero_ambiguous": 15
+          }
+        },
+        "FN579": {
+          "available": 0,
+          "issues": {
+            "source_zero_ambiguous": 120
+          }
+        },
+        "FN581": {
+          "available": 98,
+          "issues": {
+            "source_zero_ambiguous": 22
+          }
+        },
+        "FN146": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN147": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN148": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN11": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN12": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN13": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN17": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN44": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN46": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN47": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN92": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN93": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN104": {
+          "available": 120,
+          "issues": {}
+        }
+      },
+      "actual_fcff_complete": 0
+    },
+    "2026-06-30": {
+      "candidates": 120,
+      "source_groups_available": {
+        "capital_expenditure_cash": 119,
+        "reported_operating_cashflow": 120,
+        "depreciation_core": 107,
+        "depreciation_extensions": 0,
+        "cashflow_wc_reconciliation": 120,
+        "partial_balance_changes": 120,
+        "income_tax_accrual": 120,
+        "all_taxes_paid": 120
+      },
+      "components": {
+        "FN114": {
+          "available": 119,
+          "issues": {
+            "negative_cumulative_capex": 1
+          }
+        },
+        "FN234": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN136": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN137": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN138": {
+          "available": 107,
+          "issues": {
+            "source_zero_ambiguous": 13
+          }
+        },
+        "FN579": {
+          "available": 0,
+          "issues": {
+            "source_zero_ambiguous": 120
+          }
+        },
+        "FN581": {
+          "available": 100,
+          "issues": {
+            "source_zero_ambiguous": 20
+          }
+        },
+        "FN146": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN147": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN148": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN11": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN12": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN13": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN17": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN44": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN46": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN47": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN92": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN93": {
+          "available": 120,
+          "issues": {}
+        },
+        "FN104": {
+          "available": 120,
+          "issues": {}
+        }
+      },
+      "actual_fcff_complete": 0
+    }
+  },
+  "classification_gaps": [
+    "operating_vs_nonoperating_working_capital",
+    "operating_income_tax_and_interest_tax_shield",
+    "acquisitions_and_noncash_reinvestment",
+    "depreciation_operating_scope"
+  ],
+  "boundary": "源分量可用不等于标准事实、原文逐公司审核或经营分类闭合；余额差不等于现金流营运调节；各项税费不等于经营所得税；不得将缺项归零或生成实际FCFF",
+  "evidence": {
+    "protocol_sha256": "29ee44bb08ef09bb8d71f3ddac25f1dd3f149f78f78750108f240a3feb1ff2a4",
+    "snapshot_sha256": "fade80cf0a11469a96f8fec1ea317a4c88d18a5fd23789946bdfbde621fdf58b",
+    "code_sha256": "75eb978015acbdf2f646f3428bbc893f89cb4edfa8477a24ef8043839cb6fef7",
+    "shared_parser_sha256": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d"
+  }
+}

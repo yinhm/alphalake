@@ -1,6 +1,7 @@
 """简化回溯的时点隔离、源位精度与缺项分母。"""
 import copy
 from datetime import date, timedelta
+from decimal import Decimal
 import json
 from pathlib import Path
 import struct
@@ -435,3 +436,49 @@ def test_cash_anomaly_original_documents_and_tampering():
     bad=copy.deepcopy(source)
     next(r for r in bad['records'] if (r['code'],r['period'])==('603315','2025-06-30'))['bits']['FN114']^=1
     with pytest.raises(ValueError,match='TDX bits'):verify_anomaly(ledger,evidence,bad)
+
+
+def test_reinvestment_coverage_preserves_sources_and_rejects_ambiguous_inputs():
+    import hashlib
+    from collections import defaultdict
+    from tools.audit_tdx_reinvestment import audit,component
+    directory=ROOT/'valuation/research/tdx-growth-expanded'
+    raw=(directory/'snapshot-reinvestment.json').read_bytes();source=json.loads(raw)
+    previous=json.loads((directory/'snapshot-cash-proxy.json').read_bytes())
+    p=json.loads((directory/'protocol-reinvestment.json').read_bytes())
+    expected=json.loads((directory/'reinvestment-coverage-summary.json').read_bytes())
+    assert source['study_sha256']==hashlib.sha256((directory/'protocol-reinvestment.json').read_bytes()).hexdigest()
+    assert hashlib.sha256(raw).hexdigest()==expected['evidence']['snapshot_sha256']
+    assert source['artifacts']==previous['artifacts'] and source['source_lists']==previous['source_lists']
+    for old,new in zip(previous['records'],source['records'],strict=True):
+        assert old==new|dict(bits={f:new['bits'][f] for f in old['bits']})
+    result=audit(p,source)
+    assert {k:v for k,v in result.items() if k!='results'}=={k:v for k,v in expected.items() if k!='evidence'}
+    assert result['summary']['candidates']==480 and all(r['actual_fcff'] is None for r in result['results'])
+    assert result['summary']['source_groups_available']['depreciation_extensions']==0
+    invalid=copy.deepcopy(p);invalid['source_rules']['multipliers']['FN581']=1
+    with pytest.raises(ValueError,match='source rules'):audit(invalid,source)
+    original,synthetic=fixture();index=defaultdict(list)
+    for r in synthetic['records']:
+        r['bits'].update(FN579=bits(1.25),FN581=bits(2),FN114=bits(100),FN234=bits(100),FN11=bits(int(r['period'][:4])))
+        index[(r['code'],r['period'])].append(r)
+    artifacts={a['file']:a for a in synthetic['artifacts']}
+    def part(field,cutoff=original['evaluation_as_of']):
+        return component(index,artifacts,'600519',date(2026,6,30),field,cutoff)
+    assert Decimal(part('FN579')['value_cny'])==12500
+    assert Decimal(part('FN581')['value_cny'])==20000
+    assert Decimal(part('FN114')['value_cny'])==100
+    assert Decimal(part('FN234')['value_cny'])==400
+    assert Decimal(part('FN11')['value_cny'])==1
+    row=index[('600519','2026-06-30')][0]
+    row['bits']['FN579']=bits(0)
+    assert part('FN579')['issues']==['source_zero_ambiguous'] and part('FN579')['value_cny'] is None
+    del row['bits']['FN579']
+    assert part('FN579')['issues']==['missing_field']
+    row['bits']['FN579']=0x7f800000
+    assert part('FN579')['issues']==['invalid_source']
+    index[('600519','2025-06-30')][0]['bits']['FN114']=bits(1000)
+    assert part('FN114')['issues']==['negative_cumulative_capex']
+    assert part('FN581','2026-07-01T00:00:00+08:00')['issues']==['unavailable_at_cutoff']
+    index[('600519','2026-06-30')].append(copy.deepcopy(row))
+    assert part('FN581')['issues']==['duplicate_identity']
