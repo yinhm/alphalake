@@ -22,7 +22,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "usage: alphalake <command> [args]")
 	fmt.Fprintln(os.Stderr, "commands:")
 	fmt.Fprintln(os.Stderr, "  export-valuation-quote <db-path> <tdx-symbol> --date YYYY-MM-DD --as-of RFC3339")
-	fmt.Fprintln(os.Stderr, "  export-wacc-references <db-path> --as-of RFC3339 --country-release N --beta-release N --yield-release N [--credit-release N] [--recorded-cutoff RFC3339]")
+	fmt.Fprintln(os.Stderr, "  export-wacc-references <db-path> --as-of RFC3339 [--latest | --country-release N --beta-release N --yield-release N [--credit-release N]] [--recorded-cutoff RFC3339]")
 	fmt.Fprintln(os.Stderr, "  sync-industry-beta <db-path> [--offline] [--python executable] [--parser path]")
 	fmt.Fprintln(os.Stderr, "  sync-credit-spreads <db-path> [--python python3] [--parser path] [--offline]")
 	fmt.Fprintln(os.Stderr, "  export-market-capital <db-path> <code> --date YYYY-MM-DD --as-of RFC3339 --share-release N [--hk-release N --fx-release N]")

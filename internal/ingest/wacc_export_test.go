@@ -119,6 +119,46 @@ func TestWACCReferenceExport(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	latest, err := duckstore.ExportLatestWACCReferences(ctx, db, firstSeen, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	latestJSON, _ := json.Marshal(latest)
+	pinnedJSON, _ := json.Marshal(creditPacket)
+	if string(latestJSON) != string(pinnedJSON) {
+		t.Fatal("automatic selection differs from fixed releases")
+	}
+	if _, err := duckstore.ExportLatestWACCReferences(ctx, db, firstSeen.Add(-time.Microsecond), nil); err == nil {
+		t.Fatal("latest leaked future availability")
+	}
+	if _, err := duckstore.ExportLatestWACCReferences(ctx, db, firstSeen, &early); err == nil {
+		t.Fatal("latest ignored recorded cutoff")
+	}
+	// 受控版本元数据：更晚入库的旧观察不得胜过新观察；新观察损坏不得回退掩盖。
+	if _, err := db.ExecContext(ctx, `INSERT INTO meta.dataset_release SELECT * REPLACE
+ (release_id+100 AS release_id,'2025-01-01' AS source_version,repeat('e',64) AS content_key,
+ recorded_at+INTERVAL '1 day' AS recorded_at) FROM meta.dataset_release WHERE release_id=?`, ids[0]); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := duckstore.ExportLatestWACCReferences(ctx, db, firstSeen, nil); err != nil {
+		t.Fatal("arrival order overrode observation date", err)
+	}
+	if _, err := db.ExecContext(ctx, `UPDATE meta.dataset_release SET source_version=(SELECT source_version FROM meta.dataset_release WHERE release_id=?) WHERE release_id=?`, ids[0], ids[0]+100); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := duckstore.ExportLatestWACCReferences(ctx, db, firstSeen, nil); err == nil {
+		t.Fatal("broken newest revision silently fell back")
+	}
+	if _, err := db.ExecContext(ctx, `UPDATE meta.dataset_release SET recorded_at=(SELECT recorded_at FROM meta.dataset_release WHERE release_id=?) WHERE release_id=?`, ids[0], ids[0]+100); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := duckstore.ExportLatestWACCReferences(ctx, db, firstSeen, nil); err == nil || !strings.Contains(err.Error(), "ambiguous latest") {
+		t.Fatalf("ambiguous latest accepted: %v", err)
+	}
+	if _, err := db.ExecContext(ctx, `DELETE FROM meta.dataset_release WHERE release_id=?`, ids[0]+100); err != nil {
+		t.Fatal(err)
+	}
 	creditJSON, _ := json.Marshal(creditPacket)
 	if output := os.Getenv("ALPHALAKE_WACC_EXPORT_DIR"); output != "" {
 		if err := os.MkdirAll(output, 0755); err != nil {
@@ -136,5 +176,8 @@ func TestWACCReferenceExport(t *testing.T) {
 	}
 	if _, err := duckstore.ExportWACCReferences(ctx, db, firstSeen, nil, ids[0], ids[1], ids[2]); err == nil {
 		t.Fatal("incomplete curve exported")
+	}
+	if _, err := duckstore.ExportLatestWACCReferences(ctx, db, firstSeen, nil); err == nil {
+		t.Fatal("latest exported incomplete curve")
 	}
 }

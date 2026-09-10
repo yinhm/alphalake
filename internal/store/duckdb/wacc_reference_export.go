@@ -12,6 +12,51 @@ import (
 	"github.com/yinhm/alphalake/internal/source/damodaran"
 )
 
+// ExportLatestWACCReferences 按观察日期、同日期修订的入库时间选择四类版本，
+// 再复用固定版本导出的完整性检查；不以较旧版本掩盖所选版本的损坏。
+func ExportLatestWACCReferences(ctx context.Context, db *sql.DB, asof time.Time, recordedCutoff *time.Time) (map[string]any, error) {
+	if db == nil || asof.IsZero() {
+		return nil, errors.New("database and ASOF required")
+	}
+	datasets := []string{damodaran.Dataset, damodaran.BetaDataset, chinabond.Dataset, damodaran.CreditDataset}
+	rows, err := db.QueryContext(ctx, `SELECT dataset,release_id FROM meta.dataset_release
+ WHERE ((source=? AND dataset IN (?,?,?)) OR (source=? AND dataset=?))
+ AND available_at<=? AND (? IS NULL OR recorded_at<=CAST(? AS TIMESTAMPTZ))
+ AND TRY_CAST(source_version AS DATE)<=CAST(? AS DATE)
+ QUALIFY dense_rank() OVER(PARTITION BY source,dataset
+ ORDER BY TRY_CAST(source_version AS DATE) DESC,recorded_at DESC)=1`,
+		damodaran.Source, datasets[0], datasets[1], datasets[3], chinabond.Source, datasets[2], asof, recordedCutoff, recordedCutoff, asof)
+	if err != nil {
+		return nil, err
+	}
+	ids := map[string]int64{}
+	for rows.Next() {
+		var dataset string
+		var id int64
+		if err := rows.Scan(&dataset, &id); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		if ids[dataset] != 0 {
+			rows.Close()
+			return nil, fmt.Errorf("ambiguous latest WACC release: %s", dataset)
+		}
+		ids[dataset] = id
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	for _, dataset := range datasets {
+		if ids[dataset] == 0 {
+			return nil, fmt.Errorf("no available WACC release: %s", dataset)
+		}
+	}
+	// 选择结束后固定 ID；完整导出仍在原有单个事务中，不重新选择版本。
+	return ExportWACCReferences(ctx, db, asof, recordedCutoff, ids[datasets[0]], ids[datasets[1]], ids[datasets[2]], ids[datasets[3]])
+}
+
 // ExportWACCReferences selects explicit complete releases; it does not infer
 // 'latest' from arrival order. Optional recordedCutoff reproduces system knowledge.
 func ExportWACCReferences(ctx context.Context, db *sql.DB, asof time.Time, recordedCutoff *time.Time, country, beta, yield int64, creditRelease ...int64) (map[string]any, error) {
