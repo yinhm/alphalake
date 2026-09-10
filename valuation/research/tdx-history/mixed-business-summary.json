@@ -1,0 +1,280 @@
+{
+  "contract_version": "tdx-history-backtest-v2",
+  "study_id": "tdx-history-2025H1-one-year-v1",
+  "summary": {
+    "candidates": 20,
+    "statuses": {
+      "evaluated": 19,
+      "blocked": 1
+    },
+    "models": {
+      "current_rule": {
+        "revenue_n": 19,
+        "ebit_n": 19,
+        "revenue_median_ape_pct": 5.819138445634853,
+        "revenue_mean_bias_pct": 1.2678001710696796,
+        "revenue_wape_pct": 10.0018021068103,
+        "margin_mae_pp": 2.233322022157485,
+        "ebit_mae_pct_actual_revenue": 3.5681319208516284
+      },
+      "zero_growth": {
+        "revenue_n": 19,
+        "ebit_n": 19,
+        "revenue_median_ape_pct": 14.542105255924978,
+        "revenue_mean_bias_pct": -4.687482728144094,
+        "revenue_wape_pct": 12.445253100638684,
+        "margin_mae_pp": 2.233322022157485,
+        "ebit_mae_pct_actual_revenue": 3.211497375223905
+      }
+    }
+  },
+  "by_split": {
+    "development": {
+      "candidates": 12,
+      "statuses": {
+        "evaluated": 12
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 12,
+          "ebit_n": 12,
+          "revenue_median_ape_pct": 5.949225883641658,
+          "revenue_mean_bias_pct": 1.6344637442161987,
+          "revenue_wape_pct": 11.3844010232119,
+          "margin_mae_pp": 1.7123496525160502,
+          "ebit_mae_pct_actual_revenue": 3.66626806630553
+        },
+        "zero_growth": {
+          "revenue_n": 12,
+          "ebit_n": 12,
+          "revenue_median_ape_pct": 14.804967667097003,
+          "revenue_mean_bias_pct": -5.57114093587662,
+          "revenue_wape_pct": 14.254475030558506,
+          "margin_mae_pp": 1.71234965251605,
+          "ebit_mae_pct_actual_revenue": 3.2362380813313036
+        }
+      }
+    },
+    "holdout": {
+      "candidates": 8,
+      "statuses": {
+        "evaluated": 7,
+        "blocked": 1
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 7,
+          "ebit_n": 7,
+          "revenue_median_ape_pct": 5.819138445634853,
+          "revenue_mean_bias_pct": 0.6392340456756467,
+          "revenue_wape_pct": 7.289663099534017,
+          "margin_mae_pp": 3.1264175129713734,
+          "ebit_mae_pct_actual_revenue": 3.3998985286449397
+        },
+        "zero_growth": {
+          "revenue_n": 7,
+          "ebit_n": 7,
+          "revenue_median_ape_pct": 5.087612282689186,
+          "revenue_mean_bias_pct": -3.1726400863169033,
+          "revenue_wape_pct": 8.89624021574074,
+          "margin_mae_pp": 3.1264175129713734,
+          "ebit_mae_pct_actual_revenue": 3.1690847361826506
+        }
+      }
+    }
+  },
+  "by_stratum": {
+    "制造与出口": {
+      "candidates": 5,
+      "statuses": {
+        "evaluated": 5
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 5,
+          "ebit_n": 5,
+          "revenue_median_ape_pct": 9.632449151826084,
+          "revenue_mean_bias_pct": 8.621364260495673,
+          "revenue_wape_pct": 10.713013429310061,
+          "margin_mae_pp": 1.5446268156645424,
+          "ebit_mae_pct_actual_revenue": 2.6029716148098725
+        },
+        "zero_growth": {
+          "revenue_n": 5,
+          "ebit_n": 5,
+          "revenue_median_ape_pct": 14.881777460129028,
+          "revenue_mean_bias_pct": 1.8403140732936,
+          "revenue_wape_pct": 8.170083691720158,
+          "margin_mae_pp": 1.5446268156645415,
+          "ebit_mae_pct_actual_revenue": 2.489530029181926
+        }
+      }
+    },
+    "周期业务": {
+      "candidates": 5,
+      "statuses": {
+        "evaluated": 5
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 5,
+          "ebit_n": 5,
+          "revenue_median_ape_pct": 4.745465745706497,
+          "revenue_mean_bias_pct": -9.52747415401896,
+          "revenue_wape_pct": 11.060242390125733,
+          "margin_mae_pp": 3.3021850429246755,
+          "ebit_mae_pct_actual_revenue": 4.039846446424013
+        },
+        "zero_growth": {
+          "revenue_n": 5,
+          "ebit_n": 5,
+          "revenue_median_ape_pct": 14.542105255924978,
+          "revenue_mean_bias_pct": -13.628553407012545,
+          "revenue_wape_pct": 13.327857881467489,
+          "margin_mae_pp": 3.3021850429246755,
+          "ebit_mae_pct_actual_revenue": 3.789611100124299
+        }
+      }
+    },
+    "科技与设备": {
+      "candidates": 5,
+      "statuses": {
+        "evaluated": 4,
+        "blocked": 1
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 4,
+          "ebit_n": 4,
+          "revenue_median_ape_pct": 4.868310689732723,
+          "revenue_mean_bias_pct": -4.515862970695649,
+          "revenue_wape_pct": 7.131133139636871,
+          "margin_mae_pp": 2.8605259333684643,
+          "ebit_mae_pct_actual_revenue": 2.5457819389489087
+        },
+        "zero_growth": {
+          "revenue_n": 4,
+          "ebit_n": 4,
+          "revenue_median_ape_pct": 19.235416714791363,
+          "revenue_mean_bias_pct": -16.805493906291137,
+          "revenue_wape_pct": 20.0323474343235,
+          "margin_mae_pp": 2.8605259333684643,
+          "ebit_mae_pct_actual_revenue": 1.6423725503694384
+        }
+      }
+    },
+    "稳定消费": {
+      "candidates": 5,
+      "statuses": {
+        "evaluated": 5
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 5,
+          "ebit_n": 5,
+          "revenue_median_ape_pct": 5.591384306793914,
+          "revenue_mean_bias_pct": 9.336440920144588,
+          "revenue_wape_pct": 9.868644329394343,
+          "margin_mae_pp": 1.351391078914454,
+          "ebit_mae_pct_actual_revenue": 4.879457686843176
+        },
+        "zero_growth": {
+          "revenue_n": 5,
+          "ebit_n": 5,
+          "revenue_median_ape_pct": 4.8224624634860795,
+          "revenue_mean_bias_pct": 7.420200091804299,
+          "revenue_wape_pct": 6.810326448077856,
+          "margin_mae_pp": 1.351391078914454,
+          "ebit_mae_pct_actual_revenue": 4.610650856249063
+        }
+      }
+    }
+  },
+  "by_profit_scope": {
+    "no_financial_fields_detected": {
+      "candidates": 13,
+      "statuses": {
+        "evaluated": 13
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 13,
+          "ebit_n": 13,
+          "revenue_median_ape_pct": 5.819138445634853,
+          "revenue_mean_bias_pct": -1.753274012793763,
+          "revenue_wape_pct": 10.210399297430492,
+          "margin_mae_pp": 2.467271248767418,
+          "ebit_mae_pct_actual_revenue": 3.498918940404455
+        },
+        "zero_growth": {
+          "revenue_n": 13,
+          "ebit_n": 13,
+          "revenue_median_ape_pct": 16.04149218365286,
+          "revenue_mean_bias_pct": -6.971685913578934,
+          "revenue_wape_pct": 15.87513244278752,
+          "margin_mae_pp": 2.467271248767418,
+          "ebit_mae_pct_actual_revenue": 3.705643481263936
+        }
+      }
+    },
+    "financial_fields_present": {
+      "candidates": 6,
+      "statuses": {
+        "evaluated": 6
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 6,
+          "ebit_n": 6,
+          "revenue_median_ape_pct": 7.611916729309999,
+          "revenue_mean_bias_pct": 7.813460902773804,
+          "revenue_wape_pct": 9.660582995230618,
+          "margin_mae_pp": 1.7264320311692973,
+          "ebit_mae_pct_actual_revenue": 3.718093378487171
+        },
+        "zero_growth": {
+          "revenue_n": 6,
+          "ebit_n": 6,
+          "revenue_median_ape_pct": 5.029712812208501,
+          "revenue_mean_bias_pct": 0.26162417363139484,
+          "revenue_wape_pct": 6.834725085021945,
+          "margin_mae_pp": 1.7264320311692969,
+          "ebit_mae_pct_actual_revenue": 2.1408474788038374
+        }
+      }
+    },
+    "not_evaluated": {
+      "candidates": 1,
+      "statuses": {
+        "blocked": 1
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 0,
+          "ebit_n": 0,
+          "revenue_median_ape_pct": null,
+          "revenue_mean_bias_pct": null,
+          "revenue_wape_pct": null,
+          "margin_mae_pp": null,
+          "ebit_mae_pct_actual_revenue": null
+        },
+        "zero_growth": {
+          "revenue_n": 0,
+          "ebit_n": 0,
+          "revenue_median_ape_pct": null,
+          "revenue_mean_bias_pct": null,
+          "revenue_wape_pct": null,
+          "margin_mae_pp": null,
+          "ebit_mae_pct_actual_revenue": null
+        }
+      }
+    }
+  },
+  "boundaries": [
+    "简化TDX历史回溯，FN314日期精度，无CNINFO逐公司核验；可能包含后续修订，不是严格PIT或前瞻检验",
+    "2024字段语义沿用已审核后续期间映射，研究外推不扩大生产映射有效期；代码/人工分层不是标准历史身份",
+    "仅非金融主业固定样本的经营预测子规则；合并调整EBIT代理包含未拆分金融业务，非纯实业利润或完整DCF准入；汇总覆盖全部可评价样本并按金融字段信号分组，非行业分类，零字段不证明无兼营",
+    "同一历史起点、目的抽样且存在幸存者偏差；留出组未调参，但不是时间样本外验证",
+    "对零增长的收入和EBIT比较不需要股价/WACC，结果不得解释为一年投资收益预测"
+  ]
+}

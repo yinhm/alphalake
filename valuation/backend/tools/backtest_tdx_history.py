@@ -12,7 +12,7 @@ import struct
 
 from data_sources.alphalake import HistoricalDCFPolicy, historical_forecast
 
-CONTRACT='tdx-history-backtest-v1'
+CONTRACT='tdx-history-backtest-v2'
 EBIT={'FN86':1,'FN305':1,'FN306':-1,'FN83':-1,'FN82':-1,'FN301':-1}
 
 
@@ -76,7 +76,7 @@ def metrics(rows):
     result={}
     for model in ('current_rule','zero_growth'):
         valid=[r for r in rows if r['status']=='evaluated']
-        eligible=[r for r in valid if not r['financial_scope_flags']]
+        eligible=valid
         errors=[r['errors'][model] for r in valid]
         result[model]=dict(revenue_n=len(valid),ebit_n=len(eligible),
             revenue_median_ape_pct=median(abs(e['revenue_error_pct']) for e in errors) if valid else None,
@@ -134,16 +134,21 @@ def run(study,snapshot):
                     n=value(rows[end.isoformat()],field) if field=='FN413' else window(rows,end,field)[0]
                     if n!=0:flags.append(stage+':'+field)
             r.update(status='evaluated',actual=actual,financial_scope_flags=flags,
+                     profit_scope='financial_fields_present' if flags else 'no_financial_fields_detected',
+                     profit_basis='consolidated_adjusted_ebit_proxy',
                      errors=dict(current_rule=error(predicted,actual),zero_growth=error(base,actual)))
         except (ValueError,KeyError,OverflowError,ArithmeticError) as exc:
             r['reason']=str(exc)
     return dict(contract_version=CONTRACT,status='completed',study_id=study['study_id'],origin=study['origin'],target=study['target'],
         forecast_as_of=study['forecast_as_of'],evaluation_as_of=study['evaluation_as_of'],amount_unit='million_CNY',
-        results=output,summary=metrics(output),by_split={s:metrics([r for r in output if r['split']==s]) for s in ('development','holdout')},
+        results=output,summary=metrics(output),
+        by_profit_scope={s:metrics([r for r in output if r.get('profit_scope','not_evaluated')==s])
+                         for s in ('no_financial_fields_detected','financial_fields_present','not_evaluated')},
+        by_split={s:metrics([r for r in output if r['split']==s]) for s in ('development','holdout')},
         by_stratum={s:metrics([r for r in output if r['stratum']==s]) for s in sorted({r['stratum'] for r in output})},
         boundaries=['简化TDX历史回溯，FN314日期精度，无CNINFO逐公司核验；可能包含后续修订，不是严格PIT或前瞻检验',
                     '2024字段语义沿用已审核后续期间映射，研究外推不扩大生产映射有效期；代码/人工分层不是标准历史身份',
-                    '仅经营预测子规则；非完整DCF准入或每股估值；金融字段命中者不进入EBIT/利润率汇总，零字段不证明无兼营',
+                    '仅非金融主业固定样本的经营预测子规则；合并调整EBIT代理包含未拆分金融业务，非纯实业利润或完整DCF准入；汇总覆盖全部可评价样本并按金融字段信号分组，非行业分类，零字段不证明无兼营',
                     '同一历史起点、目的抽样且存在幸存者偏差；留出组未调参，但不是时间样本外验证',
                     '对零增长的收入和EBIT比较不需要股价/WACC，结果不得解释为一年投资收益预测'])
 

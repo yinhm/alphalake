@@ -55,7 +55,9 @@ def test_replay_uses_origin_only_and_preserves_rejections():
     changed=copy.deepcopy(snapshot);changed['records'][5]['bits']['FN506']=bits(1)
     flagged=run(study,changed)
     assert flagged['summary']['models']['current_rule']['revenue_n']==1
-    assert flagged['summary']['models']['current_rule']['ebit_n']==0
+    assert flagged['summary']['models']['current_rule']['ebit_n']==1
+    assert flagged['by_profit_scope']['financial_fields_present']['models']['current_rule']['ebit_n']==1
+    assert flagged['by_profit_scope']['no_financial_fields_detected']['models']['current_rule']['ebit_n']==0
     changed=copy.deepcopy(snapshot);changed['records'][0]['bits']['FN230']=bits(float('nan'))
     assert run(study,changed)['results'][0]['status']=='blocked'
     changed=copy.deepcopy(study);changed['forecast_as_of']='2025-09-01'
@@ -74,7 +76,15 @@ def test_archived_tdx_baseline():
     assert hashlib.sha256(raw).hexdigest()==expected['evidence']['snapshot_sha256']
     assert hashlib.sha256(STUDY.read_bytes()).hexdigest()==snapshot['study_sha256']==expected['evidence']['study_sha256']
     actual=run(study,snapshot)
-    assert actual=={k:v for k,v in expected.items() if k!='evidence'}
+    # 扩展评价分母，不改源数据、逐公司预测、实际或误差，也不覆盖v1历史基线。
+    for before,after in zip(expected['results'],actual['results'],strict=True):
+        assert before=={k:v for k,v in after.items() if k not in ('profit_scope','profit_basis')}
+    summary=json.loads((directory/'mixed-business-summary.json').read_bytes())
+    assert {k:actual[k] for k in summary}==summary
     assert actual['summary']['statuses']=={'evaluated':19,'blocked':1}
-    assert actual['summary']['models']['current_rule']['ebit_n']==13
+    assert actual['summary']['models']['current_rule']['ebit_n']==19
+    assert actual['by_profit_scope']['no_financial_fields_detected']['models']['current_rule']['ebit_n']==13
+    assert actual['by_profit_scope']['financial_fields_present']['models']['current_rule']['ebit_n']==6
+    assert {r['code'] for r in actual['results'] if r.get('profit_scope')=='financial_fields_present'}=={'600519','600887','000895','000333','000651','600031'}
+    assert actual['by_profit_scope']['not_evaluated']['candidates']==1
     assert actual['by_split']['holdout']['models']['current_rule']['revenue_median_ape_pct']>actual['by_split']['holdout']['models']['zero_growth']['revenue_median_ape_pct']
