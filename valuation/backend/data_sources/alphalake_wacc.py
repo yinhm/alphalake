@@ -46,7 +46,7 @@ class CreditBandDebtPolicy(Strict):
 
 class WACCPolicy(Strict):
     policy_id: str = Field(min_length=1)
-    code: Literal['300866', '600519']
+    code: str = Field(pattern=r'^[0-9]{6}$')
     report_period: date
     scope: Literal['consolidated', 'liquor_proxy']
     currency: Literal['CNY']
@@ -171,7 +171,7 @@ class WACCBinding(Strict):
 
 def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_of: datetime, *, ebit: float | None = None, interest: float | None = None, debt: float | None = None, bridge=None, note=None):
     s, p = binding.references, binding.policy
-    expected_scope = 'consolidated' if code == '300866' else 'liquor_proxy'
+    expected_scope = 'liquor_proxy' if code == '600519' else 'consolidated'
     if p.code != code or p.report_period != period or p.scope != expected_scope or s.information_as_of != information_as_of:
         raise ValueError('WACC/company/scope/period/cutoff mismatch')
     information_as_of = information_as_of.astimezone(timezone.utc)
@@ -216,7 +216,7 @@ def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_o
     if p.synthetic_debt is not None:
         sp = p.synthetic_debt
         # 茅台酒类分子与合并利息分母尚不具备同范围证据，不能套用。
-        if code != '300866' or ebit is None or interest is None or interest <= 0:
+        if p.scope != 'consolidated' or ebit is None or interest is None or interest <= 0:
             raise ValueError('synthetic debt requires approved consolidated EBIT and positive gross interest')
         coverage = Decimal(str(ebit)) / Decimal(str(interest))
         matches = [r for r in s.credit_spreads if Decimal(r['coverage_lower']) < coverage <= Decimal(r['coverage_upper'])]

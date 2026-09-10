@@ -105,7 +105,7 @@ class ScreenPolicy(BaseModel):
     scenario: str = Field(min_length=1)
     review_note: str = Field(min_length=1)
     nonfinancial_scope_review: str = Field(min_length=1)
-    wacc: float = Field(gt=0,lt=1)
+    wacc: float | None = Field(default=None,gt=0,lt=1)
     tax_rate: float = Field(ge=0,le=1)
 
 
@@ -128,7 +128,7 @@ class BookDCFPolicy(ScreenPolicy):
 
     @model_validator(mode='after')
     def check_terminal(self):
-        if self.terminal_growth>=min(self.wacc,self.terminal_roic):
+        if self.terminal_growth>=self.terminal_roic or (self.wacc is not None and self.terminal_growth>=self.wacc):
             raise ValueError('terminal growth must be below WACC and ROIC')
         return self
 
@@ -158,8 +158,10 @@ class AlphaLakeRequest(BaseModel):
     @model_validator(mode='after')
     def wacc_source(self):
         if isinstance(self.policy, ScreenPolicy):
-            if self.wacc_binding is not None:
-                raise ValueError('generic policy requires explicit scenario WACC')
+            if (self.wacc_binding is None) == (self.policy.wacc is None):
+                raise ValueError('provide either direct WACC or reference binding, never both or neither')
+            if self.wacc_binding is not None and (self.wacc_binding.policy.scope != 'consolidated' or self.wacc_binding.policy.market is not None or self.wacc_binding.market_capital is not None):
+                raise ValueError('generic WACC requires consolidated target-weight references; market bridge not reviewed')
             return self
         if (self.wacc_binding is None) != ('wacc' in self.policy.parameters):
             raise ValueError('provide either direct WACC or reference binding, never both or neither')
@@ -265,12 +267,28 @@ def build_inputs(request: AlphaLakeRequest):
     if request.data.source_conflicts:
         raise MissingInputs(['source_record_conflict:'+r['period'] for r in request.data.source_conflicts])
     d, policy = request.data, request.policy
-    if isinstance(policy, HistoricalDCFPolicy):
-        return build_historical_dcf_inputs(d, policy)
-    if isinstance(policy, BookDCFPolicy):
-        return build_book_dcf_inputs(d, policy)
     if isinstance(policy, ScreenPolicy):
-        return build_earnings_power_inputs(d, policy)
+        reference_components = reference_audit = None
+        if request.wacc_binding is not None:
+            window,_ = standard_window_reader(d)
+            ebit = window('FN86')+window('FN305')-window('FN306')-window('FN83')-window('FN82')-window('FN301')
+            reference_components,reference_audit = resolve_wacc(request.wacc_binding,d.code,d.report_period,d.information_as_of,ebit=ebit,interest=window('FN305'))
+            policy = type(policy).model_validate(policy.model_dump() | {'wacc':reference_audit['result']['wacc']})
+        if isinstance(policy, HistoricalDCFPolicy):
+            inputs,audit = build_historical_dcf_inputs(d,policy)
+        elif isinstance(policy, BookDCFPolicy):
+            inputs,audit = build_book_dcf_inputs(d,policy)
+        else:
+            inputs,audit = build_earnings_power_inputs(d,policy)
+        if reference_components is not None:
+            inputs.methodology_choices = MethodologyChoices(cost_of_capital_approach='reference_snapshot',reference_capital_inputs=reference_components)
+            inputs.macro_inputs.risk_free_rate = reference_components.risk_free_rate
+            inputs.macro_inputs.equity_risk_premium = reference_components.mature_market_erp
+            inputs.prepared_ttm.provenance['wacc_binding'] = content_hash(request.wacc_binding.model_dump(mode='json'))
+            audit['wacc_reference'] = reference_audit
+            audit['boundaries'] = [b for b in audit['boundaries'] if not b.startswith('WACC/tax are')]
+            audit['boundaries'] += reference_audit['boundaries'] + ['tax, industry/country exposure and target capital weights remain explicit policy; not fully observed company WACC']
+        return inputs,audit
     anker = policy.policy_id.startswith('anker-')
     revised = policy.policy_id == 'anker-consolidated-v2'
     if d.code != ('300866' if anker else '600519') or policy.approved_report_period != d.report_period:

@@ -778,3 +778,49 @@ def test_new_companies_standard_chain_and_review_hold(tmp_path,monkeypatch):
               universe_scope='real_two_company_sample',universe_count=2,companies=companies)
     result=run_batch(scan,policy,lambda code:pytest.fail('review hold must precede export'))
     assert result['status_counts']=={'blocked_review_exclusion':2}
+
+
+@pytest.mark.parametrize('kind',['history','screen'])
+def test_generic_reference_wacc_real_chain(exports,reference_export,tmp_path,monkeypatch,kind):
+    from decimal import Decimal as D
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    req=reference_request(exports,reference_export,'anker')
+    policy=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_text())
+    policy.pop('wacc')
+    policy['nonfinancial_scope_review']='安克合并普通经营模型回归；不是公司预测建议'
+    if kind=='screen':
+        policy={k:v for k,v in policy.items() if k in ('approved_report_period','scenario','review_note','nonfinancial_scope_review','tax_rate')}
+        policy['policy_id']='nonfinancial-earnings-power-v1'
+    req['policy']=policy
+    with TestClient(app) as client:
+        response=client.post('/api/valuation/from-alphalake',json=req)
+        assert response.status_code==200,response.text
+        result=response.json();p=req['wacc_binding']['policy']
+        country={(r['subject_code'],r['metric_code']):D(r['value']) for r in reference_export['country_risk']}
+        industries={(r['industry'],r['metric_code']):D(r['value']) for r in reference_export['industry_stats']}
+        rf=next(D(r['value']) for r in reference_export['yield_curve'] if r['tenor_months']==120)-country['CN','sovereign_default_spread']
+        beta=sum(D(str(i['weight']))*industries[i['industry'],p['beta_metric']] for i in p['industries'])
+        dw,tax,kd=[D(str(p[k])) for k in ('target_debt_weight','tax_shield_rate','debt_cost_pretax')]
+        crp=sum(D(str(c['weight']))*D(str(c['exposure_scale']))*country[c['country'],'country_risk_premium'] for c in p['countries'])
+        wacc=(rf+beta*(1+(1-tax)*dw/(1-dw))*country['mature','mature_market_erp']+crp)*(1-dw)+kd*(1-tax)*dw
+        near(result['report']['cost_of_capital']['wacc'],float(wacc))
+        near(result['inputs']['valuation_assumptions']['cost_of_capital_stable_override'],float(wacc))
+        assert result['inputs']['methodology_choices']['cost_of_capital_approach']=='reference_snapshot'
+        assert result['report']['cashflow']['fcff'] is None
+        assert 'wacc_binding' in result['inputs']['prepared_ttm']['provenance']
+        if kind=='screen':near(result['report']['dcf']['value_of_operating_assets'],result['audit']['automatic_drivers']['adjusted_ebit']*.75/float(wacc))
+        else:
+            assert result['status']=='illustrative_book_equity_scenario'
+            near(result['audit']['generated_policy']['wacc'],float(wacc))
+        assert client.post('/api/valuation/from-alphalake',json=req).json()==result
+        for mutation in ('dual','neither','company','scope','stale','terminal'):
+            bad=copy.deepcopy(req)
+            if mutation=='dual':bad['policy']['wacc']=.1
+            elif mutation=='neither':bad.pop('wacc_binding')
+            elif mutation=='company':bad['wacc_binding']['policy']['code']='000001'
+            elif mutation=='scope':bad['wacc_binding']['policy']['scope']='liquor_proxy'
+            elif mutation=='stale':bad['wacc_binding']['policy']['max_beta_age_days']=0
+            elif kind=='history':bad['policy']['terminal_growth']=.099
+            else:continue
+            assert client.post('/api/valuation/from-alphalake',json=bad).status_code==422,mutation
+    assert len(list(tmp_path.glob('*.json')))==1
