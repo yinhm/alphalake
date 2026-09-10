@@ -153,3 +153,44 @@ def test_archived_multi_origin_failure_and_selection_tamper(tmp_path):
     rejected=subprocess.run(args+['--phase','holdout','--selection',str(selection)],capture_output=True,text=True)
     assert rejected.returncode==1
     assert json.loads(rejected.stdout)['reason']=='saved selection does not reproduce development decision'
+
+
+def test_expanded_sample_freeze_and_bounded_margin_trials():
+    import hashlib
+    from tools.backtest_tdx_origins import study as multi
+    directory=ROOT/'valuation/research/tdx-growth-expanded'
+    raw=(directory/'sampling-universe.json').read_bytes();universe=json.loads(raw)
+    protocol=json.loads((directory/'protocol.json').read_bytes())
+    assert hashlib.sha256(raw).hexdigest()==protocol['sampling']['universe_sha256']
+    ranked=sorted(universe['companies'],key=lambda r:hashlib.sha256((protocol['sampling']['seed']+r['code']).encode()).hexdigest())[:120]
+    assert protocol['samples']==[dict(r,split='development' if i%2==0 else 'holdout') for i,r in enumerate(ranked)]
+    assert not {r['code'] for r in ranked}&set(universe['excluded_prior_codes'])
+    source_raw=(directory/'snapshot.json').read_bytes();source=json.loads(source_raw)
+    assert source['study_sha256']==hashlib.sha256((directory/'protocol.json').read_bytes()).hexdigest()
+    for version in ('','-v2','-v3'):
+        protocol=json.loads((directory/f'protocol{version}.json').read_bytes())
+        expected=json.loads((directory/f'development{version}-summary.json').read_bytes())
+        assert hashlib.sha256(source_raw).hexdigest()==expected['evidence']['snapshot_sha256']
+        actual=multi(protocol,source,'development')
+        assert actual['summary']==expected['summary'] and actual['selection']==expected['selection']
+        assert actual['selection']['model'] is None
+        assert actual['summary']['total']['statuses']=={'evaluated':86,'blocked':34}
+    clipped=False
+    for row in actual['results']:
+        if row['status']!='evaluated':continue
+        base=row['base']['ebit']/row['base']['revenue']
+        prior=row['prior_full_year']['ebit']/row['prior_full_year']['revenue']
+        for model,cap in [('margin_trend_2pp',.02),('margin_trend_5pp',.05)]:
+            forecast=row['forecasts'][model]
+            expected_margin=base+max(-cap,min(cap,.5*(base-prior)))
+            assert forecast['revenue']==row['forecasts']['current_rule']['revenue']
+            assert forecast['ebit']/forecast['revenue']==pytest.approx(expected_margin,abs=1e-14)
+            clipped |= abs(.5*(base-prior))>cap
+    assert clipped
+    for cap in (0,-.01,float('nan'),True):
+        bad=copy.deepcopy(protocol);bad['candidate_weights']['margin_trend_2pp']['margin_change_cap']=cap
+        with pytest.raises(ValueError):multi(bad,source,'development')
+    changed=copy.deepcopy(source);held={s['code'] for s in protocol['samples'] if s['split']=='holdout'}
+    for row in changed['records']:
+        if row['code'] in held:row['bits']['FN86']=bits(999e12)
+    assert multi(protocol,changed,'development')==actual

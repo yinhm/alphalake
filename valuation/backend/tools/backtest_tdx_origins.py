@@ -47,6 +47,8 @@ def evaluate(protocol,snapshot,split,origins,models):
                     weights=protocol.get('candidate_weights',DEFAULT_WEIGHTS)[model]
                     g=growth*weights['growth_weight'];w=weights['prior_margin_weight']
                     m=(1-w)*margin+w*prior_margin
+                    if 'margin_change_cap' in weights:
+                        cap=weights['margin_change_cap'];m=margin+max(-cap,min(cap,m-margin))
                     revenue=base['revenue']*(1+g);forecasts[model]=dict(revenue=revenue,ebit=revenue*m)
                 result.update(actual=row['actual'],base=row['base'],prior_full_year=prior,forecasts=forecasts,
                               profit_scope=row['profit_scope'],financial_scope_flags=row['financial_scope_flags'],
@@ -87,8 +89,15 @@ def study(protocol,snapshot,phase,selection=None):
     candidates=('current_rule','zero_growth',*weights)
     if tuple(protocol['candidates'])!=candidates or len(set(candidates))!=len(candidates):raise ValueError('candidate definitions differ')
     for values in weights.values():
-        if set(values)!={'growth_weight','prior_margin_weight'} or any(isinstance(v,bool) or not isinstance(v,(int,float)) or not 0<=v<=1 for v in values.values()):
-            raise ValueError('candidate weights must be finite fractions in [0,1]')
+        required={'growth_weight','prior_margin_weight'}
+        if not required<=set(values)<=required|{'margin_change_cap'}:
+            raise ValueError('invalid candidate parameters')
+        for key,value in values.items():
+            lower=-1 if key=='prior_margin_weight' else 0
+            if isinstance(value,bool) or not isinstance(value,(int,float)) or not lower<=value<=1:
+                raise ValueError('candidate parameters outside finite bounds')
+        if values['prior_margin_weight']<0 and not values.get('margin_change_cap',0)>0:
+            raise ValueError('margin extrapolation requires positive change cap')
     if phase=='development':
         models=candidates;split='development';origins=protocol['selection']['periods']
     elif phase=='holdout':
