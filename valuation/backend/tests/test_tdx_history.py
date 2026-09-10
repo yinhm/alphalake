@@ -568,3 +568,46 @@ def test_disclosed_cash_adjustments_keep_blank_and_unexplained_items():
     bad=copy.deepcopy(source)
     next(r for r in bad['records'] if (r['code'],r['period'])==('688648','2025-06-30'))['bits']['FN301']^=1
     with pytest.raises(ValueError,match='adjustment TDX bits'):verify(ledger,directory,bad)
+
+
+def test_capex_frozen_development_and_information_isolation():
+    import hashlib
+    from collections import defaultdict
+    from tools.backtest_tdx_capex import study,financial
+    directory=ROOT/'valuation/research/tdx-capex-forecast'
+    raw=(directory/'snapshot.json').read_bytes();source=json.loads(raw);p=json.loads((directory/'protocol.json').read_bytes())
+    expected=json.loads((directory/'development-summary.json').read_bytes())
+    assert hashlib.sha256(raw).hexdigest()==expected['evidence']['snapshot_sha256']
+    assert source['study_sha256']==hashlib.sha256((directory/'protocol.json').read_bytes()).hexdigest()
+    old=ROOT/'valuation/research/tdx-growth-expanded'
+    universe=json.loads((old/'sampling-universe.json').read_bytes())
+    ranked=sorted(universe['companies'],key=lambda r:hashlib.sha256(('alphalake-growth-v3:'+r['code']).encode()).hexdigest())
+    assert [r['code'] for r in p['samples'] if r['split']=='holdout']==[r['code'] for r in ranked[240:360]]
+    previous=json.loads((old/'protocol-v7.json').read_bytes())
+    assert [r for r in p['samples'] if r['split']=='development']==[r for r in previous['samples'] if r['split']=='development']
+    result=study(p,source,'development')
+    assert {k:v for k,v in result.items() if k!='results'}=={k:v for k,v in expected.items() if k!='evidence'}
+    assert result['summary']['statuses']=={'blocked':22,'evaluated':158}
+    assert result['decision']['selected'] is None
+    with pytest.raises(ValueError,match='passing development'):study(p,source,'holdout',result)
+    changed=copy.deepcopy(source);held={r['code'] for r in p['samples'] if r['split']=='holdout'}
+    for row in changed['records']:
+        if row['code'] in held:row['bits']['FN114']=bits(999e9)
+    assert study(p,changed,'development')==result
+    selected=next(r for r in result['results'] if r['origin']=='2025-06-30' and r['status']=='evaluated')
+    changed=copy.deepcopy(source)
+    next(r for r in changed['records'] if (r['code'],r['period'])==(selected['code'],'2026-06-30'))['bits']['FN114']=bits(999e9)
+    later=study(p,changed,'development')
+    assert [r.get('forecasts_cny') for r in later['results']]==[r.get('forecasts_cny') for r in result['results']]
+    assert later['summary']!=result['summary']
+    original,synthetic=fixture();index=defaultdict(list)
+    for row in synthetic['records']:
+        row['bits']['FN114']=bits(0);index[(row['code'],row['period'])].append(row)
+    artifacts={a['file']:a for a in synthetic['artifacts']}
+    def current():return financial(index,artifacts,'600519',date(2026,6,30),original['evaluation_as_of'])
+    assert Decimal(current()['capex_cny'])==0
+    index[('600519','2025-06-30')][0]['bits']['FN114']=bits(100)
+    with pytest.raises(ValueError,match='negative capex'):current()
+    index[('600519','2025-06-30')][0]['bits']['FN114']=bits(0)
+    index[('600519','2026-06-30')].append(copy.deepcopy(index[('600519','2026-06-30')][0]))
+    with pytest.raises(ValueError,match='duplicate'):current()
