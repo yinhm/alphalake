@@ -120,7 +120,7 @@ func (c *Client) CataloguePage(ctx context.Context, request CatalogueRequest) (C
 		"tabName":   {"fulltext"},
 		"plate":     {""},
 		"stock":     {""},
-		"searchkey": {""},
+		"searchkey": {request.Code},
 		"secid":     {""},
 		"category":  {PeriodicReportCategories},
 		"trade":     {""},

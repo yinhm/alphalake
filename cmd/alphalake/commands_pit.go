@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -81,7 +82,7 @@ func runFilingUnresolved(ctx context.Context, args []string) error {
 
 func runSyncFilings(ctx context.Context, args []string) error {
 	if len(args) < 1 {
-		return fmt.Errorf("usage: alphalake sync-filings <db-path> [--all] [--start YYYY-MM-DD] [--end YYYY-MM-DD] [--metadata-only] [--rescan]")
+		return fmt.Errorf("usage: alphalake sync-filings <db-path> [--all] [--start YYYY-MM-DD] [--end YYYY-MM-DD] [--metadata-only] [--rescan] [--code 600519]")
 	}
 	dbPath := strings.TrimSpace(args[0])
 	if dbPath == "" {
@@ -94,6 +95,7 @@ func runSyncFilings(ctx context.Context, args []string) error {
 	endText := fs.String("end", "", "inclusive catalogue end date")
 	metadataOnly := fs.Bool("metadata-only", false, "retain catalogue metadata without downloading filing documents")
 	rescan := fs.Bool("rescan", false, "ignore completed old-window checkpoints")
+	code := fs.String("code", "", "query one six-digit CNINFO security; checkpoint separately from whole-market windows")
 	pageSize := fs.Int("page-size", 30, "CNINFO page size in [1,100]")
 	windowDays := fs.Int("window-days", 90, "catalogue window size in [1,366]")
 	if err := fs.Parse(args[1:]); err != nil {
@@ -136,6 +138,7 @@ func runSyncFilings(ctx context.Context, args []string) error {
 	lastPages := -1
 	lastFailures := -1
 	options := ingest.CNINFOFilingOptions{
+		Code:         *code,
 		StartDate:    startDate,
 		EndDate:      endDate,
 		PageSize:     *pageSize,
@@ -160,6 +163,9 @@ func runSyncFilings(ctx context.Context, args []string) error {
 		summary.Filings, summary.Inserted, summary.Updated, summary.Resolved,
 		summary.Pending, summary.Documents, summary.ReusedDocs, summary.Issues,
 		len(summary.Failures), *metadataOnly, artifactRoot)
+	for _, failure := range summary.Failures {
+		fmt.Fprintf(os.Stderr, "CNINFO filing issue: run=%d code=%s window=%s page=%d filing=%s error=%q\n", summary.RunID, *code, failure.Window, failure.Page, failure.SourceFilingID, failure.Err)
+	}
 	return syncErr
 }
 

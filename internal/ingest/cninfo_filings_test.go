@@ -93,6 +93,7 @@ func TestRealCNINFOPartialOverlapCannotComplete(t *testing.T) {
 }
 
 type fakeCNINFOFilingSource struct {
+	requests       []cninfo.CatalogueRequest
 	pages          map[int]cninfo.CataloguePage
 	raw            map[int][]byte
 	documents      map[string][]byte
@@ -101,12 +102,53 @@ type fakeCNINFOFilingSource struct {
 }
 
 func (f *fakeCNINFOFilingSource) CataloguePage(_ context.Context, request cninfo.CatalogueRequest) (cninfo.CataloguePage, []byte, error) {
+	f.requests = append(f.requests, request)
 	f.catalogueCalls++
 	page, ok := f.pages[request.Page]
 	if !ok {
 		return cninfo.CataloguePage{}, nil, fmt.Errorf("unexpected page %d", request.Page)
 	}
 	return page, append([]byte(nil), f.raw[request.Page]...), nil
+}
+
+func TestCNINFOCodeCheckpointsAndForeignResponse(t *testing.T) {
+	ctx := t.Context()
+	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "scope.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	day := time.Date(2025, 4, 29, 0, 0, 0, 0, time.UTC)
+	period := time.Date(2025, 3, 31, 0, 0, 0, 0, time.UTC)
+	source := &fakeCNINFOFilingSource{pages: map[int]cninfo.CataloguePage{}, raw: map[int][]byte{1: []byte(`{"fixture":"scope-checkpoint"}`)}}
+	options := CNINFOFilingOptions{StartDate: day, EndDate: day, MetadataOnly: true, Now: func() time.Time { return time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC) }}
+	root := filepath.Join(t.TempDir(), "raw")
+	for _, code := range []string{"000001", "000002"} {
+		f := domain.FilingObservation{Source: cninfo.Source, SourceFilingID: "test-" + code, ProviderCode: code, Title: "2025年第一季度报告", FilingType: domain.FilingTypeQ1, FilingVariant: domain.FilingVariantFull, ReportPeriod: &period, AnnouncementTime: day, ClassifierVersion: cninfo.FilingClassifierVersion}
+		source.pages[1] = cninfo.CataloguePage{Page: 1, TotalPages: 1, TotalRecords: 1, Filings: []domain.FilingObservation{f}}
+		options.Code = code
+		result, err := SyncCNINFOFilingsWithOptions(ctx, db, source, root, options)
+		if err != nil || result.SkippedWindows != 0 || source.requests[len(source.requests)-1].Code != code {
+			t.Fatalf("scope failed: %+v %v", result, err)
+		}
+	}
+	key := "catalogue-window:v5:metadata-only=true:" + filingWindowName(day, day)
+	if _, found, err := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, key); err != nil || found {
+		t.Fatalf("company query completed whole market: %t %v", found, err)
+	}
+	options.Code = "000001"
+	result, err := SyncCNINFOFilingsWithOptions(ctx, db, source, root, options)
+	if err != nil || result.SkippedWindows != 1 || source.catalogueCalls != 2 {
+		t.Fatalf("scoped replay: %+v %v", result, err)
+	}
+	options.Code = "000003"
+	result, err = SyncCNINFOFilingsWithOptions(ctx, db, source, root, options)
+	if err == nil || len(result.Failures) != 1 || !strings.Contains(result.Failures[0].Err.Error(), "returned another security") {
+		t.Fatalf("foreign security accepted: %+v %v", result, err)
+	}
+	if _, found, err := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, key+":code=000003"); err != nil || found {
+		t.Fatalf("foreign response completed: %t %v", found, err)
+	}
 }
 
 func (f *fakeCNINFOFilingSource) FilingDocumentURL(locator string) (string, error) {

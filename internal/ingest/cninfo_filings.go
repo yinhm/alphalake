@@ -37,6 +37,7 @@ type CNINFOFilingSource interface {
 }
 
 type CNINFOFilingOptions struct {
+	Code         string
 	StartDate    time.Time
 	EndDate      time.Time
 	PageSize     int
@@ -145,6 +146,9 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 		windowName := filingWindowName(window.start, window.end)
 		// Older checkpoints may omit documents, final pages, or accept repeated pages.
 		checkpointKey := fmt.Sprintf("catalogue-window:v5:metadata-only=%t:%s", options.MetadataOnly, windowName)
+		if options.Code != "" {
+			checkpointKey += ":code=" + options.Code
+		}
 		if !options.Rescan && window.end.Before(dateUTCIngest(now.AddDate(0, 0, -cninfoRecentRescanDays))) {
 			if _, found, err := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, checkpointKey); err != nil {
 				summary.Failures = append(summary.Failures, CNINFOFilingFailure{Window: windowName, Err: err})
@@ -264,6 +268,9 @@ func normalizeCNINFOFilingOptions(options CNINFOFilingOptions, now time.Time) (t
 	if windowDays < 1 || windowDays > 366 {
 		return time.Time{}, time.Time{}, 0, 0, errors.New("CNINFO filing window days must be in [1,366]")
 	}
+	if err := cninfo.ValidateCatalogueRequest(cninfo.CatalogueRequest{Code: options.Code, Page: 1, PageSize: pageSize, StartDate: start, EndDate: end}); err != nil {
+		return time.Time{}, time.Time{}, 0, 0, err
+	}
 	return start, end, pageSize, windowDays, nil
 }
 
@@ -300,13 +307,16 @@ func acquireCNINFOFilingWindow(
 	expectedRows := 0
 	for pageNumber := 1; pageNumber <= 10000; pageNumber++ {
 		page, raw, err := source.CataloguePage(ctx, cninfo.CatalogueRequest{
-			Page: pageNumber, PageSize: pageSize, StartDate: start, EndDate: end,
+			Code: options.Code, Page: pageNumber, PageSize: pageSize, StartDate: start, EndDate: end,
 		})
 		if err != nil {
 			failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: err})
 			break
 		}
 		locator := fmt.Sprintf("periodic/%s/page-%05d-size-%d.json", windowName, pageNumber, pageSize)
+		if options.Code != "" {
+			locator = "security/" + options.Code + "/" + locator
+		}
 		stored, err := artifact.Persist(ctx, db, artifactRoot, artifact.Input{
 			Source: cninfo.Source, Dataset: cninfoCatalogueArtifactData,
 			SourceLocator: locator, FetchedAt: now, MediaType: "application/json",
@@ -317,6 +327,17 @@ func acquireCNINFOFilingWindow(
 			break
 		}
 		pageSHAs = append(pageSHAs, stored.SHA256)
+		if options.Code != "" {
+			for _, filing := range page.Filings {
+				if filing.ProviderCode != options.Code {
+					failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: fmt.Errorf("CNINFO code query %s returned another security %q", options.Code, filing.ProviderCode)})
+					break
+				}
+			}
+			if len(failures) > 0 {
+				break
+			}
+		}
 		for i := range page.Filings {
 			page.Filings[i].CatalogueArtifactID = stored.ArtifactID
 		}

@@ -1,17 +1,102 @@
 package cninfo
 
 import (
+	"bytes"
+	"compress/gzip"
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/yinhm/alphalake/internal/domain"
 )
+
+func TestCodeCatalogueRealResponses(t *testing.T) {
+	var hashes map[string]string
+	meta, err := os.ReadFile("testdata/code-catalogues/hashes.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(meta, &hashes); err != nil {
+		t.Fatal(err)
+	}
+	rawByCode := map[string][]byte{}
+	for code, hash := range hashes {
+		compressed, err := os.ReadFile("testdata/code-catalogues/" + code + ".json.gz")
+		if err != nil {
+			t.Fatal(err)
+		}
+		r, err := gzip.NewReader(bytes.NewReader(compressed))
+		if err != nil {
+			t.Fatal(err)
+		}
+		raw, err := io.ReadAll(r)
+		r.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if fmt.Sprintf("%x", sha256.Sum256(raw)) != hash {
+			t.Fatal("source response hash", code)
+		}
+		rawByCode[code] = raw
+	}
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		if err := r.ParseForm(); err != nil {
+			t.Error(err)
+		}
+		code := r.Form.Get("searchkey")
+		if r.Form.Get("seDate") != "2025-04-01~2026-09-10" || r.Form.Get("category") != PeriodicReportCategories || r.Form.Get("pageSize") != "30" {
+			t.Errorf("changed query: %v", r.Form)
+		}
+		raw, ok := rawByCode[code]
+		if !ok {
+			t.Errorf("unscoped request %q", code)
+			http.Error(w, "bad code", 400)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(raw)
+	}))
+	defer server.Close()
+	client, err := NewClient(server.Client(), ClientOptions{BaseURL: server.URL, DocumentBaseURL: server.URL + "/"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := CatalogueRequest{Page: 1, PageSize: 30, StartDate: time.Date(2025, 4, 1, 0, 0, 0, 0, time.UTC), EndDate: time.Date(2026, 9, 10, 0, 0, 0, 0, time.UTC)}
+	for _, code := range []string{"300124", "603288"} {
+		request.Code = code
+		page, _, err := client.CataloguePage(t.Context(), request)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(page.Filings) != 11 || page.TotalRecords != 11 {
+			t.Fatalf("unexpected real catalogue: %+v", page)
+		}
+		for _, f := range page.Filings {
+			if f.ProviderCode != code {
+				t.Fatal("foreign identity", f)
+			}
+		}
+	}
+	for _, code := range []string{"30012", "../300124", "３００１２４"} {
+		request.Code = code
+		if _, _, err := client.CataloguePage(t.Context(), request); err == nil {
+			t.Fatal("bad query accepted", code)
+		}
+	}
+	if calls != 2 {
+		t.Fatal("invalid code reached network", calls)
+	}
+}
 
 func TestClassifyPeriodicTitle(t *testing.T) {
 	tests := []struct {
