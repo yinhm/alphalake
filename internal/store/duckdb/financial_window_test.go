@@ -47,11 +47,13 @@ func TestFinancialWindows(t *testing.T) {
 		var value sql.NullFloat64
 		var gotAvailable, gotRequired, missing int
 		var status string
-		check(db.QueryRowContext(ctx, `SELECT CAST(value AS DOUBLE), available_inputs, required_inputs,
-			coverage_status, coalesce(len(missing_periods),0) FROM fundamental.ttm_asof(?, CAST(? AS DATE))
+		for _, scope := range []string{"", ", min_instrument_id := 1, max_instrument_id := 1"} {
+			check(db.QueryRowContext(ctx, `SELECT CAST(value AS DOUBLE), available_inputs, required_inputs,
+			coverage_status, coalesce(len(missing_periods),0) FROM fundamental.ttm_asof(?, CAST(? AS DATE)`+scope+`)
 			WHERE instrument_id=1 AND canonical_field=?`, asOf, end, field).Scan(&value, &gotAvailable, &gotRequired, &status, &missing))
-		if value != want || gotAvailable != available || gotRequired != required || missing != required-available || (status == "complete") != want.Valid {
-			t.Fatalf("%s/%s: value=%v inputs=%d/%d missing=%d status=%s", end, field, value, gotAvailable, gotRequired, missing, status)
+			if value != want || gotAvailable != available || gotRequired != required || missing != required-available || (status == "complete") != want.Valid {
+				t.Fatalf("%s/%s: value=%v inputs=%d/%d missing=%d status=%s", end, field, value, gotAvailable, gotRequired, missing, status)
+			}
 		}
 	}
 	before, after := "2026-04-30T15:59:59Z", "2026-04-30T16:00:00Z"
@@ -89,5 +91,12 @@ func TestFinancialWindows(t *testing.T) {
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.ttm_asof(?, DATE '2026-03-30')`, after).Scan(&invalidEnd))
 	if invalidEnd != 0 {
 		t.Fatal("non-quarter-end accepted")
+	}
+	for _, bounds := range [][2]int64{{2, 2}, {1, 0}} {
+		var count int
+		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.ttm_asof(?, DATE '2026-03-31', min_instrument_id := ?, max_instrument_id := ?)`, after, bounds[0], bounds[1]).Scan(&count))
+		if count != 0 {
+			t.Fatalf("identity outside scope %v: %d rows", bounds, count)
+		}
 	}
 }

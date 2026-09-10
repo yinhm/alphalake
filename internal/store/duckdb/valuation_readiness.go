@@ -98,7 +98,7 @@ func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 		ids[i], byID[id] = id, row
 	}
 	// 单个全市场 TTM 分组在真实库超过1 GiB；同一事务中分批限制聚合规模。
-	// ponytail: 每批重读标准事实；若扫描延迟成为瓶颈，再在事务内暂存一次ASOF。
+	// 证券范围直接传入共享事实CTE，避免每批重新排序全市场版本。
 	const batchSize = 128
 	for start := 0; start < len(ids); start += batchSize {
 		if err := func() error {
@@ -106,8 +106,8 @@ func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
  field:=source_provider_field,canonical_field:=canonical_field,value:=CAST(value AS VARCHAR),unit:=unit,
  scope:=statement_scope,status:=coverage_status,required_inputs:=required_inputs,available_inputs:=available_inputs,
  missing_periods:=missing_periods,source_fact_ids:=source_fact_ids) ORDER BY source_provider_field,provider_code,statement_scope)) AS VARCHAR)
- FROM fundamental.ttm_asof(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE))
- WHERE instrument_id BETWEEN ? AND ? GROUP BY instrument_id`, asof, end, ids[start], ids[min(start+batchSize, len(ids))-1])
+ FROM fundamental.ttm_asof(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE), min_instrument_id := ?, max_instrument_id := ?)
+ GROUP BY instrument_id`, asof, end, ids[start], ids[min(start+batchSize, len(ids))-1])
 			if err != nil {
 				return err
 			}

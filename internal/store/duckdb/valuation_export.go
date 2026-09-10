@@ -114,6 +114,15 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
 	}
 	defer tx.Rollback()
 	output := map[string]any{"contract_version": "alphalake-valuation-v1", "code": code, "report_period": end.Format("2006-01-02"), "information_as_of": asof.UTC().Format(time.RFC3339Nano)}
+	// 以窗口分区键限定候选证券，避免逐公司重排全市场事实。不能提前按代码
+	// 筛选版本：同一证券的其他代码/来源可能已取代旧事实；代码复用须保留全部身份。
+	var first, last sql.NullInt64
+	if err := tx.QueryRowContext(ctx, `SELECT min(instrument_id),max(instrument_id) FROM fundamental.fact WHERE provider_code=?`, code).Scan(&first, &last); err != nil {
+		return nil, fmt.Errorf("export candidate instruments: %w", err)
+	}
+	if !first.Valid {
+		first.Int64, last.Int64 = 1, 0
+	}
 	queries := []struct {
 		name, query string
 		args        []any
@@ -137,14 +146,14 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
     JOIN meta.artifact a ON a.artifact_id=p.artifact_id
     JOIN fundamental.filing d ON d.filing_id=f.source_filing_id
     JOIN fundamental.provider_field m ON m.source=f.primary_source AND m.provider_field=f.source_provider_field
-    WHERE f.provider_code=? AND f.primary_source='tdx' AND f.report_period<=CAST(? AS DATE)
+    WHERE f.instrument_id BETWEEN ? AND ? AND f.provider_code=? AND f.primary_source='tdx' AND f.report_period<=CAST(? AS DATE)
       AND f.report_period>=make_date(year(CAST(? AS DATE))-1,1,1)
-    ORDER BY f.report_period,f.source_provider_field,f.fact_id) x`, []any{asof, code, end, end}},
+    ORDER BY f.report_period,f.source_provider_field,f.fact_id) x`, []any{asof, first.Int64, last.Int64, code, end, end}},
 		{"windows", `SELECT CAST(to_json(list(x)) AS VARCHAR) FROM (
     SELECT instrument_id,provider_code AS code,source_provider_field AS field,canonical_field,CAST(value AS VARCHAR) AS value,
       unit,statement_scope,period_type,calculation_basis,coverage_status,required_inputs,available_inputs,
       CAST(latest_input_announcement_time AS VARCHAR) AS available_at,input_periods,input_coefficients,source_fact_ids,source_filing_ids,missing_periods
-    FROM fundamental.ttm_asof(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE)) WHERE provider_code=? ORDER BY source_provider_field,instrument_id) x`, []any{asof, end, code}},
+    FROM fundamental.ttm_asof(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE), min_instrument_id := ?, max_instrument_id := ?) WHERE provider_code=? ORDER BY source_provider_field,instrument_id) x`, []any{asof, end, first.Int64, last.Int64, code}},
 		{"supplements", `SELECT CAST(to_json(list(x)) AS VARCHAR) FROM (
     SELECT s.provider_code AS code,CAST(s.report_period AS VARCHAR) AS period,s.item,CAST(s.value AS VARCHAR) AS value,
       s.unit,s.period_basis,s.statement_scope AS scope,f.source_filing_id AS announcement_id,s.pdf_sha256,s.pdf_page,
