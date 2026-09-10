@@ -94,6 +94,13 @@ func TestMaterializeCanonicalFundamentalsNoLookAheadAndCorrection(t *testing.T) 
 	if replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 || replay.Materialized != 2 {
 		t.Fatalf("replay=%#v", replay)
 	}
+	var replayWrites int
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE ingest_run_id <> 8`).Scan(&replayWrites); err != nil {
+		t.Fatal(err)
+	}
+	if replayWrites != 0 {
+		t.Fatalf("unchanged replay rewrote %d facts", replayWrites)
+	}
 	var canonicalRows, unreviewedRows int
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact`).Scan(&canonicalRows); err != nil {
 		t.Fatal(err)

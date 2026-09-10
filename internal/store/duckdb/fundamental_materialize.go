@@ -246,39 +246,42 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 		return result, fmt.Errorf("count updated canonical fundamentals: %w", err)
 	}
 
-	if _, err := conn.ExecContext(ctx, `
-		INSERT INTO fundamental.fact (
-			instrument_id, canonical_field, report_period, announcement_time,
-			period_type, statement_scope, currency, unit, value,
-			primary_source, source_provider_field, provider_code,
-			provider_fact_id, source_filing_id, revision_key,
-			normalization_rule, materializer_version, ingest_run_id
-		)
-		SELECT
-			instrument_id, canonical_field, report_period, announcement_time,
-			period_type, statement_scope, currency, unit, value,
-			primary_source, source_provider_field, provider_code,
-			provider_fact_id, filing_id, revision_key,
-			normalization_rule, materializer_version, ingest_run_id
-		FROM temp.main.`+fundamentalFactStage+`
-		ON CONFLICT(primary_source, revision_key, provider_code, source_provider_field) DO UPDATE SET
-			instrument_id=excluded.instrument_id,
-			canonical_field=excluded.canonical_field,
-			report_period=excluded.report_period,
-			announcement_time=excluded.announcement_time,
-			period_type=excluded.period_type,
-			statement_scope=excluded.statement_scope,
-			currency=excluded.currency,
-			unit=excluded.unit,
-			value=excluded.value,
-			provider_fact_id=excluded.provider_fact_id,
-			source_filing_id=excluded.source_filing_id,
-			normalization_rule=excluded.normalization_rule,
-			materializer_version=excluded.materializer_version,
-			ingest_run_id=excluded.ingest_run_id,
-			ingested_at=now()
-	`); err != nil {
-		return result, fmt.Errorf("merge canonical fundamental facts: %w", err)
+	// 内容未变化时不重写整张事实表，也不刷新事实的入库血缘。删除和诊断仍继续执行。
+	if result.Inserted > 0 || result.Updated > 0 {
+		if _, err := conn.ExecContext(ctx, `
+			INSERT INTO fundamental.fact (
+				instrument_id, canonical_field, report_period, announcement_time,
+				period_type, statement_scope, currency, unit, value,
+				primary_source, source_provider_field, provider_code,
+				provider_fact_id, source_filing_id, revision_key,
+				normalization_rule, materializer_version, ingest_run_id
+			)
+			SELECT
+				instrument_id, canonical_field, report_period, announcement_time,
+				period_type, statement_scope, currency, unit, value,
+				primary_source, source_provider_field, provider_code,
+				provider_fact_id, filing_id, revision_key,
+				normalization_rule, materializer_version, ingest_run_id
+			FROM temp.main.`+fundamentalFactStage+`
+			ON CONFLICT(primary_source, revision_key, provider_code, source_provider_field) DO UPDATE SET
+				instrument_id=excluded.instrument_id,
+				canonical_field=excluded.canonical_field,
+				report_period=excluded.report_period,
+				announcement_time=excluded.announcement_time,
+				period_type=excluded.period_type,
+				statement_scope=excluded.statement_scope,
+				currency=excluded.currency,
+				unit=excluded.unit,
+				value=excluded.value,
+				provider_fact_id=excluded.provider_fact_id,
+				source_filing_id=excluded.source_filing_id,
+				normalization_rule=excluded.normalization_rule,
+				materializer_version=excluded.materializer_version,
+				ingest_run_id=excluded.ingest_run_id,
+				ingested_at=now()
+		`); err != nil {
+			return result, fmt.Errorf("merge canonical fundamental facts: %w", err)
+		}
 	}
 
 	if err := conn.QueryRowContext(ctx, `
