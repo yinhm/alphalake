@@ -54,6 +54,8 @@ jobs:
         run: python -m pip install -e './valuation/backend[dev]'
       - name: Verify reference publication and offline replay
         run: ALPHALAKE_TEST_PYTHON=python go test ./internal/ingest -run 'TestCountryRiskRealArchiveReplay|TestBetaYieldRealArchiveReplay|TestMarketCapitalArchiveReplay' -count=1
+      - name: Verify archived company industry parser
+        run: ALPHALAKE_TEST_PYTHON=python go test ./internal/source/damodaran -run TestCompanyIndustryRealArchiveParser -count=1
       - name: Test valuation backend
         working-directory: valuation/backend
         run: python -m pytest -q
