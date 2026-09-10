@@ -1,0 +1,183 @@
+{
+  "protocol_id": "tdx-multi-origin-v1",
+  "frozen_at": "2026-09-10T21:30:26.648600+00:00",
+  "samples": [
+    {
+      "code": "600519",
+      "stratum": "稳定消费",
+      "split": "development"
+    },
+    {
+      "code": "000858",
+      "stratum": "稳定消费",
+      "split": "development"
+    },
+    {
+      "code": "603288",
+      "stratum": "稳定消费",
+      "split": "development"
+    },
+    {
+      "code": "600887",
+      "stratum": "稳定消费",
+      "split": "holdout"
+    },
+    {
+      "code": "000895",
+      "stratum": "稳定消费",
+      "split": "holdout"
+    },
+    {
+      "code": "300866",
+      "stratum": "制造与出口",
+      "split": "development"
+    },
+    {
+      "code": "000333",
+      "stratum": "制造与出口",
+      "split": "development"
+    },
+    {
+      "code": "000651",
+      "stratum": "制造与出口",
+      "split": "development"
+    },
+    {
+      "code": "002032",
+      "stratum": "制造与出口",
+      "split": "holdout"
+    },
+    {
+      "code": "002508",
+      "stratum": "制造与出口",
+      "split": "holdout"
+    },
+    {
+      "code": "300124",
+      "stratum": "科技与设备",
+      "split": "development"
+    },
+    {
+      "code": "002415",
+      "stratum": "科技与设备",
+      "split": "development"
+    },
+    {
+      "code": "002475",
+      "stratum": "科技与设备",
+      "split": "development"
+    },
+    {
+      "code": "300750",
+      "stratum": "科技与设备",
+      "split": "holdout"
+    },
+    {
+      "code": "002371",
+      "stratum": "科技与设备",
+      "split": "holdout"
+    },
+    {
+      "code": "600031",
+      "stratum": "周期业务",
+      "split": "development"
+    },
+    {
+      "code": "000425",
+      "stratum": "周期业务",
+      "split": "development"
+    },
+    {
+      "code": "600309",
+      "stratum": "周期业务",
+      "split": "development"
+    },
+    {
+      "code": "601899",
+      "stratum": "周期业务",
+      "split": "holdout"
+    },
+    {
+      "code": "600019",
+      "stratum": "周期业务",
+      "split": "holdout"
+    }
+  ],
+  "base_policy": {
+    "policy_id": "nonfinancial-history-fcff-v1",
+    "approved_report_period": "2025-06-30",
+    "scenario": "mechanical_starting_scenario",
+    "review_note": "模板参数仅为初始敏感性情景，不是行业研究结论；使用前应审核适用范围和参数。",
+    "nonfinancial_scope_review": "使用时替换为公司非金融经营范围的实际审核依据。",
+    "wacc": 0.1,
+    "tax_rate": 0.25,
+    "growth_floor": -0.1,
+    "growth_ceiling": 0.2,
+    "growth_shift": 0,
+    "margin_shift": 0,
+    "sales_to_capital": 3,
+    "terminal_growth": 0.02,
+    "terminal_roic": 0.1,
+    "cash_recovery": 0.8,
+    "operating_cash_ratio": 0.03,
+    "minority_book_multiple": 1,
+    "debt_book_multiple": 1,
+    "extra_dilution_rate": 0.02,
+    "additional_claims_million_cny": 0,
+    "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+    "financial_asset_policy": "no_credit_pending_classification",
+    "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+  },
+  "origins": [
+    "2023-06-30",
+    "2024-06-30"
+  ],
+  "known_diagnostic_origins": [
+    "2025-06-30"
+  ],
+  "forecast_cutoff_rule": "origin year September 1 China midnight",
+  "evaluation_as_of": "2026-09-10T00:00:00+08:00",
+  "input_start_rule": "January 1 of origin year minus one, matching production export",
+  "candidates": [
+    "current_rule",
+    "zero_growth",
+    "half_growth",
+    "half_margin",
+    "half_both"
+  ],
+  "candidate_definitions": {
+    "half_growth": "0.5 * current clipped growth; current margin unchanged",
+    "half_margin": "current growth; margin=0.5*current TTM margin+0.5*prior full-year adjusted EBIT/revenue margin",
+    "half_both": "half_growth and half_margin combined",
+    "zero_growth": "unchanged revenue and margin",
+    "current_rule": "existing shared historical_forecast first year"
+  },
+  "selection": {
+    "sample_split": "development",
+    "periods": [
+      "2023-06-30",
+      "2024-06-30"
+    ],
+    "primary": "ebit_mae_pct_actual_revenue",
+    "minimum_pairs": 18,
+    "minimum_primary_improvement_fraction": 0.05,
+    "maximum_revenue_wape_ratio": 1.0,
+    "maximum_each_period_primary_ratio": 1.05,
+    "tie_break": "candidate order"
+  },
+  "validation": {
+    "sample_split": "holdout",
+    "minimum_pairs": 12,
+    "minimum_primary_improvement_fraction": 0.05,
+    "maximum_revenue_wape_ratio": 1.0,
+    "maximum_revenue_median_ape_ratio": 1.05,
+    "maximum_each_period_primary_ratio": 1.05
+  },
+  "discipline": [
+    "Select on development companies in new origins before opening holdout output; do not tune on holdout",
+    "2025H1 outcomes previously seen, diagnostic only, not unseen validation",
+    "All candidates use common support; keep missing/rejected company-period denominator",
+    "No winner if gates fail; no production changes merely to improve coverage",
+    "Source revisions and survivor bias remain; findings not strict PIT or proof of full DCF fair value accuracy"
+  ]
+}
