@@ -28,6 +28,7 @@ const (
 )
 
 var errCNINFONoPageProgress = errors.New("CNINFO pagination made no progress")
+var errCNINFOIncompletePages = errors.New("CNINFO pagination overlaps or omits rows")
 
 type CNINFOFilingSource interface {
 	CataloguePage(context.Context, cninfo.CatalogueRequest) (cninfo.CataloguePage, []byte, error)
@@ -143,7 +144,7 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 		summary.Windows++
 		windowName := filingWindowName(window.start, window.end)
 		// Older checkpoints may omit documents, final pages, or accept repeated pages.
-		checkpointKey := fmt.Sprintf("catalogue-window:v4:metadata-only=%t:%s", options.MetadataOnly, windowName)
+		checkpointKey := fmt.Sprintf("catalogue-window:v5:metadata-only=%t:%s", options.MetadataOnly, windowName)
 		if !options.Rescan && window.end.Before(dateUTCIngest(now.AddDate(0, 0, -cninfoRecentRescanDays))) {
 			if _, found, err := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, checkpointKey); err != nil {
 				summary.Failures = append(summary.Failures, CNINFOFilingFailure{Window: windowName, Err: err})
@@ -165,7 +166,7 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 		)
 		// 深分页停滞时拆分日期范围；不发布父窗口的部分结果或完成检查点。
 		// ponytail: 不缓存分割计划；若父窗口重复探测流量显著，再持久化已验证的分割边界。
-		if len(windowFailures) == 1 && errors.Is(windowFailures[0].Err, errCNINFONoPageProgress) && window.start.Before(window.end) {
+		if len(windowFailures) == 1 && (errors.Is(windowFailures[0].Err, errCNINFONoPageProgress) || errors.Is(windowFailures[0].Err, errCNINFOIncompletePages)) && window.start.Before(window.end) {
 			middle := window.start.AddDate(0, 0, int(window.end.Sub(window.start).Hours()/24)/2)
 			diagnostic := duckstore.IngestDiagnostic{RuleCode: "cninfo.catalogue_window_split", Severity: "warning", SubjectType: "date_window", SubjectKey: windowName, Details: windowFailures[0].Err.Error()}
 			if err := duckstore.RecordIngestDiagnostics(ctx, db, runID, cninfo.Source, cninfoFilingDataset, []duckstore.IngestDiagnostic{diagnostic}); err != nil {
@@ -296,6 +297,7 @@ func acquireCNINFOFilingWindow(
 	var failures []CNINFOFilingFailure
 	var issues []cninfo.CatalogueIssue
 	seenFilings := map[string]bool{}
+	expectedRows := 0
 	for pageNumber := 1; pageNumber <= 10000; pageNumber++ {
 		page, raw, err := source.CataloguePage(ctx, cninfo.CatalogueRequest{
 			Page: pageNumber, PageSize: pageSize, StartDate: start, EndDate: end,
@@ -330,6 +332,11 @@ func acquireCNINFOFilingWindow(
 			failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: fmt.Errorf("%w: page %d repeats previously observed announcement identities", errCNINFONoPageProgress, pageNumber)})
 			break
 		}
+		if newIdentities != len(page.Filings) {
+			failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: fmt.Errorf("%w: page %d has %d repeated announcement identities among %d rows", errCNINFOIncompletePages, pageNumber, len(page.Filings)-newIdentities, len(page.Filings))})
+			break
+		}
+		expectedRows = max(expectedRows, page.TotalRecords)
 		filings = append(filings, page.Filings...)
 		issues = append(issues, page.Issues...)
 		summary.Pages++
@@ -356,6 +363,9 @@ func acquireCNINFOFilingWindow(
 		if pageNumber == 10000 {
 			failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: errors.New("CNINFO pagination exhausted safety limit before completion")})
 		}
+	}
+	if len(failures) == 0 && len(filings)+len(issues) < expectedRows {
+		failures = append(failures, CNINFOFilingFailure{Window: windowName, Err: fmt.Errorf("%w: received %d rows, source advertised %d", errCNINFOIncompletePages, len(filings)+len(issues), expectedRows)})
 	}
 	return filings, pageSHAs, failures, issues
 }

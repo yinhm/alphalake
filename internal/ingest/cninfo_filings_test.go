@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"crypto/sha256"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -16,6 +19,78 @@ import (
 	"github.com/yinhm/alphalake/internal/source/cninfo"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
 )
+
+func TestRealCNINFOPartialOverlapCannotComplete(t *testing.T) {
+	const dir = "testdata/cninfo-partial-overlap-2026"
+	ctx := t.Context()
+	dbPath := filepath.Join(t.TempDir(), "overlap.duckdb")
+	db, err := duckstore.OpenAndMigrate(ctx, dbPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	var metadata []struct {
+		Page   int
+		SHA256 string
+	}
+	if err := json.Unmarshal(readFinancialSample(t, dir, "pages.json"), &metadata); err != nil {
+		t.Fatal(err)
+	}
+	source := &fakeCNINFOFilingSource{pages: map[int]cninfo.CataloguePage{}, raw: map[int][]byte{}}
+	for _, m := range metadata {
+		r, err := gzip.NewReader(bytes.NewReader(readFinancialSample(t, dir, fmt.Sprintf("page-%d.json.gz", m.Page))))
+		if err != nil {
+			t.Fatal(err)
+		}
+		raw, err := io.ReadAll(r)
+		r.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if fmt.Sprintf("%x", sha256.Sum256(raw)) != m.SHA256 {
+			t.Fatal("raw response hash", m.Page)
+		}
+		page, err := cninfo.ParseCataloguePage(raw)
+		if err != nil {
+			t.Fatal(err)
+		}
+		// 原始前六页，截为受控尾页：旧逻辑每页都有新增就会错误完成。
+		page.Page, page.PageSize, page.TotalPages, page.TotalRecords = m.Page, 30, 6, 180
+		source.pages[m.Page], source.raw[m.Page] = page, raw
+	}
+	if len(metadata) != 6 {
+		t.Fatal("six original pages required")
+	}
+	day := time.Date(2025, 4, 29, 0, 0, 0, 0, time.UTC)
+	key := "catalogue-window:v4:metadata-only=true:" + filingWindowName(day, day)
+	if err := duckstore.SetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, key, "old-partial-pages"); err != nil {
+		t.Fatal(err)
+	}
+	result, err := SyncCNINFOFilingsWithOptions(ctx, db, source, filepath.Join(t.TempDir(), "raw"), CNINFOFilingOptions{StartDate: day, EndDate: day, MetadataOnly: true, Now: func() time.Time { return time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC) }})
+	if err == nil || source.catalogueCalls != 6 || result.SkippedWindows != 0 || len(result.Failures) != 1 || !errors.Is(result.Failures[0].Err, errCNINFOIncompletePages) {
+		t.Fatalf("partial overlap accepted: %+v %v", result, err)
+	}
+	if !strings.Contains(result.Failures[0].Err.Error(), "3 repeated announcement identities") {
+		t.Fatal(result.Failures[0].Err)
+	}
+	if err := db.Close(); err != nil {
+		t.Fatal(err)
+	}
+	db, err = duckstore.Open(ctx, dbPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, found, err := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, strings.Replace(key, ":v4:", ":v5:", 1)); err != nil || found {
+		t.Fatalf("false completion after reopen: %t %v", found, err)
+	}
+	// 数量缺口也不能因上游提前宣称末页而得到完成键。
+	source.pages[1] = cninfo.CataloguePage{Page: 1, TotalPages: 1, TotalRecords: 31, Filings: source.pages[1].Filings}
+	result, err = SyncCNINFOFilingsWithOptions(ctx, db, source, filepath.Join(t.TempDir(), "raw"), CNINFOFilingOptions{StartDate: day, EndDate: day, MetadataOnly: true})
+	if err == nil || len(result.Failures) != 1 || !strings.Contains(result.Failures[0].Err.Error(), "received 30 rows, source advertised 31") {
+		t.Fatalf("short tail accepted: %+v %v", result, err)
+	}
+}
 
 type fakeCNINFOFilingSource struct {
 	pages          map[int]cninfo.CataloguePage
@@ -384,7 +459,7 @@ func TestRealCNINFORepeatedPagesInvalidateOldCompletion(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, strings.Replace(oldKey, ":v3:", ":v4:", 1)); e != nil || found {
+	if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, strings.Replace(oldKey, ":v3:", ":v5:", 1)); e != nil || found {
 		t.Fatalf("false completion: %t %v", found, e)
 	}
 	var n int
@@ -450,11 +525,11 @@ func TestCNINFOAutomaticallySplitsStalledWindow(t *testing.T) {
 		t.Fatalf("%+v calls=%d err=%v", result, source.catalogueCalls, err)
 	}
 	for _, day := range []time.Time{start, end} {
-		if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, "catalogue-window:v4:metadata-only=true:"+filingWindowName(day, day)); e != nil || !found {
+		if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, "catalogue-window:v5:metadata-only=true:"+filingWindowName(day, day)); e != nil || !found {
 			t.Fatalf("missing child completion %v %v", day, e)
 		}
 	}
-	if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, "catalogue-window:v4:metadata-only=true:"+filingWindowName(start, end)); e != nil || found {
+	if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, "catalogue-window:v5:metadata-only=true:"+filingWindowName(start, end)); e != nil || found {
 		t.Fatalf("unexpected parent completion %v %v", found, e)
 	}
 	var n int
