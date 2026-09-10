@@ -1,0 +1,62 @@
+[
+  {
+    "file": "gpcw20250331.zip",
+    "period": "2025-03-31",
+    "sample_sha256": "47197a3a49c91d4fa46342c748d65bb14313e21e59be663d05ec146392ea7cd4",
+    "original_archive_sha256": "50349ae09bbac7e52d2752e4d7449fa429d16997ec8a1ef5bfb6c914c3afc049",
+    "record_sha256": "4bd73f36a2cc049e591f9812d1189a1dcc06968ff6bc2904dd5502f52b2d5ae0",
+    "record_bytes": 2336,
+    "original_record_count": 5403,
+    "verified_fields": 1
+  },
+  {
+    "file": "gpcw20250630.zip",
+    "period": "2025-06-30",
+    "sample_sha256": "1378f853035533868b970e019b7d088b4bae53e382f9e8865ea28d68821b1baa",
+    "original_archive_sha256": "4a744d422e659ce75e608792259a969edd9e50377aaa5fde8bb1fd7d283e3534",
+    "record_sha256": "cff17b213e6f65ba1cc50861464977a4082cc892712c21e41ca69ac7f2d5627c",
+    "record_bytes": 2336,
+    "original_record_count": 5540,
+    "verified_fields": 7
+  },
+  {
+    "file": "gpcw20250930.zip",
+    "period": "2025-09-30",
+    "sample_sha256": "f1d7accc95136417a9300641bd478f17606d76b531501a21f91cb6838a5c03b4",
+    "original_archive_sha256": "9d553c0ee59796bb6234c6629a438dd1f5cb4c37eea550bdd15f782ca9004883",
+    "record_sha256": "5e9d28086d67e1d5ae8799a874f9573d1c09162bf4f9f8de7408c6aada62c807",
+    "record_bytes": 2336,
+    "original_record_count": 5466,
+    "verified_fields": 1
+  },
+  {
+    "file": "gpcw20251231.zip",
+    "period": "2025-12-31",
+    "sample_sha256": "e4487ff39b299fb81dd146697725dc4a62c7ada601a8f883fdd99ed0c3aa8c51",
+    "original_archive_sha256": "4430a5b2187fbe08f4e61c0543a9b2b32dc8420655f581e927e6e7ed7d6f70f7",
+    "record_sha256": "d32d96078b72452462238105882cf085427b262f893b0bed2b14a3a99b5ed240",
+    "record_bytes": 2336,
+    "original_record_count": 5563,
+    "verified_fields": 7
+  },
+  {
+    "file": "gpcw20260331.zip",
+    "period": "2026-03-31",
+    "sample_sha256": "b654c56331adb7a1f6b91b4c0a73430b3d8787ebe3ec7182cd7d4cb76b750c79",
+    "original_archive_sha256": "7d05f98f0d26f8cabb7070974b62b4e0b51bd0337df09921b1443688a78e82fa",
+    "record_sha256": "51e27147544fef35b3f7d80803798bd6a710526feba56ac42a2de308e1b5923c",
+    "record_bytes": 2336,
+    "original_record_count": 5543,
+    "verified_fields": 1
+  },
+  {
+    "file": "gpcw20260630.zip",
+    "period": "2026-06-30",
+    "sample_sha256": "11e42f8655d4e44396748933f06c46f9605d2f59149cc26add95f5450a65e805",
+    "original_archive_sha256": "c715a00bbb5158f7d3fb33ddc796a793f257f437f734b6976a827517df95d4fb",
+    "record_sha256": "e4b23913abd56f2a4a3fc46e8fa04ec3723810bb3a9aca3ba80379d78322a3d6",
+    "record_bytes": 2336,
+    "original_record_count": 5561,
+    "verified_fields": 15
+  }
+]

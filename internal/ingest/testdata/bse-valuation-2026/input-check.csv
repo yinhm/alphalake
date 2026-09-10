@@ -1,0 +1,33 @@
+field,period,pdf_period,pdf_page,label,pdf_value,source_value,source_bits,status,method
+FN86,2025-06-30,2025-06-30,37,"三、营业利润（亏损以“-”号填列）  39,380,473.07 33,676,458.74 ",39380473.07,39380472.0000000000,1276524926,pdf_numeric_matches_source_float32,reported_current_column
+FN305,2025-06-30,2025-06-30,36,"其中：利息费用  55,748.68 68,238.89 ",55748.68,55748.6796875000,1197065390,pdf_numeric_matches_source_float32,reported_current_column
+FN306,2025-06-30,2025-06-30,36,"利息收入  1,251,936.24 1,123,916.67 ",1251936.24,1251936.2500000000,1234752258,pdf_numeric_matches_source_float32,reported_current_column
+FN83,2025-06-30,2025-06-30,36,"投资收益（损失以“-”号填列） 五、40 472,910.06 798,944.17 ",472910.06,472910.0625000000,1223092674,pdf_numeric_matches_source_float32,reported_current_column
+FN82,2025-06-30,2025-06-30,37,"公允价值变动收益（损失以“-”号填列） 五、41 854,944.63 159,331.25 ",854944.63,854944.6250000000,1230027274,pdf_numeric_matches_source_float32,reported_current_column
+FN301,2025-06-30,2025-06-30,37,"资产处置收益（损失以“-”号填列） 五、44 -9,680.20 137,115.98 ",-9680.20,-9680.2001953125,3323412685,pdf_numeric_matches_source_float32,reported_current_column
+FN86,2025-12-31,2025-12-31,72,"三、营业利润（亏损以“－”号填列）  77,893,299.08 75,276,744.64 ",77893299.08,77893296.0000000000,1284805078,pdf_numeric_matches_source_float32,reported_current_column
+FN305,2025-12-31,2025-12-31,71,"其中：利息费用  106,073.68 136,355.55 ",106073.68,106073.6796875000,1204759767,pdf_numeric_matches_source_float32,reported_current_column
+FN306,2025-12-31,2025-12-31,71,"利息收入  3,186,614.33 2,074,201.18 ",3186614.33,3186614.2500000000,1245871833,pdf_numeric_matches_source_float32,reported_current_column
+FN83,2025-12-31,2025-12-31,72,"投资收益（损失以“-”号填列） 五、40 1,448,944.38 1,818,341.76 ",1448944.38,1448944.3750000000,1236328323,pdf_numeric_matches_source_float32,reported_current_column
+FN82,2025-12-31,2025-12-31,72,"公允价值变动收益 （损失以 “-” 号填列） 五、41 2,335,008.73 163,705.15 ",2335008.73,2335008.7500000000,1242465411,pdf_numeric_matches_source_float32,reported_current_column
+FN301,2025-12-31,2025-12-31,72,"资产处置收益（损失以“-”号填列） 五、44 -3,230.74 149,727.56 ",-3230.74,-3230.7399902344,3309956055,pdf_numeric_matches_source_float32,reported_current_column
+FN86,2026-06-30,2026-06-30,31,"三、营业利润（亏损以“-”号填列）  32,830,789.75 39,380,473.07 ",32830789.75,32830790.0000000000,1274706595,pdf_numeric_matches_source_float32,reported_current_column
+FN305,2026-06-30,2026-06-30,30,"其中：利息费用  37,422.83 55,748.68 ",37422.83,37422.8281250000,1192373972,pdf_numeric_matches_source_float32,reported_current_column
+FN306,2026-06-30,2026-06-30,30,"利息收入  1,003,908.39 1,251,936.24 ",1003908.39,1003908.3750000000,1232410694,pdf_numeric_matches_source_float32,reported_current_column
+FN83,2026-06-30,2026-06-30,30,"投资收益（损失以“-”号填列） 五、39 302,864.16 472,910.06 ",302864.16,302864.1562500000,1217651205,pdf_numeric_matches_source_float32,reported_current_column
+FN82,2026-06-30,2026-06-30,31,"公允价值变动收益 （损失以 “-” 号填列） 五、40 2,029,870.20 854,944.63 ",2029870.20,2029870.2500000000,1240975730,pdf_numeric_matches_source_float32,reported_current_column
+FN301,2026-06-30,2026-06-30,31,"资产处置收益（损失以“-”号填列） 五、43 - -9,680.20 ",,0.0000000000,0,pdf_blank_or_dash_not_zero_proof,reported_current_column
+FN230,2025-03-31,2025-12-31,9,分季度主要财务数据：营业收入,90972487.72,90972488.0000000000,1286439977,pdf_numeric_matches_source_float32,reported_single_quarter_column
+FN230,2025-06-30,2025-12-31,9,分季度主要财务数据：营业收入,110317592.82,110317592.0000000000,1288858115,pdf_numeric_matches_source_float32,reported_single_quarter_column
+FN230,2025-09-30,2025-12-31,9,分季度主要财务数据：营业收入,121031786.37,121031784.0000000000,1290197389,pdf_numeric_matches_source_float32,reported_single_quarter_column
+FN230,2025-12-31,2025-12-31,9,分季度主要财务数据：营业收入,105297254.56,105297256.0000000000,1288230573,pdf_numeric_matches_source_float32,reported_single_quarter_column
+FN230,2026-03-31,2026-03-31,13,合并营业收入,90505343.88,90505344.0000000000,1286381584,pdf_numeric_matches_source_float32,Q1_reported
+FN230,2026-06-30,2026-06-30,30,合并营业收入,118610230.36,118610232.0000000000,1289894695,pdf_numeric_matches_source_float32,H1_minus_Q1_decimal
+FN41,2026-06-30,2026-06-30,27,短期借款      ,,0.0000000000,0,pdf_blank_or_dash_not_zero_proof,reported_current_column
+FN52,2026-06-30,2026-06-30,27,"一年内到期的非流动负债 五、23 1,700,000.00 1,650,000.00 ",1700000.00,1700000.0000000000,1238336768,pdf_numeric_matches_source_float32,reported_current_column
+FN55,2026-06-30,2026-06-30,27,应付债券    ,,0.0000000000,0,pdf_blank_or_dash_not_zero_proof,reported_current_column
+FN56,2026-06-30,2026-06-30,27,"长期借款 五、25 - 850,000.00 ",,0.0000000000,0,pdf_blank_or_dash_not_zero_proof,reported_current_column
+FN439,2026-06-30,2026-06-30,27,租赁负债    ,,0.0000000000,0,pdf_blank_or_dash_not_zero_proof,reported_current_column
+FN69,2026-06-30,2026-06-30,28,"少数股东权益  1,863,523.24 1,772,963.52 ",1863523.24,1863523.2500000000,1239644954,pdf_numeric_matches_source_float32,reported_current_column
+FN133,2026-06-30,2026-06-30,34,"六、期末现金及现金等价物余额  72,653,972.00 81,686,339.48 ",72653972.00,72653968.0000000000,1284150162,pdf_numeric_matches_source_float32,reported_current_column
+FN238,2026-06-30,2026-06-30,19,"     总股本 91,680,000 - 0 91,680,000 - ",91680000,91680000.0000000000,1286528416,pdf_numeric_matches_source_float32,ordinary_share_structure_ending_count

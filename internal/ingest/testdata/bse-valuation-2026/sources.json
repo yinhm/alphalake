@@ -1,0 +1,54 @@
+[
+  {
+    "announcement_date": "2025-08-20",
+    "code": "832000",
+    "id": "1224525553",
+    "period": "2025-06-30",
+    "title": "2025年半年度报告",
+    "url": "https://static.cninfo.com.cn/finalpage/2025-08-20/1224525553.PDF",
+    "variant": "full",
+    "file": "2025-06-30.pdf",
+    "bytes": 2131420,
+    "sha256": "348a8c09970f5154db702c41a2c60c2d96a35ff9ad7804e3a5c3b5bdfedc63dd",
+    "fetched_at": "2026-09-10T07:24:56.198812+00:00"
+  },
+  {
+    "announcement_date": "2026-04-21",
+    "code": "920000",
+    "id": "1225139795",
+    "period": "2025-12-31",
+    "title": "2025年年度报告",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-04-21/1225139795.PDF",
+    "variant": "full",
+    "file": "2025-12-31.pdf",
+    "bytes": 2306292,
+    "sha256": "e5db3aef86c24bf4dac3f4370d4189a435ca5db907025c88419f26906d8cd3cc",
+    "fetched_at": "2026-09-10T07:24:58.729687+00:00"
+  },
+  {
+    "announcement_date": "2026-04-28",
+    "code": "920000",
+    "id": "1225223898",
+    "period": "2026-03-31",
+    "title": "2026年一季度报告",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-04-28/1225223898.PDF",
+    "variant": "full",
+    "file": "2026-03-31.pdf",
+    "bytes": 582402,
+    "sha256": "be1238da37af707ace5ed92af9ea99780b3bf0263509093a9c4af08f3a776979",
+    "fetched_at": "2026-09-10T07:25:00.411031+00:00"
+  },
+  {
+    "announcement_date": "2026-08-14",
+    "code": "920000",
+    "id": "1225473519",
+    "period": "2026-06-30",
+    "title": "2026年半年度报告",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-08-14/1225473519.PDF",
+    "variant": "full",
+    "file": "2026-06-30.pdf",
+    "bytes": 1654481,
+    "sha256": "ba310b24359867cf3bc71aeefa2a922578a0f3128f2bf9af115d6c59e0a5274b",
+    "fetched_at": "2026-09-10T07:25:02.074222+00:00"
+  }
+]

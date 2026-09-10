@@ -440,3 +440,5 @@ python -m tools.prepare_industry_policy ../examples/a-share-nonfinancial-recipe-
 
 
 北交所限定代理批次已实际完成：118家命中规则中57家条件股权估值、30家明确拒绝、31家缺输入，零执行异常。57份全部从归档标准请求独立Decimal复算WACC、逐年DCF及股权桥接通过，其中50家为本轮新增核心输入齐全公司。结果与拒绝分类见[实际验收](../valuation/docs/bse-industry-proxies.md#副本实际批次验收)；不是57家公司逐份PDF验收或市场价格结论，原主库尚未更新为副本。
+
+新增[安徽凤凰32项模型输入原文核验](../internal/ingest/testdata/bse-valuation-2026/README.md)：27项数字位级匹配，5项空白/横杠明确保留边界；现金及等价物与含保证金的货币资金分别核对，股数使用股份结构表。六期TDX切片、四PDF、标准输入和台账进入离线Go/Python回归，无新依赖，不把原文空白改成数值零。

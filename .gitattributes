@@ -5,3 +5,6 @@ internal/source/damodaran/testdata/ratings.html binary
 internal/source/safe/testdata/rates.html binary
 internal/ingest/testdata/bse-code-transition-2025/*.html binary
 internal/ingest/testdata/bse-code-transition-2025/*-catalogue.json binary
+internal/ingest/testdata/bse-valuation-2026/*.pdf binary
+internal/ingest/testdata/bse-valuation-2026/*.zip binary
+internal/ingest/testdata/bse-valuation-2026/*.csv text eol=lf

@@ -46,6 +46,8 @@ jobs:
         run: python internal/ingest/testdata/generic-valuation-2026/verify.py
       - name: Verify Bear valuation evidence
         run: python internal/ingest/testdata/bear-valuation-2026/verify.py
+      - name: Verify BSE valuation PDF inputs offline
+        run: python internal/ingest/testdata/bse-valuation-2026/verify.py
       - name: Verify BSE code transition evidence
         run: python internal/ingest/testdata/bse-code-transition-2025/verify.py
       - name: Verify contractual debt maturity evidence offline
