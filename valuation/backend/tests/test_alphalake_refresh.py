@@ -8,17 +8,22 @@ import pytest
 from tools import refresh_valuate_alphalake as refresh
 
 
-@pytest.mark.parametrize('failed', ['sync-financial','materialize-fundamentals','repair-filings','materialize-after-filing-repair'])
+@pytest.mark.parametrize('failed', ['sync-financial','materialize-fundamentals','repair-filings','materialize-after-filing-repair','sync-cny-yield'])
 def test_refresh_preserves_stage_failures_and_gates_materialization(tmp_path,monkeypatch,failed):
     execute=refresh.execute
     seen=[]
     def stub(command,log,timeout):
         name=log.stem;seen.append(name)
+        if name in ('sync-country-risk','sync-industry-beta','sync-cny-yield','sync-credit-spreads'):
+            assert command[2]=='references.duckdb'
+            assert command[command.index('--python')+1]==sys.executable
+            assert Path(command[command.index('--parser')+1]).is_absolute()
+            assert Path(command[command.index('--parser')+1]).is_file()
         return execute([sys.executable,'-c',f'print({name!r});raise SystemExit({int(name==failed)})'],log,timeout)
     monkeypatch.setattr(refresh,'execute',stub)
     args=SimpleNamespace(database='test.duckdb',period='2026-06-30',as_of=None,latest=6,
                          filings_start='2025-04-01',filings_end='2026-09-09',alphalake='alphalake',
-                         policy='policy.json',stage_timeout=10,reference_database='references.duckdb')
+                         policy='policy.json',stage_timeout=10,reference_database='references.duckdb',sync_references=True)
     assert refresh.run_cycle(args,tmp_path)==1
     report=json.loads((tmp_path/'run.json').read_text())
     assert report['status']=='partial_or_failed'
@@ -27,6 +32,9 @@ def test_refresh_preserves_stage_failures_and_gates_materialization(tmp_path,mon
     if failed!='materialize-fundamentals':
         assert seen[4:6]==['repair-filings','materialize-after-filing-repair']
         assert report['information_as_of']>=report['stages'][5]['finished_at']
+    if 'batch-valuation' in seen:
+        assert seen[6:10]==['sync-country-risk','sync-industry-beta','sync-cny-yield','sync-credit-spreads']
+        assert report['information_as_of']>=report['stages'][9]['finished_at']
     for stage in report['stages']:
         if stage['name']=='batch-valuation':assert stage['command'][-2:]==['--reference-database','references.duckdb']
     assert all(Path(r['log']).read_text().strip()==r['name'] for r in report['stages'])

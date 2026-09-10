@@ -71,6 +71,13 @@ def run_cycle(args, root):
         if materialized:
             stage('repair-filings',[args.alphalake,'repair-filings',args.database,'--period',args.period])
             materialized = stage('materialize-after-filing-repair',[args.alphalake,'materialize-fundamentals',args.database]) == 0
+        if materialized and getattr(args,'sync_references',False):
+            repo=Path(__file__).resolve().parents[3]
+            for name,script in [('sync-country-risk','valuation/backend/data_sources/damodaran_parsers/country_risk_parser.py'),
+                                ('sync-industry-beta','valuation/backend/data_sources/damodaran_parsers/beta_parser.py'),
+                                ('sync-cny-yield','internal/source/chinabond/parse.py'),
+                                ('sync-credit-spreads','internal/source/damodaran/ratings.py')]:
+                stage(name,[args.alphalake,name,args.reference_database,'--python',sys.executable,'--parser',str(repo/script)])
         ledger['information_as_of'] = args.as_of or timestamp()
         if materialized:
             reference_args = ['--reference-database',args.reference_database] if getattr(args,'reference_database',None) else []
@@ -99,10 +106,13 @@ def main():
     parser.add_argument('--output-dir',required=True)
     parser.add_argument('--alphalake',default=str(Path(__file__).resolve().parents[3]/'alphalake'))
     parser.add_argument('--reference-database',help='批次运行时自动选择本地最新WACC参考版本')
+    parser.add_argument('--sync-references',action='store_true',help='批次前刷新四类参考源，需指定参考库')
     args = parser.parse_args()
     period = date.fromisoformat(args.period)
     if args.latest<1 or args.stage_timeout<1 or period.month%3 or (period+timedelta(days=1)).day!=1:
         parser.error('positive limits and quarter-end period required')
+    if args.sync_references and not args.reference_database:
+        parser.error('sync-references requires reference-database')
     if date.fromisoformat(args.filings_start)>date.fromisoformat(args.filings_end):
         parser.error('filings start exceeds end')
     if args.as_of and (datetime.fromisoformat(args.as_of).utcoffset() is None or datetime.fromisoformat(args.as_of).date()<period):
@@ -115,6 +125,8 @@ def main():
     args.alphalake = str(Path(args.alphalake).resolve())
     if args.reference_database:
         args.reference_database = str(Path(args.reference_database).resolve())
+        if args.sync_references:
+            Path(args.reference_database).parent.mkdir(parents=True,exist_ok=True)
     Path(args.database).parent.mkdir(parents=True,exist_ok=True)
     # ponytail: 本机进程锁；远程分布式调度不在此入口范围。
     with open(args.database+'.valuation.lock','a') as lock:
