@@ -374,3 +374,64 @@ def test_cash_source_additions_preserve_existing_evidence():
     for before,after in zip(old['records'],source['records'],strict=True):
         assert {'FN234','FN114'}<=after['bits'].keys()
         assert before==after|dict(bits={k:v for k,v in after['bits'].items() if k not in ('FN234','FN114')})
+
+
+def test_cash_proxy_periods_missing_values_and_real_diagnostic():
+    import hashlib
+    from tools.backtest_tdx_cash_proxy import cash_actual,diagnose
+    original,source=fixture()
+    for r in source['records']:
+        year=int(r['period'][:4]);q=int(r['period'][5:7])//3
+        r['bits']['FN234']=bits([-10,20,30,40][q-1]*1e6)
+        r['bits']['FN114']=bits(q*{2024:10,2025:12,2026:15}[year]*1e6)
+    actual=cash_actual(source,'600519',date(2026,6,30),original['evaluation_as_of'])
+    assert actual['operating_cash_flow']==80 and actual['capital_expenditure_cash']==54
+    assert actual['reported_ocf_less_capex']==26
+    assert [r['coefficient'] for r in actual['source_inputs']]==[1,1,1,1,1,1,-1]
+    missing=copy.deepcopy(source)
+    del next(r for r in missing['records'] if r['period']=='2025-09-30')['bits']['FN234']
+    with pytest.raises(KeyError):cash_actual(missing,'600519',date(2026,6,30),original['evaluation_as_of'])
+    late=copy.deepcopy(source)
+    next(r for r in late['records'] if r['period']=='2026-06-30')['bits']['FN314']=bits(260909)
+    with pytest.raises(KeyError):cash_actual(late,'600519',date(2026,6,30),'2026-09-01T00:00:00+08:00')
+    bad=copy.deepcopy(source)
+    next(r for r in bad['records'] if r['period']=='2025-06-30')['bits']['FN114']=bits(100e6)
+    with pytest.raises(ValueError,match='negative cumulative'):cash_actual(bad,'600519',date(2026,6,30),original['evaluation_as_of'])
+    directory=ROOT/'valuation/research/tdx-growth-expanded'
+    p=json.loads((directory/'protocol-cash-proxy.json').read_bytes());raw=(directory/'snapshot-cash-proxy.json').read_bytes();source=json.loads(raw)
+    expected=json.loads((directory/'cash-diagnostic-summary.json').read_bytes());assert hashlib.sha256(raw).hexdigest()==expected['evidence']['snapshot_sha256']
+    result=diagnose(p,source)
+    assert {k:v for k,v in result.items() if k!='results'}=={k:v for k,v in expected.items() if k!='evidence'}
+    assert result['summary']['cash_statuses']=={'blocked_forecast':104,'evaluated':255,'blocked_cash_inputs':1}
+    assert all(r['actual_fcff'] is None for r in result['results'])
+    rejected=[r for r in result['results'] if r['cash_status']=='blocked_cash_inputs']
+    assert [(r['code'],r['origin']) for r in rejected]==[('603315','2025-06-30')]
+    changed=copy.deepcopy(source)
+    sample=next(r for r in result['results'] if r['cash_status']=='evaluated')
+    target=str(int(sample['origin'][:4])+1)+'-06-30'
+    row=next(r for r in changed['records'] if r['code']==sample['code'] and r['period']==target)
+    row['bits']['FN234']=bits(999e9)
+    later=diagnose(p,changed)
+    for a,b in zip(result['results'],later['results'],strict=True):assert a.get('forecast_fcff_policy')==b.get('forecast_fcff_policy')
+    changed_row=next(r for r in later['results'] if (r['code'],r['origin'])==(sample['code'],sample['origin']))
+    assert changed_row['cash_actual']!=sample['cash_actual']
+
+
+def test_cash_anomaly_original_documents_and_tampering():
+    import hashlib
+    from tools.backtest_tdx_cash_proxy import verify_anomaly
+    directory=ROOT/'valuation/research/tdx-growth-expanded'
+    evidence=directory/'cash-review-603315'
+    ledger=json.loads((evidence/'evidence.json').read_bytes())
+    raw=(directory/'snapshot-cash-proxy.json').read_bytes();source=json.loads(raw)
+    assert hashlib.sha256(raw).hexdigest()==ledger['source_snapshot_sha256']
+    result=verify_anomaly(ledger,evidence,source)
+    assert result==dict(status='source_values_confirmed_comparability_unresolved',
+                       tdx_capex_ttm_cny='-26679990.5',pdf_capex_ttm_cny='-26679991.35',actual_fcff=None)
+    for key,value_,message in [('sha256','0'*64,'hash'),('values',['0.01','6353617.85'],'row/columns'),
+                               ('header_period','2024年1—6月','scope'),('row_page',42,'row/columns')]:
+        bad=copy.deepcopy(ledger);bad['reports'][0][key]=value_
+        with pytest.raises(ValueError,match=message):verify_anomaly(bad,evidence,source)
+    bad=copy.deepcopy(source)
+    next(r for r in bad['records'] if (r['code'],r['period'])==('603315','2025-06-30'))['bits']['FN114']^=1
+    with pytest.raises(ValueError,match='TDX bits'):verify_anomaly(ledger,evidence,bad)

@@ -1,0 +1,48 @@
+{
+  "code": "603315",
+  "field": "FN114",
+  "source_snapshot_sha256": "0dca2b4c46b37a91c12088f450caf09f7cbe168fe47f7087e56988fa2d47725a",
+  "reports": [
+    {
+      "file": "2025H1.pdf",
+      "sha256": "b6f2d53db2590044271a73be13208924a4e02d94de4332f2ea416c0bdab4231d",
+      "source_url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224621854.PDF",
+      "period": "2025-06-30",
+      "header_page": 40,
+      "row_page": 41,
+      "header_period": "2025年1—6月",
+      "values": [
+        "39274680.86",
+        "6353617.85"
+      ]
+    },
+    {
+      "file": "2025FY.pdf",
+      "sha256": "f5b2a5bdbbed68208f10c43f77da076d048909bddecb8aa56ccf111f6953854f",
+      "source_url": "https://static.cninfo.com.cn/finalpage/2026-04-28/1225204553.PDF",
+      "period": "2025-12-31",
+      "header_page": 74,
+      "row_page": 75,
+      "header_period": "2025年1—12月",
+      "values": [
+        "4502506.41",
+        "24441819.65"
+      ]
+    },
+    {
+      "file": "2026H1.pdf",
+      "sha256": "477e7002604f849df85da9db84b272ddbf5036c0c8ea9188e50a30a1101d7315",
+      "source_url": "https://static.cninfo.com.cn/finalpage/2026-08-28/1225516346.PDF",
+      "period": "2026-06-30",
+      "header_page": 41,
+      "row_page": 42,
+      "header_period": "2026年1—6月",
+      "values": [
+        "8092183.10",
+        "39274680.86"
+      ]
+    }
+  ],
+  "status": "source_values_confirmed_comparability_unresolved",
+  "boundary": "三期TDX数值与各自PDF合并当期列的float32位一致；年度小于半年及负TTM原因尚未闭合，不改源、不填FCFF、不认定TDX错列；URL日期不冒充权威公告时间"
+}

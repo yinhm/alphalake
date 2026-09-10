@@ -1,0 +1,278 @@
+{
+  "contract_version": "tdx-cash-proxy-diagnostic-v1",
+  "protocol_id": "tdx-cash-proxy-diagnostic-v1",
+  "amount_unit": "million_CNY",
+  "summary": {
+    "candidates": 360,
+    "cash_statuses": {
+      "blocked_forecast": 104,
+      "evaluated": 255,
+      "blocked_cash_inputs": 1
+    },
+    "models": {
+      "current_rule": {
+        "n": 255,
+        "mean_absolute_distance_pct_revenue": 15.33855613024909,
+        "median_absolute_distance_pct_revenue": 8.010067593829604,
+        "mean_signed_distance_pct_revenue": 8.541114181117731
+      },
+      "bias_half": {
+        "n": 255,
+        "mean_absolute_distance_pct_revenue": 14.89257873783002,
+        "median_absolute_distance_pct_revenue": 7.8564682973309905,
+        "mean_signed_distance_pct_revenue": 7.3269798203503
+      }
+    }
+  },
+  "by_origin": {
+    "2023-06-30": {
+      "candidates": 120,
+      "cash_statuses": {
+        "blocked_forecast": 35,
+        "evaluated": 85
+      },
+      "models": {
+        "current_rule": {
+          "n": 85,
+          "mean_absolute_distance_pct_revenue": 22.17991891502468,
+          "median_absolute_distance_pct_revenue": 10.478174633043542,
+          "mean_signed_distance_pct_revenue": 16.004372512051095
+        },
+        "bias_half": {
+          "n": 85,
+          "mean_absolute_distance_pct_revenue": 21.228282038772015,
+          "median_absolute_distance_pct_revenue": 9.378849232645011,
+          "mean_signed_distance_pct_revenue": 13.574009256430504
+        }
+      }
+    },
+    "2024-06-30": {
+      "candidates": 120,
+      "cash_statuses": {
+        "blocked_forecast": 34,
+        "evaluated": 86
+      },
+      "models": {
+        "current_rule": {
+          "n": 86,
+          "mean_absolute_distance_pct_revenue": 13.255059640620857,
+          "median_absolute_distance_pct_revenue": 7.061150599774828,
+          "mean_signed_distance_pct_revenue": 7.574587449202334
+        },
+        "bias_half": {
+          "n": 86,
+          "mean_absolute_distance_pct_revenue": 12.877604734308756,
+          "median_absolute_distance_pct_revenue": 6.923531474631197,
+          "mean_signed_distance_pct_revenue": 6.7091977304637735
+        }
+      }
+    },
+    "2025-06-30": {
+      "candidates": 120,
+      "cash_statuses": {
+        "blocked_forecast": 35,
+        "evaluated": 84,
+        "blocked_cash_inputs": 1
+      },
+      "models": {
+        "current_rule": {
+          "n": 84,
+          "mean_absolute_distance_pct_revenue": 10.548852099321744,
+          "median_absolute_distance_pct_revenue": 7.827366679651539,
+          "mean_signed_distance_pct_revenue": 1.9785468098723482
+        },
+        "bias_half": {
+          "n": 84,
+          "mean_absolute_distance_pct_revenue": 10.544399972624769,
+          "median_absolute_distance_pct_revenue": 7.764823659155507,
+          "mean_signed_distance_pct_revenue": 1.6380721734863015
+        }
+      }
+    }
+  },
+  "by_profit_scope": {
+    "no_financial_fields_detected": {
+      "candidates": 253,
+      "cash_statuses": {
+        "evaluated": 252,
+        "blocked_cash_inputs": 1
+      },
+      "models": {
+        "current_rule": {
+          "n": 252,
+          "mean_absolute_distance_pct_revenue": 15.47697999657553,
+          "median_absolute_distance_pct_revenue": 8.059645078474954,
+          "mean_signed_distance_pct_revenue": 8.661776111542297
+        },
+        "bias_half": {
+          "n": 252,
+          "mean_absolute_distance_pct_revenue": 15.018641519884216,
+          "median_absolute_distance_pct_revenue": 7.943670099788264,
+          "mean_signed_distance_pct_revenue": 7.444217217092042
+        }
+      }
+    },
+    "financial_fields_present": {
+      "candidates": 3,
+      "cash_statuses": {
+        "evaluated": 3
+      },
+      "models": {
+        "current_rule": {
+          "n": 3,
+          "mean_absolute_distance_pct_revenue": 3.710951358828171,
+          "median_absolute_distance_pct_revenue": 3.17469507642352,
+          "mean_signed_distance_pct_revenue": -1.5944879745458242
+        },
+        "bias_half": {
+          "n": 3,
+          "mean_absolute_distance_pct_revenue": 4.30330504527746,
+          "median_absolute_distance_pct_revenue": 2.6735153089822132,
+          "mean_signed_distance_pct_revenue": -2.520961505955984
+        }
+      }
+    },
+    "not_evaluated": {
+      "candidates": 104,
+      "cash_statuses": {
+        "blocked_forecast": 104
+      },
+      "models": {
+        "current_rule": {
+          "n": 0,
+          "mean_absolute_distance_pct_revenue": null,
+          "median_absolute_distance_pct_revenue": null,
+          "mean_signed_distance_pct_revenue": null
+        },
+        "bias_half": {
+          "n": 0,
+          "mean_absolute_distance_pct_revenue": null,
+          "median_absolute_distance_pct_revenue": null,
+          "mean_signed_distance_pct_revenue": null
+        }
+      }
+    }
+  },
+  "calibration_training": {
+    "2023-06-30": {
+      "origin": "2022-06-30",
+      "target": "2023-06-30",
+      "evaluation_as_of": "2023-09-01T00:00:00+08:00",
+      "status": "fitted",
+      "training_pairs": 36,
+      "weighted_ebit_scale": 0.05312018276175804,
+      "ebit_scale": 0.5,
+      "summary": {
+        "candidates": 60,
+        "statuses": {
+          "blocked": 24,
+          "evaluated": 36
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 36,
+            "ebit_n": 36,
+            "revenue_median_ape_pct": 13.42348826049848,
+            "revenue_mean_bias_pct": 19.568340459588683,
+            "revenue_wape_pct": 33.84619020384116,
+            "margin_mae_pp": 8.757193414728622,
+            "ebit_mae_pct_actual_revenue": 19.743389549744165
+          },
+          "zero_growth": {
+            "revenue_n": 36,
+            "ebit_n": 36,
+            "revenue_median_ape_pct": 15.481305794982571,
+            "revenue_mean_bias_pct": 12.430287645565624,
+            "revenue_wape_pct": 25.649843166229424,
+            "margin_mae_pp": 8.757193414728622,
+            "ebit_mae_pct_actual_revenue": 17.393547973837503
+          }
+        }
+      }
+    },
+    "2024-06-30": {
+      "origin": "2023-06-30",
+      "target": "2024-06-30",
+      "evaluation_as_of": "2024-09-01T00:00:00+08:00",
+      "status": "fitted",
+      "training_pairs": 44,
+      "weighted_ebit_scale": 0.782955459563529,
+      "ebit_scale": 0.782955459563529,
+      "summary": {
+        "candidates": 60,
+        "statuses": {
+          "blocked": 16,
+          "evaluated": 44
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 44,
+            "ebit_n": 44,
+            "revenue_median_ape_pct": 13.54544770300295,
+            "revenue_mean_bias_pct": 13.091331770292818,
+            "revenue_wape_pct": 11.57644330596421,
+            "margin_mae_pp": 4.367571882310692,
+            "ebit_mae_pct_actual_revenue": 5.548684995721894
+          },
+          "zero_growth": {
+            "revenue_n": 44,
+            "ebit_n": 44,
+            "revenue_median_ape_pct": 12.555989474477304,
+            "revenue_mean_bias_pct": 6.2968013450821205,
+            "revenue_wape_pct": 13.125288206892716,
+            "margin_mae_pp": 4.367571882310692,
+            "ebit_mae_pct_actual_revenue": 5.336506941990757
+          }
+        }
+      }
+    },
+    "2025-06-30": {
+      "origin": "2024-06-30",
+      "target": "2025-06-30",
+      "evaluation_as_of": "2025-09-01T00:00:00+08:00",
+      "status": "fitted",
+      "training_pairs": 42,
+      "weighted_ebit_scale": 0.907113572390187,
+      "ebit_scale": 0.907113572390187,
+      "summary": {
+        "candidates": 60,
+        "statuses": {
+          "blocked": 18,
+          "evaluated": 42
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 42,
+            "ebit_n": 42,
+            "revenue_median_ape_pct": 7.7005657841809,
+            "revenue_mean_bias_pct": 1.830789995674006,
+            "revenue_wape_pct": 12.165987179186963,
+            "margin_mae_pp": 4.507672319613538,
+            "ebit_mae_pct_actual_revenue": 4.896719323260597
+          },
+          "zero_growth": {
+            "revenue_n": 42,
+            "ebit_n": 42,
+            "revenue_median_ape_pct": 12.630150725065228,
+            "revenue_mean_bias_pct": -1.0161206527917122,
+            "revenue_wape_pct": 19.803040029650518,
+            "margin_mae_pp": 4.507672319613538,
+            "ebit_mae_pct_actual_revenue": 5.06274008832105
+          }
+        }
+      }
+    }
+  },
+  "boundary": "报表经营现金流减资本开支不等于FCFF；距离混合预测误差与会计口径差异，不据此选择参数或宣称估值准确率；实际FCFF仍为空；三个利润窗口均已观察，非新增独立验证",
+  "evidence": {
+    "protocol_sha256": "8df1a9be000e00177744570aeb986661bbc3a54ebd16dd06da5f4e837ac868eb",
+    "snapshot_sha256": "0dca2b4c46b37a91c12088f450caf09f7cbe168fe47f7087e56988fa2d47725a",
+    "code_sha256": "7a6ef71a11c4f165e239038f5e6f8b066a414c3d466844f7c256560f7ce7c66b",
+    "dependencies": {
+      "tools/backtest_tdx_history.py": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+      "tools/backtest_tdx_origins.py": "58f7254ebba472e51fab54ee98dec618cb3c69abcb26046a09a1c71f857f333d",
+      "data_sources/alphalake.py": "7250a086357095d2c58be7bdaddde773287545b729fba27a6b68feece7f550ee",
+      "data_sources/alphalake_calibration.py": "386cad4668caa2ee2e6a0fe8e94b11ea551506b90786cb69b8990acdbfea9570"
+    }
+  }
+}
