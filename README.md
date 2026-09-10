@@ -64,6 +64,27 @@ TDX 协议请求支持[自动换节点重试](docs/tdx-failover.md)：每个独�
 
 [统一公司CLI](docs/company-valuation-entry.md)已提供多政策候选、选择依据及结构化JSON；估值变化解释尚在计划中，下一步及实现边界见[当前优先级](docs/implementation-status.md)。安克的[专项与通用模型口径](docs/anker-recalculation-20260909.md)分别记录，不能用不同政策的数值冒充同一模型更新。
 
+## Agent 使用
+
+已提供 [alphalake-valuation Skill](skills/alphalake-valuation/SKILL.md)，指导支持技能的本地agent调用统一公司CLI、解释候选/缺项并追溯run ID。它需要AlphaLake仓库、后端Python环境、数据库和显式政策配置，不自带财务库、默认估值或第二套计算引擎。
+
+从仓库根目录将技能链接到本地Codex技能目录（已有同名目录时先检查，不覆盖）：
+
+```bash
+python3 - <<'PYINSTALL'
+import os
+from pathlib import Path
+source = Path('skills/alphalake-valuation').resolve(strict=True)
+skills = Path(os.environ.get('CODEX_HOME') or Path.home()/'.codex')/'skills'
+skills.mkdir(parents=True, exist_ok=True)
+(skills/source.name).symlink_to(source, target_is_directory=True)
+PYINSTALL
+```
+
+重新加载支持技能的会话后，可使用`$alphalake-valuation`并给出公司及已有配置；也允许客户端按描述自动选择。其他支持Agent Skills的客户端可安装同一技能目录，具体发现方式由客户端决定。移动仓库后需更新软链接。
+
+安装检查通过不等于客户端已在当前会话发现技能；实际使用仍以客户端技能列表为准。Skill不是MCP服务，目前没有新增MCP接口。程序契约与验收范围见[统一公司入口](docs/company-valuation-entry.md)。
+
 ## WACC 参考数据
 
 已提供 `sync-country-risk`：归档达摩达兰 2026 年 7 月工作簿，发布 CN/HK/US 评级法与成熟市场 ERP 共 10 项，支持原子发布、幂等重放和离线核验。具体命令与范围见[国家风险同步](docs/country-risk-sync.md)。另已接入[全球行业 Beta 与人民币国债收益率](docs/beta-yield-sync.md)：94 个行业的 376 项指标和 8 个国债期限点。三条同步链均不改动公司财务事实；已有[固定版本到 WACC／估值桥接](docs/wacc-valuation-bridge.md)，须显式提供公司映射与政策；也可使用[市场权益／估计债务权重分支](docs/market-wacc.md)，不可省略代理假设。另支持[合成评级利差同步与借款成本桥接](docs/credit-spread-sync.md)，首批仅开放安克已审核财务口径。
