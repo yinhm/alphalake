@@ -48,6 +48,7 @@ TDX 协议请求支持[自动换节点重试](docs/tdx-failover.md)：每个独�
 - 财务身份治理支持分页查看待解析记录、显式确认及撤销确认；
 - 已审核的 80 个 TDX 字段映射，含单季度利润/现金流、股本，以及现金、借款、债券、租赁、税项、利息、权益和再投资明细；新增字段区分期末存量与年初累计，见[核心财务字段](docs/decisions/009-core-financial-fields.md)、[损益/营运资本增补](docs/decisions/012-earnings-working-capital-fields.md)、[现金流/研发字段](docs/decisions/013-cashflow-research-fields.md)、[开源目录与余额/利润增补](docs/decisions/014-open-source-fn-balance-profit.md)及[金融工具与补充供给](docs/decisions/015-financial-instruments-and-supplement-supply.md)；
 - CNINFO 公告目录与原文归档、保守的披露日期精度，以及待解析公告的本地重试；
+- [北交所2025年代码切换](docs/bse-code-transitions.md)四原文发布与公告日身份核验；保留原代码，缺少唯一时点锚点时仍待解析；
 - 显式的数据源事实—公告关联、标准时点基本面物化，以及原始/更正版本的 ASOF 查询；
 - 按公告时点查询年度与 TTM，区分单季、累计和存量，缺期返回空值及输入血缘，见[查询规则](docs/decisions/011-annual-and-ttm-windows.md)；
 - 持久化采集/计算运行状态：`completed`、`partial`、`failed`、`canceled`；

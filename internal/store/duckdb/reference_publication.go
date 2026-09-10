@@ -22,7 +22,12 @@ type referencePublication struct {
 	source, dataset, key string
 }
 
-func beginReferencePublication(ctx context.Context, db *sql.DB, runID, artifactID int64, in referenceInput) (p referencePublication, err error) {
+type referenceEvidence struct {
+	ArtifactID     int64
+	Role, URL, SHA string
+}
+
+func beginReferencePublication(ctx context.Context, db *sql.DB, runID, artifactID int64, in referenceInput, supporting ...referenceEvidence) (p referencePublication, err error) {
 	if !regexp.MustCompile(`^[0-9a-f]{64}$`).MatchString(in.ParserHash) {
 		return p, errors.New("invalid parser digest")
 	}
@@ -47,6 +52,24 @@ func beginReferencePublication(ctx context.Context, db *sql.DB, runID, artifactI
 	}
 	if hash != in.SHA || source != in.Source || dataset != in.Dataset || locator != in.URL || runSource != source || runDataset != dataset || status != IngestRunRunning {
 		return p, errors.New("reference artifact/run lineage mismatch")
+	}
+	ids := map[int64]bool{artifactID: true}
+	for _, proof := range supporting {
+		if proof.ArtifactID <= 0 || ids[proof.ArtifactID] || (proof.Role != "publication" && proof.Role != "timing") {
+			return p, errors.New("invalid or duplicate supporting reference artifact")
+		}
+		var proofHash, proofSource, proofDataset, proofURL string
+		var fetched time.Time
+		if err = p.tx.QueryRowContext(ctx, `SELECT sha256,source,dataset,source_locator,fetched_at FROM meta.artifact WHERE artifact_id=?`, proof.ArtifactID).Scan(&proofHash, &proofSource, &proofDataset, &proofURL, &fetched); err != nil {
+			return
+		}
+		if proofHash != proof.SHA || proofSource != source || proofDataset != dataset || proofURL != proof.URL {
+			return p, errors.New("supporting reference artifact lineage mismatch")
+		}
+		if fetched.After(firstSeen) {
+			firstSeen = fetched
+		}
+		ids[proof.ArtifactID] = true
 	}
 	// 未标日期的来源保留 NULL 版本；各具体解析器仍负责其日期契约。
 	var version any
@@ -73,6 +96,24 @@ func beginReferencePublication(ctx context.Context, db *sql.DB, runID, artifactI
 		if err == nil && linked != 1 {
 			err = errors.New("published reference lineage/checkpoint changed")
 		}
+		if err != nil {
+			return
+		}
+		var total int
+		if err = p.tx.QueryRowContext(ctx, `SELECT count(*) FROM meta.dataset_release_artifact WHERE release_id=?`, p.id).Scan(&total); err != nil {
+			return
+		}
+		if total != 1+len(supporting) {
+			return p, errors.New("published reference evidence scope changed")
+		}
+		for _, proof := range supporting {
+			if err = p.tx.QueryRowContext(ctx, `SELECT count(*) FROM meta.dataset_release_artifact WHERE release_id=? AND artifact_id=? AND role=?`, p.id, proof.ArtifactID, proof.Role).Scan(&linked); err != nil {
+				return
+			}
+			if linked != 1 {
+				return p, errors.New("published supporting reference link changed")
+			}
+		}
 		return
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
@@ -84,6 +125,14 @@ func beginReferencePublication(ctx context.Context, db *sql.DB, runID, artifactI
 		return
 	}
 	_, err = p.tx.ExecContext(ctx, `INSERT INTO meta.dataset_release_artifact VALUES (?,?,'data')`, p.id, artifactID)
+	if err != nil {
+		return
+	}
+	for _, proof := range supporting {
+		if _, err = p.tx.ExecContext(ctx, `INSERT INTO meta.dataset_release_artifact VALUES (?,?,?)`, p.id, proof.ArtifactID, proof.Role); err != nil {
+			return
+		}
+	}
 	return
 }
 func (p referencePublication) finish(ctx context.Context) (int64, bool, error) {

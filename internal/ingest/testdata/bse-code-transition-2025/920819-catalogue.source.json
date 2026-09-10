@@ -1,0 +1,15 @@
+{
+  "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query",
+  "method": "POST",
+  "sha256": "9ca949c7a0cf1d6cb88db54cd99d0b85c41d91b05a72224b0e891fa52e23a3ea",
+  "fetched_at": "2026-09-10T06:15:23.862947303Z",
+  "request": {
+    "Code": "920819",
+    "OrganizationID": "gfbj0833819",
+    "Page": 1,
+    "PageSize": 30,
+    "StartDate": "2025-03-31T00:00:00Z",
+    "EndDate": "2026-09-10T00:00:00Z"
+  },
+  "identity_basis": "orgId observed in earlier immutable CNINFO catalogue; not generated from code"
+}

@@ -93,37 +93,11 @@ func syncReference(ctx context.Context, db *sql.DB, root string, options Country
 		}
 
 	} else {
-		client := options.Client
-		if client == nil {
-			client = &http.Client{Timeout: 45 * time.Second}
-		}
-		req, requestErr := http.NewRequestWithContext(ctx, http.MethodGet, feed.url, nil)
-		if requestErr != nil {
-			return out, requestErr
-		}
-		resp, fetchErr := client.Do(req)
-		if fetchErr != nil {
-			return out, fetchErr
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode != http.StatusOK {
-			return out, fmt.Errorf("reference HTTP %d", resp.StatusCode)
-		}
-		limit := 16 << 20
-		if feed.source == "hkex" || feed.source == damodaran.Source && feed.dataset == damodaran.CompanyIndustryDataset {
-			limit = 64 << 20
-		}
-		body, readErr := io.ReadAll(io.LimitReader(resp.Body, int64(limit)+1))
-		if readErr != nil {
-			return out, readErr
-		}
-		if len(body) > limit || len(body) == 0 {
-			return out, errors.New("empty/oversized reference response")
-		}
-		stored, err = artifact.Persist(ctx, db, root, artifact.Input{Source: feed.source, Dataset: feed.dataset, SourceLocator: feed.url, FetchedAt: time.Now().UTC(), MediaType: feed.mediaType, ParserVersion: feed.parserVersion, IngestRunID: &out.RunID, Content: body})
+		stored, err = fetchReferenceArtifact(ctx, db, root, options, feed, out.RunID)
 		if err != nil {
 			return
 		}
+
 	}
 	out.ArtifactID = stored.ArtifactID
 	out.ReleaseID, out.Inserted, out.Observations, err = publish(out.RunID, stored)
@@ -131,4 +105,44 @@ func syncReference(ctx context.Context, db *sql.DB, root string, options Country
 		out.Observations = 0
 	}
 	return
+}
+
+// fetchReferenceArtifact 只取得并归档单份原文；发布完整性由具体来源校验。
+func fetchReferenceArtifact(ctx context.Context, db *sql.DB, root string, options ReferenceOptions, feed referenceFeed, runID int64) (artifact.Stored, error) {
+	var empty artifact.Stored
+	client := options.Client
+	if client == nil {
+		client = &http.Client{Timeout: 45 * time.Second}
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, feed.url, nil)
+	if err != nil {
+		return empty, err
+	}
+	if feed.source == "bse" {
+		req.Header.Set("User-Agent", "AlphaLake/1.0")
+		req.Header.Set("Accept", "text/html")
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return empty, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return empty, fmt.Errorf("reference HTTP %d", resp.StatusCode)
+	}
+	limit := 16 << 20
+	if feed.source == "hkex" || feed.source == damodaran.Source && feed.dataset == damodaran.CompanyIndustryDataset {
+		limit = 64 << 20
+	}
+	if feed.source == "bse" {
+		limit = 2 << 20
+	}
+	body, err := io.ReadAll(io.LimitReader(resp.Body, int64(limit)+1))
+	if err != nil {
+		return empty, err
+	}
+	if len(body) > limit || len(body) == 0 {
+		return empty, errors.New("empty/oversized reference response")
+	}
+	return artifact.Persist(ctx, db, root, artifact.Input{Source: feed.source, Dataset: feed.dataset, SourceLocator: feed.url, FetchedAt: time.Now().UTC(), MediaType: feed.mediaType, ParserVersion: feed.parserVersion, IngestRunID: &runID, Content: body})
 }

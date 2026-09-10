@@ -59,7 +59,7 @@ func MaterializeProviderFundamentals(ctx context.Context, db *sql.DB, providerSo
 		return summary, fmt.Errorf("refresh pending filing resolutions: %w", err)
 	}
 	summary.FilingResolutionAttempted = filingResolution.Attempted
-	summary.FilingResolutionRecovered = filingResolution.Resolved
+	summary.FilingResolutionRecovered = filingResolution.Recovered
 	summary.FilingResolutionPending = filingResolution.StillPending
 
 	links, err := duckstore.RefreshProviderFilingLinks(ctx, db, runID, providerSource)

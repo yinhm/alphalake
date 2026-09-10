@@ -35,7 +35,7 @@ func TestRefreshPendingFilingResolutionsAfterLifecycleEnrichment(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if first.Attempted != 1 || first.Resolved != 0 || first.StillPending != 1 {
+	if first.Attempted != 1 || first.Resolved != 0 || first.Recovered != 0 || first.StillPending != 1 {
 		t.Fatalf("first=%#v", first)
 	}
 
@@ -67,7 +67,7 @@ func TestRefreshPendingFilingResolutionsAfterLifecycleEnrichment(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if second.Attempted != 1 || second.Resolved != 1 || second.StillPending != 0 {
+	if second.Attempted != 1 || second.Resolved != 1 || second.Recovered != 1 || second.StillPending != 0 {
 		t.Fatalf("second=%#v", second)
 	}
 	assertTiming()

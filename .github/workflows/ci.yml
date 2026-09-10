@@ -58,6 +58,8 @@ jobs:
         run: ALPHALAKE_TEST_PYTHON=python go test ./internal/source/damodaran -run TestCompanyIndustryRealArchiveParser -count=1
       - name: Verify official BSE code transition source
         run: ALPHALAKE_TEST_PYTHON=python go test ./internal/source/bse -run TestOfficialCodeTransitionEvidence -count=1
+      - name: Verify BSE multi-evidence publication
+        run: ALPHALAKE_TEST_PYTHON=python go test ./internal/ingest -run TestBSETransitionPublicationRealEvidence -count=1
       - name: Verify company industry identity projection
         run: ALPHALAKE_TEST_PYTHON=python go test ./internal/store/duckdb -run TestCompanyIndustryProjectionRealSourceAndIdentityBoundaries -count=1
       - name: Test valuation backend

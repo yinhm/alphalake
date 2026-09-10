@@ -12,6 +12,7 @@ import (
 type PendingFilingResolutionResult struct {
 	Attempted    int
 	Resolved     int
+	Recovered    int // 本轮从待解析变为已解析，不含既有已解析公告的复核。
 	StillPending int
 }
 
@@ -47,9 +48,12 @@ func RefreshPendingFilingResolutions(ctx context.Context, db *sql.DB, ingestRunI
 			return result, err
 		}
 		result.Attempted += len(resolved)
-		for _, filing := range resolved {
+		for i, filing := range resolved {
 			if filing.ResolutionStatus == domain.FilingResolutionResolved {
 				result.Resolved++
+				if filings[i].ResolutionStatus != domain.FilingResolutionResolved {
+					result.Recovered++
+				}
 			} else {
 				result.StillPending++
 			}
@@ -70,9 +74,10 @@ func listPendingFilingsAfter(ctx context.Context, db *sql.DB, afterID int64, lim
 			COALESCE(provider_org_id,''), COALESCE(provider_column_id,''),
 			COALESCE(provider_page_column,''), raw_announcement_time_ms,
 			catalogue_artifact_id, artifact_id, COALESCE(sha256,''),
-			COALESCE(resolution_reason,'')
+			COALESCE(resolution_reason,''), resolution_status
 		FROM fundamental.filing
-		WHERE resolution_status='pending' AND filing_id>?
+		WHERE (resolution_status='pending' OR (source='cninfo' AND exchange_mic='XBSE' AND
+          (starts_with(coalesce(resolution_reason,''),'bse-transition-v1:') OR EXISTS (SELECT 1 FROM meta.dataset_release WHERE source='bse' AND dataset='stock-code-transitions-2025-v1')))) AND filing_id>?
 		ORDER BY filing_id
 		LIMIT ?
 	`, afterID, limit)
@@ -101,13 +106,12 @@ func listPendingFilingsAfter(ctx context.Context, db *sql.DB, afterID int64, lim
 			&filing.ProviderOrgID, &filing.ProviderColumnID,
 			&filing.ProviderPageColumn, &rawMillis,
 			&catalogueArtifact, &documentArtifact, &filing.DocumentSHA256,
-			&filing.ResolutionReason,
+			&filing.ResolutionReason, &filing.ResolutionStatus,
 		); err != nil {
 			return nil, afterID, fmt.Errorf("scan pending filing: %w", err)
 		}
 		filing.FilingType = domain.FilingType(filingType)
 		filing.FilingVariant = domain.FilingVariant(filingVariant)
-		filing.ResolutionStatus = domain.FilingResolutionPending
 		if instrument.Valid {
 			filing.InstrumentID = instrument.Int64
 		}

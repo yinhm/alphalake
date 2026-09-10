@@ -60,6 +60,14 @@ func ResolveFilingObservations(ctx context.Context, db *sql.DB, filings []domain
 	}
 	out := make([]domain.FilingObservation, len(filings))
 	copy(out, filings)
+	var bseEvidence *bseIdentityEvidence
+	var bseErr error
+	for _, f := range out {
+		if f.Source == "cninfo" && strings.TrimSpace(f.ExchangeMIC) == "XBSE" {
+			bseEvidence, bseErr = loadBSEIdentityEvidence(ctx, db)
+			break
+		}
+	}
 	for i := range out {
 		filing := &out[i]
 		filing.ProviderCode = strings.TrimSpace(filing.ProviderCode)
@@ -76,6 +84,32 @@ func ResolveFilingObservations(ctx context.Context, db *sql.DB, filings []domain
 				filing.InstrumentID = 0
 				filing.ResolutionStatus = domain.FilingResolutionPending
 				filing.ResolutionReason = fmt.Sprintf("unsupported filing exchange evidence %q for provider code %s", filing.ExchangeMIC, filing.ProviderCode)
+				continue
+			}
+		}
+		if filing.Source == "cninfo" && filing.ExchangeMIC == "XBSE" {
+			dependent := strings.HasPrefix(filing.ResolutionReason, "bse-transition-v1:")
+			covered := false
+			if bseEvidence != nil {
+				_, covered = bseEvidence.transitions[filing.ProviderCode]
+			}
+			if bseErr != nil || dependent && !covered {
+				filing.InstrumentID = 0
+				filing.ResolutionStatus = domain.FilingResolutionPending
+				filing.ResolutionReason = "bse-transition-v1:verified relationship unavailable"
+				if bseErr != nil {
+					filing.ResolutionReason += ";" + bseErr.Error()
+				}
+				continue
+			}
+			if covered {
+				id, reason := bseEvidence.resolve(filing.ProviderCode, observationDate)
+				filing.InstrumentID = id
+				filing.ResolutionReason = reason
+				filing.ResolutionStatus = domain.FilingResolutionPending
+				if id > 0 {
+					filing.ResolutionStatus = domain.FilingResolutionResolved
+				}
 				continue
 			}
 		}

@@ -376,15 +376,8 @@ func acquireCNINFOFilingWindow(
 		}
 		pageSHAs = append(pageSHAs, stored.SHA256)
 		if options.Code != "" {
-			for _, filing := range page.Filings {
-				if filing.ProviderCode != options.Code {
-					failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: fmt.Errorf("CNINFO code query %s returned another security %q", options.Code, filing.ProviderCode)})
-					break
-				}
-				if filing.ProviderOrgID != options.organizationID {
-					failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: fmt.Errorf("CNINFO code query %s returned another organization %q", options.Code, filing.ProviderOrgID)})
-					break
-				}
+			if err := duckstore.ValidateCNINFOCodeQuery(ctx, db, options.Code, options.organizationID, page.Filings); err != nil {
+				failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: err})
 			}
 			if len(failures) > 0 {
 				break

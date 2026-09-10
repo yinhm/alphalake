@@ -32,7 +32,7 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return true, runMarketCapitalExport(ctx, args[1:])
 	case "sync-share-classes", "sync-hkex-close", "sync-equity-proceeds":
 		return true, runMarketSource(ctx, args[0], args[1:])
-	case "sync-company-industries", "sync-industry-capital", "sync-industry-beta", "sync-cny-yield", "sync-credit-spreads", "sync-hkd-cny":
+	case "sync-bse-code-transitions", "sync-company-industries", "sync-industry-capital", "sync-industry-beta", "sync-cny-yield", "sync-credit-spreads", "sync-hkd-cny":
 		return true, runReferenceSync(ctx, args[0], args[1:])
 	case "sync-country-risk":
 		return true, runCountryRiskSync(ctx, args[1:])

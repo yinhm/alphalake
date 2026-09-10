@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/yinhm/alphalake/internal/ingest"
+	"github.com/yinhm/alphalake/internal/source/bse"
 	"github.com/yinhm/alphalake/internal/source/chinabond"
 	"github.com/yinhm/alphalake/internal/source/damodaran"
 	"github.com/yinhm/alphalake/internal/source/safe"
@@ -29,6 +30,8 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 	python := fs.String("python", "python3", "Python with the selected parser dependencies")
 	defaultScript := damodaran.DefaultScript
 	switch command {
+	case "sync-bse-code-transitions":
+		defaultScript = bse.Script
 	case "sync-company-industries":
 		defaultScript = damodaran.CompanyIndustryScript
 	case "sync-industry-capital":
@@ -57,6 +60,8 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 	defer db.Close()
 	sync := ingest.SyncCountryRisk
 	switch command {
+	case "sync-bse-code-transitions":
+		sync = ingest.SyncBSECodeTransitions
 	case "sync-company-industries":
 		sync = ingest.SyncCompanyIndustries
 	case "sync-industry-capital":
