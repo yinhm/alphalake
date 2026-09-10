@@ -147,17 +147,17 @@ DuckDB 限制与 Go 的 `GOMEMLIMIT` 各管各的内存，二者都不是整个�
 ```bash
 ALPHALAKE_DUCKDB_MEMORY_LIMIT=1536MiB ALPHALAKE_DUCKDB_THREADS=1 GOMEMLIMIT=192MiB \
 python -m tools.refresh_valuate_alphalake /absolute/path/alphalake.duckdb \
-  --period 2026-06-30 --filings-start 2025-04-01 --latest 6 \
+  --period 2026-06-30 --filings-start 2025-04-01 --latest 6 --stage-timeout 21600 \
   --policy /absolute/path/batch-policy.json --output-dir ./data/refresh_runs
 ```
 
 顺序是 `sync-financial` → `sync-bse-code-transitions` → `sync-filings --metadata-only` → `sync-industries` → 首次 `materialize-fundamentals` → `repair-filings` → 再次物化 → 可选WACC与资本效率参考源刷新 → 批量估值。证券名单由同步命令刷新；不另建常驻服务。可由本机 cron/systemd 定时调用此命令，尚未替用户安装周期任务。进程锁按数据库绝对路径保护同一入口的重叠运行，其他直接写库命令仍依赖 DuckDB 自身锁；不支持跨主机调度锁。
 
-`--filings-end` 默认中国当日，`--as-of` 默认取本轮同步/物化结束后的实际时点，避免刚刷新的行业因晚于启动时点被误排除。报告期及对应审核政策仍须显式更新，默认六期回填不能保证任意历史报告期齐全。已嵌入的WACC参考包仍须符合本轮信息截止和陈旧约束；加 `--reference-database /absolute/references.duckdb --sync-references` 可自动刷新并固定四类参考版本。行情和所有公司市场股债结构尚未纳入该通用周期，行业风险暴露及目标权重仍属显式政策。
+`--filings-end` 默认中国当日，`--as-of` 默认取本轮同步/物化结束后的实际时点，避免刚刷新的行业因晚于启动时点被误排除。报告期及对应审核政策仍须显式更新，默认六期回填不能保证任意历史报告期齐全。已嵌入的WACC参考包仍须符合本轮信息截止和陈旧约束；加 `--reference-database /absolute/references.duckdb --sync-references` 可自动刷新并固定六类参考版本（WACC四源、行业资本效率、公司行业）。行情和所有公司市场股债结构尚未纳入该通用周期，行业风险暴露及目标权重仍属显式政策。
 
 每次运行保存独立目录：逐阶段日志、持续原子更新的 `run.json` 和批量报告。采集失败不阻止其他采集及缺项检查，但总任务返回非零；物化失败则跳过批量估值，避免将旧物化结果当作本轮成果。`completed` 仅表示命令执行完成，估值覆盖率仍看批量报告，全部公司被阻断也不能称为估值完成。
 
-单阶段默认上限3600秒，可通过 `--stage-timeout` 按真实市场规模调整；超时先发送中断、等30秒后才强制结束，退出码124保留。SIGTERM/交互中断记录取消。进程被系统强杀时只能留下 running 的审计记录，须结合实际进程状态诊断。离线检查覆盖采集失败后继续检查、物化失败阻止估值、逐阶段日志保留和真实子进程超时结束；完整市场流水线的在线验收仍在推进。
+单阶段默认上限3600秒。78行业全市场批次在本机实际超过一小时，上例显式设为21600秒（六小时），这是部署超时政策，并非完成时长保证；可通过 `--stage-timeout` 按真实市场规模调整；超时先发送中断、等30秒后才强制结束，退出码124保留。SIGTERM/交互中断记录取消。进程被系统强杀时只能留下 running 的审计记录，须结合实际进程状态诊断。离线检查覆盖采集失败后继续检查、物化失败阻止估值、逐阶段日志保留和真实子进程超时结束；完整市场流水线的在线验收仍在推进。
 
 财务同步每个失败包现在立即输出包名和具体错误，失败计数和最终运行状态仍保留；因此长批次后续下载期间也能定位前一包的失败阶段，不必等待只含首错的终场摘要。
 
