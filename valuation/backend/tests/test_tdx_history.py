@@ -611,3 +611,25 @@ def test_capex_frozen_development_and_information_isolation():
     index[('600519','2025-06-30')][0]['bits']['FN114']=bits(0)
     index[('600519','2026-06-30')].append(copy.deepcopy(index[('600519','2026-06-30')][0]))
     with pytest.raises(ValueError,match='duplicate'):current()
+
+
+def test_capex_lagged_calibration_keeps_past_forecast_cutoff():
+    from tools.backtest_tdx_capex import study,fit_scale
+    directory=ROOT/'valuation/research/tdx-capex-forecast';p=json.loads((directory/'protocol-v2.json').read_bytes());source=json.loads((directory/'snapshot.json').read_bytes())
+    result=study(p,source,'development');expected=json.loads((directory/'development-v2-summary.json').read_bytes())
+    assert {k:v for k,v in result.items() if k!='results'}=={k:v for k,v in expected.items() if k!='evidence'}
+    assert result['decision']['selected'] is None
+    v=result['decision']['verdicts']['lagged_scale_half']
+    assert {k for k,passed in v['checks'].items() if not passed}=={'primary_improvement','capex_wape_nonworse'}
+    training=fit_scale(p,source,'2023-06-30')
+    assert training['forecast_as_of']=='2022-09-01T00:00:00+08:00' and training['evaluation_as_of']=='2023-09-01T00:00:00+08:00'
+    assert training['training_pairs']==52
+    code=next(r['code'] for r in training['results'] if r['status']=='evaluated')
+    changed=copy.deepcopy(source)
+    next(r for r in changed['records'] if (r['code'],r['period'])==(code,'2022-06-30'))['bits']['FN314']=bits(221001)
+    late=fit_scale(p,changed,'2023-06-30')
+    assert late['training_pairs']==51
+    assert next(r for r in late['results'] if r['code']==code)['reason']=='source not available at cutoff: 2022-06-30'
+    changed=copy.deepcopy(source)
+    next(r for r in changed['records'] if (r['code'],r['period'])==(code,'2024-06-30'))['bits']['FN114']=bits(999e9)
+    assert fit_scale(p,changed,'2023-06-30')==training

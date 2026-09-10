@@ -9,6 +9,7 @@ from pathlib import Path
 from statistics import mean,median
 
 from tools.backtest_tdx_history import at,available,window,quarter_periods
+from data_sources.alphalake_calibration import weighted_median
 
 BASE='repeat_latest_capex'
 CANDIDATES=('median_capex','median_intensity')
@@ -30,7 +31,31 @@ def financial(index,artifacts,code,end,cutoff):
     return dict(period=end.isoformat(),capex_cny=str(capex),revenue_cny=str(revenue),source_inputs=refs+more)
 
 
-def evaluate(p,source,split,models):
+
+def fit_scale(p,source,origin):
+    config=p['calibration']
+    if config['training_split']!='development' or config['scale_bounds']!=[0.5,1.5] or config['weight_on_scale']!=0.5 or config['minimum_pairs']!=30 or config['method']!='weighted_median_actual_over_predicted':raise ValueError('unsupported calibration')
+    end=date.fromisoformat(origin);previous=end.replace(year=end.year-1);cutoff=f'{end.year}-09-01T00:00:00+08:00';forecast_cutoff=f'{previous.year}-09-01T00:00:00+08:00'
+    index=defaultdict(list);artifacts={a['file']:a for a in source['artifacts']}
+    for r in source['records']:index[(r['code'],r['period'])].append(r)
+    rows=[];pairs=[]
+    for sample in p['samples']:
+        if sample['split']!='development':continue
+        row=dict(code=sample['code'],status='blocked');rows.append(row)
+        try:
+            base=financial(index,artifacts,sample['code'],previous,forecast_cutoff);actual=financial(index,artifacts,sample['code'],end,cutoff)
+            prediction=Decimal(base['capex_cny']);amount=Decimal(actual['capex_cny']);revenue=Decimal(actual['revenue_cny'])
+            if prediction<=0:raise ValueError('zero predicted training capex')
+            pairs.append((float(amount/prediction),float(prediction/revenue)))
+            row.update(status='evaluated',base=base,actual=actual)
+        except (ValueError,KeyError,ArithmeticError) as exc:row['reason']=str(exc)
+    raw=weighted_median(pairs) if len(pairs)>=config['minimum_pairs'] else None
+    scale=max(.5,min(1.5,raw)) if raw is not None else None
+    return dict(origin=previous.isoformat(),target=origin,forecast_as_of=forecast_cutoff,evaluation_as_of=cutoff,training_pairs=len(pairs),statuses=dict(Counter(r['status'] for r in rows)),
+                raw_scale=raw,clipped_scale=scale,multiplier=(1+scale)/2 if scale is not None else None,results=rows)
+
+
+def evaluate(p,source,split,models,calibrations=None):
     artifacts={r['file']:r for r in source['artifacts']}
     if len(artifacts)!=len(source['artifacts']):raise ValueError('duplicate artifact')
     index=defaultdict(list)
@@ -47,9 +72,11 @@ def evaluate(p,source,split,models):
             row=dict(code=sample['code'],stratum=sample['stratum'],origin=origin,target=target.isoformat(),status='blocked',actual_fcff=None)
             results.append(row)
             try:
+                if calibrations is not None and calibrations[origin]['multiplier'] is None:raise ValueError('insufficient calibration training')
                 history=[financial(index,artifacts,sample['code'],d,cutoff) for d in (end,date(end.year-1,12,31),date(end.year-2,12,31))]
                 amounts=[Decimal(r['capex_cny']) for r in history];revenues=[Decimal(r['revenue_cny']) for r in history]
                 all_predictions={BASE:amounts[0],'median_capex':median(amounts),'median_intensity':median(c/r for c,r in zip(amounts,revenues))*revenues[0]}
+                if calibrations is not None:all_predictions['lagged_scale_half']=amounts[0]*Decimal(str(calibrations[origin]['multiplier']))
                 predictions={m:all_predictions[m] for m in models};row.update(history=history,forecast_as_of=cutoff,forecasts_cny={m:str(v) for m,v in predictions.items()})
                 # 预测已固定之后才读取目标期；目标缺失仍保留已有预测及拒绝原因。
                 actual=financial(index,artifacts,sample['code'],target,p['evaluation_as_of'])
@@ -83,27 +110,31 @@ def gates(p,rows,model):
 
 
 def study(p,source,phase,selection=None):
-    if p['protocol_id']!='tdx-capex-forecast-v1' or p['baseline']!=BASE or tuple(p['candidates'])!=CANDIDATES or source['contract_version']!='tdx-history-source-v1':raise ValueError('unsupported study')
-    if phase=='development':models=(BASE,)+CANDIDATES
-    elif phase=='holdout' and selection and selection['decision']['selected'] in CANDIDATES:models=(BASE,selection['decision']['selected'])
+    candidates=CANDIDATES if p['protocol_id']=='tdx-capex-forecast-v1' else ('lagged_scale_half',)
+    if p['protocol_id'] not in ('tdx-capex-forecast-v1','tdx-capex-forecast-v2') or p['baseline']!=BASE or tuple(p['candidates'])!=candidates or source['contract_version']!='tdx-history-source-v1' or p['gates']['require_leave_one_company_out_nonworse'] is not True:raise ValueError('unsupported study')
+    if phase=='development':models=(BASE,)+candidates
+    elif phase=='holdout' and selection and selection['decision']['selected'] in candidates and selection['decision']['verdicts'][selection['decision']['selected']]['passed']:models=(BASE,selection['decision']['selected'])
     else:raise ValueError('holdout requires passing development selection')
-    rows=evaluate(p,source,phase if phase=='development' else 'holdout',models)
+    calibrations={o:fit_scale(p,source,o) for o in p['origins']} if p['protocol_id']=='tdx-capex-forecast-v2' else None
+    rows=evaluate(p,source,phase if phase=='development' else 'holdout',models,calibrations)
     summary=metrics(rows,models);verdicts={m:gates(p,rows,m) for m in models if m!=BASE}
     if phase=='development':
-        passing=[m for m in CANDIDATES if verdicts[m]['passed']]
+        passing=[m for m in candidates if verdicts[m]['passed']]
         selected=min(passing,key=lambda m:summary['models'][m]['mae_pct_actual_revenue']) if passing else None
         decision=dict(selected=selected,verdicts=verdicts)
     else:decision=dict(selected=models[1],verdicts=verdicts)
-    return dict(protocol_id=p['protocol_id'],phase=phase,summary=summary,by_origin={o:metrics([r for r in rows if r['origin']==o],models) for o in p['origins']},decision=decision,results=rows,
+    result=dict(protocol_id=p['protocol_id'],phase=phase,summary=summary,by_origin={o:metrics([r for r in rows if r['origin']==o],models) for o in p['origins']},decision=decision,results=rows,
                 boundary='报告资本开支现金预测，不是净再投资或FCFF；相同三历史窗口分母，亏损不剔除；TDX+FN314后来取得版本研究，不是严格PIT或生产政策')
+    if calibrations is not None:result['calibration_training']={o:{k:v for k,v in r.items() if k!='results'} for o,r in calibrations.items()}
+    return result
 
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('protocol',type=Path);parser.add_argument('snapshot',type=Path);parser.add_argument('--phase',choices=['development','holdout'],required=True);parser.add_argument('--selection',type=Path);args=parser.parse_args()
     try:
         raw=args.protocol.read_bytes();data=args.snapshot.read_bytes();p=json.loads(raw);source=json.loads(data);digest=lambda b:hashlib.sha256(b).hexdigest()
-        if source['study_sha256']!=digest(raw):raise ValueError('source/protocol hash differs')
-        evidence=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),dependency_sha256=digest(Path(__file__).with_name('backtest_tdx_history.py').read_bytes()))
+        if source['study_sha256']!=p.get('source_protocol_sha256',digest(raw)) or (p.get('source_snapshot_sha256') and p['source_snapshot_sha256']!=digest(data)):raise ValueError('source/protocol hash differs')
+        evidence=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),dependency_sha256=digest(Path(__file__).with_name('backtest_tdx_history.py').read_bytes()),calibration_dependency_sha256=digest((Path(__file__).resolve().parents[1]/'data_sources/alphalake_calibration.py').read_bytes()))
         selection=None
         if args.phase=='holdout':
             if args.selection is None:raise ValueError('selection receipt required')
