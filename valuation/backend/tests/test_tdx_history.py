@@ -123,3 +123,33 @@ def test_multi_origin_selection_is_separate_from_holdout():
     assert gates(summary,'half_growth',protocol['selection'])['passed']
     summary['by_origin']['2025-06-30']['models']['half_growth']['ebit_mae_pct_actual_revenue']=11
     assert not gates(summary,'half_growth',protocol['selection'])['passed']
+
+
+def test_archived_multi_origin_failure_and_selection_tamper(tmp_path):
+    import hashlib
+    import subprocess
+    import sys
+    from tools.backtest_tdx_origins import study as multi
+    directory=ROOT/'valuation/research/tdx-multi-origin'
+    protocol=json.loads((directory/'protocol-v2.json').read_bytes())
+    raw=(directory/'snapshot.json').read_bytes();source=json.loads(raw)
+    dev=json.loads((directory/'development-v2-summary.json').read_bytes())
+    held=json.loads((directory/'holdout-v2-summary.json').read_bytes())
+    assert hashlib.sha256(raw).hexdigest()==held['evidence']['snapshot_sha256']==protocol['source_snapshot_sha256']
+    actual_dev=multi(protocol,source,'development')
+    assert actual_dev['selection']==dev['selection']
+    assert actual_dev['summary']==dev['summary']
+    actual=multi(protocol,source,'holdout',actual_dev)
+    assert {k:actual[k] for k in held if k!='evidence'}=={k:v for k,v in held.items() if k!='evidence'}
+    assert actual['summary']['total']['statuses']=={'evaluated':14,'blocked':2}
+    assert not actual['validation']['verdict']['passed']
+    assert not actual['validation']['verdict']['checks']['primary_improvement']
+    # 当前代码重新生成选择证据，再篡改所选模型，不能凭修改后的JSON打开其他候选。
+    args=[sys.executable,'-m','tools.backtest_tdx_origins',str(directory/'protocol-v2.json'),str(directory/'snapshot.json')]
+    replay=subprocess.run(args+['--phase','development'],capture_output=True,text=True,check=True)
+    changed=json.loads(replay.stdout)
+    changed['selection']['model']='quarter_growth_half_margin'
+    selection=tmp_path/'selection.json';selection.write_text(json.dumps(changed))
+    rejected=subprocess.run(args+['--phase','holdout','--selection',str(selection)],capture_output=True,text=True)
+    assert rejected.returncode==1
+    assert json.loads(rejected.stdout)['reason']=='saved selection does not reproduce development decision'

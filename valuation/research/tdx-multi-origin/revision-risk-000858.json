@@ -1,0 +1,40 @@
+{
+  "code": "000858",
+  "report_period": "2025-06-30",
+  "status": "later_source_revision_risk",
+  "pdfs": [
+    {
+      "version": "original",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-28/1224596951.PDF",
+      "sha256": "e460cfeaac9388f493dcafc14f4f5a6f83521f24a5ad3d3dd8a447cb437d755a",
+      "page": 6,
+      "revenue_cny": "52770984383.52"
+    },
+    {
+      "version": "updated",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-30/1225273126.PDF",
+      "sha256": "43763a06159d47b7ec2600a8c6c73fcc28799643849b5dd1f855ed29a9996f2a",
+      "page": 6,
+      "revenue_cny": "23509972048.65"
+    }
+  ],
+  "tdx": [
+    {
+      "period": "2025-03-31",
+      "artifact": "gpcw20250331.zip",
+      "values": {
+        "FN230": 17085765632.0,
+        "FN314": 250426.0
+      }
+    },
+    {
+      "period": "2025-06-30",
+      "artifact": "gpcw20250630.zip",
+      "values": {
+        "FN230": 6424206336.0,
+        "FN314": 250828.0
+      }
+    }
+  ],
+  "boundary": "两个原文第6页由pypdf重新提取；URL日期不视为权威发布日期。TDX季度收入加总接近更新版，非累计收入位级核验。保留TDX源值、原误差和样本分母；FN314不能识别修订版本。PDF本地保存在workspace，本台账不宣称已纳入离线CI证据。"
+}
