@@ -560,6 +560,29 @@ def build_book_dcf_inputs(d, policy):
     return inputs,audit
 
 
+def historical_forecast(revenue, ebit, quarters, report_period, policy):
+    """共享纯预测规则；quarters只含调用方已校验的起点可用收入及来源引用。"""
+    if revenue<=0 or ebit<=0:
+        raise ValueError('positive revenue and EBIT required for historical forecast rules')
+    pairs=[]
+    for period,(current,current_id) in sorted(quarters.items()):
+        if period>report_period or period<=report_period.replace(year=report_period.year-1):continue
+        previous=quarters.get(period.replace(year=period.year-1))
+        if previous is not None and previous[0]>0 and current>=0:
+            pairs.append(dict(period=period.isoformat(),growth=float(current/previous[0]-1),source_fact_ids=[current_id,previous[1]]))
+    if len(pairs)<2:
+        raise MissingInputs(['TDX/at_least_two_same_quarter_revenue_yoy_pairs'])
+    observed=median(r['growth'] for r in pairs)
+    growth=max(policy.growth_floor,min(policy.growth_ceiling,observed+policy.growth_shift))
+    margin=ebit/revenue;target=margin+policy.margin_shift
+    if not 0<target<=1:raise ValueError('rule-generated target margin outside (0,1]')
+    annual=[ForecastYear(growth=growth if year<=5 else growth+(policy.terminal_growth-growth)*(year-5)/5,
+        margin=margin+(target-margin)*min(year/5,1),tax=policy.tax_rate) for year in range(1,11)]
+    return annual, dict(required_yoy_pairs=2,available_yoy_pairs=len(pairs),revenue_yoy_pairs=pairs,
+                        observed_median_growth=observed,clipped_scenario_growth=growth,
+                        current_adjusted_margin=margin,target_margin=target)
+
+
 def build_historical_dcf_inputs(d, policy):
     window,_=standard_window_reader(d)
     revenue=window('FN230')
@@ -575,28 +598,14 @@ def build_historical_dcf_inputs(d, policy):
             raise ValueError('invalid quarterly revenue history')
         if period in quarters:raise ValueError('duplicate quarterly revenue history')
         quarters[period]=(validated_source_value(f),f['fact_id'])
-    pairs=[]
-    for period,(current,current_id) in sorted(quarters.items()):
-        if period<=d.report_period.replace(year=d.report_period.year-1):continue
-        previous=quarters.get(period.replace(year=period.year-1))
-        if previous is not None and previous[0]>0 and current>=0:
-            pairs.append(dict(period=period.isoformat(),growth=float(current/previous[0]-1),source_fact_ids=[current_id,previous[1]]))
-    if len(pairs)<2:
-        raise MissingInputs(['TDX/at_least_two_same_quarter_revenue_yoy_pairs'])
-    observed=median(r['growth'] for r in pairs)
-    growth=max(policy.growth_floor,min(policy.growth_ceiling,observed+policy.growth_shift))
-    margin=ebit/revenue;target=margin+policy.margin_shift
-    if not 0<target<=1:raise ValueError('rule-generated target margin outside (0,1]')
-    annual=[ForecastYear(growth=growth if year<=5 else growth+(policy.terminal_growth-growth)*(year-5)/5,
-        margin=margin+(target-margin)*min(year/5,1),tax=policy.tax_rate) for year in range(1,11)]
+    annual,evidence=historical_forecast(revenue,ebit,quarters,d.report_period,policy)
     parameters=policy.model_dump(exclude={'policy_id','annual_forecast','growth_floor','growth_ceiling','growth_shift','margin_shift'})
     generated=BookDCFPolicy(policy_id='nonfinancial-book-fcff-v1',annual_forecast=annual,**parameters)
     inputs,audit=build_book_dcf_inputs(d,generated)
     inputs.prepared_ttm.provenance['assumption_rules']=content_hash(policy.model_dump(mode='json'))
     audit['generated_policy']=generated.model_dump(mode='json')
-    audit['forecast_rule_evidence']=dict(required_yoy_pairs=2,available_yoy_pairs=len(pairs),revenue_yoy_pairs=pairs,observed_median_growth=observed,
-        clipped_scenario_growth=growth,current_adjusted_margin=margin,target_margin=target)
+    audit['forecast_rule_evidence']=evidence
     audit['consumed_inputs'].append(dict(source='tdx',field='FN230',purpose='historical_growth_rule',
-        source_fact_ids=sorted({i for r in pairs for i in r['source_fact_ids']})))
+        source_fact_ids=sorted({i for r in evidence['revenue_yoy_pairs'] for i in r['source_fact_ids']})))
     audit['boundaries'].append('median recent quarterly YOY with policy cap/shift and five-year fade; mechanical starting scenario, not researched growth forecast')
     return inputs,audit

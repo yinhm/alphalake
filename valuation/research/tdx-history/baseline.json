@@ -1,0 +1,6842 @@
+{
+  "contract_version": "tdx-history-backtest-v1",
+  "status": "completed",
+  "study_id": "tdx-history-2025H1-one-year-v1",
+  "origin": "2025-06-30",
+  "target": "2026-06-30",
+  "forecast_as_of": "2025-09-01T00:00:00+08:00",
+  "evaluation_as_of": "2026-09-10T00:00:00+08:00",
+  "amount_unit": "million_CNY",
+  "results": [
+    {
+      "code": "600519",
+      "stratum": "稳定消费",
+      "split": "development",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 178357.526528,
+        "ebit": 123809.77431891016,
+        "ebit_components_cny": {
+          "FN86": 124906598400.0,
+          "FN305": 13096068.0,
+          "FN306": 1074980384.0,
+          "FN83": 6901385.01953125,
+          "FN82": 27204883.25,
+          "FN301": 833496.8203125
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 194252.5597557193,
+        "ebit": 134843.56983640158
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 0.10541531182534764,
+            "source_fact_ids": [
+              "gpcw20250331.zip:600519:FN230",
+              "gpcw20240331.zip:600519:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": 0.07282256282048624,
+            "source_fact_ids": [
+              "gpcw20250630.zip:600519:FN230",
+              "gpcw20240630.zip:600519:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.08911893732291694,
+        "clipped_scenario_growth": 0.08911893732291694,
+        "current_adjusted_margin": 0.6941662442233606,
+        "target_margin": 0.6941662442233606
+      },
+      "actual": {
+        "revenue": 170152.009728,
+        "ebit": 112779.93879047266,
+        "ebit_components_cny": {
+          "FN86": 113451266048.0,
+          "FN305": 45399919.5,
+          "FN306": 615989616.0,
+          "FN83": 1515881.41796875,
+          "FN82": 96487248.75,
+          "FN301": 2734430.859375
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [
+        "base:FN506",
+        "base:FN509",
+        "base:FN510",
+        "base:FN413",
+        "actual:FN506",
+        "actual:FN509",
+        "actual:FN510",
+        "actual:FN413"
+      ],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": 24100.55002771929,
+          "revenue_error_pct": 14.164128925803297,
+          "ebit_error_million_cny": 22063.631045928923,
+          "ebit_error_pct_actual_revenue": 12.967011721577192,
+          "margin_error_pp": 3.1347515424568595
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": 8205.516799999983,
+          "revenue_error_pct": 4.8224624634860795,
+          "ebit_error_million_cny": 11029.8355284375,
+          "ebit_error_pct_actual_revenue": 6.482342198643125,
+          "margin_error_pp": 3.1347515424568595
+        }
+      }
+    },
+    {
+      "code": "000858",
+      "stratum": "稳定消费",
+      "split": "development",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 62037.124096,
+        "ebit": 21416.098303500003,
+        "ebit_components_cny": {
+          "FN86": 24221429248.0,
+          "FN305": 40588880.0,
+          "FN306": 2731514624.0,
+          "FN83": 104715092.0,
+          "FN82": 0.0,
+          "FN301": 9690108.5
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 55833.4116864,
+        "ebit": 19274.488473150002
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": -0.5094935659482077,
+            "source_fact_ids": [
+              "gpcw20250331.zip:000858:FN230",
+              "gpcw20240331.zip:000858:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": -0.5937933832943129,
+            "source_fact_ids": [
+              "gpcw20250630.zip:000858:FN230",
+              "gpcw20240630.zip:000858:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": -0.5516434746212603,
+        "clipped_scenario_growth": -0.1,
+        "current_adjusted_margin": 0.34521423446966104,
+        "target_margin": 0.34521423446966104
+      },
+      "actual": {
+        "revenue": 45435.2128,
+        "ebit": 15261.233685375002,
+        "ebit_components_cny": {
+          "FN86": 17838346752.0,
+          "FN305": 34223800.0,
+          "FN306": 2471097088.0,
+          "FN83": 136135448.0,
+          "FN82": 0.0,
+          "FN301": 4104330.625
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": 10398.198886400001,
+          "revenue_error_pct": 22.88577128970771,
+          "ebit_error_million_cny": 4013.2547877750003,
+          "ebit_error_pct_actual_revenue": 8.832917335373415,
+          "margin_error_pp": 0.9324233193492237
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": 16601.911296,
+          "revenue_error_pct": 36.539745877453,
+          "ebit_error_million_cny": 6154.864618125001,
+          "ebit_error_pct_actual_revenue": 13.546463720150113,
+          "margin_error_pp": 0.9324233193492237
+        }
+      }
+    },
+    {
+      "code": "603288",
+      "stratum": "稳定消费",
+      "split": "development",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 27974.990336,
+        "ebit": 7377.476214044921,
+        "ebit_components_cny": {
+          "FN86": 8090025984.0,
+          "FN305": 22863152.0,
+          "FN306": 512714992.0,
+          "FN83": 15774892.0,
+          "FN82": 198284808.0,
+          "FN301": 8638229.955078125
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 30084.355993073026,
+        "ebit": 7933.75147186882
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 0.0807855114087255,
+            "source_fact_ids": [
+              "gpcw20250331.zip:603288:FN230",
+              "gpcw20240331.zip:603288:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": 0.07001816228252582,
+            "source_fact_ids": [
+              "gpcw20250630.zip:603288:FN230",
+              "gpcw20240630.zip:603288:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.07540183684562565,
+        "clipped_scenario_growth": 0.07540183684562565,
+        "current_adjusted_margin": 0.2637168458482402,
+        "target_margin": 0.2637168458482402
+      },
+      "actual": {
+        "revenue": 29789.731328,
+        "ebit": 7699.050315078123,
+        "ebit_components_cny": {
+          "FN86": 8966932480.0,
+          "FN305": 15654576.5,
+          "FN306": 878920176.0,
+          "FN83": 11123472.5,
+          "FN82": 392774776.0,
+          "FN301": 718316.921875
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": 294.6246650730245,
+          "revenue_error_pct": 0.9890141734715833,
+          "ebit_error_million_cny": 234.7011567906966,
+          "ebit_error_pct_actual_revenue": 0.7878592599796158,
+          "margin_error_pp": 0.527039561652487
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": -1814.7409920000027,
+          "revenue_error_pct": -6.0918340350867455,
+          "ebit_error_million_cny": -321.57410103320217,
+          "ebit_error_pct_actual_revenue": -1.0794796955115464,
+          "margin_error_pp": 0.527039561652487
+        }
+      }
+    },
+    {
+      "code": "600887",
+      "stratum": "稳定消费",
+      "split": "holdout",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 117474.299904,
+        "ebit": 9317.438346249999,
+        "ebit_components_cny": {
+          "FN86": 10020632064.0,
+          "FN305": 1373642880.0,
+          "FN306": 2174913024.0,
+          "FN83": -120005984.0,
+          "FN82": 42847286.0,
+          "FN301": -20917728.25
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 121797.48248458741,
+        "ebit": 9660.330256966834
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 0.0146444797509612,
+            "source_fact_ids": [
+              "gpcw20250331.zip:600887:FN230",
+              "gpcw20240331.zip:600887:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": 0.05895770530773364,
+            "source_fact_ids": [
+              "gpcw20250630.zip:600887:FN230",
+              "gpcw20240630.zip:600887:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.03680109252934742,
+        "clipped_scenario_growth": 0.03680109252934742,
+        "current_adjusted_margin": 0.07931469567270637,
+        "target_margin": 0.07931469567270637
+      },
+      "actual": {
+        "revenue": 118190.422016,
+        "ebit": 11504.190126250003,
+        "ebit_components_cny": {
+          "FN86": 12453916160.0,
+          "FN305": 1353331840.0,
+          "FN306": 2133355712.0,
+          "FN83": 269479408.0,
+          "FN82": -114791348.0,
+          "FN301": 15014101.75
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [
+        "base:FN506",
+        "actual:FN506"
+      ],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": 3607.060468587413,
+          "revenue_error_pct": 3.0519059049464334,
+          "ebit_error_million_cny": -1843.8598692831692,
+          "ebit_error_pct_actual_revenue": -1.5600755440517484,
+          "margin_error_pp": -1.80213653212431
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": -716.1221119999973,
+          "revenue_error_pct": -0.6059053684595969,
+          "ebit_error_million_cny": -2186.751780000004,
+          "ebit_error_pct_actual_revenue": -1.8501937320301414,
+          "margin_error_pp": -1.80213653212431
+        }
+      }
+    },
+    {
+      "code": "000895",
+      "stratum": "稳定消费",
+      "split": "holdout",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 60381.9776,
+        "ebit": 6587.770779171875,
+        "ebit_components_cny": {
+          "FN86": 6578472192.0,
+          "FN305": 155884648.0,
+          "FN306": 49685262.0,
+          "FN83": 119406304.0,
+          "FN82": -23811513.25,
+          "FN301": 1306008.078125
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 62241.629106893495,
+        "ebit": 6790.661746700503
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 1.8156566006329825e-05,
+            "source_fact_ids": [
+              "gpcw20250331.zip:000895:FN230",
+              "gpcw20240331.zip:000895:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": 0.06157808724080465,
+            "source_fact_ids": [
+              "gpcw20250630.zip:000895:FN230",
+              "gpcw20240630.zip:000895:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.03079812190340549,
+        "clipped_scenario_growth": 0.03079812190340549,
+        "current_adjusted_margin": 0.10910160682070597,
+        "target_margin": 0.10910160682070597
+      },
+      "actual": {
+        "revenue": 58945.74592,
+        "ebit": 6643.6365715,
+        "ebit_components_cny": {
+          "FN86": 6658174208.0,
+          "FN305": 144669792.0,
+          "FN306": 74625914.0,
+          "FN83": 51837296.0,
+          "FN82": -6479267.0,
+          "FN301": 39223485.5
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [
+        "base:FN506",
+        "base:FN509",
+        "base:FN510",
+        "base:FN413",
+        "actual:FN506",
+        "actual:FN509",
+        "actual:FN510",
+        "actual:FN413"
+      ],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": 3295.883186893494,
+          "revenue_error_pct": 5.591384306793914,
+          "ebit_error_million_cny": 147.02517520050242,
+          "ebit_error_pct_actual_revenue": 0.24942457323390577,
+          "margin_error_pp": -0.36060443898938976
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": 1436.2316799999971,
+          "revenue_error_pct": 2.436531521628757,
+          "ebit_error_million_cny": -55.86579232812528,
+          "ebit_error_pct_actual_revenue": -0.09477493491039239,
+          "margin_error_pp": -0.36060443898938976
+        }
+      }
+    },
+    {
+      "code": "300866",
+      "stratum": "制造与出口",
+      "split": "development",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 27928.516096,
+        "ebit": 2249.5873929296877,
+        "ebit_components_cny": {
+          "FN86": 2626298240.0,
+          "FN305": 34837926.0,
+          "FN306": 34474344.0,
+          "FN83": 271387812.0,
+          "FN82": 105324528.0,
+          "FN301": 362089.0703125
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 33514.219315199996,
+        "ebit": 2699.5048715156254
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 0.36906163701373945,
+            "source_fact_ids": [
+              "gpcw20250331.zip:300866:FN230",
+              "gpcw20240331.zip:300866:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": 0.30409902257955185,
+            "source_fact_ids": [
+              "gpcw20250630.zip:300866:FN230",
+              "gpcw20240630.zip:300866:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.33658032979664565,
+        "clipped_scenario_growth": 0.2,
+        "current_adjusted_margin": 0.08054804577504496,
+        "target_margin": 0.08054804577504496
+      },
+      "actual": {
+        "revenue": 34252.649984,
+        "ebit": 3250.1592016113286,
+        "ebit_components_cny": {
+          "FN86": 3748730752.0,
+          "FN305": 63953754.0,
+          "FN306": 77690396.0,
+          "FN83": 147508038.0,
+          "FN82": 337062960.0,
+          "FN301": 263910.388671875
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": -738.430668800007,
+          "revenue_error_pct": -2.1558351518639887,
+          "ebit_error_million_cny": -550.6543300957032,
+          "ebit_error_pct_actual_revenue": -1.6076254840221802,
+          "margin_error_pp": -1.4339771755263895
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": -6324.133888000004,
+          "revenue_error_pct": -18.46319595988665,
+          "ebit_error_million_cny": -1000.571808681641,
+          "ebit_error_pct_actual_revenue": -2.9211515288569645,
+          "margin_error_pp": -1.4339771755263895
+        }
+      }
+    },
+    {
+      "code": "000333",
+      "stratum": "制造与出口",
+      "split": "development",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 440999.223296,
+        "ebit": 45624.663135999996,
+        "ebit_components_cny": {
+          "FN86": 52330145792.0,
+          "FN305": 2505709888.0,
+          "FN306": 7903968512.0,
+          "FN83": 1543518016.0,
+          "FN82": -316528992.0,
+          "FN301": 80235008.0
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 510197.08249852736,
+        "ebit": 52783.69845640598
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 0.20486892342928123,
+            "source_fact_ids": [
+              "gpcw20250331.zip:000333:FN230",
+              "gpcw20240331.zip:000333:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": 0.10895412000080466,
+            "source_fact_ids": [
+              "gpcw20250630.zip:000333:FN230",
+              "gpcw20240630.zip:000333:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.15691152171504294,
+        "clipped_scenario_growth": 0.15691152171504294,
+        "current_adjusted_margin": 0.10345746823544083,
+        "target_margin": 0.10345746823544083
+      },
+      "actual": {
+        "revenue": 465370.505216,
+        "ebit": 36585.19461599999,
+        "ebit_components_cny": {
+          "FN86": 53413822464.0,
+          "FN305": 1957165056.0,
+          "FN306": 7781472768.0,
+          "FN83": 4088892864.0,
+          "FN82": 7149163264.0,
+          "FN301": -233735992.0
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [
+        "base:FN506",
+        "base:FN509",
+        "base:FN510",
+        "base:FN413",
+        "actual:FN506",
+        "actual:FN509",
+        "actual:FN510",
+        "actual:FN413"
+      ],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": 44826.577282527345,
+          "revenue_error_pct": 9.632449151826084,
+          "ebit_error_million_cny": 16198.503840405989,
+          "ebit_error_pct_actual_revenue": 3.480775781629631,
+          "margin_error_pp": 2.4842269794750846
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": -24371.281920000038,
+          "revenue_error_pct": -5.236963160930922,
+          "ebit_error_million_cny": 9039.468520000002,
+          "ebit_error_pct_actual_revenue": 1.9424240296029,
+          "margin_error_pp": 2.4842269794750846
+        }
+      }
+    },
+    {
+      "code": "000651",
+      "stratum": "制造与出口",
+      "split": "development",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 186705.465344,
+        "ebit": 32882.71870949999,
+        "ebit_components_cny": {
+          "FN86": 37269577728.0,
+          "FN305": 2102678208.0,
+          "FN306": 5898733568.0,
+          "FN83": 485140894.0,
+          "FN82": 94417608.0,
+          "FN301": 11245156.5
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 188718.9152662662,
+        "ebit": 33237.32915064352
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 0.14141873909382252,
+            "source_fact_ids": [
+              "gpcw20250331.zip:000651:FN230",
+              "gpcw20240331.zip:000651:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": -0.11985054430577512,
+            "source_fact_ids": [
+              "gpcw20250630.zip:000651:FN230",
+              "gpcw20240630.zip:000651:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.010784097394023702,
+        "clipped_scenario_growth": 0.010784097394023702,
+        "current_adjusted_margin": 0.17612081493658704,
+        "target_margin": 0.17612081493658704
+      },
+      "actual": {
+        "revenue": 162519.652352,
+        "ebit": 29590.085485499996,
+        "ebit_components_cny": {
+          "FN86": 34150518784.0,
+          "FN305": 1547703424.0,
+          "FN306": 5196902144.0,
+          "FN83": 708147860.0,
+          "FN82": 138356208.0,
+          "FN301": 64730510.5
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [
+        "base:FN506",
+        "base:FN509",
+        "base:FN510",
+        "base:FN413",
+        "actual:FN506",
+        "actual:FN509",
+        "actual:FN510",
+        "actual:FN413"
+      ],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": 26199.262914266204,
+          "revenue_error_pct": 16.120673737057615,
+          "ebit_error_million_cny": 3647.2436651435237,
+          "ebit_error_pct_actual_revenue": 2.244186233701748,
+          "margin_error_pp": -0.5949999621956775
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": 24185.812991999992,
+          "revenue_error_pct": 14.881777460129028,
+          "ebit_error_million_cny": 3292.633223999994,
+          "ebit_error_pct_actual_revenue": 2.025990811787184,
+          "margin_error_pp": -0.5949999621956747
+        }
+      }
+    },
+    {
+      "code": "002032",
+      "stratum": "制造与出口",
+      "split": "holdout",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 22940.060672,
+        "ebit": 2667.2717996445313,
+        "ebit_components_cny": {
+          "FN86": 2734121728.0,
+          "FN305": 13288551.0,
+          "FN306": 34389944.0,
+          "FN83": 44449900.0,
+          "FN82": 1079942.82421875,
+          "FN301": 218692.53125
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 24025.201573426435,
+        "ebit": 2793.4425960691615
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 0.07587694008353936,
+            "source_fact_ids": [
+              "gpcw20250331.zip:002032:FN230",
+              "gpcw20240331.zip:002032:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": 0.018729688638321824,
+            "source_fact_ids": [
+              "gpcw20250630.zip:002032:FN230",
+              "gpcw20240630.zip:002032:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.04730331436093059,
+        "clipped_scenario_growth": 0.04730331436093059,
+        "current_adjusted_margin": 0.11627134896378583,
+        "target_margin": 0.11627134896378583
+      },
+      "actual": {
+        "revenue": 22704.02304,
+        "ebit": 2449.5521608164067,
+        "ebit_components_cny": {
+          "FN86": 2517507840.0,
+          "FN305": 12503168.5,
+          "FN306": 21620728.0,
+          "FN83": 55634514.0,
+          "FN82": 1235833.509765625,
+          "FN301": 1967772.173828125
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": 1321.178533426435,
+          "revenue_error_pct": 5.819138445634853,
+          "ebit_error_million_cny": 343.89043525275474,
+          "ebit_error_pct_actual_revenue": 1.5146673990194945,
+          "margin_error_pp": 0.8380683221385021
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": 236.03763199999958,
+          "revenue_error_pct": 1.0396291070712356,
+          "ebit_error_million_cny": 217.71963882812452,
+          "ebit_error_pct_actual_revenue": 0.9589474008396907,
+          "margin_error_pp": 0.8380683221385008
+        }
+      }
+    },
+    {
+      "code": "002508",
+      "stratum": "制造与出口",
+      "split": "holdout",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 11090.824832,
+        "ebit": 1454.7611411249998,
+        "ebit_components_cny": {
+          "FN86": 1741624320.0,
+          "FN305": 5768058.25,
+          "FN306": 163520144.0,
+          "FN83": 136610046.0,
+          "FN82": 0.0,
+          "FN301": -7498952.875
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 10778.909015460888,
+        "ebit": 1413.8477720945784
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": -0.07196516185242752,
+            "source_fact_ids": [
+              "gpcw20250331.zip:002508:FN230",
+              "gpcw20240331.zip:002508:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": 0.015717620075525438,
+            "source_fact_ids": [
+              "gpcw20250630.zip:002508:FN230",
+              "gpcw20240630.zip:002508:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": -0.02812377088845104,
+        "clipped_scenario_growth": -0.02812377088845104,
+        "current_adjusted_margin": 0.1311679846324526,
+        "target_margin": 0.1311679846324526
+      },
+      "actual": {
+        "revenue": 9480.931968,
+        "ebit": 1018.7201503125,
+        "ebit_components_cny": {
+          "FN86": 1276424896.0,
+          "FN305": 4605406.375,
+          "FN306": 145838520.0,
+          "FN83": 119122546.0,
+          "FN82": 0.0,
+          "FN301": -2650913.9375
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": 1297.9770474608868,
+          "revenue_error_pct": 13.690395119823801,
+          "ebit_error_million_cny": 395.12762178207845,
+          "ebit_error_pct_actual_revenue": 4.167603175676309,
+          "margin_error_pp": 2.371861638987058
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": 1609.8928639999995,
+          "revenue_error_pct": 16.98032292008531,
+          "ebit_error_million_cny": 436.0409908124998,
+          "ebit_error_pct_actual_revenue": 4.599136374822891,
+          "margin_error_pp": 2.371861638987058
+        }
+      }
+    },
+    {
+      "code": "300124",
+      "stratum": "科技与设备",
+      "split": "development",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 41366.975488,
+        "ebit": 4926.3206512265615,
+        "ebit_components_cny": {
+          "FN86": 5565416960.0,
+          "FN305": 150192264.0,
+          "FN306": 209197632.0,
+          "FN83": 476461260.0,
+          "FN82": -63550192.0,
+          "FN301": 167179872.7734375
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 49640.370585599994,
+        "ebit": 5911.584781471874
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 0.38283489851039326,
+            "source_fact_ids": [
+              "gpcw20250331.zip:300124:FN230",
+              "gpcw20240331.zip:300124:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": 0.18992050450732986,
+            "source_fact_ids": [
+              "gpcw20250630.zip:300124:FN230",
+              "gpcw20240630.zip:300124:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.28637770150886155,
+        "clipped_scenario_growth": 0.2,
+        "current_adjusted_margin": 0.11908824836990127,
+        "target_margin": 0.11908824836990127
+      },
+      "actual": {
+        "revenue": 49270.736896,
+        "ebit": 5393.660093992187,
+        "ebit_components_cny": {
+          "FN86": 5288138496.0,
+          "FN305": 163284992.0,
+          "FN306": 235976240.0,
+          "FN83": -308319624.0,
+          "FN82": 127094012.0,
+          "FN301": 3012766.0078125
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": 369.63368959999207,
+          "revenue_error_pct": 0.750209379616566,
+          "ebit_error_million_cny": 517.9246874796863,
+          "ebit_error_pct_actual_revenue": 1.051181127193033,
+          "margin_error_pp": 0.9618400062638255
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": -7903.761408000006,
+          "revenue_error_pct": -16.04149218365286,
+          "ebit_error_million_cny": -467.3394427656258,
+          "ebit_error_pct_actual_revenue": -0.9485131991268559,
+          "margin_error_pp": 0.9618400062638255
+        }
+      }
+    },
+    {
+      "code": "002415",
+      "stratum": "科技与设备",
+      "split": "development",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 93104.467968,
+        "ebit": 14541.650659999998,
+        "ebit_components_cny": {
+          "FN86": 15050538496.0,
+          "FN305": 246802888.0,
+          "FN306": 542267200.0,
+          "FN83": 254551756.0,
+          "FN82": -45747484.0,
+          "FN301": 4619252.0
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 94761.06894687895,
+        "ebit": 14800.38918505286
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 0.04009045542194599,
+            "source_fact_ids": [
+              "gpcw20250331.zip:002415:FN230",
+              "gpcw20240331.zip:002415:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": -0.004504601917078027,
+            "source_fact_ids": [
+              "gpcw20250630.zip:002415:FN230",
+              "gpcw20240630.zip:002415:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.01779292675243398,
+        "clipped_scenario_growth": 0.01779292675243398,
+        "current_adjusted_margin": 0.1561863890892751,
+        "target_margin": 0.1561863890892751
+      },
+      "actual": {
+        "revenue": 97512.292352,
+        "ebit": 18810.912774601562,
+        "ebit_components_cny": {
+          "FN86": 20316679168.0,
+          "FN305": 178051424.0,
+          "FN306": 652890528.0,
+          "FN83": 943684268.0,
+          "FN82": 67753482.0,
+          "FN301": 19489539.3984375
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": -2751.2234051210544,
+          "revenue_error_pct": -2.8214118843496,
+          "ebit_error_million_cny": -4010.523589548702,
+          "ebit_error_pct_actual_revenue": -4.112838999899119,
+          "margin_error_pp": -3.6721728655489865
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": -4407.824384000007,
+          "revenue_error_pct": -4.52027562647039,
+          "ebit_error_million_cny": -4269.2621146015645,
+          "ebit_error_pct_actual_revenue": -4.378178393335658,
+          "margin_error_pp": -3.6721728655489865
+        }
+      }
+    },
+    {
+      "code": "002475",
+      "stratum": "科技与设备",
+      "split": "development",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 289699.9424,
+        "ebit": 13190.718816000002,
+        "ebit_components_cny": {
+          "FN86": 18159984640.0,
+          "FN305": 1564780416.0,
+          "FN306": 935794304.0,
+          "FN83": 6443860480.0,
+          "FN82": -888224676.0,
+          "FN301": 42616132.0
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 347639.93088,
+        "ebit": 15828.862579200002
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 0.17900191353821054,
+            "source_fact_ids": [
+              "gpcw20250331.zip:002475:FN230",
+              "gpcw20240331.zip:002475:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": 0.22512246305384823,
+            "source_fact_ids": [
+              "gpcw20250630.zip:002475:FN230",
+              "gpcw20240630.zip:002475:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.2020621882960294,
+        "clipped_scenario_growth": 0.2,
+        "current_adjusted_margin": 0.045532348769980295,
+        "target_margin": 0.045532348769980295
+      },
+      "actual": {
+        "revenue": 382345.592832,
+        "ebit": 12660.768573999998,
+        "ebit_components_cny": {
+          "FN86": 20465239040.0,
+          "FN305": 2014412416.0,
+          "FN306": 1351783680.0,
+          "FN83": 8034670592.0,
+          "FN82": 380450272.0,
+          "FN301": 51978338.0
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": -34705.661951999995,
+          "revenue_error_pct": -9.077039882933716,
+          "ebit_error_million_cny": 3168.094005200004,
+          "ebit_error_pct_actual_revenue": 0.8285943566746022,
+          "margin_error_pp": 1.2418933024233616
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": -92645.650432,
+          "revenue_error_pct": -24.23086656911143,
+          "ebit_error_million_cny": 529.9502420000044,
+          "ebit_error_pct_actual_revenue": 0.13860503479972394,
+          "margin_error_pp": 1.2418933024233616
+        }
+      }
+    },
+    {
+      "code": "300750",
+      "stratum": "科技与设备",
+      "split": "holdout",
+      "status": "blocked",
+      "diagnostics": [],
+      "reason": "duplicate code/period; identity or version ambiguous"
+    },
+    {
+      "code": "002371",
+      "stratum": "科技与设备",
+      "split": "holdout",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 33644.708864,
+        "ebit": 6693.14463496875,
+        "ebit_components_cny": {
+          "FN86": 6639457792.0,
+          "FN305": 186095584.0,
+          "FN306": 127925124.0,
+          "FN83": -6021611.375,
+          "FN82": 6260374.5,
+          "FN301": 4244853.90625
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 40373.6506368,
+        "ebit": 8031.773561962499
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 0.4005463103732908,
+            "source_fact_ids": [
+              "gpcw20250331.zip:002371:FN230",
+              "gpcw20240331.zip:002371:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": 0.2254217426921086,
+            "source_fact_ids": [
+              "gpcw20250630.zip:002371:FN230",
+              "gpcw20240630.zip:002371:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.3129840265326997,
+        "clipped_scenario_growth": 0.2,
+        "current_adjusted_margin": 0.19893602474089014,
+        "target_margin": 0.19893602474089014
+      },
+      "actual": {
+        "revenue": 43372.983296,
+        "ebit": 6214.22294046875,
+        "ebit_components_cny": {
+          "FN86": 5969147136.0,
+          "FN305": 365465048.0,
+          "FN306": 80768992.0,
+          "FN83": 21234981.5,
+          "FN82": 6379820.5,
+          "FN301": 12005449.53125
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": -2999.332659200001,
+          "revenue_error_pct": -6.915209495115845,
+          "ebit_error_million_cny": 1817.5506214937495,
+          "ebit_error_pct_actual_revenue": 4.190513272028881,
+          "margin_error_pp": 5.5661975592376844
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": -9728.274431999998,
+          "revenue_error_pct": -22.429341245929866,
+          "ebit_error_million_cny": 478.92169450000074,
+          "ebit_error_pct_actual_revenue": 1.1041935742155151,
+          "margin_error_pp": 5.5661975592376844
+        }
+      }
+    },
+    {
+      "code": "600031",
+      "stratum": "周期业务",
+      "split": "development",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 83568.87552,
+        "ebit": 8695.618048,
+        "ebit_components_cny": {
+          "FN86": 8965784064.0,
+          "FN305": 682662016.0,
+          "FN306": 1016233024.0,
+          "FN83": 613643008.0,
+          "FN82": -751710000.0,
+          "FN301": 74662000.0
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 96356.66715702976,
+        "ebit": 10026.230085808349
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 0.19176342397074977,
+            "source_fact_ids": [
+              "gpcw20250331.zip:600031:FN230",
+              "gpcw20240331.zip:600031:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": 0.11427854578076013,
+            "source_fact_ids": [
+              "gpcw20250630.zip:600031:FN230",
+              "gpcw20240630.zip:600031:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.15302098487575494,
+        "clipped_scenario_growth": 0.15302098487575494,
+        "current_adjusted_margin": 0.10405330924811755,
+        "target_margin": 0.10405330924811755
+      },
+      "actual": {
+        "revenue": 98002.896896,
+        "ebit": 8255.233048000002,
+        "ebit_components_cny": {
+          "FN86": 10501550080.0,
+          "FN305": 489349984.0,
+          "FN306": 1310813984.0,
+          "FN83": 761093024.0,
+          "FN82": 803295008.0,
+          "FN301": -139535000.0
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [
+        "base:FN506",
+        "base:FN509",
+        "base:FN510",
+        "actual:FN506",
+        "actual:FN509",
+        "actual:FN510"
+      ],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": -1646.2297389702435,
+          "revenue_error_pct": -1.679776609784516,
+          "ebit_error_million_cny": 1770.9970378083472,
+          "ebit_error_pct_actual_revenue": 1.8070864167288003,
+          "margin_error_pp": 1.981872731774463
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": -14434.021376000004,
+          "revenue_error_pct": -14.728157874064976,
+          "ebit_error_million_cny": 440.3849999999984,
+          "ebit_error_pct_actual_revenue": 0.4493591658492829,
+          "margin_error_pp": 1.981872731774463
+        }
+      }
+    },
+    {
+      "code": "000425",
+      "stratum": "周期业务",
+      "split": "development",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 96835.721216,
+        "ebit": 9221.463535125002,
+        "ebit_components_cny": {
+          "FN86": 7753733888.0,
+          "FN305": 1335552384.0,
+          "FN306": 285298464.0,
+          "FN83": -236299100.0,
+          "FN82": -151168393.125,
+          "FN301": -30008234.0
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 106946.39889434105,
+        "ebit": 10184.282258995045
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 0.10922315950062673,
+            "source_fact_ids": [
+              "gpcw20250331.zip:000425:FN230",
+              "gpcw20240331.zip:000425:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": 0.09959808025217787,
+            "source_fact_ids": [
+              "gpcw20250630.zip:000425:FN230",
+              "gpcw20240630.zip:000425:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.1044106198764023,
+        "clipped_scenario_growth": 0.1044106198764023,
+        "current_adjusted_margin": 0.09522791196603754,
+        "target_margin": 0.09522791196603754
+      },
+      "actual": {
+        "revenue": 107261.68576,
+        "ebit": 7026.948473999998,
+        "ebit_components_cny": {
+          "FN86": 6556171264.0,
+          "FN305": 1060379520.0,
+          "FN306": 803706800.0,
+          "FN83": -459773168.0,
+          "FN82": 242634904.0,
+          "FN301": 3033774.0
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": -315.2868656589417,
+          "revenue_error_pct": -0.2939417401702989,
+          "ebit_error_million_cny": 3157.3337849950467,
+          "ebit_error_pct_actual_revenue": 2.943580238016806,
+          "margin_error_pp": 2.9715716961728864
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": -10425.964543999988,
+          "revenue_error_pct": -9.720119975858179,
+          "ebit_error_million_cny": 2194.5150611250037,
+          "ebit_error_pct_actual_revenue": 2.045944966812541,
+          "margin_error_pp": 2.9715716961728864
+        }
+      }
+    },
+    {
+      "code": "600309",
+      "stratum": "周期业务",
+      "split": "development",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 175903.195136,
+        "ebit": 16556.017766500005,
+        "ebit_components_cny": {
+          "FN86": 15037512704.0,
+          "FN305": 2867689984.0,
+          "FN306": 942605376.0,
+          "FN83": 746916608.0,
+          "FN82": -344976320.0,
+          "FN301": 4639257.5
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 164700.87012665626,
+        "ebit": 15501.654360892682
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": -0.06700798072579431,
+            "source_fact_ids": [
+              "gpcw20250331.zip:600309:FN230",
+              "gpcw20240331.zip:600309:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": -0.060361223690107504,
+            "source_fact_ids": [
+              "gpcw20250630.zip:600309:FN230",
+              "gpcw20240630.zip:600309:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": -0.06368460220795091,
+        "clipped_scenario_growth": -0.06368460220795091,
+        "current_adjusted_margin": 0.09412005139360702,
+        "target_margin": 0.09412005139360702
+      },
+      "actual": {
+        "revenue": 231648.997376,
+        "ebit": 23219.179329250004,
+        "ebit_components_cny": {
+          "FN86": 23118635008.0,
+          "FN305": 2880182272.0,
+          "FN306": 958363648.0,
+          "FN83": 899891872.0,
+          "FN82": 899100912.0,
+          "FN301": 22281518.75
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": -66948.12724934376,
+          "revenue_error_pct": -28.90067645778635,
+          "ebit_error_million_cny": -7717.524968357322,
+          "ebit_error_pct_actual_revenue": -3.3315598408702183,
+          "margin_error_pp": -0.6114266873533586
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": -55745.80224000002,
+          "revenue_error_pct": -24.0647716465254,
+          "ebit_error_million_cny": -6663.16156275,
+          "ebit_error_pct_actual_revenue": -2.876404231499746,
+          "margin_error_pp": -0.6114266873533586
+        }
+      }
+    },
+    {
+      "code": "601899",
+      "stratum": "周期业务",
+      "split": "holdout",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 320934.289408,
+        "ebit": 54659.761019,
+        "ebit_components_cny": {
+          "FN86": 61943203840.0,
+          "FN305": 4022962432.0,
+          "FN306": 2526866176.0,
+          "FN83": 5978430336.0,
+          "FN82": 2778540928.0,
+          "FN301": 22567813.0
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 357725.2441724958,
+        "ebit": 60925.79385331531
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": 0.05552077857968104,
+            "source_fact_ids": [
+              "gpcw20250331.zip:601899:FN230",
+              "gpcw20240331.zip:601899:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": 0.17375328766210876,
+            "source_fact_ids": [
+              "gpcw20250630.zip:601899:FN230",
+              "gpcw20240630.zip:601899:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": 0.1146370331208949,
+        "clipped_scenario_growth": 0.1146370331208949,
+        "current_adjusted_margin": 0.17031449372339172,
+        "target_margin": 0.17031449372339172
+      },
+      "actual": {
+        "revenue": 375546.683392,
+        "ebit": 103688.087645,
+        "ebit_components_cny": {
+          "FN86": 110797287424.0,
+          "FN305": 3895317504.0,
+          "FN306": 3145644416.0,
+          "FN83": 4581115648.0,
+          "FN82": 3268174080.0,
+          "FN301": 9583139.0
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": -17821.439219504187,
+          "revenue_error_pct": -4.745465745706497,
+          "ebit_error_million_cny": -42762.2937916847,
+          "ebit_error_pct_actual_revenue": -11.386678589582678,
+          "margin_error_pp": -10.578456993620975
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": -54612.393983999966,
+          "revenue_error_pct": -14.542105255924978,
+          "ebit_error_million_cny": -49028.32662600001,
+          "ebit_error_pct_actual_revenue": -13.055188287956115,
+          "margin_error_pp": -10.578456993620975
+        }
+      }
+    },
+    {
+      "code": "600019",
+      "stratum": "周期业务",
+      "split": "holdout",
+      "status": "evaluated",
+      "diagnostics": [],
+      "base": {
+        "revenue": 310237.151232,
+        "ebit": 9364.030704,
+        "ebit_components_cny": {
+          "FN86": 10366813696.0,
+          "FN305": 1438904640.0,
+          "FN306": 431435936.0,
+          "FN83": 2145756672.0,
+          "FN82": -330784440.0,
+          "FN301": 195279464.0
+        },
+        "source_inputs": [
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2025-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250331.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20240930.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20240630.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2024-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20241231.zip"
+          },
+          {
+            "period": "2024-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20240630.zip"
+          }
+        ]
+      },
+      "forecast": {
+        "revenue": 287585.61074222764,
+        "ebit": 8680.328833360696
+      },
+      "rule_evidence": {
+        "required_yoy_pairs": 2,
+        "available_yoy_pairs": 2,
+        "revenue_yoy_pairs": [
+          {
+            "period": "2025-03-31",
+            "growth": -0.09817602613861771,
+            "source_fact_ids": [
+              "gpcw20250331.zip:600019:FN230",
+              "gpcw20240331.zip:600019:FN230"
+            ]
+          },
+          {
+            "period": "2025-06-30",
+            "growth": -0.047851233329305444,
+            "source_fact_ids": [
+              "gpcw20250630.zip:600019:FN230",
+              "gpcw20240630.zip:600019:FN230"
+            ]
+          }
+        ],
+        "observed_median_growth": -0.07301362973396158,
+        "clipped_scenario_growth": -0.07301362973396158,
+        "current_adjusted_margin": 0.030183460191063445,
+        "target_margin": 0.030183460191063445
+      },
+      "actual": {
+        "revenue": 326866.870272,
+        "ebit": 11067.526321249998,
+        "ebit_components_cny": {
+          "FN86": 13165141504.0,
+          "FN305": 1097223168.0,
+          "FN306": 448733280.0,
+          "FN83": 2821378560.0,
+          "FN82": -74821860.0,
+          "FN301": -451629.25
+        },
+        "source_inputs": [
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2026-03-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20260331.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-09-30",
+            "coefficient": 1,
+            "field": "FN230",
+            "artifact": "gpcw20250930.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN86",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN86",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN305",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN305",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN306",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN306",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN83",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN83",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN82",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN82",
+            "artifact": "gpcw20250630.zip"
+          },
+          {
+            "period": "2026-06-30",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20260630.zip"
+          },
+          {
+            "period": "2025-12-31",
+            "coefficient": 1,
+            "field": "FN301",
+            "artifact": "gpcw20251231.zip"
+          },
+          {
+            "period": "2025-06-30",
+            "coefficient": -1,
+            "field": "FN301",
+            "artifact": "gpcw20250630.zip"
+          }
+        ]
+      },
+      "financial_scope_flags": [],
+      "errors": {
+        "current_rule": {
+          "revenue_error_million_cny": -39281.25952977233,
+          "revenue_error_pct": -12.017510216647134,
+          "ebit_error_million_cny": -2387.1974878893016,
+          "ebit_error_pct_actual_revenue": -0.7303271469215623,
+          "margin_error_pp": -0.36759710570169535
+        },
+        "zero_growth": {
+          "revenue_error_million_cny": -16629.719039999996,
+          "revenue_error_pct": -5.087612282689186,
+          "ebit_error_million_cny": -1703.495617249997,
+          "ebit_error_pct_actual_revenue": -0.5211588485038098,
+          "margin_error_pp": -0.36759710570169535
+        }
+      }
+    }
+  ],
+  "summary": {
+    "candidates": 20,
+    "statuses": {
+      "evaluated": 19,
+      "blocked": 1
+    },
+    "models": {
+      "current_rule": {
+        "revenue_n": 19,
+        "ebit_n": 13,
+        "revenue_median_ape_pct": 5.819138445634853,
+        "revenue_mean_bias_pct": 1.2678001710696796,
+        "revenue_wape_pct": 10.0018021068103,
+        "margin_mae_pp": 2.467271248767418,
+        "ebit_mae_pct_actual_revenue": 3.498918940404455
+      },
+      "zero_growth": {
+        "revenue_n": 19,
+        "ebit_n": 13,
+        "revenue_median_ape_pct": 14.542105255924978,
+        "revenue_mean_bias_pct": -4.687482728144094,
+        "revenue_wape_pct": 12.445253100638684,
+        "margin_mae_pp": 2.467271248767418,
+        "ebit_mae_pct_actual_revenue": 3.705643481263936
+      }
+    }
+  },
+  "by_split": {
+    "development": {
+      "candidates": 12,
+      "statuses": {
+        "evaluated": 12
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 12,
+          "ebit_n": 8,
+          "revenue_median_ape_pct": 5.949225883641658,
+          "revenue_mean_bias_pct": 1.6344637442161987,
+          "revenue_wape_pct": 11.3844010232119,
+          "margin_mae_pp": 1.544043076786315,
+          "ebit_mae_pct_actual_revenue": 2.9370195802536236
+        },
+        "zero_growth": {
+          "revenue_n": 12,
+          "ebit_n": 8,
+          "revenue_median_ape_pct": 14.804967667097003,
+          "revenue_mean_bias_pct": -5.57114093587662,
+          "revenue_wape_pct": 14.254475030558506,
+          "margin_mae_pp": 1.544043076786315,
+          "ebit_mae_pct_actual_revenue": 3.4918425962616437
+        }
+      }
+    },
+    "holdout": {
+      "candidates": 8,
+      "statuses": {
+        "evaluated": 7,
+        "blocked": 1
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 7,
+          "ebit_n": 5,
+          "revenue_median_ape_pct": 5.819138445634853,
+          "revenue_mean_bias_pct": 0.6392340456756467,
+          "revenue_wape_pct": 7.289663099534017,
+          "margin_mae_pp": 3.944436323937183,
+          "ebit_mae_pct_actual_revenue": 4.397957916645785
+        },
+        "zero_growth": {
+          "revenue_n": 7,
+          "ebit_n": 5,
+          "revenue_median_ape_pct": 5.087612282689186,
+          "revenue_mean_bias_pct": -3.1726400863169033,
+          "revenue_wape_pct": 8.89624021574074,
+          "margin_mae_pp": 3.9444363239371825,
+          "ebit_mae_pct_actual_revenue": 4.047724897267604
+        }
+      }
+    }
+  },
+  "by_stratum": {
+    "制造与出口": {
+      "candidates": 5,
+      "statuses": {
+        "evaluated": 5
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 5,
+          "ebit_n": 3,
+          "revenue_median_ape_pct": 9.632449151826084,
+          "revenue_mean_bias_pct": 8.621364260495673,
+          "revenue_wape_pct": 10.713013429310061,
+          "margin_mae_pp": 1.5479690455506498,
+          "ebit_mae_pct_actual_revenue": 2.4299653529059944
+        },
+        "zero_growth": {
+          "revenue_n": 5,
+          "ebit_n": 3,
+          "revenue_median_ape_pct": 14.881777460129028,
+          "revenue_mean_bias_pct": 1.8403140732936,
+          "revenue_wape_pct": 8.170083691720158,
+          "margin_mae_pp": 1.5479690455506494,
+          "ebit_mae_pct_actual_revenue": 2.8264117681731817
+        }
+      }
+    },
+    "周期业务": {
+      "candidates": 5,
+      "statuses": {
+        "evaluated": 5
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 5,
+          "ebit_n": 4,
+          "revenue_median_ape_pct": 4.745465745706497,
+          "revenue_mean_bias_pct": -9.52747415401896,
+          "revenue_wape_pct": 11.060242390125733,
+          "margin_mae_pp": 3.6322631207122287,
+          "ebit_mae_pct_actual_revenue": 4.598036453847816
+        },
+        "zero_growth": {
+          "revenue_n": 5,
+          "ebit_n": 4,
+          "revenue_median_ape_pct": 14.542105255924978,
+          "revenue_mean_bias_pct": -13.628553407012545,
+          "revenue_wape_pct": 13.327857881467489,
+          "margin_mae_pp": 3.6322631207122287,
+          "ebit_mae_pct_actual_revenue": 4.624674083693053
+        }
+      }
+    },
+    "科技与设备": {
+      "candidates": 5,
+      "statuses": {
+        "evaluated": 4,
+        "blocked": 1
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 4,
+          "ebit_n": 4,
+          "revenue_median_ape_pct": 4.868310689732723,
+          "revenue_mean_bias_pct": -4.515862970695649,
+          "revenue_wape_pct": 7.131133139636871,
+          "margin_mae_pp": 2.8605259333684643,
+          "ebit_mae_pct_actual_revenue": 2.5457819389489087
+        },
+        "zero_growth": {
+          "revenue_n": 4,
+          "ebit_n": 4,
+          "revenue_median_ape_pct": 19.235416714791363,
+          "revenue_mean_bias_pct": -16.805493906291137,
+          "revenue_wape_pct": 20.0323474343235,
+          "margin_mae_pp": 2.8605259333684643,
+          "ebit_mae_pct_actual_revenue": 1.6423725503694384
+        }
+      }
+    },
+    "稳定消费": {
+      "candidates": 5,
+      "statuses": {
+        "evaluated": 5
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 5,
+          "ebit_n": 2,
+          "revenue_median_ape_pct": 5.591384306793914,
+          "revenue_mean_bias_pct": 9.336440920144588,
+          "revenue_wape_pct": 9.868644329394343,
+          "margin_mae_pp": 0.7297314405008554,
+          "ebit_mae_pct_actual_revenue": 4.810388297676515
+        },
+        "zero_growth": {
+          "revenue_n": 5,
+          "ebit_n": 2,
+          "revenue_median_ape_pct": 4.8224624634860795,
+          "revenue_mean_bias_pct": 7.420200091804299,
+          "revenue_wape_pct": 6.810326448077856,
+          "margin_mae_pp": 0.7297314405008554,
+          "ebit_mae_pct_actual_revenue": 7.31297170783083
+        }
+      }
+    }
+  },
+  "boundaries": [
+    "简化TDX历史回溯，FN314日期精度，无CNINFO逐公司核验；可能包含后续修订，不是严格PIT或前瞻检验",
+    "2024字段语义沿用已审核后续期间映射，研究外推不扩大生产映射有效期；代码/人工分层不是标准历史身份",
+    "仅经营预测子规则；非完整DCF准入或每股估值；金融字段命中者不进入EBIT/利润率汇总，零字段不证明无兼营",
+    "同一历史起点、目的抽样且存在幸存者偏差；留出组未调参，但不是时间样本外验证",
+    "对零增长的收入和EBIT比较不需要股价/WACC，结果不得解释为一年投资收益预测"
+  ],
+  "evidence": {
+    "study_sha256": "777b09362a649090f71d0a44361c3c84cf1f5f6df2b1d0b5cea411b1ae205056",
+    "snapshot_sha256": "8b3eaad998a8c30f56a865c3753b5aa2257ba0823db572bb2f4d52f83ed771de",
+    "forecast_code_sha256": "fb303384e981648b3c9f91d1ee2ceaab5503812e3bfb60c908244e4f3c246c2a",
+    "backtest_code_sha256": "abdc0934e28b2423b80be9a0e10875765a37f95c0650dc12ed51e87fc18e93ab"
+  }
+}
