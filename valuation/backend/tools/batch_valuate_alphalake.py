@@ -9,15 +9,21 @@ import subprocess
 import tempfile
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from api.alphalake import evaluate, ENGINE_REVISION
 from data_sources.alphalake import Policy, ScreenPolicy, BookDCFPolicy, HistoricalDCFPolicy, WACCBinding, AlphaLakeRequest, MissingInputs, content_hash
+from data_sources.alphalake_wacc import WACCPolicy, ReferenceSnapshot
 
 
 class Assignment(BaseModel):
     model_config = ConfigDict(extra='forbid')
     policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy
     wacc_binding: WACCBinding | None = None
+
+
+class IndustryWACCPolicy(WACCPolicy):
+    # 行业模板不伪造公司身份，路由确认证券后才绑定具体代码。
+    code: None = None
 
 
 class IndustryRule(BaseModel):
@@ -29,6 +35,15 @@ class IndustryRule(BaseModel):
     max_age_days: int = Field(ge=1,le=366)
     review_note: str = Field(min_length=1)
     policy: HistoricalDCFPolicy
+    wacc_policy: IndustryWACCPolicy | None = None
+
+    @model_validator(mode='after')
+    def wacc_source(self):
+        if (self.wacc_policy is None) == (self.policy.wacc is None):
+            raise ValueError('industry rule requires either fixed WACC or reference policy')
+        if self.wacc_policy is not None and (self.wacc_policy.scope!='consolidated' or self.wacc_policy.market is not None or self.wacc_policy.report_period!=self.policy.approved_report_period):
+            raise ValueError('industry WACC requires same-period consolidated target-weight policy')
+        return self
 
 
 class BatchPolicy(BaseModel):
@@ -37,6 +52,7 @@ class BatchPolicy(BaseModel):
     review_note: str = Field(min_length=1)
     assignments: dict[Annotated[str, Field(pattern=r'^\d{6}$')], Assignment]
     industry_rules: list[IndustryRule] = Field(default_factory=list)
+    wacc_references: ReferenceSnapshot | None = None
     exclusions: dict[Annotated[str, Field(pattern=r'^\d{6}$')], Annotated[str, Field(min_length=1, pattern=r'\S')]] = Field(default_factory=dict)
 
 
@@ -90,8 +106,21 @@ def run_batch(readiness, policy, export):
                     row.update(status='blocked_ambiguous_industry_policy',matching_rules=[r.rule_id for r,_ in matches])
                 elif matches:
                     rule,evidence=matches[0]
-                    assignment=Assignment(policy=rule.policy)
                     row['policy_route']=dict(rule_id=rule.rule_id,classification_evidence=evidence)
+                    binding=None
+                    if rule.wacc_policy is not None:
+                        if policy.wacc_references is None:
+                            row.update(status='blocked_missing_wacc_references')
+                            results.append(row)
+                            continue
+                        try:
+                            binding=WACCBinding(references=policy.wacc_references,policy=WACCPolicy.model_validate(
+                                rule.wacc_policy.model_dump(exclude={'code'}) | {'code':code}))
+                        except ValueError as error:
+                            row.update(status='rejected_input_or_policy',reason=str(error))
+                            results.append(row)
+                            continue
+                    assignment=Assignment(policy=rule.policy,wacc_binding=binding)
             if assignment is not None:
                 row.setdefault('policy_route',dict(kind='explicit_company_assignment'))
                 if isinstance(assignment.policy,BookDCFPolicy) and company['missing_core_fields']:
@@ -136,8 +165,15 @@ def main():
     parser.add_argument('--policy',required=True,help='versioned assignments JSON; empty assignments allowed for census')
     parser.add_argument('--output-dir',required=True)
     parser.add_argument('--alphalake',default=str(Path(__file__).resolve().parents[3]/'alphalake'))
+    parser.add_argument('--reference-database',help='按同一信息时点自动选择此库四类WACC参考版本')
     args=parser.parse_args()
-    policy=BatchPolicy.model_validate_json(Path(args.policy).read_text())
+    raw_policy=json.loads(Path(args.policy).read_text())
+    if args.reference_database:
+        if raw_policy.get('wacc_references') is not None:
+            parser.error('reference database and embedded reference packet are mutually exclusive')
+        raw_policy['wacc_references']=json.loads(subprocess.check_output([args.alphalake,'export-wacc-references',
+            args.reference_database,'--as-of',args.as_of,'--latest'],text=True,timeout=300))
+    policy=BatchPolicy.model_validate(raw_policy)
     def command(name,*extra):
         return json.loads(subprocess.check_output([args.alphalake,name,args.database,*extra,
             '--period',args.period,'--as-of',args.as_of],text=True,timeout=300))

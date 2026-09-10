@@ -73,9 +73,10 @@ def run_cycle(args, root):
             materialized = stage('materialize-after-filing-repair',[args.alphalake,'materialize-fundamentals',args.database]) == 0
         ledger['information_as_of'] = args.as_of or timestamp()
         if materialized:
+            reference_args = ['--reference-database',args.reference_database] if getattr(args,'reference_database',None) else []
             stage('batch-valuation',[sys.executable,'-m','tools.batch_valuate_alphalake',args.database,
                   '--period',args.period,'--as-of',ledger['information_as_of'],'--policy',args.policy,
-                  '--output-dir',str(root/'batches'),'--alphalake',args.alphalake])
+                  '--output-dir',str(root/'batches'),'--alphalake',args.alphalake,*reference_args])
         ledger['status'] = 'completed' if all(r['status']=='completed' for r in ledger['stages']) else 'partial_or_failed'
     except KeyboardInterrupt:
         ledger['status'] = 'canceled'
@@ -97,6 +98,7 @@ def main():
     parser.add_argument('--policy',required=True)
     parser.add_argument('--output-dir',required=True)
     parser.add_argument('--alphalake',default=str(Path(__file__).resolve().parents[3]/'alphalake'))
+    parser.add_argument('--reference-database',help='批次运行时自动选择本地最新WACC参考版本')
     args = parser.parse_args()
     period = date.fromisoformat(args.period)
     if args.latest<1 or args.stage_timeout<1 or period.month%3 or (period+timedelta(days=1)).day!=1:
@@ -111,6 +113,8 @@ def main():
     args.database = str(Path(args.database).resolve())
     args.policy = str(Path(args.policy).resolve())
     args.alphalake = str(Path(args.alphalake).resolve())
+    if args.reference_database:
+        args.reference_database = str(Path(args.reference_database).resolve())
     Path(args.database).parent.mkdir(parents=True,exist_ok=True)
     # ponytail: 本机进程锁；远程分布式调度不在此入口范围。
     with open(args.database+'.valuation.lock','a') as lock:

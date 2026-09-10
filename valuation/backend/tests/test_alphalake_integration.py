@@ -829,3 +829,36 @@ def test_generic_reference_wacc_real_chain(exports,reference_export,tmp_path,mon
             else:continue
             assert client.post('/api/valuation/from-alphalake',json=bad).status_code==422,mutation
     assert len(list(tmp_path.glob('*.json')))==1
+
+
+def test_industry_wacc_routes_real_reference_and_financial_packets(exports,reference_export,tmp_path,monkeypatch):
+    from tools.batch_valuate_alphalake import BatchPolicy,run_batch
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
+    req=reference_request(exports,reference_export,'anker')
+    d=req['data'];wp=req['wacc_binding']['policy'];wp.pop('code')
+    profile=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_text());profile.pop('wacc')
+    profile['nonfinancial_scope_review']='真实安克财务和参考包，行业关系为路由受控夹具'
+    rule=dict(rule_id='reference-test',source='tdx',taxonomy_code='test-routing',node_codes=['TEST'],max_age_days=30,
+        review_note='模拟行业归属，不是实际分类验收',policy=profile,wacc_policy=wp)
+    policy=BatchPolicy(policy_version='reference-routing-test',review_note='explicit target-weight reference scenario',
+        assignments={},industry_rules=[rule],wacc_references=reference_export)
+    member=dict(source='tdx',taxonomy_code='test-routing',node_code='TEST',observed_at=d['information_as_of'],run_finished_at=d['information_as_of'])
+    scan=dict(contract_version='alphalake-readiness-v1',report_period=d['report_period'],information_as_of=d['information_as_of'],
+        universe_count=1,universe_scope='test',companies=[dict(instrument_id=d['facts'][0]['instrument_id'],name='anker',symbols=['sz300866'],
+        financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[member])])
+    result=run_batch(scan,policy,lambda code:d)
+    row=result['companies'][0]
+    assert row['status']=='illustrative_book_equity_scenario'
+    saved=json.loads((tmp_path/(row['run_id']+'.json')).read_text())
+    assert saved['request']['wacc_binding']['policy']['code']=='300866'
+    assert saved['request']['policy']['wacc'] is None
+    assert saved['report']['cost_of_capital']['approach_used']=='reference_snapshot'
+    assert result['policy']['industry_rules'][0]['wacc_policy']['code'] is None
+    assert run_batch(scan,policy,lambda code:d)==result
+    missing=policy.model_copy(update={'wacc_references':None})
+    assert run_batch(scan,missing,lambda code:pytest.fail('missing references must block before export'))['companies'][0]['status']=='blocked_missing_wacc_references'
+    for change in ({'code':'300866'},{'scope':'liquor_proxy'},{'report_period':'2025-12-31'}):
+        bad=copy.deepcopy(rule);bad['wacc_policy'].update(change)
+        with pytest.raises(ValueError):BatchPolicy(policy_version='bad',review_note='bad',assignments={},industry_rules=[bad])
+    bad=copy.deepcopy(rule);bad['policy']['wacc']=.1
+    with pytest.raises(ValueError):BatchPolicy(policy_version='dual',review_note='dual',assignments={},industry_rules=[bad])

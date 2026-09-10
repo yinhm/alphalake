@@ -240,3 +240,24 @@ python -m tools.refresh_valuate_alphalake /absolute/path/alphalake.duckdb \
 首轮批次还对已知缺核心的公司逐一重算导出，耗时约十分钟。现在账面/历史FCFF模型复用本次就绪度已确定的核心缺项，直接留 `blocked_missing_inputs`，无需再跑该公司的TTM导出；核心齐全仍走原标准导出，经营价值模型不套用股权桥接缺项门槛。跨时点同步可能改变后续批次结果，本批次不将后来补入的事实冒充扫描时已齐全。
 
 全量机构补采已启动，队列4,657家；执行结束后仍须二次物化与重跑批次。流水线未取得这一轮全量完成结果前，不宣称公告或估值全市场闭合。
+
+## 行业参考 WACC 与定时批次
+
+行业规则现在可选择 `wacc_policy`：沿用既有 WACC 政策字段，但删除 `code`（或显式 null），同时删除该规则经营政策中的固定 `wacc`。行业模板只承载代理行业、国家暴露、目标股债结构等选择；确认证券的行业证据后，系统才绑定其六位代码。模板不得携带某一家公司的代码，须为同期间、合并范围、目标资本结构；固定 WACC 与参考模板不能并存。
+
+批量政策可嵌入 `wacc_references` 固定包，或者运行时提供参考库（两者互斥）：
+
+```bash
+python -m tools.batch_valuate_alphalake /absolute/financial.duckdb \
+  --period 2026-06-30 --as-of 2026-09-10T01:24:27Z \
+  --policy industry-policy.json --reference-database /absolute/references.duckdb \
+  --output-dir ./data/batches
+```
+
+后者用本地 `export-wacc-references --latest` 按同一时点选择四类版本，并将完整固定包写入批次政策记录。缺少参考包的规则留 `blocked_missing_wacc_references`，不执行该公司导出；自动参考库导出失败则整个批次命令失败，不使用隐式旧包。每家公司仍执行身份/期间/参考陈旧/金融范围/终值条件检查，显式公司政策和审核隔离优先级不变。
+
+`refresh_valuate_alphalake` 同样支持 `--reference-database` 并传入物化结束后的批次，适合定时调用。它此时只消费本地参考库，不自动对行业进行风险研究，也尚未在该选项下同步外部参考源。普通市场股债结构及类别股本仍未通用化，结果保持条件情景标识。
+
+真实 CLI 衔接在隔离库 `generic-reference-live.duckdb` 完成：从既有双公司财务验收库复制，再实际刷新主数据/行业（5,569条已识别归属、7条身份缺口、TDX分类缺名称，运行保持partial）。同一时点2026-09-10T01:47:39Z，自动选出四类参考1/2/3/4，品牌消费电子模板匹配后绑定安克，完成1个条件账面FCFF情景；同行业其余11家缺输入，5,557家无此行业政策。此隔离库用于验证接口组合，不能拿它统计全市场财务完整度。
+
+输出的目标权重 WACC 为6.9721%，不是安克当前市场化WACC结论。独立 Decimal 从所选参考与标准窗口重算 WACC、十年FCFF、终值和股权桥接全部一致；这项算术复核不新增PDF语义证据。原增长上限、目标结构、国家权重及账面桥接仍是机械政策，不等于已研究合理价格。Python213通过/4既有跳过，刷新参数传递5项回归通过；Go测试及构建通过，无依赖变更。

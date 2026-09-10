@@ -18,7 +18,7 @@ def test_refresh_preserves_stage_failures_and_gates_materialization(tmp_path,mon
     monkeypatch.setattr(refresh,'execute',stub)
     args=SimpleNamespace(database='test.duckdb',period='2026-06-30',as_of=None,latest=6,
                          filings_start='2025-04-01',filings_end='2026-09-09',alphalake='alphalake',
-                         policy='policy.json',stage_timeout=10)
+                         policy='policy.json',stage_timeout=10,reference_database='references.duckdb')
     assert refresh.run_cycle(args,tmp_path)==1
     report=json.loads((tmp_path/'run.json').read_text())
     assert report['status']=='partial_or_failed'
@@ -27,6 +27,8 @@ def test_refresh_preserves_stage_failures_and_gates_materialization(tmp_path,mon
     if failed!='materialize-fundamentals':
         assert seen[4:6]==['repair-filings','materialize-after-filing-repair']
         assert report['information_as_of']>=report['stages'][5]['finished_at']
+    for stage in report['stages']:
+        if stage['name']=='batch-valuation':assert stage['command'][-2:]==['--reference-database','references.duckdb']
     assert all(Path(r['log']).read_text().strip()==r['name'] for r in report['stages'])
     assert report['information_as_of']>=report['stages'][3]['finished_at']
 
