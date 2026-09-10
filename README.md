@@ -60,7 +60,9 @@ TDX 协议请求支持[自动换节点重试](docs/tdx-failover.md)：每个独�
 
 估值所需行情已支持[版本保留与未复权收盘价导出](docs/valuation-quotes.md)；已新增[类别股本、A/H 市值与市场权重 WACC 估计链](docs/market-wacc.md)，首批安克/茅台；新增[合同债务区间及H股融资事件链](docs/wacc-gap-review-20260909.md)，实际现金滚动、费用重叠及经营范围仍有明确缺口。
 
-面向全 A 股自动估值的[财务就绪度扫描与推进状态](docs/automated-valuation.md)已提供独立命令，缺事实公司也进入本地集合分母。 已完成[全本地A股条件估值验收](docs/a-share-automation-acceptance-20260910.md)：5,569家公司全部有处理结论，5,304家核心输入齐全、2,461家产出条件估值，成功结果全部独立复算通过；非当前目标价或逐公司原文全量验收。
+面向全 A 股自动估值的[财务就绪度扫描与推进状态](docs/automated-valuation.md)已提供独立命令，缺事实公司也进入本地集合分母。已完成[全本地A股条件估值验收](docs/a-share-automation-acceptance-20260910.md)：5,569家公司全部有处理结论，5,304家核心输入齐全、2,461家产出条件估值，成功结果全部独立复算通过；非当前目标价或逐公司原文全量验收。
+
+统一结果选择与估值变化解释尚在计划中，下一步及实现边界见[当前优先级](docs/implementation-status.md)。安克的[专项与通用模型口径](docs/anker-recalculation-20260909.md)分别记录，不能用不同政策的数值冒充同一模型更新。
 
 ## WACC 参考数据
 
