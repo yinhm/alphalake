@@ -1,4 +1,10 @@
-# AD_CC_pilot — Project Context for Claude Code
+# AlphaLake valuation 约定
+
+- 遵循根目录 [AGENTS.md](../AGENTS.md) 的数据分层、证据和结果口径约定；当前能力以 [实现状态](../docs/implementation-status.md) 为准。
+- AlphaLake 入口为 `backend/api/alphalake.py` 及 `backend/tools/*valuate_alphalake.py`，消费 DuckDB 标准导出并复用共享编排器。不得静默改用上游CIQ/SQLite数据补缺，也不得为AlphaLake另建一套DCF引擎。
+- 下列为导入上游时保留的CIQ/前端开发背景；默认美国Beta、SQLite选择顺序、历史测试数和已知问题只描述该路径，不作为AlphaLake已验收能力或参考选择政策。上游来源及credit见 [UPSTREAM.md](UPSTREAM.md)。
+
+## 上游开发背景（历史记录）
 
 ## What this system is
 
