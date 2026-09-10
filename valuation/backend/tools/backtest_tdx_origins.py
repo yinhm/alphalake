@@ -165,7 +165,8 @@ def study(protocol,snapshot,phase,selection=None):
     calibrations={origin:fit_calibration(protocol,snapshot,origin) for origin in origins} if config is not None else None
     rows=evaluate(protocol,snapshot,split,origins,models,calibrations);summary=summarize(rows,models)
     result=dict(contract_version=CONTRACT,protocol_id=protocol['protocol_id'],phase=phase,summary=summary,results=rows,
-                boundary='简化源数据回溯、一个目的样本的多个起点；非严格PIT或DCF公允价值证明；2025已知结果未用于本轮选择或验证')
+                boundary=('简化源数据回溯、一个目的样本的多个起点；非严格PIT或DCF公允价值证明；'
+                          +('追加2025时间窗口；同公司旧窗口已评分，不称新公司独立验证' if '2025-06-30' in protocol['origins'] else '2025已知结果未用于本轮选择或验证')))
     if calibrations is not None:result['calibration_training']=calibrations
     if phase=='development':
         verdicts={m:gates(summary,m,protocol['selection'],rows) for m in candidates[2:]}
