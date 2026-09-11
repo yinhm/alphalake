@@ -1,0 +1,401 @@
+{
+  "scope": "two_saved_requests_replayed_no_database_query_or_new_financial_data",
+  "results": [
+    {
+      "code": "300866",
+      "source": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b.json",
+        "sha256": "328ffa8de193bb8fe8253a0be686b051f1ea4160ba3c80a182781052a7b028b7"
+      },
+      "old_run_id": "6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b",
+      "new_run_id": "44ef1577d3aac5fea6d91b52135c48f4d15e97a23b207e8eface3d832ba42682",
+      "engine_revision": "59c7d15f15e9d987132325265d7bdc3695bb9908596162e83b9ccd7166d5c488",
+      "request_unchanged": true,
+      "complete_main_report_unchanged": true,
+      "only_changed_inputs": [
+        {
+          "path": "/valuation_assumptions/annual_forecast/0/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.2,
+          "after": 0.0
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/1/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.2,
+          "after": 0.0
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/2/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.2,
+          "after": 0.0
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/3/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.2,
+          "after": 0.0
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/4/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.2,
+          "after": 0.0
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/5/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.164,
+          "after": 0.004
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/6/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.128,
+          "after": 0.008
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/7/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.092,
+          "after": 0.012
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/8/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.055999999999999994,
+          "after": 0.016
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/9/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.01999999999999999,
+          "after": 0.02
+        }
+      ],
+      "unchanged_cost_of_capital_and_bridge_adjustments": true,
+      "derived_bridge_changes": [
+        {
+          "path": "/equity_if_converted",
+          "before_present": true,
+          "after_present": true,
+          "before": 68997.64417297459,
+          "after": 30162.683356429454
+        },
+        {
+          "path": "/equity_no_conversion",
+          "before_present": true,
+          "after_present": true,
+          "before": 68997.64417297459,
+          "after": 30162.683356429454
+        },
+        {
+          "path": "/operating_value",
+          "before_present": true,
+          "after_present": true,
+          "before": 70859.58390791959,
+          "after": 32024.623091374455
+        },
+        {
+          "path": "/per_share",
+          "before_present": true,
+          "after_present": true,
+          "before": 126.13784833230838,
+          "after": 55.14182439288226
+        },
+        {
+          "path": "/per_share_if_converted",
+          "before_present": true,
+          "after_present": true,
+          "before": 126.13784833230838,
+          "after": 55.14182439288226
+        },
+        {
+          "path": "/per_share_no_conversion",
+          "before_present": true,
+          "after_present": true,
+          "before": 126.13784833230838,
+          "after": 55.14182439288226
+        }
+      ],
+      "growth_sensitivity": {
+        "status": "illustrative_growth_path_sensitivity",
+        "method": "zero_first_five_then_fade_to_unchanged_terminal_growth",
+        "baseline_growth": [
+          0.2,
+          0.2,
+          0.2,
+          0.2,
+          0.2,
+          0.164,
+          0.128,
+          0.092,
+          0.055999999999999994,
+          0.01999999999999999
+        ],
+        "counterfactual_growth": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.004,
+          0.008,
+          0.012,
+          0.016,
+          0.02
+        ],
+        "baseline_value_per_share": 126.13784833230838,
+        "counterfactual_value_per_share": 55.14182439288226,
+        "delta_per_share": -70.99602393942612,
+        "counterfactual_equity_status": "positive_equity_residual",
+        "currency": "CNY",
+        "unit": "CNY/share",
+        "baseline_fcff_million_cny": [
+          166.76537538192633,
+          200.11845045831114,
+          240.14214054997274,
+          288.1705686599689,
+          345.8046823919585,
+          1432.0756869884144,
+          2850.8522189439273,
+          4551.218685527217,
+          6428.250266349569,
+          8328.217632877213
+        ],
+        "counterfactual_fcff_million_cny": [
+          2437.6194012084966,
+          2437.6194012084966,
+          2437.6194012084966,
+          2437.6194012084966,
+          2437.6194012084966,
+          2392.2023206919644,
+          2356.172381136135,
+          2329.058221355919,
+          2310.4918187169305,
+          2300.200344900421
+        ],
+        "evidence": {
+          "medium_horizon": "two_disjoint_120_company_cohorts_show_average_improvement_in_common_two_and_three_year_windows",
+          "counterevidence": "one_year_validation_failed_and_some_medium_horizon_windows_worsened",
+          "adoption": "not_adopted_as_default_or_company_specific_forecast",
+          "review": "docs/zero-growth-common-windows-20260911.md",
+          "receipt": {
+            "path": "docs/acceptance/zero-growth-common-windows-20260911.json",
+            "sha256": "1aa85158546b71ab986a0be0a31c32f02448be1c3dc455d9105523204faa75ca"
+          }
+        },
+        "boundary": "同一财务与信息时点，仅改十年收入增长路径；利润率、税率、资本效率、WACC、终值增长/ROIC及股权股本桥接输入不变。收入变化同时影响利润、再投资和终值金额；零收入增量再投资不等于零现金资本开支。中期样本改善不证明一年、第四年至终值、当前公司或完整DCF有效；不是价格区间、概率界限或推荐值。"
+      }
+    },
+    {
+      "code": "002032",
+      "source": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d.json",
+        "sha256": "9560ca4d3056791d115b2b10f0f5b84b0cc789fd5663fc12a9d16880fcf42b70"
+      },
+      "old_run_id": "183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d",
+      "new_run_id": "05b18a43496b6a2af67885eaa11723ea776fe82ff25718c22e5020ae36852918",
+      "engine_revision": "59c7d15f15e9d987132325265d7bdc3695bb9908596162e83b9ccd7166d5c488",
+      "request_unchanged": true,
+      "complete_main_report_unchanged": true,
+      "only_changed_inputs": [
+        {
+          "path": "/valuation_assumptions/annual_forecast/0/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": -0.006089052517015289,
+          "after": 0.0
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/1/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": -0.006089052517015289,
+          "after": 0.0
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/2/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": -0.006089052517015289,
+          "after": 0.0
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/3/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": -0.006089052517015289,
+          "after": 0.0
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/4/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": -0.006089052517015289,
+          "after": 0.0
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/5/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": -0.0008712420136122315,
+          "after": 0.004
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/6/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.004346568489790826,
+          "after": 0.008
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/7/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.009564378993193883,
+          "after": 0.012
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/8/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.014782189496596942,
+          "after": 0.016
+        },
+        {
+          "path": "/valuation_assumptions/annual_forecast/9/growth",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.019999999999999997,
+          "after": 0.02
+        }
+      ],
+      "unchanged_cost_of_capital_and_bridge_adjustments": true,
+      "derived_bridge_changes": [
+        {
+          "path": "/equity_if_converted",
+          "before_present": true,
+          "after_present": true,
+          "before": 35288.964886063826,
+          "after": 36324.363985164986
+        },
+        {
+          "path": "/equity_no_conversion",
+          "before_present": true,
+          "after_present": true,
+          "before": 35288.964886063826,
+          "after": 36324.363985164986
+        },
+        {
+          "path": "/operating_value",
+          "before_present": true,
+          "after_present": true,
+          "before": 36657.27908252008,
+          "after": 37692.67818162124
+        },
+        {
+          "path": "/per_share",
+          "before_present": true,
+          "after_present": true,
+          "before": 43.252612680123605,
+          "after": 44.52166991507971
+        },
+        {
+          "path": "/per_share_if_converted",
+          "before_present": true,
+          "after_present": true,
+          "before": 43.252612680123605,
+          "after": 44.52166991507971
+        },
+        {
+          "path": "/per_share_no_conversion",
+          "before_present": true,
+          "after_present": true,
+          "before": 43.252612680123605,
+          "after": 44.52166991507971
+        }
+      ],
+      "growth_sensitivity": {
+        "status": "illustrative_growth_path_sensitivity",
+        "method": "zero_first_five_then_fade_to_unchanged_terminal_growth",
+        "baseline_growth": [
+          -0.006089052517015289,
+          -0.006089052517015289,
+          -0.006089052517015289,
+          -0.006089052517015289,
+          -0.006089052517015289,
+          -0.0008712420136122315,
+          0.004346568489790826,
+          0.009564378993193883,
+          0.014782189496596942,
+          0.019999999999999997
+        ],
+        "counterfactual_growth": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.004,
+          0.008,
+          0.012,
+          0.016,
+          0.02
+        ],
+        "baseline_value_per_share": 43.252612680123605,
+        "counterfactual_value_per_share": 44.52166991507971,
+        "delta_per_share": 1.269057234956108,
+        "counterfactual_equity_status": "positive_equity_residual",
+        "currency": "CNY",
+        "unit": "CNY/share",
+        "baseline_fcff_million_cny": [
+          1886.7984054109431,
+          1875.3095908313758,
+          1863.8907322471405,
+          1852.541403692509,
+          1841.2611817954808,
+          1788.7964381782465,
+          1746.02069751141,
+          1712.213476331765,
+          1686.797384163463,
+          1669.3218095167022
+        ],
+        "counterfactual_fcff_million_cny": [
+          1837.164120612305,
+          1837.164120612305,
+          1837.164120612305,
+          1837.164120612305,
+          1837.164120612305,
+          1804.5585323635987,
+          1779.0407558913507,
+          1760.275183251967,
+          1748.0046119802364,
+          1742.044510325636
+        ],
+        "evidence": {
+          "medium_horizon": "two_disjoint_120_company_cohorts_show_average_improvement_in_common_two_and_three_year_windows",
+          "counterevidence": "one_year_validation_failed_and_some_medium_horizon_windows_worsened",
+          "adoption": "not_adopted_as_default_or_company_specific_forecast",
+          "review": "docs/zero-growth-common-windows-20260911.md",
+          "receipt": {
+            "path": "docs/acceptance/zero-growth-common-windows-20260911.json",
+            "sha256": "1aa85158546b71ab986a0be0a31c32f02448be1c3dc455d9105523204faa75ca"
+          }
+        },
+        "boundary": "同一财务与信息时点，仅改十年收入增长路径；利润率、税率、资本效率、WACC、终值增长/ROIC及股权股本桥接输入不变。收入变化同时影响利润、再投资和终值金额；零收入增量再投资不等于零现金资本开支。中期样本改善不证明一年、第四年至终值、当前公司或完整DCF有效；不是价格区间、概率界限或推荐值。"
+      }
+    }
+  ]
+}

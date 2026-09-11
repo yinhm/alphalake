@@ -42,6 +42,7 @@ def summarize_run(row, run_directory):
         boundaries=run['audit'].get('boundaries'),
         historical_fcff_status=run['audit'].get('historical_fcff_status'),
         terminal_sensitivity=run.get('terminal_sensitivity'),
+        growth_sensitivity=run.get('growth_sensitivity'),
         evidence=dict(run_file=str(path.resolve()),request_sha256=content_hash(run['request'])),
     )
 

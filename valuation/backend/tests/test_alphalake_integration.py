@@ -621,6 +621,7 @@ def test_generic_book_dcf_forecast_and_equity_bridge(exports,tmp_path,monkeypatc
         response=client.post('/api/valuation/from-alphalake',json=dict(data=exports['300866'],policy=policy))
         assert response.status_code==200,response.text
         result=response.json();assert result['status']=='illustrative_book_equity_scenario'
+        assert result['growth_sensitivity'] is None  # 显式逐年政策不套历史规则研究。
         w={r['field']:float(r['value'])/1e6 for r in exports['300866']['windows'] if r['value'] is not None}
         rev=w['FN230'];pv=0
         for year,row in enumerate(policy['annual_forecast'],1):
@@ -681,6 +682,41 @@ def test_generic_book_dcf_forecast_and_equity_bridge(exports,tmp_path,monkeypatc
             pv+=cash/1.1**year
         ev=pv+rev*1.02*margin*.75*(1-.02/.1)/(.1-.02)/1.1**10
         near(auto['report']['final']['value_per_share'],(ev+fixed)/(w['FN238']*1.02))
+        sensitivity=auto['growth_sensitivity']
+        assert sensitivity['evidence']['adoption']=='not_adopted_as_default_or_company_specific_forecast'
+        assert 'one_year_validation_failed' in sensitivity['evidence']['counterevidence']
+        from hashlib import sha256
+        receipt=sensitivity['evidence']['receipt']
+        assert sha256((REPO/receipt['path']).read_bytes()).hexdigest()==receipt['sha256']
+        # 从四个冻结驱动独立复算零增长对照，不复制引擎的增长生成函数。
+        rev=w['FN230'];zero_pv=0
+        for year,g in enumerate([0]*5+[.004,.008,.012,.016,.02],1):
+            previous=rev;rev*=1+g
+            cash=rev*margin*.75-(rev-previous)/3
+            near(sensitivity['counterfactual_fcff_million_cny'][year-1],cash)
+            zero_pv+=cash/1.1**year
+        zero_ev=zero_pv+rev*1.02*margin*.75*(1-.02/.1)/(.1-.02)/1.1**10
+        near(sensitivity['counterfactual_value_per_share'],(zero_ev+fixed)/(w['FN238']*1.02))
+        near(sensitivity['delta_per_share'],(zero_ev-ev)/(w['FN238']*1.02))
+        assert sensitivity['baseline_fcff_million_cny']==auto['report']['dcf']['fcff_projections']
+        from api.alphalake import growth_path_sensitivity
+        original_inputs,_=build_inputs(AlphaLakeRequest.model_validate(dict(data=exports['300866'],policy=automatic)))
+        original_report=run_full_valuation(original_inputs)
+        before=original_inputs.model_dump(mode='json')
+        assert growth_path_sensitivity(original_inputs,original_report)==sensitivity
+        assert original_inputs.model_dump(mode='json')==before
+        assert jsonable_encoder(asdict(original_report))==auto['report']
+        zero_req=dict(data=exports['300866'],policy=automatic|dict(growth_floor=0,growth_ceiling=0))
+        zero=client.post('/api/valuation/from-alphalake',json=zero_req).json()
+        near(zero['report']['final']['value_per_share'],sensitivity['counterfactual_value_per_share'])
+        assert zero['growth_sensitivity']['delta_per_share']==0
+        assert client.post('/api/valuation/from-alphalake',json=zero_req).json()==zero
+        assert auto['report']['final']['value_per_share']>sensitivity['counterfactual_value_per_share']
+        claims=automatic['additional_claims_million_cny']+(auto['report']['final']['value_per_share']+sensitivity['counterfactual_value_per_share'])/2*w['FN238']*1.02
+        stressed=client.post('/api/valuation/from-alphalake',json=dict(data=exports['300866'],policy=automatic|dict(additional_claims_million_cny=claims)))
+        assert stressed.status_code==200,stressed.text
+        assert stressed.json()['growth_sensitivity']['counterfactual_value_per_share']<0
+        assert stressed.json()['growth_sensitivity']['counterfactual_equity_status']=='nonpositive_equity_residual_requires_distress_model'
         # 2025Q1 位于当前 TTM 窗口之外，历史规则也必须校验其源位。
         corrupted=copy.deepcopy(exports['300866'])
         next(f for f in corrupted['facts'] if f['field']=='FN230' and f['period']=='2025-03-31')['value']='1'
@@ -1029,6 +1065,8 @@ def test_company_entry_selection_summary_and_no_fallback(exports,tmp_path,monkey
     assert explicit['selection']['policy_version']=='industry-v1'
     assert explicit['valuation']['policy_id']=='nonfinancial-history-fcff-v1'
     assert explicit['valuation']['terminal_sensitivity']['method']=='terminal_roic_equals_terminal_wacc'
+    assert explicit['valuation']['growth_sensitivity']['status']=='illustrative_growth_path_sensitivity'
+    assert result['valuation']['growth_sensitivity'] is None
     # 同级专项绝不按价格或传入顺序取一个。
     other=specific.model_copy(update={'policy_version':'another-reviewed-scenario'})
     ambiguous=company_valuation(scan,'300866',[specific,other],export,tmp_path)

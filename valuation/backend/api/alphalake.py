@@ -58,6 +58,36 @@ def terminal_return_sensitivity(inputs, report):
         boundary='仅终值ROIC改为终值WACC；显式期现金流、折现与股权桥接不变。无持续超额回报是假设对照，不是公司回报估计、预测验证或推荐估值。')
 
 
+def growth_path_sensitivity(inputs, report):
+    """历史增长政策的显式对照；保留利润率、资本效率及全部桥接输入。"""
+    scenario = inputs.model_copy(deep=True)
+    assumptions = scenario.valuation_assumptions
+    original = inputs.valuation_assumptions.annual_forecast
+    terminal_growth = assumptions.growth_perpetuity_rate
+    growth = [0.0 if year <= 5 else terminal_growth*(year-5)/5 for year in range(1, 11)]
+    assumptions.annual_forecast = [row.model_copy(update={'growth': rate}) for row, rate in zip(original, growth)]
+    counter = run_full_valuation(scenario)
+    value = counter.final.value_per_share
+    return dict(
+        status='illustrative_growth_path_sensitivity',
+        method='zero_first_five_then_fade_to_unchanged_terminal_growth',
+        baseline_growth=[row.growth for row in original], counterfactual_growth=growth,
+        baseline_value_per_share=report.final.value_per_share,
+        counterfactual_value_per_share=value, delta_per_share=value-report.final.value_per_share,
+        counterfactual_equity_status='positive_equity_residual' if value > 0 else 'nonpositive_equity_residual_requires_distress_model',
+        currency='CNY', unit='CNY/share',
+        baseline_fcff_million_cny=report.dcf.fcff_projections,
+        counterfactual_fcff_million_cny=counter.dcf.fcff_projections,
+        evidence=dict(
+            medium_horizon='two_disjoint_120_company_cohorts_show_average_improvement_in_common_two_and_three_year_windows',
+            counterevidence='one_year_validation_failed_and_some_medium_horizon_windows_worsened',
+            adoption='not_adopted_as_default_or_company_specific_forecast',
+            review='docs/zero-growth-common-windows-20260911.md',
+            receipt=dict(path='docs/acceptance/zero-growth-common-windows-20260911.json',
+                         sha256='1aa85158546b71ab986a0be0a31c32f02448be1c3dc455d9105523204faa75ca')),
+        boundary='同一财务与信息时点，仅改十年收入增长路径；利润率、税率、资本效率、WACC、终值增长/ROIC及股权股本桥接输入不变。收入变化同时影响利润、再投资和终值金额；零收入增量再投资不等于零现金资本开支。中期样本改善不证明一年、第四年至终值、当前公司或完整DCF有效；不是价格区间、概率界限或推荐值。')
+
+
 def evaluate(request: AlphaLakeRequest):
     inputs, audit = build_inputs(request)
     revision = ENGINE_REVISION
@@ -70,7 +100,9 @@ def evaluate(request: AlphaLakeRequest):
         request=request_data,inputs=inputs.model_dump(mode='json'),audit=audit,
         report=jsonable_encoder(asdict(report)),
         terminal_sensitivity=(terminal_return_sensitivity(inputs,report)
-                              if audit.get('valuation_scope')=='report_date_book_equity_scenario' else None))
+                              if audit.get('valuation_scope')=='report_date_book_equity_scenario' else None),
+        growth_sensitivity=(growth_path_sensitivity(inputs,report)
+                            if request.policy.policy_id in ('nonfinancial-history-fcff-v1', 'nonfinancial-history-fcff-calibrated-v1') else None))
     # 保存输入/政策/引擎版本与输出。同内容重放不覆盖；失败不产生成功记录。
     root = Path(os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(Path(__file__).resolve().parents[1]/'data/alphalake_runs')))
     root.mkdir(parents=True,exist_ok=True)
