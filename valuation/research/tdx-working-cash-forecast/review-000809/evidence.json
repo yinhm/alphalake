@@ -1,0 +1,173 @@
+{
+  "code": "000809",
+  "org_id": "gssz0000809",
+  "selection": "largest absolute normalized errors in frozen v3 development; diagnostic review only, do not remove failures",
+  "snapshot_sha256": "cfdbed237d7816723e9ff807d8e50fc8bfb96207b805c094a1367094f64f294c",
+  "catalogue_sha256": "9dcc2e53356f95a81f2556f0ff911264e37421d3c9f8e56b3d9d543518d2246f",
+  "reports": [
+    {
+      "file": "2022H1.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2022-08-20/1214341544.PDF",
+      "sha256": "537c215bbd9bf8886f0aa9be7cb4e389838956f657cf55ff233d704981044aa7",
+      "first_acquired_at": "2026-09-11T00:29:49.901904+00:00",
+      "period": "2022-06-30",
+      "announcement_id": "1214341544",
+      "issuer": "铁岭新城投资控股(集团)股份有限公司",
+      "rows": [
+        {
+          "key": "inventory",
+          "page": 33,
+          "section": "1、合并资产负债表",
+          "header_period": "2022年06月30日",
+          "label": "存货",
+          "values": [
+            "4106966944.85",
+            "4103498686.78"
+          ]
+        },
+        {
+          "key": "revenue",
+          "page": 37,
+          "section": "3、合并利润表",
+          "header_period": "2022年半年度",
+          "label": "其中：营业收入",
+          "values": [
+            "9712361.41",
+            "10028603.44"
+          ]
+        }
+      ],
+      "notes": [
+        {
+          "page": 9,
+          "anchors": [
+            "其中土地一级开发业务为公司主营业务"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "2023H1.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-19/1217578261.PDF",
+      "sha256": "c76ab5578410db1fccc4335c0638c26f93d6afb8a80c198f3d339e729dad4aef",
+      "first_acquired_at": "2026-09-11T00:29:51.399027+00:00",
+      "period": "2023-06-30",
+      "announcement_id": "1217578261",
+      "issuer": "铁岭新城投资控股(集团)股份有限公司",
+      "rows": [
+        {
+          "key": "inventory",
+          "page": 35,
+          "section": "1、合并资产负债表",
+          "header_period": "2023年06月30日",
+          "label": "存货",
+          "values": [
+            "4042824105.05",
+            "4044149698.31"
+          ]
+        },
+        {
+          "key": "revenue",
+          "page": 39,
+          "section": "3、合并利润表",
+          "header_period": "2023年半年度",
+          "label": "其中：营业收入",
+          "values": [
+            "10648402.48",
+            "9712361.41"
+          ]
+        }
+      ],
+      "notes": [
+        {
+          "page": 11,
+          "anchors": [
+            "公司系铁岭市新城区唯一一家土地一级开发商"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "2024H1.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-08-28/1220998688.PDF",
+      "sha256": "49fbac18c0983a73c2e96bd4870003b644ee2c754a3354cadef12ea2a7337927",
+      "first_acquired_at": "2026-09-11T00:27:57.115448+00:00",
+      "period": "2024-06-30",
+      "announcement_id": "1220998688",
+      "issuer": "辽宁和展能源集团股份有限公司",
+      "rows": [
+        {
+          "key": "inventory",
+          "page": 41,
+          "section": "1、合并资产负债表",
+          "header_period": "2024年06月30日",
+          "label": "存货",
+          "values": [
+            "4060598436.80",
+            "4043921422.47"
+          ]
+        },
+        {
+          "key": "revenue",
+          "page": 46,
+          "section": "3、合并利润表",
+          "header_period": "2024年半年度",
+          "label": "其中：营业收入",
+          "values": [
+            "10283917.71",
+            "10648402.48"
+          ]
+        }
+      ],
+      "notes": []
+    },
+    {
+      "file": "2025H1.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-28/1224599404.PDF",
+      "sha256": "31d62f641723047f307c4ad49f7456614c1cbdb5eb90cd7e7c5b736830791196",
+      "first_acquired_at": "2026-09-11T00:27:06.114799+00:00",
+      "period": "2025-06-30",
+      "announcement_id": "1224599404",
+      "issuer": "辽宁和展能源集团股份有限公司",
+      "rows": [
+        {
+          "key": "inventory",
+          "page": 32,
+          "section": "1、合并资产负债表",
+          "header_period": "2025年06月30日",
+          "label": "存货",
+          "values": [
+            "31281072.38",
+            "1655663.94"
+          ]
+        },
+        {
+          "key": "revenue",
+          "page": 37,
+          "section": "3、合并利润表",
+          "header_period": "2025年半年度",
+          "label": "其中：营业收入",
+          "values": [
+            "11509715.74",
+            "10283917.71"
+          ]
+        }
+      ],
+      "notes": [
+        {
+          "page": 11,
+          "anchors": [
+            "并于2024年末完成重大资产出售，将原有业务剥离出表"
+          ]
+        },
+        {
+          "page": 16,
+          "anchors": [
+            "持股比例降至38.68%",
+            "不再纳入公司的合并报表范围"
+          ]
+        }
+      ]
+    }
+  ]
+}

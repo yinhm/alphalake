@@ -1,0 +1,178 @@
+{
+  "code": "000809",
+  "periods": [
+    {
+      "period": "2022-06-30",
+      "published_date": "2022-08-20",
+      "original_available_from": "2022-08-21T00:00:00+08:00",
+      "forecast_as_of": "2022-09-01T00:00:00+08:00",
+      "pdf_inventory_cny": "4106966944.85",
+      "source_inventory_cny": "4106967040",
+      "pdf_half_revenue_cny": "9712361.41",
+      "source_half_revenue_cny": "9712361.5",
+      "revenue_rounding_bound_cny": "0.385",
+      "source_inventory_minus_pdf_cny": "95.15",
+      "source_half_revenue_minus_pdf_cny": "0.09",
+      "source_inputs": [
+        {
+          "period": "2022-03-31",
+          "field": "FN230",
+          "source_bits": 1249184552,
+          "artifact": "gpcw20220331.zip"
+        },
+        {
+          "period": "2022-06-30",
+          "field": "FN230",
+          "source_bits": 1252909119,
+          "artifact": "gpcw20220630.zip"
+        },
+        {
+          "period": "2022-06-30",
+          "field": "FN17",
+          "source_bits": 1333054296,
+          "artifact": "gpcw20220630.zip"
+        }
+      ],
+      "notes": [
+        {
+          "page": 9,
+          "anchors": [
+            "其中土地一级开发业务为公司主营业务"
+          ]
+        }
+      ]
+    },
+    {
+      "period": "2023-06-30",
+      "published_date": "2023-08-19",
+      "original_available_from": "2023-08-20T00:00:00+08:00",
+      "forecast_as_of": "2023-09-01T00:00:00+08:00",
+      "pdf_inventory_cny": "4042824105.05",
+      "source_inventory_cny": "4042824192",
+      "pdf_half_revenue_cny": "10648402.48",
+      "source_half_revenue_cny": "10648402.5",
+      "revenue_rounding_bound_cny": "0.51",
+      "source_inventory_minus_pdf_cny": "86.95",
+      "source_half_revenue_minus_pdf_cny": "0.02",
+      "source_inputs": [
+        {
+          "period": "2023-03-31",
+          "field": "FN230",
+          "source_bits": 1253477313,
+          "artifact": "gpcw20230331.zip"
+        },
+        {
+          "period": "2023-06-30",
+          "field": "FN230",
+          "source_bits": 1250847460,
+          "artifact": "gpcw20230630.zip"
+        },
+        {
+          "period": "2023-06-30",
+          "field": "FN17",
+          "source_bits": 1332803738,
+          "artifact": "gpcw20230630.zip"
+        }
+      ],
+      "notes": [
+        {
+          "page": 11,
+          "anchors": [
+            "公司系铁岭市新城区唯一一家土地一级开发商"
+          ]
+        }
+      ]
+    },
+    {
+      "period": "2024-06-30",
+      "published_date": "2024-08-28",
+      "original_available_from": "2024-08-29T00:00:00+08:00",
+      "forecast_as_of": "2024-09-01T00:00:00+08:00",
+      "pdf_inventory_cny": "4060598436.80",
+      "source_inventory_cny": "4060598528",
+      "pdf_half_revenue_cny": "10283917.71",
+      "source_half_revenue_cny": "10283918.0",
+      "revenue_rounding_bound_cny": "0.385",
+      "source_inventory_minus_pdf_cny": "91.20",
+      "source_half_revenue_minus_pdf_cny": "0.29",
+      "source_inputs": [
+        {
+          "period": "2024-03-31",
+          "field": "FN230",
+          "source_bits": 1244459594,
+          "artifact": "gpcw20240331.zip"
+        },
+        {
+          "period": "2024-06-30",
+          "field": "FN230",
+          "source_bits": 1256414711,
+          "artifact": "gpcw20240630.zip"
+        },
+        {
+          "period": "2024-06-30",
+          "field": "FN17",
+          "source_bits": 1332873169,
+          "artifact": "gpcw20240630.zip"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "period": "2025-06-30",
+      "published_date": "2025-08-28",
+      "original_available_from": "2025-08-29T00:00:00+08:00",
+      "forecast_as_of": "2025-09-01T00:00:00+08:00",
+      "pdf_inventory_cny": "31281072.38",
+      "source_inventory_cny": "31281072",
+      "pdf_half_revenue_cny": "11509715.74",
+      "source_half_revenue_cny": "11509716.1875",
+      "revenue_rounding_bound_cny": "0.54125",
+      "source_inventory_minus_pdf_cny": "-0.38",
+      "source_half_revenue_minus_pdf_cny": "0.4475",
+      "source_inputs": [
+        {
+          "period": "2025-03-31",
+          "field": "FN230",
+          "source_bits": 1229160947,
+          "artifact": "gpcw20250331.zip"
+        },
+        {
+          "period": "2025-06-30",
+          "field": "FN230",
+          "source_bits": 1260611509,
+          "artifact": "gpcw20250630.zip"
+        },
+        {
+          "period": "2025-06-30",
+          "field": "FN17",
+          "source_bits": 1273931736,
+          "artifact": "gpcw20250630.zip"
+        }
+      ],
+      "notes": [
+        {
+          "page": 11,
+          "anchors": [
+            "并于2024年末完成重大资产出售，将原有业务剥离出表"
+          ]
+        },
+        {
+          "page": 16,
+          "anchors": [
+            "持股比例降至38.68%",
+            "不再纳入公司的合并报表范围"
+          ]
+        }
+      ]
+    }
+  ],
+  "status": "source_values_confirmed_historical_business_and_scope_break",
+  "original_failed_samples_retained": true,
+  "actual_fcff": null,
+  "boundary": "later-acquired original evidence; no strict PIT, automatic exclusion or full TTM revenue/target cash audit; no retrospective adoption",
+  "evidence": {
+    "ledger_sha256": "001fd2c45acde8ae4c8b026a8435ec834baeec29dae78704ae5c049fcfef220b",
+    "snapshot_sha256": "cfdbed237d7816723e9ff807d8e50fc8bfb96207b805c094a1367094f64f294c",
+    "code_sha256": "0a58dfbb41eef9da69775f73a47796d2c65e1e965ca7ac91e4000b0636423a2d"
+  }
+}

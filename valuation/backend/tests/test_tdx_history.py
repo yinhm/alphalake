@@ -964,3 +964,31 @@ def test_working_cash_expansion_sampling_source_and_failed_replication():
     assert metrics([r for r in result['results'] if r['code'] in original_codes],models)==saved['development_cohorts']['original60']==json.loads((directory/'development-v2-summary.json').read_bytes())['summary']
     assert metrics([r for r in result['results'] if r['code'] not in original_codes],models)==saved['development_cohorts']['additional600']
     assert business_diagnostics(p,result['results'])==saved['business_diagnostics']
+
+
+def test_business_break_original_values_timing_and_tampering(tmp_path):
+    import hashlib
+    from datetime import datetime,timezone
+    from tools.verify_tdx_business_break import verify
+    directory=ROOT/'valuation/research/tdx-working-cash-forecast/review-000809';ledger=json.loads((directory/'evidence.json').read_bytes());raw=(directory.parent/'snapshot-v3.json').read_bytes();source=json.loads(raw)
+    assert hashlib.sha256(raw).hexdigest()==ledger['snapshot_sha256']
+    result=verify(ledger,directory,source);saved=json.loads((directory/'reconciled.json').read_bytes())
+    assert result=={k:v for k,v in saved.items() if k!='evidence'}
+    assert [r['original_available_from'] for r in result['periods']]==['2022-08-21T00:00:00+08:00','2023-08-20T00:00:00+08:00','2024-08-29T00:00:00+08:00','2025-08-29T00:00:00+08:00']
+    assert result['actual_fcff'] is None and result['original_failed_samples_retained']
+    assert len([x for r in result['periods'] for x in r['source_inputs']])==12
+    bad=copy.deepcopy(ledger);bad['reports'][0]['rows'][0]['values'][0]='4106966944.86'
+    with pytest.raises(ValueError,match='row values'):verify(bad,directory,source)
+    bad=copy.deepcopy(source);next(r for r in bad['records'] if r['code']=='000809' and r['period']=='2022-06-30')['bits']['FN17']+=1
+    with pytest.raises(ValueError,match='inventory source bits'):verify(ledger,directory,bad)
+    bad=copy.deepcopy(ledger);bad['reports'][0]['notes'][0]['anchors']=['不存在的业务依据']
+    with pytest.raises(ValueError,match='business evidence'):verify(bad,directory,source)
+    bad=copy.deepcopy(ledger);bad['reports'][0]['rows'][0]['section']='母公司资产负债表'
+    with pytest.raises(ValueError,match='statement scope'):verify(bad,directory,source)
+    # Even when a changed catalogue hash is acknowledged, late publication is rejected semantically.
+    catalogue=json.loads((directory/'catalogue.json').read_bytes());a=next(a for a in catalogue['announcements'] if a['announcementId']==ledger['reports'][0]['announcement_id'])
+    a['announcementTime']=int(datetime(2022,9,1,tzinfo=timezone.utc).timestamp()*1000)
+    data=json.dumps(catalogue).encode();(tmp_path/'catalogue.json').write_bytes(data)
+    for report in ledger['reports']:(tmp_path/report['file']).symlink_to(directory/report['file'])
+    bad=copy.deepcopy(ledger);bad['catalogue_sha256']=hashlib.sha256(data).hexdigest()
+    with pytest.raises(ValueError,match='not available'):verify(bad,tmp_path,source)
