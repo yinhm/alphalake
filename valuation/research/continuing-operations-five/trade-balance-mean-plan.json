@@ -1,0 +1,60 @@
+{
+  "analysis_id": "fixed-five-trade-balance-mean-two-v1",
+  "inputs": {
+    "capital-snapshot.json": "685f86200322784ecf445e45f3d93a4b8e7d2601d218ab69d84d79513e6c99ed",
+    "study.json": "210c96f365a3e3fcddf7123f1824f95e9010eeba27807577e48f36a7e726bc62",
+    "baseline.json": "f8e6260300d8f32c1928344d817394544a0c16b3249a5374e1948b2e97fd9f26",
+    "multiyear-result.json.gz": "a4b92cbb93bd18fdd3682d800a460fa7dab598918ec90b5ebc66af6f98b31890",
+    "trade-balance-result.json.gz": "73ce4a629a1bf3d7e27f8e895b185adbd2b6c77c43cc250fcfefc6baee5ea8ce"
+  },
+  "codes": [
+    "300866",
+    "002032",
+    "000651",
+    "600887",
+    "603288"
+  ],
+  "origins": [
+    "2023-06-30",
+    "2024-06-30",
+    "2025-06-30"
+  ],
+  "horizons": [
+    1,
+    2,
+    3
+  ],
+  "evaluation_as_of": "2026-09-10T00:00:00+08:00",
+  "fields": {
+    "FN11": "accounts_receivable_net",
+    "FN17": "inventory_net",
+    "FN44": "accounts_payable"
+  },
+  "forecast": "base_balance * frozen_current_rule_revenue_forecast / base_TTM_revenue",
+  "benchmark": "repeat_base_balance",
+  "counterfactual": "base_balance * actual_target_TTM_revenue / base_TTM_revenue; hindsight_error_attribution_only_not_prediction",
+  "metrics": [
+    "mean_sum_absolute_component_error_pct_actual_revenue",
+    "component_WAPE",
+    "signed_three_balance_net_error_not_cashflow"
+  ],
+  "missing_policy": "retain_all_45_positions; zero_ambiguous_and_nonpositive_component_block; unavailable_future_retained; no_financial_scope_exclusion_or_full_DCF_admission_claim; retain baseline even when prior candidate input unavailable; same-quarter past input available by forecast cutoff only",
+  "decision": "development_screen_only_not_adoption; if any gate fails stop without scanning weights or alternate history lengths",
+  "method_source": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/noncashwc.htm",
+  "boundary": "three_balance_subset_not_complete_working_capital; historical_versions_later_acquired_not_strict_PIT; no_actual_FCFF_or_valuation_accuracy_claim; fixed_five_previously_exposed_not_independent",
+  "candidate": "mean of current and prior same-quarter balance / their own TTM revenue, multiplied by unchanged revenue forecast",
+  "candidate_fields": [
+    "FN11",
+    "FN17",
+    "FN44"
+  ],
+  "gates": {
+    "min_common_positions": 30,
+    "min_baseline_coverage": 1.0,
+    "min_gross_mae_improvement": 0.05,
+    "component_wape_nonworse": true,
+    "max_period_mae_ratio": 1.05,
+    "min_companies_nonworse": 4,
+    "require_repeat_balance_nonworse": true
+  }
+}
