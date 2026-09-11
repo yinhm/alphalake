@@ -1,0 +1,356 @@
+{
+  "protocol_id": "tdx-revenue-cagr-v1",
+  "phase": "development",
+  "candidates": 1800,
+  "common_companies": 519,
+  "summary": {
+    "short_quarter_yoy_median_revenue_only": {
+      "n": 1386,
+      "mae_pct": 21.0257804900929,
+      "wape_pct": 14.98166614303419,
+      "bias_pct": 6.946287514673449
+    },
+    "three_year_ttm_cagr": {
+      "n": 1386,
+      "mae_pct": 22.113122802983572,
+      "wape_pct": 16.251422897316328,
+      "bias_pct": 8.69152160574904
+    },
+    "zero_growth": {
+      "n": 1386,
+      "mae_pct": 19.654531096316507,
+      "wape_pct": 13.93541938854038,
+      "bias_pct": 3.6732444403017337
+    }
+  },
+  "independent": {
+    "short_quarter_yoy_median_revenue_only": {
+      "n": 1726,
+      "mae_pct": 23.292097658542428,
+      "wape_pct": 15.142511597566141,
+      "bias_pct": 8.288647880520998
+    },
+    "three_year_ttm_cagr": {
+      "n": 1386,
+      "mae_pct": 22.113122802983572,
+      "wape_pct": 16.251422897316328,
+      "bias_pct": 8.69152160574904
+    },
+    "zero_growth": {
+      "n": 1728,
+      "mae_pct": 21.872884867932044,
+      "wape_pct": 14.210355614803916,
+      "bias_pct": 4.219845203140307
+    }
+  },
+  "statuses": {
+    "incomplete_forecasts": 385,
+    "evaluated": 1386,
+    "blocked": 29
+  },
+  "by_origin": {
+    "2023-06-30": {
+      "short_quarter_yoy_median_revenue_only": {
+        "n": 410,
+        "mae_pct": 26.30109578046525,
+        "wape_pct": 18.249812358893035,
+        "bias_pct": 12.044934180868205
+      },
+      "three_year_ttm_cagr": {
+        "n": 410,
+        "mae_pct": 27.614278963685617,
+        "wape_pct": 20.22287388575766,
+        "bias_pct": 15.889420942666328
+      },
+      "zero_growth": {
+        "n": 410,
+        "mae_pct": 23.077473943546305,
+        "wape_pct": 15.498895630078316,
+        "bias_pct": 7.234313716031722
+      }
+    },
+    "2024-06-30": {
+      "short_quarter_yoy_median_revenue_only": {
+        "n": 457,
+        "mae_pct": 19.3325641601418,
+        "wape_pct": 13.675208137097108,
+        "bias_pct": 6.697590880646186
+      },
+      "three_year_ttm_cagr": {
+        "n": 457,
+        "mae_pct": 20.26900414664626,
+        "wape_pct": 14.255268878696223,
+        "bias_pct": 8.71539573777921
+      },
+      "zero_growth": {
+        "n": 457,
+        "mae_pct": 18.06698263100364,
+        "wape_pct": 12.005730560426459,
+        "bias_pct": 4.022216854773328
+      }
+    },
+    "2025-06-30": {
+      "short_quarter_yoy_median_revenue_only": {
+        "n": 519,
+        "mae_pct": 18.34932691347438,
+        "wape_pct": 13.304468067067328,
+        "bias_pct": 3.1374420977382047
+      },
+      "three_year_ttm_cagr": {
+        "n": 519,
+        "mae_pct": 19.39113474914602,
+        "wape_pct": 14.57999654288131,
+        "bias_pct": 2.9842977011751
+      },
+      "zero_growth": {
+        "n": 519,
+        "mae_pct": 18.348371330003914,
+        "wape_pct": 14.30411111799223,
+        "bias_pct": 0.5527843315101851
+      }
+    }
+  },
+  "by_origin_coverage": {
+    "2023-06-30": {
+      "candidates": 600,
+      "statuses": {
+        "incomplete_forecasts": 173,
+        "evaluated": 410,
+        "blocked": 17
+      },
+      "independent": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 554,
+          "mae_pct": 33.05351764749247,
+          "wape_pct": 18.401503621145608,
+          "bias_pct": 17.843575821622817
+        },
+        "three_year_ttm_cagr": {
+          "n": 410,
+          "mae_pct": 27.614278963685617,
+          "wape_pct": 20.22287388575766,
+          "bias_pct": 15.889420942666328
+        },
+        "zero_growth": {
+          "n": 556,
+          "mae_pct": 29.056903601418338,
+          "wape_pct": 15.73538258059698,
+          "bias_pct": 11.764363632106786
+        }
+      }
+    },
+    "2024-06-30": {
+      "candidates": 600,
+      "statuses": {
+        "incomplete_forecasts": 132,
+        "evaluated": 457,
+        "blocked": 11
+      },
+      "independent": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 583,
+          "mae_pct": 19.171420414617423,
+          "wape_pct": 13.884027287884509,
+          "bias_pct": 5.097478385205116
+        },
+        "three_year_ttm_cagr": {
+          "n": 457,
+          "mae_pct": 20.26900414664626,
+          "wape_pct": 14.255268878696223,
+          "bias_pct": 8.71539573777921
+        },
+        "zero_growth": {
+          "n": 583,
+          "mae_pct": 18.38277323710211,
+          "wape_pct": 12.400766653411809,
+          "bias_pct": 1.8074266013725828
+        }
+      }
+    },
+    "2025-06-30": {
+      "candidates": 600,
+      "statuses": {
+        "incomplete_forecasts": 80,
+        "evaluated": 519,
+        "blocked": 1
+      },
+      "independent": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 589,
+          "mae_pct": 18.189428998661203,
+          "wape_pct": 13.361553192819299,
+          "bias_pct": 2.4601618642200638
+        },
+        "three_year_ttm_cagr": {
+          "n": 519,
+          "mae_pct": 19.39113474914602,
+          "wape_pct": 14.57999654288131,
+          "bias_pct": 2.9842977011751
+        },
+        "zero_growth": {
+          "n": 589,
+          "mae_pct": 18.545925046124694,
+          "wape_pct": 14.509576801814893,
+          "bias_pct": -0.5141313701615251
+        }
+      }
+    }
+  },
+  "by_profit_group": {
+    "positive": {
+      "candidates": 1289,
+      "independent": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 1288,
+          "mae_pct": 22.206568808455273,
+          "wape_pct": 14.905736702630556,
+          "bias_pct": 10.174536230010737
+        },
+        "three_year_ttm_cagr": {
+          "n": 1012,
+          "mae_pct": 20.115579757642426,
+          "wape_pct": 16.088683880895573,
+          "bias_pct": 10.56933304074665
+        },
+        "zero_growth": {
+          "n": 1288,
+          "mae_pct": 20.131730982520832,
+          "wape_pct": 13.93777804334922,
+          "bias_pct": 4.1990187483743036
+        }
+      },
+      "common": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 1012,
+          "mae_pct": 18.841584068807695,
+          "wape_pct": 14.752757689649286,
+          "bias_pct": 7.762278719910696
+        },
+        "three_year_ttm_cagr": {
+          "n": 1012,
+          "mae_pct": 20.115579757642426,
+          "wape_pct": 16.088683880895573,
+          "bias_pct": 10.56933304074665
+        },
+        "zero_growth": {
+          "n": 1012,
+          "mae_pct": 16.812870017740178,
+          "wape_pct": 13.686065808070763,
+          "bias_pct": 2.6763123498408095
+        }
+      }
+    },
+    "nonpositive": {
+      "candidates": 441,
+      "independent": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 438,
+          "mae_pct": 26.484246423182277,
+          "wape_pct": 17.488870918096854,
+          "bias_pct": 2.7429305422954626
+        },
+        "three_year_ttm_cagr": {
+          "n": 374,
+          "mae_pct": 27.518239278612548,
+          "wape_pct": 17.880460252684777,
+          "bias_pct": 3.6103847816378596
+        },
+        "zero_growth": {
+          "n": 438,
+          "mae_pct": 27.051446373999,
+          "wape_pct": 16.90975146337507,
+          "bias_pct": 4.3417771634897875
+        }
+      },
+      "common": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 374,
+          "mae_pct": 26.935959041805802,
+          "wape_pct": 17.27306761346895,
+          "bias_pct": 4.738311312266779
+        },
+        "three_year_ttm_cagr": {
+          "n": 374,
+          "mae_pct": 27.518239278612548,
+          "wape_pct": 17.880460252684777,
+          "bias_pct": 3.6103847816378596
+        },
+        "zero_growth": {
+          "n": 374,
+          "mae_pct": 27.343731661875996,
+          "wape_pct": 16.431479068719668,
+          "bias_pct": 6.370825390960705
+        }
+      }
+    },
+    "unknown": {
+      "candidates": 70,
+      "independent": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 0,
+          "mae_pct": null,
+          "wape_pct": null,
+          "bias_pct": null
+        },
+        "three_year_ttm_cagr": {
+          "n": 0,
+          "mae_pct": null,
+          "wape_pct": null,
+          "bias_pct": null
+        },
+        "zero_growth": {
+          "n": 2,
+          "mae_pct": 9.071017244089587,
+          "wape_pct": 14.886998142287656,
+          "bias_pct": -9.071017244089587
+        }
+      },
+      "common": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 0,
+          "mae_pct": null,
+          "wape_pct": null,
+          "bias_pct": null
+        },
+        "three_year_ttm_cagr": {
+          "n": 0,
+          "mae_pct": null,
+          "wape_pct": null,
+          "bias_pct": null
+        },
+        "zero_growth": {
+          "n": 0,
+          "mae_pct": null,
+          "wape_pct": null,
+          "bias_pct": null
+        }
+      }
+    }
+  },
+  "decision": {
+    "passed": false,
+    "checks": {
+      "minimum_pairs": true,
+      "minimum_companies": true,
+      "each_origin_minimum": true,
+      "coverage_retention": false,
+      "primary_improvement": false,
+      "wape_nonworse": false,
+      "zero_growth_nonworse": false,
+      "each_origin_nonworse": false,
+      "leave_one_company_out_nonworse": false
+    }
+  },
+  "amount_unit": "million_CNY",
+  "boundary": "frozen_development_revenue_input_test_not_FCFF_or_strict_PIT; three_year_window_is_project_assumption; no_holdout_scoring_before_passing_development",
+  "evidence": {
+    "protocol_sha256": "9604ee4003117b454ed8fdc2606311117e214dab18d7bc747c1564d280f3a32d",
+    "snapshot_sha256": "9e87dad4b1e261d229b7d5b55f6e57b8b3ee5f4a893076d352971e2f53efe3ff",
+    "origin_diagnostics_sha256": "d163190e2259822d184fe142ed2122cd04072a6cd8f454083d565e9179d197e4",
+    "helpers": {
+      "tools/backtest_tdx_revenue_cagr.py": "7630c8f81e965208289583008c535c916b6a542178ea0c65f8850d211725a3d7",
+      "tools/backtest_tdx_history.py": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+      "data_sources/alphalake.py": "7250a086357095d2c58be7bdaddde773287545b729fba27a6b68feece7f550ee"
+    }
+  }
+}
