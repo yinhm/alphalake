@@ -51,3 +51,23 @@ def test_real_reports_profit_pair_and_tamper(tmp_path, monkeypatch):
     target=bad/reports[0]['pdf_file'];target.unlink();target.write_bytes(b'corrupt PDF')
     with pytest.raises(ValueError,match='PDF hash'):
         build(copy,bad)
+
+
+def test_capex_scope_remains_unreviewed_and_tamper_rejected(tmp_path, monkeypatch):
+    from tools.verify_analyst_capex import verify
+    monkeypatch.chdir(ROOT)
+    if not all((PDFS/r['pdf_file']).exists() for r in json.loads((SOURCE/'sources.json').read_bytes())):
+        pytest.skip('six original broker PDFs absent; restore sources.json URLs and hashes')
+    result = verify(SOURCE,PDFS)
+    assert len(result['reports']) == 6 and result['eligible'] == 0
+    copy = tmp_path/'capex'; copy.mkdir()
+    shutil.copyfile(SOURCE/'sources.json',copy/'sources.json')
+    path = copy/'capex-scope.json'
+    for change in ('amount','year','admission'):
+        bad = json.loads((SOURCE/'capex-scope.json').read_bytes())
+        row = bad['reports'][0]
+        if change == 'amount': row['printed_million_cny'][3] += 1
+        elif change == 'year': row['years'][3] = '2030E'
+        else: row['eligible_forecasts'] = 3
+        path.write_text(json.dumps(bad))
+        with pytest.raises(AssertionError): verify(copy,PDFS)

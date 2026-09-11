@@ -1,0 +1,276 @@
+{
+  "scope": "same_six_reports_capex_definition_audit_not_forecast_scoring",
+  "sources_sha256": "b7daa5ad9802ef6fc0587290f15eb569600161510a6a334e5e1b09a0108aa02e",
+  "source_sha256": "685f86200322784ecf445e45f3d93a4b8e7d2601d218ab69d84d79513e6c99ed",
+  "reports": [
+    {
+      "code": "300866",
+      "info_code": "AP202308311596906163",
+      "pdf_file": "AP202308311596906163.pdf",
+      "pdf_sha256": "967d3a99421687c8ee8ba9afc516cd08d661babbcf231124b5e1fe83a1e59ab1",
+      "page": 2,
+      "label": "资本开支",
+      "years": [
+        "2020",
+        "2021",
+        "2022",
+        "2023E",
+        "2024E",
+        "2025E"
+      ],
+      "printed_million_cny": [
+        -30,
+        -207,
+        -1144,
+        -471,
+        -422,
+        -422
+      ],
+      "historical": [
+        {
+          "year": "2020",
+          "printed_million_cny": -30,
+          "status": "missing_in_frozen_source"
+        },
+        {
+          "year": "2021",
+          "printed_million_cny": -207,
+          "tdx_purchase_cash_cny": "207129488",
+          "bits": 1296402617,
+          "artifact": "gpcw20211231.zip",
+          "status": "numeric_match_only"
+        },
+        {
+          "year": "2022",
+          "printed_million_cny": -1144,
+          "tdx_purchase_cash_cny": "1144162304",
+          "bits": 1317561616,
+          "artifact": "gpcw20221231.zip",
+          "status": "numeric_match_only"
+        }
+      ],
+      "status": "unreviewed_capex_definition",
+      "eligible_forecasts": 0,
+      "unit": "人民币百万元"
+    },
+    {
+      "code": "300866",
+      "info_code": "AP202408311639673106",
+      "pdf_file": "AP202408311639673106.pdf",
+      "pdf_sha256": "ced31c009617389fe361814705c81c8b467b9bc5dc13fd9f71902f9d0662ffec",
+      "page": 6,
+      "label": "资本支出",
+      "years": [
+        "2022A",
+        "2023A",
+        "2024E",
+        "2025E",
+        "2026E"
+      ],
+      "printed_million_cny": [
+        1144,
+        70,
+        64,
+        61,
+        56
+      ],
+      "historical": [
+        {
+          "year": "2022A",
+          "printed_million_cny": 1144,
+          "tdx_purchase_cash_cny": "1144162304",
+          "bits": 1317561616,
+          "artifact": "gpcw20221231.zip",
+          "status": "numeric_match_only"
+        },
+        {
+          "year": "2023A",
+          "printed_million_cny": 70,
+          "tdx_purchase_cash_cny": "70296552",
+          "bits": 1283855485,
+          "artifact": "gpcw20231231.zip",
+          "status": "numeric_match_only"
+        }
+      ],
+      "status": "unreviewed_capex_definition",
+      "eligible_forecasts": 0,
+      "unit": "利润表(百万元)"
+    },
+    {
+      "code": "300866",
+      "info_code": "AP202508311737221901",
+      "pdf_file": "AP202508311737221901.pdf",
+      "pdf_sha256": "cdcb9cfc1f4839b0a64c03014f5c5cd19841080d4f3b4480867d409b11ffde46",
+      "page": 3,
+      "label": "资本开支",
+      "years": [
+        "2023",
+        "2024",
+        "2025E",
+        "2026E",
+        "2027E"
+      ],
+      "printed_million_cny": [
+        0,
+        -1544,
+        -2000,
+        -4000,
+        -6000
+      ],
+      "historical": [
+        {
+          "year": "2023",
+          "printed_million_cny": 0,
+          "tdx_purchase_cash_cny": "70296552",
+          "bits": 1283855485,
+          "artifact": "gpcw20231231.zip",
+          "status": "differs_from_gross_purchase_cash"
+        },
+        {
+          "year": "2024",
+          "printed_million_cny": -1544,
+          "tdx_purchase_cash_cny": "428881984",
+          "bits": 1305248194,
+          "artifact": "gpcw20241231.zip",
+          "status": "differs_from_gross_purchase_cash"
+        }
+      ],
+      "status": "unreviewed_capex_definition",
+      "eligible_forecasts": 0,
+      "unit": "利润表（百万元）"
+    },
+    {
+      "code": "002032",
+      "info_code": "AP202308311596883311",
+      "pdf_file": "AP202308311596883311.pdf",
+      "pdf_sha256": "b78dbc2e266f818faa29ca2980fd47a75eb0f508087673e100114bca5c43aa44",
+      "page": 3,
+      "label": "资本支出",
+      "years": [
+        "2021A",
+        "2022A",
+        "2023E",
+        "2024E",
+        "2025E"
+      ],
+      "printed_million_cny": [
+        -225,
+        -160,
+        -1,
+        -1,
+        -1
+      ],
+      "historical": [
+        {
+          "year": "2021A",
+          "printed_million_cny": -225,
+          "tdx_purchase_cash_cny": "228405536",
+          "bits": 1297732370,
+          "artifact": "gpcw20211231.zip",
+          "status": "differs_from_gross_purchase_cash"
+        },
+        {
+          "year": "2022A",
+          "printed_million_cny": -160,
+          "tdx_purchase_cash_cny": "165432736",
+          "bits": 1293796570,
+          "artifact": "gpcw20221231.zip",
+          "status": "differs_from_gross_purchase_cash"
+        }
+      ],
+      "status": "unreviewed_capex_definition",
+      "eligible_forecasts": 0,
+      "unit": "单位:百万元"
+    },
+    {
+      "code": "002032",
+      "info_code": "AP202407251638296815",
+      "pdf_file": "AP202407251638296815.pdf",
+      "pdf_sha256": "8108784165d03e9cfe56e975a19944c127a16cdf776ed2d1f2abe94378460c9f",
+      "page": 3,
+      "label": "资本支出",
+      "years": [
+        "2023",
+        "2024E",
+        "2025E",
+        "2026E"
+      ],
+      "printed_million_cny": [
+        -135,
+        -176,
+        -187,
+        -181
+      ],
+      "historical": [
+        {
+          "year": "2023",
+          "printed_million_cny": -135,
+          "tdx_purchase_cash_cny": "137477520",
+          "bits": 1292049369,
+          "artifact": "gpcw20231231.zip",
+          "status": "differs_from_gross_purchase_cash"
+        }
+      ],
+      "status": "unreviewed_capex_definition",
+      "eligible_forecasts": 0,
+      "unit": "单位:百万元"
+    },
+    {
+      "code": "002032",
+      "info_code": "AP202508301736875870",
+      "pdf_file": "AP202508301736875870.pdf",
+      "pdf_sha256": "2839b2ec2eb5bc46701b8629963b346485592a1330fdcb296194cc04eb60c15e",
+      "page": 2,
+      "label": "资本开支",
+      "years": [
+        "2022",
+        "2023",
+        "2024",
+        "2025E",
+        "2026E",
+        "2027E"
+      ],
+      "printed_million_cny": [
+        -160,
+        -135,
+        -199,
+        -23,
+        -22,
+        -22
+      ],
+      "historical": [
+        {
+          "year": "2022",
+          "printed_million_cny": -160,
+          "tdx_purchase_cash_cny": "165432736",
+          "bits": 1293796570,
+          "artifact": "gpcw20221231.zip",
+          "status": "differs_from_gross_purchase_cash"
+        },
+        {
+          "year": "2023",
+          "printed_million_cny": -135,
+          "tdx_purchase_cash_cny": "137477520",
+          "bits": 1292049369,
+          "artifact": "gpcw20231231.zip",
+          "status": "differs_from_gross_purchase_cash"
+        },
+        {
+          "year": "2024",
+          "printed_million_cny": -199,
+          "tdx_purchase_cash_cny": "208214256",
+          "bits": 1296470415,
+          "artifact": "gpcw20241231.zip",
+          "status": "differs_from_gross_purchase_cash"
+        }
+      ],
+      "status": "unreviewed_capex_definition",
+      "eligible_forecasts": 0,
+      "unit": "人民币百万元"
+    }
+  ],
+  "positions": 18,
+  "eligible": 0,
+  "decision": "stop direct substitution of broker capital-expenditure line for FN114; no score or policy adoption",
+  "boundary": "printed negative signs retained; absolute magnitude comparison is diagnostic only and does not establish scope; no inference that residual equals disposals, acquisitions or errors; later acquired source, not strict PIT"
+}

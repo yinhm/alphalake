@@ -177,3 +177,5 @@ else:target.write_text(encoded)
 print(json.dumps(result['summary'],ensure_ascii=False,indent=2))
 PY
 ```
+
+[资本开支口径检查](capex-scope.md)另确认：同六份报告的18项预测均未获得购建现金准入，不能直接补入FN114或FCFF，停止这条替代路径。
