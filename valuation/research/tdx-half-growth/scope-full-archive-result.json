@@ -1,0 +1,285 @@
+{
+  "audit_id": "tdx-half-growth-source-review-v1",
+  "checks": [
+    {
+      "code": "000876",
+      "periods": [
+        "2024-03-31"
+      ],
+      "pdf_cny": "23908453072.71",
+      "tdx_cny": "23908452352",
+      "difference_cny": "-720.71",
+      "rounding_bound_cny": "1024.02",
+      "source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "bits": 1353851329
+        }
+      ]
+    },
+    {
+      "code": "000876",
+      "periods": [
+        "2024-06-30"
+      ],
+      "pdf_cny": "25668924563.89",
+      "tdx_cny": "25668925440",
+      "difference_cny": "876.11",
+      "rounding_bound_cny": "1024.02",
+      "source_inputs": [
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "bits": 1354710935
+        }
+      ]
+    },
+    {
+      "code": "000876",
+      "periods": [
+        "2024-09-30"
+      ],
+      "pdf_cny": "27631772053.01",
+      "tdx_cny": "27631771648",
+      "difference_cny": "-405.01",
+      "rounding_bound_cny": "1024.02",
+      "source_inputs": [
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "bits": 1355669356
+        }
+      ]
+    },
+    {
+      "code": "000876",
+      "periods": [
+        "2024-12-31"
+      ],
+      "pdf_cny": "25853812564.73",
+      "tdx_cny": "25853812736",
+      "difference_cny": "171.27",
+      "rounding_bound_cny": "1024.02",
+      "source_inputs": [
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "bits": 1354801212
+        }
+      ]
+    },
+    {
+      "code": "002714",
+      "periods": [
+        "2023-03-31"
+      ],
+      "pdf_cny": "24198301291.41",
+      "tdx_cny": "24198301696",
+      "difference_cny": "404.59",
+      "rounding_bound_cny": "1024.02",
+      "source_inputs": [
+        {
+          "period": "2023-03-31",
+          "artifact": "gpcw20230331.zip",
+          "bits": 1353992857
+        }
+      ]
+    },
+    {
+      "code": "002714",
+      "periods": [
+        "2023-06-30"
+      ],
+      "pdf_cny": "27670673174.68",
+      "tdx_cny": "27670673408",
+      "difference_cny": "233.32",
+      "rounding_bound_cny": "1024.02",
+      "source_inputs": [
+        {
+          "period": "2023-06-30",
+          "artifact": "gpcw20230630.zip",
+          "bits": 1355688351
+        }
+      ]
+    },
+    {
+      "code": "002714",
+      "periods": [
+        "2023-09-30"
+      ],
+      "pdf_cny": "31099681034.63",
+      "tdx_cny": "31099680768",
+      "difference_cny": "-266.63",
+      "rounding_bound_cny": "1024.02",
+      "source_inputs": [
+        {
+          "period": "2023-09-30",
+          "artifact": "gpcw20230930.zip",
+          "bits": 1357362671
+        }
+      ]
+    },
+    {
+      "code": "002714",
+      "periods": [
+        "2023-12-31"
+      ],
+      "pdf_cny": "27892072213.68",
+      "tdx_cny": "27892072448",
+      "difference_cny": "234.32",
+      "rounding_bound_cny": "1024.02",
+      "source_inputs": [
+        {
+          "period": "2023-12-31",
+          "artifact": "gpcw20231231.zip",
+          "bits": 1355796456
+        }
+      ]
+    },
+    {
+      "code": "002459",
+      "periods": [
+        "2024-03-31"
+      ],
+      "pdf_cny": "15971496835.21",
+      "tdx_cny": "15971496960",
+      "difference_cny": "124.79",
+      "rounding_bound_cny": "512.02",
+      "source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "bits": 1349385837
+        }
+      ]
+    },
+    {
+      "code": "002459",
+      "periods": [
+        "2024-06-30"
+      ],
+      "pdf_cny": "21385034158.57",
+      "tdx_cny": "21385033728",
+      "difference_cny": "-430.57",
+      "rounding_bound_cny": "1024.02",
+      "source_inputs": [
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "bits": 1352619191
+        }
+      ]
+    },
+    {
+      "code": "002459",
+      "periods": [
+        "2024-09-30"
+      ],
+      "pdf_cny": "16991324029.89",
+      "tdx_cny": "16991324160",
+      "difference_cny": "130.11",
+      "rounding_bound_cny": "512.02",
+      "source_inputs": [
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "bits": 1350381762
+        }
+      ]
+    },
+    {
+      "code": "002459",
+      "periods": [
+        "2024-12-31"
+      ],
+      "pdf_cny": "15772842006.06",
+      "tdx_cny": "15772841984",
+      "difference_cny": "-22.06",
+      "rounding_bound_cny": "512.02",
+      "source_inputs": [
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "bits": 1349191838
+        }
+      ]
+    },
+    {
+      "code": "002459",
+      "periods": [
+        "2023-03-31",
+        "2023-06-30"
+      ],
+      "pdf_cny": "40842723878.08",
+      "tdx_cny": "40842723328",
+      "difference_cny": "-550.08",
+      "rounding_bound_cny": "2048.02",
+      "source_inputs": [
+        {
+          "period": "2023-03-31",
+          "artifact": "gpcw20230331.zip",
+          "bits": 1352177435
+        },
+        {
+          "period": "2023-06-30",
+          "artifact": "gpcw20230630.zip",
+          "bits": 1352119861
+        }
+      ]
+    },
+    {
+      "code": "002459",
+      "periods": [
+        "2022-03-31",
+        "2022-06-30"
+      ],
+      "pdf_cny": "28468627908.57",
+      "tdx_cny": "28468627456",
+      "difference_cny": "-452.57",
+      "rounding_bound_cny": "1024.02",
+      "source_inputs": [
+        {
+          "period": "2022-03-31",
+          "artifact": "gpcw20220331.zip",
+          "bits": 1345820661
+        },
+        {
+          "period": "2022-06-30",
+          "artifact": "gpcw20220630.zip",
+          "bits": 1349558077
+        }
+      ]
+    },
+    {
+      "code": "002459",
+      "periods": [
+        "2022-03-31",
+        "2022-06-30"
+      ],
+      "pdf_cny": "28468627908.57",
+      "tdx_cny": "28468627456",
+      "difference_cny": "-452.57",
+      "rounding_bound_cny": "1024.02",
+      "source_inputs": [
+        {
+          "period": "2022-03-31",
+          "artifact": "gpcw20220331.zip",
+          "bits": 1345820661
+        },
+        {
+          "period": "2022-06-30",
+          "artifact": "gpcw20220630.zip",
+          "bits": 1349558077
+        }
+      ]
+    }
+  ],
+  "business_phrases": 3,
+  "full_archive_checked": true,
+  "boundary": "post_hoc_partial_source_audit_not_forecast_validation_or_strict_PIT",
+  "evidence": {
+    "config_sha256": "1045b9858e26ee6cc02f89e3acc7dc527222f31d9dc6de833b40c4464bfb0ab0",
+    "code_sha256": "cf4f1a85e54154dd5ad4b2726fcaa85f952faac33b89ae949d1426c26ec49117"
+  }
+}

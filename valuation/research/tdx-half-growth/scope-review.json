@@ -1,0 +1,191 @@
+{
+  "audit_id": "tdx-half-growth-source-review-v1",
+  "source": {
+    "path": "valuation/research/tdx-half-growth/first-year-holdout-snapshot.json",
+    "sha256": "667ee5b1cf7e4e15e8048d645d6cf1dd66dfd65ca353e561032e769859ffe625"
+  },
+  "documents": [
+    {
+      "code": "000876",
+      "full_path": "workspace/tdx-half-growth-scope-20260911/000876-2024-summary.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-04-26/1223314073.PDF",
+      "full_sha256": "7a8bb2db4fb1cc40244ecfbaa6884b175ebb5c0f2ed0005f54a3b78d00f1df72",
+      "archive_verified_at": "2026-09-11T05:33:13.381663+00:00",
+      "download_time_precision": "not_recorded_separately",
+      "selected_path": "valuation/research/tdx-half-growth/scope-evidence/000876-2024-summary.pdf",
+      "selected_sha256": "adbdf77cb74a0a27f92e2db9e583b641778438d7f428e4730f2d377ab76cc4b0",
+      "original_pages": [
+        2,
+        3,
+        4
+      ],
+      "checks": [
+        {
+          "page": 4,
+          "section": "分季度主要会计数据",
+          "anchor": "营业收入",
+          "values": [
+            "23908453072.71",
+            "25668924563.89",
+            "27631772053.01",
+            "25853812564.73"
+          ],
+          "source_period_groups": [
+            [
+              "2024-03-31"
+            ],
+            [
+              "2024-06-30"
+            ],
+            [
+              "2024-09-30"
+            ],
+            [
+              "2024-12-31"
+            ]
+          ]
+        }
+      ],
+      "contains": [
+        [
+          2,
+          "营收下降主要是由于公司在2023年底转让了白羽肉禽和食品深加工板块的控股权"
+        ]
+      ]
+    },
+    {
+      "code": "002714",
+      "full_path": "workspace/tdx-half-growth-scope-20260911/002714-2023.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-27/1219861302.PDF",
+      "full_sha256": "504e75272708990866030e46324e0f373ca7a52abadca561aaf00fcea1f1c469",
+      "archive_verified_at": "2026-09-11T05:33:13.899831+00:00",
+      "download_time_precision": "not_recorded_separately",
+      "selected_path": "valuation/research/tdx-half-growth/scope-evidence/002714-2023.pdf",
+      "selected_sha256": "68cf12489ca48a82af0efdcb21ea3b7714c5bd32ea8538cc0c956a459d92d2ee",
+      "original_pages": [
+        10,
+        14
+      ],
+      "checks": [
+        {
+          "page": 10,
+          "section": "分季度主要财务指标",
+          "anchor": "营业收入",
+          "values": [
+            "24198301291.41",
+            "27670673174.68",
+            "31099681034.63",
+            "27892072213.68"
+          ],
+          "source_period_groups": [
+            [
+              "2023-03-31"
+            ],
+            [
+              "2023-06-30"
+            ],
+            [
+              "2023-09-30"
+            ],
+            [
+              "2023-12-31"
+            ]
+          ]
+        }
+      ],
+      "contains": [
+        [
+          14,
+          "2023年全年，生猪价格整体维持低位运行"
+        ]
+      ]
+    },
+    {
+      "code": "002459",
+      "full_path": "workspace/tdx-half-growth-scope-20260911/002459-2024.pdf",
+      "url": "https://disc.static.szse.cn/disc/disk03/finalpage/2025-04-24/02b2c06f-8240-4e40-a7db-6daaf3df0f98.PDF",
+      "full_sha256": "e3e901eb522dfff4dc2578f8115803be0e60c074657b8f396998d5f6926680be",
+      "archive_verified_at": "2026-09-11T05:33:14.503065+00:00",
+      "download_time_precision": "not_recorded_separately",
+      "selected_path": "valuation/research/tdx-half-growth/scope-evidence/002459-2024.pdf",
+      "selected_sha256": "33b33cfba00e1fb14c2229f0daefad75efa693f164bc4c9e907eb0a55a653abb",
+      "original_pages": [
+        9,
+        35
+      ],
+      "checks": [
+        {
+          "page": 9,
+          "section": "分季度主要财务指标",
+          "anchor": "营业收入",
+          "values": [
+            "15971496835.21",
+            "21385034158.57",
+            "16991324029.89",
+            "15772842006.06"
+          ],
+          "source_period_groups": [
+            [
+              "2024-03-31"
+            ],
+            [
+              "2024-06-30"
+            ],
+            [
+              "2024-09-30"
+            ],
+            [
+              "2024-12-31"
+            ]
+          ]
+        }
+      ],
+      "contains": [
+        [
+          35,
+          "受光伏行业产品销售价格下降影响"
+        ]
+      ]
+    },
+    {
+      "code": "002459",
+      "full_path": "workspace/tdx-half-growth-scope-20260911/002459-2023H1.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-08-31/1217717838.PDF",
+      "full_sha256": "44a162d095e5917a4010422aab9a59d3082a41ed42f742097b7dfdb424d6d077",
+      "archive_verified_at": "2026-09-11T05:33:14.857777+00:00",
+      "download_time_precision": "not_recorded_separately",
+      "selected_path": "valuation/research/tdx-half-growth/scope-evidence/002459-2023H1.pdf",
+      "selected_sha256": "ce8d9c611af0a8fee065f384d3eb78037c3547b1cdd7bce5662963152b41a74a",
+      "original_pages": [
+        8
+      ],
+      "checks": [
+        {
+          "page": 8,
+          "section": "主要会计数据和财务指标",
+          "anchor": "营业收入（元）",
+          "values": [
+            "40842723878.08",
+            "28468627908.57",
+            "28468627908.57"
+          ],
+          "source_period_groups": [
+            [
+              "2023-03-31",
+              "2023-06-30"
+            ],
+            [
+              "2022-03-31",
+              "2022-06-30"
+            ],
+            [
+              "2022-03-31",
+              "2022-06-30"
+            ]
+          ]
+        }
+      ],
+      "contains": []
+    }
+  ]
+}
