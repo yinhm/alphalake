@@ -1,0 +1,111 @@
+{
+  "code": "000651",
+  "report_period": "2025-12-31",
+  "documents": {
+    "annual": {
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-29/1225250396.PDF",
+      "fetched_at": "2026-09-11T21:04:40.401625+00:00",
+      "sha256": "7cc972f2d199e2ec3797cc5da479e8268afa59b77875770de3bcd3648242fb8c",
+      "size": 2350012,
+      "file": "2025-annual.pdf",
+      "title": "珠海格力电器股份有限公司2025年年度报告",
+      "report_period": "2025-12-31"
+    },
+    "finance": {
+      "url": "https://static.cninfo.com.cn/finalpage/2026-04-29/1225250405.PDF",
+      "fetched_at": "2026-09-11T21:05:27.709935+00:00",
+      "sha256": "5258da10fa2ccd2545ccb4b097ede28b45ca3ce151f234c6ef47161cbf0c3587",
+      "size": 213946,
+      "file": "2025-finance-risk.pdf",
+      "title": "关于珠海格力集团财务有限责任公司的风险评估报告",
+      "report_period": "2025-12-31"
+    }
+  },
+  "source_sha256": "685f86200322784ecf445e45f3d93a4b8e7d2601d218ab69d84d79513e6c99ed",
+  "notes": [
+    {
+      "item": "finance_assets",
+      "label": "资产规模为",
+      "amount": "4635991",
+      "unit": "万元",
+      "page": 7
+    },
+    {
+      "item": "finance_liabilities",
+      "label": "负债总额为",
+      "amount": "3899309",
+      "unit": "万元",
+      "page": 7
+    },
+    {
+      "item": "finance_equity",
+      "label": "所有者权益为",
+      "amount": "736682",
+      "unit": "万元",
+      "page": 7
+    },
+    {
+      "item": "finance_revenue",
+      "label": "营业总收入为",
+      "amount": "92860",
+      "unit": "万元",
+      "page": 7
+    },
+    {
+      "item": "finance_net_income",
+      "label": "净利润为",
+      "amount": "20508",
+      "unit": "万元",
+      "page": 7
+    },
+    {
+      "item": "parent_deposit",
+      "label": "存款余额为",
+      "amount": "249.75",
+      "unit": "亿元",
+      "page": 7
+    },
+    {
+      "item": "parent_loan",
+      "label": "贷款余额为",
+      "amount": "0",
+      "unit": "亿元",
+      "page": 7
+    }
+  ],
+  "tdx_checks": [
+    {
+      "field": "FN506",
+      "label": "利息收入五、55",
+      "amount_cny": "671102741.84",
+      "page": 88
+    },
+    {
+      "field": "FN509",
+      "label": "利息支出五、55",
+      "amount_cny": "26783481.38",
+      "page": 88
+    },
+    {
+      "field": "FN510",
+      "label": "手续费及佣金支出",
+      "amount_cny": "321690.16",
+      "page": 88
+    },
+    {
+      "field": "FN413",
+      "label": "吸收存款及同业存放五、35",
+      "amount_cny": "208923102.80",
+      "page": 87
+    }
+  ],
+  "status": "partial_finance_scope_inputs_not_deconsolidated",
+  "missing": [
+    "finance_operating_cost_tax_and_external_vs_internal_income_bridge",
+    "finance_external_assets_and_liabilities_classification",
+    "all_group_internal_balances_and_eliminations",
+    "historical_finance_net_income_and_equity_for_three_origins",
+    "finance_equity_valuation_policy_and_industrial_forecast"
+  ],
+  "boundary": "2025 annual source research only; not 2026H1 admission, standard facts, strict PIT, complete deconsolidation or valuation; risk-report rounded disclosures remain rounded; FN values never overwritten"
+}
