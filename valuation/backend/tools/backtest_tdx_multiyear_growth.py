@@ -37,7 +37,7 @@ def metrics(rows):
     return result
 
 
-def study(p,source,phase='development'):
+def forecast_rows(p,source,phase='development',horizons=(2,3)):
     if phase not in ('development','holdout'):raise ValueError('invalid study phase')
     p=p|dict(samples=[s for s in p['samples'] if s['split']==phase])
     if p['protocol_id']!='tdx-multiyear-growth-v1' or (p['baseline'],p['benchmark'],p['candidate'])!=MODELS or p['base_policy']['margin_shift']!=0:raise ValueError('unsupported growth study')
@@ -52,7 +52,7 @@ def study(p,source,phase='development'):
     for sample in p['samples']:
         for w in p['windows']:
             end=date.fromisoformat(w['origin']);horizon=w['horizon'];target=end.replace(year=end.year+horizon);cutoff=f'{end.year}-09-01T00:00:00+08:00'
-            if horizon not in (2,3) or (end.month,end.day)!=(6,30) or at(cutoff)>=at(p['evaluation_as_of']) or target>=at(p['evaluation_as_of']).date():raise ValueError('invalid forecast window')
+            if horizon not in horizons or (end.month,end.day)!=(6,30) or at(cutoff)>=at(p['evaluation_as_of']) or target>=at(p['evaluation_as_of']).date():raise ValueError('invalid forecast window')
             row=dict(code=sample['code'],origin=end.isoformat(),horizon=horizon,target=target.isoformat(),forecast_as_of=cutoff,status='blocked',actual_fcff=None);rows.append(row)
             try:
                 _,evidence=revenue_forecast(p,index,artifacts,sample['code'],end,cutoff)
@@ -68,6 +68,11 @@ def study(p,source,phase='development'):
                 actual=actual_operating(index,artifacts,sample['code'],target,p['evaluation_as_of'])
                 row.update(status='evaluated',actual=actual,errors={model:error(f,actual) for model,f in forecasts.items()})
             except (ValueError,KeyError,ArithmeticError) as exc:row['reason']=str(exc)
+    return rows
+
+
+def study(p,source,phase='development'):
+    rows=forecast_rows(p,source,phase)
     summary=metrics(rows);by_horizon={str(h):metrics([r for r in rows if r['horizon']==h]) for h in (2,3)}
     by_window={w['origin']+':'+str(w['horizon']):metrics([r for r in rows if (r['origin'],r['horizon'])==(w['origin'],w['horizon'])]) for w in p['windows']}
     g=p['gates'];b,z,c=(summary['models'][m] for m in MODELS)

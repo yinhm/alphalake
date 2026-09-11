@@ -28,12 +28,12 @@ def verify_sampling(p):
     if [r for r in p['samples'] if r['split']=='holdout']!=selected or len(selected)!=120:raise ValueError('holdout sampling differs')
 
 
-def score(p,rows,phase):
+def score(p,rows,phase,horizons=(2,3)):
     if p['protocol_id']!='tdx-zero-growth-validation-v1' or (p['baseline'],p['candidate'])!=(BASE,CANDIDATE):raise ValueError('unsupported zero-growth study')
     if phase not in ('development','holdout'):raise ValueError('invalid phase')
     g=p['gates']
     if any(v is not True for k,v in g.items() if k.startswith('require_')):raise ValueError('required gate disabled')
-    summary=metrics(rows);by_horizon={str(h):metrics([r for r in rows if r['horizon']==h]) for h in (2,3)}
+    summary=metrics(rows);by_horizon={str(h):metrics([r for r in rows if r['horizon']==h]) for h in horizons}
     by_window={w['origin']+':'+str(w['horizon']):metrics([r for r in rows if (r['origin'],r['horizon'])==(w['origin'],w['horizon'])]) for w in p['windows']}
     codes={r['code'] for r in rows if r['status']=='evaluated'};b=summary['models'][BASE];c=summary['models'][CANDIDATE]
     def nonworse(m,key):
