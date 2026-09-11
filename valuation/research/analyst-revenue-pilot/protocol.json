@@ -1,0 +1,53 @@
+{
+  "study_id": "anker-single-broker-annual-revenue-v1",
+  "selection": "same broker identified by first source discovery; unique returned H1 commentary for each August query; not consensus or exhaustive broker selection",
+  "code": "300866",
+  "broker": "东吴证券",
+  "origins": [
+    "2023-06-30",
+    "2024-06-30",
+    "2025-06-30"
+  ],
+  "forecast_cutoff": "origin year September 1 China midnight",
+  "reports": [
+    {
+      "info_code": "AP202308301596817366",
+      "provider_report_date": "2023-08-30 00:00:00.000",
+      "target_years": [
+        2023,
+        2024,
+        2025
+      ]
+    },
+    {
+      "info_code": "AP202408301639629259",
+      "provider_report_date": "2024-08-30 00:00:00.000",
+      "target_years": [
+        2024,
+        2025,
+        2026
+      ]
+    },
+    {
+      "info_code": "AP202508311737338558",
+      "provider_report_date": "2025-08-31 00:00:00.000",
+      "target_years": [
+        2025,
+        2026,
+        2027
+      ]
+    }
+  ],
+  "forecast_kind": "broker_estimate_not_company_fact",
+  "period_basis": "calendar_fiscal_year_not_next_H1_TTM",
+  "historical_availability": "later_acquired_provider_and_printed_report_date_proxy_not_strict_PIT",
+  "comparison_plan": {
+    "benchmark": "known origin H1 revenue plus prior H2 revenue; flat thereafter",
+    "current_rule": "known origin H1 revenue + prior H2 revenue*(1+frozen origin clipped growth); subsequent FY multiply by same growth",
+    "candidate": "unaltered broker full-year revenue forecasts",
+    "evaluation_as_of": "2026-09-10T00:00:00+08:00",
+    "actual": "sum four TDX FN230 quarters for each target FY; future FY remains unobservable",
+    "decision": "single-company exposed-source diagnostic only; no policy adoption or claim of market consensus or full DCF accuracy"
+  },
+  "boundary": "one company three reports nine annual forecasts; historical original PDFs retained locally; printed and provider date agreement does not prove historical public availability"
+}
