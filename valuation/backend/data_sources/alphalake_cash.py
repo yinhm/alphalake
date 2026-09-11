@@ -8,12 +8,15 @@ from data_sources.alphalake import Snapshot,BookDCFPolicy,standard_window_reader
 MODEL='mean-two-ocf-margins-v1'
 VALIDATION={'protocol_sha256': '6aeb6080de4f423b92896eea921acbdf7543a4865f0aa447364e52a59b32ce36', 'holdout_sha256': '6d8334c661e73acdc6cb43196eb1e986fb8323571ea49b285b2fcd1f6cc816cd'}
 
+SCOPE_AUDIT=dict(summary_sha256='acd690ac5b0f5f480522dd5bb1274a3bb07808de0d67ce5818e890df5ad317ac',status='retrospective_subgroup_review_not_new_validation',
+    boundary='forecast_inputs_ready_not_full_DCF_admission; zero_financial_signals_not_business_verification; subgroup_year_WAPE_can_worsen')
+
 
 def cash_crosscheck(request,prior_data,report):
     current=request.data;prior=Snapshot.model_validate(prior_data)
     result=dict(model_id=MODEL,status='blocked_missing_standard_history',code=current.code,report_period=current.report_period.isoformat(),
         information_as_of=current.information_as_of.isoformat(),unit='CNY',cash_forecast=None,comparison=None,missing=[],
-        evidence=dict(research_validation=VALIDATION,current_snapshot_sha256=content_hash(current.model_dump(mode='json')),prior_snapshot_sha256=content_hash(prior.model_dump(mode='json')),
+        evidence=dict(research_validation=VALIDATION,research_scope_audit=SCOPE_AUDIT,current_snapshot_sha256=content_hash(current.model_dump(mode='json')),prior_snapshot_sha256=content_hash(prior.model_dump(mode='json')),
                       code_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()),
         boundary='retrospective_research_crosscheck_not_asof_policy; reported_OCF_less_cash_capex_not_FCFF; no_valuation_adjustment; formula_validation_not_independent_semantic_evidence')
     if not isinstance(request.policy,BookDCFPolicy) or current.report_period.month!=6:

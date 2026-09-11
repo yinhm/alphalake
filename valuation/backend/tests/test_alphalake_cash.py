@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 from data_sources.alphalake import AlphaLakeRequest
-from data_sources.alphalake_cash import cash_crosscheck,VALIDATION
+from data_sources.alphalake_cash import cash_crosscheck,VALIDATION,SCOPE_AUDIT
 from tools.backtest_tdx_history import value,quarter_periods
 
 ROOT=Path(__file__).resolve().parents[3]
@@ -78,6 +78,8 @@ def test_cash_check_formula_scope_gaps_and_immutability():
     with pytest.raises(ValueError,match='future'):cash_crosscheck(request,bad,report)
     bad=copy.deepcopy(prior);bad['windows'][1]['calculation_basis']='ytd'
     with pytest.raises(ValueError):cash_crosscheck(request,bad,report)
+    assert result['evidence']['research_scope_audit']==SCOPE_AUDIT
+    assert SCOPE_AUDIT['summary_sha256']==hashlib.sha256((ROOT/'valuation/research/tdx-operating-cash-forecast/scope-summary.json').read_bytes()).hexdigest()
     for key,name in [('protocol_sha256','protocol.json'),('holdout_sha256','holdout-summary.json')]:
         assert VALIDATION[key]==hashlib.sha256((ROOT/'valuation/research/tdx-operating-cash-forecast'/name).read_bytes()).hexdigest()
 
