@@ -1,0 +1,21 @@
+{
+  "scope": "decimal_arithmetic_crosscheck_not_independent_source_or_semantic_evidence",
+  "checks": {
+    "short_quarter_yoy_median_revenue_only": {
+      "decimal_mae_pct": "23.29209765854242860266778376",
+      "decimal_wape_pct": "15.14251159756614316431632280"
+    },
+    "rd_net_nonpositive_zero_5yr": {
+      "decimal_mae_pct": "23.34152718005979341380510188",
+      "decimal_wape_pct": "15.13735232844911264925502446"
+    },
+    "zero_growth": {
+      "decimal_mae_pct": "21.88771901349848970599804034",
+      "decimal_wape_pct": "14.21019466423740345933846444"
+    },
+    "rd_net_nonpositive_zero_3yr": {
+      "decimal_mae_pct": "23.20349300870333646879258796",
+      "decimal_wape_pct": "14.97411374439904852070131198"
+    }
+  }
+}
