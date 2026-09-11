@@ -1,0 +1,21 @@
+{
+  "form": {
+    "pageNum": "1",
+    "pageSize": "30",
+    "column": "szse",
+    "tabName": "fulltext",
+    "plate": "",
+    "stock": "",
+    "searchkey": "海天味业",
+    "secid": "",
+    "category": "category_ndbg_szsh;",
+    "trade": "",
+    "seDate": "2023-01-01~2025-09-01",
+    "sortName": "time",
+    "sortType": "desc",
+    "isHLtitle": "true"
+  },
+  "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query",
+  "sha256": "7ce4281258dde4280a41c72d0d4d364e34b1c87979f6f41c4846c2e50df581a0",
+  "fetched_at": "2026-09-11T21:21:54.458315+00:00"
+}

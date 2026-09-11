@@ -1,0 +1,21 @@
+{
+  "form": {
+    "pageNum": "1",
+    "pageSize": "30",
+    "column": "szse",
+    "tabName": "fulltext",
+    "plate": "",
+    "stock": "",
+    "searchkey": "苏泊尔",
+    "secid": "",
+    "category": "category_ndbg_szsh;",
+    "trade": "",
+    "seDate": "2023-01-01~2025-09-01",
+    "sortName": "time",
+    "sortType": "desc",
+    "isHLtitle": "true"
+  },
+  "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query",
+  "sha256": "c2a890bbf3a6a53ab02ddc6c1794bf1c72ba45799fe9f59dcc5ba2cc18467114",
+  "fetched_at": "2026-09-11T21:21:54.213756+00:00"
+}

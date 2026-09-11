@@ -3,61 +3,336 @@
     {
       "code": "300866",
       "origin_year": 2023,
-      "status": "document_pending",
-      "targets": []
+      "document": {
+        "code": "300866",
+        "report_year": 2022,
+        "origin_year": 2023,
+        "announcement_id": "1216460035",
+        "org_id": "gfbj0839473",
+        "title": "2022年年度报告",
+        "available_at": "2023-04-20T00:00:00+08:00",
+        "catalogue": "300866-annual-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2023-04-19/1216460035.PDF",
+        "file": "300866-2022-annual.pdf",
+        "fetched_at": "2026-09-06T06:06:51.679416+00:00",
+        "sha256": "20ed99d2548c09dd1342af21e5774290210863dfd7f2c3bf6fbc4a0de0e93719",
+        "size": 3864282,
+        "reused_path": "internal/ingest/testdata/anker-history-2026/1216460035.pdf",
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "targets": [],
+      "status": "no_numeric_target_found_in_reviewed_plan",
+      "reviewed_pages": [
+        31,
+        32,
+        33
+      ],
+      "section_heading": "公司未来发展的展望",
+      "review_note": "人工检查经营展望/计划节未识别到符合冻结口径的当年收入或利润数值目标；不使用内控阈值、股权激励或其他科目数字。",
+      "reviewed_text_sha256": "336293cfc42f8445288760e885c13eb80de998fa1ecf4476fba93e140cb8de54",
+      "outside_plan_candidates": [
+        {
+          "page": 46,
+          "anchor": "利润分配",
+          "reason": "dividend_not_annual_operating_target"
+        }
+      ]
     },
     {
       "code": "300866",
       "origin_year": 2024,
-      "status": "document_pending",
-      "targets": []
+      "document": {
+        "code": "300866",
+        "report_year": 2023,
+        "origin_year": 2024,
+        "announcement_id": "1219800919",
+        "org_id": "gfbj0839473",
+        "title": "2023年年度报告",
+        "available_at": "2024-04-26T00:00:00+08:00",
+        "catalogue": "300866-annual-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2024-04-25/1219800919.PDF",
+        "file": "300866-2023-annual.pdf",
+        "fetched_at": "2026-09-06T05:44:22.705466+00:00",
+        "sha256": "ff02ac8df3bb057e9eceea98686d65672600f6cbb8e8a4530a4698ff118762c4",
+        "size": 3718666,
+        "reused_path": "internal/ingest/testdata/anker-history-2026/1219800919.pdf",
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "targets": [],
+      "status": "no_numeric_target_found_in_reviewed_plan",
+      "reviewed_pages": [
+        38,
+        39,
+        40,
+        41
+      ],
+      "section_heading": "公司未来发展的展望",
+      "review_note": "人工检查经营展望/计划节未识别到符合冻结口径的当年收入或利润数值目标；不使用内控阈值、股权激励或其他科目数字。",
+      "reviewed_text_sha256": "5b32285f3a316f2f0b4b5e1db3a523bb66e5c94bf06458e27260a5da5e89cef1",
+      "outside_plan_candidates": []
     },
     {
       "code": "300866",
       "origin_year": 2025,
-      "status": "document_pending",
-      "targets": []
+      "document": {
+        "code": "300866",
+        "report_year": 2024,
+        "origin_year": 2025,
+        "announcement_id": "1223379891",
+        "org_id": "gfbj0839473",
+        "title": "2024年年度报告",
+        "available_at": "2025-04-30T00:00:00+08:00",
+        "catalogue": "300866-annual-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2025-04-29/1223379891.PDF",
+        "file": "300866-2024-annual.pdf",
+        "fetched_at": "2026-09-11T01:19:54.190253+00:00",
+        "sha256": "204d64010810bc228ab9fac13eb42bdebc40bf53e0e7baff041b664da4725ee8",
+        "size": 3621465,
+        "reused_path": "internal/ingest/testdata/anker-cash-history-2024/1223379891.pdf",
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "targets": [],
+      "status": "no_numeric_target_found_in_reviewed_plan",
+      "reviewed_pages": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "section_heading": "公司未来发展的展望",
+      "review_note": "人工检查经营展望/计划节未识别到符合冻结口径的当年收入或利润数值目标；不使用内控阈值、股权激励或其他科目数字。",
+      "reviewed_text_sha256": "c64f5f47e75e286d2cd082a2651c097b01f679911323b599e84dd7970d19b818",
+      "outside_plan_candidates": [
+        {
+          "page": 47,
+          "anchor": "利润分配",
+          "reason": "dividend_not_annual_operating_target"
+        },
+        {
+          "page": 66,
+          "anchor": "内部控制评价报告",
+          "reason": "internal_control_scope_not_target"
+        },
+        {
+          "page": 173,
+          "anchor": "合同负债",
+          "reason": "contract_revenue_subset_not_company_annual_target"
+        }
+      ]
     },
     {
       "code": "002032",
       "origin_year": 2023,
-      "status": "document_pending",
-      "targets": []
+      "document": {
+        "code": "002032",
+        "report_year": 2022,
+        "origin_year": 2023,
+        "announcement_id": "1216274468",
+        "org_id": "gssz0002032",
+        "title": "2022年年度报告",
+        "available_at": "2023-04-01T00:00:00+08:00",
+        "catalogue": "002032-annual-stock-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2023-03-31/1216274468.PDF",
+        "file": "002032-2022-annual.pdf",
+        "fetched_at": "2026-09-11T21:23:34.101549+00:00",
+        "sha256": "0553e8866f9ffee2908c76c4a8e3ea81958bd1e5d289d6e985f37efa26d5a6c0",
+        "size": 4418906,
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "targets": [],
+      "status": "no_numeric_target_found_in_reviewed_plan",
+      "reviewed_pages": [
+        22,
+        23
+      ],
+      "section_heading": "公司未来发展的展望",
+      "review_note": "人工检查经营展望/计划节未识别到符合冻结口径的当年收入或利润数值目标；不使用内控阈值、股权激励或其他科目数字。",
+      "reviewed_text_sha256": "e3714b1d2998f1193d512fabea772f9a816239e7b7fc4227ea592ac112490097",
+      "outside_plan_candidates": []
     },
     {
       "code": "002032",
       "origin_year": 2024,
-      "status": "document_pending",
-      "targets": []
+      "document": {
+        "code": "002032",
+        "report_year": 2023,
+        "origin_year": 2024,
+        "announcement_id": "1219462976",
+        "org_id": "gssz0002032",
+        "title": "2023年年度报告",
+        "available_at": "2024-03-31T00:00:00+08:00",
+        "catalogue": "002032-annual-stock-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2024-03-30/1219462976.PDF",
+        "file": "002032-2023-annual.pdf",
+        "fetched_at": "2026-09-11T21:23:34.135284+00:00",
+        "sha256": "ffff7a029d3b3ed082579c8c7534011d4df011a187ccba97974e004a9f8a9fdf",
+        "size": 4692843,
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "targets": [],
+      "status": "no_numeric_target_found_in_reviewed_plan",
+      "reviewed_pages": [
+        22,
+        23
+      ],
+      "section_heading": "公司未来发展的展望",
+      "review_note": "人工检查经营展望/计划节未识别到符合冻结口径的当年收入或利润数值目标；不使用内控阈值、股权激励或其他科目数字。",
+      "reviewed_text_sha256": "5efdbd3478333d142d8c9f3248c55b99ce7e2767f572fab215d3aa399ecc9f8f",
+      "outside_plan_candidates": []
     },
     {
       "code": "002032",
       "origin_year": 2025,
-      "status": "document_pending",
-      "targets": []
+      "document": {
+        "code": "002032",
+        "report_year": 2024,
+        "origin_year": 2025,
+        "announcement_id": "1222928386",
+        "org_id": "gssz0002032",
+        "title": "2024年年度报告",
+        "available_at": "2025-03-29T00:00:00+08:00",
+        "catalogue": "002032-annual-stock-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2025-03-28/1222928386.PDF",
+        "file": "002032-2024-annual.pdf",
+        "fetched_at": "2026-09-11T21:23:36.363220+00:00",
+        "sha256": "9819abd69b7cb18c703c9d8f1dda4a9f476609a4056595767126a25b96abede8",
+        "size": 4541600,
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "targets": [],
+      "status": "no_numeric_target_found_in_reviewed_plan",
+      "reviewed_pages": [
+        22,
+        23
+      ],
+      "section_heading": "公司未来发展的展望",
+      "review_note": "人工检查经营展望/计划节未识别到符合冻结口径的当年收入或利润数值目标；不使用内控阈值、股权激励或其他科目数字。",
+      "reviewed_text_sha256": "eaecc26cecb2f8b353e0dacdc686cb7f1899391dd0374f6c5825b40c4e859823",
+      "outside_plan_candidates": []
     },
     {
       "code": "000651",
       "origin_year": 2023,
-      "status": "document_pending",
-      "targets": []
+      "document": {
+        "code": "000651",
+        "report_year": 2022,
+        "origin_year": 2023,
+        "announcement_id": "1216702261",
+        "org_id": "gssz0000651",
+        "title": "2022年年度报告",
+        "available_at": "2023-04-30T00:00:00+08:00",
+        "catalogue": "000651-annual-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216702261.PDF",
+        "file": "000651-2022-annual.pdf",
+        "fetched_at": "2026-09-11T21:23:35.769759+00:00",
+        "sha256": "7cfc80c2badbf4cd74c5adc080d5072b02cd6c700b04fa7ca0ac44cb8b8fe987",
+        "size": 3765397,
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "targets": [],
+      "status": "no_numeric_target_found_in_reviewed_plan",
+      "reviewed_pages": [
+        40,
+        41
+      ],
+      "section_heading": "公司未来发展的展望",
+      "review_note": "人工检查经营展望/计划节未识别到符合冻结口径的当年收入或利润数值目标；不使用内控阈值、股权激励或其他科目数字。",
+      "reviewed_text_sha256": "68579e64133136fb242fc550a51978f2fbe0b7b3a4f28ef00253ebfdf24bf2ad",
+      "outside_plan_candidates": [
+        {
+          "page": 221,
+          "anchor": "第二期员工持股计划",
+          "reason": "incentive_threshold_excluded_by_frozen_protocol"
+        }
+      ]
     },
     {
       "code": "000651",
       "origin_year": 2024,
-      "status": "document_pending",
-      "targets": []
+      "document": {
+        "code": "000651",
+        "report_year": 2023,
+        "origin_year": 2024,
+        "announcement_id": "1219928418",
+        "org_id": "gssz0000651",
+        "title": "2023年年度报告",
+        "available_at": "2024-05-01T00:00:00+08:00",
+        "catalogue": "000651-annual-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219928418.PDF",
+        "file": "000651-2023-annual.pdf",
+        "fetched_at": "2026-09-11T21:23:38.898546+00:00",
+        "sha256": "32ebc475a2291ce4f1b5c1a9f9da55227e03192f07e75041e976c29d213ec8aa",
+        "size": 3911496,
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "targets": [],
+      "status": "no_numeric_target_found_in_reviewed_plan",
+      "reviewed_pages": [
+        39,
+        40
+      ],
+      "section_heading": "公司未来发展的展望",
+      "review_note": "人工检查经营展望/计划节未识别到符合冻结口径的当年收入或利润数值目标；不使用内控阈值、股权激励或其他科目数字。",
+      "reviewed_text_sha256": "a854277f295a67520ed410286029c00cf3941b72fbbe9202197723a9c49abd46",
+      "outside_plan_candidates": [
+        {
+          "page": 56,
+          "anchor": "内控评价报告",
+          "reason": "internal_control_scope_not_target"
+        }
+      ]
     },
     {
       "code": "000651",
       "origin_year": 2025,
-      "status": "document_pending",
-      "targets": []
+      "document": {
+        "code": "000651",
+        "report_year": 2024,
+        "origin_year": 2025,
+        "announcement_id": "1223330631",
+        "org_id": "gssz0000651",
+        "title": "2024年年度报告",
+        "available_at": "2025-04-29T00:00:00+08:00",
+        "catalogue": "000651-annual-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2025-04-28/1223330631.PDF",
+        "file": "000651-2024-annual.pdf",
+        "fetched_at": "2026-09-11T21:23:38.645214+00:00",
+        "sha256": "c7184706caf5f57c04a795990967cfc4f4253024e02f8bdaffe2b260df2c6006",
+        "size": 5087621,
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "targets": [],
+      "status": "no_numeric_target_found_in_reviewed_plan",
+      "reviewed_pages": [
+        43,
+        44,
+        45
+      ],
+      "section_heading": "公司未来发展的展望",
+      "review_note": "人工检查经营展望/计划节未识别到符合冻结口径的当年收入或利润数值目标；不使用内控阈值、股权激励或其他科目数字。",
+      "reviewed_text_sha256": "9908639002496e8d475aba11dc4dac4d5c53a74afbea5d9a0483d3004fd3c956",
+      "outside_plan_candidates": []
     },
     {
       "code": "600887",
       "origin_year": 2023,
-      "status": "extracted_selection_pending",
+      "document": {
+        "code": "600887",
+        "report_year": 2022,
+        "file": "600887-2022-annual.pdf",
+        "url": "https://static.cninfo.com.cn/finalpage/2023-04-28/1216664083.PDF",
+        "fetched_at": "2026-09-11T21:16:39.152474+00:00",
+        "sha256": "9b555197f8a45f40ea4b9f336aae05345798fe6d96ad116c0c3f2bf4e19edab8",
+        "size": 4514827,
+        "selection_status": "original_annual_catalogue_verified",
+        "origin_year": 2023,
+        "announcement_id": "1216664083",
+        "org_id": "gssh0600887",
+        "title": "内蒙古伊利实业集团股份有限公司2022年年度报告",
+        "available_at": "2023-04-29T00:00:00+08:00",
+        "catalogue": "600887-annual-catalogue-1.json"
+      },
       "targets": [
         {
           "concept": "total_operating_income",
@@ -74,34 +349,119 @@
           "kind": "management_plan_not_reported_fact"
         }
       ],
-      "document": {
-        "code": "600887",
-        "report_year": 2022,
-        "file": "600887-2022-annual.pdf",
-        "url": "https://static.cninfo.com.cn/finalpage/2023-04-28/1216664083.PDF",
-        "fetched_at": "2026-09-11T21:16:39.152474+00:00",
-        "sha256": "9b555197f8a45f40ea4b9f336aae05345798fe6d96ad116c0c3f2bf4e19edab8",
-        "size": 4514827,
-        "selection_status": "official_document_located_catalogue_selection_pending"
-      },
-      "page": 34
+      "status": "numeric_targets_found_actual_semantics_pending",
+      "page": 34,
+      "reviewed_pages": [
+        34
+      ],
+      "reviewed_text_sha256": "1c8a7f4421184b69112136ba0c0d6186869f7b3c6d1e83acf50e974f8dc98554",
+      "outside_plan_candidates": []
     },
     {
       "code": "600887",
       "origin_year": 2024,
-      "status": "document_pending",
-      "targets": []
+      "document": {
+        "code": "600887",
+        "report_year": 2023,
+        "origin_year": 2024,
+        "announcement_id": "1219916433",
+        "org_id": "gssh0600887",
+        "title": "内蒙古伊利实业集团股份有限公司2023年年度报告",
+        "available_at": "2024-05-01T00:00:00+08:00",
+        "catalogue": "600887-annual-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219916433.PDF",
+        "file": "600887-2023-annual.pdf",
+        "fetched_at": "2026-09-11T21:23:41.461428+00:00",
+        "sha256": "d56b0be917eb89a07f092a3ecf1c269aea9f1698c51b648a53f69a0759ef44fe",
+        "size": 4729271,
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "targets": [
+        {
+          "concept": "total_operating_income",
+          "label": "营业总收入",
+          "printed_amount": "1300",
+          "printed_unit": "亿元",
+          "kind": "management_plan_not_reported_fact"
+        },
+        {
+          "concept": "pretax_profit",
+          "label": "利润总额",
+          "printed_amount": "147",
+          "printed_unit": "亿元",
+          "kind": "management_plan_not_reported_fact"
+        }
+      ],
+      "status": "numeric_targets_found_actual_semantics_pending",
+      "page": 32,
+      "reviewed_pages": [
+        32
+      ],
+      "reviewed_text_sha256": "d36d60cde8dc74aa7f3074e7d281d390c38b1c4ef5d45facee2adf175e42aa5f",
+      "outside_plan_candidates": []
     },
     {
       "code": "600887",
       "origin_year": 2025,
-      "status": "document_pending",
-      "targets": []
+      "document": {
+        "code": "600887",
+        "report_year": 2024,
+        "origin_year": 2025,
+        "announcement_id": "1223421123",
+        "org_id": "gssh0600887",
+        "title": "内蒙古伊利实业集团股份有限公司2024年年度报告",
+        "available_at": "2025-05-01T00:00:00+08:00",
+        "catalogue": "600887-annual-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2025-04-30/1223421123.PDF",
+        "file": "600887-2024-annual.pdf",
+        "fetched_at": "2026-09-11T21:23:40.241267+00:00",
+        "sha256": "a82a81e52f52da3cd1b7f38ded08625dc18e3d4522b15d3ef76bf921e54c1f43",
+        "size": 1522472,
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "targets": [
+        {
+          "concept": "total_operating_income",
+          "label": "营业总收入",
+          "printed_amount": "1190",
+          "printed_unit": "亿元",
+          "kind": "management_plan_not_reported_fact"
+        },
+        {
+          "concept": "pretax_profit",
+          "label": "利润总额",
+          "printed_amount": "126",
+          "printed_unit": "亿元",
+          "kind": "management_plan_not_reported_fact"
+        }
+      ],
+      "status": "numeric_targets_found_actual_semantics_pending",
+      "page": 33,
+      "reviewed_pages": [
+        33
+      ],
+      "reviewed_text_sha256": "105cb3c5c349113a1acb6440cf0a06e45f1a8b326decab8845a045bee9edaba6",
+      "outside_plan_candidates": []
     },
     {
       "code": "603288",
       "origin_year": 2023,
-      "status": "extracted_selection_pending",
+      "document": {
+        "code": "603288",
+        "report_year": 2022,
+        "file": "603288-2022-annual.pdf",
+        "url": "https://static.cninfo.com.cn/finalpage/2023-04-26/1216595423.PDF",
+        "fetched_at": "2026-09-11T21:16:38.125818+00:00",
+        "sha256": "b23d6decaa7ea3007ce920927c3bbc0c07246f2832abe49e221a715b97cc03c9",
+        "size": 4057601,
+        "selection_status": "original_annual_catalogue_verified",
+        "origin_year": 2023,
+        "announcement_id": "1216595423",
+        "org_id": "9900023228",
+        "title": "海天味业2022年年度报告",
+        "available_at": "2023-04-27T00:00:00+08:00",
+        "catalogue": "603288-annual-catalogue-1.json"
+      },
       "targets": [
         {
           "concept": "operating_revenue",
@@ -118,30 +478,86 @@
           "kind": "management_plan_not_reported_fact"
         }
       ],
-      "document": {
-        "code": "603288",
-        "report_year": 2022,
-        "file": "603288-2022-annual.pdf",
-        "url": "https://static.cninfo.com.cn/finalpage/2023-04-26/1216595423.PDF",
-        "fetched_at": "2026-09-11T21:16:38.125818+00:00",
-        "sha256": "b23d6decaa7ea3007ce920927c3bbc0c07246f2832abe49e221a715b97cc03c9",
-        "size": 4057601,
-        "selection_status": "official_document_located_catalogue_selection_pending"
-      },
-      "page": 29
+      "status": "numeric_targets_found_actual_semantics_pending",
+      "page": 29,
+      "reviewed_pages": [
+        29
+      ],
+      "reviewed_text_sha256": "d2f00ac77d29d1b3efa555b94b7fe25545ef5233756efceb3c060ec110baea5a",
+      "outside_plan_candidates": []
     },
     {
       "code": "603288",
       "origin_year": 2024,
-      "status": "document_pending",
-      "targets": []
+      "document": {
+        "code": "603288",
+        "report_year": 2023,
+        "origin_year": 2024,
+        "announcement_id": "1219879610",
+        "org_id": "9900023228",
+        "title": "海天味业2023年年度报告",
+        "available_at": "2024-04-28T00:00:00+08:00",
+        "catalogue": "603288-annual-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2024-04-27/1219879610.PDF",
+        "file": "603288-2023-annual.pdf",
+        "fetched_at": "2026-09-11T21:23:42.951650+00:00",
+        "sha256": "e34eb13835855354f5557f305a5e54d8c910bc9e74ed9ca29f52c2a5ebeb9b04",
+        "size": 4202457,
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "targets": [
+        {
+          "concept": "operating_revenue",
+          "label": "营业收入目标为",
+          "printed_amount": "275.1",
+          "printed_unit": "亿元",
+          "kind": "management_plan_not_reported_fact"
+        },
+        {
+          "concept": "net_income_parent",
+          "label": "归母净利目标为",
+          "printed_amount": "62.3",
+          "printed_unit": "亿元",
+          "kind": "management_plan_not_reported_fact"
+        }
+      ],
+      "status": "numeric_targets_found_actual_semantics_pending",
+      "page": 27,
+      "reviewed_pages": [
+        27
+      ],
+      "reviewed_text_sha256": "a0b5452ed04ed5e2474926a46c8723cc81d892c9789e0ae3cb7a2d9ceba8454f",
+      "outside_plan_candidates": []
     },
     {
       "code": "603288",
       "origin_year": 2025,
-      "status": "document_pending",
-      "targets": []
+      "document": {
+        "code": "603288",
+        "report_year": 2024,
+        "origin_year": 2025,
+        "announcement_id": "1222994233",
+        "org_id": "9900023228",
+        "title": "海天味业2024年年度报告",
+        "available_at": "2025-04-04T00:00:00+08:00",
+        "catalogue": "603288-annual-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2025-04-03/1222994233.PDF",
+        "file": "603288-2024-annual.pdf",
+        "fetched_at": "2026-09-11T21:23:45.255481+00:00",
+        "sha256": "5a97b13534438f5e85249752ef492fbd9e23af73e67845e47bad1ab7d92e20ee",
+        "size": 4561223,
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "targets": [],
+      "status": "no_numeric_target_found_in_reviewed_plan",
+      "reviewed_pages": [
+        30
+      ],
+      "section_heading": "(三)经营计划",
+      "review_note": "人工检查经营展望/计划节未识别到符合冻结口径的当年收入或利润数值目标；不使用内控阈值、股权激励或其他科目数字。",
+      "reviewed_text_sha256": "16ed70bd49fa9962683cefde319d0c486022de1640d8b1fc117040a91cf7b2ca",
+      "outside_plan_candidates": []
     }
   ],
-  "status": "collection_in_progress_not_scored"
+  "status": "stopped_insufficient_source_coverage"
 }

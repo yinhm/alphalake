@@ -1,0 +1,23 @@
+{
+  "form": {
+    "pageNum": "1",
+    "pageSize": "30",
+    "column": "szse",
+    "tabName": "fulltext",
+    "plate": "",
+    "stock": "002032,gssz0002032",
+    "searchkey": "",
+    "secid": "",
+    "category": "category_ndbg_szsh;",
+    "trade": "",
+    "seDate": "2023-01-01~2025-09-01",
+    "sortName": "time",
+    "sortType": "desc",
+    "isHLtitle": "true"
+  },
+  "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query",
+  "sha256": "473c0a4f37eee93e641a8da6f7d48adfafd5906eba8e5cd3af5e0bc82abea474",
+  "fetched_at": "2026-09-11T21:22:20.714025+00:00",
+  "identity_response": "002032-identity-search.json",
+  "identity_sha256": "dc02b5fef9929e685f183e5b4024c527b0fdc1ef252f0d78c33f006d57cc0c4d"
+}

@@ -1,0 +1,16 @@
+{
+  "positions": 15,
+  "source_statuses": {
+    "no_numeric_target_found_in_reviewed_plan": 10,
+    "numeric_targets_found_actual_semantics_pending": 5
+  },
+  "primary_eligible_upper_bound": 5,
+  "minimum_required": 6,
+  "scored_positions": 0,
+  "decision": "stopped_insufficient_source_coverage",
+  "boundary": "source coverage only; no error scoring or claim of forecast effectiveness; no DCF adoption",
+  "printed_targets_verified": 10,
+  "study_sha256": "90ceee837bba85145a5698016a285202531db2beadcc9fca2bcdecb35f394f35",
+  "targets_sha256": "ba366222b69da24d75a63414bad1106282f728202063207fb096778ec05fffc1",
+  "documents_sha256": "8854bfee3abb1cde68b24633b841713ba69db2eb0c37a0f731ea8715508c0559"
+}

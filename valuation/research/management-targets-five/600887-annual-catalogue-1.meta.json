@@ -1,0 +1,21 @@
+{
+  "form": {
+    "pageNum": "1",
+    "pageSize": "30",
+    "column": "szse",
+    "tabName": "fulltext",
+    "plate": "",
+    "stock": "",
+    "searchkey": "伊利股份",
+    "secid": "",
+    "category": "category_ndbg_szsh;",
+    "trade": "",
+    "seDate": "2023-01-01~2025-09-01",
+    "sortName": "time",
+    "sortType": "desc",
+    "isHLtitle": "true"
+  },
+  "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query",
+  "sha256": "be5504ae497a2c26ff0cd065177856d27d16b10cce159b362d4e4bdb7e42b0f3",
+  "fetched_at": "2026-09-11T21:21:28.028339+00:00"
+}

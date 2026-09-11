@@ -1,0 +1,21 @@
+{
+  "form": {
+    "pageNum": "1",
+    "pageSize": "30",
+    "column": "szse",
+    "tabName": "fulltext",
+    "plate": "",
+    "stock": "",
+    "searchkey": "格力电器",
+    "secid": "",
+    "category": "category_ndbg_szsh;",
+    "trade": "",
+    "seDate": "2023-01-01~2025-09-01",
+    "sortName": "time",
+    "sortType": "desc",
+    "isHLtitle": "true"
+  },
+  "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query",
+  "sha256": "42de73d74878c5d7fd31d1f48cc599fcca8471c5e37b24aed97e1ea6f1eadf6d",
+  "fetched_at": "2026-09-11T21:21:54.462216+00:00"
+}
