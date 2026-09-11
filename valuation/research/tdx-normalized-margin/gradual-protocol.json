@@ -1,0 +1,16 @@
+{
+  "protocol_id": "tdx-gradual-normalized-margin-v1",
+  "frozen_at": "2026-09-11T04:08:15.322933+00:00",
+  "parent_protocol": "valuation/research/tdx-normalized-margin/protocol.json",
+  "parent_result": "valuation/research/tdx-normalized-margin/development-result.json",
+  "snapshot": "valuation/research/tdx-normalized-margin/development-snapshot.json",
+  "candidate": "zero_growth_gradual_five_fy_margin",
+  "transition_years": 5,
+  "rule": "existing historical_forecast annual policy: current_margin + (five_FY_mean-current_margin)*min(year/5,1); zero revenue growth",
+  "rationale": "five years matches existing AlphaLake historical forecast transition, not fitted by testing alternative durations; same eligibility, source, six windows, gates and unscored reserved holdout",
+  "method_source": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/normearn.htm",
+  "boundary": "development_only; gradual normalization is an explicit input assumption, not proof of company cycle or full Damodaran EBIT/DCF adequacy",
+  "parent_protocol_sha256": "045850b85503b7225095606637f70e90b6077c78142bc833f272b8555531adaf",
+  "parent_result_sha256": "99f2ec57a54a152f7c740d5776f0bc242ee76be04da54aae0f688b92e39731e8",
+  "snapshot_sha256": "28233e2750ffc9fec6bca27d512a54b57b145eba695cd91234c0a7a9dff575ce"
+}
