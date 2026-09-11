@@ -1,0 +1,720 @@
+{
+  "prepublication": {
+    "backup": "",
+    "base_sha256": "f25e30ba9dc73481a29ac0c385641d34834fcc73428070bfb742c245d6deb4ec",
+    "candidate_sha256": "2712ab166cff2de624c8066f7fc1a273b8587b812082b3518c6b36d9278f1f97",
+    "checks": {
+      "added_facts": 27,
+      "base_schema": 38,
+      "candidate_facts": 2023212,
+      "candidate_schema": 39,
+      "classification.membership": 0,
+      "earnings_other_mapping_columns_changed": 0,
+      "fundamental.reviewed_supplement": 0,
+      "meta.checkpoint": 0,
+      "new_fact_source_mismatch": 0,
+      "old_anker_source_facts_changed": 0,
+      "old_artifacts_changed": 0,
+      "old_facts_changed_including_runtime": 0,
+      "old_runs_changed": 0,
+      "other_filings_content_changed": 0,
+      "other_filings_runtime_refreshed": 3664,
+      "other_mappings_changed": 0,
+      "ref.instrument": 0,
+      "ref.instrument_identifier": 0,
+      "reference.\"country_risk\"": 0,
+      "reference.\"credit_spread_band\"": 0,
+      "reference.\"industry_stat\"": 0,
+      "reference.\"security_code_transition\"": 0,
+      "reference.\"security_industry\"": 0,
+      "scope_date": 6,
+      "unexpected_added_facts": 0
+    },
+    "completed_at": "2026-09-11T18:26:17.357675231Z",
+    "new_artifacts": [
+      {
+        "path": "cninfo/filing_catalogue/fd/fd7496c6ff429835c350930879c3d080271f0db110424c891ba9d19bd4c94495",
+        "sha256": "fd7496c6ff429835c350930879c3d080271f0db110424c891ba9d19bd4c94495"
+      },
+      {
+        "path": "cninfo/filing_document/ca/ca9fed52d70acd6809d686c1b9b6d8aaa89961fc5021da0b0bee8a3c2eef7173.pdf",
+        "sha256": "ca9fed52d70acd6809d686c1b9b6d8aaa89961fc5021da0b0bee8a3c2eef7173"
+      },
+      {
+        "path": "tdx/reviewed_cash_history_2024/73/73488df5ca1fcf06766be425a5580031ebda168f7ad2a3b41c87d6afa7a7e631.zip",
+        "sha256": "73488df5ca1fcf06766be425a5580031ebda168f7ad2a3b41c87d6afa7a7e631"
+      }
+    ],
+    "scope": "earnings_history_2024_anker_only; not_full_market_historical_review",
+    "status": "prepublication_checks_passed"
+  },
+  "publication": {
+    "backup": "workspace/auto-valuation-20260909/market.duckdb.pre-earnings-history-20260911",
+    "base_sha256": "f25e30ba9dc73481a29ac0c385641d34834fcc73428070bfb742c245d6deb4ec",
+    "candidate_sha256": "2712ab166cff2de624c8066f7fc1a273b8587b812082b3518c6b36d9278f1f97",
+    "checks": {
+      "added_facts": 27,
+      "base_schema": 38,
+      "candidate_facts": 2023212,
+      "candidate_schema": 39,
+      "classification.membership": 0,
+      "earnings_other_mapping_columns_changed": 0,
+      "fundamental.reviewed_supplement": 0,
+      "meta.checkpoint": 0,
+      "new_fact_source_mismatch": 0,
+      "old_anker_source_facts_changed": 0,
+      "old_artifacts_changed": 0,
+      "old_facts_changed_including_runtime": 0,
+      "old_runs_changed": 0,
+      "other_filings_content_changed": 0,
+      "other_filings_runtime_refreshed": 3664,
+      "other_mappings_changed": 0,
+      "ref.instrument": 0,
+      "ref.instrument_identifier": 0,
+      "reference.\"country_risk\"": 0,
+      "reference.\"credit_spread_band\"": 0,
+      "reference.\"industry_stat\"": 0,
+      "reference.\"security_code_transition\"": 0,
+      "reference.\"security_industry\"": 0,
+      "scope_date": 6,
+      "unexpected_added_facts": 0
+    },
+    "completed_at": "2026-09-11T18:28:50.792527335Z",
+    "new_artifacts": [
+      {
+        "path": "cninfo/filing_catalogue/fd/fd7496c6ff429835c350930879c3d080271f0db110424c891ba9d19bd4c94495",
+        "sha256": "fd7496c6ff429835c350930879c3d080271f0db110424c891ba9d19bd4c94495"
+      },
+      {
+        "path": "cninfo/filing_document/ca/ca9fed52d70acd6809d686c1b9b6d8aaa89961fc5021da0b0bee8a3c2eef7173.pdf",
+        "sha256": "ca9fed52d70acd6809d686c1b9b6d8aaa89961fc5021da0b0bee8a3c2eef7173"
+      },
+      {
+        "path": "tdx/reviewed_cash_history_2024/73/73488df5ca1fcf06766be425a5580031ebda168f7ad2a3b41c87d6afa7a7e631.zip",
+        "sha256": "73488df5ca1fcf06766be425a5580031ebda168f7ad2a3b41c87d6afa7a7e631"
+      }
+    ],
+    "scope": "earnings_history_2024_anker_only; not_full_market_historical_review",
+    "status": "published_with_backup"
+  },
+  "postpublication": {
+    "backup": "",
+    "base_sha256": "f25e30ba9dc73481a29ac0c385641d34834fcc73428070bfb742c245d6deb4ec",
+    "candidate_sha256": "db55dc644e2bd7cc9c4880b2506a6490f0102805a1f91f09734146388c588723",
+    "checks": {
+      "added_facts": 27,
+      "base_schema": 38,
+      "candidate_facts": 2023212,
+      "candidate_schema": 39,
+      "classification.membership": 0,
+      "earnings_other_mapping_columns_changed": 0,
+      "fundamental.reviewed_supplement": 0,
+      "meta.checkpoint": 0,
+      "new_fact_source_mismatch": 0,
+      "old_anker_source_facts_changed": 0,
+      "old_artifacts_changed": 0,
+      "old_facts_changed_including_runtime": 0,
+      "old_runs_changed": 0,
+      "other_filings_content_changed": 0,
+      "other_filings_runtime_refreshed": 3664,
+      "other_mappings_changed": 0,
+      "ref.instrument": 0,
+      "ref.instrument_identifier": 0,
+      "reference.\"country_risk\"": 0,
+      "reference.\"credit_spread_band\"": 0,
+      "reference.\"industry_stat\"": 0,
+      "reference.\"security_code_transition\"": 0,
+      "reference.\"security_industry\"": 0,
+      "scope_date": 6,
+      "unexpected_added_facts": 0
+    },
+    "completed_at": "2026-09-11T20:31:41.666992713Z",
+    "new_artifacts": [
+      {
+        "path": "cninfo/filing_catalogue/fd/fd7496c6ff429835c350930879c3d080271f0db110424c891ba9d19bd4c94495",
+        "sha256": "fd7496c6ff429835c350930879c3d080271f0db110424c891ba9d19bd4c94495"
+      },
+      {
+        "path": "cninfo/filing_document/ca/ca9fed52d70acd6809d686c1b9b6d8aaa89961fc5021da0b0bee8a3c2eef7173.pdf",
+        "sha256": "ca9fed52d70acd6809d686c1b9b6d8aaa89961fc5021da0b0bee8a3c2eef7173"
+      },
+      {
+        "path": "tdx/reviewed_cash_history_2024/73/73488df5ca1fcf06766be425a5580031ebda168f7ad2a3b41c87d6afa7a7e631.zip",
+        "sha256": "73488df5ca1fcf06766be425a5580031ebda168f7ad2a3b41c87d6afa7a7e631"
+      }
+    ],
+    "scope": "earnings_history_2024_anker_only; not_full_market_historical_review",
+    "status": "prepublication_checks_passed"
+  },
+  "materialization_replay": {
+    "run": 5376,
+    "filing_resolution_attempted": 3664,
+    "filing_resolution_recovered": 0,
+    "filing_resolution_pending": 435,
+    "link_records": 33066,
+    "linked": 32573,
+    "link_pending": 419,
+    "link_ambiguous": 74,
+    "links_removed": 0,
+    "candidates": 2605577,
+    "materialized": 2023212,
+    "inserted": 0,
+    "updated": 0,
+    "removed": 0,
+    "rejected": 582365
+  },
+  "company_entry": {
+    "contract_version": "alphalake-company-valuation-v1",
+    "code": "300866",
+    "report_period": "2025-06-30",
+    "information_as_of": "2025-08-31T16:00:00Z",
+    "readiness_sha256": "a05ff51dc6697c88d011bf2957478cdf4474c6e7955564b00a5dbc76299c1328",
+    "universe_count": 5569,
+    "universe_scope": "local_known_mainland_CNY_equities_not_verified_exchange_census_or_historical_master_snapshot",
+    "selection": {
+      "policy_version": "anker-standard-history-2025H1-v1",
+      "reason": "configured_company_assignment_precedes_industry",
+      "fallback_applied": false
+    },
+    "valuation": {
+      "run_id": "bc882d3e2437e5422ae8a5182ce84ea69a615496554cad23963a07acf26e3359",
+      "engine_revision": "56160d18b78b7a5fa2be85674eaf6982b26d4ce2bb6b88d2b098e0e3e8830a72",
+      "policy_id": "nonfinancial-history-fcff-v1",
+      "scenario": "retrospective_standard_chain_acceptance",
+      "report_period": "2025-06-30",
+      "information_as_of": "2025-08-31T16:00:00Z",
+      "value_per_share": {
+        "value": 58.81844953880256,
+        "currency": "CNY",
+        "unit": "CNY/share"
+      },
+      "operating_enterprise_value": {
+        "value": 33694.66658459616,
+        "currency": "CNY",
+        "unit": "million_CNY"
+      },
+      "wacc": 0.1,
+      "capital_structure_basis": "not_used",
+      "capital_basis": "report_date_book_debt_no_conversion_scenario",
+      "share_date": "2025-06-30",
+      "equity_bridge": {
+        "components": {
+          "additional_claims_scenario": -0.0,
+          "cash_recovery_scenario": 2182.695936,
+          "debt_book_proxy": -2959.00976321875,
+          "minority_book_proxy": -190.958944,
+          "operating_cash_reserve": -837.85548288
+        },
+        "equity_if_converted": 31889.538330497413,
+        "equity_no_conversion": 31889.538330497413,
+        "operating_ownership": 1.0,
+        "operating_value": 33694.66658459616,
+        "per_share": 58.81844953880256,
+        "per_share_if_converted": 58.81844953880256,
+        "per_share_no_conversion": 58.81844953880256,
+        "policy_id": "nonfinancial-book-fcff-v1",
+        "selected_case": "not_converted",
+        "shares_if_converted": 542.1689721600001,
+        "shares_no_conversion": 542.1689721600001,
+        "status": "illustrative_policy_not_reported_fact"
+      },
+      "assumptions": {
+        "annual_forecast": [
+          {
+            "growth": 0.2,
+            "margin": 0.08054804577504496,
+            "tax": 0.25
+          },
+          {
+            "growth": 0.2,
+            "margin": 0.08054804577504496,
+            "tax": 0.25
+          },
+          {
+            "growth": 0.2,
+            "margin": 0.08054804577504496,
+            "tax": 0.25
+          },
+          {
+            "growth": 0.2,
+            "margin": 0.08054804577504496,
+            "tax": 0.25
+          },
+          {
+            "growth": 0.2,
+            "margin": 0.08054804577504496,
+            "tax": 0.25
+          },
+          {
+            "growth": 0.164,
+            "margin": 0.08054804577504496,
+            "tax": 0.25
+          },
+          {
+            "growth": 0.128,
+            "margin": 0.08054804577504496,
+            "tax": 0.25
+          },
+          {
+            "growth": 0.092,
+            "margin": 0.08054804577504496,
+            "tax": 0.25
+          },
+          {
+            "growth": 0.055999999999999994,
+            "margin": 0.08054804577504496,
+            "tax": 0.25
+          },
+          {
+            "growth": 0.01999999999999999,
+            "margin": 0.08054804577504496,
+            "tax": 0.25
+          }
+        ],
+        "bridge": {
+          "additional_claims_million_cny": 0.0,
+          "approved_report_period": "2025-06-30",
+          "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+          "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。",
+          "cash_recovery": 0.8,
+          "debt_book_multiple": 1.0,
+          "extra_dilution_rate": 0.02,
+          "financial_asset_policy": "no_credit_pending_classification",
+          "minority_book_multiple": 1.0,
+          "nonfinancial_scope_review": "沿用既有安克合并消费电子样本范围审核；已知金融业务由标准字段门控，未新增逐业务范围研究。",
+          "operating_cash_ratio": 0.03,
+          "policy_id": "nonfinancial-book-fcff-v1",
+          "review_note": "2026-09-11事后链路验收；数值沿用既有历史规则模板，不声称2025时已制定或市场参数已估计。",
+          "sales_to_capital": 3.0,
+          "scenario": "retrospective_standard_chain_acceptance",
+          "tax_rate": 0.25,
+          "terminal_growth": 0.02,
+          "terminal_roic": 0.1,
+          "wacc": 0.1
+        },
+        "sales_to_capital": 3.0,
+        "terminal_growth": 0.02,
+        "terminal_roic": 0.1,
+        "wacc": 0.1
+      },
+      "boundaries": [
+        "nonfinancial scope requires explicit review; missing financial-business fields do not prove absence",
+        "investment/fair-value/disposal income excluded; operating hedges not restored",
+        "RD remains expensed; reported interest may not consistently include lease finance costs",
+        "WACC/tax are explicit sensitivity assumptions, not market estimates",
+        "report-date shares and book claims; not a current-date securities rollforward",
+        "all FN52 treated as debt proxy without maturity-note split",
+        "nonoperating financial investments receive no credit pending classification; not asserted zero",
+        "no-conversion scenario only; convertible choice and employee options not priced",
+        "additional claims amount is a policy scenario, not a claim that undisclosed obligations are absent",
+        "cash recovery and minority/debt multiples are assumptions, not fair-value observations",
+        "median recent quarterly YOY with policy cap/shift and five-year fade; mechanical starting scenario, not researched growth forecast"
+      ],
+      "historical_fcff_status": "missing_classification_not_zero",
+      "terminal_sensitivity": {
+        "baseline_value_per_share": 58.81844953880256,
+        "boundary": "仅终值ROIC改为终值WACC；显式期现金流、折现与股权桥接不变。无持续超额回报是假设对照，不是公司回报估计、预测验证或推荐估值。",
+        "counterfactual_equity_status": "positive_equity_residual",
+        "counterfactual_value_per_share": 58.81844953880256,
+        "currency": "CNY",
+        "delta_per_share": 0.0,
+        "method": "terminal_roic_equals_terminal_wacc",
+        "source": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm",
+        "status": "illustrative_terminal_only_sensitivity",
+        "terminal_growth": 0.02,
+        "terminal_pv_share": 0.7567132321998912,
+        "terminal_roic": 0.1,
+        "terminal_wacc": 0.1,
+        "unit": "CNY/share"
+      },
+      "growth_sensitivity": {
+        "baseline_fcff_million_cny": [
+          162.7275805700533,
+          195.27309668406315,
+          234.32771602087587,
+          281.19325922505186,
+          337.43191107006214,
+          1087.7215962055393,
+          2060.890982583827,
+          3221.2003026640173,
+          4496.545410055041,
+          5782.170334618627
+        ],
+        "baseline_growth": [
+          0.2,
+          0.2,
+          0.2,
+          0.2,
+          0.2,
+          0.164,
+          0.128,
+          0.092,
+          0.055999999999999994,
+          0.01999999999999999
+        ],
+        "baseline_value_per_share": 58.81844953880256,
+        "boundary": "同一财务与信息时点，仅改十年收入增长路径；利润率、税率、资本效率、WACC、终值增长/ROIC及股权股本桥接输入不变。收入变化同时影响利润、再投资和终值金额；零收入增量再投资不等于零现金资本开支。中期样本改善不证明一年、第四年至终值、当前公司或完整DCF有效；不是价格区间、概率界限或推荐值。",
+        "counterfactual_equity_status": "positive_equity_residual",
+        "counterfactual_fcff_million_cny": [
+          1687.1905446972658,
+          1687.1905446972658,
+          1687.1905446972658,
+          1687.1905446972658,
+          1687.1905446972658,
+          1656.7012854147217,
+          1632.716874236706,
+          1614.922503180368,
+          1603.0751938956973,
+          1596.998395606029
+        ],
+        "counterfactual_growth": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.004,
+          0.008,
+          0.012,
+          0.016,
+          0.02
+        ],
+        "counterfactual_value_per_share": 28.505443260122796,
+        "currency": "CNY",
+        "delta_per_share": -30.313006278679765,
+        "evidence": {
+          "adoption": "not_adopted_as_default_or_company_specific_forecast",
+          "counterevidence": "one_year_validation_failed_and_some_medium_horizon_windows_worsened",
+          "medium_horizon": "two_disjoint_120_company_cohorts_show_average_improvement_in_common_two_and_three_year_windows",
+          "receipt": {
+            "path": "docs/acceptance/zero-growth-common-windows-20260911.json",
+            "sha256": "1aa85158546b71ab986a0be0a31c32f02448be1c3dc455d9105523204faa75ca"
+          },
+          "review": "docs/zero-growth-common-windows-20260911.md"
+        },
+        "method": "zero_first_five_then_fade_to_unchanged_terminal_growth",
+        "status": "illustrative_growth_path_sensitivity",
+        "unit": "CNY/share"
+      },
+      "evidence": {
+        "run_file": "/root/alphalake/valuation/backend/data/alphalake_runs/bc882d3e2437e5422ae8a5182ce84ea69a615496554cad23963a07acf26e3359.json",
+        "request_sha256": "56996fc845d3adb2f44479ee2b94936e163058fa346892c5b4e257526989a5b6"
+      }
+    },
+    "candidates": [
+      {
+        "policy_version": "anker-standard-history-2025H1-v1",
+        "policy_sha256": "25ec413627aa956083137bfaa5ca5124aefd783710e1acf56b80c24dac4e5644",
+        "kind": "company_assignment",
+        "configured_policy": {
+          "policy_id": "nonfinancial-history-fcff-v1",
+          "approved_report_period": "2025-06-30",
+          "scenario": "retrospective_standard_chain_acceptance",
+          "review_note": "2026-09-11事后链路验收；数值沿用既有历史规则模板，不声称2025时已制定或市场参数已估计。",
+          "nonfinancial_scope_review": "沿用既有安克合并消费电子样本范围审核；已知金融业务由标准字段门控，未新增逐业务范围研究。",
+          "wacc": 0.1,
+          "tax_rate": 0.25,
+          "annual_forecast": null,
+          "sales_to_capital": 3.0,
+          "terminal_growth": 0.02,
+          "terminal_roic": 0.1,
+          "cash_recovery": 0.8,
+          "operating_cash_ratio": 0.03,
+          "minority_book_multiple": 1.0,
+          "debt_book_multiple": 1.0,
+          "extra_dilution_rate": 0.02,
+          "additional_claims_million_cny": 0.0,
+          "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+          "financial_asset_policy": "no_credit_pending_classification",
+          "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。",
+          "growth_floor": -0.1,
+          "growth_ceiling": 0.2,
+          "growth_shift": 0.0,
+          "margin_shift": 0.0
+        },
+        "status": "illustrative_book_equity_scenario",
+        "policy_route": {
+          "kind": "explicit_company_assignment"
+        },
+        "reason": null,
+        "missing": [],
+        "valuation": {
+          "run_id": "bc882d3e2437e5422ae8a5182ce84ea69a615496554cad23963a07acf26e3359",
+          "engine_revision": "56160d18b78b7a5fa2be85674eaf6982b26d4ce2bb6b88d2b098e0e3e8830a72",
+          "policy_id": "nonfinancial-history-fcff-v1",
+          "scenario": "retrospective_standard_chain_acceptance",
+          "report_period": "2025-06-30",
+          "information_as_of": "2025-08-31T16:00:00Z",
+          "value_per_share": {
+            "value": 58.81844953880256,
+            "currency": "CNY",
+            "unit": "CNY/share"
+          },
+          "operating_enterprise_value": {
+            "value": 33694.66658459616,
+            "currency": "CNY",
+            "unit": "million_CNY"
+          },
+          "wacc": 0.1,
+          "capital_structure_basis": "not_used",
+          "capital_basis": "report_date_book_debt_no_conversion_scenario",
+          "share_date": "2025-06-30",
+          "equity_bridge": {
+            "components": {
+              "additional_claims_scenario": -0.0,
+              "cash_recovery_scenario": 2182.695936,
+              "debt_book_proxy": -2959.00976321875,
+              "minority_book_proxy": -190.958944,
+              "operating_cash_reserve": -837.85548288
+            },
+            "equity_if_converted": 31889.538330497413,
+            "equity_no_conversion": 31889.538330497413,
+            "operating_ownership": 1.0,
+            "operating_value": 33694.66658459616,
+            "per_share": 58.81844953880256,
+            "per_share_if_converted": 58.81844953880256,
+            "per_share_no_conversion": 58.81844953880256,
+            "policy_id": "nonfinancial-book-fcff-v1",
+            "selected_case": "not_converted",
+            "shares_if_converted": 542.1689721600001,
+            "shares_no_conversion": 542.1689721600001,
+            "status": "illustrative_policy_not_reported_fact"
+          },
+          "assumptions": {
+            "annual_forecast": [
+              {
+                "growth": 0.2,
+                "margin": 0.08054804577504496,
+                "tax": 0.25
+              },
+              {
+                "growth": 0.2,
+                "margin": 0.08054804577504496,
+                "tax": 0.25
+              },
+              {
+                "growth": 0.2,
+                "margin": 0.08054804577504496,
+                "tax": 0.25
+              },
+              {
+                "growth": 0.2,
+                "margin": 0.08054804577504496,
+                "tax": 0.25
+              },
+              {
+                "growth": 0.2,
+                "margin": 0.08054804577504496,
+                "tax": 0.25
+              },
+              {
+                "growth": 0.164,
+                "margin": 0.08054804577504496,
+                "tax": 0.25
+              },
+              {
+                "growth": 0.128,
+                "margin": 0.08054804577504496,
+                "tax": 0.25
+              },
+              {
+                "growth": 0.092,
+                "margin": 0.08054804577504496,
+                "tax": 0.25
+              },
+              {
+                "growth": 0.055999999999999994,
+                "margin": 0.08054804577504496,
+                "tax": 0.25
+              },
+              {
+                "growth": 0.01999999999999999,
+                "margin": 0.08054804577504496,
+                "tax": 0.25
+              }
+            ],
+            "bridge": {
+              "additional_claims_million_cny": 0.0,
+              "approved_report_period": "2025-06-30",
+              "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+              "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。",
+              "cash_recovery": 0.8,
+              "debt_book_multiple": 1.0,
+              "extra_dilution_rate": 0.02,
+              "financial_asset_policy": "no_credit_pending_classification",
+              "minority_book_multiple": 1.0,
+              "nonfinancial_scope_review": "沿用既有安克合并消费电子样本范围审核；已知金融业务由标准字段门控，未新增逐业务范围研究。",
+              "operating_cash_ratio": 0.03,
+              "policy_id": "nonfinancial-book-fcff-v1",
+              "review_note": "2026-09-11事后链路验收；数值沿用既有历史规则模板，不声称2025时已制定或市场参数已估计。",
+              "sales_to_capital": 3.0,
+              "scenario": "retrospective_standard_chain_acceptance",
+              "tax_rate": 0.25,
+              "terminal_growth": 0.02,
+              "terminal_roic": 0.1,
+              "wacc": 0.1
+            },
+            "sales_to_capital": 3.0,
+            "terminal_growth": 0.02,
+            "terminal_roic": 0.1,
+            "wacc": 0.1
+          },
+          "boundaries": [
+            "nonfinancial scope requires explicit review; missing financial-business fields do not prove absence",
+            "investment/fair-value/disposal income excluded; operating hedges not restored",
+            "RD remains expensed; reported interest may not consistently include lease finance costs",
+            "WACC/tax are explicit sensitivity assumptions, not market estimates",
+            "report-date shares and book claims; not a current-date securities rollforward",
+            "all FN52 treated as debt proxy without maturity-note split",
+            "nonoperating financial investments receive no credit pending classification; not asserted zero",
+            "no-conversion scenario only; convertible choice and employee options not priced",
+            "additional claims amount is a policy scenario, not a claim that undisclosed obligations are absent",
+            "cash recovery and minority/debt multiples are assumptions, not fair-value observations",
+            "median recent quarterly YOY with policy cap/shift and five-year fade; mechanical starting scenario, not researched growth forecast"
+          ],
+          "historical_fcff_status": "missing_classification_not_zero",
+          "terminal_sensitivity": {
+            "baseline_value_per_share": 58.81844953880256,
+            "boundary": "仅终值ROIC改为终值WACC；显式期现金流、折现与股权桥接不变。无持续超额回报是假设对照，不是公司回报估计、预测验证或推荐估值。",
+            "counterfactual_equity_status": "positive_equity_residual",
+            "counterfactual_value_per_share": 58.81844953880256,
+            "currency": "CNY",
+            "delta_per_share": 0.0,
+            "method": "terminal_roic_equals_terminal_wacc",
+            "source": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm",
+            "status": "illustrative_terminal_only_sensitivity",
+            "terminal_growth": 0.02,
+            "terminal_pv_share": 0.7567132321998912,
+            "terminal_roic": 0.1,
+            "terminal_wacc": 0.1,
+            "unit": "CNY/share"
+          },
+          "growth_sensitivity": {
+            "baseline_fcff_million_cny": [
+              162.7275805700533,
+              195.27309668406315,
+              234.32771602087587,
+              281.19325922505186,
+              337.43191107006214,
+              1087.7215962055393,
+              2060.890982583827,
+              3221.2003026640173,
+              4496.545410055041,
+              5782.170334618627
+            ],
+            "baseline_growth": [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.164,
+              0.128,
+              0.092,
+              0.055999999999999994,
+              0.01999999999999999
+            ],
+            "baseline_value_per_share": 58.81844953880256,
+            "boundary": "同一财务与信息时点，仅改十年收入增长路径；利润率、税率、资本效率、WACC、终值增长/ROIC及股权股本桥接输入不变。收入变化同时影响利润、再投资和终值金额；零收入增量再投资不等于零现金资本开支。中期样本改善不证明一年、第四年至终值、当前公司或完整DCF有效；不是价格区间、概率界限或推荐值。",
+            "counterfactual_equity_status": "positive_equity_residual",
+            "counterfactual_fcff_million_cny": [
+              1687.1905446972658,
+              1687.1905446972658,
+              1687.1905446972658,
+              1687.1905446972658,
+              1687.1905446972658,
+              1656.7012854147217,
+              1632.716874236706,
+              1614.922503180368,
+              1603.0751938956973,
+              1596.998395606029
+            ],
+            "counterfactual_growth": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.004,
+              0.008,
+              0.012,
+              0.016,
+              0.02
+            ],
+            "counterfactual_value_per_share": 28.505443260122796,
+            "currency": "CNY",
+            "delta_per_share": -30.313006278679765,
+            "evidence": {
+              "adoption": "not_adopted_as_default_or_company_specific_forecast",
+              "counterevidence": "one_year_validation_failed_and_some_medium_horizon_windows_worsened",
+              "medium_horizon": "two_disjoint_120_company_cohorts_show_average_improvement_in_common_two_and_three_year_windows",
+              "receipt": {
+                "path": "docs/acceptance/zero-growth-common-windows-20260911.json",
+                "sha256": "1aa85158546b71ab986a0be0a31c32f02448be1c3dc455d9105523204faa75ca"
+              },
+              "review": "docs/zero-growth-common-windows-20260911.md"
+            },
+            "method": "zero_first_five_then_fade_to_unchanged_terminal_growth",
+            "status": "illustrative_growth_path_sensitivity",
+            "unit": "CNY/share"
+          },
+          "evidence": {
+            "run_file": "/root/alphalake/valuation/backend/data/alphalake_runs/bc882d3e2437e5422ae8a5182ce84ea69a615496554cad23963a07acf26e3359.json",
+            "request_sha256": "56996fc845d3adb2f44479ee2b94936e163058fa346892c5b4e257526989a5b6"
+          }
+        }
+      }
+    ],
+    "boundary": "条件估值；仅评估显式提供的政策集合，非当前目标价或自动政策审核。",
+    "security": {
+      "instrument_id": 45156,
+      "name": "安克创新",
+      "symbols": [
+        "sz300866"
+      ],
+      "exchange_mic": "XSHE",
+      "financial_status": "financial_core_complete_requires_policy",
+      "missing_core_fields": []
+    },
+    "status": "illustrative_book_equity_scenario"
+  },
+  "run_receipt": {
+    "path": "/root/alphalake/valuation/backend/data/alphalake_runs/bc882d3e2437e5422ae8a5182ce84ea69a615496554cad23963a07acf26e3359.json",
+    "sha256": "d0bcf00f1749ec04a072e1bf89d4195a8ec9b9cb543df34f739f4dcdaa4ec073"
+  },
+  "request_unchanged": true,
+  "complete_report_unchanged": true,
+  "actual_results_unchanged": true,
+  "review": {
+    "run_id": "bc882d3e2437e5422ae8a5182ce84ea69a615496554cad23963a07acf26e3359",
+    "review_id": "b7c03436df0aff6f606ff15b08939871fcf8f90cf23e18032f9c6d0cf647df42",
+    "statuses": {
+      "evaluated": 1,
+      "not_yet_observable": 9
+    },
+    "first_metrics": {
+      "revenue": {
+        "status": "evaluated",
+        "actual_million_cny": 34252.649984,
+        "signed_error_million_cny": -738.430668800007,
+        "absolute_error_million_cny": 738.430668800007,
+        "absolute_error_pct_actual_revenue": 2.1558351518639887
+      },
+      "adjusted_ebit": {
+        "status": "evaluated",
+        "actual_million_cny": 3250.1592016113286,
+        "signed_error_million_cny": -550.6543300957032,
+        "absolute_error_million_cny": 550.6543300957032,
+        "absolute_error_pct_actual_revenue": 1.60762548402218
+      }
+    },
+    "full_review_sha256": "f800dc13017fb2b7f197fd4b4d2f4dc9c637ff18d7fc4d1c0a2971eebc1afb30"
+  },
+  "boundary": "single_company_history_main_publication; retrospective_fixed_policy_not_current_target_or_accuracy_improvement",
+  "retired_copy": {
+    "path": "workspace/earnings-history-upgrade-20260911/acceptance.duckdb",
+    "sha256": "2712ab166cff2de624c8066f7fc1a273b8587b812082b3518c6b36d9278f1f97",
+    "bytes_reclaimed": 2011967488,
+    "reason": "published independent main file; baseline backup, original artifacts, exports and archived valuation run retained"
+  }
+}

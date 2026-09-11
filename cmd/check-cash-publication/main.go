@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"flag"
 	"fmt"
 	duck "github.com/yinhm/alphalake/internal/store/duckdb"
 	"io"
@@ -13,6 +14,8 @@ import (
 	"strings"
 	"time"
 )
+
+const newFactSourceMismatchSQL = `SELECT count(*) FROM candidate.fundamental.fact f LEFT JOIN candidate.fundamental.provider_fact p ON f.provider_fact_id=p.provider_fact_id LEFT JOIN candidate.fundamental.provider_field m ON m.source=f.primary_source AND m.provider_field=f.source_provider_field WHERE NOT EXISTS(SELECT 1 FROM baseline.fundamental.fact b WHERE b.fact_id=f.fact_id) AND (p.provider_fact_id IS NULL OR m.provider_field IS NULL OR f.value IS DISTINCT FROM CAST(p.value*m.value_multiplier AS DECIMAL(38,10)) OR f.primary_source IS DISTINCT FROM p.source OR f.report_period IS DISTINCT FROM p.report_period OR f.provider_code IS DISTINCT FROM p.provider_code OR f.instrument_id IS DISTINCT FROM p.instrument_id OR f.source_provider_field IS DISTINCT FROM p.provider_field OR f.revision_key IS DISTINCT FROM p.revision_key OR f.canonical_field IS DISTINCT FROM m.canonical_field OR f.unit IS DISTINCT FROM m.unit)`
 
 func fileHash(path string) (string, error) {
 	f, err := os.Open(path)
@@ -28,13 +31,27 @@ func fileHash(path string) (string, error) {
 }
 
 func run() error {
-	if len(os.Args) != 4 && (len(os.Args) != 5 || os.Args[4] != "--publish") {
-		return fmt.Errorf("usage: check-cash-publication BASE CANDIDATE ACCEPTANCE_JSON [--publish]")
+	if len(os.Args) < 4 {
+		return fmt.Errorf("usage: check-cash-publication BASE CANDIDATE ACCEPTANCE_JSON [--publish] [--earnings]")
 	}
-	publish := len(os.Args) == 5
+	flags := flag.NewFlagSet("check-cash-publication", flag.ContinueOnError)
+	publishFlag := flags.Bool("publish", false, "publish with backup")
+	earnings := flags.Bool("earnings", false, "fixed schema38 to39 Anker history acceptance")
+	if err := flags.Parse(os.Args[4:]); err != nil {
+		return err
+	}
+	if flags.NArg() != 0 {
+		return fmt.Errorf("unexpected arguments")
+	}
+	publish := *publishFlag
+	kind := "cash"
+	if *earnings {
+		kind = "earnings"
+	}
 	base, candidate := os.Args[1], os.Args[2]
 	var receipt struct {
-		BaseHash string `json:"base_sha256"`
+		BaseHash      string `json:"base_sha256"`
+		CandidateHash string `json:"candidate_sha256"`
 	}
 	raw, err := os.ReadFile(os.Args[3])
 	if err != nil {
@@ -42,6 +59,9 @@ func run() error {
 	}
 	if err = json.Unmarshal(raw, &receipt); err != nil {
 		return err
+	}
+	if publish && *earnings && receipt.CandidateHash == "" {
+		return fmt.Errorf("earnings publication requires a prepublication receipt with candidate_sha256")
 	}
 	baseHash, err := fileHash(base)
 	if err != nil {
@@ -67,6 +87,14 @@ func run() error {
 		if _, err = db.ExecContext(ctx, "ATTACH '"+strings.ReplaceAll(path, "'", "''")+"' AS "+alias+" (READ_ONLY)"); err != nil {
 			return err
 		}
+	}
+	// Recheck after native read locks are held, before trusting the baseline hash.
+	lockedHash, err := fileHash(base)
+	if err != nil {
+		return err
+	}
+	if lockedHash != baseHash {
+		return fmt.Errorf("base changed while acquiring read locks")
 	}
 	checks := map[string]int{}
 	check := func(name, query string, want int) error {
@@ -132,8 +160,38 @@ func run() error {
 		{"unexpected_added_facts", `SELECT count(*) FROM candidate.fundamental.fact f WHERE NOT EXISTS(SELECT 1 FROM baseline.fundamental.fact b WHERE b.fact_id=f.fact_id) AND NOT(provider_code='300866' AND report_period IN (DATE '2024-06-30',DATE '2024-09-30',DATE '2024-12-31') AND source_provider_field IN ('FN114','FN230','FN231','FN232','FN233','FN234','FN235','FN236','FN237','FN238'))`, 0},
 		{"added_facts", `SELECT count(*) FROM candidate.fundamental.fact f WHERE NOT EXISTS(SELECT 1 FROM baseline.fundamental.fact b WHERE b.fact_id=f.fact_id)`, 30},
 	}
+	if *earnings {
+		const fields = "('FN86','FN305','FN306','FN83','FN82','FN301')"
+		for i := range queries {
+			q := &queries[i]
+			q.sql = strings.ReplaceAll(q.sql, "provider_field<>'FN114'", "provider_field NOT IN "+fields)
+			q.sql = strings.ReplaceAll(q.sql, "provider_field='FN114'", "provider_field IN "+fields)
+			q.sql = strings.ReplaceAll(q.sql, "'1221057646','1221558710','1223379891'", "'1219865739'")
+			switch q.name {
+			case "base_schema":
+				q.want = 38
+			case "candidate_schema":
+				q.want = 39
+			case "candidate_facts":
+				q.want = 2023212
+			case "scope_date":
+				q.want = 6
+			case "added_facts":
+				q.want = 27
+			case "capex_other_mapping_columns_changed":
+				q.name = "earnings_other_mapping_columns_changed"
+			case "unexpected_added_facts":
+				q.sql = `SELECT count(*) FROM candidate.fundamental.fact f WHERE NOT EXISTS(SELECT 1 FROM baseline.fundamental.fact b WHERE b.fact_id=f.fact_id) AND NOT(provider_code='300866' AND ((report_period IN (DATE '2024-06-30',DATE '2024-09-30',DATE '2024-12-31') AND source_provider_field IN ` + fields + `) OR (report_period=DATE '2024-03-31' AND source_provider_field IN ('FN230','FN231','FN232','FN233','FN234','FN235','FN236','FN237','FN238'))))`
+			}
+		}
+	}
 	for _, q := range queries {
 		if err = check(q.name, q.sql, q.want); err != nil {
+			return err
+		}
+	}
+	if *earnings {
+		if err = check("new_fact_source_mismatch", newFactSourceMismatchSQL, 0); err != nil {
 			return err
 		}
 	}
@@ -176,11 +234,14 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	if receipt.CandidateHash != "" && candidateHash != receipt.CandidateHash {
+		return fmt.Errorf("candidate changed since prepublication checks")
+	}
 	status := "prepublication_checks_passed"
 	backup := ""
 	if publish {
-		backup = base + ".pre-cash-history-20260911"
-		target := base + ".cash-publish-new"
+		backup = base + ".pre-" + kind + "-history-20260911"
+		target := base + "." + kind + "-publish-new"
 		for _, path := range []string{backup, target} {
 			if _, err = os.Lstat(path); !os.IsNotExist(err) {
 				return fmt.Errorf("refuse existing publication path: %s", path)
@@ -225,7 +286,7 @@ func run() error {
 		}
 		status = "published_with_backup"
 	}
-	return json.NewEncoder(os.Stdout).Encode(map[string]any{"status": status, "backup": backup, "completed_at": time.Now().UTC(), "base_sha256": baseHash, "candidate_sha256": candidateHash, "checks": checks, "new_artifacts": proofs, "scope": "cash_history_2024_anker_only; not_full_market_historical_review"})
+	return json.NewEncoder(os.Stdout).Encode(map[string]any{"status": status, "backup": backup, "completed_at": time.Now().UTC(), "base_sha256": baseHash, "candidate_sha256": candidateHash, "checks": checks, "new_artifacts": proofs, "scope": kind + "_history_2024_anker_only; not_full_market_historical_review"})
 }
 func syncDir(path string) error {
 	dir, err := os.Open(path)
