@@ -37,10 +37,12 @@ def metrics(rows):
     return result
 
 
-def study(p,source):
+def study(p,source,phase='development'):
+    if phase not in ('development','holdout'):raise ValueError('invalid study phase')
+    p=p|dict(samples=[s for s in p['samples'] if s['split']==phase])
     if p['protocol_id']!='tdx-multiyear-growth-v1' or (p['baseline'],p['benchmark'],p['candidate'])!=MODELS or p['base_policy']['margin_shift']!=0:raise ValueError('unsupported growth study')
     if source['contract_version']!='tdx-history-source-v1':raise ValueError('source contract differs')
-    if not p['samples'] or any(s['split']!='development' for s in p['samples']) or len({s['code'] for s in p['samples']})!=len(p['samples']):raise ValueError('unique development samples required')
+    if not p['samples'] or any(s['split']!=phase for s in p['samples']) or len({s['code'] for s in p['samples']})!=len(p['samples']):raise ValueError('unique phase samples required')
     if len({(w['origin'],w['horizon']) for w in p['windows']})!=len(p['windows']):raise ValueError('duplicate forecast window')
     if any(v is not True for k,v in p['gates'].items() if k.startswith('require_')):raise ValueError('required gate disabled')
     index=defaultdict(list);artifacts={a['file']:a for a in source['artifacts']}
