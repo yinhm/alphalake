@@ -1,0 +1,366 @@
+{
+  "results": [
+    {
+      "code": "000417",
+      "period": "2021-12-31",
+      "artifact": "gpcw20211231.zip",
+      "source_matches": [
+        {
+          "field": "FN41",
+          "pdf_cny": "591512680.58",
+          "source_cny": "591512704",
+          "bits": 1309476626
+        },
+        {
+          "field": "FN55",
+          "pdf_cny": "392015669.17",
+          "source_cny": "392015680",
+          "bits": 1304096122
+        },
+        {
+          "field": "FN52",
+          "pdf_cny": "276487666.60",
+          "source_cny": "276487680",
+          "bits": 1300485872
+        },
+        {
+          "field": "FN439",
+          "pdf_cny": "861940849.37",
+          "source_cny": "861940781.250000",
+          "bits": 1202215178
+        }
+      ],
+      "noncurrent_bond_status": "source_zero_matches_blank_current_statement_column",
+      "bond_section": "not_applicable",
+      "confirmed_current_bond_cny": null,
+      "full_debt": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000417",
+      "period": "2022-12-31",
+      "artifact": "gpcw20221231.zip",
+      "source_matches": [
+        {
+          "field": "FN41",
+          "pdf_cny": "581396077.63",
+          "source_cny": "581396096",
+          "bits": 1309318554
+        },
+        {
+          "field": "FN55",
+          "pdf_cny": "581881246.97",
+          "source_cny": "581881216",
+          "bits": 1309326134
+        },
+        {
+          "field": "FN52",
+          "pdf_cny": "262063986.15",
+          "source_cny": "262063984",
+          "bits": 1299836023
+        },
+        {
+          "field": "FN439",
+          "pdf_cny": "801811647.57",
+          "source_cny": "801811562.50000",
+          "bits": 1201445524
+        }
+      ],
+      "noncurrent_bond_status": "source_zero_matches_blank_current_statement_column",
+      "bond_section": "not_applicable",
+      "confirmed_current_bond_cny": null,
+      "full_debt": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000422",
+      "period": "2021-12-31",
+      "artifact": "gpcw20211231.zip",
+      "source_matches": [
+        {
+          "field": "FN41",
+          "pdf_cny": "2567025072.97",
+          "source_cny": "2567025152",
+          "bits": 1327038898
+        },
+        {
+          "field": "FN55",
+          "pdf_cny": "4553757496.76",
+          "source_cny": "4553757696",
+          "bits": 1334294122
+        },
+        {
+          "field": "FN52",
+          "pdf_cny": "4555011165.65",
+          "source_cny": "4555011072",
+          "bits": 1334296570
+        },
+        {
+          "field": "FN439",
+          "pdf_cny": "1636955.48",
+          "source_cny": "1636999.9694824218750000",
+          "bits": 1126413107
+        }
+      ],
+      "noncurrent_bond_status": "source_zero_matches_blank_current_statement_column",
+      "bond_section": "applicable_current_maturity",
+      "confirmed_current_bond_cny": "20000000.00",
+      "full_debt": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000422",
+      "period": "2022-12-31",
+      "artifact": "gpcw20221231.zip",
+      "source_matches": [
+        {
+          "field": "FN41",
+          "pdf_cny": "2024391904.95",
+          "source_cny": "2024391936",
+          "bits": 1324438410
+        },
+        {
+          "field": "FN55",
+          "pdf_cny": "4912915986.28",
+          "source_cny": "4912915968",
+          "bits": 1334995603
+        },
+        {
+          "field": "FN52",
+          "pdf_cny": "1983668160.12",
+          "source_cny": "1983668224",
+          "bits": 1324120256
+        },
+        {
+          "field": "FN439",
+          "pdf_cny": "746931.72",
+          "source_cny": "746900.02441406250000",
+          "bits": 1117086024
+        }
+      ],
+      "noncurrent_bond_status": "source_zero_matches_blank_current_statement_column",
+      "bond_section": "not_applicable",
+      "confirmed_current_bond_cny": null,
+      "full_debt": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000521",
+      "period": "2021-12-31",
+      "artifact": "gpcw20211231.zip",
+      "source_matches": [
+        {
+          "field": "FN41",
+          "pdf_cny": "622874652.77",
+          "source_cny": "622874624",
+          "bits": 1309966656
+        },
+        {
+          "field": "FN55",
+          "pdf_cny": "168000000.00",
+          "source_cny": "168000000",
+          "bits": 1293957024
+        },
+        {
+          "field": "FN52",
+          "pdf_cny": "332718478.25",
+          "source_cny": "332718464",
+          "bits": 1302243084
+        },
+        {
+          "field": "FN439",
+          "pdf_cny": "33225912.15",
+          "source_cny": "33225900.878906250000",
+          "bits": 1162848625
+        }
+      ],
+      "noncurrent_bond_status": "source_zero_matches_blank_current_statement_column",
+      "bond_section": "not_applicable",
+      "confirmed_current_bond_cny": null,
+      "full_debt": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000521",
+      "period": "2022-12-31",
+      "artifact": "gpcw20221231.zip",
+      "source_matches": [
+        {
+          "field": "FN41",
+          "pdf_cny": "674143916.67",
+          "source_cny": "674143936",
+          "bits": 1310767739
+        },
+        {
+          "field": "FN55",
+          "pdf_cny": "148000000.00",
+          "source_cny": "148000000",
+          "bits": 1292707024
+        },
+        {
+          "field": "FN52",
+          "pdf_cny": "30287099.08",
+          "source_cny": "30287100",
+          "bits": 1273434750
+        },
+        {
+          "field": "FN439",
+          "pdf_cny": "28164287.97",
+          "source_cny": "28164299.316406250000",
+          "bits": 1160775393
+        }
+      ],
+      "noncurrent_bond_status": "source_zero_matches_blank_current_statement_column",
+      "bond_section": "not_applicable",
+      "confirmed_current_bond_cny": null,
+      "full_debt": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000546",
+      "period": "2021-12-31",
+      "artifact": "gpcw20211231.zip",
+      "source_matches": [
+        {
+          "field": "FN41",
+          "pdf_cny": "2377274707.56",
+          "source_cny": "2377274624",
+          "bits": 1326297685
+        },
+        {
+          "field": "FN55",
+          "pdf_cny": "321000000.00",
+          "source_cny": "321000000",
+          "bits": 1301876882
+        },
+        {
+          "field": "FN52",
+          "pdf_cny": "181451774.76",
+          "source_cny": "181451776",
+          "bits": 1294797760
+        },
+        {
+          "field": "FN439",
+          "pdf_cny": "3230160.94",
+          "source_cny": "3230199.890136718750000",
+          "bits": 1134658191
+        }
+      ],
+      "noncurrent_bond_status": "source_zero_matches_blank_current_statement_column",
+      "bond_section": "not_applicable",
+      "confirmed_current_bond_cny": null,
+      "full_debt": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000546",
+      "period": "2022-12-31",
+      "artifact": "gpcw20221231.zip",
+      "source_matches": [
+        {
+          "field": "FN41",
+          "pdf_cny": "975844555.21",
+          "source_cny": "975844544",
+          "bits": 1315481811
+        },
+        {
+          "field": "FN55",
+          "pdf_cny": "185000000.00",
+          "source_cny": "185000000",
+          "bits": 1295019524
+        },
+        {
+          "field": "FN52",
+          "pdf_cny": "91835998.04",
+          "source_cny": "91836000",
+          "bits": 1286547916
+        },
+        {
+          "field": "FN439",
+          "pdf_cny": "1202121.41",
+          "source_cny": "1202099.99084472656250000",
+          "bits": 1123052421
+        }
+      ],
+      "noncurrent_bond_status": "source_zero_matches_blank_current_statement_column",
+      "bond_section": "not_applicable",
+      "confirmed_current_bond_cny": null,
+      "full_debt": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000599",
+      "period": "2021-12-31",
+      "artifact": "gpcw20211231.zip",
+      "source_matches": [
+        {
+          "field": "FN41",
+          "pdf_cny": "3754517452.06",
+          "source_cny": "3754517504",
+          "bits": 1331677540
+        },
+        {
+          "field": "FN55",
+          "pdf_cny": "836544256.14",
+          "source_cny": "836544256",
+          "bits": 1313305244
+        },
+        {
+          "field": "FN52",
+          "pdf_cny": "445705751.85",
+          "source_cny": "445705760",
+          "bits": 1305773937
+        },
+        {
+          "field": "FN439",
+          "pdf_cny": "2040400.45",
+          "source_cny": "2040399.9328613281250000",
+          "bits": 1129056829
+        }
+      ],
+      "noncurrent_bond_status": "source_zero_matches_printed_zero",
+      "bond_section": "not_applicable",
+      "confirmed_current_bond_cny": null,
+      "full_debt": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000599",
+      "period": "2022-12-31",
+      "artifact": "gpcw20221231.zip",
+      "source_matches": [
+        {
+          "field": "FN41",
+          "pdf_cny": "3903699009.57",
+          "source_cny": "3903698944",
+          "bits": 1332260280
+        },
+        {
+          "field": "FN55",
+          "pdf_cny": "486516256.14",
+          "source_cny": "486516256",
+          "bits": 1307049265
+        },
+        {
+          "field": "FN52",
+          "pdf_cny": "434945427.21",
+          "source_cny": "434945440",
+          "bits": 1305437677
+        },
+        {
+          "field": "FN439",
+          "pdf_cny": "574518.27",
+          "source_cny": "574500.007629394531250000",
+          "bits": 1113967821
+        }
+      ],
+      "noncurrent_bond_status": "source_zero_matches_blank_current_statement_column",
+      "bond_section": "not_applicable",
+      "confirmed_current_bond_cny": null,
+      "full_debt": null,
+      "economic_roic": null
+    }
+  ],
+  "nonzero_matches": 40,
+  "boundary": "later_acquired_research_only; statement_noncurrent_blank_not_absence_of_all_bonds; no_standard_zero_override; full_debt_and_operating_capital_not_closed"
+}
