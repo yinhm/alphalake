@@ -1,0 +1,107 @@
+{
+  "study_id": "continuing-operations-five-capital-source-v1",
+  "origins": [
+    "2023-06-30",
+    "2024-06-30",
+    "2025-06-30"
+  ],
+  "forecast_cutoff_rule": "origin year September 1 China midnight",
+  "evaluation_as_of": "2026-09-10T00:00:00+08:00",
+  "policy": {
+    "policy_id": "nonfinancial-history-fcff-v1",
+    "approved_report_period": "2025-06-30",
+    "scenario": "mechanical_starting_scenario",
+    "review_note": "模板参数仅为初始敏感性情景，不是行业研究结论；使用前应审核适用范围和参数。",
+    "nonfinancial_scope_review": "使用时替换为公司非金融经营范围的实际审核依据。",
+    "wacc": 0.1,
+    "tax_rate": 0.25,
+    "growth_floor": -0.1,
+    "growth_ceiling": 0.2,
+    "growth_shift": 0,
+    "margin_shift": 0,
+    "sales_to_capital": 3,
+    "terminal_growth": 0.02,
+    "terminal_roic": 0.1,
+    "cash_recovery": 0.8,
+    "operating_cash_ratio": 0.03,
+    "minority_book_multiple": 1,
+    "debt_book_multiple": 1,
+    "extra_dilution_rate": 0.02,
+    "additional_claims_million_cny": 0,
+    "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+    "financial_asset_policy": "no_credit_pending_classification",
+    "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+  },
+  "samples": [
+    {
+      "code": "300866",
+      "stratum": "制造与出口",
+      "split": "development"
+    },
+    {
+      "code": "002032",
+      "stratum": "制造与出口",
+      "split": "development"
+    },
+    {
+      "code": "000651",
+      "stratum": "制造与出口",
+      "split": "development"
+    },
+    {
+      "code": "600887",
+      "stratum": "稳定消费",
+      "split": "development"
+    },
+    {
+      "code": "603288",
+      "stratum": "稳定消费",
+      "split": "development"
+    }
+  ],
+  "models": [
+    "current_rule",
+    "zero_growth"
+  ],
+  "selection": "2026-09-11已固定五家公司，全部保留；已暴露开发诊断，不是新留出，不保证业务可比性。",
+  "boundary": "fixed_five_source_extension_only; no_new_rule_or_actual_FCFF; zeros_and_financial_scope_retained; source_versions_later_acquired_not_strict_PIT",
+  "additional_source_fields": [
+    8,
+    11,
+    12,
+    13,
+    17,
+    21,
+    25,
+    40,
+    41,
+    44,
+    46,
+    47,
+    52,
+    54,
+    55,
+    56,
+    63,
+    69,
+    72,
+    92,
+    93,
+    104,
+    114,
+    133,
+    136,
+    137,
+    138,
+    146,
+    147,
+    148,
+    234,
+    271,
+    304,
+    439,
+    579,
+    581
+  ],
+  "baseline_snapshot_sha256": "ab57cd23d2a5ec05ade969eebced5c3274b911f5524f39bfa2e30dcbf823db59"
+}
