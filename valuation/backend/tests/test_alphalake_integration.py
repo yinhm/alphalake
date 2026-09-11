@@ -1,5 +1,6 @@
 """真实 Go 数据库导出 → HTTP → 完整引擎 → 原生桥接与可复现记录。"""
 import copy
+from dataclasses import asdict
 import csv
 import json
 import math
@@ -10,6 +11,7 @@ import sys
 
 import pytest
 from fastapi.testclient import TestClient
+from fastapi.encoders import jsonable_encoder
 from api.main import app
 from data_sources.alphalake import build_inputs, AlphaLakeRequest
 from engine.orchestrator import run_full_valuation
@@ -49,6 +51,7 @@ def test_real_http_forecast_bridge_and_replay(exports,tmp_path,monkeypatch,compa
         assert client.post('/api/valuation/from-alphalake',json=req).json() == result
     stored, = tmp_path.glob('*.json')
     assert json.loads(stored.read_text()) == result
+    assert result['terminal_sensitivity'] is None
     report,p = result['report'],req['policy']['parameters']
     assert report['cashflow']['fcff'] is None and report['cashflow']['fcfe'] is None
     assert report['final']['value_per_share'] == report['equity_bridge']['per_share']
@@ -630,6 +633,30 @@ def test_generic_book_dcf_forecast_and_equity_bridge(exports,tmp_path,monkeypatc
         fixed=w['FN133']*.8-w['FN230']*.03-sum(w[f] for f in ('FN41','FN52','FN55','FN56','FN439'))-w['FN69']*1.5-50
         near(result['report']['final']['value_per_share'],(ev+fixed)/(w['FN238']*1.02))
         assert result['report']['cashflow']['fcff'] is None
+        assert result['terminal_sensitivity']['delta_per_share']==0
+        # 真正单因素：高于/低于WACC及零增长；用终值公式独立核对影响。
+        for roic,growth in ((.15,.02),(.08,.02),(.15,0)):
+            changed=policy|dict(terminal_roic=roic,terminal_growth=growth)
+            req=dict(data=exports['300866'],policy=changed)
+            response=client.post('/api/valuation/from-alphalake',json=req)
+            assert response.status_code==200,response.text
+            observed=response.json();sensitivity=observed['terminal_sensitivity']
+            assert client.post('/api/valuation/from-alphalake',json=req).json()==observed
+            near(sensitivity['counterfactual_value_per_share'],
+                 (pv+rev*(1+growth)*.09*.75/.1/1.1**10+fixed)/(w['FN238']*1.02))
+            inputs,_=build_inputs(AlphaLakeRequest.model_validate(req))
+            direct=run_full_valuation(inputs)
+            assert observed['report']['dcf']==jsonable_encoder(asdict(direct))['dcf']
+            near(sensitivity['delta_per_share'],sensitivity['counterfactual_value_per_share']-observed['report']['final']['value_per_share'])
+            if growth==0: near(sensitivity['delta_per_share'],0)
+            if roic>.1 and growth>0:
+                claims=changed['additional_claims_million_cny']+(sensitivity['baseline_value_per_share']+sensitivity['counterfactual_value_per_share'])/2*w['FN238']*1.02
+                stressed=client.post('/api/valuation/from-alphalake',json=dict(data=exports['300866'],policy=changed|dict(additional_claims_million_cny=claims)))
+                assert stressed.status_code==200,stressed.text
+                stress=stressed.json()
+                assert stress['report']['final']['value_per_share']>0
+                assert stress['terminal_sensitivity']['counterfactual_value_per_share']<0
+                assert stress['terminal_sensitivity']['counterfactual_equity_status']=='nonpositive_equity_residual_requires_distress_model'
         assert client.post('/api/valuation/from-alphalake',json=dict(data=exports['600519'],policy=policy)).status_code==422
         for field in ('FN238','FN52','FN133'):
             bad=copy.deepcopy(exports['300866']);bad['windows']=[r for r in bad['windows'] if r['field']!=field]
@@ -1001,6 +1028,7 @@ def test_company_entry_selection_summary_and_no_fallback(exports,tmp_path,monkey
     explicit=company_valuation(scan,'300866',[specific,generic],export,tmp_path,select='industry-v1')
     assert explicit['selection']['policy_version']=='industry-v1'
     assert explicit['valuation']['policy_id']=='nonfinancial-history-fcff-v1'
+    assert explicit['valuation']['terminal_sensitivity']['method']=='terminal_roic_equals_terminal_wacc'
     # 同级专项绝不按价格或传入顺序取一个。
     other=specific.model_copy(update={'policy_version':'another-reviewed-scenario'})
     ambiguous=company_valuation(scan,'300866',[specific,other],export,tmp_path)

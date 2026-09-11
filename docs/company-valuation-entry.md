@@ -1,5 +1,14 @@
 # 统一公司估值入口
 
+## 通用DCF的终值回报对照
+
+成功的通用账面DCF（含历史增长和显式一年校准政策）现在自动输出`valuation.terminal_sensitivity`；完整API/归档运行对应顶层同名字段。内容包含原终值ROIC、终值WACC、增长率、终值现值占比、原每股条件值、`counterfactual_value_per_share`与差额，金额单位为CNY/share。专项模型和仅企业价值模型输出null；不由此推断其没有终值风险。
+
+对照复用现有引擎，只把终值ROIC设为终值WACC，保持显式期现金流、折现及股权桥接。它是达摩达兰[无持续超额回报](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm)情景，不是公司回报估计或推荐价格；不覆盖原`value_per_share`、不自动切换政策。对照若出现非正股权残值，以`counterfactual_equity_status`标明需要困境模型，不改原成功结果。原ROIC已等于WACC时复用原报告，其余通用结果增加一次引擎内存计算，无额外数据库查询或网络请求。
+
+已完成[两份真实标准请求验收](acceptance/terminal-sensitivity-output-20260911.json)：安克、苏泊尔原请求、解析输入和完整报告均与历史运行一致，对照分别119.8340元、38.0005元，匹配前轮单因素复算。新增输出使引擎版本/run ID更新，不是财务或估值变化；旧运行原样保留。此验收重放归档请求，没有重新查询主库。Python回归覆盖终值ROIC与WACC的高/等/低关系、零增长、幂等归档、专项不套用及统一摘要透传；依赖现有后端Python环境和自包含Go真实样本，进入现有pytest CI。 本轮Python全套375项通过、4项既有外部样本缺失跳过、7条既有警告（474.76秒）；补充非正对照分支回归通过，Go全套及构建通过。没有Go代码或依赖变更。
+
+
 `tools.company_valuation` 从实际数据库扫描证券身份、共享一次当前标准估值输入（显式现金检查另读上年同期窗口），按显式提供的政策集合计算候选结果并输出JSON。复用`run_batch`、参考版本选择及共享估值引擎；不启动HTTP服务，不读取样本PDF直算，不自动发现或批准目录中的政策。
 
 ## 使用

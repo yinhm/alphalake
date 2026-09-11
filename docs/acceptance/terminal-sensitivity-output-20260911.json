@@ -1,0 +1,78 @@
+{
+  "companies": [
+    {
+      "code": "300866",
+      "before_run": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b.json",
+        "sha256": "328ffa8de193bb8fe8253a0be686b051f1ea4160ba3c80a182781052a7b028b7"
+      },
+      "before_run_id": "6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b",
+      "after_run_id": "ed011ae4e4f56f5c9cc490ffd8b5d56017fbe406fba01da44ec1916360877c64",
+      "engine_revision": "4081edeae857807efc7491eaef40a5372949962c4a9a203daa2727012afba76a",
+      "terminal_sensitivity": {
+        "baseline_value_per_share": 126.13784833230838,
+        "boundary": "仅终值ROIC改为终值WACC；显式期现金流、折现与股权桥接不变。无持续超额回报是假设对照，不是公司回报估计、预测验证或推荐估值。",
+        "counterfactual_equity_status": "positive_equity_residual",
+        "counterfactual_value_per_share": 119.83396547562994,
+        "currency": "CNY",
+        "delta_per_share": -6.303882856678442,
+        "method": "terminal_roic_equals_terminal_wacc",
+        "source": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm",
+        "status": "illustrative_terminal_only_sensitivity",
+        "terminal_growth": 0.02,
+        "terminal_pv_share": 0.8167192042527859,
+        "terminal_roic": 0.1,
+        "terminal_wacc": 0.08075367197021832,
+        "unit": "CNY/share"
+      },
+      "checks": [
+        "request_inputs_and_complete_report_unchanged",
+        "counterfactual_matches_prior_single_factor_replay",
+        "summary_matches_saved_output",
+        "idempotent_replay"
+      ]
+    },
+    {
+      "code": "002032",
+      "before_run": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d.json",
+        "sha256": "9560ca4d3056791d115b2b10f0f5b84b0cc789fd5663fc12a9d16880fcf42b70"
+      },
+      "before_run_id": "183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d",
+      "after_run_id": "51c14b24051c6238b1d82984a15c54f10af0e3f97c09b6ff8ddbf510ae59dc57",
+      "engine_revision": "4081edeae857807efc7491eaef40a5372949962c4a9a203daa2727012afba76a",
+      "terminal_sensitivity": {
+        "baseline_value_per_share": 43.252612680123605,
+        "boundary": "仅终值ROIC改为终值WACC；显式期现金流、折现与股权桥接不变。无持续超额回报是假设对照，不是公司回报估计、预测验证或推荐估值。",
+        "counterfactual_equity_status": "positive_equity_residual",
+        "counterfactual_value_per_share": 38.00047127187885,
+        "currency": "CNY",
+        "delta_per_share": -5.2521414082447535,
+        "method": "terminal_roic_equals_terminal_wacc",
+        "source": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm",
+        "status": "illustrative_terminal_only_sensitivity",
+        "terminal_growth": 0.02,
+        "terminal_pv_share": 0.6334317258969464,
+        "terminal_roic": 0.1,
+        "terminal_wacc": 0.057531403615019586,
+        "unit": "CNY/share"
+      },
+      "checks": [
+        "request_inputs_and_complete_report_unchanged",
+        "counterfactual_matches_prior_single_factor_replay",
+        "summary_matches_saved_output",
+        "idempotent_replay"
+      ]
+    }
+  ],
+  "scope": "two_saved_standard_requests_API_and_summary_not_fresh_database_query",
+  "run_directory": "/root/alphalake/workspace/terminal-sensitivity-output-20260911/runs",
+  "boundary": "新增输出改变引擎版本与run ID；原估值/财务不变，不证明预测准确度提升。",
+  "validation": {
+    "python_full": "375 passed, 4 existing external-fixture skips, 7 existing warnings, 474.76 seconds",
+    "additional_nonpositive_counterfactual_regression": "passed",
+    "go_test": "./... passed",
+    "go_build": "./cmd/alphalake passed",
+    "dependency_changes": false
+  }
+}
