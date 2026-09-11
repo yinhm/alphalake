@@ -1,0 +1,6434 @@
+{
+  "protocol_id": "tdx-first-year-half-growth-v1",
+  "frozen_at": "2026-09-11T05:04:36.986013+00:00",
+  "parent_protocol": "valuation/research/tdx-zero-growth-horizons/protocol.json",
+  "parent_protocol_sha256": "71a22981a137f3d2b668fbf660700bc0db919cc297a009eac93fc19478abfbf8",
+  "parent_result": "valuation/research/tdx-zero-growth-horizons/development-result.json.gz",
+  "parent_result_sha256": "510a103aa33a651308f5a5a78ed7e6968b6b1adcc86380a9064a5120cdc34e35",
+  "samples": [
+    {
+      "code": "688610",
+      "name": "埃科光电",
+      "instrument_id": 27209,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "000829",
+      "name": "天音控股",
+      "instrument_id": 28586,
+      "stratum": "Computer Services",
+      "split": "development"
+    },
+    {
+      "code": "688551",
+      "name": "科威尔",
+      "instrument_id": 27158,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "301486",
+      "name": "致尚科技",
+      "instrument_id": 45637,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "688591",
+      "name": "泰凌微",
+      "instrument_id": 27192,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "301086",
+      "name": "鸿富瀚",
+      "instrument_id": 45362,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "301221",
+      "name": "光庭信息",
+      "instrument_id": 45478,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "002216",
+      "name": "三全食品",
+      "instrument_id": 29018,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "002613",
+      "name": "北玻股份",
+      "instrument_id": 29386,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "301046",
+      "name": "能辉科技",
+      "instrument_id": 45326,
+      "stratum": "Engineering/Construction",
+      "split": "development"
+    },
+    {
+      "code": "688256",
+      "name": "寒武纪",
+      "instrument_id": 26952,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "300845",
+      "name": "捷安高科",
+      "instrument_id": 45135,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "600469",
+      "name": "风神股份",
+      "instrument_id": 25366,
+      "stratum": "Rubber& Tires",
+      "split": "development"
+    },
+    {
+      "code": "688800",
+      "name": "瑞可达",
+      "instrument_id": 27327,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "301305",
+      "name": "朗坤科技",
+      "instrument_id": 45544,
+      "stratum": "Environmental & Waste Services",
+      "split": "development"
+    },
+    {
+      "code": "000802",
+      "name": "北京文化",
+      "instrument_id": 28567,
+      "stratum": "Entertainment",
+      "split": "development"
+    },
+    {
+      "code": "300941",
+      "name": "创识科技",
+      "instrument_id": 45227,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "002485",
+      "name": "ST雪发",
+      "instrument_id": 29267,
+      "stratum": "Apparel",
+      "split": "development"
+    },
+    {
+      "code": "300475",
+      "name": "香农芯创",
+      "instrument_id": 44782,
+      "stratum": "Computer Services",
+      "split": "development"
+    },
+    {
+      "code": "002841",
+      "name": "视源股份",
+      "instrument_id": 29588,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "002432",
+      "name": "九安医疗",
+      "instrument_id": 29221,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "600305",
+      "name": "恒顺醋业",
+      "instrument_id": 25255,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "688790",
+      "name": "昂瑞微",
+      "instrument_id": 27320,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "300801",
+      "name": "泰和科技",
+      "instrument_id": 45091,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "002468",
+      "name": "申通快递",
+      "instrument_id": 29252,
+      "stratum": "Transportation",
+      "split": "development"
+    },
+    {
+      "code": "000887",
+      "name": "中鼎股份",
+      "instrument_id": 28614,
+      "stratum": "Rubber& Tires",
+      "split": "development"
+    },
+    {
+      "code": "000821",
+      "name": "ST京机",
+      "instrument_id": 28580,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300228",
+      "name": "富瑞特装",
+      "instrument_id": 44555,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300140",
+      "name": "节能环境",
+      "instrument_id": 44473,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "603585",
+      "name": "苏利股份",
+      "instrument_id": 26387,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "603076",
+      "name": "乐惠国际",
+      "instrument_id": 26069,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "601918",
+      "name": "新集能源",
+      "instrument_id": 25976,
+      "stratum": "Coal & Related Energy",
+      "split": "development"
+    },
+    {
+      "code": "002759",
+      "name": "ST天际",
+      "instrument_id": 29516,
+      "stratum": "Furn/Home Furnishings",
+      "split": "development"
+    },
+    {
+      "code": "002722",
+      "name": "物产金轮",
+      "instrument_id": 29484,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300650",
+      "name": "太龙股份",
+      "instrument_id": 44950,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "002074",
+      "name": "国轩高科",
+      "instrument_id": 28882,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "000925",
+      "name": "众合科技",
+      "instrument_id": 28643,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "300027",
+      "name": "ST华谊",
+      "instrument_id": 44372,
+      "stratum": "Entertainment",
+      "split": "development"
+    },
+    {
+      "code": "600487",
+      "name": "亨通光电",
+      "instrument_id": 25378,
+      "stratum": "Telecom. Equipment",
+      "split": "development"
+    },
+    {
+      "code": "002780",
+      "name": "三夫户外",
+      "instrument_id": 29534,
+      "stratum": "Retail (Special Lines)",
+      "split": "development"
+    },
+    {
+      "code": "002462",
+      "name": "嘉事堂",
+      "instrument_id": 29247,
+      "stratum": "Healthcare Support Services",
+      "split": "development"
+    },
+    {
+      "code": "600187",
+      "name": "*ST国中",
+      "instrument_id": 25170,
+      "stratum": "Utility (Water)",
+      "split": "development"
+    },
+    {
+      "code": "688608",
+      "name": "恒玄科技",
+      "instrument_id": 27207,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "688105",
+      "name": "诺唯赞",
+      "instrument_id": 26822,
+      "stratum": "Drugs (Biotechnology)",
+      "split": "development"
+    },
+    {
+      "code": "603833",
+      "name": "欧派家居",
+      "instrument_id": 26524,
+      "stratum": "Furn/Home Furnishings",
+      "split": "development"
+    },
+    {
+      "code": "301062",
+      "name": "上海艾录",
+      "instrument_id": 45341,
+      "stratum": "Packaging & Container",
+      "split": "development"
+    },
+    {
+      "code": "600580",
+      "name": "卧龙电驱",
+      "instrument_id": 25455,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "300551",
+      "name": "古鳌科技",
+      "instrument_id": 44854,
+      "stratum": "Computers/Peripherals",
+      "split": "development"
+    },
+    {
+      "code": "002434",
+      "name": "万里扬",
+      "instrument_id": 29222,
+      "stratum": "Construction Supplies",
+      "split": "development"
+    },
+    {
+      "code": "002828",
+      "name": "贝肯能源",
+      "instrument_id": 29576,
+      "stratum": "Oil/Gas (Production and Exploration)",
+      "split": "development"
+    },
+    {
+      "code": "688622",
+      "name": "*ST禾信",
+      "instrument_id": 27220,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "600754",
+      "name": "锦江酒店",
+      "instrument_id": 25598,
+      "stratum": "Hotel/Gaming",
+      "split": "development"
+    },
+    {
+      "code": "600590",
+      "name": "泰豪科技",
+      "instrument_id": 25465,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "002630",
+      "name": "*ST华西",
+      "instrument_id": 29400,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "603798",
+      "name": "康普顿",
+      "instrument_id": 26502,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "000545",
+      "name": "金浦钛业",
+      "instrument_id": 28403,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "301059",
+      "name": "金三江",
+      "instrument_id": 45338,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "301678",
+      "name": "新恒汇",
+      "instrument_id": 45741,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "603169",
+      "name": "兰石重装",
+      "instrument_id": 26142,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "688337",
+      "name": "普源精电",
+      "instrument_id": 27025,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "600327",
+      "name": "大东方",
+      "instrument_id": 25271,
+      "stratum": "Retail (Automotive)",
+      "split": "development"
+    },
+    {
+      "code": "601089",
+      "name": "福元医药",
+      "instrument_id": 25810,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "301040",
+      "name": "中环海陆",
+      "instrument_id": 45321,
+      "stratum": "Steel",
+      "split": "development"
+    },
+    {
+      "code": "600653",
+      "name": "申华控股",
+      "instrument_id": 25514,
+      "stratum": "Retail (Distributors)",
+      "split": "development"
+    },
+    {
+      "code": "603127",
+      "name": "昭衍新药",
+      "instrument_id": 26116,
+      "stratum": "Heathcare Information and Technology",
+      "split": "development"
+    },
+    {
+      "code": "000678",
+      "name": "襄阳轴承",
+      "instrument_id": 28484,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "600033",
+      "name": "福建高速",
+      "instrument_id": 25056,
+      "stratum": "Transportation",
+      "split": "development"
+    },
+    {
+      "code": "688560",
+      "name": "明冠新材",
+      "instrument_id": 27165,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "000788",
+      "name": "北大医药",
+      "instrument_id": 28554,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "002066",
+      "name": "瑞泰科技",
+      "instrument_id": 28876,
+      "stratum": "Construction Supplies",
+      "split": "development"
+    },
+    {
+      "code": "002723",
+      "name": "小崧股份",
+      "instrument_id": 29485,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "301071",
+      "name": "力量钻石",
+      "instrument_id": 45349,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "000557",
+      "name": "西部创业",
+      "instrument_id": 28413,
+      "stratum": "Transportation (Railroads)",
+      "split": "development"
+    },
+    {
+      "code": "301591",
+      "name": "肯特股份",
+      "instrument_id": 45702,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "301282",
+      "name": "金禄电子",
+      "instrument_id": 45524,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "002574",
+      "name": "明牌珠宝",
+      "instrument_id": 29349,
+      "stratum": "Apparel",
+      "split": "development"
+    },
+    {
+      "code": "301013",
+      "name": "利和兴",
+      "instrument_id": 45296,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "002586",
+      "name": "围海股份",
+      "instrument_id": 29361,
+      "stratum": "Engineering/Construction",
+      "split": "development"
+    },
+    {
+      "code": "000716",
+      "name": "黑芝麻",
+      "instrument_id": 28512,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "002970",
+      "name": "锐明技术",
+      "instrument_id": 29705,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "603183",
+      "name": "建研院",
+      "instrument_id": 26155,
+      "stratum": "Engineering/Construction",
+      "split": "development"
+    },
+    {
+      "code": "301290",
+      "name": "东星医疗",
+      "instrument_id": 45531,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "300449",
+      "name": "汉邦高科",
+      "instrument_id": 44756,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "688260",
+      "name": "昀冢科技",
+      "instrument_id": 26956,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "688663",
+      "name": "新风光",
+      "instrument_id": 27247,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "600576",
+      "name": "祥源文旅",
+      "instrument_id": 25451,
+      "stratum": "Entertainment",
+      "split": "development"
+    },
+    {
+      "code": "688082",
+      "name": "盛美上海",
+      "instrument_id": 26802,
+      "stratum": "Semiconductor Equip",
+      "split": "development"
+    },
+    {
+      "code": "002688",
+      "name": "金河生物",
+      "instrument_id": 29455,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "605567",
+      "name": "春雪食品",
+      "instrument_id": 26724,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "002110",
+      "name": "三钢闽光",
+      "instrument_id": 28916,
+      "stratum": "Steel",
+      "split": "development"
+    },
+    {
+      "code": "300065",
+      "name": "海兰信",
+      "instrument_id": 44405,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "000035",
+      "name": "中国天楹",
+      "instrument_id": 28305,
+      "stratum": "Environmental & Waste Services",
+      "split": "development"
+    },
+    {
+      "code": "600538",
+      "name": "国发股份",
+      "instrument_id": 25422,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "603335",
+      "name": "迪生力",
+      "instrument_id": 26278,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "300225",
+      "name": "金力泰",
+      "instrument_id": 44552,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "600741",
+      "name": "华域汽车",
+      "instrument_id": 25587,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "002265",
+      "name": "建设工业",
+      "instrument_id": 29063,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "603087",
+      "name": "甘李药业",
+      "instrument_id": 26079,
+      "stratum": "Drugs (Biotechnology)",
+      "split": "development"
+    },
+    {
+      "code": "600860",
+      "name": "京城股份",
+      "instrument_id": 25683,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300716",
+      "name": "*ST泉为",
+      "instrument_id": 45014,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "600458",
+      "name": "时代新材",
+      "instrument_id": 25359,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "301072",
+      "name": "中捷精工",
+      "instrument_id": 45350,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "300095",
+      "name": "华伍股份",
+      "instrument_id": 44433,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "600336",
+      "name": "澳柯玛",
+      "instrument_id": 25279,
+      "stratum": "Furn/Home Furnishings",
+      "split": "development"
+    },
+    {
+      "code": "002217",
+      "name": "ST合力泰",
+      "instrument_id": 29019,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "300780",
+      "name": "德恩精工",
+      "instrument_id": 45072,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "002082",
+      "name": "ST万邦",
+      "instrument_id": 28890,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "600292",
+      "name": "电投水电",
+      "instrument_id": 25246,
+      "stratum": "Environmental & Waste Services",
+      "split": "development"
+    },
+    {
+      "code": "301175",
+      "name": "中科环保",
+      "instrument_id": 45436,
+      "stratum": "Environmental & Waste Services",
+      "split": "development"
+    },
+    {
+      "code": "002956",
+      "name": "西麦食品",
+      "instrument_id": 29692,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "600359",
+      "name": "新农开发",
+      "instrument_id": 25295,
+      "stratum": "Farming/Agriculture",
+      "split": "development"
+    },
+    {
+      "code": "002192",
+      "name": "融捷股份",
+      "instrument_id": 28994,
+      "stratum": "Metals & Mining",
+      "split": "development"
+    },
+    {
+      "code": "300553",
+      "name": "集智股份",
+      "instrument_id": 44856,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "301117",
+      "name": "ST佳缘",
+      "instrument_id": 45390,
+      "stratum": "Computer Services",
+      "split": "development"
+    },
+    {
+      "code": "603728",
+      "name": "鸣志电器",
+      "instrument_id": 26477,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "300513",
+      "name": "恒实科技",
+      "instrument_id": 44819,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "301687",
+      "name": "新广益",
+      "instrument_id": 45745,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "603068",
+      "name": "博通集成",
+      "instrument_id": 26062,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "603836",
+      "name": "海程邦达",
+      "instrument_id": 26525,
+      "stratum": "Transportation",
+      "split": "development"
+    },
+    {
+      "code": "002925",
+      "name": "盈趣科技",
+      "instrument_id": 29664,
+      "stratum": "Electronics (Consumer & Office)",
+      "split": "development"
+    },
+    {
+      "code": "688648",
+      "name": "中邮科技",
+      "instrument_id": 27235,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "002276",
+      "name": "万马股份",
+      "instrument_id": 29074,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "002127",
+      "name": "南极电商",
+      "instrument_id": 28931,
+      "stratum": "Advertising",
+      "split": "development"
+    },
+    {
+      "code": "605208",
+      "name": "永茂泰",
+      "instrument_id": 26679,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "002329",
+      "name": "皇氏集团",
+      "instrument_id": 29123,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "300254",
+      "name": "仟源医药",
+      "instrument_id": 44581,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "688678",
+      "name": "福立旺",
+      "instrument_id": 27256,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "688131",
+      "name": "皓元医药",
+      "instrument_id": 26847,
+      "stratum": "Heathcare Information and Technology",
+      "split": "development"
+    },
+    {
+      "code": "000553",
+      "name": "安道麦A",
+      "instrument_id": 28410,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "000066",
+      "name": "中国长城",
+      "instrument_id": 28323,
+      "stratum": "Computers/Peripherals",
+      "split": "development"
+    },
+    {
+      "code": "601611",
+      "name": "中国核建",
+      "instrument_id": 25910,
+      "stratum": "Engineering/Construction",
+      "split": "development"
+    },
+    {
+      "code": "605117",
+      "name": "德业股份",
+      "instrument_id": 26652,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "688111",
+      "name": "金山办公",
+      "instrument_id": 26828,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "300318",
+      "name": "博晖创新",
+      "instrument_id": 44638,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "002824",
+      "name": "和胜股份",
+      "instrument_id": 29572,
+      "stratum": "Metals & Mining",
+      "split": "development"
+    },
+    {
+      "code": "600822",
+      "name": "上海物贸",
+      "instrument_id": 25654,
+      "stratum": "Retail (Distributors)",
+      "split": "development"
+    },
+    {
+      "code": "600783",
+      "name": "鲁信创投",
+      "instrument_id": 25622,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "002084",
+      "name": "海鸥住工",
+      "instrument_id": 28892,
+      "stratum": "Building Materials",
+      "split": "development"
+    },
+    {
+      "code": "301120",
+      "name": "新特电气",
+      "instrument_id": 45393,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "301536",
+      "name": "星宸科技",
+      "instrument_id": 45670,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "002207",
+      "name": "*ST准油",
+      "instrument_id": 29009,
+      "stratum": "Oilfield Svcs/Equip.",
+      "split": "development"
+    },
+    {
+      "code": "600885",
+      "name": "宏发股份",
+      "instrument_id": 25706,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "002573",
+      "name": "清新环境",
+      "instrument_id": 29348,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300639",
+      "name": "凯普生物",
+      "instrument_id": 44940,
+      "stratum": "Drugs (Biotechnology)",
+      "split": "development"
+    },
+    {
+      "code": "002185",
+      "name": "华天科技",
+      "instrument_id": 28987,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "603192",
+      "name": "汇得科技",
+      "instrument_id": 26163,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "603788",
+      "name": "宁波高发",
+      "instrument_id": 26498,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "000785",
+      "name": "居然智家",
+      "instrument_id": 28552,
+      "stratum": "Retail (General)",
+      "split": "development"
+    },
+    {
+      "code": "688596",
+      "name": "正帆科技",
+      "instrument_id": 27196,
+      "stratum": "Semiconductor Equip",
+      "split": "development"
+    },
+    {
+      "code": "600505",
+      "name": "西昌电力",
+      "instrument_id": 25393,
+      "stratum": "Power",
+      "split": "development"
+    },
+    {
+      "code": "002691",
+      "name": "*ST冀凯",
+      "instrument_id": 29458,
+      "stratum": "Construction Supplies",
+      "split": "development"
+    },
+    {
+      "code": "300132",
+      "name": "诺斯贝尔",
+      "instrument_id": 44465,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "605277",
+      "name": "新亚电子",
+      "instrument_id": 26688,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "300168",
+      "name": "万达信息",
+      "instrument_id": 44500,
+      "stratum": "Computer Services",
+      "split": "development"
+    },
+    {
+      "code": "603327",
+      "name": "福蓉科技",
+      "instrument_id": 26270,
+      "stratum": "Metals & Mining",
+      "split": "development"
+    },
+    {
+      "code": "600039",
+      "name": "四川路桥",
+      "instrument_id": 25061,
+      "stratum": "Engineering/Construction",
+      "split": "development"
+    },
+    {
+      "code": "688233",
+      "name": "神工股份",
+      "instrument_id": 26936,
+      "stratum": "Semiconductor Equip",
+      "split": "development"
+    },
+    {
+      "code": "300013",
+      "name": "新宁物流",
+      "instrument_id": 44359,
+      "stratum": "Transportation",
+      "split": "development"
+    },
+    {
+      "code": "002755",
+      "name": "奥赛康",
+      "instrument_id": 29512,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "002800",
+      "name": "天顺股份",
+      "instrument_id": 29551,
+      "stratum": "Transportation",
+      "split": "development"
+    },
+    {
+      "code": "603960",
+      "name": "克来机电",
+      "instrument_id": 26593,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "605305",
+      "name": "中际联合",
+      "instrument_id": 26698,
+      "stratum": "Construction Supplies",
+      "split": "development"
+    },
+    {
+      "code": "002360",
+      "name": "ST同德",
+      "instrument_id": 29151,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "301511",
+      "name": "德福科技",
+      "instrument_id": 45653,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "300164",
+      "name": "通源石油",
+      "instrument_id": 44496,
+      "stratum": "Oilfield Svcs/Equip.",
+      "split": "development"
+    },
+    {
+      "code": "600201",
+      "name": "生物股份",
+      "instrument_id": 25180,
+      "stratum": "Drugs (Biotechnology)",
+      "split": "development"
+    },
+    {
+      "code": "002075",
+      "name": "沙钢股份",
+      "instrument_id": 28883,
+      "stratum": "Steel",
+      "split": "development"
+    },
+    {
+      "code": "300782",
+      "name": "卓胜微",
+      "instrument_id": 45074,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "300176",
+      "name": "鸿特科技",
+      "instrument_id": 44508,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "001299",
+      "name": "美能能源",
+      "instrument_id": 28753,
+      "stratum": "Power",
+      "split": "development"
+    },
+    {
+      "code": "002014",
+      "name": "永新股份",
+      "instrument_id": 28825,
+      "stratum": "Packaging & Container",
+      "split": "development"
+    },
+    {
+      "code": "603315",
+      "name": "福鞍股份",
+      "instrument_id": 26258,
+      "stratum": "Steel",
+      "split": "development"
+    },
+    {
+      "code": "301580",
+      "name": "爱迪特",
+      "instrument_id": 45692,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "002350",
+      "name": "北京科锐",
+      "instrument_id": 29142,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "003023",
+      "name": "彩虹集团",
+      "instrument_id": 29755,
+      "stratum": "Furn/Home Furnishings",
+      "split": "development"
+    },
+    {
+      "code": "688345",
+      "name": "博力威",
+      "instrument_id": 27029,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "603985",
+      "name": "恒润股份",
+      "instrument_id": 26606,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "002240",
+      "name": "盛新锂能",
+      "instrument_id": 29040,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "002449",
+      "name": "国星光电",
+      "instrument_id": 29235,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "300100",
+      "name": "双林股份",
+      "instrument_id": 44438,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "002569",
+      "name": "*ST步森",
+      "instrument_id": 29344,
+      "stratum": "Apparel",
+      "split": "development"
+    },
+    {
+      "code": "002998",
+      "name": "优彩资源",
+      "instrument_id": 29731,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "003029",
+      "name": "吉大正元",
+      "instrument_id": 29760,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "600727",
+      "name": "鲁北化工",
+      "instrument_id": 25573,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "603991",
+      "name": "领先股份",
+      "instrument_id": 26612,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "000738",
+      "name": "航发控制",
+      "instrument_id": 28530,
+      "stratum": "Aerospace/Defense",
+      "split": "development"
+    },
+    {
+      "code": "002799",
+      "name": "环球印务",
+      "instrument_id": 29550,
+      "stratum": "Packaging & Container",
+      "split": "development"
+    },
+    {
+      "code": "301185",
+      "name": "鸥玛软件",
+      "instrument_id": 45445,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "002969",
+      "name": "嘉美包装",
+      "instrument_id": 29704,
+      "stratum": "Packaging & Container",
+      "split": "development"
+    },
+    {
+      "code": "300395",
+      "name": "菲利华",
+      "instrument_id": 44703,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "688067",
+      "name": "爱威科技",
+      "instrument_id": 26788,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "603137",
+      "name": "恒尚节能",
+      "instrument_id": 26124,
+      "stratum": "Building Materials",
+      "split": "development"
+    },
+    {
+      "code": "001213",
+      "name": "中铁特货",
+      "instrument_id": 28704,
+      "stratum": "Transportation (Railroads)",
+      "split": "development"
+    },
+    {
+      "code": "600025",
+      "name": "华能水电",
+      "instrument_id": 25048,
+      "stratum": "Green & Renewable Energy",
+      "split": "development"
+    },
+    {
+      "code": "000591",
+      "name": "太阳能",
+      "instrument_id": 28434,
+      "stratum": "Green & Renewable Energy",
+      "split": "development"
+    },
+    {
+      "code": "603696",
+      "name": "安记食品",
+      "instrument_id": 26454,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "603332",
+      "name": "苏州龙杰",
+      "instrument_id": 26275,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "000922",
+      "name": "佳电股份",
+      "instrument_id": 28641,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "603237",
+      "name": "五芳斋",
+      "instrument_id": 26205,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "300043",
+      "name": "星辉娱乐",
+      "instrument_id": 44385,
+      "stratum": "Recreation",
+      "split": "development"
+    },
+    {
+      "code": "605090",
+      "name": "九丰能源",
+      "instrument_id": 26645,
+      "stratum": "Oil/Gas Distribution",
+      "split": "development"
+    },
+    {
+      "code": "000798",
+      "name": "中水渔业",
+      "instrument_id": 28563,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "600981",
+      "name": "苏豪汇鸿",
+      "instrument_id": 25760,
+      "stratum": "Retail (Distributors)",
+      "split": "development"
+    },
+    {
+      "code": "688361",
+      "name": "中科飞测",
+      "instrument_id": 27043,
+      "stratum": "Semiconductor Equip",
+      "split": "development"
+    },
+    {
+      "code": "002943",
+      "name": "宇晶股份",
+      "instrument_id": 29681,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300657",
+      "name": "弘信电子",
+      "instrument_id": 44957,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "000813",
+      "name": "德展健康",
+      "instrument_id": 28574,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "300825",
+      "name": "阿尔特",
+      "instrument_id": 45115,
+      "stratum": "Auto & Truck",
+      "split": "development"
+    },
+    {
+      "code": "300568",
+      "name": "星源材质",
+      "instrument_id": 44871,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "300867",
+      "name": "圣元环保",
+      "instrument_id": 45157,
+      "stratum": "Environmental & Waste Services",
+      "split": "development"
+    },
+    {
+      "code": "300899",
+      "name": "上海凯鑫",
+      "instrument_id": 45188,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "000419",
+      "name": "通程控股",
+      "instrument_id": 28357,
+      "stratum": "Retail (General)",
+      "split": "development"
+    },
+    {
+      "code": "603221",
+      "name": "爱丽家居",
+      "instrument_id": 26191,
+      "stratum": "Building Materials",
+      "split": "development"
+    },
+    {
+      "code": "300621",
+      "name": "维业股份",
+      "instrument_id": 44923,
+      "stratum": "Business & Consumer Services",
+      "split": "development"
+    },
+    {
+      "code": "603636",
+      "name": "南威软件",
+      "instrument_id": 26419,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "002825",
+      "name": "纳尔股份",
+      "instrument_id": 29573,
+      "stratum": "Publishing & Newspapers",
+      "split": "development"
+    },
+    {
+      "code": "605058",
+      "name": "澳弘电子",
+      "instrument_id": 26635,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "300053",
+      "name": "航宇微",
+      "instrument_id": 44395,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "600527",
+      "name": "江南高纤",
+      "instrument_id": 25413,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "688658",
+      "name": "悦康药业",
+      "instrument_id": 27242,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "688117",
+      "name": "圣诺生物",
+      "instrument_id": 26834,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "600567",
+      "name": "山鹰国际",
+      "instrument_id": 25443,
+      "stratum": "Paper/Forest Products",
+      "split": "development"
+    },
+    {
+      "code": "300655",
+      "name": "晶瑞电材",
+      "instrument_id": 44955,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "300796",
+      "name": "贝斯美",
+      "instrument_id": 45087,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "000777",
+      "name": "中核科技",
+      "instrument_id": 28547,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "688685",
+      "name": "迈信林",
+      "instrument_id": 27262,
+      "stratum": "Aerospace/Defense",
+      "split": "development"
+    },
+    {
+      "code": "000935",
+      "name": "四川双马",
+      "instrument_id": 28652,
+      "stratum": "Construction Supplies",
+      "split": "development"
+    },
+    {
+      "code": "300751",
+      "name": "迈为股份",
+      "instrument_id": 45045,
+      "stratum": "Semiconductor Equip",
+      "split": "development"
+    },
+    {
+      "code": "688576",
+      "name": "西山科技",
+      "instrument_id": 27178,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "301007",
+      "name": "德迈仕",
+      "instrument_id": 45290,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "603009",
+      "name": "北特科技",
+      "instrument_id": 26011,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "603926",
+      "name": "铁流股份",
+      "instrument_id": 26576,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "002157",
+      "name": "正邦科技",
+      "instrument_id": 28959,
+      "stratum": "Farming/Agriculture",
+      "split": "development"
+    },
+    {
+      "code": "600717",
+      "name": "天津港",
+      "instrument_id": 25564,
+      "stratum": "Shipbuilding & Marine",
+      "split": "development"
+    },
+    {
+      "code": "002843",
+      "name": "泰嘉股份",
+      "instrument_id": 29590,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "688205",
+      "name": "德科立",
+      "instrument_id": 26910,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "603029",
+      "name": "天鹅股份",
+      "instrument_id": 26030,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "002590",
+      "name": "万安科技",
+      "instrument_id": 29365,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "000908",
+      "name": "石药景峰",
+      "instrument_id": 28630,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "300672",
+      "name": "国科微",
+      "instrument_id": 44972,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "600488",
+      "name": "津药药业",
+      "instrument_id": 25379,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "002101",
+      "name": "广东鸿图",
+      "instrument_id": 28907,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300125",
+      "name": "聆达股份",
+      "instrument_id": 44458,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "000888",
+      "name": "峨眉山Ａ",
+      "instrument_id": 28615,
+      "stratum": "Hotel/Gaming",
+      "split": "development"
+    },
+    {
+      "code": "002529",
+      "name": "海源复材",
+      "instrument_id": 29304,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "688695",
+      "name": "中创股份",
+      "instrument_id": 27270,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "300703",
+      "name": "创源股份",
+      "instrument_id": 45003,
+      "stratum": "Paper/Forest Products",
+      "split": "development"
+    },
+    {
+      "code": "688110",
+      "name": "东芯股份",
+      "instrument_id": 26827,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "300514",
+      "name": "友讯达",
+      "instrument_id": 44820,
+      "stratum": "Telecom. Equipment",
+      "split": "development"
+    },
+    {
+      "code": "601360",
+      "name": "三六零",
+      "instrument_id": 25877,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "603667",
+      "name": "五洲新春",
+      "instrument_id": 26436,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300226",
+      "name": "上海钢联",
+      "instrument_id": 44553,
+      "stratum": "Retail (Distributors)",
+      "split": "development"
+    },
+    {
+      "code": "301388",
+      "name": "欣灵电气",
+      "instrument_id": 45609,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "300749",
+      "name": "顶固集创",
+      "instrument_id": 45043,
+      "stratum": "Furn/Home Furnishings",
+      "split": "development"
+    },
+    {
+      "code": "603135",
+      "name": "中重科技",
+      "instrument_id": 26122,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "301177",
+      "name": "迪阿股份",
+      "instrument_id": 45438,
+      "stratum": "Apparel",
+      "split": "development"
+    },
+    {
+      "code": "000999",
+      "name": "华润三九",
+      "instrument_id": 28692,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "301119",
+      "name": "正强股份",
+      "instrument_id": 45392,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "600373",
+      "name": "中文传媒",
+      "instrument_id": 25308,
+      "stratum": "Publishing & Newspapers",
+      "split": "development"
+    },
+    {
+      "code": "600196",
+      "name": "复星医药",
+      "instrument_id": 25176,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "300965",
+      "name": "恒宇信通",
+      "instrument_id": 45249,
+      "stratum": "Aerospace/Defense",
+      "split": "development"
+    },
+    {
+      "code": "601777",
+      "name": "千里科技",
+      "instrument_id": 25938,
+      "stratum": "Auto & Truck",
+      "split": "development"
+    },
+    {
+      "code": "600681",
+      "name": "百川能源",
+      "instrument_id": 25535,
+      "stratum": "Power",
+      "split": "development"
+    },
+    {
+      "code": "600513",
+      "name": "联环药业",
+      "instrument_id": 25401,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "603041",
+      "name": "美思德",
+      "instrument_id": 26041,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "002293",
+      "name": "罗莱生活",
+      "instrument_id": 29089,
+      "stratum": "Apparel",
+      "split": "development"
+    },
+    {
+      "code": "300244",
+      "name": "迪安诊断",
+      "instrument_id": 44571,
+      "stratum": "Healthcare Support Services",
+      "split": "development"
+    },
+    {
+      "code": "003009",
+      "name": "中天火箭",
+      "instrument_id": 29742,
+      "stratum": "Aerospace/Defense",
+      "split": "development"
+    },
+    {
+      "code": "002049",
+      "name": "紫光国微",
+      "instrument_id": 28859,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "002453",
+      "name": "华软科技",
+      "instrument_id": 29238,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "301123",
+      "name": "奕东电子",
+      "instrument_id": 45396,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "300966",
+      "name": "共同药业",
+      "instrument_id": 45250,
+      "stratum": "Drugs (Biotechnology)",
+      "split": "development"
+    },
+    {
+      "code": "603261",
+      "name": "立航科技",
+      "instrument_id": 26215,
+      "stratum": "Aerospace/Defense",
+      "split": "development"
+    },
+    {
+      "code": "000963",
+      "name": "华东医药",
+      "instrument_id": 28668,
+      "stratum": "Healthcare Support Services",
+      "split": "development"
+    },
+    {
+      "code": "688253",
+      "name": "英诺特",
+      "instrument_id": 26950,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "002152",
+      "name": "广电运通",
+      "instrument_id": 28954,
+      "stratum": "Computers/Peripherals",
+      "split": "development"
+    },
+    {
+      "code": "603950",
+      "name": "长源东谷",
+      "instrument_id": 26588,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "603799",
+      "name": "华友钴业",
+      "instrument_id": 26503,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "002480",
+      "name": "新筑股份",
+      "instrument_id": 29262,
+      "stratum": "Construction Supplies",
+      "split": "development"
+    },
+    {
+      "code": "300492",
+      "name": "华图山鼎",
+      "instrument_id": 44799,
+      "stratum": "Business & Consumer Services",
+      "split": "development"
+    },
+    {
+      "code": "000521",
+      "name": "长虹美菱",
+      "instrument_id": 28384,
+      "stratum": "Furn/Home Furnishings",
+      "split": "development"
+    },
+    {
+      "code": "600759",
+      "name": "ST洲际",
+      "instrument_id": 25603,
+      "stratum": "Oil/Gas (Production and Exploration)",
+      "split": "development"
+    },
+    {
+      "code": "300101",
+      "name": "振芯科技",
+      "instrument_id": 44439,
+      "stratum": "Telecom. Equipment",
+      "split": "development"
+    },
+    {
+      "code": "301658",
+      "name": "首航新能",
+      "instrument_id": 45733,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "002191",
+      "name": "劲嘉股份",
+      "instrument_id": 28993,
+      "stratum": "Packaging & Container",
+      "split": "development"
+    },
+    {
+      "code": "300705",
+      "name": "九典制药",
+      "instrument_id": 45004,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "603678",
+      "name": "火炬电子",
+      "instrument_id": 26441,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "688271",
+      "name": "XD联影医",
+      "instrument_id": 26965,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "002587",
+      "name": "奥拓电子",
+      "instrument_id": 29362,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "603599",
+      "name": "广信股份",
+      "instrument_id": 26396,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "603017",
+      "name": "中衡设计",
+      "instrument_id": 26019,
+      "stratum": "Business & Consumer Services",
+      "split": "development"
+    },
+    {
+      "code": "002098",
+      "name": "浔兴股份",
+      "instrument_id": 28904,
+      "stratum": "Apparel",
+      "split": "development"
+    },
+    {
+      "code": "601311",
+      "name": "骆驼股份",
+      "instrument_id": 25868,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "002472",
+      "name": "双环传动",
+      "instrument_id": 29256,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "603657",
+      "name": "春光科技",
+      "instrument_id": 26427,
+      "stratum": "Furn/Home Furnishings",
+      "split": "development"
+    },
+    {
+      "code": "605056",
+      "name": "咸亨国际",
+      "instrument_id": 26634,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "000819",
+      "name": "岳阳兴长",
+      "instrument_id": 28578,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "600523",
+      "name": "贵航股份",
+      "instrument_id": 25410,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "301048",
+      "name": "金鹰重工",
+      "instrument_id": 45328,
+      "stratum": "Construction Supplies",
+      "split": "development"
+    },
+    {
+      "code": "002391",
+      "name": "长青股份",
+      "instrument_id": 29182,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "000933",
+      "name": "神火股份",
+      "instrument_id": 28651,
+      "stratum": "Metals & Mining",
+      "split": "development"
+    },
+    {
+      "code": "002387",
+      "name": "维信诺",
+      "instrument_id": 29178,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "688259",
+      "name": "创耀科技",
+      "instrument_id": 26955,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "600812",
+      "name": "华北制药",
+      "instrument_id": 25645,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "603208",
+      "name": "江山欧派",
+      "instrument_id": 26178,
+      "stratum": "Building Materials",
+      "split": "development"
+    },
+    {
+      "code": "002255",
+      "name": "海陆重工",
+      "instrument_id": 29055,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "601231",
+      "name": "环旭电子",
+      "instrument_id": 25861,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "002100",
+      "name": "天康生物",
+      "instrument_id": 28906,
+      "stratum": "Farming/Agriculture",
+      "split": "development"
+    },
+    {
+      "code": "300036",
+      "name": "超图软件",
+      "instrument_id": 44379,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "002170",
+      "name": "芭田股份",
+      "instrument_id": 28972,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "002705",
+      "name": "新宝股份",
+      "instrument_id": 29470,
+      "stratum": "Furn/Home Furnishings",
+      "split": "development"
+    },
+    {
+      "code": "002005",
+      "name": "德豪润达",
+      "instrument_id": 28817,
+      "stratum": "Furn/Home Furnishings",
+      "split": "development"
+    },
+    {
+      "code": "002088",
+      "name": "鲁阳节能",
+      "instrument_id": 28895,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "300137",
+      "name": "先河环保",
+      "instrument_id": 44470,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "002668",
+      "name": "TCL智家",
+      "instrument_id": 29437,
+      "stratum": "Furn/Home Furnishings",
+      "split": "development"
+    },
+    {
+      "code": "688719",
+      "name": "爱科赛博",
+      "instrument_id": 27287,
+      "stratum": "Semiconductor Equip",
+      "split": "development"
+    },
+    {
+      "code": "600118",
+      "name": "中国卫星",
+      "instrument_id": 25116,
+      "stratum": "Aerospace/Defense",
+      "split": "development"
+    },
+    {
+      "code": "688439",
+      "name": "振华风光",
+      "instrument_id": 27095,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "300301",
+      "name": "ST长方",
+      "instrument_id": 44623,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "603370",
+      "name": "华新精科",
+      "instrument_id": 26303,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "300942",
+      "name": "易瑞生物",
+      "instrument_id": 45228,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "301153",
+      "name": "中科江南",
+      "instrument_id": 45417,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "603888",
+      "name": "新华网",
+      "instrument_id": 26553,
+      "stratum": "Publishing & Newspapers",
+      "split": "development"
+    },
+    {
+      "code": "300609",
+      "name": "汇纳科技",
+      "instrument_id": 44911,
+      "stratum": "Computer Services",
+      "split": "development"
+    },
+    {
+      "code": "300539",
+      "name": "横河精密",
+      "instrument_id": 44843,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "688365",
+      "name": "光云科技",
+      "instrument_id": 27046,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "688295",
+      "name": "中复神鹰",
+      "instrument_id": 26985,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "301377",
+      "name": "鼎泰高科",
+      "instrument_id": 45600,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "002119",
+      "name": "康强电子",
+      "instrument_id": 28923,
+      "stratum": "Semiconductor Equip",
+      "split": "development"
+    },
+    {
+      "code": "002986",
+      "name": "宇新股份",
+      "instrument_id": 29720,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "603589",
+      "name": "口子窖",
+      "instrument_id": 26391,
+      "stratum": "Beverage (Alcoholic)",
+      "split": "development"
+    },
+    {
+      "code": "301468",
+      "name": "博盈特焊",
+      "instrument_id": 45634,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "603648",
+      "name": "畅联股份",
+      "instrument_id": 26423,
+      "stratum": "Transportation",
+      "split": "development"
+    },
+    {
+      "code": "301301",
+      "name": "川宁生物",
+      "instrument_id": 45541,
+      "stratum": "Drugs (Biotechnology)",
+      "split": "development"
+    },
+    {
+      "code": "603816",
+      "name": "顾家家居",
+      "instrument_id": 26514,
+      "stratum": "Furn/Home Furnishings",
+      "split": "development"
+    },
+    {
+      "code": "002085",
+      "name": "万丰奥威",
+      "instrument_id": 28893,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "300763",
+      "name": "锦浪科技",
+      "instrument_id": 45056,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "603896",
+      "name": "寿仙谷",
+      "instrument_id": 26558,
+      "stratum": "Household Products",
+      "split": "development"
+    },
+    {
+      "code": "300279",
+      "name": "和晶科技",
+      "instrument_id": 44604,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "603987",
+      "name": "康德莱",
+      "instrument_id": 26608,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "002571",
+      "name": "德力股份",
+      "instrument_id": 29346,
+      "stratum": "Household Products",
+      "split": "development"
+    },
+    {
+      "code": "300077",
+      "name": "国民技术",
+      "instrument_id": 44417,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "002902",
+      "name": "铭普光磁",
+      "instrument_id": 29644,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "301137",
+      "name": "哈焊华通",
+      "instrument_id": 45408,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "688159",
+      "name": "有方科技",
+      "instrument_id": 26868,
+      "stratum": "Telecom. Equipment",
+      "split": "development"
+    },
+    {
+      "code": "300848",
+      "name": "美瑞新材",
+      "instrument_id": 45138,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "300201",
+      "name": "海伦哲",
+      "instrument_id": 44531,
+      "stratum": "Construction Supplies",
+      "split": "development"
+    },
+    {
+      "code": "300820",
+      "name": "英杰电气",
+      "instrument_id": 45110,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "000599",
+      "name": "青岛双星",
+      "instrument_id": 28441,
+      "stratum": "Rubber& Tires",
+      "split": "development"
+    },
+    {
+      "code": "002773",
+      "name": "康弘药业",
+      "instrument_id": 29528,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "300349",
+      "name": "金卡智能",
+      "instrument_id": 44665,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "300034",
+      "name": "钢研高纳",
+      "instrument_id": 44377,
+      "stratum": "Aerospace/Defense",
+      "split": "development"
+    },
+    {
+      "code": "600312",
+      "name": "平高电气",
+      "instrument_id": 25260,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "688578",
+      "name": "艾力斯",
+      "instrument_id": 27180,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "002001",
+      "name": "新 和 成",
+      "instrument_id": 28814,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "300528",
+      "name": "幸福蓝海",
+      "instrument_id": 44832,
+      "stratum": "Entertainment",
+      "split": "development"
+    },
+    {
+      "code": "002410",
+      "name": "广联达",
+      "instrument_id": 29201,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "603517",
+      "name": "ST绝味",
+      "instrument_id": 26360,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "300149",
+      "name": "睿智医药",
+      "instrument_id": 44482,
+      "stratum": "Drugs (Biotechnology)",
+      "split": "development"
+    },
+    {
+      "code": "301004",
+      "name": "嘉益股份",
+      "instrument_id": 45287,
+      "stratum": "Household Products",
+      "split": "development"
+    },
+    {
+      "code": "688380",
+      "name": "中微半导",
+      "instrument_id": 27060,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "000995",
+      "name": "皇台酒业",
+      "instrument_id": 28689,
+      "stratum": "Beverage (Alcoholic)",
+      "split": "development"
+    },
+    {
+      "code": "000902",
+      "name": "新洋丰",
+      "instrument_id": 28626,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "300996",
+      "name": "普联软件",
+      "instrument_id": 45279,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "000711",
+      "name": "京蓝科技",
+      "instrument_id": 28508,
+      "stratum": "Environmental & Waste Services",
+      "split": "development"
+    },
+    {
+      "code": "000065",
+      "name": "北方国际",
+      "instrument_id": 28322,
+      "stratum": "Engineering/Construction",
+      "split": "development"
+    },
+    {
+      "code": "300448",
+      "name": "浩云科技",
+      "instrument_id": 44755,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "002872",
+      "name": "ST天圣",
+      "instrument_id": 29617,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "601698",
+      "name": "中国卫通",
+      "instrument_id": 25929,
+      "stratum": "Cable TV",
+      "split": "development"
+    },
+    {
+      "code": "000417",
+      "name": "合百集团",
+      "instrument_id": 28356,
+      "stratum": "Retail (General)",
+      "split": "development"
+    },
+    {
+      "code": "002182",
+      "name": "宝武镁业",
+      "instrument_id": 28984,
+      "stratum": "Metals & Mining",
+      "split": "development"
+    },
+    {
+      "code": "603042",
+      "name": "华脉科技",
+      "instrument_id": 26042,
+      "stratum": "Telecom. Equipment",
+      "split": "development"
+    },
+    {
+      "code": "688116",
+      "name": "天奈科技",
+      "instrument_id": 26833,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "300752",
+      "name": "隆利科技",
+      "instrument_id": 45046,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "000507",
+      "name": "珠海港",
+      "instrument_id": 28374,
+      "stratum": "Shipbuilding & Marine",
+      "split": "development"
+    },
+    {
+      "code": "000605",
+      "name": "渤海股份",
+      "instrument_id": 28445,
+      "stratum": "Utility (Water)",
+      "split": "development"
+    },
+    {
+      "code": "002806",
+      "name": "华锋股份",
+      "instrument_id": 29556,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "301552",
+      "name": "科力装备",
+      "instrument_id": 45676,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "600666",
+      "name": "奥瑞德",
+      "instrument_id": 25525,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "000809",
+      "name": "和展能源",
+      "instrument_id": 28570,
+      "stratum": "Engineering/Construction",
+      "split": "development"
+    },
+    {
+      "code": "001286",
+      "name": "陕西能源",
+      "instrument_id": 28747,
+      "stratum": "Power",
+      "split": "development"
+    },
+    {
+      "code": "300286",
+      "name": "安科瑞",
+      "instrument_id": 44609,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "000905",
+      "name": "厦门港务",
+      "instrument_id": 28628,
+      "stratum": "Shipbuilding & Marine",
+      "split": "development"
+    },
+    {
+      "code": "000708",
+      "name": "中信特钢",
+      "instrument_id": 28505,
+      "stratum": "Steel",
+      "split": "development"
+    },
+    {
+      "code": "300775",
+      "name": "三角防务",
+      "instrument_id": 45067,
+      "stratum": "Aerospace/Defense",
+      "split": "development"
+    },
+    {
+      "code": "600073",
+      "name": "光明肉业",
+      "instrument_id": 25082,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "300989",
+      "name": "蕾奥规划",
+      "instrument_id": 45272,
+      "stratum": "Business & Consumer Services",
+      "split": "development"
+    },
+    {
+      "code": "605099",
+      "name": "共创草坪",
+      "instrument_id": 26647,
+      "stratum": "Recreation",
+      "split": "development"
+    },
+    {
+      "code": "301208",
+      "name": "中亦科技",
+      "instrument_id": 45466,
+      "stratum": "Computer Services",
+      "split": "development"
+    },
+    {
+      "code": "600361",
+      "name": "创新新材",
+      "instrument_id": 25297,
+      "stratum": "Metals & Mining",
+      "split": "development"
+    },
+    {
+      "code": "600821",
+      "name": "金开新能",
+      "instrument_id": 25653,
+      "stratum": "Green & Renewable Energy",
+      "split": "development"
+    },
+    {
+      "code": "600612",
+      "name": "老凤祥",
+      "instrument_id": 25483,
+      "stratum": "Apparel",
+      "split": "development"
+    },
+    {
+      "code": "301220",
+      "name": "亚香股份",
+      "instrument_id": 45477,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "301052",
+      "name": "果麦文化",
+      "instrument_id": 45332,
+      "stratum": "Publishing & Newspapers",
+      "split": "development"
+    },
+    {
+      "code": "600248",
+      "name": "陕建股份",
+      "instrument_id": 25214,
+      "stratum": "Engineering/Construction",
+      "split": "development"
+    },
+    {
+      "code": "600873",
+      "name": "梅花生物",
+      "instrument_id": 25695,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "301665",
+      "name": "泰禾股份",
+      "instrument_id": 45735,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "301489",
+      "name": "思泉新材",
+      "instrument_id": 45640,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "000970",
+      "name": "中科三环",
+      "instrument_id": 28674,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "600979",
+      "name": "广安爱众",
+      "instrument_id": 25758,
+      "stratum": "Power",
+      "split": "development"
+    },
+    {
+      "code": "301396",
+      "name": "宏景科技",
+      "instrument_id": 45616,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "000831",
+      "name": "中国稀土",
+      "instrument_id": 28588,
+      "stratum": "Metals & Mining",
+      "split": "development"
+    },
+    {
+      "code": "300766",
+      "name": "每日互动",
+      "instrument_id": 45058,
+      "stratum": "Computer Services",
+      "split": "development"
+    },
+    {
+      "code": "603326",
+      "name": "我乐家居",
+      "instrument_id": 26269,
+      "stratum": "Furn/Home Furnishings",
+      "split": "development"
+    },
+    {
+      "code": "000915",
+      "name": "华特达因",
+      "instrument_id": 28636,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "603995",
+      "name": "甬金股份",
+      "instrument_id": 26615,
+      "stratum": "Steel",
+      "split": "development"
+    },
+    {
+      "code": "603613",
+      "name": "国联股份",
+      "instrument_id": 26408,
+      "stratum": "Retail (Distributors)",
+      "split": "development"
+    },
+    {
+      "code": "301507",
+      "name": "民生健康",
+      "instrument_id": 45649,
+      "stratum": "Household Products",
+      "split": "development"
+    },
+    {
+      "code": "301595",
+      "name": "太力科技",
+      "instrument_id": 45704,
+      "stratum": "Packaging & Container",
+      "split": "development"
+    },
+    {
+      "code": "301526",
+      "name": "国际复材",
+      "instrument_id": 45664,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "603989",
+      "name": "艾华集团",
+      "instrument_id": 26610,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "688518",
+      "name": "联赢激光",
+      "instrument_id": 27136,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "688590",
+      "name": "新致软件",
+      "instrument_id": 27191,
+      "stratum": "Computer Services",
+      "split": "development"
+    },
+    {
+      "code": "688562",
+      "name": "航天软件",
+      "instrument_id": 27167,
+      "stratum": "Computer Services",
+      "split": "development"
+    },
+    {
+      "code": "600400",
+      "name": "红豆股份",
+      "instrument_id": 25329,
+      "stratum": "Apparel",
+      "split": "development"
+    },
+    {
+      "code": "688262",
+      "name": "国芯科技",
+      "instrument_id": 26958,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "000581",
+      "name": "威孚高科",
+      "instrument_id": 28429,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "300724",
+      "name": "捷佳伟创",
+      "instrument_id": 45022,
+      "stratum": "Semiconductor Equip",
+      "split": "development"
+    },
+    {
+      "code": "600116",
+      "name": "三峡水利",
+      "instrument_id": 25114,
+      "stratum": "Power",
+      "split": "development"
+    },
+    {
+      "code": "002996",
+      "name": "顺博合金",
+      "instrument_id": 29729,
+      "stratum": "Metals & Mining",
+      "split": "development"
+    },
+    {
+      "code": "002442",
+      "name": "龙星科技",
+      "instrument_id": 29229,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "688597",
+      "name": "煜邦电力",
+      "instrument_id": 27197,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "600522",
+      "name": "中天科技",
+      "instrument_id": 25409,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "002324",
+      "name": "普利特",
+      "instrument_id": 29119,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "300094",
+      "name": "国联水产",
+      "instrument_id": 44432,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "688575",
+      "name": "亚辉龙",
+      "instrument_id": 27177,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "688603",
+      "name": "天承科技",
+      "instrument_id": 27203,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "301163",
+      "name": "宏德股份",
+      "instrument_id": 45426,
+      "stratum": "Steel",
+      "split": "development"
+    },
+    {
+      "code": "688305",
+      "name": "科德数控",
+      "instrument_id": 26994,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "688133",
+      "name": "泰坦科技",
+      "instrument_id": 26849,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "605287",
+      "name": "德才股份",
+      "instrument_id": 26690,
+      "stratum": "Engineering/Construction",
+      "split": "development"
+    },
+    {
+      "code": "600307",
+      "name": "酒钢宏兴",
+      "instrument_id": 25256,
+      "stratum": "Steel",
+      "split": "development"
+    },
+    {
+      "code": "300315",
+      "name": "掌趣科技",
+      "instrument_id": 44635,
+      "stratum": "Entertainment",
+      "split": "development"
+    },
+    {
+      "code": "301222",
+      "name": "浙江恒威",
+      "instrument_id": 45479,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "002023",
+      "name": "海特高新",
+      "instrument_id": 28833,
+      "stratum": "Air Transport",
+      "split": "development"
+    },
+    {
+      "code": "301079",
+      "name": "邵阳液压",
+      "instrument_id": 45356,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300552",
+      "name": "万集科技",
+      "instrument_id": 44855,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "603185",
+      "name": "弘元绿能",
+      "instrument_id": 26156,
+      "stratum": "Semiconductor Equip",
+      "split": "development"
+    },
+    {
+      "code": "002912",
+      "name": "中新赛克",
+      "instrument_id": 29653,
+      "stratum": "Computers/Peripherals",
+      "split": "development"
+    },
+    {
+      "code": "002158",
+      "name": "汉钟精机",
+      "instrument_id": 28960,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "688766",
+      "name": "普冉股份",
+      "instrument_id": 27304,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "688376",
+      "name": "美埃科技",
+      "instrument_id": 27056,
+      "stratum": "Building Materials",
+      "split": "development"
+    },
+    {
+      "code": "300828",
+      "name": "锐新科技",
+      "instrument_id": 45118,
+      "stratum": "Metals & Mining",
+      "split": "development"
+    },
+    {
+      "code": "688629",
+      "name": "华丰科技",
+      "instrument_id": 27226,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "601368",
+      "name": "绿城水务",
+      "instrument_id": 25879,
+      "stratum": "Utility (Water)",
+      "split": "development"
+    },
+    {
+      "code": "301100",
+      "name": "风光股份",
+      "instrument_id": 45375,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "002783",
+      "name": "凯龙股份",
+      "instrument_id": 29536,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "600463",
+      "name": "空港股份",
+      "instrument_id": 25363,
+      "stratum": "Engineering/Construction",
+      "split": "development"
+    },
+    {
+      "code": "688580",
+      "name": "伟思医疗",
+      "instrument_id": 27182,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "600166",
+      "name": "福田汽车",
+      "instrument_id": 25152,
+      "stratum": "Auto & Truck",
+      "split": "development"
+    },
+    {
+      "code": "600267",
+      "name": "海正药业",
+      "instrument_id": 25228,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "300154",
+      "name": "瑞凌股份",
+      "instrument_id": 44487,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "603130",
+      "name": "云中马",
+      "instrument_id": 26119,
+      "stratum": "Apparel",
+      "split": "development"
+    },
+    {
+      "code": "002470",
+      "name": "金正大",
+      "instrument_id": 29254,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "603488",
+      "name": "展鹏科技",
+      "instrument_id": 26347,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300735",
+      "name": "光弘科技",
+      "instrument_id": 45031,
+      "stratum": "Electronics (Consumer & Office)",
+      "split": "development"
+    },
+    {
+      "code": "002652",
+      "name": "扬子新材",
+      "instrument_id": 29422,
+      "stratum": "Packaging & Container",
+      "split": "development"
+    },
+    {
+      "code": "603219",
+      "name": "富佳股份",
+      "instrument_id": 26189,
+      "stratum": "Furn/Home Furnishings",
+      "split": "development"
+    },
+    {
+      "code": "301022",
+      "name": "海泰科",
+      "instrument_id": 45304,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "600448",
+      "name": "华纺股份",
+      "instrument_id": 25354,
+      "stratum": "Apparel",
+      "split": "development"
+    },
+    {
+      "code": "605268",
+      "name": "王力安防",
+      "instrument_id": 26687,
+      "stratum": "Building Materials",
+      "split": "development"
+    },
+    {
+      "code": "300055",
+      "name": "万邦达",
+      "instrument_id": 44397,
+      "stratum": "Utility (Water)",
+      "split": "development"
+    },
+    {
+      "code": "301118",
+      "name": "恒光股份",
+      "instrument_id": 45391,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "600216",
+      "name": "浙江医药",
+      "instrument_id": 25190,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "600018",
+      "name": "上港集团",
+      "instrument_id": 25042,
+      "stratum": "Shipbuilding & Marine",
+      "split": "development"
+    },
+    {
+      "code": "600184",
+      "name": "光电股份",
+      "instrument_id": 25167,
+      "stratum": "Aerospace/Defense",
+      "split": "development"
+    },
+    {
+      "code": "000795",
+      "name": "英洛华",
+      "instrument_id": 28560,
+      "stratum": "Metals & Mining",
+      "split": "development"
+    },
+    {
+      "code": "600787",
+      "name": "中储股份",
+      "instrument_id": 25625,
+      "stratum": "Transportation",
+      "split": "development"
+    },
+    {
+      "code": "000422",
+      "name": "湖北宜化",
+      "instrument_id": 28360,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "301230",
+      "name": "泓博医药",
+      "instrument_id": 45486,
+      "stratum": "Heathcare Information and Technology",
+      "split": "development"
+    },
+    {
+      "code": "688350",
+      "name": "富淼科技",
+      "instrument_id": 27033,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "300729",
+      "name": "乐歌股份",
+      "instrument_id": 45026,
+      "stratum": "Office Equipment & Services",
+      "split": "development"
+    },
+    {
+      "code": "001373",
+      "name": "翔腾新材",
+      "instrument_id": 28791,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "603966",
+      "name": "法兰泰克",
+      "instrument_id": 26594,
+      "stratum": "Construction Supplies",
+      "split": "development"
+    },
+    {
+      "code": "002801",
+      "name": "微光股份",
+      "instrument_id": 29552,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "002131",
+      "name": "利欧股份",
+      "instrument_id": 28935,
+      "stratum": "Advertising",
+      "split": "development"
+    },
+    {
+      "code": "688106",
+      "name": "金宏气体",
+      "instrument_id": 26823,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "603917",
+      "name": "合力科技",
+      "instrument_id": 26571,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "600792",
+      "name": "云煤能源",
+      "instrument_id": 25629,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "601369",
+      "name": "陕鼓动力",
+      "instrument_id": 25880,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "301088",
+      "name": "戎美股份",
+      "instrument_id": 45364,
+      "stratum": "Retail (Special Lines)",
+      "split": "development"
+    },
+    {
+      "code": "300145",
+      "name": "南方泵业",
+      "instrument_id": 44478,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "301609",
+      "name": "山大电力",
+      "instrument_id": 45715,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "002201",
+      "name": "九鼎新材",
+      "instrument_id": 29003,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "301266",
+      "name": "宇邦新材",
+      "instrument_id": 45510,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "001965",
+      "name": "招商公路",
+      "instrument_id": 28812,
+      "stratum": "Transportation",
+      "split": "development"
+    },
+    {
+      "code": "603586",
+      "name": "金麒麟",
+      "instrument_id": 26388,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "300022",
+      "name": "吉峰科技",
+      "instrument_id": 44368,
+      "stratum": "Retail (Distributors)",
+      "split": "development"
+    },
+    {
+      "code": "301535",
+      "name": "浙江华远",
+      "instrument_id": 45669,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "301314",
+      "name": "科瑞思",
+      "instrument_id": 45553,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "600480",
+      "name": "凌云股份",
+      "instrument_id": 25373,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "301229",
+      "name": "纽泰格",
+      "instrument_id": 45485,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "002204",
+      "name": "大连重工",
+      "instrument_id": 29006,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "002890",
+      "name": "弘宇股份",
+      "instrument_id": 29634,
+      "stratum": "Farming/Agriculture",
+      "split": "development"
+    },
+    {
+      "code": "688638",
+      "name": "誉辰智能",
+      "instrument_id": 27232,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300269",
+      "name": "联建光电",
+      "instrument_id": 44595,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "600207",
+      "name": "安彩高科",
+      "instrument_id": 25184,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "002264",
+      "name": "新 华 都",
+      "instrument_id": 29062,
+      "stratum": "Retail (General)",
+      "split": "development"
+    },
+    {
+      "code": "002580",
+      "name": "圣阳股份",
+      "instrument_id": 29355,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "688601",
+      "name": "力芯微",
+      "instrument_id": 27201,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "000881",
+      "name": "中广核技",
+      "instrument_id": 28609,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "300206",
+      "name": "理邦仪器",
+      "instrument_id": 44535,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "002601",
+      "name": "龙佰集团",
+      "instrument_id": 29376,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "002593",
+      "name": "日上集团",
+      "instrument_id": 29368,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "688469",
+      "name": "芯联集成",
+      "instrument_id": 27106,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "000546",
+      "name": "金圆股份",
+      "instrument_id": 28404,
+      "stratum": "Construction Supplies",
+      "split": "development"
+    },
+    {
+      "code": "688360",
+      "name": "德马科技",
+      "instrument_id": 27042,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "688151",
+      "name": "华强科技",
+      "instrument_id": 26861,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "301021",
+      "name": "英诺激光",
+      "instrument_id": 45303,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300629",
+      "name": "新劲刚",
+      "instrument_id": 44931,
+      "stratum": "Building Materials",
+      "split": "development"
+    },
+    {
+      "code": "605066",
+      "name": "天正电气",
+      "instrument_id": 26637,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "603353",
+      "name": "和顺石油",
+      "instrument_id": 26290,
+      "stratum": "Retail (Automotive)",
+      "split": "development"
+    },
+    {
+      "code": "002713",
+      "name": "东易日盛",
+      "instrument_id": 29476,
+      "stratum": "Business & Consumer Services",
+      "split": "development"
+    },
+    {
+      "code": "000301",
+      "name": "东方盛虹",
+      "instrument_id": 28342,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "688137",
+      "name": "近岸蛋白",
+      "instrument_id": 26852,
+      "stratum": "Drugs (Biotechnology)",
+      "split": "development"
+    },
+    {
+      "code": "603099",
+      "name": "长白山",
+      "instrument_id": 26090,
+      "stratum": "Hotel/Gaming",
+      "split": "development"
+    },
+    {
+      "code": "300921",
+      "name": "南凌科技",
+      "instrument_id": 45209,
+      "stratum": "Telecom. Services",
+      "split": "development"
+    },
+    {
+      "code": "301131",
+      "name": "聚赛龙",
+      "instrument_id": 45403,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "300637",
+      "name": "扬帆新材",
+      "instrument_id": 44938,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "301232",
+      "name": "飞沃科技",
+      "instrument_id": 45488,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "002109",
+      "name": "ST兴化",
+      "instrument_id": 28915,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "603931",
+      "name": "格林达",
+      "instrument_id": 26580,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "603126",
+      "name": "中材节能",
+      "instrument_id": 26115,
+      "stratum": "Environmental & Waste Services",
+      "split": "development"
+    },
+    {
+      "code": "300364",
+      "name": "中文在线",
+      "instrument_id": 44677,
+      "stratum": "Publishing & Newspapers",
+      "split": "development"
+    },
+    {
+      "code": "600283",
+      "name": "钱江水利",
+      "instrument_id": 25240,
+      "stratum": "Utility (Water)",
+      "split": "development"
+    },
+    {
+      "code": "600449",
+      "name": "宁夏建材",
+      "instrument_id": 25355,
+      "stratum": "Construction Supplies",
+      "split": "development"
+    },
+    {
+      "code": "300821",
+      "name": "东岳硅材",
+      "instrument_id": 45111,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "603489",
+      "name": "八方股份",
+      "instrument_id": 26348,
+      "stratum": "Recreation",
+      "split": "development"
+    },
+    {
+      "code": "301255",
+      "name": "通力科技",
+      "instrument_id": 45500,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300588",
+      "name": "熙菱信息",
+      "instrument_id": 44890,
+      "stratum": "Computer Services",
+      "split": "development"
+    },
+    {
+      "code": "002219",
+      "name": "新里程",
+      "instrument_id": 29021,
+      "stratum": "Hospitals/Healthcare Facilities",
+      "split": "development"
+    },
+    {
+      "code": "603779",
+      "name": "威龙股份",
+      "instrument_id": 26495,
+      "stratum": "Beverage (Alcoholic)",
+      "split": "development"
+    },
+    {
+      "code": "603276",
+      "name": "恒兴新材",
+      "instrument_id": 26226,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "603392",
+      "name": "万泰生物",
+      "instrument_id": 26320,
+      "stratum": "Drugs (Biotechnology)",
+      "split": "development"
+    },
+    {
+      "code": "000697",
+      "name": "炼石航空",
+      "instrument_id": 28497,
+      "stratum": "Aerospace/Defense",
+      "split": "development"
+    },
+    {
+      "code": "000551",
+      "name": "创元科技",
+      "instrument_id": 28408,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300536",
+      "name": "农尚环境",
+      "instrument_id": 44840,
+      "stratum": "Environmental & Waste Services",
+      "split": "development"
+    },
+    {
+      "code": "301667",
+      "name": "纳百川",
+      "instrument_id": 45737,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "002124",
+      "name": "天邦食品",
+      "instrument_id": 28928,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "002310",
+      "name": "东方新能",
+      "instrument_id": 29105,
+      "stratum": "Engineering/Construction",
+      "split": "development"
+    },
+    {
+      "code": "300606",
+      "name": "金太阳",
+      "instrument_id": 44908,
+      "stratum": "Paper/Forest Products",
+      "split": "development"
+    },
+    {
+      "code": "000403",
+      "name": "派林生物",
+      "instrument_id": 28348,
+      "stratum": "Drugs (Biotechnology)",
+      "split": "development"
+    },
+    {
+      "code": "601619",
+      "name": "嘉泽新能",
+      "instrument_id": 25914,
+      "stratum": "Green & Renewable Energy",
+      "split": "development"
+    },
+    {
+      "code": "000960",
+      "name": "锡业股份",
+      "instrument_id": 28666,
+      "stratum": "Metals & Mining",
+      "split": "development"
+    },
+    {
+      "code": "002430",
+      "name": "杭氧股份",
+      "instrument_id": 29219,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "300549",
+      "name": "优德精密",
+      "instrument_id": 44852,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300152",
+      "name": "*ST动力",
+      "instrument_id": 44485,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300481",
+      "name": "濮阳惠成",
+      "instrument_id": 44788,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "688072",
+      "name": "拓荆科技",
+      "instrument_id": 26793,
+      "stratum": "Semiconductor Equip",
+      "split": "development"
+    },
+    {
+      "code": "002538",
+      "name": "ST司特",
+      "instrument_id": 29313,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "603170",
+      "name": "宝立食品",
+      "instrument_id": 26143,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "600751",
+      "name": "海航科技",
+      "instrument_id": 25596,
+      "stratum": "Computer Services",
+      "split": "development"
+    },
+    {
+      "code": "688299",
+      "name": "长阳科技",
+      "instrument_id": 26989,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "301192",
+      "name": "泰祥股份",
+      "instrument_id": 45452,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "300737",
+      "name": "科顺股份",
+      "instrument_id": 45033,
+      "stratum": "Construction Supplies",
+      "split": "development"
+    },
+    {
+      "code": "603000",
+      "name": "人民网",
+      "instrument_id": 26003,
+      "stratum": "Publishing & Newspapers",
+      "split": "development"
+    },
+    {
+      "code": "002046",
+      "name": "国机精工",
+      "instrument_id": 28856,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "002910",
+      "name": "庄园牧场",
+      "instrument_id": 29651,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "300327",
+      "name": "中颖电子",
+      "instrument_id": 44646,
+      "stratum": "Semiconductor",
+      "split": "development"
+    },
+    {
+      "code": "600623",
+      "name": "华谊集团",
+      "instrument_id": 25493,
+      "stratum": "Chemical (Basic)",
+      "split": "development"
+    },
+    {
+      "code": "603595",
+      "name": "ST东尼",
+      "instrument_id": 26393,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "603359",
+      "name": "*ST东珠",
+      "instrument_id": 26295,
+      "stratum": "Environmental & Waste Services",
+      "split": "development"
+    },
+    {
+      "code": "600753",
+      "name": "ST海钦",
+      "instrument_id": 25597,
+      "stratum": "Retail (Distributors)",
+      "split": "development"
+    },
+    {
+      "code": "603706",
+      "name": "东方环宇",
+      "instrument_id": 26461,
+      "stratum": "Power",
+      "split": "development"
+    },
+    {
+      "code": "301439",
+      "name": "泓淋电力",
+      "instrument_id": 45627,
+      "stratum": "Electrical Equipment",
+      "split": "development"
+    },
+    {
+      "code": "601156",
+      "name": "东航物流",
+      "instrument_id": 25836,
+      "stratum": "Transportation",
+      "split": "development"
+    },
+    {
+      "code": "300736",
+      "name": "百邦科技",
+      "instrument_id": 45032,
+      "stratum": "Retail (Special Lines)",
+      "split": "development"
+    },
+    {
+      "code": "300496",
+      "name": "中科创达",
+      "instrument_id": 44802,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "300558",
+      "name": "贝达药业",
+      "instrument_id": 44861,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "688665",
+      "name": "四方光电",
+      "instrument_id": 27248,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "688670",
+      "name": "金迪克",
+      "instrument_id": 27252,
+      "stratum": "Drugs (Biotechnology)",
+      "split": "development"
+    },
+    {
+      "code": "002949",
+      "name": "华阳国际",
+      "instrument_id": 29686,
+      "stratum": "Business & Consumer Services",
+      "split": "development"
+    },
+    {
+      "code": "688607",
+      "name": "康众医疗",
+      "instrument_id": 27206,
+      "stratum": "Healthcare Products",
+      "split": "development"
+    },
+    {
+      "code": "300984",
+      "name": "金沃股份",
+      "instrument_id": 45267,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "300377",
+      "name": "赢时胜",
+      "instrument_id": 44688,
+      "stratum": "Software (System & Application)",
+      "split": "development"
+    },
+    {
+      "code": "300217",
+      "name": "东方电热",
+      "instrument_id": 44544,
+      "stratum": "Furn/Home Furnishings",
+      "split": "development"
+    },
+    {
+      "code": "688328",
+      "name": "深科达",
+      "instrument_id": 27016,
+      "stratum": "Semiconductor Equip",
+      "split": "development"
+    },
+    {
+      "code": "301397",
+      "name": "溯联股份",
+      "instrument_id": 45617,
+      "stratum": "Auto Parts",
+      "split": "development"
+    },
+    {
+      "code": "300181",
+      "name": "佐力药业",
+      "instrument_id": 44512,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "300434",
+      "name": "金石亚药",
+      "instrument_id": 44741,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "development"
+    },
+    {
+      "code": "300698",
+      "name": "万马科技",
+      "instrument_id": 44998,
+      "stratum": "Telecom. Equipment",
+      "split": "development"
+    },
+    {
+      "code": "603703",
+      "name": "盛洋科技",
+      "instrument_id": 26460,
+      "stratum": "Telecom. Equipment",
+      "split": "development"
+    },
+    {
+      "code": "300759",
+      "name": "康龙化成",
+      "instrument_id": 45052,
+      "stratum": "Heathcare Information and Technology",
+      "split": "development"
+    },
+    {
+      "code": "300091",
+      "name": "*ST金灵",
+      "instrument_id": 44429,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "600054",
+      "name": "黄山旅游",
+      "instrument_id": 25067,
+      "stratum": "Hotel/Gaming",
+      "split": "development"
+    },
+    {
+      "code": "002661",
+      "name": "克明食品",
+      "instrument_id": 29431,
+      "stratum": "Food Processing",
+      "split": "development"
+    },
+    {
+      "code": "002589",
+      "name": "瑞康医药",
+      "instrument_id": 29364,
+      "stratum": "Healthcare Support Services",
+      "split": "development"
+    },
+    {
+      "code": "000017",
+      "name": "深中华A",
+      "instrument_id": 28292,
+      "stratum": "Apparel",
+      "split": "development"
+    },
+    {
+      "code": "300943",
+      "name": "春晖智控",
+      "instrument_id": 45229,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "600861",
+      "name": "北京人力",
+      "instrument_id": 25684,
+      "stratum": "Business & Consumer Services",
+      "split": "development"
+    },
+    {
+      "code": "301050",
+      "name": "雷电微力",
+      "instrument_id": 45330,
+      "stratum": "Aerospace/Defense",
+      "split": "development"
+    },
+    {
+      "code": "301125",
+      "name": "腾亚精工",
+      "instrument_id": 45397,
+      "stratum": "Machinery",
+      "split": "development"
+    },
+    {
+      "code": "301303",
+      "name": "真兰仪表",
+      "instrument_id": 45543,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "603181",
+      "name": "皇马科技",
+      "instrument_id": 26153,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "601366",
+      "name": "利群股份",
+      "instrument_id": 25878,
+      "stratum": "Retail (General)",
+      "split": "development"
+    },
+    {
+      "code": "002947",
+      "name": "恒铭达",
+      "instrument_id": 29684,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "600547",
+      "name": "山东黄金",
+      "instrument_id": 25428,
+      "stratum": "Precious Metals",
+      "split": "development"
+    },
+    {
+      "code": "603236",
+      "name": "移远通信",
+      "instrument_id": 26204,
+      "stratum": "Electronics (General)",
+      "split": "development"
+    },
+    {
+      "code": "688281",
+      "name": "华秦科技",
+      "instrument_id": 26974,
+      "stratum": "Chemical (Specialty)",
+      "split": "development"
+    },
+    {
+      "code": "301383",
+      "name": "天键股份",
+      "instrument_id": 45606,
+      "stratum": "Electronics (Consumer & Office)",
+      "split": "development"
+    },
+    {
+      "code": "601801",
+      "name": "皖新传媒",
+      "instrument_id": 25945,
+      "stratum": "Retail (Distributors)",
+      "split": "holdout"
+    },
+    {
+      "code": "002249",
+      "name": "大洋电机",
+      "instrument_id": 29049,
+      "stratum": "Electrical Equipment",
+      "split": "holdout"
+    },
+    {
+      "code": "002281",
+      "name": "光迅科技",
+      "instrument_id": 29078,
+      "stratum": "Electronics (General)",
+      "split": "holdout"
+    },
+    {
+      "code": "002909",
+      "name": "集泰股份",
+      "instrument_id": 29650,
+      "stratum": "Chemical (Specialty)",
+      "split": "holdout"
+    },
+    {
+      "code": "300499",
+      "name": "高澜股份",
+      "instrument_id": 44805,
+      "stratum": "Machinery",
+      "split": "holdout"
+    },
+    {
+      "code": "002714",
+      "name": "牧原股份",
+      "instrument_id": 29477,
+      "stratum": "Food Processing",
+      "split": "holdout"
+    },
+    {
+      "code": "688115",
+      "name": "思林杰",
+      "instrument_id": 26832,
+      "stratum": "Electronics (General)",
+      "split": "holdout"
+    },
+    {
+      "code": "603121",
+      "name": "华培动力",
+      "instrument_id": 26110,
+      "stratum": "Auto Parts",
+      "split": "holdout"
+    },
+    {
+      "code": "603409",
+      "name": "汇通控股",
+      "instrument_id": 26331,
+      "stratum": "Auto Parts",
+      "split": "holdout"
+    },
+    {
+      "code": "301413",
+      "name": "安培龙",
+      "instrument_id": 45621,
+      "stratum": "Electronics (General)",
+      "split": "holdout"
+    },
+    {
+      "code": "603350",
+      "name": "安乃达",
+      "instrument_id": 26287,
+      "stratum": "Auto Parts",
+      "split": "holdout"
+    },
+    {
+      "code": "301228",
+      "name": "实朴检测",
+      "instrument_id": 45484,
+      "stratum": "Business & Consumer Services",
+      "split": "holdout"
+    },
+    {
+      "code": "600288",
+      "name": "大恒科技",
+      "instrument_id": 25244,
+      "stratum": "Computer Services",
+      "split": "holdout"
+    },
+    {
+      "code": "300730",
+      "name": "科创信息",
+      "instrument_id": 45027,
+      "stratum": "Computer Services",
+      "split": "holdout"
+    },
+    {
+      "code": "301331",
+      "name": "恩威医药",
+      "instrument_id": 45569,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "holdout"
+    },
+    {
+      "code": "605507",
+      "name": "国邦医药",
+      "instrument_id": 26721,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "holdout"
+    },
+    {
+      "code": "603289",
+      "name": "泰瑞机器",
+      "instrument_id": 26238,
+      "stratum": "Machinery",
+      "split": "holdout"
+    },
+    {
+      "code": "002352",
+      "name": "顺丰控股",
+      "instrument_id": 29144,
+      "stratum": "Transportation",
+      "split": "holdout"
+    },
+    {
+      "code": "000026",
+      "name": "飞亚达",
+      "instrument_id": 28297,
+      "stratum": "Apparel",
+      "split": "holdout"
+    },
+    {
+      "code": "002169",
+      "name": "智光电气",
+      "instrument_id": 28971,
+      "stratum": "Electrical Equipment",
+      "split": "holdout"
+    },
+    {
+      "code": "600169",
+      "name": "ST太重",
+      "instrument_id": 25155,
+      "stratum": "Construction Supplies",
+      "split": "holdout"
+    },
+    {
+      "code": "600691",
+      "name": "潞化科技",
+      "instrument_id": 25544,
+      "stratum": "Chemical (Specialty)",
+      "split": "holdout"
+    },
+    {
+      "code": "300082",
+      "name": "奥克股份",
+      "instrument_id": 44422,
+      "stratum": "Chemical (Specialty)",
+      "split": "holdout"
+    },
+    {
+      "code": "603351",
+      "name": "威尔药业",
+      "instrument_id": 26288,
+      "stratum": "Chemical (Basic)",
+      "split": "holdout"
+    },
+    {
+      "code": "603111",
+      "name": "康尼机电",
+      "instrument_id": 26101,
+      "stratum": "Construction Supplies",
+      "split": "holdout"
+    },
+    {
+      "code": "688285",
+      "name": "高铁电气",
+      "instrument_id": 26977,
+      "stratum": "Construction Supplies",
+      "split": "holdout"
+    },
+    {
+      "code": "603308",
+      "name": "应流股份",
+      "instrument_id": 26252,
+      "stratum": "Machinery",
+      "split": "holdout"
+    },
+    {
+      "code": "603928",
+      "name": "兴业股份",
+      "instrument_id": 26578,
+      "stratum": "Chemical (Basic)",
+      "split": "holdout"
+    },
+    {
+      "code": "301035",
+      "name": "润丰股份",
+      "instrument_id": 45316,
+      "stratum": "Chemical (Specialty)",
+      "split": "holdout"
+    },
+    {
+      "code": "301328",
+      "name": "维峰电子",
+      "instrument_id": 45566,
+      "stratum": "Electronics (General)",
+      "split": "holdout"
+    },
+    {
+      "code": "600588",
+      "name": "用友网络",
+      "instrument_id": 25463,
+      "stratum": "Software (System & Application)",
+      "split": "holdout"
+    },
+    {
+      "code": "603063",
+      "name": "禾望电气",
+      "instrument_id": 26058,
+      "stratum": "Electrical Equipment",
+      "split": "holdout"
+    },
+    {
+      "code": "002254",
+      "name": "泰和新材",
+      "instrument_id": 29054,
+      "stratum": "Apparel",
+      "split": "holdout"
+    },
+    {
+      "code": "601018",
+      "name": "宁波港",
+      "instrument_id": 25791,
+      "stratum": "Shipbuilding & Marine",
+      "split": "holdout"
+    },
+    {
+      "code": "603188",
+      "name": "亚邦股份",
+      "instrument_id": 26159,
+      "stratum": "Chemical (Specialty)",
+      "split": "holdout"
+    },
+    {
+      "code": "300633",
+      "name": "开立医疗",
+      "instrument_id": 44934,
+      "stratum": "Healthcare Products",
+      "split": "holdout"
+    },
+    {
+      "code": "688577",
+      "name": "浙海德曼",
+      "instrument_id": 27179,
+      "stratum": "Machinery",
+      "split": "holdout"
+    },
+    {
+      "code": "688168",
+      "name": "安博通",
+      "instrument_id": 26876,
+      "stratum": "Software (System & Application)",
+      "split": "holdout"
+    },
+    {
+      "code": "600929",
+      "name": "雪天盐业",
+      "instrument_id": 25731,
+      "stratum": "Chemical (Basic)",
+      "split": "holdout"
+    },
+    {
+      "code": "600883",
+      "name": "博闻科技",
+      "instrument_id": 25704,
+      "stratum": "Construction Supplies",
+      "split": "holdout"
+    },
+    {
+      "code": "003005",
+      "name": "竞业达",
+      "instrument_id": 29738,
+      "stratum": "Computer Services",
+      "split": "holdout"
+    },
+    {
+      "code": "688721",
+      "name": "龙图光罩",
+      "instrument_id": 27289,
+      "stratum": "Semiconductor Equip",
+      "split": "holdout"
+    },
+    {
+      "code": "688266",
+      "name": "泽璟制药",
+      "instrument_id": 26960,
+      "stratum": "Drugs (Biotechnology)",
+      "split": "holdout"
+    },
+    {
+      "code": "002980",
+      "name": "华盛昌",
+      "instrument_id": 29714,
+      "stratum": "Electronics (General)",
+      "split": "holdout"
+    },
+    {
+      "code": "300348",
+      "name": "长亮科技",
+      "instrument_id": 44664,
+      "stratum": "Computer Services",
+      "split": "holdout"
+    },
+    {
+      "code": "300908",
+      "name": "仲景食品",
+      "instrument_id": 45197,
+      "stratum": "Food Processing",
+      "split": "holdout"
+    },
+    {
+      "code": "002749",
+      "name": "国光股份",
+      "instrument_id": 29509,
+      "stratum": "Chemical (Specialty)",
+      "split": "holdout"
+    },
+    {
+      "code": "603248",
+      "name": "锡华科技",
+      "instrument_id": 26208,
+      "stratum": "Electrical Equipment",
+      "split": "holdout"
+    },
+    {
+      "code": "600137",
+      "name": "浪莎股份",
+      "instrument_id": 25132,
+      "stratum": "Apparel",
+      "split": "holdout"
+    },
+    {
+      "code": "603689",
+      "name": "皖天然气",
+      "instrument_id": 26451,
+      "stratum": "Oil/Gas Distribution",
+      "split": "holdout"
+    },
+    {
+      "code": "301618",
+      "name": "长联科技",
+      "instrument_id": 45720,
+      "stratum": "Chemical (Specialty)",
+      "split": "holdout"
+    },
+    {
+      "code": "300503",
+      "name": "昊志机电",
+      "instrument_id": 44809,
+      "stratum": "Machinery",
+      "split": "holdout"
+    },
+    {
+      "code": "600540",
+      "name": "新赛股份",
+      "instrument_id": 25424,
+      "stratum": "Farming/Agriculture",
+      "split": "holdout"
+    },
+    {
+      "code": "000757",
+      "name": "浩物股份",
+      "instrument_id": 28538,
+      "stratum": "Retail (Automotive)",
+      "split": "holdout"
+    },
+    {
+      "code": "300877",
+      "name": "金春股份",
+      "instrument_id": 45166,
+      "stratum": "Apparel",
+      "split": "holdout"
+    },
+    {
+      "code": "000876",
+      "name": "新 希 望",
+      "instrument_id": 28605,
+      "stratum": "Farming/Agriculture",
+      "split": "holdout"
+    },
+    {
+      "code": "688156",
+      "name": "路德科技",
+      "instrument_id": 26865,
+      "stratum": "Environmental & Waste Services",
+      "split": "holdout"
+    },
+    {
+      "code": "688709",
+      "name": "成都华微",
+      "instrument_id": 27280,
+      "stratum": "Semiconductor",
+      "split": "holdout"
+    },
+    {
+      "code": "600479",
+      "name": "千金药业",
+      "instrument_id": 25372,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "holdout"
+    },
+    {
+      "code": "300667",
+      "name": "必创科技",
+      "instrument_id": 44967,
+      "stratum": "Electronics (General)",
+      "split": "holdout"
+    },
+    {
+      "code": "600989",
+      "name": "宝丰能源",
+      "instrument_id": 25768,
+      "stratum": "Chemical (Diversified)",
+      "split": "holdout"
+    },
+    {
+      "code": "000526",
+      "name": "学大教育",
+      "instrument_id": 28388,
+      "stratum": "Education",
+      "split": "holdout"
+    },
+    {
+      "code": "301367",
+      "name": "瑞迈特",
+      "instrument_id": 45592,
+      "stratum": "Healthcare Products",
+      "split": "holdout"
+    },
+    {
+      "code": "603877",
+      "name": "太平鸟",
+      "instrument_id": 26543,
+      "stratum": "Apparel",
+      "split": "holdout"
+    },
+    {
+      "code": "002638",
+      "name": "勤上股份",
+      "instrument_id": 29408,
+      "stratum": "Electrical Equipment",
+      "split": "holdout"
+    },
+    {
+      "code": "300961",
+      "name": "深水海纳",
+      "instrument_id": 45245,
+      "stratum": "Environmental & Waste Services",
+      "split": "holdout"
+    },
+    {
+      "code": "600258",
+      "name": "首旅酒店",
+      "instrument_id": 25222,
+      "stratum": "Hotel/Gaming",
+      "split": "holdout"
+    },
+    {
+      "code": "300708",
+      "name": "聚灿光电",
+      "instrument_id": 45007,
+      "stratum": "Semiconductor",
+      "split": "holdout"
+    },
+    {
+      "code": "002656",
+      "name": "摩登大道",
+      "instrument_id": 29426,
+      "stratum": "Retail (Special Lines)",
+      "split": "holdout"
+    },
+    {
+      "code": "605366",
+      "name": "宏柏新材",
+      "instrument_id": 26708,
+      "stratum": "Chemical (Basic)",
+      "split": "holdout"
+    },
+    {
+      "code": "002927",
+      "name": "泰永长征",
+      "instrument_id": 29666,
+      "stratum": "Electrical Equipment",
+      "split": "holdout"
+    },
+    {
+      "code": "300012",
+      "name": "华测检测",
+      "instrument_id": 44358,
+      "stratum": "Business & Consumer Services",
+      "split": "holdout"
+    },
+    {
+      "code": "301162",
+      "name": "国能日新",
+      "instrument_id": 45425,
+      "stratum": "Software (System & Application)",
+      "split": "holdout"
+    },
+    {
+      "code": "603626",
+      "name": "科森科技",
+      "instrument_id": 26414,
+      "stratum": "Electronics (General)",
+      "split": "holdout"
+    },
+    {
+      "code": "300930",
+      "name": "屹通新材",
+      "instrument_id": 45217,
+      "stratum": "Steel",
+      "split": "holdout"
+    },
+    {
+      "code": "600694",
+      "name": "大商股份",
+      "instrument_id": 25547,
+      "stratum": "Retail (General)",
+      "split": "holdout"
+    },
+    {
+      "code": "688183",
+      "name": "生益电子",
+      "instrument_id": 26890,
+      "stratum": "Electronics (General)",
+      "split": "holdout"
+    },
+    {
+      "code": "600143",
+      "name": "金发科技",
+      "instrument_id": 25135,
+      "stratum": "Chemical (Basic)",
+      "split": "holdout"
+    },
+    {
+      "code": "300878",
+      "name": "维康药业",
+      "instrument_id": 45167,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "holdout"
+    },
+    {
+      "code": "688223",
+      "name": "晶科能源",
+      "instrument_id": 26927,
+      "stratum": "Semiconductor",
+      "split": "holdout"
+    },
+    {
+      "code": "600455",
+      "name": "博通股份",
+      "instrument_id": 25357,
+      "stratum": "Education",
+      "split": "holdout"
+    },
+    {
+      "code": "002356",
+      "name": "鹏飞绿能",
+      "instrument_id": 29148,
+      "stratum": "Retail (Special Lines)",
+      "split": "holdout"
+    },
+    {
+      "code": "600637",
+      "name": "东方明珠",
+      "instrument_id": 25501,
+      "stratum": "Cable TV",
+      "split": "holdout"
+    },
+    {
+      "code": "301161",
+      "name": "唯万密封",
+      "instrument_id": 45424,
+      "stratum": "Machinery",
+      "split": "holdout"
+    },
+    {
+      "code": "605050",
+      "name": "福然德",
+      "instrument_id": 26632,
+      "stratum": "Steel",
+      "split": "holdout"
+    },
+    {
+      "code": "688369",
+      "name": "致远互联",
+      "instrument_id": 27050,
+      "stratum": "Software (System & Application)",
+      "split": "holdout"
+    },
+    {
+      "code": "002507",
+      "name": "涪陵榨菜",
+      "instrument_id": 29284,
+      "stratum": "Food Processing",
+      "split": "holdout"
+    },
+    {
+      "code": "002349",
+      "name": "精华制药",
+      "instrument_id": 29141,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "holdout"
+    },
+    {
+      "code": "002253",
+      "name": "川大智胜",
+      "instrument_id": 29053,
+      "stratum": "Software (System & Application)",
+      "split": "holdout"
+    },
+    {
+      "code": "600620",
+      "name": "天宸股份",
+      "instrument_id": 25490,
+      "stratum": "Transportation",
+      "split": "holdout"
+    },
+    {
+      "code": "300337",
+      "name": "银邦股份",
+      "instrument_id": 44654,
+      "stratum": "Metals & Mining",
+      "split": "holdout"
+    },
+    {
+      "code": "002459",
+      "name": "晶澳科技",
+      "instrument_id": 29244,
+      "stratum": "Semiconductor",
+      "split": "holdout"
+    },
+    {
+      "code": "000702",
+      "name": "正虹科技",
+      "instrument_id": 28501,
+      "stratum": "Farming/Agriculture",
+      "split": "holdout"
+    },
+    {
+      "code": "600062",
+      "name": "华润双鹤",
+      "instrument_id": 25075,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "holdout"
+    },
+    {
+      "code": "301160",
+      "name": "翔楼新材",
+      "instrument_id": 45423,
+      "stratum": "Steel",
+      "split": "holdout"
+    },
+    {
+      "code": "000623",
+      "name": "吉林敖东",
+      "instrument_id": 28455,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "holdout"
+    },
+    {
+      "code": "688707",
+      "name": "振华新材",
+      "instrument_id": 27278,
+      "stratum": "Electrical Equipment",
+      "split": "holdout"
+    },
+    {
+      "code": "002952",
+      "name": "亚世光电",
+      "instrument_id": 29689,
+      "stratum": "Computers/Peripherals",
+      "split": "holdout"
+    },
+    {
+      "code": "300593",
+      "name": "新雷能",
+      "instrument_id": 44895,
+      "stratum": "Electrical Equipment",
+      "split": "holdout"
+    },
+    {
+      "code": "300634",
+      "name": "彩讯股份",
+      "instrument_id": 44935,
+      "stratum": "Computer Services",
+      "split": "holdout"
+    },
+    {
+      "code": "688339",
+      "name": "亿华通",
+      "instrument_id": 27027,
+      "stratum": "Construction Supplies",
+      "split": "holdout"
+    },
+    {
+      "code": "600075",
+      "name": "新疆天业",
+      "instrument_id": 25083,
+      "stratum": "Chemical (Basic)",
+      "split": "holdout"
+    },
+    {
+      "code": "300692",
+      "name": "中赋科技",
+      "instrument_id": 44992,
+      "stratum": "Environmental & Waste Services",
+      "split": "holdout"
+    },
+    {
+      "code": "688489",
+      "name": "三未信安",
+      "instrument_id": 27116,
+      "stratum": "Computers/Peripherals",
+      "split": "holdout"
+    },
+    {
+      "code": "603059",
+      "name": "倍加洁",
+      "instrument_id": 26054,
+      "stratum": "Household Products",
+      "split": "holdout"
+    },
+    {
+      "code": "002412",
+      "name": "汉森制药",
+      "instrument_id": 29202,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "holdout"
+    },
+    {
+      "code": "600549",
+      "name": "厦门钨业",
+      "instrument_id": 25430,
+      "stratum": "Metals & Mining",
+      "split": "holdout"
+    },
+    {
+      "code": "002167",
+      "name": "东方锆业",
+      "instrument_id": 28969,
+      "stratum": "Chemical (Basic)",
+      "split": "holdout"
+    },
+    {
+      "code": "605068",
+      "name": "明新旭腾",
+      "instrument_id": 26638,
+      "stratum": "Apparel",
+      "split": "holdout"
+    },
+    {
+      "code": "301488",
+      "name": "豪恩汽电",
+      "instrument_id": 45639,
+      "stratum": "Auto Parts",
+      "split": "holdout"
+    },
+    {
+      "code": "002654",
+      "name": "万润科技",
+      "instrument_id": 29424,
+      "stratum": "Electronics (General)",
+      "split": "holdout"
+    },
+    {
+      "code": "002121",
+      "name": "科陆电子",
+      "instrument_id": 28925,
+      "stratum": "Electrical Equipment",
+      "split": "holdout"
+    },
+    {
+      "code": "603037",
+      "name": "凯众股份",
+      "instrument_id": 26037,
+      "stratum": "Auto Parts",
+      "split": "holdout"
+    },
+    {
+      "code": "300594",
+      "name": "ST朗进",
+      "instrument_id": 44896,
+      "stratum": "Construction Supplies",
+      "split": "holdout"
+    },
+    {
+      "code": "601010",
+      "name": "ST文峰",
+      "instrument_id": 25786,
+      "stratum": "Retail (General)",
+      "split": "holdout"
+    },
+    {
+      "code": "300652",
+      "name": "雷迪克",
+      "instrument_id": 44952,
+      "stratum": "Auto Parts",
+      "split": "holdout"
+    },
+    {
+      "code": "600543",
+      "name": "*ST莫高",
+      "instrument_id": 25425,
+      "stratum": "Beverage (Alcoholic)",
+      "split": "holdout"
+    },
+    {
+      "code": "300765",
+      "name": "石药创新",
+      "instrument_id": 45057,
+      "stratum": "Drugs (Pharmaceutical)",
+      "split": "holdout"
+    },
+    {
+      "code": "002510",
+      "name": "天汽模",
+      "instrument_id": 29286,
+      "stratum": "Auto Parts",
+      "split": "holdout"
+    },
+    {
+      "code": "300927",
+      "name": "江天化学",
+      "instrument_id": 45214,
+      "stratum": "Chemical (Specialty)",
+      "split": "holdout"
+    }
+  ],
+  "sampling": {
+    "universe": "valuation/research/tdx-growth-expanded/sampling-universe.json",
+    "universe_sha256": "112776d60d44be204b44875f1337bb7de427a6f5108026efb9f60b39c9f1c2b4",
+    "seed": "alphalake-growth-v3:",
+    "excluded_codes": [
+      "000007",
+      "000012",
+      "000017",
+      "000025",
+      "000035",
+      "000065",
+      "000066",
+      "000068",
+      "000078",
+      "000088",
+      "000089",
+      "000155",
+      "000301",
+      "000333",
+      "000403",
+      "000417",
+      "000419",
+      "000422",
+      "000425",
+      "000426",
+      "000507",
+      "000518",
+      "000521",
+      "000528",
+      "000531",
+      "000532",
+      "000534",
+      "000537",
+      "000544",
+      "000545",
+      "000546",
+      "000551",
+      "000553",
+      "000557",
+      "000564",
+      "000581",
+      "000591",
+      "000599",
+      "000605",
+      "000619",
+      "000630",
+      "000639",
+      "000651",
+      "000661",
+      "000669",
+      "000672",
+      "000678",
+      "000697",
+      "000708",
+      "000711",
+      "000716",
+      "000738",
+      "000762",
+      "000767",
+      "000777",
+      "000785",
+      "000786",
+      "000788",
+      "000789",
+      "000795",
+      "000798",
+      "000802",
+      "000809",
+      "000813",
+      "000819",
+      "000821",
+      "000823",
+      "000829",
+      "000831",
+      "000839",
+      "000852",
+      "000858",
+      "000862",
+      "000878",
+      "000881",
+      "000883",
+      "000887",
+      "000888",
+      "000889",
+      "000895",
+      "000900",
+      "000902",
+      "000905",
+      "000908",
+      "000911",
+      "000915",
+      "000921",
+      "000922",
+      "000925",
+      "000933",
+      "000935",
+      "000951",
+      "000957",
+      "000959",
+      "000960",
+      "000963",
+      "000970",
+      "000995",
+      "000998",
+      "000999",
+      "001202",
+      "001213",
+      "001229",
+      "001286",
+      "001287",
+      "001299",
+      "001316",
+      "001317",
+      "001322",
+      "001328",
+      "001368",
+      "001369",
+      "001373",
+      "001389",
+      "001965",
+      "002001",
+      "002005",
+      "002009",
+      "002014",
+      "002023",
+      "002026",
+      "002032",
+      "002038",
+      "002041",
+      "002046",
+      "002049",
+      "002054",
+      "002060",
+      "002066",
+      "002074",
+      "002075",
+      "002082",
+      "002084",
+      "002085",
+      "002088",
+      "002098",
+      "002100",
+      "002101",
+      "002105",
+      "002109",
+      "002110",
+      "002119",
+      "002120",
+      "002124",
+      "002127",
+      "002128",
+      "002131",
+      "002136",
+      "002137",
+      "002144",
+      "002152",
+      "002154",
+      "002157",
+      "002158",
+      "002162",
+      "002170",
+      "002182",
+      "002185",
+      "002188",
+      "002190",
+      "002191",
+      "002192",
+      "002196",
+      "002201",
+      "002204",
+      "002205",
+      "002206",
+      "002207",
+      "002212",
+      "002213",
+      "002216",
+      "002217",
+      "002219",
+      "002222",
+      "002228",
+      "002240",
+      "002241",
+      "002255",
+      "002261",
+      "002264",
+      "002265",
+      "002266",
+      "002269",
+      "002276",
+      "002282",
+      "002284",
+      "002289",
+      "002290",
+      "002293",
+      "002294",
+      "002306",
+      "002310",
+      "002324",
+      "002329",
+      "002350",
+      "002353",
+      "002360",
+      "002363",
+      "002366",
+      "002368",
+      "002369",
+      "002371",
+      "002374",
+      "002379",
+      "002381",
+      "002386",
+      "002387",
+      "002389",
+      "002391",
+      "002393",
+      "002397",
+      "002405",
+      "002410",
+      "002413",
+      "002415",
+      "002422",
+      "002430",
+      "002431",
+      "002432",
+      "002434",
+      "002439",
+      "002442",
+      "002446",
+      "002449",
+      "002452",
+      "002453",
+      "002456",
+      "002462",
+      "002467",
+      "002468",
+      "002470",
+      "002472",
+      "002475",
+      "002480",
+      "002485",
+      "002492",
+      "002508",
+      "002513",
+      "002520",
+      "002529",
+      "002537",
+      "002538",
+      "002543",
+      "002544",
+      "002568",
+      "002569",
+      "002571",
+      "002572",
+      "002573",
+      "002574",
+      "002576",
+      "002580",
+      "002585",
+      "002586",
+      "002587",
+      "002589",
+      "002590",
+      "002593",
+      "002601",
+      "002602",
+      "002605",
+      "002612",
+      "002613",
+      "002620",
+      "002630",
+      "002640",
+      "002648",
+      "002652",
+      "002658",
+      "002661",
+      "002668",
+      "002676",
+      "002685",
+      "002688",
+      "002691",
+      "002702",
+      "002705",
+      "002713",
+      "002717",
+      "002722",
+      "002723",
+      "002733",
+      "002745",
+      "002755",
+      "002759",
+      "002767",
+      "002772",
+      "002773",
+      "002780",
+      "002783",
+      "002787",
+      "002790",
+      "002799",
+      "002800",
+      "002801",
+      "002802",
+      "002806",
+      "002811",
+      "002816",
+      "002824",
+      "002825",
+      "002827",
+      "002828",
+      "002829",
+      "002841",
+      "002843",
+      "002848",
+      "002849",
+      "002851",
+      "002855",
+      "002862",
+      "002865",
+      "002872",
+      "002875",
+      "002889",
+      "002890",
+      "002902",
+      "002910",
+      "002911",
+      "002912",
+      "002917",
+      "002918",
+      "002925",
+      "002931",
+      "002932",
+      "002935",
+      "002938",
+      "002943",
+      "002947",
+      "002949",
+      "002956",
+      "002959",
+      "002965",
+      "002969",
+      "002970",
+      "002971",
+      "002973",
+      "002976",
+      "002985",
+      "002986",
+      "002990",
+      "002995",
+      "002996",
+      "002998",
+      "002999",
+      "003009",
+      "003022",
+      "003023",
+      "003029",
+      "003037",
+      "003038",
+      "003039",
+      "300002",
+      "300013",
+      "300017",
+      "300018",
+      "300022",
+      "300027",
+      "300034",
+      "300036",
+      "300043",
+      "300051",
+      "300053",
+      "300054",
+      "300055",
+      "300057",
+      "300065",
+      "300067",
+      "300076",
+      "300077",
+      "300084",
+      "300086",
+      "300091",
+      "300094",
+      "300095",
+      "300100",
+      "300101",
+      "300121",
+      "300124",
+      "300125",
+      "300127",
+      "300132",
+      "300137",
+      "300139",
+      "300140",
+      "300145",
+      "300149",
+      "300152",
+      "300154",
+      "300164",
+      "300168",
+      "300174",
+      "300176",
+      "300179",
+      "300181",
+      "300191",
+      "300196",
+      "300201",
+      "300206",
+      "300214",
+      "300217",
+      "300225",
+      "300226",
+      "300228",
+      "300244",
+      "300252",
+      "300254",
+      "300256",
+      "300266",
+      "300269",
+      "300279",
+      "300283",
+      "300286",
+      "300288",
+      "300299",
+      "300301",
+      "300303",
+      "300305",
+      "300307",
+      "300314",
+      "300315",
+      "300318",
+      "300323",
+      "300326",
+      "300327",
+      "300333",
+      "300334",
+      "300340",
+      "300346",
+      "300347",
+      "300349",
+      "300364",
+      "300368",
+      "300370",
+      "300377",
+      "300388",
+      "300389",
+      "300395",
+      "300408",
+      "300412",
+      "300415",
+      "300427",
+      "300434",
+      "300446",
+      "300448",
+      "300449",
+      "300450",
+      "300451",
+      "300455",
+      "300465",
+      "300469",
+      "300475",
+      "300479",
+      "300481",
+      "300483",
+      "300492",
+      "300494",
+      "300496",
+      "300510",
+      "300511",
+      "300513",
+      "300514",
+      "300519",
+      "300528",
+      "300536",
+      "300539",
+      "300540",
+      "300549",
+      "300551",
+      "300552",
+      "300553",
+      "300558",
+      "300562",
+      "300563",
+      "300568",
+      "300570",
+      "300576",
+      "300584",
+      "300588",
+      "300600",
+      "300603",
+      "300606",
+      "300609",
+      "300611",
+      "300615",
+      "300618",
+      "300621",
+      "300625",
+      "300629",
+      "300637",
+      "300639",
+      "300650",
+      "300653",
+      "300655",
+      "300657",
+      "300672",
+      "300677",
+      "300678",
+      "300684",
+      "300687",
+      "300690",
+      "300696",
+      "300698",
+      "300703",
+      "300705",
+      "300715",
+      "300716",
+      "300718",
+      "300721",
+      "300724",
+      "300729",
+      "300733",
+      "300735",
+      "300736",
+      "300737",
+      "300739",
+      "300741",
+      "300745",
+      "300746",
+      "300749",
+      "300750",
+      "300751",
+      "300752",
+      "300759",
+      "300763",
+      "300766",
+      "300772",
+      "300775",
+      "300780",
+      "300782",
+      "300792",
+      "300796",
+      "300798",
+      "300801",
+      "300817",
+      "300820",
+      "300821",
+      "300822",
+      "300825",
+      "300826",
+      "300828",
+      "300842",
+      "300845",
+      "300848",
+      "300849",
+      "300851",
+      "300853",
+      "300858",
+      "300866",
+      "300867",
+      "300886",
+      "300890",
+      "300892",
+      "300899",
+      "300904",
+      "300921",
+      "300941",
+      "300942",
+      "300943",
+      "300945",
+      "300958",
+      "300962",
+      "300965",
+      "300966",
+      "300979",
+      "300980",
+      "300984",
+      "300988",
+      "300989",
+      "300996",
+      "300997",
+      "301000",
+      "301004",
+      "301007",
+      "301013",
+      "301021",
+      "301022",
+      "301036",
+      "301040",
+      "301046",
+      "301047",
+      "301048",
+      "301050",
+      "301052",
+      "301059",
+      "301062",
+      "301063",
+      "301071",
+      "301072",
+      "301077",
+      "301079",
+      "301083",
+      "301086",
+      "301087",
+      "301088",
+      "301100",
+      "301102",
+      "301117",
+      "301118",
+      "301119",
+      "301120",
+      "301121",
+      "301122",
+      "301123",
+      "301125",
+      "301126",
+      "301128",
+      "301130",
+      "301131",
+      "301137",
+      "301139",
+      "301153",
+      "301163",
+      "301175",
+      "301177",
+      "301179",
+      "301180",
+      "301185",
+      "301187",
+      "301191",
+      "301192",
+      "301193",
+      "301200",
+      "301208",
+      "301220",
+      "301221",
+      "301222",
+      "301229",
+      "301230",
+      "301232",
+      "301234",
+      "301239",
+      "301255",
+      "301258",
+      "301259",
+      "301262",
+      "301266",
+      "301273",
+      "301275",
+      "301278",
+      "301282",
+      "301286",
+      "301290",
+      "301292",
+      "301295",
+      "301301",
+      "301303",
+      "301305",
+      "301309",
+      "301314",
+      "301337",
+      "301355",
+      "301376",
+      "301377",
+      "301380",
+      "301383",
+      "301386",
+      "301388",
+      "301391",
+      "301393",
+      "301396",
+      "301397",
+      "301439",
+      "301468",
+      "301479",
+      "301486",
+      "301489",
+      "301507",
+      "301510",
+      "301511",
+      "301526",
+      "301535",
+      "301536",
+      "301551",
+      "301552",
+      "301557",
+      "301558",
+      "301565",
+      "301580",
+      "301586",
+      "301587",
+      "301588",
+      "301591",
+      "301595",
+      "301609",
+      "301611",
+      "301616",
+      "301633",
+      "301636",
+      "301638",
+      "301656",
+      "301658",
+      "301665",
+      "301667",
+      "301678",
+      "301687",
+      "600017",
+      "600018",
+      "600019",
+      "600025",
+      "600029",
+      "600031",
+      "600033",
+      "600039",
+      "600054",
+      "600057",
+      "600073",
+      "600097",
+      "600110",
+      "600111",
+      "600116",
+      "600118",
+      "600121",
+      "600123",
+      "600129",
+      "600133",
+      "600166",
+      "600176",
+      "600178",
+      "600179",
+      "600182",
+      "600184",
+      "600187",
+      "600191",
+      "600196",
+      "600201",
+      "600207",
+      "600216",
+      "600228",
+      "600231",
+      "600233",
+      "600235",
+      "600236",
+      "600243",
+      "600248",
+      "600250",
+      "600257",
+      "600261",
+      "600267",
+      "600279",
+      "600283",
+      "600287",
+      "600292",
+      "600305",
+      "600307",
+      "600309",
+      "600312",
+      "600313",
+      "600316",
+      "600320",
+      "600327",
+      "600332",
+      "600336",
+      "600352",
+      "600353",
+      "600359",
+      "600361",
+      "600368",
+      "600370",
+      "600373",
+      "600378",
+      "600391",
+      "600395",
+      "600400",
+      "600403",
+      "600425",
+      "600428",
+      "600444",
+      "600446",
+      "600448",
+      "600449",
+      "600458",
+      "600460",
+      "600461",
+      "600463",
+      "600469",
+      "600480",
+      "600487",
+      "600488",
+      "600495",
+      "600497",
+      "600505",
+      "600506",
+      "600513",
+      "600519",
+      "600520",
+      "600522",
+      "600523",
+      "600527",
+      "600536",
+      "600538",
+      "600546",
+      "600547",
+      "600558",
+      "600560",
+      "600561",
+      "600567",
+      "600570",
+      "600576",
+      "600580",
+      "600584",
+      "600590",
+      "600592",
+      "600594",
+      "600597",
+      "600609",
+      "600610",
+      "600612",
+      "600617",
+      "600623",
+      "600640",
+      "600642",
+      "600645",
+      "600653",
+      "600666",
+      "600676",
+      "600681",
+      "600689",
+      "600697",
+      "600703",
+      "600704",
+      "600706",
+      "600711",
+      "600712",
+      "600713",
+      "600717",
+      "600719",
+      "600720",
+      "600727",
+      "600730",
+      "600735",
+      "600741",
+      "600745",
+      "600751",
+      "600753",
+      "600754",
+      "600756",
+      "600759",
+      "600777",
+      "600783",
+      "600784",
+      "600787",
+      "600792",
+      "600793",
+      "600812",
+      "600818",
+      "600821",
+      "600822",
+      "600838",
+      "600839",
+      "600844",
+      "600851",
+      "600860",
+      "600861",
+      "600864",
+      "600873",
+      "600885",
+      "600887",
+      "600893",
+      "600897",
+      "600933",
+      "600962",
+      "600968",
+      "600969",
+      "600979",
+      "600980",
+      "600981",
+      "600982",
+      "600985",
+      "601001",
+      "601007",
+      "601016",
+      "601033",
+      "601061",
+      "601065",
+      "601089",
+      "601096",
+      "601101",
+      "601116",
+      "601117",
+      "601127",
+      "601156",
+      "601212",
+      "601222",
+      "601226",
+      "601231",
+      "601238",
+      "601311",
+      "601339",
+      "601360",
+      "601366",
+      "601368",
+      "601369",
+      "601579",
+      "601611",
+      "601615",
+      "601616",
+      "601619",
+      "601698",
+      "601766",
+      "601777",
+      "601799",
+      "601872",
+      "601877",
+      "601899",
+      "601918",
+      "601996",
+      "603000",
+      "603001",
+      "603006",
+      "603009",
+      "603013",
+      "603017",
+      "603029",
+      "603030",
+      "603039",
+      "603041",
+      "603042",
+      "603055",
+      "603057",
+      "603060",
+      "603068",
+      "603073",
+      "603076",
+      "603079",
+      "603087",
+      "603090",
+      "603098",
+      "603099",
+      "603101",
+      "603103",
+      "603106",
+      "603109",
+      "603119",
+      "603126",
+      "603127",
+      "603130",
+      "603135",
+      "603137",
+      "603165",
+      "603169",
+      "603170",
+      "603181",
+      "603183",
+      "603185",
+      "603192",
+      "603193",
+      "603195",
+      "603200",
+      "603208",
+      "603219",
+      "603221",
+      "603228",
+      "603236",
+      "603237",
+      "603259",
+      "603261",
+      "603272",
+      "603276",
+      "603281",
+      "603288",
+      "603290",
+      "603298",
+      "603307",
+      "603311",
+      "603315",
+      "603317",
+      "603326",
+      "603327",
+      "603332",
+      "603335",
+      "603337",
+      "603339",
+      "603353",
+      "603357",
+      "603359",
+      "603370",
+      "603376",
+      "603377",
+      "603392",
+      "603395",
+      "603406",
+      "603458",
+      "603477",
+      "603488",
+      "603489",
+      "603499",
+      "603517",
+      "603520",
+      "603530",
+      "603533",
+      "603535",
+      "603580",
+      "603585",
+      "603586",
+      "603589",
+      "603595",
+      "603596",
+      "603599",
+      "603606",
+      "603611",
+      "603612",
+      "603613",
+      "603619",
+      "603628",
+      "603636",
+      "603637",
+      "603648",
+      "603657",
+      "603661",
+      "603667",
+      "603678",
+      "603679",
+      "603696",
+      "603700",
+      "603703",
+      "603706",
+      "603711",
+      "603717",
+      "603725",
+      "603728",
+      "603778",
+      "603779",
+      "603786",
+      "603788",
+      "603798",
+      "603799",
+      "603806",
+      "603816",
+      "603833",
+      "603836",
+      "603859",
+      "603869",
+      "603878",
+      "603882",
+      "603888",
+      "603896",
+      "603912",
+      "603916",
+      "603917",
+      "603918",
+      "603926",
+      "603927",
+      "603931",
+      "603933",
+      "603939",
+      "603950",
+      "603960",
+      "603966",
+      "603969",
+      "603978",
+      "603985",
+      "603987",
+      "603989",
+      "603991",
+      "603995",
+      "603999",
+      "605056",
+      "605058",
+      "605066",
+      "605090",
+      "605099",
+      "605116",
+      "605117",
+      "605136",
+      "605167",
+      "605196",
+      "605208",
+      "605268",
+      "605277",
+      "605286",
+      "605287",
+      "605288",
+      "605300",
+      "605305",
+      "605336",
+      "605358",
+      "605488",
+      "605567",
+      "605580",
+      "605599",
+      "688016",
+      "688019",
+      "688020",
+      "688023",
+      "688036",
+      "688050",
+      "688056",
+      "688057",
+      "688062",
+      "688066",
+      "688067",
+      "688069",
+      "688070",
+      "688072",
+      "688078",
+      "688082",
+      "688096",
+      "688098",
+      "688105",
+      "688106",
+      "688110",
+      "688111",
+      "688116",
+      "688117",
+      "688120",
+      "688128",
+      "688131",
+      "688133",
+      "688135",
+      "688137",
+      "688143",
+      "688151",
+      "688159",
+      "688167",
+      "688173",
+      "688177",
+      "688182",
+      "688199",
+      "688205",
+      "688210",
+      "688230",
+      "688231",
+      "688233",
+      "688238",
+      "688244",
+      "688246",
+      "688251",
+      "688253",
+      "688255",
+      "688256",
+      "688259",
+      "688260",
+      "688262",
+      "688271",
+      "688278",
+      "688281",
+      "688286",
+      "688295",
+      "688298",
+      "688299",
+      "688301",
+      "688305",
+      "688308",
+      "688316",
+      "688328",
+      "688334",
+      "688337",
+      "688343",
+      "688345",
+      "688350",
+      "688360",
+      "688361",
+      "688365",
+      "688373",
+      "688376",
+      "688380",
+      "688381",
+      "688395",
+      "688419",
+      "688420",
+      "688439",
+      "688443",
+      "688469",
+      "688475",
+      "688484",
+      "688496",
+      "688512",
+      "688515",
+      "688518",
+      "688521",
+      "688531",
+      "688533",
+      "688551",
+      "688560",
+      "688562",
+      "688566",
+      "688568",
+      "688575",
+      "688576",
+      "688578",
+      "688580",
+      "688590",
+      "688591",
+      "688596",
+      "688597",
+      "688598",
+      "688601",
+      "688603",
+      "688607",
+      "688608",
+      "688610",
+      "688622",
+      "688626",
+      "688629",
+      "688638",
+      "688648",
+      "688658",
+      "688660",
+      "688662",
+      "688663",
+      "688665",
+      "688670",
+      "688678",
+      "688679",
+      "688680",
+      "688685",
+      "688689",
+      "688695",
+      "688719",
+      "688726",
+      "688729",
+      "688733",
+      "688750",
+      "688759",
+      "688766",
+      "688768",
+      "688777",
+      "688790",
+      "688800"
+    ],
+    "prior_protocols": [
+      {
+        "path": "valuation/research/tdx-capex-forecast/protocol-v2.json",
+        "sha256": "e8a04850237cf297cc76333676e44f309750731a9cb0528c76d7c00b87d0776c"
+      },
+      {
+        "path": "valuation/research/tdx-capex-forecast/protocol-v3.json",
+        "sha256": "adb815679213fccdaf342a5f000b637e48fbc331b701280a614b222cbbdf9079"
+      },
+      {
+        "path": "valuation/research/tdx-capex-forecast/protocol-v4.json",
+        "sha256": "99d2cfa15f8d0dedb7dbd8dff3c45411604ca49119000f499100f57d767ab6e5"
+      },
+      {
+        "path": "valuation/research/tdx-capex-forecast/protocol.json",
+        "sha256": "af5763d5874c1e473b55202e41852b04a8f42e0d87cd14baf86987f3f5b7f5c5"
+      },
+      {
+        "path": "valuation/research/tdx-cash-revenue-comparison/protocol.json",
+        "sha256": "140474bc5a633cb506ef5fde8e9f2f8ebf9547cfc5954b8336f6f9619429d369"
+      },
+      {
+        "path": "valuation/research/tdx-growth-expanded/protocol-cash-proxy.json",
+        "sha256": "8df1a9be000e00177744570aeb986661bbc3a54ebd16dd06da5f4e837ac868eb"
+      },
+      {
+        "path": "valuation/research/tdx-growth-expanded/protocol-reinvestment.json",
+        "sha256": "29ee44bb08ef09bb8d71f3ddac25f1dd3f149f78f78750108f240a3feb1ff2a4"
+      },
+      {
+        "path": "valuation/research/tdx-growth-expanded/protocol-v2.json",
+        "sha256": "718491d4e1aa2f896a0a81eefe181fb4f4f424e420763384ae0bbf4f5d3ca3ed"
+      },
+      {
+        "path": "valuation/research/tdx-growth-expanded/protocol-v3.json",
+        "sha256": "e70ff01cf02ebdb70a8cab90c8b4d1816241d735fec2869480491a7d17be4092"
+      },
+      {
+        "path": "valuation/research/tdx-growth-expanded/protocol-v4.json",
+        "sha256": "5edd469a2f27c362b5657eaee75af125853cc3381342bf173387f98226ccd294"
+      },
+      {
+        "path": "valuation/research/tdx-growth-expanded/protocol-v5.json",
+        "sha256": "16fa85567f84f1f8acf45f28874bd14c8ed8ca435e365d3d49a22f8e5e44bad6"
+      },
+      {
+        "path": "valuation/research/tdx-growth-expanded/protocol-v6.json",
+        "sha256": "56a61c764116e104d7a19c09b80c331d8fdf5fe9590aef6023c215566e3dc9cd"
+      },
+      {
+        "path": "valuation/research/tdx-growth-expanded/protocol-v7.json",
+        "sha256": "e1f303382fcc7c2aa0db74e79a69d215756f80efcc0e2e3c5e7cf4d9025c9332"
+      },
+      {
+        "path": "valuation/research/tdx-growth-expanded/protocol-v8.json",
+        "sha256": "a0c7f69bbe8d29f830a9af2684726b7e08f04161ca58fffd837a9decae9c13b1"
+      },
+      {
+        "path": "valuation/research/tdx-growth-expanded/protocol.json",
+        "sha256": "163722b2da5c3cfda36c3a5e854432623854d474699fd8ed5b7744a053af60b9"
+      },
+      {
+        "path": "valuation/research/tdx-history/study.json",
+        "sha256": "777b09362a649090f71d0a44361c3c84cf1f5f6df2b1d0b5cea411b1ae205056"
+      },
+      {
+        "path": "valuation/research/tdx-multi-origin/protocol-v2.json",
+        "sha256": "054e7cf71ff9562047ebeef46d42aca76e59444c9ba749b3ab6470e269b0e8fc"
+      },
+      {
+        "path": "valuation/research/tdx-multi-origin/protocol.json",
+        "sha256": "cd3a81aa255e9822afa3e7a8ec53ae7361eaece8d64983c4df941295eace053d"
+      },
+      {
+        "path": "valuation/research/tdx-multiyear-growth/protocol.json",
+        "sha256": "ab67a62ce02a1e448765ac4e23e9a6f15e52fb861b160fb212d9ed2e03f2540d"
+      },
+      {
+        "path": "valuation/research/tdx-operating-cash-forecast/protocol.json",
+        "sha256": "6aeb6080de4f423b92896eea921acbdf7543a4865f0aa447364e52a59b32ce36"
+      },
+      {
+        "path": "valuation/research/tdx-working-cash-forecast/protocol-v2.json",
+        "sha256": "7ad50fd06ef1815e3dbb40597d85c6768ebffd87c33c3e5ef2df68adb86eee43"
+      },
+      {
+        "path": "valuation/research/tdx-working-cash-forecast/protocol-v3.json",
+        "sha256": "085f998b9db68e7f624e35f9052cda18e0bad881298f1a5bb430e884e1591f68"
+      },
+      {
+        "path": "valuation/research/tdx-working-cash-forecast/protocol-v4.json",
+        "sha256": "ee4656e2a8a48c4be0349ee222d2af3f1b3537fd588d054c13f556108fac1a73"
+      },
+      {
+        "path": "valuation/research/tdx-working-cash-forecast/protocol.json",
+        "sha256": "6abfb207b678b57d13bf6b9dc4e405ace683001d4a29b561fcef049de4604664"
+      },
+      {
+        "path": "valuation/research/tdx-zero-growth-validation/protocol.json",
+        "sha256": "c25fa377ea65662ebe89aecf6812f95a062e9b60655f3c012926a7b9f5521427"
+      },
+      {
+        "path": "valuation/research/tdx-zero-growth-horizons/protocol.json",
+        "sha256": "71a22981a137f3d2b668fbf660700bc0db919cc297a009eac93fc19478abfbf8"
+      }
+    ],
+    "rule": "development first240 prior-registered companies by fixed rank; holdout first120 outside all prior registered samples and exclusions; no financial/outcome filtering"
+  },
+  "windows": [
+    {
+      "origin": "2023-06-30",
+      "horizon": 1
+    },
+    {
+      "origin": "2023-06-30",
+      "horizon": 2
+    },
+    {
+      "origin": "2023-06-30",
+      "horizon": 3
+    },
+    {
+      "origin": "2024-06-30",
+      "horizon": 1
+    },
+    {
+      "origin": "2024-06-30",
+      "horizon": 2
+    },
+    {
+      "origin": "2025-06-30",
+      "horizon": 1
+    }
+  ],
+  "evaluation_as_of": "2026-09-10T00:00:00+08:00",
+  "baseline": "flat_first_five",
+  "candidate": "first_year_half_growth",
+  "benchmark": "zero_growth",
+  "growth_multiplier": 0.5,
+  "gates": {
+    "development_minimum_pairs": 120,
+    "holdout_minimum_pairs": 240,
+    "development_minimum_companies": 30,
+    "holdout_minimum_companies": 60,
+    "minimum_primary_improvement_fraction": 0.05,
+    "maximum_each_window_primary_ratio": 1.05,
+    "require_revenue_wape_nonworse": true,
+    "require_ebit_nonworse": true,
+    "require_each_horizon_nonworse": true,
+    "require_leave_one_company_out_nonworse": true,
+    "require_zero_growth_revenue_nonworse": true
+  },
+  "rule": "year 1 already-clipped production growth times 0.5; years 2 and 3 growth zero, keeping year-1 revenue level, not forcing revenue back to origin; current margin unchanged",
+  "rationale": "fixed short-term persistence hypothesis after persistent half-growth failed; no alternative weights or decay periods searched; same gates and unscored reserved 120; not a Damodaran universal input rule",
+  "boundary": "development-only until all gates pass; require overall revenue MAE and WAPE nonworse than zero as well as original gates against production; new 120 selected excluding all 1220 previously registered codes; no forecast scoring of these reserved companies before frozen development success; input hypothesis, not strict PIT or full DCF proof",
+  "growth_years": 1,
+  "previous_comparison": "valuation/research/tdx-half-growth/development-result.json.gz",
+  "previous_comparison_sha256": "280ad4754be4fdb802860a44dc17b61d12ca3bc7f5429feb8c85cbdfe7470061"
+}
