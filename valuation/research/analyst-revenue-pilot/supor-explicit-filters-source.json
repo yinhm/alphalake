@@ -1,0 +1,5 @@
+{
+  "url": "https://reportapi.eastmoney.com/report/list?code=002032&beginTime=2024-08-01&endTime=2024-09-01&pageSize=100&pageNo=1&qType=0&industryCode=%2A&industry=%2A&rating=%2A&ratingChange=%2A&fields=&orgCode=&rcode=&p=1&pageNum=1&pageNumber=1",
+  "archived_at": "2026-09-11T16:34:44.398040+00:00",
+  "sha256": "782c8503ffc584b2e75ab545ab14136c66e5251a8ba4e5b9ff71e3a538055edc"
+}

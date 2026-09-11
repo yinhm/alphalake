@@ -1,0 +1,50 @@
+[
+  {
+    "year": 2023,
+    "url": "https://reportapi.eastmoney.com/report/list?code=002032&beginTime=2023-08-01&endTime=2023-09-01&pageSize=100&pageNo=1&qType=0",
+    "archived_at": null,
+    "first_observed_date": "2026-09-11",
+    "archive_time_note": "2023 precise time was not retained by initial probe",
+    "directory_file": "supor-directory-2023.json.gz",
+    "sha256": "d33c2a6f95c2d60f38585eb4229282f5917635a38a4e5cb854d733355485d94b",
+    "response_counts": {
+      "hits": 4,
+      "size": 4,
+      "TotalPage": 1,
+      "pageNo": 1
+    },
+    "matches": []
+  },
+  {
+    "year": 2024,
+    "url": "https://reportapi.eastmoney.com/report/list?code=002032&beginTime=2024-08-01&endTime=2024-09-01&pageSize=100&pageNo=1&qType=0",
+    "archived_at": "2026-09-11T16:32:32.233728+00:00",
+    "first_observed_date": "2026-09-11",
+    "archive_time_note": "first retained response archive; not historical publication",
+    "directory_file": "supor-directory-2024.json.gz",
+    "sha256": "782c8503ffc584b2e75ab545ab14136c66e5251a8ba4e5b9ff71e3a538055edc",
+    "response_counts": {
+      "hits": 0,
+      "size": 0,
+      "TotalPage": 0,
+      "pageNo": 1
+    },
+    "matches": []
+  },
+  {
+    "year": 2025,
+    "url": "https://reportapi.eastmoney.com/report/list?code=002032&beginTime=2025-08-01&endTime=2025-09-01&pageSize=100&pageNo=1&qType=0",
+    "archived_at": "2026-09-11T16:32:32.666670+00:00",
+    "first_observed_date": "2026-09-11",
+    "archive_time_note": "first retained response archive; not historical publication",
+    "directory_file": "supor-directory-2025.json.gz",
+    "sha256": "7470e3651e84b968ab0fdfbc3b45e7118ed6d5769869165cd735adf102e7f31e",
+    "response_counts": {
+      "hits": 1,
+      "size": 1,
+      "TotalPage": 1,
+      "pageNo": 1
+    },
+    "matches": []
+  }
+]

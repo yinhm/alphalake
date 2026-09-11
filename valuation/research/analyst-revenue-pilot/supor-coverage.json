@@ -1,0 +1,66 @@
+{
+  "plan_sha256": "046a40e1211b292f96b2fe29c236593a2ba26fa2204a5c533c5d542533f1d474",
+  "companies": 1,
+  "requested_report_positions": 3,
+  "matched_report_positions": 0,
+  "missing_positions": 3,
+  "results": [
+    {
+      "code": "002032",
+      "origin": "2023-06-30",
+      "status": "no_same_broker_record_in_returned_window",
+      "directory_rows": 4,
+      "same_broker_records": 0,
+      "annual_forecasts": null,
+      "reason": "returned_reports_from_other_brokers",
+      "directory_file": "supor-directory-2023.json.gz",
+      "sha256": "d33c2a6f95c2d60f38585eb4229282f5917635a38a4e5cb854d733355485d94b"
+    },
+    {
+      "code": "002032",
+      "origin": "2024-06-30",
+      "status": "no_same_broker_record_in_returned_window",
+      "directory_rows": 0,
+      "same_broker_records": 0,
+      "annual_forecasts": null,
+      "reason": "empty_returned_directory",
+      "directory_file": "supor-directory-2024.json.gz",
+      "sha256": "782c8503ffc584b2e75ab545ab14136c66e5251a8ba4e5b9ff71e3a538055edc"
+    },
+    {
+      "code": "002032",
+      "origin": "2025-06-30",
+      "status": "no_same_broker_record_in_returned_window",
+      "directory_rows": 1,
+      "same_broker_records": 0,
+      "annual_forecasts": null,
+      "reason": "returned_reports_from_other_brokers",
+      "directory_file": "supor-directory-2025.json.gz",
+      "sha256": "7470e3651e84b968ab0fdfbc3b45e7118ed6d5769869165cd735adf102e7f31e"
+    }
+  ],
+  "diagnostic_checks": [
+    {
+      "file": "supor-after-cutoff-2024.json.gz",
+      "sha256": "6809e0b4306767c7830a1236bb163201ab8369c94061bca512164e746e4f0892",
+      "rows": 1,
+      "same_broker_records": 0,
+      "use": "diagnostic_only_not_added_to_selection"
+    },
+    {
+      "file": "supor-explicit-filters-2024.json.gz",
+      "sha256": "782c8503ffc584b2e75ab545ab14136c66e5251a8ba4e5b9ff71e3a538055edc",
+      "rows": 0,
+      "same_broker_records": 0,
+      "use": "diagnostic_only_not_added_to_selection"
+    }
+  ],
+  "forecast_accuracy": null,
+  "decision": "cannot_replicate_same_broker_rule_on_second_company; do_not_replace_broker_or_fill_forecasts",
+  "boundary": "returned_directory_scope_only_not_proof_no_research_exists; no_dates_or_cutoffs_relaxed; prior_anker_accuracy_not_generalized",
+  "validation": [
+    "real_empty_directory_accepted_with_TotalPage_zero",
+    "missing_count_tamper_rejected",
+    "wrong_company_tamper_rejected"
+  ]
+}

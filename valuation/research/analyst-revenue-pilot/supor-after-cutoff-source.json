@@ -1,0 +1,12 @@
+{
+  "url": "https://reportapi.eastmoney.com/report/list?code=002032&beginTime=2024-09-01&endTime=2024-09-07&pageSize=100&pageNo=1&qType=0",
+  "archived_at": "2026-09-11T16:34:06.463088+00:00",
+  "sha256": "6809e0b4306767c7830a1236bb163201ab8369c94061bca512164e746e4f0892",
+  "response_counts": {
+    "hits": 1,
+    "size": 1,
+    "TotalPage": 1,
+    "pageNo": 1
+  },
+  "purpose": "coverage_diagnostic_only_no_change_to_forecast_cutoff_or_broker_selection"
+}
