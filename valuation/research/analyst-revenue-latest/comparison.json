@@ -1,0 +1,1482 @@
+{
+  "evidence": {
+    "valuation/research/continuing-operations-five/capital-snapshot.json": "685f86200322784ecf445e45f3d93a4b8e7d2601d218ab69d84d79513e6c99ed",
+    "valuation/research/continuing-operations-five/baseline.json": "f8e6260300d8f32c1928344d817394544a0c16b3249a5374e1948b2e97fd9f26",
+    "valuation/research/analyst-revenue-latest/protocol.json": "ec0e839f0f8e809b0241f6645a21ed0d93d6f8b2e409cb6bcc3ef3420554e7bc",
+    "valuation/research/analyst-revenue-latest/forecasts.csv": "e07aa8d43d28f7c37e42e08072c847bff8f89bf1fea3c36875e2b7df2fce1bc4",
+    "valuation/research/analyst-revenue-latest/sources.json": "b7daa5ad9802ef6fc0587290f15eb569600161510a6a334e5e1b09a0108aa02e"
+  },
+  "summary": {
+    "positions": 18,
+    "statuses": {
+      "evaluated": 12,
+      "not_yet_observable": 6
+    },
+    "models": {
+      "broker": {
+        "n": 12,
+        "mae_pct_actual": 8.09467842138112,
+        "wape_pct": 8.710002189529584
+      },
+      "current_rule_fy_bridge": {
+        "n": 12,
+        "mae_pct_actual": 10.394827148280786,
+        "wape_pct": 10.658712474524142
+      },
+      "zero_growth_fy_bridge": {
+        "n": 12,
+        "mae_pct_actual": 16.261286992180157,
+        "wape_pct": 17.712090730905437
+      }
+    }
+  },
+  "by_origin": {
+    "2023": {
+      "positions": 6,
+      "statuses": {
+        "evaluated": 6
+      },
+      "models": {
+        "broker": {
+          "n": 6,
+          "mae_pct_actual": 11.071088198000737,
+          "wape_pct": 12.609313694489591
+        },
+        "current_rule_fy_bridge": {
+          "n": 6,
+          "mae_pct_actual": 13.333687303554663,
+          "wape_pct": 14.188517578663445
+        },
+        "zero_growth_fy_bridge": {
+          "n": 6,
+          "mae_pct_actual": 21.716513042925346,
+          "wape_pct": 24.0318746264702
+        }
+      }
+    },
+    "2024": {
+      "positions": 6,
+      "statuses": {
+        "evaluated": 4,
+        "not_yet_observable": 2
+      },
+      "models": {
+        "broker": {
+          "n": 4,
+          "mae_pct_actual": 5.353559536959285,
+          "wape_pct": 5.429394540106486
+        },
+        "current_rule_fy_bridge": {
+          "n": 4,
+          "mae_pct_actual": 10.054505250704283,
+          "wape_pct": 10.288197900467662
+        },
+        "zero_growth_fy_bridge": {
+          "n": 4,
+          "mae_pct_actual": 13.905735907615151,
+          "wape_pct": 15.605577564687586
+        }
+      }
+    },
+    "2025": {
+      "positions": 6,
+      "statuses": {
+        "evaluated": 2,
+        "not_yet_observable": 4
+      },
+      "models": {
+        "broker": {
+          "n": 2,
+          "mae_pct_actual": 4.64768686036594,
+          "wape_pct": 4.703910641196777
+        },
+        "current_rule_fy_bridge": {
+          "n": 2,
+          "mae_pct_actual": 2.2588904776121606,
+          "wape_pct": 2.133739410477952
+        },
+        "zero_growth_fy_bridge": {
+          "n": 2,
+          "mae_pct_actual": 4.606711009074598,
+          "wape_pct": 5.168686573395362
+        }
+      }
+    }
+  },
+  "by_company": {
+    "300866": {
+      "positions": 9,
+      "statuses": {
+        "evaluated": 6,
+        "not_yet_observable": 3
+      },
+      "models": {
+        "broker": {
+          "n": 6,
+          "mae_pct_actual": 11.377431165350135,
+          "wape_pct": 11.977906645569211
+        },
+        "current_rule_fy_bridge": {
+          "n": 6,
+          "mae_pct_actual": 10.527353278366848,
+          "wape_pct": 10.972116237060348
+        },
+        "zero_growth_fy_bridge": {
+          "n": 6,
+          "mae_pct_actual": 26.700736488765468,
+          "wape_pct": 27.81327747178437
+        }
+      }
+    },
+    "002032": {
+      "positions": 9,
+      "statuses": {
+        "evaluated": 6,
+        "not_yet_observable": 3
+      },
+      "models": {
+        "broker": {
+          "n": 6,
+          "mae_pct_actual": 4.8119256774121055,
+          "wape_pct": 4.858944458293551
+        },
+        "current_rule_fy_bridge": {
+          "n": 6,
+          "mae_pct_actual": 10.262301018194725,
+          "wape_pct": 10.289382220549639
+        },
+        "zero_growth_fy_bridge": {
+          "n": 6,
+          "mae_pct_actual": 5.821837495594844,
+          "wape_pct": 5.8083604302148455
+        }
+      }
+    }
+  },
+  "by_target_year": {
+    "2023": {
+      "positions": 2,
+      "statuses": {
+        "evaluated": 2
+      },
+      "models": {
+        "broker": {
+          "n": 2,
+          "mae_pct_actual": 1.804355337730033,
+          "wape_pct": 1.7885358606377608
+        },
+        "current_rule_fy_bridge": {
+          "n": 2,
+          "mae_pct_actual": 5.214602845817491,
+          "wape_pct": 5.495575409843837
+        },
+        "zero_growth_fy_bridge": {
+          "n": 2,
+          "mae_pct_actual": 9.39703022253141,
+          "wape_pct": 9.154965177513352
+        }
+      }
+    },
+    "2024": {
+      "positions": 4,
+      "statuses": {
+        "evaluated": 4
+      },
+      "models": {
+        "broker": {
+          "n": 4,
+          "mae_pct_actual": 8.055848156281263,
+          "wape_pct": 8.330414299220386
+        },
+        "current_rule_fy_bridge": {
+          "n": 4,
+          "mae_pct_actual": 11.619058694901746,
+          "wape_pct": 11.716290789400821
+        },
+        "zero_growth_fy_bridge": {
+          "n": 4,
+          "mae_pct_actual": 17.118228706858453,
+          "wape_pct": 17.65146001688302
+        }
+      }
+    },
+    "2025": {
+      "positions": 6,
+      "statuses": {
+        "evaluated": 6
+      },
+      "models": {
+        "broker": {
+          "n": 6,
+          "mae_pct_actual": 10.217339625998054,
+          "wape_pct": 10.61428454153406
+        },
+        "current_rule_fy_bridge": {
+          "n": 6,
+          "mae_pct_actual": 11.305414218021243,
+          "wape_pct": 11.288546289867469
+        },
+        "zero_growth_fy_bridge": {
+          "n": 6,
+          "mae_pct_actual": 17.978078105610873,
+          "wape_pct": 19.825384101761053
+        }
+      }
+    },
+    "2026": {
+      "positions": 4,
+      "statuses": {
+        "not_yet_observable": 4
+      },
+      "models": {
+        "broker": {
+          "n": 0,
+          "mae_pct_actual": null,
+          "wape_pct": null
+        },
+        "current_rule_fy_bridge": {
+          "n": 0,
+          "mae_pct_actual": null,
+          "wape_pct": null
+        },
+        "zero_growth_fy_bridge": {
+          "n": 0,
+          "mae_pct_actual": null,
+          "wape_pct": null
+        }
+      }
+    },
+    "2027": {
+      "positions": 2,
+      "statuses": {
+        "not_yet_observable": 2
+      },
+      "models": {
+        "broker": {
+          "n": 0,
+          "mae_pct_actual": null,
+          "wape_pct": null
+        },
+        "current_rule_fy_bridge": {
+          "n": 0,
+          "mae_pct_actual": null,
+          "wape_pct": null
+        },
+        "zero_growth_fy_bridge": {
+          "n": 0,
+          "mae_pct_actual": null,
+          "wape_pct": null
+        }
+      }
+    }
+  },
+  "results": [
+    {
+      "code": "300866",
+      "broker": "国金证券",
+      "provider_date": "2023-08-31",
+      "printed_report_date": "2023-08-30",
+      "info_code": "AP202308311596906163",
+      "origin_year": 2023,
+      "target_year": 2023,
+      "forecast_as_of": "2023-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "17507203072",
+      "growth": "0.19947832494927892",
+      "known_h1_cny": "7065692160",
+      "prior_h2_cny": "8363148288",
+      "forecast_source_inputs": [
+        {
+          "period": "2023-03-31",
+          "artifact": "gpcw20230331.zip",
+          "field": "FN230",
+          "bits": 1330156393
+        },
+        {
+          "period": "2023-06-30",
+          "artifact": "gpcw20230630.zip",
+          "field": "FN230",
+          "bits": 1331466879
+        },
+        {
+          "period": "2022-09-30",
+          "artifact": "gpcw20220930.zip",
+          "field": "FN230",
+          "bits": 1331265962
+        },
+        {
+          "period": "2022-12-31",
+          "artifact": "gpcw20221231.zip",
+          "field": "FN230",
+          "bits": 1334607085
+        }
+      ],
+      "predictions_cny": {
+        "broker": "17163000000",
+        "current_rule_fy_bridge": "17097107259.79266968663248896",
+        "zero_growth_fy_bridge": "15428840448"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2023-03-31",
+          "artifact": "gpcw20230331.zip",
+          "field": "FN230",
+          "bits": 1330156393
+        },
+        {
+          "period": "2023-06-30",
+          "artifact": "gpcw20230630.zip",
+          "field": "FN230",
+          "bits": 1331466879
+        },
+        {
+          "period": "2023-09-30",
+          "artifact": "gpcw20230930.zip",
+          "field": "FN230",
+          "bits": 1334620325
+        },
+        {
+          "period": "2023-12-31",
+          "artifact": "gpcw20231231.zip",
+          "field": "FN230",
+          "bits": 1336573379
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": -1.9660654565120017,
+        "current_rule_fy_bridge": -2.342440483044454,
+        "zero_growth_fy_bridge": -11.871471504914522
+      }
+    },
+    {
+      "code": "300866",
+      "broker": "国金证券",
+      "provider_date": "2023-08-31",
+      "printed_report_date": "2023-08-30",
+      "info_code": "AP202308311596906163",
+      "origin_year": 2023,
+      "target_year": 2024,
+      "forecast_as_of": "2023-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "24710080512",
+      "growth": "0.19947832494927892",
+      "known_h1_cny": "7065692160",
+      "prior_h2_cny": "8363148288",
+      "forecast_source_inputs": [
+        {
+          "period": "2023-03-31",
+          "artifact": "gpcw20230331.zip",
+          "field": "FN230",
+          "bits": 1330156393
+        },
+        {
+          "period": "2023-06-30",
+          "artifact": "gpcw20230630.zip",
+          "field": "FN230",
+          "bits": 1331466879
+        },
+        {
+          "period": "2022-09-30",
+          "artifact": "gpcw20220930.zip",
+          "field": "FN230",
+          "bits": 1331265962
+        },
+        {
+          "period": "2022-12-31",
+          "artifact": "gpcw20221231.zip",
+          "field": "FN230",
+          "bits": 1334607085
+        }
+      ],
+      "predictions_cny": {
+        "broker": "19518000000",
+        "current_rule_fy_bridge": "20507609577.45426753790768797",
+        "zero_growth_fy_bridge": "15428840448"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1333950316
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1335694201
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1338681954
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1341535661
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": -21.011993503940875,
+        "current_rule_fy_bridge": -17.007111460057278,
+        "zero_growth_fy_bridge": -37.560541575300554
+      }
+    },
+    {
+      "code": "300866",
+      "broker": "国金证券",
+      "provider_date": "2023-08-31",
+      "printed_report_date": "2023-08-30",
+      "info_code": "AP202308311596906163",
+      "origin_year": 2023,
+      "target_year": 2025,
+      "forecast_as_of": "2023-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "30514403328",
+      "growth": "0.19947832494927892",
+      "known_h1_cny": "7065692160",
+      "prior_h2_cny": "8363148288",
+      "forecast_source_inputs": [
+        {
+          "period": "2023-03-31",
+          "artifact": "gpcw20230331.zip",
+          "field": "FN230",
+          "bits": 1330156393
+        },
+        {
+          "period": "2023-06-30",
+          "artifact": "gpcw20230630.zip",
+          "field": "FN230",
+          "bits": 1331466879
+        },
+        {
+          "period": "2022-09-30",
+          "artifact": "gpcw20220930.zip",
+          "field": "FN230",
+          "bits": 1331265962
+        },
+        {
+          "period": "2022-12-31",
+          "artifact": "gpcw20221231.zip",
+          "field": "FN230",
+          "bits": 1334607085
+        }
+      ],
+      "predictions_cny": {
+        "broker": "22003000000",
+        "current_rule_fy_bridge": "24598433184.67863448448456347",
+        "zero_growth_fy_bridge": "15428840448"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1337105886
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1338824638
+        },
+        {
+          "period": "2025-09-30",
+          "artifact": "gpcw20250930.zip",
+          "field": "FN230",
+          "bits": 1341322858
+        },
+        {
+          "period": "2025-12-31",
+          "artifact": "gpcw20251231.zip",
+          "field": "FN230",
+          "bits": 1343061299
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": -27.89306818983395,
+        "current_rule_fy_bridge": -19.387467877809936,
+        "zero_growth_fy_bridge": -49.43751551634469
+      }
+    },
+    {
+      "code": "300866",
+      "broker": "开源证券",
+      "provider_date": "2024-08-31",
+      "printed_report_date": "2024-08-31",
+      "info_code": "AP202408311639673106",
+      "origin_year": 2024,
+      "target_year": 2024,
+      "forecast_as_of": "2024-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "24710080512",
+      "growth": "0.2",
+      "known_h1_cny": "9648327168",
+      "prior_h2_cny": "10441510912",
+      "forecast_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1333950316
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1335694201
+        },
+        {
+          "period": "2023-09-30",
+          "artifact": "gpcw20230930.zip",
+          "field": "FN230",
+          "bits": 1334620325
+        },
+        {
+          "period": "2023-12-31",
+          "artifact": "gpcw20231231.zip",
+          "field": "FN230",
+          "bits": 1336573379
+        }
+      ],
+      "predictions_cny": {
+        "broker": "23119000000",
+        "current_rule_fy_bridge": "22178140262.4",
+        "zero_growth_fy_bridge": "20089838080"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1333950316
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1335694201
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1338681954
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1341535661
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": -6.438993637545296,
+        "current_rule_fy_bridge": -10.246588425199219,
+        "zero_growth_fy_bridge": -18.697804038947844
+      }
+    },
+    {
+      "code": "300866",
+      "broker": "开源证券",
+      "provider_date": "2024-08-31",
+      "printed_report_date": "2024-08-31",
+      "info_code": "AP202408311639673106",
+      "origin_year": 2024,
+      "target_year": 2025,
+      "forecast_as_of": "2024-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "30514403328",
+      "growth": "0.2",
+      "known_h1_cny": "9648327168",
+      "prior_h2_cny": "10441510912",
+      "forecast_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1333950316
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1335694201
+        },
+        {
+          "period": "2023-09-30",
+          "artifact": "gpcw20230930.zip",
+          "field": "FN230",
+          "bits": 1334620325
+        },
+        {
+          "period": "2023-12-31",
+          "artifact": "gpcw20231231.zip",
+          "field": "FN230",
+          "bits": 1336573379
+        }
+      ],
+      "predictions_cny": {
+        "broker": "28708000000",
+        "current_rule_fy_bridge": "26613768314.88",
+        "zero_growth_fy_bridge": "20089838080"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1337105886
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1338824638
+        },
+        {
+          "period": "2025-09-30",
+          "artifact": "gpcw20250930.zip",
+          "field": "FN230",
+          "bits": 1341322858
+        },
+        {
+          "period": "2025-12-31",
+          "artifact": "gpcw20251231.zip",
+          "field": "FN230",
+          "bits": 1343061299
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": -5.919838276314731,
+        "current_rule_fy_bridge": -12.782930641612053,
+        "zero_growth_fy_bridge": -34.16276941726868
+      }
+    },
+    {
+      "code": "300866",
+      "broker": "开源证券",
+      "provider_date": "2024-08-31",
+      "printed_report_date": "2024-08-31",
+      "info_code": "AP202408311639673106",
+      "origin_year": 2024,
+      "target_year": 2026,
+      "forecast_as_of": "2024-09-01T00:00:00+08:00",
+      "status": "not_yet_observable",
+      "actual_revenue_cny": null,
+      "growth": "0.2",
+      "known_h1_cny": "9648327168",
+      "prior_h2_cny": "10441510912",
+      "forecast_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1333950316
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1335694201
+        },
+        {
+          "period": "2023-09-30",
+          "artifact": "gpcw20230930.zip",
+          "field": "FN230",
+          "bits": 1334620325
+        },
+        {
+          "period": "2023-12-31",
+          "artifact": "gpcw20231231.zip",
+          "field": "FN230",
+          "bits": 1336573379
+        }
+      ],
+      "predictions_cny": {
+        "broker": "33932000000",
+        "current_rule_fy_bridge": "31936521977.856",
+        "zero_growth_fy_bridge": "20089838080"
+      }
+    },
+    {
+      "code": "300866",
+      "broker": "国信证券",
+      "provider_date": "2025-08-31",
+      "printed_report_date": "2025-08-29",
+      "info_code": "AP202508311737221901",
+      "origin_year": 2025,
+      "target_year": 2025,
+      "forecast_as_of": "2025-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "30514403328",
+      "growth": "0.2",
+      "known_h1_cny": "12866762752",
+      "prior_h2_cny": "15061753344",
+      "forecast_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1337105886
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1338824638
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1338681954
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1341535661
+        }
+      ],
+      "predictions_cny": {
+        "broker": "32050690000.00",
+        "current_rule_fy_bridge": "30940866764.8",
+        "zero_growth_fy_bridge": "27928516096"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1337105886
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1338824638
+        },
+        {
+          "period": "2025-09-30",
+          "artifact": "gpcw20250930.zip",
+          "field": "FN230",
+          "bits": 1341322858
+        },
+        {
+          "period": "2025-12-31",
+          "artifact": "gpcw20251231.zip",
+          "field": "FN230",
+          "bits": 1343061299
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": 5.034627927953958,
+        "current_rule_fy_bridge": 1.3975807824781465,
+        "zero_growth_fy_bridge": -8.474316879816527
+      }
+    },
+    {
+      "code": "300866",
+      "broker": "国信证券",
+      "provider_date": "2025-08-31",
+      "printed_report_date": "2025-08-29",
+      "info_code": "AP202508311737221901",
+      "origin_year": 2025,
+      "target_year": 2026,
+      "forecast_as_of": "2025-09-01T00:00:00+08:00",
+      "status": "not_yet_observable",
+      "actual_revenue_cny": null,
+      "growth": "0.2",
+      "known_h1_cny": "12866762752",
+      "prior_h2_cny": "15061753344",
+      "forecast_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1337105886
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1338824638
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1338681954
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1341535661
+        }
+      ],
+      "predictions_cny": {
+        "broker": "39603630000.00",
+        "current_rule_fy_bridge": "37129040117.76",
+        "zero_growth_fy_bridge": "27928516096"
+      }
+    },
+    {
+      "code": "300866",
+      "broker": "国信证券",
+      "provider_date": "2025-08-31",
+      "printed_report_date": "2025-08-29",
+      "info_code": "AP202508311737221901",
+      "origin_year": 2025,
+      "target_year": 2027,
+      "forecast_as_of": "2025-09-01T00:00:00+08:00",
+      "status": "not_yet_observable",
+      "actual_revenue_cny": null,
+      "growth": "0.2",
+      "known_h1_cny": "12866762752",
+      "prior_h2_cny": "15061753344",
+      "forecast_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1337105886
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1338824638
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1338681954
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1341535661
+        }
+      ],
+      "predictions_cny": {
+        "broker": "47112070000.00",
+        "current_rule_fy_bridge": "44554848141.312",
+        "zero_growth_fy_bridge": "27928516096"
+      }
+    },
+    {
+      "code": "002032",
+      "broker": "信达证券",
+      "provider_date": "2023-08-31",
+      "printed_report_date": "2023-08-31",
+      "info_code": "AP202308311596883311",
+      "origin_year": 2023,
+      "target_year": 2023,
+      "forecast_as_of": "2023-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "21303948288",
+      "growth": "-0.025188068337493562",
+      "known_h1_cny": "9982616064",
+      "prior_h2_cny": "9846547456",
+      "forecast_source_inputs": [
+        {
+          "period": "2023-03-31",
+          "artifact": "gpcw20230331.zip",
+          "field": "FN230",
+          "bits": 1335092790
+        },
+        {
+          "period": "2023-06-30",
+          "artifact": "gpcw20230630.zip",
+          "field": "FN230",
+          "bits": 1335204635
+        },
+        {
+          "period": "2022-09-30",
+          "artifact": "gpcw20220930.zip",
+          "field": "FN230",
+          "bits": 1334495365
+        },
+        {
+          "period": "2022-12-31",
+          "artifact": "gpcw20221231.zip",
+          "field": "FN230",
+          "bits": 1335536301
+        }
+      ],
+      "predictions_cny": {
+        "broker": "20954000000",
+        "current_rule_fy_bridge": "19581148009.78989861767252173",
+        "zero_growth_fy_bridge": "19829163520"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2023-03-31",
+          "artifact": "gpcw20230331.zip",
+          "field": "FN230",
+          "bits": 1335092790
+        },
+        {
+          "period": "2023-06-30",
+          "artifact": "gpcw20230630.zip",
+          "field": "FN230",
+          "bits": 1335204635
+        },
+        {
+          "period": "2023-09-30",
+          "artifact": "gpcw20230930.zip",
+          "field": "FN230",
+          "bits": 1335916653
+        },
+        {
+          "period": "2023-12-31",
+          "artifact": "gpcw20231231.zip",
+          "field": "FN230",
+          "bits": 1336995452
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": -1.6426452189480643,
+        "current_rule_fy_bridge": -8.086765208590528,
+        "zero_growth_fy_bridge": -6.9225889401482945
+      }
+    },
+    {
+      "code": "002032",
+      "broker": "信达证券",
+      "provider_date": "2023-08-31",
+      "printed_report_date": "2023-08-31",
+      "info_code": "AP202308311596883311",
+      "origin_year": 2023,
+      "target_year": 2024,
+      "forecast_as_of": "2023-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "22427338240",
+      "growth": "-0.025188068337493562",
+      "known_h1_cny": "9982616064",
+      "prior_h2_cny": "9846547456",
+      "forecast_source_inputs": [
+        {
+          "period": "2023-03-31",
+          "artifact": "gpcw20230331.zip",
+          "field": "FN230",
+          "bits": 1335092790
+        },
+        {
+          "period": "2023-06-30",
+          "artifact": "gpcw20230630.zip",
+          "field": "FN230",
+          "bits": 1335204635
+        },
+        {
+          "period": "2022-09-30",
+          "artifact": "gpcw20220930.zip",
+          "field": "FN230",
+          "bits": 1334495365
+        },
+        {
+          "period": "2022-12-31",
+          "artifact": "gpcw20221231.zip",
+          "field": "FN230",
+          "bits": 1335536301
+        }
+      ],
+      "predictions_cny": {
+        "broker": "23031000000",
+        "current_rule_fy_bridge": "19087936715.59273459570427649",
+        "zero_growth_fy_bridge": "19829163520"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1335904573
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1336311137
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1336235187
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1336952754
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": 2.6916335480389133,
+        "current_rule_fy_bridge": -14.88987007139045,
+        "zero_growth_fy_bridge": -11.584855466111701
+      }
+    },
+    {
+      "code": "002032",
+      "broker": "信达证券",
+      "provider_date": "2023-08-31",
+      "printed_report_date": "2023-08-31",
+      "info_code": "AP202308311596883311",
+      "origin_year": 2023,
+      "target_year": 2025,
+      "forecast_as_of": "2023-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "22771753472",
+      "growth": "-0.025188068337493562",
+      "known_h1_cny": "9982616064",
+      "prior_h2_cny": "9846547456",
+      "forecast_source_inputs": [
+        {
+          "period": "2023-03-31",
+          "artifact": "gpcw20230331.zip",
+          "field": "FN230",
+          "bits": 1335092790
+        },
+        {
+          "period": "2023-06-30",
+          "artifact": "gpcw20230630.zip",
+          "field": "FN230",
+          "bits": 1335204635
+        },
+        {
+          "period": "2022-09-30",
+          "artifact": "gpcw20220930.zip",
+          "field": "FN230",
+          "bits": 1334495365
+        },
+        {
+          "period": "2022-12-31",
+          "artifact": "gpcw20221231.zip",
+          "field": "FN230",
+          "bits": 1335536301
+        }
+      ],
+      "predictions_cny": {
+        "broker": "25327000000",
+        "current_rule_fy_bridge": "18607148461.17863238302575173",
+        "zero_growth_fy_bridge": "19829163520"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1336701623
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1336515498
+        },
+        {
+          "period": "2025-09-30",
+          "artifact": "gpcw20250930.zip",
+          "field": "FN230",
+          "bits": 1335985526
+        },
+        {
+          "period": "2025-12-31",
+          "artifact": "gpcw20251231.zip",
+          "field": "FN230",
+          "bits": 1336873690
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": 11.22112327073062,
+        "current_rule_fy_bridge": -18.288468720435336,
+        "zero_growth_fy_bridge": -12.922105254732314
+      }
+    },
+    {
+      "code": "002032",
+      "broker": "华安证券",
+      "provider_date": "2024-07-25",
+      "printed_report_date": "2024-07-25",
+      "info_code": "AP202407251638296815",
+      "origin_year": 2024,
+      "target_year": 2024,
+      "forecast_as_of": "2024-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "22427338240",
+      "growth": "0.09830375123975738",
+      "known_h1_cny": "10964777984",
+      "prior_h2_cny": "11321332224",
+      "forecast_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1335904573
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1336311137
+        },
+        {
+          "period": "2023-09-30",
+          "artifact": "gpcw20230930.zip",
+          "field": "FN230",
+          "bits": 1335916653
+        },
+        {
+          "period": "2023-12-31",
+          "artifact": "gpcw20231231.zip",
+          "field": "FN230",
+          "bits": 1336995452
+        }
+      ],
+      "predictions_cny": {
+        "broker": "22894000000",
+        "current_rule_fy_bridge": "23399039634.65074517613581312",
+        "zero_growth_fy_bridge": "22286110208"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1335904573
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1336311137
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1336235187
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1336952754
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": 2.080771935599969,
+        "current_rule_fy_bridge": 4.332664822960039,
+        "zero_growth_fy_bridge": -0.6297137470737143
+      }
+    },
+    {
+      "code": "002032",
+      "broker": "华安证券",
+      "provider_date": "2024-07-25",
+      "printed_report_date": "2024-07-25",
+      "info_code": "AP202407251638296815",
+      "origin_year": 2024,
+      "target_year": 2025,
+      "forecast_as_of": "2024-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "22771753472",
+      "growth": "0.09830375123975738",
+      "known_h1_cny": "10964777984",
+      "prior_h2_cny": "11321332224",
+      "forecast_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1335904573
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1336311137
+        },
+        {
+          "period": "2023-09-30",
+          "artifact": "gpcw20230930.zip",
+          "field": "FN230",
+          "bits": 1335916653
+        },
+        {
+          "period": "2023-12-31",
+          "artifact": "gpcw20231231.zip",
+          "field": "FN230",
+          "bits": 1336995452
+        }
+      ],
+      "predictions_cny": {
+        "broker": "24360000000",
+        "current_rule_fy_bridge": "25699253006.14467543921513911",
+        "zero_growth_fy_bridge": "22286110208"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1336701623
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1336515498
+        },
+        {
+          "period": "2025-09-30",
+          "artifact": "gpcw20250930.zip",
+          "field": "FN230",
+          "bits": 1335985526
+        },
+        {
+          "period": "2025-12-31",
+          "artifact": "gpcw20251231.zip",
+          "field": "FN230",
+          "bits": 1336873690
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": 6.974634298377143,
+        "current_rule_fy_bridge": 12.855837113045817,
+        "zero_growth_fy_bridge": -2.1326564271703705
+      }
+    },
+    {
+      "code": "002032",
+      "broker": "华安证券",
+      "provider_date": "2024-07-25",
+      "printed_report_date": "2024-07-25",
+      "info_code": "AP202407251638296815",
+      "origin_year": 2024,
+      "target_year": 2026,
+      "forecast_as_of": "2024-09-01T00:00:00+08:00",
+      "status": "not_yet_observable",
+      "actual_revenue_cny": null,
+      "growth": "0.09830375123975738",
+      "known_h1_cny": "10964777984",
+      "prior_h2_cny": "11321332224",
+      "forecast_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1335904573
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1336311137
+        },
+        {
+          "period": "2023-09-30",
+          "artifact": "gpcw20230930.zip",
+          "field": "FN230",
+          "bits": 1335916653
+        },
+        {
+          "period": "2023-12-31",
+          "artifact": "gpcw20231231.zip",
+          "field": "FN230",
+          "bits": 1336995452
+        }
+      ],
+      "predictions_cny": {
+        "broker": "25652000000",
+        "current_rule_fy_bridge": "28225585980.70830865227793106",
+        "zero_growth_fy_bridge": "22286110208"
+      }
+    },
+    {
+      "code": "002032",
+      "broker": "国金证券",
+      "provider_date": "2025-08-30",
+      "printed_report_date": "2025-08-29",
+      "info_code": "AP202508301736875870",
+      "origin_year": 2025,
+      "target_year": 2025,
+      "forecast_as_of": "2025-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "22771753472",
+      "growth": "0.04730331436093059",
+      "known_h1_cny": "11477500416",
+      "prior_h2_cny": "11462560256",
+      "forecast_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1336701623
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1336515498
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1336235187
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1336952754
+        }
+      ],
+      "predictions_cny": {
+        "broker": "23742000000",
+        "current_rule_fy_bridge": "23482277763.17067702010863104",
+        "zero_growth_fy_bridge": "22940060672"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1336701623
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1336515498
+        },
+        {
+          "period": "2025-09-30",
+          "artifact": "gpcw20250930.zip",
+          "field": "FN230",
+          "bits": 1335985526
+        },
+        {
+          "period": "2025-12-31",
+          "artifact": "gpcw20251231.zip",
+          "field": "FN230",
+          "bits": 1336873690
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": 4.260745792777921,
+        "current_rule_fy_bridge": 3.120200172746175,
+        "zero_growth_fy_bridge": 0.7391051383326692
+      }
+    },
+    {
+      "code": "002032",
+      "broker": "国金证券",
+      "provider_date": "2025-08-30",
+      "printed_report_date": "2025-08-29",
+      "info_code": "AP202508301736875870",
+      "origin_year": 2025,
+      "target_year": 2026,
+      "forecast_as_of": "2025-09-01T00:00:00+08:00",
+      "status": "not_yet_observable",
+      "actual_revenue_cny": null,
+      "growth": "0.04730331436093059",
+      "known_h1_cny": "11477500416",
+      "prior_h2_cny": "11462560256",
+      "forecast_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1336701623
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1336515498
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1336235187
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1336952754
+        }
+      ],
+      "predictions_cny": {
+        "broker": "25191000000",
+        "current_rule_fy_bridge": "24593067330.11262955838848666",
+        "zero_growth_fy_bridge": "22940060672"
+      }
+    },
+    {
+      "code": "002032",
+      "broker": "国金证券",
+      "provider_date": "2025-08-30",
+      "printed_report_date": "2025-08-29",
+      "info_code": "AP202508301736875870",
+      "origin_year": 2025,
+      "target_year": 2027,
+      "forecast_as_of": "2025-09-01T00:00:00+08:00",
+      "status": "not_yet_observable",
+      "actual_revenue_cny": null,
+      "growth": "0.04730331436093059",
+      "known_h1_cny": "11477500416",
+      "prior_h2_cny": "11462560256",
+      "forecast_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1336701623
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1336515498
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1336235187
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1336952754
+        }
+      ],
+      "predictions_cny": {
+        "broker": "26751000000",
+        "current_rule_fy_bridge": "25756400925.12847923112189473",
+        "zero_growth_fy_bridge": "22940060672"
+      }
+    }
+  ],
+  "validation": [
+    "future_target_bit_tamper_changes_actual_errors_only",
+    "missing_future_actual_keeps_all_forecasts_and_positions",
+    "eleven_historical_cells_match_TDX_FY_at_printed_million_precision"
+  ],
+  "decision": "two_exposed_companies_diagnostic_no_adoption_or_consensus_claim",
+  "boundary": "one latest broker report is not consensus; later-acquired date proxy not strict PIT; two exposed companies not independent validation; no production adoption based on pilot average; retain all six company/origin positions and missing forecasts"
+}

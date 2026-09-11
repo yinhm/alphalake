@@ -1,0 +1,122 @@
+[
+  {
+    "code": "300866",
+    "info_code": "AP202308311596906163",
+    "pdf_file": "AP202308311596906163.pdf",
+    "metadata": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202308311596906163_1.pdf",
+      "archived_at": "2026-09-11T16:43:23.828173+00:00",
+      "sha256": "967d3a99421687c8ee8ba9afc516cd08d661babbcf231124b5e1fe83a1e59ab1",
+      "size": 920739
+    },
+    "source_page": 1,
+    "printed_report_date": "2023-08-30",
+    "identity_date_review": "visual_page1_header",
+    "provider_date": "2023-08-31",
+    "provider_age_days": 1,
+    "header": "项目  2021  2022  2023E  2024E  2025E",
+    "revenue_line": "营业收入(百万元) 12,574 14,251 17,163 19,518 22,003",
+    "unit_line": "营业收入(百万元) 12,574 14,251 17,163 19,518 22,003",
+    "label": "营业收入(百万元)"
+  },
+  {
+    "code": "300866",
+    "info_code": "AP202408311639673106",
+    "pdf_file": "AP202408311639673106.pdf",
+    "metadata": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202408311639673106_1.pdf",
+      "archived_at": "2026-09-11T16:43:24.074954+00:00",
+      "sha256": "ced31c009617389fe361814705c81c8b467b9bc5dc13fd9f71902f9d0662ffec",
+      "size": 1274976
+    },
+    "source_page": 1,
+    "printed_report_date": "2024-08-31",
+    "identity_date_review": "text_header_review",
+    "provider_date": "2024-08-31",
+    "provider_age_days": 1,
+    "header": "指标 2022A 2023A 2024E 2025E 2026E",
+    "revenue_line": "营业收入(百万元) 14,251 17,507 23,119 28,708 33,932",
+    "unit_line": "营业收入(百万元) 14,251 17,507 23,119 28,708 33,932",
+    "label": "营业收入(百万元)"
+  },
+  {
+    "code": "300866",
+    "info_code": "AP202508311737221901",
+    "pdf_file": "AP202508311737221901.pdf",
+    "metadata": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202508311737221901_1.pdf",
+      "archived_at": "2026-09-11T16:43:23.049763+00:00",
+      "sha256": "cdcb9cfc1f4839b0a64c03014f5c5cd19841080d4f3b4480867d409b11ffde46",
+      "size": 300631
+    },
+    "source_page": 1,
+    "printed_report_date": "2025-08-29",
+    "identity_date_review": "text_header_review",
+    "provider_date": "2025-08-31",
+    "provider_age_days": 1,
+    "header": "盈利预测和财务指标 2023 2024 2025E 2026E 2027E",
+    "revenue_line": "营业收入(百万元) 17,507.20 24,710.08 32,050.69 39,603.63 47,112.07",
+    "unit_line": "营业收入(百万元) 17,507.20 24,710.08 32,050.69 39,603.63 47,112.07",
+    "label": "营业收入(百万元)"
+  },
+  {
+    "code": "002032",
+    "info_code": "AP202308311596883311",
+    "pdf_file": "AP202308311596883311.pdf",
+    "metadata": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202308311596883311_1.pdf",
+      "archived_at": "2026-09-11T16:43:23.077277+00:00",
+      "sha256": "b78dbc2e266f818faa29ca2980fd47a75eb0f508087673e100114bca5c43aa44",
+      "size": 478106
+    },
+    "source_page": 2,
+    "printed_report_date": "2023-08-31",
+    "identity_date_review": "text_header_review",
+    "provider_date": "2023-08-31",
+    "provider_age_days": 1,
+    "header": "[Table_Profit] 重要财务指标 2021A 2022A 2023E 2024E 2025E",
+    "revenue_line": "营业总收入(百万元) 21,585 20,171 20,954 23,031 25,327",
+    "unit_line": "营业总收入(百万元) 21,585 20,171 20,954 23,031 25,327",
+    "label": "营业总收入(百万元)"
+  },
+  {
+    "code": "002032",
+    "info_code": "AP202407251638296815",
+    "pdf_file": "AP202407251638296815.pdf",
+    "metadata": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202407251638296815_1.pdf",
+      "archived_at": "2026-09-11T16:43:23.097353+00:00",
+      "sha256": "8108784165d03e9cfe56e975a19944c127a16cdf776ed2d1f2abe94378460c9f",
+      "size": 451071
+    },
+    "source_page": 2,
+    "printed_report_date": "2024-07-25",
+    "identity_date_review": "text_header_review",
+    "provider_date": "2024-07-25",
+    "provider_age_days": 38,
+    "header": "主要财务指标 2023A 2024E 2025E 2026E",
+    "revenue_line": "营业收入 21304  22894  24360  25652",
+    "unit_line": "⚫ 重要财务指标   单位:百万元",
+    "label": "营业收入"
+  },
+  {
+    "code": "002032",
+    "info_code": "AP202508301736875870",
+    "pdf_file": "AP202508301736875870.pdf",
+    "metadata": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202508301736875870_1.pdf",
+      "archived_at": "2026-09-11T16:43:25.132742+00:00",
+      "sha256": "2839b2ec2eb5bc46701b8629963b346485592a1330fdcb296194cc04eb60c15e",
+      "size": 926313
+    },
+    "source_page": 1,
+    "printed_report_date": "2025-08-29",
+    "identity_date_review": "visual_page1_header",
+    "provider_date": "2025-08-30",
+    "provider_age_days": 2,
+    "header": "项目 2023 2024 2025E  2026E  2027E",
+    "revenue_line": "营 业 收入(百万 元) 21,304 22,427 23,742 25,191 26,751",
+    "unit_line": "营 业 收入(百万 元) 21,304 22,427 23,742 25,191 26,751",
+    "label": "营业收入(百万元)"
+  }
+]
