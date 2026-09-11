@@ -1,0 +1,83 @@
+{
+  "results": [
+    {
+      "code": "000035",
+      "period": "2021-12-31",
+      "current_payable_cny": "403815511.23",
+      "status": "financing_nature_supported_by_gross_less_noncurrent",
+      "unclassified_current_payable_cny": "0.00",
+      "principal_interest_split": null,
+      "basis": "2022_report_note_with_2021_comparative; existing_original_source_checks"
+    },
+    {
+      "code": "000035",
+      "period": "2022-12-31",
+      "current_payable_cny": "495741427.03",
+      "status": "financing_nature_supported_by_gross_less_noncurrent",
+      "unclassified_current_payable_cny": "0.00",
+      "principal_interest_split": null,
+      "basis": "2022_report_note_with_2021_comparative; existing_original_source_checks"
+    },
+    {
+      "code": "000546",
+      "period": "2021-12-31",
+      "status": "sale_leaseback_and_installment_purchase_identified",
+      "current_payable_cny": "19126437.28",
+      "sale_leaseback_cny": "7681904.45",
+      "installment_vehicle_purchase_cny": "11444532.83",
+      "unclassified_current_payable_cny": "0.00",
+      "principal_interest_split": null
+    },
+    {
+      "code": "000599",
+      "period": "2021-12-31",
+      "status": "partial_related_party_identification",
+      "current_payable_cny": "78265692.83",
+      "related_current_cny": "60094359.47",
+      "related_noncurrent_cny": "9447868.23",
+      "narrative_borrowing_cny": "69542227.70",
+      "narrative_less_current_and_noncurrent_cny": "0.00",
+      "unclassified_current_payable_cny": "18171333.36",
+      "principal_interest_split": null
+    },
+    {
+      "code": "000599",
+      "period": "2022-12-31",
+      "status": "partial_related_party_identification",
+      "current_payable_cny": "57683701.17",
+      "related_current_cny": "49383701.17",
+      "related_noncurrent_cny": "23641262.81",
+      "narrative_borrowing_cny": "75615153.23",
+      "narrative_less_current_and_noncurrent_cny": "2590189.25",
+      "unclassified_current_payable_cny": "8300000.00",
+      "principal_interest_split": null
+    },
+    {
+      "code": "000422",
+      "period": "2021-12-31",
+      "status": "current_nature_not_proven_by_noncurrent_note",
+      "current_payable_cny": "346874390.98",
+      "unclassified_current_payable_cny": "346874390.98",
+      "principal_interest_split": null
+    },
+    {
+      "code": "000422",
+      "period": "2022-12-31",
+      "status": "current_nature_not_proven_by_noncurrent_note",
+      "current_payable_cny": "98499972.99",
+      "unclassified_current_payable_cny": "98499972.99",
+      "principal_interest_split": null
+    },
+    {
+      "code": "000521",
+      "period": "2021-12-31",
+      "status": "current_nature_not_proven_by_noncurrent_note",
+      "current_payable_cny": "173499.29",
+      "unclassified_current_payable_cny": "173499.29",
+      "principal_interest_split": null
+    }
+  ],
+  "full_debt": null,
+  "economic_roic": null,
+  "boundary": "eight_nonzero_current_payables_preserved; nature_identification_not_principal_estimate; narrative_gap_and_unclassified_residual_not_zero; no_standard_or_forecast_update"
+}
