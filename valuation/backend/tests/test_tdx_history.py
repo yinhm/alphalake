@@ -1079,3 +1079,69 @@ def test_working_cash_scope_source_and_holdout_selection_rejected(tmp_path,monke
     monkeypatch.setattr(sys,'argv',['working_cash',str(directory/'protocol-v4.json'),str(snapshot),'--phase','holdout'])
     with pytest.raises(SystemExit):m.main()
     assert 'passing development receipt required' in capsys.readouterr().out
+
+
+def test_operating_cash_forecast_source_isolation_and_development(tmp_path,monkeypatch,capsys):
+    import hashlib,sys
+    import tools.backtest_tdx_operating_cash as m
+    directory=ROOT/'valuation/research/tdx-operating-cash-forecast';raw=(directory/'protocol.json').read_bytes();p=json.loads(raw);source=json.loads((directory/'snapshot.json').read_bytes())
+    prior=ROOT/'valuation/research/tdx-capex-forecast'
+    assert p['samples']==json.loads((prior/'protocol.json').read_bytes())['samples']
+    assert source['study_sha256']==hashlib.sha256(raw).hexdigest()
+    index={(r['code'],r['period']):r for r in source['records']}
+    old=json.loads((prior/'snapshot.json').read_bytes())
+    assert len(source['records'])==len(old['records'])
+    for row in old['records']:
+        now=index[(row['code'],row['period'])]
+        assert now['artifact']==row['artifact'] and all(now['bits'][f]==b for f,b in row['bits'].items())
+    result=m.study(p,source,'development');saved=json.loads((directory/'development-summary.json').read_bytes())
+    assert {k:v for k,v in result.items() if k!='results'}=={k:v for k,v in saved.items() if k!='evidence'}
+    assert result['decision']['passed'] and result['summary']['statuses']=={'blocked':16,'evaluated':164}
+    valid=[r for r in result['results'] if r['status']=='evaluated']
+    for row in valid:
+        expected=Decimal(row['current']['revenue_cny'])*(Decimal(row['current']['ocf_cny'])/Decimal(row['current']['revenue_cny'])+Decimal(row['prior']['ocf_cny'])/Decimal(row['prior']['revenue_cny']))/2
+        assert abs(Decimal(row['forecasts'][m.MODELS[2]]['ocf_cny'])-expected)<Decimal('.00000001')
+        assert len({f['capex_cny'] for f in row['forecasts'].values()})==1
+        assert row['actual_fcff'] is None
+    for kind in ('ocf_cny','cash_proxy_cny'):
+        for model in m.MODELS:
+            errors=[abs(Decimal(r['forecasts'][model][kind])-Decimal(r['actual'][kind])) for r in valid]
+            mae=sum(e/Decimal(r['actual']['revenue_cny']) for e,r in zip(errors,valid))*100/len(valid)
+            wape=sum(errors)*100/sum(abs(Decimal(r['actual'][kind])) for r in valid)
+            assert result['summary']['targets'][kind][model]['mae_pct_actual_revenue']==pytest.approx(float(mae),rel=1e-12)
+            assert result['summary']['targets'][kind][model]['wape_pct']==float(wape)
+    first=valid[0];one=dict(p,origins=[first['origin']],samples=[dict(code=first['code'],split='development')]);before=m.evaluate(one,source,'development')[0]
+    changed=copy.deepcopy(source)
+    for row in changed['records']:
+        if row['period']>first['origin']:row['bits']['FN234']=bits(-100000)
+    after=m.evaluate(one,changed,'development')[0]
+    assert after['status']=='evaluated' and after['forecasts']==before['forecasts'] and after['actual']!=before['actual']
+    # A forged passing receipt must not open holdout scoring.
+    receipt=tmp_path/'selection.json';receipt.write_text(json.dumps(dict(saved,evidence={})))
+    monkeypatch.setattr(sys,'argv',['ocf',str(directory/'protocol.json'),str(directory/'snapshot.json'),'--phase','holdout','--selection',str(receipt)])
+    with pytest.raises(SystemExit) as exc:m.main()
+    assert exc.value.code==1 and 'selection failed' in capsys.readouterr().out
+
+
+def test_operating_cash_negative_zero_cutoff_and_cash_proxy_gate(monkeypatch):
+    from collections import defaultdict
+    import tools.backtest_tdx_operating_cash as m
+    directory=ROOT/'valuation/research/tdx-operating-cash-forecast';p=json.loads((directory/'protocol.json').read_bytes());_,source=fixture()
+    index=defaultdict(list);artifacts={a['file']:a for a in source['artifacts']};code=source['records'][0]['code']
+    for row in source['records']:
+        row['bits'].update(FN114=bits(int(row['period'][5:7])//3*10),FN234=bits(-10))
+        index[(code,row['period'])].append(row)
+    def observe():return m.observation(index,artifacts,code,date(2025,6,30),'2025-09-01T00:00:00+08:00')
+    assert Decimal(observe()['ocf_cny'])==-40
+    for row in source['records']:row['bits']['FN234']=bits(0)
+    assert Decimal(observe()['ocf_cny'])==0
+    row=index[(code,'2025-06-30')][0];row['bits']['FN314']=bits(250901)
+    with pytest.raises(ValueError,match='not available'):observe()
+    source=json.loads((directory/'snapshot.json').read_bytes());rows=m.evaluate(p,source,'development')
+    for row in rows:
+        if row['status']=='evaluated':
+            row['errors']['ocf_cny'][m.MODELS[2]]=dict(cny='0',pct_actual_revenue=0)
+            row['errors']['cash_proxy_cny'][m.MODELS[2]]=dict(cny='1e15',pct_actual_revenue=1e9)
+    monkeypatch.setattr(m,'evaluate',lambda *a:rows)
+    decision=m.study(p,source,'development')['decision']
+    assert decision['checks']['primary_improvement'] and not decision['checks']['cash_proxy_nonworse'] and not decision['passed']
