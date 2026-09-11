@@ -172,7 +172,8 @@ class TestIncrementalRecomputation:
         assert modules == ["M6"]
 
 
-def test_invalid_terminal_api_preserves_existing_session(sample_inputs,monkeypatch):
+@pytest.mark.parametrize('invalid_roic', [False, True])
+def test_invalid_terminal_api_preserves_existing_session(sample_inputs,monkeypatch,invalid_roic):
     from fastapi.testclient import TestClient
     from api.main import app
     from api import routes,session_store
@@ -185,6 +186,8 @@ def test_invalid_terminal_api_preserves_existing_session(sample_inputs,monkeypat
     assert created.status_code==200,created.text
     saved=created.json();sid=saved['id']
     overrides={'valuation_assumptions.override_growth_perpetuity':True,'valuation_assumptions.growth_perpetuity_rate':0.1,'valuation_assumptions.cost_of_capital_stable_override':0.1}
+    if invalid_roic:
+        overrides = {'valuation_assumptions.roic_stable_override': 0}
     patched=client.patch('/api/valuation/'+sid,json={'overrides':overrides})
     assert patched.status_code==422 and patched.json()['detail']['status']=='rejected_input_or_policy'
     assert client.get('/api/valuation/'+sid).json()==saved

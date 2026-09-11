@@ -43,7 +43,7 @@ from .data_dictionary import (
 # ---------------------------------------------------------------------------
 
 class InvalidTerminalValue(ValueError):
-    """Gordon终值的增长/折现条件不成立。"""
+    """Gordon终值的增长、折现或资本回报条件不成立。"""
 
 
 def _revenue_growth_path(
@@ -295,6 +295,9 @@ def compute_dcf(
     else:
         roic_terminal = wacc_terminal  # Default: no excess returns
 
+    if not math.isfinite(roic_terminal) or roic_terminal <= 0:
+        raise InvalidTerminalValue("terminal ROIC must be finite and positive")
+
     # --- NOL ---
     nol_initial = assumptions.nol_amount if assumptions.override_nol else 0.0
 
@@ -343,7 +346,7 @@ def compute_dcf(
     rev_terminal = extended_rev[n] * (1 + g_terminal)  # rev[11]
     ebit_terminal = rev_terminal * margin_target
     nopat_terminal = ebit_terminal * (1 - tax_terminal)
-    rir_terminal = g_terminal / roic_terminal if roic_terminal > 0 else 0.0
+    rir_terminal = g_terminal / roic_terminal
     reinvestment_terminal = rir_terminal * nopat_terminal if g_terminal > 0 else 0.0
     fcff_terminal = nopat_terminal - reinvestment_terminal
 

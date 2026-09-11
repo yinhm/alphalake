@@ -46,7 +46,16 @@ def test_real_replay_and_independent_decimal():
             source=json.loads((DIR/'first-year-holdout-snapshot.json').read_text())
             inner=source_parent|dict(protocol_id='tdx-multiyear-growth-v1',samples=p['samples'],baseline='flat_first_five',benchmark='zero_growth',candidate='fade_to_terminal_by_year_five')
             actual=compare(p,dict(results=forecast_rows(inner,source,'holdout',horizons=(1,2,3))),'holdout')
-        else:actual=run(p)
+        else:
+            # Frozen CLI must still reject a changed engine; compatibility is a fresh
+            # source replay compared with the entire archived result, not a hash bypass.
+            with pytest.raises(ValueError, match='parent forecast implementation differs'):
+                run(p)
+            from tools.backtest_tdx_half_growth import digest
+            source_raw=(ROOT/source_parent['development_snapshot']).read_bytes()
+            assert digest(source_raw)==source_parent['development_snapshot_sha256']
+            inner=source_parent|dict(protocol_id='tdx-multiyear-growth-v1',samples=p['samples'],baseline='flat_first_five',benchmark='zero_growth',candidate='fade_to_terminal_by_year_five')
+            actual=compare(p,dict(results=forecast_rows(inner,json.loads(source_raw),'development',horizons=(1,2,3))),'development')
         assert actual=={k:v for k,v in saved.items() if k!='evidence'}
         assert actual['summary']['statuses']==({'evaluated':461,'blocked':259} if held else {'blocked':1073,'evaluated':2527})
         assert actual['decision']['passed'] is (protocol_file=='first-year-protocol.json' and not held)

@@ -2,7 +2,7 @@
 
 [半量增长复验](../valuation/research/tdx-half-growth/README.md)已完成：持续半量开发未过零增长对照；仅首年半量开发通过，新120家留出461/720组（97家）六窗口收入主误差均改善，整体25.1307%→21.7267%，但WAPE20.9701%略高于零增长20.7345%，唯一额外门槛失败，仍不采用。保留259组阻断，新留出现已暴露；已完成[三家公司15窗口的加权误差定位](../valuation/research/tdx-half-growth/error-diagnosis.md)，已完成[收入TTM链](../valuation/research/tdx-half-growth/ttm-chain-review.md)：16份原文、57项金额检查，30个基期/实际TTM均在源精度内，所需48条季度中42条逐季、6条半年合计核对；[新希望交易时点](../valuation/research/tdx-half-growth/newhope-disposal-review.md)已核对，五份文件在三个起点可用数0/5/5，会计出表日与登记/披露分别保留；[新希望可比收入](../valuation/research/tdx-half-growth/newhope-comparability-review.md)已核对现有资料，期间不齐及双向抵销缺口保留，调整留空；牧原月度量价探索暂停；已按[通用输入规范](valuation-accuracy.md#通用适用性与输入规范2026-09-11)完成[600家三起点诊断](../valuation/research/tdx-origin-inputs/README.md)：1,730/1,800组可计算，441组非正EBIT保留，70组阻断；业务可比性未知，不修改生产政策、门槛或重复使用本批自证。
 
-[三年收入复合增长](../valuation/research/tdx-revenue-cagr/README.md)开发未通过：600家三起点1,800组，1,386组共同可评价（519家），主误差21.0258%→22.1131%、WAPE14.9817%→16.2514%，三个起点均变差，覆盖仅保留80.30%；不进入新留出。374组非正利润参与共同比较，收入准入与利润分开，不扩展生产DCF准入。
+[三年收入复合增长](../valuation/research/tdx-revenue-cagr/README.md)开发未通过：600家三起点1,800组，1,386组共同可评价（519家），主误差21.0258%→22.1131%、WAPE14.9817%→16.2514%，三个起点均变差，覆盖仅保留80.30%；不进入新留出。374组非正利润参与共同比较，收入准入与利润分开，不扩展生产DCF准入。 后续共享DCF核对已[补强终值ROIC拒绝](damodaran-method-audit-20260911.md#终值roic边界补验)：无效资本回报不再静默产生零再投资，通用API失败保留会话；两份真实标准请求完整同值重放通过。
 
 [零增长一至三年独立复验](../valuation/research/tdx-zero-growth-horizons/README.md)开发通过、留出失败：600家开发2,527/3,600组，新120家留出493/720组（101家公司）；收入整体误差改善15.94%，但一年期合计及2024/2025两个一年窗口未过门槛。该120家现已公开评分，不能再用于新独立验证。零增长示例已补反证说明，安克同快照完整报告及42.2846元条件值不变，不改市场默认政策。
 

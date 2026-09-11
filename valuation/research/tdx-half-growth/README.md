@@ -49,6 +49,8 @@
 
 ## 重放与适用边界
 
+共享DCF后续增加[终值ROIC拒绝](../../../docs/damodaran-method-audit-20260911.md#终值roic边界补验)，文件哈希已变化；下列原CLI命令会按冻结契约拒绝`parent forecast implementation differs`，不应修改旧哈希绕过。当前兼容性通过`python -m pytest tests/test_tdx_half_growth.py -q`从原源快照重建开发/留出预测，与完整归档结果逐项比较，同时断言旧CLI仍拒绝新引擎；这是兼容性复验，不是新留出评分。
+
 在`valuation/backend`执行：
 
 ```bash

@@ -203,3 +203,11 @@ def test_invalid_terminal_denominator_rejected(wacc,growth,cf_metrics,cost_of_ca
         cost_of_capital_stable_override=wacc,roic_stable_override=0.12)
     with pytest.raises(ValueError,match='terminal WACC must be finite'):
         compute_dcf(cf_metrics,cost_of_capital,adjusted,raw,assumptions,macro)
+
+
+@pytest.mark.parametrize('roic', [0, -0.01, float('nan'), float('inf')])
+def test_invalid_terminal_roic_rejected(roic, cf_metrics, cost_of_capital, adjusted, raw, macro):
+    assumptions = ValuationAssumptions(override_growth_perpetuity=True, growth_perpetuity_rate=0.02,
+        cost_of_capital_stable_override=0.09, roic_stable_override=roic)
+    with pytest.raises(ValueError, match='terminal ROIC must be finite and positive'):
+        compute_dcf(cf_metrics, cost_of_capital, adjusted, raw, assumptions, macro)
