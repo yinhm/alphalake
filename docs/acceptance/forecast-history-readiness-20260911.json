@@ -1,0 +1,1224 @@
+{
+  "scope": "four_readonly_historical_standard_exports_from_main_schema38; not market coverage",
+  "observed_date": "2026-09-11",
+  "queries": [
+    {
+      "code": "002032",
+      "report_period": "2024-06-30",
+      "information_as_of": "2024-08-31T16:00:00Z",
+      "source_export": "workspace/forecast-review-history-20260911/002032-2024H1.json",
+      "sha256": "0b33983a054eb10a06b96a9a79d722c7823337ac7b373f0f45ab5e0e9ce2a7d7",
+      "fact_count": 0,
+      "required_field_count": 15,
+      "complete": [],
+      "missing_or_incomplete": [
+        "FN230",
+        "FN86",
+        "FN305",
+        "FN306",
+        "FN83",
+        "FN82",
+        "FN301",
+        "FN238",
+        "FN133",
+        "FN41",
+        "FN52",
+        "FN55",
+        "FN56",
+        "FN439",
+        "FN69"
+      ],
+      "windows": {
+        "FN230": null,
+        "FN86": null,
+        "FN305": null,
+        "FN306": null,
+        "FN83": null,
+        "FN82": null,
+        "FN301": null,
+        "FN238": null,
+        "FN133": null,
+        "FN41": null,
+        "FN52": null,
+        "FN55": null,
+        "FN56": null,
+        "FN439": null,
+        "FN69": null
+      }
+    },
+    {
+      "code": "002032",
+      "report_period": "2025-06-30",
+      "information_as_of": "2025-08-31T16:00:00Z",
+      "source_export": "workspace/forecast-review-history-20260911/002032-2025H1.json",
+      "sha256": "f3b7a386831a30feaa363a8d145413dc57e805e012af2d6cf4522a04ed7321bb",
+      "fact_count": 128,
+      "required_field_count": 15,
+      "complete": [
+        "FN238",
+        "FN133",
+        "FN41",
+        "FN52",
+        "FN55",
+        "FN56",
+        "FN439",
+        "FN69"
+      ],
+      "missing_or_incomplete": [
+        "FN230",
+        "FN86",
+        "FN305",
+        "FN306",
+        "FN83",
+        "FN82",
+        "FN301"
+      ],
+      "windows": {
+        "FN230": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN230",
+          "canonical_field": "revenue",
+          "value": null,
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "quarter",
+          "coverage_status": "missing_inputs",
+          "required_inputs": 4,
+          "available_inputs": 2,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30",
+            "2025-03-31",
+            "2024-12-31",
+            "2024-09-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "source_fact_ids": [
+            7372271,
+            1066091,
+            null,
+            null
+          ],
+          "source_filing_ids": [
+            43363,
+            29131,
+            null,
+            null
+          ],
+          "missing_periods": [
+            "2024-12-31",
+            "2024-09-30"
+          ]
+        },
+        "FN86": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN86",
+          "canonical_field": "operating_profit_cumulative",
+          "value": null,
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "ytd",
+          "coverage_status": "missing_inputs",
+          "required_inputs": 3,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30",
+            "2024-12-31",
+            "2024-06-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            -1
+          ],
+          "source_fact_ids": [
+            7503484,
+            null,
+            null
+          ],
+          "source_filing_ids": [
+            43363,
+            null,
+            null
+          ],
+          "missing_periods": [
+            "2024-12-31",
+            "2024-06-30"
+          ]
+        },
+        "FN305": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN305",
+          "canonical_field": "interest_expense",
+          "value": null,
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "ytd",
+          "coverage_status": "missing_inputs",
+          "required_inputs": 3,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30",
+            "2024-12-31",
+            "2024-06-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            -1
+          ],
+          "source_fact_ids": [
+            7580858,
+            null,
+            null
+          ],
+          "source_filing_ids": [
+            43363,
+            null,
+            null
+          ],
+          "missing_periods": [
+            "2024-12-31",
+            "2024-06-30"
+          ]
+        },
+        "FN306": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN306",
+          "canonical_field": "interest_income",
+          "value": null,
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "ytd",
+          "coverage_status": "missing_inputs",
+          "required_inputs": 3,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30",
+            "2024-12-31",
+            "2024-06-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            -1
+          ],
+          "source_fact_ids": [
+            7402567,
+            null,
+            null
+          ],
+          "source_filing_ids": [
+            43363,
+            null,
+            null
+          ],
+          "missing_periods": [
+            "2024-12-31",
+            "2024-06-30"
+          ]
+        },
+        "FN83": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN83",
+          "canonical_field": "investment_income",
+          "value": null,
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "ytd",
+          "coverage_status": "missing_inputs",
+          "required_inputs": 3,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30",
+            "2024-12-31",
+            "2024-06-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            -1
+          ],
+          "source_fact_ids": [
+            7402566,
+            null,
+            null
+          ],
+          "source_filing_ids": [
+            43363,
+            null,
+            null
+          ],
+          "missing_periods": [
+            "2024-12-31",
+            "2024-06-30"
+          ]
+        },
+        "FN82": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN82",
+          "canonical_field": "fair_value_change_income",
+          "value": null,
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "ytd",
+          "coverage_status": "missing_inputs",
+          "required_inputs": 3,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30",
+            "2024-12-31",
+            "2024-06-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            -1
+          ],
+          "source_fact_ids": [
+            7439090,
+            null,
+            null
+          ],
+          "source_filing_ids": [
+            43363,
+            null,
+            null
+          ],
+          "missing_periods": [
+            "2024-12-31",
+            "2024-06-30"
+          ]
+        },
+        "FN301": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN301",
+          "canonical_field": "asset_disposal_income",
+          "value": null,
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "ytd",
+          "coverage_status": "missing_inputs",
+          "required_inputs": 3,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30",
+            "2024-12-31",
+            "2024-06-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            -1
+          ],
+          "source_fact_ids": [
+            7366928,
+            null,
+            null
+          ],
+          "source_filing_ids": [
+            43363,
+            null,
+            null
+          ],
+          "missing_periods": [
+            "2024-12-31",
+            "2024-06-30"
+          ]
+        },
+        "FN238": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN238",
+          "canonical_field": "total_shares",
+          "value": "801359744.0000000000",
+          "unit": "share",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            7506125
+          ],
+          "source_filing_ids": [
+            43363
+          ],
+          "missing_periods": null
+        },
+        "FN133": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN133",
+          "canonical_field": "cash_and_cash_equivalents",
+          "value": "1723857152.0000000000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            7427414
+          ],
+          "source_filing_ids": [
+            43363
+          ],
+          "missing_periods": null
+        },
+        "FN41": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN41",
+          "canonical_field": "short_term_borrowings",
+          "value": "527874720.0000000000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            7349827
+          ],
+          "source_filing_ids": [
+            43363
+          ],
+          "missing_periods": null
+        },
+        "FN52": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN52",
+          "canonical_field": "current_portion_noncurrent_liabilities",
+          "value": "45748916.0000000000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            7507482
+          ],
+          "source_filing_ids": [
+            43363
+          ],
+          "missing_periods": null
+        },
+        "FN55": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN55",
+          "canonical_field": "long_term_borrowings",
+          "value": "0.0000000000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            7332909
+          ],
+          "source_filing_ids": [
+            43363
+          ],
+          "missing_periods": null
+        },
+        "FN56": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN56",
+          "canonical_field": "bonds_payable",
+          "value": "0.0000000000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            7310554
+          ],
+          "source_filing_ids": [
+            43363
+          ],
+          "missing_periods": null
+        },
+        "FN439": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN439",
+          "canonical_field": "lease_liabilities",
+          "value": "180997792.9687500000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            7537646
+          ],
+          "source_filing_ids": [
+            43363
+          ],
+          "missing_periods": null
+        },
+        "FN69": {
+          "instrument_id": 28842,
+          "code": "002032",
+          "field": "FN69",
+          "canonical_field": "noncontrolling_interests",
+          "value": "34247952.0000000000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            7583561
+          ],
+          "source_filing_ids": [
+            43363
+          ],
+          "missing_periods": null
+        }
+      }
+    },
+    {
+      "code": "300866",
+      "report_period": "2024-06-30",
+      "information_as_of": "2024-08-31T16:00:00Z",
+      "source_export": "workspace/forecast-review-history-20260911/300866-2024H1.json",
+      "sha256": "ed9d7cd363d9c64b163795c537bf8f99d2a3c65304e11a0a8ffaf77a31bb0d21",
+      "fact_count": 10,
+      "required_field_count": 15,
+      "complete": [
+        "FN238"
+      ],
+      "missing_or_incomplete": [
+        "FN230",
+        "FN86",
+        "FN305",
+        "FN306",
+        "FN83",
+        "FN82",
+        "FN301",
+        "FN133",
+        "FN41",
+        "FN52",
+        "FN55",
+        "FN56",
+        "FN439",
+        "FN69"
+      ],
+      "windows": {
+        "FN230": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN230",
+          "canonical_field": "revenue",
+          "value": null,
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "quarter",
+          "coverage_status": "missing_inputs",
+          "required_inputs": 4,
+          "available_inputs": 1,
+          "available_at": "2024-08-30 16:00:00+00",
+          "input_periods": [
+            "2024-06-30",
+            "2024-03-31",
+            "2023-12-31",
+            "2023-09-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "source_fact_ids": [
+            12263649,
+            null,
+            null,
+            null
+          ],
+          "source_filing_ids": [
+            57575,
+            null,
+            null,
+            null
+          ],
+          "missing_periods": [
+            "2024-03-31",
+            "2023-12-31",
+            "2023-09-30"
+          ]
+        },
+        "FN86": null,
+        "FN305": null,
+        "FN306": null,
+        "FN83": null,
+        "FN82": null,
+        "FN301": null,
+        "FN238": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN238",
+          "canonical_field": "total_shares",
+          "value": "528482784.0000000000",
+          "unit": "share",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2024-08-30 16:00:00+00",
+          "input_periods": [
+            "2024-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            12263650
+          ],
+          "source_filing_ids": [
+            57575
+          ],
+          "missing_periods": null
+        },
+        "FN133": null,
+        "FN41": null,
+        "FN52": null,
+        "FN55": null,
+        "FN56": null,
+        "FN439": null,
+        "FN69": null
+      }
+    },
+    {
+      "code": "300866",
+      "report_period": "2025-06-30",
+      "information_as_of": "2025-08-31T16:00:00Z",
+      "source_export": "workspace/forecast-review-history-20260911/300866-2025H1.json",
+      "sha256": "deaa3a14378c58593fae6becd9fc95c39161903b651d48bf3697dee3b962f62d",
+      "fact_count": 159,
+      "required_field_count": 15,
+      "complete": [
+        "FN230",
+        "FN238",
+        "FN133",
+        "FN41",
+        "FN52",
+        "FN55",
+        "FN56",
+        "FN439",
+        "FN69"
+      ],
+      "missing_or_incomplete": [
+        "FN86",
+        "FN305",
+        "FN306",
+        "FN83",
+        "FN82",
+        "FN301"
+      ],
+      "windows": {
+        "FN230": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN230",
+          "canonical_field": "revenue",
+          "value": "27928516096.0000000000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "quarter",
+          "coverage_status": "complete",
+          "required_inputs": 4,
+          "available_inputs": 4,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30",
+            "2025-03-31",
+            "2024-12-31",
+            "2024-09-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "source_fact_ids": [
+            925486,
+            7795615,
+            12263659,
+            12263652
+          ],
+          "source_filing_ids": [
+            2556,
+            48693,
+            48695,
+            57576
+          ],
+          "missing_periods": null
+        },
+        "FN86": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN86",
+          "canonical_field": "operating_profit_cumulative",
+          "value": null,
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "ytd",
+          "coverage_status": "missing_inputs",
+          "required_inputs": 3,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30",
+            "2024-12-31",
+            "2024-06-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            -1
+          ],
+          "source_fact_ids": [
+            761699,
+            null,
+            null
+          ],
+          "source_filing_ids": [
+            2556,
+            null,
+            null
+          ],
+          "missing_periods": [
+            "2024-12-31",
+            "2024-06-30"
+          ]
+        },
+        "FN305": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN305",
+          "canonical_field": "interest_expense",
+          "value": null,
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "ytd",
+          "coverage_status": "missing_inputs",
+          "required_inputs": 3,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30",
+            "2024-12-31",
+            "2024-06-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            -1
+          ],
+          "source_fact_ids": [
+            825671,
+            null,
+            null
+          ],
+          "source_filing_ids": [
+            2556,
+            null,
+            null
+          ],
+          "missing_periods": [
+            "2024-12-31",
+            "2024-06-30"
+          ]
+        },
+        "FN306": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN306",
+          "canonical_field": "interest_income",
+          "value": null,
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "ytd",
+          "coverage_status": "missing_inputs",
+          "required_inputs": 3,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30",
+            "2024-12-31",
+            "2024-06-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            -1
+          ],
+          "source_fact_ids": [
+            951584,
+            null,
+            null
+          ],
+          "source_filing_ids": [
+            2556,
+            null,
+            null
+          ],
+          "missing_periods": [
+            "2024-12-31",
+            "2024-06-30"
+          ]
+        },
+        "FN83": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN83",
+          "canonical_field": "investment_income",
+          "value": null,
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "ytd",
+          "coverage_status": "missing_inputs",
+          "required_inputs": 3,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30",
+            "2024-12-31",
+            "2024-06-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            -1
+          ],
+          "source_fact_ids": [
+            951583,
+            null,
+            null
+          ],
+          "source_filing_ids": [
+            2556,
+            null,
+            null
+          ],
+          "missing_periods": [
+            "2024-12-31",
+            "2024-06-30"
+          ]
+        },
+        "FN82": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN82",
+          "canonical_field": "fair_value_change_income",
+          "value": null,
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "ytd",
+          "coverage_status": "missing_inputs",
+          "required_inputs": 3,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30",
+            "2024-12-31",
+            "2024-06-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            -1
+          ],
+          "source_fact_ids": [
+            746059,
+            null,
+            null
+          ],
+          "source_filing_ids": [
+            2556,
+            null,
+            null
+          ],
+          "missing_periods": [
+            "2024-12-31",
+            "2024-06-30"
+          ]
+        },
+        "FN301": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN301",
+          "canonical_field": "asset_disposal_income",
+          "value": null,
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "TTM",
+          "calculation_basis": "ytd",
+          "coverage_status": "missing_inputs",
+          "required_inputs": 3,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30",
+            "2024-12-31",
+            "2024-06-30"
+          ],
+          "input_coefficients": [
+            1,
+            1,
+            -1
+          ],
+          "source_fact_ids": [
+            921284,
+            null,
+            null
+          ],
+          "source_filing_ids": [
+            2556,
+            null,
+            null
+          ],
+          "missing_periods": [
+            "2024-12-31",
+            "2024-06-30"
+          ]
+        },
+        "FN238": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN238",
+          "canonical_field": "total_shares",
+          "value": "531538208.0000000000",
+          "unit": "share",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            763891
+          ],
+          "source_filing_ids": [
+            2556
+          ],
+          "missing_periods": null
+        },
+        "FN133": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN133",
+          "canonical_field": "cash_and_cash_equivalents",
+          "value": "2728369920.0000000000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            734540
+          ],
+          "source_filing_ids": [
+            2556
+          ],
+          "missing_periods": null
+        },
+        "FN41": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN41",
+          "canonical_field": "short_term_borrowings",
+          "value": "668730880.0000000000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            943237
+          ],
+          "source_filing_ids": [
+            2556
+          ],
+          "missing_periods": null
+        },
+        "FN52": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN52",
+          "canonical_field": "current_portion_noncurrent_liabilities",
+          "value": "198468176.0000000000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            800489
+          ],
+          "source_filing_ids": [
+            2556
+          ],
+          "missing_periods": null
+        },
+        "FN55": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN55",
+          "canonical_field": "long_term_borrowings",
+          "value": "852671104.0000000000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            893923
+          ],
+          "source_filing_ids": [
+            2556
+          ],
+          "missing_periods": null
+        },
+        "FN56": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN56",
+          "canonical_field": "bonds_payable",
+          "value": "1085867904.0000000000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            911706
+          ],
+          "source_filing_ids": [
+            2556
+          ],
+          "missing_periods": null
+        },
+        "FN439": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN439",
+          "canonical_field": "lease_liabilities",
+          "value": "153271699.2187500000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            788865
+          ],
+          "source_filing_ids": [
+            2556
+          ],
+          "missing_periods": null
+        },
+        "FN69": {
+          "instrument_id": 45156,
+          "code": "300866",
+          "field": "FN69",
+          "canonical_field": "noncontrolling_interests",
+          "value": "190958944.0000000000",
+          "unit": "CNY",
+          "statement_scope": "provider_default",
+          "period_type": "instant",
+          "calculation_basis": "instant",
+          "coverage_status": "complete",
+          "required_inputs": 1,
+          "available_inputs": 1,
+          "available_at": "2025-08-29 16:00:00+00",
+          "input_periods": [
+            "2025-06-30"
+          ],
+          "input_coefficients": [
+            1
+          ],
+          "source_fact_ids": [
+            827820
+          ],
+          "source_filing_ids": [
+            2556
+          ],
+          "missing_periods": null
+        }
+      }
+    }
+  ]
+}

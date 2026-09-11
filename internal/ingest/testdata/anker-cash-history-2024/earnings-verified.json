@@ -1,0 +1,159 @@
+{
+  "status": "historical_earnings_source_verified_not_materialized",
+  "code": "300866",
+  "source_values": [
+    {
+      "period": "2024-06-30",
+      "field": "FN86",
+      "pdf_amount_cny": "1017568922.79",
+      "source_bits": 1316133754,
+      "source_value_cny": "1017568896",
+      "source_minus_pdf_cny": "-26.79"
+    },
+    {
+      "period": "2024-06-30",
+      "field": "FN305",
+      "pdf_amount_cny": "13383808.06",
+      "source_bits": 1263286400,
+      "source_value_cny": "13383808",
+      "source_minus_pdf_cny": "-0.06"
+    },
+    {
+      "period": "2024-06-30",
+      "field": "FN306",
+      "pdf_amount_cny": "28189807.14",
+      "source_bits": 1272386104,
+      "source_value_cny": "28189808",
+      "source_minus_pdf_cny": "0.86"
+    },
+    {
+      "period": "2024-06-30",
+      "field": "FN83",
+      "pdf_amount_cny": "38072235.28",
+      "source_bits": 1276197867,
+      "source_value_cny": "38072236",
+      "source_minus_pdf_cny": "0.72"
+    },
+    {
+      "period": "2024-06-30",
+      "field": "FN82",
+      "pdf_amount_cny": "97401230.58",
+      "source_bits": 1287243570,
+      "source_value_cny": "97401232",
+      "source_minus_pdf_cny": "1.42"
+    },
+    {
+      "period": "2024-06-30",
+      "field": "FN301",
+      "pdf_amount_cny": "10710.00",
+      "source_bits": 1176983552,
+      "source_value_cny": "10710",
+      "source_minus_pdf_cny": "0.00"
+    },
+    {
+      "period": "2024-09-30",
+      "field": "FN86",
+      "pdf_amount_cny": "1723310276.85",
+      "source_bits": 1322086210,
+      "source_value_cny": "1723310336",
+      "source_minus_pdf_cny": "59.15"
+    },
+    {
+      "period": "2024-09-30",
+      "field": "FN305",
+      "pdf_amount_cny": "20478320.60",
+      "source_bits": 1268530360,
+      "source_value_cny": "20478320",
+      "source_minus_pdf_cny": "-0.60"
+    },
+    {
+      "period": "2024-09-30",
+      "field": "FN306",
+      "pdf_amount_cny": "38330649.70",
+      "source_bits": 1276262470,
+      "source_value_cny": "38330648",
+      "source_minus_pdf_cny": "-1.70"
+    },
+    {
+      "period": "2024-09-30",
+      "field": "FN83",
+      "pdf_amount_cny": "143464753.74",
+      "source_bits": 1292423571,
+      "source_value_cny": "143464752",
+      "source_minus_pdf_cny": "-1.74"
+    },
+    {
+      "period": "2024-09-30",
+      "field": "FN82",
+      "pdf_amount_cny": "71042810.68",
+      "source_bits": 1283948767,
+      "source_value_cny": "71042808",
+      "source_minus_pdf_cny": "-2.68"
+    },
+    {
+      "period": "2024-09-30",
+      "field": "FN301",
+      "pdf_amount_cny": "14554.22",
+      "source_bits": 1180920033,
+      "source_value_cny": "14554.2197265625",
+      "source_minus_pdf_cny": "-0.0002734375"
+    },
+    {
+      "period": "2024-12-31",
+      "field": "FN86",
+      "pdf_amount_cny": "2376915837.03",
+      "source_bits": 1326296283,
+      "source_value_cny": "2376915712",
+      "source_minus_pdf_cny": "-125.03"
+    },
+    {
+      "period": "2024-12-31",
+      "field": "FN305",
+      "pdf_amount_cny": "27760034.51",
+      "source_bits": 1272171217,
+      "source_value_cny": "27760034",
+      "source_minus_pdf_cny": "-0.51"
+    },
+    {
+      "period": "2024-12-31",
+      "field": "FN306",
+      "pdf_amount_cny": "44818172.23",
+      "source_bits": 1277884351,
+      "source_value_cny": "44818172",
+      "source_minus_pdf_cny": "-0.23"
+    },
+    {
+      "period": "2024-12-31",
+      "field": "FN83",
+      "pdf_amount_cny": "154658578.53",
+      "source_bits": 1293123185,
+      "source_value_cny": "154658576",
+      "source_minus_pdf_cny": "-2.53"
+    },
+    {
+      "period": "2024-12-31",
+      "field": "FN82",
+      "pdf_amount_cny": "128719504.90",
+      "source_bits": 1291158354,
+      "source_value_cny": "128719504",
+      "source_minus_pdf_cny": "-0.90"
+    },
+    {
+      "period": "2024-12-31",
+      "field": "FN301",
+      "pdf_amount_cny": "76365.29",
+      "source_bits": 1200957093,
+      "source_value_cny": "76365.2890625",
+      "source_minus_pdf_cny": "-0.0009375"
+    }
+  ],
+  "printed_amounts": 48,
+  "parent_source_values_verified": 7,
+  "evidence": {
+    "earnings-evidence.json": "ea82440a1748d5f48d8d9900c182b19b237ace2d31ccde7ac34421158ac3963f",
+    "reports.json": "db7faed850cc42e0b432cb5891f679a5f862eee4e76a225326e1068772a69511",
+    "packages.json": "3b88cc7511268290b670528daef16852469072574e61d3f8a385795e2c8118b6",
+    "source-snapshot.json": "4b82d6ccd992dcc9fa678daceb59cca39139e5e5b0bb908f8e73019fd7c7aa76"
+  },
+  "boundary": "18 current-column TDX values match original consolidated statements; 18 comparative cells and 12 interest-note cells checked; H1/FY FN305 includes loan/payable and lease interest; Q3 has no matching component-note assertion; no global historical scope or mapping extension claimed"
+}

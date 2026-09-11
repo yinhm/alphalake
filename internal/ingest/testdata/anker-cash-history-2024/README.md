@@ -2,6 +2,26 @@
 
 当前已完成原文与TDX源值核验、迁移038、标准链及[真实主库副本现金交叉检查正向验收](../../../../docs/acceptance/cash-history-upgrade-20260911.json)。随后已[备份发布主库schema38并重开验收](../../../../docs/cash-main-publication-20260911.md)，原副本阶段回执按历史保留。目标是补[上轮缺项](../../../../docs/acceptance/cash-crosscheck-20260911.json)，不绕过标准事实层。
 
+## 历史调整EBIT分量补证（待物化）
+
+为使保存预测的到期核验进入真实历史标准链，已[查询主库四个历史窗口](../../../../docs/acceptance/forecast-history-readiness-20260911.json)：安克2025H1有完整收入与账面桥接字段，但FN86、FN305、FN306、FN83、FN82、FN301六个损益TTM缺2024比较期；苏泊尔对应历史收入亦缺，不以另一家公司代替分母。
+
+复用本目录三份原文及整条TDX裁剪记录，新增[损益台账](earnings-evidence.json)与[回执](earnings-verified.json)：六字段×2024H1/9M/FY，共18个当前列TDX源值逐位匹配；另核对18个原文比较列及12个利息附注金额，共48个印刷金额。这里FN86为累计营业利润，FN82公允价值变动、FN83投资收益、FN301资产处置收益，均为年初累计人民币元，不与FN230单季度混用。
+
+半年报57页、年报112页明确合并利润表、附注及2024/2023列序；三季报表头在12页，数值在13页，明确“合并年初到报告期末利润表”，跨页规则仅用于这个相邻页版式。投资收益等标签跨行，仅移除排版空白；三季报资产处置的负号提示使用ASCII短横，与另两期不同，标签按报告固定，不做任意模糊匹配。
+
+半年报127页和年报183页财务费用附注，分别核对借款/应付款项利息＋租赁利息＝主表利息费用，存款及应收利息收入＝主表利息收入，两列均闭合。两期本期利息费用分别13,383,808.06、27,760,034.51元；三季报累计20,478,320.60元只完成主表/TDX核对，不借其他报告证明其租赁分量。该样本结论不推翻其他公司历史利息范围差异的反例。
+
+```bash
+cd valuation/backend
+python -m tools.verify_anker_earnings_history ../../internal/ingest/testdata/anker-cash-history-2024
+python -m pytest tests/test_anker_earnings_history.py tests/test_anker_cash_history.py -q
+```
+
+新验证器先复用原现金验证器，锁定公告身份、日期、整条原记录与PDF哈希，再核对损益。回归覆盖原文金额加0.01元、误取母公司页及FN305源位篡改拒绝，进入已有pytest CI；本地2项回归通过，Go全套与构建通过，无新增依赖、原文下载或数据库写入，未重跑无关后端全套。
+
+**本步仅完成源层补证，尚未新增标准事实、迁移或历史估值运行。** 下一步扩展六字段的2024映射有效期，在真实库副本物化并验收2025H1→2026H1到期比较；已有原文不直接充作标准实际值。该原文与TDX版本均后来取得，不能称当时已留存的严格PIT预测。
+
 ## 来源及核验范围
 
 巨潮资讯的安克正式报告：[2024半年报](https://static.cninfo.com.cn/finalpage/2024-08-30/1221057646.PDF)、[2024三季报](https://static.cninfo.com.cn/finalpage/2024-10-30/1221558710.PDF)、[2024年报](https://static.cninfo.com.cn/finalpage/2025-04-29/1223379891.PDF)。完整原文、URL/取得时刻/哈希见[reports.json](reports.json)，原始目录及请求保留在[catalogue.json](catalogue.json)和[catalogue-request.json](catalogue-request.json)。目录返回7条、`totalpages=0`原样保留；仅选择三份全文，不把摘要或2023年报混入。
