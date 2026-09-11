@@ -819,3 +819,30 @@ def test_working_cash_real_source_and_development_receipt(tmp_path,monkeypatch,c
     monkeypatch.setattr(sys,'argv',['working_cash',str(directory/'protocol.json'),str(directory/'snapshot.json'),'--phase','holdout','--selection',str(receipt)])
     with pytest.raises(SystemExit) as exc:module.main()
     assert exc.value.code==1 and 'development selection failed' in capsys.readouterr().out
+
+
+def test_working_cash_component_diagnostic_cancellation_and_development_only(monkeypatch,capsys):
+    import sys
+    import tools.backtest_tdx_working_cash as module
+    def report(values):return dict(components={f:dict(value_cny=str(v)) for f,v in zip(('FN146','FN147','FN148'),values)},working_cash_cny=str(sum(values)),revenue_cny='100')
+    row=dict(status='evaluated',base=report([10,-20,30]),actual=report([-10,20,30]),forecasts_cny=dict(repeat_latest='20',zero_forecast='0',half_latest='10'))
+    result=module.component_diagnostics([row,dict(status='blocked')])
+    assert result['statuses']==dict(evaluated=1,blocked=1)
+    assert result['components']['FN146']['direction']==dict(same=0,opposite=1,either_zero=0)
+    # Signed repeat errors +20,-40,0 have gross 60 and net 20; half errors +15,-30,-15 have gross60/net30.
+    assert result['cancellation']['repeat_latest']['sum_component_absolute_error_pct_revenue']==60
+    assert result['cancellation']['repeat_latest']['net_absolute_error_pct_revenue']==20
+    assert result['cancellation']['half_latest']['net_absolute_error_pct_revenue']==30
+    assert result['cancellation']['repeat_latest']['offset_fraction']==pytest.approx(2/3)
+    assert module.component_diagnostics([])['cancellation']['repeat_latest']['offset_fraction'] is None
+    directory=ROOT/'valuation/research/tdx-working-cash-forecast';p=json.loads((directory/'protocol.json').read_bytes());source=json.loads((directory/'snapshot.json').read_bytes())
+    study=module.study(p,source,'development');saved=json.loads((directory/'component-diagnostics.json').read_bytes())
+    assert module.component_diagnostics(study['results'])==saved['component_diagnostics']['overall']
+    assert {o:module.component_diagnostics([r for r in study['results'] if r['origin']==o]) for o in p['origins']}==saved['component_diagnostics']['by_origin']
+    for field in ('FN146','FN147','FN148'):
+        for s in saved['component_diagnostics']['by_origin'].values():
+            m=s['components'][field]['metrics']['models']
+            assert m['zero_forecast']['mae_pct_actual_revenue']<m['half_latest']['mae_pct_actual_revenue']<m['repeat_latest']['mae_pct_actual_revenue']
+    monkeypatch.setattr(sys,'argv',['working_cash','absent-protocol','absent-source','--phase','holdout','--diagnose-components'])
+    with pytest.raises(SystemExit) as exc:module.main()
+    assert exc.value.code==1 and 'development only' in capsys.readouterr().out

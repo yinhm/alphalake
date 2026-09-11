@@ -1,0 +1,593 @@
+{
+  "protocol_id": "tdx-working-cash-forecast-v1",
+  "phase": "development",
+  "summary": {
+    "candidates": 180,
+    "statuses": {
+      "blocked": 13,
+      "evaluated": 167
+    },
+    "models": {
+      "repeat_latest": {
+        "n": 167,
+        "mae_pct_actual_revenue": 15.036993172999242,
+        "wape_pct": 115.01050231547264
+      },
+      "zero_forecast": {
+        "n": 167,
+        "mae_pct_actual_revenue": 10.335616976209172,
+        "wape_pct": 100.0
+      },
+      "half_latest": {
+        "n": 167,
+        "mae_pct_actual_revenue": 11.508248699229572,
+        "wape_pct": 97.46417468921688
+      }
+    }
+  },
+  "by_origin": {
+    "2023-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "blocked": 7,
+        "evaluated": 53
+      },
+      "models": {
+        "repeat_latest": {
+          "n": 53,
+          "mae_pct_actual_revenue": 14.167272064094165,
+          "wape_pct": 128.4477822173087
+        },
+        "zero_forecast": {
+          "n": 53,
+          "mae_pct_actual_revenue": 8.417803788818516,
+          "wape_pct": 100.0
+        },
+        "half_latest": {
+          "n": 53,
+          "mae_pct_actual_revenue": 9.083140889122873,
+          "wape_pct": 87.959127068083
+        }
+      }
+    },
+    "2024-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "evaluated": 57,
+        "blocked": 3
+      },
+      "models": {
+        "repeat_latest": {
+          "n": 57,
+          "mae_pct_actual_revenue": 14.063157784715719,
+          "wape_pct": 102.81737314665382
+        },
+        "zero_forecast": {
+          "n": 57,
+          "mae_pct_actual_revenue": 11.917761280275563,
+          "wape_pct": 100.0
+        },
+        "half_latest": {
+          "n": 57,
+          "mae_pct_actual_revenue": 12.124690209678707,
+          "wape_pct": 95.39246170391327
+        }
+      }
+    },
+    "2025-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "evaluated": 57,
+        "blocked": 3
+      },
+      "models": {
+        "repeat_latest": {
+          "n": 57,
+          "mae_pct_actual_revenue": 16.819516609913805,
+          "wape_pct": 117.3595740789377
+        },
+        "zero_forecast": {
+          "n": 57,
+          "mae_pct_actual_revenue": 10.53670247796216,
+          "wape_pct": 100.0
+        },
+        "half_latest": {
+          "n": 57,
+          "mae_pct_actual_revenue": 13.146731994669121,
+          "wape_pct": 104.10454109830349
+        }
+      }
+    }
+  },
+  "decision": {
+    "passed": false,
+    "checks": {
+      "minimum_pairs": true,
+      "primary_improvement": true,
+      "wape_nonworse": true,
+      "zero_benchmark_nonworse": false,
+      "each_period_nonworse": true,
+      "leave_one_company_out_nonworse": true
+    }
+  },
+  "boundary": "Later-acquired TDX+FN314 research timing, not strict PIT, standard facts, classified WC or FCFF; current listed industry universe survivor bias; no production policy change",
+  "evidence": {
+    "protocol_sha256": "6abfb207b678b57d13bf6b9dc4e405ace683001d4a29b561fcef049de4604664",
+    "snapshot_sha256": "ff9c1d551fd0c022dc81f3dd94118ab0e60ae87ba3859713549d0f73c64fbe5f",
+    "code_sha256": "a79ce204de3dc9085711590790da357b437859971104830030521389ff4f4d01",
+    "history_sha256": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+    "component_sha256": "75eb978015acbdf2f646f3428bbc893f89cb4edfa8477a24ef8043839cb6fef7"
+  },
+  "component_diagnostics": {
+    "overall": {
+      "candidates": 180,
+      "statuses": {
+        "blocked": 13,
+        "evaluated": 167
+      },
+      "components": {
+        "FN146": {
+          "metrics": {
+            "candidates": 167,
+            "statuses": {
+              "evaluated": 167
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 167,
+                "mae_pct_actual_revenue": 11.160510829885808,
+                "wape_pct": 126.10107382559313
+              },
+              "zero_forecast": {
+                "n": 167,
+                "mae_pct_actual_revenue": 8.153491376805997,
+                "wape_pct": 100.0
+              },
+              "half_latest": {
+                "n": 167,
+                "mae_pct_actual_revenue": 8.884198744478352,
+                "wape_pct": 103.01301655160192
+              }
+            }
+          },
+          "direction": {
+            "same": 90,
+            "opposite": 77,
+            "either_zero": 0
+          }
+        },
+        "FN147": {
+          "metrics": {
+            "candidates": 167,
+            "statuses": {
+              "evaluated": 167
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 167,
+                "mae_pct_actual_revenue": 14.83078353302811,
+                "wape_pct": 134.4540523098463
+              },
+              "zero_forecast": {
+                "n": 167,
+                "mae_pct_actual_revenue": 10.897768869156197,
+                "wape_pct": 100.0
+              },
+              "half_latest": {
+                "n": 167,
+                "mae_pct_actual_revenue": 12.087846486560279,
+                "wape_pct": 107.9496968256319
+              }
+            }
+          },
+          "direction": {
+            "same": 96,
+            "opposite": 71,
+            "either_zero": 0
+          }
+        },
+        "FN148": {
+          "metrics": {
+            "candidates": 167,
+            "statuses": {
+              "evaluated": 167
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 167,
+                "mae_pct_actual_revenue": 15.392574721678312,
+                "wape_pct": 132.85275929167673
+              },
+              "zero_forecast": {
+                "n": 167,
+                "mae_pct_actual_revenue": 11.737380912457345,
+                "wape_pct": 100.0
+              },
+              "half_latest": {
+                "n": 167,
+                "mae_pct_actual_revenue": 12.620765358879016,
+                "wape_pct": 108.40931441367745
+              }
+            }
+          },
+          "direction": {
+            "same": 95,
+            "opposite": 72,
+            "either_zero": 0
+          }
+        }
+      },
+      "cancellation": {
+        "repeat_latest": {
+          "sum_component_absolute_error_pct_revenue": 41.383869084592234,
+          "net_absolute_error_pct_revenue": 15.036993172999242,
+          "offset_fraction": 0.6366460288606095
+        },
+        "zero_forecast": {
+          "sum_component_absolute_error_pct_revenue": 30.788641158419537,
+          "net_absolute_error_pct_revenue": 10.335616976209172,
+          "offset_fraction": 0.6643042178110946
+        },
+        "half_latest": {
+          "sum_component_absolute_error_pct_revenue": 33.59281058991765,
+          "net_absolute_error_pct_revenue": 11.508248699229572,
+          "offset_fraction": 0.6574192960596279
+        }
+      },
+      "boundary": "posthoc_development_diagnostic_not_candidate_selection; same complete-case cohort; sign persistence is not prediction validity"
+    },
+    "by_origin": {
+      "2023-06-30": {
+        "candidates": 60,
+        "statuses": {
+          "blocked": 7,
+          "evaluated": 53
+        },
+        "components": {
+          "FN146": {
+            "metrics": {
+              "candidates": 53,
+              "statuses": {
+                "evaluated": 53
+              },
+              "models": {
+                "repeat_latest": {
+                  "n": 53,
+                  "mae_pct_actual_revenue": 8.600352832539533,
+                  "wape_pct": 133.3185017208729
+                },
+                "zero_forecast": {
+                  "n": 53,
+                  "mae_pct_actual_revenue": 5.783330267348176,
+                  "wape_pct": 100.0
+                },
+                "half_latest": {
+                  "n": 53,
+                  "mae_pct_actual_revenue": 6.04050269653457,
+                  "wape_pct": 96.11855920078283
+                }
+              }
+            },
+            "direction": {
+              "same": 25,
+              "opposite": 28,
+              "either_zero": 0
+            }
+          },
+          "FN147": {
+            "metrics": {
+              "candidates": 53,
+              "statuses": {
+                "evaluated": 53
+              },
+              "models": {
+                "repeat_latest": {
+                  "n": 53,
+                  "mae_pct_actual_revenue": 13.354517731419193,
+                  "wape_pct": 185.5750471778897
+                },
+                "zero_forecast": {
+                  "n": 53,
+                  "mae_pct_actual_revenue": 9.957199080044767,
+                  "wape_pct": 100.0
+                },
+                "half_latest": {
+                  "n": 53,
+                  "mae_pct_actual_revenue": 10.358372492074913,
+                  "wape_pct": 123.63501945200949
+                }
+              }
+            },
+            "direction": {
+              "same": 34,
+              "opposite": 19,
+              "either_zero": 0
+            }
+          },
+          "FN148": {
+            "metrics": {
+              "candidates": 53,
+              "statuses": {
+                "evaluated": 53
+              },
+              "models": {
+                "repeat_latest": {
+                  "n": 53,
+                  "mae_pct_actual_revenue": 13.778834542482551,
+                  "wape_pct": 159.02167820356402
+                },
+                "zero_forecast": {
+                  "n": 53,
+                  "mae_pct_actual_revenue": 9.251188560588279,
+                  "wape_pct": 100.0
+                },
+                "half_latest": {
+                  "n": 53,
+                  "mae_pct_actual_revenue": 10.012835321573213,
+                  "wape_pct": 105.94798550831155
+                }
+              }
+            },
+            "direction": {
+              "same": 26,
+              "opposite": 27,
+              "either_zero": 0
+            }
+          }
+        },
+        "cancellation": {
+          "repeat_latest": {
+            "sum_component_absolute_error_pct_revenue": 35.73370510644128,
+            "net_absolute_error_pct_revenue": 14.167272064094165,
+            "offset_fraction": 0.6035319589196362
+          },
+          "zero_forecast": {
+            "sum_component_absolute_error_pct_revenue": 24.991717907981222,
+            "net_absolute_error_pct_revenue": 8.417803788818516,
+            "offset_fraction": 0.6631762642403125
+          },
+          "half_latest": {
+            "sum_component_absolute_error_pct_revenue": 26.411710510182697,
+            "net_absolute_error_pct_revenue": 9.083140889122873,
+            "offset_fraction": 0.6560941827065314
+          }
+        },
+        "boundary": "posthoc_development_diagnostic_not_candidate_selection; same complete-case cohort; sign persistence is not prediction validity"
+      },
+      "2024-06-30": {
+        "candidates": 60,
+        "statuses": {
+          "evaluated": 57,
+          "blocked": 3
+        },
+        "components": {
+          "FN146": {
+            "metrics": {
+              "candidates": 57,
+              "statuses": {
+                "evaluated": 57
+              },
+              "models": {
+                "repeat_latest": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 11.97501707997797,
+                  "wape_pct": 138.10739171532128
+                },
+                "zero_forecast": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 10.981151769625251,
+                  "wape_pct": 100.0
+                },
+                "half_latest": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 11.103990940722744,
+                  "wape_pct": 110.65803143993311
+                }
+              }
+            },
+            "direction": {
+              "same": 32,
+              "opposite": 25,
+              "either_zero": 0
+            }
+          },
+          "FN147": {
+            "metrics": {
+              "candidates": 57,
+              "statuses": {
+                "evaluated": 57
+              },
+              "models": {
+                "repeat_latest": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 15.223149253290579,
+                  "wape_pct": 118.91064898370708
+                },
+                "zero_forecast": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 10.276452431716244,
+                  "wape_pct": 100.0
+                },
+                "half_latest": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 12.313462394294927,
+                  "wape_pct": 104.18791386987057
+                }
+              }
+            },
+            "direction": {
+              "same": 28,
+              "opposite": 29,
+              "either_zero": 0
+            }
+          },
+          "FN148": {
+            "metrics": {
+              "candidates": 57,
+              "statuses": {
+                "evaluated": 57
+              },
+              "models": {
+                "repeat_latest": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 15.522860755137641,
+                  "wape_pct": 109.09407366726842
+                },
+                "zero_forecast": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 13.596637384751439,
+                  "wape_pct": 100.0
+                },
+                "half_latest": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 14.173562222241369,
+                  "wape_pct": 100.76087119090212
+                }
+              }
+            },
+            "direction": {
+              "same": 32,
+              "opposite": 25,
+              "either_zero": 0
+            }
+          }
+        },
+        "cancellation": {
+          "repeat_latest": {
+            "sum_component_absolute_error_pct_revenue": 42.72102708840619,
+            "net_absolute_error_pct_revenue": 14.063157784715719,
+            "offset_fraction": 0.6708141460266475
+          },
+          "zero_forecast": {
+            "sum_component_absolute_error_pct_revenue": 34.85424158609293,
+            "net_absolute_error_pct_revenue": 11.917761280275563,
+            "offset_fraction": 0.6580685524073826
+          },
+          "half_latest": {
+            "sum_component_absolute_error_pct_revenue": 37.59101555725904,
+            "net_absolute_error_pct_revenue": 12.124690209678707,
+            "offset_fraction": 0.6774577640444364
+          }
+        },
+        "boundary": "posthoc_development_diagnostic_not_candidate_selection; same complete-case cohort; sign persistence is not prediction validity"
+      },
+      "2025-06-30": {
+        "candidates": 60,
+        "statuses": {
+          "evaluated": 57,
+          "blocked": 3
+        },
+        "components": {
+          "FN146": {
+            "metrics": {
+              "candidates": 57,
+              "statuses": {
+                "evaluated": 57
+              },
+              "models": {
+                "repeat_latest": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 12.726502366799835,
+                  "wape_pct": 111.43051623590674
+                },
+                "zero_forecast": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 7.529664998044014,
+                  "wape_pct": 100.0
+                },
+                "half_latest": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 9.308544978778178,
+                  "wape_pct": 100.97511095655727
+                }
+              }
+            },
+            "direction": {
+              "same": 33,
+              "opposite": 24,
+              "either_zero": 0
+            }
+          },
+          "FN147": {
+            "metrics": {
+              "candidates": 57,
+              "statuses": {
+                "evaluated": 57
+              },
+              "models": {
+                "repeat_latest": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 15.811086014261654,
+                  "wape_pct": 121.5435411923398
+                },
+                "zero_forecast": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 12.393650198226078,
+                  "wape_pct": 100.0
+                },
+                "half_latest": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 13.47033797720676,
+                  "wape_pct": 103.16322446898118
+                }
+              }
+            },
+            "direction": {
+              "same": 34,
+              "opposite": 23,
+              "either_zero": 0
+            }
+          },
+          "FN148": {
+            "metrics": {
+              "candidates": 57,
+              "statuses": {
+                "evaluated": 57
+              },
+              "models": {
+                "repeat_latest": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 16.7627839425589,
+                  "wape_pct": 142.10429643452795
+                },
+                "zero_forecast": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 12.18984715330466,
+                  "wape_pct": 100.0
+                },
+                "half_latest": {
+                  "n": 57,
+                  "mae_pct_actual_revenue": 13.492885898625568,
+                  "wape_pct": 116.72462067919729
+                }
+              }
+            },
+            "direction": {
+              "same": 37,
+              "opposite": 20,
+              "either_zero": 0
+            }
+          }
+        },
+        "cancellation": {
+          "repeat_latest": {
+            "sum_component_absolute_error_pct_revenue": 45.300372323620394,
+            "net_absolute_error_pct_revenue": 16.819516609913805,
+            "offset_fraction": 0.628711294252568
+          },
+          "zero_forecast": {
+            "sum_component_absolute_error_pct_revenue": 32.11316234957475,
+            "net_absolute_error_pct_revenue": 10.53670247796216,
+            "offset_fraction": 0.6718883564545087
+          },
+          "half_latest": {
+            "sum_component_absolute_error_pct_revenue": 36.27176885461051,
+            "net_absolute_error_pct_revenue": 13.146731994669121,
+            "offset_fraction": 0.6375491901879486
+          }
+        },
+        "boundary": "posthoc_development_diagnostic_not_candidate_selection; same complete-case cohort; sign persistence is not prediction validity"
+      }
+    }
+  }
+}

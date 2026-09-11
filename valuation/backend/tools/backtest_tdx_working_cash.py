@@ -59,6 +59,30 @@ def metrics(rows):
         wape_pct=float(100*sum((abs(Decimal(r['errors'][m]['cny'])) for r in valid),Decimal(0))/denominator) if denominator else None) for m in MODELS})
 
 
+def component_diagnostics(rows):
+    """事后开发诊断，不选择分项倍率，也不扩大原共同可评价集合。"""
+    valid=[r for r in rows if r['status']=='evaluated'];fields=('FN146','FN147','FN148');parts={};gross={m:Decimal(0) for m in MODELS};net={m:Decimal(0) for m in MODELS}
+    for field in fields:
+        projected=[];same=opposite=zeros=0
+        for row in valid:
+            base=Decimal(row['base']['components'][field]['value_cny']);actual=Decimal(row['actual']['components'][field]['value_cny']);rev=Decimal(row['actual']['revenue_cny'])
+            if base*actual>0:same+=1
+            elif base*actual<0:opposite+=1
+            else:zeros+=1
+            predictions=dict(repeat_latest=base,zero_forecast=Decimal(0),half_latest=base/2)
+            errors={m:dict(cny=str(v-actual),pct_actual_revenue=float(100*(v-actual)/rev)) for m,v in predictions.items()}
+            projected.append(dict(status='evaluated',actual=dict(working_cash_cny=str(actual)),errors=errors))
+            for m in MODELS:gross[m]+=abs(predictions[m]-actual)/rev
+        parts[field]=dict(metrics=metrics(projected),direction=dict(same=same,opposite=opposite,either_zero=zeros))
+    for row in valid:
+        for m in MODELS:net[m]+=abs(Decimal(row['forecasts_cny'][m])-Decimal(row['actual']['working_cash_cny']))/Decimal(row['actual']['revenue_cny'])
+    return dict(candidates=len(rows),statuses=dict(Counter(r['status'] for r in rows)),components=parts,
+                cancellation={m:dict(sum_component_absolute_error_pct_revenue=float(100*gross[m]/len(valid)) if valid else None,
+                    net_absolute_error_pct_revenue=float(100*net[m]/len(valid)) if valid else None,
+                    offset_fraction=float(1-net[m]/gross[m]) if gross[m] else None) for m in MODELS},
+                boundary='posthoc_development_diagnostic_not_candidate_selection; same complete-case cohort; sign persistence is not prediction validity')
+
+
 def study(p,source,phase):
     if p['protocol_id']!='tdx-working-cash-forecast-v1' or source['contract_version']!='tdx-history-source-v1' or (p['baseline'],p['benchmark'],p['candidate'])!=MODELS:raise ValueError('unsupported study')
     if any(p['gates'][key] is not True for key in ('require_wape_nonworse','require_zero_benchmark_nonworse','require_leave_one_company_out_nonworse')):raise ValueError('required comparison gate disabled')
@@ -79,8 +103,9 @@ def study(p,source,phase):
 
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('protocol',type=Path);parser.add_argument('snapshot',type=Path);parser.add_argument('--phase',choices=['development','holdout'],required=True);parser.add_argument('--selection',type=Path);args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('protocol',type=Path);parser.add_argument('snapshot',type=Path);parser.add_argument('--phase',choices=['development','holdout'],required=True);parser.add_argument('--selection',type=Path);parser.add_argument('--diagnose-components',action='store_true');args=parser.parse_args()
     try:
+        if args.diagnose_components and args.phase!='development':raise ValueError('component diagnosis is development only')
         raw=args.protocol.read_bytes();data=args.snapshot.read_bytes();p=json.loads(raw);source=json.loads(data);digest=lambda b:hashlib.sha256(b).hexdigest()
         if source['study_sha256']!=digest(raw):raise ValueError('source/protocol hash differs')
         evidence=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),history_sha256=digest(Path(__file__).with_name('backtest_tdx_history.py').read_bytes()),component_sha256=digest(Path(__file__).with_name('audit_tdx_reinvestment.py').read_bytes()))
@@ -89,6 +114,7 @@ def main():
             selected=json.loads(args.selection.read_bytes());dev=study(p,source,'development')
             if selected['evidence']!=evidence or any(selected[k]!=dev[k] for k in ('decision','summary','by_origin')) or not dev['decision']['passed']:raise ValueError('development selection failed or differs')
         result=study(p,source,args.phase);result['evidence']=evidence
+        if args.diagnose_components:result['component_diagnostics']=dict(overall=component_diagnostics(result['results']),by_origin={o:component_diagnostics([r for r in result['results'] if r['origin']==o]) for o in p['origins']})
         print(json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False))
     except (ValueError,KeyError,TypeError,OSError) as exc:
         print(json.dumps(dict(status='rejected',reason=str(exc)),ensure_ascii=False));raise SystemExit(1)
