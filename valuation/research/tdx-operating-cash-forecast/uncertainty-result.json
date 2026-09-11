@@ -1,0 +1,607 @@
+{
+  "protocol_sha256": "a81b2944d1d86df23ff8cd1b51d63de5469bab545a49954126f19cbfe87afe22",
+  "companies": 120,
+  "candidates": 360,
+  "statuses": {
+    "evaluated": 331,
+    "blocked": 29
+  },
+  "strata": 38,
+  "singleton_strata": [
+    "Auto & Truck",
+    "Beverage (Alcoholic)",
+    "Building Materials",
+    "Computer Services",
+    "Computers/Peripherals",
+    "Entertainment",
+    "Farming/Agriculture",
+    "Food Processing",
+    "Hotel/Gaming",
+    "Metals & Mining",
+    "Oil/Gas (Production and Exploration)",
+    "Packaging & Container",
+    "Paper/Forest Products",
+    "Power",
+    "Retail (Distributors)",
+    "Rubber& Tires",
+    "Transportation"
+  ],
+  "schemes": {
+    "stratified": {
+      "draw_counts_sha256": "4d912299dee8a85065b05d81b93ec45f7dd8c758bd16db69db53bb6d1ba5d7a2",
+      "evaluated_count_range": {
+        "all": [
+          305,
+          352
+        ],
+        "2023-06-30": [
+          89,
+          115
+        ],
+        "2024-06-30": [
+          104,
+          120
+        ],
+        "2025-06-30": [
+          109,
+          120
+        ]
+      },
+      "intervals": {
+        "all": {
+          "ocf_cny": {
+            "mae_reduction_pp": {
+              "point": 0.6907357026372769,
+              "interval": [
+                0.20703878726574726,
+                1.1708307879077058
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9972997299729973
+            },
+            "relative_mae_reduction_pct": {
+              "point": 6.844689857679764,
+              "interval": [
+                2.082084517936023,
+                11.357515193431022
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9972997299729973
+            },
+            "wape_reduction_pp": {
+              "point": 3.4924521373856767,
+              "interval": [
+                0.8658856791402313,
+                6.328918730797968
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9968996899689969
+            }
+          },
+          "cash_proxy_cny": {
+            "mae_reduction_pp": {
+              "point": 0.7620748685560385,
+              "interval": [
+                0.23668320627258654,
+                1.301052346635234
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9977997799779978
+            },
+            "relative_mae_reduction_pct": {
+              "point": 6.0889361418381105,
+              "interval": [
+                1.9736047417506544,
+                9.98215010371144
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9977997799779978
+            },
+            "wape_reduction_pp": {
+              "point": 3.0276451316866857,
+              "interval": [
+                -0.027834016241271978,
+                6.764600674889431
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9735973597359736
+            }
+          }
+        },
+        "2023-06-30": {
+          "ocf_cny": {
+            "mae_reduction_pp": {
+              "point": 1.0281989557023072,
+              "interval": [
+                0.1454011943813063,
+                1.9183608794253257
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.98999899989999
+            },
+            "relative_mae_reduction_pct": {
+              "point": 9.688161643971576,
+              "interval": [
+                1.4419663803838043,
+                17.279513250648307
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.98999899989999
+            },
+            "wape_reduction_pp": {
+              "point": 3.2297033713282772,
+              "interval": [
+                -3.0866769977064283,
+                9.624970377770605
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.8432843284328433
+            }
+          },
+          "cash_proxy_cny": {
+            "mae_reduction_pp": {
+              "point": 0.5784399951969946,
+              "interval": [
+                -0.3767984056871708,
+                1.5654881046459148
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.8786878687868787
+            },
+            "relative_mae_reduction_pct": {
+              "point": 4.477594853912144,
+              "interval": [
+                -3.0810296420419703,
+                11.528178680798506
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.8786878687868787
+            },
+            "wape_reduction_pp": {
+              "point": -1.2299291519999693,
+              "interval": [
+                -13.034662559525675,
+                9.314923927590442
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.46324632463246324
+            }
+          }
+        },
+        "2024-06-30": {
+          "ocf_cny": {
+            "mae_reduction_pp": {
+              "point": 0.09510294869101801,
+              "interval": [
+                -1.0617827350523417,
+                1.2047163332431705
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.5601560156015601
+            },
+            "relative_mae_reduction_pct": {
+              "point": 1.0439046882672494,
+              "interval": [
+                -12.133187369837916,
+                12.629281804599984
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.5601560156015601
+            },
+            "wape_reduction_pp": {
+              "point": -0.39443391995900634,
+              "interval": [
+                -4.852820405360977,
+                4.148020200056914
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.42654265426542654
+            }
+          },
+          "cash_proxy_cny": {
+            "mae_reduction_pp": {
+              "point": 1.061288264250518,
+              "interval": [
+                -0.026018389477886743,
+                2.221596966076899
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9721972197219722
+            },
+            "relative_mae_reduction_pct": {
+              "point": 8.111959745994811,
+              "interval": [
+                -0.2105114616609074,
+                15.4013488283795
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9721972197219722
+            },
+            "wape_reduction_pp": {
+              "point": 0.5650488472925269,
+              "interval": [
+                -5.380812789598504,
+                7.375893265413684
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.5666566656665667
+            }
+          }
+        },
+        "2025-06-30": {
+          "ocf_cny": {
+            "mae_reduction_pp": {
+              "point": 0.9742292318036079,
+              "interval": [
+                0.09226351401153601,
+                1.8973214518848256
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9843984398439845
+            },
+            "relative_mae_reduction_pct": {
+              "point": 9.200419668457114,
+              "interval": [
+                0.8964165552290856,
+                17.574701568062068
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9843984398439845
+            },
+            "wape_reduction_pp": {
+              "point": 7.785996009237895,
+              "interval": [
+                0.6700582285731089,
+                15.810742992486057
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9868986898689869
+            }
+          },
+          "cash_proxy_cny": {
+            "mae_reduction_pp": {
+              "point": 0.6320717941521252,
+              "interval": [
+                -0.19186878343297395,
+                1.4630267617299262
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9337933793379338
+            },
+            "relative_mae_reduction_pct": {
+              "point": 5.444703495513911,
+              "interval": [
+                -1.6604192231882906,
+                12.519953306191024
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9337933793379338
+            },
+            "wape_reduction_pp": {
+              "point": 9.60338965251313,
+              "interval": [
+                1.0818428285088124,
+                16.79791014077563
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.986998699869987
+            }
+          }
+        }
+      }
+    },
+    "unstratified_sensitivity": {
+      "draw_counts_sha256": "c5eabd8507333648f31b08287f8888eaf17cb2c4a5817bfbc7c0bccf40c9a39b",
+      "evaluated_count_range": {
+        "all": [
+          301,
+          356
+        ],
+        "2023-06-30": [
+          85,
+          116
+        ],
+        "2024-06-30": [
+          103,
+          120
+        ],
+        "2025-06-30": [
+          106,
+          120
+        ]
+      },
+      "intervals": {
+        "all": {
+          "ocf_cny": {
+            "mae_reduction_pp": {
+              "point": 0.6907357026372769,
+              "interval": [
+                0.1403124186423569,
+                1.2813558480291976
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9935993599359936
+            },
+            "relative_mae_reduction_pct": {
+              "point": 6.844689857679764,
+              "interval": [
+                1.3976760466168694,
+                12.482902513386822
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9935993599359936
+            },
+            "wape_reduction_pp": {
+              "point": 3.4924521373856767,
+              "interval": [
+                0.34106028933027194,
+                6.686007233782536
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9876987698769877
+            }
+          },
+          "cash_proxy_cny": {
+            "mae_reduction_pp": {
+              "point": 0.7620748685560385,
+              "interval": [
+                0.1656946583472617,
+                1.3879896805448817
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9940994099409941
+            },
+            "relative_mae_reduction_pct": {
+              "point": 6.0889361418381105,
+              "interval": [
+                1.3950945517579785,
+                10.658595587867092
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9940994099409941
+            },
+            "wape_reduction_pp": {
+              "point": 3.0276451316866857,
+              "interval": [
+                -0.820080880859054,
+                7.370836063880458
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9361936193619362
+            }
+          }
+        },
+        "2023-06-30": {
+          "ocf_cny": {
+            "mae_reduction_pp": {
+              "point": 1.0281989557023072,
+              "interval": [
+                0.039167486348799144,
+                2.0961494387592725
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9786978697869787
+            },
+            "relative_mae_reduction_pct": {
+              "point": 9.688161643971576,
+              "interval": [
+                0.3832176847383964,
+                18.698657994014276
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9786978697869787
+            },
+            "wape_reduction_pp": {
+              "point": 3.2297033713282772,
+              "interval": [
+                -4.33446842433191,
+                10.252968212967271
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.8095809580958095
+            }
+          },
+          "cash_proxy_cny": {
+            "mae_reduction_pp": {
+              "point": 0.5784399951969946,
+              "interval": [
+                -0.5050177061043881,
+                1.711807205213622
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.8455845584558456
+            },
+            "relative_mae_reduction_pct": {
+              "point": 4.477594853912144,
+              "interval": [
+                -4.3217704396581595,
+                12.79535675665162
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.8455845584558456
+            },
+            "wape_reduction_pp": {
+              "point": -1.2299291519999693,
+              "interval": [
+                -14.970279924304792,
+                10.869296398100905
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.47314731473147315
+            }
+          }
+        },
+        "2024-06-30": {
+          "ocf_cny": {
+            "mae_reduction_pp": {
+              "point": 0.09510294869101801,
+              "interval": [
+                -1.2269844177261577,
+                1.3519405197941659
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.5681568156815682
+            },
+            "relative_mae_reduction_pct": {
+              "point": 1.0439046882672494,
+              "interval": [
+                -13.99117400161149,
+                14.358630882844354
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.5681568156815682
+            },
+            "wape_reduction_pp": {
+              "point": -0.39443391995900634,
+              "interval": [
+                -5.7046195342080495,
+                5.153349340853757
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.44664466446644663
+            }
+          },
+          "cash_proxy_cny": {
+            "mae_reduction_pp": {
+              "point": 1.061288264250518,
+              "interval": [
+                -0.12746540691887887,
+                2.3641393676518163
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9582958295829583
+            },
+            "relative_mae_reduction_pct": {
+              "point": 8.111959745994811,
+              "interval": [
+                -1.0768553662204674,
+                16.557513315890038
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9582958295829583
+            },
+            "wape_reduction_pp": {
+              "point": 0.5650488472925269,
+              "interval": [
+                -6.523168879149049,
+                8.999610511373366
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.5632563256325632
+            }
+          }
+        },
+        "2025-06-30": {
+          "ocf_cny": {
+            "mae_reduction_pp": {
+              "point": 0.9742292318036079,
+              "interval": [
+                -0.07011643540158347,
+                2.0509968243754795
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9665966596659666
+            },
+            "relative_mae_reduction_pct": {
+              "point": 9.200419668457114,
+              "interval": [
+                -0.7047141659824946,
+                18.919084660337727
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9665966596659666
+            },
+            "wape_reduction_pp": {
+              "point": 7.785996009237895,
+              "interval": [
+                -0.5902249662587954,
+                17.028873095543393
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9643964396439644
+            }
+          },
+          "cash_proxy_cny": {
+            "mae_reduction_pp": {
+              "point": 0.6320717941521252,
+              "interval": [
+                -0.35009344772105555,
+                1.628353390172181
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.8901890189018902
+            },
+            "relative_mae_reduction_pct": {
+              "point": 5.444703495513911,
+              "interval": [
+                -3.100457233421547,
+                13.759861545128864
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.8901890189018902
+            },
+            "wape_reduction_pp": {
+              "point": 9.60338965251313,
+              "interval": [
+                -0.7281731751918998,
+                17.99884355414036
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0,
+              "positive_resample_fraction": 0.9662966296629663
+            }
+          }
+        }
+      }
+    }
+  },
+  "interpretation": "positive_means_candidate_lower_error; pointwise_conditional_intervals_not_joint_coverage_or_probability_rule_is_true; no_new_adoption_gate_or_redefinition_of_original_gates",
+  "boundary": "fixed_three_origins_not_macro_regime_uncertainty; contemporaneous_cross_company_dependence_not_resolved; original_membership_revision_survivorship_and_missingness_bias_remain; singleton_strata_have_no_within_stratum_variation; original_holdout_now_exposed; no_new_forecasts_or_production_change; OCF_cash_proxy_not_FCFF"
+}
