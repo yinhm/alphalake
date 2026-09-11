@@ -1145,3 +1145,23 @@ def test_operating_cash_negative_zero_cutoff_and_cash_proxy_gate(monkeypatch):
     monkeypatch.setattr(m,'evaluate',lambda *a:rows)
     decision=m.study(p,source,'development')['decision']
     assert decision['checks']['primary_improvement'] and not decision['checks']['cash_proxy_nonworse'] and not decision['passed']
+
+
+def test_operating_cash_locked_holdout_and_independent_errors():
+    import tools.backtest_tdx_operating_cash as m
+    directory=ROOT/'valuation/research/tdx-operating-cash-forecast';p=json.loads((directory/'protocol.json').read_bytes());source=json.loads((directory/'snapshot.json').read_bytes())
+    result=m.study(p,source,'holdout');saved=json.loads((directory/'holdout-summary.json').read_bytes())
+    assert {k:v for k,v in result.items() if k!='results'}=={k:v for k,v in saved.items() if k!='evidence'}
+    assert result['summary']['statuses']=={'evaluated':331,'blocked':29} and result['decision']['passed']
+    valid=[r for r in result['results'] if r['status']=='evaluated']
+    for kind in ('ocf_cny','cash_proxy_cny'):
+        for model in m.MODELS:
+            errors=[abs(Decimal(r['forecasts'][model][kind])-Decimal(r['actual'][kind])) for r in valid]
+            assert result['summary']['targets'][kind][model]['mae_pct_actual_revenue']==pytest.approx(float(100*sum(e/Decimal(r['actual']['revenue_cny']) for e,r in zip(errors,valid))/len(valid)),rel=1e-12)
+            assert result['summary']['targets'][kind][model]['wape_pct']==float(100*sum(errors)/sum(abs(Decimal(r['actual'][kind])) for r in valid))
+    assert all(o['targets']['ocf_cny'][m.MODELS[2]]['mae_pct_actual_revenue']<o['targets']['ocf_cny'][m.MODELS[0]]['mae_pct_actual_revenue'] for o in result['by_origin'].values())
+    # Held company values never participate in development or fitting.
+    changed=copy.deepcopy(source);held={s['code'] for s in p['samples'] if s['split']=='holdout'}
+    for row in changed['records']:
+        if row['code'] in held:row['bits']['FN234']=bits(123456)
+    assert m.study(p,changed,'development')==m.study(p,source,'development')
