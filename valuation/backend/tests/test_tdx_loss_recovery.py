@@ -38,3 +38,37 @@ def test_loss_path_and_outcome_isolation():
     assert study(p,changed)['results'][0]['status']=='blocked_candidate'
     with pytest.raises(ValueError,match='unexpected source'):study(p|dict(samples=[dict(code='000002',split='development')]),source)
     with pytest.raises(ValueError,match='duplicate window'):study(p|dict(windows=p['windows']*2),source)
+
+
+def test_real_replay_decimal_and_source_binding(tmp_path):
+    from decimal import Decimal
+    import gzip,hashlib,subprocess,sys
+    from tools.backtest_tdx_history import value,EBIT
+    p=json.loads((DIR/'protocol.json').read_text());source=json.loads((DIR/'development-snapshot.json').read_text())
+    saved=json.loads(gzip.decompress((DIR/'development-result.json.gz').read_bytes()));actual=study(p,source)
+    assert actual=={k:v for k,v in saved.items() if k!='evidence'}
+    assert hashlib.sha256((DIR/'development-snapshot.json').read_bytes()).hexdigest()==saved['evidence']['snapshot_sha256']
+    assert actual['baseline_evaluable']==834 and actual['evaluated_companies']==82
+    assert actual['summary']['statuses']=={'blocked':178,'blocked_candidate':617,'outside_loss_scope':2588,'evaluated':217}
+    index={(r['code'],r['period']):r for r in source['records']};scaled=[];absolute=[];denominator=[]
+    valid=[r for r in actual['results'] if r['status']=='evaluated']
+    assert any(r['actual']['ebit']>0 for r in valid) and any(r['actual']['ebit']<=0 for r in valid)
+    for r in valid:
+        margins=[]
+        for year in range(int(r['origin'][:4])-5,int(r['origin'][:4])):
+            revenue=sum(value(index[r['code'],str(year)+'-'+suffix],'FN230') for suffix in ('03-31','06-30','09-30','12-31'))
+            ebit=sum(value(index[r['code'],str(year)+'-12-31'],field)*sign for field,sign in EBIT.items())
+            margins.append(ebit/revenue)
+        normal=sum(margins)/5
+        current=Decimal(str(r['base']['ebit']))/Decimal(str(r['base']['revenue']))
+        predicted=Decimal(str(r['base']['revenue']))*(current+(normal-current)*r['horizon']/5)
+        assert float(predicted)==pytest.approx(r['forecasts'][MODELS[1]]['ebit'],rel=1e-11,abs=1e-9)
+        delta=abs(predicted-Decimal(str(r['actual']['ebit'])))
+        absolute.append(delta);scaled.append(delta/Decimal(str(r['actual']['revenue'])));denominator.append(abs(Decimal(str(r['actual']['ebit']))))
+    m=actual['summary']['models'][MODELS[1]]
+    assert m['ebit_mae_pct_actual_revenue']==pytest.approx(float(sum(scaled)/len(scaled)*100),rel=1e-12)
+    assert m['ebit_wape_pct']==pytest.approx(float(sum(absolute)/sum(denominator)*100),rel=1e-12)
+    assert actual['decision']['passed'] is False and actual['decision']['checks']['minimum_sample'] is True
+    source['study_sha256']='0'*64;bad=tmp_path/'bad.json';bad.write_text(json.dumps(source))
+    run=subprocess.run([sys.executable,'-m','tools.backtest_tdx_loss_recovery',str(DIR/'protocol.json'),str(bad)],capture_output=True,text=True)
+    assert run.returncode==1 and json.loads(run.stdout)['reason']=='source binding differs'
