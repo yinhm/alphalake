@@ -45,3 +45,39 @@ def test_five_fy_margins_keep_losses_and_future_isolation():
     blocked=study(p,late,'development')['results'][0]
     assert blocked['status']=='blocked_candidate' and 'cutoff differs' in blocked['candidate_reason']
     with pytest.raises(ValueError,match='duplicate forecast window'):study(p|dict(windows=p['windows']*2),source,'development')
+
+
+def test_real_development_replay_decimal_and_source_rejection(tmp_path):
+    from decimal import Decimal
+    import hashlib,subprocess,sys
+    from tools.backtest_tdx_history import value
+    p=json.loads((DIR/'protocol.json').read_text());source=json.loads((DIR/'development-snapshot.json').read_text())
+    recorded=json.loads((DIR/'development-result.json').read_text());actual=study(p,source,'development')
+    assert actual=={k:v for k,v in recorded.items() if k!='evidence'}
+    assert actual['decision']['passed'] is False and actual['decision']['checks']['minimum_sample'] is True
+    assert actual['baseline_evaluable']==995 and actual['evaluated_companies']==125
+    assert actual['summary']['statuses']=={'blocked':445,'blocked_candidate':417,'evaluated':578}
+    assert hashlib.sha256((DIR/'development-snapshot.json').read_bytes()).hexdigest()==recorded['evidence']['snapshot_sha256']
+    index={(r['code'],r['period']):r for r in source['records']}
+    valid=[r for r in actual['results'] if r['status']=='evaluated'];errors=[]
+    assert any(r['actual']['ebit']<0 for r in valid)
+    for row in valid:
+        margins=[]
+        for h in row['history']:
+            year=h['year'];rev=sum(value(index[(row['code'],f'{year}-{q}')],'FN230') for q in ('03-31','06-30','09-30','12-31'))/1000000
+            fy=index[(row['code'],f'{year}-12-31')]
+            ebit=(value(fy,'FN86')+value(fy,'FN305')-value(fy,'FN306')-value(fy,'FN83')-value(fy,'FN82')-value(fy,'FN301'))/1000000
+            assert float(rev)==pytest.approx(h['revenue'],rel=1e-12,abs=1e-8)
+            assert float(ebit)==pytest.approx(h['ebit'],rel=1e-12,abs=1e-8)
+            margins.append(ebit/rev)
+        predicted=Decimal(str(row['base']['revenue']))*sum(margins)/5
+        assert float(predicted)==pytest.approx(row['forecasts']['zero_growth_five_fy_mean_margin']['ebit'],rel=1e-12,abs=1e-8)
+        errors.append(abs(predicted-Decimal(str(row['actual']['ebit']))))
+    mae=sum(100*e/Decimal(str(r['actual']['revenue'])) for e,r in zip(errors,valid))/len(valid)
+    wape=100*sum(errors)/sum(abs(Decimal(str(r['actual']['ebit']))) for r in valid)
+    result=actual['summary']['models']['zero_growth_five_fy_mean_margin']
+    assert float(mae)==pytest.approx(result['ebit_mae_pct_actual_revenue'],rel=1e-12)
+    assert float(wape)==pytest.approx(result['ebit_wape_pct'],rel=1e-12)
+    bad=source|dict(study_sha256='0'*64);path=tmp_path/'bad.json';path.write_text(json.dumps(bad))
+    check=subprocess.run([sys.executable,'-m','tools.backtest_tdx_normalized_margin',str(DIR/'protocol.json'),str(path)],cwd=ROOT/'valuation/backend',capture_output=True,text=True)
+    assert check.returncode==1 and json.loads(check.stdout)['reason']=='source binding differs'
