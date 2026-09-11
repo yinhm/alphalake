@@ -1,0 +1,14 @@
+[
+  {
+    "file": "2025H1.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224620745.PDF",
+    "sha256": "5bb12d3947500c3c753e0fc4e48c6cab33c90c64393aa5f8767aa2a0d23e818f",
+    "first_acquired_at": "2026-09-11T00:38:12.564946+00:00"
+  },
+  {
+    "file": "2024H1.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2024-08-31/1221087852.PDF",
+    "sha256": "f5679dcd6a2a1ba15c15406327552fdfac6bb3990aca1aef3d1560383662ab11",
+    "first_acquired_at": "2026-09-11T00:38:15.746957+00:00"
+  }
+]

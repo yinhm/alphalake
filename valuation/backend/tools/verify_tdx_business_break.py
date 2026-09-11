@@ -1,4 +1,4 @@
-"""000809开发异常的原文/源值/披露时点核验，不据此删除历史失败样本。"""
+"""两家开发异常的原文/源值/披露时点核验，不据此删除历史失败样本。"""
 import argparse
 from datetime import datetime,timedelta,timezone
 from decimal import Decimal
@@ -13,7 +13,8 @@ from tools.backtest_tdx_history import at,available,value
 
 
 def verify(ledger,directory,source):
-    if ledger['code']!='000809' or [r['period'] for r in ledger['reports']]!=[f'{y}-06-30' for y in range(2022,2026)]:raise ValueError('unsupported company/period scope')
+    years={'000809':range(2022,2026),'688443':range(2024,2026)}.get(ledger['code'])
+    if years is None or [r['period'] for r in ledger['reports']]!=[f'{y}-06-30' for y in years]:raise ValueError('unsupported company/period scope')
     raw=(directory/'catalogue.json').read_bytes()
     if hashlib.sha256(raw).hexdigest()!=ledger['catalogue_sha256']:raise ValueError('catalogue hash differs')
     catalogue=json.loads(raw)['announcements'];artifacts={a['file']:a for a in source['artifacts']};results=[]
@@ -29,9 +30,10 @@ def verify(ledger,directory,source):
         if usable>cutoff:raise ValueError('original not available by forecast cutoff')
         pdf=PdfReader(path);pages={}
         def text(page):
-            if page not in pages:pages[page]=re.sub(r'\s+','',pdf.pages[page-1].extract_text())
+            if page not in pages:pages[page]=re.sub(r'\s+','',pdf.pages[page-1].extract_text()).replace(':','：')
             return pages[page]
-        if ledger['code'] not in text(6) or report['issuer'] not in text(6) or f'{year}年半年度报告' not in text(1):raise ValueError('PDF company/period differs')
+        identity_page=6 if ledger['code']=='000809' else 1
+        if ledger['code'] not in text(identity_page) or report['issuer'] not in text(identity_page) or f'{year}年半年度报告' not in text(1):raise ValueError('PDF company/period differs')
         amounts={}
         for row in report['rows']:
             body=text(row['page'])
@@ -42,6 +44,9 @@ def verify(ledger,directory,source):
             values=[s.replace(',','') for s in re.findall(r'[0-9,]+\.[0-9]{2}',matches[0])]
             if values!=row['values']:raise ValueError('PDF row values differ')
             amounts[row['key']]=Decimal(values[0])
+        if ledger['code']=='688443':
+            subtotal=amounts['other_business_income']+(amounts['main_business_income'] if year==2025 else Decimal(0))
+            if subtotal!=amounts['revenue']:raise ValueError('income breakdown differs')
         refs=[];half_revenue=Decimal(0);bound=Decimal('.01')
         for month in ('03-31','06-30'):
             period=f'{year}-{month}';records=[r for r in source['records'] if (r['code'],r['period'])==(ledger['code'],period)]
@@ -60,7 +65,8 @@ def verify(ledger,directory,source):
         results.append(dict(period=report['period'],published_date=publication.date().isoformat(),original_available_from=usable.isoformat(),forecast_as_of=cutoff.isoformat(),
             pdf_inventory_cny=str(amounts['inventory']),source_inventory_cny=str(inventory),pdf_half_revenue_cny=str(amounts['revenue']),source_half_revenue_cny=str(half_revenue),revenue_rounding_bound_cny=str(bound),
             source_inventory_minus_pdf_cny=str(inventory-amounts['inventory']),source_half_revenue_minus_pdf_cny=str(half_revenue-amounts['revenue']),source_inputs=refs,notes=report['notes']))
-    return dict(code=ledger['code'],periods=results,status='source_values_confirmed_historical_business_and_scope_break',
+        if ledger['code']=='688443':results[-1]['income_note_cny']={k:str(v) for k,v in amounts.items() if k.endswith('_business_income')}
+    return dict(code=ledger['code'],periods=results,status='source_values_confirmed_historical_business_and_scope_break' if ledger['code']=='000809' else 'source_values_confirmed_early_commercialization_base',
         original_failed_samples_retained=True,actual_fcff=None,boundary='later-acquired original evidence; no strict PIT, automatic exclusion or full TTM revenue/target cash audit; no retrospective adoption')
 
 

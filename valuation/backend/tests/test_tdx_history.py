@@ -992,3 +992,24 @@ def test_business_break_original_values_timing_and_tampering(tmp_path):
     for report in ledger['reports']:(tmp_path/report['file']).symlink_to(directory/report['file'])
     bad=copy.deepcopy(ledger);bad['catalogue_sha256']=hashlib.sha256(data).hexdigest()
     with pytest.raises(ValueError,match='not available'):verify(bad,tmp_path,source)
+
+
+def test_early_commercialization_original_income_and_cutoff():
+    import hashlib
+    from tools.verify_tdx_business_break import verify
+    directory=ROOT/'valuation/research/tdx-working-cash-forecast/review-688443';ledger=json.loads((directory/'evidence.json').read_bytes());raw=(directory.parent/'snapshot-v3.json').read_bytes();source=json.loads(raw)
+    assert hashlib.sha256(raw).hexdigest()==ledger['snapshot_sha256']
+    result=verify(ledger,directory,source);saved=json.loads((directory/'reconciled.json').read_bytes())
+    assert result=={k:v for k,v in saved.items() if k!='evidence'}
+    first,last=result['periods']
+    assert first['original_available_from']==first['forecast_as_of']=='2024-09-01T00:00:00+08:00'
+    assert first['pdf_half_revenue_cny']==first['income_note_cny']['other_business_income']=='12660.54'
+    assert 'main_business_income' not in first['income_note_cny']  # The blank original cell is not a reported source zero.
+    assert Decimal(last['income_note_cny']['main_business_income'])+Decimal(last['income_note_cny']['other_business_income'])==Decimal(last['pdf_half_revenue_cny'])
+    assert result['status']=='source_values_confirmed_early_commercialization_base' and result['original_failed_samples_retained']
+    bad=copy.deepcopy(ledger);bad['reports'][0]['notes'][0]['anchors']=['报告期内，公司产品已开展商业化生产与销售']
+    with pytest.raises(ValueError,match='business evidence'):verify(bad,directory,source)
+    bad=copy.deepcopy(ledger);bad['reports'][0]['rows'][2]['values'][0]='12660.55'
+    with pytest.raises(ValueError,match='row values'):verify(bad,directory,source)
+    bad=copy.deepcopy(source);next(r for r in bad['records'] if r['code']=='688443' and r['period']=='2024-03-31')['bits']['FN230']=bits(999999)
+    with pytest.raises(ValueError,match='rounding bound'):verify(ledger,directory,bad)

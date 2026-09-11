@@ -1,0 +1,111 @@
+{
+  "code": "688443",
+  "periods": [
+    {
+      "period": "2024-06-30",
+      "published_date": "2024-08-31",
+      "original_available_from": "2024-09-01T00:00:00+08:00",
+      "forecast_as_of": "2024-09-01T00:00:00+08:00",
+      "pdf_inventory_cny": "59717478.66",
+      "source_inventory_cny": "59717480",
+      "pdf_half_revenue_cny": "12660.54",
+      "source_half_revenue_cny": "12660.54003906250",
+      "revenue_rounding_bound_cny": "0.010488281250",
+      "source_inventory_minus_pdf_cny": "1.34",
+      "source_half_revenue_minus_pdf_cny": "0.00003906250",
+      "source_inputs": [
+        {
+          "period": "2024-03-31",
+          "field": "FN230",
+          "source_bits": 1170592297,
+          "artifact": "gpcw20240331.zip"
+        },
+        {
+          "period": "2024-06-30",
+          "field": "FN230",
+          "source_bits": 1170592297,
+          "artifact": "gpcw20240630.zip"
+        },
+        {
+          "period": "2024-06-30",
+          "field": "FN17",
+          "source_bits": 1281609178,
+          "artifact": "gpcw20240630.zip"
+        }
+      ],
+      "notes": [
+        {
+          "page": 2,
+          "anchors": [
+            "报告期内，公司产品尚未开展商业化生产与销售"
+          ]
+        },
+        {
+          "page": 24,
+          "anchors": [
+            "中重度斑块状银屑病适应症已于2024年8月获批上市"
+          ]
+        }
+      ],
+      "income_note_cny": {
+        "other_business_income": "12660.54"
+      }
+    },
+    {
+      "period": "2025-06-30",
+      "published_date": "2025-08-30",
+      "original_available_from": "2025-08-31T00:00:00+08:00",
+      "forecast_as_of": "2025-09-01T00:00:00+08:00",
+      "pdf_inventory_cny": "61094926.28",
+      "source_inventory_cny": "61094928",
+      "pdf_half_revenue_cny": "45391789.33",
+      "source_half_revenue_cny": "45391788",
+      "revenue_rounding_bound_cny": "2.01",
+      "source_inventory_minus_pdf_cny": "1.72",
+      "source_half_revenue_minus_pdf_cny": "-1.33",
+      "source_inputs": [
+        {
+          "period": "2025-03-31",
+          "field": "FN230",
+          "source_bits": 1268369109,
+          "artifact": "gpcw20250331.zip"
+        },
+        {
+          "period": "2025-06-30",
+          "field": "FN230",
+          "source_bits": 1270909185,
+          "artifact": "gpcw20250630.zip"
+        },
+        {
+          "period": "2025-06-30",
+          "field": "FN17",
+          "source_bits": 1281953540,
+          "artifact": "gpcw20250630.zip"
+        }
+      ],
+      "notes": [
+        {
+          "page": 23,
+          "anchors": [
+            "2024年8月27日",
+            "《药品注册证书》",
+            "获批上市"
+          ]
+        }
+      ],
+      "income_note_cny": {
+        "other_business_income": "15960.54",
+        "main_business_income": "45375828.79"
+      }
+    }
+  ],
+  "status": "source_values_confirmed_early_commercialization_base",
+  "original_failed_samples_retained": true,
+  "actual_fcff": null,
+  "boundary": "later-acquired original evidence; no strict PIT, automatic exclusion or full TTM revenue/target cash audit; no retrospective adoption",
+  "evidence": {
+    "ledger_sha256": "e2948cf4c32b8d805f1aed6e2294bde296fcc2631985faf7ec23e600fcc6c780",
+    "snapshot_sha256": "cfdbed237d7816723e9ff807d8e50fc8bfb96207b805c094a1367094f64f294c",
+    "code_sha256": "dbaa2d8c97e02ea90017e2de2fc7188a4ebf864b55f82bac0ee32074230f6cd2"
+  }
+}

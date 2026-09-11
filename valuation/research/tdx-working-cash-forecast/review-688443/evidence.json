@@ -1,0 +1,136 @@
+{
+  "code": "688443",
+  "org_id": "9900056031",
+  "selection": "next distinct issuer among frozen v3 largest normalized errors after 000809; no outcome deletion",
+  "snapshot_sha256": "cfdbed237d7816723e9ff807d8e50fc8bfb96207b805c094a1367094f64f294c",
+  "catalogue_sha256": "84ea694feca6e2aaa856a70b1cb7a1a2b3f9e76158e42f8dc602eed2e5dfdfae",
+  "reports": [
+    {
+      "file": "2024H1.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-08-31/1221087852.PDF",
+      "sha256": "f5679dcd6a2a1ba15c15406327552fdfac6bb3990aca1aef3d1560383662ab11",
+      "first_acquired_at": "2026-09-11T00:38:15.746957+00:00",
+      "period": "2024-06-30",
+      "announcement_id": "1221087852",
+      "issuer": "重庆智翔金泰生物制药股份有限公司",
+      "rows": [
+        {
+          "key": "inventory",
+          "page": 66,
+          "section": "合并资产负债表",
+          "header_period": "2024年6月30日",
+          "label": "存货七、10",
+          "values": [
+            "59717478.66",
+            "55450910.06"
+          ]
+        },
+        {
+          "key": "revenue",
+          "page": 70,
+          "section": "合并利润表",
+          "header_period": "2024年半年度",
+          "label": "其中：营业收入七、61",
+          "values": [
+            "12660.54",
+            "132804.13"
+          ]
+        },
+        {
+          "key": "other_business_income",
+          "page": 138,
+          "section": "61、营业收入和营业成本",
+          "header_period": "本期发生额上期发生额",
+          "label": "其他业务",
+          "values": [
+            "12660.54",
+            "4361.45",
+            "106343.95",
+            "98096.30"
+          ]
+        }
+      ],
+      "notes": [
+        {
+          "page": 2,
+          "anchors": [
+            "报告期内，公司产品尚未开展商业化生产与销售"
+          ]
+        },
+        {
+          "page": 24,
+          "anchors": [
+            "中重度斑块状银屑病适应症已于2024年8月获批上市"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "2025H1.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2025-08-30/1224620745.PDF",
+      "sha256": "5bb12d3947500c3c753e0fc4e48c6cab33c90c64393aa5f8767aa2a0d23e818f",
+      "first_acquired_at": "2026-09-11T00:38:12.564946+00:00",
+      "period": "2025-06-30",
+      "announcement_id": "1224620745",
+      "issuer": "重庆智翔金泰生物制药股份有限公司",
+      "rows": [
+        {
+          "key": "inventory",
+          "page": 69,
+          "section": "合并资产负债表",
+          "header_period": "2025年6月30日",
+          "label": "存货七、10",
+          "values": [
+            "61094926.28",
+            "50149048.77"
+          ]
+        },
+        {
+          "key": "revenue",
+          "page": 73,
+          "section": "合并利润表",
+          "header_period": "2025年半年度",
+          "label": "其中：营业收入七、61",
+          "values": [
+            "45391789.33",
+            "12660.54"
+          ]
+        },
+        {
+          "key": "other_business_income",
+          "page": 141,
+          "section": "61、营业收入和营业成本",
+          "header_period": "本期发生额上期发生额",
+          "label": "其他业务",
+          "values": [
+            "15960.54",
+            "7736.92",
+            "12660.54",
+            "4361.45"
+          ]
+        },
+        {
+          "key": "main_business_income",
+          "page": 141,
+          "section": "61、营业收入和营业成本",
+          "header_period": "本期发生额上期发生额",
+          "label": "主营业务",
+          "values": [
+            "45375828.79",
+            "7595005.73"
+          ]
+        }
+      ],
+      "notes": [
+        {
+          "page": 23,
+          "anchors": [
+            "2024年8月27日",
+            "《药品注册证书》",
+            "获批上市"
+          ]
+        }
+      ]
+    }
+  ]
+}
