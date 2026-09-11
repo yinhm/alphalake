@@ -1,0 +1,7 @@
+{
+  "protocol_sha256": "99a4b0b46438c8302980112325929c30acb4b27fecad6740887e27ef18f56a7b",
+  "result_gzip_sha256": "710aa25240555927e2f42195e5450dd3724efc3be1562139a0cfb55700d08127",
+  "tool_sha256": "812f600b69e415b0ffb272e3635407b516ba07e87761303e3ee94cb53f786cf8",
+  "helper_sha256": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+  "scope": "development_diagnostic_not_adopted_no_production_change"
+}

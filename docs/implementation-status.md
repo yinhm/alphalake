@@ -1,5 +1,7 @@
 # AlphaLake 实现状态
 
+[经验预测范围开发](../valuation/research/tdx-past-error-bands/README.md)未通过：三起点632/900项可评价，2025期收入/EBIT代理覆盖低于冻结90%门槛，范围仍宽；未发布为单公司预测或DCF置信区间。
+
 [现金预测新120家公司复验](../valuation/research/tdx-operating-cash-replication/README.md)未通过：三起点324/360组，OCF主要误差12.1920%→12.7863%，现金代理亦退化。统一现金交叉检查已同时返回新失败证据，不只展示原留出6.84%的改善；不扩大规则适用性或替换DCF。
 
 已[分离达摩达兰行业经营利润增长与收入增长](damodaran-method-audit-20260911.md#行业经营利润增长与收入增长分离)：继承解析器不再把fundgrEB的经营利润增长显示为收入增长。源值保留为独立参考；通用DCF不直接消费该字段，两份标准请求完整报告不变。

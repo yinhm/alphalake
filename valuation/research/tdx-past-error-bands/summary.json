@@ -1,0 +1,120 @@
+{
+  "by_origin": {
+    "2023-06-30": {
+      "candidates": 300,
+      "statuses": {
+        "evaluated": 213,
+        "blocked": 87
+      },
+      "marginal": {
+        "revenue": {
+          "coverage": 0.9107981220657277,
+          "mean_width_base_revenue": 0.9157988092596786
+        },
+        "ebit": {
+          "coverage": 0.9107981220657277,
+          "mean_width_base_revenue": 0.352077455575325
+        }
+      },
+      "joint_coverage": 0.8450704225352113
+    },
+    "2024-06-30": {
+      "candidates": 300,
+      "statuses": {
+        "evaluated": 213,
+        "blocked": 87
+      },
+      "marginal": {
+        "revenue": {
+          "coverage": 0.9389671361502347,
+          "mean_width_base_revenue": 0.7424295031119986
+        },
+        "ebit": {
+          "coverage": 0.9061032863849765,
+          "mean_width_base_revenue": 0.28672316586302843
+        }
+      },
+      "joint_coverage": 0.8779342723004695
+    },
+    "2025-06-30": {
+      "candidates": 300,
+      "statuses": {
+        "evaluated": 206,
+        "blocked": 94
+      },
+      "marginal": {
+        "revenue": {
+          "coverage": 0.8786407766990292,
+          "mean_width_base_revenue": 0.6404922541706642
+        },
+        "ebit": {
+          "coverage": 0.8883495145631068,
+          "mean_width_base_revenue": 0.22963902256795948
+        }
+      },
+      "joint_coverage": 0.8106796116504854
+    }
+  },
+  "decision": "stop_fixed_empirical_bands",
+  "boundary": "600 exposed development companies, 300/300 disjoint roles not fresh holdout; source later acquired with FN314 simplified chronology not strict PIT; empirical percentiles not guaranteed probabilities; report joint coverage without independence assumption; negative EBIT retained; no FCFF/value/point forecast change",
+  "protocol_sha256": "99a4b0b46438c8302980112325929c30acb4b27fecad6740887e27ef18f56a7b",
+  "calibration": {
+    "2023-06-30": {
+      "origin": "2022-06-30",
+      "target": "2023-06-30",
+      "cutoff": "2023-09-01T00:00:00+08:00",
+      "statuses": {
+        "evaluated": 187,
+        "blocked": 113
+      },
+      "quantiles": {
+        "revenue": [
+          -0.4362396194573952,
+          0.4795591898022834
+        ],
+        "ebit": [
+          -0.26324059406739353,
+          0.08883686150793148
+        ]
+      }
+    },
+    "2024-06-30": {
+      "origin": "2023-06-30",
+      "target": "2024-06-30",
+      "cutoff": "2024-09-01T00:00:00+08:00",
+      "statuses": {
+        "blocked": 96,
+        "evaluated": 204
+      },
+      "quantiles": {
+        "revenue": [
+          -0.38781097121427804,
+          0.3546185318977206
+        ],
+        "ebit": [
+          -0.21906461326373416,
+          0.06765855259929426
+        ]
+      }
+    },
+    "2025-06-30": {
+      "origin": "2024-06-30",
+      "target": "2025-06-30",
+      "cutoff": "2025-09-01T00:00:00+08:00",
+      "statuses": {
+        "blocked": 87,
+        "evaluated": 213
+      },
+      "quantiles": {
+        "revenue": [
+          -0.31628020153951025,
+          0.324212052631154
+        ],
+        "ebit": [
+          -0.1671018736293696,
+          0.06253714893858989
+        ]
+      }
+    }
+  }
+}
