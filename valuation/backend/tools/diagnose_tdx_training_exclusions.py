@@ -20,7 +20,7 @@ def load_result():
     return json.loads(gzip.decompress(raw))
 
 
-def refit(result, excluded):
+def refit(result, excluded, *, equal_weight=False):
     """只读取既有起点输入及滞后训练池拟合；最后才读评价实际值。"""
     rows = copy.deepcopy(result['results'])
     pools = {}; removed = {}
@@ -42,7 +42,8 @@ def refit(result, excluded):
                 row['calibration'][model] = dict(status='nonpositive_unscaled')
                 continue
             try:
-                coefficient = joint.fit(pools[row['origin']][base], row['code'], minimum=30)
+                coefficient = joint.fit(pools[row['origin']][base], row['code'], minimum=30,
+                                        equal_weight=equal_weight)
                 row['calibration'][model] = coefficient
                 row['forecasts'][model] = forecast | dict(ebit=forecast['ebit'] * coefficient['multiplier'])
             except ValueError as exc:

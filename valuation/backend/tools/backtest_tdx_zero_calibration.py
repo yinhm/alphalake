@@ -6,7 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from data_sources.alphalake_calibration import CalibrationObservation, fitted_scale
+from data_sources.alphalake_calibration import CalibrationObservation, fitted_scale, weighted_median
 from tools.backtest_tdx_history import at, error
 from tools.backtest_tdx_multiyear_growth import actual_operating
 from tools.backtest_tdx_normalized_margin import metrics
@@ -17,13 +17,14 @@ PROTOCOL_SHA = 'b1fd4c4fe211f9fef0df423d599a31571c9c9bd727b2272218938336b16c24b3
 ZERO, COMBINED, SHORT, CALIBRATED = MODELS = ('zero_growth', 'zero_growth_half_calibrated', 'short_or_flat', 'short_or_flat_half_calibrated')
 
 
-def fit(observations, target_code, minimum=30):
+def fit(observations, target_code, minimum=30, *, equal_weight=False):
     if len({r.code for r in observations}) != len(observations):
         raise ValueError('duplicate training company')
     selected = [r for r in observations if r.code != target_code]
     if len(selected) < minimum:
         raise ValueError('insufficient training after target exclusion')
-    raw = fitted_scale(selected)
+    raw = (weighted_median((r.actual_ebit/r.predicted_ebit, 1) for r in selected)
+           if equal_weight else fitted_scale(selected))
     scale = max(.5, min(1.5, raw))
     return dict(status='applied', observations=len(selected), excluded_target=any(r.code == target_code for r in observations),
                 raw_scale=raw, scale=scale, multiplier=(1+scale)/2)

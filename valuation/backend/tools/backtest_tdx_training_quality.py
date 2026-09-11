@@ -47,9 +47,16 @@ def study(p, result, source):
                 admitted.append(entry)
         pool['admitted'] = admitted
     rows, _ = prior.refit(filtered, ())
+    return dict(protocol_sha256=PROTOCOL_SHA,source_result_sha256=prior.SOURCE_SHA,removed_training=removed,
+        remaining_training={o:len(v['admitted']) for o,v in filtered['training'].items()},
+        **assess(p, result, rows), results=rows, boundary=p['boundary'])
+
+
+def assess(p, result, rows):
+    """两项开发候选共用已冻结的完整评价门槛，不改变训练过程。"""
     models = prior.joint.MODELS; candidate = prior.joint.COMBINED; base = prior.joint.ZERO
     summary = prior.metrics(rows,models)
-    by_origin = {o:prior.metrics([r for r in rows if r['origin']==o],models) for o in removed}
+    by_origin = {o:prior.metrics([r for r in rows if r['origin']==o],models) for o in result['training']}
     valid = [r for r in rows if r['status']=='evaluated']; g=p['gates']
     main='ebit_mae_pct_actual_revenue'; wape='ebit_wape_pct'
     current=summary['models'][candidate]; baseline=summary['models'][base]
@@ -67,10 +74,7 @@ def study(p, result, source):
             for m in (candidate,prior.joint.CALIBRATED) for k in (main,wape)),
         each_origin_nonworse=all(m['models'][candidate][main]<=m['models'][base][main]*g['maximum_each_origin_main_ratio_vs_zero'] for m in by_origin.values()),
         leave_one_evaluation_company_out_nonworse=all(totals[candidate]-losses[candidate][c]<=totals[base]-losses[base][c] for c in losses[base]))
-    return dict(protocol_sha256=PROTOCOL_SHA,source_result_sha256=prior.SOURCE_SHA,removed_training=removed,
-        remaining_training={o:len(v['admitted']) for o,v in filtered['training'].items()},
-        summary=summary,by_origin=by_origin,decision=dict(passed=all(checks.values()),checks=checks),results=rows,
-        boundary=p['boundary'])
+    return dict(summary=summary,by_origin=by_origin,decision=dict(passed=all(checks.values()),checks=checks))
 
 
 if __name__ == '__main__':
