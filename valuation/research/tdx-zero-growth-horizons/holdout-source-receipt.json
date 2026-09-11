@@ -1,0 +1,12 @@
+{
+  "archive_dir": "workspace/tdx-zero-growth-horizons-held-20260911",
+  "records": 3685,
+  "companies": 120,
+  "artifacts": 34,
+  "snapshot_sha256": "107030fc3824020f2428beb6261fe655de64bb206900973537cdd08c3cc91f57",
+  "definition_sha256": "9fa5a3182f437f9a3865c120e9a87530efa4ae2ed08b44d0695b9d2ed7971575",
+  "development_selection_sha256": "5e2754a73a4f1c54a2ee6466aa021ca44948636c5c82f6dab80269bc504c7b21",
+  "same_archive_versions": true,
+  "no_development_company_overlap": true,
+  "boundary": "source extraction after development-selection commit f6f56cc; same original 120 reserved companies, now extracted; not yet scored at this receipt"
+}
