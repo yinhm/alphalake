@@ -1,0 +1,13 @@
+{
+  "status": "development_source_extracted_before_scoring",
+  "implementation_commit": "fdd1482",
+  "records": 7400,
+  "companies": 240,
+  "artifacts": 34,
+  "snapshot_sha256": "28233e2750ffc9fec6bca27d512a54b57b145eba695cd91234c0a7a9dff575ce",
+  "manifest_path": "workspace/tdx-normalized-margin-download-20260911-retry/source-manifest.json",
+  "manifest_sha256": "b62884fd036e7963b64a319d44f6f6cf6baa9bd7207cd320698b6853a082e82b",
+  "failed_attempt_directory": "workspace/tdx-normalized-margin-download-20260911",
+  "retry_directory": "workspace/tdx-normalized-margin-download-20260911-retry",
+  "boundary": "new historical archives are later-acquired versions; original22 archived versions and timestamps retained; no holdout extraction; no standard facts publication"
+}
