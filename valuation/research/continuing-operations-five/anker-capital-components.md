@@ -1,0 +1,92 @@
+# 安克年度资本分量与现金调节衔接
+
+本轮把已归档TDX源字段与既有年度财报台账衔接，优先核对正常经营的投入分量，未扩展疫情研究或新增预测候选。2021—2025五年度、每年十项，共50个位比较，49项匹配、1项冲突保留；其中10项是上轮已核对的资本开支/研发，本轮新增40项比较、39项匹配。不是新增50个独立财务字段。
+
+## 字段与范围
+
+| TDX | 已定位财报项目 | 源倍率 |
+| --- | --- | ---: |
+| FN114 / FN304 | 购建长期资产支付现金 / 研发费用 | 1 |
+| FN136 / FN137 / FN138 | 固定资产折旧 / 无形资产摊销 / 长期待摊摊销 | 1 |
+| FN146 / FN147 / FN148 | 存货减少 / 经营应收减少 / 经营应付增加 | 1 |
+| FN579 / FN581 | 投资性房地产折旧 / 使用权资产折旧 | 10000 |
+
+原文行、物理页、列序、分位金额、TDX位及倍率全部保存在[核验回执](anker-capital-components.json.gz)。元编码比较 `float32(原文金额)`；万元编码比较 `float32(原文金额/10000按0.01万元舍入)`，随后计算只使用原TDX位值乘倍率，不恢复原文小数。这五年FN136均匹配独立固定资产折旧行，不含另列的投资性房地产及使用权折旧；仅限本样本，不能泛化其他公司的FN136。
+
+## 年度分量
+
+单位亿元。为避免把使用权折旧与缺失的使用权新增混在一起，本表单列租赁折旧，不将它减入小计；研发费用也单列，不假设已重分类或再加一遍。非租赁折旧摊销小计为FN136＋FN137＋FN138＋10000×FN579。营运现金占用为−(FN146＋FN147＋FN148)。
+
+| 年度 | 购建现金 | 非租赁折旧摊销 | 营运现金占用 | 已匹配分量小计 |
+| --- | ---: | ---: | ---: | ---: |
+| 2021 | 2.0713 | 0.2417 | 4.2997 | 6.1293 |
+| 2022 | 11.4416 | 0.3913 | −3.6470（源口径，有冲突） | 留空 |
+| 2023 | 0.7030 | 0.5363 | 3.1012 | 3.2679 |
+| 2024 | 4.2888 | 0.5926 | −5.4295 | −1.7332 |
+| 2025 | 3.6512 | 1.0478 | 24.5320 | 27.1354 |
+
+小计＝购建现金−非租赁折旧摊销＋营运现金占用，**只是已匹配分量的算术组合**。未扣处置回款、未补并购和非现金投入、未完成经营营运资本分类及租赁/研发重分类；不是完整净再投资，也不是上下界。负小计不能解释为公司没有维持性投入。五期完整再投资和实际FCFF均为空。
+
+2024/2025年的源资本开支相近，而营运现金调节由释放约5.43亿元转为占用约24.53亿元，说明要解释这两年的投入路径，首先需要衔接营运项目的时序与归属。该观察不证明资本效率比率不应使用，也不支持直接用这些不完整小计拟合新的比率。现有[资本效率敏感性](../../../docs/capital-efficiency-counterfactual-20260911.md)仍只是一项政策对照，不能据本表选定111.47元或其他新估值。
+
+## 保留的一项版本冲突
+
+2022年FN148源值−13,763,685元；2023年报p186的2022重述比较列为−13,690,857.77元，差额−72,827.23元，超出该金额的float32精度。原财报版本及重述标记见[六年历史说明](../../../internal/ingest/testdata/anker-history-2026/README.md)。本轮尚未确认差额归因，不声称TDX必然错误或差额已经由重述解释。源值不覆盖，原PDF台账不修改；2022的原始算式可追溯，但证据支持的小计留空。
+
+这项冲突进入边界记录，不追加异常个案追查，不删除该年度来改善预测评分。本轮没有给出资本效率评分或新的历史预测结论。
+
+## 验证与下一步
+
+既有历史样本默认校验重新执行，验证原文金额及派生表；下面的衔接检查精确重建回执，并分别翻转元字段FN136和万元字段FN581的一位，额外不匹配必须被拒绝。已有PDF校验在CI，新衔接脚本属于本地验收，未新增CI步骤。无生产代码、迁移、依赖或Go改动，不重跑Go全套。
+
+下一步在已匹配年度检查营运项目中哪些是持续经营资金占用、哪些是范围/时序调整，并用既有标准链保留财务事实与分析政策的分层。只为明确的资本输入决策补证；未分类部分不归零，不再扫描一年增长参数。
+
+```bash
+PYTHONPATH=valuation/backend workspace/anker-agent-adapter-20260906/venv/bin/python - <<'PY'
+import csv, gzip, hashlib, json, struct
+from copy import deepcopy
+from decimal import Decimal as D, ROUND_HALF_UP
+from pathlib import Path
+p=Path('valuation/research/continuing-operations-five')
+source_path=p/'capital-snapshot.json'
+ledger_path=Path('internal/ingest/testdata/anker-history-2026/reported.csv')
+source=json.loads(source_path.read_bytes());ledger=list(csv.DictReader(ledger_path.open()))
+fields={'FN114':('cash_capex',1),'FN304':('rd_expense',1),'FN136':('cf_fixed_da',1),'FN137':('cf_intangible_da',1),'FN138':('cf_deferred_da',1),'FN146':('cf_inventory',1),'FN147':('cf_receivables',1),'FN148':('cf_payables',1),'FN579':('cf_property_da',10000),'FN581':('cf_rou_da',10000)}
+bits=lambda n:struct.unpack('<I',struct.pack('<f',float(n)))[0]
+value=lambda n:D(str(struct.unpack('<f',struct.pack('<I',n))[0]))
+def build(s):
+ index={(r['code'],r['period']):r for r in s['records']}
+ assert len(index)==len(s['records'])
+ rows=[];comparisons=[]
+ for year in range(2021,2026):
+  r=index['300866',f'{year}-12-31'];amounts={};conflicts=[]
+  for field,(key,multiplier) in fields.items():
+   pdf,=[x for x in ledger if x['year']==str(year) and x['key']==key]
+   encoded=D(pdf['value'])/multiplier
+   if multiplier==10000:encoded=encoded.quantize(D('.01'),rounding=ROUND_HALF_UP)
+   matched=r['bits'][field]==bits(encoded)
+   comparisons.append(dict(year=year,field=field,source_bits=r['bits'][field],source_value=str(value(r['bits'][field])),value_multiplier=multiplier,pdf_row_id=pdf['id'],pdf_id=pdf['pdf_id'],pdf_page=int(pdf['pdf_page']),pdf_column=int(pdf['column']),pdf_decimal=pdf['value'],expected_source_bits=bits(encoded),status='source_precision_match' if matched else 'source_pdf_version_conflict_unresolved'))
+   amounts[field]=value(r['bits'][field])*multiplier
+   if not matched:conflicts.append(field)
+  da=sum((amounts[f] for f in ('FN136','FN137','FN138','FN579')),D(0))
+  wc=-sum((amounts[f] for f in ('FN146','FN147','FN148')),D(0))
+  subtotal=amounts['FN114']-da+wc
+  rows.append(dict(year=year,cash_capex_cny=str(amounts['FN114']),matched_nonlease_da_cny=str(da),cashflow_wc_cash_use_cny=str(wc),rou_depreciation_separate_cny=str(amounts['FN581']),rd_expense_separate_cny=str(amounts['FN304']),source_formula_subtotal_cny=str(subtotal),evidence_supported_subtotal_cny=None if conflicts else str(subtotal),conflict_fields=conflicts,classified_reinvestment=None,actual_fcff=None,status='source_pdf_conflict' if conflicts else 'matched_components_not_full_reinvestment'))
+ conflicts=[(c['year'],c['field']) for c in comparisons if c['status']!='source_precision_match']
+ assert conflicts==[(2022,'FN148')],conflicts
+ return dict(code='300866',years=list(range(2021,2026)),comparison_count=50,matched_count=49,conflict_count=1,comparisons=comparisons,annual_components=rows,boundary='source_precision_preserved; later_acquired_and_restated_versions; source_subtotal_is_not_full_net_reinvestment_or_FCFF; excluded_lease_investment_RD_reclassification_disposal_and_other_adjustments_not_zero; no_capital_ratio_adoption_or_forecast_validation')
+r=build(source)
+for field in ('FN136','FN581'):
+ changed=deepcopy(source)
+ row=next(x for x in changed['records'] if x['code']=='300866' and x['period']=='2024-12-31');row['bits'][field]^=1
+ try:build(changed)
+ except AssertionError:pass
+ else:raise AssertionError('source tamper accepted')
+r['evidence']={str(x):hashlib.sha256(x.read_bytes()).hexdigest() for x in (source_path,ledger_path,Path('internal/ingest/testdata/anker-history-2026/annual-inputs.csv'))}
+r['verification']=['one_yuan_field_bit_tamper_rejected','one_wanyuan_field_bit_tamper_rejected','known_2022_conflict_retained_not_overwritten']
+data=(json.dumps(r,ensure_ascii=False,indent=2)+'\n').encode();target=p/'anker-capital-components.json.gz'
+if target.exists():assert gzip.decompress(target.read_bytes())==data
+else:target.write_bytes(gzip.compress(data,mtime=0))
+print('50 comparisons: 49 matches, 1 retained conflict; yuan/wanyuan tamper rejected')
+PY
+```

@@ -1,5 +1,7 @@
 # AlphaLake 实现状态
 
+[安克五年度资本分量衔接](../valuation/research/continuing-operations-five/anker-capital-components.md)已完成50项源/原文比较，49匹配、1项2022版本冲突保留。2024营运现金释放5.43亿元、2025占用24.53亿元；投入小计不等于完整再投资，不能直接拟合资本效率。下一步核对营运项目的经营归属与时序。
+
 [固定五家的资本源衔接](../valuation/research/continuing-operations-five/capital-source.md)已补齐22包110条研究源记录，原15组预测不变；安克2021—2025资本开支/研发10项与既有原文台账按源精度匹配。完整经营资本及FCFF仍未闭合，下一步核对这些分量的资本口径与时序。
 
 [资本效率原表与单因素对照](capital-efficiency-counterfactual-20260911.md)已核对：仅替换安克资本效率同行代理，条件值126.14→111.47元，首年FCFF转负；增长、WACC、终值和股权桥接不变。这是投入需求敏感性，未采用替代政策或证明准确度改善，下一步核对公司多年资本需求与口径。
