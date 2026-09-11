@@ -1,0 +1,14 @@
+{
+  "status": "source_extracted_before_holdout_scoring",
+  "frozen_implementation_commit": "b4f5c41",
+  "snapshot_sha256": "80ed7ff684077c8402675a26e9ddeb0a723fcfb7e87eecfea307fe7264f380fa",
+  "records": 3803,
+  "companies": 180,
+  "artifacts": 22,
+  "files": {
+    "cmd/prepare-tdx-history/main.go": "a6efa04c5873af6a1e82c4ae92d474230739be9f10dbf92137d66296e9646074",
+    "workspace/tdx-calibration-download-20260910/source-manifest.json": "53f2148c92af811ed145f864c682f225c6e0c4fb0a718109a81453a2bde36268",
+    "valuation/research/tdx-zero-growth-validation/protocol.json": "c25fa377ea65662ebe89aecf6812f95a062e9b60655f3c012926a7b9f5521427",
+    "valuation/research/tdx-zero-growth-validation/development-selection.json": "94363e44e289b8e0dcc14d9ea7c5ae521068dc01611c353d105a6181b4cd4297"
+  }
+}
