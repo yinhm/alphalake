@@ -1,0 +1,204 @@
+{
+  "scope": "capital_efficiency_only_counterfactual_not_adoption_or_price_update",
+  "source": {
+    "url": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/capexGlobal.xls",
+    "sha256": "2470cd4d62a330575132c1bf7d9ccc001a56dbd97bd374fa7ceec7930eb30955",
+    "fetched_at": "2026-09-10T02:52:14.028451+00:00"
+  },
+  "base_source_checks": [
+    {
+      "code": "300866",
+      "industry": "Computers/Peripherals",
+      "observation": {
+        "artifact_id": 5,
+        "industry": "Computers/Peripherals",
+        "method_code": "source_sales_to_invested_capital_ltm",
+        "metric_code": "sales_to_invested_capital_ltm",
+        "observation_date": "2026-01-05",
+        "observation_id": 397,
+        "raw_unit": "dimensionless",
+        "raw_value": "2.4835356974578553",
+        "release_id": 5,
+        "sample_count": 343,
+        "sample_region": "global",
+        "source_locator": "Industry Averages!J29",
+        "statistic_code": "provider_estimate",
+        "value": "2.483535697458",
+        "value_status": "reported"
+      },
+      "adoption": {
+        "adoption_basis": "historical_industry_ratio_as_marginal_reinvestment_proxy",
+        "adoption_reason": "采用行业历史比率作为未来增量投资代理；来源方法资本化研发与经营租赁，通用模型未自动协调该口径，倍率1仅为显式代理情景，不声称公司实际边际效率已闭合。",
+        "code": "300866",
+        "industry": "Computers/Peripherals",
+        "mapping_reason": "使用同一Damodaran目录下的公司来源分类与全球行业资本效率；不是公司实测边际资本效率。",
+        "max_age_days": 370,
+        "minimum_sample_count": 30,
+        "ratio_multiplier": 1.0,
+        "report_period": "2026-06-30"
+      }
+    },
+    {
+      "code": "002032",
+      "industry": "Furn/Home Furnishings",
+      "observation": {
+        "artifact_id": 5,
+        "industry": "Furn/Home Furnishings",
+        "method_code": "source_sales_to_invested_capital_ltm",
+        "metric_code": "sales_to_invested_capital_ltm",
+        "observation_date": "2026-01-05",
+        "observation_id": 413,
+        "raw_unit": "dimensionless",
+        "raw_value": "2.2730023498401595",
+        "release_id": 5,
+        "sample_count": 383,
+        "sample_region": "global",
+        "source_locator": "Industry Averages!J45",
+        "statistic_code": "provider_estimate",
+        "value": "2.273002349840",
+        "value_status": "reported"
+      },
+      "adoption": {
+        "adoption_basis": "historical_industry_ratio_as_marginal_reinvestment_proxy",
+        "adoption_reason": "采用行业历史比率作为未来增量投资代理；来源方法资本化研发与经营租赁，通用模型未自动协调该口径，倍率1仅为显式代理情景，不声称公司实际边际效率已闭合。",
+        "code": "002032",
+        "industry": "Furn/Home Furnishings",
+        "mapping_reason": "使用同一Damodaran目录下的公司来源分类与全球行业资本效率；不是公司实测边际资本效率。",
+        "max_age_days": 370,
+        "minimum_sample_count": 30,
+        "ratio_multiplier": 1.0,
+        "report_period": "2026-06-30"
+      }
+    }
+  ],
+  "report_period": "2026-06-30",
+  "information_as_of": "2026-09-10T04:42:23Z",
+  "original_run": {
+    "path": "/root/alphalake/valuation/backend/data/alphalake_runs/6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b.json",
+    "sha256": "328ffa8de193bb8fe8253a0be686b051f1ea4160ba3c80a182781052a7b028b7"
+  },
+  "counterfactual_run": {
+    "path": "/root/alphalake/workspace/capital-efficiency-counterfactual-20260911/runs/8b2b3c6ac79657b55ba299a0d12b7570cb9a4b2d2a15f069477bcaf13103fa8f.json",
+    "sha256": "c014d8a1864b809ef46ded4bde99739a92ba24818c553a6c01525a0649978262"
+  },
+  "original_run_id": "6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b",
+  "counterfactual_run_id": "8b2b3c6ac79657b55ba299a0d12b7570cb9a4b2d2a15f069477bcaf13103fa8f",
+  "engine_revision": "150d8dc5d91826123fb33dfcb1d9f0cc44dafddf302adc55ce825ac5d752bfea",
+  "request_patch": {
+    "industry": "Electronics (Consumer & Office)",
+    "mapping_reason": "2024年报消费电子业务作为资本效率同行替代敏感性；不变更WACC行业，不声称当前官方分类或公司边际效率。"
+  },
+  "input_changes": [
+    {
+      "path": "/prepared_ttm/provenance/assumption_rules",
+      "before_present": true,
+      "after_present": true,
+      "before": "8c25dd1c9f6324f676b8101ad3a9639ff7970ed25d83dc57c2844e2f31c9038a",
+      "after": "d72f8cd2334527beaa6ac6c2c548a920c1f23422696972c62f5c3b233a11fa1e"
+    },
+    {
+      "path": "/prepared_ttm/provenance/capital_binding",
+      "before_present": true,
+      "after_present": true,
+      "before": "aef8185c3cc180c71b6a17216a11d81187c879faef3410ab4c0c7f7a9bb51297",
+      "after": "17ad31177c948b3fbdc1357eaf7ebb006377a4e12adf1bd25f63d356fea4ec70"
+    },
+    {
+      "path": "/prepared_ttm/provenance/valuation_policy",
+      "before_present": true,
+      "after_present": true,
+      "before": "05cd4d418b95fdfcddff974840a20f5daa619e7cf6275be4266397183f855844",
+      "after": "cce493952121b12bad86f0dcd45953c9869f562b3e78ab4ce9a1ed50b28e4aeb"
+    },
+    {
+      "path": "/valuation_assumptions/sales_to_capital_high",
+      "before_present": true,
+      "after_present": true,
+      "before": 2.483535697458,
+      "after": 1.905898248522
+    },
+    {
+      "path": "/valuation_assumptions/sales_to_capital_stable",
+      "before_present": true,
+      "after_present": true,
+      "before": 2.483535697458,
+      "after": 1.905898248522
+    }
+  ],
+  "original_ratio": 2.483535697458,
+  "counterfactual_ratio": 1.905898248522,
+  "counterfactual_observation": {
+    "artifact_id": 5,
+    "industry": "Electronics (Consumer & Office)",
+    "method_code": "source_sales_to_invested_capital_ltm",
+    "metric_code": "sales_to_invested_capital_ltm",
+    "observation_date": "2026-01-05",
+    "observation_id": 404,
+    "raw_unit": "dimensionless",
+    "raw_value": "1.9058982485219271",
+    "release_id": 5,
+    "sample_count": 122,
+    "sample_region": "global",
+    "source_locator": "Industry Averages!J36",
+    "statistic_code": "provider_estimate",
+    "value": "1.905898248522",
+    "value_status": "reported"
+  },
+  "original_value_per_share": 126.13784833230838,
+  "counterfactual_value_per_share": 111.46508243780573,
+  "original_first_fcff_million_cny": 166.76537538192633,
+  "counterfactual_first_fcff_million_cny": -669.2406276134157,
+  "annual_cash_changes": [
+    {
+      "year": 1,
+      "extra_reinvestment_million_cny": 836.006002995342,
+      "pv_cash_change_million_cny": -773.539821957116
+    },
+    {
+      "year": 2,
+      "extra_reinvestment_million_cny": 1003.2072035944107,
+      "pv_cash_change_million_cny": -858.8893199468295
+    },
+    {
+      "year": 3,
+      "extra_reinvestment_million_cny": 1203.8486443132938,
+      "pv_cash_change_million_cny": -953.6559631181136
+    },
+    {
+      "year": 4,
+      "extra_reinvestment_million_cny": 1444.618373175951,
+      "pv_cash_change_million_cny": -1058.8788041362957
+    },
+    {
+      "year": 5,
+      "extra_reinvestment_million_cny": 1733.5420478111428,
+      "pv_cash_change_million_cny": -1175.7115408612472
+    },
+    {
+      "year": 6,
+      "extra_reinvestment_million_cny": 1705.8053750461622,
+      "pv_cash_change_million_cny": -1070.4568360137348
+    },
+    {
+      "year": 7,
+      "extra_reinvestment_million_cny": 1549.7033807248672,
+      "pv_cash_change_million_cny": -899.8322248528243
+    },
+    {
+      "year": 8,
+      "extra_reinvestment_million_cny": 1256.4220159226861,
+      "pv_cash_change_million_cny": -675.0279876167109
+    },
+    {
+      "year": 9,
+      "extra_reinvestment_million_cny": 835.138251279393,
+      "pv_cash_change_million_cny": -415.1622891519524
+    },
+    {
+      "year": 10,
+      "extra_reinvestment_million_cny": 314.96642619679824,
+      "pv_cash_change_million_cny": -144.8762062712199
+    }
+  ],
+  "boundary": "2024 business evidence supports analyst alternative peer proxy only; no official remapping or company marginal-capital estimate; WACC/growth/margins/terminal/bridge fixed; RD and other accounting scope not reconciled; not forecast validation"
+}
