@@ -1,0 +1,15 @@
+{
+  "files": {
+    "forward-plan.json": "2453632c8a3785e45df12bd0b0e6d1ad034e67f76581683f9fd912d8d0750339",
+    "forward-2026H1.json.gz": "fa3ce4da6ce7ca735d42dcf0d9a1a56f3266f5a2dc87a54cd5c4dd0644a06cfc"
+  },
+  "implementation": {
+    "valuation/backend/tools/prepare_temporal_forecasts.py": "cbb9ec1a6b62eb5db9949d5cd59eebfa0576a0111d852bf9caf8c2f3c388712a",
+    "valuation/backend/tools/backtest_tdx_origins.py": "414563a51edaa6b9265f34916ed3c58fcff735e72b655bedb10cf208aa2e7efb",
+    "valuation/backend/tools/backtest_tdx_cash_revenue.py": "9952c1ecbfee61f7dfbf6fbaf111a34ac3e4627a2212411fdb412f04d2e0431c",
+    "valuation/backend/tools/backtest_tdx_history.py": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+    "valuation/backend/data_sources/alphalake.py": "7250a086357095d2c58be7bdaddde773287545b729fba27a6b68feece7f550ee"
+  },
+  "publication": "local immutable prospective target ledger; no scheduler, automatic future retrieval or current accuracy claim",
+  "validation": "2 Python tests, no skip; future records ignored; 86 mature prior-window forecasts identical; all Go tests and command build passed"
+}
