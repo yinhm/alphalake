@@ -1,0 +1,26 @@
+{
+  "old_file": "workspace/tdx-zero-growth-holdout-source-20260911/terminal-guard-runs/4d24e3a91da5f15e21ff2c5cd1498e326cfcfd01051c0919c8906b36d6da9cb5.json",
+  "old_sha256": "c98670478cf7a2e3843ec6c9404f6639d0eb52c1c0ca4bc05b949a0f7dd946f5",
+  "new_file": "workspace/tdx-zero-growth-horizons-20260911/valuation-runs/b84e313900cc9125bc3dc420b5d6da0370472095d62998b7cb89f04bc5e9e3cf.json",
+  "new_sha256": "af2774ae1a0f54ea5394f97ae94f72eeefcc807b32c260118fa570792f8c58e6",
+  "old_run_id": "4d24e3a91da5f15e21ff2c5cd1498e326cfcfd01051c0919c8906b36d6da9cb5",
+  "new_run_id": "b84e313900cc9125bc3dc420b5d6da0370472095d62998b7cb89f04bc5e9e3cf",
+  "engine_revision": "15a3cf41a2d311b6fb559d566b56831c1010ea2537837c097ad51a37d65fde4b",
+  "value_per_share": {
+    "value": 42.284555083108394,
+    "currency": "CNY",
+    "unit": "CNY/share"
+  },
+  "only_changed_paths": [
+    "run_id",
+    "request.policy.review_note",
+    "audit.assumptions.bridge.review_note",
+    "audit.generated_policy.review_note",
+    "inputs.prepared_ttm.provenance.valuation_policy",
+    "inputs.prepared_ttm.provenance.assumption_rules"
+  ],
+  "all_other_content_equal": true,
+  "complete_report_equal": true,
+  "repeat_cli_output_equal": true,
+  "boundary": "explicit illustrative policy documentation updated after independent one-to-three-year holdout failed; financial values and forecast numeric assumptions unchanged; not an automatically adopted policy or current price target"
+}

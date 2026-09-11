@@ -1,13 +1,13 @@
 {
-  "policy_version": "nonfinancial-zero-growth-2026H1-pilot-v1",
-  "review_note": "零增长显式估值对照：120家公司两年/三年留出验证通过；前五年零增长及随后向2%终值增长过渡是估值延伸假设，四至十年、再投资及完整DCF未验证。事后政策，不代表历史当时已知或当前目标价。",
+  "policy_version": "nonfinancial-zero-growth-2026H1-pilot-v2",
+  "review_note": "零增长显式估值对照：此前一批120家公司两年/三年留出通过；随后另一批120家公司一至三年联合验证失败，一年期及两个一年窗口退化，见tdx-zero-growth-horizons。不得把前五年零增长视为已验证预测；前五年及随后向2%终值增长过渡仍是估值延伸假设，再投资及完整DCF未验证，不作为自动采用依据。事后政策，不代表历史当时已知或当前目标价。",
   "assignments": {
     "300866": {
       "policy": {
         "policy_id": "nonfinancial-history-fcff-v1",
         "approved_report_period": "2026-06-30",
         "scenario": "zero_growth_valuation_extension_not_validated_dcf",
-        "review_note": "零增长显式估值对照：120家公司两年/三年留出验证通过；前五年零增长及随后向2%终值增长过渡是估值延伸假设，四至十年、再投资及完整DCF未验证。事后政策，不代表历史当时已知或当前目标价。",
+        "review_note": "零增长显式估值对照：此前一批120家公司两年/三年留出通过；随后另一批120家公司一至三年联合验证失败，一年期及两个一年窗口退化，见tdx-zero-growth-horizons。不得把前五年零增长视为已验证预测；前五年及随后向2%终值增长过渡仍是估值延伸假设，再投资及完整DCF未验证，不作为自动采用依据。事后政策，不代表历史当时已知或当前目标价。",
         "nonfinancial_scope_review": "安克合并普通经营模型；标准链及已审核原文见valuation-chain-2026，仍执行金融业务字段拒绝，不替代专项研发/套保估值。",
         "wacc": 0.1,
         "tax_rate": 0.25,
