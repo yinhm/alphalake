@@ -922,3 +922,45 @@ def test_working_cash_inventory_driver_signal_and_source_integrity():
     assert {k for k,v in actual['decision']['checks'].items() if not v}=={'zero_benchmark_nonworse'}
     saved=json.loads((directory/'development-v2-summary.json').read_bytes())
     assert {k:v for k,v in actual.items() if k!='results'}=={k:v for k,v in saved.items() if k!='evidence'}
+
+
+def test_working_cash_business_diagnosis_keeps_all_groups_and_refusals(monkeypatch,capsys):
+    import sys
+    import tools.backtest_tdx_working_cash as module
+    directory=ROOT/'valuation/research/tdx-working-cash-forecast';p=json.loads((directory/'protocol-v2.json').read_bytes());source=json.loads((directory/'snapshot-v2.json').read_bytes())
+    r=module.study(p,source,'development');diagnosis=module.business_diagnostics(p,r['results']);saved=json.loads((directory/'business-diagnostics.json').read_bytes())
+    assert diagnosis==saved['business_diagnostics']
+    assert diagnosis['industries']==26 and diagnosis['development_companies']==60
+    groups=diagnosis['by_industry'].values()
+    assert sum(g['companies'] for g in groups)==60 and max(g['companies'] for g in groups)==11
+    assert sum(g['summary']['candidates'] for g in groups)==180
+    assert sum(diagnosis['refusals'].values())==17
+    held=next(s['code'] for s in p['samples'] if s['split']=='holdout')
+    with pytest.raises(ValueError,match='development only'):module.business_diagnostics(p,[dict(code=held,status='blocked')])
+    monkeypatch.setattr(sys,'argv',['working_cash','absent','absent','--phase','holdout','--diagnose-business'])
+    with pytest.raises(SystemExit) as exc:module.main()
+    assert exc.value.code==1 and 'development only' in capsys.readouterr().out
+
+
+def test_working_cash_expansion_sampling_source_and_failed_replication():
+    import hashlib
+    from tools.backtest_tdx_working_cash import study,metrics,business_diagnostics
+    directory=ROOT/'valuation/research/tdx-working-cash-forecast';p=json.loads((directory/'protocol-v3.json').read_bytes());old=json.loads((directory/'protocol-v2.json').read_bytes())
+    universe=json.loads((ROOT/'valuation/research/tdx-growth-expanded/sampling-universe.json').read_bytes())
+    ranked=sorted(universe['companies'],key=lambda r:hashlib.sha256(('alphalake-growth-v3:'+r['code']).encode()).hexdigest())
+    original=[s for s in old['samples'] if s['split']=='development'];dev=[s for s in p['samples'] if s['split']=='development'];held=[s for s in p['samples'] if s['split']=='holdout']
+    assert dev==original+[dict(s,split='development') for s in ranked[360:960]]
+    assert held==[s for s in old['samples'] if s['split']=='holdout']
+    assert len({s['code'] for s in p['samples']})==780
+    assert p['definitions']==old['definitions'] and p['gates']==old['gates'] and p['driver_policy']==old['driver_policy']
+    raw=(directory/'snapshot-v3.json').read_bytes();source=json.loads(raw);prior=json.loads((directory/'snapshot-v2.json').read_bytes());index={(r['code'],r['period']):r for r in source['records']}
+    assert source['study_sha256']==hashlib.sha256((directory/'protocol-v3.json').read_bytes()).hexdigest()
+    assert all(index[(r['code'],r['period'])]==r for r in prior['records'])
+    result=study(p,source,'development');saved=json.loads((directory/'development-v3-summary.json').read_bytes())
+    assert all(result[k]==saved[k] for k in ('summary','by_origin','decision'))
+    assert result['summary']['statuses']=={'blocked':202,'evaluated':1778}
+    assert {k for k,v in result['decision']['checks'].items() if v}=={'minimum_pairs'}
+    original_codes={s['code'] for s in original};models=(p['baseline'],p['benchmark'],p['candidate'])
+    assert metrics([r for r in result['results'] if r['code'] in original_codes],models)==saved['development_cohorts']['original60']==json.loads((directory/'development-v2-summary.json').read_bytes())['summary']
+    assert metrics([r for r in result['results'] if r['code'] not in original_codes],models)==saved['development_cohorts']['additional600']
+    assert business_diagnostics(p,result['results'])==saved['business_diagnostics']

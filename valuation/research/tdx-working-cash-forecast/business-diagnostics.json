@@ -1,0 +1,4794 @@
+{
+  "protocol_id": "tdx-working-cash-forecast-v2",
+  "phase": "development",
+  "summary": {
+    "candidates": 180,
+    "statuses": {
+      "blocked": 17,
+      "evaluated": 163
+    },
+    "models": {
+      "repeat_latest": {
+        "n": 163,
+        "mae_pct_actual_revenue": 15.25451852687434,
+        "wape_pct": 115.4316221525107
+      },
+      "zero_forecast": {
+        "n": 163,
+        "mae_pct_actual_revenue": 10.443441389655744,
+        "wape_pct": 100.0
+      },
+      "inventory_intensity_half": {
+        "n": 163,
+        "mae_pct_actual_revenue": 10.565783562420412,
+        "wape_pct": 110.37137731106571
+      }
+    }
+  },
+  "by_origin": {
+    "2023-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "blocked": 8,
+        "evaluated": 52
+      },
+      "models": {
+        "repeat_latest": {
+          "n": 52,
+          "mae_pct_actual_revenue": 14.40343395713727,
+          "wape_pct": 129.60432001388955
+        },
+        "zero_forecast": {
+          "n": 52,
+          "mae_pct_actual_revenue": 8.39901591722102,
+          "wape_pct": 100.0
+        },
+        "inventory_intensity_half": {
+          "n": 52,
+          "mae_pct_actual_revenue": 7.745213299301077,
+          "wape_pct": 107.0117602379907
+        }
+      }
+    },
+    "2024-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "blocked": 6,
+        "evaluated": 54
+      },
+      "models": {
+        "repeat_latest": {
+          "n": 54,
+          "mae_pct_actual_revenue": 14.422139024894305,
+          "wape_pct": 103.25354370081345
+        },
+        "zero_forecast": {
+          "n": 54,
+          "mae_pct_actual_revenue": 12.313705140269446,
+          "wape_pct": 100.0
+        },
+        "inventory_intensity_half": {
+          "n": 54,
+          "mae_pct_actual_revenue": 13.041986020396864,
+          "wape_pct": 118.83146332684794
+        }
+      }
+    },
+    "2025-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "evaluated": 57,
+        "blocked": 3
+      },
+      "models": {
+        "repeat_latest": {
+          "n": 57,
+          "mae_pct_actual_revenue": 16.819516609913805,
+          "wape_pct": 117.3595740789377
+        },
+        "zero_forecast": {
+          "n": 57,
+          "mae_pct_actual_revenue": 10.53670247796216,
+          "wape_pct": 100.0
+        },
+        "inventory_intensity_half": {
+          "n": 57,
+          "mae_pct_actual_revenue": 10.793059368586674,
+          "wape_pct": 105.63421572318046
+        }
+      }
+    }
+  },
+  "decision": {
+    "passed": false,
+    "checks": {
+      "minimum_pairs": true,
+      "primary_improvement": true,
+      "wape_nonworse": true,
+      "zero_benchmark_nonworse": false,
+      "each_period_nonworse": true,
+      "leave_one_company_out_nonworse": true
+    }
+  },
+  "boundary": "Later-acquired TDX+FN314 research timing, not strict PIT, standard facts, classified WC or FCFF; current listed industry universe survivor bias; no production policy change",
+  "evidence": {
+    "protocol_sha256": "7ad50fd06ef1815e3dbb40597d85c6768ebffd87c33c3e5ef2df68adb86eee43",
+    "snapshot_sha256": "9be6840d260cca948cd251a91c0aa42f90acaa0ba2aa0839efe9357f564ca96b",
+    "code_sha256": "26caef4b29c5233bad9362ec1d02ea7f7b9874e00b45f3801d68dcba50ef10eb",
+    "history_sha256": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+    "component_sha256": "75eb978015acbdf2f646f3428bbc893f89cb4edfa8477a24ef8043839cb6fef7"
+  },
+  "business_diagnostics": {
+    "development_companies": 60,
+    "industries": 26,
+    "by_industry": {
+      "Auto Parts": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 18.536745198254966,
+              "wape_pct": 268.00343132860877
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 6.601566576702553,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 5.943208984688568,
+              "wape_pct": 87.30996710119763
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 36.228598192710315,
+                "wape_pct": 1258.7689587787297
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.8780975206013713,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.5719907427295254,
+                "wape_pct": 89.36426664903678
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 4.122178747742831,
+                "wape_pct": 58.146906008405146
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 7.089248647463667,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 8.424833683810197,
+                "wape_pct": 118.83958516287005
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 15.259458654311752,
+                "wape_pct": 155.11751771523487
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 9.837353562042622,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 6.832802527525981,
+                "wape_pct": 69.45773052104495
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Chemical (Basic)": {
+        "companies": 3,
+        "evaluated_companies": 2,
+        "summary": {
+          "candidates": 9,
+          "statuses": {
+            "evaluated": 6,
+            "blocked": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 6,
+              "mae_pct_actual_revenue": 6.664490411762095,
+              "wape_pct": 156.89745367929683
+            },
+            "zero_forecast": {
+              "n": 6,
+              "mae_pct_actual_revenue": 3.2683646445661854,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 6,
+              "mae_pct_actual_revenue": 4.734466501918562,
+              "wape_pct": 163.42371490727695
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 3,
+            "statuses": {
+              "evaluated": 2,
+              "blocked": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 11.255335718934827,
+                "wape_pct": 464.4064958680138
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 5.474317262201497,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 6.304381484204304,
+                "wape_pct": 204.78807032173128
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 3,
+            "statuses": {
+              "evaluated": 2,
+              "blocked": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 4.812289277933397,
+                "wape_pct": 169.68116969888254
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 0.8169363478693378,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 2.609593366368188,
+                "wape_pct": 313.1065758309073
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 3,
+            "statuses": {
+              "evaluated": 2,
+              "blocked": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 3.9258462384180617,
+                "wape_pct": 117.0429335315494
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 3.513840323627722,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 5.289424655183194,
+                "wape_pct": 132.5252128680253
+              }
+            }
+          }
+        },
+        "refusals": {
+          "working cash component blocked: {'FN146': ['missing_record', 'unavailable_at_cutoff'], 'FN147': ['missing_record', 'unavailable_at_cutoff'], 'FN148': ['missing_record', 'unavailable_at_cutoff']}": 1,
+          "working cash component blocked: {'FN146': ['unavailable_at_cutoff'], 'FN147': ['unavailable_at_cutoff'], 'FN148': ['unavailable_at_cutoff']}": 2
+        }
+      },
+      "Chemical (Specialty)": {
+        "companies": 3,
+        "evaluated_companies": 3,
+        "summary": {
+          "candidates": 9,
+          "statuses": {
+            "evaluated": 9
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 9,
+              "mae_pct_actual_revenue": 12.99480531136351,
+              "wape_pct": 257.1972761586653
+            },
+            "zero_forecast": {
+              "n": 9,
+              "mae_pct_actual_revenue": 4.6304990589363175,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 9,
+              "mae_pct_actual_revenue": 6.179633686072317,
+              "wape_pct": 126.13355007545336
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 3,
+            "statuses": {
+              "evaluated": 3
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 3,
+                "mae_pct_actual_revenue": 25.556224147050656,
+                "wape_pct": 891.0083774855076
+              },
+              "zero_forecast": {
+                "n": 3,
+                "mae_pct_actual_revenue": 2.1389269421536117,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 3,
+                "mae_pct_actual_revenue": 4.023978431094232,
+                "wape_pct": 153.28879920174307
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 3,
+            "statuses": {
+              "evaluated": 3
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 3,
+                "mae_pct_actual_revenue": 5.605564099678339,
+                "wape_pct": 109.8150297916783
+              },
+              "zero_forecast": {
+                "n": 3,
+                "mae_pct_actual_revenue": 5.334946690304748,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 3,
+                "mae_pct_actual_revenue": 7.256183366522953,
+                "wape_pct": 132.18721777877224
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 3,
+            "statuses": {
+              "evaluated": 3
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 3,
+                "mae_pct_actual_revenue": 7.822627687361537,
+                "wape_pct": 139.33016925603113
+              },
+              "zero_forecast": {
+                "n": 3,
+                "mae_pct_actual_revenue": 6.417623544350592,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 3,
+                "mae_pct_actual_revenue": 7.258739260599766,
+                "wape_pct": 109.30040516103986
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Computer Services": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 2.9820349599417697,
+              "wape_pct": 116.3013835380357
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 2.670826670822469,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 6.487722624730207,
+              "wape_pct": 199.8977671729114
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 4.2815139555089745,
+                "wape_pct": 88.82921380225125
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 4.819939040595748,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 11.95425869252069,
+                "wape_pct": 248.01680253290374
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 1.7059426906563457,
+                "wape_pct": 416.62289142736284
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 0.40946926483365653,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 3.5558057310802784,
+                "wape_pct": 868.393805460538
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.958648233659989,
+                "wape_pct": 106.30873168585548
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.7830717070380033,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 3.9531034505896514,
+                "wape_pct": 142.04102038020795
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Construction Supplies": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 4.0447382429115315,
+              "wape_pct": 71.44154107119526
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 5.946396393032371,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 5.983569294517922,
+              "wape_pct": 101.57908433881916
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 3.6623327888955437,
+                "wape_pct": 34.542677621763296
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 10.602341917431799,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 9.944920307785225,
+                "wape_pct": 93.79927930294649
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 7.764894660831479,
+                "wape_pct": 276.3086005802746
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.8102254669324287,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 4.196656371712212,
+                "wape_pct": 149.33521957913138
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 0.706987279007572,
+                "wape_pct": 15.97126006673524
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 4.426621794732885,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 3.809131204056331,
+                "wape_pct": 86.05052296513588
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Drugs (Pharmaceutical)": {
+        "companies": 2,
+        "evaluated_companies": 2,
+        "summary": {
+          "candidates": 6,
+          "statuses": {
+            "evaluated": 6
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 6,
+              "mae_pct_actual_revenue": 22.988063571988334,
+              "wape_pct": 130.86040551978218
+            },
+            "zero_forecast": {
+              "n": 6,
+              "mae_pct_actual_revenue": 18.682392061011374,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 6,
+              "mae_pct_actual_revenue": 18.389212127942322,
+              "wape_pct": 96.2770838344748
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 2,
+            "statuses": {
+              "evaluated": 2
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 16.786480946473976,
+                "wape_pct": 463.5404413889287
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 2.94409020554653,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 1.2787663013017803,
+                "wape_pct": 46.00839154511771
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 2,
+            "statuses": {
+              "evaluated": 2
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 4.615819986434661,
+                "wape_pct": 76.21395246566439
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 5.288489733725946,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 5.151858089020016,
+                "wape_pct": 99.04166234573938
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 2,
+            "statuses": {
+              "evaluated": 2
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 47.56188978305636,
+                "wape_pct": 100.6791495442882
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 47.81459624376164,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 48.73701199350518,
+                "wape_pct": 101.73337727057017
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Electrical Equipment": {
+        "companies": 6,
+        "evaluated_companies": 6,
+        "summary": {
+          "candidates": 18,
+          "statuses": {
+            "evaluated": 18
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 18,
+              "mae_pct_actual_revenue": 9.443658261039992,
+              "wape_pct": 163.98915257953692
+            },
+            "zero_forecast": {
+              "n": 18,
+              "mae_pct_actual_revenue": 5.136066382343945,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 18,
+              "mae_pct_actual_revenue": 5.737548614738848,
+              "wape_pct": 110.89350065570403
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 6,
+            "statuses": {
+              "evaluated": 6
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 6,
+                "mae_pct_actual_revenue": 12.693170892006759,
+                "wape_pct": 143.54196623999198
+              },
+              "zero_forecast": {
+                "n": 6,
+                "mae_pct_actual_revenue": 6.631909476296462,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 6,
+                "mae_pct_actual_revenue": 6.607287005837418,
+                "wape_pct": 101.44402717172963
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 6,
+            "statuses": {
+              "evaluated": 6
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 6,
+                "mae_pct_actual_revenue": 7.419107237545185,
+                "wape_pct": 172.8576739577397
+              },
+              "zero_forecast": {
+                "n": 6,
+                "mae_pct_actual_revenue": 4.71400676674549,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 6,
+                "mae_pct_actual_revenue": 6.1281581481071115,
+                "wape_pct": 140.87935913348755
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 6,
+            "statuses": {
+              "evaluated": 6
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 6,
+                "mae_pct_actual_revenue": 8.218696653568035,
+                "wape_pct": 191.6702423464802
+              },
+              "zero_forecast": {
+                "n": 6,
+                "mae_pct_actual_revenue": 4.0622829039898845,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 6,
+                "mae_pct_actual_revenue": 4.477200690272015,
+                "wape_pct": 97.16340335287367
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Electronics (General)": {
+        "companies": 11,
+        "evaluated_companies": 11,
+        "summary": {
+          "candidates": 33,
+          "statuses": {
+            "blocked": 3,
+            "evaluated": 30
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 30,
+              "mae_pct_actual_revenue": 36.143804491508945,
+              "wape_pct": 184.86057657718234
+            },
+            "zero_forecast": {
+              "n": 30,
+              "mae_pct_actual_revenue": 22.877382960709475,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 30,
+              "mae_pct_actual_revenue": 21.855632132482803,
+              "wape_pct": 99.17727191238606
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 11,
+            "statuses": {
+              "blocked": 2,
+              "evaluated": 9
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 9,
+                "mae_pct_actual_revenue": 21.393073092389223,
+                "wape_pct": 156.06099684287634
+              },
+              "zero_forecast": {
+                "n": 9,
+                "mae_pct_actual_revenue": 16.804862183029385,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 9,
+                "mae_pct_actual_revenue": 12.036741137604706,
+                "wape_pct": 86.87215424178999
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 11,
+            "statuses": {
+              "blocked": 1,
+              "evaluated": 10
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 10,
+                "mae_pct_actual_revenue": 45.35889059536109,
+                "wape_pct": 111.48546370345687
+              },
+              "zero_forecast": {
+                "n": 10,
+                "mae_pct_actual_revenue": 39.25125606020732,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 10,
+                "mae_pct_actual_revenue": 40.039379495398,
+                "wape_pct": 99.35919496669048
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 11,
+            "statuses": {
+              "evaluated": 11
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 11,
+                "mae_pct_actual_revenue": 39.835233723650404,
+                "wape_pct": 724.3857036958797
+              },
+              "zero_forecast": {
+                "n": 11,
+                "mae_pct_actual_revenue": 12.96046987017696,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 11,
+                "mae_pct_actual_revenue": 13.358590798369246,
+                "wape_pct": 118.73338015076004
+              }
+            }
+          }
+        },
+        "refusals": {
+          "revenue missing/duplicate identity: 2022-09-30": 2,
+          "working cash component blocked: {'FN146': ['source_zero_ambiguous'], 'FN147': ['source_zero_ambiguous'], 'FN148': ['source_zero_ambiguous']}": 1
+        }
+      },
+      "Engineering/Construction": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 4.22096592944682,
+              "wape_pct": 119.32864392980878
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 3.4252776273791445,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 2.9387875869290028,
+              "wape_pct": 84.53375703617111
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.996046156429579,
+                "wape_pct": 47.2670561025484
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 6.338550363554473,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 4.470564806181228,
+                "wape_pct": 70.52976705661554
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 5.588489232413728,
+                "wape_pct": 470.09469996570135
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 1.188800731601839,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 1.3778788054997433,
+                "wape_pct": 115.90494259228228
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 4.078362399497151,
+                "wape_pct": 148.38600782495072
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.7484817869811207,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.967919149106037,
+                "wape_pct": 107.98394819875966
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Environmental & Waste Services": {
+        "companies": 2,
+        "evaluated_companies": 2,
+        "summary": {
+          "candidates": 6,
+          "statuses": {
+            "blocked": 3,
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 4.468547439256397,
+              "wape_pct": 209.84612281611186
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 1.9475310127644503,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 1.5500348162205861,
+              "wape_pct": 77.38133014242642
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 2,
+            "statuses": {
+              "blocked": 2
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 0,
+                "mae_pct_actual_revenue": null,
+                "wape_pct": null
+              },
+              "zero_forecast": {
+                "n": 0,
+                "mae_pct_actual_revenue": null,
+                "wape_pct": null
+              },
+              "inventory_intensity_half": {
+                "n": 0,
+                "mae_pct_actual_revenue": null,
+                "wape_pct": null
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 2,
+            "statuses": {
+              "blocked": 1,
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 7.932957602114343,
+                "wape_pct": 3293.7466340077863
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 0.2408490537859504,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 0.6212195096940991,
+                "wape_pct": 257.9289807989842
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 2,
+            "statuses": {
+              "evaluated": 2
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 2.736342357827423,
+                "wape_pct": 98.05676571597425
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 2.8008719922537,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 2.01444246948383,
+                "wape_pct": 70.83659702941246
+              }
+            }
+          }
+        },
+        "refusals": {
+          "revenue missing/duplicate identity: 2022-09-30": 2,
+          "revenue missing/duplicate identity: 2021-09-30": 1
+        }
+      },
+      "Farming/Agriculture": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 26.04310340580642,
+              "wape_pct": 126.57779122133269
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 20.81956746769217,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 19.094322729258703,
+              "wape_pct": 93.53972417647152
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 9.49886480415613,
+                "wape_pct": 35.1775682955097
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 27.002619181521503,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 16.10587311466087,
+                "wape_pct": 59.64559588235233
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 31.59238594477698,
+                "wape_pct": 592.2794907962918
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 5.334033414242068,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 16.885171493658724,
+                "wape_pct": 316.555412805902
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 37.038059468486146,
+                "wape_pct": 122.9599569266171
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 30.122049807312944,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 24.291923579456512,
+                "wape_pct": 80.64498842160134
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Food Processing": {
+        "companies": 2,
+        "evaluated_companies": 2,
+        "summary": {
+          "candidates": 6,
+          "statuses": {
+            "evaluated": 6
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 6,
+              "mae_pct_actual_revenue": 4.73867126787083,
+              "wape_pct": 163.3803395476037
+            },
+            "zero_forecast": {
+              "n": 6,
+              "mae_pct_actual_revenue": 2.8995997750446367,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 6,
+              "mae_pct_actual_revenue": 2.610463504652568,
+              "wape_pct": 89.11228455404415
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 2,
+            "statuses": {
+              "evaluated": 2
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 6.788899170376952,
+                "wape_pct": 179.99047689367043
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 3.724858433023818,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 3.2894449876177108,
+                "wape_pct": 87.7067164252005
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 2,
+            "statuses": {
+              "evaluated": 2
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 3.3191673677017555,
+                "wape_pct": 155.16324498480284
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 2.200918214712929,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 2.59196628194153,
+                "wape_pct": 116.45014054674783
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 2,
+            "statuses": {
+              "evaluated": 2
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 4.107947265533781,
+                "wape_pct": 147.8111693657756
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 2.7730226773971633,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 1.9499792443984636,
+                "wape_pct": 69.83608336523764
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Furn/Home Furnishings": {
+        "companies": 2,
+        "evaluated_companies": 2,
+        "summary": {
+          "candidates": 6,
+          "statuses": {
+            "evaluated": 6
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 6,
+              "mae_pct_actual_revenue": 16.16668774816553,
+              "wape_pct": 167.3519265330511
+            },
+            "zero_forecast": {
+              "n": 6,
+              "mae_pct_actual_revenue": 8.514310112308078,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 6,
+              "mae_pct_actual_revenue": 10.233300606717753,
+              "wape_pct": 106.85525037462473
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 2,
+            "statuses": {
+              "evaluated": 2
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 17.368984915089907,
+                "wape_pct": 421.8330201042729
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 3.7497925206316958,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 5.528579715741323,
+                "wape_pct": 112.32358399607953
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 2,
+            "statuses": {
+              "evaluated": 2
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 9.860406297522925,
+                "wape_pct": 111.38805986498932
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 6.446142904449686,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 9.117920621503144,
+                "wape_pct": 111.82758168178562
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 2,
+            "statuses": {
+              "evaluated": 2
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 21.270672031883763,
+                "wape_pct": 194.16099190288415
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 15.346994911842849,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 16.05340148290879,
+                "wape_pct": 101.29633215881904
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Healthcare Products": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 20.50506192401348,
+              "wape_pct": 187.85757076084232
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 9.733728647345472,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 8.464553835209875,
+              "wape_pct": 88.04987605722282
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 7.731164927744996,
+                "wape_pct": 147.6432894850324
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 5.236380843796328,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 5.564643457613681,
+                "wape_pct": 106.26888348287832
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 19.432991651724056,
+                "wape_pct": 144.66961946827192
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 13.432669362889962,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 10.965447863355188,
+                "wape_pct": 81.63267900905166
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 34.35102919257138,
+                "wape_pct": 326.1544482120125
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 10.532135735350126,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 8.863570184660755,
+                "wape_pct": 84.15738656795898
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Healthcare Support Services": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 3.6463640904641603,
+              "wape_pct": 151.77311978856747
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 2.684253004891483,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 2.0371883452626713,
+              "wape_pct": 76.62787965021825
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 4.490495850250414,
+                "wape_pct": 275.25746217160923
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 1.6313802411833669,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 1.186317149436223,
+                "wape_pct": 72.71861700223211
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 4.054915423814665,
+                "wape_pct": 216.78427723555566
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 1.8704840939219196,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.0452441058293527,
+                "wape_pct": 109.3430365152695
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.393680997327401,
+                "wape_pct": 52.598031065707126
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 4.550894679569163,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.8800037805224377,
+                "wape_pct": 63.28434260304811
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Heathcare Information and Technology": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 15.270519301066232,
+              "wape_pct": 106.10181087048625
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 15.007865533146386,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 20.44955799182121,
+              "wape_pct": 147.57879727070798
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 6.77763281340005,
+                "wape_pct": 1561.8889426754993
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 0.433938203172758,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 16.057492203499056,
+                "wape_pct": 3700.4098938729076
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 6.122688234732757,
+                "wape_pct": 109.3355312597069
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 5.599907152039544,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 12.391567353781795,
+                "wape_pct": 221.28165730870484
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 32.91123685506589,
+                "wape_pct": 84.40996878619222
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 38.98975124422686,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 32.89961441818277,
+                "wape_pct": 84.38015983252562
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Machinery": {
+        "companies": 7,
+        "evaluated_companies": 7,
+        "summary": {
+          "candidates": 21,
+          "statuses": {
+            "evaluated": 21
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 21,
+              "mae_pct_actual_revenue": 8.07934713688285,
+              "wape_pct": 123.53793502961383
+            },
+            "zero_forecast": {
+              "n": 21,
+              "mae_pct_actual_revenue": 6.3434277285399645,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 21,
+              "mae_pct_actual_revenue": 7.630631665279015,
+              "wape_pct": 123.19792808618882
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 7,
+            "statuses": {
+              "evaluated": 7
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 7,
+                "mae_pct_actual_revenue": 7.437014160589771,
+                "wape_pct": 126.10853293455567
+              },
+              "zero_forecast": {
+                "n": 7,
+                "mae_pct_actual_revenue": 4.826452110915087,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 7,
+                "mae_pct_actual_revenue": 4.654022981153625,
+                "wape_pct": 84.46367004148348
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 7,
+            "statuses": {
+              "evaluated": 7
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 7,
+                "mae_pct_actual_revenue": 6.7741603731528395,
+                "wape_pct": 87.63084013974928
+              },
+              "zero_forecast": {
+                "n": 7,
+                "mae_pct_actual_revenue": 8.64921775332256,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 7,
+                "mae_pct_actual_revenue": 7.522632093621601,
+                "wape_pct": 83.74602291275897
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 7,
+            "statuses": {
+              "evaluated": 7
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 7,
+                "mae_pct_actual_revenue": 10.026866876905942,
+                "wape_pct": 200.4018879047372
+              },
+              "zero_forecast": {
+                "n": 7,
+                "mae_pct_actual_revenue": 5.554613321382246,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 7,
+                "mae_pct_actual_revenue": 10.71523992106182,
+                "wape_pct": 258.8434495910356
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Retail (Automotive)": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 3.0273230677496477,
+              "wape_pct": 308.3256287413767
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 0.9373567132519192,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 2.137634162678657,
+              "wape_pct": 221.2555174380791
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 3.9626752047052607,
+                "wape_pct": 486.07598507929947
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 0.8152378077388007,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.346085461406567,
+                "wape_pct": 287.7792760757539
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.753904848183426,
+                "wape_pct": 144.28232228805354
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 1.9086917957179617,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.921697363071772,
+                "wape_pct": 153.07329185499876
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.3653891503602567,
+                "wape_pct": 2683.65640791685
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 0.088140536298995,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 1.1451196635576317,
+                "wape_pct": 1299.1975220948236
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Rubber& Tires": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 4.95995905918953,
+              "wape_pct": 72.2295591855818
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 6.937308230147457,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 5.9977584975109695,
+              "wape_pct": 86.97745424193847
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 8.212035572872715,
+                "wape_pct": 87.70804234948638
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 9.362921977155274,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 7.164654251366833,
+                "wape_pct": 76.52156312792069
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 0.8860348001296613,
+                "wape_pct": 9.870758916576422
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 8.976359443261268,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 8.959884603635443,
+                "wape_pct": 99.81646412746771
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 5.781806804566214,
+                "wape_pct": 233.83101293482642
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.4726432700258303,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 1.8687366375306331,
+                "wape_pct": 75.57647559532967
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Semiconductor": {
+        "companies": 4,
+        "evaluated_companies": 3,
+        "summary": {
+          "candidates": 12,
+          "statuses": {
+            "blocked": 5,
+            "evaluated": 7
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 7,
+              "mae_pct_actual_revenue": 17.173337818494346,
+              "wape_pct": 75.08921202177706
+            },
+            "zero_forecast": {
+              "n": 7,
+              "mae_pct_actual_revenue": 21.128966192726313,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 7,
+              "mae_pct_actual_revenue": 19.83243711483505,
+              "wape_pct": 105.20094978599705
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 4,
+            "statuses": {
+              "blocked": 2,
+              "evaluated": 2
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 17.115001375950573,
+                "wape_pct": 89.21593629242301
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 19.562737176656672,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 17.22457471711286,
+                "wape_pct": 115.76783552868633
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 4,
+            "statuses": {
+              "blocked": 2,
+              "evaluated": 2
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 19.77433262521391,
+                "wape_pct": 87.87373464310275
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 22.431170415046076,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 20.42777759702881,
+                "wape_pct": 91.75422931062393
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 4,
+            "statuses": {
+              "evaluated": 3,
+              "blocked": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 3,
+                "mae_pct_actual_revenue": 15.47823224237715,
+                "wape_pct": 70.24054749926077
+              },
+              "zero_forecast": {
+                "n": 3,
+                "mae_pct_actual_revenue": 21.304982721892905,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 3,
+                "mae_pct_actual_revenue": 21.174118391854005,
+                "wape_pct": 108.98601790217877
+              }
+            }
+          }
+        },
+        "refusals": {
+          "revenue missing/duplicate identity: 2023-03-31": 2,
+          "working cash component blocked: {'FN146': ['missing_record', 'unavailable_at_cutoff'], 'FN147': ['missing_record', 'unavailable_at_cutoff'], 'FN148': ['missing_record', 'unavailable_at_cutoff']}": 3
+        }
+      },
+      "Semiconductor Equip": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 1.4283938926713706,
+              "wape_pct": 7.622044595131574
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 19.943453207673414,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 16.21476496355305,
+              "wape_pct": 76.50866160721377
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 0.6110410847577209,
+                "wape_pct": 2.689704721452342
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 22.717775668244393,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 24.62314768609164,
+                "wape_pct": 108.38714161840517
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.598504860111883,
+                "wape_pct": 13.664468302295408
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 19.016509114192,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 17.514534854415345,
+                "wape_pct": 92.10173512521425
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 1.0756357331445077,
+                "wape_pct": 5.944027876875223
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 18.09607484058385,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 6.506612350152166,
+                "wape_pct": 35.95593192154502
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Software (System & Application)": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 7.5263886529060215,
+              "wape_pct": 109.40587840364641
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 6.552596863340639,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 6.807244490041385,
+              "wape_pct": 103.684842543309
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 14.641271252523557,
+                "wape_pct": 169.8978883687295
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 8.617688773592993,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 8.741205787874565,
+                "wape_pct": 101.43329629935188
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 3.8885512295828843,
+                "wape_pct": 105.80427080978647
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 3.6752308766190267,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 4.627857706702969,
+                "wape_pct": 125.92019010681301
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 4.049343476611624,
+                "wape_pct": 54.98186607348948
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 7.364870939809898,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 7.052669975546623,
+                "wape_pct": 95.76094453229707
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Steel": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 31.860864156569278,
+              "wape_pct": 295.4654899682659
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 10.660942558191083,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 7.362406711124951,
+              "wape_pct": 65.65574266445259
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 73.00776764407878,
+                "wape_pct": 327.6113462739008
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 22.284871532819363,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 21.525636741429523,
+                "wape_pct": 96.59304838140216
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 13.267638511349285,
+                "wape_pct": 221.2397941207085
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 5.996949402380323,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 0.3447901659731788,
+                "wape_pct": 5.749425963746232
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 9.307186314279772,
+                "wape_pct": 251.47715121035176
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 3.701006739373566,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 0.21679322597215242,
+                "wape_pct": 5.857682550690165
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Telecom. Equipment": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 1.817420664389529,
+              "wape_pct": 39.92614018849479
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 4.800478612608564,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 5.232747318206752,
+              "wape_pct": 108.11528129069742
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 1.387958485200084,
+                "wape_pct": 28.381839534869087
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 4.8903048849066995,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 4.663964912208394,
+                "wape_pct": 95.37165927227002
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 0.5680980875842944,
+                "wape_pct": 17.486550357101784
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 3.2487716329571747,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 5.781906714385246,
+                "wape_pct": 177.97208814958472
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 3.4962054203842086,
+                "wape_pct": 55.82888559651549
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 6.262359319961818,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 5.2523703280266165,
+                "wape_pct": 83.87206897062305
+              }
+            }
+          }
+        },
+        "refusals": {}
+      },
+      "Transportation": {
+        "companies": 3,
+        "evaluated_companies": 2,
+        "summary": {
+          "candidates": 9,
+          "statuses": {
+            "evaluated": 6,
+            "blocked": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 6,
+              "mae_pct_actual_revenue": 5.735234010673912,
+              "wape_pct": 161.42328147267187
+            },
+            "zero_forecast": {
+              "n": 6,
+              "mae_pct_actual_revenue": 5.531834071669057,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 6,
+              "mae_pct_actual_revenue": 5.54746263700419,
+              "wape_pct": 100.17613446565045
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 3,
+            "statuses": {
+              "evaluated": 2,
+              "blocked": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 3.8997204017675395,
+                "wape_pct": 107.75339134126192
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 2.5013840974791464,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 2.5098753755832055,
+                "wape_pct": 100.31689165460006
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 3,
+            "statuses": {
+              "evaluated": 2,
+              "blocked": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 7.068933884675743,
+                "wape_pct": 200.9701037136629
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 4.759461346097854,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 4.7762206060833465,
+                "wape_pct": 100.91799139234095
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 3,
+            "statuses": {
+              "evaluated": 2,
+              "blocked": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 2,
+                "mae_pct_actual_revenue": 6.237047745578453,
+                "wape_pct": 189.39300989224893
+              },
+              "zero_forecast": {
+                "n": 2,
+                "mae_pct_actual_revenue": 9.33465677143017,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 2,
+                "mae_pct_actual_revenue": 9.35629192934602,
+                "wape_pct": 98.48772011421507
+              }
+            }
+          }
+        },
+        "refusals": {
+          "working cash component blocked: {'FN146': ['source_zero_ambiguous']}": 3
+        }
+      },
+      "Transportation (Railroads)": {
+        "companies": 1,
+        "evaluated_companies": 1,
+        "summary": {
+          "candidates": 3,
+          "statuses": {
+            "evaluated": 3
+          },
+          "models": {
+            "repeat_latest": {
+              "n": 3,
+              "mae_pct_actual_revenue": 12.193154004527216,
+              "wape_pct": 352.6029125865791
+            },
+            "zero_forecast": {
+              "n": 3,
+              "mae_pct_actual_revenue": 3.7781914289987,
+              "wape_pct": 100.0
+            },
+            "inventory_intensity_half": {
+              "n": 3,
+              "mae_pct_actual_revenue": 3.132304786904123,
+              "wape_pct": 81.8709477111046
+            }
+          }
+        },
+        "by_origin": {
+          "2023-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 27.635867231892487,
+                "wape_pct": 1406.2206516546105
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 1.9652582401897682,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 0.9346026509047077,
+                "wape_pct": 47.5562260364552
+              }
+            }
+          },
+          "2024-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 5.274067649592205,
+                "wape_pct": 181.25970363856015
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.9096746511893947,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 2.712357053392296,
+                "wape_pct": 93.21856834693044
+              }
+            }
+          },
+          "2025-06-30": {
+            "candidates": 1,
+            "statuses": {
+              "evaluated": 1
+            },
+            "models": {
+              "repeat_latest": {
+                "n": 1,
+                "mae_pct_actual_revenue": 3.669527132096953,
+                "wape_pct": 56.80697901569022
+              },
+              "zero_forecast": {
+                "n": 1,
+                "mae_pct_actual_revenue": 6.459641395616938,
+                "wape_pct": 100.0
+              },
+              "inventory_intensity_half": {
+                "n": 1,
+                "mae_pct_actual_revenue": 5.749954656415365,
+                "wape_pct": 89.01352728832414
+              }
+            }
+          }
+        },
+        "refusals": {}
+      }
+    },
+    "largest_errors": [
+      {
+        "sample": {
+          "code": "002217",
+          "name": "ST合力泰",
+          "instrument_id": 29019,
+          "stratum": "Electronics (General)",
+          "split": "development"
+        },
+        "result": {
+          "code": "002217",
+          "origin": "2024-06-30",
+          "target": "2025-06-30",
+          "forecast_as_of": "2024-09-01T00:00:00+08:00",
+          "status": "evaluated",
+          "actual_fcff": null,
+          "driver": {
+            "history": [
+              {
+                "period": "2024-06-30",
+                "net_inventory_cny": "678824960",
+                "revenue_cny": "1962614016",
+                "revenue_inputs": [
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20240630.zip"
+                  },
+                  {
+                    "period": "2024-03-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20240331.zip"
+                  },
+                  {
+                    "period": "2023-12-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20231231.zip"
+                  },
+                  {
+                    "period": "2023-09-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20230930.zip"
+                  }
+                ],
+                "inventory_input": {
+                  "field": "FN17",
+                  "artifact": "gpcw20240630.zip",
+                  "source_bits": 1310840880
+                }
+              },
+              {
+                "period": "2023-06-30",
+                "net_inventory_cny": "4088738304",
+                "revenue_cny": "8986978944",
+                "revenue_inputs": [
+                  {
+                    "period": "2023-06-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20230630.zip"
+                  },
+                  {
+                    "period": "2023-03-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20230331.zip"
+                  },
+                  {
+                    "period": "2022-12-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20221231.zip"
+                  },
+                  {
+                    "period": "2022-09-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20220930.zip"
+                  }
+                ],
+                "inventory_input": {
+                  "field": "FN17",
+                  "artifact": "gpcw20230630.zip",
+                  "source_bits": 1332983090
+                }
+              }
+            ],
+            "inventory_cash_forecast_cny": "-107045398.2920128795619441478",
+            "receivables_cash_forecast_cny": "0",
+            "payables_cash_forecast_cny": "0",
+            "boundary": "net_inventory_intensity_predictor_not_gross_inventory_or_accounting_identity"
+          },
+          "base": {
+            "period": "2024-06-30",
+            "working_cash_cny": "519095632",
+            "revenue_cny": "1962614016",
+            "components": {
+              "FN146": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "349840032",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 1293147964,
+                    "source_value": "155055040",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2023-12-31",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20231231.zip",
+                    "bits": 1305340516,
+                    "source_value": "431836288",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2023-06-30",
+                    "coefficient": -1,
+                    "field": "FN146",
+                    "artifact": "gpcw20230630.zip",
+                    "bits": 1298272730,
+                    "source_value": "237051296",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN147": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "1133922000",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 1298605561,
+                    "source_value": "242376592",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2023-12-31",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20231231.zip",
+                    "bits": 1318025311,
+                    "source_value": "1203515264",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2023-06-30",
+                    "coefficient": -1,
+                    "field": "FN147",
+                    "artifact": "gpcw20230630.zip",
+                    "bits": 1301594690,
+                    "source_value": "311969856",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN148": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-964666400",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 3448497744,
+                    "source_value": "-293390848",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2023-12-31",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20231231.zip",
+                    "bits": 3465189697,
+                    "source_value": "-1162649728",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2023-06-30",
+                    "coefficient": -1,
+                    "field": "FN148",
+                    "artifact": "gpcw20230630.zip",
+                    "bits": 3454684723,
+                    "source_value": "-491374176",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              }
+            },
+            "revenue_inputs": [
+              {
+                "period": "2024-06-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20240630.zip"
+              },
+              {
+                "period": "2024-03-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20240331.zip"
+              },
+              {
+                "period": "2023-12-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20231231.zip"
+              },
+              {
+                "period": "2023-09-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20230930.zip"
+              }
+            ]
+          },
+          "forecasts_cny": {
+            "repeat_latest": "519095632",
+            "zero_forecast": "0",
+            "inventory_intensity_half": "-107045398.2920128795619441478"
+          },
+          "actual": {
+            "period": "2025-06-30",
+            "working_cash_cny": "-3857714732",
+            "revenue_cny": "1503015968",
+            "components": {
+              "FN146": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "3296393008",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3431965218,
+                    "source_value": "-75305232",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 1330787836,
+                    "source_value": "3526753280",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN146",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 1293147964,
+                    "source_value": "155055040",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN147": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-2387813020",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3430691267,
+                    "source_value": "-66111244",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 3472351224,
+                    "source_value": "-2079325184",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN147",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 1298605561,
+                    "source_value": "242376592",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN148": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-4766294720",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3445167308,
+                    "source_value": "-227626176",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 3482321328,
+                    "source_value": "-4832059392",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN148",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 3448497744,
+                    "source_value": "-293390848",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              }
+            },
+            "revenue_inputs": [
+              {
+                "period": "2025-06-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20250630.zip"
+              },
+              {
+                "period": "2025-03-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20250331.zip"
+              },
+              {
+                "period": "2024-12-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20241231.zip"
+              },
+              {
+                "period": "2024-09-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20240930.zip"
+              }
+            ]
+          },
+          "errors": {
+            "repeat_latest": {
+              "cny": "4376810364",
+              "pct_actual_revenue": 291.2018539512948
+            },
+            "zero_forecast": {
+              "cny": "3857714732",
+              "pct_actual_revenue": 256.6649200096855
+            },
+            "inventory_intensity_half": {
+              "cny": "3750669333.707987120438055852",
+              "pct_actual_revenue": 249.54288002002033
+            }
+          }
+        }
+      },
+      {
+        "sample": {
+          "code": "688256",
+          "name": "寒武纪",
+          "instrument_id": 26952,
+          "stratum": "Semiconductor",
+          "split": "development"
+        },
+        "result": {
+          "code": "688256",
+          "origin": "2025-06-30",
+          "target": "2026-06-30",
+          "forecast_as_of": "2025-09-01T00:00:00+08:00",
+          "status": "evaluated",
+          "actual_fcff": null,
+          "driver": {
+            "history": [
+              {
+                "period": "2025-06-30",
+                "net_inventory_cny": "2690128640",
+                "revenue_cny": "3990342512",
+                "revenue_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20250630.zip"
+                  },
+                  {
+                    "period": "2025-03-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20250331.zip"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20241231.zip"
+                  },
+                  {
+                    "period": "2024-09-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20240930.zip"
+                  }
+                ],
+                "inventory_input": {
+                  "field": "FN17",
+                  "artifact": "gpcw20250630.zip",
+                  "source_bits": 1327519771
+                }
+              },
+              {
+                "period": "2024-06-30",
+                "net_inventory_cny": "235427216",
+                "revenue_cny": "659683976",
+                "revenue_inputs": [
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20240630.zip"
+                  },
+                  {
+                    "period": "2024-03-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20240331.zip"
+                  },
+                  {
+                    "period": "2023-12-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20231231.zip"
+                  },
+                  {
+                    "period": "2023-09-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20230930.zip"
+                  }
+                ],
+                "inventory_input": {
+                  "field": "FN17",
+                  "artifact": "gpcw20240630.zip",
+                  "source_bits": 1298171225
+                }
+              }
+            ],
+            "inventory_cash_forecast_cny": "633030025.8044058114275008555",
+            "receivables_cash_forecast_cny": "0",
+            "payables_cash_forecast_cny": "0",
+            "boundary": "net_inventory_intensity_predictor_not_gross_inventory_or_accounting_identity"
+          },
+          "base": {
+            "period": "2025-06-30",
+            "working_cash_cny": "-1583802840",
+            "revenue_cny": "3990342512",
+            "components": {
+              "FN146": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-2507123088",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3462828971,
+                    "source_value": "-967109312",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 3469382645,
+                    "source_value": "-1699347072",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN146",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 3440899003,
+                    "source_value": "-159333296",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN147": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "104033304",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 1289454979,
+                    "source_value": "115092504",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 3448140889,
+                    "source_value": "-281971488",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN147",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 3447795289,
+                    "source_value": "-270912288",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN148": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "819286944",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 1304720343,
+                    "source_value": "411990752",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 1308649781,
+                    "source_value": "538594624",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN148",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 1291480720,
+                    "source_value": "131298432",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              }
+            },
+            "revenue_inputs": [
+              {
+                "period": "2025-06-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20250630.zip"
+              },
+              {
+                "period": "2025-03-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20250331.zip"
+              },
+              {
+                "period": "2024-12-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20241231.zip"
+              },
+              {
+                "period": "2024-09-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20240930.zip"
+              }
+            ]
+          },
+          "forecasts_cny": {
+            "repeat_latest": "-1583802840",
+            "zero_forecast": "0",
+            "inventory_intensity_half": "633030025.8044058114275008555"
+          },
+          "actual": {
+            "period": "2026-06-30",
+            "working_cash_cny": "-5334421272",
+            "revenue_cny": "9612126464",
+            "components": {
+              "FN146": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-6047865408",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2026-06-30",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20260630.zip",
+                    "bits": 3478993662,
+                    "source_value": "-3711630848",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-12-31",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20251231.zip",
+                    "bits": 3477398791,
+                    "source_value": "-3303343872",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": -1,
+                    "field": "FN146",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3462828971,
+                    "source_value": "-967109312",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN147": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-2390479416",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2026-06-30",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20260630.zip",
+                    "bits": 3471337971,
+                    "source_value": "-1949628800",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-12-31",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20251231.zip",
+                    "bits": 3449509221,
+                    "source_value": "-325758112",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": -1,
+                    "field": "FN147",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 1289454979,
+                    "source_value": "115092504",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN148": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "3103923552",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2026-06-30",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20260630.zip",
+                    "bits": 1329294270,
+                    "source_value": "3144400384",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-12-31",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20251231.zip",
+                    "bits": 1303455442,
+                    "source_value": "371513920",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": -1,
+                    "field": "FN148",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 1304720343,
+                    "source_value": "411990752",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              }
+            },
+            "revenue_inputs": [
+              {
+                "period": "2026-06-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20260630.zip"
+              },
+              {
+                "period": "2026-03-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20260331.zip"
+              },
+              {
+                "period": "2025-12-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20251231.zip"
+              },
+              {
+                "period": "2025-09-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20250930.zip"
+              }
+            ]
+          },
+          "errors": {
+            "repeat_latest": {
+              "cny": "3750618432",
+              "pct_actual_revenue": 39.01965341433111
+            },
+            "zero_forecast": {
+              "cny": "5334421272",
+              "pct_actual_revenue": 55.4967861895996
+            },
+            "inventory_intensity_half": {
+              "cny": "5967451297.804405811427500856",
+              "pct_actual_revenue": 62.08253002240573
+            }
+          }
+        }
+      },
+      {
+        "sample": {
+          "code": "000788",
+          "name": "北大医药",
+          "instrument_id": 28554,
+          "stratum": "Drugs (Pharmaceutical)",
+          "split": "development"
+        },
+        "result": {
+          "code": "000788",
+          "origin": "2025-06-30",
+          "target": "2026-06-30",
+          "forecast_as_of": "2025-09-01T00:00:00+08:00",
+          "status": "evaluated",
+          "actual_fcff": null,
+          "driver": {
+            "history": [
+              {
+                "period": "2025-06-30",
+                "net_inventory_cny": "166722688",
+                "revenue_cny": "2009195840",
+                "revenue_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20250630.zip"
+                  },
+                  {
+                    "period": "2025-03-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20250331.zip"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20241231.zip"
+                  },
+                  {
+                    "period": "2024-09-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20240930.zip"
+                  }
+                ],
+                "inventory_input": {
+                  "field": "FN17",
+                  "artifact": "gpcw20250630.zip",
+                  "source_bits": 1293877192
+                }
+              },
+              {
+                "period": "2024-06-30",
+                "net_inventory_cny": "221630064",
+                "revenue_cny": "2118070816",
+                "revenue_inputs": [
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20240630.zip"
+                  },
+                  {
+                    "period": "2024-03-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20240331.zip"
+                  },
+                  {
+                    "period": "2023-12-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20231231.zip"
+                  },
+                  {
+                    "period": "2023-09-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20230930.zip"
+                  }
+                ],
+                "inventory_input": {
+                  "field": "FN17",
+                  "artifact": "gpcw20240630.zip",
+                  "source_bits": 1297308903
+                }
+              }
+            ],
+            "inventory_cash_forecast_cny": "-21757474.3237150461734136844",
+            "receivables_cash_forecast_cny": "0",
+            "payables_cash_forecast_cny": "0",
+            "boundary": "net_inventory_intensity_predictor_not_gross_inventory_or_accounting_identity"
+          },
+          "base": {
+            "period": "2025-06-30",
+            "working_cash_cny": "78108938",
+            "revenue_cny": "2009195840",
+            "components": {
+              "FN146": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "50768165",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 1269351176,
+                    "source_value": "22119952",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 3406191555,
+                    "source_value": "-8805315",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN146",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 3423526838,
+                    "source_value": "-37453528",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN147": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "192188953",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3431179577,
+                    "source_value": "-69020104",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 1300420798,
+                    "source_value": "274405312",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN147",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 1263098847,
+                    "source_value": "13196255",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN148": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-164848180",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3429645505,
+                    "source_value": "-61928196",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 3440592836,
+                    "source_value": "-154434624",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN148",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 3427042116,
+                    "source_value": "-51514640",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              }
+            },
+            "revenue_inputs": [
+              {
+                "period": "2025-06-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20250630.zip"
+              },
+              {
+                "period": "2025-03-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20250331.zip"
+              },
+              {
+                "period": "2024-12-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20241231.zip"
+              },
+              {
+                "period": "2024-09-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20240930.zip"
+              }
+            ]
+          },
+          "forecasts_cny": {
+            "repeat_latest": "78108938",
+            "zero_forecast": "0",
+            "inventory_intensity_half": "-21757474.3237150461734136844"
+          },
+          "actual": {
+            "period": "2026-06-30",
+            "working_cash_cny": "493376499",
+            "revenue_cny": "972173136",
+            "components": {
+              "FN146": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "41079863",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2026-06-30",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20260630.zip",
+                    "bits": 1263408395,
+                    "source_value": "13505803",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-12-31",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20251231.zip",
+                    "bits": 1279103311,
+                    "source_value": "49694012",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": -1,
+                    "field": "FN146",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 1269351176,
+                    "source_value": "22119952",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN147": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "781120728",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2026-06-30",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20260630.zip",
+                    "bits": 1294592247,
+                    "source_value": "178163568",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-12-31",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20251231.zip",
+                    "bits": 1308531165,
+                    "source_value": "533937056",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": -1,
+                    "field": "FN147",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3431179577,
+                    "source_value": "-69020104",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN148": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-328824092",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2026-06-30",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20260630.zip",
+                    "bits": 3424611304,
+                    "source_value": "-41791392",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-12-31",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20251231.zip",
+                    "bits": 3450234308,
+                    "source_value": "-348960896",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": -1,
+                    "field": "FN148",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3429645505,
+                    "source_value": "-61928196",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              }
+            },
+            "revenue_inputs": [
+              {
+                "period": "2026-06-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20260630.zip"
+              },
+              {
+                "period": "2026-03-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20260331.zip"
+              },
+              {
+                "period": "2025-12-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20251231.zip"
+              },
+              {
+                "period": "2025-09-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20250930.zip"
+              }
+            ]
+          },
+          "errors": {
+            "repeat_latest": {
+              "cny": "-415267561",
+              "pct_actual_revenue": -42.71539148969037
+            },
+            "zero_forecast": {
+              "cny": "-493376499",
+              "pct_actual_revenue": -50.74985933369794
+            },
+            "inventory_intensity_half": {
+              "cny": "-515133973.3237150461734136844",
+              "pct_actual_revenue": -52.987883973345575
+            }
+          }
+        }
+      },
+      {
+        "sample": {
+          "code": "002082",
+          "name": "ST万邦",
+          "instrument_id": 28890,
+          "stratum": "Drugs (Pharmaceutical)",
+          "split": "development"
+        },
+        "result": {
+          "code": "002082",
+          "origin": "2025-06-30",
+          "target": "2026-06-30",
+          "forecast_as_of": "2025-09-01T00:00:00+08:00",
+          "status": "evaluated",
+          "actual_fcff": null,
+          "driver": {
+            "history": [
+              {
+                "period": "2025-06-30",
+                "net_inventory_cny": "227815232",
+                "revenue_cny": "1269119296",
+                "revenue_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20250630.zip"
+                  },
+                  {
+                    "period": "2025-03-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20250331.zip"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20241231.zip"
+                  },
+                  {
+                    "period": "2024-09-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20240930.zip"
+                  }
+                ],
+                "inventory_input": {
+                  "field": "FN17",
+                  "artifact": "gpcw20250630.zip",
+                  "source_bits": 1297695476
+                }
+              },
+              {
+                "period": "2024-06-30",
+                "net_inventory_cny": "268471136",
+                "revenue_cny": "1556176896",
+                "revenue_inputs": [
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20240630.zip"
+                  },
+                  {
+                    "period": "2024-03-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20240331.zip"
+                  },
+                  {
+                    "period": "2023-12-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20231231.zip"
+                  },
+                  {
+                    "period": "2023-09-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20230930.zip"
+                  }
+                ],
+                "inventory_input": {
+                  "field": "FN17",
+                  "artifact": "gpcw20240630.zip",
+                  "source_bits": 1300235355
+                }
+              }
+            ],
+            "inventory_cash_forecast_cny": "4433590.2666683775261498292",
+            "receivables_cash_forecast_cny": "0",
+            "payables_cash_forecast_cny": "0",
+            "boundary": "net_inventory_intensity_predictor_not_gross_inventory_or_accounting_identity"
+          },
+          "base": {
+            "period": "2025-06-30",
+            "working_cash_cny": "-84896559",
+            "revenue_cny": "1269119296",
+            "components": {
+              "FN146": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "51758560",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3411566210,
+                    "source_value": "-14179970",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 1280324725,
+                    "source_value": "54579668",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN146",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 3408745102,
+                    "source_value": "-11358862",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN147": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-66710183",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3448136800,
+                    "source_value": "-281840640",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 1262780201,
+                    "source_value": "12877609",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN147",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 3443581475,
+                    "source_value": "-202252848",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN148": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-69944936",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 1300001703,
+                    "source_value": "264714864",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 3436413633,
+                    "source_value": "-110892552",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN148",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 1297442477,
+                    "source_value": "223767248",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              }
+            },
+            "revenue_inputs": [
+              {
+                "period": "2025-06-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20250630.zip"
+              },
+              {
+                "period": "2025-03-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20250331.zip"
+              },
+              {
+                "period": "2024-12-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20241231.zip"
+              },
+              {
+                "period": "2024-09-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20240930.zip"
+              }
+            ]
+          },
+          "forecasts_cny": {
+            "repeat_latest": "-84896559",
+            "zero_forecast": "0",
+            "inventory_intensity_half": "4433590.2666683775261498292"
+          },
+          "actual": {
+            "period": "2026-06-30",
+            "working_cash_cny": "506053016.5",
+            "revenue_cny": "1127585864",
+            "components": {
+              "FN146": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-14752325.5",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2026-06-30",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20260630.zip",
+                    "bits": 3405504695,
+                    "source_value": "-8253531.5",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-12-31",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20251231.zip",
+                    "bits": 3416114230,
+                    "source_value": "-20678764",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": -1,
+                    "field": "FN146",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3411566210,
+                    "source_value": "-14179970",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN147": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "748294854",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2026-06-30",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20260630.zip",
+                    "bits": 3415987821,
+                    "source_value": "-20425946",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-12-31",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20251231.zip",
+                    "bits": 1307060637,
+                    "source_value": "486880160",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": -1,
+                    "field": "FN147",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3448136800,
+                    "source_value": "-281840640",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN148": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-227489512",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2026-06-30",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20260630.zip",
+                    "bits": 3425764850,
+                    "source_value": "-46405576",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-12-31",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20251231.zip",
+                    "bits": 1285522282,
+                    "source_value": "83630928",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": -1,
+                    "field": "FN148",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 1300001703,
+                    "source_value": "264714864",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              }
+            },
+            "revenue_inputs": [
+              {
+                "period": "2026-06-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20260630.zip"
+              },
+              {
+                "period": "2026-03-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20260331.zip"
+              },
+              {
+                "period": "2025-12-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20251231.zip"
+              },
+              {
+                "period": "2025-09-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20250930.zip"
+              }
+            ]
+          },
+          "errors": {
+            "repeat_latest": {
+              "cny": "-590949575.5",
+              "pct_actual_revenue": -52.408388076422355
+            },
+            "zero_forecast": {
+              "cny": "-506053016.5",
+              "pct_actual_revenue": -44.87933315382535
+            },
+            "inventory_intensity_half": {
+              "cny": "-501619426.2333316224738501708",
+              "pct_actual_revenue": -44.48614001366477
+            }
+          }
+        }
+      },
+      {
+        "sample": {
+          "code": "300449",
+          "name": "汉邦高科",
+          "instrument_id": 44756,
+          "stratum": "Electronics (General)",
+          "split": "development"
+        },
+        "result": {
+          "code": "300449",
+          "origin": "2024-06-30",
+          "target": "2025-06-30",
+          "forecast_as_of": "2024-09-01T00:00:00+08:00",
+          "status": "evaluated",
+          "actual_fcff": null,
+          "driver": {
+            "history": [
+              {
+                "period": "2024-06-30",
+                "net_inventory_cny": "6468289",
+                "revenue_cny": "136521132",
+                "revenue_inputs": [
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20240630.zip"
+                  },
+                  {
+                    "period": "2024-03-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20240331.zip"
+                  },
+                  {
+                    "period": "2023-12-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20231231.zip"
+                  },
+                  {
+                    "period": "2023-09-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20230930.zip"
+                  }
+                ],
+                "inventory_input": {
+                  "field": "FN17",
+                  "artifact": "gpcw20240630.zip",
+                  "source_bits": 1254450562
+                }
+              },
+              {
+                "period": "2023-06-30",
+                "net_inventory_cny": "20150870",
+                "revenue_cny": "144046064",
+                "revenue_inputs": [
+                  {
+                    "period": "2023-06-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20230630.zip"
+                  },
+                  {
+                    "period": "2023-03-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20230331.zip"
+                  },
+                  {
+                    "period": "2022-12-31",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20221231.zip"
+                  },
+                  {
+                    "period": "2022-09-30",
+                    "coefficient": 1,
+                    "field": "FN230",
+                    "artifact": "gpcw20220930.zip"
+                  }
+                ],
+                "inventory_input": {
+                  "field": "FN17",
+                  "artifact": "gpcw20230630.zip",
+                  "source_bits": 1268366635
+                }
+              }
+            ],
+            "inventory_cash_forecast_cny": "-6314952.18057587467297961019",
+            "receivables_cash_forecast_cny": "0",
+            "payables_cash_forecast_cny": "0",
+            "boundary": "net_inventory_intensity_predictor_not_gross_inventory_or_accounting_identity"
+          },
+          "base": {
+            "period": "2024-06-30",
+            "working_cash_cny": "-28282137.875",
+            "revenue_cny": "136521132",
+            "components": {
+              "FN146": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "16261377.125",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 1243124132,
+                    "source_value": "2499689",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2023-12-31",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20231231.zip",
+                    "bits": 1264016454,
+                    "source_value": "14113862",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2023-06-30",
+                    "coefficient": -1,
+                    "field": "FN146",
+                    "artifact": "gpcw20230630.zip",
+                    "bits": 1219229116,
+                    "source_value": "352173.875",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN147": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-15545583.5",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 3399120563,
+                    "source_value": "-5061465.5",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2023-12-31",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20231231.zip",
+                    "bits": 1264193318,
+                    "source_value": "14290726",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2023-06-30",
+                    "coefficient": -1,
+                    "field": "FN147",
+                    "artifact": "gpcw20230630.zip",
+                    "bits": 1270678622,
+                    "source_value": "24774844",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN148": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-28997931.5",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 3428933473,
+                    "source_value": "-59080068",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2023-12-31",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20231231.zip",
+                    "bits": 1237942884,
+                    "source_value": "1650764.5",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2023-06-30",
+                    "coefficient": -1,
+                    "field": "FN148",
+                    "artifact": "gpcw20230630.zip",
+                    "bits": 3419990534,
+                    "source_value": "-28431372",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              }
+            },
+            "revenue_inputs": [
+              {
+                "period": "2024-06-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20240630.zip"
+              },
+              {
+                "period": "2024-03-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20240331.zip"
+              },
+              {
+                "period": "2023-12-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20231231.zip"
+              },
+              {
+                "period": "2023-09-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20230930.zip"
+              }
+            ]
+          },
+          "forecasts_cny": {
+            "repeat_latest": "-28282137.875",
+            "zero_forecast": "0",
+            "inventory_intensity_half": "-6314952.18057587467297961019"
+          },
+          "actual": {
+            "period": "2025-06-30",
+            "working_cash_cny": "-82070198.0",
+            "revenue_cny": "175986722",
+            "components": {
+              "FN146": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-44720640.5",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3426552229,
+                    "source_value": "-49555092",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN146",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 1256182265,
+                    "source_value": "7334140.5",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN146",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 1243124132,
+                    "source_value": "2499689",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN147": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "-49486863.5",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 3430268971,
+                    "source_value": "-64422060",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN147",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 1259776323,
+                    "source_value": "9873731",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN147",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 3399120563,
+                    "source_value": "-5061465.5",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              },
+              "FN148": {
+                "status": "available_source_component",
+                "issues": [],
+                "value_cny": "12137306",
+                "period_basis": "ttm",
+                "source_inputs": [
+                  {
+                    "period": "2025-06-30",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20250630.zip",
+                    "bits": 1270662539,
+                    "source_value": "24742678",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-12-31",
+                    "coefficient": 1,
+                    "field": "FN148",
+                    "artifact": "gpcw20241231.zip",
+                    "bits": 3431512744,
+                    "source_value": "-71685440",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  },
+                  {
+                    "period": "2024-06-30",
+                    "coefficient": -1,
+                    "field": "FN148",
+                    "artifact": "gpcw20240630.zip",
+                    "bits": 3428933473,
+                    "source_value": "-59080068",
+                    "multiplier": 1,
+                    "status": "available_source_component"
+                  }
+                ]
+              }
+            },
+            "revenue_inputs": [
+              {
+                "period": "2025-06-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20250630.zip"
+              },
+              {
+                "period": "2025-03-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20250331.zip"
+              },
+              {
+                "period": "2024-12-31",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20241231.zip"
+              },
+              {
+                "period": "2024-09-30",
+                "coefficient": 1,
+                "field": "FN230",
+                "artifact": "gpcw20240930.zip"
+              }
+            ]
+          },
+          "errors": {
+            "repeat_latest": {
+              "cny": "53788060.125",
+              "pct_actual_revenue": 30.563703621344796
+            },
+            "zero_forecast": {
+              "cny": "82070198.0",
+              "pct_actual_revenue": 46.63431255910318
+            },
+            "inventory_intensity_half": {
+              "cny": "75755245.81942412532702038981",
+              "pct_actual_revenue": 43.04600083375843
+            }
+          }
+        }
+      }
+    ],
+    "refusals": {
+      "revenue missing/duplicate identity: 2022-09-30": 4,
+      "revenue missing/duplicate identity: 2023-03-31": 2,
+      "working cash component blocked: {'FN146': ['missing_record', 'unavailable_at_cutoff'], 'FN147': ['missing_record', 'unavailable_at_cutoff'], 'FN148': ['missing_record', 'unavailable_at_cutoff']}": 4,
+      "working cash component blocked: {'FN146': ['source_zero_ambiguous'], 'FN147': ['source_zero_ambiguous'], 'FN148': ['source_zero_ambiguous']}": 1,
+      "revenue missing/duplicate identity: 2021-09-30": 1,
+      "working cash component blocked: {'FN146': ['unavailable_at_cutoff'], 'FN147': ['unavailable_at_cutoff'], 'FN148': ['unavailable_at_cutoff']}": 2,
+      "working cash component blocked: {'FN146': ['source_zero_ambiguous']}": 3
+    },
+    "boundary": "posthoc_all_development_industries_not_industry_selection; current industry proxy, not historical classification; no adoption gate or holdout score"
+  }
+}

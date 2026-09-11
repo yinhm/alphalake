@@ -104,8 +104,23 @@ def component_diagnostics(rows):
                 boundary='posthoc_development_diagnostic_not_candidate_selection; same complete-case cohort; sign persistence is not prediction validity')
 
 
+def business_diagnostics(p,rows):
+    samples={s['code']:s for s in p['samples'] if s['split']=='development'}
+    if any(r['code'] not in samples for r in rows):raise ValueError('business diagnosis is development only')
+    models=(p['baseline'],p['benchmark'],p['candidate']);groups={}
+    for industry in sorted({s['stratum'] for s in samples.values()}):
+        codes={c for c,s in samples.items() if s['stratum']==industry};selected=[r for r in rows if r['code'] in codes]
+        groups[industry]=dict(companies=len(codes),evaluated_companies=len({r['code'] for r in selected if r['status']=='evaluated'}),
+            summary=metrics(selected,models),by_origin={o:metrics([r for r in selected if r['origin']==o],models) for o in p['origins']},
+            refusals=dict(Counter(r['reason'] for r in selected if r['status']=='blocked')))
+    return dict(development_companies=len(samples),industries=len(groups),by_industry=groups,
+                largest_errors=[dict(sample=samples[r['code']],result=r) for r in sorted([r for r in rows if r['status']=='evaluated'],key=lambda r:abs(r['errors'][p['candidate']]['pct_actual_revenue']),reverse=True)[:5]],
+                refusals=dict(Counter(r['reason'] for r in rows if r['status']=='blocked')),
+                boundary='posthoc_all_development_industries_not_industry_selection; current industry proxy, not historical classification; no adoption gate or holdout score')
+
+
 def study(p,source,phase):
-    candidate={'tdx-working-cash-forecast-v1':'half_latest','tdx-working-cash-forecast-v2':'inventory_intensity_half'}.get(p['protocol_id'])
+    candidate={'tdx-working-cash-forecast-v1':'half_latest','tdx-working-cash-forecast-v2':'inventory_intensity_half','tdx-working-cash-forecast-v3':'inventory_intensity_half'}.get(p['protocol_id'])
     models=('repeat_latest','zero_forecast',candidate)
     if candidate is None or source['contract_version']!='tdx-history-source-v1' or (p['baseline'],p['benchmark'],p['candidate'])!=models:raise ValueError('unsupported study')
     if candidate=='inventory_intensity_half' and (p['driver_policy']['weight']!=.5 or p['driver_policy']['receivables_forecast']!=0 or p['driver_policy']['payables_forecast']!=0):raise ValueError('unsupported inventory driver policy')
@@ -127,9 +142,10 @@ def study(p,source,phase):
 
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('protocol',type=Path);parser.add_argument('snapshot',type=Path);parser.add_argument('--phase',choices=['development','holdout'],required=True);parser.add_argument('--selection',type=Path);parser.add_argument('--diagnose-components',action='store_true');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('protocol',type=Path);parser.add_argument('snapshot',type=Path);parser.add_argument('--phase',choices=['development','holdout'],required=True);parser.add_argument('--selection',type=Path);parser.add_argument('--diagnose-components',action='store_true');parser.add_argument('--diagnose-business',action='store_true');args=parser.parse_args()
     try:
         if args.diagnose_components and args.phase!='development':raise ValueError('component diagnosis is development only')
+        if args.diagnose_business and args.phase!='development':raise ValueError('business diagnosis is development only')
         raw=args.protocol.read_bytes();data=args.snapshot.read_bytes();p=json.loads(raw);source=json.loads(data);digest=lambda b:hashlib.sha256(b).hexdigest()
         if args.diagnose_components and p['protocol_id']!='tdx-working-cash-forecast-v1':raise ValueError('component diagnosis requires original lagged models')
         if source['study_sha256']!=digest(raw):raise ValueError('source/protocol hash differs')
@@ -140,6 +156,10 @@ def main():
             if selected['evidence']!=evidence or any(selected[k]!=dev[k] for k in ('decision','summary','by_origin')) or not dev['decision']['passed']:raise ValueError('development selection failed or differs')
         result=study(p,source,args.phase);result['evidence']=evidence
         if args.diagnose_components:result['component_diagnostics']=dict(overall=component_diagnostics(result['results']),by_origin={o:component_diagnostics([r for r in result['results'] if r['origin']==o]) for o in p['origins']})
+        if args.diagnose_business:result['business_diagnostics']=business_diagnostics(p,result['results'])
+        if p['protocol_id']=='tdx-working-cash-forecast-v3' and args.phase=='development':
+            original=set(p['sampling']['original_development_codes']);models=(p['baseline'],p['benchmark'],p['candidate'])
+            result['development_cohorts']={name:metrics([r for r in result['results'] if (r['code'] in original)==is_original],models) for name,is_original in [('original60',True),('additional600',False)]}
         print(json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False))
     except (ValueError,KeyError,TypeError,OSError) as exc:
         print(json.dumps(dict(status='rejected',reason=str(exc)),ensure_ascii=False));raise SystemExit(1)
