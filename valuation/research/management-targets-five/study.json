@@ -1,0 +1,71 @@
+{
+  "study_id": "management-annual-targets-five-v1",
+  "samples": [
+    {
+      "code": "300866",
+      "stratum": "制造与出口",
+      "split": "development"
+    },
+    {
+      "code": "002032",
+      "stratum": "制造与出口",
+      "split": "development"
+    },
+    {
+      "code": "000651",
+      "stratum": "制造与出口",
+      "split": "development"
+    },
+    {
+      "code": "600887",
+      "stratum": "稳定消费",
+      "split": "development"
+    },
+    {
+      "code": "603288",
+      "stratum": "稳定消费",
+      "split": "development"
+    }
+  ],
+  "origins": [
+    2023,
+    2024,
+    2025
+  ],
+  "positions": 15,
+  "forecast_cutoff": "September 1 China midnight of each origin year",
+  "evaluation_as_of": "2026-09-10T00:00:00+08:00",
+  "selection": "same fixed five companies; original prior-FY annual report first available before cutoff; only explicit issuer annual targets for origin FY; no replacement with broker forecasts, incentive thresholds, later revisions or retrospectively selected reports",
+  "semantics": "management plan/aspiration is not an unbiased forecast; printed concept and consolidated/parent scope must match actual; revenue differs from total operating income; reported profit is not adjusted EBIT; mixed profit concepts never pooled",
+  "targets": "primary: explicit point amount of operating revenue or total operating income; secondary: all explicit point reported-profit targets, separately by concept; ranges/lower bounds/non-numeric objectives retained but unscored; percentage targets need matching original base evidence, not later restatements",
+  "benchmark": "current-rule origin clipped growth applied to known H1 plus prior H2 then FY; zero-growth FY bridge also shown; for each revenue concept use same source concept for H1/H2; profit companion uses matching origin TTM profit/revenue ratio times each revenue forecast; no formula tuning",
+  "gate": {
+    "primary_revenue_positions_at_least": 6,
+    "companies_at_least": 2,
+    "all_three_origins_required": true,
+    "mae_improvement_vs_both_benchmarks_at_least_pct": 5,
+    "wape_no_worse_than_either": true,
+    "each_origin_mae_deterioration_vs_either_at_most_pct": 5
+  },
+  "decision": "exposed development study only; failure stops this source-selection rule with no threshold or company tuning; passing only permits untouched validation, never direct DCF adoption; cashflow/reinvestment and multiyear extension remain separate",
+  "source_fields": {
+    "FN74": "candidate annual operating revenue CNY; verify against original statement before use",
+    "FN502": "candidate total operating income in 10000 CNY; verify before use",
+    "FN92": "reported pretax profit CNY",
+    "FN95": "reported consolidated net profit CNY",
+    "FN96": "reported parent attributable net profit CNY"
+  },
+  "additional_source_fields": [
+    74,
+    92,
+    95,
+    96,
+    502
+  ],
+  "inputs": {
+    "valuation/research/continuing-operations-five/study.json": "210c96f365a3e3fcddf7123f1824f95e9010eeba27807577e48f36a7e726bc62",
+    "valuation/research/continuing-operations-five/baseline.json": "f8e6260300d8f32c1928344d817394544a0c16b3249a5374e1948b2e97fd9f26",
+    "valuation/research/continuing-operations-five/capital-snapshot.json": "685f86200322784ecf445e45f3d93a4b8e7d2601d218ab69d84d79513e6c99ed"
+  },
+  "boundary": "all five companies already exposed; later-acquired TDX/FN314 date proxy not strict PIT; same-company repeated targets not independent; management annual target generally predates H1 benchmark information; no new source-semantic production mapping"
+}
