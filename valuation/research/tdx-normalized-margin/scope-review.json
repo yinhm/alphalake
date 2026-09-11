@@ -1,0 +1,306 @@
+{
+  "audit_id": "tdx-normalized-margin-scope-review-v1",
+  "selection": "post_hoc: sum across evaluated windows of candidate minus baseline absolute EBIT error divided by actual revenue; top two deteriorations and top two improvements, code tie-break; no cohort removal or adoption",
+  "inputs": {
+    "protocol": {
+      "path": "valuation/research/tdx-normalized-margin/protocol.json",
+      "sha256": "045850b85503b7225095606637f70e90b6077c78142bc833f272b8555531adaf"
+    },
+    "parent": {
+      "path": "valuation/research/tdx-normalized-margin/development-result.json",
+      "sha256": "99f2ec57a54a152f7c740d5776f0bc242ee76be04da54aae0f688b92e39731e8"
+    },
+    "gradual": {
+      "path": "valuation/research/tdx-normalized-margin/gradual-result.json",
+      "sha256": "7599b3857dd2077fac30952be68d685da580507dd00710c984caa0ef7cf2bd2f"
+    },
+    "source": {
+      "path": "valuation/research/tdx-normalized-margin/development-snapshot.json",
+      "sha256": "28233e2750ffc9fec6bca27d512a54b57b145eba695cd91234c0a7a9dff575ce"
+    }
+  },
+  "documents": [
+    {
+      "code": "000591",
+      "full": {
+        "code": "000591",
+        "url": "https://static.cninfo.com.cn/finalpage/2023-04-13/1216393252.PDF",
+        "path": "workspace/tdx-normalized-margin-scope-20260911/000591-2022.pdf",
+        "sha256": "d0f027011eb29bd00e7cef39d1e44a5680d8de66d1afd29bd5d5b42955d519f0",
+        "fetched_at": "2026-09-11T04:21:27.140883+00:00"
+      },
+      "selected_path": "valuation/research/tdx-normalized-margin/scope-evidence/000591-2022-selected.pdf",
+      "selected_sha256": "af24a71eec8ed660463f97875e91ffc58819236ae066207bace1e3c2a95e60c8",
+      "original_pages": [
+        15,
+        16,
+        103,
+        154
+      ],
+      "checks": [
+        {
+          "page": 15,
+          "anchor": "营业收入合计",
+          "occurrence": 0,
+          "values": [
+            "9236384665.74",
+            "7026819004.01"
+          ]
+        },
+        {
+          "page": 15,
+          "anchor": "太阳能产品制造",
+          "occurrence": 0,
+          "values": [
+            "4856886711.49",
+            "52.59",
+            "2548600630.17",
+            "36.27",
+            "90.57"
+          ]
+        },
+        {
+          "page": 15,
+          "anchor": "太阳能发电",
+          "occurrence": 4,
+          "values": [
+            "4356002637.04",
+            "1527460124.49",
+            "64.93"
+          ]
+        },
+        {
+          "page": 16,
+          "anchor": "太阳能产品制造",
+          "occurrence": 0,
+          "values": [
+            "4856886711.49",
+            "4641971179.16",
+            "4.42"
+          ]
+        },
+        {
+          "page": 154,
+          "anchor": "营业收入",
+          "occurrence": 0,
+          "values": [
+            "7015771852.94",
+            "11047151.07",
+            "11047151.07",
+            "7026819004.01"
+          ]
+        }
+      ],
+      "contains": [
+        [
+          154,
+          "解释第15号"
+        ]
+      ],
+      "annual_revenue": {
+        "2021": {
+          "original": "7015771852.94",
+          "restated": "7026819004.01"
+        },
+        "2022": {
+          "original": "9236384665.74"
+        }
+      }
+    },
+    {
+      "code": "002240",
+      "full": {
+        "code": "002240",
+        "url": "https://static.cninfo.com.cn/finalpage/2023-03-07/1216056384.PDF",
+        "path": "workspace/tdx-normalized-margin-scope-20260911/002240-2022.pdf",
+        "sha256": "039dd65b7a65c1580c56b1a6461e458e816dfa404cf61925f3f41cb99c32ce7d",
+        "fetched_at": "2026-09-11T04:21:16.265865+00:00"
+      },
+      "selected_path": "valuation/research/tdx-normalized-margin/scope-evidence/002240-2022-selected.pdf",
+      "selected_sha256": "e461107af5e41367586022fa61bbd9f8201462037e5666bec986af073a86fd60",
+      "original_pages": [
+        23,
+        103,
+        139
+      ],
+      "checks": [
+        {
+          "page": 23,
+          "anchor": "营业收入合计",
+          "occurrence": 0,
+          "values": [
+            "12039233744.51",
+            "3017155553.58"
+          ]
+        },
+        {
+          "page": 23,
+          "anchor": "新能源",
+          "occurrence": 0,
+          "values": [
+            "12036608991.00",
+            "99.98",
+            "3007658662.78",
+            "99.69",
+            "300.20"
+          ],
+          "section": "分行业"
+        },
+        {
+          "page": 139,
+          "anchor": "营业收入",
+          "occurrence": 0,
+          "values": [
+            "2934272468.13",
+            "82883085.45",
+            "3017155553.58"
+          ]
+        }
+      ],
+      "contains": [
+        [
+          23,
+          "继续将非锂电业务相关资产进行剥离"
+        ],
+        [
+          139,
+          "解释第15号"
+        ]
+      ],
+      "annual_revenue": {
+        "2021": {
+          "original": "2934272468.13",
+          "restated": "3017155553.58"
+        },
+        "2022": {
+          "original": "12039233744.51"
+        }
+      }
+    },
+    {
+      "code": "002432",
+      "full": {
+        "code": "002432",
+        "url": "https://pdf.dfcfw.com/pdf/H2_AN202304281586089467_1.pdf",
+        "path": "workspace/tdx-normalized-margin-scope-20260911/002432-2022.pdf",
+        "sha256": "a52b3cbadc42d778e28a76468503c40b0ae8a72cd832b2928500774cf3fb82f8",
+        "fetched_at": "2026-09-11T04:21:25.471574+00:00",
+        "source_note": "issuer annual report, hosted mirror; CNINFO URL not resolved"
+      },
+      "selected_path": "valuation/research/tdx-normalized-margin/scope-evidence/002432-2022-selected.pdf",
+      "selected_sha256": "ee7838cb5dfbc1b1bae2f3c812badcad9efcaed9444817db67f0749cae377e0e",
+      "original_pages": [
+        11,
+        16,
+        31,
+        78
+      ],
+      "checks": [
+        {
+          "page": 78,
+          "anchor": "一、营业总收入",
+          "occurrence": 0,
+          "values": [
+            "26315360917.43",
+            "2397097777.49"
+          ]
+        },
+        {
+          "page": 16,
+          "anchor": "iHealth系列产品",
+          "occurrence": 0,
+          "values": [
+            "25968598322.18",
+            "98.68",
+            "1859857526.60",
+            "77.59",
+            "1296.27"
+          ]
+        }
+      ],
+      "contains": [
+        [
+          31,
+          "试剂盒产品市场需求大幅下降导致的业绩波动风险"
+        ]
+      ],
+      "annual_revenue": {
+        "2021": {
+          "original": "2397097777.49"
+        },
+        "2022": {
+          "original": "26315360917.43"
+        }
+      }
+    },
+    {
+      "code": "300672",
+      "full": {
+        "code": "300672",
+        "url": "https://static.cninfo.com.cn/finalpage/2023-04-27/1216616930.PDF",
+        "path": "workspace/tdx-normalized-margin-scope-20260911/300672-2022.pdf",
+        "sha256": "207f72ad4da5ecfcd9750c89c17849cd6cc9438281c19ca1b1fdec9582481e83",
+        "fetched_at": "2026-09-11T04:21:16.885000+00:00"
+      },
+      "selected_path": "valuation/research/tdx-normalized-margin/scope-evidence/300672-2022-selected.pdf",
+      "selected_sha256": "4cacd130d51289864f761bcbc7e65307679607f1ed47fffa68cd69dafa77f81b",
+      "original_pages": [
+        17,
+        18,
+        19,
+        90
+      ],
+      "checks": [
+        {
+          "page": 18,
+          "anchor": "营业收入合计",
+          "occurrence": 0,
+          "values": [
+            "3604899374.87",
+            "2321897195.89",
+            "55.26"
+          ]
+        },
+        {
+          "page": 18,
+          "anchor": "视频解码系列芯片产品",
+          "occurrence": 0,
+          "values": [
+            "1985650241.84",
+            "55.08",
+            "136207645.98",
+            "5.87",
+            "1357.81"
+          ]
+        },
+        {
+          "page": 18,
+          "anchor": "固态存储系列芯片产品",
+          "occurrence": 0,
+          "values": [
+            "244476321.28",
+            "6.78",
+            "1092820329.27",
+            "47.06",
+            "-77.63"
+          ]
+        }
+      ],
+      "contains": [
+        [
+          17,
+          "公司目前处在业务规模提升及扩大市场占有率的关键时期"
+        ]
+      ],
+      "annual_revenue": {
+        "2021": {
+          "original": "2321897195.89"
+        },
+        "2022": {
+          "original": "3604899374.87"
+        }
+      }
+    }
+  ],
+  "boundary": "four outcome-selected diagnostic cases; not representative or independent validation; later acquired reports do not establish strict PIT; all forecast results and holdout remain unchanged"
+}

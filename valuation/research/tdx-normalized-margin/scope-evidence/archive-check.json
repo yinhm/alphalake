@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-09-11T04:29:29.031126+00:00",
+  "config_sha256": "861323415f51b9417bd2be44ba691ff6dba4449d151f7fecf2470fd6970c432a",
+  "code_sha256": "9193b0c5b2ba214c2b6c70ecdd59f9a4127db41c148e7dccdc7c3eb6bd22e9b0",
+  "source_decoder_sha256": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+  "pypdf_version": "6.17.0",
+  "full_result_path": "workspace/tdx-normalized-margin-scope-20260911/full-result.json",
+  "full_result_sha256": "c47ec8238191961fde319213287ab28844441d5acb0269652f12ffb0244ad129",
+  "checked_full_reports": 4,
+  "checked_selected_pages": 15,
+  "checked_pdf_amounts": 47,
+  "checked_annual_revenue": 8,
+  "full_sha_and_selected_page_text_equal": true,
+  "default_and_full_outputs_equal_except_archive_flag": true,
+  "boundary": "local full originals verified; CI verifies committed selected pages and source snapshot, not uncommitted full originals"
+}

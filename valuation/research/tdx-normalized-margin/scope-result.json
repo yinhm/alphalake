@@ -1,0 +1,1034 @@
+{
+  "audit_id": "tdx-normalized-margin-scope-review-v1",
+  "ranking": [
+    {
+      "code": "000591",
+      "name": "太阳能",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "24.52580289535055583367424621"
+    },
+    {
+      "code": "300672",
+      "name": "国科微",
+      "evaluated_windows": 4,
+      "signed_primary_error_contribution_pp": "18.45587748306890135069788329"
+    },
+    {
+      "code": "603636",
+      "name": "南威软件",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "15.08690959953506296667354240"
+    },
+    {
+      "code": "000785",
+      "name": "居然智家",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "14.72668985910811030350747654"
+    },
+    {
+      "code": "002843",
+      "name": "泰嘉股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "13.40170992079125075629858826"
+    },
+    {
+      "code": "600527",
+      "name": "江南高纤",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "13.12828799295406759551332252"
+    },
+    {
+      "code": "002925",
+      "name": "盈趣科技",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "12.53995996532960072271349917"
+    },
+    {
+      "code": "002075",
+      "name": "沙钢股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "11.25752170210052488051319368"
+    },
+    {
+      "code": "603127",
+      "name": "昭衍新药",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "11.22290884781969109845790005"
+    },
+    {
+      "code": "300782",
+      "name": "卓胜微",
+      "evaluated_windows": 2,
+      "signed_primary_error_contribution_pp": "10.98668295997044453443862410"
+    },
+    {
+      "code": "300095",
+      "name": "华伍股份",
+      "evaluated_windows": 5,
+      "signed_primary_error_contribution_pp": "10.44744622404725861877214503"
+    },
+    {
+      "code": "002449",
+      "name": "国星光电",
+      "evaluated_windows": 5,
+      "signed_primary_error_contribution_pp": "10.38096595638315143025321435"
+    },
+    {
+      "code": "600201",
+      "name": "生物股份",
+      "evaluated_windows": 5,
+      "signed_primary_error_contribution_pp": "9.832704893258995977985215525"
+    },
+    {
+      "code": "000557",
+      "name": "西部创业",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "8.475491533003890790042392587"
+    },
+    {
+      "code": "603585",
+      "name": "苏利股份",
+      "evaluated_windows": 4,
+      "signed_primary_error_contribution_pp": "8.240096208581758848114590075"
+    },
+    {
+      "code": "300621",
+      "name": "维业股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "7.868000330823291627646455451"
+    },
+    {
+      "code": "300751",
+      "name": "迈为股份",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "7.546616520313480504714461410"
+    },
+    {
+      "code": "603009",
+      "name": "北特科技",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "7.034453036418949986881477490"
+    },
+    {
+      "code": "603029",
+      "name": "天鹅股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "6.706158553741693065257061517"
+    },
+    {
+      "code": "300650",
+      "name": "太龙股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "6.635217735843718146806371159"
+    },
+    {
+      "code": "002573",
+      "name": "清新环境",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "6.536808853865902487598007931"
+    },
+    {
+      "code": "002127",
+      "name": "南极电商",
+      "evaluated_windows": 2,
+      "signed_primary_error_contribution_pp": "6.357641931221243199589318099"
+    },
+    {
+      "code": "300639",
+      "name": "凯普生物",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "6.162431553080006481532957303"
+    },
+    {
+      "code": "300513",
+      "name": "恒实科技",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "5.607841957797471591201776667"
+    },
+    {
+      "code": "600754",
+      "name": "锦江酒店",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "5.375384317171268743139799309"
+    },
+    {
+      "code": "000935",
+      "name": "四川双马",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "5.350406198972682545953987327"
+    },
+    {
+      "code": "600717",
+      "name": "天津港",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "4.876072277288869563205712760"
+    },
+    {
+      "code": "000066",
+      "name": "中国长城",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "4.513819592497830633487645851"
+    },
+    {
+      "code": "002110",
+      "name": "三钢闽光",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "4.228789646152303794944815425"
+    },
+    {
+      "code": "002462",
+      "name": "嘉事堂",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "4.054512079044644947986482798"
+    },
+    {
+      "code": "603696",
+      "name": "安记食品",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "4.047729528961393921106880368"
+    },
+    {
+      "code": "603728",
+      "name": "鸣志电器",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "3.864148739978813191173665731"
+    },
+    {
+      "code": "603960",
+      "name": "克来机电",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "3.737294627985353056314099651"
+    },
+    {
+      "code": "002084",
+      "name": "海鸥住工",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "3.695909746716438081680235140"
+    },
+    {
+      "code": "000035",
+      "name": "中国天楹",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "3.602805762405357671351536278"
+    },
+    {
+      "code": "600727",
+      "name": "鲁北化工",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "3.297873492743402547124877038"
+    },
+    {
+      "code": "002192",
+      "name": "融捷股份",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "3.192477384953150239923103490"
+    },
+    {
+      "code": "601918",
+      "name": "新集能源",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "2.923790941780541028123922372"
+    },
+    {
+      "code": "603926",
+      "name": "铁流股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "2.842164752797892531723921778"
+    },
+    {
+      "code": "600336",
+      "name": "澳柯玛",
+      "evaluated_windows": 5,
+      "signed_primary_error_contribution_pp": "2.824143150151260395603868053"
+    },
+    {
+      "code": "002800",
+      "name": "天顺股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "2.784289201387570159962405869"
+    },
+    {
+      "code": "603833",
+      "name": "欧派家居",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "2.636884185789102600375470508"
+    },
+    {
+      "code": "600885",
+      "name": "宏发股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "2.212309789240526253844051080"
+    },
+    {
+      "code": "002755",
+      "name": "奥赛康",
+      "evaluated_windows": 1,
+      "signed_primary_error_contribution_pp": "2.199323030591463823073227909"
+    },
+    {
+      "code": "603327",
+      "name": "福蓉科技",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "2.161854883644388141927275510"
+    },
+    {
+      "code": "688233",
+      "name": "神工股份",
+      "evaluated_windows": 1,
+      "signed_primary_error_contribution_pp": "2.146877825199889887976955932"
+    },
+    {
+      "code": "600305",
+      "name": "恒顺醋业",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "1.977379790769879868932942792"
+    },
+    {
+      "code": "603076",
+      "name": "乐惠国际",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "1.933297498334606122266144829"
+    },
+    {
+      "code": "600033",
+      "name": "福建高速",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "1.750498952963661770860725268"
+    },
+    {
+      "code": "002590",
+      "name": "万安科技",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "1.741009056444677636483708657"
+    },
+    {
+      "code": "603183",
+      "name": "建研院",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "1.505711221544296633464975801"
+    },
+    {
+      "code": "603315",
+      "name": "福鞍股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "1.415491435243080796823062701"
+    },
+    {
+      "code": "002014",
+      "name": "永新股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "1.385460294504620153914323663"
+    },
+    {
+      "code": "603985",
+      "name": "恒润股份",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "1.264790327736426834109425210"
+    },
+    {
+      "code": "000922",
+      "name": "佳电股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "1.168804321947626248011772650"
+    },
+    {
+      "code": "600458",
+      "name": "时代新材",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "1.152662759157207773042236184"
+    },
+    {
+      "code": "603087",
+      "name": "甘李药业",
+      "evaluated_windows": 1,
+      "signed_primary_error_contribution_pp": "1.144150868182659115696384163"
+    },
+    {
+      "code": "000887",
+      "name": "中鼎股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "0.9842044929346893874375896502"
+    },
+    {
+      "code": "002350",
+      "name": "北京科锐",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "0.9663212100714972866250255880"
+    },
+    {
+      "code": "000553",
+      "name": "安道麦A",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "0.8847477697189523820319117050"
+    },
+    {
+      "code": "600469",
+      "name": "风神股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "0.8434504938058350307276785788"
+    },
+    {
+      "code": "600567",
+      "name": "山鹰国际",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "0.8063103397023355558168685374"
+    },
+    {
+      "code": "603169",
+      "name": "兰石重装",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "0.7746973507609583251794938685"
+    },
+    {
+      "code": "300845",
+      "name": "捷安高科",
+      "evaluated_windows": 1,
+      "signed_primary_error_contribution_pp": "0.6940088160491561196594037933"
+    },
+    {
+      "code": "603332",
+      "name": "苏州龙杰",
+      "evaluated_windows": 2,
+      "signed_primary_error_contribution_pp": "0.3945417923384043700615377347"
+    },
+    {
+      "code": "688111",
+      "name": "金山办公",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "0.2738859081663905819608488374"
+    },
+    {
+      "code": "600025",
+      "name": "华能水电",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "0.06091988912268914118081952305"
+    },
+    {
+      "code": "600590",
+      "name": "泰豪科技",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "0.03786550309525634038085346160"
+    },
+    {
+      "code": "600741",
+      "name": "华域汽车",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "0.03256275295889365153043481998"
+    },
+    {
+      "code": "600292",
+      "name": "电投水电",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-0.005418693561201131247629536690"
+    },
+    {
+      "code": "000821",
+      "name": "ST京机",
+      "evaluated_windows": 1,
+      "signed_primary_error_contribution_pp": "-0.02799954581128411497630406113"
+    },
+    {
+      "code": "002066",
+      "name": "瑞泰科技",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-0.08952477791139449139363199230"
+    },
+    {
+      "code": "688596",
+      "name": "正帆科技",
+      "evaluated_windows": 1,
+      "signed_primary_error_contribution_pp": "-0.1066746913962695540611458562"
+    },
+    {
+      "code": "300176",
+      "name": "鸿特科技",
+      "evaluated_windows": 1,
+      "signed_primary_error_contribution_pp": "-0.1091468041859166112536045833"
+    },
+    {
+      "code": "002799",
+      "name": "环球印务",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "-0.1344572551011373783316947308"
+    },
+    {
+      "code": "300655",
+      "name": "晶瑞电材",
+      "evaluated_windows": 5,
+      "signed_primary_error_contribution_pp": "-0.3456697518650991192331895120"
+    },
+    {
+      "code": "000829",
+      "name": "天音控股",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-0.3486974343828441434500428903"
+    },
+    {
+      "code": "002969",
+      "name": "嘉美包装",
+      "evaluated_windows": 1,
+      "signed_primary_error_contribution_pp": "-0.4239794201215738335351556502"
+    },
+    {
+      "code": "600327",
+      "name": "大东方",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-0.4874314077879698976352790357"
+    },
+    {
+      "code": "002688",
+      "name": "金河生物",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-0.4968927540501728966237234844"
+    },
+    {
+      "code": "600580",
+      "name": "卧龙电驱",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-0.5274247103367159751984792195"
+    },
+    {
+      "code": "600981",
+      "name": "苏豪汇鸿",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "-0.5337212413131391548656746310"
+    },
+    {
+      "code": "002276",
+      "name": "万马股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-0.5395349676662170060774436093"
+    },
+    {
+      "code": "002360",
+      "name": "ST同德",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-0.6089827966658322179891693910"
+    },
+    {
+      "code": "300475",
+      "name": "香农芯创",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-0.6850958132182094172197157570"
+    },
+    {
+      "code": "300100",
+      "name": "双林股份",
+      "evaluated_windows": 1,
+      "signed_primary_error_contribution_pp": "-0.6954787618308375614522064739"
+    },
+    {
+      "code": "002824",
+      "name": "和胜股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-0.9201493178928204013054933172"
+    },
+    {
+      "code": "603221",
+      "name": "爱丽家居",
+      "evaluated_windows": 1,
+      "signed_primary_error_contribution_pp": "-0.9672742404462936030268495636"
+    },
+    {
+      "code": "000716",
+      "name": "黑芝麻",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "-1.027653558244752690469819236"
+    },
+    {
+      "code": "002841",
+      "name": "视源股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-1.079387239276903926509789907"
+    },
+    {
+      "code": "002723",
+      "name": "小崧股份",
+      "evaluated_windows": 5,
+      "signed_primary_error_contribution_pp": "-1.172390963291046707415098533"
+    },
+    {
+      "code": "300801",
+      "name": "泰和科技",
+      "evaluated_windows": 1,
+      "signed_primary_error_contribution_pp": "-1.183464528614104389157816107"
+    },
+    {
+      "code": "002468",
+      "name": "申通快递",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-1.215122511183843330085825272"
+    },
+    {
+      "code": "300228",
+      "name": "富瑞特装",
+      "evaluated_windows": 1,
+      "signed_primary_error_contribution_pp": "-1.238037583656066802867480482"
+    },
+    {
+      "code": "000738",
+      "name": "航发控制",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-1.275093966713971167675632817"
+    },
+    {
+      "code": "002722",
+      "name": "物产金轮",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-1.327212801518063724483691271"
+    },
+    {
+      "code": "601611",
+      "name": "中国核建",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-1.331403256148934030926137992"
+    },
+    {
+      "code": "002082",
+      "name": "ST万邦",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-1.480646940653145407774768310"
+    },
+    {
+      "code": "002970",
+      "name": "锐明技术",
+      "evaluated_windows": 1,
+      "signed_primary_error_contribution_pp": "-1.484478161757921452668987805"
+    },
+    {
+      "code": "600822",
+      "name": "上海物贸",
+      "evaluated_windows": 5,
+      "signed_primary_error_contribution_pp": "-1.518950229373879423005316815"
+    },
+    {
+      "code": "002613",
+      "name": "北玻股份",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "-1.522718867625495778391673319"
+    },
+    {
+      "code": "600576",
+      "name": "祥源文旅",
+      "evaluated_windows": 1,
+      "signed_primary_error_contribution_pp": "-1.526852102196072539957904084"
+    },
+    {
+      "code": "600487",
+      "name": "亨通光电",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-1.535500931565163443875445072"
+    },
+    {
+      "code": "603192",
+      "name": "汇得科技",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-1.657028937444441439166324088"
+    },
+    {
+      "code": "002825",
+      "name": "纳尔股份",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-1.875433726551694984661573577"
+    },
+    {
+      "code": "603798",
+      "name": "康普顿",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-1.923470366804105460592912916"
+    },
+    {
+      "code": "000777",
+      "name": "中核科技",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-1.956687284773611198156873616"
+    },
+    {
+      "code": "002956",
+      "name": "西麦食品",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "-1.967301977597306244899271340"
+    },
+    {
+      "code": "300553",
+      "name": "集智股份",
+      "evaluated_windows": 4,
+      "signed_primary_error_contribution_pp": "-2.366357275051713721851896399"
+    },
+    {
+      "code": "300395",
+      "name": "菲利华",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-2.825258646726705072709864924"
+    },
+    {
+      "code": "002074",
+      "name": "国轩高科",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-3.028215503628668802178878829"
+    },
+    {
+      "code": "603788",
+      "name": "宁波高发",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-3.243915956597762211345230697"
+    },
+    {
+      "code": "600359",
+      "name": "新农开发",
+      "evaluated_windows": 5,
+      "signed_primary_error_contribution_pp": "-3.336037323962677556362315318"
+    },
+    {
+      "code": "000925",
+      "name": "众合科技",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-3.371777888023905373288901553"
+    },
+    {
+      "code": "000419",
+      "name": "通程控股",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-3.540341141096433759883023673"
+    },
+    {
+      "code": "600039",
+      "name": "四川路桥",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-3.799496692781368786576063016"
+    },
+    {
+      "code": "000788",
+      "name": "北大医药",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-4.145339842705768091940538079"
+    },
+    {
+      "code": "002434",
+      "name": "万里扬",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-4.159873168497807143684465277"
+    },
+    {
+      "code": "002216",
+      "name": "三全食品",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-5.266725336437053295413904773"
+    },
+    {
+      "code": "002943",
+      "name": "宇晶股份",
+      "evaluated_windows": 2,
+      "signed_primary_error_contribution_pp": "-5.536817366401173777504757524"
+    },
+    {
+      "code": "300568",
+      "name": "星源材质",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-5.834529020646220062300808751"
+    },
+    {
+      "code": "002185",
+      "name": "华天科技",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-6.505245612341193343907429478"
+    },
+    {
+      "code": "600505",
+      "name": "西昌电力",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-7.447139184970339246619780834"
+    },
+    {
+      "code": "002240",
+      "name": "盛新锂能",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "-36.46376650373803908068189014"
+    },
+    {
+      "code": "002432",
+      "name": "九安医疗",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-49.46820013786582932462941729"
+    }
+  ],
+  "cases": [
+    {
+      "code": "000591",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "24.52580289535055583367424621",
+      "annual_revenue": {
+        "2021": {
+          "tdx_quarter_sum_cny": "7015771904",
+          "pdf_original_cny": "7015771852.94",
+          "source_rounding_bound_cny": "256.02",
+          "source_inputs": [
+            {
+              "period": "2021-03-31",
+              "artifact": "gpcw20210331.zip",
+              "bits": 1320901814
+            },
+            {
+              "period": "2021-06-30",
+              "artifact": "gpcw20210630.zip",
+              "bits": 1322591875
+            },
+            {
+              "period": "2021-09-30",
+              "artifact": "gpcw20210930.zip",
+              "bits": 1323039219
+            },
+            {
+              "period": "2021-12-31",
+              "artifact": "gpcw20211231.zip",
+              "bits": 1322769202
+            }
+          ],
+          "pdf_restated_cny": "7026819004.01",
+          "reported_restatement_cny": "11047151.07",
+          "status": "source_matches_pre_restatement_not_comparable_latest"
+        },
+        "2022": {
+          "tdx_quarter_sum_cny": "9236384512",
+          "pdf_original_cny": "9236384665.74",
+          "source_rounding_bound_cny": "384.02",
+          "source_inputs": [
+            {
+              "period": "2022-03-31",
+              "artifact": "gpcw20220331.zip",
+              "bits": 1319532678
+            },
+            {
+              "period": "2022-06-30",
+              "artifact": "gpcw20220630.zip",
+              "bits": 1325340994
+            },
+            {
+              "period": "2022-09-30",
+              "artifact": "gpcw20220930.zip",
+              "bits": 1326204612
+            },
+            {
+              "period": "2022-12-31",
+              "artifact": "gpcw20221231.zip",
+              "bits": 1330083939
+            }
+          ],
+          "status": "source_sum_consistent_with_reported_annual_within_rounding"
+        }
+      }
+    },
+    {
+      "code": "002240",
+      "evaluated_windows": 3,
+      "signed_primary_error_contribution_pp": "-36.46376650373803908068189014",
+      "annual_revenue": {
+        "2021": {
+          "tdx_quarter_sum_cny": "2934272416",
+          "pdf_original_cny": "2934272468.13",
+          "source_rounding_bound_cny": "144.02",
+          "source_inputs": [
+            {
+              "period": "2021-03-31",
+              "artifact": "gpcw20210331.zip",
+              "bits": 1308554839
+            },
+            {
+              "period": "2021-06-30",
+              "artifact": "gpcw20210630.zip",
+              "bits": 1309596966
+            },
+            {
+              "period": "2021-09-30",
+              "artifact": "gpcw20210930.zip",
+              "bits": 1311575797
+            },
+            {
+              "period": "2021-12-31",
+              "artifact": "gpcw20211231.zip",
+              "bits": 1317017408
+            }
+          ],
+          "pdf_restated_cny": "3017155553.58",
+          "reported_restatement_cny": "82883085.45",
+          "status": "source_matches_pre_restatement_not_comparable_latest"
+        },
+        "2022": {
+          "tdx_quarter_sum_cny": "12039233792",
+          "pdf_original_cny": "12039233744.51",
+          "source_rounding_bound_cny": "448.02",
+          "source_inputs": [
+            {
+              "period": "2022-03-31",
+              "artifact": "gpcw20220331.zip",
+              "bits": 1321801826
+            },
+            {
+              "period": "2022-06-30",
+              "artifact": "gpcw20220630.zip",
+              "bits": 1330472933
+            },
+            {
+              "period": "2022-09-30",
+              "artifact": "gpcw20220930.zip",
+              "bits": 1328751586
+            },
+            {
+              "period": "2022-12-31",
+              "artifact": "gpcw20221231.zip",
+              "bits": 1332248617
+            }
+          ],
+          "status": "source_sum_consistent_with_reported_annual_within_rounding"
+        }
+      }
+    },
+    {
+      "code": "002432",
+      "evaluated_windows": 6,
+      "signed_primary_error_contribution_pp": "-49.46820013786582932462941729",
+      "annual_revenue": {
+        "2021": {
+          "tdx_quarter_sum_cny": "2397097760",
+          "pdf_original_cny": "2397097777.49",
+          "source_rounding_bound_cny": "96.02",
+          "source_inputs": [
+            {
+              "period": "2021-03-31",
+              "artifact": "gpcw20210331.zip",
+              "bits": 1301913781
+            },
+            {
+              "period": "2021-06-30",
+              "artifact": "gpcw20210630.zip",
+              "bits": 1298882799
+            },
+            {
+              "period": "2021-09-30",
+              "artifact": "gpcw20210930.zip",
+              "bits": 1297298665
+            },
+            {
+              "period": "2021-12-31",
+              "artifact": "gpcw20211231.zip",
+              "bits": 1321174710
+            }
+          ],
+          "status": "source_sum_consistent_with_reported_annual_within_rounding"
+        },
+        "2022": {
+          "tdx_quarter_sum_cny": "26315360000",
+          "pdf_original_cny": "26315360917.43",
+          "source_rounding_bound_cny": "1216.02",
+          "source_inputs": [
+            {
+              "period": "2022-03-31",
+              "artifact": "gpcw20220331.zip",
+              "bits": 1352790986
+            },
+            {
+              "period": "2022-06-30",
+              "artifact": "gpcw20220630.zip",
+              "bits": 1320573329
+            },
+            {
+              "period": "2022-09-30",
+              "artifact": "gpcw20220930.zip",
+              "bits": 1318957582
+            },
+            {
+              "period": "2022-12-31",
+              "artifact": "gpcw20221231.zip",
+              "bits": 1322107087
+            }
+          ],
+          "status": "source_sum_consistent_with_reported_annual_within_rounding"
+        }
+      }
+    },
+    {
+      "code": "300672",
+      "evaluated_windows": 4,
+      "signed_primary_error_contribution_pp": "18.45587748306890135069788329",
+      "annual_revenue": {
+        "2021": {
+          "tdx_quarter_sum_cny": "2321897216",
+          "pdf_original_cny": "2321897195.89",
+          "source_rounding_bound_cny": "96.02",
+          "source_inputs": [
+            {
+              "period": "2021-03-31",
+              "artifact": "gpcw20210331.zip",
+              "bits": 1304707832
+            },
+            {
+              "period": "2021-06-30",
+              "artifact": "gpcw20210630.zip",
+              "bits": 1308675869
+            },
+            {
+              "period": "2021-09-30",
+              "artifact": "gpcw20210930.zip",
+              "bits": 1314676159
+            },
+            {
+              "period": "2021-12-31",
+              "artifact": "gpcw20211231.zip",
+              "bits": 1305775624
+            }
+          ],
+          "status": "source_sum_consistent_with_reported_annual_within_rounding"
+        },
+        "2022": {
+          "tdx_quarter_sum_cny": "3604899360",
+          "pdf_original_cny": "3604899374.87",
+          "source_rounding_bound_cny": "176.02",
+          "source_inputs": [
+            {
+              "period": "2022-03-31",
+              "artifact": "gpcw20220331.zip",
+              "bits": 1307740173
+            },
+            {
+              "period": "2022-06-30",
+              "artifact": "gpcw20220630.zip",
+              "bits": 1317674405
+            },
+            {
+              "period": "2022-09-30",
+              "artifact": "gpcw20220930.zip",
+              "bits": 1318369339
+            },
+            {
+              "period": "2022-12-31",
+              "artifact": "gpcw20221231.zip",
+              "bits": 1311017426
+            }
+          ],
+          "status": "source_sum_consistent_with_reported_annual_within_rounding"
+        }
+      }
+    }
+  ],
+  "checked_pdf_amounts": 47,
+  "full_archive_checked": false,
+  "original_decision": {
+    "passed": false,
+    "checks": {
+      "minimum_sample": true,
+      "primary_improvement": false,
+      "ebit_wape_nonworse": false,
+      "production_comparator_nonworse": true,
+      "each_horizon_nonworse": false,
+      "each_window_within_tolerance": false,
+      "leave_one_company_out_nonworse": false
+    }
+  },
+  "boundary": "four outcome-selected diagnostic cases; not representative or independent validation; later acquired reports do not establish strict PIT; all forecast results and holdout remain unchanged",
+  "evidence": {
+    "config_sha256": "861323415f51b9417bd2be44ba691ff6dba4449d151f7fecf2470fd6970c432a",
+    "code_sha256": "9193b0c5b2ba214c2b6c70ecdd59f9a4127db41c148e7dccdc7c3eb6bd22e9b0",
+    "source_decoder_sha256": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+    "pypdf_version": "6.17.0"
+  }
+}
