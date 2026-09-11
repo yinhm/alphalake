@@ -1,0 +1,13 @@
+{
+  "full_replay_identical": true,
+  "future_mutation": {
+    "field": "FN86",
+    "bits": "NaN",
+    "records": 2404,
+    "after": "2025-06-30",
+    "all_1800_forecasts_and_calibrations_unchanged": true,
+    "all_training_unchanged": true,
+    "actual_rejections_increased": true
+  },
+  "result_sha256": "9ac4c2357b4212aefcc02230bdfb24d9a3405b4b948d63b17c2c5b880e74d637"
+}

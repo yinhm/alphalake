@@ -1,0 +1,96 @@
+{
+  "training_weight_before_target_exclusion": {
+    "2023-06-30": {
+      "zero_growth": {
+        "largest_weight_share_pct": 16.843643765065057,
+        "top_five_weight_share_pct": 25.241165701479577,
+        "largest_code": "600751",
+        "largest_name": "海航科技"
+      },
+      "short_or_flat": {
+        "largest_weight_share_pct": 13.992391691908818,
+        "top_five_weight_share_pct": 23.293737474695245,
+        "largest_code": "600751",
+        "largest_name": "海航科技"
+      }
+    },
+    "2024-06-30": {
+      "zero_growth": {
+        "largest_weight_share_pct": 13.684692875968452,
+        "top_five_weight_share_pct": 23.48360602895876,
+        "largest_code": "688670",
+        "largest_name": "金迪克"
+      },
+      "short_or_flat": {
+        "largest_weight_share_pct": 14.95073422247021,
+        "top_five_weight_share_pct": 25.1405259635688,
+        "largest_code": "688670",
+        "largest_name": "金迪克"
+      }
+    },
+    "2025-06-30": {
+      "zero_growth": {
+        "largest_weight_share_pct": 1.4824675231992406,
+        "top_five_weight_share_pct": 6.622555094631282,
+        "largest_code": "688439",
+        "largest_name": "振华风光"
+      },
+      "short_or_flat": {
+        "largest_weight_share_pct": 1.6673156904021502,
+        "top_five_weight_share_pct": 6.903012505823848,
+        "largest_code": "688439",
+        "largest_name": "振华风光"
+      }
+    }
+  },
+  "aggregate_extra_absolute_error_million_cny": 17132.9041617961,
+  "largest_increases": [
+    {
+      "code": "600025",
+      "name": "华能水电",
+      "extra_absolute_error_million_cny": 3703.864205845707
+    },
+    {
+      "code": "600547",
+      "name": "山东黄金",
+      "extra_absolute_error_million_cny": 2496.477196950288
+    },
+    {
+      "code": "000708",
+      "name": "中信特钢",
+      "extra_absolute_error_million_cny": 2174.6857559939435
+    },
+    {
+      "code": "600018",
+      "name": "上港集团",
+      "extra_absolute_error_million_cny": 1961.7822111091436
+    },
+    {
+      "code": "601918",
+      "name": "新集能源",
+      "extra_absolute_error_million_cny": 1340.7991920807917
+    }
+  ],
+  "boundary": "posthoc_diagnostic_not_filter_or_new_policy; current_names_not_historical_identity_proof",
+  "source_result_sha256": "9ac4c2357b4212aefcc02230bdfb24d9a3405b4b948d63b17c2c5b880e74d637",
+  "priority_source_checks": [
+    {
+      "origin": "2023-06-30",
+      "code": "600751",
+      "prior_revenue_million_cny": 3803.269128,
+      "prior_ebit_proxy_million_cny": 2784.6129360000004,
+      "realized_revenue_million_cny": 247.552,
+      "realized_ebit_proxy_million_cny": -157.58501599999997,
+      "status": "source_and_business_comparability_review_pending"
+    },
+    {
+      "origin": "2024-06-30",
+      "code": "688670",
+      "prior_revenue_million_cny": 429.233402,
+      "prior_ebit_proxy_million_cny": 90.54724146875,
+      "realized_revenue_million_cny": 10.73678475,
+      "realized_ebit_proxy_million_cny": -179.40710830371094,
+      "status": "source_and_business_comparability_review_pending"
+    }
+  ]
+}
