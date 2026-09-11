@@ -1,0 +1,72 @@
+{
+  "scope": "five_company_baseline_two_saved_standard_requests_three_blocks_retained",
+  "source": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm",
+  "report_period": "2026-06-30",
+  "information_as_of": "2026-09-10T04:42:23Z",
+  "companies": [
+    {
+      "code": "300866",
+      "run_id": "6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b",
+      "source_run": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b.json",
+        "sha256": "328ffa8de193bb8fe8253a0be686b051f1ea4160ba3c80a182781052a7b028b7"
+      },
+      "status": "policy_transition_diagnostic_not_error_classification",
+      "sales_to_capital": 2.483535697458,
+      "terminal_roic": 0.1,
+      "growth": 0.02,
+      "last_year_reinvestment_rate": 0.11093988107545004,
+      "terminal_reinvestment_rate": 0.2,
+      "rate_jump_percentage_points": 8.906011892454996,
+      "last_year_fcff_million_cny": 8328.217632877213,
+      "terminal_fcff_million_cny": 7643.831326781776,
+      "fcff_growth_into_terminal": -0.08217680376095034,
+      "terminal_convention_return_equivalent_of_last_year": 0.18027782079915905,
+      "terminal_convention_matching_sales_to_capital": 1.3776157746131326,
+      "value_per_share": 126.13784833230838
+    },
+    {
+      "code": "002032",
+      "run_id": "183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d",
+      "source_run": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d.json",
+        "sha256": "9560ca4d3056791d115b2b10f0f5b84b0cc789fd5663fc12a9d16880fcf42b70"
+      },
+      "status": "policy_transition_diagnostic_not_error_classification",
+      "sales_to_capital": 2.27300234984,
+      "terminal_roic": 0.1,
+      "growth": 0.02,
+      "last_year_reinvestment_rate": 0.10660677434399554,
+      "terminal_reinvestment_rate": 0.2,
+      "rate_jump_percentage_points": 9.339322565600446,
+      "last_year_fcff_million_cny": 1669.3218095167022,
+      "terminal_fcff_million_cny": 1524.7111321729706,
+      "fcff_growth_into_terminal": -0.08662839994021224,
+      "terminal_convention_return_equivalent_of_last_year": 0.18760533862008244,
+      "terminal_convention_matching_sales_to_capital": 1.2115872429638157,
+      "value_per_share": 43.252612680123605
+    },
+    {
+      "code": "000651",
+      "status": "rejected_input_or_policy",
+      "reason": "financial operations require separate model: FN506"
+    },
+    {
+      "code": "600887",
+      "status": "rejected_input_or_policy",
+      "reason": "financial operations require separate model: FN506"
+    },
+    {
+      "code": "603288",
+      "status": "blocked_review_exclusion",
+      "reason": "generic-valuation-2026/values.json：原披露与后续比较列存在差异，可比历史尚待协调"
+    }
+  ],
+  "checks": [
+    "baseline_report_replayed_exactly",
+    "last_year_reinvestment_independent_decimal",
+    "terminal_formula_independent_decimal",
+    "matching_ratio_identity"
+  ],
+  "boundary": "隐含回报仅为按终值公式口径反推的等效值，不是公司实际历史ROIC或新增投资回报。匹配资本效率只为解释两个公式的差异，不是建议参数，不改变预测/估值/生产政策。"
+}

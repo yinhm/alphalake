@@ -120,3 +120,46 @@
 [两份已存安克标准请求](acceptance/current-capital-guard-20260911.json)的请求、输入、审计、完整报告、状态均与此前逐项相同，92.1504及42.2846元条件值不变；第二次重放幂等，旧文件哈希不变。新引擎/run ID记录在回执，新运行位于`workspace/current-capital-guard-20260911/runs`。样本未包含本次无效窗口，只证明正常请求兼容，不是预测有效性或全市场回归证据。
 
 当前窗口验收：Python全套351通过、4项既有外部数据缺失跳过、7条警告；Go全套和构建通过。六项新回归进入既有Python CI；文档链接、旧运行哈希、重放与`git diff --check`通过。没有Go、依赖或迁移变更。
+
+## 显式期与终值再投资的政策切换
+
+固定五家公司基线的[再投资衔接诊断](acceptance/reinvestment-transition-20260911.json)已重放安克、苏泊尔两份既有标准请求，另外三家生产阻断保留。财务期2026H1、信息截止2026-09-10T04:42:23Z，使用当时行业机械政策；不是新估值或当前目标价。
+
+| 项目 | 安克 | 苏泊尔 |
+| --- | ---: | ---: |
+| 显式期采用的行业资本效率 | 2.4835 | 2.2730 |
+| 第十年净再投资/NOPAT | 11.0940% | 10.6607% |
+| 终值年净再投资/NOPAT | 20.0000% | 20.0000% |
+| 再投资率切换 | +8.9060个百分点 | +9.3393个百分点 |
+| 第十年至终值年FCFF变化 | −8.2177% | −8.6628% |
+
+两家公司第十年及终值年收入增速均为2%，利润率及25%税率相同。显式期用`Δ收入/资本效率`，终值用`下一年NOPAT×g/ROIC`，终值ROIC为显式10%假设。因此即使收入继续增长2%，FCFF仍在切换处下降约8%。公式核对成立，不将差异直接判为代码错误，也不把连续平滑当作达摩达兰的强制规定。
+
+达摩达兰[终值与超额回报说明](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm)要求稳定增长对应足够再投资；本项目终值公式已满足这项关系。但行业资本效率与10%终值ROIC分别采用，不证明公司为何在这时发生回报变化。下一项经济依据应解释增长、利润率、资本效率及回报的过渡，而非继续单独寻找收入同比统计量。
+
+纯代数地，在零投资滞后、利润率及税率稳定、增长率均为g时，使`Δ收入/S`与终值投入一致需要`S=ROIC/[(1+g)×利润率×(1−税率)]`。两例分别约1.3776、1.2116；这只是同一终值约定下的匹配比率，不是估计出的公司资本效率，不应替换行业来源。类似地，`g/第十年再投资率`给出约18.03%、18.76%的等效回报，不是历史ROIC或实测新增投资回报；不能跨期资本分母直接混用。
+
+本轮以Decimal复算第十年净再投资、终值现金流与终值金额，并检验上述匹配比率恒等式。原输入、报告、政策及run均未修改；没有新增代码、依赖或数据采集。复现（已有Python环境与原始运行归档）：
+
+```bash
+PYTHONPATH=valuation/backend workspace/anker-agent-adapter-20260906/venv/bin/python - <<'PYTHON'
+from decimal import Decimal as D
+import json, math
+from tools.compare_valuations import load_run, replay
+receipt = json.load(open('docs/acceptance/reinvestment-transition-20260911.json'))
+for row in receipt['companies']:
+    if 'run_id' not in row:
+        continue
+    run, evidence = load_run('valuation/backend/data/alphalake_runs', row['run_id'])
+    assert evidence['sha256'] == row['source_run']['sha256']
+    report, inputs = replay(run)
+    dcf = report['dcf']; policy = run['request']['policy']
+    nopat = D(str(dcf['ebit_projections'][-1]))*(1-D(str(policy['tax_rate'])))
+    rate = D(str(policy['terminal_growth']))/D(str(policy['terminal_roic']))
+    cash = nopat*(1+D(str(policy['terminal_growth'])))*(1-rate)
+    assert math.isclose(float(cash), row['terminal_fcff_million_cny'], rel_tol=1e-12)
+    assert math.isclose(float(D(str(dcf['reinvestment_projections'][-1]))/nopat), row['last_year_reinvestment_rate'], rel_tol=1e-12)
+    assert report['final']['value_per_share'] == row['value_per_share']
+print('two transitions reproduced; original valuations unchanged')
+PYTHON
+```
