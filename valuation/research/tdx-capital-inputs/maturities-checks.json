@@ -1,0 +1,7 @@
+{
+  "valuation/research/tdx-capital-inputs/maturities.json": "4ffab53baeaf99b9fd7830581828300920558e15e4c68be8d89adea0e765ac87",
+  "valuation/research/tdx-capital-inputs/maturities-result.json": "dccd015a36292c077110f60755965f64f5701375e24d3916c559c4c992eb2ecf",
+  "valuation/backend/tools/verify_debt_maturities.py": "57d9ec0e156759400202cba26259be0d2867bb08e6032281cb68834c882eeabe",
+  "valuation/backend/tools/verify_cnty_debt.py": "c6f1d3b0710764e174787779a0d851360ad08195c737688d95faf0d7f7721fdf",
+  "valuation/backend/tools/verify_five_debt.py": "504c7a2d59eeb9edb394340beefc733585298c29303944d667b65040ce22f41b"
+}

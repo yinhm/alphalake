@@ -1,0 +1,402 @@
+{
+  "results": [
+    {
+      "code": "000035",
+      "period": "2021-12-31",
+      "components": [
+        {
+          "label": "一年内到期的长期借款",
+          "amount_cny": "405591849.06",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的长期应付款",
+          "amount_cny": "403815511.23",
+          "status": "reported_amount",
+          "classification": "payable_nature_unresolved"
+        },
+        {
+          "label": "一年内到期的租赁负债",
+          "amount_cny": "16895401.88",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的其他非流动负债(附注七、37）",
+          "amount_cny": null,
+          "status": "blank_not_asserted_zero",
+          "classification": "reported_component"
+        }
+      ],
+      "printed_component_sum_cny": "826302762.17",
+      "source_cny": "826302784",
+      "source_bits": 1313145221,
+      "fully_classified_principal": null,
+      "full_debt": null
+    },
+    {
+      "code": "000035",
+      "period": "2022-12-31",
+      "components": [
+        {
+          "label": "一年内到期的长期借款",
+          "amount_cny": "1104317626.31",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的长期应付款",
+          "amount_cny": "495741427.03",
+          "status": "reported_amount",
+          "classification": "payable_nature_unresolved"
+        },
+        {
+          "label": "一年内到期的租赁负债",
+          "amount_cny": "19325397.49",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        }
+      ],
+      "printed_component_sum_cny": "1619384450.83",
+      "source_cny": "1619384448",
+      "source_bits": 1321274289,
+      "fully_classified_principal": null,
+      "full_debt": null
+    },
+    {
+      "code": "000417",
+      "period": "2021-12-31",
+      "components": [
+        {
+          "label": "一年内到期的长期借款",
+          "amount_cny": "89894800.00",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的租赁负债",
+          "amount_cny": "186592866.60",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        }
+      ],
+      "printed_component_sum_cny": "276487666.60",
+      "source_cny": "276487680",
+      "source_bits": 1300485872,
+      "fully_classified_principal": null,
+      "full_debt": null
+    },
+    {
+      "code": "000417",
+      "period": "2022-12-31",
+      "components": [
+        {
+          "label": "一年内到期的长期借款",
+          "amount_cny": "90150773.48",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的租赁负债",
+          "amount_cny": "171913212.67",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        }
+      ],
+      "printed_component_sum_cny": "262063986.15",
+      "source_cny": "262063984",
+      "source_bits": 1299836023,
+      "fully_classified_principal": null,
+      "full_debt": null
+    },
+    {
+      "code": "000422",
+      "period": "2021-12-31",
+      "components": [
+        {
+          "label": "一年内到期的长期借款",
+          "amount_cny": "4174967040.00",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的应付债券",
+          "amount_cny": "20000000.00",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的长期应付款",
+          "amount_cny": "346874390.98",
+          "status": "reported_amount",
+          "classification": "payable_nature_unresolved"
+        },
+        {
+          "label": "一年内到期的租赁负债",
+          "amount_cny": "1000000.00",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "应付利息",
+          "amount_cny": "12169734.67",
+          "status": "reported_amount",
+          "classification": "explicit_interest"
+        }
+      ],
+      "printed_component_sum_cny": "4555011165.65",
+      "source_cny": "4555011072",
+      "source_bits": 1334296570,
+      "fully_classified_principal": null,
+      "full_debt": null
+    },
+    {
+      "code": "000422",
+      "period": "2022-12-31",
+      "components": [
+        {
+          "label": "一年内到期的长期借款",
+          "amount_cny": "1881989200.00",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的应付债券",
+          "amount_cny": null,
+          "status": "blank_not_asserted_zero",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的长期应付款",
+          "amount_cny": "98499972.99",
+          "status": "reported_amount",
+          "classification": "payable_nature_unresolved"
+        },
+        {
+          "label": "一年内到期的租赁负债",
+          "amount_cny": "1000000.00",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "应付利息",
+          "amount_cny": "2178987.13",
+          "status": "reported_amount",
+          "classification": "explicit_interest"
+        }
+      ],
+      "printed_component_sum_cny": "1983668160.12",
+      "source_cny": "1983668224",
+      "source_bits": 1324120256,
+      "fully_classified_principal": null,
+      "full_debt": null
+    },
+    {
+      "code": "000521",
+      "period": "2021-12-31",
+      "components": [
+        {
+          "label": "一年内到期的长期借款本息",
+          "amount_cny": "320520933.33",
+          "status": "reported_amount",
+          "classification": "principal_interest_combined"
+        },
+        {
+          "label": "一年内到期的长期应付款",
+          "amount_cny": "173499.29",
+          "status": "reported_amount",
+          "classification": "payable_nature_unresolved"
+        },
+        {
+          "label": "一年内到期的租赁负债本息",
+          "amount_cny": "12024045.63",
+          "status": "reported_amount",
+          "classification": "principal_interest_combined"
+        }
+      ],
+      "printed_component_sum_cny": "332718478.25",
+      "source_cny": "332718464",
+      "source_bits": 1302243084,
+      "fully_classified_principal": null,
+      "full_debt": null
+    },
+    {
+      "code": "000521",
+      "period": "2022-12-31",
+      "components": [
+        {
+          "label": "一年内到期的长期借款本息",
+          "amount_cny": "20211488.89",
+          "status": "reported_amount",
+          "classification": "principal_interest_combined"
+        },
+        {
+          "label": "一年内到期的长期应付款",
+          "amount_cny": null,
+          "status": "blank_not_asserted_zero",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的租赁负债本息",
+          "amount_cny": "10075610.19",
+          "status": "reported_amount",
+          "classification": "principal_interest_combined"
+        }
+      ],
+      "printed_component_sum_cny": "30287099.08",
+      "source_cny": "30287100",
+      "source_bits": 1273434750,
+      "fully_classified_principal": null,
+      "full_debt": null
+    },
+    {
+      "code": "000546",
+      "period": "2021-12-31",
+      "components": [
+        {
+          "label": "一年内到期的长期借款",
+          "amount_cny": "161600000.00",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的长期应付款",
+          "amount_cny": "19126437.28",
+          "status": "reported_amount",
+          "classification": "payable_nature_unresolved"
+        },
+        {
+          "label": "限制性股票回购义务",
+          "amount_cny": null,
+          "status": "blank_not_asserted_zero",
+          "classification": "reported_component"
+        },
+        {
+          "label": "未到期应付利息",
+          "amount_cny": "725337.48",
+          "status": "reported_amount",
+          "classification": "explicit_interest"
+        }
+      ],
+      "printed_component_sum_cny": "181451774.76",
+      "source_cny": "181451776",
+      "source_bits": 1294797760,
+      "fully_classified_principal": null,
+      "full_debt": null
+    },
+    {
+      "code": "000546",
+      "period": "2022-12-31",
+      "components": [
+        {
+          "label": "一年内到期的长期借款",
+          "amount_cny": "90000000.00",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的应付债券",
+          "amount_cny": "0.00",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的长期应付款",
+          "amount_cny": "0.00",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的租赁负债",
+          "amount_cny": "1029406.40",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "未到期应付利息",
+          "amount_cny": "806591.64",
+          "status": "reported_amount",
+          "classification": "explicit_interest"
+        }
+      ],
+      "printed_component_sum_cny": "91835998.04",
+      "source_cny": "91836000",
+      "source_bits": 1286547916,
+      "fully_classified_principal": null,
+      "full_debt": null
+    },
+    {
+      "code": "000599",
+      "period": "2021-12-31",
+      "components": [
+        {
+          "label": "一年内到期的长期借款",
+          "amount_cny": "362500000.00",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的长期应付款",
+          "amount_cny": "78265692.83",
+          "status": "reported_amount",
+          "classification": "payable_nature_unresolved"
+        },
+        {
+          "label": "一年内到期的租赁负债",
+          "amount_cny": "2143398.34",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "加：应付利息",
+          "amount_cny": "2796660.68",
+          "status": "reported_amount",
+          "classification": "explicit_interest"
+        }
+      ],
+      "printed_component_sum_cny": "445705751.85",
+      "source_cny": "445705760",
+      "source_bits": 1305773937,
+      "fully_classified_principal": null,
+      "full_debt": null
+    },
+    {
+      "code": "000599",
+      "period": "2022-12-31",
+      "components": [
+        {
+          "label": "一年内到期的长期借款",
+          "amount_cny": "373584000.00",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "一年内到期的长期应付款",
+          "amount_cny": "57683701.17",
+          "status": "reported_amount",
+          "classification": "payable_nature_unresolved"
+        },
+        {
+          "label": "一年内到期的租赁负债",
+          "amount_cny": "1465882.24",
+          "status": "reported_amount",
+          "classification": "reported_component"
+        },
+        {
+          "label": "应付利息",
+          "amount_cny": "2211843.80",
+          "status": "reported_amount",
+          "classification": "explicit_interest"
+        }
+      ],
+      "printed_component_sum_cny": "434945427.21",
+      "source_cny": "434945440",
+      "source_bits": 1305437677,
+      "fully_classified_principal": null,
+      "full_debt": null
+    }
+  ],
+  "closed_statement_totals": 12,
+  "boundary": "printed_amount_sum_not_blank_zero_imputation; mixed_interest_and_payable_nature_preserved; no_full_debt_operating_capital_or_growth_estimate; later_acquired_not_strict_PIT"
+}
