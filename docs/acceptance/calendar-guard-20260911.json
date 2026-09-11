@@ -1,0 +1,22 @@
+[
+  {
+    "original_file": "workspace/historical-rd-audit-20260911/runs/2754955d0905da1dc98df00c8b4ceda9cdfd1d9ed5dc5c775a53eda113c9b452.json",
+    "original_sha256": "0baf5c85d853cbc363e55c68e97f2d7b2f799144e2c77e680e387195a7d46471",
+    "old_run_id": "2754955d0905da1dc98df00c8b4ceda9cdfd1d9ed5dc5c775a53eda113c9b452",
+    "new_run_id": "50cee7cc88ce5693556ff7fd3fd72bf462a4fa5d94a85c58e05b7ce16b415c31",
+    "engine_revision": "8fdf0263a6eda8a3c02645b3575333cd873d53722b534caf3fbfc60c2b42e195",
+    "value_per_share": 92.15042148953913,
+    "identical_request_inputs_audit_report_status": true,
+    "replay_identical": true
+  },
+  {
+    "original_file": "workspace/historical-rd-audit-20260911/runs/a47906acceace86595fa77488ad550395e65b9b83b9ca2804f23e2955ad47fea.json",
+    "original_sha256": "212cf565203b4a13e98504ff6f6155617200b6eabd652e7a3c269f9275de2966",
+    "old_run_id": "a47906acceace86595fa77488ad550395e65b9b83b9ca2804f23e2955ad47fea",
+    "new_run_id": "c24a8a2eb0368616c72811282de935d81779f28faa002dd80f3161af0b8ad4a4",
+    "engine_revision": "8fdf0263a6eda8a3c02645b3575333cd873d53722b534caf3fbfc60c2b42e195",
+    "value_per_share": 42.284555083108394,
+    "identical_request_inputs_audit_report_status": true,
+    "replay_identical": true
+  }
+]

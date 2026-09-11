@@ -32,14 +32,18 @@ def _safe_mean(values: list[float | None]) -> float | None:
 def _revenue_cagr(history: list[RawFinancials], years: int) -> float | None:
     """Compound annual growth rate over the last `years` years.
 
-    CAGR = (Rev[0] / Rev[years]) ** (1/years) - 1. Different from the
+    CAGR uses unique fiscal-year endpoints exactly `years` apart. Different from the
     arithmetic mean of annual growth rates: CAGR is the geometric measure,
     financially correct for multi-period growth and immune to volatility.
     """
-    if len(history) <= years:
+    if not history:
         return None
-    rev_now = history[0].revenues
-    rev_then = history[years].revenues
+    latest = history[0]
+    endpoints = [f for f in history if f.fiscal_year == latest.fiscal_year-years]
+    if len(endpoints) != 1 or sum(f.fiscal_year == latest.fiscal_year for f in history) != 1:
+        return None
+    rev_now = latest.revenues
+    rev_then = endpoints[0].revenues
     if rev_now is None or rev_then is None or rev_then <= 0 or rev_now <= 0:
         return None
     return (rev_now / rev_then) ** (1.0 / years) - 1.0
@@ -129,14 +133,19 @@ def _compute_historical_series(
         if rev_i is not None and ic_current[i] not in (None, 0):
             s_c[i] = rev_i / ic_current[i]
 
+        # Adjacent list entries need not be adjacent fiscal years.
+        annual_pair = (i + 1 < len(history)
+                       and history[i + 1].fiscal_year == f.fiscal_year - 1
+                       and year_counts[f.fiscal_year] == 1
+                       and year_counts[history[i + 1].fiscal_year] == 1)
         # ROIC — prior-year IC with per-year NOPAT
-        if i + 1 < n_total and ebit_i is not None and ic_current[i + 1] not in (None, 0):
+        if annual_pair and i + 1 < n_total and ebit_i is not None and ic_current[i + 1] not in (None, 0):
             nopat_i = after_tax_operating_income(AdjustedFinancials(adjusted_ebit=ebit_i), f, eff_tax_i)
             nopat_series[i] = nopat_i
             roic[i] = nopat_i / ic_current[i + 1]
 
         # Revenue growth — from prior year
-        if i + 1 < len(history):
+        if annual_pair:
             rev_prev = history[i + 1].revenues
             if rev_i is not None and rev_prev not in (None, 0):
                 rev_growth[i] = rev_i / rev_prev - 1

@@ -294,3 +294,28 @@ def test_historical_rd_uses_each_years_cohorts(cost_of_capital, life):
     explicit_zero = [r.model_copy(deep=True) for r in history]
     explicit_zero[-1].r_and_d_expense = 0.0
     assert calculate(explicit_zero).historical_s_c_by_year[-life] is not None
+
+
+def test_historical_returns_require_actual_annual_intervals():
+    from engine.module_3_cashflow import _compute_historical_series, _revenue_cagr
+
+    def row(year, revenue):
+        return RawFinancials(fiscal_year=year, revenues=revenue, ebit=100,
+                             bv_equity=500, bv_debt=100, cash_and_marketable_securities=0)
+    history = [row(2025, 1331), row(2024, 1210), row(2022, 1000), row(2021, 900)]
+    result = _compute_historical_series(history, None)
+    assert result['historical_revenue_growth_by_year'][0] == pytest.approx(.1)
+    assert result['historical_revenue_growth_by_year'][1] is None
+    assert result['historical_roic_by_year'][1] is None
+    assert result['historical_roic_by_year'][2] == pytest.approx(79/600)
+    # CAGR only needs uniquely identified endpoints, not intervening annual observations.
+    assert _revenue_cagr(history, 3) == pytest.approx(.1)
+    assert _revenue_cagr(history, 5) is None
+    duplicate = history + [row(2024, 1200)]
+    changed = _compute_historical_series(duplicate, None)
+    assert changed['historical_revenue_growth_by_year'][0] is None
+    assert changed['historical_roic_by_year'][0] is None
+    assert _revenue_cagr(history + [row(2022, 999)], 3) is None
+    reversed_pair = _compute_historical_series([history[1], history[0]], None)
+    assert reversed_pair['historical_roic_by_year'] == [None, None]
+    assert reversed_pair['historical_revenue_growth_by_year'] == [None, None]
