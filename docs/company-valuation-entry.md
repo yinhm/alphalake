@@ -57,6 +57,8 @@ python -m tools.company_valuation /absolute/market.duckdb 300866 \
 
 [此前主库验收](acceptance/cash-crosscheck-20260911.json)保留缺2024历史的阻断结果。现已完成[真实主库副本正向验收](acceptance/cash-history-upgrade-20260911.json)：三期TDX记录→公告关联→标准物化→两期TTM→统一CLI现金检查，历史不再缺项。[差额解释及复现](anker-cash-bridge-20260911.md)单独记录。现金预测OCF为16.4115亿元，沿用资本开支3.1963亿元，现金代理13.2151亿元；DCF首年FCFF为6.4163亿元，差额−6.7988亿元，仍标记未分类，不能据此修改估值。原run ID和92.1504元条件值完全不变。
 
+现金检查另输出`forecast_basis`（两侧收入及增长、现金模型和资本开支规则）与`revenue_only_sensitivity`。后者只把现金模型收入替换为DCF首年收入，保持平均OCF率、现金资本开支及DCF结果不变，明确标为未经验证的敏感性；不替换`cash_forecast`，不称FCFF。缺少或非正/非有限的DCF首年收入拒绝比较；历史缺项仍优先返回原阻断。真实安克敏感性及未闭合税费/再投资分类见[现金桥接报告](anker-cash-bridge-20260911.md)。
+
 迁移038只扩展FN114到2024-06-30；其他字段审核有效期不变。真实副本重开重放增改删均零，原主库哈希不变、仍为schema37。默认Go/Python回归使用自包含真实样本；1GB限制下的完整主库副本验收另行记录，不依赖CI保有本机数据库。该历史为后来取得的版本，原公告日期边界有验证，但不冒称当时已留存或严格PIT。
 
 ## JSON契约

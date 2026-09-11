@@ -44,10 +44,21 @@ def cash_crosscheck(request,prior_data,report):
         result['status']='blocked_nonpositive_revenue_or_negative_capex';return result
     ocf=(now['FN234']+before['FN234']*now['FN230']/before['FN230'])/2
     capex=now['FN114'];cash=ocf-capex
-    dcf=report.get('dcf') or {};fcff=dcf.get('fcff_projections',[]);reinvest=dcf.get('reinvestment_projections',[])
-    if not fcff or not reinvest:raise ValueError('first-year DCF cashflow required')
+    dcf=report.get('dcf') or {};fcff=dcf.get('fcff_projections',[]);reinvest=dcf.get('reinvestment_projections',[]);revenues=dcf.get('revenue_projections',[])
+    if not fcff or not reinvest or not revenues:raise ValueError('first-year DCF cashflow and revenue required')
     f=Decimal(str(fcff[0]))*1000000;r=Decimal(str(reinvest[0]))*1000000
     if not f.is_finite() or not r.is_finite():raise ValueError('nonfinite DCF cashflow')
+    revenue=Decimal(str(revenues[0]))*1000000
+    if not revenue.is_finite() or revenue<=0:raise ValueError('positive finite DCF revenue required')
+    scaled_ocf=ocf*revenue/now['FN230']
+    result['forecast_basis']=dict(cash_revenue_cny=str(now['FN230']),cash_revenue_growth='0',dcf_revenue_cny=str(revenue),
+        dcf_revenue_growth=str(revenue/now['FN230']-1),cash_capex_rule='repeat_current_ttm',
+        cash_ocf_rule=MODEL)
+    result['revenue_only_sensitivity']=dict(status='unvalidated_sensitivity_not_cash_forecast_or_fcff',
+        operating_cashflow=str(scaled_ocf),capital_expenditure=str(capex),ocf_less_capex=str(scaled_ocf-capex),
+        change_from_cash_forecast=str(scaled_ocf-ocf),dcf_minus_cash_proxy=str(f-(scaled_ocf-capex)),
+        held_fixed=['mean_ocf_margin','cash_capital_expenditure','dcf_fcff'],
+        boundary='only_cash_revenue_replaced_by_dcf_revenue; not_reinvestment_matched; no_valuation_adjustment')
     result.update(status='research_crosscheck_available',cash_forecast=dict(operating_cashflow=str(ocf),capital_expenditure=str(capex),ocf_less_capex=str(cash)),
         comparison=dict(forecast_year=1,dcf_fcff=str(f),dcf_reinvestment=str(r),dcf_nopat_derived=str(f+r),
             dcf_minus_cash_proxy=str(f-cash),nopat_minus_ocf=str(f+r-ocf),reinvestment_minus_cash_capex=str(r-capex),

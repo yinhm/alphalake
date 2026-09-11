@@ -42,7 +42,7 @@ def fixture():
 def test_cash_check_formula_scope_gaps_and_immutability():
     import hashlib
     from tools.backtest_tdx_operating_cash import evaluate
-    request,prior,source=fixture();original=copy.deepcopy((request,prior));report=dict(dcf=dict(fcff_projections=[200],reinvestment_projections=[50]))
+    request,prior,source=fixture();original=copy.deepcopy((request,prior));report=dict(dcf=dict(fcff_projections=[200],reinvestment_projections=[50],revenue_projections=[2500]))
     result=cash_crosscheck(request,prior,report)
     assert result['status']=='research_crosscheck_available'
     p=json.loads((ROOT/'valuation/research/tdx-operating-cash-forecast/protocol.json').read_text())
@@ -50,10 +50,20 @@ def test_cash_check_formula_scope_gaps_and_immutability():
     prediction=evaluate(p,source,'development')[0]['forecasts']['mean_two_ocf_margins']
     assert result['cash_forecast']['operating_cashflow']==prediction['ocf_cny']
     assert result['cash_forecast']['ocf_less_capex']==prediction['cash_proxy_cny']
+    current_revenue=Decimal(result['observations'][0]['values_cny']['FN230'])
+    original_ocf=Decimal(result['cash_forecast']['operating_cashflow'])
+    sensitivity=result['revenue_only_sensitivity']
+    assert Decimal(sensitivity['operating_cashflow'])==original_ocf*Decimal(2500000000)/current_revenue
+    assert Decimal(sensitivity['change_from_cash_forecast'])==Decimal(sensitivity['operating_cashflow'])-original_ocf
+    assert sensitivity['status']=='unvalidated_sensitivity_not_cash_forecast_or_fcff'
+    assert Decimal(sensitivity['dcf_minus_cash_proxy'])==Decimal('200000000')-Decimal(sensitivity['ocf_less_capex'])
+    for revenue in (None,0,-1,float('nan'),float('inf')):
+        bad_report=copy.deepcopy(report);bad_report['dcf']['revenue_projections']=[] if revenue is None else [revenue]
+        with pytest.raises(ValueError,match='revenue'):cash_crosscheck(request,prior,bad_report)
     c=result['comparison']
     assert Decimal(c['dcf_minus_cash_proxy'])==Decimal(c['nopat_minus_ocf'])-Decimal(c['reinvestment_minus_cash_capex'])
     assert c['classification_status']=='unclassified_difference_not_valuation_error'
-    assert (request,prior)==original and report==dict(dcf=dict(fcff_projections=[200],reinvestment_projections=[50]))
+    assert (request,prior)==original and report==dict(dcf=dict(fcff_projections=[200],reinvestment_projections=[50],revenue_projections=[2500]))
     missing=copy.deepcopy(prior);missing['windows']=[w for w in missing['windows'] if w['field']!='FN234']
     blocked=cash_crosscheck(request,missing,report)
     assert blocked['status']=='blocked_missing_standard_history' and blocked['cash_forecast'] is None and blocked['comparison'] is None
@@ -93,6 +103,10 @@ def test_real_standard_history_to_company_cash_check(tmp_path):
     current,prior=amounts;ocf=(current['FN234']+prior['FN234']*current['FN230']/prior['FN230'])/2
     assert Decimal(cash['cash_forecast']['operating_cashflow'])==ocf
     assert Decimal(cash['cash_forecast']['ocf_less_capex'])==ocf-current['FN114']
+    basis=cash['forecast_basis'];sensitivity=cash['revenue_only_sensitivity']
+    assert basis['cash_revenue_growth']=='0' and Decimal(basis['dcf_revenue_growth'])==Decimal('0.2')
+    assert Decimal(sensitivity['operating_cashflow'])==ocf*Decimal(basis['dcf_revenue_cny'])/current['FN230']
+    assert sensitivity['capital_expenditure']==cash['cash_forecast']['capital_expenditure']
     older=[f for f in cash['observations'][1]['facts'] if f['period'].startswith('2024')]
     assert len(older)==6 and all(f['announcement_id'] and f['pdf_sha256'] and f['artifact_sha256'] for f in older)
     assert {f['field'] for f in older}=={'FN230','FN234','FN114'}
