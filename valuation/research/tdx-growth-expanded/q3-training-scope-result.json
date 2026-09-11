@@ -1,0 +1,4121 @@
+{
+  "protocol_sha256": "a8455416217707d605052ca36abb9be8d971832d263d7e6be73c7c9dceccd346",
+  "amount_unit": "million_CNY",
+  "status": "posthoc_training_sensitivity_not_adopted",
+  "excluded_training_codes": [
+    "002432"
+  ],
+  "summary": {
+    "total": {
+      "candidates": 240,
+      "statuses": {
+        "blocked": 70,
+        "evaluated": 170
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 170,
+          "ebit_n": 170,
+          "revenue_median_ape_pct": 10.597217779927902,
+          "revenue_mean_bias_pct": 9.644517781374658,
+          "revenue_wape_pct": 19.115335977330066,
+          "margin_mae_pp": 5.0346175838486,
+          "ebit_mae_pct_actual_revenue": 5.855993124869097
+        },
+        "zero_growth": {
+          "revenue_n": 170,
+          "ebit_n": 170,
+          "revenue_median_ape_pct": 10.78023768325004,
+          "revenue_mean_bias_pct": 4.960660140493901,
+          "revenue_wape_pct": 16.307919974834373,
+          "margin_mae_pp": 5.0346175838486,
+          "ebit_mae_pct_actual_revenue": 5.865505898797289
+        },
+        "bias_half": {
+          "revenue_n": 170,
+          "ebit_n": 170,
+          "revenue_median_ape_pct": 10.597217779927902,
+          "revenue_mean_bias_pct": 9.644517781374658,
+          "revenue_wape_pct": 19.115335977330066,
+          "margin_mae_pp": 4.954541386955081,
+          "ebit_mae_pct_actual_revenue": 5.650492435393446
+        }
+      }
+    },
+    "by_origin": {
+      "2023-09-30": {
+        "candidates": 120,
+        "statuses": {
+          "blocked": 36,
+          "evaluated": 84
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 84,
+            "ebit_n": 84,
+            "revenue_median_ape_pct": 11.552957308172367,
+            "revenue_mean_bias_pct": 9.829599061475859,
+            "revenue_wape_pct": 28.2693072695138,
+            "margin_mae_pp": 5.64240117628877,
+            "ebit_mae_pct_actual_revenue": 6.703273882361322
+          },
+          "zero_growth": {
+            "revenue_n": 84,
+            "ebit_n": 84,
+            "revenue_median_ape_pct": 11.23770502163347,
+            "revenue_mean_bias_pct": 4.567667498424017,
+            "revenue_wape_pct": 22.23677193578725,
+            "margin_mae_pp": 5.64240117628877,
+            "ebit_mae_pct_actual_revenue": 6.629035121440513
+          },
+          "bias_half": {
+            "revenue_n": 84,
+            "ebit_n": 84,
+            "revenue_median_ape_pct": 11.552957308172367,
+            "revenue_mean_bias_pct": 9.829599061475859,
+            "revenue_wape_pct": 28.2693072695138,
+            "margin_mae_pp": 5.461193324372094,
+            "ebit_mae_pct_actual_revenue": 6.36469109649746
+          }
+        }
+      },
+      "2024-09-30": {
+        "candidates": 120,
+        "statuses": {
+          "blocked": 34,
+          "evaluated": 86
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 86,
+            "ebit_n": 86,
+            "revenue_median_ape_pct": 8.501920581047745,
+            "revenue_mean_bias_pct": 9.463740717089765,
+            "revenue_wape_pct": 10.88748313343956,
+            "margin_mae_pp": 4.440968493558201,
+            "ebit_mae_pct_actual_revenue": 5.028416571039482
+          },
+          "zero_growth": {
+            "revenue_n": 86,
+            "ebit_n": 86,
+            "revenue_median_ape_pct": 10.413738094691166,
+            "revenue_mean_bias_pct": 5.344513418794718,
+            "revenue_wape_pct": 10.978897203091035,
+            "margin_mae_pp": 4.4409684935582,
+            "ebit_mae_pct_actual_revenue": 5.119733169703908
+          },
+          "bias_half": {
+            "revenue_n": 86,
+            "ebit_n": 86,
+            "revenue_median_ape_pct": 8.501920581047745,
+            "revenue_mean_bias_pct": 9.463740717089765,
+            "revenue_wape_pct": 10.88748313343956,
+            "margin_mae_pp": 4.459672052733813,
+            "ebit_mae_pct_actual_revenue": 4.952903045477895
+          }
+        }
+      }
+    },
+    "by_profit_scope": {
+      "no_financial_fields_detected": {
+        "candidates": 168,
+        "statuses": {
+          "evaluated": 168
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 168,
+            "ebit_n": 168,
+            "revenue_median_ape_pct": 10.597217779927902,
+            "revenue_mean_bias_pct": 9.803847045039575,
+            "revenue_wape_pct": 19.13170255967824,
+            "margin_mae_pp": 5.071173821578861,
+            "ebit_mae_pct_actual_revenue": 5.914538115634392
+          },
+          "zero_growth": {
+            "revenue_n": 168,
+            "ebit_n": 168,
+            "revenue_median_ape_pct": 11.144262690700849,
+            "revenue_mean_bias_pct": 5.012407176370812,
+            "revenue_wape_pct": 16.331262073141946,
+            "margin_mae_pp": 5.071173821578861,
+            "ebit_mae_pct_actual_revenue": 5.919643273875758
+          },
+          "bias_half": {
+            "revenue_n": 168,
+            "ebit_n": 168,
+            "revenue_median_ape_pct": 10.597217779927902,
+            "revenue_mean_bias_pct": 9.803847045039575,
+            "revenue_wape_pct": 19.13170255967824,
+            "margin_mae_pp": 4.987135564506767,
+            "ebit_mae_pct_actual_revenue": 5.702764323180757
+          }
+        }
+      },
+      "financial_fields_present": {
+        "candidates": 2,
+        "statuses": {
+          "evaluated": 2
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 2,
+            "ebit_n": 2,
+            "revenue_median_ape_pct": 13.810280928733857,
+            "revenue_mean_bias_pct": -3.7391403664783054,
+            "revenue_wape_pct": 13.973970410790061,
+            "margin_mae_pp": 1.9638936145066235,
+            "ebit_mae_pct_actual_revenue": 0.9382139005843598
+          },
+          "zero_growth": {
+            "revenue_n": 2,
+            "ebit_n": 2,
+            "revenue_median_ape_pct": 9.002155010402472,
+            "revenue_mean_bias_pct": 0.6139091268333949,
+            "revenue_wape_pct": 8.975279724333557,
+            "margin_mae_pp": 1.9638936145066244,
+            "ebit_mae_pct_actual_revenue": 1.3179663922058662
+          },
+          "bias_half": {
+            "revenue_n": 2,
+            "ebit_n": 2,
+            "revenue_median_ape_pct": 13.810280928733857,
+            "revenue_mean_bias_pct": -3.7391403664783054,
+            "revenue_wape_pct": 13.973970410790061,
+            "margin_mae_pp": 2.216630472613468,
+            "ebit_mae_pct_actual_revenue": 1.2596538612592951
+          }
+        }
+      },
+      "not_evaluated": {
+        "candidates": 70,
+        "statuses": {
+          "blocked": 70
+        },
+        "models": {
+          "current_rule": {
+            "revenue_n": 0,
+            "ebit_n": 0,
+            "revenue_median_ape_pct": null,
+            "revenue_mean_bias_pct": null,
+            "revenue_wape_pct": null,
+            "margin_mae_pp": null,
+            "ebit_mae_pct_actual_revenue": null
+          },
+          "zero_growth": {
+            "revenue_n": 0,
+            "ebit_n": 0,
+            "revenue_median_ape_pct": null,
+            "revenue_mean_bias_pct": null,
+            "revenue_wape_pct": null,
+            "margin_mae_pp": null,
+            "ebit_mae_pct_actual_revenue": null
+          },
+          "bias_half": {
+            "revenue_n": 0,
+            "ebit_n": 0,
+            "revenue_median_ape_pct": null,
+            "revenue_mean_bias_pct": null,
+            "revenue_wape_pct": null,
+            "margin_mae_pp": null,
+            "ebit_mae_pct_actual_revenue": null
+          }
+        }
+      }
+    }
+  },
+  "diagnostic_original_gates": {
+    "passed": false,
+    "checks": {
+      "minimum_pairs": true,
+      "primary_improvement": false,
+      "revenue_wape": true,
+      "revenue_median_ape": true,
+      "period_2023-09-30": true,
+      "period_2024-09-30": true,
+      "company_removal_available": true,
+      "without_000066": true,
+      "without_000419": true,
+      "without_000553": true,
+      "without_000591": true,
+      "without_000738": true,
+      "without_000777": true,
+      "without_000785": true,
+      "without_000798": true,
+      "without_000813": true,
+      "without_000908": true,
+      "without_000922": true,
+      "without_000935": true,
+      "without_001213": true,
+      "without_001299": true,
+      "without_002014": true,
+      "without_002075": true,
+      "without_002084": true,
+      "without_002127": true,
+      "without_002157": true,
+      "without_002185": true,
+      "without_002207": true,
+      "without_002240": true,
+      "without_002276": true,
+      "without_002329": true,
+      "without_002350": true,
+      "without_002360": true,
+      "without_002449": true,
+      "without_002569": true,
+      "without_002573": true,
+      "without_002590": true,
+      "without_002691": true,
+      "without_002755": true,
+      "without_002799": true,
+      "without_002800": true,
+      "without_002824": true,
+      "without_002825": true,
+      "without_002843": true,
+      "without_002943": true,
+      "without_002969": true,
+      "without_002998": true,
+      "without_003023": true,
+      "without_003029": true,
+      "without_300013": true,
+      "without_300043": true,
+      "without_300053": true,
+      "without_300100": true,
+      "without_300132": true,
+      "without_300164": true,
+      "without_300168": true,
+      "without_300176": true,
+      "without_300254": true,
+      "without_300318": true,
+      "without_300395": true,
+      "without_300568": true,
+      "without_300621": true,
+      "without_300639": true,
+      "without_300655": true,
+      "without_300657": true,
+      "without_300672": true,
+      "without_300751": true,
+      "without_300782": true,
+      "without_300796": true,
+      "without_300825": true,
+      "without_300867": true,
+      "without_300899": true,
+      "without_301007": true,
+      "without_301120": true,
+      "without_301185": true,
+      "without_301511": true,
+      "without_301536": true,
+      "without_301580": true,
+      "without_600025": true,
+      "without_600039": true,
+      "without_600201": true,
+      "without_600505": true,
+      "without_600527": true,
+      "without_600567": true,
+      "without_600717": true,
+      "without_600727": true,
+      "without_600783": true,
+      "without_600822": true,
+      "without_600885": true,
+      "without_600981": true,
+      "without_601611": true,
+      "without_603009": true,
+      "without_603029": true,
+      "without_603137": true,
+      "without_603192": true,
+      "without_603221": true,
+      "without_603237": true,
+      "without_603315": true,
+      "without_603327": true,
+      "without_603332": true,
+      "without_603636": true,
+      "without_603696": true,
+      "without_603788": true,
+      "without_603926": true,
+      "without_603960": true,
+      "without_603985": true,
+      "without_603991": true,
+      "without_605058": true,
+      "without_605090": true,
+      "without_605117": true,
+      "without_605208": true,
+      "without_605277": true,
+      "without_605305": true,
+      "without_688067": true,
+      "without_688111": true,
+      "without_688117": true,
+      "without_688131": true,
+      "without_688205": true,
+      "without_688233": true,
+      "without_688345": true,
+      "without_688361": true,
+      "without_688576": true,
+      "without_688596": true,
+      "without_688648": true,
+      "without_688658": true,
+      "without_688678": true,
+      "without_688685": true
+    }
+  },
+  "original_validation": {
+    "model": "bias_half",
+    "verdict": {
+      "passed": false,
+      "checks": {
+        "minimum_pairs": true,
+        "primary_improvement": false,
+        "revenue_wape": true,
+        "revenue_median_ape": true,
+        "period_2023-09-30": true,
+        "period_2024-09-30": true,
+        "company_removal_available": true,
+        "without_000066": true,
+        "without_000419": true,
+        "without_000553": true,
+        "without_000591": true,
+        "without_000738": true,
+        "without_000777": true,
+        "without_000785": true,
+        "without_000798": true,
+        "without_000813": true,
+        "without_000908": true,
+        "without_000922": true,
+        "without_000935": true,
+        "without_001213": true,
+        "without_001299": true,
+        "without_002014": true,
+        "without_002075": true,
+        "without_002084": true,
+        "without_002127": true,
+        "without_002157": true,
+        "without_002185": true,
+        "without_002207": true,
+        "without_002240": true,
+        "without_002276": true,
+        "without_002329": true,
+        "without_002350": true,
+        "without_002360": true,
+        "without_002449": true,
+        "without_002569": true,
+        "without_002573": true,
+        "without_002590": true,
+        "without_002691": true,
+        "without_002755": true,
+        "without_002799": true,
+        "without_002800": true,
+        "without_002824": true,
+        "without_002825": true,
+        "without_002843": true,
+        "without_002943": true,
+        "without_002969": true,
+        "without_002998": true,
+        "without_003023": true,
+        "without_003029": true,
+        "without_300013": true,
+        "without_300043": true,
+        "without_300053": true,
+        "without_300100": true,
+        "without_300132": true,
+        "without_300164": true,
+        "without_300168": true,
+        "without_300176": true,
+        "without_300254": true,
+        "without_300318": true,
+        "without_300395": true,
+        "without_300568": true,
+        "without_300621": true,
+        "without_300639": true,
+        "without_300655": true,
+        "without_300657": true,
+        "without_300672": true,
+        "without_300751": true,
+        "without_300782": true,
+        "without_300796": true,
+        "without_300825": true,
+        "without_300867": true,
+        "without_300899": true,
+        "without_301007": true,
+        "without_301120": true,
+        "without_301185": true,
+        "without_301511": true,
+        "without_301536": true,
+        "without_301580": true,
+        "without_600025": true,
+        "without_600039": true,
+        "without_600201": true,
+        "without_600505": true,
+        "without_600527": true,
+        "without_600567": true,
+        "without_600717": true,
+        "without_600727": true,
+        "without_600783": true,
+        "without_600822": true,
+        "without_600885": true,
+        "without_600981": true,
+        "without_601611": true,
+        "without_603009": true,
+        "without_603029": true,
+        "without_603137": true,
+        "without_603192": true,
+        "without_603221": true,
+        "without_603237": true,
+        "without_603315": true,
+        "without_603327": true,
+        "without_603332": true,
+        "without_603636": true,
+        "without_603696": true,
+        "without_603788": true,
+        "without_603926": true,
+        "without_603960": true,
+        "without_603985": true,
+        "without_603991": true,
+        "without_605058": true,
+        "without_605090": true,
+        "without_605117": true,
+        "without_605208": true,
+        "without_605277": true,
+        "without_605305": true,
+        "without_688067": true,
+        "without_688111": true,
+        "without_688117": true,
+        "without_688131": true,
+        "without_688205": true,
+        "without_688233": true,
+        "without_688345": true,
+        "without_688361": true,
+        "without_688576": true,
+        "without_688596": true,
+        "without_688648": true,
+        "without_688658": true,
+        "without_688678": true,
+        "without_688685": true
+      }
+    },
+    "status": "evaluated"
+  },
+  "training": {
+    "2023-09-30": {
+      "original": {
+        "fit": {
+          "origin": "2022-09-30",
+          "target": "2023-09-30",
+          "evaluation_as_of": "2023-11-01T00:00:00+08:00",
+          "status": "fitted",
+          "training_pairs": 37,
+          "weighted_ebit_scale": 0.024610061090526752,
+          "ebit_scale": 0.5,
+          "summary": {
+            "candidates": 60,
+            "statuses": {
+              "blocked": 23,
+              "evaluated": 37
+            },
+            "models": {
+              "current_rule": {
+                "revenue_n": 37,
+                "ebit_n": 37,
+                "revenue_median_ape_pct": 16.24330185901458,
+                "revenue_mean_bias_pct": 25.122697180006682,
+                "revenue_wape_pct": 35.43628754021605,
+                "margin_mae_pp": 9.439008604956552,
+                "ebit_mae_pct_actual_revenue": 22.898026792421483
+              },
+              "zero_growth": {
+                "revenue_n": 37,
+                "ebit_n": 37,
+                "revenue_median_ape_pct": 18.792930665244526,
+                "revenue_mean_bias_pct": 15.215574240302157,
+                "revenue_wape_pct": 26.52168569068319,
+                "margin_mae_pp": 9.439008604956552,
+                "ebit_mae_pct_actual_revenue": 20.22189251488764
+              }
+            }
+          }
+        },
+        "observations": [
+          {
+            "code": "688610",
+            "status": "blocked",
+            "reason": "'2022-09-30'"
+          },
+          {
+            "code": "688551",
+            "status": "evaluated",
+            "weight": 0.04565946195887884,
+            "scale": 3.9429155465734693,
+            "weight_share": 0.005055835889498029
+          },
+          {
+            "code": "688591",
+            "status": "blocked",
+            "reason": "'2022-09-30'"
+          },
+          {
+            "code": "301221",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "002613",
+            "status": "evaluated",
+            "weight": 0.03912799441509566,
+            "scale": 1.6484241226368526,
+            "weight_share": 0.004332611685746124
+          },
+          {
+            "code": "688256",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "600469",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "301305",
+            "status": "blocked",
+            "reason": "'2022-09-30'"
+          },
+          {
+            "code": "300941",
+            "status": "evaluated",
+            "weight": 0.24334412619192233,
+            "scale": 0.7474631762956551,
+            "weight_share": 0.02694530145378586
+          },
+          {
+            "code": "300475",
+            "status": "evaluated",
+            "weight": 0.04349868727532312,
+            "scale": 0.9030264101350085,
+            "weight_share": 0.004816575028209771
+          },
+          {
+            "code": "002432",
+            "status": "evaluated",
+            "weight": 5.229612237823679,
+            "scale": 0.024610061090526752,
+            "weight_share": 0.5790708016655808
+          },
+          {
+            "code": "688790",
+            "status": "blocked",
+            "reason": "'2022-09-30'"
+          },
+          {
+            "code": "002468",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "000821",
+            "status": "evaluated",
+            "weight": 0.044874349340479146,
+            "scale": 1.6083881941343863,
+            "weight_share": 0.004968900994010697
+          },
+          {
+            "code": "300140",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "603076",
+            "status": "evaluated",
+            "weight": 0.0219990350260856,
+            "scale": 1.8881129477723777,
+            "weight_share": 0.002435935642854843
+          },
+          {
+            "code": "002759",
+            "status": "evaluated",
+            "weight": 0.4778132380024531,
+            "scale": 0.029642084833777872,
+            "weight_share": 0.052907879627353015
+          },
+          {
+            "code": "300650",
+            "status": "evaluated",
+            "weight": 0.0345370761880553,
+            "scale": 0.7603346213598139,
+            "weight_share": 0.0038242629636581326
+          },
+          {
+            "code": "000925",
+            "status": "evaluated",
+            "weight": 0.12263444151017358,
+            "scale": 0.09073449817756024,
+            "weight_share": 0.013579214122892544
+          },
+          {
+            "code": "600487",
+            "status": "evaluated",
+            "weight": 0.0645781951419779,
+            "scale": 0.685870335407443,
+            "weight_share": 0.007150692160408371
+          },
+          {
+            "code": "002462",
+            "status": "evaluated",
+            "weight": 0.034525025712280964,
+            "scale": 0.777631702767679,
+            "weight_share": 0.003822928624064725
+          },
+          {
+            "code": "688608",
+            "status": "evaluated",
+            "weight": 0.07607849472026279,
+            "scale": -0.045883227999634436,
+            "weight_share": 0.0084241111814261
+          },
+          {
+            "code": "603833",
+            "status": "evaluated",
+            "weight": 0.13475675387629651,
+            "scale": 0.999902597897863,
+            "weight_share": 0.014921508124945105
+          },
+          {
+            "code": "600580",
+            "status": "evaluated",
+            "weight": 0.07810460516842505,
+            "scale": 1.1271562557252939,
+            "weight_share": 0.008648460779087395
+          },
+          {
+            "code": "002434",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "688622",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "600590",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "603798",
+            "status": "evaluated",
+            "weight": 0.03491499235327749,
+            "scale": 1.0340352456507886,
+            "weight_share": 0.0038661093199089482
+          },
+          {
+            "code": "301059",
+            "status": "blocked",
+            "reason": "'2021-03-31'"
+          },
+          {
+            "code": "603169",
+            "status": "evaluated",
+            "weight": 0.07672254482599318,
+            "scale": 0.7619862594052923,
+            "weight_share": 0.008495426337135101
+          },
+          {
+            "code": "600327",
+            "status": "evaluated",
+            "weight": 0.039997779098385366,
+            "scale": 0.9644248073856753,
+            "weight_share": 0.004428922251601503
+          },
+          {
+            "code": "301040",
+            "status": "evaluated",
+            "weight": 0.013943934662061907,
+            "scale": 1.7048745218792742,
+            "weight_share": 0.0015440007893382374
+          },
+          {
+            "code": "603127",
+            "status": "evaluated",
+            "weight": 0.2833467181370849,
+            "scale": 1.0283795633361668,
+            "weight_share": 0.03137475662808121
+          },
+          {
+            "code": "600033",
+            "status": "evaluated",
+            "weight": 0.49308169453313266,
+            "scale": 1.0827007281094827,
+            "weight_share": 0.054598543669223946
+          },
+          {
+            "code": "000788",
+            "status": "evaluated",
+            "weight": 0.02875162223565436,
+            "scale": 1.3100753475111355,
+            "weight_share": 0.003183644251244704
+          },
+          {
+            "code": "002723",
+            "status": "evaluated",
+            "weight": 0.035238018895432044,
+            "scale": 0.39202046494077636,
+            "weight_share": 0.003901877791875532
+          },
+          {
+            "code": "000557",
+            "status": "evaluated",
+            "weight": 0.21793394919918108,
+            "scale": 0.6100800635130658,
+            "weight_share": 0.02413165277535643
+          },
+          {
+            "code": "301282",
+            "status": "blocked",
+            "reason": "'2022-03-31'"
+          },
+          {
+            "code": "301013",
+            "status": "evaluated",
+            "weight": 0.013280665740546763,
+            "scale": -6.219071249346636,
+            "weight_share": 0.0014705575494506325
+          },
+          {
+            "code": "000716",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "603183",
+            "status": "evaluated",
+            "weight": 0.11728112629187375,
+            "scale": 1.492175835059153,
+            "weight_share": 0.01298644578863465
+          },
+          {
+            "code": "300449",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "688663",
+            "status": "evaluated",
+            "weight": 0.08245431084742996,
+            "scale": 1.329457063763503,
+            "weight_share": 0.009130100227674678
+          },
+          {
+            "code": "688082",
+            "status": "blocked",
+            "reason": "'2021-03-31'"
+          },
+          {
+            "code": "605567",
+            "status": "blocked",
+            "reason": "'2021-03-31'"
+          },
+          {
+            "code": "300065",
+            "status": "evaluated",
+            "weight": 0.06965764292064519,
+            "scale": -18.973661272887647,
+            "weight_share": 0.007713135371003918
+          },
+          {
+            "code": "600538",
+            "status": "evaluated",
+            "weight": 0.06741932139045366,
+            "scale": -0.028356556848311947,
+            "weight_share": 0.007465287809095058
+          },
+          {
+            "code": "300225",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "002265",
+            "status": "evaluated",
+            "weight": 0.0005499810112294727,
+            "scale": 23.3911897008692,
+            "weight_share": 6.0898959729762525e-05
+          },
+          {
+            "code": "600860",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "600458",
+            "status": "evaluated",
+            "weight": 0.013889054109076137,
+            "scale": 1.0894332138388347,
+            "weight_share": 0.0015379239093769527
+          },
+          {
+            "code": "300095",
+            "status": "evaluated",
+            "weight": 0.12601195995034806,
+            "scale": 0.3669987780087037,
+            "weight_share": 0.013953204052135565
+          },
+          {
+            "code": "002217",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "002082",
+            "status": "evaluated",
+            "weight": 0.13240856254980968,
+            "scale": -0.23207484663299074,
+            "weight_share": 0.014661494767920613
+          },
+          {
+            "code": "301175",
+            "status": "blocked",
+            "reason": "'2021-09-30'"
+          },
+          {
+            "code": "600359",
+            "status": "evaluated",
+            "weight": 0.20547635771973932,
+            "scale": 0.13362020382965253,
+            "weight_share": 0.02275223358388217
+          },
+          {
+            "code": "300553",
+            "status": "evaluated",
+            "weight": 0.05963432680431363,
+            "scale": 0.9780615376537168,
+            "weight_share": 0.0066032615534286606
+          },
+          {
+            "code": "603728",
+            "status": "evaluated",
+            "weight": 0.10532616526966856,
+            "scale": 0.7128923562647614,
+            "weight_share": 0.0116626824677254
+          },
+          {
+            "code": "301687",
+            "status": "blocked",
+            "reason": "'2022-09-30'"
+          },
+          {
+            "code": "603836",
+            "status": "evaluated",
+            "weight": 0.12257669775340578,
+            "scale": 0.2174938129647565,
+            "weight_share": 0.01357282020265485
+          }
+        ]
+      },
+      "sensitivity": {
+        "fit": {
+          "origin": "2022-09-30",
+          "target": "2023-09-30",
+          "evaluation_as_of": "2023-11-01T00:00:00+08:00",
+          "status": "fitted",
+          "training_pairs": 36,
+          "weighted_ebit_scale": 0.7474631762956551,
+          "ebit_scale": 0.7474631762956551,
+          "summary": {
+            "candidates": 59,
+            "statuses": {
+              "blocked": 23,
+              "evaluated": 36
+            },
+            "models": {
+              "current_rule": {
+                "revenue_n": 36,
+                "ebit_n": 36,
+                "revenue_median_ape_pct": 15.272736280268155,
+                "revenue_mean_bias_pct": 9.068155432669412,
+                "revenue_wape_pct": 23.078837402440726,
+                "margin_mae_pp": 7.992572616018995,
+                "ebit_mae_pct_actual_revenue": 9.364885422291321
+              },
+              "zero_growth": {
+                "revenue_n": 36,
+                "ebit_n": 36,
+                "revenue_median_ape_pct": 17.30796692785768,
+                "revenue_mean_bias_pct": 2.14086333762193,
+                "revenue_wape_pct": 16.521140749692684,
+                "margin_mae_pp": 7.992572616018996,
+                "ebit_mae_pct_actual_revenue": 9.03553085826287
+              }
+            }
+          }
+        },
+        "observations": [
+          {
+            "code": "688610",
+            "status": "blocked",
+            "reason": "'2022-09-30'"
+          },
+          {
+            "code": "688551",
+            "status": "evaluated",
+            "weight": 0.04565946195887884,
+            "scale": 3.9429155465734693,
+            "weight_share": 0.012011131348225635
+          },
+          {
+            "code": "688591",
+            "status": "blocked",
+            "reason": "'2022-09-30'"
+          },
+          {
+            "code": "301221",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "002613",
+            "status": "evaluated",
+            "weight": 0.03912799441509566,
+            "scale": 1.6484241226368526,
+            "weight_share": 0.010292970178571352
+          },
+          {
+            "code": "688256",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "600469",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "301305",
+            "status": "blocked",
+            "reason": "'2022-09-30'"
+          },
+          {
+            "code": "300941",
+            "status": "evaluated",
+            "weight": 0.24334412619192233,
+            "scale": 0.7474631762956551,
+            "weight_share": 0.06401385686810539
+          },
+          {
+            "code": "300475",
+            "status": "evaluated",
+            "weight": 0.04349868727532312,
+            "scale": 0.9030264101350085,
+            "weight_share": 0.011442720170680832
+          },
+          {
+            "code": "688790",
+            "status": "blocked",
+            "reason": "'2022-09-30'"
+          },
+          {
+            "code": "002468",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "000821",
+            "status": "evaluated",
+            "weight": 0.044874349340479146,
+            "scale": 1.6083881941343863,
+            "weight_share": 0.011804600426086411
+          },
+          {
+            "code": "300140",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "603076",
+            "status": "evaluated",
+            "weight": 0.0219990350260856,
+            "scale": 1.8881129477723777,
+            "weight_share": 0.005787043646517351
+          },
+          {
+            "code": "002759",
+            "status": "evaluated",
+            "weight": 0.4778132380024531,
+            "scale": 0.029642084833777872,
+            "weight_share": 0.12569306153316273
+          },
+          {
+            "code": "300650",
+            "status": "evaluated",
+            "weight": 0.0345370761880553,
+            "scale": 0.7603346213598139,
+            "weight_share": 0.009085287926782967
+          },
+          {
+            "code": "000925",
+            "status": "evaluated",
+            "weight": 0.12263444151017358,
+            "scale": 0.09073449817756024,
+            "weight_share": 0.032260090715075906
+          },
+          {
+            "code": "600487",
+            "status": "evaluated",
+            "weight": 0.0645781951419779,
+            "scale": 0.685870335407443,
+            "weight_share": 0.01698787394341625
+          },
+          {
+            "code": "002462",
+            "status": "evaluated",
+            "weight": 0.034525025712280964,
+            "scale": 0.777631702767679,
+            "weight_share": 0.00908211794095474
+          },
+          {
+            "code": "688608",
+            "status": "evaluated",
+            "weight": 0.07607849472026279,
+            "scale": -0.045883227999634436,
+            "weight_share": 0.020013130984402095
+          },
+          {
+            "code": "603833",
+            "status": "evaluated",
+            "weight": 0.13475675387629651,
+            "scale": 0.999902597897863,
+            "weight_share": 0.03544897380364259
+          },
+          {
+            "code": "600580",
+            "status": "evaluated",
+            "weight": 0.07810460516842505,
+            "scale": 1.1271562557252939,
+            "weight_share": 0.02054611752596069
+          },
+          {
+            "code": "002434",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "688622",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "600590",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "603798",
+            "status": "evaluated",
+            "weight": 0.03491499235327749,
+            "scale": 1.0340352456507886,
+            "weight_share": 0.009184702166556303
+          },
+          {
+            "code": "301059",
+            "status": "blocked",
+            "reason": "'2021-03-31'"
+          },
+          {
+            "code": "603169",
+            "status": "evaluated",
+            "weight": 0.07672254482599318,
+            "scale": 0.7619862594052923,
+            "weight_share": 0.020182554146281076
+          },
+          {
+            "code": "600327",
+            "status": "evaluated",
+            "weight": 0.039997779098385366,
+            "scale": 0.9644248073856753,
+            "weight_share": 0.010521774847471662
+          },
+          {
+            "code": "301040",
+            "status": "evaluated",
+            "weight": 0.013943934662061907,
+            "scale": 1.7048745218792742,
+            "weight_share": 0.0036680771860154063
+          },
+          {
+            "code": "603127",
+            "status": "evaluated",
+            "weight": 0.2833467181370849,
+            "scale": 1.0283795633361668,
+            "weight_share": 0.0745368977781262
+          },
+          {
+            "code": "600033",
+            "status": "evaluated",
+            "weight": 0.49308169453313266,
+            "scale": 1.0827007281094827,
+            "weight_share": 0.1297095660868044
+          },
+          {
+            "code": "000788",
+            "status": "evaluated",
+            "weight": 0.02875162223565436,
+            "scale": 1.3100753475111355,
+            "weight_share": 0.007563372329223326
+          },
+          {
+            "code": "002723",
+            "status": "evaluated",
+            "weight": 0.035238018895432044,
+            "scale": 0.39202046494077636,
+            "weight_share": 0.009269677198243618
+          },
+          {
+            "code": "000557",
+            "status": "evaluated",
+            "weight": 0.21793394919918108,
+            "scale": 0.6100800635130658,
+            "weight_share": 0.05732948170581492
+          },
+          {
+            "code": "301282",
+            "status": "blocked",
+            "reason": "'2022-03-31'"
+          },
+          {
+            "code": "301013",
+            "status": "evaluated",
+            "weight": 0.013280665740546763,
+            "scale": -6.219071249346636,
+            "weight_share": 0.003493598342119061
+          },
+          {
+            "code": "000716",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "603183",
+            "status": "evaluated",
+            "weight": 0.11728112629187375,
+            "scale": 1.492175835059153,
+            "weight_share": 0.03085185309078321
+          },
+          {
+            "code": "300449",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "688663",
+            "status": "evaluated",
+            "weight": 0.08245431084742996,
+            "scale": 1.329457063763503,
+            "weight_share": 0.021690346651649973
+          },
+          {
+            "code": "688082",
+            "status": "blocked",
+            "reason": "'2021-03-31'"
+          },
+          {
+            "code": "605567",
+            "status": "blocked",
+            "reason": "'2021-03-31'"
+          },
+          {
+            "code": "300065",
+            "status": "evaluated",
+            "weight": 0.06965764292064519,
+            "scale": -18.973661272887647,
+            "weight_share": 0.018324068279235876
+          },
+          {
+            "code": "600538",
+            "status": "evaluated",
+            "weight": 0.06741932139045366,
+            "scale": -0.028356556848311947,
+            "weight_share": 0.017735257707554054
+          },
+          {
+            "code": "300225",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "002265",
+            "status": "evaluated",
+            "weight": 0.0005499810112294727,
+            "scale": 23.3911897008692,
+            "weight_share": 0.00014467744212265265
+          },
+          {
+            "code": "600860",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "600458",
+            "status": "evaluated",
+            "weight": 0.013889054109076137,
+            "scale": 1.0894332138388347,
+            "weight_share": 0.0036536403638958424
+          },
+          {
+            "code": "300095",
+            "status": "evaluated",
+            "weight": 0.12601195995034806,
+            "scale": 0.3669987780087037,
+            "weight_share": 0.03314857726037347
+          },
+          {
+            "code": "002217",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "002082",
+            "status": "evaluated",
+            "weight": 0.13240856254980968,
+            "scale": -0.23207484663299074,
+            "weight_share": 0.03483126099575627
+          },
+          {
+            "code": "301175",
+            "status": "blocked",
+            "reason": "'2021-09-30'"
+          },
+          {
+            "code": "600359",
+            "status": "evaluated",
+            "weight": 0.20547635771973932,
+            "scale": 0.13362020382965253,
+            "weight_share": 0.05405240043672619
+          },
+          {
+            "code": "300553",
+            "status": "evaluated",
+            "weight": 0.05963432680431363,
+            "scale": 0.9780615376537168,
+            "weight_share": 0.015687344996634114
+          },
+          {
+            "code": "603728",
+            "status": "evaluated",
+            "weight": 0.10532616526966856,
+            "scale": 0.7128923562647614,
+            "weight_share": 0.027706993275528606
+          },
+          {
+            "code": "301687",
+            "status": "blocked",
+            "reason": "'2022-09-30'"
+          },
+          {
+            "code": "603836",
+            "status": "evaluated",
+            "weight": 0.12257669775340578,
+            "scale": 0.2174938129647565,
+            "weight_share": 0.03224490070149882
+          }
+        ]
+      }
+    },
+    "2024-09-30": {
+      "original": {
+        "fit": {
+          "origin": "2023-09-30",
+          "target": "2024-09-30",
+          "evaluation_as_of": "2024-11-01T00:00:00+08:00",
+          "status": "fitted",
+          "training_pairs": 42,
+          "weighted_ebit_scale": 0.9231460693316413,
+          "ebit_scale": 0.9231460693316413,
+          "summary": {
+            "candidates": 60,
+            "statuses": {
+              "blocked": 18,
+              "evaluated": 42
+            },
+            "models": {
+              "current_rule": {
+                "revenue_n": 42,
+                "ebit_n": 42,
+                "revenue_median_ape_pct": 13.065410285417373,
+                "revenue_mean_bias_pct": 8.501412709492412,
+                "revenue_wape_pct": 16.283935371981425,
+                "margin_mae_pp": 3.9448175331245885,
+                "ebit_mae_pct_actual_revenue": 4.236080441383859
+              },
+              "zero_growth": {
+                "revenue_n": 42,
+                "ebit_n": 42,
+                "revenue_median_ape_pct": 13.415481727081207,
+                "revenue_mean_bias_pct": 2.8552313585377664,
+                "revenue_wape_pct": 16.246119105862817,
+                "margin_mae_pp": 3.9448175331245885,
+                "ebit_mae_pct_actual_revenue": 3.8527347396214076
+              }
+            }
+          }
+        },
+        "observations": [
+          {
+            "code": "688610",
+            "status": "blocked",
+            "reason": "'2022-09-30'"
+          },
+          {
+            "code": "688551",
+            "status": "evaluated",
+            "weight": 0.18687326768623155,
+            "scale": 0.7610186161858369,
+            "weight_share": 0.04478646052771106
+          },
+          {
+            "code": "688591",
+            "status": "blocked",
+            "reason": "'2023-03-31'"
+          },
+          {
+            "code": "301221",
+            "status": "evaluated",
+            "weight": 0.06255559821141753,
+            "scale": -0.6078877248783408,
+            "weight_share": 0.014992212983545016
+          },
+          {
+            "code": "002613",
+            "status": "evaluated",
+            "weight": 0.06334278859992877,
+            "scale": 0.8385676552554121,
+            "weight_share": 0.015180872772606166
+          },
+          {
+            "code": "688256",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "600469",
+            "status": "evaluated",
+            "weight": 0.06578714069666616,
+            "scale": 0.9264900949345477,
+            "weight_share": 0.01576669160079816
+          },
+          {
+            "code": "301305",
+            "status": "blocked",
+            "reason": "'2022-09-30'"
+          },
+          {
+            "code": "300941",
+            "status": "evaluated",
+            "weight": 0.2042846307617197,
+            "scale": 0.9257255593507342,
+            "weight_share": 0.04895930630051204
+          },
+          {
+            "code": "300475",
+            "status": "evaluated",
+            "weight": 0.018671973430434904,
+            "scale": 2.448831568253132,
+            "weight_share": 0.004474966437793264
+          },
+          {
+            "code": "002432",
+            "status": "evaluated",
+            "weight": 0.20087560430517498,
+            "scale": 1.0480071506983095,
+            "weight_share": 0.04814229148226464
+          },
+          {
+            "code": "688790",
+            "status": "blocked",
+            "reason": "'2023-09-30'"
+          },
+          {
+            "code": "002468",
+            "status": "evaluated",
+            "weight": 0.016371234693478807,
+            "scale": 1.4447375698350693,
+            "weight_share": 0.003923566304948838
+          },
+          {
+            "code": "000821",
+            "status": "evaluated",
+            "weight": 0.06519267138334178,
+            "scale": 0.9738597336365621,
+            "weight_share": 0.015624219770740364
+          },
+          {
+            "code": "300140",
+            "status": "evaluated",
+            "weight": 0.2159064515118613,
+            "scale": 1.0249551035561626,
+            "weight_share": 0.051744617558408444
+          },
+          {
+            "code": "603076",
+            "status": "evaluated",
+            "weight": 0.043459139909546834,
+            "scale": 0.06586082851598331,
+            "weight_share": 0.010415513562888253
+          },
+          {
+            "code": "002759",
+            "status": "evaluated",
+            "weight": 0.016193509300646777,
+            "scale": -7.727206672304921,
+            "weight_share": 0.0038809722443354793
+          },
+          {
+            "code": "300650",
+            "status": "evaluated",
+            "weight": 0.02267425468579605,
+            "scale": 0.9511637043041417,
+            "weight_share": 0.005434162012866072
+          },
+          {
+            "code": "000925",
+            "status": "evaluated",
+            "weight": 0.01100759192689083,
+            "scale": 5.523341985825491,
+            "weight_share": 0.0026381038199995563
+          },
+          {
+            "code": "600487",
+            "status": "evaluated",
+            "weight": 0.03651767997175119,
+            "scale": 1.7041057210800687,
+            "weight_share": 0.008751907925988067
+          },
+          {
+            "code": "002462",
+            "status": "evaluated",
+            "weight": 0.02915644119651298,
+            "scale": 0.7569832623242244,
+            "weight_share": 0.0069876971647366715
+          },
+          {
+            "code": "688608",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "603833",
+            "status": "evaluated",
+            "weight": 0.15609180024579505,
+            "scale": 0.8958277527900091,
+            "weight_share": 0.03740930598027279
+          },
+          {
+            "code": "600580",
+            "status": "evaluated",
+            "weight": 0.09182880528590648,
+            "scale": 0.5584226248680431,
+            "weight_share": 0.022007894516777534
+          },
+          {
+            "code": "002434",
+            "status": "evaluated",
+            "weight": 0.07841313986939169,
+            "scale": 0.5872559902660003,
+            "weight_share": 0.018792666479782134
+          },
+          {
+            "code": "688622",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "600590",
+            "status": "evaluated",
+            "weight": 0.006242276531639971,
+            "scale": -19.507828733187242,
+            "weight_share": 0.0014960377958219266
+          },
+          {
+            "code": "603798",
+            "status": "evaluated",
+            "weight": 0.041740085157950156,
+            "scale": 1.3793966005448215,
+            "weight_share": 0.010003521100132001
+          },
+          {
+            "code": "301059",
+            "status": "evaluated",
+            "weight": 0.12168754995309447,
+            "scale": 1.2722224489742968,
+            "weight_share": 0.02916390728415392
+          },
+          {
+            "code": "603169",
+            "status": "evaluated",
+            "weight": 0.05236252947721059,
+            "scale": 0.8969188868590703,
+            "weight_share": 0.012549319592889976
+          },
+          {
+            "code": "600327",
+            "status": "evaluated",
+            "weight": 0.04338780070723319,
+            "scale": 0.47039211492966654,
+            "weight_share": 0.01039841625192421
+          },
+          {
+            "code": "301040",
+            "status": "evaluated",
+            "weight": 0.027482701399483066,
+            "scale": -4.97279117999926,
+            "weight_share": 0.006586564984187434
+          },
+          {
+            "code": "603127",
+            "status": "evaluated",
+            "weight": 0.4244015306161153,
+            "scale": 0.24961636082473102,
+            "weight_share": 0.10171300921838183
+          },
+          {
+            "code": "600033",
+            "status": "evaluated",
+            "weight": 0.558450324657697,
+            "scale": 0.9231460693316413,
+            "weight_share": 0.13383943959263325
+          },
+          {
+            "code": "000788",
+            "status": "evaluated",
+            "weight": 0.040909765901718485,
+            "scale": 2.084305206378884,
+            "weight_share": 0.009804524951271069
+          },
+          {
+            "code": "002723",
+            "status": "evaluated",
+            "weight": 0.019203606810747682,
+            "scale": -0.41207054763088524,
+            "weight_share": 0.004602378869209456
+          },
+          {
+            "code": "000557",
+            "status": "evaluated",
+            "weight": 0.15512125247936173,
+            "scale": 1.2006850770160888,
+            "weight_share": 0.03717670235659876
+          },
+          {
+            "code": "301282",
+            "status": "blocked",
+            "reason": "'2022-03-31'"
+          },
+          {
+            "code": "301013",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "000716",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "603183",
+            "status": "evaluated",
+            "weight": 0.1950786080482915,
+            "scale": 0.8178187810096601,
+            "weight_share": 0.04675297054164661
+          },
+          {
+            "code": "300449",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "688663",
+            "status": "evaluated",
+            "weight": 0.11481183730230195,
+            "scale": 0.8381727739863783,
+            "weight_share": 0.027516058787430218
+          },
+          {
+            "code": "688082",
+            "status": "evaluated",
+            "weight": 0.2057789508573793,
+            "scale": 0.921397265077173,
+            "weight_share": 0.04931743835871735
+          },
+          {
+            "code": "605567",
+            "status": "evaluated",
+            "weight": 0.02279519692524331,
+            "scale": -0.6031667958923103,
+            "weight_share": 0.005463147297386448
+          },
+          {
+            "code": "300065",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "600538",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "300225",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "002265",
+            "status": "evaluated",
+            "weight": 0.02638323503914283,
+            "scale": 1.7049541203105176,
+            "weight_share": 0.006323064445246775
+          },
+          {
+            "code": "600860",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "600458",
+            "status": "evaluated",
+            "weight": 0.01723541506553175,
+            "scale": 1.6270308760996022,
+            "weight_share": 0.004130677683697546
+          },
+          {
+            "code": "300095",
+            "status": "evaluated",
+            "weight": 0.04454458596704566,
+            "scale": 0.46910706457449636,
+            "weight_share": 0.010675653965049759
+          },
+          {
+            "code": "002217",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "002082",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "301175",
+            "status": "evaluated",
+            "weight": 0.2571652242451087,
+            "scale": 1.1715033915241115,
+            "weight_share": 0.061632786258610024
+          },
+          {
+            "code": "600359",
+            "status": "evaluated",
+            "weight": 0.03335638680437855,
+            "scale": 1.995280912807277,
+            "weight_share": 0.007994265415584803
+          },
+          {
+            "code": "300553",
+            "status": "evaluated",
+            "weight": 0.0819474189574654,
+            "scale": -0.05790174269055666,
+            "weight_share": 0.019639699620646885
+          },
+          {
+            "code": "603728",
+            "status": "evaluated",
+            "weight": 0.08085711464443235,
+            "scale": 0.5158305745160304,
+            "weight_share": 0.019378394878221995
+          },
+          {
+            "code": "301687",
+            "status": "blocked",
+            "reason": "'2023-09-30'"
+          },
+          {
+            "code": "603836",
+            "status": "evaluated",
+            "weight": 0.01639220169787837,
+            "scale": 1.0785547838406537,
+            "weight_share": 0.003928591303583216
+          }
+        ]
+      },
+      "sensitivity": {
+        "fit": {
+          "origin": "2023-09-30",
+          "target": "2024-09-30",
+          "evaluation_as_of": "2024-11-01T00:00:00+08:00",
+          "status": "fitted",
+          "training_pairs": 41,
+          "weighted_ebit_scale": 0.921397265077173,
+          "ebit_scale": 0.921397265077173,
+          "summary": {
+            "candidates": 59,
+            "statuses": {
+              "blocked": 18,
+              "evaluated": 41
+            },
+            "models": {
+              "current_rule": {
+                "revenue_n": 41,
+                "ebit_n": 41,
+                "revenue_median_ape_pct": 12.476912429106557,
+                "revenue_mean_bias_pct": 7.340978996805753,
+                "revenue_wape_pct": 15.936074453897191,
+                "margin_mae_pp": 3.8414765142738214,
+                "ebit_mae_pct_actual_revenue": 4.315878829204215
+              },
+              "zero_growth": {
+                "revenue_n": 41,
+                "ebit_n": 41,
+                "revenue_median_ape_pct": 13.331274505899882,
+                "revenue_mean_bias_pct": 1.1341070575361014,
+                "revenue_wape_pct": 15.746335443835001,
+                "margin_mae_pp": 3.8414765142738214,
+                "ebit_mae_pct_actual_revenue": 3.9157866938024877
+              }
+            }
+          }
+        },
+        "observations": [
+          {
+            "code": "688610",
+            "status": "blocked",
+            "reason": "'2022-09-30'"
+          },
+          {
+            "code": "688551",
+            "status": "evaluated",
+            "weight": 0.18687326768623155,
+            "scale": 0.7610186161858369,
+            "weight_share": 0.04705163400678242
+          },
+          {
+            "code": "688591",
+            "status": "blocked",
+            "reason": "'2023-03-31'"
+          },
+          {
+            "code": "301221",
+            "status": "evaluated",
+            "weight": 0.06255559821141753,
+            "scale": -0.6078877248783408,
+            "weight_share": 0.015750477040198992
+          },
+          {
+            "code": "002613",
+            "status": "evaluated",
+            "weight": 0.06334278859992877,
+            "scale": 0.8385676552554121,
+            "weight_share": 0.015948678711912023
+          },
+          {
+            "code": "688256",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "600469",
+            "status": "evaluated",
+            "weight": 0.06578714069666616,
+            "scale": 0.9264900949345477,
+            "weight_share": 0.016564126612317483
+          },
+          {
+            "code": "301305",
+            "status": "blocked",
+            "reason": "'2022-09-30'"
+          },
+          {
+            "code": "300941",
+            "status": "evaluated",
+            "weight": 0.2042846307617197,
+            "scale": 0.9257255593507342,
+            "weight_share": 0.05143553060756644
+          },
+          {
+            "code": "300475",
+            "status": "evaluated",
+            "weight": 0.018671973430434904,
+            "scale": 2.448831568253132,
+            "weight_share": 0.004701297681101759
+          },
+          {
+            "code": "688790",
+            "status": "blocked",
+            "reason": "'2023-09-30'"
+          },
+          {
+            "code": "002468",
+            "status": "evaluated",
+            "weight": 0.016371234693478807,
+            "scale": 1.4447375698350693,
+            "weight_share": 0.00412200927705754
+          },
+          {
+            "code": "000821",
+            "status": "evaluated",
+            "weight": 0.06519267138334178,
+            "scale": 0.9738597336365621,
+            "weight_share": 0.016414448956946433
+          },
+          {
+            "code": "300140",
+            "status": "evaluated",
+            "weight": 0.2159064515118613,
+            "scale": 1.0249551035561626,
+            "weight_share": 0.054361715091835405
+          },
+          {
+            "code": "603076",
+            "status": "evaluated",
+            "weight": 0.043459139909546834,
+            "scale": 0.06586082851598331,
+            "weight_share": 0.010942301007476882
+          },
+          {
+            "code": "002759",
+            "status": "evaluated",
+            "weight": 0.016193509300646777,
+            "scale": -7.727206672304921,
+            "weight_share": 0.004077260928399749
+          },
+          {
+            "code": "300650",
+            "status": "evaluated",
+            "weight": 0.02267425468579605,
+            "scale": 0.9511637043041417,
+            "weight_share": 0.005709006676353266
+          },
+          {
+            "code": "000925",
+            "status": "evaluated",
+            "weight": 0.01100759192689083,
+            "scale": 5.523341985825491,
+            "weight_share": 0.002771531707304971
+          },
+          {
+            "code": "600487",
+            "status": "evaluated",
+            "weight": 0.03651767997175119,
+            "scale": 1.7041057210800687,
+            "weight_share": 0.009194554866416777
+          },
+          {
+            "code": "002462",
+            "status": "evaluated",
+            "weight": 0.02915644119651298,
+            "scale": 0.7569832623242244,
+            "weight_share": 0.007341115276166799
+          },
+          {
+            "code": "688608",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "603833",
+            "status": "evaluated",
+            "weight": 0.15609180024579505,
+            "scale": 0.8958277527900091,
+            "weight_share": 0.039301363686519715
+          },
+          {
+            "code": "600580",
+            "status": "evaluated",
+            "weight": 0.09182880528590648,
+            "scale": 0.5584226248680431,
+            "weight_share": 0.023120992055681265
+          },
+          {
+            "code": "002434",
+            "status": "evaluated",
+            "weight": 0.07841313986939169,
+            "scale": 0.5872559902660003,
+            "weight_share": 0.01974314680819962
+          },
+          {
+            "code": "688622",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "600590",
+            "status": "evaluated",
+            "weight": 0.006242276531639971,
+            "scale": -19.507828733187242,
+            "weight_share": 0.0015717031888638129
+          },
+          {
+            "code": "603798",
+            "status": "evaluated",
+            "weight": 0.041740085157950156,
+            "scale": 1.3793966005448215,
+            "weight_share": 0.010509471122222478
+          },
+          {
+            "code": "301059",
+            "status": "evaluated",
+            "weight": 0.12168754995309447,
+            "scale": 1.2722224489742968,
+            "weight_share": 0.030638935865286977
+          },
+          {
+            "code": "603169",
+            "status": "evaluated",
+            "weight": 0.05236252947721059,
+            "scale": 0.8969188868590703,
+            "weight_share": 0.013184028957891402
+          },
+          {
+            "code": "600327",
+            "status": "evaluated",
+            "weight": 0.04338780070723319,
+            "scale": 0.47039211492966654,
+            "weight_share": 0.010924338962508348
+          },
+          {
+            "code": "301040",
+            "status": "evaluated",
+            "weight": 0.027482701399483066,
+            "scale": -4.97279117999926,
+            "weight_share": 0.006919694955713762
+          },
+          {
+            "code": "603127",
+            "status": "evaluated",
+            "weight": 0.4244015306161153,
+            "scale": 0.24961636082473102,
+            "weight_share": 0.10685736776431923
+          },
+          {
+            "code": "600033",
+            "status": "evaluated",
+            "weight": 0.558450324657697,
+            "scale": 0.9231460693316413,
+            "weight_share": 0.14060866282319917
+          },
+          {
+            "code": "000788",
+            "status": "evaluated",
+            "weight": 0.040909765901718485,
+            "scale": 2.084305206378884,
+            "weight_share": 0.010300410306640268
+          },
+          {
+            "code": "002723",
+            "status": "evaluated",
+            "weight": 0.019203606810747682,
+            "scale": -0.41207054763088524,
+            "weight_share": 0.004835154275712527
+          },
+          {
+            "code": "000557",
+            "status": "evaluated",
+            "weight": 0.15512125247936173,
+            "scale": 1.2006850770160888,
+            "weight_share": 0.03905699562436865
+          },
+          {
+            "code": "301282",
+            "status": "blocked",
+            "reason": "'2022-03-31'"
+          },
+          {
+            "code": "301013",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "000716",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "603183",
+            "status": "evaluated",
+            "weight": 0.1950786080482915,
+            "scale": 0.8178187810096601,
+            "weight_share": 0.04911760457815895
+          },
+          {
+            "code": "300449",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "688663",
+            "status": "evaluated",
+            "weight": 0.11481183730230195,
+            "scale": 0.8381727739863783,
+            "weight_share": 0.028907743816330638
+          },
+          {
+            "code": "688082",
+            "status": "evaluated",
+            "weight": 0.2057789508573793,
+            "scale": 0.921397265077173,
+            "weight_share": 0.051811775980168416
+          },
+          {
+            "code": "605567",
+            "status": "evaluated",
+            "weight": 0.02279519692524331,
+            "scale": -0.6031667958923103,
+            "weight_share": 0.005739457955216692
+          },
+          {
+            "code": "300065",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "600538",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "300225",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "002265",
+            "status": "evaluated",
+            "weight": 0.02638323503914283,
+            "scale": 1.7049541203105176,
+            "weight_share": 0.006642867299034918
+          },
+          {
+            "code": "600860",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "600458",
+            "status": "evaluated",
+            "weight": 0.01723541506553175,
+            "scale": 1.6270308760996022,
+            "weight_share": 0.004339595768079637
+          },
+          {
+            "code": "300095",
+            "status": "evaluated",
+            "weight": 0.04454458596704566,
+            "scale": 0.46910706457449636,
+            "weight_share": 0.0112155985810886
+          },
+          {
+            "code": "002217",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "002082",
+            "status": "blocked",
+            "reason": "positive revenue and EBIT required for historical forecast rules"
+          },
+          {
+            "code": "301175",
+            "status": "evaluated",
+            "weight": 0.2571652242451087,
+            "scale": 1.1715033915241115,
+            "weight_share": 0.06474999961347863
+          },
+          {
+            "code": "600359",
+            "status": "evaluated",
+            "weight": 0.03335638680437855,
+            "scale": 1.995280912807277,
+            "weight_share": 0.00839859292418164
+          },
+          {
+            "code": "300553",
+            "status": "evaluated",
+            "weight": 0.0819474189574654,
+            "scale": -0.05790174269055666,
+            "weight_share": 0.020633020508107752
+          },
+          {
+            "code": "603728",
+            "status": "evaluated",
+            "weight": 0.08085711464443235,
+            "scale": 0.5158305745160304,
+            "weight_share": 0.020358499705169883
+          },
+          {
+            "code": "301687",
+            "status": "blocked",
+            "reason": "'2023-09-30'"
+          },
+          {
+            "code": "603836",
+            "status": "evaluated",
+            "weight": 0.01639220169787837,
+            "scale": 1.0785547838406537,
+            "weight_share": 0.004127288426020051
+          }
+        ]
+      }
+    }
+  },
+  "results": [
+    {
+      "code": "688648",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "'2023-09-30'"
+    },
+    {
+      "code": "002276",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 347.908375375,
+      "actual_revenue": 16397.771776,
+      "original_ebit": 418.6354889831381,
+      "sensitivity_ebit": 487.70006752570623
+    },
+    {
+      "code": "002127",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "605208",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 69.30766802343751,
+      "actual_revenue": 3791.440384,
+      "original_ebit": 76.19371821312747,
+      "sensitivity_ebit": 88.76381122832522
+    },
+    {
+      "code": "002329",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "300254",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "688678",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 109.01697725708004,
+      "actual_revenue": 1191.592768,
+      "original_ebit": 70.49004181717406,
+      "sensitivity_ebit": 82.11916824736835
+    },
+    {
+      "code": "688131",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 184.11504374609373,
+      "actual_revenue": 2122.996256,
+      "original_ebit": 147.48658305468746,
+      "sensitivity_ebit": 171.81824859049144
+    },
+    {
+      "code": "000553",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": -1296.984968,
+      "actual_revenue": 29642.64448,
+      "original_ebit": 470.36970540000004,
+      "sensitivity_ebit": 547.9691596210238
+    },
+    {
+      "code": "000066",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": -580.9045738671875,
+      "actual_revenue": 14972.34432,
+      "original_ebit": 101.22169505625001,
+      "sensitivity_ebit": 117.92078983534991
+    },
+    {
+      "code": "601611",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 4490.753460765625,
+      "actual_revenue": 109720.762368,
+      "original_ebit": 3580.7333551257875,
+      "sensitivity_ebit": 4171.466454810605
+    },
+    {
+      "code": "605117",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 2512.407763375,
+      "actual_revenue": 9169.865728,
+      "original_ebit": 2289.605281966406,
+      "sensitivity_ebit": 2667.3339456588833
+    },
+    {
+      "code": "688111",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 1243.1645891249998,
+      "actual_revenue": 4912.422016,
+      "original_ebit": 841.266809775,
+      "sensitivity_ebit": 980.055181014356
+    },
+    {
+      "code": "300318",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "002824",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 119.7242604453125,
+      "actual_revenue": 3190.450048,
+      "original_ebit": 158.23883190351853,
+      "sensitivity_ebit": 184.34435454095785
+    },
+    {
+      "code": "600822",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 12.528221000000006,
+      "actual_revenue": 1353.964288,
+      "original_ebit": 45.51722414593739,
+      "sensitivity_ebit": 53.02644872148069
+    },
+    {
+      "code": "600783",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "002084",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "301120",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": -3.2917859374999994,
+      "actual_revenue": 380.137856,
+      "original_ebit": 58.092209303902145,
+      "sensitivity_ebit": 67.6759977254859
+    },
+    {
+      "code": "301536",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "'2023-09-30'"
+    },
+    {
+      "code": "002207",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "600885",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 2553.299283654297,
+      "actual_revenue": 13868.321536,
+      "original_ebit": 1880.0899328260437,
+      "sensitivity_ebit": 2190.2586171584553
+    },
+    {
+      "code": "002573",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 386.042119328125,
+      "actual_revenue": 8519.477888,
+      "original_ebit": 719.3000303955565,
+      "sensitivity_ebit": 837.966877216387
+    },
+    {
+      "code": "300639",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": -589.2165034353027,
+      "actual_revenue": 864.06904,
+      "original_ebit": 216.116325079541,
+      "sensitivity_ebit": 251.7702132485594
+    },
+    {
+      "code": "002185",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "603192",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 80.70261322167968,
+      "actual_revenue": 2781.603392,
+      "original_ebit": 32.778608432080084,
+      "sensitivity_ebit": 38.18627413684947
+    },
+    {
+      "code": "603788",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 196.1581433803711,
+      "actual_revenue": 1469.168448,
+      "original_ebit": 148.2457498154297,
+      "sensitivity_ebit": 172.70265922986786
+    },
+    {
+      "code": "000785",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 1582.8273739999995,
+      "actual_revenue": 13247.421696,
+      "original_ebit": 1743.2493432880067,
+      "sensitivity_ebit": 2030.8426896649169
+    },
+    {
+      "code": "688596",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 555.6933879169922,
+      "actual_revenue": 4925.2592,
+      "original_ebit": 302.37479105185554,
+      "sensitivity_ebit": 352.25920853547365
+    },
+    {
+      "code": "600505",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 58.920008125,
+      "actual_revenue": 1423.922688,
+      "original_ebit": 52.71916661479416,
+      "sensitivity_ebit": 61.41653489623205
+    },
+    {
+      "code": "002691",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "300132",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "605277",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 178.63489345312502,
+      "actual_revenue": 3457.7808,
+      "original_ebit": 166.16037495278326,
+      "sensitivity_ebit": 193.57275772631175
+    },
+    {
+      "code": "300168",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "603327",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 171.092355921875,
+      "actual_revenue": 2218.866272,
+      "original_ebit": 220.15514863125,
+      "sensitivity_ebit": 256.47534353667083
+    },
+    {
+      "code": "600039",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 10240.141904343749,
+      "actual_revenue": 97365.766144,
+      "original_ebit": 16138.064624951954,
+      "sensitivity_ebit": 18800.449112522063
+    },
+    {
+      "code": "688233",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "300013",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "002755",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "002800",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 18.412308359375,
+      "actual_revenue": 1180.772624,
+      "original_ebit": 18.687451902539063,
+      "sensitivity_ebit": 21.770422705655466
+    },
+    {
+      "code": "603960",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 90.54915166015627,
+      "actual_revenue": 653.77564,
+      "original_ebit": 68.31023256986599,
+      "sensitivity_ebit": 79.57974398668863
+    },
+    {
+      "code": "605305",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 327.7230911152343,
+      "actual_revenue": 1339.290368,
+      "original_ebit": 92.99263616718748,
+      "sensitivity_ebit": 108.33413824587977
+    },
+    {
+      "code": "002360",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 93.08238450000003,
+      "actual_revenue": 648.724784,
+      "original_ebit": 182.324602607902,
+      "sensitivity_ebit": 212.40368612669835
+    },
+    {
+      "code": "301511",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "'2022-09-30'"
+    },
+    {
+      "code": "300164",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 16.6208178125,
+      "actual_revenue": 1105.764688,
+      "original_ebit": 106.7335287890625,
+      "sensitivity_ebit": 124.34194082331928
+    },
+    {
+      "code": "600201",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 139.13464927734375,
+      "actual_revenue": 1350.040848,
+      "original_ebit": 230.3181334871153,
+      "sensitivity_ebit": 268.3149714012542
+    },
+    {
+      "code": "002075",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": -101.92759700781251,
+      "actual_revenue": 14821.307648,
+      "original_ebit": 98.10463500000002,
+      "sensitivity_ebit": 114.28949139095062
+    },
+    {
+      "code": "300782",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 663.5649683750001,
+      "actual_revenue": 4671.869056,
+      "original_ebit": 679.3597816785889,
+      "sensitivity_ebit": 791.4374679597264
+    },
+    {
+      "code": "300176",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 69.50626824999999,
+      "actual_revenue": 1746.732448,
+      "original_ebit": 17.669126732876308,
+      "sensitivity_ebit": 20.58409888200167
+    },
+    {
+      "code": "001299",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "'2022-03-31'"
+    },
+    {
+      "code": "002014",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 454.1512713232422,
+      "actual_revenue": 3439.333504,
+      "original_ebit": 331.0468755963341,
+      "sensitivity_ebit": 385.6614831548817
+    },
+    {
+      "code": "603315",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 91.13226681835935,
+      "actual_revenue": 1225.135648,
+      "original_ebit": 69.86705354701952,
+      "sensitivity_ebit": 81.39340220646224
+    },
+    {
+      "code": "301580",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "'2023-09-30'"
+    },
+    {
+      "code": "002350",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": -178.95646800000003,
+      "actual_revenue": 1921.052992,
+      "original_ebit": 1.3751912162109352,
+      "sensitivity_ebit": 1.6020640071292307
+    },
+    {
+      "code": "003023",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 118.98533255859373,
+      "actual_revenue": 1349.432704,
+      "original_ebit": 77.0868176353859,
+      "sensitivity_ebit": 89.80425013043691
+    },
+    {
+      "code": "688345",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": -109.736506140625,
+      "actual_revenue": 1738.926272,
+      "original_ebit": 48.198820279688206,
+      "sensitivity_ebit": 56.15044238643159
+    },
+    {
+      "code": "603985",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": -198.892860375,
+      "actual_revenue": 1666.617984,
+      "original_ebit": 56.273817320257024,
+      "sensitivity_ebit": 65.55761570449187
+    },
+    {
+      "code": "002240",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": -891.2218596894531,
+      "actual_revenue": 4820.686848,
+      "original_ebit": 1534.3224479028809,
+      "sensitivity_ebit": 1787.4479855160623
+    },
+    {
+      "code": "002449",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 22.84575804687501,
+      "actual_revenue": 3578.268992,
+      "original_ebit": 55.313858155728546,
+      "sensitivity_ebit": 64.43928684398449
+    },
+    {
+      "code": "300100",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 292.0728996396484,
+      "actual_revenue": 4491.920512,
+      "original_ebit": 113.85109064911364,
+      "sensitivity_ebit": 132.63372566028315
+    },
+    {
+      "code": "002569",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "002998",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 144.245505484375,
+      "actual_revenue": 2184.182976,
+      "original_ebit": 142.46584760869638,
+      "sensitivity_ebit": 165.96921505063023
+    },
+    {
+      "code": "003029",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "600727",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "603991",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "000738",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 768.4458689492188,
+      "actual_revenue": 5433.483392,
+      "original_ebit": 589.4789148160797,
+      "sensitivity_ebit": 686.7284645625483
+    },
+    {
+      "code": "002799",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": -295.92752115624995,
+      "actual_revenue": 1479.366304,
+      "original_ebit": 40.631874533789066,
+      "sensitivity_ebit": 47.33513635444105
+    },
+    {
+      "code": "301185",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 62.881319640624994,
+      "actual_revenue": 220.093912,
+      "original_ebit": 46.48826346328124,
+      "sensitivity_ebit": 54.1576856880098
+    },
+    {
+      "code": "002969",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 285.6989865,
+      "actual_revenue": 3023.627392,
+      "original_ebit": 128.40665380578818,
+      "sensitivity_ebit": 149.59059941130613
+    },
+    {
+      "code": "300395",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 403.7880531875,
+      "actual_revenue": 1909.482848,
+      "original_ebit": 491.29947490635436,
+      "sensitivity_ebit": 572.3518272881637
+    },
+    {
+      "code": "688067",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 16.548856296875,
+      "actual_revenue": 202.667272,
+      "original_ebit": 8.576146294537107,
+      "sensitivity_ebit": 9.990999896152017
+    },
+    {
+      "code": "603137",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "'2022-09-30'"
+    },
+    {
+      "code": "001213",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 672.6517632578125,
+      "actual_revenue": 10891.178496,
+      "original_ebit": 408.81129609066767,
+      "sensitivity_ebit": 476.25512398142786
+    },
+    {
+      "code": "600025",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 12532.409785629883,
+      "actual_revenue": 24740.687872,
+      "original_ebit": 8297.110734080878,
+      "sensitivity_ebit": 9665.930318302499
+    },
+    {
+      "code": "000591",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 2266.4329361249997,
+      "actual_revenue": 7869.500928,
+      "original_ebit": 2098.4881729051262,
+      "sensitivity_ebit": 2444.687205362439
+    },
+    {
+      "code": "603696",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 28.128562743774413,
+      "actual_revenue": 523.130184,
+      "original_ebit": 29.339732645721302,
+      "sensitivity_ebit": 34.18006826717164
+    },
+    {
+      "code": "603332",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "000922",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 442.377594171875,
+      "actual_revenue": 5851.907456,
+      "original_ebit": 346.8278705666348,
+      "sensitivity_ebit": 404.0459548854867
+    },
+    {
+      "code": "603237",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "'2022-03-31'"
+    },
+    {
+      "code": "300043",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "605090",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 1506.6950210312502,
+      "actual_revenue": 24074.889216,
+      "original_ebit": 1064.4874242264618,
+      "sensitivity_ebit": 1240.1017169770357
+    },
+    {
+      "code": "000798",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 76.532889625,
+      "actual_revenue": 4509.61664,
+      "original_ebit": 37.23726515625,
+      "sensitivity_ebit": 43.38049976433609
+    },
+    {
+      "code": "600981",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "688361",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "'2022-09-30'"
+    },
+    {
+      "code": "002943",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 69.99604223437501,
+      "actual_revenue": 1332.080896,
+      "original_ebit": 114.20810954516601,
+      "sensitivity_ebit": 133.04964390967862
+    },
+    {
+      "code": "300657",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "000813",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "300825",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": -4.470089015624997,
+      "actual_revenue": 871.195552,
+      "original_ebit": 26.210411325,
+      "sensitivity_ebit": 30.53448575066674
+    },
+    {
+      "code": "300568",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 499.35763825,
+      "actual_revenue": 3408.016576,
+      "original_ebit": 649.550701291652,
+      "sensitivity_ebit": 756.7106210961203
+    },
+    {
+      "code": "300867",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 407.24316229492183,
+      "actual_revenue": 1696.225728,
+      "original_ebit": 277.78752365192764,
+      "sensitivity_ebit": 323.6156456107346
+    },
+    {
+      "code": "300899",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 8.229563882812498,
+      "actual_revenue": 132.894995,
+      "original_ebit": 7.452545906617277,
+      "sensitivity_ebit": 8.682033027644406
+    },
+    {
+      "code": "000419",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 145.39425775,
+      "actual_revenue": 1824.631424,
+      "original_ebit": 97.65847695012299,
+      "sensitivity_ebit": 113.76972821563864
+    },
+    {
+      "code": "603221",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 155.34296706640623,
+      "actual_revenue": 1320.235168,
+      "original_ebit": 12.35796544160156,
+      "sensitivity_ebit": 14.396726362088668
+    },
+    {
+      "code": "300621",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 201.91553175,
+      "actual_revenue": 13343.51744,
+      "original_ebit": 263.11439773124994,
+      "sensitivity_ebit": 306.52181412571224
+    },
+    {
+      "code": "603636",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": -48.24643298437499,
+      "actual_revenue": 1341.993368,
+      "original_ebit": 66.01473837651119,
+      "sensitivity_ebit": 76.90554960382995
+    },
+    {
+      "code": "002825",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 78.57011503125,
+      "actual_revenue": 1837.510784,
+      "original_ebit": 13.474739762402344,
+      "sensitivity_ebit": 15.697741029976639
+    },
+    {
+      "code": "605058",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 85.27087244531248,
+      "actual_revenue": 1214.360096,
+      "original_ebit": 74.07184238530239,
+      "sensitivity_ebit": 86.29187797912775
+    },
+    {
+      "code": "300053",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "600527",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 20.430718023437496,
+      "actual_revenue": 699.728072,
+      "original_ebit": 23.207386865625004,
+      "sensitivity_ebit": 27.036035977151425
+    },
+    {
+      "code": "688658",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 316.0539722421875,
+      "actual_revenue": 4230.380032,
+      "original_ebit": 103.91222273849051,
+      "sensitivity_ebit": 121.05518853502949
+    },
+    {
+      "code": "688117",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 111.93899862255859,
+      "actual_revenue": 481.630808,
+      "original_ebit": 58.10356004958122,
+      "sensitivity_ebit": 67.68922106555102
+    },
+    {
+      "code": "600567",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "300655",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 41.62464757421875,
+      "actual_revenue": 1400.723296,
+      "original_ebit": 71.06956372836915,
+      "sensitivity_ebit": 82.79429704714828
+    },
+    {
+      "code": "300796",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 19.3059976015625,
+      "actual_revenue": 1204.300464,
+      "original_ebit": 104.97108356367191,
+      "sensitivity_ebit": 122.28873540224717
+    },
+    {
+      "code": "000777",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 67.62868780468752,
+      "actual_revenue": 1717.616112,
+      "original_ebit": 86.13603143437496,
+      "sensitivity_ebit": 100.34636205587684
+    },
+    {
+      "code": "688685",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 49.06675314221192,
+      "actual_revenue": 376.493128,
+      "original_ebit": 25.112737883178617,
+      "sensitivity_ebit": 29.255723137879688
+    },
+    {
+      "code": "000935",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 533.1912045550002,
+      "actual_revenue": 1158.005664,
+      "original_ebit": 218.77014021152314,
+      "sensitivity_ebit": 254.8618427284494
+    },
+    {
+      "code": "300751",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 960.8957050698241,
+      "actual_revenue": 10748.718336,
+      "original_ebit": 662.2492376671876,
+      "sensitivity_ebit": 771.5041042355198
+    },
+    {
+      "code": "688576",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "'2022-09-30'"
+    },
+    {
+      "code": "301007",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 56.037041375,
+      "actual_revenue": 699.812304,
+      "original_ebit": 48.26245414753037,
+      "sensitivity_ebit": 56.224574280311224
+    },
+    {
+      "code": "603009",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 135.99857479492186,
+      "actual_revenue": 2008.964768,
+      "original_ebit": 57.39738582286836,
+      "sensitivity_ebit": 66.86654542739784
+    },
+    {
+      "code": "603926",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 96.41629038671876,
+      "actual_revenue": 2344.196288,
+      "original_ebit": 70.82471329764816,
+      "sensitivity_ebit": 82.50905230622493
+    },
+    {
+      "code": "002157",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "600717",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 1455.5340890156249,
+      "actual_revenue": 12415.215616,
+      "original_ebit": 1300.126722746954,
+      "sensitivity_ebit": 1514.6157150121687
+    },
+    {
+      "code": "002843",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 73.82897800000002,
+      "actual_revenue": 1751.2608,
+      "original_ebit": 130.855056525,
+      "sensitivity_ebit": 152.442928473016
+    },
+    {
+      "code": "688205",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 82.92427263085938,
+      "actual_revenue": 870.377312,
+      "original_ebit": 35.79798564580078,
+      "sensitivity_ebit": 41.703774467731535
+    },
+    {
+      "code": "603029",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 57.179151859375,
+      "actual_revenue": 706.54616,
+      "original_ebit": 76.99348040097655,
+      "sensitivity_ebit": 89.69551454369851
+    },
+    {
+      "code": "002590",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": 256.674281546875,
+      "actual_revenue": 4264.53728,
+      "original_ebit": 87.16973729062497,
+      "sensitivity_ebit": 101.55060400182222
+    },
+    {
+      "code": "000908",
+      "origin": "2023-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "300672",
+      "origin": "2023-09-30",
+      "status": "evaluated",
+      "actual_ebit": -18.06543015625,
+      "actual_revenue": 2243.201408,
+      "original_ebit": 22.464222188378915,
+      "sensitivity_ebit": 26.170267372210635
+    },
+    {
+      "code": "688648",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "002276",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 597.351685375,
+      "actual_revenue": 18848.737024,
+      "original_ebit": 380.65017831587704,
+      "sensitivity_ebit": 380.30403578311854
+    },
+    {
+      "code": "002127",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": -358.6786105859375,
+      "actual_revenue": 2942.461504,
+      "original_ebit": 43.38750388995952,
+      "sensitivity_ebit": 43.34804965785332
+    },
+    {
+      "code": "605208",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 103.53141407812501,
+      "actual_revenue": 5610.26432,
+      "original_ebit": 72.84586460919591,
+      "sensitivity_ebit": 72.77962254886543
+    },
+    {
+      "code": "002329",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "300254",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 85.52352365625002,
+      "actual_revenue": 849.26392,
+      "original_ebit": 74.90673721207143,
+      "sensitivity_ebit": 74.83862110648079
+    },
+    {
+      "code": "688678",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 31.789419385498043,
+      "actual_revenue": 1760.81536,
+      "original_ebit": 125.79334278142225,
+      "sensitivity_ebit": 125.67895316924037
+    },
+    {
+      "code": "688131",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 395.4732076015624,
+      "actual_revenue": 2710.18016,
+      "original_ebit": 210.76831984339844,
+      "sensitivity_ebit": 210.57665861686593
+    },
+    {
+      "code": "000553",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "000066",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "601611",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 4368.087783609375,
+      "actual_revenue": 108550.144,
+      "original_ebit": 4334.157828264562,
+      "sensitivity_ebit": 4330.216581278451
+    },
+    {
+      "code": "605117",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 3459.891122234375,
+      "actual_revenue": 12036.812032,
+      "original_ebit": 2463.6532524883305,
+      "sensitivity_ebit": 2461.4129404505748
+    },
+    {
+      "code": "688111",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 1546.691131015625,
+      "actual_revenue": 5672.406016,
+      "original_ebit": 1321.2298432456312,
+      "sensitivity_ebit": 1320.0283888122704
+    },
+    {
+      "code": "300318",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 13.944470561279298,
+      "actual_revenue": 834.381712,
+      "original_ebit": 61.422696459177125,
+      "sensitivity_ebit": 61.366842005580644
+    },
+    {
+      "code": "002824",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 159.30793670385742,
+      "actual_revenue": 3766.433536,
+      "original_ebit": 127.82896951749997,
+      "sensitivity_ebit": 127.71272881727369
+    },
+    {
+      "code": "600822",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": -34.541777890625,
+      "actual_revenue": 213.86048,
+      "original_ebit": 10.842119537340661,
+      "sensitivity_ebit": 10.832260304557087
+    },
+    {
+      "code": "600783",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "002084",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "301120",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "301536",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "'2023-09-30'"
+    },
+    {
+      "code": "002207",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "600885",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 2818.9976495957026,
+      "actual_revenue": 16147.615744,
+      "original_ebit": 2734.5062184913013,
+      "sensitivity_ebit": 2732.019607523456
+    },
+    {
+      "code": "002573",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 33.83491081249999,
+      "actual_revenue": 8916.72448,
+      "original_ebit": 387.69331749060746,
+      "sensitivity_ebit": 387.3407703108229
+    },
+    {
+      "code": "300639",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "002185",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 754.726826,
+      "actual_revenue": 16310.179584,
+      "original_ebit": 491.3851014793791,
+      "sensitivity_ebit": 490.93826264079405
+    },
+    {
+      "code": "603192",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 142.00035766015623,
+      "actual_revenue": 2463.968128,
+      "original_ebit": 79.06590299751986,
+      "sensitivity_ebit": 78.99400477317255
+    },
+    {
+      "code": "603788",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 180.52321626513674,
+      "actual_revenue": 1528.267872,
+      "original_ebit": 226.34445744561194,
+      "sensitivity_ebit": 226.13863212819658
+    },
+    {
+      "code": "000785",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 692.2969355,
+      "actual_revenue": 12645.605632,
+      "original_ebit": 1470.6083177411806,
+      "sensitivity_ebit": 1469.271026661873
+    },
+    {
+      "code": "688596",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 329.46745374999995,
+      "actual_revenue": 5259.926912,
+      "original_ebit": 641.2077328356879,
+      "sensitivity_ebit": 640.6246534591064
+    },
+    {
+      "code": "600505",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 95.710198,
+      "actual_revenue": 1549.252384,
+      "original_ebit": 58.35888421284084,
+      "sensitivity_ebit": 58.305815823171976
+    },
+    {
+      "code": "002691",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "300132",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 125.7505362929687,
+      "actual_revenue": 2106.13328,
+      "original_ebit": 52.879786792647565,
+      "sensitivity_ebit": 52.831700795648636
+    },
+    {
+      "code": "605277",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 251.477959609375,
+      "actual_revenue": 3924.918912,
+      "original_ebit": 187.2787661314725,
+      "sensitivity_ebit": 187.1084650252772
+    },
+    {
+      "code": "300168",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "603327",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 128.72283275,
+      "actual_revenue": 2573.094912,
+      "original_ebit": 197.42135507030645,
+      "sensitivity_ebit": 197.24183084634052
+    },
+    {
+      "code": "600039",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 11143.998876203126,
+      "actual_revenue": 108641.804288,
+      "original_ebit": 8861.97989373161,
+      "sensitivity_ebit": 8853.921292053707
+    },
+    {
+      "code": "688233",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "300013",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "002755",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 222.3571890722656,
+      "actual_revenue": 1827.081568,
+      "original_ebit": 97.18897578547293,
+      "sensitivity_ebit": 97.1005974261525
+    },
+    {
+      "code": "002800",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": -23.163964777343743,
+      "actual_revenue": 1300.433424,
+      "original_ebit": 19.784062565932203,
+      "sensitivity_ebit": 19.766072017352606
+    },
+    {
+      "code": "603960",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 35.19292759570312,
+      "actual_revenue": 529.992304,
+      "original_ebit": 80.9159198801569,
+      "sensitivity_ebit": 80.84233935125313
+    },
+    {
+      "code": "605305",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 496.65241841406254,
+      "actual_revenue": 1716.717184,
+      "original_ebit": 378.1556247044869,
+      "sensitivity_ebit": 377.8117505828689
+    },
+    {
+      "code": "002360",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 11.635737631835951,
+      "actual_revenue": 459.038408,
+      "original_ebit": 80.5549598438362,
+      "sensitivity_ebit": 80.48170755232285
+    },
+    {
+      "code": "301511",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "300164",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 43.848644017578124,
+      "actual_revenue": 1189.04584,
+      "original_ebit": 17.99780066868104,
+      "sensitivity_ebit": 17.981434449347837
+    },
+    {
+      "code": "600201",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 33.599257984375015,
+      "actual_revenue": 1327.056688,
+      "original_ebit": 120.40931423950208,
+      "sensitivity_ebit": 120.299820569532
+    },
+    {
+      "code": "002075",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "300782",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": -152.97629456250002,
+      "actual_revenue": 3888.507584,
+      "original_ebit": 732.7258348685585,
+      "sensitivity_ebit": 732.0595339162745
+    },
+    {
+      "code": "300176",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 39.18231688281249,
+      "actual_revenue": 1834.840864,
+      "original_ebit": 71.49738256325146,
+      "sensitivity_ebit": 71.43236673902268
+    },
+    {
+      "code": "001299",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 85.1366530625,
+      "actual_revenue": 741.072752,
+      "original_ebit": 74.63287010304731,
+      "sensitivity_ebit": 74.5650030372842
+    },
+    {
+      "code": "002014",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 510.3780971249999,
+      "actual_revenue": 3692.094784,
+      "original_ebit": 444.1466550614098,
+      "sensitivity_ebit": 443.74277229225055
+    },
+    {
+      "code": "603315",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": -11.114160677734361,
+      "actual_revenue": 1180.898704,
+      "original_ebit": 104.13914389806669,
+      "sensitivity_ebit": 104.04444543453867
+    },
+    {
+      "code": "301580",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "'2023-09-30'"
+    },
+    {
+      "code": "002350",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "003023",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 79.77321798437501,
+      "actual_revenue": 1171.029256,
+      "original_ebit": 121.11613626799371,
+      "sensitivity_ebit": 121.0059998525815
+    },
+    {
+      "code": "688345",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "603985",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "002240",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "002449",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": -7.777701014892578,
+      "actual_revenue": 3284.369728,
+      "original_ebit": 20.839775057763973,
+      "sensitivity_ebit": 20.820824501763905
+    },
+    {
+      "code": "300100",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 513.115491,
+      "actual_revenue": 5529.349888,
+      "original_ebit": 314.5172326696566,
+      "sensitivity_ebit": 314.2312278344714
+    },
+    {
+      "code": "002569",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "002998",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 45.863327156249994,
+      "actual_revenue": 2667.67872,
+      "original_ebit": 124.83232960096417,
+      "sensitivity_ebit": 124.71881388180863
+    },
+    {
+      "code": "003029",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "600727",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 189.767770375,
+      "actual_revenue": 5507.863424,
+      "original_ebit": 463.3817247527791,
+      "sensitivity_ebit": 462.960350659249
+    },
+    {
+      "code": "603991",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "000738",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 543.1196245800782,
+      "actual_revenue": 5238.984448,
+      "original_ebit": 759.5369979578097,
+      "sensitivity_ebit": 758.8463163945958
+    },
+    {
+      "code": "002799",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "301185",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 65.6176385498047,
+      "actual_revenue": 208.866316,
+      "original_ebit": 56.595400791051304,
+      "sensitivity_ebit": 56.54393601712431
+    },
+    {
+      "code": "002969",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 260.715944125,
+      "actual_revenue": 3159.394176,
+      "original_ebit": 250.49262406944848,
+      "sensitivity_ebit": 250.26483972499778
+    },
+    {
+      "code": "300395",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 410.041895875,
+      "actual_revenue": 1809.777696,
+      "original_ebit": 349.44453329877734,
+      "sensitivity_ebit": 349.12676747938434
+    },
+    {
+      "code": "688067",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 21.72062099267578,
+      "actual_revenue": 221.120764,
+      "original_ebit": 15.87522857118695,
+      "sensitivity_ebit": 15.860792503272668
+    },
+    {
+      "code": "603137",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 71.7239979296875,
+      "actual_revenue": 1851.270752,
+      "original_ebit": 139.08299861482908,
+      "sensitivity_ebit": 138.9565241137079
+    },
+    {
+      "code": "001213",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 616.630912578125,
+      "actual_revenue": 11853.29792,
+      "original_ebit": 674.2689474558223,
+      "sensitivity_ebit": 673.6558040119775
+    },
+    {
+      "code": "600025",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 13051.378494354492,
+      "actual_revenue": 26104.716288,
+      "original_ebit": 14272.295948492952,
+      "sensitivity_ebit": 14259.317500171328
+    },
+    {
+      "code": "000591",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 1902.45221425,
+      "actual_revenue": 5367.13024,
+      "original_ebit": 1961.4067166306538,
+      "sensitivity_ebit": 1959.6231202281306
+    },
+    {
+      "code": "603696",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 33.02182676855469,
+      "actual_revenue": 503.326576,
+      "original_ebit": 25.511549170124823,
+      "sensitivity_ebit": 25.48835035728462
+    },
+    {
+      "code": "603332",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 43.20309711230468,
+      "actual_revenue": 1564.92592,
+      "original_ebit": 81.13259631732716,
+      "sensitivity_ebit": 81.05881875467684
+    },
+    {
+      "code": "000922",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 382.6840186250001,
+      "actual_revenue": 4971.076608,
+      "original_ebit": 494.9973826828555,
+      "sensitivity_ebit": 494.5472590325561
+    },
+    {
+      "code": "603237",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 133.08721889062502,
+      "actual_revenue": 2188.601184,
+      "original_ebit": 124.03500617227414,
+      "sensitivity_ebit": 123.92221549560314
+    },
+    {
+      "code": "300043",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "605090",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 1396.3263522500001,
+      "actual_revenue": 20607.27808,
+      "original_ebit": 1417.3132087073477,
+      "sensitivity_ebit": 1416.0243812964568
+    },
+    {
+      "code": "000798",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 49.34062,
+      "actual_revenue": 4651.460416,
+      "original_ebit": 88.31035551414665,
+      "sensitivity_ebit": 88.23005088835687
+    },
+    {
+      "code": "600981",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 340.78115557031254,
+      "actual_revenue": 57253.561344,
+      "original_ebit": 409.09870625310623,
+      "sensitivity_ebit": 408.7266941790355
+    },
+    {
+      "code": "688361",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "002943",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": -403.4970335156251,
+      "actual_revenue": 810.65732,
+      "original_ebit": 65.53805278338041,
+      "sensitivity_ebit": 65.47845604896439
+    },
+    {
+      "code": "300657",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 166.4946666875,
+      "actual_revenue": 6976.060032,
+      "original_ebit": 14.500666956937689,
+      "sensitivity_ebit": 14.487480840463583
+    },
+    {
+      "code": "000813",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "300825",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "300568",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 162.17667887500005,
+      "actual_revenue": 3893.644928,
+      "original_ebit": 535.1601966724094,
+      "sensitivity_ebit": 534.6735511473047
+    },
+    {
+      "code": "300867",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 459.22058229882816,
+      "actual_revenue": 1574.073824,
+      "original_ebit": 371.97491317469166,
+      "sensitivity_ebit": 371.6366594553881
+    },
+    {
+      "code": "300899",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 15.7097878125,
+      "actual_revenue": 154.54477875,
+      "original_ebit": 9.339174840363288,
+      "sensitivity_ebit": 9.330682303600478
+    },
+    {
+      "code": "000419",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 110.0551689375,
+      "actual_revenue": 1991.700128,
+      "original_ebit": 125.82647788288682,
+      "sensitivity_ebit": 125.71205813944901
+    },
+    {
+      "code": "603221",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 62.84873894921874,
+      "actual_revenue": 1197.493584,
+      "original_ebit": 154.22784238014148,
+      "sensitivity_ebit": 154.0875959832541
+    },
+    {
+      "code": "300621",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 176.7517823535156,
+      "actual_revenue": 8346.716032,
+      "original_ebit": 177.7347568422392,
+      "sensitivity_ebit": 177.57313453809425
+    },
+    {
+      "code": "603636",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "002825",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 86.2917009355469,
+      "actual_revenue": 1946.218336,
+      "original_ebit": 90.66108473357,
+      "sensitivity_ebit": 90.57864248270556
+    },
+    {
+      "code": "605058",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 122.92673266406248,
+      "actual_revenue": 1356.0448,
+      "original_ebit": 95.98468360295043,
+      "sensitivity_ebit": 95.89740036132592
+    },
+    {
+      "code": "300053",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "600527",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 5.0787922421874985,
+      "actual_revenue": 534.122608,
+      "original_ebit": 17.681064777178623,
+      "sensitivity_ebit": 17.66498658020807
+    },
+    {
+      "code": "688658",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": -242.2673590546875,
+      "actual_revenue": 2548.186496,
+      "original_ebit": 278.59592813967794,
+      "sensitivity_ebit": 278.3425881816905
+    },
+    {
+      "code": "688117",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 156.65054368994143,
+      "actual_revenue": 638.351088,
+      "original_ebit": 127.3563108008363,
+      "sensitivity_ebit": 127.24049991069455
+    },
+    {
+      "code": "600567",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 118.23811337500001,
+      "actual_revenue": 28760.202752,
+      "original_ebit": 852.976824586572,
+      "sensitivity_ebit": 852.2011739360115
+    },
+    {
+      "code": "300655",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": -19.722400667968753,
+      "actual_revenue": 1561.534592,
+      "original_ebit": 44.331257099764784,
+      "sensitivity_ebit": 44.29094466990919
+    },
+    {
+      "code": "300796",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": -8.7829521640625,
+      "actual_revenue": 1467.116896,
+      "original_ebit": 22.276952041182607,
+      "sensitivity_ebit": 22.256694594737187
+    },
+    {
+      "code": "000777",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 80.72817253906248,
+      "actual_revenue": 1900.871552,
+      "original_ebit": 58.526930306538674,
+      "sensitivity_ebit": 58.473709104908046
+    },
+    {
+      "code": "688685",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 162.30781520703124,
+      "actual_revenue": 622.391728,
+      "original_ebit": 56.61752006418649,
+      "sensitivity_ebit": 56.56603517619765
+    },
+    {
+      "code": "000935",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 225.81243008496094,
+      "actual_revenue": 1247.271456,
+      "original_ebit": 468.204192699825,
+      "sensitivity_ebit": 467.7784333166919
+    },
+    {
+      "code": "300751",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 735.4241000864258,
+      "actual_revenue": 8266.892544,
+      "original_ebit": 1108.765678945613,
+      "sensitivity_ebit": 1107.757427847337
+    },
+    {
+      "code": "688576",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 55.89377056640626,
+      "actual_revenue": 359.842752,
+      "original_ebit": 84.35521341540928,
+      "sensitivity_ebit": 84.27850538035153
+    },
+    {
+      "code": "301007",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 60.469270078125,
+      "actual_revenue": 641.791552,
+      "original_ebit": 60.481077292330305,
+      "sensitivity_ebit": 60.42607909590084
+    },
+    {
+      "code": "603009",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 161.12084019335938,
+      "actual_revenue": 2278.517248,
+      "original_ebit": 136.05746076273576,
+      "sensitivity_ebit": 135.93373752089343
+    },
+    {
+      "code": "603926",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 101.20598964453124,
+      "actual_revenue": 2410.311296,
+      "original_ebit": 100.21209876395471,
+      "sensitivity_ebit": 100.12097134130994
+    },
+    {
+      "code": "002157",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "600717",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 1645.424624953125,
+      "actual_revenue": 12459.919872,
+      "original_ebit": 1464.83863655469,
+      "sensitivity_ebit": 1463.5065921090973
+    },
+    {
+      "code": "002843",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 74.16889715624998,
+      "actual_revenue": 1558.807616,
+      "original_ebit": 69.48467522293892,
+      "sensitivity_ebit": 69.42148964510476
+    },
+    {
+      "code": "688205",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 46.470076882812485,
+      "actual_revenue": 892.87384,
+      "original_ebit": 90.35948107967823,
+      "sensitivity_ebit": 90.27731309074402
+    },
+    {
+      "code": "603029",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 79.20341310937499,
+      "actual_revenue": 949.0384,
+      "original_ebit": 59.77680250198071,
+      "sensitivity_ebit": 59.72244473467377
+    },
+    {
+      "code": "002590",
+      "origin": "2024-09-30",
+      "status": "evaluated",
+      "actual_ebit": 267.93407131250007,
+      "actual_revenue": 4764.923008,
+      "original_ebit": 274.58013176073564,
+      "sensitivity_ebit": 274.33044354917797
+    },
+    {
+      "code": "000908",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    },
+    {
+      "code": "300672",
+      "origin": "2024-09-30",
+      "status": "blocked",
+      "reason": "positive revenue and EBIT required for historical forecast rules"
+    }
+  ],
+  "business_evidence": {
+    "config_sha256": "861323415f51b9417bd2be44ba691ff6dba4449d151f7fecf2470fd6970c432a",
+    "checked_pdf_amounts": 47,
+    "source": "existing issuer report excerpts; numerical TDX inputs unchanged"
+  },
+  "boundary": "posthoc_diagnostic_not_new_validation_or_adoptable_universal_filter; no_company_removed_from_evaluation; source_PDF_business_scope_not_TDX_value_override; no_strict_PIT_business_event_chain; no_threshold_search_or_default_policy_change"
+}
