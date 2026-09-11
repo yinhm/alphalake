@@ -1,0 +1,40 @@
+{
+  "database": "workspace/auto-valuation-20260909/market.duckdb",
+  "report_period": "2026-06-30",
+  "information_as_of": "2026-09-10T22:18:56.906406Z",
+  "concurrency": "two company CLI processes launched before waiting; cross-process store regression holds parent reader open during child query",
+  "cases": [
+    {
+      "scenario": "baseline",
+      "before": "workspace/cash-uncertainty-output-20260911/baseline-after.json",
+      "after": "workspace/readonly-valuation-20260911/baseline.json",
+      "before_sha256": "cf17fbaf2c39e0442fcc53e426470545ce54e4fedd82a61ceaf3821510c23b24",
+      "after_sha256": "cf17fbaf2c39e0442fcc53e426470545ce54e4fedd82a61ceaf3821510c23b24",
+      "whole_json_equal": true,
+      "exit_code": 0
+    },
+    {
+      "scenario": "zero",
+      "before": "workspace/cash-uncertainty-output-20260911/zero-after.json",
+      "after": "workspace/readonly-valuation-20260911/zero.json",
+      "before_sha256": "e650234c42e82ab0a24307c084e89f8a112eb0c3253f129211c2cb72dbee29ed",
+      "after_sha256": "e650234c42e82ab0a24307c084e89f8a112eb0c3253f129211c2cb72dbee29ed",
+      "whole_json_equal": true,
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    "TestOpenReadOnlyAcrossProcesses: concurrent read, write rejected, missing file not created, memory rejected, normal writer restored after reader close",
+    "go test ./internal/store/duckdb -run ^TestOpen -count=1",
+    "go test ./...",
+    "go build ./cmd/alphalake",
+    "go vet ./cmd/alphalake ./internal/store/duckdb"
+  ],
+  "boundaries": [
+    "Read-only persistent ATTACH; no cross-process writer/reader concurrency promise",
+    "No schema, financial input, forecast policy or Python code changes",
+    "Python full suite not rerun: production Go change tested through two real Python CLI runs",
+    "Python subprocess stderr propagation still pending",
+    "Operational correction is not evidence of predictive accuracy improvement"
+  ]
+}

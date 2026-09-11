@@ -38,7 +38,7 @@ func runValuationExport(ctx context.Context, args []string) error {
 	if _, err := os.Stat(args[0]); err != nil {
 		return err
 	}
-	db, err := duckstore.Open(ctx, args[0])
+	db, err := duckstore.OpenReadOnly(ctx, args[0])
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func runValuationReadiness(ctx context.Context, args []string) error {
 	if _, err = os.Stat(args[0]); err != nil {
 		return err
 	}
-	db, err := duckstore.Open(ctx, args[0])
+	db, err := duckstore.OpenReadOnly(ctx, args[0])
 	if err != nil {
 		return err
 	}

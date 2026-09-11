@@ -30,9 +30,22 @@ const (
 //
 // Use :memory: for a purely in-memory database.
 func Open(ctx context.Context, path string) (*sql.DB, error) {
+	return open(ctx, path, false)
+}
+
+// OpenReadOnly 只读附加已有数据库，允许多个查询进程同时读取。
+func OpenReadOnly(ctx context.Context, path string) (*sql.DB, error) {
+	return open(ctx, path, true)
+}
+
+func open(ctx context.Context, path string, readOnly bool) (*sql.DB, error) {
 	path = strings.TrimSpace(path)
 	if path == "" {
 		return nil, errors.New("duckdb path is empty")
+	}
+
+	if readOnly && path == ":memory:" {
+		return nil, errors.New("read-only duckdb requires an existing persistent database")
 	}
 
 	var connector *duckdbgo.Connector
@@ -53,6 +66,9 @@ func Open(ctx context.Context, path string) (*sql.DB, error) {
 			return nil, fmt.Errorf("resolve duckdb path %q: %w", path, absErr)
 		}
 		attachSQL := fmt.Sprintf("ATTACH IF NOT EXISTS %s AS %s", duckdbStringLiteral(absolutePath), PersistentCatalog)
+		if readOnly {
+			attachSQL += " (READ_ONLY)"
+		}
 		connector, err = duckdbgo.NewConnector(dsn, func(execer driver.ExecerContext) error {
 			if _, err := execer.ExecContext(context.Background(), attachSQL, nil); err != nil {
 				return fmt.Errorf("attach AlphaLake database %q: %w", absolutePath, err)

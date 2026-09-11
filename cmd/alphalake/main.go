@@ -462,7 +462,7 @@ func main() {
 		if _, err := os.Stat(os.Args[2]); err != nil {
 			fatal(fmt.Errorf("stat database %q: %w", os.Args[2], err))
 		}
-		db, err := duckstore.Open(ctx, os.Args[2])
+		db, err := duckstore.OpenReadOnly(ctx, os.Args[2])
 		if err != nil {
 			fatal(err)
 		}
