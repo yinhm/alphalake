@@ -1,0 +1,31 @@
+{
+  "status": "frozen_before_new_source_extraction_and_scoring",
+  "inputs": {
+    "development_protocol": {
+      "path": "valuation/research/tdx-growth-calibration/protocol.json",
+      "sha256": "39f06ed5f723fc5d33a66e810fd816641384be0e4980e1b33e7a7d1c4019396f"
+    },
+    "development_summary": {
+      "path": "valuation/research/tdx-growth-calibration/development-summary.json",
+      "sha256": "998465d0337f42125572370ff2cd3762339c4c97d0d9fbbf8f3465012ca3bc3d"
+    },
+    "design": {
+      "path": "valuation/research/tdx-growth-calibration/validation-design.json",
+      "sha256": "0fa6078cb76044572a177410df654efec196fb9843596d2c62441e43de1fddd4"
+    },
+    "sampling": {
+      "path": "valuation/research/tdx-growth-calibration/validation-sampling.json.gz",
+      "sha256": "d0cec0fb445e4e0a1871967821f514e661922ff7e92fae35c880bb1431558210"
+    },
+    "implementation": {
+      "path": "valuation/backend/tools/backtest_tdx_growth_calibration.py",
+      "sha256": "ed050700ff1f4909db711ff24e543c2cf766162c9d5c5d083a92f060d59de18d"
+    },
+    "source_manifest": {
+      "path": "workspace/tdx-operating-cash-20260911/source-manifest.json",
+      "sha256": "53f2148c92af811ed145f864c682f225c6e0c4fb0a718109a81453a2bde36268"
+    }
+  },
+  "rule": "original formula and gates unchanged; original calibration300 reused; only evaluation companies replaced; passing development required",
+  "scope": "new120company replication over same three origins; not new macro periods or strict PIT"
+}
