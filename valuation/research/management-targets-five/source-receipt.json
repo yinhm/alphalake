@@ -1,0 +1,9 @@
+{
+  "records": 40,
+  "artifacts": 8,
+  "preserved_bits": 520,
+  "duplicate_bytes_removed": 45046841,
+  "snapshot_sha256": "6a69705f65471a30f170204d5888575feae8c81022a33c74abbb179c54e47810",
+  "boundary": "candidate FN semantics not yet reviewed; original packages retained; no scoring, production mapping or standard fact updates",
+  "negative_original_package_check": "flipped one byte of gpcw20220630.zip; original manifest size/MD5 rejected; no snapshot published"
+}

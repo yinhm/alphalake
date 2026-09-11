@@ -1,0 +1,50 @@
+[
+  {
+    "file": "gpcw20220630.zip",
+    "path": "/root/alphalake/workspace/tdx-multi-origin-20260910/gpcw20220630.zip",
+    "list": "/root/alphalake/workspace/tdx-multi-origin-20260910/gpcw.txt",
+    "fetched_at": "2026-09-10T21:30:53.246355+00:00"
+  },
+  {
+    "file": "gpcw20221231.zip",
+    "path": "/root/alphalake/workspace/tdx-multi-origin-20260910/gpcw20221231.zip",
+    "list": "/root/alphalake/workspace/tdx-multi-origin-20260910/gpcw.txt",
+    "fetched_at": "2026-09-10T21:30:59.988425+00:00"
+  },
+  {
+    "file": "gpcw20230630.zip",
+    "path": "/root/alphalake/workspace/tdx-multi-origin-20260910/gpcw20230630.zip",
+    "list": "/root/alphalake/workspace/tdx-multi-origin-20260910/gpcw.txt",
+    "fetched_at": "2026-09-10T21:33:25.293941+00:00"
+  },
+  {
+    "file": "gpcw20231231.zip",
+    "path": "/root/alphalake/workspace/tdx-multi-origin-20260910/gpcw20231231.zip",
+    "list": "/root/alphalake/workspace/tdx-multi-origin-20260910/gpcw.txt",
+    "fetched_at": "2026-09-10T21:33:27.384962+00:00"
+  },
+  {
+    "file": "gpcw20240630.zip",
+    "path": "/root/alphalake/workspace/tdx-history-download-20260910/gpcw20240630.zip",
+    "list": "/root/alphalake/workspace/tdx-history-20260910/gpcw.txt",
+    "fetched_at": "2026-09-10T16:30:49.323597+00:00"
+  },
+  {
+    "file": "gpcw20241231.zip",
+    "path": "/root/alphalake/workspace/tdx-history-download-20260910/gpcw20241231.zip",
+    "list": "/root/alphalake/workspace/tdx-history-20260910/gpcw.txt",
+    "fetched_at": "2026-09-10T16:26:15.999390+00:00"
+  },
+  {
+    "file": "gpcw20250630.zip",
+    "path": "/root/alphalake/workspace/auto-valuation-20260909/raw/tdx/professional_financial/4a/4a744d422e659ce75e608792259a969edd9e50377aaa5fde8bb1fd7d283e3534.zip",
+    "list": "/root/alphalake/workspace/auto-valuation-20260909/raw/tdx/professional_financial/97/973b55f7aabe70a0cc10d216df5c67fab9d300dbb72529d0eebe366778dee3b2.txt",
+    "fetched_at": "2026-09-09T23:09:57.583031+00:00"
+  },
+  {
+    "file": "gpcw20251231.zip",
+    "path": "/root/alphalake/workspace/auto-valuation-20260909/raw/tdx/professional_financial/44/4430a5b2187fbe08f4e61c0543a9b2b32dc8420655f581e927e6e7ed7d6f70f7.zip",
+    "list": "/root/alphalake/workspace/auto-valuation-20260909/raw/tdx/professional_financial/97/973b55f7aabe70a0cc10d216df5c67fab9d300dbb72529d0eebe366778dee3b2.txt",
+    "fetched_at": "2026-09-09T23:09:57.583031+00:00"
+  }
+]

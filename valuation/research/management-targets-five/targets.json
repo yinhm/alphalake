@@ -1,0 +1,147 @@
+{
+  "positions": [
+    {
+      "code": "300866",
+      "origin_year": 2023,
+      "status": "document_pending",
+      "targets": []
+    },
+    {
+      "code": "300866",
+      "origin_year": 2024,
+      "status": "document_pending",
+      "targets": []
+    },
+    {
+      "code": "300866",
+      "origin_year": 2025,
+      "status": "document_pending",
+      "targets": []
+    },
+    {
+      "code": "002032",
+      "origin_year": 2023,
+      "status": "document_pending",
+      "targets": []
+    },
+    {
+      "code": "002032",
+      "origin_year": 2024,
+      "status": "document_pending",
+      "targets": []
+    },
+    {
+      "code": "002032",
+      "origin_year": 2025,
+      "status": "document_pending",
+      "targets": []
+    },
+    {
+      "code": "000651",
+      "origin_year": 2023,
+      "status": "document_pending",
+      "targets": []
+    },
+    {
+      "code": "000651",
+      "origin_year": 2024,
+      "status": "document_pending",
+      "targets": []
+    },
+    {
+      "code": "000651",
+      "origin_year": 2025,
+      "status": "document_pending",
+      "targets": []
+    },
+    {
+      "code": "600887",
+      "origin_year": 2023,
+      "status": "extracted_selection_pending",
+      "targets": [
+        {
+          "concept": "total_operating_income",
+          "label": "营业总收入",
+          "printed_amount": "1355",
+          "printed_unit": "亿元",
+          "kind": "management_plan_not_reported_fact"
+        },
+        {
+          "concept": "pretax_profit",
+          "label": "利润总额",
+          "printed_amount": "125",
+          "printed_unit": "亿元",
+          "kind": "management_plan_not_reported_fact"
+        }
+      ],
+      "document": {
+        "code": "600887",
+        "report_year": 2022,
+        "file": "600887-2022-annual.pdf",
+        "url": "https://static.cninfo.com.cn/finalpage/2023-04-28/1216664083.PDF",
+        "fetched_at": "2026-09-11T21:16:39.152474+00:00",
+        "sha256": "9b555197f8a45f40ea4b9f336aae05345798fe6d96ad116c0c3f2bf4e19edab8",
+        "size": 4514827,
+        "selection_status": "official_document_located_catalogue_selection_pending"
+      },
+      "page": 34
+    },
+    {
+      "code": "600887",
+      "origin_year": 2024,
+      "status": "document_pending",
+      "targets": []
+    },
+    {
+      "code": "600887",
+      "origin_year": 2025,
+      "status": "document_pending",
+      "targets": []
+    },
+    {
+      "code": "603288",
+      "origin_year": 2023,
+      "status": "extracted_selection_pending",
+      "targets": [
+        {
+          "concept": "operating_revenue",
+          "label": "营业收入目标为",
+          "printed_amount": "281.7",
+          "printed_unit": "亿元",
+          "kind": "management_plan_not_reported_fact"
+        },
+        {
+          "concept": "net_income_parent",
+          "label": "归母净利目标为",
+          "printed_amount": "68.2",
+          "printed_unit": "亿元",
+          "kind": "management_plan_not_reported_fact"
+        }
+      ],
+      "document": {
+        "code": "603288",
+        "report_year": 2022,
+        "file": "603288-2022-annual.pdf",
+        "url": "https://static.cninfo.com.cn/finalpage/2023-04-26/1216595423.PDF",
+        "fetched_at": "2026-09-11T21:16:38.125818+00:00",
+        "sha256": "b23d6decaa7ea3007ce920927c3bbc0c07246f2832abe49e221a715b97cc03c9",
+        "size": 4057601,
+        "selection_status": "official_document_located_catalogue_selection_pending"
+      },
+      "page": 29
+    },
+    {
+      "code": "603288",
+      "origin_year": 2024,
+      "status": "document_pending",
+      "targets": []
+    },
+    {
+      "code": "603288",
+      "origin_year": 2025,
+      "status": "document_pending",
+      "targets": []
+    }
+  ],
+  "status": "collection_in_progress_not_scored"
+}
