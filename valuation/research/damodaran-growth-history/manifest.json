@@ -1,0 +1,2354 @@
+{
+  "source_index": {
+    "url": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/dataarchived.html",
+    "sha256": "995d814c4463124a9f247aedaa0183fc38b54871d5e3276eb0362bbaf639b3e0",
+    "file": "source-index.html.gz",
+    "fetched_at": "2026-09-11T14:45:37.025294+00:00"
+  },
+  "datasets": [
+    {
+      "url": "https://pages.stern.nyu.edu/~adamodar/pc/archives/fundgrEBGlobal22.xls",
+      "resolved_url": "https://pages.stern.nyu.edu/~adamodar/pc/archives/fundgrEBGlobal22.xls",
+      "sha256": "b47c3d320eee94bf1086b7fbdbfb85bfd050b2dac373d406e5083a05e92dae55",
+      "size": 51200,
+      "fetched_at": "2026-09-11T14:43:48.440812+00:00",
+      "archive_label": "1/23",
+      "source_index": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/dataarchived.html",
+      "file": "fundgrEBGlobal22.xls",
+      "observation_date": "2023-01-05",
+      "release_date": null,
+      "first_acquired_at": "2026-09-11T14:43:48.440812+00:00",
+      "index_link": {
+        "href": "https://pages.stern.nyu.edu/~adamodar/pc/archives/fundgrEBGlobal22.xls",
+        "label": "1/23"
+      },
+      "industries": [
+        {
+          "industry": "Advertising",
+          "sample_count": 362,
+          "source_row": 9,
+          "expected_ebit_growth": 0.05926640421089058,
+          "roc": 0.21338723126336392,
+          "reinvestment_rate": 0.27774109940881886
+        },
+        {
+          "industry": "Aerospace/Defense",
+          "sample_count": 278,
+          "source_row": 10,
+          "expected_ebit_growth": 0.050248728398640474,
+          "roc": 0.12143702063274998,
+          "reinvestment_rate": 0.41378426559560244
+        },
+        {
+          "industry": "Air Transport",
+          "sample_count": 155,
+          "source_row": 11,
+          "expected_ebit_growth": 0.08633184709896416,
+          "roc": 0.009035525266594758,
+          "reinvestment_rate": 9.554712598518389
+        },
+        {
+          "industry": "Apparel",
+          "sample_count": 1146,
+          "source_row": 12,
+          "expected_ebit_growth": 0.0984328579781845,
+          "roc": 0.20093422274465472,
+          "reinvestment_rate": 0.4898760232758958
+        },
+        {
+          "industry": "Auto & Truck",
+          "sample_count": 154,
+          "source_row": 13,
+          "expected_ebit_growth": 0.026782745830797813,
+          "roc": 0.053357693453791086,
+          "reinvestment_rate": 0.501947218801582
+        },
+        {
+          "industry": "Auto Parts",
+          "sample_count": 746,
+          "source_row": 14,
+          "expected_ebit_growth": 0.0871920704628067,
+          "roc": 0.04222860068434426,
+          "reinvestment_rate": 2.064763431650533
+        },
+        {
+          "industry": "Bank (Money Center)",
+          "sample_count": 596,
+          "source_row": 15,
+          "expected_ebit_growth": 0.0035094204583513283,
+          "roc": 4.1684616383614826e-05,
+          "reinvestment_rate": 84.18982259677921
+        },
+        {
+          "industry": "Banks (Regional)",
+          "sample_count": 800,
+          "source_row": 16,
+          "expected_ebit_growth": null,
+          "roc": -3.6680349455871644e-05,
+          "reinvestment_rate": null
+        },
+        {
+          "industry": "Beverage (Alcoholic)",
+          "sample_count": 220,
+          "source_row": 17,
+          "expected_ebit_growth": 0.0022980123905092403,
+          "roc": 0.13930925191772361,
+          "reinvestment_rate": 0.01649576290788247
+        },
+        {
+          "industry": "Beverage (Soft)",
+          "sample_count": 100,
+          "source_row": 18,
+          "expected_ebit_growth": 0.05841253141105528,
+          "roc": 0.22610954818560502,
+          "reinvestment_rate": 0.25833730543349975
+        },
+        {
+          "industry": "Broadcasting",
+          "sample_count": 135,
+          "source_row": 19,
+          "expected_ebit_growth": 0.14245635948919474,
+          "roc": 0.1088653110194383,
+          "reinvestment_rate": 1.3085560327270698
+        },
+        {
+          "industry": "Brokerage & Investment Banking",
+          "sample_count": 592,
+          "source_row": 20,
+          "expected_ebit_growth": -0.04485100976333187,
+          "roc": 0.0011237028657450701,
+          "reinvestment_rate": -39.91358492584554
+        },
+        {
+          "industry": "Building Materials",
+          "sample_count": 454,
+          "source_row": 21,
+          "expected_ebit_growth": 0.1422844145331017,
+          "roc": 0.16368297461942438,
+          "reinvestment_rate": 0.8692682599636523
+        },
+        {
+          "industry": "Business & Consumer Services",
+          "sample_count": 961,
+          "source_row": 22,
+          "expected_ebit_growth": 0.16904967576528915,
+          "roc": 0.1949198693955836,
+          "reinvestment_rate": 0.8672778013318297
+        },
+        {
+          "industry": "Cable TV",
+          "sample_count": 54,
+          "source_row": 23,
+          "expected_ebit_growth": 0.007735206616883648,
+          "roc": 0.12652466179683763,
+          "reinvestment_rate": 0.061135959638478815
+        },
+        {
+          "industry": "Chemical (Basic)",
+          "sample_count": 879,
+          "source_row": 24,
+          "expected_ebit_growth": 0.12872201966579613,
+          "roc": 0.10745139617308558,
+          "reinvestment_rate": 1.1979557665164933
+        },
+        {
+          "industry": "Chemical (Diversified)",
+          "sample_count": 68,
+          "source_row": 25,
+          "expected_ebit_growth": 0.07130076597807702,
+          "roc": 0.08886057802387214,
+          "reinvestment_rate": 0.8023891759844538
+        },
+        {
+          "industry": "Chemical (Specialty)",
+          "sample_count": 922,
+          "source_row": 26,
+          "expected_ebit_growth": 0.12989092302341473,
+          "roc": 0.1715000996753188,
+          "reinvestment_rate": 0.7573810351674554
+        },
+        {
+          "industry": "Coal & Related Energy",
+          "sample_count": 212,
+          "source_row": 27,
+          "expected_ebit_growth": 0.05521747322364894,
+          "roc": 0.38609852291856595,
+          "reinvestment_rate": 0.14301394578319884
+        },
+        {
+          "industry": "Computer Services",
+          "sample_count": 1105,
+          "source_row": 28,
+          "expected_ebit_growth": 0.13298106428765938,
+          "roc": 0.2025293235529626,
+          "reinvestment_rate": 0.6566015328288205
+        },
+        {
+          "industry": "Computers/Peripherals",
+          "sample_count": 333,
+          "source_row": 29,
+          "expected_ebit_growth": 0.10032876833875728,
+          "roc": 0.20720316942953626,
+          "reinvestment_rate": 0.4842047957807719
+        },
+        {
+          "industry": "Construction Supplies",
+          "sample_count": 790,
+          "source_row": 30,
+          "expected_ebit_growth": 0.07684359418774907,
+          "roc": 0.07145774048181253,
+          "reinvestment_rate": 1.075371172802579
+        },
+        {
+          "industry": "Diversified",
+          "sample_count": 314,
+          "source_row": 31,
+          "expected_ebit_growth": 0.031212048826680626,
+          "roc": 0.0629528070306068,
+          "reinvestment_rate": 0.49580074819389314
+        },
+        {
+          "industry": "Drugs (Biotechnology)",
+          "sample_count": 1267,
+          "source_row": 32,
+          "expected_ebit_growth": 0.08750111646200474,
+          "roc": 0.04652691339292144,
+          "reinvestment_rate": 1.8806559490214771
+        },
+        {
+          "industry": "Drugs (Pharmaceutical)",
+          "sample_count": 1352,
+          "source_row": 33,
+          "expected_ebit_growth": 0.030871493761137028,
+          "roc": 0.13957128286220502,
+          "reinvestment_rate": 0.22118800607153283
+        },
+        {
+          "industry": "Education",
+          "sample_count": 251,
+          "source_row": 34,
+          "expected_ebit_growth": 0.12192190600431417,
+          "roc": 0.06260319152041387,
+          "reinvestment_rate": 1.947534990521329
+        },
+        {
+          "industry": "Electrical Equipment",
+          "sample_count": 1045,
+          "source_row": 35,
+          "expected_ebit_growth": 0.1974251425786996,
+          "roc": 0.09606962883100381,
+          "reinvestment_rate": 2.0550213941805726
+        },
+        {
+          "industry": "Electronics (Consumer & Office)",
+          "sample_count": 134,
+          "source_row": 36,
+          "expected_ebit_growth": 0.09976323451716995,
+          "roc": 0.06019721929032275,
+          "reinvestment_rate": 1.6572731380834365
+        },
+        {
+          "industry": "Electronics (General)",
+          "sample_count": 1457,
+          "source_row": 37,
+          "expected_ebit_growth": 0.14053868174778844,
+          "roc": 0.08720693418717892,
+          "reinvestment_rate": 1.611553978564818
+        },
+        {
+          "industry": "Engineering/Construction",
+          "sample_count": 1269,
+          "source_row": 38,
+          "expected_ebit_growth": 0.12653957890877893,
+          "roc": 0.07301466577699338,
+          "reinvestment_rate": 1.7330707134271515
+        },
+        {
+          "industry": "Entertainment",
+          "sample_count": 752,
+          "source_row": 39,
+          "expected_ebit_growth": 0.048953610968821476,
+          "roc": 0.09651262642338801,
+          "reinvestment_rate": 0.5072249381554339
+        },
+        {
+          "industry": "Environmental & Waste Services",
+          "sample_count": 370,
+          "source_row": 40,
+          "expected_ebit_growth": 0.1753575563952044,
+          "roc": 0.10618091123311392,
+          "reinvestment_rate": 1.6514979421321525
+        },
+        {
+          "industry": "Farming/Agriculture",
+          "sample_count": 426,
+          "source_row": 41,
+          "expected_ebit_growth": 0.13405265924087145,
+          "roc": 0.10276535855905174,
+          "reinvestment_rate": 1.3044537684733635
+        },
+        {
+          "industry": "Financial Svcs. (Non-bank & Insurance)",
+          "sample_count": 1089,
+          "source_row": 42,
+          "expected_ebit_growth": 0.0029235894349642125,
+          "roc": 0.005932745272563773,
+          "reinvestment_rate": 0.4927886333641313
+        },
+        {
+          "industry": "Food Processing",
+          "sample_count": 1397,
+          "source_row": 43,
+          "expected_ebit_growth": 0.09360607010035345,
+          "roc": 0.1178757677853427,
+          "reinvestment_rate": 0.79410782944646
+        },
+        {
+          "industry": "Food Wholesalers",
+          "sample_count": 169,
+          "source_row": 44,
+          "expected_ebit_growth": 0.09773931059094246,
+          "roc": 0.11488938343353311,
+          "reinvestment_rate": 0.8507253470246667
+        },
+        {
+          "industry": "Furn/Home Furnishings",
+          "sample_count": 362,
+          "source_row": 45,
+          "expected_ebit_growth": 0.11767450411318549,
+          "roc": 0.1464127947186541,
+          "reinvestment_rate": 0.8037173550256184
+        },
+        {
+          "industry": "Green & Renewable Energy",
+          "sample_count": 248,
+          "source_row": 46,
+          "expected_ebit_growth": 0.07887959275956298,
+          "roc": 0.06735338001368155,
+          "reinvestment_rate": 1.171130427953877
+        },
+        {
+          "industry": "Healthcare Products",
+          "sample_count": 896,
+          "source_row": 47,
+          "expected_ebit_growth": 0.1498655790701398,
+          "roc": 0.1352276726043494,
+          "reinvestment_rate": 1.1082463831838485
+        },
+        {
+          "industry": "Healthcare Support Services",
+          "sample_count": 460,
+          "source_row": 48,
+          "expected_ebit_growth": 0.11337911150315937,
+          "roc": 0.24286107738383947,
+          "reinvestment_rate": 0.4668476016186193
+        },
+        {
+          "industry": "Heathcare Information and Technology",
+          "sample_count": 447,
+          "source_row": 49,
+          "expected_ebit_growth": 0.2356995272632916,
+          "roc": 0.16356639499180595,
+          "reinvestment_rate": 1.4410021525209946
+        },
+        {
+          "industry": "Homebuilding",
+          "sample_count": 171,
+          "source_row": 50,
+          "expected_ebit_growth": 0.13172930297578986,
+          "roc": 0.17576561641927174,
+          "reinvestment_rate": 0.7494600232935346
+        },
+        {
+          "industry": "Hospitals/Healthcare Facilities",
+          "sample_count": 231,
+          "source_row": 51,
+          "expected_ebit_growth": 0.06598064454704371,
+          "roc": 0.11635149727764249,
+          "reinvestment_rate": 0.567080322048612
+        },
+        {
+          "industry": "Hotel/Gaming",
+          "sample_count": 650,
+          "source_row": 52,
+          "expected_ebit_growth": 0.02464796696002697,
+          "roc": 0.021470742209970764,
+          "reinvestment_rate": 1.1479792696025544
+        },
+        {
+          "industry": "Household Products",
+          "sample_count": 589,
+          "source_row": 53,
+          "expected_ebit_growth": 0.08107981498757481,
+          "roc": 0.22892705098975522,
+          "reinvestment_rate": 0.3541731509536776
+        },
+        {
+          "industry": "Information Services",
+          "sample_count": 242,
+          "source_row": 54,
+          "expected_ebit_growth": 0.10472188741530505,
+          "roc": 0.28674950161733914,
+          "reinvestment_rate": 0.3652033807370103
+        },
+        {
+          "industry": "Insurance (General)",
+          "sample_count": 206,
+          "source_row": 55,
+          "expected_ebit_growth": 0.044452953781966516,
+          "roc": 0.11101717127867118,
+          "reinvestment_rate": 0.4004151183998587
+        },
+        {
+          "industry": "Insurance (Life)",
+          "sample_count": 142,
+          "source_row": 56,
+          "expected_ebit_growth": 0.009617615321137049,
+          "roc": 0.039384734913749324,
+          "reinvestment_rate": 0.24419652289647661
+        },
+        {
+          "industry": "Insurance (Prop/Cas.)",
+          "sample_count": 235,
+          "source_row": 57,
+          "expected_ebit_growth": 0.023133623961732186,
+          "roc": 0.06719791507014804,
+          "reinvestment_rate": 0.3442610375274731
+        },
+        {
+          "industry": "Investments & Asset Management",
+          "sample_count": 1660,
+          "source_row": 58,
+          "expected_ebit_growth": 0.05782782334753354,
+          "roc": 0.06259987647621855,
+          "reinvestment_rate": 0.9237689689292294
+        },
+        {
+          "industry": "Machinery",
+          "sample_count": 1463,
+          "source_row": 59,
+          "expected_ebit_growth": 0.15478534677342878,
+          "roc": 0.11441000402524393,
+          "reinvestment_rate": 1.3529004573697616
+        },
+        {
+          "industry": "Metals & Mining",
+          "sample_count": 1783,
+          "source_row": 60,
+          "expected_ebit_growth": 0.14033059034204903,
+          "roc": 0.24562183011742217,
+          "reinvestment_rate": 0.5713278427856452
+        },
+        {
+          "industry": "Office Equipment & Services",
+          "sample_count": 144,
+          "source_row": 61,
+          "expected_ebit_growth": 0.11507973920518393,
+          "roc": 0.10525106285728021,
+          "reinvestment_rate": 1.093383155296316
+        },
+        {
+          "industry": "Oil/Gas (Integrated)",
+          "sample_count": 36,
+          "source_row": 62,
+          "expected_ebit_growth": 0.06868242408070599,
+          "roc": 0.27004010102815007,
+          "reinvestment_rate": 0.25434157304490956
+        },
+        {
+          "industry": "Oil/Gas (Production and Exploration)",
+          "sample_count": 616,
+          "source_row": 63,
+          "expected_ebit_growth": 0.1254510962206597,
+          "roc": 0.31379162613860156,
+          "reinvestment_rate": 0.3997910899166188
+        },
+        {
+          "industry": "Oil/Gas Distribution",
+          "sample_count": 166,
+          "source_row": 64,
+          "expected_ebit_growth": 0.04940609857291169,
+          "roc": 0.0678584280776384,
+          "reinvestment_rate": 0.7280760838784098
+        },
+        {
+          "industry": "Oilfield Svcs/Equip.",
+          "sample_count": 455,
+          "source_row": 65,
+          "expected_ebit_growth": 0.12970402063080988,
+          "roc": 0.14865827167185494,
+          "reinvestment_rate": 0.8724978379751093
+        },
+        {
+          "industry": "Packaging & Container",
+          "sample_count": 414,
+          "source_row": 66,
+          "expected_ebit_growth": 0.11232457840319814,
+          "roc": 0.11313229318848557,
+          "reinvestment_rate": 0.9928604400872373
+        },
+        {
+          "industry": "Paper/Forest Products",
+          "sample_count": 268,
+          "source_row": 67,
+          "expected_ebit_growth": 0.0827632694399472,
+          "roc": 0.10812075767476295,
+          "reinvestment_rate": 0.7654706757504107
+        },
+        {
+          "industry": "Power",
+          "sample_count": 485,
+          "source_row": 68,
+          "expected_ebit_growth": null,
+          "roc": 0.00563795095811195,
+          "reinvestment_rate": null
+        },
+        {
+          "industry": "Precious Metals",
+          "sample_count": 930,
+          "source_row": 69,
+          "expected_ebit_growth": 0.1335843656370868,
+          "roc": 0.1313128227330175,
+          "reinvestment_rate": 1.0172987135360556
+        },
+        {
+          "industry": "Publishing & Newspapers",
+          "sample_count": 327,
+          "source_row": 70,
+          "expected_ebit_growth": 0.04290740663972585,
+          "roc": 0.06981604588824067,
+          "reinvestment_rate": 0.6145780113129105
+        },
+        {
+          "industry": "R.E.I.T.",
+          "sample_count": 792,
+          "source_row": 71,
+          "expected_ebit_growth": 0.0033854005977229677,
+          "roc": 0.035771025211289796,
+          "reinvestment_rate": 0.09464086024167101
+        },
+        {
+          "industry": "Real Estate (Development)",
+          "sample_count": 869,
+          "source_row": 72,
+          "expected_ebit_growth": 0.007567626260314023,
+          "roc": 0.04648881319983875,
+          "reinvestment_rate": 0.1627838126945403
+        },
+        {
+          "industry": "Real Estate (General/Diversified)",
+          "sample_count": 342,
+          "source_row": 73,
+          "expected_ebit_growth": 0.028525716689687782,
+          "roc": 0.030628603680595022,
+          "reinvestment_rate": 0.9313423813623101
+        },
+        {
+          "industry": "Real Estate (Operations & Services)",
+          "sample_count": 730,
+          "source_row": 74,
+          "expected_ebit_growth": 0.028612869561759787,
+          "roc": 0.03214955502598619,
+          "reinvestment_rate": 0.8899927087212333
+        },
+        {
+          "industry": "Recreation",
+          "sample_count": 323,
+          "source_row": 75,
+          "expected_ebit_growth": 0.11910039478048819,
+          "roc": 0.08731459038120859,
+          "reinvestment_rate": 1.3640377199332356
+        },
+        {
+          "industry": "Reinsurance",
+          "sample_count": 34,
+          "source_row": 76,
+          "expected_ebit_growth": 0.06566729707141668,
+          "roc": 0.022689180850825514,
+          "reinvestment_rate": 2.894211893464081
+        },
+        {
+          "industry": "Restaurant/Dining",
+          "sample_count": 382,
+          "source_row": 77,
+          "expected_ebit_growth": 0.048403535053142197,
+          "roc": 0.1298363222896256,
+          "reinvestment_rate": 0.37280426770845015
+        },
+        {
+          "industry": "Retail (Automotive)",
+          "sample_count": 193,
+          "source_row": 78,
+          "expected_ebit_growth": 0.15723883404054137,
+          "roc": 0.12384134362101419,
+          "reinvestment_rate": 1.269679651746447
+        },
+        {
+          "industry": "Retail (Building Supply)",
+          "sample_count": 98,
+          "source_row": 79,
+          "expected_ebit_growth": 0.12393556066728685,
+          "roc": 0.29843243697346,
+          "reinvestment_rate": 0.4152885052448525
+        },
+        {
+          "industry": "Retail (Distributors)",
+          "sample_count": 1006,
+          "source_row": 80,
+          "expected_ebit_growth": 0.113148169788132,
+          "roc": 0.08965288670125256,
+          "reinvestment_rate": 1.262069454218156
+        },
+        {
+          "industry": "Retail (General)",
+          "sample_count": 189,
+          "source_row": 81,
+          "expected_ebit_growth": 0.09231448143372961,
+          "roc": 0.116496913492536,
+          "reinvestment_rate": 0.7924199763424997
+        },
+        {
+          "industry": "Retail (Grocery and Food)",
+          "sample_count": 181,
+          "source_row": 82,
+          "expected_ebit_growth": 0.028442547321958632,
+          "roc": 0.109306157945409,
+          "reinvestment_rate": 0.2602099264724294
+        },
+        {
+          "industry": "Retail (Online)",
+          "sample_count": 342,
+          "source_row": 83,
+          "expected_ebit_growth": null,
+          "roc": 0.01927410279592016,
+          "reinvestment_rate": null
+        },
+        {
+          "industry": "Retail (Special Lines)",
+          "sample_count": 495,
+          "source_row": 84,
+          "expected_ebit_growth": 0.07533469632535753,
+          "roc": 0.12108557504627562,
+          "reinvestment_rate": 0.6221607841938781
+        },
+        {
+          "industry": "Rubber& Tires",
+          "sample_count": 89,
+          "source_row": 85,
+          "expected_ebit_growth": 0.08462552964803091,
+          "roc": 0.06727892421800931,
+          "reinvestment_rate": 1.2578311950085885
+        },
+        {
+          "industry": "Semiconductor",
+          "sample_count": 624,
+          "source_row": 86,
+          "expected_ebit_growth": 0.15959326503405197,
+          "roc": 0.18215285247984078,
+          "reinvestment_rate": 0.8761502378982206
+        },
+        {
+          "industry": "Semiconductor Equip",
+          "sample_count": 342,
+          "source_row": 87,
+          "expected_ebit_growth": 0.2363622367474729,
+          "roc": 0.2638646798167927,
+          "reinvestment_rate": 0.8957706537744446
+        },
+        {
+          "industry": "Shipbuilding & Marine",
+          "sample_count": 349,
+          "source_row": 88,
+          "expected_ebit_growth": 0.03414572696864235,
+          "roc": 0.32699317521985316,
+          "reinvestment_rate": 0.10442336279857994
+        },
+        {
+          "industry": "Shoe",
+          "sample_count": 85,
+          "source_row": 89,
+          "expected_ebit_growth": 0.09562036760316563,
+          "roc": 0.17156391646728414,
+          "reinvestment_rate": 0.5573454463625495
+        },
+        {
+          "industry": "Software (Entertainment)",
+          "sample_count": 320,
+          "source_row": 90,
+          "expected_ebit_growth": 0.10225420425607265,
+          "roc": 0.15976086690423852,
+          "reinvestment_rate": 0.6400453768028459
+        },
+        {
+          "industry": "Software (Internet)",
+          "sample_count": 152,
+          "source_row": 91,
+          "expected_ebit_growth": null,
+          "roc": 0.00551203420754335,
+          "reinvestment_rate": null
+        },
+        {
+          "industry": "Software (System & Application)",
+          "sample_count": 1648,
+          "source_row": 92,
+          "expected_ebit_growth": 0.2556478568082344,
+          "roc": 0.173054641209129,
+          "reinvestment_rate": 1.4772666888447972
+        },
+        {
+          "industry": "Steel",
+          "sample_count": 710,
+          "source_row": 93,
+          "expected_ebit_growth": 0.1068680263011637,
+          "roc": 0.15474452778417921,
+          "reinvestment_rate": 0.6906094052657653
+        },
+        {
+          "industry": "Telecom (Wireless)",
+          "sample_count": 99,
+          "source_row": 94,
+          "expected_ebit_growth": 0.01683667562390894,
+          "roc": 0.07185380499516585,
+          "reinvestment_rate": 0.23431849746915523
+        },
+        {
+          "industry": "Telecom. Equipment",
+          "sample_count": 461,
+          "source_row": 95,
+          "expected_ebit_growth": 0.09802871953853885,
+          "roc": 0.12105446393642671,
+          "reinvestment_rate": 0.8097902080671712
+        },
+        {
+          "industry": "Telecom. Services",
+          "sample_count": 295,
+          "source_row": 96,
+          "expected_ebit_growth": 0.005232613442574962,
+          "roc": 0.08300284823336357,
+          "reinvestment_rate": 0.06304137212091086
+        },
+        {
+          "industry": "Tobacco",
+          "sample_count": 56,
+          "source_row": 97,
+          "expected_ebit_growth": 0.01086640655217388,
+          "roc": 0.20013728578995296,
+          "reinvestment_rate": 0.054294763263544675
+        },
+        {
+          "industry": "Transportation",
+          "sample_count": 302,
+          "source_row": 98,
+          "expected_ebit_growth": 0.07170577447287876,
+          "roc": 0.1272026410977261,
+          "reinvestment_rate": 0.5637129375151047
+        },
+        {
+          "industry": "Transportation (Railroads)",
+          "sample_count": 50,
+          "source_row": 99,
+          "expected_ebit_growth": 0.03141304624125817,
+          "roc": 0.063106474006416,
+          "reinvestment_rate": 0.4977785042793617
+        },
+        {
+          "industry": "Trucking",
+          "sample_count": 220,
+          "source_row": 100,
+          "expected_ebit_growth": 0.12080499003661829,
+          "roc": 0.09325941401187661,
+          "reinvestment_rate": 1.2953650987044991
+        },
+        {
+          "industry": "Utility (General)",
+          "sample_count": 51,
+          "source_row": 101,
+          "expected_ebit_growth": 0.08654253603237237,
+          "roc": 0.07671442300374834,
+          "reinvestment_rate": 1.1281129759412232
+        },
+        {
+          "industry": "Utility (Water)",
+          "sample_count": 104,
+          "source_row": 102,
+          "expected_ebit_growth": 0.06770118928623635,
+          "roc": 0.06833349361746348,
+          "reinvestment_rate": 0.9907467875890142
+        }
+      ],
+      "excluded_totals": [
+        {
+          "row": 103,
+          "label": "Total Market"
+        },
+        {
+          "row": 104,
+          "label": "Total Market (without financials)"
+        }
+      ]
+    },
+    {
+      "url": "https://pages.stern.nyu.edu/~adamodar/pc/archives/fundgrEBGlobal23.xls",
+      "resolved_url": "https://pages.stern.nyu.edu/~adamodar/pc/archives/fundgrEBGlobal23.xls",
+      "sha256": "896450e81e511f0abd79cd1b983aa71ecb4562d7b8fa34e8f9530cccf08e8980",
+      "size": 51200,
+      "fetched_at": "2026-09-11T14:43:48.384811+00:00",
+      "archive_label": "1/24",
+      "source_index": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/dataarchived.html",
+      "file": "fundgrEBGlobal23.xls",
+      "observation_date": "2024-01-05",
+      "release_date": null,
+      "first_acquired_at": "2026-09-11T14:43:48.384811+00:00",
+      "index_link": {
+        "href": "https://pages.stern.nyu.edu/~adamodar/pc/archives/fundgrEBGlobal23.xls",
+        "label": "1/24"
+      },
+      "industries": [
+        {
+          "industry": "Advertising",
+          "sample_count": 391,
+          "source_row": 9,
+          "expected_ebit_growth": 0.056050642542410066,
+          "roc": 0.2231841538480623,
+          "reinvestment_rate": 0.2511407802749644
+        },
+        {
+          "industry": "Aerospace/Defense",
+          "sample_count": 289,
+          "source_row": 10,
+          "expected_ebit_growth": 0.05598585924936127,
+          "roc": 0.13938187028979593,
+          "reinvestment_rate": 0.40167246380722416
+        },
+        {
+          "industry": "Air Transport",
+          "sample_count": 155,
+          "source_row": 11,
+          "expected_ebit_growth": 0.023101286599437873,
+          "roc": 0.07609043946784132,
+          "reinvestment_rate": 0.3036030119027154
+        },
+        {
+          "industry": "Apparel",
+          "sample_count": 1152,
+          "source_row": 12,
+          "expected_ebit_growth": 0.11115077843020066,
+          "roc": 0.2131479985821288,
+          "reinvestment_rate": 0.5214723064236175
+        },
+        {
+          "industry": "Auto & Truck",
+          "sample_count": 165,
+          "source_row": 13,
+          "expected_ebit_growth": 0.06064657454737125,
+          "roc": 0.08616757062954447,
+          "reinvestment_rate": 0.7038213344566223
+        },
+        {
+          "industry": "Auto Parts",
+          "sample_count": 761,
+          "source_row": 14,
+          "expected_ebit_growth": 0.08073003918392284,
+          "roc": 0.06951342691934614,
+          "reinvestment_rate": 1.161358931096735
+        },
+        {
+          "industry": "Bank (Money Center)",
+          "sample_count": 607,
+          "source_row": 15,
+          "expected_ebit_growth": 0.007577607648942569,
+          "roc": 0.00038710600933369535,
+          "reinvestment_rate": 19.575019416478437
+        },
+        {
+          "industry": "Banks (Regional)",
+          "sample_count": 881,
+          "source_row": 16,
+          "expected_ebit_growth": null,
+          "roc": -0.0001474165996108738,
+          "reinvestment_rate": null
+        },
+        {
+          "industry": "Beverage (Alcoholic)",
+          "sample_count": 220,
+          "source_row": 17,
+          "expected_ebit_growth": 0.06374765650794861,
+          "roc": 0.16067497723977517,
+          "reinvestment_rate": 0.39674912424489117
+        },
+        {
+          "industry": "Beverage (Soft)",
+          "sample_count": 100,
+          "source_row": 18,
+          "expected_ebit_growth": 0.07395516638215392,
+          "roc": 0.2608297340208955,
+          "reinvestment_rate": 0.28353809683457815
+        },
+        {
+          "industry": "Broadcasting",
+          "sample_count": 130,
+          "source_row": 19,
+          "expected_ebit_growth": 0.135473067527659,
+          "roc": 0.08815285332158262,
+          "reinvestment_rate": 1.5367973063044447
+        },
+        {
+          "industry": "Brokerage & Investment Banking",
+          "sample_count": 590,
+          "source_row": 20,
+          "expected_ebit_growth": 0.015277648538810158,
+          "roc": 0.0018058244106970507,
+          "reinvestment_rate": 8.460207121086022
+        },
+        {
+          "industry": "Building Materials",
+          "sample_count": 457,
+          "source_row": 21,
+          "expected_ebit_growth": 0.11376484833065599,
+          "roc": 0.1673029038037701,
+          "reinvestment_rate": 0.6799932681628228
+        },
+        {
+          "industry": "Business & Consumer Services",
+          "sample_count": 980,
+          "source_row": 22,
+          "expected_ebit_growth": 0.06403173854436374,
+          "roc": 0.21051840184826337,
+          "reinvestment_rate": 0.3041621919138275
+        },
+        {
+          "industry": "Cable TV",
+          "sample_count": 48,
+          "source_row": 23,
+          "expected_ebit_growth": 0.02163811677250578,
+          "roc": 0.12004314941711697,
+          "reinvestment_rate": 0.1802528247348732
+        },
+        {
+          "industry": "Chemical (Basic)",
+          "sample_count": 888,
+          "source_row": 24,
+          "expected_ebit_growth": 0.09027055221855507,
+          "roc": 0.04639005089702379,
+          "reinvestment_rate": 1.945903280402447
+        },
+        {
+          "industry": "Chemical (Diversified)",
+          "sample_count": 64,
+          "source_row": 25,
+          "expected_ebit_growth": 0.026691851379263744,
+          "roc": 0.054454418663555146,
+          "reinvestment_rate": 0.4901686958441055
+        },
+        {
+          "industry": "Chemical (Specialty)",
+          "sample_count": 949,
+          "source_row": 26,
+          "expected_ebit_growth": 0.0976363759756787,
+          "roc": 0.12380681994346789,
+          "reinvestment_rate": 0.7886187208447886
+        },
+        {
+          "industry": "Coal & Related Energy",
+          "sample_count": 215,
+          "source_row": 27,
+          "expected_ebit_growth": 0.08037540725567567,
+          "roc": 0.322209335583537,
+          "reinvestment_rate": 0.24945089536313977
+        },
+        {
+          "industry": "Computer Services",
+          "sample_count": 1164,
+          "source_row": 28,
+          "expected_ebit_growth": 0.05835605640461135,
+          "roc": 0.21094949668920462,
+          "reinvestment_rate": 0.27663520093905836
+        },
+        {
+          "industry": "Computers/Peripherals",
+          "sample_count": 338,
+          "source_row": 29,
+          "expected_ebit_growth": 0.06132678345106664,
+          "roc": 0.1574768445956785,
+          "reinvestment_rate": 0.38943365679267344
+        },
+        {
+          "industry": "Construction Supplies",
+          "sample_count": 793,
+          "source_row": 30,
+          "expected_ebit_growth": 0.07240799276281115,
+          "roc": 0.09335125538795638,
+          "reinvestment_rate": 0.7756509803954151
+        },
+        {
+          "industry": "Diversified",
+          "sample_count": 326,
+          "source_row": 31,
+          "expected_ebit_growth": 0.044298062098550514,
+          "roc": 0.11943531860178906,
+          "reinvestment_rate": 0.3708958339722381
+        },
+        {
+          "industry": "Drugs (Biotechnology)",
+          "sample_count": 1259,
+          "source_row": 32,
+          "expected_ebit_growth": null,
+          "roc": 0.0069302625462042446,
+          "reinvestment_rate": null
+        },
+        {
+          "industry": "Drugs (Pharmaceutical)",
+          "sample_count": 1299,
+          "source_row": 33,
+          "expected_ebit_growth": 0.05690243941379144,
+          "roc": 0.12868088125172028,
+          "reinvestment_rate": 0.4421980861514401
+        },
+        {
+          "industry": "Education",
+          "sample_count": 260,
+          "source_row": 34,
+          "expected_ebit_growth": 0.053381777438546094,
+          "roc": 0.09268476409209102,
+          "reinvestment_rate": 0.5759498657784389
+        },
+        {
+          "industry": "Electrical Equipment",
+          "sample_count": 1072,
+          "source_row": 35,
+          "expected_ebit_growth": 0.17684406116918341,
+          "roc": 0.10900312865728104,
+          "reinvestment_rate": 1.622376012024411
+        },
+        {
+          "industry": "Electronics (Consumer & Office)",
+          "sample_count": 127,
+          "source_row": 36,
+          "expected_ebit_growth": 0.05426074045158555,
+          "roc": 0.062281608986361356,
+          "reinvestment_rate": 0.8712160994984531
+        },
+        {
+          "industry": "Electronics (General)",
+          "sample_count": 1486,
+          "source_row": 37,
+          "expected_ebit_growth": 0.062217264393455214,
+          "roc": 0.06442013008104085,
+          "reinvestment_rate": 0.9658046997915959
+        },
+        {
+          "industry": "Engineering/Construction",
+          "sample_count": 1283,
+          "source_row": 38,
+          "expected_ebit_growth": 0.09965489046453664,
+          "roc": 0.07890348694080135,
+          "reinvestment_rate": 1.2629972936342393
+        },
+        {
+          "industry": "Entertainment",
+          "sample_count": 741,
+          "source_row": 39,
+          "expected_ebit_growth": -0.025493679779284264,
+          "roc": 0.07471394705446398,
+          "reinvestment_rate": -0.3412171459861466
+        },
+        {
+          "industry": "Environmental & Waste Services",
+          "sample_count": 383,
+          "source_row": 40,
+          "expected_ebit_growth": 0.14513958456545967,
+          "roc": 0.10776035869992424,
+          "reinvestment_rate": 1.3468736213993477
+        },
+        {
+          "industry": "Farming/Agriculture",
+          "sample_count": 430,
+          "source_row": 41,
+          "expected_ebit_growth": 0.06320522455673691,
+          "roc": 0.10564638698267616,
+          "reinvestment_rate": 0.5982715203228036
+        },
+        {
+          "industry": "Financial Svcs. (Non-bank & Insurance)",
+          "sample_count": 1113,
+          "source_row": 42,
+          "expected_ebit_growth": -0.006781308806154616,
+          "roc": 0.008761897143301427,
+          "reinvestment_rate": -0.7739543954061371
+        },
+        {
+          "industry": "Food Processing",
+          "sample_count": 1395,
+          "source_row": 43,
+          "expected_ebit_growth": 0.06881776578765754,
+          "roc": 0.11622768831214836,
+          "reinvestment_rate": 0.59209442076174
+        },
+        {
+          "industry": "Food Wholesalers",
+          "sample_count": 173,
+          "source_row": 44,
+          "expected_ebit_growth": 0.051784703953780674,
+          "roc": 0.10682869077036927,
+          "reinvestment_rate": 0.48474528312897786
+        },
+        {
+          "industry": "Furn/Home Furnishings",
+          "sample_count": 383,
+          "source_row": 45,
+          "expected_ebit_growth": 0.07016015374861578,
+          "roc": 0.13128509792883244,
+          "reinvestment_rate": 0.5344106441284637
+        },
+        {
+          "industry": "Green & Renewable Energy",
+          "sample_count": 253,
+          "source_row": 46,
+          "expected_ebit_growth": 0.10913560505045276,
+          "roc": 0.07173408690830194,
+          "reinvestment_rate": 1.5213911510431768
+        },
+        {
+          "industry": "Healthcare Products",
+          "sample_count": 849,
+          "source_row": 47,
+          "expected_ebit_growth": 0.0743583057308793,
+          "roc": 0.11043987670936666,
+          "reinvestment_rate": 0.6732921834615992
+        },
+        {
+          "industry": "Healthcare Support Services",
+          "sample_count": 463,
+          "source_row": 48,
+          "expected_ebit_growth": 0.1662139944078834,
+          "roc": 0.28931239582267737,
+          "reinvestment_rate": 0.5745139054109445
+        },
+        {
+          "industry": "Heathcare Information and Technology",
+          "sample_count": 443,
+          "source_row": 49,
+          "expected_ebit_growth": 0.09131793294075341,
+          "roc": 0.12755597641996133,
+          "reinvestment_rate": 0.7159047776805149
+        },
+        {
+          "industry": "Homebuilding",
+          "sample_count": 173,
+          "source_row": 50,
+          "expected_ebit_growth": 0.02924571436420319,
+          "roc": 0.14415922427185887,
+          "reinvestment_rate": 0.2028709193735042
+        },
+        {
+          "industry": "Hospitals/Healthcare Facilities",
+          "sample_count": 232,
+          "source_row": 51,
+          "expected_ebit_growth": 0.050248952517465126,
+          "roc": 0.123234764374531,
+          "reinvestment_rate": 0.4077498161537452
+        },
+        {
+          "industry": "Hotel/Gaming",
+          "sample_count": 650,
+          "source_row": 52,
+          "expected_ebit_growth": 0.01323824481284253,
+          "roc": 0.08265390639495226,
+          "reinvestment_rate": 0.1601647809552411
+        },
+        {
+          "industry": "Household Products",
+          "sample_count": 549,
+          "source_row": 53,
+          "expected_ebit_growth": 0.031518589700964376,
+          "roc": 0.20302883575078812,
+          "reinvestment_rate": 0.15524193686286272
+        },
+        {
+          "industry": "Information Services",
+          "sample_count": 81,
+          "source_row": 54,
+          "expected_ebit_growth": 0.0003272970871661287,
+          "roc": 0.2187503321074406,
+          "reinvestment_rate": 0.0014962129840578925
+        },
+        {
+          "industry": "Insurance (General)",
+          "sample_count": 202,
+          "source_row": 55,
+          "expected_ebit_growth": 0.0036619548143351655,
+          "roc": 0.18156705572027637,
+          "reinvestment_rate": 0.02016860823021111
+        },
+        {
+          "industry": "Insurance (Life)",
+          "sample_count": 137,
+          "source_row": 56,
+          "expected_ebit_growth": -0.007600584672799729,
+          "roc": 0.09641658012037313,
+          "reinvestment_rate": -0.07883068102302149
+        },
+        {
+          "industry": "Insurance (Prop/Cas.)",
+          "sample_count": 228,
+          "source_row": 57,
+          "expected_ebit_growth": 0.025315139639265655,
+          "roc": 0.1331121282848552,
+          "reinvestment_rate": 0.1901790615584792
+        },
+        {
+          "industry": "Investments & Asset Management",
+          "sample_count": 1374,
+          "source_row": 58,
+          "expected_ebit_growth": 0.029235098312310095,
+          "roc": 0.05577023711236661,
+          "reinvestment_rate": 0.5242060967646028
+        },
+        {
+          "industry": "Machinery",
+          "sample_count": 1492,
+          "source_row": 59,
+          "expected_ebit_growth": 0.1164581106060246,
+          "roc": 0.12714981972762668,
+          "reinvestment_rate": 0.9159125105760647
+        },
+        {
+          "industry": "Metals & Mining",
+          "sample_count": 1815,
+          "source_row": 60,
+          "expected_ebit_growth": 0.12590581027170505,
+          "roc": 0.14836568932569902,
+          "reinvestment_rate": 0.8486181060050277
+        },
+        {
+          "industry": "Office Equipment & Services",
+          "sample_count": 137,
+          "source_row": 61,
+          "expected_ebit_growth": 0.03412873990685052,
+          "roc": 0.11212639112128635,
+          "reinvestment_rate": 0.3043774045124996
+        },
+        {
+          "industry": "Oil/Gas (Integrated)",
+          "sample_count": 36,
+          "source_row": 62,
+          "expected_ebit_growth": 0.03229616377746023,
+          "roc": 0.21955647007213325,
+          "reinvestment_rate": 0.1470972992362722
+        },
+        {
+          "industry": "Oil/Gas (Production and Exploration)",
+          "sample_count": 590,
+          "source_row": 63,
+          "expected_ebit_growth": 0.12968246893794766,
+          "roc": 0.24158267687634816,
+          "reinvestment_rate": 0.53680367572185
+        },
+        {
+          "industry": "Oil/Gas Distribution",
+          "sample_count": 174,
+          "source_row": 64,
+          "expected_ebit_growth": 0.06049140833770363,
+          "roc": 0.1263403111518606,
+          "reinvestment_rate": 0.47879736709681825
+        },
+        {
+          "industry": "Oilfield Svcs/Equip.",
+          "sample_count": 444,
+          "source_row": 65,
+          "expected_ebit_growth": 0.05992106665351171,
+          "roc": 0.14553325656056446,
+          "reinvestment_rate": 0.41173452769247443
+        },
+        {
+          "industry": "Packaging & Container",
+          "sample_count": 426,
+          "source_row": 66,
+          "expected_ebit_growth": 0.08838175637720551,
+          "roc": 0.11004848275450956,
+          "reinvestment_rate": 0.8031165370481568
+        },
+        {
+          "industry": "Paper/Forest Products",
+          "sample_count": 266,
+          "source_row": 67,
+          "expected_ebit_growth": 0.07570111671156106,
+          "roc": 0.049573756287668545,
+          "reinvestment_rate": 1.5270401595610315
+        },
+        {
+          "industry": "Power",
+          "sample_count": 488,
+          "source_row": 68,
+          "expected_ebit_growth": 0.07310496575253908,
+          "roc": 0.07777329056638789,
+          "reinvestment_rate": 0.9399752179719862
+        },
+        {
+          "industry": "Precious Metals",
+          "sample_count": 853,
+          "source_row": 69,
+          "expected_ebit_growth": 0.1419145109886178,
+          "roc": 0.09093109941714525,
+          "reinvestment_rate": 1.560681789819639
+        },
+        {
+          "industry": "Publishing & Newspapers",
+          "sample_count": 324,
+          "source_row": 70,
+          "expected_ebit_growth": 0.010400017227564758,
+          "roc": 0.08380137544218207,
+          "reinvestment_rate": 0.12410318055865499
+        },
+        {
+          "industry": "R.E.I.T.",
+          "sample_count": 659,
+          "source_row": 71,
+          "expected_ebit_growth": -0.005255639369896132,
+          "roc": 0.03419004504110163,
+          "reinvestment_rate": -0.15371841024421157
+        },
+        {
+          "industry": "Real Estate (Development)",
+          "sample_count": 884,
+          "source_row": 72,
+          "expected_ebit_growth": -0.05104183554777694,
+          "roc": 0.020519444443367223,
+          "reinvestment_rate": -2.4874862323222344
+        },
+        {
+          "industry": "Real Estate (General/Diversified)",
+          "sample_count": 336,
+          "source_row": 73,
+          "expected_ebit_growth": 0.038619947406027484,
+          "roc": 0.035054354887619446,
+          "reinvestment_rate": 1.101716107166683
+        },
+        {
+          "industry": "Real Estate (Operations & Services)",
+          "sample_count": 748,
+          "source_row": 74,
+          "expected_ebit_growth": 0.005296406382878722,
+          "roc": 0.03906588983308024,
+          "reinvestment_rate": 0.1355762381327822
+        },
+        {
+          "industry": "Recreation",
+          "sample_count": 326,
+          "source_row": 75,
+          "expected_ebit_growth": 0.05401087319465126,
+          "roc": 0.11185676111013582,
+          "reinvestment_rate": 0.4828574746721958
+        },
+        {
+          "industry": "Reinsurance",
+          "sample_count": 34,
+          "source_row": 76,
+          "expected_ebit_growth": 0.07314826327617392,
+          "roc": 0.23300411586091976,
+          "reinvestment_rate": 0.31393549854645547
+        },
+        {
+          "industry": "Restaurant/Dining",
+          "sample_count": 394,
+          "source_row": 77,
+          "expected_ebit_growth": 0.0319850517743794,
+          "roc": 0.1287733318373561,
+          "reinvestment_rate": 0.2483825751653092
+        },
+        {
+          "industry": "Retail (Automotive)",
+          "sample_count": 204,
+          "source_row": 78,
+          "expected_ebit_growth": 0.08681330333343512,
+          "roc": 0.10481182756223022,
+          "reinvestment_rate": 0.8282777368984547
+        },
+        {
+          "industry": "Retail (Building Supply)",
+          "sample_count": 120,
+          "source_row": 79,
+          "expected_ebit_growth": 0.014311149395094168,
+          "roc": 0.2434078621058677,
+          "reinvestment_rate": 0.05879493485247277
+        },
+        {
+          "industry": "Retail (Distributors)",
+          "sample_count": 1028,
+          "source_row": 80,
+          "expected_ebit_growth": 0.06553794537911153,
+          "roc": 0.08729577431256255,
+          "reinvestment_rate": 0.7507573636319772
+        },
+        {
+          "industry": "Retail (General)",
+          "sample_count": 256,
+          "source_row": 81,
+          "expected_ebit_growth": 0.06059544050441462,
+          "roc": 0.08347827970872808,
+          "reinvestment_rate": 0.7258827172270904
+        },
+        {
+          "industry": "Retail (Grocery and Food)",
+          "sample_count": 201,
+          "source_row": 82,
+          "expected_ebit_growth": 0.03267354548964617,
+          "roc": 0.1088812105703706,
+          "reinvestment_rate": 0.3000843333618986
+        },
+        {
+          "industry": "Retail (REITs)",
+          "sample_count": 123,
+          "source_row": 83,
+          "expected_ebit_growth": -0.003833107643958299,
+          "roc": 0.044961316107197745,
+          "reinvestment_rate": -0.08525345732360949
+        },
+        {
+          "industry": "Retail (Special Lines)",
+          "sample_count": 639,
+          "source_row": 84,
+          "expected_ebit_growth": 0.026155820653080496,
+          "roc": 0.11756426158826139,
+          "reinvestment_rate": 0.22248105248757089
+        },
+        {
+          "industry": "Rubber& Tires",
+          "sample_count": 89,
+          "source_row": 85,
+          "expected_ebit_growth": 0.060927352694842084,
+          "roc": 0.08670171150271351,
+          "reinvestment_rate": 0.7027237598756656
+        },
+        {
+          "industry": "Semiconductor",
+          "sample_count": 647,
+          "source_row": 86,
+          "expected_ebit_growth": 0.10667071464330354,
+          "roc": 0.114165502163095,
+          "reinvestment_rate": 0.9343515564878387
+        },
+        {
+          "industry": "Semiconductor Equip",
+          "sample_count": 367,
+          "source_row": 87,
+          "expected_ebit_growth": 0.14098024427423095,
+          "roc": 0.23276660818443082,
+          "reinvestment_rate": 0.6056721166917823
+        },
+        {
+          "industry": "Shipbuilding & Marine",
+          "sample_count": 348,
+          "source_row": 88,
+          "expected_ebit_growth": 0.017173855854513774,
+          "roc": 0.11145415365810689,
+          "reinvestment_rate": 0.1540889710328404
+        },
+        {
+          "industry": "Shoe",
+          "sample_count": 85,
+          "source_row": 89,
+          "expected_ebit_growth": -0.025213379288083936,
+          "roc": 0.15682992610629745,
+          "reinvestment_rate": -0.16076892920930544
+        },
+        {
+          "industry": "Software (Entertainment)",
+          "sample_count": 317,
+          "source_row": 90,
+          "expected_ebit_growth": 0.06473437425030378,
+          "roc": 0.15958092016299497,
+          "reinvestment_rate": 0.4056523435520016
+        },
+        {
+          "industry": "Software (Internet)",
+          "sample_count": 151,
+          "source_row": 91,
+          "expected_ebit_growth": null,
+          "roc": 0.013073769344178877,
+          "reinvestment_rate": null
+        },
+        {
+          "industry": "Software (System & Application)",
+          "sample_count": 1616,
+          "source_row": 92,
+          "expected_ebit_growth": 0.08733378117440108,
+          "roc": 0.18335837660819057,
+          "reinvestment_rate": 0.4763010165661551
+        },
+        {
+          "industry": "Steel",
+          "sample_count": 718,
+          "source_row": 93,
+          "expected_ebit_growth": 0.048554407770210715,
+          "roc": 0.0904906469174532,
+          "reinvestment_rate": 0.5365682468211627
+        },
+        {
+          "industry": "Telecom (Wireless)",
+          "sample_count": 98,
+          "source_row": 94,
+          "expected_ebit_growth": 0.025345452398794318,
+          "roc": 0.08308394526497115,
+          "reinvestment_rate": 0.3050583637784972
+        },
+        {
+          "industry": "Telecom. Equipment",
+          "sample_count": 453,
+          "source_row": 95,
+          "expected_ebit_growth": 0.07304264728470686,
+          "roc": 0.1362119863769908,
+          "reinvestment_rate": 0.5362424352475735
+        },
+        {
+          "industry": "Telecom. Services",
+          "sample_count": 288,
+          "source_row": 96,
+          "expected_ebit_growth": -0.0031207882609789813,
+          "roc": 0.09502129852429446,
+          "reinvestment_rate": -0.0328430395021499
+        },
+        {
+          "industry": "Tobacco",
+          "sample_count": 56,
+          "source_row": 97,
+          "expected_ebit_growth": 0.126961184766448,
+          "roc": 0.23171724996207474,
+          "reinvestment_rate": 0.5479142566521387
+        },
+        {
+          "industry": "Transportation",
+          "sample_count": 443,
+          "source_row": 98,
+          "expected_ebit_growth": 0.025399825733990678,
+          "roc": 0.08934491370457888,
+          "reinvestment_rate": 0.2842895547246911
+        },
+        {
+          "industry": "Transportation (Railroads)",
+          "sample_count": 49,
+          "source_row": 99,
+          "expected_ebit_growth": 0.04147040572005703,
+          "roc": 0.06911956076890328,
+          "reinvestment_rate": 0.5999807472548995
+        },
+        {
+          "industry": "Trucking",
+          "sample_count": 106,
+          "source_row": 100,
+          "expected_ebit_growth": 0.12220905415809309,
+          "roc": 0.11601095133243039,
+          "reinvestment_rate": 1.0534268769842425
+        },
+        {
+          "industry": "Utility (General)",
+          "sample_count": 50,
+          "source_row": 101,
+          "expected_ebit_growth": 0.06524937790582895,
+          "roc": 0.08320329489198379,
+          "reinvestment_rate": 0.7842162740133911
+        },
+        {
+          "industry": "Utility (Water)",
+          "sample_count": 102,
+          "source_row": 102,
+          "expected_ebit_growth": 0.06679893628168682,
+          "roc": 0.06940509121988034,
+          "reinvestment_rate": 0.9624500898653524
+        }
+      ],
+      "excluded_totals": [
+        {
+          "row": 103,
+          "label": "Total Market"
+        },
+        {
+          "row": 104,
+          "label": "Total Market (without financials)"
+        }
+      ]
+    },
+    {
+      "url": "https://pages.stern.nyu.edu/~adamodar/pc/archives/fundgrEBGlobal24.xls",
+      "resolved_url": "https://pages.stern.nyu.edu/~adamodar/pc/archives/fundgrEBGlobal24.xls",
+      "sha256": "bcfea357800aa87d24b31337bc25cbf446b99f7a98aa4807cac5ee2aad33386c",
+      "size": 51200,
+      "fetched_at": "2026-09-11T14:43:48.371980+00:00",
+      "archive_label": "1/25",
+      "source_index": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/dataarchived.html",
+      "file": "fundgrEBGlobal24.xls",
+      "observation_date": "2025-01-05",
+      "release_date": null,
+      "first_acquired_at": "2026-09-11T14:43:48.371980+00:00",
+      "index_link": {
+        "href": "https://pages.stern.nyu.edu/~adamodar/pc/archives/fundgrEBGlobal24.xls",
+        "label": "1/25"
+      },
+      "industries": [
+        {
+          "industry": "Advertising",
+          "sample_count": 417,
+          "source_row": 9,
+          "expected_ebit_growth": 0.04122174354303481,
+          "roc": 0.21482336224002138,
+          "reinvestment_rate": 0.19188668826893185
+        },
+        {
+          "industry": "Aerospace/Defense",
+          "sample_count": 300,
+          "source_row": 10,
+          "expected_ebit_growth": 0.13589563246438158,
+          "roc": 0.13729203977947993,
+          "reinvestment_rate": 0.9898289273191564
+        },
+        {
+          "industry": "Air Transport",
+          "sample_count": 151,
+          "source_row": 11,
+          "expected_ebit_growth": 0.04773272886252772,
+          "roc": 0.08850245019032303,
+          "reinvestment_rate": 0.5393379365190375
+        },
+        {
+          "industry": "Apparel",
+          "sample_count": 1194,
+          "source_row": 12,
+          "expected_ebit_growth": 0.08885599525380866,
+          "roc": 0.18859814493129912,
+          "reinvestment_rate": 0.47113928552253975
+        },
+        {
+          "industry": "Auto & Truck",
+          "sample_count": 162,
+          "source_row": 13,
+          "expected_ebit_growth": 0.05503524717039221,
+          "roc": 0.07142845891959625,
+          "reinvestment_rate": 0.7704946740114171
+        },
+        {
+          "industry": "Auto Parts",
+          "sample_count": 780,
+          "source_row": 14,
+          "expected_ebit_growth": 0.0722159486221817,
+          "roc": 0.07937770430239609,
+          "reinvestment_rate": 0.9097762307041399
+        },
+        {
+          "industry": "Bank (Money Center)",
+          "sample_count": 621,
+          "source_row": 15,
+          "expected_ebit_growth": null,
+          "roc": null,
+          "reinvestment_rate": null
+        },
+        {
+          "industry": "Banks (Regional)",
+          "sample_count": 849,
+          "source_row": 16,
+          "expected_ebit_growth": null,
+          "roc": null,
+          "reinvestment_rate": null
+        },
+        {
+          "industry": "Beverage (Alcoholic)",
+          "sample_count": 216,
+          "source_row": 17,
+          "expected_ebit_growth": 0.023611628835693708,
+          "roc": 0.15898286131530992,
+          "reinvestment_rate": 0.14851681898506583
+        },
+        {
+          "industry": "Beverage (Soft)",
+          "sample_count": 101,
+          "source_row": 18,
+          "expected_ebit_growth": 0.0858751275013324,
+          "roc": 0.26466406261132963,
+          "reinvestment_rate": 0.32446840970412993
+        },
+        {
+          "industry": "Broadcasting",
+          "sample_count": 126,
+          "source_row": 19,
+          "expected_ebit_growth": 0.13118688789674685,
+          "roc": 0.09118766396956975,
+          "reinvestment_rate": 1.4386473146249832
+        },
+        {
+          "industry": "Brokerage & Investment Banking",
+          "sample_count": 606,
+          "source_row": 20,
+          "expected_ebit_growth": null,
+          "roc": null,
+          "reinvestment_rate": null
+        },
+        {
+          "industry": "Building Materials",
+          "sample_count": 462,
+          "source_row": 21,
+          "expected_ebit_growth": 0.12360076148330858,
+          "roc": 0.15629327131409368,
+          "reinvestment_rate": 0.7908258650170241
+        },
+        {
+          "industry": "Business & Consumer Services",
+          "sample_count": 974,
+          "source_row": 22,
+          "expected_ebit_growth": 0.032993183194754305,
+          "roc": 0.21417691014080062,
+          "reinvestment_rate": 0.15404640571695835
+        },
+        {
+          "industry": "Cable TV",
+          "sample_count": 45,
+          "source_row": 23,
+          "expected_ebit_growth": 0.005764350169373074,
+          "roc": 0.12395246866735661,
+          "reinvestment_rate": 0.046504520896977826
+        },
+        {
+          "industry": "Chemical (Basic)",
+          "sample_count": 897,
+          "source_row": 24,
+          "expected_ebit_growth": 0.0411971400391315,
+          "roc": 0.04211770219853005,
+          "reinvestment_rate": 0.9781431058356577
+        },
+        {
+          "industry": "Chemical (Diversified)",
+          "sample_count": 64,
+          "source_row": 25,
+          "expected_ebit_growth": 0.04160292903984647,
+          "roc": 0.047486814943558296,
+          "reinvestment_rate": 0.876094324062263
+        },
+        {
+          "industry": "Chemical (Specialty)",
+          "sample_count": 951,
+          "source_row": 26,
+          "expected_ebit_growth": 0.06050535162968462,
+          "roc": 0.0962744977475017,
+          "reinvestment_rate": 0.628467071190249
+        },
+        {
+          "industry": "Coal & Related Energy",
+          "sample_count": 216,
+          "source_row": 27,
+          "expected_ebit_growth": 0.1536140759954529,
+          "roc": 0.24085864121433487,
+          "reinvestment_rate": 0.6377768936209977
+        },
+        {
+          "industry": "Computer Services",
+          "sample_count": 1182,
+          "source_row": 28,
+          "expected_ebit_growth": 0.06662278596439417,
+          "roc": 0.20377160576210954,
+          "reinvestment_rate": 0.3269483288175687
+        },
+        {
+          "industry": "Computers/Peripherals",
+          "sample_count": 342,
+          "source_row": 29,
+          "expected_ebit_growth": 0.07004121809935011,
+          "roc": 0.20415937267651255,
+          "reinvestment_rate": 0.34307128387551117
+        },
+        {
+          "industry": "Construction Supplies",
+          "sample_count": 804,
+          "source_row": 30,
+          "expected_ebit_growth": 0.0527178460737537,
+          "roc": 0.0972904990816261,
+          "reinvestment_rate": 0.5418601669369973
+        },
+        {
+          "industry": "Diversified",
+          "sample_count": 335,
+          "source_row": 31,
+          "expected_ebit_growth": 0.028885338255908704,
+          "roc": 0.1305216540403019,
+          "reinvestment_rate": 0.22130686642225372
+        },
+        {
+          "industry": "Drugs (Biotechnology)",
+          "sample_count": 1223,
+          "source_row": 32,
+          "expected_ebit_growth": null,
+          "roc": 0.019137906017770365,
+          "reinvestment_rate": null
+        },
+        {
+          "industry": "Drugs (Pharmaceutical)",
+          "sample_count": 1271,
+          "source_row": 33,
+          "expected_ebit_growth": 0.08796439024034726,
+          "roc": 0.13663932508445867,
+          "reinvestment_rate": 0.643770672798444
+        },
+        {
+          "industry": "Education",
+          "sample_count": 272,
+          "source_row": 34,
+          "expected_ebit_growth": 0.04589534525630866,
+          "roc": 0.11595776073954202,
+          "reinvestment_rate": 0.3957936490287724
+        },
+        {
+          "industry": "Electrical Equipment",
+          "sample_count": 1101,
+          "source_row": 35,
+          "expected_ebit_growth": 0.1393462294559095,
+          "roc": 0.1059167172061984,
+          "reinvestment_rate": 1.3156207360980665
+        },
+        {
+          "industry": "Electronics (Consumer & Office)",
+          "sample_count": 125,
+          "source_row": 36,
+          "expected_ebit_growth": 0.10612497647429321,
+          "roc": 0.10563964900091696,
+          "reinvestment_rate": 1.00459417915495
+        },
+        {
+          "industry": "Electronics (General)",
+          "sample_count": 1480,
+          "source_row": 37,
+          "expected_ebit_growth": 0.06242863715189038,
+          "roc": 0.07756998876499577,
+          "reinvestment_rate": 0.8048039988896056
+        },
+        {
+          "industry": "Engineering/Construction",
+          "sample_count": 1327,
+          "source_row": 38,
+          "expected_ebit_growth": 0.12515055176568274,
+          "roc": 0.07784889611248046,
+          "reinvestment_rate": 1.6076085598549554
+        },
+        {
+          "industry": "Entertainment",
+          "sample_count": 748,
+          "source_row": 39,
+          "expected_ebit_growth": 2.7129430120697524,
+          "roc": 0.09652074087312353,
+          "reinvestment_rate": 28.10735793704604
+        },
+        {
+          "industry": "Environmental & Waste Services",
+          "sample_count": 391,
+          "source_row": 40,
+          "expected_ebit_growth": 0.11127071675729859,
+          "roc": 0.11120965355361774,
+          "reinvestment_rate": 1.000549081862317
+        },
+        {
+          "industry": "Farming/Agriculture",
+          "sample_count": 429,
+          "source_row": 41,
+          "expected_ebit_growth": 0.03244221949157928,
+          "roc": 0.07513685742168924,
+          "reinvestment_rate": 0.4317750383078226
+        },
+        {
+          "industry": "Financial Svcs. (Non-bank & Insurance)",
+          "sample_count": 1117,
+          "source_row": 42,
+          "expected_ebit_growth": null,
+          "roc": null,
+          "reinvestment_rate": null
+        },
+        {
+          "industry": "Food Processing",
+          "sample_count": 1424,
+          "source_row": 43,
+          "expected_ebit_growth": 0.047669229128982804,
+          "roc": 0.12288224100938813,
+          "reinvestment_rate": 0.3879261050043912
+        },
+        {
+          "industry": "Food Wholesalers",
+          "sample_count": 188,
+          "source_row": 44,
+          "expected_ebit_growth": 0.10746565252683987,
+          "roc": 0.11568187281193071,
+          "reinvestment_rate": 0.9289757324516321
+        },
+        {
+          "industry": "Furn/Home Furnishings",
+          "sample_count": 380,
+          "source_row": 45,
+          "expected_ebit_growth": -0.03171982036952243,
+          "roc": 0.1380676274530838,
+          "reinvestment_rate": -0.22974118520506204
+        },
+        {
+          "industry": "Green & Renewable Energy",
+          "sample_count": 260,
+          "source_row": 46,
+          "expected_ebit_growth": 0.08026521016963836,
+          "roc": 0.06292648559233405,
+          "reinvestment_rate": 1.2755393760527536
+        },
+        {
+          "industry": "Healthcare Products",
+          "sample_count": 850,
+          "source_row": 47,
+          "expected_ebit_growth": 0.06554680811982733,
+          "roc": 0.1218233026244545,
+          "reinvestment_rate": 0.5380481952774577
+        },
+        {
+          "industry": "Healthcare Support Services",
+          "sample_count": 480,
+          "source_row": 48,
+          "expected_ebit_growth": 0.10704732570195906,
+          "roc": 0.23334053461573592,
+          "reinvestment_rate": 0.45876009446127347
+        },
+        {
+          "industry": "Heathcare Information and Technology",
+          "sample_count": 435,
+          "source_row": 49,
+          "expected_ebit_growth": 0.0650357178812394,
+          "roc": 0.11111500595339449,
+          "reinvestment_rate": 0.5853009440373665
+        },
+        {
+          "industry": "Homebuilding",
+          "sample_count": 165,
+          "source_row": 50,
+          "expected_ebit_growth": 0.06613707639905583,
+          "roc": 0.1361031622471103,
+          "reinvestment_rate": 0.48593342951853447
+        },
+        {
+          "industry": "Hospitals/Healthcare Facilities",
+          "sample_count": 245,
+          "source_row": 51,
+          "expected_ebit_growth": 0.06735864962038875,
+          "roc": 0.1287428129243988,
+          "reinvestment_rate": 0.5232031838541817
+        },
+        {
+          "industry": "Hotel/Gaming",
+          "sample_count": 660,
+          "source_row": 52,
+          "expected_ebit_growth": 0.01613963840449931,
+          "roc": 0.10909506308719386,
+          "reinvestment_rate": 0.14794105203092242
+        },
+        {
+          "industry": "Household Products",
+          "sample_count": 554,
+          "source_row": 53,
+          "expected_ebit_growth": 0.05156193943189083,
+          "roc": 0.22277651316453786,
+          "reinvestment_rate": 0.23145141603777733
+        },
+        {
+          "industry": "Information Services",
+          "sample_count": 85,
+          "source_row": 54,
+          "expected_ebit_growth": 0.12786022366950575,
+          "roc": 0.21256133010877326,
+          "reinvestment_rate": 0.601521563701527
+        },
+        {
+          "industry": "Insurance (General)",
+          "sample_count": 199,
+          "source_row": 55,
+          "expected_ebit_growth": 0.011049270919646545,
+          "roc": 0.22284268214086758,
+          "reinvestment_rate": 0.0495832791702887
+        },
+        {
+          "industry": "Insurance (Life)",
+          "sample_count": 137,
+          "source_row": 56,
+          "expected_ebit_growth": -0.006346823692604146,
+          "roc": 0.11188409574679048,
+          "reinvestment_rate": -0.05672677291835923
+        },
+        {
+          "industry": "Insurance (Prop/Cas.)",
+          "sample_count": 240,
+          "source_row": 57,
+          "expected_ebit_growth": 0.003573265510728445,
+          "roc": 0.2049680044948979,
+          "reinvestment_rate": 0.01743328437789124
+        },
+        {
+          "industry": "Investments & Asset Management",
+          "sample_count": 1291,
+          "source_row": 58,
+          "expected_ebit_growth": 0.024136971824158637,
+          "roc": 0.06286342760445107,
+          "reinvestment_rate": 0.38395888903852277
+        },
+        {
+          "industry": "Machinery",
+          "sample_count": 1548,
+          "source_row": 59,
+          "expected_ebit_growth": 0.08463803085072484,
+          "roc": 0.1287927559074887,
+          "reinvestment_rate": 0.6571645295914001
+        },
+        {
+          "industry": "Metals & Mining",
+          "sample_count": 1832,
+          "source_row": 60,
+          "expected_ebit_growth": 0.10714618599159677,
+          "roc": 0.15028461661979697,
+          "reinvestment_rate": 0.7129551141130064
+        },
+        {
+          "industry": "Office Equipment & Services",
+          "sample_count": 140,
+          "source_row": 61,
+          "expected_ebit_growth": 0.005588193209844751,
+          "roc": 0.12805012241363092,
+          "reinvestment_rate": 0.04364067057892862
+        },
+        {
+          "industry": "Oil/Gas (Integrated)",
+          "sample_count": 36,
+          "source_row": 62,
+          "expected_ebit_growth": 0.016633244804985445,
+          "roc": 0.16942432319584688,
+          "reinvestment_rate": 0.09817507009166661
+        },
+        {
+          "industry": "Oil/Gas (Production and Exploration)",
+          "sample_count": 548,
+          "source_row": 63,
+          "expected_ebit_growth": 0.10797209159833225,
+          "roc": 0.182499556775622,
+          "reinvestment_rate": 0.5916293360157628
+        },
+        {
+          "industry": "Oil/Gas Distribution",
+          "sample_count": 179,
+          "source_row": 64,
+          "expected_ebit_growth": 0.08577313649224788,
+          "roc": 0.10213474768823065,
+          "reinvestment_rate": 0.8398036753766988
+        },
+        {
+          "industry": "Oilfield Svcs/Equip.",
+          "sample_count": 437,
+          "source_row": 65,
+          "expected_ebit_growth": 0.04455345686188081,
+          "roc": 0.10190717522939738,
+          "reinvestment_rate": 0.4371964659170376
+        },
+        {
+          "industry": "Packaging & Container",
+          "sample_count": 438,
+          "source_row": 66,
+          "expected_ebit_growth": 0.041924283748129856,
+          "roc": 0.10687018671898328,
+          "reinvestment_rate": 0.3922916674448261
+        },
+        {
+          "industry": "Paper/Forest Products",
+          "sample_count": 269,
+          "source_row": 67,
+          "expected_ebit_growth": 0.06301078560712954,
+          "roc": 0.05272866685558862,
+          "reinvestment_rate": 1.1950005445747607
+        },
+        {
+          "industry": "Power",
+          "sample_count": 492,
+          "source_row": 68,
+          "expected_ebit_growth": 0.07579322976747492,
+          "roc": 0.07050906109597382,
+          "reinvestment_rate": 1.0749431149609059
+        },
+        {
+          "industry": "Precious Metals",
+          "sample_count": 823,
+          "source_row": 69,
+          "expected_ebit_growth": 0.11707488052330095,
+          "roc": 0.10269894013168175,
+          "reinvestment_rate": 1.1399813900044753
+        },
+        {
+          "industry": "Publishing & Newspapers",
+          "sample_count": 321,
+          "source_row": 70,
+          "expected_ebit_growth": 0.006451340638177806,
+          "roc": 0.10343449946067172,
+          "reinvestment_rate": 0.06237126560109434
+        },
+        {
+          "industry": "R.E.I.T.",
+          "sample_count": 650,
+          "source_row": 71,
+          "expected_ebit_growth": -0.008050802443065037,
+          "roc": 0.03460415465330588,
+          "reinvestment_rate": -0.23265421518672788
+        },
+        {
+          "industry": "Real Estate (Development)",
+          "sample_count": 879,
+          "source_row": 72,
+          "expected_ebit_growth": -0.07761690585354614,
+          "roc": 0.021146449116557203,
+          "reinvestment_rate": -3.670446296951757
+        },
+        {
+          "industry": "Real Estate (General/Diversified)",
+          "sample_count": 309,
+          "source_row": 73,
+          "expected_ebit_growth": 0.04154673589385122,
+          "roc": 0.03542870514679378,
+          "reinvestment_rate": 1.172685699963017
+        },
+        {
+          "industry": "Real Estate (Operations & Services)",
+          "sample_count": 749,
+          "source_row": 74,
+          "expected_ebit_growth": 0.01221961795681652,
+          "roc": 0.04144747040045901,
+          "reinvestment_rate": 0.2948218030859899
+        },
+        {
+          "industry": "Recreation",
+          "sample_count": 320,
+          "source_row": 75,
+          "expected_ebit_growth": 0.028384284586480603,
+          "roc": 0.09828012461097044,
+          "reinvestment_rate": 0.288810018290435
+        },
+        {
+          "industry": "Reinsurance",
+          "sample_count": 33,
+          "source_row": 76,
+          "expected_ebit_growth": 0.022464395361343762,
+          "roc": 0.20241035747384928,
+          "reinvestment_rate": 0.11098441622112191
+        },
+        {
+          "industry": "Restaurant/Dining",
+          "sample_count": 401,
+          "source_row": 77,
+          "expected_ebit_growth": 0.04306975328683296,
+          "roc": 0.14980478064662475,
+          "reinvestment_rate": 0.28750586664140193
+        },
+        {
+          "industry": "Retail (Automotive)",
+          "sample_count": 208,
+          "source_row": 78,
+          "expected_ebit_growth": 0.06626570631817168,
+          "roc": 0.10287586469596494,
+          "reinvestment_rate": 0.6441326788747836
+        },
+        {
+          "industry": "Retail (Building Supply)",
+          "sample_count": 117,
+          "source_row": 79,
+          "expected_ebit_growth": 0.15483584479936044,
+          "roc": 0.2461376398673357,
+          "reinvestment_rate": 0.62906203570821
+        },
+        {
+          "industry": "Retail (Distributors)",
+          "sample_count": 1038,
+          "source_row": 80,
+          "expected_ebit_growth": 0.06850481664805215,
+          "roc": 0.0799339959563239,
+          "reinvestment_rate": 0.8570172906842205
+        },
+        {
+          "industry": "Retail (General)",
+          "sample_count": 253,
+          "source_row": 81,
+          "expected_ebit_growth": 0.040861777125217914,
+          "roc": 0.10133972617718918,
+          "reinvestment_rate": 0.40321578384544315
+        },
+        {
+          "industry": "Retail (Grocery and Food)",
+          "sample_count": 204,
+          "source_row": 82,
+          "expected_ebit_growth": 0.03886082089792845,
+          "roc": 0.10782224576056171,
+          "reinvestment_rate": 0.36041561390054655
+        },
+        {
+          "industry": "Retail (REITs)",
+          "sample_count": 121,
+          "source_row": 83,
+          "expected_ebit_growth": -0.004398751697176531,
+          "roc": 0.048001617939278346,
+          "reinvestment_rate": -0.0916375715239623
+        },
+        {
+          "industry": "Retail (Special Lines)",
+          "sample_count": 633,
+          "source_row": 84,
+          "expected_ebit_growth": 0.010106378457766027,
+          "roc": 0.1470399885066467,
+          "reinvestment_rate": 0.06873217660316387
+        },
+        {
+          "industry": "Rubber& Tires",
+          "sample_count": 92,
+          "source_row": 85,
+          "expected_ebit_growth": 0.053120429064495565,
+          "roc": 0.10030589911486042,
+          "reinvestment_rate": 0.5295842969680905
+        },
+        {
+          "industry": "Semiconductor",
+          "sample_count": 665,
+          "source_row": 86,
+          "expected_ebit_growth": 0.12448204903403592,
+          "roc": 0.15913647234971032,
+          "reinvestment_rate": 0.7822345638055896
+        },
+        {
+          "industry": "Semiconductor Equip",
+          "sample_count": 375,
+          "source_row": 87,
+          "expected_ebit_growth": 0.13326987521434552,
+          "roc": 0.1681612582174975,
+          "reinvestment_rate": 0.7925123576440898
+        },
+        {
+          "industry": "Shipbuilding & Marine",
+          "sample_count": 357,
+          "source_row": 88,
+          "expected_ebit_growth": 0.048863392682650525,
+          "roc": 0.0952899796758431,
+          "reinvestment_rate": 0.5127862640843637
+        },
+        {
+          "industry": "Shoe",
+          "sample_count": 82,
+          "source_row": 89,
+          "expected_ebit_growth": -0.00935031916031843,
+          "roc": 0.1867464447049137,
+          "reinvestment_rate": -0.050069596639942905
+        },
+        {
+          "industry": "Software (Entertainment)",
+          "sample_count": 311,
+          "source_row": 90,
+          "expected_ebit_growth": 0.09084729584336582,
+          "roc": 0.21551369284962238,
+          "reinvestment_rate": 0.42153839341779437
+        },
+        {
+          "industry": "Software (Internet)",
+          "sample_count": 147,
+          "source_row": 91,
+          "expected_ebit_growth": 6.59218280946168,
+          "roc": 0.13534242363047064,
+          "reinvestment_rate": 48.707438751507134
+        },
+        {
+          "industry": "Software (System & Application)",
+          "sample_count": 1567,
+          "source_row": 92,
+          "expected_ebit_growth": 0.20356164127415882,
+          "roc": 0.2155025330071699,
+          "reinvestment_rate": 0.9445904808338665
+        },
+        {
+          "industry": "Steel",
+          "sample_count": 727,
+          "source_row": 93,
+          "expected_ebit_growth": 0.07714516678102619,
+          "roc": 0.06714366561929556,
+          "reinvestment_rate": 1.1489567343320086
+        },
+        {
+          "industry": "Telecom (Wireless)",
+          "sample_count": 98,
+          "source_row": 94,
+          "expected_ebit_growth": 0.021185218416120193,
+          "roc": 0.09125758201669891,
+          "reinvestment_rate": 0.23214748789030573
+        },
+        {
+          "industry": "Telecom. Equipment",
+          "sample_count": 440,
+          "source_row": 95,
+          "expected_ebit_growth": 0.12869618546323555,
+          "roc": 0.1150888135688252,
+          "reinvestment_rate": 1.118233662094995
+        },
+        {
+          "industry": "Telecom. Services",
+          "sample_count": 274,
+          "source_row": 96,
+          "expected_ebit_growth": -0.01609480813840262,
+          "roc": 0.09443635195896061,
+          "reinvestment_rate": -0.1704302189203261
+        },
+        {
+          "industry": "Tobacco",
+          "sample_count": 54,
+          "source_row": 97,
+          "expected_ebit_growth": -0.0032766959437331793,
+          "roc": 0.21074845170305248,
+          "reinvestment_rate": -0.01554790043416352
+        },
+        {
+          "industry": "Transportation",
+          "sample_count": 446,
+          "source_row": 98,
+          "expected_ebit_growth": 0.033117361522092444,
+          "roc": 0.08771982267279026,
+          "reinvestment_rate": 0.37753566426628327
+        },
+        {
+          "industry": "Transportation (Railroads)",
+          "sample_count": 54,
+          "source_row": 99,
+          "expected_ebit_growth": 0.05646974907822145,
+          "roc": 0.0839752026313908,
+          "reinvestment_rate": 0.6724574315836479
+        },
+        {
+          "industry": "Trucking",
+          "sample_count": 113,
+          "source_row": 100,
+          "expected_ebit_growth": 0.10819613119632016,
+          "roc": 0.09425862206181831,
+          "reinvestment_rate": 1.1478645542405777
+        },
+        {
+          "industry": "Utility (General)",
+          "sample_count": 52,
+          "source_row": 101,
+          "expected_ebit_growth": 0.08380700720447504,
+          "roc": 0.08406795723580653,
+          "reinvestment_rate": 0.9968959632193806
+        },
+        {
+          "industry": "Utility (Water)",
+          "sample_count": 106,
+          "source_row": 102,
+          "expected_ebit_growth": 0.0529549355926809,
+          "roc": 0.06931334160955732,
+          "reinvestment_rate": 0.7639934010248204
+        }
+      ],
+      "excluded_totals": [
+        {
+          "row": 103,
+          "label": "Tiotal Market"
+        },
+        {
+          "row": 104,
+          "label": "Total Market (without financials)"
+        }
+      ]
+    }
+  ],
+  "boundary": "历史行业参考研究归档；表内观察日期/目录月份/本次首次取得分别留痕，独立发布日期未知，不证明当时已留存或严格PIT。三项比率以小数保存，缺项为null，不作为公司收入增长或公司未来ROIC；未发布生产参考库。"
+}

@@ -45,3 +45,39 @@ def test_renamed_source_header_is_rejected(tmp_path):
     path.write_bytes(raw.replace(b'Expected Growth in EBIT',b'Expected Growth in SALE'))
     with pytest.raises(ValueError,match='missing Expected Growth in EBIT header'):
         parse_fundgr(path)
+
+
+def test_historical_global_tables_and_dates(tmp_path):
+    import gzip
+    import json
+    from datetime import datetime
+    root = Path(__file__).resolve().parents[2]/'research/damodaran-growth-history'
+    manifest = json.loads((root/'manifest.json').read_text())
+    index = gzip.decompress((root/manifest['source_index']['file']).read_bytes())
+    assert hashlib.sha256(index).hexdigest() == manifest['source_index']['sha256']
+    assert len(manifest['datasets']) == 3
+    missing = 0
+    for year, dataset in zip((2023,2024,2025),manifest['datasets']):
+        path = root/dataset['file']; raw = path.read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == dataset['sha256'] and len(raw) == dataset['size']
+        book = xlrd.open_workbook(path); sheet = book.sheet_by_name('Industry Averages')
+        assert sheet.cell_value(2,5) == 'Global'
+        assert xlrd.xldate_as_datetime(sheet.cell_value(0,1),book.datemode).date().isoformat() == dataset['observation_date'] == f'{year}-01-05'
+        assert dataset['release_date'] is None
+        assert datetime.fromisoformat(dataset['first_acquired_at']).year == 2026
+        assert dataset['index_link']['href'].encode() in index
+        parsed = parse_fundgr(path)
+        assert len(dataset['industries']) == len({r['industry'] for r in dataset['industries']}) == 94
+        for row in dataset['industries']:
+            i = row['source_row']-1
+            assert sheet.cell_value(i,0) == row['industry']
+            assert sheet.cell_value(i,1) == row['sample_count']
+            for key in ('roc','reinvestment_rate','expected_ebit_growth'):
+                assert parsed[row['industry']][key] == row[key]
+                missing += row[key] is None
+            assert 'revenue_growth' not in parsed[row['industry']]
+        path = tmp_path/dataset['file']
+        path.write_bytes(raw.replace(b'Expected Growth in EBIT',b'Expected Growth in SALE'))
+        with pytest.raises(ValueError,match='missing Expected Growth in EBIT header'):
+            parse_fundgr(path)
+    assert missing == 28
