@@ -7,6 +7,8 @@ and compares them with actual market multiples.
 
 from __future__ import annotations
 
+from .module_1_adjustments import after_tax_operating_income
+
 from .data_dictionary import (
     AdjustedFinancials,
     RawFinancials,
@@ -79,17 +81,16 @@ def compute_multiples(
 
     if wacc > stable_growth:
         # EV/Sales = after_tax_margin * (1 - rir) / (WACC - g)
-        after_tax_margin = (adjusted.adjusted_ebit * (1 - tax_rate)) / raw.revenues if raw.revenues > 0 else 0.0
+        nopat = after_tax_operating_income(adjusted, raw, tax_rate)
+        after_tax_margin = nopat / raw.revenues if raw.revenues > 0 else 0.0
         rir = rir_firm or 0.0
         ev_sales_intrinsic = after_tax_margin * (1 - rir) / (wacc - stable_growth) if rir_firm is not None else None
 
         # EV/EBITDA: more complex
         ebitda = raw.ebitda
         if ebitda and ebitda > 0 and raw.d_a is not None and cf_metrics.reinvestment_firm is not None:
-            da_ratio = (raw.d_a or 0.0) / ebitda
-            reinv_ratio = cf_metrics.reinvestment_firm / ebitda if ebitda > 0 else 0.0
             ev_ebitda_intrinsic = (
-                (1 - tax_rate) - da_ratio * (1 - tax_rate) - reinv_ratio
+                (nopat - cf_metrics.reinvestment_firm) / ebitda
             ) / (wacc - stable_growth)
 
     # --- Market multiples (actual) ---

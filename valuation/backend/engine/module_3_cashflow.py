@@ -7,6 +7,8 @@ return metrics, and expected fundamental growth rates.
 
 from __future__ import annotations
 
+from .module_1_adjustments import after_tax_operating_income
+
 from .data_dictionary import (
     AdjustedFinancials,
     RawFinancials,
@@ -203,7 +205,7 @@ def compute_cashflow_and_growth(
         if all(v is not None for v in (adjusted_capex, adjusted_d_a, raw.change_in_noncash_wc)) else None)
     reinvestment_equity = (reinvestment_firm - raw.net_debt_issued
         if reinvestment_firm is not None and raw.net_debt_issued is not None else None)
-    nopat = adjusted.adjusted_ebit * (1 - tax_rate)
+    nopat = after_tax_operating_income(adjusted, raw, tax_rate)
     fcff = nopat - reinvestment_firm if reinvestment_firm is not None else None
     adjusted_net_income = adjusted.adjusted_net_income
     fcfe = (adjusted_net_income - reinvestment_equity
@@ -220,9 +222,11 @@ def compute_cashflow_and_growth(
         prior_bv_debt = raw_prior_year.bv_debt or 0.0
         prior_cash = raw_prior_year.cash_and_marketable_securities or 0.0
 
-        # Adjust prior BV equity for R&D research asset
-        # For simplicity, use current R&D asset value as proxy
-        prior_adjusted_bv_equity = prior_bv_equity + adjusted.value_of_research_asset
+        # M1 research roll-forward: opening = closing - additions + amortization.
+        prior_research_asset = adjusted.value_of_research_asset
+        if adj_inputs.has_r_and_d:
+            prior_research_asset -= adj_inputs.r_and_d_expense_current - adjusted.amortization_r_and_d
+        prior_adjusted_bv_equity = prior_bv_equity + prior_research_asset
 
         adjusted_invested_capital = prior_adjusted_bv_equity + prior_bv_debt - prior_cash
 

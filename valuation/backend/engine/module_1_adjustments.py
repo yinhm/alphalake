@@ -10,6 +10,18 @@ from __future__ import annotations
 from .data_dictionary import RawFinancials, AdjustmentInputs, AdjustedFinancials
 
 
+def after_tax_operating_income(
+    adjusted: AdjustedFinancials, raw: RawFinancials, tax_rate: float,
+) -> float:
+    """Keep modelled taxes unchanged by the M1 R&D reclassification.
+
+    M1 changes EBIT only for R&D and leases. Exclude the lease adjustment
+    when recovering the R&D delta; this does not assume extra tax credits.
+    """
+    research_delta = adjusted.adjusted_ebit - raw.ebit - adjusted.lease_adjustment_to_ebit
+    return adjusted.adjusted_ebit * (1 - tax_rate) + research_delta * tax_rate
+
+
 def capitalize_r_and_d(
     r_and_d_expense_current: float,
     r_and_d_expense_past: list[float],

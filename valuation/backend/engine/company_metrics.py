@@ -18,7 +18,7 @@ module uses the Damodaran-canonical formulas:
       + (current R&D − R&D amortization)
       + (lease expense − lease depreciation)
 
-    NOPAT = Adjusted EBIT × (1 − marginal tax rate)
+    NOPAT = Adjusted EBIT × (1 − tax rate) + R&D reclassification × tax rate
     ROIC  = NOPAT / Adjusted IC
     S/C   = Revenues / Adjusted IC
 
@@ -30,6 +30,8 @@ Marginal Sales-to-Capital uses year-over-year Δ rather than levels.
 """
 
 from __future__ import annotations
+
+from .module_1_adjustments import after_tax_operating_income
 
 from engine.data_dictionary import (
     AdjustedFinancials,
@@ -104,6 +106,10 @@ def compute_company_metrics(
     # Invested capital — Damodaran adjusted (book IC + research asset + PV(leases) − cross-holdings)
     ic0 = _adjusted_ic(fin0, adjusted)
     ic1 = _adjusted_ic(fin1, adjusted) if fin1 else None
+    if ic1 is not None and adjusted is not None:
+        # Remove the current R&D net addition to recover opening research capital.
+        # Prior lease PV remains the existing current-PV proxy.
+        ic1 -= adjusted.adjusted_ebit - fin0.ebit - adjusted.lease_adjustment_to_ebit
     # Fallbacks for comparability with legacy consumers
     ic0_book = _unadjusted_ic(fin0)
 
@@ -121,9 +127,10 @@ def compute_company_metrics(
 
     # 5. ROIC — NOPAT / IC using adjusted EBIT and adjusted IC when possible
     roic = None
-    ebit_for_roic = ebit_for_margin
     if ic0 and ic0 != 0:
-        roic = ebit_for_roic * (1 - tax_rate) / ic0
+        nopat = (after_tax_operating_income(adjusted, fin0, tax_rate)
+                 if adjusted is not None else fin0.ebit * (1 - tax_rate))
+        roic = nopat / ic0
 
     # 7. Cost of capital (WACC) — passthrough from Module 2
     wacc = cost_of_capital.wacc if cost_of_capital else None
