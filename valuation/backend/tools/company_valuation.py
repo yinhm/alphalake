@@ -123,18 +123,31 @@ def main():
     parser.add_argument('--policy',action='append',required=True,help='BatchPolicy JSON，可重复指定，版本必须唯一')
     parser.add_argument('--select',help='显式选择某份policy_version；不会选择最高估值')
     parser.add_argument('--reference-database')
+    parser.add_argument('--cash-check',action='store_true',help='并列核对第一年现金预测；另读上年同期标准窗口，缺项明确列示，不调整估值')
     parser.add_argument('--alphalake',default=str(Path(__file__).resolve().parents[3]/'alphalake'))
     args=parser.parse_args()
     try:
         if not re.fullmatch(r'\d{6}',args.code) or datetime.fromisoformat(args.as_of).utcoffset() is None:
             raise ValueError('six-digit code and timezone-aware ASOF required')
         policies=[load_policy(json.loads(Path(p).read_text()),args.reference_database,args.alphalake,args.as_of) for p in args.policy]
-        def command(name,*extra):
+        def command(name,*extra,period=None):
             return json.loads(subprocess.check_output([args.alphalake,name,args.database,*extra,
-                '--period',args.period,'--as-of',args.as_of],text=True,stderr=subprocess.PIPE,timeout=300))
+                '--period',period or args.period,'--as-of',args.as_of],text=True,stderr=subprocess.PIPE,timeout=300))
         readiness=command('valuation-readiness')
         runs=os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(Path(__file__).resolve().parents[1]/'data/alphalake_runs'))
         result=company_valuation(readiness,args.code,policies,lambda code:command('export-valuation',code),runs,args.select)
+        if args.cash_check:
+            result['cash_check']=dict(status='blocked_no_selected_valuation')
+            if result.get('valuation'):
+                from tools.compare_valuations import load_run,replay
+                from data_sources.alphalake import AlphaLakeRequest
+                from data_sources.alphalake_cash import cash_crosscheck
+                run,receipt=load_run(runs,result['valuation']['run_id']);report,_=replay(run)
+                request=AlphaLakeRequest.model_validate(run['request']);end=request.data.report_period
+                previous=command('export-valuation',args.code,period=end.replace(year=end.year-1).isoformat())
+                check=cash_crosscheck(request,previous,report)
+                check['valuation_run_id']=run['run_id'];check['evidence']['valuation_run']=receipt
+                check['check_id']=content_hash(check);result['cash_check']=check
         code=0 if result['status'] in SUCCESS else 1 if result['status']=='failed_execution' else 2
         payload=json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False)
     except (ValueError,KeyError,TypeError,OSError,subprocess.SubprocessError) as error:

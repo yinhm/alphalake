@@ -1,6 +1,6 @@
 # 统一公司估值入口
 
-`tools.company_valuation` 从实际数据库扫描证券身份、读取一次标准估值输入，按显式提供的政策集合计算候选结果并输出JSON。复用`run_batch`、参考版本选择及共享估值引擎；不启动HTTP服务，不读取样本PDF直算，不自动发现或批准目录中的政策。
+`tools.company_valuation` 从实际数据库扫描证券身份、共享一次当前标准估值输入（显式现金检查另读上年同期窗口），按显式提供的政策集合计算候选结果并输出JSON。复用`run_batch`、参考版本选择及共享估值引擎；不启动HTTP服务，不读取样本PDF直算，不自动发现或批准目录中的政策。
 
 ## 使用
 
@@ -38,6 +38,25 @@ Path('data/reviewed-policy.json').write_text(json.dumps(bundle, ensure_ascii=Fal
 
 同一份BatchPolicy内部沿用现有公司assignment优先、公司排除优先及行业歧义拒绝规则。若要并列展示专项和行业结果，应提供独立配置。所有候选都会尝试计算，`--select`只决定顶层选中结果，不跳过候选的校验。
 
+## 显式现金交叉检查
+
+增加`--cash-check`后，入口为选中的普通账面/历史DCF并列返回`cash_check`，不修改估值、输入或run ID。当前仅支持H1起点；专项模型、其他季节或未选中估值分别返回明确状态。使用同一数据库、同一信息截止导出上年H1窗口，验证证券身份、重复期间一致性、源位模式、单位、季度/累计口径与完整血缘；不回退到研究快照或PDF。
+
+```bash
+python -m tools.company_valuation /absolute/market.duckdb 300866 \
+  --period 2026-06-30 --as-of 2026-09-10T22:18:56.906406Z \
+  --policy ../examples/nonfinancial-baseline-2026H1-pilot.json \
+  --cash-check > company-with-cash-check.json
+```
+
+[依据](../valuation/research/tdx-operating-cash-forecast/README.md)是三起点留出复验通过的两期TTM现金流率均值×当前TTM收入，资本开支沿用当前值。检查是当前生成的回溯研究核对，不声称该规则在历史估值截止已经可用，也不把现金代理当成FCFF。
+
+成功时列出现金预测、DCF第一年FCFF/再投资，以及两者差额，金额均为人民币元的十进制字符串（引擎原结果为百万元）。按`差额=(DCF NOPAT−预测OCF)−(DCF再投资−预测现金资本开支)`展示算术分解；NOPAT来自DCF已有FCFF与再投资加总，不称独立取数。税项、融资/投资分类、非现金投入、营运项目及不同收入预测假设仍未归因，差额不自动称为估值误差，净差额为零也不证明分类闭合。
+
+`cash_check.status=blocked_missing_standard_history`时按报告期/字段列出`missing_periods`，预测和差额为空；选中估值的状态和退出码仍按估值本身判定。标准证据矛盾或导出失败则作为请求失败，不悄悄忽略。`check_id`绑定现金检查结果、源输入摘要、研究验证摘要与检查代码版本，并引用原`valuation_run_id`；检查随stdout交付，请保存JSON，估值归档不被修改。
+
+[单公司主库验收](acceptance/cash-crosscheck-20260911.json)：安克当前TTM三项齐全，但上一TTM缺2024Q3/Q4收入及OCF、2024H1/FY资本开支，因此明确阻断现金检查。原run ID及92.1504元条件值与此前基线完全一致；尚无主库正向现金差额验收。正向计算回归使用真实研究数值搭配模拟标准血缘，仅证明契约/公式，不能冒称历史标准链已补齐。下一步定向补这三个报告期的TDX→原文审核/披露关联→标准事实链，再完成正向验收。 本轮Python 3.12后端281项通过、4项既有上游TEST_DATA缺失跳过，新增测试纳入既有pytest CI路径；Go全套测试、构建、vet、检查摘要、文档链接及`git diff --check`通过，无新依赖或Go代码改动。主库只读，估值记录写入独立验收目录。
+
 ## JSON契约
 
 `contract_version`固定为`alphalake-company-valuation-v1`；stdout只输出JSON，诊断留stderr。CLI语法错误仍遵循argparse的帮助/错误输出。
@@ -51,6 +70,7 @@ Path('data/reviewed-policy.json').write_text(json.dumps(bundle, ensure_ascii=Fal
 | `selection` | 选中的`policy_version`和理由；选中阻断政策也保留，`fallback_applied=false`。 |
 | `valuation` | 成功时为紧凑估值摘要，否则为`null`；不能把其他候选的成功值填到这里。 |
 | `candidates` | 每份配置的版本/摘要、类型、实际配置政策、路由、状态、缺项/原因及成功摘要。 |
+| `cash_check` | 仅显式请求时返回；现金预测及差额、独立状态、缺项、check ID和血缘，不改变选中估值。 |
 | `boundary` | 条件估值及显式政策集合的适用范围。 |
 
 成功摘要含`run_id`、引擎摘要、政策ID/情景、财务与信息时点、`value_per_share`（数值、CNY、CNY/share）、经营企业价值（百万人民币）、WACC（小数比例）、资本结构依据、股本依据、股权桥接、假设、边界及证据文件路径。仅经营价值模型的每股值可以为空，不能当成0。`share_date`仅在财报日股本桥接时直接使用财报期；期后股本情景留空并按运行请求中的市场股本证据追溯，不猜日期。
