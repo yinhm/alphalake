@@ -111,3 +111,7 @@ assert len(valid) == 15 and len(expected['results']) == 30
 print('15 mature forecasts replayed; 15 future windows retained')
 PYTHON
 ```
+
+## 资本输入扩展
+
+[固定五家资本源衔接](capital-source.md)已完成22包110条源记录、原1,080个位值和15组预测不变；安克五年度资本开支/研发10项与已有原文台账位匹配。完整经营资本与FCFF仍未闭合，不改变上述预测结论或生产准入。
