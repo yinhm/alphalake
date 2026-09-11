@@ -1,0 +1,124 @@
+{
+  "analysis_id": "anker-industry-ebit-pilot-v1",
+  "phase": "exposed_development_pilot",
+  "inputs": {
+    "baseline": {
+      "path": "valuation/research/continuing-operations-five/baseline.json",
+      "sha256": "f8e6260300d8f32c1928344d817394544a0c16b3249a5374e1948b2e97fd9f26"
+    },
+    "study": {
+      "path": "valuation/research/continuing-operations-five/study.json",
+      "sha256": "210c96f365a3e3fcddf7123f1824f95e9010eeba27807577e48f36a7e726bc62"
+    },
+    "snapshot": {
+      "path": "valuation/research/continuing-operations-five/snapshot.json",
+      "sha256": "ab57cd23d2a5ec05ade969eebced5c3274b911f5524f39bfa2e30dcbf823db59"
+    },
+    "industry": {
+      "path": "valuation/research/damodaran-growth-history/manifest.json",
+      "sha256": "084dab9f27577c9afdb94113108ea0265adcfc88419c89c668627390407db3ba"
+    }
+  },
+  "mappings": [
+    {
+      "origin": "2023-06-30",
+      "code": "300866",
+      "industry": "Electronics (Consumer & Office)",
+      "mapping_basis": "analyst_business_proxy_not_provider_membership",
+      "source": {
+        "url": "https://static.cninfo.com.cn/finalpage/2023-04-19/1216460035.PDF",
+        "sha256": "20ed99d2548c09dd1342af21e5774290210863dfd7f2c3bf6fbc4a0de0e93719",
+        "first_acquired_at": "2026-09-06T06:06:51.679416+00:00",
+        "local_full_file": "internal/ingest/testdata/anker-history-2026/1216460035.pdf",
+        "report_year": 2022,
+        "disclosure_date": "2023-04-19",
+        "original_page": 16
+      },
+      "crop": {
+        "file": "2022-business.pdf",
+        "sha256": "12c7a89ff07cdcfce3f5a327e584a594b445f0757077b06c51525528b2b626cb"
+      },
+      "required_text": [
+        "消费电子业",
+        "100.00%",
+        "营业收入合计"
+      ],
+      "scope": "前一年全年业务作为本起点公司行业代理；不证明半年内业务构成不变，未按分部加权"
+    },
+    {
+      "origin": "2024-06-30",
+      "code": "300866",
+      "industry": "Electronics (Consumer & Office)",
+      "mapping_basis": "analyst_business_proxy_not_provider_membership",
+      "source": {
+        "url": "https://static.cninfo.com.cn/finalpage/2024-04-25/1219800919.PDF",
+        "sha256": "ff02ac8df3bb057e9eceea98686d65672600f6cbb8e8a4530a4698ff118762c4",
+        "first_acquired_at": "2026-09-06T05:44:22.705466+00:00",
+        "local_full_file": "internal/ingest/testdata/anker-history-2026/1219800919.pdf",
+        "report_year": 2023,
+        "disclosure_date": "2024-04-25",
+        "original_page": 22
+      },
+      "crop": {
+        "file": "2023-business.pdf",
+        "sha256": "fb520de49f0deb33385d158c97c0b18b9c1a4d739c9827dc851cf455fc2334ad"
+      },
+      "required_text": [
+        "消费电子业",
+        "100.00%",
+        "营业收入合计"
+      ],
+      "scope": "前一年全年业务作为本起点公司行业代理；不证明半年内业务构成不变，未按分部加权"
+    },
+    {
+      "origin": "2025-06-30",
+      "code": "300866",
+      "industry": "Electronics (Consumer & Office)",
+      "mapping_basis": "analyst_business_proxy_not_provider_membership",
+      "source": {
+        "url": "https://static.cninfo.com.cn/finalpage/2025-04-29/1223379891.PDF",
+        "sha256": "204d64010810bc228ab9fac13eb42bdebc40bf53e0e7baff041b664da4725ee8",
+        "first_acquired_at": "2026-09-11T14:58:40.143997+00:00",
+        "local_full_file": "workspace/damodaran-growth-history-20260911/1223379891.pdf",
+        "report_year": 2024,
+        "disclosure_date": "2025-04-29",
+        "original_page": 22
+      },
+      "crop": {
+        "file": "2024-business.pdf",
+        "sha256": "5645718782678114cd421a3da7293cb5e583b631d1f670487c6b8ae624974258"
+      },
+      "required_text": [
+        "消费电子业",
+        "100.00%",
+        "营业收入合计"
+      ],
+      "scope": "前一年全年业务作为本起点公司行业代理；不证明半年内业务构成不变，未按分部加权"
+    }
+  ],
+  "candidate": "base_adjusted_ebit_proxy * (1 + corresponding_January_global_expected_ebit_growth)",
+  "revenue": "unchanged_current_rule",
+  "benchmarks": [
+    "current_rule",
+    "zero_growth"
+  ],
+  "planned_companies": [
+    "300866",
+    "002032",
+    "000651",
+    "600887",
+    "603288"
+  ],
+  "origins": [
+    "2023-06-30",
+    "2024-06-30",
+    "2025-06-30"
+  ],
+  "selection": "固定五家已暴露开发样本；先复用安克已有原文，另补2024原文；另外四家不猜映射，仍保留12项未评价。不是随机选择或新留出。",
+  "decision_rule": "这是可行性诊断，3组无论改善与否都不足采用；若主要EBIT误差或任一起点比当前规则更差，停止直接行业增长替代，不调权重救结果。",
+  "boundaries": [
+    "后来取得历史资料，不是严格PIT；发布日期只取来源URL日期代理，不新增标准公告事实",
+    "行业增长不等于公司增长；不改变收入、WACC、终值或生产行业映射",
+    "EBIT仍是TDX合并调整代理，尚非完整FCFF或DCF有效性检验"
+  ]
+}
