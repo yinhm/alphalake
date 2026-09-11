@@ -1,0 +1,349 @@
+{
+  "inputs": {
+    "valuation/research/tdx-zero-growth-validation/holdout-result.json": "28b8a85fdf99fa0670c41c5108493d118f28646db1c5acc11e65362c24e895db",
+    "valuation/research/tdx-zero-growth-validation/snapshot.json": "80ed7ff684077c8402675a26e9ddeb0a723fcfb7e87eecfea307fe7264f380fa",
+    "valuation/research/tdx-zero-growth-horizons/holdout-result.json.gz": "1a9e83ba66a9cc773bc324ea6f1558d996754cd17347d7ee86919340beb8fd31",
+    "valuation/research/tdx-zero-growth-horizons/holdout-snapshot.json": "107030fc3824020f2428beb6261fe655de64bb206900973537cdd08c3cc91f57"
+  },
+  "common_windows": [
+    [
+      "2023-06-30",
+      2
+    ],
+    [
+      "2023-06-30",
+      3
+    ],
+    [
+      "2024-06-30",
+      2
+    ]
+  ],
+  "cohort_codes_disjoint": true,
+  "cohorts": {
+    "tdx-zero-growth-validation": {
+      "common": {
+        "positions": 360,
+        "companies": 120,
+        "statuses": {
+          "evaluated": 240,
+          "blocked": 120
+        },
+        "metrics": {
+          "flat_first_five": {
+            "revenue_mae_pct_actual_revenue": 27.47771869314612,
+            "revenue_wape_pct": 14.160288532353789,
+            "ebit_mae_pct_actual_revenue": 8.79758303029025,
+            "ebit_wape_pct": 64.94940078693296
+          },
+          "zero_growth": {
+            "revenue_mae_pct_actual_revenue": 24.431017972133496,
+            "revenue_wape_pct": 13.363719667454,
+            "ebit_mae_pct_actual_revenue": 8.165588031161908,
+            "ebit_wape_pct": 60.97249961072199
+          }
+        }
+      },
+      "by_window": {
+        "2023-06-30:2": {
+          "positions": 120,
+          "companies": 120,
+          "statuses": {
+            "evaluated": 80,
+            "blocked": 40
+          },
+          "metrics": {
+            "flat_first_five": {
+              "revenue_mae_pct_actual_revenue": 24.189755505061417,
+              "revenue_wape_pct": 13.8734945882629,
+              "ebit_mae_pct_actual_revenue": 8.710525996122275,
+              "ebit_wape_pct": 70.58439283797847
+            },
+            "zero_growth": {
+              "revenue_mae_pct_actual_revenue": 22.6971642387517,
+              "revenue_wape_pct": 12.085746971035551,
+              "ebit_mae_pct_actual_revenue": 8.394802324462438,
+              "ebit_wape_pct": 66.24883044943964
+            }
+          }
+        },
+        "2023-06-30:3": {
+          "positions": 120,
+          "companies": 120,
+          "statuses": {
+            "evaluated": 80,
+            "blocked": 40
+          },
+          "metrics": {
+            "flat_first_five": {
+              "revenue_mae_pct_actual_revenue": 37.74804530097876,
+              "revenue_wape_pct": 19.10521749074901,
+              "ebit_mae_pct_actual_revenue": 11.092090118261993,
+              "ebit_wape_pct": 72.65225650841096
+            },
+            "zero_growth": {
+              "revenue_mae_pct_actual_revenue": 29.44705893421931,
+              "revenue_wape_pct": 16.362848047034184,
+              "ebit_mae_pct_actual_revenue": 9.868420380119018,
+              "ebit_wape_pct": 69.56678965692177
+            }
+          }
+        },
+        "2024-06-30:2": {
+          "positions": 120,
+          "companies": 120,
+          "statuses": {
+            "evaluated": 80,
+            "blocked": 40
+          },
+          "metrics": {
+            "flat_first_five": {
+              "revenue_mae_pct_actual_revenue": 20.49535527339818,
+              "revenue_wape_pct": 9.414049661209381,
+              "ebit_mae_pct_actual_revenue": 6.590132976486482,
+              "ebit_wape_pct": 52.47752430273217
+            },
+            "zero_growth": {
+              "revenue_mae_pct_actual_revenue": 21.148830743429478,
+              "revenue_wape_pct": 11.562910192760832,
+              "ebit_mae_pct_actual_revenue": 6.233541388904272,
+              "ebit_wape_pct": 47.866241262086184
+            }
+          }
+        }
+      },
+      "original_decision": {
+        "passed": true,
+        "checks": {
+          "minimum_sample": true,
+          "primary_improvement": true,
+          "revenue_wape_nonworse": true,
+          "ebit_nonworse": true,
+          "each_horizon_nonworse": true,
+          "each_window_nonworse": true,
+          "leave_one_company_out_nonworse": true
+        }
+      }
+    },
+    "tdx-zero-growth-horizons": {
+      "common": {
+        "positions": 360,
+        "companies": 120,
+        "statuses": {
+          "evaluated": 252,
+          "blocked": 108
+        },
+        "metrics": {
+          "flat_first_five": {
+            "revenue_mae_pct_actual_revenue": 57.24621279479217,
+            "revenue_wape_pct": 35.88625448566906,
+            "ebit_mae_pct_actual_revenue": 20.006274873214824,
+            "ebit_wape_pct": 53.356718736814535
+          },
+          "zero_growth": {
+            "revenue_mae_pct_actual_revenue": 45.4526947163751,
+            "revenue_wape_pct": 28.24242104637391,
+            "ebit_mae_pct_actual_revenue": 19.13564593964854,
+            "ebit_wape_pct": 51.48524300053845
+          }
+        }
+      },
+      "by_window": {
+        "2023-06-30:2": {
+          "positions": 120,
+          "companies": 120,
+          "statuses": {
+            "evaluated": 85,
+            "blocked": 35
+          },
+          "metrics": {
+            "flat_first_five": {
+              "revenue_mae_pct_actual_revenue": 41.788579812247434,
+              "revenue_wape_pct": 25.51567069768282,
+              "ebit_mae_pct_actual_revenue": 18.44139784186591,
+              "ebit_wape_pct": 58.46638798867488
+            },
+            "zero_growth": {
+              "revenue_mae_pct_actual_revenue": 31.609474750839773,
+              "revenue_wape_pct": 21.189101842449265,
+              "ebit_mae_pct_actual_revenue": 17.96921879530979,
+              "ebit_wape_pct": 57.98720292640964
+            }
+          }
+        },
+        "2023-06-30:3": {
+          "positions": 120,
+          "companies": 120,
+          "statuses": {
+            "evaluated": 85,
+            "blocked": 35
+          },
+          "metrics": {
+            "flat_first_five": {
+              "revenue_mae_pct_actual_revenue": 90.92915113146265,
+              "revenue_wape_pct": 49.637871374195264,
+              "ebit_mae_pct_actual_revenue": 30.881255276559045,
+              "ebit_wape_pct": 57.962258996581674
+            },
+            "zero_growth": {
+              "revenue_mae_pct_actual_revenue": 67.68718946019742,
+              "revenue_wape_pct": 38.554884263412674,
+              "ebit_mae_pct_actual_revenue": 28.845957109421583,
+              "ebit_wape_pct": 57.52921407019431
+            }
+          }
+        },
+        "2024-06-30:2": {
+          "positions": 120,
+          "companies": 120,
+          "statuses": {
+            "evaluated": 82,
+            "blocked": 38
+          },
+          "metrics": {
+            "flat_first_five": {
+              "revenue_mae_pct_actual_revenue": 38.3541279764911,
+              "revenue_wape_pct": 33.75184144134734,
+              "ebit_mae_pct_actual_revenue": 10.355557963219688,
+              "ebit_wape_pct": 44.32689376129135
+            },
+            "zero_growth": {
+              "revenue_mae_pct_actual_revenue": 36.754422080345904,
+              "revenue_wape_pct": 26.04540528654486,
+              "ebit_mae_pct_actual_revenue": 10.279180791332506,
+              "ebit_wape_pct": 39.8176194041355
+            }
+          }
+        }
+      },
+      "original_decision": {
+        "passed": false,
+        "checks": {
+          "minimum_sample": true,
+          "primary_improvement": true,
+          "revenue_wape_nonworse": true,
+          "ebit_nonworse": true,
+          "each_horizon_nonworse": false,
+          "each_window_nonworse": false,
+          "leave_one_company_out_nonworse": true
+        }
+      }
+    }
+  },
+  "source_version_comparison": {
+    "gpcw20220930.zip": {
+      "sha256": [
+        "88146dc963406fc41ee3fd7775470a53fe04b0c7be3f7527afd501bc8d069852",
+        "88146dc963406fc41ee3fd7775470a53fe04b0c7be3f7527afd501bc8d069852"
+      ],
+      "same_content": true
+    },
+    "gpcw20221231.zip": {
+      "sha256": [
+        "45717612b7dab0bb28acd2d1b2b8766e2a113e25f21404754a205542be63b9eb",
+        "45717612b7dab0bb28acd2d1b2b8766e2a113e25f21404754a205542be63b9eb"
+      ],
+      "same_content": true
+    },
+    "gpcw20230331.zip": {
+      "sha256": [
+        "dd5d644d0b0dbb0c99d233e47f6513bb6d801e802c6c84edbae6e02a6f6bce95",
+        "dd5d644d0b0dbb0c99d233e47f6513bb6d801e802c6c84edbae6e02a6f6bce95"
+      ],
+      "same_content": true
+    },
+    "gpcw20230630.zip": {
+      "sha256": [
+        "f214b9ce79edf404743b23b4f107bdb19a47c78f4ee0d2ea63ff6e502c7e55fe",
+        "f214b9ce79edf404743b23b4f107bdb19a47c78f4ee0d2ea63ff6e502c7e55fe"
+      ],
+      "same_content": true
+    },
+    "gpcw20230930.zip": {
+      "sha256": [
+        "8c6f43fa25d92813cda9d1f639ce9d48548f6671f5c4ead40405c51268ffc632",
+        "8c6f43fa25d92813cda9d1f639ce9d48548f6671f5c4ead40405c51268ffc632"
+      ],
+      "same_content": true
+    },
+    "gpcw20231231.zip": {
+      "sha256": [
+        "93fa9fd1b82ed8267a8041bae6bb531c7d71a260cc44e5b0d7a37cc9d3df21b8",
+        "93fa9fd1b82ed8267a8041bae6bb531c7d71a260cc44e5b0d7a37cc9d3df21b8"
+      ],
+      "same_content": true
+    },
+    "gpcw20240331.zip": {
+      "sha256": [
+        "e60bad30de91cf650408d2ef766dfe66105b956597d40998000588a6d6995e11",
+        "e60bad30de91cf650408d2ef766dfe66105b956597d40998000588a6d6995e11"
+      ],
+      "same_content": true
+    },
+    "gpcw20240630.zip": {
+      "sha256": [
+        "5b843700d8861955cb026d19188ee1cce38ba2e39f4c7b18dde671e64f80dc45",
+        "5b843700d8861955cb026d19188ee1cce38ba2e39f4c7b18dde671e64f80dc45"
+      ],
+      "same_content": true
+    },
+    "gpcw20240930.zip": {
+      "sha256": [
+        "a629da2eb0765edea320542e6e29170a65f06ad4d7bd74ecef0760e2dbd7672d",
+        "a629da2eb0765edea320542e6e29170a65f06ad4d7bd74ecef0760e2dbd7672d"
+      ],
+      "same_content": true
+    },
+    "gpcw20241231.zip": {
+      "sha256": [
+        "ee90041b7fe66bb3add2fa9c129da926edcbc4d7815a2c07e6ff5102511c049e",
+        "ee90041b7fe66bb3add2fa9c129da926edcbc4d7815a2c07e6ff5102511c049e"
+      ],
+      "same_content": true
+    },
+    "gpcw20250331.zip": {
+      "sha256": [
+        "50349ae09bbac7e52d2752e4d7449fa429d16997ec8a1ef5bfb6c914c3afc049",
+        "50349ae09bbac7e52d2752e4d7449fa429d16997ec8a1ef5bfb6c914c3afc049"
+      ],
+      "same_content": true
+    },
+    "gpcw20250630.zip": {
+      "sha256": [
+        "4a744d422e659ce75e608792259a969edd9e50377aaa5fde8bb1fd7d283e3534",
+        "4a744d422e659ce75e608792259a969edd9e50377aaa5fde8bb1fd7d283e3534"
+      ],
+      "same_content": true
+    },
+    "gpcw20250930.zip": {
+      "sha256": [
+        "9d553c0ee59796bb6234c6629a438dd1f5cb4c37eea550bdd15f782ca9004883",
+        "9d553c0ee59796bb6234c6629a438dd1f5cb4c37eea550bdd15f782ca9004883"
+      ],
+      "same_content": true
+    },
+    "gpcw20251231.zip": {
+      "sha256": [
+        "4430a5b2187fbe08f4e61c0543a9b2b32dc8420655f581e927e6e7ed7d6f70f7",
+        "4430a5b2187fbe08f4e61c0543a9b2b32dc8420655f581e927e6e7ed7d6f70f7"
+      ],
+      "same_content": true
+    },
+    "gpcw20260331.zip": {
+      "sha256": [
+        "7d05f98f0d26f8cabb7070974b62b4e0b51bd0337df09921b1443688a78e82fa",
+        "7d05f98f0d26f8cabb7070974b62b4e0b51bd0337df09921b1443688a78e82fa"
+      ],
+      "same_content": true
+    },
+    "gpcw20260630.zip": {
+      "sha256": [
+        "c715a00bbb5158f7d3fb33ddc796a793f257f437f734b6976a827517df95d4fb",
+        "c715a00bbb5158f7d3fb33ddc796a793f257f437f734b6976a827517df95d4fb"
+      ],
+      "same_content": true
+    }
+  },
+  "reconstructed_base_and_actual_revenues": 984,
+  "boundary": "posthoc common-window evidence audit; original full-window pass/fail decisions unchanged; cohorts share macro periods and target years, not independent time replications; no new policy, combined significance or DCF accuracy claim"
+}
