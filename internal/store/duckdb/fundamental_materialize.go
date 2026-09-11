@@ -15,6 +15,21 @@ const (
 	fundamentalRejectStage     = "_alphalake_fundamental_reject_stage"
 )
 
+// 计数与实际写入复用同一内容比较，避免新增一行时重写全部既有事实。
+const fundamentalFactChanged = `f.instrument_id IS DISTINCT FROM s.instrument_id
+		   OR f.canonical_field IS DISTINCT FROM s.canonical_field
+		   OR f.report_period IS DISTINCT FROM s.report_period
+		   OR f.announcement_time IS DISTINCT FROM s.announcement_time
+		   OR f.period_type IS DISTINCT FROM s.period_type
+		   OR f.statement_scope IS DISTINCT FROM s.statement_scope
+		   OR f.currency IS DISTINCT FROM s.currency
+		   OR f.unit IS DISTINCT FROM s.unit
+		   OR f.value IS DISTINCT FROM s.value
+		   OR f.provider_fact_id IS DISTINCT FROM s.provider_fact_id
+		   OR f.source_filing_id IS DISTINCT FROM s.filing_id
+		   OR f.normalization_rule IS DISTINCT FROM s.normalization_rule
+		   OR f.materializer_version IS DISTINCT FROM s.materializer_version`
+
 type CanonicalFundamentalResult struct {
 	Candidates   int
 	Materialized int
@@ -229,19 +244,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 		 AND f.revision_key=s.revision_key
 		 AND f.provider_code=s.provider_code
 		 AND f.source_provider_field=s.source_provider_field
-		WHERE f.instrument_id IS DISTINCT FROM s.instrument_id
-		   OR f.canonical_field IS DISTINCT FROM s.canonical_field
-		   OR f.report_period IS DISTINCT FROM s.report_period
-		   OR f.announcement_time IS DISTINCT FROM s.announcement_time
-		   OR f.period_type IS DISTINCT FROM s.period_type
-		   OR f.statement_scope IS DISTINCT FROM s.statement_scope
-		   OR f.currency IS DISTINCT FROM s.currency
-		   OR f.unit IS DISTINCT FROM s.unit
-		   OR f.value IS DISTINCT FROM s.value
-		   OR f.provider_fact_id IS DISTINCT FROM s.provider_fact_id
-		   OR f.source_filing_id IS DISTINCT FROM s.filing_id
-		   OR f.normalization_rule IS DISTINCT FROM s.normalization_rule
-		   OR f.materializer_version IS DISTINCT FROM s.materializer_version
+		WHERE `+fundamentalFactChanged+`
 	`).Scan(&result.Updated); err != nil {
 		return result, fmt.Errorf("count updated canonical fundamentals: %w", err)
 	}
@@ -262,7 +265,15 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 				primary_source, source_provider_field, provider_code,
 				provider_fact_id, filing_id, revision_key,
 				normalization_rule, materializer_version, ingest_run_id
-			FROM temp.main.`+fundamentalFactStage+`
+			FROM temp.main.`+fundamentalFactStage+` s
+			WHERE NOT EXISTS (
+				SELECT 1 FROM fundamental.fact f
+				WHERE f.primary_source=s.primary_source
+				  AND f.revision_key=s.revision_key
+				  AND f.provider_code=s.provider_code
+				  AND f.source_provider_field=s.source_provider_field
+				  AND NOT (`+fundamentalFactChanged+`)
+			)
 			ON CONFLICT(primary_source, revision_key, provider_code, source_provider_field) DO UPDATE SET
 				instrument_id=excluded.instrument_id,
 				canonical_field=excluded.canonical_field,

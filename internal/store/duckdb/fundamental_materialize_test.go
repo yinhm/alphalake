@@ -111,6 +111,35 @@ func TestMaterializeCanonicalFundamentalsNoLookAheadAndCorrection(t *testing.T) 
 	if canonicalRows != 2 || unreviewedRows != 0 {
 		t.Fatalf("canonical/unreviewed rows=%d/%d", canonicalRows, unreviewedRows)
 	}
+	if _, err := db.ExecContext(ctx, `CREATE TEMP TABLE incremental_before AS SELECT * FROM fundamental.fact`); err != nil {
+		t.Fatal(err)
+	}
+	insertMappedProviderFact(t, ctx, db, artifactB, instrumentID, "annual-rev-b", "000001", "FN234", period, 220)
+	added, err := MaterializeCanonicalFundamentals(ctx, db, 10, "tdx")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if added.Inserted != 1 || added.Updated != 0 || added.Removed != 0 {
+		t.Fatalf("incremental insert %+v", added)
+	}
+	if _, err := db.ExecContext(ctx, `UPDATE fundamental.fact SET value=1 WHERE source_provider_field='FN234'`); err != nil {
+		t.Fatal(err)
+	}
+	repaired, err := MaterializeCanonicalFundamentals(ctx, db, 11, "tdx")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if repaired.Inserted != 0 || repaired.Updated != 1 || repaired.Removed != 0 {
+		t.Fatalf("incremental repair %+v", repaired)
+	}
+	var changed int
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM incremental_before EXCEPT SELECT * FROM fundamental.fact)`).Scan(&changed); err != nil {
+		t.Fatal(err)
+	}
+	if changed != 0 {
+		t.Fatalf("incremental insert/repair rewrote %d unchanged facts including run provenance", changed)
+	}
+
 }
 
 func TestMaterializeCanonicalFundamentalsRejectsInvalidAndRemovesStale(t *testing.T) {
