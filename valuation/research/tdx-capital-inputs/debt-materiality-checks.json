@@ -1,0 +1,73 @@
+{
+  "hashes": {
+    "valuation/research/tdx-capital-inputs/debt-materiality-result.json": "744ff5cd26e70a811a7ab11d51efb68f1dc151ddb10342ae0b5d31880a43baf3",
+    "valuation/backend/tools/diagnose_debt_materiality.py": "ea5f9cc258565d66436956b5a30ddb45d406d1ab88a9ba17c6bb777250dc86e6",
+    "valuation/research/tdx-capital-inputs/financing-payables-result.json": "98b2d83227ee6755ab2e30ac34651a271ef53bf2bb8de3bec9afcf7acba85a7c",
+    "valuation/research/tdx-capital-inputs/maturities-result.json": "dccd015a36292c077110f60755965f64f5701375e24d3916c559c4c992eb2ecf",
+    "valuation/research/tdx-capital-inputs/cnty-debt/result.json": "b68b4afbce52923151caca75626ecb42a0c5ba9dc7fe23821a3a6e31334a8b91",
+    "valuation/research/tdx-capital-inputs/five-debt/result.json": "69fe3c8a5b839c0e06dffd1eb146f6152bdd6a6a6527a6d0ca19fcd6e2e67c18"
+  },
+  "subtotal_crosschecks": [
+    {
+      "code": "000035",
+      "period": "2021-12-31",
+      "source_minus_printed_subtotal_cny": "120.678281250000"
+    },
+    {
+      "code": "000035",
+      "period": "2022-12-31",
+      "source_minus_printed_subtotal_cny": "-238.763750000"
+    },
+    {
+      "code": "000417",
+      "period": "2021-12-31",
+      "source_minus_printed_subtotal_cny": "-20.470000"
+    },
+    {
+      "code": "000417",
+      "period": "2022-12-31",
+      "source_minus_printed_subtotal_cny": "-99.82000"
+    },
+    {
+      "code": "000422",
+      "period": "2021-12-31",
+      "source_minus_printed_subtotal_cny": "229.1094824218750000"
+    },
+    {
+      "code": "000422",
+      "period": "2022-12-31",
+      "source_minus_printed_subtotal_cny": "44.95441406250000"
+    },
+    {
+      "code": "000521",
+      "period": "2021-12-31",
+      "source_minus_printed_subtotal_cny": "-54.291093750000"
+    },
+    {
+      "code": "000521",
+      "period": "2022-12-31",
+      "source_minus_printed_subtotal_cny": "31.596406250000"
+    },
+    {
+      "code": "000546",
+      "period": "2021-12-31",
+      "source_minus_printed_subtotal_cny": "-43.369863281250000"
+    },
+    {
+      "code": "000546",
+      "period": "2022-12-31",
+      "source_minus_printed_subtotal_cny": "-30.66915527343750000"
+    },
+    {
+      "code": "000599",
+      "period": "2021-12-31",
+      "source_minus_printed_subtotal_cny": "59.4328613281250000"
+    },
+    {
+      "code": "000599",
+      "period": "2022-12-31",
+      "source_minus_printed_subtotal_cny": "-71.182370605468750000"
+    }
+  ],
+  "boundary": "arithmetic_rebuild_from_existing_verified_refs_not_independent_semantic_evidence; FN56_zero_supported_by_parent_checks"
+}

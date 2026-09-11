@@ -1,0 +1,344 @@
+{
+  "results": [
+    {
+      "code": "000035",
+      "period": "2021-12-31",
+      "source_components_cny": {
+        "FN41": "1531969536",
+        "FN55": "3796336384",
+        "FN52": "826302784",
+        "FN56": "0",
+        "FN439": "34735500.488281250000"
+      },
+      "common_field_subtotal_cny": "6189344204.488281250000",
+      "separately_reported_interest": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "unclassified_current_payable": {
+        "amount_cny": "0.00",
+        "percent_of_subtotal": "0E+10"
+      },
+      "related_party_narrative_gap": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "identified_additional_financing_claims": {
+        "amount_cny": "1230552198.22",
+        "percent_of_subtotal": "19.88178646338087815505620013"
+      }
+    },
+    {
+      "code": "000035",
+      "period": "2022-12-31",
+      "source_components_cny": {
+        "FN41": "2686120448",
+        "FN55": "3130310144",
+        "FN52": "1619384448",
+        "FN56": "0",
+        "FN439": "94887597.656250000"
+      },
+      "common_field_subtotal_cny": "7530702637.656250000",
+      "separately_reported_interest": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "unclassified_current_payable": {
+        "amount_cny": "0.00",
+        "percent_of_subtotal": "0E+7"
+      },
+      "related_party_narrative_gap": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "identified_additional_financing_claims": {
+        "amount_cny": "1363295731.79",
+        "percent_of_subtotal": "18.10316775718942733754160293"
+      }
+    },
+    {
+      "code": "000417",
+      "period": "2021-12-31",
+      "source_components_cny": {
+        "FN41": "591512704",
+        "FN55": "392015680",
+        "FN52": "276487680",
+        "FN56": "0",
+        "FN439": "861940781.250000"
+      },
+      "common_field_subtotal_cny": "2121956845.250000",
+      "separately_reported_interest": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "unclassified_current_payable": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "related_party_narrative_gap": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "identified_additional_financing_claims": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      }
+    },
+    {
+      "code": "000417",
+      "period": "2022-12-31",
+      "source_components_cny": {
+        "FN41": "581396096",
+        "FN55": "581881216",
+        "FN52": "262063984",
+        "FN56": "0",
+        "FN439": "801811562.50000"
+      },
+      "common_field_subtotal_cny": "2227152858.50000",
+      "separately_reported_interest": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "unclassified_current_payable": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "related_party_narrative_gap": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "identified_additional_financing_claims": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      }
+    },
+    {
+      "code": "000422",
+      "period": "2021-12-31",
+      "source_components_cny": {
+        "FN41": "2567025152",
+        "FN55": "4553757696",
+        "FN52": "4555011072",
+        "FN56": "0",
+        "FN439": "1636999.9694824218750000"
+      },
+      "common_field_subtotal_cny": "11677430919.9694824218750000",
+      "separately_reported_interest": {
+        "amount_cny": "12169734.67",
+        "percent_of_subtotal": "0.1042158566674852498761528776"
+      },
+      "unclassified_current_payable": {
+        "amount_cny": "346874390.98",
+        "percent_of_subtotal": "2.970468362067660298375564324"
+      },
+      "related_party_narrative_gap": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "identified_additional_financing_claims": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      }
+    },
+    {
+      "code": "000422",
+      "period": "2022-12-31",
+      "source_components_cny": {
+        "FN41": "2024391936",
+        "FN55": "4912915968",
+        "FN52": "1983668224",
+        "FN56": "0",
+        "FN439": "746900.02441406250000"
+      },
+      "common_field_subtotal_cny": "8921723028.02441406250000",
+      "separately_reported_interest": {
+        "amount_cny": "2178987.13",
+        "percent_of_subtotal": "0.02442338910494630139418513474"
+      },
+      "unclassified_current_payable": {
+        "amount_cny": "98499972.99",
+        "percent_of_subtotal": "1.104046524203872173732221684"
+      },
+      "related_party_narrative_gap": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "identified_additional_financing_claims": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      }
+    },
+    {
+      "code": "000521",
+      "period": "2021-12-31",
+      "source_components_cny": {
+        "FN41": "622874624",
+        "FN55": "168000000",
+        "FN52": "332718464",
+        "FN56": "0",
+        "FN439": "33225900.878906250000"
+      },
+      "common_field_subtotal_cny": "1156818988.878906250000",
+      "separately_reported_interest": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "unclassified_current_payable": {
+        "amount_cny": "173499.29",
+        "percent_of_subtotal": "0.01499796352479839838242926358"
+      },
+      "related_party_narrative_gap": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "identified_additional_financing_claims": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      }
+    },
+    {
+      "code": "000521",
+      "period": "2022-12-31",
+      "source_components_cny": {
+        "FN41": "674143936",
+        "FN55": "148000000",
+        "FN52": "30287100",
+        "FN56": "0",
+        "FN439": "28164299.316406250000"
+      },
+      "common_field_subtotal_cny": "880595335.316406250000",
+      "separately_reported_interest": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "unclassified_current_payable": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "related_party_narrative_gap": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "identified_additional_financing_claims": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      }
+    },
+    {
+      "code": "000546",
+      "period": "2021-12-31",
+      "source_components_cny": {
+        "FN41": "2377274624",
+        "FN55": "321000000",
+        "FN52": "181451776",
+        "FN56": "0",
+        "FN439": "3230199.890136718750000"
+      },
+      "common_field_subtotal_cny": "2882956599.890136718750000",
+      "separately_reported_interest": {
+        "amount_cny": "725337.48",
+        "percent_of_subtotal": "0.02515950049430647179319851916"
+      },
+      "unclassified_current_payable": {
+        "amount_cny": "0.00",
+        "percent_of_subtotal": "0E+13"
+      },
+      "related_party_narrative_gap": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "identified_additional_financing_claims": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      }
+    },
+    {
+      "code": "000546",
+      "period": "2022-12-31",
+      "source_components_cny": {
+        "FN41": "975844544",
+        "FN55": "185000000",
+        "FN52": "91836000",
+        "FN56": "0",
+        "FN439": "1202099.99084472656250000"
+      },
+      "common_field_subtotal_cny": "1253882643.99084472656250000",
+      "separately_reported_interest": {
+        "amount_cny": "806591.64",
+        "percent_of_subtotal": "0.06432752250503990232924108907"
+      },
+      "unclassified_current_payable": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "related_party_narrative_gap": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      },
+      "identified_additional_financing_claims": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      }
+    },
+    {
+      "code": "000599",
+      "period": "2021-12-31",
+      "source_components_cny": {
+        "FN41": "3754517504",
+        "FN55": "836544256",
+        "FN52": "445705760",
+        "FN56": "0",
+        "FN439": "2040399.9328613281250000"
+      },
+      "common_field_subtotal_cny": "5038807919.9328613281250000",
+      "separately_reported_interest": {
+        "amount_cny": "2796660.68",
+        "percent_of_subtotal": "0.05550242685252553925983308790"
+      },
+      "unclassified_current_payable": {
+        "amount_cny": "18171333.36",
+        "percent_of_subtotal": "0.3606276255960580572843018976"
+      },
+      "related_party_narrative_gap": {
+        "amount_cny": "0.00",
+        "percent_of_subtotal": "0E+14"
+      },
+      "identified_additional_financing_claims": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      }
+    },
+    {
+      "code": "000599",
+      "period": "2022-12-31",
+      "source_components_cny": {
+        "FN41": "3903698944",
+        "FN55": "486516256",
+        "FN52": "434945440",
+        "FN56": "0",
+        "FN439": "574500.007629394531250000"
+      },
+      "common_field_subtotal_cny": "4825735140.007629394531250000",
+      "separately_reported_interest": {
+        "amount_cny": "2211843.80",
+        "percent_of_subtotal": "0.04583433893134265792822060171"
+      },
+      "unclassified_current_payable": {
+        "amount_cny": "8300000.00",
+        "percent_of_subtotal": "0.1719945201962923696529705191"
+      },
+      "related_party_narrative_gap": {
+        "amount_cny": "2590189.25",
+        "percent_of_subtotal": "0.05367450087606558864242776736"
+      },
+      "identified_additional_financing_claims": {
+        "amount_cny": null,
+        "percent_of_subtotal": null
+      }
+    }
+  ],
+  "full_debt": null,
+  "invested_capital": null,
+  "economic_roic": null,
+  "boundary": "six_companies_two_FY; 2023-09-01_China_cutoff; later_acquired_not_strict_PIT; source_precision_subtotal_not_full_debt_or_lower_bound; ratios_not_valuation_impacts; unknown_not_zero; claim_scope_differs_by_year; overlapping_diagnostics_not_additive"
+}
