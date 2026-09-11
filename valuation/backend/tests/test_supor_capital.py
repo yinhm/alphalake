@@ -15,7 +15,8 @@ def test_supor_capital_actual_source_and_tamper(monkeypatch):
         pytest.skip('restore three original Supor annual PDFs from evidence URLs and hashes')
     result=verify(ledger,pdfs)
     assert result==json.loads((DIRECTORY/'supor-capital-result.json').read_bytes())
-    assert result['pdf_amounts_checked']==40 and result['source_bits_checked']==9
+    assert result['pdf_amounts_checked']==52 and result['source_bits_checked']==12
+    assert [r['extra_reinvestment_if_cash_capex_and_capital_payables_in_wc_cny'] for r in result['results']]==['7059441.72','9345336.33','22159603.74']
     assert all(r['historical_fcff'] is None for r in result['results'])
     for change in ('amount','columns','field','drop_year'):
         bad=deepcopy(ledger)

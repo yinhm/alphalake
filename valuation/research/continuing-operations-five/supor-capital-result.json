@@ -2,6 +2,8 @@
   "results": [
     {
       "year": 2022,
+      "capital_payable_change_cny": "-7059441.72",
+      "extra_reinvestment_if_cash_capex_and_capital_payables_in_wc_cny": "7059441.72",
       "amounts": {
         "current_assets": {
           "current": "9518374202.92",
@@ -29,6 +31,14 @@
         "term_deposit": {
           "current": "381101095.89",
           "comparative": "1863761369.84"
+        },
+        "capital_payables": {
+          "current": "67104579.12",
+          "comparative": "74164020.84"
+        },
+        "current_lease": {
+          "current": "41924940.24",
+          "comparative": "29191343.78"
         }
       },
       "unclassified_current_subtotal_cny": "240129049.83",
@@ -40,6 +50,8 @@
     },
     {
       "year": 2023,
+      "capital_payable_change_cny": "-9345336.33",
+      "extra_reinvestment_if_cash_capex_and_capital_payables_in_wc_cny": "9345336.33",
       "amounts": {
         "current_assets": {
           "current": "10036694506.68",
@@ -67,6 +79,14 @@
         },
         "term_deposit": {
           "comparative": "381101095.89"
+        },
+        "capital_payables": {
+          "current": "57759242.79",
+          "comparative": "67104579.12"
+        },
+        "current_lease": {
+          "current": "47568255.43",
+          "comparative": "41924940.24"
         }
       },
       "unclassified_current_subtotal_cny": "-36077491.37",
@@ -78,6 +98,8 @@
     },
     {
       "year": 2024,
+      "capital_payable_change_cny": "-22159603.74",
+      "extra_reinvestment_if_cash_capex_and_capital_payables_in_wc_cny": "22159603.74",
       "amounts": {
         "current_assets": {
           "current": "10603927260.76",
@@ -106,6 +128,14 @@
         "warranty": {
           "current": "47938174.63",
           "comparative": "39916751.22"
+        },
+        "capital_payables": {
+          "current": "35599639.05",
+          "comparative": "57759242.79"
+        },
+        "current_lease": {
+          "current": "41987421.60",
+          "comparative": "47568255.43"
         }
       },
       "unclassified_current_subtotal_cny": "1600067693.97",
@@ -116,12 +146,13 @@
       "historical_fcff": null
     }
   ],
-  "pdf_amounts_checked": 40,
-  "source_bits_checked": 9,
+  "pdf_amounts_checked": 52,
+  "source_bits_checked": 12,
   "comparison_2023": {
     "current_liability_difference_cny": "-39916751.22",
     "noncurrent_liability_difference_cny": "39916751.22",
     "numerical_bridge": "equal_opposite_and_matches_warranty_comparative; not independent proof of reclassification cause"
   },
+  "capital_payable_boundary": "cash capex already reflects settlement of capital purchases; including their payable change again in operating working capital double counts that change; no full FCFF computed",
   "decision": "raw_current_balance_proxy_not_eligible_as_complete_operating_reinvestment_label"
 }

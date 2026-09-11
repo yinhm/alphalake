@@ -121,6 +121,36 @@
             "1863761369.84"
           ],
           "tdx_field": null
+        },
+        {
+          "key": "capital_payables",
+          "page": 124,
+          "label": "设备工程款",
+          "line": "设备工程款 67,104,579.12 74,164,020.84",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "67104579.12",
+            "74164020.84"
+          ],
+          "tdx_field": null
+        },
+        {
+          "key": "current_lease",
+          "page": 126,
+          "label": "一年内到期的租赁负债",
+          "line": "一年内到期的租赁负债 41,924,940.24 29,191,343.78",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "41924940.24",
+            "29191343.78"
+          ],
+          "tdx_field": "FN52"
         }
       ]
     },
@@ -245,6 +275,36 @@
             "381101095.89"
           ],
           "tdx_field": null
+        },
+        {
+          "key": "capital_payables",
+          "page": 130,
+          "label": "设备工程款",
+          "line": "设备工程款 57,759,242.79 67,104,579.12",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "57759242.79",
+            "67104579.12"
+          ],
+          "tdx_field": null
+        },
+        {
+          "key": "current_lease",
+          "page": 132,
+          "label": "一年内到期的租赁负债",
+          "line": "一年内到期的租赁负债 47,568,255.43 41,924,940.24",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "47568255.43",
+            "41924940.24"
+          ],
+          "tdx_field": "FN52"
         }
       ]
     },
@@ -371,6 +431,36 @@
             "39916751.22"
           ],
           "tdx_field": null
+        },
+        {
+          "key": "capital_payables",
+          "page": 134,
+          "label": "设备工程款",
+          "line": "设备工程款 35,599,639.05 57,759,242.79",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "35599639.05",
+            "57759242.79"
+          ],
+          "tdx_field": null
+        },
+        {
+          "key": "current_lease",
+          "page": 137,
+          "label": "一年内到期的租赁负债",
+          "line": "一年内到期的租赁负债 41,987,421.60 47,568,255.43",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "41987421.60",
+            "47568255.43"
+          ],
+          "tdx_field": "FN52"
         }
       ]
     }

@@ -31,12 +31,12 @@ def verify(ledger, pdf_directory):
         record=[r for r in source if r['code']=='002032' and r['period']==f'{year}-12-31']
         assert len(record)==1
         base=['current_assets','cash','trading_assets','current_liabilities','noncurrent_liabilities','current_debt_investment']
-        assert [r['key'] for r in report['rows']]==base+(['term_deposit'] if year<2024 else ['warranty'])
+        assert [r['key'] for r in report['rows']]==base+(['term_deposit'] if year<2024 else ['warranty'])+['capital_payables','current_lease']
         values={}
         header=reader.pages[report['rows'][0]['page']-1].extract_text()
         compact=re.sub(r'\s+','',header)
         assert '合并资产负债表' in compact and '单位：元' in compact and f'{year}年12月31日' in compact
-        labels=dict(zip(base,['流动资产合计','货币资金','交易性金融资产','流动负债合计','非流动负债合计','一年内到期的其他债权投资'])) | {'term_deposit':'定期存款','warranty':'产品质量保证'}
+        labels=dict(zip(base,['流动资产合计','货币资金','交易性金融资产','流动负债合计','非流动负债合计','一年内到期的其他债权投资'])) | {'term_deposit':'定期存款','warranty':'产品质量保证','capital_payables':'设备工程款','current_lease':'一年内到期的租赁负债'}
         for row in report['rows']:
             assert row['label']==labels[row['key']], 'concept differs'
             text=reader.pages[row['page']-1].extract_text()
@@ -48,7 +48,7 @@ def verify(ledger, pdf_directory):
                               ['comparative'] if (year,row['key'])==(2023,'term_deposit') else ['current','comparative'])
             assert row['columns']==expected_columns
             values[row['key']]={c:Decimal(v) for c,v in zip(row['columns'],extracted,strict=True)}
-            field={'current_assets':'FN21','cash':'FN8','current_liabilities':'FN54'}.get(row['key'])
+            field={'current_assets':'FN21','cash':'FN8','current_liabilities':'FN54','current_lease':'FN52'}.get(row['key'])
             assert row['tdx_field']==field
             if field:
                 assert struct.unpack('<I',struct.pack('<f',float(values[row['key']]['current'])))[0]==record[0]['bits'][field], 'source bits differ'
@@ -59,10 +59,15 @@ def verify(ledger, pdf_directory):
         identified=current('trading_assets')+current('current_debt_investment')
         # 只加原文明确的本期金融分量；不把未列示定期存款认定为全部经济余额为零。
         if 'current' in values.get('term_deposit',{}):identified+=current('term_deposit')
-        results.append(dict(year=year, amounts={k:{c:str(v) for c,v in cols.items()} for k,cols in values.items()},
+        capital_payable_change=current('capital_payables')-values['capital_payables']['comparative']
+        results.append(dict(year=year,capital_payable_change_cny=str(capital_payable_change),
+            extra_reinvestment_if_cash_capex_and_capital_payables_in_wc_cny=str(-capital_payable_change), amounts={k:{c:str(v) for c,v in cols.items()} for k,cols in values.items()},
             unclassified_current_subtotal_cny=str(subtotal),identified_financial_assets_cny=str(identified),
             subtotal_after_identified_asset_deduction_cny=str(subtotal-identified),
             full_operating_working_capital=None, full_reinvestment=None, historical_fcff=None))
+    for prior,current in zip(results,results[1:]):
+        for key in ('capital_payables','current_lease'):
+            assert prior['amounts'][key]['current']==current['amounts'][key]['comparative'], 'capital component comparative differs'
     before,after=results[1:]
     delta=Decimal(after['amounts']['current_liabilities']['comparative'])-Decimal(before['amounts']['current_liabilities']['current'])
     noncurrent_delta=Decimal(after['amounts']['noncurrent_liabilities']['comparative'])-Decimal(before['amounts']['noncurrent_liabilities']['current'])
@@ -71,6 +76,7 @@ def verify(ledger, pdf_directory):
     return dict(results=results,pdf_amounts_checked=amounts_checked,source_bits_checked=bits_checked,
         comparison_2023=dict(current_liability_difference_cny=str(delta),noncurrent_liability_difference_cny=str(noncurrent_delta),
             numerical_bridge='equal_opposite_and_matches_warranty_comparative; not independent proof of reclassification cause'),
+        capital_payable_boundary='cash capex already reflects settlement of capital purchases; including their payable change again in operating working capital double counts that change; no full FCFF computed',
         decision='raw_current_balance_proxy_not_eligible_as_complete_operating_reinvestment_label')
 
 
