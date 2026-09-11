@@ -1,0 +1,41 @@
+{
+  "protocol_id": "tdx-past-log-growth-calibration-v1",
+  "frozen_at": "2026-09-11T15:22:18.227346+00:00",
+  "inputs": {
+    "sample_protocol": {
+      "path": "valuation/research/tdx-zero-growth-horizons/protocol.json",
+      "sha256": "71a22981a137f3d2b668fbf660700bc0db919cc297a009eac93fc19478abfbf8"
+    },
+    "source": {
+      "path": "valuation/research/tdx-growth-calibration/validation-source.json.gz",
+      "sha256": "f48de0f5b6060c7de294704a942ee95eb577d51b0174b116ac9604109aa97c6e"
+    },
+    "design": {
+      "path": "valuation/research/tdx-growth-calibration/validation-design.json",
+      "sha256": "0fa6078cb76044572a177410df654efec196fb9843596d2c62441e43de1fddd4"
+    }
+  },
+  "formula": "OLS y=a+b*x; x=log(predicted_revenue/base_revenue), y=log(actual_revenue/base_revenue); predicted growth=clip(expm1(a+b*x_current), original floor, original ceiling)",
+  "method": "statistics.linear_regression; intercept included; equal company weights; no trimming, coefficient scan, or industry grouping",
+  "minimum_training_pairs": 80,
+  "models": [
+    "current_rule",
+    "past_log_calibration",
+    "zero_growth"
+  ],
+  "gates": {
+    "minimum_pairs": 240,
+    "minimum_each_origin": 80,
+    "minimum_revenue_mae_improvement": 0.05,
+    "maximum_each_origin_mae_ratio": 1.05,
+    "require_revenue_wape_nonworse": true,
+    "require_zero_growth_nonworse": true,
+    "require_ebit_mae_nonworse": true
+  },
+  "scope": "original 300 calibration companies unchanged; new 120 evaluation companies exclude prior research samples/results; fixed same three origins, current survivor universe, not strict PIT or new macro periods",
+  "cash_bridge": "first-year policy NOPAT minus revenue increment / original sales_to_capital; explicit assumption, no historical FCFF or full DCF accuracy claim",
+  "stop": "any gate fails: no new holdout, no coefficient/feature/weight tuning; pass permits new-company validation only",
+  "method_source": "https://pages.stern.nyu.edu/~adamodar/pdfiles/papers/growthorigins.pdf",
+  "method_boundary": "Damodaran discusses limits of past growth prediction; this regression is an explicit research calibration, not a prescribed valuation formula. Log back-transform is a geometric point, not an unbiased conditional mean.",
+  "validation_plan_sha256": "ddae262ce2a1897cda97df4e72e455951c93e05f44b236790ef5a88252a48440"
+}

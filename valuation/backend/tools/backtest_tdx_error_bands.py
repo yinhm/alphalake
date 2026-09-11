@@ -3,6 +3,7 @@ import argparse
 from collections import Counter
 from datetime import date
 import hashlib
+import gzip
 import json
 import math
 from pathlib import Path
@@ -94,7 +95,7 @@ def load_inputs(path):
         data = (ROOT/ref['path']).read_bytes()
         if hashlib.sha256(data).hexdigest() != ref['sha256']:
             raise ValueError('input hash differs: '+key)
-        inputs[key] = json.loads(data)
+        inputs[key] = json.loads(gzip.decompress(data) if ref['path'].endswith('.gz') else data)
     return p, inputs
 
 
