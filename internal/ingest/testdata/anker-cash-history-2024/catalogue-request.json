@@ -1,0 +1,17 @@
+{
+  "parameters": {
+    "stock": "",
+    "tabName": "fulltext",
+    "pageSize": 30,
+    "pageNum": 1,
+    "column": "szse",
+    "category": "category_ndbg_szsh;category_bndbg_szsh;category_sjdbg_szsh;",
+    "seDate": "2024-01-01~2025-05-31",
+    "searchkey": "300866",
+    "isHLtitle": "true",
+    "sortName": "time",
+    "sortType": "desc"
+  },
+  "acquired_at": "2026-09-11T01:19:10.001541+00:00",
+  "sha256": "12b90faa17dde14c0f7a330aeefdf135957f6b04a2901748ce4f168ededae825"
+}

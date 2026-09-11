@@ -1,0 +1,102 @@
+{
+  "code": "300866",
+  "status": "original_cash_history_verified_not_materialized",
+  "periods": [
+    {
+      "period": "2024-06-30",
+      "published": "2024-08-30",
+      "available_from": "2024-08-31T00:00:00+08:00",
+      "cumulative_cny": {
+        "revenue": "9648327221.81",
+        "ocf": "841301280.92",
+        "capex": "37900591.14"
+      }
+    },
+    {
+      "period": "2024-09-30",
+      "published": "2024-10-30",
+      "available_from": "2024-10-31T00:00:00+08:00",
+      "cumulative_cny": {
+        "revenue": "16448654845.50",
+        "ocf": "1651200264.69",
+        "capex": "71613378.76"
+      }
+    },
+    {
+      "period": "2024-12-31",
+      "published": "2025-04-29",
+      "available_from": "2025-04-30T00:00:00+08:00",
+      "cumulative_cny": {
+        "revenue": "24710080329.34",
+        "ocf": "2745458716.91",
+        "capex": "428881972.81"
+      }
+    }
+  ],
+  "source_values": [
+    {
+      "period": "2024-06-30",
+      "field": "FN114",
+      "pdf_amount": "37900591.14",
+      "source_bits": 1276154956,
+      "source_value": "37900592",
+      "source_minus_pdf": "0.86"
+    },
+    {
+      "period": "2024-09-30",
+      "field": "FN114",
+      "pdf_amount": "71613378.76",
+      "source_bits": 1284020088,
+      "source_value": "71613376",
+      "source_minus_pdf": "-2.76"
+    },
+    {
+      "period": "2024-09-30",
+      "field": "FN230",
+      "pdf_amount": "6800327623.69",
+      "source_bits": 1338681954,
+      "source_value": "6800327680",
+      "source_minus_pdf": "56.31"
+    },
+    {
+      "period": "2024-09-30",
+      "field": "FN234",
+      "pdf_amount": "809898983.77",
+      "source_bits": 1312888912,
+      "source_value": "809899008",
+      "source_minus_pdf": "24.23"
+    },
+    {
+      "period": "2024-12-31",
+      "field": "FN114",
+      "pdf_amount": "428881972.81",
+      "source_bits": 1305248194,
+      "source_value": "428881984",
+      "source_minus_pdf": "11.19"
+    },
+    {
+      "period": "2024-12-31",
+      "field": "FN230",
+      "pdf_amount": "8261425483.84",
+      "source_bits": 1341535661,
+      "source_value": "8261425664",
+      "source_minus_pdf": "180.16"
+    },
+    {
+      "period": "2024-12-31",
+      "field": "FN234",
+      "pdf_amount": "1094258452.22",
+      "source_bits": 1317171742,
+      "source_value": "1094258432",
+      "source_minus_pdf": "-20.22"
+    }
+  ],
+  "boundary": "7 verified source values: FN114 three YTD amounts and FN230/FN234 Q3/Q4 differences; H1 revenue/OCF are cumulative anchors, not independent Q2 verification; no PDF overwrite or FCFF claim",
+  "evidence": {
+    "evidence.json": "615ac9aa3e02126a2208d2ed9aefb82292faab7edeca698abeff8566d4ccc1b8",
+    "source-snapshot.json": "4b82d6ccd992dcc9fa678daceb59cca39139e5e5b0bb908f8e73019fd7c7aa76",
+    "packages.json": "3b88cc7511268290b670528daef16852469072574e61d3f8a385795e2c8118b6",
+    "catalogue.json": "12b90faa17dde14c0f7a330aeefdf135957f6b04a2901748ce4f168ededae825",
+    "code_sha256": "86bad424762b5b5653a305c95b88c4bc597abddd0bd825bdc5d57602425bcbbe"
+  }
+}

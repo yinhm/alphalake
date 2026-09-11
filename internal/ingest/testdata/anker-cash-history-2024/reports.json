@@ -1,0 +1,26 @@
+[
+  {
+    "period": "2024-06-30",
+    "announcement_id": "1221057646",
+    "url": "https://static.cninfo.com.cn/finalpage/2024-08-30/1221057646.PDF",
+    "file": "1221057646.pdf",
+    "sha256": "fae97eeabfa99796b3331310e27ed9887ef40bc7c8af3e7b982992d7c2ee9b32",
+    "fetched_at": "2026-09-11T01:19:49.725038+00:00"
+  },
+  {
+    "period": "2024-09-30",
+    "announcement_id": "1221558710",
+    "url": "https://static.cninfo.com.cn/finalpage/2024-10-30/1221558710.PDF",
+    "file": "1221558710.pdf",
+    "sha256": "29ff627b42ad5f797045602c4166df3f23a47c0ebe5465dbf8deaab41f427fd8",
+    "fetched_at": "2026-09-11T01:19:51.254935+00:00"
+  },
+  {
+    "period": "2024-12-31",
+    "announcement_id": "1223379891",
+    "url": "https://static.cninfo.com.cn/finalpage/2025-04-29/1223379891.PDF",
+    "file": "1223379891.pdf",
+    "sha256": "204d64010810bc228ab9fac13eb42bdebc40bf53e0e7baff041b664da4725ee8",
+    "fetched_at": "2026-09-11T01:19:54.190253+00:00"
+  }
+]
