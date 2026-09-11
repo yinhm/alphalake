@@ -58,5 +58,10 @@ def test_archived_real_main_copy_review(tmp_path):
     def export(period):
         calls.append(period)
         return saved['results'][0]['actual_snapshot']
-    assert review(run, saved['evaluation_as_of'], export) == saved
+    from api.alphalake import ENGINE_REVISION
+    from data_sources.alphalake import content_hash
+    # 实际复核代码版本变化会产生新review ID，旧归档本身不改写。
+    expected = saved | {'current_engine_revision': ENGINE_REVISION}
+    expected['review_id'] = content_hash({k:v for k,v in expected.items() if k!='review_id'})
+    assert review(run, saved['evaluation_as_of'], export) == expected
     assert calls == ['2026-06-30']

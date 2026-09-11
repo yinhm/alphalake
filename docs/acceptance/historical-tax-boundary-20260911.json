@@ -1,0 +1,27 @@
+{
+  "engine_revision": "56160d18b78b7a5fa2be85674eaf6982b26d4ce2bb6b88d2b098e0e3e8830a72",
+  "results": [
+    {
+      "code": "300866",
+      "run_id": "6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b",
+      "source": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b.json",
+        "sha256": "328ffa8de193bb8fe8253a0be686b051f1ea4160ba3c80a182781052a7b028b7"
+      },
+      "full_report_unchanged": true,
+      "value_per_share": 126.13784833230838
+    },
+    {
+      "code": "002032",
+      "run_id": "183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d",
+      "source": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d.json",
+        "sha256": "9560ca4d3056791d115b2b10f0f5b84b0cc789fd5663fc12a9d16880fcf42b70"
+      },
+      "full_report_unchanged": true,
+      "value_per_share": 43.252612680123605
+    }
+  ],
+  "scope": "read_only_replay_two_saved_standard_requests_no_database_or_run_mutation",
+  "boundary": "Historical diagnostic tax fallback removed; these standard requests do not acquire historical tax inputs or new prices; no forecast accuracy improvement claimed"
+}

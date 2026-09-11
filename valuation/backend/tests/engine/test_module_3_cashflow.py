@@ -321,7 +321,8 @@ def test_historical_returns_require_actual_annual_intervals():
 
     def row(year, revenue):
         return RawFinancials(fiscal_year=year, revenues=revenue, ebit=100,
-                             bv_equity=500, bv_debt=100, cash_and_marketable_securities=0)
+                             bv_equity=500, bv_debt=100, cash_and_marketable_securities=0,
+                             earnings_before_tax=100, total_tax_expense=21)
     history = [row(2025, 1331), row(2024, 1210), row(2022, 1000), row(2021, 900)]
     result = _compute_historical_series(history, None)
     assert result['historical_revenue_growth_by_year'][0] == pytest.approx(.1)
@@ -339,3 +340,23 @@ def test_historical_returns_require_actual_annual_intervals():
     reversed_pair = _compute_historical_series([history[1], history[0]], None)
     assert reversed_pair['historical_roic_by_year'] == [None, None]
     assert reversed_pair['historical_revenue_growth_by_year'] == [None, None]
+
+
+@pytest.mark.parametrize('tax,ebt', [(None,100), (20,None), (20,0), (20,-100), (float('nan'),100), (20,float('inf'))])
+def test_historical_missing_tax_does_not_invent_roic(tax, ebt):
+    from engine.module_3_cashflow import _compute_historical_series
+    history = [RawFinancials(fiscal_year=y, revenues=1000, ebit=100,
+        bv_equity=500, bv_debt=100, cash_and_marketable_securities=0,
+        total_tax_expense=tax, earnings_before_tax=ebt) for y in (2025,2024)]
+    result = _compute_historical_series(history, None)
+    assert result['historical_roic_by_year'] == [None,None]
+    assert result['historical_roic_avg_3yr'] is None
+    assert result['historical_roic_weighted_3yr'] is None
+    assert result['historical_margin_by_year'] == [.1,.1]
+    assert result['historical_s_c_by_year'] == [1000/600,1000/600]
+    assert result['historical_revenue_growth_by_year'] == [0,None]
+    # 明示零税额可用；缺税项不能由另一期有税项填充。
+    history[0].earnings_before_tax = 100
+    history[0].total_tax_expense = 0
+    known = _compute_historical_series(history, None)
+    assert known['historical_roic_by_year'] == [pytest.approx(100/600),None]

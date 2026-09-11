@@ -58,7 +58,7 @@ def _compute_historical_series(
     Convention:
       NOPAT_i        = raw_EBIT_i × (1 - effective_tax_i) + R&D net adjustment
       effective_tax_i = |tax_exp_i| / |ebt_i|                   IQ_INC_TAX/IQ_EBT_EXCL
-                      (falls back to 0.21 if EBT <= 0 or missing)
+                      (unavailable if tax/EBT is missing or nonfinite, or EBT <= 0)
       IC_i           = bv_equity_i + year-specific R&D asset + bv_debt_i - cash_i
       ROIC_i         = NOPAT_i / IC_{i+1}   (prior-year IC, standard)
       S_C_i          = Revenue_i / IC_i      (current-year IC)
@@ -119,11 +119,12 @@ def _compute_historical_series(
         ebit_i = f.ebit + research_delta[i] if research_delta[i] is not None else None
         rev_i = f.revenues
 
-        # Per-year effective tax rate (falls back to 21% marginal default)
-        if f.total_tax_expense is not None and f.earnings_before_tax and f.earnings_before_tax > 0:
-            eff_tax_i = abs(f.total_tax_expense) / abs(f.earnings_before_tax)
-        else:
-            eff_tax_i = 0.21
+        # Historical diagnostics require that year's tax evidence, not a country default.
+        eff_tax_i = None
+        if (f.total_tax_expense is not None and math.isfinite(f.total_tax_expense)
+                and f.earnings_before_tax is not None and math.isfinite(f.earnings_before_tax)
+                and f.earnings_before_tax > 0):
+            eff_tax_i = abs(f.total_tax_expense) / f.earnings_before_tax
 
         # Margin
         if ebit_i is not None and rev_i not in (None, 0):
@@ -139,7 +140,7 @@ def _compute_historical_series(
                        and year_counts[f.fiscal_year] == 1
                        and year_counts[history[i + 1].fiscal_year] == 1)
         # ROIC — prior-year IC with per-year NOPAT
-        if annual_pair and i + 1 < n_total and ebit_i is not None and ic_current[i + 1] not in (None, 0):
+        if annual_pair and i + 1 < n_total and ebit_i is not None and eff_tax_i is not None and ic_current[i + 1] not in (None, 0):
             nopat_i = after_tax_operating_income(AdjustedFinancials(adjusted_ebit=ebit_i), f, eff_tax_i)
             nopat_series[i] = nopat_i
             roic[i] = nopat_i / ic_current[i + 1]
