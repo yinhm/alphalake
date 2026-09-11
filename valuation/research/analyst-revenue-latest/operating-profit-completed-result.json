@@ -1,0 +1,692 @@
+{
+  "plan_sha256": "f36e6ed31912f00421b7d014a719cf126f95f01daf2652f7f585a8f80948b838",
+  "evidence_sha256": "c6f93494577bd874fb524dd4a63f6f4b9725712b88e96cf312cddf50ba479198",
+  "history": [
+    {
+      "info_code": "AP202308311596906163",
+      "year": 2020,
+      "printed_million_cny": "1007",
+      "status": "matched"
+    },
+    {
+      "info_code": "AP202308311596906163",
+      "year": 2021,
+      "printed_million_cny": "1092",
+      "status": "matched"
+    },
+    {
+      "info_code": "AP202308311596906163",
+      "year": 2022,
+      "printed_million_cny": "1275",
+      "status": "matched"
+    },
+    {
+      "info_code": "AP202408311639673106",
+      "year": 2022,
+      "printed_million_cny": "1275",
+      "status": "matched"
+    },
+    {
+      "info_code": "AP202408311639673106",
+      "year": 2023,
+      "printed_million_cny": "1806",
+      "status": "matched"
+    },
+    {
+      "info_code": "AP202508311737221901",
+      "year": 2023,
+      "printed_million_cny": "1806",
+      "status": "matched"
+    },
+    {
+      "info_code": "AP202508311737221901",
+      "year": 2024,
+      "printed_million_cny": "2377",
+      "status": "matched"
+    },
+    {
+      "info_code": "AP202308311596883311",
+      "year": 2021,
+      "printed_million_cny": "2385",
+      "status": "matched"
+    },
+    {
+      "info_code": "AP202308311596883311",
+      "year": 2022,
+      "printed_million_cny": "2535",
+      "status": "matched"
+    },
+    {
+      "info_code": "AP202407251638296815",
+      "year": 2023,
+      "printed_million_cny": "2681",
+      "status": "matched"
+    },
+    {
+      "info_code": "AP202508301736875870",
+      "year": 2022,
+      "printed_million_cny": "2535",
+      "status": "matched"
+    },
+    {
+      "info_code": "AP202508301736875870",
+      "year": 2023,
+      "printed_million_cny": "2681",
+      "status": "matched"
+    },
+    {
+      "info_code": "AP202508301736875870",
+      "year": 2024,
+      "printed_million_cny": "2732",
+      "status": "matched"
+    }
+  ],
+  "results": [
+    {
+      "code": "300866",
+      "origin_year": 2023,
+      "target_year": 2023,
+      "info_code": "AP202308311596906163",
+      "status": "evaluated",
+      "broker_operating_profit_cny": "1867000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "17163000000",
+        "current_rule_fy_bridge": "17097107259.79266968663248896",
+        "zero_growth_fy_bridge": "15428840448"
+      },
+      "origin_reported_margin": "0.1005528215311284551563469509",
+      "profit_predictions_cny": {
+        "broker": "1867000000",
+        "companion_benchmark": "1719162374.992492978648127615"
+      },
+      "actual_profit_cny": "1805649664",
+      "actual_revenue_cny": "17507203072",
+      "actual_bits": 1322729486,
+      "profit_errors_cny": {
+        "broker": "61350336",
+        "companion_benchmark": "-86487289.007507021351872385"
+      },
+      "paired_revenue_errors_pct": {
+        "broker": -1.9660654565120017,
+        "current_rule_fy_bridge": -2.342440483044454
+      }
+    },
+    {
+      "code": "300866",
+      "origin_year": 2023,
+      "target_year": 2024,
+      "info_code": "AP202308311596906163",
+      "status": "evaluated",
+      "broker_operating_profit_cny": "2095000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "19518000000",
+        "current_rule_fy_bridge": "20507609577.45426753790768797",
+        "zero_growth_fy_bridge": "15428840448"
+      },
+      "origin_reported_margin": "0.1005528215311284551563469509",
+      "profit_predictions_cny": {
+        "broker": "2095000000",
+        "companion_benchmark": "2062098005.871819593248132641"
+      },
+      "actual_profit_cny": "2376915712",
+      "actual_revenue_cny": "24710080512",
+      "actual_bits": 1326296283,
+      "profit_errors_cny": {
+        "broker": "-281915712",
+        "companion_benchmark": "-314817706.128180406751867359"
+      },
+      "paired_revenue_errors_pct": {
+        "broker": -21.011993503940875,
+        "current_rule_fy_bridge": -17.007111460057278
+      }
+    },
+    {
+      "code": "300866",
+      "origin_year": 2023,
+      "target_year": 2025,
+      "info_code": "AP202308311596906163",
+      "status": "evaluated",
+      "broker_operating_profit_cny": "2351000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "22003000000",
+        "current_rule_fy_bridge": "24598433184.67863448448456347",
+        "zero_growth_fy_bridge": "15428840448"
+      },
+      "origin_reported_margin": "0.1005528215311284551563469509",
+      "profit_predictions_cny": {
+        "broker": "2351000000",
+        "companion_benchmark": "2473441861.964378492487786418"
+      },
+      "actual_profit_cny": "2926092800",
+      "actual_revenue_cny": "30514403328",
+      "actual_bits": 1328441506,
+      "profit_errors_cny": {
+        "broker": "-575092800",
+        "companion_benchmark": "-452650938.035621507512213582"
+      },
+      "paired_revenue_errors_pct": {
+        "broker": -27.89306818983395,
+        "current_rule_fy_bridge": -19.387467877809936
+      }
+    },
+    {
+      "code": "300866",
+      "origin_year": 2024,
+      "target_year": 2024,
+      "info_code": "AP202408311639673106",
+      "status": "evaluated",
+      "broker_operating_profit_cny": "2210000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "23119000000",
+        "current_rule_fy_bridge": "22178140262.4",
+        "zero_growth_fy_bridge": "20089838080"
+      },
+      "origin_reported_margin": "0.09540463553601722209599809776",
+      "profit_predictions_cny": {
+        "broker": "2210000000",
+        "companion_benchmark": "2115897388.600941358707058330"
+      },
+      "actual_profit_cny": "2376915712",
+      "actual_revenue_cny": "24710080512",
+      "actual_bits": 1326296283,
+      "profit_errors_cny": {
+        "broker": "-166915712",
+        "companion_benchmark": "-261018323.399058641292941670"
+      },
+      "paired_revenue_errors_pct": {
+        "broker": -6.438993637545296,
+        "current_rule_fy_bridge": -10.246588425199219
+      }
+    },
+    {
+      "code": "300866",
+      "origin_year": 2024,
+      "target_year": 2025,
+      "info_code": "AP202408311639673106",
+      "status": "evaluated",
+      "broker_operating_profit_cny": "2636000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "28708000000",
+        "current_rule_fy_bridge": "26613768314.88",
+        "zero_growth_fy_bridge": "20089838080"
+      },
+      "origin_reported_margin": "0.09540463553601722209599809776",
+      "profit_predictions_cny": {
+        "broker": "2636000000",
+        "companion_benchmark": "2539076866.321129630448469996"
+      },
+      "actual_profit_cny": "2926092800",
+      "actual_revenue_cny": "30514403328",
+      "actual_bits": 1328441506,
+      "profit_errors_cny": {
+        "broker": "-290092800",
+        "companion_benchmark": "-387015933.678870369551530004"
+      },
+      "paired_revenue_errors_pct": {
+        "broker": -5.919838276314731,
+        "current_rule_fy_bridge": -12.782930641612053
+      }
+    },
+    {
+      "code": "300866",
+      "origin_year": 2024,
+      "target_year": 2026,
+      "info_code": "AP202408311639673106",
+      "status": "not_yet_observable",
+      "broker_operating_profit_cny": "3178000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "33932000000",
+        "current_rule_fy_bridge": "31936521977.856",
+        "zero_growth_fy_bridge": "20089838080"
+      },
+      "origin_reported_margin": "0.09540463553601722209599809776",
+      "profit_predictions_cny": {
+        "broker": "3178000000",
+        "companion_benchmark": "3046892239.585355556538163995"
+      }
+    },
+    {
+      "code": "300866",
+      "origin_year": 2025,
+      "target_year": 2025,
+      "info_code": "AP202508311737221901",
+      "status": "evaluated",
+      "broker_operating_profit_cny": "2900000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "32050690000.00",
+        "current_rule_fy_bridge": "30940866764.8",
+        "zero_growth_fy_bridge": "27928516096"
+      },
+      "origin_reported_margin": "0.09403644042427824375879078570",
+      "profit_predictions_cny": {
+        "broker": "2900000000",
+        "companion_benchmark": "2909568974.203645923344082849"
+      },
+      "actual_profit_cny": "2926092800",
+      "actual_revenue_cny": "30514403328",
+      "actual_bits": 1328441506,
+      "profit_errors_cny": {
+        "broker": "-26092800",
+        "companion_benchmark": "-16523825.796354076655917151"
+      },
+      "paired_revenue_errors_pct": {
+        "broker": 5.034627927953958,
+        "current_rule_fy_bridge": 1.3975807824781465
+      }
+    },
+    {
+      "code": "300866",
+      "origin_year": 2025,
+      "target_year": 2026,
+      "info_code": "AP202508311737221901",
+      "status": "not_yet_observable",
+      "broker_operating_profit_cny": "3589000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "39603630000.00",
+        "current_rule_fy_bridge": "37129040117.76",
+        "zero_growth_fy_bridge": "27928516096"
+      },
+      "origin_reported_margin": "0.09403644042427824375879078570",
+      "profit_predictions_cny": {
+        "broker": "3589000000",
+        "companion_benchmark": "3491482769.044375108012899419"
+      }
+    },
+    {
+      "code": "300866",
+      "origin_year": 2025,
+      "target_year": 2027,
+      "info_code": "AP202508311737221901",
+      "status": "not_yet_observable",
+      "broker_operating_profit_cny": "4369000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "47112070000.00",
+        "current_rule_fy_bridge": "44554848141.312",
+        "zero_growth_fy_bridge": "27928516096"
+      },
+      "origin_reported_margin": "0.09403644042427824375879078570",
+      "profit_predictions_cny": {
+        "broker": "4369000000",
+        "companion_benchmark": "4189779322.853250129615479303"
+      }
+    },
+    {
+      "code": "002032",
+      "origin_year": 2023,
+      "target_year": 2023,
+      "info_code": "AP202308311596883311",
+      "status": "evaluated",
+      "broker_operating_profit_cny": "2633000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "20954000000",
+        "current_rule_fy_bridge": "19581148009.78989861767252173",
+        "zero_growth_fy_bridge": "19829163520"
+      },
+      "origin_reported_margin": "0.1200435734769713573878480982",
+      "profit_predictions_cny": {
+        "broker": "2633000000",
+        "companion_benchmark": "2350590979.876665154815018697"
+      },
+      "actual_profit_cny": "2681323264",
+      "actual_revenue_cny": "21303948288",
+      "actual_bits": 1327485375,
+      "profit_errors_cny": {
+        "broker": "-48323264",
+        "companion_benchmark": "-330732284.123334845184981303"
+      },
+      "paired_revenue_errors_pct": {
+        "broker": -1.6426452189480643,
+        "current_rule_fy_bridge": -8.086765208590528
+      }
+    },
+    {
+      "code": "002032",
+      "origin_year": 2023,
+      "target_year": 2024,
+      "info_code": "AP202308311596883311",
+      "status": "evaluated",
+      "broker_operating_profit_cny": "2895000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "23031000000",
+        "current_rule_fy_bridge": "19087936715.59273459570427649",
+        "zero_growth_fy_bridge": "19829163520"
+      },
+      "origin_reported_margin": "0.1200435734769713573878480982",
+      "profit_predictions_cny": {
+        "broker": "2895000000",
+        "companion_benchmark": "2291384133.642035758678661434"
+      },
+      "actual_profit_cny": "2732270592",
+      "actual_revenue_cny": "22427338240",
+      "actual_bits": 1327684388,
+      "profit_errors_cny": {
+        "broker": "162729408",
+        "companion_benchmark": "-440886458.357964241321338566"
+      },
+      "paired_revenue_errors_pct": {
+        "broker": 2.6916335480389133,
+        "current_rule_fy_bridge": -14.88987007139045
+      }
+    },
+    {
+      "code": "002032",
+      "origin_year": 2023,
+      "target_year": 2025,
+      "info_code": "AP202308311596883311",
+      "status": "evaluated",
+      "broker_operating_profit_cny": "3233000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "25327000000",
+        "current_rule_fy_bridge": "18607148461.17863238302575173",
+        "zero_growth_fy_bridge": "19829163520"
+      },
+      "origin_reported_margin": "0.1200435734769713573878480982",
+      "profit_predictions_cny": {
+        "broker": "3233000000",
+        "companion_benchmark": "2233668593.496411681157497039"
+      },
+      "actual_profit_cny": "2587783424",
+      "actual_revenue_cny": "22771753472",
+      "actual_bits": 1327119985,
+      "profit_errors_cny": {
+        "broker": "645216576",
+        "companion_benchmark": "-354114830.503588318842502961"
+      },
+      "paired_revenue_errors_pct": {
+        "broker": 11.22112327073062,
+        "current_rule_fy_bridge": -18.288468720435336
+      }
+    },
+    {
+      "code": "002032",
+      "origin_year": 2024,
+      "target_year": 2024,
+      "info_code": "AP202407251638296815",
+      "status": "evaluated",
+      "broker_operating_profit_cny": "2938000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "22894000000",
+        "current_rule_fy_bridge": "23399039634.65074517613581312",
+        "zero_growth_fy_bridge": "22286110208"
+      },
+      "origin_reported_margin": "0.1235112966017690079978985268",
+      "profit_predictions_cny": {
+        "broker": "2938000000",
+        "companion_benchmark": "2890045724.511896913117571447"
+      },
+      "actual_profit_cny": "2732270592",
+      "actual_revenue_cny": "22427338240",
+      "actual_bits": 1327684388,
+      "profit_errors_cny": {
+        "broker": "205729408",
+        "companion_benchmark": "157775132.511896913117571447"
+      },
+      "paired_revenue_errors_pct": {
+        "broker": 2.080771935599969,
+        "current_rule_fy_bridge": 4.332664822960039
+      }
+    },
+    {
+      "code": "002032",
+      "origin_year": 2024,
+      "target_year": 2025,
+      "info_code": "AP202407251638296815",
+      "status": "evaluated",
+      "broker_operating_profit_cny": "3149000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "24360000000",
+        "current_rule_fy_bridge": "25699253006.14467543921513911",
+        "zero_growth_fy_bridge": "22286110208"
+      },
+      "origin_reported_margin": "0.1235112966017690079978985268",
+      "profit_predictions_cny": {
+        "broker": "3149000000",
+        "companion_benchmark": "3174148060.485838814791524006"
+      },
+      "actual_profit_cny": "2587783424",
+      "actual_revenue_cny": "22771753472",
+      "actual_bits": 1327119985,
+      "profit_errors_cny": {
+        "broker": "561216576",
+        "companion_benchmark": "586364636.485838814791524006"
+      },
+      "paired_revenue_errors_pct": {
+        "broker": 6.974634298377143,
+        "current_rule_fy_bridge": 12.855837113045817
+      }
+    },
+    {
+      "code": "002032",
+      "origin_year": 2024,
+      "target_year": 2026,
+      "info_code": "AP202407251638296815",
+      "status": "not_yet_observable",
+      "broker_operating_profit_cny": "3393000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "25652000000",
+        "current_rule_fy_bridge": "28225585980.70830865227793106",
+        "zero_growth_fy_bridge": "22286110208"
+      },
+      "origin_reported_margin": "0.1235112966017690079978985268",
+      "profit_predictions_cny": {
+        "broker": "3393000000",
+        "companion_benchmark": "3486178721.821997075381091340"
+      }
+    },
+    {
+      "code": "002032",
+      "origin_year": 2025,
+      "target_year": 2025,
+      "info_code": "AP202508301736875870",
+      "status": "evaluated",
+      "broker_operating_profit_cny": "2836000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "23742000000",
+        "current_rule_fy_bridge": "23482277763.17067702010863104",
+        "zero_growth_fy_bridge": "22940060672"
+      },
+      "origin_reported_margin": "0.1191854619345969269457388120",
+      "profit_predictions_cny": {
+        "broker": "2836000000",
+        "companion_benchmark": "2798746122.480010597469325692"
+      },
+      "actual_profit_cny": "2587783424",
+      "actual_revenue_cny": "22771753472",
+      "actual_bits": 1327119985,
+      "profit_errors_cny": {
+        "broker": "248216576",
+        "companion_benchmark": "210962698.480010597469325692"
+      },
+      "paired_revenue_errors_pct": {
+        "broker": 4.260745792777921,
+        "current_rule_fy_bridge": 3.120200172746175
+      }
+    },
+    {
+      "code": "002032",
+      "origin_year": 2025,
+      "target_year": 2026,
+      "info_code": "AP202508301736875870",
+      "status": "not_yet_observable",
+      "broker_operating_profit_cny": "3056000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "25191000000",
+        "current_rule_fy_bridge": "24593067330.11262955838848666",
+        "zero_growth_fy_bridge": "22940060672"
+      },
+      "origin_reported_margin": "0.1191854619345969269457388120",
+      "profit_predictions_cny": {
+        "broker": "3056000000",
+        "companion_benchmark": "2931136090.128118086731667299"
+      }
+    },
+    {
+      "code": "002032",
+      "origin_year": 2025,
+      "target_year": 2027,
+      "info_code": "AP202508301736875870",
+      "status": "not_yet_observable",
+      "broker_operating_profit_cny": "3205000000",
+      "historical_anchor_issues": [],
+      "revenue_predictions_cny": {
+        "broker": "26751000000",
+        "current_rule_fy_bridge": "25756400925.12847923112189473",
+        "zero_growth_fy_bridge": "22940060672"
+      },
+      "origin_reported_margin": "0.1191854619345969269457388120",
+      "profit_predictions_cny": {
+        "broker": "3205000000",
+        "companion_benchmark": "3069788542.034117435197649427"
+      }
+    }
+  ],
+  "summary": {
+    "positions": 18,
+    "statuses": {
+      "evaluated": 12,
+      "not_yet_observable": 6
+    },
+    "models": {
+      "broker": {
+        "n": 12,
+        "profit_mae_pct_revenue": 1.1121123896324028,
+        "profit_wape_pct": 10.474268472247974,
+        "revenue_mae_pct": 8.09467842138112
+      },
+      "companion_benchmark": {
+        "n": 12,
+        "profit_mae_pct_revenue": 1.2423725024008163,
+        "profit_wape_pct": 11.51903551540265,
+        "revenue_mae_pct": 10.394827148280786
+      }
+    }
+  },
+  "by_company": {
+    "300866": {
+      "positions": 9,
+      "statuses": {
+        "evaluated": 6,
+        "not_yet_observable": 3
+      },
+      "models": {
+        "broker": {
+          "n": 6,
+          "profit_mae_pct_revenue": 0.8479440003725639,
+          "profit_wape_pct": 9.137319965777781,
+          "revenue_mae_pct": 11.377431165350137
+        },
+        "companion_benchmark": {
+          "n": 6,
+          "profit_mae_pct_revenue": 0.9383727019709752,
+          "profit_wape_pct": 9.900494379466906,
+          "revenue_mae_pct": 10.527353278366848
+        }
+      }
+    },
+    "002032": {
+      "positions": 9,
+      "statuses": {
+        "evaluated": 6,
+        "not_yet_observable": 3
+      },
+      "models": {
+        "broker": {
+          "n": 6,
+          "profit_mae_pct_revenue": 1.3762807788922418,
+          "profit_wape_pct": 11.763194104403917,
+          "revenue_mae_pct": 4.811925677412105
+        },
+        "companion_benchmark": {
+          "n": 6,
+          "profit_mae_pct_revenue": 1.5463723028306573,
+          "profit_wape_pct": 13.07943903633877,
+          "revenue_mae_pct": 10.262301018194725
+        }
+      }
+    }
+  },
+  "by_origin": {
+    "2023": {
+      "positions": 6,
+      "statuses": {
+        "evaluated": 6
+      },
+      "models": {
+        "broker": {
+          "n": 6,
+          "profit_mae_pct_revenue": 1.1936338479763147,
+          "profit_wape_pct": 11.744698423558749,
+          "revenue_mae_pct": 11.071088198000737
+        },
+        "companion_benchmark": {
+          "n": 6,
+          "profit_mae_pct_revenue": 1.3874679862600194,
+          "profit_wape_pct": 13.101819065355583,
+          "revenue_mae_pct": 13.333687303554663
+        }
+      }
+    },
+    "2024": {
+      "positions": 6,
+      "statuses": {
+        "evaluated": 4,
+        "not_yet_observable": 2
+      },
+      "models": {
+        "broker": {
+          "n": 4,
+          "profit_mae_pct_revenue": 1.2520040513587867,
+          "profit_wape_pct": 11.521672707601331,
+          "revenue_mae_pct": 5.353559536959285
+        },
+        "companion_benchmark": {
+          "n": 4,
+          "profit_mae_pct_revenue": 1.4007721207376151,
+          "profit_wape_pct": 13.105204101041556,
+          "revenue_mae_pct": 10.054505250704281
+        }
+      }
+    },
+    "2025": {
+      "positions": 6,
+      "statuses": {
+        "evaluated": 2,
+        "not_yet_observable": 4
+      },
+      "models": {
+        "broker": {
+          "n": 2,
+          "profit_mae_pct_revenue": 0.5877646911478996,
+          "profit_wape_pct": 4.974891797643661,
+          "revenue_mae_pct": 4.647686860365939
+        },
+        "companion_benchmark": {
+          "n": 2,
+          "profit_mae_pct_revenue": 0.4902868141496092,
+          "profit_wape_pct": 4.125709664758058,
+          "revenue_mae_pct": 2.2588904776121606
+        }
+      }
+    }
+  },
+  "decision": "diagnostic only; no DCF adoption even if reported operating-profit error improves because adjusted EBIT components and capital needs remain unclosed; no threshold tuning or posthoc model mixing",
+  "boundary": "later-acquired versions and exposed overlapping targets; not strict PIT, consensus forecast or independent validation",
+  "history_source_sha256": "9b8d66382f58f01ee798a7735708a945e80485f1c1d810a1dc43631e00714321"
+}

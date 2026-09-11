@@ -12,7 +12,7 @@ from pypdf import PdfReader
 from tools.backtest_tdx_history import available, at, value, window
 
 
-def build(directory, pdf_directory):
+def build(directory, pdf_directory, history_source=None):
     plan = json.loads((directory/'operating-profit-plan.json').read_bytes())
     inputs = {}
     for name, digest in plan['inputs'].items():
@@ -25,6 +25,25 @@ def build(directory, pdf_directory):
     if len(records) != len(source['records']):
         raise ValueError('duplicate source identity')
     artifacts = {a['file']:a for a in source['artifacts']}
+    supplement_hash = None
+    if history_source is not None:
+        raw = history_source.read_bytes()
+        supplement_hash = hashlib.sha256(raw).hexdigest()
+        if supplement_hash != '9b8d66382f58f01ee798a7735708a945e80485f1c1d810a1dc43631e00714321':
+            raise ValueError('supplement source hash differs')
+        supplement = json.loads(raw)
+        completion = (directory/'operating-profit-completion-plan.json').read_bytes()
+        if supplement['study_sha256'] != hashlib.sha256(completion).hexdigest():
+            raise ValueError('completion plan hash differs')
+        for row in supplement['records']:
+            key = (row['code'], row['period'])
+            if key != ('300866', '2020-12-31') or key in records:
+                raise ValueError('supplement cannot replace source history')
+            records[key] = row
+        for artifact in supplement['artifacts']:
+            if artifact['file'] in artifacts:
+                raise ValueError('supplement cannot replace artifact')
+            artifacts[artifact['file']] = artifact
     specs = json.loads((directory/'operating-profit-evidence.json').read_bytes())
     reports = inputs['sources.json']
     if [s['info_code'] for s in specs] != [s['info_code'] for s in reports]:
@@ -89,12 +108,17 @@ def build(directory, pdf_directory):
         for model, rev in [('broker','broker'),('companion_benchmark','current_rule_fy_bridge')]:
             result['models'][model] = dict(n=len(valid),profit_mae_pct_revenue=sum(float(abs(D(r['profit_errors_cny'][model]))/D(r['actual_revenue_cny'])*100) for r in valid)/len(valid) if valid else None,profit_wape_pct=float(sum(abs(D(r['profit_errors_cny'][model])) for r in valid)/sum(abs(D(r['actual_profit_cny'])) for r in valid)*100) if valid and sum(abs(D(r['actual_profit_cny'])) for r in valid) else None,revenue_mae_pct=sum(abs(r['paired_revenue_errors_pct'][rev]) for r in valid)/len(valid) if valid else None)
         return result
-    return dict(plan_sha256=hashlib.sha256((directory/'operating-profit-plan.json').read_bytes()).hexdigest(),evidence_sha256=hashlib.sha256((directory/'operating-profit-evidence.json').read_bytes()).hexdigest(),history=history,results=output,summary=metrics(output),by_company={c:metrics([r for r in output if r['code']==c]) for c in plan['codes']},by_origin={str(y):metrics([r for r in output if r['origin_year']==y]) for y in plan['origins']},decision=plan['decision'],boundary=plan['boundary'])
+    result = dict(plan_sha256=hashlib.sha256((directory/'operating-profit-plan.json').read_bytes()).hexdigest(),evidence_sha256=hashlib.sha256((directory/'operating-profit-evidence.json').read_bytes()).hexdigest(),history=history,results=output,summary=metrics(output),by_company={c:metrics([r for r in output if r['code']==c]) for c in plan['codes']},by_origin={str(y):metrics([r for r in output if r['origin_year']==y]) for y in plan['origins']},decision=plan['decision'],boundary=plan['boundary'])
+
+    if supplement_hash is not None:
+        result['history_source_sha256'] = supplement_hash
+    return result
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('directory',type=Path)
     parser.add_argument('pdf_directory',type=Path)
+    parser.add_argument('--history-source',type=Path)
     args = parser.parse_args()
-    print(json.dumps(build(args.directory,args.pdf_directory),ensure_ascii=False,indent=2))
+    print(json.dumps(build(args.directory,args.pdf_directory,args.history_source),ensure_ascii=False,indent=2))

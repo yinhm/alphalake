@@ -21,6 +21,22 @@ def test_real_reports_profit_pair_and_tamper(tmp_path, monkeypatch):
     assert result == json.loads((SOURCE/'operating-profit-result.json').read_bytes())
     assert result['summary']['statuses'] == {'blocked_history_anchor':3,'evaluated':9,'not_yet_observable':6}
     assert all(set(r['profit_predictions_cny'])=={'broker','companion_benchmark'} for r in result['results'])
+    source = SOURCE/'operating-profit-history-source.json'
+    completed = build(SOURCE,PDFS,source)
+    assert completed == json.loads((SOURCE/'operating-profit-completed-result.json').read_bytes())
+    assert completed['summary']['statuses'] == {'evaluated':12,'not_yet_observable':6}
+    assert all(h['status']=='matched' for h in completed['history'])
+    for old, new in zip(result['results'],completed['results']):
+        for key in ('profit_predictions_cny','revenue_predictions_cny'):
+            assert old[key] == new[key]
+        if old['status'] == 'evaluated':
+            assert old == new
+    bad_source = tmp_path/'source.json'
+    original_source = json.loads(source.read_bytes())
+    original_source['records'][0]['bits']['FN86'] += 1
+    bad_source.write_text(json.dumps(original_source))
+    with pytest.raises(ValueError,match='supplement source hash'):
+        build(SOURCE,PDFS,bad_source)
     copy = tmp_path/'spec';copy.mkdir()
     for name in ('operating-profit-plan.json','operating-profit-evidence.json'):
         shutil.copyfile(SOURCE/name,copy/name)

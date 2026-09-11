@@ -1,0 +1,42 @@
+{
+  "artifacts": [
+    {
+      "fetched_at": "2026-09-11T03:55:03.106963+00:00",
+      "file": "gpcw20201231.zip",
+      "list_sha256": "244289285554d8ff01d8f6ff836db7463e27cb0c725f9112ab16c24ebaa8a882",
+      "md5": "06e30e65dd1b699e7d0301e864aadc70",
+      "report_period": "2020-12-31",
+      "sha256": "67083d2b146aa15955d189bc7bcca5cd31a384c9d84107722dd34fe6d689488b",
+      "size": 5374242,
+      "source": "tdxfin/gpcw20201231.zip"
+    }
+  ],
+  "boundary": "TDX源证据研究切片；无CNINFO核验、无标准身份/事实认证、无历史修订版本保证",
+  "contract_version": "tdx-history-source-v1",
+  "records": [
+    {
+      "artifact": "gpcw20201231.zip",
+      "bits": {
+        "FN230": 1330035053,
+        "FN301": 1164378972,
+        "FN305": 1242118283,
+        "FN306": 1260386146,
+        "FN314": 1213032128,
+        "FN413": 0,
+        "FN506": 0,
+        "FN509": 0,
+        "FN510": 0,
+        "FN82": 1283048122,
+        "FN83": 1284294192,
+        "FN86": 1315967384
+      },
+      "code": "300866",
+      "market_marker": 0,
+      "period": "2020-12-31"
+    }
+  ],
+  "source_lists": {
+    "244289285554d8ff01d8f6ff836db7463e27cb0c725f9112ab16c24ebaa8a882": "list-244289285554d8ff01d8f6ff836db7463e27cb0c725f9112ab16c24ebaa8a882.txt"
+  },
+  "study_sha256": "2d34c8e834ef22cfa0cd32fad286e6c2a77a87ebaaddf9ebb444878f51a7903a"
+}
