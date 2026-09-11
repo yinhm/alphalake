@@ -49,11 +49,41 @@ def cash_bridge(amounts,record,source,code,period,tdx_da,pdf_da,cutoff):
                 status='partial_cash_reconciliation_not_classified_FCFF')
 
 
+def inventory_bridge(report,text,record,cash_amount):
+    table=report['inventory_table'];body=text(table['page']).replace(':','：')
+    if '单位：元币种：人民币' not in body or '10、存货' not in body:raise ValueError('inventory section/unit differs')
+    if body.count(table['anchor'])!=1 or body.count(table['end_anchor'])!=1:raise ValueError('inventory section ambiguous')
+    body=body.split(table['anchor'],1)[1].split(table['end_anchor'],1)[0]
+    if '期末余额期初余额'+2*'账面余额存货跌价准备/合同履约成本减值准备账面价值' not in body:raise ValueError('inventory column order differs')
+    matches=re.findall(r'合计((?:[0-9,]+\.[0-9]{2})+)',body)
+    if len(matches)!=1:raise ValueError('inventory total not unique')
+    values=[v.replace(',','') for v in re.findall(r'[0-9,]+\.[0-9]{2}',matches[0])]
+    if values!=table['values'] or len(values)!=6:raise ValueError('inventory table values differ')
+    gross_close,provision_close,net_close,gross_open,provision_open,net_open=map(Decimal,values)
+    if gross_close-provision_close!=net_close or gross_open-provision_open!=net_open:raise ValueError('inventory gross/net identity differs')
+    bs=report['inventory_balance'];header=text(bs['header_page']).replace(':','：');y,m,d=map(int,report['period'].split('-'))
+    if '合并资产负债表' not in header or '单位：元币种：人民币' not in header or f'{y}年{m}月{d}日' not in header:raise ValueError('inventory balance scope differs')
+    matches=re.findall(r'存货七、10((?:[0-9,]+\.[0-9]{2})+)',text(bs['page']))
+    if len(matches)!=1:raise ValueError('inventory balance not unique')
+    balances=[v.replace(',','') for v in re.findall(r'[0-9,]+\.[0-9]{2}',matches[0])]
+    if balances!=bs['values'] or balances!=[values[2],values[5]]:raise ValueError('inventory balance values differ')
+    if gross_open-gross_close!=cash_amount:raise ValueError('inventory gross decrease/cash adjustment differs')
+    for field,amount in [('FN17',net_close),('FN146',cash_amount)]:
+        if record['bits'][field]!=struct.unpack('<I',struct.pack('<f',float(amount)))[0]:raise ValueError('inventory source bits differ: '+field)
+    return dict(gross_open_cny=str(gross_open),gross_close_cny=str(gross_close),provision_open_cny=str(provision_open),provision_close_cny=str(provision_close),
+        net_open_cny=str(net_open),net_close_cny=str(net_close),gross_decrease_cny=str(gross_open-gross_close),net_decrease_cny=str(net_open-net_close),
+        provision_decrease_cny=str(provision_open-provision_close),pdf_cash_adjustment_cny=str(cash_amount),source_net_close_cny=str(value(record,'FN17')),
+        source_cash_adjustment_cny=str(value(record,'FN146')),source_net_minus_pdf_cny=str(value(record,'FN17')-net_close),source_cash_minus_pdf_cny=str(value(record,'FN146')-cash_amount),
+        checked_source_inputs=[dict(field=f,source_bits=record['bits'][f],artifact=record['artifact']) for f in ('FN17','FN146')],
+        boundary='company_period_reconciliation_not_universal_inventory_identity_or_classified_FCFF')
+
+
 def verify(ledger,directory,source):
     if ledger['code']!='688648' or {r['period'] for r in ledger['reports']}!={'2025-06-30','2025-12-31','2026-06-30'} or len(ledger['reports'])!=3:
         raise ValueError('unsupported company/period scope')
     if any('cash_rows' in r for r in ledger['reports']) and not all('cash_rows' in r for r in ledger['reports']):raise ValueError('partial cash report set')
     if any('adjustment_rows' in r for r in ledger['reports']) and not all('adjustment_rows' in r and 'cash_rows' in r for r in ledger['reports']):raise ValueError('partial adjustment report set')
+    if any('inventory_table' in r for r in ledger['reports']) and not all('inventory_table' in r and 'inventory_balance' in r and 'cash_rows' in r for r in ledger['reports']):raise ValueError('partial inventory report set')
     results=[]
     for report in ledger['reports']:
         path=Path(directory)/report['file']
@@ -117,6 +147,7 @@ def verify(ledger,directory,source):
                             unconsumed_source_fields=combined,reported_da_cny=str(tdx_total),pdf_reported_da_cny=str(pdf_total),source_minus_pdf_cny=str(tdx_total-pdf_total)))
         if 'cash_rows' in report:
             results[-1]['cash_bridge']=cash_bridge(amounts,record,source,ledger['code'],report['period'],tdx_total,pdf_total,ledger['evaluation_as_of'])
+        if 'inventory_table' in report:results[-1]['inventory_bridge']=inventory_bridge(report,text,record,amounts['cash_inventory'])
         if 'adjustment_rows' in report:
             required={'adj_asset_impairment','adj_credit_impairment','adj_disposal','adj_retirement','adj_fair_value','adj_finance','adj_investment','adj_deferred_tax_asset','adj_deferred_tax_liability','adj_other'}
             items={k:v for k,v in amounts.items() if k.startswith('adj_')};blanks=[b['key'] for b in report['adjustment_blanks']]

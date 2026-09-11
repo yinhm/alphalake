@@ -846,3 +846,34 @@ def test_working_cash_component_diagnostic_cancellation_and_development_only(mon
     monkeypatch.setattr(sys,'argv',['working_cash','absent-protocol','absent-source','--phase','holdout','--diagnose-components'])
     with pytest.raises(SystemExit) as exc:module.main()
     assert exc.value.code==1 and 'development only' in capsys.readouterr().out
+
+
+def test_inventory_gross_net_cash_bridge_and_tampering():
+    import hashlib,re
+    from pypdf import PdfReader
+    from tools.verify_tdx_depreciation import verify,inventory_bridge
+    directory=ROOT/'valuation/research/tdx-growth-expanded/depreciation-review-688648';ledger=json.loads((directory/'inventory-evidence.json').read_bytes())
+    raw=(directory.parent/'snapshot-reinvestment.json').read_bytes();source=json.loads(raw)
+    assert hashlib.sha256(raw).hexdigest()==ledger['snapshot_sha256']
+    result=verify(ledger,directory,source);expected=json.loads((directory/'inventory-reconciled.json').read_bytes())
+    assert result=={k:v for k,v in expected.items() if k!='evidence'}
+    bridges=[p['inventory_bridge'] for p in result['periods']]
+    assert [b['provision_decrease_cny'] for b in bridges]==['5798345.50','918810.87','5601493.61']
+    for b in bridges:
+        assert Decimal(b['net_decrease_cny'])+Decimal(b['provision_decrease_cny'])==Decimal(b['pdf_cash_adjustment_cny'])
+        assert Decimal(b['source_net_minus_pdf_cny'])!=0
+    assert result['actual_fcff'] is None
+    report=ledger['reports'][0];pdf=PdfReader(directory/report['file']);pages={}
+    def text(page):
+        if page not in pages:pages[page]=re.sub(r'\s+','',pdf.pages[page-1].extract_text())
+        return pages[page]
+    record=next(r for r in source['records'] if r['code']=='688648' and r['period']==report['period']);cash=Decimal(bridges[0]['pdf_cash_adjustment_cny'])
+    bad=copy.deepcopy(report);bad['inventory_table']['values'][0]='407062150.40'
+    with pytest.raises(ValueError,match='table values'):inventory_bridge(bad,text,record,cash)
+    bad=copy.deepcopy(report);bad['inventory_balance']['page']=65;bad['inventory_balance']['header_page']=65
+    with pytest.raises(ValueError,match='balance scope'):inventory_bridge(bad,text,record,cash)
+    bad=copy.deepcopy(record);bad['bits']['FN17']=bits(float(bridges[0]['gross_close_cny']))
+    with pytest.raises(ValueError,match='source bits'):inventory_bridge(report,text,bad,cash)
+    with pytest.raises(ValueError,match='cash adjustment'):inventory_bridge(report,text,record,Decimal(bridges[0]['net_decrease_cny']))
+    bad=copy.deepcopy(ledger);bad['reports'][0].pop('inventory_table')
+    with pytest.raises(ValueError,match='partial inventory'):verify(bad,directory,source)
