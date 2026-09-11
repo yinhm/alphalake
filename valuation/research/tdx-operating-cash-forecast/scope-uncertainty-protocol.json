@@ -1,0 +1,28 @@
+{
+  "protocol_id": "tdx-ocf-scope-company-bootstrap-v1",
+  "phase": "posthoc_scope_uncertainty_not_new_validation",
+  "frozen_at": "2026-09-11T12:09:02.865646+00:00",
+  "inputs": {
+    "parent_uncertainty": {
+      "path": "valuation/research/tdx-operating-cash-forecast/uncertainty-protocol.json",
+      "sha256": "a81b2944d1d86df23ff8cd1b51d63de5469bab545a49954126f19cbfe87afe22"
+    },
+    "scope_protocol": {
+      "path": "valuation/research/tdx-operating-cash-forecast/scope-protocol.json",
+      "sha256": "23c2c78a893342ad20a0b77f522dec3f9ea28d7042e5e14b1c1eae24aef4857d"
+    },
+    "forecast_protocol": {
+      "path": "valuation/research/tdx-cash-revenue-comparison/protocol.json",
+      "sha256": "140474bc5a633cb506ef5fde8e9f2f8ebf9547cfc5954b8336f6f9619429d369"
+    },
+    "scope_result": {
+      "path": "valuation/research/tdx-operating-cash-forecast/scope-result.json",
+      "sha256": "bfe6e5c9edce26bcdac8c4bbc775f52656f7b792907caba0ac1eff21ad56aa26"
+    }
+  },
+  "scope_group": "forecast_ready_no_financial_signal",
+  "rule": "replay_frozen_origin_only_scope_classification; retain_all_120_company_clusters_and_all_360_identities; aggregate_errors_only_for_evaluated_rows_in_fixed_scope; preserve_original_statuses_and_report_outside_scope_separately",
+  "resampling": "inherit_parent_uncertainty_9999_seed_20260911_stratified_primary_and_unstratified_sensitivity; same_company_counts_as_full_sample; singleton_and_missingness_limits_unchanged",
+  "comparison": "point_estimates_must_replay_original_scope_summary_244_evaluated; report_all_and_three_origins; no_new_gate_or_model_selection",
+  "boundary": "forecast_input_readiness_not_actual_production_DCF_admission; zero_financial_signals_not_verified_business; posthoc_subgroup_with_fixed_membership_rule; conditional_pointwise_intervals_not_company_valuation_intervals; no_production_change"
+}
