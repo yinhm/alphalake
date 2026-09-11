@@ -1,0 +1,13 @@
+{
+  "full_result_replay_identical": true,
+  "negative": {
+    "code": "688551",
+    "period": "2017-12-31",
+    "mutation": "FN304_to_zero_in_memory",
+    "candidate_ready_before": 110,
+    "candidate_ready_after": 109,
+    "later_origins_identical": true,
+    "baseline_preserved": true
+  },
+  "result_sha256": "a5b87d873c622b1097b9b0fd420164385afddf269b244a02d8f135c02c48efd2"
+}

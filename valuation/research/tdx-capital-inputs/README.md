@@ -1,6 +1,6 @@
 # 再投资与研发历史输入盘点
 
-状态：源数据扩展、2017年定向补采及三起点连续历史盘点完成；[旧期语义抽核](rd-semantics.md)确认七个正值及一个源零反例，非全样本审核；后续[研发净投入收入候选](../tdx-rd-growth/README.md)开发复验失败，未采用新的增长政策。
+状态：源数据扩展、2017年定向补采及三起点连续历史盘点完成；[旧期语义抽核](rd-semantics.md)确认七个正值及一个源零反例，非全样本审核；后续[研发净投入收入候选](../tdx-rd-growth/README.md)开发复验失败；后续[年度研发利润候选](../tdx-rd-profit/README.md)1,704组主误差与WAPE也退化，未采用新的增长政策。
 
 沿用收入复合增长研究的600家开发样本、34份2018Q1–2026H1原始包，使用既有 `cmd/prepare-tdx-history` 增取36个源字段，包含FN304。配置见 [study.json](study.json)，盘点见 [source-inventory.json](source-inventory.json)。未引入新解析器、依赖或标准事实。
 
