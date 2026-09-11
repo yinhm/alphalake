@@ -1,0 +1,127 @@
+{
+  "results": [
+    {
+      "year": 2022,
+      "amounts": {
+        "current_assets": {
+          "current": "9518374202.92",
+          "comparative": "11158574785.45"
+        },
+        "cash": {
+          "current": "3563140907.75",
+          "comparative": "2654052417.47"
+        },
+        "trading_assets": {
+          "current": "431382527.79",
+          "comparative": "180312742.31"
+        },
+        "current_liabilities": {
+          "current": "5715104245.34",
+          "comparative": "6069087434.50"
+        },
+        "noncurrent_liabilities": {
+          "current": "164861469.85",
+          "comparative": "172061140.74"
+        },
+        "current_debt_investment": {
+          "current": "32157534.25"
+        },
+        "term_deposit": {
+          "current": "381101095.89",
+          "comparative": "1863761369.84"
+        }
+      },
+      "unclassified_current_subtotal_cny": "240129049.83",
+      "identified_financial_assets_cny": "844641157.93",
+      "subtotal_after_identified_asset_deduction_cny": "-604512108.10",
+      "full_operating_working_capital": null,
+      "full_reinvestment": null,
+      "historical_fcff": null
+    },
+    {
+      "year": 2023,
+      "amounts": {
+        "current_assets": {
+          "current": "10036694506.68",
+          "comparative": "9518374202.92"
+        },
+        "cash": {
+          "current": "3548277442.44",
+          "comparative": "3563140907.75"
+        },
+        "trading_assets": {
+          "current": "351137787.54",
+          "comparative": "431382527.79"
+        },
+        "current_liabilities": {
+          "current": "6524494555.61",
+          "comparative": "5715104245.34"
+        },
+        "noncurrent_liabilities": {
+          "current": "200375994.02",
+          "comparative": "164861469.85"
+        },
+        "current_debt_investment": {
+          "current": "285783958.92",
+          "comparative": "32157534.25"
+        },
+        "term_deposit": {
+          "comparative": "381101095.89"
+        }
+      },
+      "unclassified_current_subtotal_cny": "-36077491.37",
+      "identified_financial_assets_cny": "636921746.46",
+      "subtotal_after_identified_asset_deduction_cny": "-672999237.83",
+      "full_operating_working_capital": null,
+      "full_reinvestment": null,
+      "historical_fcff": null
+    },
+    {
+      "year": 2024,
+      "amounts": {
+        "current_assets": {
+          "current": "10603927260.76",
+          "comparative": "10036694506.68"
+        },
+        "cash": {
+          "current": "2480007318.69",
+          "comparative": "3548277442.44"
+        },
+        "trading_assets": {
+          "current": "281234235.25",
+          "comparative": "351137787.54"
+        },
+        "current_liabilities": {
+          "current": "6523852248.10",
+          "comparative": "6484577804.39"
+        },
+        "noncurrent_liabilities": {
+          "current": "280477153.14",
+          "comparative": "240292745.24"
+        },
+        "current_debt_investment": {
+          "current": "1558446438.34",
+          "comparative": "285783958.92"
+        },
+        "warranty": {
+          "current": "47938174.63",
+          "comparative": "39916751.22"
+        }
+      },
+      "unclassified_current_subtotal_cny": "1600067693.97",
+      "identified_financial_assets_cny": "1839680673.59",
+      "subtotal_after_identified_asset_deduction_cny": "-239612979.62",
+      "full_operating_working_capital": null,
+      "full_reinvestment": null,
+      "historical_fcff": null
+    }
+  ],
+  "pdf_amounts_checked": 40,
+  "source_bits_checked": 9,
+  "comparison_2023": {
+    "current_liability_difference_cny": "-39916751.22",
+    "noncurrent_liability_difference_cny": "39916751.22",
+    "numerical_bridge": "equal_opposite_and_matches_warranty_comparative; not independent proof of reclassification cause"
+  },
+  "decision": "raw_current_balance_proxy_not_eligible_as_complete_operating_reinvestment_label"
+}

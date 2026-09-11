@@ -1,0 +1,379 @@
+{
+  "reports": [
+    {
+      "year": 2022,
+      "document": {
+        "code": "002032",
+        "report_year": 2022,
+        "origin_year": 2023,
+        "announcement_id": "1216274468",
+        "org_id": "gssz0002032",
+        "title": "2022年年度报告",
+        "available_at": "2023-04-01T00:00:00+08:00",
+        "catalogue": "002032-annual-stock-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2023-03-31/1216274468.PDF",
+        "file": "002032-2022-annual.pdf",
+        "fetched_at": "2026-09-11T21:23:34.101549+00:00",
+        "sha256": "0553e8866f9ffee2908c76c4a8e3ea81958bd1e5d289d6e985f37efa26d5a6c0",
+        "size": 4418906,
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "rows": [
+        {
+          "key": "current_assets",
+          "page": 68,
+          "label": "流动资产合计",
+          "line": "流动资产合计 9,518,374,202.92 11,158,574,785.45",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "9518374202.92",
+            "11158574785.45"
+          ],
+          "tdx_field": "FN21"
+        },
+        {
+          "key": "cash",
+          "page": 68,
+          "label": "货币资金",
+          "line": "货币资金 3,563,140,907.75 2,654,052,417.47",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "3563140907.75",
+            "2654052417.47"
+          ],
+          "tdx_field": "FN8"
+        },
+        {
+          "key": "trading_assets",
+          "page": 68,
+          "label": "交易性金融资产",
+          "line": "交易性金融资产 431,382,527.79 180,312,742.31",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "431382527.79",
+            "180312742.31"
+          ],
+          "tdx_field": null
+        },
+        {
+          "key": "current_liabilities",
+          "page": 70,
+          "label": "流动负债合计",
+          "line": "流动负债合计 5,715,104,245.34 6,069,087,434.50",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "5715104245.34",
+            "6069087434.50"
+          ],
+          "tdx_field": "FN54"
+        },
+        {
+          "key": "noncurrent_liabilities",
+          "page": 70,
+          "label": "非流动负债合计",
+          "line": "非流动负债合计 164,861,469.85 172,061,140.74",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "164861469.85",
+            "172061140.74"
+          ],
+          "tdx_field": null
+        },
+        {
+          "key": "current_debt_investment",
+          "page": 116,
+          "label": "一年内到期的其他债权投资",
+          "line": "一年内到期的其他债权投资 32,157,534.25",
+          "columns": [
+            "current"
+          ],
+          "amounts_cny": [
+            "32157534.25"
+          ],
+          "tdx_field": null
+        },
+        {
+          "key": "term_deposit",
+          "page": 116,
+          "label": "定期存款",
+          "line": "定期存款 381,101,095.89 1,863,761,369.84",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "381101095.89",
+            "1863761369.84"
+          ],
+          "tdx_field": null
+        }
+      ]
+    },
+    {
+      "year": 2023,
+      "document": {
+        "code": "002032",
+        "report_year": 2023,
+        "origin_year": 2024,
+        "announcement_id": "1219462976",
+        "org_id": "gssz0002032",
+        "title": "2023年年度报告",
+        "available_at": "2024-03-31T00:00:00+08:00",
+        "catalogue": "002032-annual-stock-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2024-03-30/1219462976.PDF",
+        "file": "002032-2023-annual.pdf",
+        "fetched_at": "2026-09-11T21:23:34.135284+00:00",
+        "sha256": "ffff7a029d3b3ed082579c8c7534011d4df011a187ccba97974e004a9f8a9fdf",
+        "size": 4692843,
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "rows": [
+        {
+          "key": "current_assets",
+          "page": 69,
+          "label": "流动资产合计",
+          "line": "流动资产合计 10,036,694,506.68 9,518,374,202.92",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "10036694506.68",
+            "9518374202.92"
+          ],
+          "tdx_field": "FN21"
+        },
+        {
+          "key": "cash",
+          "page": 69,
+          "label": "货币资金",
+          "line": "货币资金 3,548,277,442.44 3,563,140,907.75",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "3548277442.44",
+            "3563140907.75"
+          ],
+          "tdx_field": "FN8"
+        },
+        {
+          "key": "trading_assets",
+          "page": 69,
+          "label": "交易性金融资产",
+          "line": "交易性金融资产 351,137,787.54 431,382,527.79",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "351137787.54",
+            "431382527.79"
+          ],
+          "tdx_field": null
+        },
+        {
+          "key": "current_liabilities",
+          "page": 71,
+          "label": "流动负债合计",
+          "line": "流动负债合计 6,524,494,555.61 5,715,104,245.34",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "6524494555.61",
+            "5715104245.34"
+          ],
+          "tdx_field": "FN54"
+        },
+        {
+          "key": "noncurrent_liabilities",
+          "page": 71,
+          "label": "非流动负债合计",
+          "line": "非流动负债合计 200,375,994.02 164,861,469.85",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "200375994.02",
+            "164861469.85"
+          ],
+          "tdx_field": null
+        },
+        {
+          "key": "current_debt_investment",
+          "page": 122,
+          "label": "一年内到期的其他债权投资",
+          "line": "一年内到期的其他债权投资 285,783,958.92 32,157,534.25",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "285783958.92",
+            "32157534.25"
+          ],
+          "tdx_field": null
+        },
+        {
+          "key": "term_deposit",
+          "page": 122,
+          "label": "定期存款",
+          "line": "定期存款  381,101,095.89",
+          "columns": [
+            "comparative"
+          ],
+          "amounts_cny": [
+            "381101095.89"
+          ],
+          "tdx_field": null
+        }
+      ]
+    },
+    {
+      "year": 2024,
+      "document": {
+        "code": "002032",
+        "report_year": 2024,
+        "origin_year": 2025,
+        "announcement_id": "1222928386",
+        "org_id": "gssz0002032",
+        "title": "2024年年度报告",
+        "available_at": "2025-03-29T00:00:00+08:00",
+        "catalogue": "002032-annual-stock-catalogue-1.json",
+        "url": "https://static.cninfo.com.cn/finalpage/2025-03-28/1222928386.PDF",
+        "file": "002032-2024-annual.pdf",
+        "fetched_at": "2026-09-11T21:23:36.363220+00:00",
+        "sha256": "9819abd69b7cb18c703c9d8f1dda4a9f476609a4056595767126a25b96abede8",
+        "size": 4541600,
+        "selection_status": "original_annual_catalogue_verified"
+      },
+      "rows": [
+        {
+          "key": "current_assets",
+          "page": 72,
+          "label": "流动资产合计",
+          "line": "流动资产合计 10,603,927,260.76 10,036,694,506.68",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "10603927260.76",
+            "10036694506.68"
+          ],
+          "tdx_field": "FN21"
+        },
+        {
+          "key": "cash",
+          "page": 72,
+          "label": "货币资金",
+          "line": "货币资金 2,480,007,318.69 3,548,277,442.44",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "2480007318.69",
+            "3548277442.44"
+          ],
+          "tdx_field": "FN8"
+        },
+        {
+          "key": "trading_assets",
+          "page": 72,
+          "label": "交易性金融资产",
+          "line": "交易性金融资产 281,234,235.25 351,137,787.54",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "281234235.25",
+            "351137787.54"
+          ],
+          "tdx_field": null
+        },
+        {
+          "key": "current_liabilities",
+          "page": 74,
+          "label": "流动负债合计",
+          "line": "流动负债合计 6,523,852,248.10 6,484,577,804.39",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "6523852248.10",
+            "6484577804.39"
+          ],
+          "tdx_field": "FN54"
+        },
+        {
+          "key": "noncurrent_liabilities",
+          "page": 74,
+          "label": "非流动负债合计",
+          "line": "非流动负债合计 280,477,153.14 240,292,745.24",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "280477153.14",
+            "240292745.24"
+          ],
+          "tdx_field": null
+        },
+        {
+          "key": "current_debt_investment",
+          "page": 126,
+          "label": "一年内到期的其他债权投资",
+          "line": "一年内到期的其他债权投资 1,558,446,438.34 285,783,958.92",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "1558446438.34",
+            "285783958.92"
+          ],
+          "tdx_field": null
+        },
+        {
+          "key": "warranty",
+          "page": 138,
+          "label": "产品质量保证",
+          "line": "产品质量保证 47,938,174.63 39,916,751.22 详见附注十六、“承诺及或有事项”",
+          "columns": [
+            "current",
+            "comparative"
+          ],
+          "amounts_cny": [
+            "47938174.63",
+            "39916751.22"
+          ],
+          "tdx_field": null
+        }
+      ]
+    }
+  ],
+  "boundary": "known financial exclusions only; missing/blank note column is not a proved zero economic balance"
+}
