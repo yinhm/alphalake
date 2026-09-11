@@ -1,0 +1,7 @@
+{
+  "full_result_replay": true,
+  "future_source_corruption_invariant": true,
+  "zero_tamper_reduces_2025_five_year_coverage_by_one": true,
+  "tampered_code": "688610",
+  "original_snapshot_modified": false
+}

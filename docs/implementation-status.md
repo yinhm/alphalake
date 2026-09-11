@@ -2,7 +2,7 @@
 
 已按用户要求[清理退役验收数据库及临时测试缓存](acceptance/disk-cleanup-20260911.json)，释放约7.3GB逻辑文件空间；主库、最近升级前备份、原始证据及运行结果保留。历史验收记录所列的四份退役数据库不再本地保留，不能照旧路径直接重开。
 
-[再投资与研发输入盘点](../valuation/research/tdx-capital-inputs/README.md)已复用既有解析器扩展600家源快照，34包哈希/大小核对，原221,016个字段位值及重复次数不变；FN304历史有数值但旧期语义、时点准入及资本化范围未闭合，尚未生成新增长规则。
+[再投资与研发输入盘点](../valuation/research/tdx-capital-inputs/README.md)已复用既有解析器扩展600家源快照，34包哈希/大小核对，原221,016个字段位值及重复次数不变；FN304连续年度及时点盘点已完成：三起点三年寿命所需源序列分别536/548/557家齐全，五年寿命0/520/549家，分母各600；2023起点缺2017年度，源零及重复保留。旧期语义及资本化范围未闭合，共享研发税项与期初资本代理已列待修，尚未生成新增长规则。
 
 [半量增长复验](../valuation/research/tdx-half-growth/README.md)已完成：持续半量开发未过零增长对照；仅首年半量开发通过，新120家留出461/720组（97家）六窗口收入主误差均改善，整体25.1307%→21.7267%，但WAPE20.9701%略高于零增长20.7345%，唯一额外门槛失败，仍不采用。保留259组阻断，新留出现已暴露；已完成[三家公司15窗口的加权误差定位](../valuation/research/tdx-half-growth/error-diagnosis.md)，已完成[收入TTM链](../valuation/research/tdx-half-growth/ttm-chain-review.md)：16份原文、57项金额检查，30个基期/实际TTM均在源精度内，所需48条季度中42条逐季、6条半年合计核对；[新希望交易时点](../valuation/research/tdx-half-growth/newhope-disposal-review.md)已核对，五份文件在三个起点可用数0/5/5，会计出表日与登记/披露分别保留；[新希望可比收入](../valuation/research/tdx-half-growth/newhope-comparability-review.md)已核对现有资料，期间不齐及双向抵销缺口保留，调整留空；牧原月度量价探索暂停；已按[通用输入规范](valuation-accuracy.md#通用适用性与输入规范2026-09-11)完成[600家三起点诊断](../valuation/research/tdx-origin-inputs/README.md)：1,730/1,800组可计算，441组非正EBIT保留，70组阻断；业务可比性未知，不修改生产政策、门槛或重复使用本批自证。
 
