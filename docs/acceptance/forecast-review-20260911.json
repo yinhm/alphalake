@@ -1,0 +1,250 @@
+{
+  "scope": "two_real_saved_requests; no matured targets or actual queries; no accuracy claim",
+  "query_guard": "/bin/false as export executable; any accidental query would produce blocked_actual",
+  "results": [
+    {
+      "saved_run_sha256": "ea53560fc75cd8f68600f9907424192bb57943e3bba7d9608e6a6b49b8943619",
+      "review": {
+        "contract_version": "alphalake-forecast-review-v1",
+        "run_id": "44ef1577d3aac5fea6d91b52135c48f4d15e97a23b207e8eface3d832ba42682",
+        "reviewer_sha256": "8d3686484152ada4146f358fcee57cda4634c5970522195a97e419affc1a6799",
+        "current_engine_revision": "59c7d15f15e9d987132325265d7bdc3695bb9908596162e83b9ccd7166d5c488",
+        "forecast_engine_revision": "59c7d15f15e9d987132325265d7bdc3695bb9908596162e83b9ccd7166d5c488",
+        "code": "300866",
+        "forecast_period": "2026-06-30",
+        "forecast_information_as_of": "2026-09-10T04:42:23Z",
+        "evaluation_as_of": "2026-09-11T00:00:00+08:00",
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "statuses": {
+          "not_yet_observable": 10
+        },
+        "results": [
+          {
+            "horizon": 1,
+            "target_period": "2027-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 41103.1799808,
+              "adjusted_ebit": 3900.191041933594
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 2,
+            "target_period": "2028-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 49323.815976959995,
+              "adjusted_ebit": 4680.2292503203125
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 3,
+            "target_period": "2029-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 59188.579172351994,
+              "adjusted_ebit": 5616.275100384375
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 4,
+            "target_period": "2030-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 71026.29500682239,
+              "adjusted_ebit": 6739.53012046125
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 5,
+            "target_period": "2031-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 85231.55400818687,
+              "adjusted_ebit": 8087.4361445535
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 6,
+            "target_period": "2032-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 99209.5288655295,
+              "adjusted_ebit": 9413.775672260272
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 7,
+            "target_period": "2033-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 111908.34856031729,
+              "adjusted_ebit": 10618.738958309588
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 8,
+            "target_period": "2034-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 122203.91662786649,
+              "adjusted_ebit": 11595.662942474071
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 9,
+            "target_period": "2035-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 129047.33595902703,
+              "adjusted_ebit": 12245.02006725262
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 10,
+            "target_period": "2036-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 131628.28267820756,
+              "adjusted_ebit": 12489.920468597673
+            },
+            "actual_fcff": null
+          }
+        ],
+        "boundary": "仅收入与原政策调整EBIT的同季TTM到期核验；亏损实际值保留，非正实际收入不算百分比。沿用原经营范围假设，未逐期重新核验业务可比性；未核实运行首次创建时间，不冒称当时已留存预测或严格PIT。缺项、冲突、身份变化、未到期保留。FCFF、终值、每股价值准确度均未评价，不自动选择或修改政策。",
+        "review_id": "10a3de452e0669aca1b274e3a6720c22e622101222b10c8b90d4ac47734a8877"
+      }
+    },
+    {
+      "saved_run_sha256": "8b9f1242b16b6d7c735406baae2d759d1423ad355db9390fc448af570d165754",
+      "review": {
+        "contract_version": "alphalake-forecast-review-v1",
+        "run_id": "05b18a43496b6a2af67885eaa11723ea776fe82ff25718c22e5020ae36852918",
+        "reviewer_sha256": "8d3686484152ada4146f358fcee57cda4634c5970522195a97e419affc1a6799",
+        "current_engine_revision": "59c7d15f15e9d987132325265d7bdc3695bb9908596162e83b9ccd7166d5c488",
+        "forecast_engine_revision": "59c7d15f15e9d987132325265d7bdc3695bb9908596162e83b9ccd7166d5c488",
+        "code": "002032",
+        "forecast_period": "2026-06-30",
+        "forecast_information_as_of": "2026-09-10T04:42:23Z",
+        "evaluation_as_of": "2026-09-11T00:00:00+08:00",
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "statuses": {
+          "not_yet_observable": 10
+        },
+        "results": [
+          {
+            "horizon": 1,
+            "target_period": "2027-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 22565.777051361914,
+              "adjusted_ebit": 2434.6367090660274
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 2,
+            "target_period": "2028-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 22428.37284980891,
+              "adjusted_ebit": 2419.812078284671
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 3,
+            "target_period": "2029-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 22291.805309655225,
+              "adjusted_ebit": 2405.0777154586876
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 4,
+            "target_period": "2030-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 22156.069336425655,
+              "adjusted_ebit": 2390.433070941757
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 5,
+            "target_period": "2031-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 22021.159866665526,
+              "adjusted_ebit": 2375.877598434382
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 6,
+            "target_period": "2032-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 22001.974107001217,
+              "adjusted_ebit": 2373.8076340514262
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 7,
+            "target_period": "2033-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 22097.6071943679,
+              "adjusted_ebit": 2384.125551514419
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 8,
+            "target_period": "2034-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 22308.95708441756,
+              "adjusted_ebit": 2406.9282318564597
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 9,
+            "target_period": "2035-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 22638.73231551087,
+              "adjusted_ebit": 2442.507901084471
+            },
+            "actual_fcff": null
+          },
+          {
+            "horizon": 10,
+            "target_period": "2036-06-30",
+            "status": "not_yet_observable",
+            "predictions_million_cny": {
+              "revenue": 23091.50696182109,
+              "adjusted_ebit": 2491.358059106161
+            },
+            "actual_fcff": null
+          }
+        ],
+        "boundary": "仅收入与原政策调整EBIT的同季TTM到期核验；亏损实际值保留，非正实际收入不算百分比。沿用原经营范围假设，未逐期重新核验业务可比性；未核实运行首次创建时间，不冒称当时已留存预测或严格PIT。缺项、冲突、身份变化、未到期保留。FCFF、终值、每股价值准确度均未评价，不自动选择或修改政策。",
+        "review_id": "41e0a32c2eefe159abbb126311dfddcdc7058916f5b602fe1014797314169d64"
+      }
+    }
+  ]
+}

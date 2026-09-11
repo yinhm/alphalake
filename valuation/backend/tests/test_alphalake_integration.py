@@ -20,6 +20,61 @@ REPO = Path(__file__).resolve().parents[3]
 CHAIN = REPO/'internal/ingest/testdata/valuation-chain-2026'
 
 
+def test_saved_forecast_review_standard_actuals_and_boundaries(exports):
+    from data_sources.alphalake import Snapshot, standard_window_reader
+    from tools.review_valuation_forecast import review
+    from decimal import Decimal
+    import struct
+    actual=copy.deepcopy(exports['300866']);window,_=standard_window_reader(Snapshot.model_validate(actual))
+    revenue=window('FN230');ebit=window('FN86')+window('FN305')-window('FN306')-window('FN83')-window('FN82')-window('FN301')
+    # 人工预测夹具；实际来源为Go标准导出。不冒称存在2025年的真实历史运行。
+    run=dict(run_id='1'*64,engine_revision='synthetic_forecast_fixture',request=dict(policy=dict(policy_id='nonfinancial-history-fcff-v1'),
+        data=dict(code='300866',report_period='2025-06-30',information_as_of='2025-09-01T00:00:00+08:00',facts=actual['facts'])),
+        report=dict(dcf=dict(revenue_projections=[revenue+10]*10,ebit_projections=[ebit+3]*10)))
+    calls=[]
+    def export(period):calls.append(period);return actual
+    checked=review(run,actual['information_as_of'],export)
+    assert calls==['2026-06-30'] and checked['statuses']=={'evaluated':1,'not_yet_observable':9}
+    metrics=checked['results'][0]['metrics']
+    near(metrics['revenue']['signed_error_million_cny'],10)
+    near(metrics['adjusted_ebit']['signed_error_million_cny'],3)
+    assert checked==review(run,actual['information_as_of'],export)
+    assert checked['results'][0]['actual_snapshot']==actual
+    missing=copy.deepcopy(actual);missing['windows']=[w for w in missing['windows'] if w['field']!='FN305']
+    partial=review(run,actual['information_as_of'],lambda _:missing)['results'][0]
+    assert partial['status']=='partial_actual' and partial['metrics']['revenue']==metrics['revenue']
+    for failure in ('bits','conflict','identity','period','duplicate'):
+        bad=copy.deepcopy(actual)
+        if failure=='bits':next(f for f in bad['facts'] if f['field']=='FN230' and f['period']==bad['report_period'])['value']='1'
+        elif failure=='conflict':bad['source_conflicts']=[dict(code='300866',period='2026-06-30')]
+        elif failure=='identity':
+            for f in bad['facts']:f['instrument_id']+=1
+        elif failure=='period':bad['report_period']='2026-03-31'
+        else:bad['facts'].append(copy.deepcopy(bad['facts'][0]))
+        blocked=review(run,actual['information_as_of'],lambda _:bad)
+        assert blocked['statuses']=={'blocked_actual':1,'not_yet_observable':9},failure
+    loss=copy.deepcopy(actual)
+    for f in loss['facts']:
+        if f['field']=='FN86':
+            f['bits']=struct.unpack('<I',struct.pack('<f',-1e12))[0]
+            f['value']=str(Decimal.from_float(struct.unpack('<f',struct.pack('<I',f['bits']))[0]))
+    facts={f['fact_id']:f for f in loss['facts']};w=next(w for w in loss['windows'] if w['field']=='FN86')
+    w['value']=str(sum(Decimal(facts[i]['value'])*c for i,c in zip(w['source_fact_ids'],w['input_coefficients'])))
+    negative=review(run,actual['information_as_of'],lambda _:loss)['results'][0]
+    assert negative['status']=='evaluated' and negative['metrics']['adjusted_ebit']['actual_million_cny']<0
+    zero=copy.deepcopy(actual)
+    for f in zero['facts']:
+        if f['field']=='FN230':f.update(bits=0,value='0')
+    next(w for w in zero['windows'] if w['field']=='FN230')['value']='0'
+    zero_result=review(run,actual['information_as_of'],lambda _:zero)['results'][0]
+    assert zero_result['status']=='evaluated'
+    assert all(m['absolute_error_pct_actual_revenue'] is None for m in zero_result['metrics'].values())
+    future=copy.deepcopy(run);future['request']['data']['report_period']='2026-06-30'
+    assert review(future,actual['information_as_of'],lambda _:pytest.fail('future must not query'))['statuses']=={'not_yet_observable':10}
+    with pytest.raises(ValueError,match='later than forecast'):
+        review(run,'2025-09-01T00:00:00+08:00',export)
+
+
 @pytest.fixture(scope='module')
 def exports(tmp_path_factory):
     output = tmp_path_factory.mktemp('alphalake_exports')
