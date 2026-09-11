@@ -1,0 +1,170 @@
+{
+  "code": "000035",
+  "source_sha256": "80a9273267c9580a57e3ad7af11c56bad5a83de599bed897102d46b04d2ddcb0",
+  "reports": [
+    {
+      "url": "https://static.cninfo.com.cn/finalpage/2022-03-31/1212745954.PDF",
+      "sha256": "1ba444df8366f370b741e4fa2f8442fc15a96b11f18a6be294dafe955849c8cf",
+      "size": 1649494,
+      "fetched_at": "2026-09-11T08:30:54.841427+00:00",
+      "year": 2021,
+      "file": "2021.pdf",
+      "statement_page": 153,
+      "bonds_page": 145
+    },
+    {
+      "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216697044.PDF",
+      "fetched_at": "2026-09-11T08:26:41.976127+00:00",
+      "sha256": "b96a9dd2b454bfe48a8dbc15f2f82ce6482895b717884b9e6015d4f25c30e68d",
+      "size": 1497758,
+      "year": 2022,
+      "file": "2022.pdf",
+      "statement_page": 108,
+      "bonds_page": 101
+    }
+  ],
+  "rows": [
+    {
+      "key": "short",
+      "page": 107,
+      "label": "短期借款",
+      "values": [
+        "2686120574.69",
+        "1531969494.33"
+      ]
+    },
+    {
+      "key": "current",
+      "page": 107,
+      "label": "一年内到期的非流动负债",
+      "values": [
+        "1619384450.83",
+        "826302762.17"
+      ]
+    },
+    {
+      "key": "long",
+      "page": 108,
+      "label": "长期借款",
+      "values": [
+        "3130310250.00",
+        "3796336338.73"
+      ]
+    },
+    {
+      "key": "leases",
+      "page": 108,
+      "label": "租赁负债",
+      "values": [
+        "94887600.90",
+        "34735488.58"
+      ]
+    },
+    {
+      "key": "payables",
+      "page": 108,
+      "label": "长期应付款",
+      "values": [
+        "1093896222.71",
+        "1230552198.22"
+      ]
+    },
+    {
+      "key": "provisions",
+      "page": 108,
+      "label": "预计负债",
+      "values": [
+        "1647874.69",
+        "16970943.26"
+      ]
+    },
+    {
+      "key": "deferred_income",
+      "page": 108,
+      "label": "递延收益",
+      "values": [
+        "217549520.27",
+        "208358473.33"
+      ]
+    },
+    {
+      "key": "deferred_tax",
+      "page": 108,
+      "label": "递延所得税负债",
+      "values": [
+        "97267568.81",
+        "45577872.16"
+      ]
+    },
+    {
+      "key": "other_noncurrent",
+      "page": 108,
+      "label": "其他非流动负债",
+      "values": [
+        "2962638996.23",
+        "2364630978.48"
+      ]
+    },
+    {
+      "key": "noncurrent_total",
+      "page": 108,
+      "label": "非流动负债合计",
+      "values": [
+        "7598198033.61",
+        "7697162292.76"
+      ]
+    },
+    {
+      "key": "current_loans",
+      "page": 192,
+      "label": "一年内到期的长期借款",
+      "values": [
+        "1104317626.31",
+        "405591849.06"
+      ]
+    },
+    {
+      "key": "current_payables",
+      "page": 192,
+      "label": "一年内到期的长期应付款",
+      "values": [
+        "495741427.03",
+        "403815511.23"
+      ]
+    },
+    {
+      "key": "current_leases",
+      "page": 192,
+      "label": "一年内到期的租赁负债",
+      "values": [
+        "19325397.49",
+        "16895401.88"
+      ]
+    },
+    {
+      "key": "financing_payables",
+      "page": 193,
+      "label": "应付融资款",
+      "values": [
+        "1589637649.74",
+        "1634367709.45"
+      ]
+    },
+    {
+      "key": "third_party",
+      "page": 191,
+      "label": "应付第三方借款（注1）",
+      "values": [
+        "179399509.17"
+      ]
+    },
+    {
+      "key": "supplier_finance",
+      "page": 191,
+      "label": "应付账款融资（注2）",
+      "values": [
+        "89999999.91"
+      ]
+    }
+  ]
+}

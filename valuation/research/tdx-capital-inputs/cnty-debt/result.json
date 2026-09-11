@@ -1,0 +1,88 @@
+{
+  "code": "000035",
+  "source_matches": [
+    {
+      "period": "2022-12-31",
+      "field": "FN41",
+      "artifact": "gpcw20221231.zip",
+      "source_bits": 1327504114,
+      "pdf_cny": "2686120574.69",
+      "source_cny": "2686120448",
+      "source_multiplier": 1
+    },
+    {
+      "period": "2022-12-31",
+      "field": "FN55",
+      "artifact": "gpcw20221231.zip",
+      "source_bits": 1329239230,
+      "pdf_cny": "3130310250.00",
+      "source_cny": "3130310144",
+      "source_multiplier": 1
+    },
+    {
+      "period": "2022-12-31",
+      "field": "FN52",
+      "artifact": "gpcw20221231.zip",
+      "source_bits": 1321274289,
+      "pdf_cny": "1619384450.83",
+      "source_cny": "1619384448",
+      "source_multiplier": 1
+    },
+    {
+      "period": "2022-12-31",
+      "field": "FN439",
+      "artifact": "gpcw20221231.zip",
+      "source_bits": 1175733002,
+      "pdf_cny": "94887600.90",
+      "source_cny": "94887597.656250000",
+      "source_multiplier": 10000
+    },
+    {
+      "period": "2021-12-31",
+      "field": "FN41",
+      "artifact": "gpcw20211231.zip",
+      "source_bits": 1320591360,
+      "pdf_cny": "1531969494.33",
+      "source_cny": "1531969536",
+      "source_multiplier": 1
+    },
+    {
+      "period": "2021-12-31",
+      "field": "FN55",
+      "artifact": "gpcw20211231.zip",
+      "source_bits": 1331840895,
+      "pdf_cny": "3796336338.73",
+      "source_cny": "3796336384",
+      "source_multiplier": 1
+    },
+    {
+      "period": "2021-12-31",
+      "field": "FN52",
+      "artifact": "gpcw20211231.zip",
+      "source_bits": 1313145221,
+      "pdf_cny": "826302762.17",
+      "source_cny": "826302784",
+      "source_multiplier": 1
+    },
+    {
+      "period": "2021-12-31",
+      "field": "FN439",
+      "artifact": "gpcw20211231.zip",
+      "source_bits": 1163466957,
+      "pdf_cny": "34735488.58",
+      "source_cny": "34735500.488281250000",
+      "source_multiplier": 10000
+    }
+  ],
+  "bond_periods": [
+    "2021-12-31",
+    "2022-12-31"
+  ],
+  "bond_status": "zero_supported_by_blank_inapplicability_and_liability_reconciliation_not_printed_zero",
+  "additional_2022_financing_claims_cny": "1363295731.79",
+  "additional_claims_scope": "noncurrent_financing_payables_plus_third_party_borrowings_plus_supplier_finance; current_financing_payables_already_in_FN52",
+  "full_debt": null,
+  "economic_roic": null,
+  "classified_reinvestment": null,
+  "boundary": "two_FY_research_evidence_only; insurance_scope_unresolved; no_source_override_or_standard_mapping_extension"
+}
