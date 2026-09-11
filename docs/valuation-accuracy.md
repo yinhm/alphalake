@@ -97,6 +97,8 @@ print('two terminal-only scenarios replayed; three blocked companies retained')
 PYTHON
 ```
 
+已完成[固定五家公司三历史起点的一年基线](../valuation/research/continuing-operations-five/README.md)：源层15/15可评价，收入WAPE当前7.85%/零增长7.80%，调整EBIT代理误差当前1.33%/零增长1.60%；金融兼营与可比性问题保留，不改生产2家成功/3家阻断。安克三个窗口均低估，不支持据此前异质样本直接统一压低增长；本轮不修改规则或扩大采用。
+
 ## 已完成研究与历史验收
 
 以下按研究发生时的协议、样本和结论保留；其中“下一步”“首轮”描述属于当时阶段，不覆盖上方当前执行顺序。
