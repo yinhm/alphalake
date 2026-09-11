@@ -1,0 +1,68 @@
+[
+  {
+    "code": "600751",
+    "period": "2021-06-30",
+    "file": "600751-2021-06-30.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2021-08-31/1210926901.PDF",
+    "sha256": "eb0145a20c91b04dd8a037cc05dcdc27a3982375522d07fe7765dda1dbcdc2df",
+    "size": 3086627,
+    "fetched_at": "2026-09-11T10:49:29.567353+00:00",
+    "catalogue_announcement_time_ms": 1630339200000,
+    "catalogue_date_precision": "date_only"
+  },
+  {
+    "code": "600751",
+    "period": "2022-06-30",
+    "file": "600751-2022-06-30.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2022-08-31/1214471464.PDF",
+    "sha256": "eb91b7d5c743e195f3da2dbf331a824b904f777137731e15f9593716b65fcd55",
+    "size": 2684480,
+    "fetched_at": "2026-09-11T10:49:29.009522+00:00",
+    "catalogue_announcement_time_ms": 1661875200000,
+    "catalogue_date_precision": "date_only"
+  },
+  {
+    "code": "600751",
+    "period": "2022-12-31",
+    "file": "600751-2022-12-31.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216705901.PDF",
+    "sha256": "2772233d60e7e2df36c9a67e31193983d2b5bebf754ee73ec82571c3836295a2",
+    "size": 4803800,
+    "fetched_at": "2026-09-11T10:49:30.032840+00:00",
+    "catalogue_announcement_time_ms": 1682697600000,
+    "catalogue_date_precision": "date_only"
+  },
+  {
+    "code": "688670",
+    "period": "2022-06-30",
+    "file": "688670-2022-06-30.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2022-08-06/1214230580.PDF",
+    "sha256": "2eccc43726c51dd75616be0b595b45e274f6b3618a67b5484a8ed157bb8432ee",
+    "size": 2750142,
+    "fetched_at": "2026-09-11T10:49:29.243835+00:00",
+    "catalogue_announcement_time_ms": 1659715200000,
+    "catalogue_date_precision": "date_only"
+  },
+  {
+    "code": "688670",
+    "period": "2022-12-31",
+    "file": "688670-2022-12-31.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2023-04-20/1216470049.PDF",
+    "sha256": "3cb21bcc92484659685c6da4676c6ec9cadd4a60aba8bf17978ebdb0378b7dec",
+    "size": 3855877,
+    "fetched_at": "2026-09-11T10:49:35.646621+00:00",
+    "catalogue_announcement_time_ms": 1681920000000,
+    "catalogue_date_precision": "date_only"
+  },
+  {
+    "code": "688670",
+    "period": "2023-06-30",
+    "file": "688670-2023-06-30.pdf",
+    "url": "https://static.cninfo.com.cn/finalpage/2023-08-03/1217451335.PDF",
+    "sha256": "920960111586567ba33449e418889c998c818cafede701aed11df1f3e109411d",
+    "size": 2965147,
+    "fetched_at": "2026-09-11T10:49:37.446751+00:00",
+    "catalogue_announcement_time_ms": 1690992000000,
+    "catalogue_date_precision": "date_only"
+  }
+]

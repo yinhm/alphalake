@@ -1,0 +1,859 @@
+{
+  "statement_comparisons": [
+    {
+      "code": "600751",
+      "period": "2021-06-30",
+      "field": "FN86",
+      "pdf_cny": "2158932000",
+      "source_bits": 1325444784,
+      "source_cny": "2158931968",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2021-06-30",
+      "field": "FN305",
+      "pdf_cny": null,
+      "source_bits": 0,
+      "source_cny": "0",
+      "status": "blank_statement_source_zero_not_proven_economic_zero"
+    },
+    {
+      "code": "600751",
+      "period": "2021-06-30",
+      "field": "FN306",
+      "pdf_cny": null,
+      "source_bits": 0,
+      "source_cny": "0",
+      "status": "blank_statement_source_zero_not_proven_economic_zero"
+    },
+    {
+      "code": "600751",
+      "period": "2021-06-30",
+      "field": "FN83",
+      "pdf_cny": "18756000",
+      "source_bits": 1267669200,
+      "source_cny": "18756000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2021-06-30",
+      "field": "FN82",
+      "pdf_cny": "256147000",
+      "source_bits": 1299466212,
+      "source_cny": "256147008",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2021-06-30",
+      "field": "FN301",
+      "pdf_cny": "-2698000",
+      "source_bits": 3391401024,
+      "source_cny": "-2698000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2021-12-31",
+      "field": "FN86",
+      "pdf_cny": "4421372000",
+      "source_bits": 1334035556,
+      "source_cny": "4421371904",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2021-12-31",
+      "field": "FN305",
+      "pdf_cny": "976333000",
+      "source_bits": 1315489443,
+      "source_cny": "976332992",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2021-12-31",
+      "field": "FN306",
+      "pdf_cny": "159406000",
+      "source_bits": 1293419899,
+      "source_cny": "159406000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2021-12-31",
+      "field": "FN83",
+      "pdf_cny": "355044000",
+      "source_bits": 1302940757,
+      "source_cny": "355044000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2021-12-31",
+      "field": "FN82",
+      "pdf_cny": "256116000",
+      "source_bits": 1299464274,
+      "source_cny": "256116000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2021-12-31",
+      "field": "FN301",
+      "pdf_cny": "-2697000",
+      "source_bits": 3391397024,
+      "source_cny": "-2697000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2022-06-30",
+      "field": "FN86",
+      "pdf_cny": "178792000",
+      "source_bits": 1294631524,
+      "source_cny": "178792000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2022-06-30",
+      "field": "FN305",
+      "pdf_cny": null,
+      "source_bits": 0,
+      "source_cny": "0",
+      "status": "blank_statement_source_zero_not_proven_economic_zero"
+    },
+    {
+      "code": "600751",
+      "period": "2022-06-30",
+      "field": "FN306",
+      "pdf_cny": null,
+      "source_bits": 0,
+      "source_cny": "0",
+      "status": "blank_statement_source_zero_not_proven_economic_zero"
+    },
+    {
+      "code": "600751",
+      "period": "2022-06-30",
+      "field": "FN83",
+      "pdf_cny": "123689000",
+      "source_bits": 1290529541,
+      "source_cny": "123689000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2022-06-30",
+      "field": "FN82",
+      "pdf_cny": "13599000",
+      "source_bits": 1263501592,
+      "source_cny": "13599000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2022-06-30",
+      "field": "FN301",
+      "pdf_cny": null,
+      "source_bits": 0,
+      "source_cny": "0",
+      "status": "blank_statement_source_zero_not_proven_economic_zero"
+    },
+    {
+      "code": "600751",
+      "period": "2022-12-31",
+      "field": "FN86",
+      "pdf_cny": "196805000",
+      "source_bits": 1295757336,
+      "source_cny": "196804992",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2022-12-31",
+      "field": "FN305",
+      "pdf_cny": "8108000",
+      "source_bits": 1257729984,
+      "source_cny": "8108000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2022-12-31",
+      "field": "FN306",
+      "pdf_cny": "152474000",
+      "source_bits": 1292986649,
+      "source_cny": "152474000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2022-12-31",
+      "field": "FN83",
+      "pdf_cny": "147060000",
+      "source_bits": 1292648274,
+      "source_cny": "147060000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2022-12-31",
+      "field": "FN82",
+      "pdf_cny": "-126000",
+      "source_bits": 3354793984,
+      "source_cny": "-126000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2022-12-31",
+      "field": "FN301",
+      "pdf_cny": "0",
+      "source_bits": 0,
+      "source_cny": "0",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2023-06-30",
+      "field": "FN86",
+      "pdf_cny": "286717000",
+      "source_bits": 1300805538,
+      "source_cny": "286716992",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2023-06-30",
+      "field": "FN305",
+      "pdf_cny": "14151000",
+      "source_bits": 1264053592,
+      "source_cny": "14151000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2023-06-30",
+      "field": "FN306",
+      "pdf_cny": "68464000",
+      "source_bits": 1283626416,
+      "source_cny": "68464000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2023-06-30",
+      "field": "FN83",
+      "pdf_cny": "253990000",
+      "source_bits": 1299331399,
+      "source_cny": "253990000",
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2023-06-30",
+      "field": "FN82",
+      "pdf_cny": null,
+      "source_bits": 0,
+      "source_cny": "0",
+      "status": "blank_statement_source_zero_not_proven_economic_zero"
+    },
+    {
+      "code": "600751",
+      "period": "2023-06-30",
+      "field": "FN301",
+      "pdf_cny": null,
+      "source_bits": 0,
+      "source_cny": "0",
+      "status": "blank_statement_source_zero_not_proven_economic_zero"
+    },
+    {
+      "code": "688670",
+      "period": "2022-06-30",
+      "field": "FN86",
+      "pdf_cny": "-11989129.22",
+      "source_bits": 3409375369,
+      "source_cny": "-11989129",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2022-06-30",
+      "field": "FN305",
+      "pdf_cny": "430594.45",
+      "source_bits": 1221738574,
+      "source_cny": "430594.4375",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2022-06-30",
+      "field": "FN306",
+      "pdf_cny": "963889.64",
+      "source_bits": 1231770394,
+      "source_cny": "963889.625",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2022-06-30",
+      "field": "FN83",
+      "pdf_cny": "6288239.49",
+      "source_bits": 1254090463,
+      "source_cny": "6288239.5",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2022-06-30",
+      "field": "FN82",
+      "pdf_cny": "1750482.70",
+      "source_bits": 1238740630,
+      "source_cny": "1750482.75",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2022-06-30",
+      "field": "FN301",
+      "pdf_cny": null,
+      "source_bits": 0,
+      "source_cny": "0",
+      "status": "blank_statement_source_zero_not_proven_economic_zero"
+    },
+    {
+      "code": "688670",
+      "period": "2022-12-31",
+      "field": "FN86",
+      "pdf_cny": "48938651.85",
+      "source_bits": 1278914471,
+      "source_cny": "48938652",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2022-12-31",
+      "field": "FN305",
+      "pdf_cny": "1281456.98",
+      "source_bits": 1234988424,
+      "source_cny": "1281457",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2022-12-31",
+      "field": "FN306",
+      "pdf_cny": "1660984.56",
+      "source_bits": 1238024644,
+      "source_cny": "1660984.5",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2022-12-31",
+      "field": "FN83",
+      "pdf_cny": "15873831.90",
+      "source_bits": 1265776424,
+      "source_cny": "15873832",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2022-12-31",
+      "field": "FN82",
+      "pdf_cny": "-1741455.08",
+      "source_bits": 3386152057,
+      "source_cny": "-1741455.125",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2022-12-31",
+      "field": "FN301",
+      "pdf_cny": "232448.97",
+      "source_bits": 1214447678,
+      "source_cny": "232448.96875",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2023-06-30",
+      "field": "FN86",
+      "pdf_cny": "40736098.60",
+      "source_bits": 1276863833,
+      "source_cny": "40736100",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2023-06-30",
+      "field": "FN305",
+      "pdf_cny": "832646.15",
+      "source_bits": 1229670498,
+      "source_cny": "832646.125",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2023-06-30",
+      "field": "FN306",
+      "pdf_cny": "752472.73",
+      "source_bits": 1228387724,
+      "source_cny": "752472.75",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2023-06-30",
+      "field": "FN83",
+      "pdf_cny": "4402494.60",
+      "source_bits": 1250318973,
+      "source_cny": "4402494.5",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2023-06-30",
+      "field": "FN82",
+      "pdf_cny": "621982.51",
+      "source_bits": 1226299880,
+      "source_cny": "621982.5",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2023-06-30",
+      "field": "FN301",
+      "pdf_cny": null,
+      "source_bits": 0,
+      "source_cny": "0",
+      "status": "blank_statement_source_zero_not_proven_economic_zero"
+    },
+    {
+      "code": "688670",
+      "period": "2023-12-31",
+      "field": "FN86",
+      "pdf_cny": "-74688961.98",
+      "source_bits": 3431888184,
+      "source_cny": "-74688960",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2023-12-31",
+      "field": "FN305",
+      "pdf_cny": "1898001.16",
+      "source_bits": 1239920777,
+      "source_cny": "1898001.125",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2023-12-31",
+      "field": "FN306",
+      "pdf_cny": "1899369.61",
+      "source_bits": 1239931725,
+      "source_cny": "1899369.625",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2023-12-31",
+      "field": "FN83",
+      "pdf_cny": "13246639.95",
+      "source_bits": 1263149232,
+      "source_cny": "13246640",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2023-12-31",
+      "field": "FN82",
+      "pdf_cny": "-146863.19",
+      "source_bits": 3356453836,
+      "source_cny": "-146863.1875",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2023-12-31",
+      "field": "FN301",
+      "pdf_cny": null,
+      "source_bits": 0,
+      "source_cny": "0",
+      "status": "blank_statement_source_zero_not_proven_economic_zero"
+    },
+    {
+      "code": "688670",
+      "period": "2024-06-30",
+      "field": "FN86",
+      "pdf_cny": "-48620185.65",
+      "source_bits": 3426318502,
+      "source_cny": "-48620184",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2024-06-30",
+      "field": "FN305",
+      "pdf_cny": "895238.91",
+      "source_bits": 1230671983,
+      "source_cny": "895238.9375",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2024-06-30",
+      "field": "FN306",
+      "pdf_cny": "766505.41",
+      "source_bits": 1228612247,
+      "source_cny": "766505.4375",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2024-06-30",
+      "field": "FN83",
+      "pdf_cny": "7485870.51",
+      "source_bits": 1256485725,
+      "source_cny": "7485870.5",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2024-06-30",
+      "field": "FN82",
+      "pdf_cny": "-160778.84",
+      "source_bits": 3357344438,
+      "source_cny": "-160778.84375",
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2024-06-30",
+      "field": "FN301",
+      "pdf_cny": "8664.46",
+      "source_bits": 1174888919,
+      "source_cny": "8664.4599609375",
+      "status": "matched"
+    }
+  ],
+  "hna_notes": {
+    "2021-06-30": {
+      "borrow_interest": "1058958000",
+      "interest_income": "-87410000",
+      "guarantee": "48135000",
+      "credit_total": "163462000",
+      "credit_note_sign_to_profit": "-1",
+      "guarantee_profit_contribution": "-48135000",
+      "positive_interest_income": "87410000"
+    },
+    "2021-12-31": {
+      "borrow_interest": "976333000",
+      "lease_interest": "43247000",
+      "interest_income": "-159406000",
+      "guarantee": "-1709995000",
+      "credit_total": "-1594779000",
+      "credit_note_sign_to_profit": "-1",
+      "guarantee_profit_contribution": "1709995000",
+      "positive_interest_income": "159406000"
+    },
+    "2022-06-30": {
+      "borrow_interest": "5370000",
+      "interest_income": "73948000",
+      "guarantee": "6425000",
+      "credit_total": "6235000",
+      "credit_note_sign_to_profit": "-1",
+      "guarantee_profit_contribution": "-6425000",
+      "positive_interest_income": "73948000"
+    },
+    "2022-12-31": {
+      "total_interest": "8108000",
+      "interest_income": "-152474000",
+      "guarantee": "-6425000",
+      "credit_total": "-6733000",
+      "credit_note_sign_to_profit": "1",
+      "guarantee_profit_contribution": "-6425000",
+      "positive_interest_income": "152474000"
+    },
+    "2023-06-30": {
+      "total_interest": "14151000",
+      "interest_income": "68464000",
+      "guarantee": "7836000",
+      "credit_total": "7114000",
+      "credit_note_sign_to_profit": "1",
+      "guarantee_profit_contribution": "7836000",
+      "positive_interest_income": "68464000"
+    }
+  },
+  "ttm_windows": [
+    {
+      "code": "600751",
+      "end": "2022-06-30",
+      "source_ebit_proxy_cny": "2784612936",
+      "blank_statement_components": [
+        {
+          "period": "2022-06-30",
+          "field": "FN305"
+        },
+        {
+          "period": "2021-06-30",
+          "field": "FN305"
+        },
+        {
+          "period": "2022-06-30",
+          "field": "FN306"
+        },
+        {
+          "period": "2021-06-30",
+          "field": "FN306"
+        },
+        {
+          "period": "2022-06-30",
+          "field": "FN301"
+        }
+      ],
+      "full_normalized_ebit_cny": null,
+      "guarantee_profit_contribution_cny": "1751705000",
+      "source_proxy_less_guarantee_cny": "1032907936",
+      "mechanical_missing_interest_delta_cny": "-1040126000",
+      "mechanical_interest_and_guarantee_sensitivity_cny": "-7218064"
+    },
+    {
+      "code": "600751",
+      "end": "2023-06-30",
+      "source_ebit_proxy_cny": "-157585016",
+      "blank_statement_components": [
+        {
+          "period": "2022-06-30",
+          "field": "FN305"
+        },
+        {
+          "period": "2022-06-30",
+          "field": "FN306"
+        },
+        {
+          "period": "2023-06-30",
+          "field": "FN82"
+        },
+        {
+          "period": "2023-06-30",
+          "field": "FN301"
+        },
+        {
+          "period": "2022-06-30",
+          "field": "FN301"
+        }
+      ],
+      "full_normalized_ebit_cny": null,
+      "guarantee_profit_contribution_cny": "7836000",
+      "source_proxy_less_guarantee_cny": "-165421016",
+      "mechanical_missing_interest_delta_cny": "68578000",
+      "mechanical_interest_and_guarantee_sensitivity_cny": "-96843016"
+    },
+    {
+      "code": "688670",
+      "end": "2023-06-30",
+      "source_ebit_proxy_cny": "90547241.46875",
+      "blank_statement_components": [
+        {
+          "period": "2023-06-30",
+          "field": "FN301"
+        },
+        {
+          "period": "2022-06-30",
+          "field": "FN301"
+        }
+      ],
+      "full_normalized_ebit_cny": null
+    },
+    {
+      "code": "688670",
+      "end": "2024-06-30",
+      "source_ebit_proxy_cny": "-179407108.3037109375",
+      "blank_statement_components": [
+        {
+          "period": "2023-12-31",
+          "field": "FN301"
+        },
+        {
+          "period": "2023-06-30",
+          "field": "FN301"
+        }
+      ],
+      "full_normalized_ebit_cny": null
+    }
+  ],
+  "training_interest_zero_exposure": {
+    "2023-06-30": {
+      "training_count": 407,
+      "any_interest_source_zero_codes": [
+        "688551",
+        "300845",
+        "300941",
+        "300801",
+        "002462",
+        "603833",
+        "603798",
+        "000545",
+        "688560",
+        "301071",
+        "000557",
+        "603183",
+        "688663",
+        "300065",
+        "603087",
+        "002082",
+        "300553",
+        "688678",
+        "605277",
+        "688233",
+        "605305",
+        "300782",
+        "301185",
+        "688067",
+        "603696",
+        "000922",
+        "002825",
+        "600527",
+        "688117",
+        "300751",
+        "300514",
+        "300965",
+        "300492",
+        "603599",
+        "605056",
+        "600523",
+        "300137",
+        "603888",
+        "603589",
+        "603648",
+        "002773",
+        "301004",
+        "002182",
+        "300286",
+        "300775",
+        "300766",
+        "000915",
+        "002996",
+        "300828",
+        "603488",
+        "002801",
+        "301088",
+        "301229",
+        "002890",
+        "688151",
+        "603353",
+        "002109",
+        "603931",
+        "300821",
+        "300549",
+        "300481",
+        "600751",
+        "300327",
+        "603359",
+        "300943",
+        "002947"
+      ]
+    },
+    "2024-06-30": {
+      "training_count": 432,
+      "any_interest_source_zero_codes": [
+        "688551",
+        "300801",
+        "002462",
+        "603798",
+        "688560",
+        "301071",
+        "000557",
+        "688663",
+        "002265",
+        "002082",
+        "688678",
+        "301120",
+        "605277",
+        "301185",
+        "688067",
+        "300899",
+        "002825",
+        "300751",
+        "300514",
+        "603599",
+        "600523",
+        "603888",
+        "002773",
+        "301004",
+        "002182",
+        "300286",
+        "300775",
+        "000915",
+        "002996",
+        "301222",
+        "603488",
+        "002801",
+        "301088",
+        "301229",
+        "002890",
+        "603353",
+        "603931",
+        "300549",
+        "300481",
+        "688072",
+        "603170",
+        "000017",
+        "300943",
+        "002947"
+      ]
+    },
+    "2025-06-30": {
+      "training_count": 433,
+      "any_interest_source_zero_codes": [
+        "300801",
+        "002462",
+        "603798",
+        "301071",
+        "000557",
+        "688663",
+        "603087",
+        "688678",
+        "002998",
+        "301185",
+        "688067",
+        "603332",
+        "300899",
+        "002825",
+        "688576",
+        "300514",
+        "603135",
+        "603599",
+        "603888",
+        "301468",
+        "002773",
+        "002182",
+        "300286",
+        "000915",
+        "301507",
+        "301222",
+        "688766",
+        "603488",
+        "002801",
+        "301088",
+        "002890",
+        "603353",
+        "603099",
+        "603931",
+        "603276",
+        "300549",
+        "603170",
+        "000017",
+        "300943",
+        "301383"
+      ]
+    }
+  },
+  "hna_2022H1_borrow_interest_note_ttm_cny": "-77255000",
+  "boundary": "source_proxy_replay_not_economic_EBIT_validation; source_zero_can_hide_note_values; interest_scope_and_cross_period_comparability_unresolved; mechanical_sensitivity_not_normalized_profit; training_zero_exposure_not_confirmed_missing_data_count; no_source_or_production_change"
+}
