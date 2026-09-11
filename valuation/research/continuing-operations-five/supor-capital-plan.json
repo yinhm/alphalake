@@ -1,0 +1,16 @@
+{
+  "code": "002032",
+  "report_years": [
+    2022,
+    2023,
+    2024
+  ],
+  "scope": "known financial items within current balances; original and comparative versions separate",
+  "selection": "existing fixed five, Supor already accepted current nonfinancial model; source pages inspected before this plan, not blind preregistration",
+  "source_snapshot_sha256": "685f86200322784ecf445e45f3d93a4b8e7d2601d218ab69d84d79513e6c99ed",
+  "documents_sha256": "8854bfee3abb1cde68b24633b841713ba69db2eb0c37a0f731ea8715508c0559",
+  "method": "current assets less current liabilities less monetary funds is only an unclassified subtotal; quantify documented financial-asset deductions separately; debt, operating cash and remaining items not silently assigned",
+  "method_source": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/noncashwc.htm",
+  "stop": "three existing original reports only; preserve source/version differences; no full historical FCFF or fitted capital ratio until operating scope reconciled; no threshold scan or new PDF downloads",
+  "decision": "determine whether raw current-balance proxy can serve as historical reinvestment label; no new growth forecast or production policy"
+}
