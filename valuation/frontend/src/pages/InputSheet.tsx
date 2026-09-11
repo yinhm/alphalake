@@ -712,8 +712,8 @@ export default function InputSheet({ data, sessionId, onUpdate }: InputSheetProp
               <SpreadsheetCell value={pct(rev_cagr_3)} type="calc" tooltip={cagrTooltip(3, latestFy, latestFy-3, 'Revenue')} />
               <SpreadsheetCell value={pct(rev_cagr_5)} type="calc" tooltip={cagrTooltip(5, latestFy, latestFy-5, 'Revenue')} />
               <SpreadsheetCell value={pct(rev_cagr_10)} type="calc" tooltip={cagrTooltip(10, latestFy, latestFy-10, 'Revenue')} />
-              <SpreadsheetCell value={pct(ind.revenue_growth)} type="reference" tooltip={`Source: fundgrEB Damodaran | Industry: ${ind.industry_name} (${ind.region})`} />
-              <SpreadsheetCell value={pct(indGlobal?.revenue_growth)} type="reference" tooltip={`Source: fundgrEBGlobal | Industry: ${ind.industry_name} (Global)`} />
+              <SpreadsheetCell value={pct(ind.revenue_growth)} type="reference" tooltip={`Revenue growth reference; EBIT growth is not substituted | Industry: ${ind.industry_name} (${ind.region})`} />
+              <SpreadsheetCell value={pct(indGlobal?.revenue_growth)} type="reference" tooltip={`Revenue growth reference; EBIT growth is not substituted | Industry: ${ind.industry_name} (Global)`} />
               <SpreadsheetCell value={stats?.revenue_growth_3y?.q1 != null && stats?.revenue_growth_3y?.q3 != null ? `${pct(stats.revenue_growth_3y.q1)}–${pct(stats.revenue_growth_3y.q3)}` : '—'} type="reference" tooltip={stats ? `Q1/Median/Q3 of ${stats.n_firms} firms in ${ind.industry_name}\n(Source: Ginzu Input Stat Distributions)` : ''} />
             </tr>
 
@@ -725,8 +725,8 @@ export default function InputSheet({ data, sessionId, onUpdate }: InputSheetProp
               <SpreadsheetCell value={pct(rev_cagr_3)} type="calc" tooltip={cagrTooltip(3, latestFy, latestFy-3, 'Revenue')} />
               <SpreadsheetCell value={pct(rev_cagr_5)} type="calc" tooltip={cagrTooltip(5, latestFy, latestFy-5, 'Revenue')} />
               <SpreadsheetCell value={pct(rev_cagr_10)} type="calc" tooltip={cagrTooltip(10, latestFy, latestFy-10, 'Revenue')} />
-              <SpreadsheetCell value={pct(ind.revenue_growth)} type="reference" tooltip={`Source: fundgrEB | Industry: ${ind.industry_name} (${ind.region})`} />
-              <SpreadsheetCell value={pct(indGlobal?.revenue_growth)} type="reference" tooltip={`Source: fundgrEBGlobal | Industry: ${ind.industry_name} (Global)`} />
+              <SpreadsheetCell value={pct(ind.revenue_growth)} type="reference" tooltip={`Revenue growth reference; EBIT growth is not substituted | Industry: ${ind.industry_name} (${ind.region})`} />
+              <SpreadsheetCell value={pct(indGlobal?.revenue_growth)} type="reference" tooltip={`Revenue growth reference; EBIT growth is not substituted | Industry: ${ind.industry_name} (Global)`} />
               <SpreadsheetCell value={stats?.revenue_growth_3y?.q1 != null && stats?.revenue_growth_3y?.q3 != null ? `${pct(stats.revenue_growth_3y.q1)}–${pct(stats.revenue_growth_3y.q3)}` : '—'} type="reference" tooltip={stats ? `Q1/Median/Q3 across ${stats.n_firms} firms` : ''} />
             </tr>
 
@@ -826,7 +826,8 @@ export default function InputSheet({ data, sessionId, onUpdate }: InputSheetProp
             const regionSuffix = ind.region === 'US' ? '' : ind.region === 'Emerging' ? 'emerg' : ind.region;
             const fSuffix = regionSuffix ? regionSuffix : '';
             const rows: [string, number | null | undefined, number | null | undefined, number | null | undefined, string, string, string][] = [
-              ['Revenue Growth', cm?.revenue_growth, ind.revenue_growth, indGlobal?.revenue_growth, 'pct', `fundgrEB${fSuffix}.xls`, 'fundgrEBGlobal.xls'],
+              ['Revenue Growth', cm?.revenue_growth, ind.revenue_growth, indGlobal?.revenue_growth, 'pct', 'Not supplied by fundgrEB', 'Not supplied by fundgrEB'],
+              ['Expected EBIT Growth (industry)', null, ind.expected_ebit_growth, indGlobal?.expected_ebit_growth, 'pct', `fundgrEB${fSuffix}.xls`, 'fundgrEBGlobal.xls'],
               ['Pre-tax Op Margin', cm?.pretax_operating_margin, ind.pretax_operating_margin, indGlobal?.pretax_operating_margin, 'pct', `margin${fSuffix}.xls`, 'marginGlobal.xls'],
               ['Sales / Capital', cm?.sales_to_capital, ind.sales_to_capital, indGlobal?.sales_to_capital, 'dec', `capex${fSuffix}.xls`, 'capexGlobal.xls'],
               ['ROIC', cm?.roic, ind.roic, indGlobal?.roic, 'pct', `EVA${fSuffix}.xls`, 'EVAGlobal.xls'],
@@ -842,7 +843,7 @@ export default function InputSheet({ data, sessionId, onUpdate }: InputSheetProp
             ];
             return rows.map(([label, company, regional, global_, fmt, srcRegional, srcGlobal]) => (
               <tr key={`cmp-${label}`}>
-                <SpreadsheetCell value={label} type="label" tooltip={`Row: ${label}. Left column = this firm (computed from CIQ data + LTM base year). Regional and Global columns = Damodaran industry medians.`} />
+                <SpreadsheetCell value={label} type="label" tooltip={`Row: ${label}. Left column = this firm (computed from CIQ data + LTM base year). Regional and Global columns = Damodaran industry reference values.`} />
                 <SpreadsheetCell value={fmt === 'pct' ? pct(company) : dec(company)} type="calc"
                   tooltip={`${label} — firm-level, computed from M3/M4 on the LTM-rotated base year. See the Ratios block above (Section 2) for the exact per-year formula.`} />
                 <SpreadsheetCell value={fmt === 'pct' ? pct(regional) : dec(regional)} type="reference"

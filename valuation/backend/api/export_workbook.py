@@ -629,6 +629,9 @@ def _write_diagnostics(wb: openpyxl.Workbook, inp: CompanyValuationInput, report
     _cell(ws, row, 1, "Industry avg revenue growth", font=BOLD_FONT)
     _cell(ws, row, 2, ind.revenue_growth, fill=ORANGE_FILL, fmt=PCT_FMT)
     row += 1
+    _cell(ws, row, 1, "Industry expected EBIT growth (not revenue growth)", font=BOLD_FONT)
+    _cell(ws, row, 2, ind.expected_ebit_growth, fill=ORANGE_FILL, fmt=PCT_FMT)
+    row += 1
     _cell(ws, row, 1, "Most recent revenue growth", font=BOLD_FONT)
     _cell(ws, row, 2, recent_growth, fill=GRAY_FILL, fmt=PCT_FMT)
     row += 1

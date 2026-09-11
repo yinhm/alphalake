@@ -163,3 +163,17 @@ for row in receipt['companies']:
 print('two transitions reproduced; original valuations unchanged')
 PYTHON
 ```
+
+## 行业经营利润增长与收入增长分离
+
+已修正继承的`fundgr_parser`语义：`Expected Growth in EBIT`原被写成`revenue_growth`，经`DamodaranStore.lookup_industry`进入行业收入增长参考，展示于输入页/增长对照及工作簿。现在解析为独立`expected_ebit_growth`，类型与查询保留该字段；缺乏真正收入增长参考时`revenue_growth`为空。工作簿单列“Industry expected EBIT growth (not revenue growth)”，输入页也单列行业EBIT增长，并移除收入增长参考来自fundgrEB的错误提示。
+
+证据来自仓库继承的八份`fundgrEB*.xls`：表题明确为经营利润的基本面增长，E列表头为`Expected Growth in EBIT`。[证据回执](acceptance/fundgr-semantics-20260911.json)记录各文件哈希；全球表SHA为`d180bb311b2b9370f69ce51a5408a588d247e336bbd6078709b0c21093ad72dc`。八份表681个数值逐项与E列相等，列名被篡改为收入含义时明确拒绝；没有以缺字段为零。表内观察日期不等于发布日期，这批继承文件首次取得时间未知，不能借用另一份已同步参考的取得时间，也未新增AlphaLake参考库发布。
+
+全球Computers/Peripherals的11.2215%、Furn/Home Furnishings的4.1255%现在仅作为行业经营利润增长参考；不自动用作公司收入增长、公司经营利润预测或已验证的长期增长。`ROC`和`Reinvestment Rate`源分量原样保留于解析层，本轮没有把它们接成公司事实或标准参考。
+
+已追踪调用链：通用DCF收入路径由显式政策/共享历史规则生成，不直接以该行业字段填入收入预测。[两份安克/苏泊尔归档标准请求](acceptance/fundgr-semantics-20260911.json)经当前引擎完整报告精确重放，估值不变；输入类型只增加空的经营利润增长字段。已有归档run保留原内容，不能把它们的旧行业参考重新描述为已修正数据；新运行的引擎版本会变化。运行中的Web服务需要重新加载参考缓存，旧会话的来源不明收入增长值不做猜测性改名，需显式重新加载行业参考或重新建会话。
+
+回归：`tests/test_fundgr_semantics.py`以真实地区表→解析→类型查询锁定字段分离，并用同长度二进制表头篡改检验拒绝；使用现有xlrd，进入现有pytest CI，无新增依赖或skip。前端`npm run build`未通过：当前与隔离的未修改HEAD副本均为相同25条TypeScript错误；本轮没有新增错误，但不将前端构建称为通过。
+
+本轮完整验证：Python 379项通过、4项既有外部样本缺失跳过、7条既有警告（486.29秒），Go全套及构建通过。八表681项及两份真实运行/工作簿检查通过；前端失败及其基线提交、相同25条错误详见上述回执。无依赖变更。

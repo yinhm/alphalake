@@ -109,6 +109,7 @@ class IndustryData(BaseModel):
     after_tax_operating_margin: float | None = Field(default=None, description="Industry after-tax operating margin")
     sales_to_capital: float | None = Field(default=None, description="Sales / Invested Capital ratio")
     revenue_growth: float | None = Field(default=None, description="Industry average revenue growth")
+    expected_ebit_growth: float | None = Field(default=None, description="Industry fundamental expected EBIT growth; not revenue growth or company forecast")
     std_dev_stock: float | None = Field(default=None, description="Industry average std deviation in stock prices")
     roic: float | None = Field(default=None, description="Industry average ROIC (from EVA dataset)")
     ev_ebitda: float | None = Field(default=None)

@@ -230,6 +230,7 @@ class DamodaranStore:
             after_tax_operating_margin=raw.get("aftertax_operating_margin"),
             sales_to_capital=raw.get("sales_to_capital"),
             revenue_growth=raw.get("revenue_growth"),
+            expected_ebit_growth=raw.get("expected_ebit_growth"),
             std_dev_stock=raw.get("std_dev_stock"),
             roic=raw.get("roic"),
             ev_ebitda=raw.get("ev_ebitda"),

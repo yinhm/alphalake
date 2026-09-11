@@ -1,0 +1,187 @@
+{
+  "workbooks": [
+    {
+      "path": "valuation/knowledge_base/damodaran/fundgrEB.xls",
+      "sha256": "d96d24f919d60500340b40d99cdc93dcc655be053013371a6960745589a04cb2",
+      "observation_date": "2026-01-05"
+    },
+    {
+      "path": "valuation/knowledge_base/damodaran/fundgrEBChina.xls",
+      "sha256": "5f5e8f7f50c0281da0268e6e020a843d38b80f20b7a747e9e7dd16d7eefaaccc",
+      "observation_date": "2026-01-05"
+    },
+    {
+      "path": "valuation/knowledge_base/damodaran/fundgrEBEurope.xls",
+      "sha256": "ddc928b700c0355fbc24070d48d0d036e2c7a30990ef334fe9bbbef89437282a",
+      "observation_date": "2026-01-05"
+    },
+    {
+      "path": "valuation/knowledge_base/damodaran/fundgrEBGlobal.xls",
+      "sha256": "d180bb311b2b9370f69ce51a5408a588d247e336bbd6078709b0c21093ad72dc",
+      "observation_date": "2026-01-05"
+    },
+    {
+      "path": "valuation/knowledge_base/damodaran/fundgrEBIndia.xls",
+      "sha256": "1133f8904cb519f3c86700739fdb7afc85e7fdde01b410cc1bce5b889011f864",
+      "observation_date": "2026-01-05"
+    },
+    {
+      "path": "valuation/knowledge_base/damodaran/fundgrEBJapan.xls",
+      "sha256": "1882065a6ed828b8c36edfd17dd6de1ff3f27f61dfc7115b1b217614c6debcc8",
+      "observation_date": "2026-01-05"
+    },
+    {
+      "path": "valuation/knowledge_base/damodaran/fundgrEBRest.xls",
+      "sha256": "4c58a7335147dc82145f5d6fc563dcd6264759feffb0490586ec7d5dc81bd2c8",
+      "observation_date": "2026-01-05"
+    },
+    {
+      "path": "valuation/knowledge_base/damodaran/fundgrEBemerg.xls",
+      "sha256": "b8c3e6e4de9cca484540e36923a10eff98d31a71a736e23661e6d8139586b515",
+      "observation_date": "2026-01-05"
+    }
+  ],
+  "source_observation_date": "2026-01-05",
+  "first_acquisition": "unknown_in_inherited_repository_not_reconstructed_from_mtime",
+  "examples": [
+    {
+      "industry_name": "Computers/Peripherals",
+      "region": "Global",
+      "beta_u": 0.0,
+      "beta_u_corrected_for_cash": null,
+      "industry_d_e_ratio": null,
+      "industry_effective_tax_rate": null,
+      "cost_of_equity": null,
+      "cost_of_debt_pretax": null,
+      "wacc": null,
+      "pretax_operating_margin": null,
+      "after_tax_operating_margin": null,
+      "sales_to_capital": null,
+      "revenue_growth": null,
+      "expected_ebit_growth": 0.11221506133746678,
+      "std_dev_stock": null,
+      "roic": null,
+      "ev_ebitda": null,
+      "ev_sales": null,
+      "pe_ratio": null,
+      "pbv_ratio": null
+    },
+    {
+      "industry_name": "Furn/Home Furnishings",
+      "region": "Global",
+      "beta_u": 0.0,
+      "beta_u_corrected_for_cash": null,
+      "industry_d_e_ratio": null,
+      "industry_effective_tax_rate": null,
+      "cost_of_equity": null,
+      "cost_of_debt_pretax": null,
+      "wacc": null,
+      "pretax_operating_margin": null,
+      "after_tax_operating_margin": null,
+      "sales_to_capital": null,
+      "revenue_growth": null,
+      "expected_ebit_growth": 0.041254681716192204,
+      "std_dev_stock": null,
+      "roic": null,
+      "ev_ebitda": null,
+      "ev_sales": null,
+      "pe_ratio": null,
+      "pbv_ratio": null
+    }
+  ],
+  "valuation_replays": [
+    {
+      "code": "300866",
+      "run_id": "6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b",
+      "source_run": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b.json",
+        "sha256": "328ffa8de193bb8fe8253a0be686b051f1ea4160ba3c80a182781052a7b028b7"
+      },
+      "value_per_share": 126.13784833230838,
+      "report_replay": "exact_match",
+      "input_schema_changes": [
+        {
+          "path": "/industry_data/expected_ebit_growth",
+          "before_present": false,
+          "after_present": true,
+          "before": null,
+          "after": null
+        }
+      ]
+    },
+    {
+      "code": "002032",
+      "run_id": "183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d",
+      "source_run": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d.json",
+        "sha256": "9560ca4d3056791d115b2b10f0f5b84b0cc789fd5663fc12a9d16880fcf42b70"
+      },
+      "value_per_share": 43.252612680123605,
+      "report_replay": "exact_match",
+      "input_schema_changes": [
+        {
+          "path": "/industry_data/expected_ebit_growth",
+          "before_present": false,
+          "after_present": true,
+          "before": null,
+          "after": null
+        }
+      ]
+    }
+  ],
+  "boundary": "继承文件的行业EBIT增长参考，不是公司收入预测；未发布AlphaLake参考数据库或回填历史可用时间；旧运行不改写。",
+  "workbook_checks": [
+    {
+      "code": "300866",
+      "revenue_growth": null,
+      "expected_ebit_growth": 0.11221506133746678,
+      "report_unchanged": true
+    },
+    {
+      "code": "002032",
+      "revenue_growth": null,
+      "expected_ebit_growth": 0.041254681716192204,
+      "report_unchanged": true
+    }
+  ],
+  "frontend_build": {
+    "status": "failed_existing_errors",
+    "current_error_count": 25,
+    "baseline_error_count": 25,
+    "errors_identical": true,
+    "baseline_commit": "03048b27fec97794a83f1bcdd89c2a585ceaf0e4",
+    "errors": [
+      "src/App.tsx(56,42): error TS2345: Argument of type '{ ticker: string; company_name: string; country: string; reporting_currency: string; stock_price_currency: string; raw_financials: ({ fiscal_year: number; revenues: number; ebit: number; ebitda: number; ... 15 more ...; minority_interests: number; } | { ...; } | { ...; } | { ...; })[]; ... 10 more ...; valuation_ass...' is not assignable to parameter of type 'CompanyValuationInput'.",
+      "src/components/GeographicSegmentsPanel.tsx(2,34): error TS6196: 'GeographicSegment' is declared but never used.",
+      "src/components/OnboardingWizard.tsx(199,13): error TS2322: Type 'RefObject<HTMLInputElement | null>' is not assignable to type 'RefObject<HTMLInputElement>'.",
+      "src/components/SensitivityPanel.tsx(38,10): error TS6133: 'fmtPct' is declared but its value is never read.",
+      "src/components/SensitivityPanel.tsx(50,9): error TS6133: 'va' is declared but its value is never read.",
+      "src/components/SensitivityPanel.tsx(51,9): error TS6133: 'mc' is declared but its value is never read.",
+      "src/components/SensitivityPanel.tsx(117,7): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.",
+      "src/components/SensitivityPanel.tsx(176,33): error TS2345: Argument of type 'number | false' is not assignable to parameter of type 'number | null | undefined'.",
+      "src/pages/AnswerKeys.tsx(7,44): error TS6133: 'sessionId' is declared but its value is never read.",
+      "src/pages/CostOfCapital.tsx(562,64): error TS2339: Property 'has_operating_leases' does not exist on type 'MethodologyChoices'.",
+      "src/pages/Diagnostics.tsx(7,45): error TS6133: 'sessionId' is declared but its value is never read.",
+      "src/pages/Diagnostics.tsx(56,9): error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.",
+      "src/pages/Diagnostics.tsx(216,46): error TS2339: Property 'toFixed' does not exist on type 'number | false'.",
+      "src/pages/InputSheet.tsx(152,44): error TS6133: 'sessionId' is declared but its value is never read.",
+      "src/pages/InputSheet.tsx(156,9): error TS6133: 'fin1' is declared but its value is never read.",
+      "src/pages/InputSheet.tsx(165,9): error TS6133: 'src' is declared but its value is never read.",
+      "src/pages/InputSheet.tsx(207,38): error TS2345: Argument of type 'PatchValue' is not assignable to parameter of type 'string | number | boolean | null'.",
+      "src/pages/InputSheet.tsx(318,27): error TS6133: 'prev' is declared but its value is never read.",
+      "src/pages/InputSheet.tsx(633,18): error TS6133: 'yearlyEffTax' is declared but its value is never read.",
+      "src/pages/LeaseConverter.tsx(7,48): error TS6133: 'sessionId' is declared but its value is never read.",
+      "src/pages/OptionValue.tsx(22,45): error TS6133: 'sessionId' is declared but its value is never read.",
+      "src/pages/RDConverter.tsx(7,45): error TS6133: 'sessionId' is declared but its value is never read.",
+      "src/pages/SyntheticRating.tsx(26,49): error TS6133: 'sessionId' is declared but its value is never read.",
+      "src/pages/ValuationOutput.tsx(231,9): error TS6133: 'priceAsPctOfValue' is declared but its value is never read.",
+      "src/pages/ValuationPicture.tsx(7,50): error TS6133: 'sessionId' is declared but its value is never read."
+    ]
+  },
+  "validation": {
+    "python_full": "379 passed, 4 existing external-fixture skips, 7 existing warnings, 486.29 seconds",
+    "go_test": "./... passed",
+    "go_build": "./cmd/alphalake passed",
+    "dependency_changes": false
+  }
+}

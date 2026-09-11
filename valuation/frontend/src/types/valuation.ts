@@ -76,6 +76,7 @@ export interface IndustryData {
   after_tax_operating_margin: number | null;
   sales_to_capital: number | null;
   revenue_growth: number | null;
+  expected_ebit_growth?: number | null;
   std_dev_stock: number | null;
   roic: number | null;
   ev_ebitda: number | null;
