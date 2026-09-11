@@ -1,0 +1,76 @@
+{
+  "boundary": "descriptive_source_research_not_model_admission_or_strict_PIT",
+  "amount_unit": "million_CNY",
+  "companies": 600,
+  "by_origin": {
+    "2023-06-30": {
+      "pairs": 600,
+      "statuses": {
+        "blocked": 44,
+        "available": 556
+      },
+      "complete_years": {
+        "0": 59,
+        "5": 377,
+        "2": 62,
+        "1": 50,
+        "3": 30,
+        "4": 22
+      },
+      "ebit_signs": {
+        "unknown": 44,
+        "positive": 433,
+        "nonpositive": 123
+      }
+    },
+    "2024-06-30": {
+      "pairs": 600,
+      "statuses": {
+        "available": 585,
+        "blocked": 15
+      },
+      "complete_years": {
+        "1": 36,
+        "5": 399,
+        "3": 61,
+        "0": 24,
+        "2": 50,
+        "4": 30
+      },
+      "ebit_signs": {
+        "nonpositive": 152,
+        "positive": 433,
+        "unknown": 15
+      }
+    },
+    "2025-06-30": {
+      "pairs": 600,
+      "statuses": {
+        "available": 589,
+        "blocked": 11
+      },
+      "complete_years": {
+        "2": 36,
+        "5": 429,
+        "4": 61,
+        "1": 13,
+        "3": 50,
+        "0": 11
+      },
+      "ebit_signs": {
+        "positive": 423,
+        "nonpositive": 166,
+        "unknown": 11
+      }
+    }
+  },
+  "evidence": {
+    "protocol_sha256": "71a22981a137f3d2b668fbf660700bc0db919cc297a009eac93fc19478abfbf8",
+    "snapshot_sha256": "9e87dad4b1e261d229b7d5b55f6e57b8b3ee5f4a893076d352971e2f53efe3ff",
+    "helpers": {
+      "tools/audit_tdx_origin_inputs.py": "6ed5943f69a40156f567c09d011c1660ba3d5dfd75a2293e62d3ac6d05b3574c",
+      "tools/backtest_tdx_history.py": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+      "tools/backtest_tdx_normalized_margin.py": "525d439505c28543e07f21c79dcaeba14302b4b8042cb7cfeb0609e9d30b5d74"
+    }
+  }
+}
