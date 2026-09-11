@@ -32,3 +32,27 @@ def test_rd_history_requires_oldest_amortization_cohort_and_preserves_rejections
         assert first['annual_inputs'][-1]['status'] == reason
         assert actual['summary']['2023']['candidates'] == 1
         assert actual['results'][1:] == expected['results'][1:]
+
+
+def test_real_rd_semantics_keep_positive_bits_and_zero_counterexample():
+    import pytest
+    from tools.verify_tdx_rd_semantics import load_inputs, verify
+
+    ledger, anker, old = load_inputs()
+    result = verify(ledger, anker, old)
+    assert len(result) == 8
+    assert sum(r['status'] == 'matched_source_bits' for r in result) == 7
+    assert result[-1]['status'] == 'zero_source_positive_comparative'
+    assert result[-1]['pdf_value_cny'] == '537932446.49'
+    changed = copy.deepcopy(ledger)
+    changed['reports'][0]['values'][1] = '14566949.81'
+    with pytest.raises(ValueError, match='PDF amounts differ'):
+        verify(changed, anker, old)
+    changed = copy.deepcopy(old)
+    next(r for r in changed['records'] if r['code']=='002943')['bits']['FN304'] ^= 1
+    with pytest.raises(ValueError, match='FN304 bits differ'):
+        verify(ledger, anker, changed)
+    changed = copy.deepcopy(old)
+    next(r for r in changed['records'] if r['code']=='000066')['bits']['FN304'] = 1
+    with pytest.raises(ValueError, match='zero counterexample differs'):
+        verify(ledger, anker, changed)

@@ -1,0 +1,69 @@
+{
+  "anker_source_sha256": "ce9b949507a0ac52c1f1389c72524c01f5856e467a02db6443b2b4989e7e2dc0",
+  "source_2017_sha256": "a3469f2e552d0065e533b90eee92fea017fd4a1a38505496e2ff5b342fa69751",
+  "anker_reported_sha256": "4549a03d9358d889fb8b9957f8357a8aa286fd73aa57614fa2d286bc5c251bd1",
+  "reports": [
+    {
+      "url": "https://static.cninfo.com.cn/finalpage/2018-11-19/1205614847.PDF",
+      "sha256": "625c14d0f6d8e65f7da49e33ff16906ff40f0d569c4ff2c59abb045c886b8b85",
+      "size": 1018520,
+      "fetched_at": "2026-09-11T07:50:02.619040+00:00",
+      "code": "002943",
+      "file": "yujing-prospectus.pdf",
+      "page": 48,
+      "section": "2、合并利润表",
+      "unit_anchor": "单位：元",
+      "headers": [
+        "2018年1-6月",
+        "2017年度",
+        "2016年度",
+        "2015年度"
+      ],
+      "label": "研发费用",
+      "values": [
+        "13036364.02",
+        "14566949.80",
+        "7995852.86",
+        "6451946.13"
+      ],
+      "column": 1,
+      "period": "2017-12-31",
+      "status": "matched_source_bits"
+    },
+    {
+      "url": "https://disc.static.szse.cn/download/disc/disk01/finalpage/2019-04-30/b17d803f-ac75-49b4-a6f2-7b399bdb5fd4.PDF",
+      "sha256": "5694763ef2ef3bb9654eba5ef9e0cdf241e63148598f774ff7d3f5951f605b01",
+      "size": 2948777,
+      "fetched_at": "2026-09-11T07:51:24.230498+00:00",
+      "code": "000066",
+      "file": "greatwall-2018.pdf",
+      "page": 97,
+      "section": "合并利润表",
+      "unit_anchor": "人民币元",
+      "headers": [
+        "2018年度",
+        "本期发生额",
+        "上期发生额"
+      ],
+      "label": "研发费用（四十四）",
+      "values": [
+        "644718337.98",
+        "537932446.49"
+      ],
+      "column": 1,
+      "period": "2017-12-31",
+      "status": "zero_source_positive_comparative",
+      "notes": [
+        {
+          "page": 130,
+          "anchors": [
+            "新增“研发费用”项目",
+            "比较数据相应调整",
+            "537,932,446.49",
+            "重分类至"
+          ]
+        }
+      ]
+    }
+  ]
+}

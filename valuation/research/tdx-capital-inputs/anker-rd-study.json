@@ -1,0 +1,12 @@
+{
+  "study_id": "anker-rd-semantic-source-v1",
+  "samples": [
+    {
+      "code": "300866"
+    }
+  ],
+  "additional_source_fields": [
+    304
+  ],
+  "boundary": "source_semantics_only_not_prediction_sample_or_standard_fact"
+}

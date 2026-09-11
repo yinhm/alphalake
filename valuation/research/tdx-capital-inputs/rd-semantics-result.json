@@ -1,0 +1,72 @@
+[
+  {
+    "code": "300866",
+    "period": "2021-12-31",
+    "status": "matched_source_bits",
+    "pdf_value_cny": "778430652.22",
+    "source_bits": 1312397219,
+    "pdf_id": "1212886831",
+    "page": "90"
+  },
+  {
+    "code": "300866",
+    "period": "2020-12-31",
+    "status": "matched_source_bits",
+    "pdf_value_cny": "567402295.09",
+    "source_bits": 1309099901,
+    "pdf_id": "1212886831",
+    "page": "90"
+  },
+  {
+    "code": "300866",
+    "period": "2023-12-31",
+    "status": "matched_source_bits",
+    "pdf_value_cny": "1413867418.29",
+    "source_bits": 1319668687,
+    "pdf_id": "1219800919",
+    "page": "103"
+  },
+  {
+    "code": "300866",
+    "period": "2022-12-31",
+    "status": "matched_source_bits",
+    "pdf_value_cny": "1080462829.88",
+    "source_bits": 1317063964,
+    "pdf_id": "1219800919",
+    "page": "103"
+  },
+  {
+    "code": "300866",
+    "period": "2025-12-31",
+    "status": "matched_source_bits",
+    "pdf_value_cny": "2892785453.80",
+    "source_bits": 1328311399,
+    "pdf_id": "1225090973",
+    "page": "112"
+  },
+  {
+    "code": "300866",
+    "period": "2024-12-31",
+    "status": "matched_source_bits",
+    "pdf_value_cny": "2108444601.44",
+    "source_bits": 1325095071,
+    "pdf_id": "1225090973",
+    "page": "112"
+  },
+  {
+    "code": "002943",
+    "period": "2017-12-31",
+    "status": "matched_source_bits",
+    "pdf_value_cny": "14566949.80",
+    "source_bits": 1264469542,
+    "page": 48
+  },
+  {
+    "code": "000066",
+    "period": "2017-12-31",
+    "status": "zero_source_positive_comparative",
+    "pdf_value_cny": "537932446.49",
+    "source_bits": 0,
+    "page": 97
+  }
+]
