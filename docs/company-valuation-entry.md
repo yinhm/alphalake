@@ -55,7 +55,9 @@ python -m tools.company_valuation /absolute/market.duckdb 300866 \
 
 `cash_check.status=blocked_missing_standard_history`时按报告期/字段列出`missing_periods`，预测和差额为空；选中估值的状态和退出码仍按估值本身判定。标准证据矛盾或导出失败则作为请求失败，不悄悄忽略。`check_id`绑定现金检查结果、源输入摘要、研究验证摘要与检查代码版本，并引用原`valuation_run_id`；检查随stdout交付，请保存JSON，估值归档不被修改。
 
-[单公司主库验收](acceptance/cash-crosscheck-20260911.json)：安克当前TTM三项齐全，但上一TTM缺2024Q3/Q4收入及OCF、2024H1/FY资本开支，因此明确阻断现金检查。原run ID及92.1504元条件值与此前基线完全一致；尚无主库正向现金差额验收。正向计算回归使用真实研究数值搭配模拟标准血缘，仅证明契约/公式，不能冒称历史标准链已补齐。现已完成[安克2024现金输入原文补证](../internal/ingest/testdata/anker-cash-history-2024/README.md)，三个报告期的7个相关源值与原文一致；下一步扩展FN114审核有效期，再在副本导入、披露关联和物化，完成正向验收。 本轮Python 3.12后端281项通过、4项既有上游TEST_DATA缺失跳过，新增测试纳入既有pytest CI路径；Go全套测试、构建、vet、检查摘要、文档链接及`git diff --check`通过，无新依赖或Go代码改动。主库只读，估值记录写入独立验收目录。
+[此前主库验收](acceptance/cash-crosscheck-20260911.json)保留缺2024历史的阻断结果。现已完成[真实主库副本正向验收](acceptance/cash-history-upgrade-20260911.json)：三期TDX记录→公告关联→标准物化→两期TTM→统一CLI现金检查，历史不再缺项。[差额解释及复现](anker-cash-bridge-20260911.md)单独记录。现金预测OCF为16.4115亿元，沿用资本开支3.1963亿元，现金代理13.2151亿元；DCF首年FCFF为6.4163亿元，差额−6.7988亿元，仍标记未分类，不能据此修改估值。原run ID和92.1504元条件值完全不变。
+
+迁移038只扩展FN114到2024-06-30；其他字段审核有效期不变。真实副本重开重放增改删均零，原主库哈希不变、仍为schema37。默认Go/Python回归使用自包含真实样本；1GB限制下的完整主库副本验收另行记录，不依赖CI保有本机数据库。该历史为后来取得的版本，原公告日期边界有验证，但不冒称当时已留存或严格PIT。
 
 ## JSON契约
 

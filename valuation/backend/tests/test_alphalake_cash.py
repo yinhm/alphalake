@@ -70,3 +70,36 @@ def test_cash_check_formula_scope_gaps_and_immutability():
     with pytest.raises(ValueError):cash_crosscheck(request,bad,report)
     for key,name in [('protocol_sha256','protocol.json'),('holdout_sha256','holdout-summary.json')]:
         assert VALIDATION[key]==hashlib.sha256((ROOT/'valuation/research/tdx-operating-cash-forecast'/name).read_bytes()).hexdigest()
+
+
+def test_real_standard_history_to_company_cash_check(tmp_path):
+    import os,subprocess,sys
+    from data_sources.alphalake import content_hash
+    output=tmp_path/'standard';binary=tmp_path/'alphalake';runs=tmp_path/'runs'
+    env=os.environ|{'GOPROXY':'off','GOSUMDB':'off','ALPHALAKE_CASH_HISTORY_EXPORT_DIR':str(output),'ALPHALAKE_VALUATION_RUN_DIR':str(runs)}
+    env.pop('ALPHALAKE_CASH_HISTORY_BASE_DB',None)
+    subprocess.run(['go','test','./internal/ingest','-run','^TestRealAnkerCashHistory$','-count=1'],cwd=ROOT,env=env,check=True,capture_output=True)
+    subprocess.run(['go','build','-o',str(binary),'./cmd/alphalake'],cwd=ROOT,env=env,check=True,capture_output=True)
+    args=[sys.executable,'-m','tools.company_valuation',str(output/'acceptance.duckdb'),'300866','--period','2026-06-30',
+          '--as-of','2026-09-10T22:18:56.906406Z','--policy',str(ROOT/'valuation/examples/nonfinancial-baseline-2026H1-pilot.json'),'--alphalake',str(binary)]
+    def run(extra):return json.loads(subprocess.check_output(args+extra,cwd=ROOT/'valuation/backend',env=env,text=True))
+    baseline=run([]);checked=run(['--cash-check']);cash=checked['cash_check']
+    assert baseline['valuation']==checked['valuation'] and baseline['status']==checked['status']=='illustrative_book_equity_scenario'
+    assert cash['status']=='research_crosscheck_available' and cash['missing']==[]
+    assert cash['valuation_run_id']==baseline['valuation']['run_id']
+    assert cash['check_id']==content_hash({k:v for k,v in cash.items() if k!='check_id'})
+    snapshots=[json.loads((output/name).read_text()) for name in ('current.json','prior.json')]
+    amounts=[{w['field']:Decimal(w['value']) for w in s['windows'] if w['field'] in ('FN230','FN234','FN114')} for s in snapshots]
+    current,prior=amounts;ocf=(current['FN234']+prior['FN234']*current['FN230']/prior['FN230'])/2
+    assert Decimal(cash['cash_forecast']['operating_cashflow'])==ocf
+    assert Decimal(cash['cash_forecast']['ocf_less_capex'])==ocf-current['FN114']
+    older=[f for f in cash['observations'][1]['facts'] if f['period'].startswith('2024')]
+    assert len(older)==6 and all(f['announcement_id'] and f['pdf_sha256'] and f['artifact_sha256'] for f in older)
+    assert {f['field'] for f in older}=={'FN230','FN234','FN114'}
+    # Same-cutoff historical evidence is independently required, not silently replaced by a source snapshot.
+    request=AlphaLakeRequest.model_validate(json.loads((runs/(cash['valuation_run_id']+'.json')).read_text())['request'])
+    bad=copy.deepcopy(snapshots[1]);bad['facts'][0]['instrument_id']+=100
+    with pytest.raises(ValueError):cash_crosscheck(request,bad,{'dcf':{}})
+    missing=copy.deepcopy(snapshots[1]);missing['windows']=[w for w in missing['windows'] if w['field']!='FN234']
+    blocked=cash_crosscheck(request,missing,{'dcf':{}})
+    assert blocked['status']=='blocked_missing_standard_history' and blocked['cash_forecast'] is None

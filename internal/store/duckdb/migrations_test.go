@@ -49,6 +49,7 @@ func TestMigrationOrder(t *testing.T) {
 		"035_scoped_financial_windows.sql",
 		"036_security_industry_observations.sql",
 		"037_security_code_transition.sql",
+		"038_capex_history_scope.sql",
 	}
 	if len(migrations) != len(want) {
 		t.Fatalf("got %v", migrations)
@@ -120,9 +121,16 @@ func TestCoreFinancialMigrationFromV17(t *testing.T) {
 			count(*) FILTER (WHERE period_basis='report'),
 			count(*) FILTER (WHERE period_basis='instant'),
 			count(*) FILTER (WHERE period_basis='ytd'),
-			count(*) FILTER (WHERE valid_from < DATE '2025-01-01')
+			count(*) FILTER (WHERE valid_from < DATE '2025-01-01' AND provider_field <> 'FN114')
 			FROM fundamental.provider_field WHERE source='tdx'`).Scan(&existing, &instant, &ytd, &historical); err != nil {
 			t.Fatal(err)
+		}
+		var capexFrom string
+		if err := db.QueryRowContext(ctx, `SELECT CAST(valid_from AS VARCHAR) FROM fundamental.provider_field WHERE source='tdx' AND provider_field='FN114'`).Scan(&capexFrom); err != nil {
+			t.Fatal(err)
+		}
+		if capexFrom != "2024-06-30" {
+			t.Fatal("unexpected reviewed capex history", capexFrom)
 		}
 		if existing != 9 || instant != 43 || ytd != 28 || historical != 9 {
 			t.Fatalf("mapping upgrade: existing=%d instant=%d ytd=%d historical=%d", existing, instant, ytd, historical)
