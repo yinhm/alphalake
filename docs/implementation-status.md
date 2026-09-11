@@ -1,5 +1,7 @@
 # AlphaLake 实现状态
 
+[对数增长校准的新公司验证](../valuation/research/tdx-growth-calibration/README.md)未通过：开发收入误差改善6.51%，新120家249/360组仅改善1.44%，WAPE及2024单期恶化。不发布生产政策，开发成功与验证失败并列保留。
+
 [经验预测范围开发](../valuation/research/tdx-past-error-bands/README.md)未通过：三起点632/900项可评价，2025期收入/EBIT代理覆盖低于冻结90%门槛，范围仍宽；未发布为单公司预测或DCF置信区间。
 
 [现金预测新120家公司复验](../valuation/research/tdx-operating-cash-replication/README.md)未通过：三起点324/360组，OCF主要误差12.1920%→12.7863%，现金代理亦退化。统一现金交叉检查已同时返回新失败证据，不只展示原留出6.84%的改善；不扩大规则适用性或替换DCF。

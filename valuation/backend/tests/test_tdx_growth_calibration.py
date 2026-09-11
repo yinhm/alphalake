@@ -56,3 +56,38 @@ def test_real_growth_calibration_and_cash_bridge():
     changed = study(p,source,inputs['sample_protocol'],inputs['design'])
     assert code not in {r['code'] for r in changed['fits']['2023-06-30']['pairs']}
     assert len(changed['fits']['2023-06-30']['pairs']) == len(result['fits']['2023-06-30']['pairs'])-1
+
+
+def test_new_company_validation_fails_without_changing_rule_or_training(tmp_path):
+    p,inputs = load_inputs(DIRECTORY/'validation-protocol.json')
+    original,_ = load_inputs(DIRECTORY/'protocol.json')
+    for k in original.keys()-{'inputs','scope'}:
+        assert p[k] == original[k]
+    result = study(p,**inputs)
+    saved = json.loads(gzip.decompress((DIRECTORY/'validation.json.gz').read_bytes()))
+    assert saved['protocol_sha256'] == hashlib.sha256((DIRECTORY/'validation-protocol.json').read_bytes()).hexdigest()
+    assert result == {k:v for k,v in saved.items() if k!='protocol_sha256'}
+    assert result['decision']['passed'] is False and result['summary']['statuses']=={'evaluated':249,'blocked':111}
+    development = json.loads(gzip.decompress((DIRECTORY/'development.json.gz').read_bytes()))
+    assert result['fits'] == development['fits']
+    audit = json.loads(gzip.decompress((DIRECTORY/'validation-sampling.json.gz').read_bytes()))
+    evaluation = {r['code'] for r in inputs['design']['samples'] if r['role']=='evaluation'}
+    assert evaluation == set(audit['selected_codes']) and len(evaluation)==120
+    assert not evaluation.intersection(audit['excluded_codes'])
+    universe = json.loads((ROOT/audit['universe_path']).read_bytes())
+    assert hashlib.sha256((ROOT/audit['universe_path']).read_bytes()).hexdigest()==audit['universe_sha256']
+    eligible = [r for r in universe['companies'] if r['code'] not in audit['excluded_codes']]
+    assert len(eligible)==audit['eligible_count']==3393
+    ordered = sorted(eligible,key=lambda r:hashlib.sha256((audit['seed']+':'+r['code']).encode()).hexdigest())
+    assert [r['code'] for r in ordered[:120]] == audit['selected_codes']
+    rows = [r for r in result['results'] if r['status']=='evaluated']
+    for model,score in result['summary']['models'].items():
+        distances = [abs(D(str(r['forecasts'][model]['revenue']))-D(str(r['actual']['revenue']))) for r in rows]
+        mae = sum(d/D(str(r['actual']['revenue'])) for d,r in zip(distances,rows))*100/len(rows)
+        wape = sum(distances)*100/sum(D(str(r['actual']['revenue'])) for r in rows)
+        assert score['revenue_mae_pct']==pytest.approx(float(mae),rel=1e-12)
+        assert score['revenue_wape_pct']==pytest.approx(float(wape),rel=1e-12)
+    # 压缩源也先核对原始压缩字节哈希，损坏副本不能进入解析。
+    path = tmp_path/'source.json.gz';raw=bytearray((ROOT/p['inputs']['source']['path']).read_bytes());raw[-1]^=1;path.write_bytes(raw)
+    p['inputs']['source']['path']=str(path);protocol=tmp_path/'protocol.json';protocol.write_text(json.dumps(p))
+    with pytest.raises(ValueError,match='input hash differs'):load_inputs(protocol)

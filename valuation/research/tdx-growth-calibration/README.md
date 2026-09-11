@@ -1,5 +1,7 @@
 # 起点前对数增长校准
 
+**当前结论：开发通过，新增120家公司验证未通过，不采用。** 收入误差仅改善约1.44%，收入WAPE及2024单期恶化；保留全部失败与拒绝，不调整参数补救。
+
 先冻结[协议](protocol.json)，复用既有600家、300/300不重叠角色和三起点。每期只用前一已成熟窗口拟合一个带截距线性回归：预测收入/起点收入与实际收入/起点收入取对数，校准后转回增长率并保持原−10%/20%边界。不改利润率、不扫描系数或特征、不删异常公司。已暴露开发样本，不是新留出。
 
 [达摩达兰的增长讨论](https://pages.stern.nyu.edu/~adamodar/pdfiles/papers/growthorigins.pdf)提醒历史增长的预测限制；本文回归是显式研究选择，不是他指定的估值公式。对数反变换是几何点预测，不冒称无偏的条件平均收入。除收入MAE至少改善5%外，还须满足逐期、收入WAPE、零增长比较及EBIT误差门槛；失败不进入新留出或继续调参。
@@ -7,7 +9,7 @@
 同时按相同税率与资本效率计算首年政策现金流差额，不能把它当实际FCFF，也不将一年校准扩展为五年有效。`5d3c5f3`先于实现和评分冻结协议。
 
 
-## 开发通过，尚待新公司复验
+## 开发通过（历史阶段）
 
 [开发结果](development.json.gz)保留900项、632可评价和268拒绝；[摘要](development-summary.json)记录三个起点的187/204/213个成熟校准组合（分母各300）。全部校准实际受当期9月1日截止约束，300家评价公司不进入拟合。
 
@@ -26,3 +28,33 @@
 ```bash
 PYTHONPATH=valuation/backend workspace/anker-agent-adapter-20260906/venv/bin/python -m pytest valuation/backend/tests/test_tdx_growth_calibration.py -q
 ```
+
+
+## 新120家公司验证未通过
+
+`7ac840c`锁定实现及开发结果，`e95e99d`冻结[验证计划](validation-plan.json)、[设计](validation-design.json)和[抽样审计](validation-sampling.json.gz)，`c003412`随后锁定[验证协议](validation-protocol.json)与[源切片](validation-source.json.gz)，才打开新公司评分。排除研究JSON中samples/results曾涉及的1,460个代码，从既有总体剩余3,393家按固定哈希排序取120家；未按未来误差换样本。当前生存者总体、研究外生产批次曝光、同一宏观年份和后来取得版本的限制保留，不能称从未看过这些公司的任何资料或严格PIT。
+
+22个原包的SHA/MD5/大小/报告期均与原校准源一致；重提取的300家校准记录在重叠期间逐位相同。组合切片保留原校准记录、原取得元数据及新增评价记录，共11,694条；三个起点全部校准公司、对数观测和拟合系数与开发阶段精确相同。原公式、增长边界、门槛、税率和资本效率不变；共享输入读取仅增添标准库gzip支持，旧研究结果经回归保持不变。
+
+[验证完整结果](validation.json.gz)保留360项、249可评价及111拒绝，[摘要](validation-summary.json)记录全部门槛。新样本收入主要误差改善1.44%，未达5%；收入WAPE恶化，2024期主要误差恶化约5.25%，超过允许的5%。零增长比较及EBIT门槛通过，不能抵销其他失败。
+
+| 指标 | 当前规则 | 对数校准 | 零增长 |
+| --- | ---: | ---: | ---: |
+| 收入MAE/实际收入 | 14.7203% | 14.5082% | 15.4017% |
+| 收入WAPE | 13.3461% | 13.5728% | 15.1656% |
+| EBIT代理MAE/实际收入 | 5.7484% | 5.6111% | 5.6307% |
+
+| 起点 | 可评价/计划 | 当前收入误差 | 校准收入误差 |
+| --- | ---: | ---: | ---: |
+| 2023H1 | 82/120 | 14.4525% | 13.6069% |
+| 2024H1 | 86/120 | 16.0875% | 16.9325% |
+| 2025H1 | 81/120 | 13.5398% | 12.8467% |
+
+开发与新公司基线误差本身不同，不能把24.41%→14.72%当模型改善。结论是**该校准没有通过预定的新公司采用门槛**，并非数学上证明所有回归都无效。不继续调系数、增加特征或筛掉异常来拯救这次结果；不发布为生产增长政策。三个模型的首年政策再投资/FCFF桥接仍逐项保留，完整DCF与实际FCFF没有“验证通过”的新声明。
+
+```bash
+PYTHONPATH=valuation/backend workspace/anker-agent-adapter-20260906/venv/bin/python -m tools.backtest_tdx_growth_calibration valuation/research/tdx-growth-calibration/validation-protocol.json > /tmp/alphalake-growth-validation-replay.json
+PYTHONPATH=valuation/backend workspace/anker-agent-adapter-20260906/venv/bin/python -m pytest valuation/backend/tests/test_tdx_growth_calibration.py valuation/backend/tests/test_tdx_error_bands.py -q
+```
+
+三项相关回归通过，覆盖旧经验范围重放、新公司完整结果/抽样排序/排除名单、三期拟合不变、Decimal独立收入MAE/WAPE、未来/截止隔离及压缩源字节篡改拒绝。新增验证切片与回归进入原pytest CI，不依赖本地全包；无新增解释器依赖或本轮skip。Go全套及构建通过，未重复全套Python；代码与结果哈希见[检查回执](checks.json)。生产估值、主库和既有归档run不变。

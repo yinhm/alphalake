@@ -1,0 +1,12 @@
+{
+  "files": {
+    "valuation/research/tdx-growth-calibration/protocol.json": "39f06ed5f723fc5d33a66e810fd816641384be0e4980e1b33e7a7d1c4019396f",
+    "valuation/research/tdx-growth-calibration/validation-protocol.json": "fc4f3c70972ca3edb082353f1324345f8d49ed3abe6ec90f4efc2d829031db11",
+    "valuation/research/tdx-growth-calibration/development.json.gz": "a4d9a3591b3b7eb428e6a1c83aef0ee7962a716c4c1aae71784b8006296902d4",
+    "valuation/research/tdx-growth-calibration/validation.json.gz": "25b73fcf1217833e1788152dfb7bba4d5b6851cf6309cc7daf3d5571e46b3217",
+    "valuation/research/tdx-growth-calibration/validation-source.json.gz": "f48de0f5b6060c7de294704a942ee95eb577d51b0174b116ac9604109aa97c6e",
+    "valuation/backend/tools/backtest_tdx_growth_calibration.py": "ed050700ff1f4909db711ff24e543c2cf766162c9d5c5d083a92f060d59de18d",
+    "valuation/backend/tools/backtest_tdx_error_bands.py": "41507e3bf299a1dfb2e3ba8b6b2e47ec6c04b653265a056d51f511daa7d50496"
+  },
+  "scope": "development_passed_new_company_validation_failed_no_production_change"
+}
