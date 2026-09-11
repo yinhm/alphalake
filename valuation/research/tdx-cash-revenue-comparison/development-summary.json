@@ -1,0 +1,141 @@
+{
+  "protocol_id": "tdx-cash-revenue-comparison-v1",
+  "candidates": 180,
+  "baseline_evaluable": 164,
+  "statuses": {
+    "blocked": 16,
+    "evaluated": 128,
+    "blocked_candidate": 36
+  },
+  "summary": {
+    "ocf": {
+      "mean_two_ocf_margins_zero_growth": {
+        "n": 128,
+        "mae_pct_actual_revenue": 10.461072734827887,
+        "wape_pct": 62.08916882080567
+      },
+      "mean_two_ocf_margins_production_revenue": {
+        "n": 128,
+        "mae_pct_actual_revenue": 10.393260517712454,
+        "wape_pct": 62.57114080779167
+      }
+    },
+    "cash_proxy": {
+      "mean_two_ocf_margins_zero_growth": {
+        "n": 128,
+        "mae_pct_actual_revenue": 11.88038802142341,
+        "wape_pct": 105.63070628748528
+      },
+      "mean_two_ocf_margins_production_revenue": {
+        "n": 128,
+        "mae_pct_actual_revenue": 11.78713156238358,
+        "wape_pct": 106.02995529699457
+      }
+    }
+  },
+  "by_origin": {
+    "2023-06-30": {
+      "ocf": {
+        "mean_two_ocf_margins_zero_growth": {
+          "n": 43,
+          "mae_pct_actual_revenue": 12.685911921706643,
+          "wape_pct": 69.37936405414433
+        },
+        "mean_two_ocf_margins_production_revenue": {
+          "n": 43,
+          "mae_pct_actual_revenue": 12.597954459640745,
+          "wape_pct": 67.16479415204532
+        }
+      },
+      "cash_proxy": {
+        "mean_two_ocf_margins_zero_growth": {
+          "n": 43,
+          "mae_pct_actual_revenue": 14.02121059491105,
+          "wape_pct": 149.83072428603543
+        },
+        "mean_two_ocf_margins_production_revenue": {
+          "n": 43,
+          "mae_pct_actual_revenue": 13.857290705443848,
+          "wape_pct": 146.35792860843677
+        }
+      }
+    },
+    "2024-06-30": {
+      "ocf": {
+        "mean_two_ocf_margins_zero_growth": {
+          "n": 41,
+          "mae_pct_actual_revenue": 9.477720451555799,
+          "wape_pct": 51.22620948214694
+        },
+        "mean_two_ocf_margins_production_revenue": {
+          "n": 41,
+          "mae_pct_actual_revenue": 9.053145030547935,
+          "wape_pct": 52.01186659959881
+        }
+      },
+      "cash_proxy": {
+        "mean_two_ocf_margins_zero_growth": {
+          "n": 41,
+          "mae_pct_actual_revenue": 10.984188064715534,
+          "wape_pct": 94.97012397920864
+        },
+        "mean_two_ocf_margins_production_revenue": {
+          "n": 41,
+          "mae_pct_actual_revenue": 10.563311575902777,
+          "wape_pct": 94.93406039109213
+        }
+      }
+    },
+    "2025-06-30": {
+      "ocf": {
+        "mean_two_ocf_margins_zero_growth": {
+          "n": 44,
+          "mae_pct_actual_revenue": 9.203103611609006,
+          "wape_pct": 66.1305760360282
+        },
+        "mean_two_ocf_margins_production_revenue": {
+          "n": 44,
+          "mae_pct_actual_revenue": 9.487417232958565,
+          "wape_pct": 68.30484878347828
+        }
+      },
+      "cash_proxy": {
+        "mean_two_ocf_margins_zero_growth": {
+          "n": 44,
+          "mae_pct_actual_revenue": 10.623315920629192,
+          "wape_pct": 91.08193540938964
+        },
+        "mean_two_ocf_margins_production_revenue": {
+          "n": 44,
+          "mae_pct_actual_revenue": 10.904399205431792,
+          "wape_pct": 93.67194111611677
+        }
+      }
+    }
+  },
+  "decision": {
+    "passed": false,
+    "checks": {
+      "minimum_pairs": true,
+      "coverage_retention": false,
+      "primary_improvement": false,
+      "wape_nonworse": false,
+      "cash_proxy_nonworse": false,
+      "each_origin_nonworse": true,
+      "leave_one_company_out_nonworse": false
+    }
+  },
+  "boundary": "development_comparison_not_new_holdout; later_acquired_FN314_source_not_strict_PIT; no_production_rule_change; no_FCFF_accuracy_claim; only_if_development_passes_freeze_fresh_company_holdout_before_scoring",
+  "evidence": {
+    "protocol_sha256": "140474bc5a633cb506ef5fde8e9f2f8ebf9547cfc5954b8336f6f9619429d369",
+    "snapshot_sha256": "776dcdd9f24bb5c211cf9707b61631d6801accf2befebd6f18594787f825dd45",
+    "code_sha256": "9952c1ecbfee61f7dfbf6fbaf111a34ac3e4627a2212411fdb412f04d2e0431c",
+    "helpers": {
+      "tools/backtest_tdx_history.py": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+      "tools/backtest_tdx_operating_cash.py": "f31fbc00624d04ffe5a2aca77180e7e28e88650eeef531e3d11a052e6830a544",
+      "tools/backtest_tdx_capex.py": "7ccc05b8e2325cf9009ed7fd629f6de7b8a5ffc7ab46082c51d95c42c777767d",
+      "tools/audit_tdx_reinvestment.py": "75eb978015acbdf2f646f3428bbc893f89cb4edfa8477a24ef8043839cb6fef7",
+      "data_sources/alphalake.py": "7250a086357095d2c58be7bdaddde773287545b729fba27a6b68feece7f550ee"
+    }
+  }
+}
