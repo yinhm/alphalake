@@ -1,0 +1,50 @@
+{
+  "scope": "availability_audit_not_proof_no_historical_membership_exists",
+  "source_manifest_sha256": "084dab9f27577c9afdb94113108ea0265adcfc88419c89c668627390407db3ba",
+  "archive_index_membership_links": [],
+  "workbooks": [
+    {
+      "file": "fundgrEBGlobal22.xls",
+      "sha256": "b47c3d320eee94bf1086b7fbdbfb85bfd050b2dac373d406e5083a05e92dae55",
+      "sheets": [
+        "Variables & FAQ",
+        "Industry Averages"
+      ],
+      "company_membership_reference": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/indname.xls"
+    },
+    {
+      "file": "fundgrEBGlobal23.xls",
+      "sha256": "896450e81e511f0abd79cd1b983aa71ecb4562d7b8fa34e8f9530cccf08e8980",
+      "sheets": [
+        "Variables & FAQ",
+        "Industry Averages"
+      ],
+      "company_membership_reference": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/indname.xls"
+    },
+    {
+      "file": "fundgrEBGlobal24.xls",
+      "sha256": "bcfea357800aa87d24b31337bc25cbf446b99f7a98aa4807cac5ee2aad33386c",
+      "sheets": [
+        "Variables & FAQ",
+        "Industry Averages"
+      ],
+      "company_membership_reference": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/indname.xls"
+    }
+  ],
+  "sample_protocol": {
+    "path": "valuation/research/tdx-zero-growth-horizons/protocol.json",
+    "sha256": "71a22981a137f3d2b668fbf660700bc0db919cc297a009eac93fc19478abfbf8"
+  },
+  "development_companies": 600,
+  "origins": [
+    "2023-06-30",
+    "2024-06-30",
+    "2025-06-30"
+  ],
+  "required_company_origin_mappings": 1800,
+  "historical_mapping_evidence_delivered_by_this_archive": 0,
+  "status": "industry_candidate_not_scored_missing_historical_mapping",
+  "reason": "行业聚合历史已归档；所查目录未含indname历史链接，工作簿不含公司名单，其引用为可变的当前indname.xls。样本stratum不含历史归属证据，不能升级为预测时点行业事实。",
+  "next_step": "若继续分行业检验，先从起点前历史业务证据建立明确研究映射；不能直接采用当前分类、猜历史文件URL或把全市场合计称公司所属行业。",
+  "boundary": "零表示本轮交付的映射证据数，不表示600家公司当时没有行业，不表示整个互联网不存在历史名单。全目标未完成，不改变已有预测结论和生产估值。"
+}
