@@ -114,3 +114,5 @@ python -m tools.company_valuation /absolute/market.duckdb 300866 \
 已通过Skill frontmatter/命名校验、展示元数据YAML检查；按Skill命令从`/tmp`切换到后端目录，使用既有审核隔离库复现安克153.50元（退出0）。测试用过期政策返回`rejected_input_or_policy`、空估值及退出2；另核对既有主库安克“专项缺项、行业成功”的结构，指导不得降级。产物在本地`workspace/skill-acceptance-20260910/`。
 
 这是本地命令和结果契约的实际检查，没有独立agent行为评测或外部客户端加载验收；不新增财报原文审核或全市场估值覆盖。未改动程序，未重跑Go/Python全套测试。
+
+WACC来源解读：`approach_used`为`direct`、`industry_average`或`decile`时，`capital_structure_basis=not_used`表示未用公司资本结构计算该WACC。不要把这些分支的兼容占位权重当成公司市场权重；具体方法核对及旧/新run ID边界见[方法审计](damodaran-method-audit-20260911.md)。

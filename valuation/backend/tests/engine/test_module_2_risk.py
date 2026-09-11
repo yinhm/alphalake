@@ -147,3 +147,21 @@ class TestCostOfCapital:
             adjusted = AdjustedFinancials(adjusted_ebit=100.0, adjusted_mv_debt=float(debt))
             result = compute_cost_of_capital(adjusted, us_macro, tech_industry, mv_equity=1000.0)
             assert result.cost_of_debt_aftertax <= result.wacc <= result.cost_of_equity
+
+
+@pytest.mark.parametrize('approach', ['direct','industry_average','decile'])
+def test_wacc_proxy_does_not_claim_market_weights(approach,us_macro,tech_industry,monkeypatch):
+    from engine.data_dictionary import MethodologyChoices
+    import engine.module_2_risk as risk
+    monkeypatch.setattr(risk,'_decile_lookup',lambda region,group:0.08)
+    industry=tech_industry.model_copy(update={'wacc':0.08})
+    method=MethodologyChoices(cost_of_capital_approach=approach,wacc_direct_input=0.1)
+    adjusted=AdjustedFinancials(adjusted_ebit=100,adjusted_mv_debt=300)
+    outputs=[compute_cost_of_capital(adjusted,us_macro,industry,equity,method) for equity in (100,1000)]
+    for result in outputs:
+        assert result.approach_used==approach and result.capital_structure_basis=='not_used'
+    assert outputs[0].wacc==outputs[1].wacc
+    if approach=='direct':assert outputs[0].wacc==0.1
+    if approach=='decile':assert outputs[0].wacc==0.08
+    detailed=compute_cost_of_capital(adjusted,us_macro,industry,1000)
+    assert detailed.capital_structure_basis=='market_values' and detailed.weight_debt>0

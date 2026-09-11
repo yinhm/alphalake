@@ -241,6 +241,7 @@ def compute_cost_of_capital(
         else:
             return CostOfCapital(
                 approach_used="direct",
+                capital_structure_basis="not_used",
                 beta_branch_used="n/a",
                 erp_branch_used="n/a",
                 kd_branch_used="n/a",
@@ -271,6 +272,7 @@ def compute_cost_of_capital(
             wacc = ind_wacc + (macro.risk_free_rate - base_rf)
             return CostOfCapital(
                 approach_used="industry_average",
+                capital_structure_basis="not_used",
                 beta_branch_used="n/a", erp_branch_used="n/a", kd_branch_used="n/a",
                 beta_u=industry.beta_u or 0.0, beta_l=0.0,
                 mv_straight_debt=0.0, mv_convertible_straight_part=0.0,
@@ -296,6 +298,7 @@ def compute_cost_of_capital(
         else:
             return CostOfCapital(
                 approach_used="decile",
+                capital_structure_basis="not_used",
                 beta_branch_used="n/a", erp_branch_used="n/a", kd_branch_used="n/a",
                 beta_u=0.0, beta_l=0.0,
                 mv_straight_debt=0.0, mv_convertible_straight_part=0.0,

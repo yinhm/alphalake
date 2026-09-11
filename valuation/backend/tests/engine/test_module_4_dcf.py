@@ -135,9 +135,16 @@ class TestDCF:
         )
         result = compute_dcf(cf_metrics, cost_of_capital, adjusted, raw, assumptions, macro)
 
-        # Terminal EBIT should use capped growth, not 10%
-        # Year 5 EBIT × (1 + 0.04) instead of × (1 + 0.10)
-        assert result.terminal_value_firm > 0
+        # 比较整份DCF，防止“正值”断言漏掉未实际执行的增长上限。
+        capped = assumptions.model_copy(update={'stable_growth_rate': macro.risk_free_rate})
+        expected = compute_dcf(cf_metrics, cost_of_capital, adjusted, raw, capped, macro)
+        assert result == expected
+        # 选择较低增长且有超额回报，使负向对照不依赖无效Gordon分母。
+        lower = assumptions.model_copy(update={'stable_growth_rate': 0.02, 'roic_stable_override': 0.12})
+        higher = assumptions.model_copy(update={'roic_stable_override': 0.12})
+        low = compute_dcf(cf_metrics, cost_of_capital, adjusted, raw, lower, macro)
+        high = compute_dcf(cf_metrics, cost_of_capital, adjusted, raw, higher, macro)
+        assert high.terminal_value_firm > low.terminal_value_firm
 
     def test_shares_outstanding_affects_per_share(self, cf_metrics, cost_of_capital, adjusted, macro):
         """More shares → lower value per share."""
@@ -166,3 +173,25 @@ class TestDCF:
         # With positive equity, failure probability reduces value
         if r1.value_of_equity > 0:
             assert r2.value_of_equity < r1.value_of_equity
+
+
+def test_damodaran_terminal_reinvestment_identity(cf_metrics, cost_of_capital, adjusted, raw, macro):
+    """固定预测期，独立检查g/ROIC；不把零净再投资当零现金资本开支。"""
+    from engine.data_dictionary import ForecastYear
+    wacc=0.09;terminal_nopat=200*(1-macro.tax_rate_marginal)
+    for roic in (wacc,0.12):
+        for g in (0,0.02,0.04):
+            assumptions=ValuationAssumptions(projection_years=10,high_growth_years=5,
+                annual_forecast=[ForecastYear(growth=0,margin=0.2,tax=macro.tax_rate_marginal) for _ in range(10)],
+                override_reinvestment_lag=True,reinvestment_lag_years=0,sales_to_capital_high=3,sales_to_capital_stable=3,
+                override_growth_perpetuity=True,growth_perpetuity_rate=g,
+                cost_of_capital_stable_override=wacc,roic_stable_override=roic)
+            result=compute_dcf(cf_metrics,cost_of_capital,adjusted,raw,assumptions,macro)
+            assert result.reinvestment_projections==[0]*10
+            assert result.fcff_projections==pytest.approx([terminal_nopat]*10)
+            terminal_cash=terminal_nopat*(1+g)*(1-g/roic)
+            assert result.terminal_value_firm==pytest.approx(terminal_cash/(wacc-g),rel=1e-12)
+            if roic==wacc:
+                # 中和增长再投资后，价值/下一年NOPAT=1/WACC。
+                assert result.terminal_value_firm/(terminal_nopat*(1+g))==pytest.approx(1/wacc,rel=1e-12)
+            assert cf_metrics.adjusted_capex==80 and cf_metrics.adjusted_d_a==40
