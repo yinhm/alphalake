@@ -1,0 +1,19 @@
+{
+  "url": "https://static.cninfo.com.cn/finalpage/2023-04-29/1216697044.PDF",
+  "fetched_at": "2026-09-11T08:26:41.976127+00:00",
+  "sha256": "b96a9dd2b454bfe48a8dbc15f2f82ce6482895b717884b9e6015d4f25c30e68d",
+  "size": 1497758,
+  "local_file": "workspace/debt-zero-evidence-20260911/000035-2022.pdf",
+  "status": "downloaded_and_text_inspected_not_completed_semantic_verification",
+  "physical_pages": {
+    "bonds_section": 101,
+    "current_maturities_and_insurance": 192,
+    "long_term_financing_payables": 193
+  },
+  "next_checks": [
+    "verify_statement_blanks_and_bond_applicability",
+    "reconcile_FN52_bits_and_note_components",
+    "classify_financing_payables_and_supplier_finance",
+    "preserve_insurance_segment_scope"
+  ]
+}

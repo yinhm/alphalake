@@ -1,0 +1,13 @@
+{
+  "full_replay_equal": true,
+  "mutation": {
+    "code": "000829",
+    "period": "2021-12-31",
+    "field": "FN56",
+    "new_bits": 0,
+    "before": 33,
+    "after": 32,
+    "later_origins_unchanged": true
+  },
+  "result_sha256": "b38a7894ec6c17030939ebdd93a7e1ca6b722689d1e3a8659808511ad9d64ba6"
+}

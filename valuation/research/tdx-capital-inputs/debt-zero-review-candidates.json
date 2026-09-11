@@ -1,0 +1,67 @@
+{
+  "selection": "2023H1; FN56 zero both FY; other four debt components nonzero; code ascending first six; no future outcome read",
+  "eligible": 145,
+  "candidates": [
+    {
+      "code": "000035",
+      "name": "中国天楹",
+      "origin": "2023-06-30",
+      "periods": [
+        "2022-12-31",
+        "2021-12-31"
+      ],
+      "purpose": "verify_optional_bonds_source_zero_not_growth_scoring"
+    },
+    {
+      "code": "000417",
+      "name": "合百集团",
+      "origin": "2023-06-30",
+      "periods": [
+        "2022-12-31",
+        "2021-12-31"
+      ],
+      "purpose": "verify_optional_bonds_source_zero_not_growth_scoring"
+    },
+    {
+      "code": "000422",
+      "name": "湖北宜化",
+      "origin": "2023-06-30",
+      "periods": [
+        "2022-12-31",
+        "2021-12-31"
+      ],
+      "purpose": "verify_optional_bonds_source_zero_not_growth_scoring"
+    },
+    {
+      "code": "000521",
+      "name": "长虹美菱",
+      "origin": "2023-06-30",
+      "periods": [
+        "2022-12-31",
+        "2021-12-31"
+      ],
+      "purpose": "verify_optional_bonds_source_zero_not_growth_scoring"
+    },
+    {
+      "code": "000546",
+      "name": "金圆股份",
+      "origin": "2023-06-30",
+      "periods": [
+        "2022-12-31",
+        "2021-12-31"
+      ],
+      "purpose": "verify_optional_bonds_source_zero_not_growth_scoring"
+    },
+    {
+      "code": "000599",
+      "name": "青岛双星",
+      "origin": "2023-06-30",
+      "periods": [
+        "2022-12-31",
+        "2021-12-31"
+      ],
+      "purpose": "verify_optional_bonds_source_zero_not_growth_scoring"
+    }
+  ],
+  "status": "selected_not_verified"
+}

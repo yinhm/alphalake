@@ -1,0 +1,355 @@
+{
+  "summary": {
+    "2023": {
+      "candidates": 600,
+      "annual_slots": 1200,
+      "complete_source_groups": {
+        "book_capital_components": 345,
+        "debt_components": 33,
+        "cash_capex_and_amortization": 516,
+        "rd_expensed": 544,
+        "working_capital_reconciliation": 575
+      },
+      "field_status": {
+        "FN72": {
+          "nonzero_source": 1160,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        },
+        "FN8": {
+          "nonzero_source": 1160,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        },
+        "FN133": {
+          "nonzero_source": 1160,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        },
+        "FN25": {
+          "source_zero_ambiguous": 434,
+          "nonzero_source": 726,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        },
+        "FN41": {
+          "nonzero_source": 898,
+          "source_zero_ambiguous": 262,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        },
+        "FN55": {
+          "nonzero_source": 638,
+          "source_zero_ambiguous": 522,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        },
+        "FN56": {
+          "source_zero_ambiguous": 1026,
+          "nonzero_source": 134,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        },
+        "FN52": {
+          "nonzero_source": 1078,
+          "source_zero_ambiguous": 82,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        },
+        "FN439": {
+          "nonzero_source": 980,
+          "source_zero_ambiguous": 180,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        },
+        "FN114": {
+          "nonzero_source": 1158,
+          "source_zero_ambiguous": 2,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        },
+        "FN136": {
+          "nonzero_source": 1160,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        },
+        "FN137": {
+          "nonzero_source": 1154,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "source_zero_ambiguous": 6,
+          "duplicate_identity": 2
+        },
+        "FN138": {
+          "nonzero_source": 1058,
+          "source_zero_ambiguous": 102,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        },
+        "FN304": {
+          "nonzero_source": 1093,
+          "source_zero_ambiguous": 67,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        },
+        "FN146": {
+          "nonzero_source": 1151,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "source_zero_ambiguous": 9,
+          "duplicate_identity": 2
+        },
+        "FN147": {
+          "nonzero_source": 1160,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        },
+        "FN148": {
+          "nonzero_source": 1160,
+          "unavailable_at_cutoff": 37,
+          "missing_record": 1,
+          "duplicate_identity": 2
+        }
+      }
+    },
+    "2024": {
+      "candidates": 600,
+      "annual_slots": 1200,
+      "complete_source_groups": {
+        "book_capital_components": 356,
+        "debt_components": 37,
+        "cash_capex_and_amortization": 531,
+        "rd_expensed": 553,
+        "working_capital_reconciliation": 583
+      },
+      "field_status": {
+        "FN72": {
+          "nonzero_source": 1178,
+          "unavailable_at_cutoff": 20,
+          "duplicate_identity": 2
+        },
+        "FN8": {
+          "nonzero_source": 1178,
+          "unavailable_at_cutoff": 20,
+          "duplicate_identity": 2
+        },
+        "FN133": {
+          "nonzero_source": 1178,
+          "unavailable_at_cutoff": 20,
+          "duplicate_identity": 2
+        },
+        "FN25": {
+          "source_zero_ambiguous": 427,
+          "nonzero_source": 751,
+          "unavailable_at_cutoff": 20,
+          "duplicate_identity": 2
+        },
+        "FN41": {
+          "nonzero_source": 937,
+          "source_zero_ambiguous": 241,
+          "unavailable_at_cutoff": 20,
+          "duplicate_identity": 2
+        },
+        "FN55": {
+          "source_zero_ambiguous": 482,
+          "nonzero_source": 696,
+          "unavailable_at_cutoff": 20,
+          "duplicate_identity": 2
+        },
+        "FN56": {
+          "source_zero_ambiguous": 1035,
+          "nonzero_source": 143,
+          "unavailable_at_cutoff": 20,
+          "duplicate_identity": 2
+        },
+        "FN52": {
+          "nonzero_source": 1111,
+          "source_zero_ambiguous": 67,
+          "unavailable_at_cutoff": 20,
+          "duplicate_identity": 2
+        },
+        "FN439": {
+          "nonzero_source": 1008,
+          "source_zero_ambiguous": 170,
+          "unavailable_at_cutoff": 20,
+          "duplicate_identity": 2
+        },
+        "FN114": {
+          "nonzero_source": 1177,
+          "unavailable_at_cutoff": 20,
+          "source_zero_ambiguous": 1,
+          "duplicate_identity": 2
+        },
+        "FN136": {
+          "nonzero_source": 1178,
+          "unavailable_at_cutoff": 20,
+          "duplicate_identity": 2
+        },
+        "FN137": {
+          "nonzero_source": 1172,
+          "unavailable_at_cutoff": 20,
+          "source_zero_ambiguous": 6,
+          "duplicate_identity": 2
+        },
+        "FN138": {
+          "nonzero_source": 1082,
+          "source_zero_ambiguous": 96,
+          "unavailable_at_cutoff": 20,
+          "duplicate_identity": 2
+        },
+        "FN304": {
+          "nonzero_source": 1118,
+          "source_zero_ambiguous": 60,
+          "unavailable_at_cutoff": 20,
+          "duplicate_identity": 2
+        },
+        "FN146": {
+          "nonzero_source": 1169,
+          "unavailable_at_cutoff": 20,
+          "source_zero_ambiguous": 9,
+          "duplicate_identity": 2
+        },
+        "FN147": {
+          "nonzero_source": 1178,
+          "unavailable_at_cutoff": 20,
+          "duplicate_identity": 2
+        },
+        "FN148": {
+          "nonzero_source": 1178,
+          "unavailable_at_cutoff": 20,
+          "duplicate_identity": 2
+        }
+      }
+    },
+    "2025": {
+      "candidates": 600,
+      "annual_slots": 1200,
+      "complete_source_groups": {
+        "book_capital_components": 365,
+        "debt_components": 33,
+        "cash_capex_and_amortization": 537,
+        "rd_expensed": 569,
+        "working_capital_reconciliation": 591
+      },
+      "field_status": {
+        "FN72": {
+          "nonzero_source": 1192,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        },
+        "FN8": {
+          "nonzero_source": 1192,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        },
+        "FN133": {
+          "nonzero_source": 1192,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        },
+        "FN25": {
+          "source_zero_ambiguous": 424,
+          "nonzero_source": 768,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        },
+        "FN41": {
+          "source_zero_ambiguous": 227,
+          "nonzero_source": 965,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        },
+        "FN55": {
+          "source_zero_ambiguous": 487,
+          "nonzero_source": 705,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        },
+        "FN56": {
+          "source_zero_ambiguous": 1049,
+          "nonzero_source": 143,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        },
+        "FN52": {
+          "nonzero_source": 1122,
+          "source_zero_ambiguous": 70,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        },
+        "FN439": {
+          "nonzero_source": 1017,
+          "source_zero_ambiguous": 175,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        },
+        "FN114": {
+          "nonzero_source": 1191,
+          "source_zero_ambiguous": 1,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        },
+        "FN136": {
+          "nonzero_source": 1192,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        },
+        "FN137": {
+          "nonzero_source": 1187,
+          "unavailable_at_cutoff": 6,
+          "source_zero_ambiguous": 5,
+          "duplicate_identity": 2
+        },
+        "FN138": {
+          "nonzero_source": 1100,
+          "source_zero_ambiguous": 92,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        },
+        "FN304": {
+          "nonzero_source": 1141,
+          "source_zero_ambiguous": 51,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        },
+        "FN146": {
+          "nonzero_source": 1185,
+          "unavailable_at_cutoff": 6,
+          "source_zero_ambiguous": 7,
+          "duplicate_identity": 2
+        },
+        "FN147": {
+          "nonzero_source": 1192,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        },
+        "FN148": {
+          "nonzero_source": 1192,
+          "unavailable_at_cutoff": 6,
+          "duplicate_identity": 2
+        }
+      }
+    }
+  },
+  "boundary": "later_acquired_source_only_not_strict_PIT; two_FY_not_H1_TTM; source_units_not_converted; zeros_unresolved; no_classified_capital_reinvestment_ROIC_growth_or_valuation",
+  "evidence": {
+    "snapshot_sha256": "3f8f60a25f6e69088459cbc482e966e7711a250639908c0c37481c108d671cdb",
+    "study_sha256": "9956edce050dfec1b66470f8c0686e1e078b3fa1f0ecdfa6b1c371305892873c",
+    "tool_sha256": "519ce0e6ba2dde80c49bfa52c1830575117d37476ec2d9ad0bc87273e4a6ade5",
+    "helper_sha256": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d"
+  }
+}
