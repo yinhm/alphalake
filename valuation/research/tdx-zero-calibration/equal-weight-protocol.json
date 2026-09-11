@@ -1,0 +1,38 @@
+{
+  "protocol_id": "tdx-equal-weight-profit-calibration-v1",
+  "phase": "development",
+  "frozen_at": "2026-09-11T11:42:28.654580+00:00",
+  "source_result": {
+    "path": "valuation/research/tdx-zero-calibration/development-result.json.gz",
+    "sha256": "9ac4c2357b4212aefcc02230bdfb24d9a3405b4b948d63b17c2c5b880e74d637"
+  },
+  "snapshot": {
+    "path": "valuation/research/tdx-loss-recovery/development-snapshot.json",
+    "sha256": "9e87dad4b1e261d229b7d5b55f6e57b8b3ee5f4a893076d352971e2f53efe3ff"
+  },
+  "rule": "equal_company_weight_lower_median_of_lagged_actual_EBIT_over_predicted_EBIT; exclude_target_before_fit; clip_raw_scale_to_0.5_1.5; multiplier=(1+scale)/2",
+  "main_candidate": "zero_growth_half_calibrated",
+  "sensitivity_only": "short_or_flat_half_calibrated",
+  "minimum_training_after_target_exclusion": 30,
+  "training": "original_admitted_pools_unchanged; no_company_or_zero_value_filter; nonpositive_training_predictions_remain_rejected; realized_losses_retained",
+  "evaluation": "retain_all_1800_rows_including_filtered_companies_and_nonpositive_current_earnings",
+  "origins": [
+    "2023-06-30",
+    "2024-06-30",
+    "2025-06-30"
+  ],
+  "information_cutoff": "September_1_China_midnight_each_origin; inherit_lagged_pool_cutoffs",
+  "evaluation_as_of": "2026-09-10T00:00:00+08:00",
+  "gates": {
+    "minimum_pairs": 900,
+    "minimum_companies": 300,
+    "minimum_each_origin": 200,
+    "minimum_baseline_retention": 0.9,
+    "minimum_main_improvement_vs_zero": 0.05,
+    "wape_nonworse_than_zero": true,
+    "nonworse_than_original_combination_and_original_short_calibration": true,
+    "maximum_each_origin_main_ratio_vs_zero": 1.05,
+    "leave_one_evaluation_company_out_nonworse_than_zero": true
+  },
+  "boundary": "all_600_already_exposed_development; input_estimator_only_not_Damodaran_formula_change; no_new_holdout_unless_all_gates_pass; no_PDF_substitution; source_EBIT_proxy_not_complete_economic_EBIT; FN314_simplified_time_not_strict_PIT; no_production_adoption_from_development_alone"
+}
