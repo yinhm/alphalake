@@ -1,0 +1,238 @@
+{
+  "plan": {
+    "code": "300866",
+    "forecast_period": "2025-06-30",
+    "forecast_as_of": "2025-09-01T00:00:00+08:00",
+    "actual_period": "2026-06-30",
+    "actual_as_of": "2026-09-10T00:00:00+00:00",
+    "template_sha256": "f083b138ca61a41219da1a18cacd521ec34ef552ad3f5ed4f461b1c93bf4a627",
+    "policy_sha256": "32d4c127a7ef4257c3e97c036aa4b32b348d3664670c691b6a160fc0598d1bab",
+    "decision": "standard-chain end-to-end acceptance, not new holdout or prediction-rule adoption; parameters unchanged from existing template; one due horizon and nine future horizons retained",
+    "source": "TDX via schema39 materialization and CNINFO identity/date validation; raw versions acquired later; no PDF overwrite",
+    "boundary": "WACC, tax, capital efficiency and bridge proxies are frozen illustrative assumptions; no 2025 point-in-time policy or full DCF accuracy claim"
+  },
+  "run_id": "f11b973c965bb76aa49021a4111ae6f616687aa9531f408f2ae9e24725ea66c6",
+  "run_receipt": {
+    "path": "/root/alphalake/workspace/earnings-history-upgrade-20260911/runs/f11b973c965bb76aa49021a4111ae6f616687aa9531f408f2ae9e24725ea66c6.json",
+    "sha256": "9d8de09a8cf545a46170f94bf6ac2515780f1a84f51d39959c581a7a890246ec"
+  },
+  "engine_revision": "59c7d15f15e9d987132325265d7bdc3695bb9908596162e83b9ccd7166d5c488",
+  "run_directory": "/root/alphalake/workspace/earnings-history-upgrade-20260911/runs",
+  "historical_export_sha256": "0b2aa712a24456520738b549e0e0f26f291bf9f18c6a293ada7e55245a227154",
+  "full_review_sha256": "377a014112e323221fd938afb35aee1d9c53847c67795e124aafec7db1ac978a",
+  "retrospective_value_per_share": 58.81844953880256,
+  "review_summary": {
+    "contract_version": "alphalake-forecast-review-v1",
+    "run_id": "f11b973c965bb76aa49021a4111ae6f616687aa9531f408f2ae9e24725ea66c6",
+    "reviewer_sha256": "8d3686484152ada4146f358fcee57cda4634c5970522195a97e419affc1a6799",
+    "current_engine_revision": "59c7d15f15e9d987132325265d7bdc3695bb9908596162e83b9ccd7166d5c488",
+    "forecast_engine_revision": "59c7d15f15e9d987132325265d7bdc3695bb9908596162e83b9ccd7166d5c488",
+    "code": "300866",
+    "forecast_period": "2025-06-30",
+    "forecast_information_as_of": "2025-08-31T16:00:00Z",
+    "evaluation_as_of": "2026-09-10T00:00:00+00:00",
+    "policy_id": "nonfinancial-history-fcff-v1",
+    "statuses": {
+      "evaluated": 1,
+      "not_yet_observable": 9
+    },
+    "results": [
+      {
+        "horizon": 1,
+        "target_period": "2026-06-30",
+        "status": "evaluated",
+        "predictions_million_cny": {
+          "revenue": 33514.219315199996,
+          "adjusted_ebit": 2699.5048715156254
+        },
+        "actual_fcff": null,
+        "actual_snapshot_sha256": "49b10df0fa13997b88f0a0f86b8b252c4925344808c7f4fefd111eb9ee7d698a",
+        "metrics": {
+          "revenue": {
+            "status": "evaluated",
+            "actual_million_cny": 34252.649984,
+            "signed_error_million_cny": -738.430668800007,
+            "absolute_error_million_cny": 738.430668800007,
+            "absolute_error_pct_actual_revenue": 2.1558351518639887
+          },
+          "adjusted_ebit": {
+            "status": "evaluated",
+            "actual_million_cny": 3250.1592016113286,
+            "signed_error_million_cny": -550.6543300957032,
+            "absolute_error_million_cny": 550.6543300957032,
+            "absolute_error_pct_actual_revenue": 1.60762548402218
+          }
+        },
+        "consumed_inputs": [
+          {
+            "source": "tdx",
+            "field": "FN230",
+            "source_fact_ids": [
+              219848,
+              388398,
+              1323873,
+              581106
+            ]
+          },
+          {
+            "source": "tdx",
+            "field": "FN86",
+            "source_fact_ids": [
+              20450,
+              1224807,
+              761699
+            ]
+          },
+          {
+            "source": "tdx",
+            "field": "FN305",
+            "source_fact_ids": [
+              75671,
+              1166544,
+              825671
+            ]
+          },
+          {
+            "source": "tdx",
+            "field": "FN306",
+            "source_fact_ids": [
+              198830,
+              1300957,
+              951584
+            ]
+          },
+          {
+            "source": "tdx",
+            "field": "FN83",
+            "source_fact_ids": [
+              198829,
+              1300956,
+              951583
+            ]
+          },
+          {
+            "source": "tdx",
+            "field": "FN82",
+            "source_fact_ids": [
+              35841,
+              1273580,
+              746059
+            ]
+          },
+          {
+            "source": "tdx",
+            "field": "FN301",
+            "source_fact_ids": [
+              230742,
+              1327852,
+              921284
+            ]
+          }
+        ]
+      },
+      {
+        "horizon": 2,
+        "target_period": "2027-06-30",
+        "status": "not_yet_observable",
+        "predictions_million_cny": {
+          "revenue": 40217.063178239994,
+          "adjusted_ebit": 3239.40584581875
+        },
+        "actual_fcff": null
+      },
+      {
+        "horizon": 3,
+        "target_period": "2028-06-30",
+        "status": "not_yet_observable",
+        "predictions_million_cny": {
+          "revenue": 48260.47581388799,
+          "adjusted_ebit": 3887.2870149825
+        },
+        "actual_fcff": null
+      },
+      {
+        "horizon": 4,
+        "target_period": "2029-06-30",
+        "status": "not_yet_observable",
+        "predictions_million_cny": {
+          "revenue": 57912.570976665585,
+          "adjusted_ebit": 4664.744417979
+        },
+        "actual_fcff": null
+      },
+      {
+        "horizon": 5,
+        "target_period": "2030-06-30",
+        "status": "not_yet_observable",
+        "predictions_million_cny": {
+          "revenue": 69495.0851719987,
+          "adjusted_ebit": 5597.693301574799
+        },
+        "actual_fcff": null
+      },
+      {
+        "horizon": 6,
+        "target_period": "2031-06-30",
+        "status": "not_yet_observable",
+        "predictions_million_cny": {
+          "revenue": 80892.27914020648,
+          "adjusted_ebit": 6515.715003033066
+        },
+        "actual_fcff": null
+      },
+      {
+        "horizon": 7,
+        "target_period": "2032-06-30",
+        "status": "not_yet_observable",
+        "predictions_million_cny": {
+          "revenue": 91246.49087015292,
+          "adjusted_ebit": 7349.726523421299
+        },
+        "actual_fcff": null
+      },
+      {
+        "horizon": 8,
+        "target_period": "2033-06-30",
+        "status": "not_yet_observable",
+        "predictions_million_cny": {
+          "revenue": 99641.168030207,
+          "adjusted_ebit": 8025.901363576059
+        },
+        "actual_fcff": null
+      },
+      {
+        "horizon": 9,
+        "target_period": "2034-06-30",
+        "status": "not_yet_observable",
+        "predictions_million_cny": {
+          "revenue": 105221.0734398986,
+          "adjusted_ebit": 8475.351839936318
+        },
+        "actual_fcff": null
+      },
+      {
+        "horizon": 10,
+        "target_period": "2035-06-30",
+        "status": "not_yet_observable",
+        "predictions_million_cny": {
+          "revenue": 107325.49490869656,
+          "adjusted_ebit": 8644.858876735045
+        },
+        "actual_fcff": null
+      }
+    ],
+    "boundary": "仅收入与原政策调整EBIT的同季TTM到期核验；亏损实际值保留，非正实际收入不算百分比。沿用原经营范围假设，未逐期重新核验业务可比性；未核实运行首次创建时间，不冒称当时已留存预测或严格PIT。缺项、冲突、身份变化、未到期保留。FCFF、终值、每股价值准确度均未评价，不自动选择或修改政策。",
+    "review_id": "4f69eee175259c88dcf9fbb4ce0f7e77c98a78cef4e11c93347a57539f2347cf"
+  },
+  "boundary": "2026-09-11 retrospective fixed-policy chain acceptance; not a forecast saved in 2025, new holdout, policy improvement or current target price",
+  "archives": {
+    "run.json.gz": {
+      "sha256": "51f9befaae1ccae142f282ab426cd02bcffe8e2af4d0c1ed0560122ad9d01fd1",
+      "uncompressed_sha256": "9d8de09a8cf545a46170f94bf6ac2515780f1a84f51d39959c581a7a890246ec"
+    },
+    "review.json.gz": {
+      "sha256": "da208a1785636bba51fe98256df347216a1a7fe04ab91915946299a1befb6d44",
+      "uncompressed_sha256": "377a014112e323221fd938afb35aee1d9c53847c67795e124aafec7db1ac978a"
+    }
+  }
+}

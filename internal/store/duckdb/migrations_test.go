@@ -50,6 +50,7 @@ func TestMigrationOrder(t *testing.T) {
 		"036_security_industry_observations.sql",
 		"037_security_code_transition.sql",
 		"038_capex_history_scope.sql",
+		"039_earnings_history_scope.sql",
 	}
 	if len(migrations) != len(want) {
 		t.Fatalf("got %v", migrations)
@@ -132,7 +133,7 @@ func TestCoreFinancialMigrationFromV17(t *testing.T) {
 		if capexFrom != "2024-06-30" {
 			t.Fatal("unexpected reviewed capex history", capexFrom)
 		}
-		if existing != 9 || instant != 43 || ytd != 28 || historical != 9 {
+		if existing != 9 || instant != 43 || ytd != 28 || historical != 15 {
 			t.Fatalf("mapping upgrade: existing=%d instant=%d ytd=%d historical=%d", existing, instant, ytd, historical)
 		}
 	}

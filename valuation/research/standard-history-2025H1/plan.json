@@ -1,0 +1,12 @@
+{
+  "code": "300866",
+  "forecast_period": "2025-06-30",
+  "forecast_as_of": "2025-09-01T00:00:00+08:00",
+  "actual_period": "2026-06-30",
+  "actual_as_of": "2026-09-10T00:00:00+00:00",
+  "template_sha256": "f083b138ca61a41219da1a18cacd521ec34ef552ad3f5ed4f461b1c93bf4a627",
+  "policy_sha256": "32d4c127a7ef4257c3e97c036aa4b32b348d3664670c691b6a160fc0598d1bab",
+  "decision": "standard-chain end-to-end acceptance, not new holdout or prediction-rule adoption; parameters unchanged from existing template; one due horizon and nine future horizons retained",
+  "source": "TDX via schema39 materialization and CNINFO identity/date validation; raw versions acquired later; no PDF overwrite",
+  "boundary": "WACC, tax, capital efficiency and bridge proxies are frozen illustrative assumptions; no 2025 point-in-time policy or full DCF accuracy claim"
+}

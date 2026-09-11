@@ -1,0 +1,16 @@
+[
+  {
+    "fetched_at": "2026-09-10T16:30:21.711278+00:00",
+    "file": "gpcw20240331.zip",
+    "list_sha256": "8c9aee941e49a1363a0841970274ee461e01e0a8b6b98df08d6899a6f454cdf6",
+    "md5": "59265924fd6eebbcd26d9135e6d11e76",
+    "report_period": "2024-03-31",
+    "sha256": "e60bad30de91cf650408d2ef766dfe66105b956597d40998000588a6d6995e11",
+    "size": 4861148,
+    "source": "tdxfin/gpcw20240331.zip",
+    "sample_sha256": "73488df5ca1fcf06766be425a5580031ebda168f7ad2a3b41c87d6afa7a7e631",
+    "record_sha256": "699f5eb4ac420a91f147d720934046a6f464dd97cdf4b027469b0f7abbef3296",
+    "report_size": 2336,
+    "full_archive_path": "workspace/tdx-zero-growth-holdout-source-20260911/gpcw20240331.zip"
+  }
+]

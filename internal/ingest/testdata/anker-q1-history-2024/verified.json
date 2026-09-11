@@ -1,0 +1,12 @@
+{
+  "code": "300866",
+  "period": "2024-03-31",
+  "source_bits": 1333950316,
+  "source_value_cny": 4377729024.0,
+  "pdf_current_prior_cny": [
+    "4377729053.27",
+    "3365103838.16"
+  ],
+  "available_from": "2024-04-28T00:00:00+08:00",
+  "boundary": "FN230 current Q1 verified; comparative printed amount is not a TDX fact; later acquisition is not strict historical PIT"
+}

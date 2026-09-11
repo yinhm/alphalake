@@ -1,0 +1,18 @@
+{
+  "url": "https://www.cninfo.com.cn/new/hisAnnouncement/query",
+  "parameters": {
+    "stock": "300866,gfbj0839473",
+    "tabName": "fulltext",
+    "pageSize": 30,
+    "pageNum": 1,
+    "column": "szse",
+    "category": "category_yjdbg_szsh;",
+    "seDate": "2024-01-01~2024-06-01",
+    "searchkey": "",
+    "isHLtitle": "false",
+    "sortName": "time",
+    "sortType": "desc"
+  },
+  "acquired_at": "2026-09-11T17:48:38.356814+00:00",
+  "sha256": "fd7496c6ff429835c350930879c3d080271f0db110424c891ba9d19bd4c94495"
+}

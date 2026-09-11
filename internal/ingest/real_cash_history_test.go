@@ -3,6 +3,7 @@ package ingest
 import (
 	"bytes"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -67,15 +68,12 @@ func TestRealAnkerCashHistory(t *testing.T) {
 	db, err := duckstore.Open(ctx, path)
 	check(err)
 	defer func() { _ = db.Close() }()
-	if !supplied {
-		_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET valid_from=DATE '2025-01-01' WHERE source='tdx' AND provider_field='FN114'; DELETE FROM meta.schema_version WHERE version=38`)
-		check(err)
-	}
+	// 保留其他迁移的当前状态，只回退FN114审核边界验证038；不伪称完整schema37。
+	check(duckstore.Apply(ctx, db))
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET valid_from=DATE '2025-01-01' WHERE source='tdx' AND provider_field='FN114'; DELETE FROM meta.schema_version WHERE version=38`)
+	check(err)
 	var schema int
 	check(db.QueryRowContext(ctx, `SELECT max(version) FROM meta.schema_version`).Scan(&schema))
-	if schema != 37 {
-		t.Fatalf("expected schema37 base, got %d", schema)
-	}
 	_, err = db.ExecContext(ctx, `CREATE TEMP TABLE cash_before AS SELECT * FROM fundamental.fact; CREATE TEMP TABLE cash_catalog_before AS SELECT * FROM fundamental.provider_field WHERE provider_field<>'FN114'`)
 	check(err)
 	asof, err := time.Parse(time.RFC3339Nano, "2026-09-10T22:18:56.906406Z")
@@ -85,81 +83,8 @@ func TestRealAnkerCashHistory(t *testing.T) {
 	check(err)
 	beforeJSON, err := json.Marshal(before)
 	check(err)
-	run, err := duckstore.StartIngestRun(ctx, db, "tdx", "reviewed_cash_history_2024", nil)
-	check(err)
-	root := filepath.Join(output, "raw")
-	raw := readFinancialSample(t, dir, "catalogue.json")
-	var request struct {
-		AcquiredAt time.Time `json:"acquired_at"`
-		SHA        string    `json:"sha256"`
-	}
-	check(json.Unmarshal(readFinancialSample(t, dir, "catalogue-request.json"), &request))
-	if fmt.Sprintf("%x", sha256.Sum256(raw)) != request.SHA {
-		t.Fatal("catalogue hash")
-	}
-	catalogue, err := artifact.Persist(ctx, db, root, artifact.Input{Source: "cninfo", Dataset: "filing_catalogue", SourceLocator: "reviewed/anker-cash-history-2024/catalogue", FetchedAt: request.AcquiredAt, MediaType: "application/json", ParserVersion: cninfo.CatalogueParserVersion, Content: raw})
-	check(err)
-	page, err := cninfo.ParseCataloguePage(raw)
-	check(err)
-	var reports []struct {
-		ID        string `json:"announcement_id"`
-		File      string
-		URL       string
-		SHA       string    `json:"sha256"`
-		FetchedAt time.Time `json:"fetched_at"`
-	}
-	check(json.Unmarshal(readFinancialSample(t, dir, "reports.json"), &reports))
-	for _, r := range reports {
-		matches := 0
-		for _, f := range page.Filings {
-			if f.SourceFilingID != r.ID {
-				continue
-			}
-			matches++
-			if f.ProviderCode != "300866" {
-				t.Fatal("filing identity")
-			}
-			pdf := readFinancialSample(t, dir, r.File)
-			if fmt.Sprintf("%x", sha256.Sum256(pdf)) != r.SHA {
-				t.Fatal("PDF hash")
-			}
-			a, err := artifact.Persist(ctx, db, root, artifact.Input{Source: "cninfo", Dataset: "filing_document", SourceLocator: r.URL, FetchedAt: r.FetchedAt, MediaType: "application/pdf", ParserVersion: "pdf-raw-v1", Content: pdf})
-			check(err)
-			f.CatalogueArtifactID = catalogue.ArtifactID
-			f.SourceURL = r.URL
-			f.DocumentArtifactID = a.ArtifactID
-			f.DocumentSHA256 = a.SHA256
-			_, err = duckstore.UpsertFilings(ctx, db, run, []domain.FilingObservation{f})
-			check(err)
-		}
-		if matches != 1 {
-			t.Fatalf("filing %s matches %d", r.ID, matches)
-		}
-	}
-	var packages []struct {
-		File      string
-		SHA       string    `json:"sample_sha256"`
-		FetchedAt time.Time `json:"fetched_at"`
-	}
-	check(json.Unmarshal(readFinancialSample(t, dir, "packages.json"), &packages))
-	for _, p := range packages {
-		raw := readFinancialSample(t, dir, p.File)
-		if fmt.Sprintf("%x", sha256.Sum256(raw)) != p.SHA {
-			t.Fatal("sample hash")
-		}
-		a, err := artifact.Persist(ctx, db, root, artifact.Input{Source: "tdx", Dataset: "reviewed_cash_history_2024", SourceLocator: "reviewed/" + p.File, FetchedAt: p.FetchedAt, MediaType: "application/zip", ParserVersion: "gpcw-v1", Content: raw})
-		check(err)
-		records, err := (&tdx.Client{}).NormalizeProfessionalFinancialPackage(financial.FileEntry{Filename: p.File}, raw, a.ArtifactID)
-		check(err)
-		resolved, _, err := resolveProviderFinancialRecords(ctx, db, records)
-		check(err)
-		if len(resolved) != 1 {
-			t.Fatal("historical identity unresolved")
-		}
-		_, err = duckstore.ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", a.SHA256, resolved)
-		check(err)
-	}
-	check(duckstore.FinishIngestRun(ctx, db, run, duckstore.IngestRunCompleted, nil, nil))
+	importAnkerHistoricalEvidence(t, db, dir, output)
+
 	initial, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
 	countCapex := func() int {
@@ -274,9 +199,96 @@ func TestRealAnkerCashHistory(t *testing.T) {
 	if fmt.Sprintf("%x", hash.Sum(nil)) != baseHash {
 		t.Fatal("base database changed")
 	}
-	receipt := map[string]any{"base_database": base, "base_sha256": baseHash, "database": path, "schema": 38, "initial": initial, "upgraded": upgraded, "removed": removed, "restored": restored, "replay": replay, "preexisting_fact_content_changed": changed, "preexisting_run_metadata_refreshed": refreshed, "current_valuation_inputs_unchanged": true, "reviewed_source_values": 7, "scope": "single_company_cropped_evidence_import_not_market_sync"}
-	raw, err = json.MarshalIndent(receipt, "", "  ")
+	receipt := map[string]any{"base_database": base, "base_sha256": baseHash, "database": path, "schema": schema, "initial": initial, "upgraded": upgraded, "removed": removed, "restored": restored, "replay": replay, "preexisting_fact_content_changed": changed, "preexisting_run_metadata_refreshed": refreshed, "current_valuation_inputs_unchanged": true, "reviewed_source_values": 7, "scope": "single_company_cropped_evidence_import_and_isolated_FN114_scope_replay_not_full_schema37_or_market_sync"}
+	raw, err := json.MarshalIndent(receipt, "", "  ")
 	check(err)
 	check(os.WriteFile(filepath.Join(output, "acceptance.json"), raw, 0644))
 	t.Logf("cash history standard chain: %+v", receipt)
+}
+
+// 复用同一原文/目录/TDX导入链，支持独立季度证据包。
+func importAnkerHistoricalEvidence(t *testing.T, db *sql.DB, dir, output string) {
+	t.Helper()
+	ctx := t.Context()
+	check := func(err error) {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	run, err := duckstore.StartIngestRun(ctx, db, "tdx", "reviewed_cash_history_2024", nil)
+	check(err)
+	root := filepath.Join(output, "raw")
+	raw := readFinancialSample(t, dir, "catalogue.json")
+	var request struct {
+		AcquiredAt time.Time `json:"acquired_at"`
+		SHA        string    `json:"sha256"`
+	}
+	check(json.Unmarshal(readFinancialSample(t, dir, "catalogue-request.json"), &request))
+	if fmt.Sprintf("%x", sha256.Sum256(raw)) != request.SHA {
+		t.Fatal("catalogue hash")
+	}
+	catalogue, err := artifact.Persist(ctx, db, root, artifact.Input{Source: "cninfo", Dataset: "filing_catalogue", SourceLocator: "reviewed/" + filepath.Base(dir) + "/catalogue", FetchedAt: request.AcquiredAt, MediaType: "application/json", ParserVersion: cninfo.CatalogueParserVersion, Content: raw})
+	check(err)
+	page, err := cninfo.ParseCataloguePage(raw)
+	check(err)
+	var reports []struct {
+		ID        string `json:"announcement_id"`
+		File      string
+		URL       string
+		SHA       string    `json:"sha256"`
+		FetchedAt time.Time `json:"fetched_at"`
+	}
+	check(json.Unmarshal(readFinancialSample(t, dir, "reports.json"), &reports))
+	for _, r := range reports {
+		matches := 0
+		for _, f := range page.Filings {
+			if f.SourceFilingID != r.ID {
+				continue
+			}
+			matches++
+			if f.ProviderCode != "300866" {
+				t.Fatal("filing identity")
+			}
+			pdf := readFinancialSample(t, dir, r.File)
+			if fmt.Sprintf("%x", sha256.Sum256(pdf)) != r.SHA {
+				t.Fatal("PDF hash")
+			}
+			a, err := artifact.Persist(ctx, db, root, artifact.Input{Source: "cninfo", Dataset: "filing_document", SourceLocator: r.URL, FetchedAt: r.FetchedAt, MediaType: "application/pdf", ParserVersion: "pdf-raw-v1", Content: pdf})
+			check(err)
+			f.CatalogueArtifactID = catalogue.ArtifactID
+			f.SourceURL = r.URL
+			f.DocumentArtifactID = a.ArtifactID
+			f.DocumentSHA256 = a.SHA256
+			_, err = duckstore.UpsertFilings(ctx, db, run, []domain.FilingObservation{f})
+			check(err)
+		}
+		if matches != 1 {
+			t.Fatalf("filing %s matches %d", r.ID, matches)
+		}
+	}
+	var packages []struct {
+		File      string
+		SHA       string    `json:"sample_sha256"`
+		FetchedAt time.Time `json:"fetched_at"`
+	}
+	check(json.Unmarshal(readFinancialSample(t, dir, "packages.json"), &packages))
+	for _, p := range packages {
+		raw := readFinancialSample(t, dir, p.File)
+		if fmt.Sprintf("%x", sha256.Sum256(raw)) != p.SHA {
+			t.Fatal("sample hash")
+		}
+		a, err := artifact.Persist(ctx, db, root, artifact.Input{Source: "tdx", Dataset: "reviewed_cash_history_2024", SourceLocator: "reviewed/" + p.File, FetchedAt: p.FetchedAt, MediaType: "application/zip", ParserVersion: "gpcw-v1", Content: raw})
+		check(err)
+		records, err := (&tdx.Client{}).NormalizeProfessionalFinancialPackage(financial.FileEntry{Filename: p.File}, raw, a.ArtifactID)
+		check(err)
+		resolved, _, err := resolveProviderFinancialRecords(ctx, db, records)
+		check(err)
+		if len(resolved) != 1 {
+			t.Fatal("historical identity unresolved")
+		}
+		_, err = duckstore.ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", a.SHA256, resolved)
+		check(err)
+	}
+	check(duckstore.FinishIngestRun(ctx, db, run, duckstore.IngestRunCompleted, nil, nil))
 }

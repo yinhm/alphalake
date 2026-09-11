@@ -1,0 +1,40 @@
+{
+  "added": {
+    "RunID": 5373,
+    "FilingResolutionAttempted": 3665,
+    "FilingResolutionRecovered": 1,
+    "FilingResolutionPending": 435,
+    "LinkRecords": 33066,
+    "Linked": 32573,
+    "LinkPending": 419,
+    "LinkAmbiguous": 74,
+    "LinksRemoved": 0,
+    "Candidates": 2605577,
+    "Materialized": 2023212,
+    "Inserted": 9,
+    "Updated": 0,
+    "Removed": 0,
+    "Rejected": 582365
+  },
+  "current_inputs_unchanged": true,
+  "database": "/root/alphalake/workspace/earnings-history-upgrade-20260911/acceptance.duckdb",
+  "replay": {
+    "RunID": 5375,
+    "FilingResolutionAttempted": 3665,
+    "FilingResolutionRecovered": 1,
+    "FilingResolutionPending": 435,
+    "LinkRecords": 33066,
+    "Linked": 32573,
+    "LinkPending": 419,
+    "LinkAmbiguous": 74,
+    "LinksRemoved": 0,
+    "Candidates": 2605577,
+    "Materialized": 2023212,
+    "Inserted": 0,
+    "Updated": 0,
+    "Removed": 0,
+    "Rejected": 582365
+  },
+  "scope": "single_company_Q1_on_owned_copy_not_main_publication",
+  "source_bits": 1333950316
+}
