@@ -1,0 +1,75 @@
+{
+  "status": "explicit_zero_growth_extension_not_validated_full_dcf",
+  "code": "300866",
+  "report_period": "2026-06-30",
+  "information_as_of": "2026-09-10T22:18:56.906406Z",
+  "engine_revision": "d5e5e694c03356905f58cf151cb7bc9281127d2713e749dccf3b960df7534867",
+  "readiness_sha256": "dad9086054e8ea45e393969f202c97253020f650060f4a622372b9fddcbc4256",
+  "checks": {
+    "identical_standard_snapshot": true,
+    "identical_wacc": true,
+    "identical_margin_tax": true,
+    "identical_bridge_components": true,
+    "identical_cash_forecast": true,
+    "independent_decimal_ten_year_dcf": true
+  },
+  "changed_policy_fields": [
+    "growth_ceiling",
+    "growth_floor",
+    "review_note",
+    "scenario"
+  ],
+  "baseline": {
+    "run_id": "c03a391c27c7d803d09d6fe166daa9b2bef8b9227a6c79cc7c931f11bb6a653c",
+    "value_per_share": {
+      "value": 92.15042148953913,
+      "currency": "CNY",
+      "unit": "CNY/share"
+    },
+    "first_year_cash": {
+      "forecast_year": 1,
+      "dcf_fcff": "641633282.5168633000000",
+      "dcf_reinvestment": "2283509998.933332000000",
+      "dcf_nopat_derived": "2925143281.4501953000000",
+      "dcf_minus_cash_proxy": "-679877835.090204823982006781",
+      "nopat_minus_ocf": "1283997883.843127176017993219",
+      "reinvestment_minus_cash_capex": "1963875718.933332000000",
+      "classification_status": "unclassified_difference_not_valuation_error",
+      "unresolved": [
+        "different_revenue_and_profit_forecast_assumptions",
+        "operating_tax_and_financing_investment_classification",
+        "depreciation_and_noncash_reinvestment",
+        "working_capital_scope_acquisitions_and_asset_disposals"
+      ]
+    }
+  },
+  "zero_growth": {
+    "run_id": "6b1d6fdc744b6bfa4842a8ca80a16775d29111998bb7f9ecc368243358b93d9d",
+    "value_per_share": {
+      "value": 42.284555083108394,
+      "currency": "CNY",
+      "unit": "CNY/share"
+    },
+    "first_year_cash": {
+      "forecast_year": 1,
+      "dcf_fcff": "2437619401.2084966000000",
+      "dcf_reinvestment": "0.0",
+      "dcf_nopat_derived": "2437619401.2084966000000",
+      "dcf_minus_cash_proxy": "1116108283.601428476017993219",
+      "nopat_minus_ocf": "796474003.601428476017993219",
+      "reinvestment_minus_cash_capex": "-319634280.0000000000",
+      "classification_status": "unclassified_difference_not_valuation_error",
+      "unresolved": [
+        "different_revenue_and_profit_forecast_assumptions",
+        "operating_tax_and_financing_investment_classification",
+        "depreciation_and_noncash_reinvestment",
+        "working_capital_scope_acquisitions_and_asset_disposals"
+      ]
+    }
+  },
+  "files": {
+    "workspace/cash-main-publication-20260911/runs/c03a391c27c7d803d09d6fe166daa9b2bef8b9227a6c79cc7c931f11bb6a653c.json": "2c869babc2332693fd17088f203b02232b6d973d2e26c16f6b482c4ae73170d4",
+    "workspace/tdx-zero-growth-holdout-source-20260911/runs/6b1d6fdc744b6bfa4842a8ca80a16775d29111998bb7f9ecc368243358b93d9d.json": "5872f926912cf74062cf1fcd163530ede0f19ff4ce44c73b2b69934ac80bce5c",
+    "valuation/examples/nonfinancial-zero-growth-2026H1-pilot.json": "1bb449bde4621eff31c1a17af42163bd1967a04389db4fb0e7d9a4bfcc2e20e2"
+  }
+}

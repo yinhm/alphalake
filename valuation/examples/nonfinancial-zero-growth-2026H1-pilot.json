@@ -1,0 +1,33 @@
+{
+  "policy_version": "nonfinancial-zero-growth-2026H1-pilot-v1",
+  "review_note": "零增长显式估值对照：120家公司两年/三年留出验证通过；前五年零增长及随后向2%终值增长过渡是估值延伸假设，四至十年、再投资及完整DCF未验证。事后政策，不代表历史当时已知或当前目标价。",
+  "assignments": {
+    "300866": {
+      "policy": {
+        "policy_id": "nonfinancial-history-fcff-v1",
+        "approved_report_period": "2026-06-30",
+        "scenario": "zero_growth_valuation_extension_not_validated_dcf",
+        "review_note": "零增长显式估值对照：120家公司两年/三年留出验证通过；前五年零增长及随后向2%终值增长过渡是估值延伸假设，四至十年、再投资及完整DCF未验证。事后政策，不代表历史当时已知或当前目标价。",
+        "nonfinancial_scope_review": "安克合并普通经营模型；标准链及已审核原文见valuation-chain-2026，仍执行金融业务字段拒绝，不替代专项研发/套保估值。",
+        "wacc": 0.1,
+        "tax_rate": 0.25,
+        "growth_floor": 0,
+        "growth_ceiling": 0,
+        "growth_shift": 0,
+        "margin_shift": 0,
+        "sales_to_capital": 3,
+        "terminal_growth": 0.02,
+        "terminal_roic": 0.1,
+        "cash_recovery": 0.8,
+        "operating_cash_ratio": 0.03,
+        "minority_book_multiple": 1,
+        "debt_book_multiple": 1,
+        "extra_dilution_rate": 0.02,
+        "additional_claims_million_cny": 0,
+        "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+        "financial_asset_policy": "no_credit_pending_classification",
+        "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+      }
+    }
+  }
+}
