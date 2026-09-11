@@ -1,0 +1,198 @@
+{
+  "scope": "existing_batch_development_baseline_not_new_holdout_or_current_valuation",
+  "report_period": "2026-06-30",
+  "information_as_of": "2026-09-10T04:42:23Z",
+  "source_batch": {
+    "path": "workspace/nonfinancial-batch-20260910/batches/batch-viebswso.json",
+    "sha256": "a12c74a482913d983a84ade8b65bf0a6d4a5ac5ad5d952c33e020a7a9e0b808a"
+  },
+  "current_engine_revision": "bf7df3a29fb22514fdab88446385cd5895018549083d6b56223b2488c96efbc9",
+  "selected_count": 5,
+  "valued_count": 2,
+  "blocked_count": 3,
+  "selection": "安克、苏泊尔、格力、伊利、海天为固定开发诊断名单；并非随机抽样或已证实稳定经营，保留全部阻断；既有结果已暴露。",
+  "companies": [
+    {
+      "code": "300866",
+      "name": "安克创新",
+      "instrument_id": 45156,
+      "financial_status": "financial_core_complete_requires_policy",
+      "status": "illustrative_book_equity_scenario",
+      "reason": null,
+      "business_comparability": "not_established_by_this_audit",
+      "run_id": "6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b",
+      "saved_run": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b.json",
+        "sha256": "328ffa8de193bb8fe8253a0be686b051f1ea4160ba3c80a182781052a7b028b7"
+      },
+      "replay": "exact_report_match",
+      "policy_id": "nonfinancial-history-fcff-v1",
+      "scenario": "industry-mechanical-initial",
+      "wacc": 0.08075367197021832,
+      "wacc_basis": "industry_reference_weights",
+      "value_per_share": 126.13784833230838,
+      "revenue_ttm_million_cny": 34252.649984,
+      "ebit_ttm_million_cny": 3250.1592016113286,
+      "first_year_growth": 0.19999999999999996,
+      "terminal_pv_share": 0.8167192042527859,
+      "terminal_growth": 0.02,
+      "terminal_roic": 0.1,
+      "forecast_million_cny": {
+        "revenue_projections": [
+          41103.1799808,
+          49323.815976959995,
+          59188.579172351994,
+          71026.29500682239,
+          85231.55400818687,
+          99209.5288655295,
+          111908.34856031729,
+          122203.91662786649,
+          129047.33595902703,
+          131628.28267820756
+        ],
+        "ebit_projections": [
+          3900.191041933594,
+          4680.2292503203125,
+          5616.275100384375,
+          6739.53012046125,
+          8087.4361445535,
+          9413.775672260272,
+          10618.738958309588,
+          11595.662942474071,
+          12245.02006725262,
+          12489.920468597673
+        ],
+        "reinvestment_projections": [
+          2758.377906068269,
+          3310.053487281923,
+          3972.064184738309,
+          4766.477021685969,
+          5719.772426023166,
+          5628.256067206789,
+          5113.201999788264,
+          4145.528521328338,
+          2755.5147840898976,
+          1039.2227185710415
+        ],
+        "fcff_projections": [
+          166.76537538192633,
+          200.11845045831114,
+          240.14214054997274,
+          288.1705686599689,
+          345.8046823919585,
+          1432.0756869884144,
+          2850.8522189439273,
+          4551.218685527217,
+          6428.250266349569,
+          8328.217632877213
+        ]
+      },
+      "historical_fcff": null
+    },
+    {
+      "code": "002032",
+      "name": "苏 泊 尔",
+      "instrument_id": 28842,
+      "financial_status": "financial_core_complete_requires_policy",
+      "status": "illustrative_book_equity_scenario",
+      "reason": null,
+      "business_comparability": "not_established_by_this_audit",
+      "run_id": "183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d",
+      "saved_run": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d.json",
+        "sha256": "9560ca4d3056791d115b2b10f0f5b84b0cc789fd5663fc12a9d16880fcf42b70"
+      },
+      "replay": "exact_report_match",
+      "policy_id": "nonfinancial-history-fcff-v1",
+      "scenario": "industry-mechanical-initial",
+      "wacc": 0.057531403615019586,
+      "wacc_basis": "industry_reference_weights",
+      "value_per_share": 43.252612680123605,
+      "revenue_ttm_million_cny": 22704.02304,
+      "ebit_ttm_million_cny": 2449.5521608164067,
+      "first_year_growth": -0.006089052517015303,
+      "terminal_pv_share": 0.6334317258969464,
+      "terminal_growth": 0.02,
+      "terminal_roic": 0.1,
+      "forecast_million_cny": {
+        "revenue_projections": [
+          22565.777051361914,
+          22428.37284980891,
+          22291.805309655225,
+          22156.069336425655,
+          22021.159866665526,
+          22001.974107001217,
+          22097.6071943679,
+          22308.95708441756,
+          22638.73231551087,
+          23091.50696182109
+        ],
+        "ebit_projections": [
+          2434.6367090660274,
+          2419.812078284671,
+          2405.0777154586876,
+          2390.433070941757,
+          2375.877598434382,
+          2373.8076340514262,
+          2384.125551514419,
+          2406.9282318564597,
+          2442.507901084471,
+          2491.358059106161
+        ],
+        "reinvestment_projections": [
+          -60.820873611422805,
+          -60.45053211787272,
+          -60.08244565312465,
+          -59.716600486191574,
+          -59.35298296969426,
+          -8.44071263967675,
+          42.07346612440437,
+          92.98269756057971,
+          145.0835416498903,
+          199.19673481291863
+        ],
+        "fcff_projections": [
+          1886.7984054109431,
+          1875.3095908313758,
+          1863.8907322471405,
+          1852.541403692509,
+          1841.2611817954808,
+          1788.7964381782465,
+          1746.02069751141,
+          1712.213476331765,
+          1686.797384163463,
+          1669.3218095167022
+        ]
+      },
+      "historical_fcff": null
+    },
+    {
+      "code": "000651",
+      "name": "格力电器",
+      "instrument_id": 28469,
+      "financial_status": "financial_core_complete_requires_policy",
+      "status": "rejected_input_or_policy",
+      "reason": "financial operations require separate model: FN506",
+      "business_comparability": "not_established_by_this_audit"
+    },
+    {
+      "code": "600887",
+      "name": "伊利股份",
+      "instrument_id": 25708,
+      "financial_status": "financial_core_complete_requires_policy",
+      "status": "rejected_input_or_policy",
+      "reason": "financial operations require separate model: FN506",
+      "business_comparability": "not_established_by_this_audit"
+    },
+    {
+      "code": "603288",
+      "name": "海天味业",
+      "instrument_id": 26237,
+      "financial_status": "financial_core_complete_requires_policy",
+      "status": "blocked_review_exclusion",
+      "reason": "generic-valuation-2026/values.json：原披露与后续比较列存在差异，可比历史尚待协调",
+      "business_comparability": "not_established_by_this_audit"
+    }
+  ],
+  "boundary": "重放既有标准事实请求，不查询当前主库，不重写旧run；非逐公司原文可比性核验、非严格PIT、非完整DCF准确度证明。"
+}

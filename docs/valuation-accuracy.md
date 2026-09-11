@@ -15,6 +15,43 @@
 
 研发作为再投资线索保留；既有研发候选失败，不继续把研发费用增长率直接当未来收入增长。先解决能够影响上述交付的输入和经济一致性问题，其余个案缺口进入边界记录。
 
+## 五家公司完整基线盘点（2026-09-11）
+
+已复用既有批次固定安克、苏泊尔、格力、伊利、海天五家公司进行开发诊断，未按结果更换阻断公司；不称随机样本、独立留出或已证实稳定经营。[逐公司回执](acceptance/valuation-baseline-five-20260911.json)记录批次哈希、运行、十年路径和拒绝原因。两份成功请求经既有`load_run`校验请求/引擎哈希，再经`replay`由当前引擎重建完整报告，均精确相同；没有重新查询主库或更新估值。
+
+| 公司 | 既有批次状态 | 每股条件值（元） | 首年收入增长 | 终值现值/经营资产价值 |
+| --- | --- | ---: | ---: | ---: |
+| 安克创新 | 条件估值可重放 | 126.1378 | 20.00% | 81.67% |
+| 苏泊尔 | 条件估值可重放 | 43.2526 | −0.61% | 63.34% |
+| 格力电器 | FN506金融业务字段阻断 | — | — | — |
+| 伊利股份 | FN506金融业务字段阻断 | — | — | — |
+| 海天味业 | 原披露与后续比较列差异，已有审核隔离 | — | — | — |
+
+这是2026H1财务、2026-09-10T04:42:23Z信息截止的行业机械政策历史结果。安克使用行业参考权重WACC，不能与固定10% WACC的92.1504元试用政策串成价格更新；没有证明126.1378元更准确。两家公司税率、增量资本效率、增长路径和终值仍含政策假设，历史完整FCFF仍空。终值占比高不是错误判定，却说明只校准首年利润不足以验证主要价值来源。
+
+下一轮优先审查增长衰减、再投资与终值回报衔接；采用已有引擎做显式假设敏感性，先展示价值驱动，再决定一项可由多起点历史财务检验的候选。敏感性不作为新预测规则胜出的依据。三家阻断保持在分母中，后续按经济业务拆分或既有可比性问题处理，不把金融字段直接解释为整家公司属于金融行业，也不为了出数取消检查。
+
+本地重放（依赖保留的运行文件及后端Python环境，不是裸克隆CI）：
+
+```bash
+PYTHONPATH=valuation/backend workspace/anker-agent-adapter-20260906/venv/bin/python - <<'PYTHON'
+import json
+from tools.compare_valuations import load_run, replay
+receipt = json.load(open('docs/acceptance/valuation-baseline-five-20260911.json'))
+for company in receipt['companies']:
+    if 'run_id' in company:
+        run, evidence = load_run('valuation/backend/data/alphalake_runs', company['run_id'])
+        assert evidence['sha256'] == company['saved_run']['sha256']
+        report, inputs = replay(run)
+        assert report['final']['value_per_share'] == company['value_per_share']
+        dcf = report['dcf']
+        assert dcf['pv_terminal_value'] / dcf['value_of_operating_assets'] == company['terminal_pv_share']
+        for key, values in company['forecast_million_cny'].items():
+            assert dcf[key] == values
+print('two complete reports and forecast paths replayed')
+PYTHON
+```
+
 ## 已完成研究与历史验收
 
 以下按研究发生时的协议、样本和结论保留；其中“下一步”“首轮”描述属于当时阶段，不覆盖上方当前执行顺序。
