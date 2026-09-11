@@ -1,0 +1,14 @@
+[
+  {
+    "file": "gpcw20231231.zip",
+    "path": "/root/alphalake/workspace/tdx-multi-origin-20260910/gpcw20231231.zip",
+    "list": "/root/alphalake/workspace/tdx-multi-origin-20260910/gpcw.txt",
+    "fetched_at": "2026-09-10T21:33:27.384962+00:00"
+  },
+  {
+    "file": "gpcw20240630.zip",
+    "path": "/root/alphalake/workspace/tdx-history-download-20260910/gpcw20240630.zip",
+    "list": "/root/alphalake/workspace/tdx-history-20260910/gpcw.txt",
+    "fetched_at": "2026-09-10T16:30:49.323597+00:00"
+  }
+]

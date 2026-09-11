@@ -1,0 +1,44 @@
+[
+  {
+    "period": "2023-12-31",
+    "comparisons": {
+      "FN304": {
+        "pdf_cny": "15471820.82",
+        "source_cny": "15471821",
+        "source_bits": 1265374413
+      },
+      "FN34": {
+        "pdf_cny": "42174450.66",
+        "source_cny": "42174452",
+        "source_bits": 1277223421
+      }
+    },
+    "expensed_yoy": "-0.5226142998932512853979448215",
+    "total_yoy": "-0.3181368374636018342263313115",
+    "capitalized_cny": "15990870.05",
+    "total_cny": "31462690.87",
+    "rd_depreciation_amortization_cny": "9048215.83",
+    "boundary": "reported_RD_not_cash_investment; FN34_stock_not_flow; two_fixed_periods_not_market_coverage; no_growth_forecast_or_source_override"
+  },
+  {
+    "period": "2024-06-30",
+    "comparisons": {
+      "FN304": {
+        "pdf_cny": "12791059.40",
+        "source_cny": "12791059",
+        "source_bits": 1262693651
+      },
+      "FN34": {
+        "pdf_cny": "50081556.39",
+        "source_cny": "50081556",
+        "source_bits": 1279200197
+      }
+    },
+    "expensed_yoy": "0.984010076037891677247603902",
+    "total_yoy": "0.344889705275087525465120640",
+    "capitalized_cny": "7907105.73",
+    "total_cny": "20698165.13",
+    "rd_depreciation_amortization_cny": "4493307.03",
+    "boundary": "reported_RD_not_cash_investment; FN34_stock_not_flow; two_fixed_periods_not_market_coverage; no_growth_forecast_or_source_override"
+  }
+]
