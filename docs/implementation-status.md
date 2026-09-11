@@ -1,5 +1,7 @@
 # AlphaLake 实现状态
 
+[两期营运余额比例候选](../valuation/research/continuing-operations-five/trade-balance-mean.md)未通过：保持收入路径不变，30个到期位置误差5.7869%→6.2550%，存货/应付WAPE恶化，仅两家公司改善。停止该候选，不扫描权重或扩大采用；真实重放和时点/篡改回归已加入现有CI。
+
 [五家多起点营运余额检验](../valuation/research/continuing-operations-five/trade-balance-path.md)已完成一至三年30/45个到期位置：随预测收入同比例增长的三项余额误差6.3344%→5.7869%，但仅安克改善，其余四家恶化，不能据平均数推广。未来15项保留，实际收入反事实只作归因；下一步须联合检验增长与资本需求，不继续重复已有余额—现金差额核对。
 
 [安克五年度资本分量衔接](../valuation/research/continuing-operations-five/anker-capital-components.md)已完成50项源/原文比较，49匹配、1项2022版本冲突保留。2024营运现金释放5.43亿元、2025占用24.53亿元；投入小计不等于完整再投资，不能直接拟合资本效率。既有余额—现金分类差额继续保留，不重复已经完成的核对。
