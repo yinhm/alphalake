@@ -1,0 +1,1414 @@
+{
+  "plan_sha256": "6b54fb90029ec86b54bff1d6aa9c6a9fa1d26f6c4743f4bda8ee420efab2ec0c",
+  "coverage": {
+    "blocked_scope": 24,
+    "blocked_historical_anchor": 3,
+    "evaluated": 19,
+    "not_yet_observable": 8
+  },
+  "by_field": {
+    "FN11": {
+      "positions": 18,
+      "statuses": {
+        "blocked_scope": 12,
+        "evaluated": 5,
+        "not_yet_observable": 1
+      },
+      "metrics": {
+        "broker": {
+          "wape_pct": 18.739235125892225,
+          "mae_pct_revenue": 2.3278130757520237
+        },
+        "current_rule_fy_bridge": {
+          "wape_pct": 28.893887444323568,
+          "mae_pct_revenue": 3.5686948679589823
+        },
+        "zero_growth_fy_bridge": {
+          "wape_pct": 22.944693022744545,
+          "mae_pct_revenue": 2.845470726084124
+        },
+        "repeat_balance": {
+          "wape_pct": 20.318019820573916,
+          "mae_pct_revenue": 2.523908303759244
+        },
+        "direct_broker": {
+          "wape_pct": 13.74078558091758,
+          "mae_pct_revenue": 1.7084863367041172
+        }
+      }
+    },
+    "FN17": {
+      "positions": 18,
+      "statuses": {
+        "blocked_historical_anchor": 3,
+        "evaluated": 9,
+        "not_yet_observable": 6
+      },
+      "metrics": {
+        "broker": {
+          "wape_pct": 13.838787350720992,
+          "mae_pct_revenue": 1.6640791231105487
+        },
+        "current_rule_fy_bridge": {
+          "wape_pct": 12.964357421249886,
+          "mae_pct_revenue": 1.4799209712546295
+        },
+        "zero_growth_fy_bridge": {
+          "wape_pct": 17.393162885176242,
+          "mae_pct_revenue": 1.9118497739398688
+        },
+        "repeat_balance": {
+          "wape_pct": 22.15055260639721,
+          "mae_pct_revenue": 2.4503425555414746
+        },
+        "direct_broker": {
+          "wape_pct": 20.8848767753001,
+          "mae_pct_revenue": 2.54792280104592
+        }
+      }
+    },
+    "FN44": {
+      "positions": 18,
+      "statuses": {
+        "blocked_scope": 12,
+        "evaluated": 5,
+        "not_yet_observable": 1
+      },
+      "metrics": {
+        "broker": {
+          "wape_pct": 7.612338221966658,
+          "mae_pct_revenue": 1.1403538316602742
+        },
+        "current_rule_fy_bridge": {
+          "wape_pct": 18.79458612710735,
+          "mae_pct_revenue": 2.784115155188891
+        },
+        "zero_growth_fy_bridge": {
+          "wape_pct": 14.801854761936374,
+          "mae_pct_revenue": 2.19839103296118
+        },
+        "repeat_balance": {
+          "wape_pct": 13.993103119186697,
+          "mae_pct_revenue": 2.0755744918057313
+        },
+        "direct_broker": {
+          "wape_pct": 14.158813451925486,
+          "mae_pct_revenue": 2.1179522249727647
+        }
+      }
+    }
+  },
+  "by_company": {
+    "300866": {
+      "FN11": {
+        "positions": 9,
+        "statuses": {
+          "blocked_scope": 9
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "repeat_balance": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "direct_broker": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          }
+        }
+      },
+      "FN17": {
+        "positions": 9,
+        "statuses": {
+          "blocked_historical_anchor": 3,
+          "evaluated": 3,
+          "not_yet_observable": 3
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": 14.328807148148165,
+            "mae_pct_revenue": 2.0831354314511468
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": 18.586977555053302,
+            "mae_pct_revenue": 2.7316832780907165
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": 30.534396841313193,
+            "mae_pct_revenue": 4.531863239420632
+          },
+          "repeat_balance": {
+            "wape_pct": 39.09659067784226,
+            "mae_pct_revenue": 5.86035615713726
+          },
+          "direct_broker": {
+            "wape_pct": 22.20924020858638,
+            "mae_pct_revenue": 3.3584112214130037
+          }
+        }
+      },
+      "FN44": {
+        "positions": 9,
+        "statuses": {
+          "blocked_scope": 9
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "repeat_balance": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "direct_broker": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          }
+        }
+      }
+    },
+    "002032": {
+      "FN11": {
+        "positions": 9,
+        "statuses": {
+          "evaluated": 5,
+          "not_yet_observable": 1,
+          "blocked_scope": 3
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": 18.739235125892225,
+            "mae_pct_revenue": 2.3278130757520237
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": 28.893887444323568,
+            "mae_pct_revenue": 3.5686948679589823
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": 22.944693022744545,
+            "mae_pct_revenue": 2.845470726084124
+          },
+          "repeat_balance": {
+            "wape_pct": 20.318019820573916,
+            "mae_pct_revenue": 2.523908303759244
+          },
+          "direct_broker": {
+            "wape_pct": 13.74078558091758,
+            "mae_pct_revenue": 1.7084863367041172
+          }
+        }
+      },
+      "FN17": {
+        "positions": 9,
+        "statuses": {
+          "evaluated": 6,
+          "not_yet_observable": 3
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": 13.395400576621912,
+            "mae_pct_revenue": 1.4545509689402498
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": 7.876817252054679,
+            "mae_pct_revenue": 0.8540398178365858
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": 5.502522217012564,
+            "mae_pct_revenue": 0.6018430411994871
+          },
+          "repeat_balance": {
+            "wape_pct": 6.81719425290146,
+            "mae_pct_revenue": 0.745335754743582
+          },
+          "direct_broker": {
+            "wape_pct": 19.686547170041944,
+            "mae_pct_revenue": 2.142678590862378
+          }
+        }
+      },
+      "FN44": {
+        "positions": 9,
+        "statuses": {
+          "evaluated": 5,
+          "not_yet_observable": 1,
+          "blocked_scope": 3
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": 7.612338221966658,
+            "mae_pct_revenue": 1.1403538316602742
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": 18.79458612710735,
+            "mae_pct_revenue": 2.784115155188891
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": 14.801854761936374,
+            "mae_pct_revenue": 2.19839103296118
+          },
+          "repeat_balance": {
+            "wape_pct": 13.993103119186697,
+            "mae_pct_revenue": 2.0755744918057313
+          },
+          "direct_broker": {
+            "wape_pct": 14.158813451925486,
+            "mae_pct_revenue": 2.1179522249727647
+          }
+        }
+      }
+    }
+  },
+  "by_origin": {
+    "2023": {
+      "FN11": {
+        "positions": 6,
+        "statuses": {
+          "blocked_scope": 3,
+          "evaluated": 3
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": 20.31389542589814,
+            "mae_pct_revenue": 2.5677858667286206
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": 34.151086286429994,
+            "mae_pct_revenue": 4.272196184656694
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": 31.60886435804684,
+            "mae_pct_revenue": 3.959059866614443
+          },
+          "repeat_balance": {
+            "wape_pct": 30.43149487863914,
+            "mae_pct_revenue": 3.8118605532358987
+          },
+          "direct_broker": {
+            "wape_pct": 13.5021075268075,
+            "mae_pct_revenue": 1.714578287652963
+          }
+        }
+      },
+      "FN17": {
+        "positions": 6,
+        "statuses": {
+          "blocked_historical_anchor": 3,
+          "evaluated": 3
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": 18.468480893371158,
+            "mae_pct_revenue": 1.9959581603456604
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": 6.506687204214302,
+            "mae_pct_revenue": 0.7099440918515263
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": 4.8064692769629405,
+            "mae_pct_revenue": 0.530869294485988
+          },
+          "repeat_balance": {
+            "wape_pct": 5.389930155205701,
+            "mae_pct_revenue": 0.5959857954977472
+          },
+          "direct_broker": {
+            "wape_pct": 25.497777080343127,
+            "mae_pct_revenue": 2.756513258811951
+          }
+        }
+      },
+      "FN44": {
+        "positions": 6,
+        "statuses": {
+          "blocked_scope": 3,
+          "evaluated": 3
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": 8.29304599463425,
+            "mae_pct_revenue": 1.2494120551042454
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": 24.21761192231392,
+            "mae_pct_revenue": 3.5810849298550393
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": 21.291889417697522,
+            "mae_pct_revenue": 3.152707178794473
+          },
+          "repeat_balance": {
+            "wape_pct": 19.936910789084084,
+            "mae_pct_revenue": 2.951335101556685
+          },
+          "direct_broker": {
+            "wape_pct": 19.56796040611003,
+            "mae_pct_revenue": 2.9212499726437207
+          }
+        }
+      }
+    },
+    "2024": {
+      "FN11": {
+        "positions": 6,
+        "statuses": {
+          "blocked_scope": 3,
+          "evaluated": 2,
+          "not_yet_observable": 1
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": 16.338665295477615,
+            "mae_pct_revenue": 1.967853889287128
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": 20.879287131606006,
+            "mae_pct_revenue": 2.5134428929124155
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": 9.736162704813943,
+            "mae_pct_revenue": 1.1750870152886446
+          },
+          "repeat_balance": {
+            "wape_pct": 4.9000257904006155,
+            "mae_pct_revenue": 0.5919799295442616
+          },
+          "direct_broker": {
+            "wape_pct": 14.104650305186407,
+            "mae_pct_revenue": 1.6993484102808485
+          }
+        }
+      },
+      "FN17": {
+        "positions": 6,
+        "statuses": {
+          "evaluated": 4,
+          "not_yet_observable": 2
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": 10.64714741998153,
+            "mae_pct_revenue": 1.2509519598521404
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": 14.483883496909508,
+            "mae_pct_revenue": 1.7147439739949122
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": 22.23989060841619,
+            "mae_pct_revenue": 2.566037942812245
+          },
+          "repeat_balance": {
+            "wape_pct": 29.20749053656009,
+            "mae_pct_revenue": 3.448157982307228
+          },
+          "direct_broker": {
+            "wape_pct": 21.784360399338222,
+            "mae_pct_revenue": 2.738278736115685
+          }
+        }
+      },
+      "FN44": {
+        "positions": 6,
+        "statuses": {
+          "blocked_scope": 3,
+          "evaluated": 2,
+          "not_yet_observable": 1
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": 6.604472364686046,
+            "mae_pct_revenue": 0.9767664964943171
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": 10.765175032355858,
+            "mae_pct_revenue": 1.5886604931896688
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": 5.192614784440513,
+            "mae_pct_revenue": 0.7669168142112407
+          },
+          "repeat_balance": {
+            "wape_pct": 5.192614784440513,
+            "mae_pct_revenue": 0.7619335771793004
+          },
+          "direct_broker": {
+            "wape_pct": 6.149951571633394,
+            "mae_pct_revenue": 0.913005603466331
+          }
+        }
+      }
+    },
+    "2025": {
+      "FN11": {
+        "positions": 6,
+        "statuses": {
+          "blocked_scope": 6
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "repeat_balance": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "direct_broker": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          }
+        }
+      },
+      "FN17": {
+        "positions": 6,
+        "statuses": {
+          "evaluated": 2,
+          "not_yet_observable": 4
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": 15.005633040041818,
+            "mae_pct_revenue": 1.9925148937746977
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": 16.565548738668713,
+            "mae_pct_revenue": 2.1652402848787182
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": 21.05099862086856,
+            "mae_pct_revenue": 2.6749441553759374
+          },
+          "repeat_balance": {
+            "wape_pct": 25.946194588525593,
+            "mae_pct_revenue": 3.236246842075558
+          },
+          "direct_broker": {
+            "wape_pct": 14.773000415220588,
+            "mae_pct_revenue": 1.8543252442573437
+          }
+        }
+      },
+      "FN44": {
+        "positions": 6,
+        "statuses": {
+          "blocked_scope": 6
+        },
+        "metrics": {
+          "broker": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "current_rule_fy_bridge": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "zero_growth_fy_bridge": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "repeat_balance": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          },
+          "direct_broker": {
+            "wape_pct": null,
+            "mae_pct_revenue": null
+          }
+        }
+      }
+    }
+  },
+  "complete_three_component_positions": 5,
+  "complete_three_component_gross_mae_pct_revenue": {
+    "broker": 4.94291436964327,
+    "current_rule_fy_bridge": 7.1330425406233,
+    "zero_growth_fy_bridge": 5.575943345874433,
+    "repeat_balance": 5.355277041020325,
+    "direct_broker": 6.300286659421672
+  },
+  "results": [
+    {
+      "code": "300866",
+      "origin": 2023,
+      "target_year": 2023,
+      "field": "FN11",
+      "status": "blocked_scope",
+      "source_info_code": "AP202308311596906163",
+      "direct_forecast_cny": "1387000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2023,
+      "target_year": 2024,
+      "field": "FN11",
+      "status": "blocked_scope",
+      "source_info_code": "AP202308311596906163",
+      "direct_forecast_cny": "1497000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2023,
+      "target_year": 2025,
+      "field": "FN11",
+      "status": "blocked_scope",
+      "source_info_code": "AP202308311596906163",
+      "direct_forecast_cny": "1607000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2023,
+      "target_year": 2023,
+      "field": "FN17",
+      "status": "blocked_historical_anchor",
+      "source_info_code": "AP202308311596906163",
+      "direct_forecast_cny": "1885000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2023,
+      "target_year": 2024,
+      "field": "FN17",
+      "status": "blocked_historical_anchor",
+      "source_info_code": "AP202308311596906163",
+      "direct_forecast_cny": "2143000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2023,
+      "target_year": 2025,
+      "field": "FN17",
+      "status": "blocked_historical_anchor",
+      "source_info_code": "AP202308311596906163",
+      "direct_forecast_cny": "2415000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2023,
+      "target_year": 2023,
+      "field": "FN44",
+      "status": "blocked_scope",
+      "source_info_code": "AP202308311596906163",
+      "direct_forecast_cny": "1191000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2023,
+      "target_year": 2024,
+      "field": "FN44",
+      "status": "blocked_scope",
+      "source_info_code": "AP202308311596906163",
+      "direct_forecast_cny": "1354000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2023,
+      "target_year": 2025,
+      "field": "FN44",
+      "status": "blocked_scope",
+      "source_info_code": "AP202308311596906163",
+      "direct_forecast_cny": "1526000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2024,
+      "target_year": 2024,
+      "field": "FN11",
+      "status": "blocked_scope",
+      "source_info_code": "AP202408311639673106",
+      "direct_forecast_cny": "2134000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2024,
+      "target_year": 2025,
+      "field": "FN11",
+      "status": "blocked_scope",
+      "source_info_code": "AP202408311639673106",
+      "direct_forecast_cny": "2438000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2024,
+      "target_year": 2026,
+      "field": "FN11",
+      "status": "blocked_scope",
+      "source_info_code": "AP202408311639673106",
+      "direct_forecast_cny": "2931000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2024,
+      "target_year": 2024,
+      "field": "FN17",
+      "status": "evaluated",
+      "source_info_code": "AP202408311639673106",
+      "direct_forecast_cny": "2652000000",
+      "actual_fcff": null,
+      "actual_cny": "3233554176",
+      "actual_revenue_cny": "24710080512",
+      "predictions_cny": {
+        "broker": "3184238006.728479901418258936",
+        "current_rule_fy_bridge": "3054651029.114114892789198121",
+        "zero_growth_fy_bridge": "2767023918.134742495091793952",
+        "repeat_balance": "2411311104",
+        "direct_broker": "2652000000"
+      },
+      "errors_cny": {
+        "broker": "-49316169.271520098581741064",
+        "current_rule_fy_bridge": "-178903146.885885107210801879",
+        "zero_growth_fy_bridge": "-466530257.865257504908206048",
+        "repeat_balance": "-822243072",
+        "direct_broker": "-581554176"
+      }
+    },
+    {
+      "code": "300866",
+      "origin": 2024,
+      "target_year": 2025,
+      "field": "FN17",
+      "status": "evaluated",
+      "source_info_code": "AP202408311639673106",
+      "direct_forecast_cny": "3624000000",
+      "actual_fcff": null,
+      "actual_cny": "4997118976",
+      "actual_revenue_cny": "30514403328",
+      "predictions_cny": {
+        "broker": "3954025031.236697132657786995",
+        "current_rule_fy_bridge": "3665581234.936937871347037746",
+        "zero_growth_fy_bridge": "2767023918.134742495091793952",
+        "repeat_balance": "2411311104",
+        "direct_broker": "3624000000"
+      },
+      "errors_cny": {
+        "broker": "-1043093944.763302867342213005",
+        "current_rule_fy_bridge": "-1331537741.063062128652962254",
+        "zero_growth_fy_bridge": "-2230095057.865257504908206048",
+        "repeat_balance": "-2585807872",
+        "direct_broker": "-1373118976"
+      }
+    },
+    {
+      "code": "300866",
+      "origin": 2024,
+      "target_year": 2026,
+      "field": "FN17",
+      "status": "not_yet_observable",
+      "source_info_code": "AP202408311639673106",
+      "direct_forecast_cny": "3749000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2024,
+      "target_year": 2024,
+      "field": "FN44",
+      "status": "blocked_scope",
+      "source_info_code": "AP202408311639673106",
+      "direct_forecast_cny": "1001000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2024,
+      "target_year": 2025,
+      "field": "FN44",
+      "status": "blocked_scope",
+      "source_info_code": "AP202408311639673106",
+      "direct_forecast_cny": "2288000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2024,
+      "target_year": 2026,
+      "field": "FN44",
+      "status": "blocked_scope",
+      "source_info_code": "AP202408311639673106",
+      "direct_forecast_cny": "1690000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2025,
+      "target_year": 2025,
+      "field": "FN11",
+      "status": "blocked_scope",
+      "source_info_code": "AP202508311737221901",
+      "direct_forecast_cny": "2564000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2025,
+      "target_year": 2026,
+      "field": "FN11",
+      "status": "blocked_scope",
+      "source_info_code": "AP202508311737221901",
+      "direct_forecast_cny": "3092000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2025,
+      "target_year": 2027,
+      "field": "FN11",
+      "status": "blocked_scope",
+      "source_info_code": "AP202508311737221901",
+      "direct_forecast_cny": "3534000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2025,
+      "target_year": 2025,
+      "field": "FN17",
+      "status": "evaluated",
+      "source_info_code": "AP202508311737221901",
+      "direct_forecast_cny": "4014000000",
+      "actual_fcff": null,
+      "actual_cny": "4997118976",
+      "actual_revenue_cny": "30514403328",
+      "predictions_cny": {
+        "broker": "4194144266.055778685436927483",
+        "current_rule_fy_bridge": "4048913110.088479577544809903",
+        "zero_growth_fy_bridge": "3654717750.023007974244515485",
+        "repeat_balance": "3233554176",
+        "direct_broker": "4014000000"
+      },
+      "errors_cny": {
+        "broker": "-802974709.944221314563072517",
+        "current_rule_fy_bridge": "-948205865.911520422455190097",
+        "zero_growth_fy_bridge": "-1342401225.976992025755484515",
+        "repeat_balance": "-1763564800",
+        "direct_broker": "-983118976"
+      }
+    },
+    {
+      "code": "300866",
+      "origin": 2025,
+      "target_year": 2026,
+      "field": "FN17",
+      "status": "not_yet_observable",
+      "source_info_code": "AP202508311737221901",
+      "direct_forecast_cny": "4911000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2025,
+      "target_year": 2027,
+      "field": "FN17",
+      "status": "not_yet_observable",
+      "source_info_code": "AP202508311737221901",
+      "direct_forecast_cny": "5630000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2025,
+      "target_year": 2025,
+      "field": "FN44",
+      "status": "blocked_scope",
+      "source_info_code": "AP202508311737221901",
+      "direct_forecast_cny": "2448000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2025,
+      "target_year": 2026,
+      "field": "FN44",
+      "status": "blocked_scope",
+      "source_info_code": "AP202508311737221901",
+      "direct_forecast_cny": "2994000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "300866",
+      "origin": 2025,
+      "target_year": 2027,
+      "field": "FN44",
+      "status": "blocked_scope",
+      "source_info_code": "AP202508311737221901",
+      "direct_forecast_cny": "3519000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "002032",
+      "origin": 2023,
+      "target_year": 2023,
+      "field": "FN11",
+      "status": "evaluated",
+      "source_info_code": "AP202308311596883311",
+      "direct_forecast_cny": "2213000000",
+      "actual_fcff": null,
+      "actual_cny": "2858247424",
+      "actual_revenue_cny": "21303948288",
+      "predictions_cny": {
+        "broker": "2001348835.608661595147737584",
+        "current_rule_fy_bridge": "1870225626.098781854333763414",
+        "zero_growth_fy_bridge": "1893913969.735885725805503823",
+        "repeat_balance": "1926518144",
+        "direct_broker": "2213000000"
+      },
+      "errors_cny": {
+        "broker": "-856898588.391338404852262416",
+        "current_rule_fy_bridge": "-988021797.901218145666236586",
+        "zero_growth_fy_bridge": "-964333454.264114274194496177",
+        "repeat_balance": "-931729280",
+        "direct_broker": "-645247424"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2023,
+      "target_year": 2024,
+      "field": "FN11",
+      "status": "evaluated",
+      "source_info_code": "AP202308311596883311",
+      "direct_forecast_cny": "2355000000",
+      "actual_fcff": null,
+      "actual_cny": "2690049024",
+      "actual_revenue_cny": "22427338240",
+      "predictions_cny": {
+        "broker": "2199726306.810302815588791844",
+        "current_rule_fy_bridge": "1823118255.222074053973880434",
+        "zero_growth_fy_bridge": "1893913969.735885725805503823",
+        "repeat_balance": "1926518144",
+        "direct_broker": "2355000000"
+      },
+      "errors_cny": {
+        "broker": "-490322717.189697184411208156",
+        "current_rule_fy_bridge": "-866930768.777925946026119566",
+        "zero_growth_fy_bridge": "-796135054.264114274194496177",
+        "repeat_balance": "-763530880",
+        "direct_broker": "-335049024"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2023,
+      "target_year": 2025,
+      "field": "FN11",
+      "status": "evaluated",
+      "source_info_code": "AP202308311596883311",
+      "direct_forecast_cny": "2618000000",
+      "actual_fcff": null,
+      "actual_cny": "2759420416",
+      "actual_revenue_cny": "22771753472",
+      "predictions_cny": {
+        "broker": "2419020805.548371300005094483",
+        "current_rule_fy_bridge": "1777197428.022208423699227791",
+        "zero_growth_fy_bridge": "1893913969.735885725805503823",
+        "repeat_balance": "1926518144",
+        "direct_broker": "2618000000"
+      },
+      "errors_cny": {
+        "broker": "-340399610.451628699994905517",
+        "current_rule_fy_bridge": "-982222987.977791576300772209",
+        "zero_growth_fy_bridge": "-865506446.264114274194496177",
+        "repeat_balance": "-832902272",
+        "direct_broker": "-141420416"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2023,
+      "target_year": 2023,
+      "field": "FN17",
+      "status": "evaluated",
+      "source_info_code": "AP202308311596883311",
+      "direct_forecast_cny": "2704000000",
+      "actual_fcff": null,
+      "actual_cny": "2262683392",
+      "actual_revenue_cny": "21303948288",
+      "predictions_cny": {
+        "broker": "2591831673.218208518467347121",
+        "current_rule_fy_bridge": "2422021552.436152840023320405",
+        "zero_growth_fy_bridge": "2452698962.706836945411184778",
+        "repeat_balance": "2494922752",
+        "direct_broker": "2704000000"
+      },
+      "errors_cny": {
+        "broker": "329148281.218208518467347121",
+        "current_rule_fy_bridge": "159338160.436152840023320405",
+        "zero_growth_fy_bridge": "190015570.706836945411184778",
+        "repeat_balance": "232239360",
+        "direct_broker": "441316608"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2023,
+      "target_year": 2024,
+      "field": "FN17",
+      "status": "evaluated",
+      "source_info_code": "AP202308311596883311",
+      "direct_forecast_cny": "3054000000",
+      "actual_fcff": null,
+      "actual_cny": "2565958144",
+      "actual_revenue_cny": "22427338240",
+      "predictions_cny": {
+        "broker": "2848738916.955643809717546604",
+        "current_rule_fy_bridge": "2361015508.058508775657972889",
+        "zero_growth_fy_bridge": "2452698962.706836945411184778",
+        "repeat_balance": "2494922752",
+        "direct_broker": "3054000000"
+      },
+      "errors_cny": {
+        "broker": "282780772.955643809717546604",
+        "current_rule_fy_bridge": "-204942635.941491224342027111",
+        "zero_growth_fy_bridge": "-113259181.293163054588815222",
+        "repeat_balance": "-71035392",
+        "direct_broker": "488041856"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2023,
+      "target_year": 2025,
+      "field": "FN17",
+      "status": "evaluated",
+      "source_info_code": "AP202308311596883311",
+      "direct_forecast_cny": "3324000000",
+      "actual_fcff": null,
+      "actual_cny": "2408140032",
+      "actual_revenue_cny": "22771753472",
+      "predictions_cny": {
+        "broker": "3132734599.007233327633029518",
+        "current_rule_fy_bridge": "2301546088.095648974886197293",
+        "zero_growth_fy_bridge": "2452698962.706836945411184778",
+        "repeat_balance": "2494922752",
+        "direct_broker": "3324000000"
+      },
+      "errors_cny": {
+        "broker": "724594567.007233327633029518",
+        "current_rule_fy_bridge": "-106593943.904351025113802707",
+        "zero_growth_fy_bridge": "44558930.706836945411184778",
+        "repeat_balance": "86782720",
+        "direct_broker": "915859968"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2023,
+      "target_year": 2023,
+      "field": "FN44",
+      "status": "evaluated",
+      "source_info_code": "AP202308311596883311",
+      "direct_forecast_cny": "2404000000",
+      "actual_fcff": null,
+      "actual_cny": "3205607936",
+      "actual_revenue_cny": "21303948288",
+      "predictions_cny": {
+        "broker": "2737891658.961272311872903650",
+        "current_rule_fy_bridge": "2558512064.946543914025368457",
+        "zero_growth_fy_bridge": "2590918268.854974802871826092",
+        "repeat_balance": "2635521536",
+        "direct_broker": "2404000000"
+      },
+      "errors_cny": {
+        "broker": "-467716277.038727688127096350",
+        "current_rule_fy_bridge": "-647095871.053456085974631543",
+        "zero_growth_fy_bridge": "-614689667.145025197128173908",
+        "repeat_balance": "-570086400",
+        "direct_broker": "-801607936"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2023,
+      "target_year": 2024,
+      "field": "FN44",
+      "status": "evaluated",
+      "source_info_code": "AP202308311596883311",
+      "direct_forecast_cny": "2640000000",
+      "actual_fcff": null,
+      "actual_cny": "3161736192",
+      "actual_revenue_cny": "22427338240",
+      "predictions_cny": {
+        "broker": "3009276643.959962900388701153",
+        "current_rule_fy_bridge": "2494068088.212368599335126878",
+        "zero_growth_fy_bridge": "2590918268.854974802871826092",
+        "repeat_balance": "2635521536",
+        "direct_broker": "2640000000"
+      },
+      "errors_cny": {
+        "broker": "-152459548.040037099611298847",
+        "current_rule_fy_bridge": "-667668103.787631400664873122",
+        "zero_growth_fy_bridge": "-570817923.145025197128173908",
+        "repeat_balance": "-526214656",
+        "direct_broker": "-521736192"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2023,
+      "target_year": 2025,
+      "field": "FN44",
+      "status": "evaluated",
+      "source_info_code": "AP202308311596883311",
+      "direct_forecast_cny": "2899000000",
+      "actual_fcff": null,
+      "actual_cny": "3508073728",
+      "actual_revenue_cny": "22771753472",
+      "predictions_cny": {
+        "broker": "3309276608.118361355483680001",
+        "current_rule_fy_bridge": "2431247330.768113537652686457",
+        "zero_growth_fy_bridge": "2590918268.854974802871826092",
+        "repeat_balance": "2635521536",
+        "direct_broker": "2899000000"
+      },
+      "errors_cny": {
+        "broker": "-198797119.881638644516319999",
+        "current_rule_fy_bridge": "-1076826397.231886462347313543",
+        "zero_growth_fy_bridge": "-917155459.145025197128173908",
+        "repeat_balance": "-872552192",
+        "direct_broker": "-609073728"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2024,
+      "target_year": 2024,
+      "field": "FN11",
+      "status": "evaluated",
+      "source_info_code": "AP202407251638296815",
+      "direct_forecast_cny": "2344000000",
+      "actual_fcff": null,
+      "actual_cny": "2690049024",
+      "actual_revenue_cny": "22427338240",
+      "predictions_cny": {
+        "broker": "3071576950.922046849459569999",
+        "current_rule_fy_bridge": "3139335669.411403029564592516",
+        "zero_growth_fy_bridge": "2990019325.613756587053165119",
+        "repeat_balance": "2858247424",
+        "direct_broker": "2344000000"
+      },
+      "errors_cny": {
+        "broker": "381527926.922046849459569999",
+        "current_rule_fy_bridge": "449286645.411403029564592516",
+        "zero_growth_fy_bridge": "299970301.613756587053165119",
+        "repeat_balance": "168198400",
+        "direct_broker": "-346049024"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2024,
+      "target_year": 2025,
+      "field": "FN11",
+      "status": "evaluated",
+      "source_info_code": "AP202407251638296815",
+      "direct_forecast_cny": "3182000000",
+      "actual_fcff": null,
+      "actual_cny": "2759420416",
+      "actual_revenue_cny": "22771753472",
+      "predictions_cny": {
+        "broker": "3268263061.258891467320482448",
+        "current_rule_fy_bridge": "3447944142.115318804582179989",
+        "zero_growth_fy_bridge": "2990019325.613756587053165119",
+        "repeat_balance": "2858247424",
+        "direct_broker": "3182000000"
+      },
+      "errors_cny": {
+        "broker": "508842645.258891467320482448",
+        "current_rule_fy_bridge": "688523726.115318804582179989",
+        "zero_growth_fy_bridge": "230598909.613756587053165119",
+        "repeat_balance": "98827008",
+        "direct_broker": "422579584"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2024,
+      "target_year": 2026,
+      "field": "FN11",
+      "status": "not_yet_observable",
+      "source_info_code": "AP202407251638296815",
+      "direct_forecast_cny": "2630000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "002032",
+      "origin": 2024,
+      "target_year": 2024,
+      "field": "FN17",
+      "status": "evaluated",
+      "source_info_code": "AP202407251638296815",
+      "direct_forecast_cny": "3326000000",
+      "actual_fcff": null,
+      "actual_cny": "2565958144",
+      "actual_revenue_cny": "22427338240",
+      "predictions_cny": {
+        "broker": "2431562115.911947898922725737",
+        "current_rule_fy_bridge": "2485202163.201664115420641932",
+        "zero_growth_fy_bridge": "2366998396.645904660581196394",
+        "repeat_balance": "2262683392",
+        "direct_broker": "3326000000"
+      },
+      "errors_cny": {
+        "broker": "-134396028.088052101077274263",
+        "current_rule_fy_bridge": "-80755980.798335884579358068",
+        "zero_growth_fy_bridge": "-198959747.354095339418803606",
+        "repeat_balance": "-303274752",
+        "direct_broker": "760041856"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2024,
+      "target_year": 2025,
+      "field": "FN17",
+      "status": "evaluated",
+      "source_info_code": "AP202407251638296815",
+      "direct_forecast_cny": "2570000000",
+      "actual_fcff": null,
+      "actual_cny": "2408140032",
+      "actual_revenue_cny": "22771753472",
+      "predictions_cny": {
+        "broker": "2587265359.640737783600838602",
+        "current_rule_fy_bridge": "2729506858.433547426828151376",
+        "zero_growth_fy_bridge": "2366998396.645904660581196394",
+        "repeat_balance": "2262683392",
+        "direct_broker": "2570000000"
+      },
+      "errors_cny": {
+        "broker": "179125327.640737783600838602",
+        "current_rule_fy_bridge": "321366826.433547426828151376",
+        "zero_growth_fy_bridge": "-41141635.354095339418803606",
+        "repeat_balance": "-145456640",
+        "direct_broker": "161859968"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2024,
+      "target_year": 2026,
+      "field": "FN17",
+      "status": "not_yet_observable",
+      "source_info_code": "AP202407251638296815",
+      "direct_forecast_cny": "3552000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "002032",
+      "origin": 2024,
+      "target_year": 2024,
+      "field": "FN44",
+      "status": "evaluated",
+      "source_info_code": "AP202407251638296815",
+      "direct_forecast_cny": "3528000000",
+      "actual_fcff": null,
+      "actual_cny": "3161736192",
+      "actual_revenue_cny": "22427338240",
+      "predictions_cny": {
+        "broker": "3444863228.856143945217597404",
+        "current_rule_fy_bridge": "3520856609.939541049496875325",
+        "zero_growth_fy_bridge": "3353393970.899569744956376792",
+        "repeat_balance": "3205607936",
+        "direct_broker": "3528000000"
+      },
+      "errors_cny": {
+        "broker": "283127036.856143945217597404",
+        "current_rule_fy_bridge": "359120417.939541049496875325",
+        "zero_growth_fy_bridge": "191657778.899569744956376792",
+        "repeat_balance": "43871744",
+        "direct_broker": "366263808"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2024,
+      "target_year": 2025,
+      "field": "FN44",
+      "status": "evaluated",
+      "source_info_code": "AP202407251638296815",
+      "direct_forecast_cny": "3552000000",
+      "actual_fcff": null,
+      "actual_cny": "3508073728",
+      "actual_revenue_cny": "22771753472",
+      "predictions_cny": {
+        "broker": "3665452444.087344566502169685",
+        "current_rule_fy_bridge": "3866970022.273893174035681153",
+        "zero_growth_fy_bridge": "3353393970.899569744956376792",
+        "repeat_balance": "3205607936",
+        "direct_broker": "3552000000"
+      },
+      "errors_cny": {
+        "broker": "157378716.087344566502169685",
+        "current_rule_fy_bridge": "358896294.273893174035681153",
+        "zero_growth_fy_bridge": "-154679757.100430255043623208",
+        "repeat_balance": "-302465792",
+        "direct_broker": "43926272"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2024,
+      "target_year": 2026,
+      "field": "FN44",
+      "status": "not_yet_observable",
+      "source_info_code": "AP202407251638296815",
+      "direct_forecast_cny": "3833000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "002032",
+      "origin": 2025,
+      "target_year": 2025,
+      "field": "FN11",
+      "status": "blocked_scope",
+      "source_info_code": "AP202508301736875870",
+      "direct_forecast_cny": "3797000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "002032",
+      "origin": 2025,
+      "target_year": 2026,
+      "field": "FN11",
+      "status": "blocked_scope",
+      "source_info_code": "AP202508301736875870",
+      "direct_forecast_cny": "4029000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "002032",
+      "origin": 2025,
+      "target_year": 2027,
+      "field": "FN11",
+      "status": "blocked_scope",
+      "source_info_code": "AP202508301736875870",
+      "direct_forecast_cny": "4279000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "002032",
+      "origin": 2025,
+      "target_year": 2025,
+      "field": "FN17",
+      "status": "evaluated",
+      "source_info_code": "AP202508301736875870",
+      "direct_forecast_cny": "2519000000",
+      "actual_fcff": null,
+      "actual_cny": "2408140032",
+      "actual_revenue_cny": "22771753472",
+      "predictions_cny": {
+        "broker": "2716371314.460899663142548654",
+        "current_rule_fy_bridge": "2686655956.283374890668318274",
+        "zero_growth_fy_bridge": "2624619777.668832838185259385",
+        "repeat_balance": "2565958144",
+        "direct_broker": "2519000000"
+      },
+      "errors_cny": {
+        "broker": "308231282.460899663142548654",
+        "current_rule_fy_bridge": "278515924.283374890668318274",
+        "zero_growth_fy_bridge": "216479745.668832838185259385",
+        "repeat_balance": "157818112",
+        "direct_broker": "110859968"
+      }
+    },
+    {
+      "code": "002032",
+      "origin": 2025,
+      "target_year": 2026,
+      "field": "FN17",
+      "status": "not_yet_observable",
+      "source_info_code": "AP202508301736875870",
+      "direct_forecast_cny": "2651000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "002032",
+      "origin": 2025,
+      "target_year": 2027,
+      "field": "FN17",
+      "status": "not_yet_observable",
+      "source_info_code": "AP202508301736875870",
+      "direct_forecast_cny": "2813000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "002032",
+      "origin": 2025,
+      "target_year": 2025,
+      "field": "FN44",
+      "status": "blocked_scope",
+      "source_info_code": "AP202508301736875870",
+      "direct_forecast_cny": "4754000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "002032",
+      "origin": 2025,
+      "target_year": 2026,
+      "field": "FN44",
+      "status": "blocked_scope",
+      "source_info_code": "AP202508301736875870",
+      "direct_forecast_cny": "5004000000",
+      "actual_fcff": null
+    },
+    {
+      "code": "002032",
+      "origin": 2025,
+      "target_year": 2027,
+      "field": "FN44",
+      "status": "blocked_scope",
+      "source_info_code": "AP202508301736875870",
+      "direct_forecast_cny": "5308000000",
+      "actual_fcff": null
+    }
+  ],
+  "validation": [
+    "all_frozen_input_and_PDF_hashes",
+    "54_positions_retained",
+    "wrong_unit_rejected",
+    "historical_anchor_tamper_removes_eligibility",
+    "ambiguous_label_never_promoted_by_matching_numbers"
+  ],
+  "decision": "exposed diagnostic, no production adoption; report coverage before accuracy; no follow-up threshold or report selection tuning",
+  "boundary": "balance subset not cashflow; later-acquired report and TDX history not strict PIT; observed historical matching not independent audit or proof all future scope unchanged"
+}
