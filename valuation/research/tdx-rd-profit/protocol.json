@@ -1,0 +1,60 @@
+{
+  "protocol_id": "tdx-rd-profit-v1",
+  "frozen_at": "2026-09-11T09:54:36.514811+00:00",
+  "phase": "development",
+  "inputs": {
+    "parent_protocol": {
+      "path": "valuation/research/tdx-revenue-cagr/protocol.json",
+      "sha256": "9604ee4003117b454ed8fdc2606311117e214dab18d7bc747c1564d280f3a32d"
+    },
+    "study": {
+      "path": "valuation/research/tdx-capital-inputs/study.json",
+      "sha256": "9956edce050dfec1b66470f8c0686e1e078b3fa1f0ecdfa6b1c371305892873c"
+    },
+    "snapshot": {
+      "path": "workspace/tdx-capital-inputs-source-20260911/snapshot.json",
+      "sha256": "3f8f60a25f6e69088459cbc482e966e7711a250639908c0c37481c108d671cdb"
+    },
+    "additional_source": {
+      "path": "valuation/research/tdx-capital-inputs/2017-source.json.gz",
+      "sha256": "fa8472611136911fd8c7b669363bcd01d0dc790f85c68b512f573f71043e12c6"
+    }
+  },
+  "sample_rule": "all_600_parent_development_codes_no_new_selection",
+  "origins": [
+    "2022-12-31",
+    "2023-12-31",
+    "2024-12-31"
+  ],
+  "forecast_cutoff": "following_year-05-01T00:00:00+08:00",
+  "horizon_years": 1,
+  "evaluation_as_of": "2026-09-10T00:00:00+08:00",
+  "life": 5,
+  "life_basis": "existing_model_policy_not_industry_optimum",
+  "rd_budget": "mean_of_two_completed_FY_RD_expense_to_revenue_ratios_times_current_FY_revenue",
+  "candidate": "current_RD_adjusted_EBIT_minus_next_RD_budget_plus_next_RD_amortization",
+  "baseline": "flat_revenue_current_EBIT",
+  "budget_control": "current_EBIT_plus_current_RD_minus_next_RD_budget",
+  "short_comparator": "short_quarter_yoy_revenue_times_current_EBIT_margin",
+  "missing_policy": "candidate_and_budget_control_fallback_to_flat_baseline_with_reason; unavailable_short_comparator_fallback_flat_with_reason",
+  "profit_admission": "no_positive_EBIT_gate",
+  "rd_admission": "six_unique_positive_FN304_FY_records_and_positive_prior_FY_revenue_at_cutoff",
+  "gates": {
+    "minimum_pairs": 900,
+    "minimum_companies": 300,
+    "minimum_each_origin_pairs": 200,
+    "minimum_candidate_ready_each_origin": 100,
+    "minimum_baseline_retention": 0.9,
+    "minimum_primary_improvement_fraction": 0.05,
+    "wape_nonworse": true,
+    "short_comparator_primary_and_wape_nonworse": true,
+    "budget_control_primary_nonworse": true,
+    "maximum_each_origin_primary_ratio": 1.05,
+    "leave_one_company_out_nonworse": true
+  },
+  "method_sources": [
+    "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/R%26D.htm",
+    "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/littlebook/intangiblevaluedriver.htm"
+  ],
+  "boundary": "annual_profit_proxy_forecast_not_RD_causal_return_or_Damodaran_growth_identity; frozen_policy_assumptions_not_full_operating_capital_or_FCFF; all_600_previously_exposed_development; later_acquired_not_strict_PIT; original_source_versions_not_restatement_aligned; source_zero_unresolved; no_production_adoption_before_independent_holdout"
+}
