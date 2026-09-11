@@ -64,4 +64,50 @@ print('15 company/origin results and aggregate metrics replayed')
 PYTHON
 ```
 
-下一步回到同一五家、多历史起点的多年收入与利润路径，复用现有工具，不围绕疫情公司或单年误差追加阈值扫描。生产[完整估值基线](../../../docs/valuation-accuracy.md#五家公司完整基线盘点2026-09-11)的两家成功、三家阻断继续单独保留；历史源研究可算不解除标准链准入。
+已完成下方同一五家的两年/三年路径诊断；没有围绕疫情公司或单年误差追加阈值扫描。生产[完整估值基线](../../../docs/valuation-accuracy.md#五家公司完整基线盘点2026-09-11)的两家成功、三家阻断继续单独保留；历史源研究可算不解除标准链准入。
+
+## 两年/三年路径诊断
+
+`1fba225`事前冻结[计划](multiyear-plan.json)，复用既有`forecast_rows`及三个既有路径：前五年沿用起点增长、零增长、从第二年开始至第五年收敛至终值增长。没有新候选或阈值调参，不重新评采用门槛。三起点×两期限×五家=30组，15组已到期可评价，15组目标为2027/2028H1，记`not_yet_observable`；未冒充缺字段，也未纳入误差。
+
+[完整结果](multiyear-result.json.gz)保留全部30组及金融兼营/可比性未闭合的统一边界。两年包括2023H1→2025H1及2024H1→2026H1共10组，三年仅2023H1→2026H1共5组；期限之间样本窗口不同，不能把合计误差差异全归因于期限。同公司多期重叠，不算独立宏观样本。
+
+| 期限与指标 | 前五年沿用起点增长 | 零增长 | 第五年收敛 |
+| --- | ---: | ---: | ---: |
+| 两年收入MAE/实际收入 | 16.609% | 16.266% | 16.275% |
+| 两年收入WAPE | 17.479% | 12.624% | 16.972% |
+| 两年EBIT代理MAE/实际收入 | 2.409% | 2.578% | 2.413% |
+| 三年收入MAE/实际收入 | 24.018% | 21.693% | 23.719% |
+| 三年收入WAPE | 26.073% | 17.473% | 25.096% |
+| 三年EBIT代理MAE/实际收入 | 2.684% | 3.046% | 2.573% |
+
+零增长降低合计收入误差，却恶化合计利润代理误差。对安克，三个成熟窗口的收入绝对百分比误差均值为原路径19.441%、零增长47.020%、提前收敛24.324%；不能只看总体误差就给安克统一压低增长。其他四家公司本样本零增长收入误差较低，不构成可事后指定的公司规则；五家均未成为新的独立留出。
+
+结论：保留公司差异，不自动采用统一零增长或提前收敛；当前增长规则也没有获得完整DCF有效性认证。这轮诊断到此收口，不继续扫描收敛年数以改善同一批结果。后续候选需要起点可得的经济依据及未参与选择的验证，不能按这张结果表反推公司分类。既有固定10%终值ROIC对照仍只解释价值影响，不能替代多年经营验证。
+
+三个路径均经Decimal复利计算交叉核对；首年预测与上轮基线完全相同。篡改2026H1实际收入仅改变误差、不改变任何起点与预测；重复历史代码/期间继续拒绝。无代码或依赖变更，复用现有工具、18份原包与90条切片；不新增采集或标准事实。离线精确重放：
+
+```bash
+PYTHONPATH=valuation/backend workspace/anker-agent-adapter-20260906/venv/bin/python - <<'PYTHON'
+import gzip, hashlib, json
+from pathlib import Path
+from tools.backtest_tdx_multiyear_growth import forecast_rows, metrics
+root = Path('valuation/research/continuing-operations-five')
+plan = json.loads((root/'multiyear-plan.json').read_text())
+data = {}
+for name, ref in plan['inputs'].items():
+    raw = Path(ref['path']).read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == ref['sha256']
+    data[name] = json.loads(raw)
+expected = json.loads(gzip.decompress((root/'multiyear-result.json.gz').read_bytes()))
+assert hashlib.sha256((root/'multiyear-plan.json').read_bytes()).hexdigest() == expected['plan_sha256']
+s = data['study']
+valid = [r for r in expected['results'] if r['status'] == 'evaluated']
+windows = [dict(origin=o, horizon=h) for o,h in sorted({(r['origin'],r['horizon']) for r in valid})]
+p = data['helper_protocol'] | dict(samples=s['samples'], base_policy=s['policy'], evaluation_as_of=s['evaluation_as_of'], windows=windows)
+assert forecast_rows(p, data['snapshot']) == valid
+assert metrics(expected['results']) == expected['summary']
+assert len(valid) == 15 and len(expected['results']) == 30
+print('15 mature forecasts replayed; 15 future windows retained')
+PYTHON
+```
