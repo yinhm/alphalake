@@ -100,7 +100,9 @@ def run_full_valuation(
                 fin.mv_equity = fin.mv_equity * (fx / old_fx)
 
     raw_fy0 = financials[0] if financials else None
-    raw_prior = financials[1] if len(financials) > 1 and inputs.prepared_ttm is None else None
+    # Annual opening capital does not align with a rotated LTM flow window.
+    raw_prior = financials[1] if (len(financials) > 1 and inputs.prepared_ttm is None
+                                 and not inputs.quarters_since_10k) else None
 
     # --- LTM rotation (Ginzu Trailing 12 month formula) ---
     # Build the Ginzu-rotated base year: LTM flow values + FQ-0 balance sheet snapshot.
@@ -155,6 +157,10 @@ def run_full_valuation(
         report.cost_of_capital, raw_prior, macro=inputs.macro_inputs,
         raw_financials_history=financials,
     )
+
+    if (inputs.prepared_ttm is None and (len(financials) > 1 or inputs.quarters_since_10k)
+            and report.cashflow.adjusted_invested_capital is None):
+        report.warnings.append("Current return metrics unavailable: aligned opening capital required")
 
     if inputs.adjustment_inputs.has_r_and_d and any(
         value is None for value in report.cashflow.historical_margin_by_year

@@ -61,6 +61,26 @@ def raw_prior():
 
 class TestCashFlowAndGrowth:
 
+    @pytest.mark.parametrize('prior_year,duplicate_year', [(2022, None), (2024, None), (2025, None), (2023, 2023), (2023, 2024)])
+    def test_current_returns_require_unique_adjacent_year(self, cost_of_capital, raw_current, raw_prior, prior_year, duplicate_year):
+        from engine.module_1_adjustments import compute_adjustments
+        raw_current.fiscal_year = 2024
+        raw_prior.fiscal_year = 2023
+        adj = AdjustmentInputs(has_r_and_d=False, has_operating_leases=False)
+        adjusted = compute_adjustments(raw_current, adj, .06)
+        base = compute_cashflow_and_growth(adjusted, raw_current, adj, cost_of_capital, raw_prior)
+        assert base.roic is not None and base.expected_growth_ebit is not None
+        raw_prior.fiscal_year = prior_year
+        history = [raw_current, raw_prior]
+        if duplicate_year is not None:
+            history.append(raw_prior.model_copy(update={'fiscal_year': duplicate_year}))
+        result = compute_cashflow_and_growth(adjusted, raw_current, adj, cost_of_capital, raw_prior,
+                                           raw_financials_history=history)
+        assert result.adjusted_invested_capital is None
+        assert result.roic is None and result.roe is None
+        assert result.expected_growth_ebit is None and result.expected_growth_ni is None
+        assert result.fcff == base.fcff and result.reinvestment_firm == base.reinvestment_firm
+
     def test_no_rd_adjustments(self, cost_of_capital, raw_current, raw_prior):
         """Basic case with no R&D capitalization."""
         adjusted = AdjustedFinancials(

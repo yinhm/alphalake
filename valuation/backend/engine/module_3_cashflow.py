@@ -248,7 +248,11 @@ def compute_cashflow_and_growth(
     roe = None
     adjusted_invested_capital = None
 
-    if raw_prior_year is not None and all(v is not None for v in (raw_prior_year.bv_equity, raw_prior_year.bv_debt, raw_prior_year.cash_and_marketable_securities)):
+    annual_prior_valid = raw_prior_year is not None and raw_prior_year.fiscal_year == raw.fiscal_year - 1
+    if annual_prior_valid and raw_financials_history is not None:
+        years = Counter(f.fiscal_year for f in raw_financials_history)
+        annual_prior_valid = years[raw.fiscal_year] == years[raw_prior_year.fiscal_year] == 1
+    if annual_prior_valid and all(v is not None for v in (raw_prior_year.bv_equity, raw_prior_year.bv_debt, raw_prior_year.cash_and_marketable_securities)):
         # Invested capital = BV Equity + BV Debt - Cash (beginning of period = prior year end)
         prior_bv_equity = raw_prior_year.bv_equity or 0.0
         prior_bv_debt = raw_prior_year.bv_debt or 0.0

@@ -1,0 +1,22 @@
+[
+  {
+    "original_file": "workspace/calendar-guard-20260911/runs/50cee7cc88ce5693556ff7fd3fd72bf462a4fa5d94a85c58e05b7ce16b415c31.json",
+    "original_sha256": "962dd3e84468ff1a3265781706dcfe8a84815e4229db3709e6b763d87f826870",
+    "old_run_id": "50cee7cc88ce5693556ff7fd3fd72bf462a4fa5d94a85c58e05b7ce16b415c31",
+    "new_run_id": "87d9194eaf0df549a13eae2340eeb55ccc5d808251f4ddc9cef1c08ffcbfd695",
+    "engine_revision": "bf7df3a29fb22514fdab88446385cd5895018549083d6b56223b2488c96efbc9",
+    "value_per_share": 92.15042148953913,
+    "identical_request_inputs_audit_report_status": true,
+    "replay_identical": true
+  },
+  {
+    "original_file": "workspace/calendar-guard-20260911/runs/c24a8a2eb0368616c72811282de935d81779f28faa002dd80f3161af0b8ad4a4.json",
+    "original_sha256": "06e84faf5f8446c750896513535e4f0e32062427ab29a9de65d7129095888c2a",
+    "old_run_id": "c24a8a2eb0368616c72811282de935d81779f28faa002dd80f3161af0b8ad4a4",
+    "new_run_id": "c372953ebae98a876aae0e5165b869f9b2b42b0f17027dd20c034a214ec4af3c",
+    "engine_revision": "bf7df3a29fb22514fdab88446385cd5895018549083d6b56223b2488c96efbc9",
+    "value_per_share": 42.284555083108394,
+    "identical_request_inputs_audit_report_status": true,
+    "replay_identical": true
+  }
+]

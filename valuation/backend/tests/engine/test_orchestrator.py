@@ -87,6 +87,18 @@ def sample_inputs():
 
 class TestOrchestrator:
 
+    def test_rotated_ltm_does_not_borrow_annual_opening_capital(self, sample_inputs):
+        sample_inputs.adjustment_inputs = AdjustmentInputs(has_r_and_d=False, has_operating_leases=False)
+        annual = run_full_valuation(sample_inputs.model_copy(deep=True))
+        assert annual.cashflow.roic is not None
+        sample_inputs.quarters_since_10k = 1
+        sample_inputs.quarterly_financials = [sample_inputs.raw_financials[0].model_copy(deep=True) for _ in range(5)]
+        report = run_full_valuation(sample_inputs)
+        assert report.cashflow.adjusted_invested_capital is None
+        assert report.cashflow.roic is None and report.cashflow.expected_growth_ebit is None
+        assert report.cashflow.fcff is not None and report.final.value_per_share is not None
+        assert 'Current return metrics unavailable: aligned opening capital required' in report.warnings
+
     def test_full_pipeline_produces_value(self, sample_inputs):
         """Full pipeline should produce a positive value per share."""
         report = run_full_valuation(sample_inputs)
