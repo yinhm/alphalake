@@ -1,0 +1,624 @@
+{
+  "protocol_sha256": "52e8dbb1d0ee20032a0bd979ae42b15b5291ac58bd5ba5eabd5420fcd68b799d",
+  "companies": 120,
+  "candidates": 360,
+  "statuses": {
+    "blocked": 104,
+    "evaluated": 256
+  },
+  "strata": 42,
+  "singleton_strata": [
+    "Advertising",
+    "Apparel",
+    "Auto & Truck",
+    "Business & Consumer Services",
+    "Computer Services",
+    "Computers/Peripherals",
+    "Environmental & Waste Services",
+    "Farming/Agriculture",
+    "Furn/Home Furnishings",
+    "Heathcare Information and Technology",
+    "Oil/Gas Distribution",
+    "Paper/Forest Products",
+    "Publishing & Newspapers",
+    "Recreation",
+    "Shipbuilding & Marine",
+    "Transportation (Railroads)"
+  ],
+  "companies_without_evaluable_rows": 14,
+  "original_validation": {
+    "v7": {
+      "statuses": {
+        "blocked": 69,
+        "evaluated": 171
+      },
+      "validation": {
+        "model": "bias_half",
+        "verdict": {
+          "passed": true,
+          "checks": {
+            "minimum_pairs": true,
+            "primary_improvement": true,
+            "revenue_wape": true,
+            "revenue_median_ape": true,
+            "period_2023-06-30": true,
+            "period_2024-06-30": true,
+            "company_removal_available": true,
+            "without_000066": true,
+            "without_000419": true,
+            "without_000553": true,
+            "without_000591": true,
+            "without_000738": true,
+            "without_000777": true,
+            "without_000785": true,
+            "without_000798": true,
+            "without_000813": true,
+            "without_000908": true,
+            "without_000922": true,
+            "without_000935": true,
+            "without_001213": true,
+            "without_001299": true,
+            "without_002014": true,
+            "without_002075": true,
+            "without_002084": true,
+            "without_002127": true,
+            "without_002157": true,
+            "without_002185": true,
+            "without_002207": true,
+            "without_002240": true,
+            "without_002276": true,
+            "without_002329": true,
+            "without_002350": true,
+            "without_002360": true,
+            "without_002449": true,
+            "without_002569": true,
+            "without_002573": true,
+            "without_002590": true,
+            "without_002691": true,
+            "without_002755": true,
+            "without_002799": true,
+            "without_002800": true,
+            "without_002824": true,
+            "without_002825": true,
+            "without_002843": true,
+            "without_002943": true,
+            "without_002969": true,
+            "without_002998": true,
+            "without_003023": true,
+            "without_003029": true,
+            "without_300013": true,
+            "without_300043": true,
+            "without_300053": true,
+            "without_300100": true,
+            "without_300132": true,
+            "without_300164": true,
+            "without_300168": true,
+            "without_300176": true,
+            "without_300254": true,
+            "without_300318": true,
+            "without_300395": true,
+            "without_300568": true,
+            "without_300621": true,
+            "without_300639": true,
+            "without_300655": true,
+            "without_300657": true,
+            "without_300672": true,
+            "without_300751": true,
+            "without_300782": true,
+            "without_300796": true,
+            "without_300825": true,
+            "without_300867": true,
+            "without_300899": true,
+            "without_301007": true,
+            "without_301120": true,
+            "without_301185": true,
+            "without_301511": true,
+            "without_301536": true,
+            "without_301580": true,
+            "without_600025": true,
+            "without_600039": true,
+            "without_600201": true,
+            "without_600505": true,
+            "without_600527": true,
+            "without_600567": true,
+            "without_600717": true,
+            "without_600727": true,
+            "without_600783": true,
+            "without_600822": true,
+            "without_600885": true,
+            "without_600981": true,
+            "without_601611": true,
+            "without_603009": true,
+            "without_603029": true,
+            "without_603137": true,
+            "without_603192": true,
+            "without_603221": true,
+            "without_603237": true,
+            "without_603315": true,
+            "without_603327": true,
+            "without_603332": true,
+            "without_603636": true,
+            "without_603696": true,
+            "without_603788": true,
+            "without_603926": true,
+            "without_603960": true,
+            "without_603985": true,
+            "without_603991": true,
+            "without_605058": true,
+            "without_605090": true,
+            "without_605117": true,
+            "without_605208": true,
+            "without_605277": true,
+            "without_605305": true,
+            "without_688067": true,
+            "without_688111": true,
+            "without_688117": true,
+            "without_688131": true,
+            "without_688205": true,
+            "without_688233": true,
+            "without_688345": true,
+            "without_688361": true,
+            "without_688576": true,
+            "without_688596": true,
+            "without_688648": true,
+            "without_688658": true,
+            "without_688678": true,
+            "without_688685": true
+          }
+        },
+        "status": "evaluated"
+      }
+    },
+    "v8": {
+      "statuses": {
+        "blocked": 35,
+        "evaluated": 85
+      },
+      "validation": {
+        "model": "bias_half",
+        "verdict": {
+          "passed": false,
+          "checks": {
+            "minimum_pairs": true,
+            "primary_improvement": false,
+            "revenue_wape": true,
+            "revenue_median_ape": true,
+            "period_2025-06-30": true,
+            "company_removal_available": true,
+            "without_000066": true,
+            "without_000419": true,
+            "without_000553": true,
+            "without_000591": true,
+            "without_000738": true,
+            "without_000777": true,
+            "without_000785": true,
+            "without_000798": true,
+            "without_000813": true,
+            "without_000908": true,
+            "without_000922": true,
+            "without_000935": true,
+            "without_001213": true,
+            "without_001299": true,
+            "without_002014": true,
+            "without_002075": true,
+            "without_002084": true,
+            "without_002127": true,
+            "without_002157": true,
+            "without_002185": true,
+            "without_002207": true,
+            "without_002240": true,
+            "without_002276": true,
+            "without_002329": true,
+            "without_002350": true,
+            "without_002360": true,
+            "without_002449": true,
+            "without_002569": true,
+            "without_002573": true,
+            "without_002590": true,
+            "without_002691": true,
+            "without_002755": true,
+            "without_002799": true,
+            "without_002800": true,
+            "without_002824": true,
+            "without_002825": true,
+            "without_002843": true,
+            "without_002943": true,
+            "without_002969": true,
+            "without_002998": true,
+            "without_003023": true,
+            "without_003029": true,
+            "without_300013": true,
+            "without_300043": true,
+            "without_300053": true,
+            "without_300100": true,
+            "without_300132": true,
+            "without_300164": true,
+            "without_300168": true,
+            "without_300176": true,
+            "without_300254": true,
+            "without_300318": true,
+            "without_300395": true,
+            "without_300568": true,
+            "without_300621": true,
+            "without_300639": true,
+            "without_300655": true,
+            "without_300657": true,
+            "without_300672": true,
+            "without_300751": true,
+            "without_300782": true,
+            "without_300796": true,
+            "without_300825": true,
+            "without_300867": true,
+            "without_300899": true,
+            "without_301007": true,
+            "without_301120": true,
+            "without_301185": true,
+            "without_301511": true,
+            "without_301536": true,
+            "without_301580": true,
+            "without_600025": true,
+            "without_600039": true,
+            "without_600201": true,
+            "without_600505": true,
+            "without_600527": true,
+            "without_600567": true,
+            "without_600717": true,
+            "without_600727": true,
+            "without_600783": true,
+            "without_600822": true,
+            "without_600885": true,
+            "without_600981": true,
+            "without_601611": true,
+            "without_603009": true,
+            "without_603029": true,
+            "without_603137": true,
+            "without_603192": true,
+            "without_603221": true,
+            "without_603237": true,
+            "without_603315": true,
+            "without_603327": true,
+            "without_603332": true,
+            "without_603636": true,
+            "without_603696": true,
+            "without_603788": true,
+            "without_603926": true,
+            "without_603960": true,
+            "without_603985": true,
+            "without_603991": true,
+            "without_605058": true,
+            "without_605090": true,
+            "without_605117": true,
+            "without_605208": true,
+            "without_605277": true,
+            "without_605305": true,
+            "without_688067": true,
+            "without_688111": true,
+            "without_688117": true,
+            "without_688131": true,
+            "without_688205": true,
+            "without_688233": true,
+            "without_688345": true,
+            "without_688361": true,
+            "without_688576": true,
+            "without_688596": true,
+            "without_688648": true,
+            "without_688658": true,
+            "without_688678": true,
+            "without_688685": true
+          }
+        },
+        "status": "evaluated"
+      }
+    }
+  },
+  "schemes": {
+    "stratified": {
+      "draw_counts_sha256": "510b785664f42f55d3cb10e17cc3b845af39b6c4b31871a7a3fe7f8906398bd0",
+      "windows": {
+        "original_two_origins": {
+          "evaluated": 171,
+          "evaluated_count_range": [
+            149,
+            193
+          ],
+          "metrics": {
+            "mae_reduction_pp": {
+              "point": 0.7145419124042558,
+              "interval": [
+                0.2971072851540362,
+                1.156024948250139
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "relative_mae_reduction_pct": {
+              "point": 10.240743628448316,
+              "interval": [
+                5.063576137906205,
+                14.399758619966907
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "wape_reduction_pp": {
+              "point": 5.141483035092592,
+              "interval": [
+                -1.444146900572487,
+                12.364460387940559
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            }
+          }
+        },
+        "2023-06-30": {
+          "evaluated": 85,
+          "evaluated_count_range": [
+            68,
+            99
+          ],
+          "metrics": {
+            "mae_reduction_pp": {
+              "point": 1.029856511557571,
+              "interval": [
+                0.19548834950010427,
+                1.8882053780427077
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "relative_mae_reduction_pct": {
+              "point": 12.292434989756053,
+              "interval": [
+                3.1516047977494464,
+                18.65554642276844
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "wape_reduction_pp": {
+              "point": 7.9722789939548555,
+              "interval": [
+                -7.262218759665876,
+                25.448326109363222
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            }
+          }
+        },
+        "2024-06-30": {
+          "evaluated": 86,
+          "evaluated_count_range": [
+            71,
+            101
+          ],
+          "metrics": {
+            "mae_reduction_pp": {
+              "point": 0.4028937620783118,
+              "interval": [
+                0.16928108075373202,
+                0.6470093736304828
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "relative_mae_reduction_pct": {
+              "point": 7.203280145100662,
+              "interval": [
+                3.3105286215406267,
+                11.401069740711412
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "wape_reduction_pp": {
+              "point": 2.142563914315188,
+              "interval": [
+                -2.5545708999961185,
+                6.289021265094352
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            }
+          }
+        },
+        "additional_2025_origin": {
+          "evaluated": 85,
+          "evaluated_count_range": [
+            70,
+            100
+          ],
+          "metrics": {
+            "mae_reduction_pp": {
+              "point": 0.1485660885977669,
+              "interval": [
+                0.058951185148242956,
+                0.2410033174294768
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "relative_mae_reduction_pct": {
+              "point": 1.9193870640882371,
+              "interval": [
+                0.7075849084451851,
+                4.503769041044952
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "wape_reduction_pp": {
+              "point": 0.7678089724807625,
+              "interval": [
+                -1.515249768736948,
+                3.0281104868117543
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            }
+          }
+        }
+      }
+    },
+    "unstratified_sensitivity": {
+      "draw_counts_sha256": "c5eabd8507333648f31b08287f8888eaf17cb2c4a5817bfbc7c0bccf40c9a39b",
+      "windows": {
+        "original_two_origins": {
+          "evaluated": 171,
+          "evaluated_count_range": [
+            140,
+            203
+          ],
+          "metrics": {
+            "mae_reduction_pp": {
+              "point": 0.7145419124042558,
+              "interval": [
+                0.2334538628546915,
+                1.2744525213255964
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "relative_mae_reduction_pct": {
+              "point": 10.240743628448316,
+              "interval": [
+                4.046482009201634,
+                15.329882365266084
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "wape_reduction_pp": {
+              "point": 5.141483035092592,
+              "interval": [
+                -1.6413261622441289,
+                13.307357777962936
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            }
+          }
+        },
+        "2023-06-30": {
+          "evaluated": 85,
+          "evaluated_count_range": [
+            62,
+            103
+          ],
+          "metrics": {
+            "mae_reduction_pp": {
+              "point": 1.029856511557571,
+              "interval": [
+                0.097588991497176,
+                2.0925536094482164
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "relative_mae_reduction_pct": {
+              "point": 12.292434989756053,
+              "interval": [
+                1.6048292276461942,
+                20.04922976950591
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "wape_reduction_pp": {
+              "point": 7.9722789939548555,
+              "interval": [
+                -8.149508459971813,
+                27.921936392904023
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            }
+          }
+        },
+        "2024-06-30": {
+          "evaluated": 86,
+          "evaluated_count_range": [
+            66,
+            104
+          ],
+          "metrics": {
+            "mae_reduction_pp": {
+              "point": 0.4028937620783118,
+              "interval": [
+                0.08994506158957374,
+                0.7306210335637784
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "relative_mae_reduction_pct": {
+              "point": 7.203280145100662,
+              "interval": [
+                1.795637216600318,
+                12.753202908293716
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "wape_reduction_pp": {
+              "point": 2.142563914315188,
+              "interval": [
+                -4.431991122707749,
+                9.010719908960434
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            }
+          }
+        },
+        "additional_2025_origin": {
+          "evaluated": 85,
+          "evaluated_count_range": [
+            65,
+            101
+          ],
+          "metrics": {
+            "mae_reduction_pp": {
+              "point": 0.1485660885977669,
+              "interval": [
+                0.01904992316423589,
+                0.28505967743067523
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "relative_mae_reduction_pct": {
+              "point": 1.9193870640882371,
+              "interval": [
+                0.25190787684443816,
+                5.197538070692571
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            },
+            "wape_reduction_pp": {
+              "point": 0.7678089724807625,
+              "interval": [
+                -1.816887852248163,
+                3.3405696931397832
+              ],
+              "valid_replicates": 9999,
+              "undefined_replicates": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "code_sha256": {
+    "valuation/backend/tools/audit_tdx_profit_uncertainty.py": "c80a4a5343152a7dd617934a5dab60218330fec09e8e77f6d5fb35de59c2457a",
+    "valuation/backend/tools/backtest_tdx_origins.py": "58f7254ebba472e51fab54ee98dec618cb3c69abcb26046a09a1c71f857f333d",
+    "valuation/backend/tools/backtest_tdx_history.py": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+    "valuation/backend/tools/audit_tdx_ocf_uncertainty.py": "910da6a05a76fa3fb5ae1bc2e6278d65b735c37fd6df89f8d3834873ebc48f95",
+    "valuation/backend/data_sources/alphalake_calibration.py": "386cad4668caa2ee2e6a0fe8e94b11ea551506b90786cb69b8990acdbfea9570",
+    "valuation/backend/data_sources/alphalake.py": "7250a086357095d2c58be7bdaddde773287545b729fba27a6b68feece7f550ee"
+  },
+  "interpretation": "positive_means_lower_error; pointwise_conditional_intervals; no_probability_rule_is_true; no_new_adoption_gate; original_two_origin_pass_and_additional_origin_failure_kept_separate",
+  "boundary": "already_exposed_holdout_not_new_validation; no_new_forecast_or_threshold_or_production_change; fixed_three_origins_do_not_cover_macro_regime_uncertainty; no_fix_for_cross_company_dependence_vintage_survivorship_missingness_or_unreviewed_EBIT_scope; singleton_strata_fixed_in_primary_report_counts_and_limitation; not_DCF_accuracy_or_company_valuation_interval"
+}
