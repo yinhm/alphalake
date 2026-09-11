@@ -55,4 +55,6 @@ python -m tools.company_valuation /absolute/market.duckdb 300866 \
 
 已完成[固定样本公司整组不确定性复核](../valuation/research/tdx-growth-expanded/profit-uncertainty.md)：原两起点主误差改善有正的条件区间，追加窗口点估计未达原5%门槛、各窗口利润WAPE区间跨零；不扩大默认采用或解释为完整DCF有效。
 
+[固定Q3跨季度复验](../valuation/research/tdx-growth-expanded/q3-replication.md)已完成：170/240组可评价，主误差改善4.06%不足原5%门槛，其余门槛通过；相同公司和部分重叠窗口不算新独立样本，不扩大生产采用。
+
 下一步仍需检验其他时间区间的稳定性，并研究收入、再投资及终值误差；不能把本轮一年期利润改善扩大为完整估值准确率。

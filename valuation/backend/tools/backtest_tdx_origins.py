@@ -18,13 +18,27 @@ DEFAULT_WEIGHTS={'half_growth':dict(growth_weight=.5,prior_margin_weight=0),
 def digest(raw):return hashlib.sha256(raw).hexdigest()
 
 
+def forecast_cutoff(protocol, end):
+    """研究协议显式指定同年截止；旧H1协议保持9月1日。"""
+    rules=protocol.get('forecast_cutoff_month_days', {'06-30':'09-01'})
+    if not isinstance(rules,dict):
+        raise ValueError('forecast cutoff rules must be a mapping')
+    month_day=rules.get(end.strftime('%m-%d'))
+    if not isinstance(month_day,str):
+        raise ValueError('missing forecast cutoff for origin quarter')
+    cutoff=date.fromisoformat(f'{end.year}-{month_day}')
+    if cutoff<=end or cutoff.year!=end.year:
+        raise ValueError('forecast cutoff must follow origin in the same year')
+    return cutoff.isoformat()+'T00:00:00+08:00'
+
+
 def evaluate(protocol,snapshot,split,origins,models,calibrations=None):
     samples=[s for s in protocol['samples'] if s['split']==split]
     output=[]
     for origin in origins:
         end=date.fromisoformat(origin);first=date(end.year-1,1,1)
         study=dict(study_id=protocol['protocol_id']+':'+origin,origin=origin,target=end.replace(year=end.year+1).isoformat(),
-                   forecast_as_of=f'{end.year}-09-01T00:00:00+08:00',evaluation_as_of=protocol['evaluation_as_of'],
+                   forecast_as_of=forecast_cutoff(protocol,end),evaluation_as_of=protocol['evaluation_as_of'],
                    policy=protocol['base_policy']|dict(approved_report_period=origin),samples=samples)
         # 对齐生产导出上年年初起的范围；目标期未来数据只用于实际，不扩大起点同比输入。
         source=snapshot|dict(records=[r for r in snapshot['records'] if first<=date.fromisoformat(r['period'])<=date.fromisoformat(study['target'])])
@@ -70,7 +84,7 @@ def fit_calibration(protocol,snapshot,origin):
     """只用当前起点前已结束的开发窗口；源版本的后修订风险仍保留。"""
     end=date.fromisoformat(origin);previous=end.replace(year=end.year-1).isoformat()
     training={k:v for k,v in protocol.items() if k!='calibration'}
-    training['evaluation_as_of']=f'{end.year}-09-01T00:00:00+08:00'
+    training['evaluation_as_of']=forecast_cutoff(protocol,end)
     rows=evaluate(training,snapshot,'development',[previous],('current_rule','zero_growth'))
     errors=[r['errors']['current_rule']['margin_error_pp']/100 for r in rows if r['status']=='evaluated']
     config=protocol['calibration'];raw=median(errors) if errors else None
@@ -167,6 +181,8 @@ def study(protocol,snapshot,phase,selection=None):
     result=dict(contract_version=CONTRACT,protocol_id=protocol['protocol_id'],phase=phase,summary=summary,results=rows,
                 boundary=('简化源数据回溯、一个目的样本的多个起点；非严格PIT或DCF公允价值证明；'
                           +('追加2025时间窗口；同公司旧窗口已评分，不称新公司独立验证' if '2025-06-30' in protocol['origins'] else '2025已知结果未用于本轮选择或验证')))
+    if any(date.fromisoformat(o).month==9 for o in origins):
+        result['boundary']='简化TDX源数据Q3跨季度复验；同公司且与H1窗口部分重叠，非新公司独立留出、严格PIT或完整DCF证明'
     if calibrations is not None:result['calibration_training']=calibrations
     if phase=='development':
         verdicts={m:gates(summary,m,protocol['selection'],rows) for m in candidates[2:]}
