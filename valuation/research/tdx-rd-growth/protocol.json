@@ -1,0 +1,48 @@
+{
+  "protocol_id": "tdx-rd-growth-v1",
+  "frozen_at": "2026-09-11T08:03:09.820468+00:00",
+  "phase": "development",
+  "inputs": {
+    "parent_protocol": {
+      "path": "valuation/research/tdx-revenue-cagr/protocol.json",
+      "sha256": "9604ee4003117b454ed8fdc2606311117e214dab18d7bc747c1564d280f3a32d"
+    },
+    "revenue_results": {
+      "path": "valuation/research/tdx-revenue-cagr/development-result.json.gz",
+      "sha256": "0ea02815245758dec2a9a202f8c3836797d3f433724ff77930bfb1fbb2aae73c"
+    },
+    "rd_results": {
+      "path": "valuation/research/tdx-capital-inputs/rd-history-2017-result.json.gz",
+      "sha256": "2ae5046fed7cf13aa6e98239749c878e508b7630c6a2fad0b697b81828793dc7"
+    }
+  },
+  "primary_life": 5,
+  "sensitivity_life": 3,
+  "signal": "last_completed_FY_RD_minus_mean_of_previous_n_FY_RD",
+  "rule": "complete_and_net_RD_nonpositive_select_zero_growth_else_short_baseline",
+  "missing_policy": "retain_baseline_prediction_and_missing_RD_group",
+  "baseline": "short_quarter_yoy_median_revenue_only",
+  "comparator": "zero_growth",
+  "origins": [
+    "2023-06-30",
+    "2024-06-30",
+    "2025-06-30"
+  ],
+  "horizon_years": 1,
+  "evaluation_as_of": "2026-09-10T00:00:00+08:00",
+  "gates": {
+    "minimum_pairs": 900,
+    "minimum_companies": 300,
+    "minimum_each_origin_pairs": 200,
+    "minimum_baseline_retention": 0.9,
+    "minimum_primary_improvement_fraction": 0.05,
+    "wape_nonworse": true,
+    "zero_growth_mae_and_wape_nonworse": true,
+    "maximum_each_origin_mae_ratio": 1.05,
+    "leave_one_company_out_nonworse": true
+  },
+  "selection_timing": "all_choices_before_target_values",
+  "sensitivity_adoption": false,
+  "life_basis": "five_year_existing_model_default_is_a_policy_not_a_universal_Damodaran_life; three_year_inventory_sensitivity_only",
+  "boundary": "empirical_revenue_selector_not_Damodaran_growth_identity; net_RD_is_not_total_reinvestment; source_zeros_unresolved; later_acquired_not_strict_PIT; development_outcomes_previously_seen_in_other_studies; no_causal_claim_or_production_adoption"
+}
