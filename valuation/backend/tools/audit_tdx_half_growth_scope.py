@@ -1,6 +1,7 @@
 """定向核对已评分收入案例；原文不覆盖TDX，不改预测规则。"""
 import argparse
 from decimal import Decimal
+import gzip
 import json
 from pathlib import Path
 import re
@@ -51,9 +52,48 @@ def audit(config, raw_dir=None):
                 checks.append(dict(code=doc['code'], periods=periods, pdf_cny=str(amount),
                                    tdx_cny=str(total), difference_cny=str(total-amount),
                                    rounding_bound_cny=str(bound), source_inputs=[dict(period=r['period'], artifact=r['artifact'], bits=r['bits']['FN230']) for r in rows]))
-    return dict(audit_id=config['audit_id'], checks=checks, business_phrases=phrases,
-                full_archive_checked=raw_dir is not None,
-                boundary='post_hoc_partial_source_audit_not_forecast_validation_or_strict_PIT')
+    result = dict(audit_id=config['audit_id'], checks=checks, business_phrases=phrases,
+                  full_archive_checked=raw_dir is not None,
+                  boundary='post_hoc_partial_source_audit_not_forecast_validation_or_strict_PIT')
+    if 'forecast' in config:
+        result['ttm'] = reconcile_ttm(config, checks)
+    return result
+
+
+def reconcile_ttm(config, checks):
+    ref = config['forecast']; raw = (ROOT / ref['path']).read_bytes()
+    if digest(raw) != ref['sha256']: raise ValueError('forecast hash differs')
+    forecast = json.loads(gzip.decompress(raw))
+    if forecast['evidence']['snapshot_sha256'] != config['source']['sha256']:
+        raise ValueError('forecast/source binding differs')
+    rows = [r for r in forecast['results'] if r['code'] in ref['codes']]
+    if {r['code'] for r in rows} != set(ref['codes']): raise ValueError('company missing')
+    reconciled = []; required = set()
+    direct = {(c['code'], c['periods'][0]) for c in checks if len(c['periods']) == 1}
+    for row in rows:
+        if row['status'] != 'evaluated': continue
+        for part in ('base', 'actual'):
+            periods = {s['period'] for s in row[part]['source_inputs'] if s['field'] == 'FN230'}
+            if len(periods) != 4: raise ValueError('TTM quarter count differs')
+            required.update((row['code'], p) for p in periods)
+            remaining = set(periods); chosen = []
+            # 已有逐季原文优先；仅剩半年合计时不冒称逐季独立核对。
+            for check in sorted(checks, key=lambda c: (len(c['periods']), c['periods'])):
+                if check['code'] == row['code'] and set(check['periods']) <= remaining:
+                    chosen.append(check); remaining.difference_update(check['periods'])
+            if remaining: raise ValueError('TTM PDF coverage incomplete')
+            pdf = sum(Decimal(c['pdf_cny']) for c in chosen)
+            bound = sum(Decimal(c['rounding_bound_cny']) for c in chosen)
+            stored = Decimal(str(row[part]['revenue'])) * 1_000_000
+            if abs(stored-pdf) > bound: raise ValueError('stored TTM differs from PDF')
+            reconciled.append(dict(code=row['code'], origin=row['origin'], horizon=row['horizon'],
+                                   part=part, pdf_cny=str(pdf), stored_cny=str(stored),
+                                   difference_cny=str(stored-pdf), rounding_bound_cny=str(bound),
+                                   pdf_period_groups=[c['periods'] for c in chosen]))
+    return dict(evaluated_windows=len(reconciled)//2, blocked_windows=len(rows)-len(reconciled)//2,
+                required_quarter_records=len(required), directly_checked_quarter_records=len(required & direct),
+                grouped_only_quarter_records=len(required-direct), reconciled=reconciled,
+                original_decision=forecast['decision'], boundary='revenue_only_not_EBIT_or_growth_rule_or_strict_PIT')
 
 
 def main():
