@@ -1,0 +1,26 @@
+{
+  "protocol_id": "tdx-revenue-selection-v1",
+  "frozen_at": "2026-09-11T06:54:33.531871+00:00",
+  "parent_protocol": "valuation/research/tdx-revenue-cagr/protocol.json",
+  "parent_protocol_sha256": "9604ee4003117b454ed8fdc2606311117e214dab18d7bc747c1564d280f3a32d",
+  "history_origins": 3,
+  "minimum_matured_pairs": 2,
+  "tie_choice": "zero_growth",
+  "insufficient_history_choice": "short_quarter_yoy_median_revenue_only",
+  "candidate": "past_error_selected_revenue",
+  "selection_metric": "mean_absolute_percentage_error",
+  "selection_actual_cutoff": "current_forecast_as_of",
+  "historical_prediction_cutoff": "historical_origin_year-09-01T00:00:00+08:00",
+  "gates": {
+    "minimum_pairs": 900,
+    "minimum_companies": 300,
+    "minimum_each_origin_pairs": 200,
+    "minimum_baseline_retention": 1.0,
+    "minimum_primary_improvement_fraction": 0.05,
+    "wape_nonworse": true,
+    "zero_growth_mae_and_wape_nonworse": true,
+    "maximum_each_origin_mae_ratio": 1.05,
+    "leave_one_company_out_nonworse": true
+  },
+  "boundary": "input_selection_research_not_Damodaran_prescribed_forecast_or_strict_PIT; no_holdout_scoring_before_development_passes"
+}
