@@ -1,5 +1,7 @@
 # AlphaLake 实现状态
 
+当前主线已[收敛到持续经营公司的完整估值对照](valuation-accuracy.md#当前方向与停止事项2026-09-11)。停止扩展疫情个案及训练剔除研究；已有预测改善仅在原验证范围成立，尚未证明完整DCF准确度提升。以下研究与验收数字保留各自历史口径，不代表当前下一步执行顺序。
+
 已按用户要求[清理退役验收数据库及临时测试缓存](acceptance/disk-cleanup-20260911.json)，释放约7.3GB逻辑文件空间；主库、最近升级前备份、原始证据及运行结果保留。历史验收记录所列的四份退役数据库不再本地保留，不能照旧路径直接重开。
 
 [零增长与利润校准组合](../valuation/research/tdx-zero-calibration/README.md)开发未通过：600家三起点1,726/1,800组可评价，主误差13.2080%→12.9344%，改善2.07%不足5%，WAPE43.6590%→45.3320%；不进入新留出、不改变生产叠加限制。每家公司从自己的训练池中排除，亏损与失败分母保留；本结论不否定两项规则各自的限定历史结果。 随后完成[高权重训练剔除敏感性](../valuation/research/tdx-zero-calibration/training-exclusions.md)：分别/同时剔除海航科技、金迪克均未挽救组合，评价仍为1,726/1,800组；同时剔除主误差12.9344%→12.9898%、WAPE45.3320%→44.1504%，不改生产。[四份原文复核](../valuation/research/tdx-zero-calibration/source-review/README.md)保留海航两季收入分配差异，两个TTM收入在源精度内闭合。随后[十期利润主表与附注](../valuation/research/tdx-zero-calibration/earnings-review/README.md)核对50个明确金额、保留10处空白源零，海航四个利息源零被附注反证，担保TTM贡献已分期对账；[关账补充回复及原Q3](../valuation/research/tdx-zero-calibration/closing-review/README.md)另解释季度收入差异，原Q3匹配TDX、负Q4与调整差额算式一致，但利息子项桥接及完整可比EBIT仍未闭合。[利息源零训练过滤](../valuation/research/tdx-zero-calibration/training-quality.md)事前冻结后亦未通过，主误差12.9954%、WAPE45.0917%，不进入新留出、不改生产。[公司等权复验](../valuation/research/tdx-zero-calibration/equal-weight.md)随后也未通过：相同1,726/1,800组主误差13.0848%，相对零增长改善仅0.93%，WAPE43.6473%；不删除公司，不将WAPE微降解释为整体通过。[金迪克两期研发范围桥接](../valuation/research/tdx-capital-inputs/rd-scope.md)已核对四个FN304/FN34源值：2024H1费用化同比98.40%、总投入同比34.49%，期末开发支出为存量；总投入含折旧摊销，不能直接作为现金再投资。不扩大600家覆盖或生成新增长预测。
