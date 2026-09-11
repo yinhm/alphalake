@@ -1,0 +1,138 @@
+{
+  "protocol_sha256": "df2ad70fc9986ad9d9a7004736d22a94a2a01a22b1d152c28b262dd3b7062ab1",
+  "planned_pairs": 15,
+  "evaluated_pairs": 3,
+  "summary_ebit_mae_pct_actual_revenue": {
+    "current_rule": 1.3049196429912493,
+    "zero_growth": 2.5547408387923696,
+    "industry_ebit": 2.013797641842652
+  },
+  "decision": "stop_direct_industry_replacement",
+  "results": [
+    {
+      "origin": "2023-06-30",
+      "code": "300866",
+      "status": "evaluated",
+      "industry": "Electronics (Consumer & Office)",
+      "industry_growth": 0.09976323451716995,
+      "base_ebit": 1166.204275589844,
+      "actual_ebit": 1784.5995226640623,
+      "actual_revenue": 20089.83808,
+      "predicted_ebit": {
+        "current_rule": 1398.8367510331932,
+        "zero_growth": 1166.204275589844,
+        "industry_ebit": 1282.54858623044
+      },
+      "absolute_error_pct_actual_revenue": {
+        "current_rule": 1.9201885555011355,
+        "zero_growth": 3.078149483394036,
+        "industry_ebit": 2.4990292825377636
+      }
+    },
+    {
+      "origin": "2023-06-30",
+      "code": "002032",
+      "status": "missing_research_mapping"
+    },
+    {
+      "origin": "2023-06-30",
+      "code": "000651",
+      "status": "missing_research_mapping"
+    },
+    {
+      "origin": "2023-06-30",
+      "code": "600887",
+      "status": "missing_research_mapping"
+    },
+    {
+      "origin": "2023-06-30",
+      "code": "603288",
+      "status": "missing_research_mapping"
+    },
+    {
+      "origin": "2024-06-30",
+      "code": "300866",
+      "status": "evaluated",
+      "industry": "Electronics (Consumer & Office)",
+      "industry_growth": 0.05426074045158555,
+      "base_ebit": 1784.5995226640623,
+      "actual_ebit": 2249.5873929296877,
+      "actual_revenue": 27928.516096,
+      "predicted_ebit": {
+        "current_rule": 2141.5194271968744,
+        "zero_growth": 1784.5995226640623,
+        "industry_ebit": 1881.4332141733605
+      },
+      "absolute_error_pct_actual_revenue": {
+        "current_rule": 0.3869448894504319,
+        "zero_growth": 1.664921504126108,
+        "industry_ebit": 1.3182017171655434
+      }
+    },
+    {
+      "origin": "2024-06-30",
+      "code": "002032",
+      "status": "missing_research_mapping"
+    },
+    {
+      "origin": "2024-06-30",
+      "code": "000651",
+      "status": "missing_research_mapping"
+    },
+    {
+      "origin": "2024-06-30",
+      "code": "600887",
+      "status": "missing_research_mapping"
+    },
+    {
+      "origin": "2024-06-30",
+      "code": "603288",
+      "status": "missing_research_mapping"
+    },
+    {
+      "origin": "2025-06-30",
+      "code": "300866",
+      "status": "evaluated",
+      "industry": "Electronics (Consumer & Office)",
+      "industry_growth": 0.10612497647429321,
+      "base_ebit": 2249.5873929296877,
+      "actual_ebit": 3250.1592016113286,
+      "actual_revenue": 34252.649984,
+      "predicted_ebit": {
+        "current_rule": 2699.5048715156254,
+        "zero_growth": 2249.5873929296877,
+        "industry_ebit": 2488.3248020812175
+      },
+      "absolute_error_pct_actual_revenue": {
+        "current_rule": 1.6076254840221802,
+        "zero_growth": 2.9211515288569645,
+        "industry_ebit": 2.22416192582465
+      }
+    },
+    {
+      "origin": "2025-06-30",
+      "code": "002032",
+      "status": "missing_research_mapping"
+    },
+    {
+      "origin": "2025-06-30",
+      "code": "000651",
+      "status": "missing_research_mapping"
+    },
+    {
+      "origin": "2025-06-30",
+      "code": "600887",
+      "status": "missing_research_mapping"
+    },
+    {
+      "origin": "2025-06-30",
+      "code": "603288",
+      "status": "missing_research_mapping"
+    }
+  ],
+  "boundaries": [
+    "后来取得历史资料，不是严格PIT；发布日期只取来源URL日期代理，不新增标准公告事实",
+    "行业增长不等于公司增长；不改变收入、WACC、终值或生产行业映射",
+    "EBIT仍是TDX合并调整代理，尚非完整FCFF或DCF有效性检验"
+  ]
+}
