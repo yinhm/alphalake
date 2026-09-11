@@ -1,0 +1,19 @@
+{
+  "protocol_id": "tdx-cash-origin-scope-audit-v1",
+  "frozen_at": "2026-09-11T02:15:26.695648+00:00",
+  "cash_protocol": "valuation/research/tdx-operating-cash-forecast/protocol.json",
+  "cash_protocol_sha256": "6aeb6080de4f423b92896eea921acbdf7543a4865f0aa447364e52a59b32ce36",
+  "snapshot": "valuation/research/tdx-operating-cash-forecast/snapshot.json",
+  "snapshot_sha256": "776dcdd9f24bb5c211cf9707b61631d6801accf2befebd6f18594787f825dd45",
+  "forecast_protocol": "valuation/research/tdx-cash-revenue-comparison/protocol.json",
+  "forecast_protocol_sha256": "140474bc5a633cb506ef5fde8e9f2f8ebf9547cfc5954b8336f6f9619429d369",
+  "groups": [
+    "forecast_ready_no_financial_signal",
+    "forecast_ready_financial_signal",
+    "forecast_blocked",
+    "financial_signal_unknown"
+  ],
+  "classification": "origin-only production historical forecast input requirements; then FN506/509/510 TTM and FN413 instant signals; no outcome or actual-period classifications",
+  "reporting": "all original development and already-scored holdout samples; original three OCF models and cash proxy metrics; per-origin groups and full denominators; no new adoption gates",
+  "boundary": "post_validation_scope_audit_not_new_holdout; zero_financial_signals_not_verified_nonfinancial_business; forecast_inputs_ready_not_full_DCF_admission; no_standard_facts_or_policy_changes"
+}
