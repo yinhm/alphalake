@@ -1,0 +1,36 @@
+{
+  "at": "2026-09-11T07:13:23.564335+00:00",
+  "removed_databases": [
+    {
+      "path": "workspace/anker-cash-history-upgrade-20260911/acceptance.duckdb",
+      "bytes": 1725706240,
+      "sha256": "6fdda914848f0470ec09a38367becf0feb1f7e74bde6ac14c748e2f09c2fd9c2",
+      "reason": "retired_acceptance_or_older_backup_database; raw_evidence_and_runs_retained"
+    },
+    {
+      "path": "workspace/anker-cash-history-upgrade-20260911-v2/acceptance.duckdb",
+      "bytes": 1822961664,
+      "sha256": "d4b95c7ea5b12b3c5dd759d93ea02b8aaa301a0d0ec3755cacec1cb446395630",
+      "reason": "retired_acceptance_or_older_backup_database; raw_evidence_and_runs_retained"
+    },
+    {
+      "path": "workspace/auto-valuation-20260909/market-bse-validation.duckdb",
+      "bytes": 1725706240,
+      "sha256": "84dc65a8a326c7aa75376097e78421c955597d132e52b8625d00a0e4177b70c4",
+      "reason": "retired_acceptance_or_older_backup_database; raw_evidence_and_runs_retained"
+    },
+    {
+      "path": "workspace/auto-valuation-20260909/market-pre-bse-20260910.duckdb",
+      "bytes": 1644965888,
+      "sha256": "c22b0b3879d853073cd79f4db453dba69765995f2a6c550aedf72a25a9f91a36",
+      "reason": "retired_acceptance_or_older_backup_database; raw_evidence_and_runs_retained"
+    }
+  ],
+  "removed_pytest_cache_bytes": 401601282,
+  "preserved": [
+    "workspace/auto-valuation-20260909/market.duckdb",
+    "workspace/auto-valuation-20260909/market.duckdb.pre-cash-history-20260911",
+    "all raw evidence, manifests, runs and Python environments"
+  ],
+  "historical_acceptance_boundary": "Past acceptance describes the original run. Listed retired databases no longer exist locally; result records and original evidence remain."
+}

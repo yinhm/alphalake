@@ -1,0 +1,62 @@
+{
+  "snapshot_path": "workspace/tdx-capital-inputs-source-20260911/snapshot.json",
+  "snapshot_sha256": "3f8f60a25f6e69088459cbc482e966e7711a250639908c0c37481c108d671cdb",
+  "study_sha256": "9956edce050dfec1b66470f8c0686e1e078b3fa1f0ecdfa6b1c371305892873c",
+  "companies": 600,
+  "records": 18418,
+  "duplicate_key_excess_records": 25,
+  "artifacts_sha256_md5_size_verified": 34,
+  "prior_source_bit_values_unchanged": 221016,
+  "comparison": "multiset preserves duplicate multiplicity, no arbitrary record selection",
+  "annual_FN304_source_counts": {
+    "2018": {
+      "source_records": 576,
+      "distinct_codes": 576,
+      "zero_ambiguous": 49,
+      "positive": 527
+    },
+    "2019": {
+      "source_records": 595,
+      "distinct_codes": 595,
+      "positive": 556,
+      "zero_ambiguous": 39
+    },
+    "2020": {
+      "source_records": 600,
+      "distinct_codes": 599,
+      "positive": 565,
+      "zero_ambiguous": 35
+    },
+    "2021": {
+      "source_records": 600,
+      "distinct_codes": 599,
+      "positive": 567,
+      "zero_ambiguous": 33
+    },
+    "2022": {
+      "source_records": 601,
+      "distinct_codes": 600,
+      "positive": 567,
+      "zero_ambiguous": 34
+    },
+    "2023": {
+      "source_records": 601,
+      "distinct_codes": 600,
+      "positive": 575,
+      "zero_ambiguous": 26
+    },
+    "2024": {
+      "source_records": 601,
+      "distinct_codes": 600,
+      "positive": 576,
+      "zero_ambiguous": 25
+    },
+    "2025": {
+      "source_records": 601,
+      "distinct_codes": 600,
+      "positive": 573,
+      "zero_ambiguous": 28
+    }
+  },
+  "boundary": "raw_source_inventory_only; no_FN314_asof_gate_or_historical_semantic_validation; positive_does_not_mean_audited; zero_not_filled; no_growth_score"
+}
