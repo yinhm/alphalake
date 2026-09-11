@@ -1,0 +1,13 @@
+{
+  "archive_dir": "workspace/tdx-first-year-half-held-20260911",
+  "records": 3684,
+  "companies": 120,
+  "artifacts": 34,
+  "snapshot_sha256": "667ee5b1cf7e4e15e8048d645d6cf1dd66dfd65ca353e561032e769859ffe625",
+  "definition_sha256": "56e89dc13c5e255c8ce363d485ff6cb320a361cddbf1ce3213af9e4b25808796",
+  "selection_sha256": "18b27968e53371172078461135b96c7408a5a5ba4aea8ac7705b60499b233552",
+  "same_source_versions": true,
+  "excluded_registered_companies": 1220,
+  "no_overlap_with_registered": true,
+  "boundary": "new 120 extracted after development selection 9c1922f, before scoring this snapshot; source research only, not strict PIT"
+}
