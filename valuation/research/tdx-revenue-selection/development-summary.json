@@ -1,0 +1,398 @@
+{
+  "protocol_id": "tdx-revenue-selection-v1",
+  "candidates": 1800,
+  "common_companies": 589,
+  "summary": {
+    "short_quarter_yoy_median_revenue_only": {
+      "n": 1726,
+      "mae_pct": 23.292097658542428,
+      "wape_pct": 15.142511597566141,
+      "bias_pct": 8.288647880520998
+    },
+    "past_error_selected_revenue": {
+      "n": 1726,
+      "mae_pct": 22.75685412761977,
+      "wape_pct": 14.537862861091412,
+      "bias_pct": 7.414666508379243
+    },
+    "zero_growth": {
+      "n": 1726,
+      "mae_pct": 21.88771901349849,
+      "wape_pct": 14.210194664237402,
+      "bias_pct": 4.235245970750075
+    }
+  },
+  "independent": {
+    "short_quarter_yoy_median_revenue_only": {
+      "n": 1726,
+      "mae_pct": 23.292097658542428,
+      "wape_pct": 15.142511597566141,
+      "bias_pct": 8.288647880520998
+    },
+    "past_error_selected_revenue": {
+      "n": 1726,
+      "mae_pct": 22.75685412761977,
+      "wape_pct": 14.537862861091412,
+      "bias_pct": 7.414666508379243
+    },
+    "zero_growth": {
+      "n": 1728,
+      "mae_pct": 21.872884867932044,
+      "wape_pct": 14.210355614803916,
+      "bias_pct": 4.219845203140307
+    }
+  },
+  "statuses": {
+    "incomplete_forecasts": 45,
+    "evaluated": 1726,
+    "blocked": 29
+  },
+  "by_origin": {
+    "2023-06-30": {
+      "candidates": 600,
+      "common": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 554,
+          "mae_pct": 33.05351764749247,
+          "wape_pct": 18.401503621145608,
+          "bias_pct": 17.843575821622817
+        },
+        "past_error_selected_revenue": {
+          "n": 554,
+          "mae_pct": 32.018966339334185,
+          "wape_pct": 16.90406771063659,
+          "bias_pct": 17.063042723825237
+        },
+        "zero_growth": {
+          "n": 554,
+          "mae_pct": 29.129054815704723,
+          "wape_pct": 15.736014407783513,
+          "bias_pct": 11.8395816136093
+        }
+      },
+      "independent": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 554,
+          "mae_pct": 33.05351764749247,
+          "wape_pct": 18.401503621145608,
+          "bias_pct": 17.843575821622817
+        },
+        "past_error_selected_revenue": {
+          "n": 554,
+          "mae_pct": 32.018966339334185,
+          "wape_pct": 16.90406771063659,
+          "bias_pct": 17.063042723825237
+        },
+        "zero_growth": {
+          "n": 556,
+          "mae_pct": 29.056903601418338,
+          "wape_pct": 15.73538258059698,
+          "bias_pct": 11.764363632106786
+        }
+      }
+    },
+    "2024-06-30": {
+      "candidates": 600,
+      "common": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 583,
+          "mae_pct": 19.171420414617423,
+          "wape_pct": 13.884027287884509,
+          "bias_pct": 5.097478385205116
+        },
+        "past_error_selected_revenue": {
+          "n": 583,
+          "mae_pct": 18.649063463672427,
+          "wape_pct": 13.469068600331294,
+          "bias_pct": 4.181175230575973
+        },
+        "zero_growth": {
+          "n": 583,
+          "mae_pct": 18.38277323710211,
+          "wape_pct": 12.400766653411809,
+          "bias_pct": 1.8074266013725828
+        }
+      },
+      "independent": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 583,
+          "mae_pct": 19.171420414617423,
+          "wape_pct": 13.884027287884509,
+          "bias_pct": 5.097478385205116
+        },
+        "past_error_selected_revenue": {
+          "n": 583,
+          "mae_pct": 18.649063463672427,
+          "wape_pct": 13.469068600331294,
+          "bias_pct": 4.181175230575973
+        },
+        "zero_growth": {
+          "n": 583,
+          "mae_pct": 18.38277323710211,
+          "wape_pct": 12.400766653411809,
+          "bias_pct": 1.8074266013725828
+        }
+      }
+    },
+    "2025-06-30": {
+      "candidates": 600,
+      "common": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 589,
+          "mae_pct": 18.189428998661203,
+          "wape_pct": 13.361553192819299,
+          "bias_pct": 2.4601618642200638
+        },
+        "past_error_selected_revenue": {
+          "n": 589,
+          "mae_pct": 18.111067696026424,
+          "wape_pct": 13.388798874568234,
+          "bias_pct": 1.5401758319823406
+        },
+        "zero_growth": {
+          "n": 589,
+          "mae_pct": 18.545925046124694,
+          "wape_pct": 14.509576801814893,
+          "bias_pct": -0.5141313701615251
+        }
+      },
+      "independent": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 589,
+          "mae_pct": 18.189428998661203,
+          "wape_pct": 13.361553192819299,
+          "bias_pct": 2.4601618642200638
+        },
+        "past_error_selected_revenue": {
+          "n": 589,
+          "mae_pct": 18.111067696026424,
+          "wape_pct": 13.388798874568234,
+          "bias_pct": 1.5401758319823406
+        },
+        "zero_growth": {
+          "n": 589,
+          "mae_pct": 18.545925046124694,
+          "wape_pct": 14.509576801814893,
+          "bias_pct": -0.5141313701615251
+        }
+      }
+    }
+  },
+  "by_selection": {
+    "baseline_blocked": {
+      "candidates": 72,
+      "common": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 0,
+          "mae_pct": null,
+          "wape_pct": null,
+          "bias_pct": null
+        },
+        "past_error_selected_revenue": {
+          "n": 0,
+          "mae_pct": null,
+          "wape_pct": null,
+          "bias_pct": null
+        },
+        "zero_growth": {
+          "n": 0,
+          "mae_pct": null,
+          "wape_pct": null,
+          "bias_pct": null
+        }
+      }
+    },
+    "insufficient_matured_history_use_baseline": {
+      "candidates": 203,
+      "common": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 202,
+          "mae_pct": 42.06142342969276,
+          "wape_pct": 16.47808410436741,
+          "bias_pct": 23.627915782127253
+        },
+        "past_error_selected_revenue": {
+          "n": 202,
+          "mae_pct": 42.06142342969276,
+          "wape_pct": 16.47808410436741,
+          "bias_pct": 23.627915782127253
+        },
+        "zero_growth": {
+          "n": 202,
+          "mae_pct": 37.98147054895579,
+          "wape_pct": 16.984956117773493,
+          "bias_pct": 14.468001798177479
+        }
+      }
+    },
+    "past_error_choice": {
+      "candidates": 1525,
+      "common": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 1524,
+          "mae_pct": 20.804299885725914,
+          "wape_pct": 15.095801498219476,
+          "bias_pct": 6.255490324008883
+        },
+        "past_error_selected_revenue": {
+          "n": 1524,
+          "mae_pct": 20.19811200227939,
+          "wape_pct": 14.470005873495142,
+          "bias_pct": 5.265666276557
+        },
+        "zero_growth": {
+          "n": 1524,
+          "mae_pct": 19.754557720741026,
+          "wape_pct": 14.113150600738077,
+          "bias_pct": 2.87893581514618
+        }
+      }
+    }
+  },
+  "by_choice": {
+    "short_quarter_yoy_median_revenue_only": {
+      "candidates": 769,
+      "common": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 767,
+          "mae_pct": 27.11047301745781,
+          "wape_pct": 16.18929223376582,
+          "bias_pct": 12.83998144597658
+        },
+        "past_error_selected_revenue": {
+          "n": 767,
+          "mae_pct": 27.11047301745781,
+          "wape_pct": 16.18929223376582,
+          "bias_pct": 12.83998144597658
+        },
+        "zero_growth": {
+          "n": 767,
+          "mae_pct": 25.15463572023052,
+          "wape_pct": 15.360641455265528,
+          "bias_pct": 5.68524891931694
+        }
+      }
+    },
+    "zero_growth": {
+      "candidates": 959,
+      "common": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 959,
+          "mae_pct": 20.238193695781117,
+          "wape_pct": 14.45786359555753,
+          "bias_pct": 4.6485302113818605
+        },
+        "past_error_selected_revenue": {
+          "n": 959,
+          "mae_pct": 19.27486696546568,
+          "wape_pct": 13.45774370206238,
+          "bias_pct": 3.075546010843103
+        },
+        "zero_growth": {
+          "n": 959,
+          "mae_pct": 19.27486696546568,
+          "wape_pct": 13.45774370206238,
+          "bias_pct": 3.075546010843103
+        }
+      }
+    }
+  },
+  "by_profit_group": {
+    "positive": {
+      "candidates": 1289,
+      "common": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 1288,
+          "mae_pct": 22.206568808455273,
+          "wape_pct": 14.905736702630556,
+          "bias_pct": 10.174536230010737
+        },
+        "past_error_selected_revenue": {
+          "n": 1288,
+          "mae_pct": 21.557228098008746,
+          "wape_pct": 14.324737344747573,
+          "bias_pct": 8.713011788964879
+        },
+        "zero_growth": {
+          "n": 1288,
+          "mae_pct": 20.131730982520832,
+          "wape_pct": 13.93777804334922,
+          "bias_pct": 4.1990187483743036
+        }
+      }
+    },
+    "nonpositive": {
+      "candidates": 441,
+      "common": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 438,
+          "mae_pct": 26.484246423182277,
+          "wape_pct": 17.488870918096854,
+          "bias_pct": 2.7429305422954626
+        },
+        "past_error_selected_revenue": {
+          "n": 438,
+          "mae_pct": 26.28452153889603,
+          "wape_pct": 16.64986481912136,
+          "bias_pct": 3.59670139104066
+        },
+        "zero_growth": {
+          "n": 438,
+          "mae_pct": 27.051446373999,
+          "wape_pct": 16.90975146337507,
+          "bias_pct": 4.3417771634897875
+        }
+      }
+    },
+    "unknown": {
+      "candidates": 70,
+      "common": {
+        "short_quarter_yoy_median_revenue_only": {
+          "n": 0,
+          "mae_pct": null,
+          "wape_pct": null,
+          "bias_pct": null
+        },
+        "past_error_selected_revenue": {
+          "n": 0,
+          "mae_pct": null,
+          "wape_pct": null,
+          "bias_pct": null
+        },
+        "zero_growth": {
+          "n": 0,
+          "mae_pct": null,
+          "wape_pct": null,
+          "bias_pct": null
+        }
+      }
+    }
+  },
+  "decision": {
+    "passed": false,
+    "checks": {
+      "minimum_pairs": true,
+      "minimum_companies": true,
+      "each_origin_minimum": true,
+      "coverage_retention": true,
+      "primary_improvement": false,
+      "wape_nonworse": true,
+      "zero_growth_nonworse": false,
+      "each_origin_nonworse": true,
+      "leave_one_company_out_nonworse": true
+    }
+  },
+  "amount_unit": "million_CNY",
+  "boundary": "input_selection_research_not_Damodaran_prescribed_forecast_or_strict_PIT; no_holdout_scoring_before_development_passes",
+  "evidence": {
+    "protocol_sha256": "1db29b5ba76be8e4db96d8ede29e264d99f04927ef8722424037c9bc85015255",
+    "parent_protocol_sha256": "9604ee4003117b454ed8fdc2606311117e214dab18d7bc747c1564d280f3a32d",
+    "snapshot_sha256": "9e87dad4b1e261d229b7d5b55f6e57b8b3ee5f4a893076d352971e2f53efe3ff",
+    "origin_diagnostics_sha256": "d163190e2259822d184fe142ed2122cd04072a6cd8f454083d565e9179d197e4",
+    "helpers": {
+      "tools/backtest_tdx_revenue_selection.py": "be0f5820ae6570ec54c53a7e2567cbee3a53b2f855329446bca6563589f86517",
+      "tools/backtest_tdx_revenue_cagr.py": "7630c8f81e965208289583008c535c916b6a542178ea0c65f8850d211725a3d7",
+      "tools/backtest_tdx_history.py": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d"
+    }
+  }
+}

@@ -110,4 +110,4 @@ CNINFO不再是首轮数据进入研究层的前置门槛。2024映射沿用后�
 调用链依据：生产入口的 `build_historical_dcf_inputs` 通过 `historical_forecast` 生成显式年度政策，再交给 `build_book_dcf_inputs`；研究已有 `backtest_tdx_normalized_margin.annual` 和 `audit_tdx_cash_scope.origin_scope` 可复用。后者的金融字段分组只检查数值信号，不能升级为行业分类。输入诊断已实现，其余规则选择及应用仍待验证，尚未改变生产政策、估值数值或模型准入。
 
 
-下一项[历史误差选择收入规则](../valuation/research/tdx-revenue-selection/README.md)已冻结，尚未实现或评分：仅用当前起点前已兑现的历史结果，在短期同比和零增长之间选择；历史不足显式沿用基线，保留全部原分母。时间顺序及门槛先固定，不引入单公司月度明细。
+[历史误差选择收入规则](../valuation/research/tdx-revenue-selection/README.md)开发未通过：只用起点前已兑现结果选择，在1,726组共同样本保留100%短期基线覆盖，主误差23.2921%→22.7569%，改善2.30%未达5%，仍劣于零增长。历史不足沿用的202组与实际切换的959组分别报告，不进入新留出、不扫描选择窗口挽救本候选。
