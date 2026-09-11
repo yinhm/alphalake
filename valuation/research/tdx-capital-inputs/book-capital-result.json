@@ -1,0 +1,789 @@
+{
+  "results": [
+    {
+      "code": "000035",
+      "period": "2021-12-31",
+      "source_matches": [
+        {
+          "field": "FN72",
+          "page": 154,
+          "pdf_cny": "11151924493.28",
+          "comparative_cny": "12494533157.18",
+          "source_cny": "11151924224",
+          "source_bits": 1344679223
+        },
+        {
+          "field": "FN8",
+          "page": 151,
+          "pdf_cny": "3876376806.19",
+          "comparative_cny": "3395885622.75",
+          "source_cny": "3876376832",
+          "source_bits": 1332153553
+        },
+        {
+          "field": "FN25",
+          "page": 152,
+          "pdf_cny": "295794599.53",
+          "comparative_cny": "1362697031.96",
+          "source_cny": "295794592",
+          "source_bits": 1301089213
+        },
+        {
+          "field": "FN133",
+          "page": 162,
+          "pdf_cny": "3145909969.21",
+          "comparative_cny": "2308847766.85",
+          "source_cny": "3145910016",
+          "source_bits": 1329300167
+        }
+      ],
+      "common_debt_subtotal_cny": "6189344204.488281250000",
+      "equity_plus_common_debt_cny": "17341268428.488281250000",
+      "arithmetic_capital_after_full_cash_deduction_cny": {
+        "FN8": "13464891596.488281250000",
+        "FN133": "14195358412.488281250000"
+      },
+      "monetary_funds_less_cash_equivalents_cny": "730466816",
+      "long_term_equity_investments_cny": "295794592",
+      "full_operating_capital": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000035",
+      "period": "2022-12-31",
+      "source_matches": [
+        {
+          "field": "FN72",
+          "page": 108,
+          "pdf_cny": "10438092743.91",
+          "comparative_cny": "11151924493.28",
+          "source_cny": "10438092800",
+          "source_bits": 1343982122
+        },
+        {
+          "field": "FN8",
+          "page": 106,
+          "pdf_cny": "1957921407.96",
+          "comparative_cny": "3876376806.19",
+          "source_cny": "1957921408",
+          "source_bits": 1323919109
+        },
+        {
+          "field": "FN25",
+          "page": 106,
+          "pdf_cny": "246665381.03",
+          "comparative_cny": "295794599.53",
+          "source_cny": "246665376",
+          "source_bits": 1298873610
+        },
+        {
+          "field": "FN133",
+          "page": 115,
+          "pdf_cny": "690097490.65",
+          "comparative_cny": "3145909969.21",
+          "source_cny": "690097472",
+          "source_bits": 1311017013
+        }
+      ],
+      "common_debt_subtotal_cny": "7530702637.656250000",
+      "equity_plus_common_debt_cny": "17968795437.656250000",
+      "arithmetic_capital_after_full_cash_deduction_cny": {
+        "FN8": "16010874029.656250000",
+        "FN133": "17278697965.656250000"
+      },
+      "monetary_funds_less_cash_equivalents_cny": "1267823936",
+      "long_term_equity_investments_cny": "246665376",
+      "full_operating_capital": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000417",
+      "period": "2021-12-31",
+      "source_matches": [
+        {
+          "field": "FN72",
+          "page": 77,
+          "pdf_cny": "5035998604.97",
+          "comparative_cny": "4844637463.78",
+          "source_cny": "5035998720",
+          "source_bits": 1335235999
+        },
+        {
+          "field": "FN8",
+          "page": 74,
+          "pdf_cny": "3372968183.51",
+          "comparative_cny": "3106238935.76",
+          "source_cny": "3372968192",
+          "source_bits": 1330187113
+        },
+        {
+          "field": "FN25",
+          "page": 75,
+          "pdf_cny": "126434832.88",
+          "comparative_cny": "122679082.40",
+          "source_cny": "126434832",
+          "source_bits": 1290872770
+        },
+        {
+          "field": "FN133",
+          "page": 86,
+          "pdf_cny": "3064027976.84",
+          "comparative_cny": "2720074699.15",
+          "source_cny": "3064027904",
+          "source_bits": 1328980315
+        }
+      ],
+      "common_debt_subtotal_cny": "2121956845.250000",
+      "equity_plus_common_debt_cny": "7157955565.250000",
+      "arithmetic_capital_after_full_cash_deduction_cny": {
+        "FN8": "3784987373.250000",
+        "FN133": "4093927661.250000"
+      },
+      "monetary_funds_less_cash_equivalents_cny": "308940288",
+      "long_term_equity_investments_cny": "126434832",
+      "full_operating_capital": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000417",
+      "period": "2022-12-31",
+      "source_matches": [
+        {
+          "field": "FN72",
+          "page": 65,
+          "pdf_cny": "5199599696.11",
+          "comparative_cny": "5035998604.97",
+          "source_cny": "5199599616",
+          "source_bits": 1335555532
+        },
+        {
+          "field": "FN8",
+          "page": 63,
+          "pdf_cny": "3445089529.89",
+          "comparative_cny": "3372968183.51",
+          "source_cny": "3445089536",
+          "source_bits": 1330468837
+        },
+        {
+          "field": "FN25",
+          "page": 63,
+          "pdf_cny": "131217419.94",
+          "comparative_cny": "126434832.88",
+          "source_cny": "131217416",
+          "source_bits": 1291470593
+        },
+        {
+          "field": "FN133",
+          "page": 72,
+          "pdf_cny": "3100133063.99",
+          "comparative_cny": "3064027976.84",
+          "source_cny": "3100133120",
+          "source_bits": 1329121351
+        }
+      ],
+      "common_debt_subtotal_cny": "2227152858.50000",
+      "equity_plus_common_debt_cny": "7426752474.50000",
+      "arithmetic_capital_after_full_cash_deduction_cny": {
+        "FN8": "3981662938.50000",
+        "FN133": "4326619354.50000"
+      },
+      "monetary_funds_less_cash_equivalents_cny": "344956416",
+      "long_term_equity_investments_cny": "131217416",
+      "full_operating_capital": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000422",
+      "period": "2021-12-31",
+      "source_matches": [
+        {
+          "field": "FN72",
+          "page": 121,
+          "pdf_cny": "3968498089.01",
+          "comparative_cny": "1343525199.92",
+          "source_cny": "3968498176",
+          "source_bits": 1332513402
+        },
+        {
+          "field": "FN8",
+          "page": 118,
+          "pdf_cny": "3843867716.39",
+          "comparative_cny": "3226266521.16",
+          "source_cny": "3843867648",
+          "source_bits": 1332026564
+        },
+        {
+          "field": "FN25",
+          "page": 119,
+          "pdf_cny": "108920310.21",
+          "comparative_cny": "153172168.01",
+          "source_cny": "108920312",
+          "source_bits": 1288683455
+        },
+        {
+          "field": "FN133",
+          "page": 131,
+          "pdf_cny": "3336986716.39",
+          "comparative_cny": "2739904521.16",
+          "source_cny": "3336986624",
+          "source_bits": 1330046560
+        }
+      ],
+      "common_debt_subtotal_cny": "11677430919.9694824218750000",
+      "equity_plus_common_debt_cny": "15645929095.9694824218750000",
+      "arithmetic_capital_after_full_cash_deduction_cny": {
+        "FN8": "11802061447.9694824218750000",
+        "FN133": "12308942471.9694824218750000"
+      },
+      "monetary_funds_less_cash_equivalents_cny": "506881024",
+      "long_term_equity_investments_cny": "108920312",
+      "full_operating_capital": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000422",
+      "period": "2022-12-31",
+      "source_matches": [
+        {
+          "field": "FN72",
+          "page": 109,
+          "pdf_cny": "6808867944.01",
+          "comparative_cny": "3968498089.01",
+          "source_cny": "6808867840",
+          "source_bits": 1338698634
+        },
+        {
+          "field": "FN8",
+          "page": 107,
+          "pdf_cny": "3419565662.82",
+          "comparative_cny": "3843867716.39",
+          "source_cny": "3419565568",
+          "source_bits": 1330369134
+        },
+        {
+          "field": "FN25",
+          "page": 107,
+          "pdf_cny": "3105217280.63",
+          "comparative_cny": "108920310.21",
+          "source_cny": "3105217280",
+          "source_bits": 1329141211
+        },
+        {
+          "field": "FN133",
+          "page": 116,
+          "pdf_cny": "3026154124.01",
+          "comparative_cny": "3336986716.39",
+          "source_cny": "3026154240",
+          "source_bits": 1328832371
+        }
+      ],
+      "common_debt_subtotal_cny": "8921723028.02441406250000",
+      "equity_plus_common_debt_cny": "15730590868.02441406250000",
+      "arithmetic_capital_after_full_cash_deduction_cny": {
+        "FN8": "12311025300.02441406250000",
+        "FN133": "12704436628.02441406250000"
+      },
+      "monetary_funds_less_cash_equivalents_cny": "393411328",
+      "long_term_equity_investments_cny": "3105217280",
+      "full_operating_capital": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000521",
+      "period": "2021-12-31",
+      "source_matches": [
+        {
+          "field": "FN72",
+          "page": 157,
+          "pdf_cny": "4994791381.05",
+          "comparative_cny": "4962094965.92",
+          "source_cny": "4994791424",
+          "source_bits": 1335155516
+        },
+        {
+          "field": "FN8",
+          "page": 154,
+          "pdf_cny": "5938823396.21",
+          "comparative_cny": "6594786789.98",
+          "source_cny": "5938823168",
+          "source_bits": 1336999328
+        },
+        {
+          "field": "FN25",
+          "page": 155,
+          "pdf_cny": "86631660.53",
+          "comparative_cny": "76982822.38",
+          "source_cny": "86631664",
+          "source_bits": 1285897374
+        },
+        {
+          "field": "FN133",
+          "page": 165,
+          "pdf_cny": "5840194931.57",
+          "comparative_cny": "6425529815.10",
+          "source_cny": "5840195072",
+          "source_bits": 1336806695
+        }
+      ],
+      "common_debt_subtotal_cny": "1156818988.878906250000",
+      "equity_plus_common_debt_cny": "6151610412.878906250000",
+      "arithmetic_capital_after_full_cash_deduction_cny": {
+        "FN8": "212787244.878906250000",
+        "FN133": "311415340.878906250000"
+      },
+      "monetary_funds_less_cash_equivalents_cny": "98628096",
+      "long_term_equity_investments_cny": "86631664",
+      "full_operating_capital": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000521",
+      "period": "2022-12-31",
+      "source_matches": [
+        {
+          "field": "FN72",
+          "page": 137,
+          "pdf_cny": "5539035267.35",
+          "comparative_cny": "4994791381.05",
+          "source_cny": "5539035136",
+          "source_bits": 1336218492
+        },
+        {
+          "field": "FN8",
+          "page": 135,
+          "pdf_cny": "6839421779.13",
+          "comparative_cny": "5938823396.21",
+          "source_cny": "6839421952",
+          "source_bits": 1338758310
+        },
+        {
+          "field": "FN25",
+          "page": 135,
+          "pdf_cny": "100384428.50",
+          "comparative_cny": "86631660.53",
+          "source_cny": "100384432",
+          "source_bits": 1287616470
+        },
+        {
+          "field": "FN133",
+          "page": 143,
+          "pdf_cny": "6113222069.76",
+          "comparative_cny": "5840194931.57",
+          "source_cny": "6113222144",
+          "source_bits": 1337339951
+        }
+      ],
+      "common_debt_subtotal_cny": "880595335.316406250000",
+      "equity_plus_common_debt_cny": "6419630471.316406250000",
+      "arithmetic_capital_after_full_cash_deduction_cny": {
+        "FN8": "-419791480.683593750000",
+        "FN133": "306408327.316406250000"
+      },
+      "monetary_funds_less_cash_equivalents_cny": "726199808",
+      "long_term_equity_investments_cny": "100384432",
+      "full_operating_capital": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000546",
+      "period": "2021-12-31",
+      "source_matches": [
+        {
+          "field": "FN72",
+          "page": 124,
+          "pdf_cny": "6137697130.00",
+          "comparative_cny": "5293687535.36",
+          "source_cny": "6137697280",
+          "source_bits": 1337387754
+        },
+        {
+          "field": "FN8",
+          "page": 121,
+          "pdf_cny": "822361793.36",
+          "comparative_cny": "562094755.42",
+          "source_cny": "822361792",
+          "source_bits": 1313083643
+        },
+        {
+          "field": "FN25",
+          "page": 122,
+          "pdf_cny": "33369764.21",
+          "comparative_cny": "30785118.81",
+          "source_cny": "33369764",
+          "source_bits": 1274976082
+        },
+        {
+          "field": "FN133",
+          "page": 134,
+          "pdf_cny": "492867640.61",
+          "comparative_cny": "295956818.70",
+          "source_cny": "492867648",
+          "source_bits": 1307247746
+        }
+      ],
+      "common_debt_subtotal_cny": "2882956599.890136718750000",
+      "equity_plus_common_debt_cny": "9020653879.890136718750000",
+      "arithmetic_capital_after_full_cash_deduction_cny": {
+        "FN8": "8198292087.890136718750000",
+        "FN133": "8527786231.890136718750000"
+      },
+      "monetary_funds_less_cash_equivalents_cny": "329494144",
+      "long_term_equity_investments_cny": "33369764",
+      "full_operating_capital": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000546",
+      "period": "2022-12-31",
+      "source_matches": [
+        {
+          "field": "FN72",
+          "page": 126,
+          "pdf_cny": "5646373348.12",
+          "comparative_cny": "6132867060.65",
+          "source_cny": "5646373376",
+          "source_bits": 1336428137
+        },
+        {
+          "field": "FN8",
+          "page": 124,
+          "pdf_cny": "693253280.93",
+          "comparative_cny": "822361793.36",
+          "source_cny": "693253312",
+          "source_bits": 1311066323
+        },
+        {
+          "field": "FN25",
+          "page": 125,
+          "pdf_cny": "19139518.06",
+          "comparative_cny": "33369764.21",
+          "source_cny": "19139518",
+          "source_bits": 1267860959
+        },
+        {
+          "field": "FN133",
+          "page": 134,
+          "pdf_cny": "435725923.35",
+          "comparative_cny": "492867640.61",
+          "source_cny": "435725920",
+          "source_bits": 1305462067
+        }
+      ],
+      "common_debt_subtotal_cny": "1253882643.99084472656250000",
+      "equity_plus_common_debt_cny": "6900256019.99084472656250000",
+      "arithmetic_capital_after_full_cash_deduction_cny": {
+        "FN8": "6207002707.99084472656250000",
+        "FN133": "6464530099.99084472656250000"
+      },
+      "monetary_funds_less_cash_equivalents_cny": "257527392",
+      "long_term_equity_investments_cny": "19139518",
+      "full_operating_capital": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000599",
+      "period": "2021-12-31",
+      "source_matches": [
+        {
+          "field": "FN72",
+          "page": 74,
+          "pdf_cny": "3130455973.70",
+          "comparative_cny": "3520580644.04",
+          "source_cny": "3130456064",
+          "source_bits": 1329239800
+        },
+        {
+          "field": "FN8",
+          "page": 71,
+          "pdf_cny": "1567050450.71",
+          "comparative_cny": "1225910763.98",
+          "source_cny": "1567050496",
+          "source_bits": 1320865430
+        },
+        {
+          "field": "FN25",
+          "page": 72,
+          "pdf_cny": "661197088.37",
+          "comparative_cny": "52831010.64",
+          "source_cny": "661197120",
+          "source_bits": 1310565445
+        },
+        {
+          "field": "FN133",
+          "page": 83,
+          "pdf_cny": "1273488908.11",
+          "comparative_cny": "1020664380.07",
+          "source_cny": "1273488896",
+          "source_bits": 1318571980
+        }
+      ],
+      "common_debt_subtotal_cny": "5038807919.9328613281250000",
+      "equity_plus_common_debt_cny": "8169263983.9328613281250000",
+      "arithmetic_capital_after_full_cash_deduction_cny": {
+        "FN8": "6602213487.9328613281250000",
+        "FN133": "6895775087.9328613281250000"
+      },
+      "monetary_funds_less_cash_equivalents_cny": "293561600",
+      "long_term_equity_investments_cny": "661197120",
+      "full_operating_capital": null,
+      "economic_roic": null
+    },
+    {
+      "code": "000599",
+      "period": "2022-12-31",
+      "source_matches": [
+        {
+          "field": "FN72",
+          "page": 66,
+          "pdf_cny": "2383047119.40",
+          "comparative_cny": "3130455973.70",
+          "source_cny": "2383047168",
+          "source_bits": 1326320234
+        },
+        {
+          "field": "FN8",
+          "page": 64,
+          "pdf_cny": "1344991209.02",
+          "comparative_cny": "1567050450.71",
+          "source_cny": "1344991232",
+          "source_bits": 1319130592
+        },
+        {
+          "field": "FN25",
+          "page": 64,
+          "pdf_cny": "716456080.18",
+          "comparative_cny": "661197088.37",
+          "source_cny": "716456064",
+          "source_bits": 1311428866
+        },
+        {
+          "field": "FN133",
+          "page": 73,
+          "pdf_cny": "1046323141.28",
+          "comparative_cny": "1273488908.11",
+          "source_cny": "1046323136",
+          "source_bits": 1316583039
+        }
+      ],
+      "common_debt_subtotal_cny": "4825735140.007629394531250000",
+      "equity_plus_common_debt_cny": "7208782308.007629394531250000",
+      "arithmetic_capital_after_full_cash_deduction_cny": {
+        "FN8": "5863791076.007629394531250000",
+        "FN133": "6162459172.007629394531250000"
+      },
+      "monetary_funds_less_cash_equivalents_cny": "298668096",
+      "long_term_equity_investments_cny": "716456064",
+      "full_operating_capital": null,
+      "economic_roic": null
+    }
+  ],
+  "comparative_checks": [
+    {
+      "code": "000035",
+      "field": "FN72",
+      "period": "2021-12-31",
+      "original_cny": "11151924493.28",
+      "later_comparative_cny": "11151924493.28",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000035",
+      "field": "FN8",
+      "period": "2021-12-31",
+      "original_cny": "3876376806.19",
+      "later_comparative_cny": "3876376806.19",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000035",
+      "field": "FN25",
+      "period": "2021-12-31",
+      "original_cny": "295794599.53",
+      "later_comparative_cny": "295794599.53",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000035",
+      "field": "FN133",
+      "period": "2021-12-31",
+      "original_cny": "3145909969.21",
+      "later_comparative_cny": "3145909969.21",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000417",
+      "field": "FN72",
+      "period": "2021-12-31",
+      "original_cny": "5035998604.97",
+      "later_comparative_cny": "5035998604.97",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000417",
+      "field": "FN8",
+      "period": "2021-12-31",
+      "original_cny": "3372968183.51",
+      "later_comparative_cny": "3372968183.51",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000417",
+      "field": "FN25",
+      "period": "2021-12-31",
+      "original_cny": "126434832.88",
+      "later_comparative_cny": "126434832.88",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000417",
+      "field": "FN133",
+      "period": "2021-12-31",
+      "original_cny": "3064027976.84",
+      "later_comparative_cny": "3064027976.84",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000422",
+      "field": "FN72",
+      "period": "2021-12-31",
+      "original_cny": "3968498089.01",
+      "later_comparative_cny": "3968498089.01",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000422",
+      "field": "FN8",
+      "period": "2021-12-31",
+      "original_cny": "3843867716.39",
+      "later_comparative_cny": "3843867716.39",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000422",
+      "field": "FN25",
+      "period": "2021-12-31",
+      "original_cny": "108920310.21",
+      "later_comparative_cny": "108920310.21",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000422",
+      "field": "FN133",
+      "period": "2021-12-31",
+      "original_cny": "3336986716.39",
+      "later_comparative_cny": "3336986716.39",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000521",
+      "field": "FN72",
+      "period": "2021-12-31",
+      "original_cny": "4994791381.05",
+      "later_comparative_cny": "4994791381.05",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000521",
+      "field": "FN8",
+      "period": "2021-12-31",
+      "original_cny": "5938823396.21",
+      "later_comparative_cny": "5938823396.21",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000521",
+      "field": "FN25",
+      "period": "2021-12-31",
+      "original_cny": "86631660.53",
+      "later_comparative_cny": "86631660.53",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000521",
+      "field": "FN133",
+      "period": "2021-12-31",
+      "original_cny": "5840194931.57",
+      "later_comparative_cny": "5840194931.57",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000546",
+      "field": "FN72",
+      "period": "2021-12-31",
+      "original_cny": "6137697130.00",
+      "later_comparative_cny": "6132867060.65",
+      "later_less_original_cny": "-4830069.35"
+    },
+    {
+      "code": "000546",
+      "field": "FN8",
+      "period": "2021-12-31",
+      "original_cny": "822361793.36",
+      "later_comparative_cny": "822361793.36",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000546",
+      "field": "FN25",
+      "period": "2021-12-31",
+      "original_cny": "33369764.21",
+      "later_comparative_cny": "33369764.21",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000546",
+      "field": "FN133",
+      "period": "2021-12-31",
+      "original_cny": "492867640.61",
+      "later_comparative_cny": "492867640.61",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000599",
+      "field": "FN72",
+      "period": "2021-12-31",
+      "original_cny": "3130455973.70",
+      "later_comparative_cny": "3130455973.70",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000599",
+      "field": "FN8",
+      "period": "2021-12-31",
+      "original_cny": "1567050450.71",
+      "later_comparative_cny": "1567050450.71",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000599",
+      "field": "FN25",
+      "period": "2021-12-31",
+      "original_cny": "661197088.37",
+      "later_comparative_cny": "661197088.37",
+      "later_less_original_cny": "0.00"
+    },
+    {
+      "code": "000599",
+      "field": "FN133",
+      "period": "2021-12-31",
+      "original_cny": "1273488908.11",
+      "later_comparative_cny": "1273488908.11",
+      "later_less_original_cny": "0.00"
+    }
+  ],
+  "jinyuan_2021_restatement": {
+    "report_year": 2022,
+    "page": 194,
+    "amounts_cny": {
+      "在建工程": "-10419762.41",
+      "存货": "4737327.88",
+      "递延所得税资产": "852365.18",
+      "营业收入": "109783856.28",
+      "营业成本": "115466290.81",
+      "净利润": "-4830069.35",
+      "所得税费用": "-852365.18"
+    },
+    "treatment": "retain_original_source_and_later_comparative_separately"
+  },
+  "boundary": "six_companies_two_FY; 2023-09-01_China_cutoff; later_acquired_not_strict_PIT; cash_deduction_scenarios_not_excess_cash_facts; cash_difference_not_classified_restricted_cash; long_term_investments_not_automatically_nonoperating; negative_capital_not_clamped; comparative_changes_not_source_override; no_growth_or_ROIC_estimate"
+}

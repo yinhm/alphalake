@@ -1,0 +1,14 @@
+{
+  "hashes": {
+    "valuation/research/tdx-capital-inputs/book-capital.json": "bbdca81bbf42d3fc5ec4edecc70362805e03169917d2d73322149fb7f936f2b9",
+    "valuation/research/tdx-capital-inputs/book-capital-result.json": "0eae91cb3b03003855f5f3c875804310de0f66155862ce91f8277ccdb3b9516d",
+    "valuation/backend/tools/verify_book_capital.py": "2625550391465d0c60f3c04ebd66c76fcfd3d8d5807a9201e57218c1a7627ddd",
+    "valuation/research/tdx-capital-inputs/cnty-debt/source.json.gz": "e89c98b641396d85d9e0587529bbeafacf2086898c9a5756b34584df427a91f0",
+    "valuation/research/tdx-capital-inputs/five-debt/source.json.gz": "f492be8250b3f042446fcdb0b6a8cbbe8fab24acdd9f09e3d1f0a1fb7e2f5f74"
+  },
+  "arithmetic_recheck": {
+    "cases": 24,
+    "debt_subtotals_match_prior_diagnostic": 12,
+    "boundary": "arithmetic_only_not_independent_semantic_evidence"
+  }
+}
