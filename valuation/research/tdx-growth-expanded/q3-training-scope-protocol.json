@@ -1,0 +1,35 @@
+{
+  "audit_id": "tdx-q3-business-training-sensitivity-v1",
+  "frozen_at": "2026-09-11T13:25:18.539763+00:00",
+  "inputs": {
+    "protocol": {
+      "path": "valuation/research/tdx-growth-expanded/q3-protocol.json",
+      "sha256": "9782771f0bae59a65a46565dd1a4991948ec4ec13941142f4771cc0030428b78"
+    },
+    "snapshot": {
+      "path": "valuation/research/tdx-growth-expanded/snapshot-v7.json",
+      "sha256": "56d8019d94a599c2baf1340ff5c08a4b94478c96bb6849e46ebb779fb1658b3c"
+    },
+    "original": {
+      "path": "valuation/research/tdx-growth-expanded/q3-holdout.json.gz",
+      "sha256": "1c7508c599a1b1541d68112cd279b3b3a6d4fba310deb8c1a8b6e3e8b9ae4fe9"
+    },
+    "business_config": {
+      "path": "valuation/research/tdx-normalized-margin/scope-review.json",
+      "sha256": "861323415f51b9417bd2be44ba691ff6dba4449d151f7fecf2470fd6970c432a"
+    }
+  },
+  "excluded_training_codes": [
+    "002432"
+  ],
+  "models": [
+    "current_rule",
+    "zero_growth",
+    "bias_half"
+  ],
+  "reason": "已知2023Q3训练单公司权重超过一半，结合已归档2022年报的特殊需求与需求下降风险证据；不是从评价误差排序选择删除对象",
+  "operation": "remove_only_named_development_company_before_lagged_fit; keep_original_120_holdout_companies_and_240_row_identities; fixed_bias_half_and_original_scale_bounds; no_reselection",
+  "comparison": "replay_original_fit_forecasts_summary_and_gate; compare_refitted_predictions_on_identical_evaluation_rows; keep_original_actuals_and_refusals",
+  "limits": "posthoc_diagnostic_not_new_validation_or_adoptable_universal_filter; no_company_removed_from_evaluation; source_PDF_business_scope_not_TDX_value_override; no_strict_PIT_business_event_chain; no_threshold_search_or_default_policy_change",
+  "evidence": "reuse_existing_business_PDF_checks; annual_iHealth_share_includes_test_kits_not_equal_to_test_kit_revenue; selected_page_31_demand_risk; 2024_training_business_comparability_not_established_by_2022_document"
+}
