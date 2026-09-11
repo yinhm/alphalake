@@ -1,0 +1,74 @@
+[
+  {
+    "info_code": "AP202308301596817366",
+    "directory_file": "directory-2023.json.gz",
+    "directory_source": {
+      "url": "https://reportapi.eastmoney.com/report/list?code=300866&beginTime=2023-08-01&endTime=2023-09-01&pageSize=100&pageNo=1&qType=0",
+      "archived_at": "2026-09-11T16:16:37.448498+00:00",
+      "sha256": "6a2c780f2a37e721afd23ba9f92be42f5135ef5e89cc0a626e34d4f4942bc93b"
+    },
+    "pdf_source": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202308301596817366_1.pdf",
+      "archived_at": "2026-09-11T16:16:40.901761+00:00",
+      "sha256": "b5b7b5565ab9177b3a0836b719e5d0410747a9ab55dfb057b9a76c5ec1220695"
+    },
+    "pdf_file": "AP202308301596817366.pdf",
+    "raw_pdf_directory": "workspace/analyst-forecast-20260911",
+    "source_page": 1,
+    "provider_report_date": "2023-08-30 00:00:00.000",
+    "printed_report_date": "2023-08-30",
+    "date_precision": "day_not_exact_midnight",
+    "availability_basis": "provider_and_printed_report_date_proxy_not_historical_capture",
+    "table_header": "[Table_EPS]     盈利预测与估值 2022A 2023E 2024E 2025E",
+    "revenue_line": "营业总收入（百万元） 14,251 17,234 20,504 23,061",
+    "api_current_year": 2026
+  },
+  {
+    "info_code": "AP202408301639629259",
+    "directory_file": "directory-2024.json.gz",
+    "directory_source": {
+      "url": "https://reportapi.eastmoney.com/report/list?code=300866&beginTime=2024-08-01&endTime=2024-09-01&pageSize=100&pageNo=1&qType=0",
+      "archived_at": "2026-09-11T16:16:42.023043+00:00",
+      "sha256": "6833c2b47ab027d72c7047cd8795814c0b059323d0c17aaf4372fd032b80edb7"
+    },
+    "pdf_source": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202408301639629259_1.pdf",
+      "archived_at": "2026-09-11T16:16:44.357911+00:00",
+      "sha256": "8d7483c30b8a532a2f7cdea0326d1c1c637689dade1f90fade0ccabb1b70671f"
+    },
+    "pdf_file": "AP202408301639629259.pdf",
+    "raw_pdf_directory": "workspace/analyst-forecast-20260911",
+    "source_page": 1,
+    "provider_report_date": "2024-08-30 00:00:00.000",
+    "printed_report_date": "2024-08-30",
+    "date_precision": "day_not_exact_midnight",
+    "availability_basis": "provider_and_printed_report_date_proxy_not_historical_capture",
+    "table_header": "[Table_EPS]      盈利预测与估值 2022A 2023A 2024E 2025E 2026E",
+    "revenue_line": "营业总收入（百万元） 14251 17507 23266 29612 36193",
+    "api_current_year": 2026
+  },
+  {
+    "info_code": "AP202508311737338558",
+    "directory_file": "directory-2025.json.gz",
+    "directory_source": {
+      "url": "https://reportapi.eastmoney.com/report/list?code=300866&beginTime=2025-08-01&endTime=2025-09-01&pageSize=100&pageNo=1&qType=0",
+      "archived_at": "2026-09-11T16:16:44.496815+00:00",
+      "sha256": "8658dbb8eee4d552e95cb0077230c6a0b8dee546153f29898e38801634f749e9"
+    },
+    "pdf_source": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202508311737338558_1.pdf",
+      "archived_at": "2026-09-11T16:16:47.515851+00:00",
+      "sha256": "99fd038661531ad708c20457f8f5687be9bcd2b0564fac2840ddc0e5014556b3"
+    },
+    "pdf_file": "AP202508311737338558.pdf",
+    "raw_pdf_directory": "workspace/analyst-forecast-20260911",
+    "source_page": 1,
+    "provider_report_date": "2025-08-31 00:00:00.000",
+    "printed_report_date": "2025-08-31",
+    "date_precision": "day_not_exact_midnight",
+    "availability_basis": "provider_and_printed_report_date_proxy_not_historical_capture",
+    "table_header": "[Table_EPS]      盈利预测与估值 2023A 2024A 2025E 2026E 2027E",
+    "revenue_line": "营业总收入（百万元） 17,507 24,710 32,853 41,968 50,768",
+    "api_current_year": 2026
+  }
+]

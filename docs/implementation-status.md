@@ -1,5 +1,7 @@
 # AlphaLake 实现状态
 
+[安克三期券商前瞻收入试验](../valuation/research/analyst-revenue-pilot/README.md)已取得同一券商三份原文、9个FY预测：6项到期MAE9.9122%，机械同年度桥接10.5274%，但2023/2025两个起点更差，不采用。报告日期仅为后来取得的历史可用日代理；FY与H1 TTM分开，目录相对年份EPS不解析。下一步检验固定来源能否跨公司复现，不继续调整失败的历史平滑权重。
+
 [两期营运余额比例候选](../valuation/research/continuing-operations-five/trade-balance-mean.md)未通过：保持收入路径不变，30个到期位置误差5.7869%→6.2550%，存货/应付WAPE恶化，仅两家公司改善。停止该候选，不扫描权重或扩大采用；真实重放和时点/篡改回归已加入现有CI。
 
 [五家多起点营运余额检验](../valuation/research/continuing-operations-five/trade-balance-path.md)已完成一至三年30/45个到期位置：随预测收入同比例增长的三项余额误差6.3344%→5.7869%，但仅安克改善，其余四家恶化，不能据平均数推广。未来15项保留，实际收入反事实只作归因；下一步须联合检验增长与资本需求，不继续重复已有余额—现金差额核对。

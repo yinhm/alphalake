@@ -1,0 +1,796 @@
+{
+  "evidence": {
+    "valuation/research/continuing-operations-five/capital-snapshot.json": "685f86200322784ecf445e45f3d93a4b8e7d2601d218ab69d84d79513e6c99ed",
+    "valuation/research/continuing-operations-five/baseline.json": "f8e6260300d8f32c1928344d817394544a0c16b3249a5374e1948b2e97fd9f26",
+    "valuation/research/analyst-revenue-pilot/protocol.json": "b752bdbac5843133747a2eb8f7d0f6799a5de954eac282714280e511a60e7ab6",
+    "valuation/research/analyst-revenue-pilot/forecasts.csv": "2e97506bcf20f5d9d12f6703c5828f7c5c51d6ae2d5bd87469fa9502abfa6187",
+    "valuation/research/analyst-revenue-pilot/sources.json": "e58d6a9e7983bc3a67228f4ec8ed7f4ed007ef9720e7cacd0afc5cd5ef28975e"
+  },
+  "summary": {
+    "positions": 9,
+    "statuses": {
+      "evaluated": 6,
+      "not_yet_observable": 3
+    },
+    "models": {
+      "broker": {
+        "n": 6,
+        "mae_pct_actual": 9.912233137817136,
+        "wape_pct": 10.486342666753341
+      },
+      "current_rule_fy_bridge": {
+        "n": 6,
+        "mae_pct_actual": 10.527353278366848,
+        "wape_pct": 10.972116237060348
+      },
+      "zero_growth_fy_bridge": {
+        "n": 6,
+        "mae_pct_actual": 26.700736488765468,
+        "wape_pct": 27.81327747178437
+      }
+    }
+  },
+  "by_origin": {
+    "2023": {
+      "positions": 3,
+      "statuses": {
+        "evaluated": 3
+      },
+      "models": {
+        "broker": {
+          "n": 3,
+          "mae_pct_actual": 14.336030119146132,
+          "wape_pct": 16.40644871393905
+        },
+        "current_rule_fy_bridge": {
+          "n": 3,
+          "mae_pct_actual": 12.91233994030389,
+          "wape_pct": 14.475859610974217
+        },
+        "zero_growth_fy_bridge": {
+          "n": 3,
+          "mae_pct_actual": 32.95650953218659,
+          "wape_pct": 36.35989579067059
+        }
+      }
+    },
+    "2024": {
+      "positions": 3,
+      "statuses": {
+        "evaluated": 2,
+        "not_yet_observable": 1
+      },
+      "models": {
+        "broker": {
+          "n": 2,
+          "mae_pct_actual": 4.400698802305147,
+          "wape_pct": 4.2489918906229835
+        },
+        "current_rule_fy_bridge": {
+          "n": 2,
+          "mae_pct_actual": 11.514759533405636,
+          "wape_pct": 11.648049588579006
+        },
+        "zero_growth_fy_bridge": {
+          "n": 2,
+          "mae_pct_actual": 26.43028672810826,
+          "wape_pct": 27.243002802142623
+        }
+      }
+    },
+    "2025": {
+      "positions": 3,
+      "statuses": {
+        "evaluated": 1,
+        "not_yet_observable": 2
+      },
+      "models": {
+        "broker": {
+          "n": 1,
+          "mae_pct_actual": 7.663910864854123,
+          "wape_pct": 7.663910864854123
+        },
+        "current_rule_fy_bridge": {
+          "n": 1,
+          "mae_pct_actual": 1.3975807824781465,
+          "wape_pct": 1.3975807824781465
+        },
+        "zero_growth_fy_bridge": {
+          "n": 1,
+          "mae_pct_actual": 8.474316879816527,
+          "wape_pct": 8.474316879816527
+        }
+      }
+    }
+  },
+  "by_target_year": {
+    "2023": {
+      "positions": 1,
+      "statuses": {
+        "evaluated": 1
+      },
+      "models": {
+        "broker": {
+          "n": 1,
+          "mae_pct_actual": 1.5605180957599394,
+          "wape_pct": 1.5605180957599394
+        },
+        "current_rule_fy_bridge": {
+          "n": 1,
+          "mae_pct_actual": 2.342440483044454,
+          "wape_pct": 2.342440483044454
+        },
+        "zero_growth_fy_bridge": {
+          "n": 1,
+          "mae_pct_actual": 11.871471504914522,
+          "wape_pct": 11.871471504914522
+        }
+      }
+    },
+    "2024": {
+      "positions": 2,
+      "statuses": {
+        "evaluated": 2
+      },
+      "models": {
+        "broker": {
+          "n": 2,
+          "mae_pct_actual": 11.432906949162108,
+          "wape_pct": 11.432906949162108
+        },
+        "current_rule_fy_bridge": {
+          "n": 2,
+          "mae_pct_actual": 13.62684994262825,
+          "wape_pct": 13.62684994262825
+        },
+        "zero_growth_fy_bridge": {
+          "n": 2,
+          "mae_pct_actual": 28.1291728071242,
+          "wape_pct": 28.1291728071242
+        }
+      }
+    },
+    "2025": {
+      "positions": 3,
+      "statuses": {
+        "evaluated": 3
+      },
+      "models": {
+        "broker": {
+          "n": 3,
+          "mae_pct_actual": 11.682355610939553,
+          "wape_pct": 11.682355610939553
+        },
+        "current_rule_fy_bridge": {
+          "n": 3,
+          "mae_pct_actual": 11.189326433966711,
+          "wape_pct": 11.189326433966711
+        },
+        "zero_growth_fy_bridge": {
+          "n": 3,
+          "mae_pct_actual": 30.691533937809965,
+          "wape_pct": 30.691533937809965
+        }
+      }
+    },
+    "2026": {
+      "positions": 2,
+      "statuses": {
+        "not_yet_observable": 2
+      },
+      "models": {
+        "broker": {
+          "n": 0,
+          "mae_pct_actual": null,
+          "wape_pct": null
+        },
+        "current_rule_fy_bridge": {
+          "n": 0,
+          "mae_pct_actual": null,
+          "wape_pct": null
+        },
+        "zero_growth_fy_bridge": {
+          "n": 0,
+          "mae_pct_actual": null,
+          "wape_pct": null
+        }
+      }
+    },
+    "2027": {
+      "positions": 1,
+      "statuses": {
+        "not_yet_observable": 1
+      },
+      "models": {
+        "broker": {
+          "n": 0,
+          "mae_pct_actual": null,
+          "wape_pct": null
+        },
+        "current_rule_fy_bridge": {
+          "n": 0,
+          "mae_pct_actual": null,
+          "wape_pct": null
+        },
+        "zero_growth_fy_bridge": {
+          "n": 0,
+          "mae_pct_actual": null,
+          "wape_pct": null
+        }
+      }
+    }
+  },
+  "results": [
+    {
+      "info_code": "AP202308301596817366",
+      "origin_year": 2023,
+      "target_year": 2023,
+      "forecast_as_of": "2023-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "17507203072",
+      "growth": "0.19947832494927892",
+      "known_h1_cny": "7065692160",
+      "prior_h2_cny": "8363148288",
+      "forecast_source_inputs": [
+        {
+          "period": "2023-03-31",
+          "artifact": "gpcw20230331.zip",
+          "field": "FN230",
+          "bits": 1330156393
+        },
+        {
+          "period": "2023-06-30",
+          "artifact": "gpcw20230630.zip",
+          "field": "FN230",
+          "bits": 1331466879
+        },
+        {
+          "period": "2022-09-30",
+          "artifact": "gpcw20220930.zip",
+          "field": "FN230",
+          "bits": 1331265962
+        },
+        {
+          "period": "2022-12-31",
+          "artifact": "gpcw20221231.zip",
+          "field": "FN230",
+          "bits": 1334607085
+        }
+      ],
+      "predictions_cny": {
+        "broker": "17234000000",
+        "current_rule_fy_bridge": "17097107259.79266968663248896",
+        "zero_growth_fy_bridge": "15428840448"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2023-03-31",
+          "artifact": "gpcw20230331.zip",
+          "field": "FN230",
+          "bits": 1330156393
+        },
+        {
+          "period": "2023-06-30",
+          "artifact": "gpcw20230630.zip",
+          "field": "FN230",
+          "bits": 1331466879
+        },
+        {
+          "period": "2023-09-30",
+          "artifact": "gpcw20230930.zip",
+          "field": "FN230",
+          "bits": 1334620325
+        },
+        {
+          "period": "2023-12-31",
+          "artifact": "gpcw20231231.zip",
+          "field": "FN230",
+          "bits": 1336573379
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": -1.5605180957599394,
+        "current_rule_fy_bridge": -2.342440483044454,
+        "zero_growth_fy_bridge": -11.871471504914522
+      }
+    },
+    {
+      "info_code": "AP202308301596817366",
+      "origin_year": 2023,
+      "target_year": 2024,
+      "forecast_as_of": "2023-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "24710080512",
+      "growth": "0.19947832494927892",
+      "known_h1_cny": "7065692160",
+      "prior_h2_cny": "8363148288",
+      "forecast_source_inputs": [
+        {
+          "period": "2023-03-31",
+          "artifact": "gpcw20230331.zip",
+          "field": "FN230",
+          "bits": 1330156393
+        },
+        {
+          "period": "2023-06-30",
+          "artifact": "gpcw20230630.zip",
+          "field": "FN230",
+          "bits": 1331466879
+        },
+        {
+          "period": "2022-09-30",
+          "artifact": "gpcw20220930.zip",
+          "field": "FN230",
+          "bits": 1331265962
+        },
+        {
+          "period": "2022-12-31",
+          "artifact": "gpcw20221231.zip",
+          "field": "FN230",
+          "bits": 1334607085
+        }
+      ],
+      "predictions_cny": {
+        "broker": "20504000000",
+        "current_rule_fy_bridge": "20507609577.45426753790768797",
+        "zero_growth_fy_bridge": "15428840448"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1333950316
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1335694201
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1338681954
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1341535661
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": -17.021719172292432,
+        "current_rule_fy_bridge": -17.007111460057278,
+        "zero_growth_fy_bridge": -37.560541575300554
+      }
+    },
+    {
+      "info_code": "AP202308301596817366",
+      "origin_year": 2023,
+      "target_year": 2025,
+      "forecast_as_of": "2023-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "30514403328",
+      "growth": "0.19947832494927892",
+      "known_h1_cny": "7065692160",
+      "prior_h2_cny": "8363148288",
+      "forecast_source_inputs": [
+        {
+          "period": "2023-03-31",
+          "artifact": "gpcw20230331.zip",
+          "field": "FN230",
+          "bits": 1330156393
+        },
+        {
+          "period": "2023-06-30",
+          "artifact": "gpcw20230630.zip",
+          "field": "FN230",
+          "bits": 1331466879
+        },
+        {
+          "period": "2022-09-30",
+          "artifact": "gpcw20220930.zip",
+          "field": "FN230",
+          "bits": 1331265962
+        },
+        {
+          "period": "2022-12-31",
+          "artifact": "gpcw20221231.zip",
+          "field": "FN230",
+          "bits": 1334607085
+        }
+      ],
+      "predictions_cny": {
+        "broker": "23061000000",
+        "current_rule_fy_bridge": "24598433184.67863448448456347",
+        "zero_growth_fy_bridge": "15428840448"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1337105886
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1338824638
+        },
+        {
+          "period": "2025-09-30",
+          "artifact": "gpcw20250930.zip",
+          "field": "FN230",
+          "bits": 1341322858
+        },
+        {
+          "period": "2025-12-31",
+          "artifact": "gpcw20251231.zip",
+          "field": "FN230",
+          "bits": 1343061299
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": -24.425853089386024,
+        "current_rule_fy_bridge": -19.387467877809936,
+        "zero_growth_fy_bridge": -49.43751551634469
+      }
+    },
+    {
+      "info_code": "AP202408301639629259",
+      "origin_year": 2024,
+      "target_year": 2024,
+      "forecast_as_of": "2024-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "24710080512",
+      "growth": "0.2",
+      "known_h1_cny": "9648327168",
+      "prior_h2_cny": "10441510912",
+      "forecast_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1333950316
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1335694201
+        },
+        {
+          "period": "2023-09-30",
+          "artifact": "gpcw20230930.zip",
+          "field": "FN230",
+          "bits": 1334620325
+        },
+        {
+          "period": "2023-12-31",
+          "artifact": "gpcw20231231.zip",
+          "field": "FN230",
+          "bits": 1336573379
+        }
+      ],
+      "predictions_cny": {
+        "broker": "23266000000",
+        "current_rule_fy_bridge": "22178140262.4",
+        "zero_growth_fy_bridge": "20089838080"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1333950316
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1335694201
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1338681954
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1341535661
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": -5.844094726031785,
+        "current_rule_fy_bridge": -10.246588425199219,
+        "zero_growth_fy_bridge": -18.697804038947844
+      }
+    },
+    {
+      "info_code": "AP202408301639629259",
+      "origin_year": 2024,
+      "target_year": 2025,
+      "forecast_as_of": "2024-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "30514403328",
+      "growth": "0.2",
+      "known_h1_cny": "9648327168",
+      "prior_h2_cny": "10441510912",
+      "forecast_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1333950316
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1335694201
+        },
+        {
+          "period": "2023-09-30",
+          "artifact": "gpcw20230930.zip",
+          "field": "FN230",
+          "bits": 1334620325
+        },
+        {
+          "period": "2023-12-31",
+          "artifact": "gpcw20231231.zip",
+          "field": "FN230",
+          "bits": 1336573379
+        }
+      ],
+      "predictions_cny": {
+        "broker": "29612000000",
+        "current_rule_fy_bridge": "26613768314.88",
+        "zero_growth_fy_bridge": "20089838080"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1337105886
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1338824638
+        },
+        {
+          "period": "2025-09-30",
+          "artifact": "gpcw20250930.zip",
+          "field": "FN230",
+          "bits": 1341322858
+        },
+        {
+          "period": "2025-12-31",
+          "artifact": "gpcw20251231.zip",
+          "field": "FN230",
+          "bits": 1343061299
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": -2.957302878578508,
+        "current_rule_fy_bridge": -12.782930641612053,
+        "zero_growth_fy_bridge": -34.16276941726868
+      }
+    },
+    {
+      "info_code": "AP202408301639629259",
+      "origin_year": 2024,
+      "target_year": 2026,
+      "forecast_as_of": "2024-09-01T00:00:00+08:00",
+      "status": "not_yet_observable",
+      "actual_revenue_cny": null,
+      "growth": "0.2",
+      "known_h1_cny": "9648327168",
+      "prior_h2_cny": "10441510912",
+      "forecast_source_inputs": [
+        {
+          "period": "2024-03-31",
+          "artifact": "gpcw20240331.zip",
+          "field": "FN230",
+          "bits": 1333950316
+        },
+        {
+          "period": "2024-06-30",
+          "artifact": "gpcw20240630.zip",
+          "field": "FN230",
+          "bits": 1335694201
+        },
+        {
+          "period": "2023-09-30",
+          "artifact": "gpcw20230930.zip",
+          "field": "FN230",
+          "bits": 1334620325
+        },
+        {
+          "period": "2023-12-31",
+          "artifact": "gpcw20231231.zip",
+          "field": "FN230",
+          "bits": 1336573379
+        }
+      ],
+      "predictions_cny": {
+        "broker": "36193000000",
+        "current_rule_fy_bridge": "31936521977.856",
+        "zero_growth_fy_bridge": "20089838080"
+      }
+    },
+    {
+      "info_code": "AP202508311737338558",
+      "origin_year": 2025,
+      "target_year": 2025,
+      "forecast_as_of": "2025-09-01T00:00:00+08:00",
+      "status": "evaluated",
+      "actual_revenue_cny": "30514403328",
+      "growth": "0.2",
+      "known_h1_cny": "12866762752",
+      "prior_h2_cny": "15061753344",
+      "forecast_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1337105886
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1338824638
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1338681954
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1341535661
+        }
+      ],
+      "predictions_cny": {
+        "broker": "32853000000",
+        "current_rule_fy_bridge": "30940866764.8",
+        "zero_growth_fy_bridge": "27928516096"
+      },
+      "actual_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1337105886
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1338824638
+        },
+        {
+          "period": "2025-09-30",
+          "artifact": "gpcw20250930.zip",
+          "field": "FN230",
+          "bits": 1341322858
+        },
+        {
+          "period": "2025-12-31",
+          "artifact": "gpcw20251231.zip",
+          "field": "FN230",
+          "bits": 1343061299
+        }
+      ],
+      "errors_pct_actual": {
+        "broker": 7.663910864854123,
+        "current_rule_fy_bridge": 1.3975807824781465,
+        "zero_growth_fy_bridge": -8.474316879816527
+      }
+    },
+    {
+      "info_code": "AP202508311737338558",
+      "origin_year": 2025,
+      "target_year": 2026,
+      "forecast_as_of": "2025-09-01T00:00:00+08:00",
+      "status": "not_yet_observable",
+      "actual_revenue_cny": null,
+      "growth": "0.2",
+      "known_h1_cny": "12866762752",
+      "prior_h2_cny": "15061753344",
+      "forecast_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1337105886
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1338824638
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1338681954
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1341535661
+        }
+      ],
+      "predictions_cny": {
+        "broker": "41968000000",
+        "current_rule_fy_bridge": "37129040117.76",
+        "zero_growth_fy_bridge": "27928516096"
+      }
+    },
+    {
+      "info_code": "AP202508311737338558",
+      "origin_year": 2025,
+      "target_year": 2027,
+      "forecast_as_of": "2025-09-01T00:00:00+08:00",
+      "status": "not_yet_observable",
+      "actual_revenue_cny": null,
+      "growth": "0.2",
+      "known_h1_cny": "12866762752",
+      "prior_h2_cny": "15061753344",
+      "forecast_source_inputs": [
+        {
+          "period": "2025-03-31",
+          "artifact": "gpcw20250331.zip",
+          "field": "FN230",
+          "bits": 1337105886
+        },
+        {
+          "period": "2025-06-30",
+          "artifact": "gpcw20250630.zip",
+          "field": "FN230",
+          "bits": 1338824638
+        },
+        {
+          "period": "2024-09-30",
+          "artifact": "gpcw20240930.zip",
+          "field": "FN230",
+          "bits": 1338681954
+        },
+        {
+          "period": "2024-12-31",
+          "artifact": "gpcw20241231.zip",
+          "field": "FN230",
+          "bits": 1341535661
+        }
+      ],
+      "predictions_cny": {
+        "broker": "50768000000",
+        "current_rule_fy_bridge": "44554848141.312",
+        "zero_growth_fy_bridge": "27928516096"
+      }
+    }
+  ],
+  "validation": [
+    "future_target_bit_tamper_changes_actual_errors_only",
+    "missing_future_actual_keeps_all_forecasts_and_positions",
+    "five_reported_A_cells_match_TDX_FY_at_printed_million_precision"
+  ],
+  "decision": "single_company_diagnostic_no_adoption_or_consensus_claim",
+  "boundary": "one company three reports nine annual forecasts; historical original PDFs retained locally; printed and provider date agreement does not prove historical public availability"
+}
