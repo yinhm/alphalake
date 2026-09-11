@@ -1,0 +1,31 @@
+{
+  "analysis_id": "same-six-reports-operating-profit-v1",
+  "inputs": {
+    "valuation/research/analyst-revenue-latest/sources.json": "b7daa5ad9802ef6fc0587290f15eb569600161510a6a334e5e1b09a0108aa02e",
+    "valuation/research/analyst-revenue-latest/comparison.json": "06500da90d11c4ab289c7b3d61ddd94fb80c705819fdbf49691360fad0d7ed72",
+    "valuation/research/continuing-operations-five/baseline.json": "f8e6260300d8f32c1928344d817394544a0c16b3249a5374e1948b2e97fd9f26",
+    "valuation/research/continuing-operations-five/capital-snapshot.json": "685f86200322784ecf445e45f3d93a4b8e7d2601d218ab69d84d79513e6c99ed"
+  },
+  "codes": [
+    "300866",
+    "002032"
+  ],
+  "origins": [
+    2023,
+    2024,
+    2025
+  ],
+  "positions": 18,
+  "selection": "same six frozen reports, no replacement or revision of revenue forecasts",
+  "measure": "reported consolidated operating profit FN86, not adjusted EBIT or NOPAT",
+  "benchmark": "existing current_rule_fy_bridge revenue times origin TTM FN86 / origin TTM FN230; explicit companion benchmark, not a production operating-profit forecast",
+  "eligibility": "explicit FY E columns and million CNY unit; all printed historical operating-profit cells match same-year TDX FN86 at printed precision; absent or ambiguous rows blocked, no zero imputation",
+  "metrics": [
+    "operating-profit mean absolute error / actual FY revenue",
+    "operating-profit WAPE",
+    "paired revenue errors on identical eligible positions",
+    "by company and origin"
+  ],
+  "decision": "diagnostic only; no DCF adoption even if reported operating-profit error improves because adjusted EBIT components and capital needs remain unclosed; no threshold tuning or posthoc model mixing",
+  "boundary": "later-acquired versions and exposed overlapping targets; not strict PIT, consensus forecast or independent validation"
+}
