@@ -1,0 +1,13 @@
+{
+  "study_id": "analyst-operating-profit-missing-history-completion-v1",
+  "samples": [
+    {
+      "code": "300866"
+    }
+  ],
+  "report_period": "2020-12-31",
+  "base_plan_sha256": "f36e6ed31912f00421b7d014a719cf126f95f01daf2652f7f585a8f80948b838",
+  "previous_result_sha256": "e95c30a309b2a97d19efc229535481c84d2b5f9e8ed6939e6c6560ce8ea6c0e3",
+  "selection": "only missing Anker 2020 printed historical anchor; no replacement of any existing source record",
+  "decision": "rerun unchanged original eligibility and formulas; preserve prior result and assert all 18 forecasts unchanged; not new holdout or policy adoption"
+}
