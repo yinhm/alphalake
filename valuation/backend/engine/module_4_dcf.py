@@ -25,6 +25,8 @@ Key mechanics that differ from the previous implementation:
 
 from __future__ import annotations
 
+import math
+
 from .data_dictionary import (
     CashFlowMetrics,
     CostOfCapital,
@@ -39,6 +41,10 @@ from .data_dictionary import (
 # ---------------------------------------------------------------------------
 # Path helpers
 # ---------------------------------------------------------------------------
+
+class InvalidTerminalValue(ValueError):
+    """Gordon终值的增长/折现条件不成立。"""
+
 
 def _revenue_growth_path(
     g_year_1: float,
@@ -280,6 +286,9 @@ def compute_dcf(
         # Default terminal WACC: riskfree + mature market ERP (beta=1 proxy)
         wacc_terminal = macro.risk_free_rate + macro.equity_risk_premium
 
+    if not math.isfinite(wacc_terminal) or not math.isfinite(g_terminal) or wacc_terminal <= g_terminal:
+        raise InvalidTerminalValue("terminal WACC must be finite and exceed finite terminal growth")
+
     # --- Terminal ROIC ---
     if assumptions.roic_stable_override is not None:
         roic_terminal = assumptions.roic_stable_override
@@ -339,10 +348,7 @@ def compute_dcf(
     fcff_terminal = nopat_terminal - reinvestment_terminal
 
     # --- Terminal Value (Gordon) ---
-    if wacc_terminal > g_terminal:
-        terminal_value_firm = fcff_terminal / (wacc_terminal - g_terminal)
-    else:
-        terminal_value_firm = 0.0
+    terminal_value_firm = fcff_terminal / (wacc_terminal - g_terminal)
 
     # --- Cumulative discount factors (year-by-year product) ---
     cumulative_df = []

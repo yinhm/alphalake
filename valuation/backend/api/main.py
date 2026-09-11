@@ -4,8 +4,10 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+
+from engine.module_4_dcf import InvalidTerminalValue
 
 from .alphalake import router as alphalake_router
 from .routes import router
@@ -14,6 +16,11 @@ from .admin import router as admin_router
 from .database import router as database_router, valuation_router as db_valuation_router
 
 app = FastAPI(title="Valuation Engine API", version="0.1.0")
+
+
+@app.exception_handler(InvalidTerminalValue)
+async def invalid_terminal_value(request: Request, error: InvalidTerminalValue):
+    return JSONResponse(status_code=422, content={'detail': {'status': 'rejected_input_or_policy', 'reason': str(error)}})
 
 app.add_middleware(
     CORSMiddleware,

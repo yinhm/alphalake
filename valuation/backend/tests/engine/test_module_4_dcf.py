@@ -195,3 +195,11 @@ def test_damodaran_terminal_reinvestment_identity(cf_metrics, cost_of_capital, a
                 # 中和增长再投资后，价值/下一年NOPAT=1/WACC。
                 assert result.terminal_value_firm/(terminal_nopat*(1+g))==pytest.approx(1/wacc,rel=1e-12)
             assert cf_metrics.adjusted_capex==80 and cf_metrics.adjusted_d_a==40
+
+
+@pytest.mark.parametrize('wacc,growth', [(0.02,0.02),(0.01,0.02),(float('nan'),0.02),(0.09,float('inf'))])
+def test_invalid_terminal_denominator_rejected(wacc,growth,cf_metrics,cost_of_capital,adjusted,raw,macro):
+    assumptions=ValuationAssumptions(override_growth_perpetuity=True,growth_perpetuity_rate=growth,
+        cost_of_capital_stable_override=wacc,roic_stable_override=0.12)
+    with pytest.raises(ValueError,match='terminal WACC must be finite'):
+        compute_dcf(cf_metrics,cost_of_capital,adjusted,raw,assumptions,macro)

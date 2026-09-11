@@ -1,0 +1,22 @@
+[
+  {
+    "original_file": "workspace/tdx-zero-growth-holdout-source-20260911/method-runs/e54930fa9e04bccd435aa1e87a8fafcf269fcc987971e66f1a2a059c450debbe.json",
+    "original_sha256": "d18b1111e13d506ab6be7587eeaa9da8f937fb58b54d5b1dfd12bec790128c03",
+    "old_run_id": "e54930fa9e04bccd435aa1e87a8fafcf269fcc987971e66f1a2a059c450debbe",
+    "new_run_id": "9c1f48decf2df6a7582a8f23eb8324a32ce69c907b551056f011b0cf16359821",
+    "engine_revision": "15a3cf41a2d311b6fb559d566b56831c1010ea2537837c097ad51a37d65fde4b",
+    "value_per_share": 92.15042148953913,
+    "identical_request_inputs_audit_report_status": true,
+    "replay_identical": true
+  },
+  {
+    "original_file": "workspace/tdx-zero-growth-holdout-source-20260911/method-runs/1f1c3ce96978a704fb93f75ece99e4313f54ee7ba02addd31608b7b92f60e206.json",
+    "original_sha256": "7b0e9fd325f8f2e8b02fa124a14d321d9d0eb456e558507c747e513cf6c75b95",
+    "old_run_id": "1f1c3ce96978a704fb93f75ece99e4313f54ee7ba02addd31608b7b92f60e206",
+    "new_run_id": "4d24e3a91da5f15e21ff2c5cd1498e326cfcfd01051c0919c8906b36d6da9cb5",
+    "engine_revision": "15a3cf41a2d311b6fb559d566b56831c1010ea2537837c097ad51a37d65fde4b",
+    "value_per_share": 42.284555083108394,
+    "identical_request_inputs_audit_report_status": true,
+    "replay_identical": true
+  }
+]

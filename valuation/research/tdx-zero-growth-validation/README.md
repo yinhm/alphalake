@@ -36,8 +36,10 @@
 从仓库根目录使用已安装项目依赖的Python解释器；以下模块命令在`valuation/backend`执行：
 
 ```bash
-python -m tools.validate_tdx_zero_growth ../research/tdx-zero-growth-validation/protocol.json --phase development
-python -m tools.validate_tdx_zero_growth ../research/tdx-zero-growth-validation/protocol.json --phase holdout --snapshot ../research/tdx-zero-growth-validation/snapshot.json --selection ../research/tdx-zero-growth-validation/development-selection.json
+selection=$(mktemp)
+python -m tools.validate_tdx_zero_growth ../research/tdx-zero-growth-validation/protocol.json --phase development > "$selection"
+python -m tools.validate_tdx_zero_growth ../research/tdx-zero-growth-validation/protocol.json --phase holdout --snapshot ../research/tdx-zero-growth-validation/snapshot.json --selection "$selection"
+rm "$selection"
 python -m pytest tests/test_tdx_zero_growth.py tests/test_tdx_multiyear_growth.py -q
 ```
 
@@ -48,3 +50,5 @@ python -m pytest tests/test_tdx_zero_growth.py tests/test_tdx_multiyear_growth.p
 已完成[显式估值桥接](../../../docs/zero-growth-valuation-20260911.md)，安克同标准快照92.1504→42.2846元，首年收入增量再投资归零而FCFF上升，下一步检验再投资分类与规则；终值、WACC和股权桥接继续保留各自假设。不能因收入预测改善就声称零增长加零再投资的DCF更准确，也不自动替换市场默认政策。
 
 本轮验收：Python全套288通过、4项既有上游测试数据缺失跳过；Go全套及构建通过，文档链接及`git diff --check`通过。新增研究回归进入默认Python测试集合，无新增依赖；本轮没有Go源代码改动。
+
+终值输入拒绝修正后，共享引擎文件哈希变化，但本研究所用收入路径及全部历史数值重放不变。上述命令以当前版本生成临时开发选择，只用于已公开样本重放；不替换提交的开发选择、结果或冻结顺序，不构成新的独立验证。当前版本直接使用旧代码哈希选择会被拒绝，这是版本绑定检查。原冻结版本可在提交`c36c858`复现。

@@ -34,9 +34,16 @@ def test_real_zero_growth_holdout_replay_and_future_isolation(tmp_path):
     recorded=json.loads((DIR/'holdout-result.json').read_text())
     assert hashlib.sha256((DIR/'snapshot.json').read_bytes()).hexdigest()==recorded['evidence']['snapshot_sha256']
     args=[sys.executable,'-m','tools.validate_tdx_zero_growth',str(DIR/'protocol.json'),'--phase','holdout','--selection',str(DIR/'development-selection.json'),'--snapshot',str(DIR/'snapshot.json')]
+    # 当前引擎重放不改写当时冻结的选择/结果；临时选择记录当前代码哈希。
+    selection=tmp_path/'current-selection.json'
+    dev=subprocess.run([sys.executable,'-m','tools.validate_tdx_zero_growth',str(DIR/'protocol.json'),'--phase','development'],cwd=ROOT/'valuation/backend',capture_output=True,text=True)
+    assert dev.returncode==0,dev.stdout+dev.stderr
+    selection.write_text(dev.stdout);args[args.index('--selection')+1]=str(selection)
     check=subprocess.run(args,cwd=ROOT/'valuation/backend',capture_output=True,text=True)
     assert check.returncode==0,check.stdout+check.stderr
-    assert json.loads(check.stdout)==recorded
+    replay=json.loads(check.stdout)
+    assert {k:v for k,v in replay.items() if k!='evidence'}=={k:v for k,v in recorded.items() if k!='evidence'}
+    assert replay['evidence']['snapshot_sha256']==recorded['evidence']['snapshot_sha256']
     assert recorded['decision']['passed'] and recorded['evaluated_companies']==103
     assert recorded['summary']['statuses']=={'evaluated':406,'blocked':194}
     valid=[r for r in recorded['results'] if r['status']=='evaluated']

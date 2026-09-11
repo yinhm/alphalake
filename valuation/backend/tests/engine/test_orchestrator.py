@@ -170,3 +170,25 @@ class TestIncrementalRecomputation:
     def test_m6_edit_reruns_m6_only(self):
         modules = get_modules_to_rerun("M6")
         assert modules == ["M6"]
+
+
+def test_invalid_terminal_api_preserves_existing_session(sample_inputs,monkeypatch):
+    from fastapi.testclient import TestClient
+    from api.main import app
+    from api import routes,session_store
+    monkeypatch.setattr(routes,'_get_damodaran_store',lambda:None)
+    monkeypatch.setattr(routes,'_build_lookups',lambda store:(None,None))
+    monkeypatch.setattr(session_store,'_sessions',{})
+    client=TestClient(app)
+    valid=sample_inputs.model_dump(mode='json')
+    created=client.post('/api/valuation',json={'inputs':valid})
+    assert created.status_code==200,created.text
+    saved=created.json();sid=saved['id']
+    overrides={'valuation_assumptions.override_growth_perpetuity':True,'valuation_assumptions.growth_perpetuity_rate':0.1,'valuation_assumptions.cost_of_capital_stable_override':0.1}
+    patched=client.patch('/api/valuation/'+sid,json={'overrides':overrides})
+    assert patched.status_code==422 and patched.json()['detail']['status']=='rejected_input_or_policy'
+    assert client.get('/api/valuation/'+sid).json()==saved
+    for path,value in overrides.items():valid['valuation_assumptions'][path.split('.')[1]]=value
+    rejected=client.post('/api/valuation',json={'inputs':valid})
+    assert rejected.status_code==422
+    assert session_store.list_sessions()==[sid]
