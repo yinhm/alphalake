@@ -1033,6 +1033,53 @@ def test_company_entry_selection_summary_and_no_fallback(exports,tmp_path,monkey
     assert failure['status']=='failed_request' and failure['valuation'] is None
     assert failure['code']=='bad-code' and failure['candidates']==[]
 
+    # 真实失败子进程覆盖入口、参考选择和逐公司导出，不只测字符串辅助函数。
+    policy_file=tmp_path/'policy.json'
+    policy_file.write_text(specific.model_dump_json())
+    executable=tmp_path/'failing-alphalake'
+    for stage in ('valuation-readiness','export-wacc-references','export-valuation'):
+        executable.write_text(f'''#!{sys.executable}
+import json,sys
+if sys.argv[1] == {stage!r}:
+    print("底层诊断: simulated database lock conflict", file=sys.stderr)
+    raise SystemExit(17)
+print({json.dumps(scan)!r})
+''')
+        executable.chmod(0o700)
+        args=[sys.executable,'-m','tools.company_valuation','unused.duckdb','300866',
+              '--period','2026-06-30','--as-of',data['information_as_of'],
+              '--policy',str(policy_file),'--alphalake',str(executable)]
+        if stage=='export-wacc-references':
+            args+=['--reference-database','reference.duckdb']
+        cli=subprocess.run(args,cwd=REPO/'valuation/backend',text=True,capture_output=True,timeout=30)
+        failure=json.loads(cli.stdout)
+        assert cli.returncode==1 and failure['valuation'] is None
+        assert failure['status']==('failed_execution' if stage=='export-valuation' else 'failed_request')
+        assert '底层诊断: simulated database lock conflict' in failure['reason']
+        assert '17' in failure['reason']
+        assert cli.stderr==''  # 原因随结构化结果交付。
+        batch_args=[sys.executable,'-m','tools.batch_valuate_alphalake','unused.duckdb',
+                    '--period','2026-06-30','--as-of',data['information_as_of'],
+                    '--policy',str(policy_file),'--alphalake',str(executable),
+                    '--output-dir',str(tmp_path/'batch')]
+        if stage=='export-wacc-references':
+            batch_args+=['--reference-database','reference.duckdb']
+        batch=subprocess.run(batch_args,cwd=REPO/'valuation/backend',text=True,capture_output=True,timeout=30)
+        if stage=='export-valuation':
+            assert batch.returncode==0  # 已隔离的公司失败写入批次报告。
+            report=json.loads(Path(json.loads(batch.stdout)['report']).read_text())
+            assert report['status_counts']=={'failed_execution':1}
+            assert '底层诊断: simulated database lock conflict' in report['companies'][0]['reason']
+        else:
+            assert batch.returncode==1 and batch.stdout==''
+            assert '底层诊断: simulated database lock conflict' in batch.stderr
+
+    from tools.batch_valuate_alphalake import execution_error_reason
+    timeout=subprocess.TimeoutExpired(['alphalake'],300,stderr='超时前诊断'.encode())
+    assert '超时前诊断' in execution_error_reason(timeout)
+    assert execution_error_reason(OSError('missing executable'))=='missing executable'
+
+
 
 
 def test_company_entry_moutai_and_corrupt_saved_result(exports,tmp_path,monkeypatch):

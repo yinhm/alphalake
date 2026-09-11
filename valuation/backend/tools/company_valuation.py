@@ -9,7 +9,7 @@ import re
 import subprocess
 
 from data_sources.alphalake import content_hash
-from tools.batch_valuate_alphalake import load_policy, run_batch
+from tools.batch_valuate_alphalake import execution_error_reason, load_policy, run_batch
 
 CONTRACT = 'alphalake-company-valuation-v1'
 SUCCESS = {'illustrative_book_equity_scenario', 'illustrative_enterprise_value_only', 'illustrative_valuation_completed'}
@@ -152,7 +152,7 @@ def main():
         payload=json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False)
     except (ValueError,KeyError,TypeError,OSError,subprocess.SubprocessError) as error:
         result=dict(contract_version=CONTRACT,code=args.code,report_period=args.period,information_as_of=args.as_of,
-                    status='failed_request',error_type=type(error).__name__,reason=str(error),
+                    status='failed_request',error_type=type(error).__name__,reason=execution_error_reason(error),
                     selection=dict(policy_version=None,reason=None),valuation=None,candidates=[])
         code=1
         payload=json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False)

@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 from typing import Annotated
 
@@ -14,6 +15,14 @@ from api.alphalake import evaluate, ENGINE_REVISION
 from data_sources.alphalake import Policy, ScreenPolicy, BookDCFPolicy, HistoricalDCFPolicy, CalibratedHistoricalDCFPolicy, WACCBinding, AlphaLakeRequest, MissingInputs, content_hash
 from data_sources.alphalake_wacc import WACCPolicy, ReferenceSnapshot
 from data_sources.alphalake_capital import CapitalBinding, CapitalPolicy, CapitalReferences
+
+
+def execution_error_reason(error):
+    """保留子进程原因；超时异常的stderr可能仍为bytes。"""
+    stderr = getattr(error, 'stderr', None) or ''
+    if isinstance(stderr, bytes):
+        stderr = stderr.decode('utf-8', errors='replace')
+    return str(error) + ('\nstderr: ' + stderr.strip() if stderr.strip() else '')
 
 
 class Assignment(BaseModel):
@@ -178,7 +187,7 @@ def run_batch(readiness, policy, export):
                 except (ValueError,KeyError,TypeError,ArithmeticError) as error:
                     row.update(status='rejected_input_or_policy',reason=str(error))
                 except (OSError,subprocess.SubprocessError) as error:
-                    row.update(status='failed_execution',reason=str(error))
+                    row.update(status='failed_execution',reason=execution_error_reason(error))
         results.append(row)
     if len(results) != readiness['universe_count']:
         raise ValueError('universe count does not match company rows')
@@ -197,12 +206,12 @@ def load_policy(raw_policy, reference_database, alphalake, as_of):
         if raw_policy.get('wacc_references') is not None:
             raise ValueError('reference database and embedded reference packet are mutually exclusive')
         raw_policy['wacc_references']=json.loads(subprocess.check_output([alphalake,'export-wacc-references',
-            reference_database,'--as-of',as_of,'--latest'],text=True,timeout=300))
+            reference_database,'--as-of',as_of,'--latest'],text=True,stderr=subprocess.PIPE,timeout=300))
     if reference_database and any(r.get('capital_policy') is not None for r in raw_policy.get('industry_rules',[])):
         if raw_policy.get('capital_references') is not None:
             raise ValueError('reference database and embedded capital packet are mutually exclusive')
         raw_policy['capital_references']=json.loads(subprocess.check_output([alphalake,'export-industry-capital',
-            reference_database,'--as-of',as_of],text=True,timeout=300))
+            reference_database,'--as-of',as_of],text=True,stderr=subprocess.PIPE,timeout=300))
     return BatchPolicy.model_validate(raw_policy)
 
 
@@ -222,7 +231,7 @@ def main():
         parser.error(str(error))
     def command(name,*extra):
         return json.loads(subprocess.check_output([args.alphalake,name,args.database,*extra,
-            '--period',args.period,'--as-of',args.as_of],text=True,timeout=300))
+            '--period',args.period,'--as-of',args.as_of],text=True,stderr=subprocess.PIPE,timeout=300))
     readiness=command('valuation-readiness')
     result=run_batch(readiness,policy,lambda code:command('export-valuation',code))
     # 每次尝试独立留档（包括失败）；成功单公司结果仍用既有内容寻址存储。
@@ -236,4 +245,8 @@ def main():
 
 
 if __name__=='__main__':
-    main()
+    try:
+        main()
+    except (OSError, subprocess.SubprocessError) as error:
+        print(execution_error_reason(error), file=sys.stderr)
+        raise SystemExit(1)

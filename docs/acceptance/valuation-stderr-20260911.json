@@ -1,0 +1,39 @@
+{
+  "scenario": "real_Go_CLI_missing_database",
+  "returncode": 1,
+  "stderr": "",
+  "result": {
+    "contract_version": "alphalake-company-valuation-v1",
+    "code": "300866",
+    "report_period": "2026-06-30",
+    "information_as_of": "2026-09-10T22:18:56.906406Z",
+    "status": "failed_request",
+    "error_type": "CalledProcessError",
+    "reason": "Command '['./alphalake', 'valuation-readiness', 'workspace/readonly-valuation-20260911/missing.duckdb', '--period', '2026-06-30', '--as-of', '2026-09-10T22:18:56.906406Z']' returned non-zero exit status 1.\nstderr: error: stat workspace/readonly-valuation-20260911/missing.duckdb: no such file or directory",
+    "selection": {
+      "policy_version": null,
+      "reason": null
+    },
+    "valuation": null,
+    "candidates": []
+  },
+  "database_not_created": true,
+  "boundary": "validates_actual_Go_error_propagation; simulated_lock_failure_stages_separately_covered_by_regression; not_concurrent_writer_acceptance",
+  "validation": {
+    "python": "368 passed, 4 existing external-fixture skips, 7 existing warnings; 448.68 seconds",
+    "python_command": "workspace/anker-agent-adapter-20260906/venv/bin/python -m pytest valuation/backend/tests -q",
+    "go": [
+      "go test ./...",
+      "go build ./cmd/alphalake"
+    ],
+    "links": 137,
+    "dependency_changes": false,
+    "ci": "existing backend pytest suite covers added subprocess regression"
+  },
+  "regression": "real child processes simulate exit 17 with Chinese stderr at readiness, WACC reference and company export; company JSON exit/status and batch report/global failure checked; TimeoutExpired bytes and absent stderr checked",
+  "code_sha256": {
+    "valuation/backend/tools/batch_valuate_alphalake.py": "a9f39fa959d497c967c216cf0adf4c812cb9a5133c38e5924dcb3633a005c0ed",
+    "valuation/backend/tools/company_valuation.py": "e8bb784f60bfa2cd19ccd4868e14aa910024b87b8a5f4e0d5510271705cb077d",
+    "valuation/backend/tests/test_alphalake_integration.py": "b07d37bf637f1faf44786676afabdc338c5764dca98b8cbae7f9cb9faf8adfba"
+  }
+}
