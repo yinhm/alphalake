@@ -1,0 +1,181 @@
+{
+  "audit_id": "tdx-half-growth-source-review-v1",
+  "source": {
+    "path": "valuation/research/tdx-half-growth/first-year-holdout-snapshot.json",
+    "sha256": "667ee5b1cf7e4e15e8048d645d6cf1dd66dfd65ca353e561032e769859ffe625"
+  },
+  "documents": [
+    {
+      "code": "000876",
+      "announcement_id": "1218637101",
+      "full_path": "workspace/tdx-half-growth-scope-20260911/000876-disposal-1218637101.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-12-16/1218637101.PDF",
+      "full_sha256": "bb62587e4855aef3d8cda198281c3adde94e72d0e0a9e27a74daaba31759fa94",
+      "fetched_at": "2026-09-11T05:55:38.261518+00:00",
+      "selected_path": "valuation/research/tdx-half-growth/scope-evidence/000876-disposal-1218637101-events.pdf",
+      "selected_sha256": "03f1bf8962b9efbafcbe0cc625b112d033f4fe35c17a92edf41d0b94c970f44b",
+      "original_pages": [
+        1,
+        8,
+        9,
+        10
+      ],
+      "checks": [],
+      "contains": [
+        [
+          1,
+          "于2023年12月15日召开了第九届董事会第二十四次会议"
+        ],
+        [
+          1,
+          "本次交易仍存在不确定性"
+        ],
+        [
+          8,
+          "本次中新食品100%股权作价为529,500万元，51%股权交易价格为270,045万元。"
+        ],
+        [
+          9,
+          "以下条件全部满足后（以孰晚者为准）的当月最后一天作为交接基准日"
+        ]
+      ]
+    },
+    {
+      "code": "000876",
+      "announcement_id": "1218637100",
+      "full_path": "workspace/tdx-half-growth-scope-20260911/000876-disposal-1218637100.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-12-16/1218637100.PDF",
+      "full_sha256": "cb7b937f85a2f8665c374432086d985cae2470daba059166f147d04d44b2cecb",
+      "fetched_at": "2026-09-11T05:55:37.869815+00:00",
+      "selected_path": "valuation/research/tdx-half-growth/scope-evidence/000876-disposal-1218637100-events.pdf",
+      "selected_sha256": "c81de060d8f6566016a51f13fd0591139cc7d0a322cc99915ac8e74fb95626ed",
+      "original_pages": [
+        1,
+        10,
+        11
+      ],
+      "checks": [],
+      "contains": [
+        [
+          1,
+          "67%的股权"
+        ],
+        [
+          1,
+          "本交易作价150,080万元"
+        ],
+        [
+          10,
+          "支付第一期股权转让款之日为交割日"
+        ],
+        [
+          11,
+          "本次交易后，标的公司不再合并入新希望的财务报表范围"
+        ]
+      ]
+    },
+    {
+      "code": "000876",
+      "announcement_id": "1218733410",
+      "full_path": "workspace/tdx-half-growth-scope-20260911/000876-disposal-1218733410.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-12-27/1218733410.PDF",
+      "full_sha256": "f9633679d14ec590e28c0cb638ff638c38ea5f12058a253a9cb82da9c186766c",
+      "fetched_at": "2026-09-11T05:55:37.559227+00:00",
+      "selected_path": "valuation/research/tdx-half-growth/scope-evidence/000876-disposal-1218733410-events.pdf",
+      "selected_sha256": "a4e990b6fc4e43741168eaaa0871b9e2fefcf0b2adf16b8dbb17aa0e5aa2e9c6",
+      "original_pages": [
+        1,
+        2
+      ],
+      "checks": [],
+      "contains": [
+        [
+          2,
+          "2023年12月26日，交易各方签署了《股权转让协议》"
+        ],
+        [
+          2,
+          "尚需通过国家市场监督管理总局的经营者集中审查"
+        ]
+      ]
+    },
+    {
+      "code": "000876",
+      "announcement_id": "1219026982",
+      "full_path": "workspace/tdx-half-growth-scope-20260911/000876-disposal-1219026982.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-01-30/1219026982.PDF",
+      "full_sha256": "f5c74413729bfa0ea48179060d0caf9307db5d5039e7bb8300f62f7a7acb8f29",
+      "fetched_at": "2026-09-11T05:55:39.676571+00:00",
+      "selected_path": "valuation/research/tdx-half-growth/scope-evidence/000876-disposal-1219026982-events.pdf",
+      "selected_sha256": "f8b0e83cb5fc4834038d03e5525685ba85dd556f76a73a6fedf35eba9a6f8b06",
+      "original_pages": [
+        1,
+        2
+      ],
+      "checks": [],
+      "contains": [
+        [
+          2,
+          "已完成工商变更"
+        ],
+        [
+          2,
+          "后续公司将按协议约定进行交割"
+        ]
+      ]
+    },
+    {
+      "code": "000876",
+      "announcement_id": "1219915578",
+      "full_path": "workspace/tdx-half-growth-scope-20260911/000876-2023.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219915578.PDF",
+      "full_sha256": "f74f9058470d3cdb818723226ce1b77e2f1c5a2bdba2bdda6a038a8658202d1c",
+      "fetched_at": "2026-09-11T05:56:37.497049+00:00",
+      "selected_path": "valuation/research/tdx-half-growth/scope-evidence/000876-2023-events.pdf",
+      "selected_sha256": "1a22aede2d5ca82eae9201718075e70f91822ccc7c61764e549b83f737b4861b",
+      "original_pages": [
+        212,
+        331,
+        333,
+        396
+      ],
+      "checks": [],
+      "contains": [
+        [
+          333,
+          "山东中新食品集团有限公司2,700,450,000.0051.00%转让2023年12月31日控制权转移"
+        ],
+        [
+          333,
+          "德阳新希望六和食品有限公司1,500,800,000.0067.00%转让2023年12月31日控制权转移"
+        ],
+        [
+          396,
+          "2023年12月29日公司已收到中国牧工商集团有限公司50%的股权处置转让款"
+        ],
+        [
+          396,
+          "中新食品已于2024年3月完成工商变更登记"
+        ],
+        [
+          396,
+          "德阳食品已于2024年1月完成工商变更登记"
+        ],
+        [
+          396,
+          "剩余股权采用权益法核算"
+        ]
+      ]
+    }
+  ],
+  "catalogues": [
+    {
+      "path": "valuation/research/tdx-half-growth/scope-evidence/disposal-catalogue.json",
+      "sha256": "212134b3c567972de9efee92142ddff5086de4a1b079870891724156fa12fb03"
+    },
+    {
+      "path": "valuation/research/tdx-half-growth/scope-evidence/disposal-report-catalogue.json",
+      "sha256": "c907018ff969d93f40f97c57aa82ef7836c900d76a473efcda00817350adb276"
+    }
+  ]
+}

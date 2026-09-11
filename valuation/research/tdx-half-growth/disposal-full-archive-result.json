@@ -1,0 +1,48 @@
+{
+  "audit_id": "tdx-half-growth-source-review-v1",
+  "checks": [],
+  "business_phrases": 18,
+  "full_archive_checked": true,
+  "boundary": "post_hoc_partial_source_audit_not_forecast_validation_or_strict_PIT",
+  "disclosures": [
+    {
+      "announcement_id": "1218637101",
+      "code": "000876",
+      "disclosed_date": "2023-12-16",
+      "available_at": "2023-12-17T00:00:00+08:00",
+      "boundary": "later_acquired_date_precision_evidence_not_contemporaneous_archive"
+    },
+    {
+      "announcement_id": "1218637100",
+      "code": "000876",
+      "disclosed_date": "2023-12-16",
+      "available_at": "2023-12-17T00:00:00+08:00",
+      "boundary": "later_acquired_date_precision_evidence_not_contemporaneous_archive"
+    },
+    {
+      "announcement_id": "1218733410",
+      "code": "000876",
+      "disclosed_date": "2023-12-27",
+      "available_at": "2023-12-28T00:00:00+08:00",
+      "boundary": "later_acquired_date_precision_evidence_not_contemporaneous_archive"
+    },
+    {
+      "announcement_id": "1219026982",
+      "code": "000876",
+      "disclosed_date": "2024-01-30",
+      "available_at": "2024-01-31T00:00:00+08:00",
+      "boundary": "later_acquired_date_precision_evidence_not_contemporaneous_archive"
+    },
+    {
+      "announcement_id": "1219915578",
+      "code": "000876",
+      "disclosed_date": "2024-04-30",
+      "available_at": "2024-05-01T00:00:00+08:00",
+      "boundary": "later_acquired_date_precision_evidence_not_contemporaneous_archive"
+    }
+  ],
+  "evidence": {
+    "config_sha256": "a517e0bdd4c2f388e5c4cbe28abaa6221c3d899c142d1cdbb573fcdc55aa93a6",
+    "code_sha256": "fd5d9df25c25ff22d72de16374c7dd67adfb24697f3655adad858059dddc9cce"
+  }
+}

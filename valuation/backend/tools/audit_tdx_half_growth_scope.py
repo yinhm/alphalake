@@ -1,5 +1,6 @@
 """定向核对已评分收入案例；原文不覆盖TDX，不改预测规则。"""
 import argparse
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 import gzip
 import json
@@ -57,6 +58,31 @@ def audit(config, raw_dir=None):
                   boundary='post_hoc_partial_source_audit_not_forecast_validation_or_strict_PIT')
     if 'forecast' in config:
         result['ttm'] = reconcile_ttm(config, checks)
+    if 'catalogues' in config:
+        result['disclosures'] = review_disclosures(config)
+    return result
+
+
+def review_disclosures(config):
+    announcements = {}
+    for ref in config['catalogues']:
+        raw = (ROOT / ref['path']).read_bytes()
+        if digest(raw) != ref['sha256']: raise ValueError('catalogue hash differs')
+        for item in json.loads(raw)['announcements']:
+            key = item['announcementId']
+            if key in announcements and announcements[key] != item: raise ValueError('conflicting announcement')
+            announcements[key] = item
+    result = []
+    china = timezone(timedelta(hours=8))
+    for doc in config['documents']:
+        item = announcements[doc['announcement_id']]
+        if item['secCode'] != doc['code'] or 'https://static.cninfo.com.cn/'+item['adjunctUrl'] != doc['url']:
+            raise ValueError('PDF/announcement identity differs')
+        day = datetime.fromtimestamp(item['announcementTime']/1000, china).date()
+        available = datetime.combine(day+timedelta(days=1), datetime.min.time(), china)
+        result.append(dict(announcement_id=doc['announcement_id'], code=doc['code'],
+                           disclosed_date=day.isoformat(), available_at=available.isoformat(),
+                           boundary='later_acquired_date_precision_evidence_not_contemporaneous_archive'))
     return result
 
 

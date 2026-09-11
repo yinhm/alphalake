@@ -2,11 +2,12 @@
 import copy
 import gzip
 import hashlib
+from datetime import datetime
 import json
 from decimal import Decimal
 
 import pytest
-from tools.audit_tdx_half_growth_scope import audit, reconcile_ttm, ROOT
+from tools.audit_tdx_half_growth_scope import audit, reconcile_ttm, review_disclosures, ROOT
 
 DIR = ROOT / 'valuation/research/tdx-half-growth'
 
@@ -71,3 +72,27 @@ def test_full_revenue_ttm_chain(tmp_path):
     raw = gzip.compress(json.dumps(forecast).encode(), mtime=0); path = tmp_path/'changed.json.gz'; path.write_bytes(raw)
     changed = copy.deepcopy(config); changed['forecast'] = dict(config['forecast'], path=str(path), sha256=hashlib.sha256(raw).hexdigest())
     with pytest.raises(ValueError, match='stored TTM differs'): reconcile_ttm(changed, result['checks'])
+
+
+def test_disposal_disclosure_and_accounting_date_boundaries():
+    config = json.loads((DIR/'disposal-review.json').read_text())
+    result = audit(config)
+    saved = json.loads((DIR/'disposal-result.json').read_text())
+    assert result == {k: v for k, v in saved.items() if k != 'evidence'}
+    assert result['business_phrases'] == 18 and result['checks'] == []
+    assert [r['disclosed_date'] for r in result['disclosures']] == ['2023-12-16', '2023-12-16', '2023-12-27', '2024-01-30', '2024-04-30']
+    assert [r['available_at'] for r in result['disclosures']] == ['2023-12-17T00:00:00+08:00', '2023-12-17T00:00:00+08:00', '2023-12-28T00:00:00+08:00', '2024-01-31T00:00:00+08:00', '2024-05-01T00:00:00+08:00']
+    for year, expected in [(2023, 0), (2024, 5), (2025, 5)]:
+        cutoff = datetime.fromisoformat(f'{year}-09-01T00:00:00+08:00')
+        assert sum(datetime.fromisoformat(r['available_at']) <= cutoff for r in result['disclosures']) == expected
+    # 中国12月17日零点对应UTC16日16点；不得提前到公告当日零点。
+    available = datetime.fromisoformat(result['disclosures'][0]['available_at'])
+    assert datetime.fromisoformat('2023-12-16T15:59:59+00:00') < available
+    assert datetime.fromisoformat('2023-12-16T16:00:00+00:00') == available
+    changed = copy.deepcopy(config)
+    changed['documents'][-1]['contains'][0][1] = changed['documents'][-1]['contains'][0][1].replace('12月31日', '12月29日')
+    with pytest.raises(ValueError, match='business phrase missing'): audit(changed)
+    changed = copy.deepcopy(config); changed['documents'][0]['announcement_id'] = '1218637100'
+    with pytest.raises(ValueError, match='identity differs'): review_disclosures(changed)
+    changed = copy.deepcopy(config); changed['catalogues'][0]['sha256'] = '0'*64
+    with pytest.raises(ValueError, match='catalogue hash differs'): review_disclosures(changed)
