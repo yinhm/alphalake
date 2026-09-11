@@ -1,6 +1,6 @@
 # 安克2024年历史现金输入补证
 
-当前已完成原文与TDX源值核验、迁移038、标准链及[真实主库副本现金交叉检查正向验收](../../../../docs/acceptance/cash-history-upgrade-20260911.json)。原主库未升级，副本不冒称主库已发布。目标是补[上轮缺项](../../../../docs/acceptance/cash-crosscheck-20260911.json)，不绕过标准事实层。
+当前已完成原文与TDX源值核验、迁移038、标准链及[真实主库副本现金交叉检查正向验收](../../../../docs/acceptance/cash-history-upgrade-20260911.json)。随后已[备份发布主库schema38并重开验收](../../../../docs/cash-main-publication-20260911.md)，原副本阶段回执按历史保留。目标是补[上轮缺项](../../../../docs/acceptance/cash-crosscheck-20260911.json)，不绕过标准事实层。
 
 ## 来源及核验范围
 
