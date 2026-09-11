@@ -1,0 +1,213 @@
+{
+  "summary": {
+    "candidates": 900,
+    "statuses": {
+      "evaluated": 632,
+      "blocked": 268
+    },
+    "models": {
+      "current_rule": {
+        "revenue_n": 632,
+        "ebit_n": 632,
+        "revenue_median_ape_pct": 10.195961034918657,
+        "revenue_mean_bias_pct": 12.562261614271952,
+        "revenue_wape_pct": 14.525562980453635,
+        "margin_mae_pp": 7.627458940133421,
+        "ebit_mae_pct_actual_revenue": 10.458663589207408,
+        "revenue_mae_pct": 24.41353866638396
+      },
+      "past_log_calibration": {
+        "revenue_n": 632,
+        "ebit_n": 632,
+        "revenue_median_ape_pct": 9.969769892227905,
+        "revenue_mean_bias_pct": 7.55807587110403,
+        "revenue_wape_pct": 13.400059864952896,
+        "margin_mae_pp": 7.627458940133421,
+        "ebit_mae_pct_actual_revenue": 10.132015567654614,
+        "revenue_mae_pct": 22.823845790018044
+      },
+      "zero_growth": {
+        "revenue_n": 632,
+        "ebit_n": 632,
+        "revenue_median_ape_pct": 10.940468473445879,
+        "revenue_mean_bias_pct": 6.66910294044572,
+        "revenue_wape_pct": 13.940244546441928,
+        "margin_mae_pp": 7.627458940133421,
+        "ebit_mae_pct_actual_revenue": 10.105035583288933,
+        "revenue_mae_pct": 23.29712412312856
+      }
+    }
+  },
+  "by_origin": {
+    "2023-06-30": {
+      "candidates": 300,
+      "statuses": {
+        "evaluated": 213,
+        "blocked": 87
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 213,
+          "ebit_n": 213,
+          "revenue_median_ape_pct": 12.548399987625965,
+          "revenue_mean_bias_pct": 30.141404417944322,
+          "revenue_wape_pct": 20.0192090888318,
+          "margin_mae_pp": 13.588374886343875,
+          "ebit_mae_pct_actual_revenue": 20.108555805805906,
+          "revenue_mae_pct": 43.60841602137205
+        },
+        "past_log_calibration": {
+          "revenue_n": 213,
+          "ebit_n": 213,
+          "revenue_median_ape_pct": 12.752517417404578,
+          "revenue_mean_bias_pct": 22.53079243141793,
+          "revenue_wape_pct": 18.14201811492577,
+          "margin_mae_pp": 13.588374886343875,
+          "ebit_mae_pct_actual_revenue": 19.410754553626123,
+          "revenue_mae_pct": 39.737827793674775
+        },
+        "zero_growth": {
+          "revenue_n": 213,
+          "ebit_n": 213,
+          "revenue_median_ape_pct": 11.205847845154036,
+          "revenue_mean_bias_pct": 21.583003701492135,
+          "revenue_wape_pct": 18.508610070786265,
+          "margin_mae_pp": 13.588374886343875,
+          "ebit_mae_pct_actual_revenue": 19.251250221951988,
+          "revenue_mae_pct": 39.18974470975516
+        }
+      }
+    },
+    "2024-06-30": {
+      "candidates": 300,
+      "statuses": {
+        "evaluated": 213,
+        "blocked": 87
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 213,
+          "ebit_n": 213,
+          "revenue_median_ape_pct": 8.864179946978911,
+          "revenue_mean_bias_pct": 5.268219442869951,
+          "revenue_wape_pct": 11.391626822339155,
+          "margin_mae_pp": 4.248298224072814,
+          "ebit_mae_pct_actual_revenue": 5.37591427876876,
+          "revenue_mae_pct": 14.61919898615392
+        },
+        "past_log_calibration": {
+          "revenue_n": 213,
+          "ebit_n": 213,
+          "revenue_median_ape_pct": 9.817577351597068,
+          "revenue_mean_bias_pct": 0.1513088216740041,
+          "revenue_wape_pct": 10.851319798932325,
+          "margin_mae_pp": 4.248298224072814,
+          "ebit_mae_pct_actual_revenue": 5.112887401120909,
+          "revenue_mae_pct": 14.360750405671203
+        },
+        "zero_growth": {
+          "revenue_n": 213,
+          "ebit_n": 213,
+          "revenue_median_ape_pct": 10.704022246254352,
+          "revenue_mean_bias_pct": 0.6527270821249079,
+          "revenue_wape_pct": 11.124030205947538,
+          "margin_mae_pp": 4.248298224072814,
+          "ebit_mae_pct_actual_revenue": 5.151415447413123,
+          "revenue_mae_pct": 15.243485408472889
+        }
+      }
+    },
+    "2025-06-30": {
+      "candidates": 300,
+      "statuses": {
+        "evaluated": 206,
+        "blocked": 94
+      },
+      "models": {
+        "current_rule": {
+          "revenue_n": 206,
+          "ebit_n": 206,
+          "revenue_median_ape_pct": 9.284386253920554,
+          "revenue_mean_bias_pct": 1.9276672711962803,
+          "revenue_wape_pct": 12.682494105733495,
+          "margin_mae_pp": 4.957974163327997,
+          "ebit_mae_pct_actual_revenue": 5.736326506624647,
+          "revenue_mae_pct": 14.693565245396274
+        },
+        "past_log_calibration": {
+          "revenue_n": 206,
+          "ebit_n": 206,
+          "revenue_median_ape_pct": 8.559484249215119,
+          "revenue_mean_bias_pct": -0.2649690115089041,
+          "revenue_wape_pct": 11.662703293191726,
+          "margin_mae_pp": 4.957974163327997,
+          "ebit_mae_pct_actual_revenue": 5.727660691245625,
+          "revenue_mae_pct": 14.085793120537435
+        },
+        "zero_growth": {
+          "revenue_n": 206,
+          "ebit_n": 206,
+          "revenue_median_ape_pct": 10.785725660813622,
+          "revenue_mean_bias_pct": -2.5307650414987117,
+          "revenue_wape_pct": 12.604400329628177,
+          "margin_mae_pp": 4.957974163327997,
+          "ebit_mae_pct_actual_revenue": 5.769974277008918,
+          "revenue_mae_pct": 15.191769080750861
+        }
+      }
+    }
+  },
+  "decision": {
+    "passed": true,
+    "checks": {
+      "minimum_pairs": true,
+      "each_origin_minimum": true,
+      "primary_improvement": true,
+      "revenue_wape": true,
+      "zero_growth": true,
+      "ebit_mae": true,
+      "each_origin": true
+    }
+  },
+  "amount_unit": "million_CNY",
+  "boundary": "same exposed 600 company development design, disjoint 300 calibration/300 evaluation; previous mature origin only at current cutoff; no new holdout; current forecast margin and original growth bounds fixed; first-year policy NOPAT minus revenue increment / original sales_to_capital; explicit assumption, no historical FCFF or full DCF accuracy claim",
+  "protocol_sha256": "39f06ed5f723fc5d33a66e810fd816641384be0e4980e1b33e7a7d1c4019396f",
+  "fits": {
+    "2023-06-30": {
+      "origin": "2022-06-30",
+      "target": "2023-06-30",
+      "cutoff": "2023-09-01T00:00:00+08:00",
+      "status": "fitted",
+      "statuses": {
+        "evaluated": 187,
+        "blocked": 113
+      },
+      "slope": 0.45894066325326394,
+      "intercept": -0.021769170585834167
+    },
+    "2024-06-30": {
+      "origin": "2023-06-30",
+      "target": "2024-06-30",
+      "cutoff": "2024-09-01T00:00:00+08:00",
+      "status": "fitted",
+      "statuses": {
+        "blocked": 96,
+        "evaluated": 204
+      },
+      "slope": 0.2811845471914435,
+      "intercept": -0.016537822209084205
+    },
+    "2025-06-30": {
+      "origin": "2024-06-30",
+      "target": "2025-06-30",
+      "cutoff": "2025-09-01T00:00:00+08:00",
+      "status": "fitted",
+      "statuses": {
+        "blocked": 87,
+        "evaluated": 213
+      },
+      "slope": 0.4590934629110415,
+      "intercept": 0.0037563618949067908
+    }
+  }
+}
