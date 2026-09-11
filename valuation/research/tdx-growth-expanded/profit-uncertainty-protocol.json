@@ -1,0 +1,91 @@
+{
+  "protocol_id": "tdx-profit-calibration-uncertainty-v1",
+  "frozen_at": "2026-09-11T12:48:23.406498+00:00",
+  "status": "frozen_before_interval_computation_existing_point_results_exposed",
+  "inputs": {
+    "protocol-v7.json": {
+      "path": "valuation/research/tdx-growth-expanded/protocol-v7.json",
+      "sha256": "e1f303382fcc7c2aa0db74e79a69d215756f80efcc0e2e3c5e7cf4d9025c9332"
+    },
+    "protocol-v8.json": {
+      "path": "valuation/research/tdx-growth-expanded/protocol-v8.json",
+      "sha256": "a0c7f69bbe8d29f830a9af2684726b7e08f04161ca58fffd837a9decae9c13b1"
+    },
+    "snapshot-v7.json": {
+      "path": "valuation/research/tdx-growth-expanded/snapshot-v7.json",
+      "sha256": "56d8019d94a599c2baf1340ff5c08a4b94478c96bb6849e46ebb779fb1658b3c"
+    },
+    "development-v7-summary.json": {
+      "path": "valuation/research/tdx-growth-expanded/development-v7-summary.json",
+      "sha256": "f507cb800a78479c5756f61ba5caf56163a4e9fe570f4c44a8c89137569a4181"
+    },
+    "development-v8-summary.json": {
+      "path": "valuation/research/tdx-growth-expanded/development-v8-summary.json",
+      "sha256": "37342e2b6c1de5bb63e1bec1cd393ddf44422bfd89ed3495633a1bd1f28a9288"
+    },
+    "holdout-v7-summary.json": {
+      "path": "valuation/research/tdx-growth-expanded/holdout-v7-summary.json",
+      "sha256": "89cf994c0109a6b830cdb0ce7fbacffbe785ddfb2167b318e6dc9d991d778a5b"
+    },
+    "holdout-v8-summary.json": {
+      "path": "valuation/research/tdx-growth-expanded/holdout-v8-summary.json",
+      "sha256": "d84828da53244911b888c9987b415ae07f8541c373d20db5b837acb3aacd9f24"
+    }
+  },
+  "models": {
+    "baseline": "current_rule",
+    "candidate": "bias_half"
+  },
+  "target": "existing_research_ebit_proxy_not_fully_classified_economic_EBIT",
+  "windows": {
+    "original_two_origins": [
+      "2023-06-30",
+      "2024-06-30"
+    ],
+    "2023-06-30": [
+      "2023-06-30"
+    ],
+    "2024-06-30": [
+      "2024-06-30"
+    ],
+    "additional_2025_origin": [
+      "2025-06-30"
+    ]
+  },
+  "sampling": {
+    "unit": "one_company_all_three_origins_and_both_models_together",
+    "primary": "within_original_stratum_with_replacement",
+    "sensitivity": "unstratified_companies_with_replacement",
+    "companies": 120,
+    "replicates": 9999,
+    "seed": 20260911,
+    "random_generator": "python_random_Random_choices",
+    "ordering": "sorted_company_code_and_stratum",
+    "retain": "all_120_companies_including_all_blocked; retain_all_360_row_identities; no_outlier_deletion; recalculate_evaluable_denominators",
+    "training": "fixed_original_60_company_training_and_coefficients; not_training_estimation_uncertainty"
+  },
+  "statistics": [
+    "mae_reduction_pp",
+    "relative_mae_reduction_pct",
+    "wape_reduction_pp"
+  ],
+  "definitions": {
+    "mae": "mean(100*abs(prediction-actual)/actual_revenue)",
+    "relative_mae_reduction_pct": "100*(baseline_MAE-candidate_MAE)/baseline_MAE",
+    "wape_reduction_pp": "100*(sum_baseline_abs_error-sum_candidate_abs_error)/sum_abs_actual_EBIT"
+  },
+  "interval": {
+    "method": "percentile",
+    "confidence": 0.95,
+    "quantiles": [
+      0.025,
+      0.975
+    ],
+    "interpolation": "linear",
+    "undefined": "report_nonfinite_counts; never_replace_with_zero"
+  },
+  "replay": "recompute_development_selection_and_holdout_from_bound_source_for_v7_and_v8; assert_summary_and_verdict_and_training_consistency_before_resampling; old_receipt_code_hash_remains_historical",
+  "interpretation": "positive_means_lower_error; pointwise_conditional_intervals; no_probability_rule_is_true; no_new_adoption_gate; original_two_origin_pass_and_additional_origin_failure_kept_separate",
+  "boundary": "already_exposed_holdout_not_new_validation; no_new_forecast_or_threshold_or_production_change; fixed_three_origins_do_not_cover_macro_regime_uncertainty; no_fix_for_cross_company_dependence_vintage_survivorship_missingness_or_unreviewed_EBIT_scope; singleton_strata_fixed_in_primary_report_counts_and_limitation; not_DCF_accuracy_or_company_valuation_interval",
+  "method_reference": "valuation/research/tdx-operating-cash-forecast/uncertainty.md"
+}
