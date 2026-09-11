@@ -1,0 +1,38 @@
+{
+  "analysis_id": "two-company-fy-revenue-trade-balance-transmission-v1",
+  "codes": [
+    "300866",
+    "002032"
+  ],
+  "origins": [
+    2023,
+    2024,
+    2025
+  ],
+  "horizons": [
+    0,
+    1,
+    2
+  ],
+  "inputs": {
+    "valuation/research/continuing-operations-five/capital-snapshot.json": "685f86200322784ecf445e45f3d93a4b8e7d2601d218ab69d84d79513e6c99ed",
+    "valuation/research/analyst-revenue-latest/comparison.json": "06500da90d11c4ab289c7b3d61ddd94fb80c705819fdbf49691360fad0d7ed72"
+  },
+  "evaluation_as_of": "2026-09-10T00:00:00+08:00",
+  "fields": {
+    "FN11": "accounts_receivable_net",
+    "FN17": "inventory_net",
+    "FN44": "accounts_payable"
+  },
+  "base": "prior December 31 balances / prior four-quarter FY revenue, available by origin September 1; annual seasonal alignment; no use of later actuals",
+  "predictions": "multiply identical frozen prior FY intensities by each of the three unaltered FY revenue predictions in comparison.json; additional benchmark repeats prior FY balances",
+  "counterfactual": "actual FY revenue times identical frozen intensities; hindsight attribution only; never selected as forecast",
+  "metrics": [
+    "mean(sum absolute three component errors / actual FY revenue)*100",
+    "component WAPE",
+    "signed AR+inventory-AP error; balance subset not cashflow"
+  ],
+  "missing_policy": "retain all 18 positions; nonpositive/ambiguous or duplicate base blocks input, missing actual only blocks evaluation, six future positions retained",
+  "decision": "diagnostic only; report both companies and each origin; no adoption regardless of aggregate improvement; do not retune balance ratios or select revenue models after evaluation",
+  "boundary": "two exposed companies; 12 mature forecast positions reuse six company/FY actuals; incomplete working capital not FCFF or valuation accuracy; later-acquired TDX FN314 date proxy not strict PIT"
+}
