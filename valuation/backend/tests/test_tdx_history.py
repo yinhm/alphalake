@@ -741,3 +741,81 @@ def test_capex_cip_group_boundary_training_and_no_fallback():
     assert actual['summary']['statuses']=={'blocked':38,'evaluated':142}
     assert actual['decision']['selected'] is None
     with pytest.raises(ValueError,match='passing development'):study(p,source,'holdout',actual)
+
+
+def test_working_cash_signed_components_cutoff_and_prediction_isolation():
+    from collections import defaultdict
+    from tools.backtest_tdx_working_cash import observation,evaluate
+    p=json.loads((ROOT/'valuation/research/tdx-working-cash-forecast/protocol.json').read_bytes());_,source=fixture()
+    p=dict(p,origins=['2025-06-30'],samples=[dict(code=source['records'][0]['code'],split='development')])
+    for row in source['records']:
+        q=int(row['period'][5:7])//3
+        row['bits'].update(FN146=bits(q*10),FN147=bits(-q*20),FN148=bits(q*30))
+    index=defaultdict(list)
+    for r in source['records']:index[(r['code'],r['period'])].append(r)
+    artifacts={a['file']:a for a in source['artifacts']};code=p['samples'][0]['code']
+    def current():return observation(index,artifacts,code,date(2025,6,30),'2025-09-01T00:00:00+08:00')
+    assert Decimal(current()['working_cash_cny'])==80
+    before=evaluate(p,source,'development')[0]
+    assert before['status']=='evaluated' and before['forecasts_cny']==dict(repeat_latest='80',zero_forecast='0',half_latest='40')
+    changed=copy.deepcopy(source)
+    for row in changed['records']:
+        if row['period']>'2025-06-30':row['bits']['FN148']=bits(10000)
+    assert evaluate(p,changed,'development')[0]['forecasts_cny']==before['forecasts_cny']
+    row=index[(code,'2025-06-30')][0];original=copy.deepcopy(row)
+    row['bits']['FN146']=bits(0)
+    with pytest.raises(ValueError,match='source_zero_ambiguous'):current()
+    row['bits']=copy.deepcopy(original['bits']);row['bits']['FN314']=bits(250901)
+    with pytest.raises(ValueError,match='unavailable_at_cutoff'):current()
+    row['bits']=copy.deepcopy(original['bits']);index[(code,'2025-06-30')].append(row)
+    with pytest.raises(ValueError,match='duplicate_identity'):current()
+    index[(code,'2025-06-30')].pop()
+    # Nonzero signed source components may legitimately cancel; the aggregate is not missing.
+    for r in source['records']:r['bits']['FN148']=bits(int(r['period'][5:7])//3*10)
+    assert Decimal(current()['working_cash_cny'])==0
+
+
+def test_working_cash_real_source_and_development_receipt(tmp_path,monkeypatch,capsys):
+    import hashlib,sys
+    import tools.backtest_tdx_working_cash as module
+    directory=ROOT/'valuation/research/tdx-working-cash-forecast'
+    p=json.loads((directory/'protocol.json').read_bytes());source=json.loads((directory/'snapshot.json').read_bytes())
+    assert source['study_sha256']==hashlib.sha256((directory/'protocol.json').read_bytes()).hexdigest()
+    capex=json.loads((ROOT/'valuation/research/tdx-capex-forecast/protocol.json').read_bytes())
+    assert p['samples']==capex['samples']
+    old=json.loads((ROOT/'valuation/research/tdx-growth-expanded/snapshot-reinvestment.json').read_bytes())
+    index={(r['code'],r['period']):r for r in old['records']}
+    dev={s['code'] for s in p['samples'] if s['split']=='development'}
+    for r in source['records']:
+        if r['code'] in dev:
+            prior=index[(r['code'],r['period'])]
+            assert r['artifact']==prior['artifact']
+            assert all(prior['bits'][f]==v for f,v in r['bits'].items())
+    actual=module.study(p,source,'development')
+    saved=json.loads((directory/'development-summary.json').read_bytes())
+    assert {k:v for k,v in actual.items() if k!='results'}=={k:v for k,v in saved.items() if k!='evidence'}
+    assert actual['summary']['statuses']=={'blocked':13,'evaluated':167}
+    assert {k for k,v in actual['decision']['checks'].items() if not v}=={'zero_benchmark_nonworse'}
+    # Independently sum Decimal errors from forecasts/actuals, not the stored error fields.
+    valid=[r for r in actual['results'] if r['status']=='evaluated']
+    for model in module.MODELS:
+        errors=[abs(Decimal(r['forecasts_cny'][model])-Decimal(r['actual']['working_cash_cny'])) for r in valid]
+        primary=sum(e/Decimal(r['actual']['revenue_cny'])*100 for e,r in zip(errors,valid))/len(valid)
+        wape=sum(errors)*100/sum(abs(Decimal(r['actual']['working_cash_cny'])) for r in valid)
+        assert actual['summary']['models'][model]['mae_pct_actual_revenue']==pytest.approx(float(primary),rel=1e-14)
+        assert actual['summary']['models'][model]['wape_pct']==float(wape)
+    changed=copy.deepcopy(source)
+    for r in changed['records']:
+        if r['code'] not in dev:r['bits']['FN148']=bits(999999)
+    assert module.study(p,changed,'development')==actual
+    # A fabricated passed decision cannot bypass CLI reproduction before holdout evaluation.
+    fake={k:v for k,v in actual.items() if k!='results'};fake['decision']=dict(passed=True,checks={});fake['evidence']={}
+    receipt=tmp_path/'forged.json';receipt.write_text(json.dumps(fake))
+    evaluate=module.evaluate
+    def guarded(p,s,split):
+        assert split=='development'
+        return evaluate(p,s,split)
+    monkeypatch.setattr(module,'evaluate',guarded)
+    monkeypatch.setattr(sys,'argv',['working_cash',str(directory/'protocol.json'),str(directory/'snapshot.json'),'--phase','holdout','--selection',str(receipt)])
+    with pytest.raises(SystemExit) as exc:module.main()
+    assert exc.value.code==1 and 'development selection failed' in capsys.readouterr().out
