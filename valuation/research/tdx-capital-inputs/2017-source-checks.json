@@ -1,0 +1,27 @@
+{
+  "package_sha256": "a23cf16124d2015864b43d288fa50a1fe5c0bb1cec7e9ffdcdcfeb601fbe9181",
+  "package_size": 4207879,
+  "download_receipts": [
+    {
+      "file": "gpcw.txt",
+      "url": "https://data.tdx.com.cn/tdxfin/gpcw.txt",
+      "fetched_at": "2026-09-11T07:35:36.587343+00:00",
+      "bytes": 8518,
+      "sha256": "244289285554d8ff01d8f6ff836db7463e27cb0c725f9112ab16c24ebaa8a882"
+    },
+    {
+      "file": "gpcw20171231.zip",
+      "url": "https://data.tdx.com.cn/tdxfin/gpcw20171231.zip",
+      "fetched_at": "2026-09-11T07:35:40.869839+00:00",
+      "bytes": 4207879,
+      "sha256": "a23cf16124d2015864b43d288fa50a1fe5c0bb1cec7e9ffdcdcfeb601fbe9181"
+    }
+  ],
+  "tampered_package_rejected": true,
+  "tampered_snapshot_not_published": true,
+  "negative_error": "panic: source size/MD5 mismatch: gpcw20171231.zip",
+  "full_result_replay": true,
+  "zero_tampered_code": "688551",
+  "zero_tamper_2023_five_year_coverage": 155,
+  "later_origins_unchanged": true
+}

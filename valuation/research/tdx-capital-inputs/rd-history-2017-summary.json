@@ -1,0 +1,66 @@
+{
+  "summary": {
+    "2023": {
+      "candidates": 600,
+      "complete_source_by_life": {
+        "3": 536,
+        "5": 156
+      },
+      "annual_slot_status": {
+        "positive_source": 2883,
+        "missing_record": 92,
+        "source_zero_ambiguous": 572,
+        "unavailable_at_cutoff": 50,
+        "duplicate_identity": 3
+      }
+    },
+    "2024": {
+      "candidates": 600,
+      "complete_source_by_life": {
+        "3": 548,
+        "5": 520
+      },
+      "annual_slot_status": {
+        "positive_source": 3320,
+        "missing_record": 31,
+        "source_zero_ambiguous": 216,
+        "unavailable_at_cutoff": 29,
+        "duplicate_identity": 4
+      }
+    },
+    "2025": {
+      "candidates": 600,
+      "complete_source_by_life": {
+        "3": 557,
+        "5": 549
+      },
+      "annual_slot_status": {
+        "positive_source": 3387,
+        "source_zero_ambiguous": 192,
+        "unavailable_at_cutoff": 9,
+        "missing_record": 7,
+        "duplicate_identity": 5
+      }
+    }
+  },
+  "boundary": "source_only_not_semantically_audited_or_strict_PIT; last_FY_not_H1_TTM; 3_and_5_years_are_inventory_windows_not_adopted_lives; no_growth_or_valuation",
+  "evidence": {
+    "parent_summary_sha256": "10eabbe0e750728d487a46d60ab09acf4fd094d0d2d3037cca6b2d56d4d1c297",
+    "additional_source_sha256": "a3469f2e552d0065e533b90eee92fea017fd4a1a38505496e2ff5b342fa69751",
+    "study_sha256": "9956edce050dfec1b66470f8c0686e1e078b3fa1f0ecdfa6b1c371305892873c",
+    "additional_artifacts": [
+      {
+        "fetched_at": "2026-09-11T07:35:40.869839+00:00",
+        "file": "gpcw20171231.zip",
+        "list_sha256": "244289285554d8ff01d8f6ff836db7463e27cb0c725f9112ab16c24ebaa8a882",
+        "md5": "0ec4d6534968e0291d3c1be0cc78724d",
+        "report_period": "2017-12-31",
+        "sha256": "a23cf16124d2015864b43d288fa50a1fe5c0bb1cec7e9ffdcdcfeb601fbe9181",
+        "size": 4207879,
+        "source": "tdxfin/gpcw20171231.zip"
+      }
+    ],
+    "tool_sha256": "19bdd8f366d986e29379eac5f5bb62ca8a074acf09e404a9ef97316a45131ce1"
+  },
+  "result_sha256": "6eba0f32c9399c09b58a41327409f51bd9e29e6ee950f9a2cc2e177c97b90619"
+}

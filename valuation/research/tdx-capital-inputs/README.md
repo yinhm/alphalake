@@ -1,6 +1,6 @@
 # 再投资与研发历史输入盘点
 
-状态：源数据扩展与初步核对完成；尚无增长预测规则或有效性结论。
+状态：源数据扩展、2017年定向补采及三起点连续历史盘点完成；旧期语义未审核，尚无增长预测规则或有效性结论。
 
 沿用收入复合增长研究的600家开发样本、34份2018Q1–2026H1原始包，使用既有 `cmd/prepare-tdx-history` 增取36个源字段，包含FN304。配置见 [study.json](study.json)，盘点见 [source-inventory.json](source-inventory.json)。未引入新解析器、依赖或标准事实。
 
@@ -35,13 +35,13 @@ FN304年度源记录正值数2018–2025分别为527、556、565、567、567、5
 
 | H1起点 | 公司分母 | 三年寿命所需源序列齐全 | 五年寿命所需源序列齐全 |
 | --- | --- | --- | --- |
-| 2023 | 600 | 536 | 0 |
+| 2023 | 600 | 536 | 156 |
 | 2024 | 600 | 548 | 520 |
 | 2025 | 600 | 557 | 549 |
 
-“齐全”仅指每个所需年度有唯一记录、FN314在截止前可用、FN304为有限正值；仍未逐公司审核语义。零值、缺失、重复与迟到均保留，记录级诊断见 [结果](rd-history-result.json.gz)及[摘要](rd-history-summary.json)。寿命3/5是供给盘点窗口，不是已采用的行业寿命，也未依据预测效果选择。
+“齐全”仅指每个所需年度有唯一记录、FN314在截止前可用、FN304为有限正值；仍未逐公司审核语义。零值、缺失、重复与迟到均保留，补采后的记录级诊断见 [结果](rd-history-2017-result.json.gz)及[摘要](rd-history-2017-summary.json)；[首次盘点](rd-history-summary.json)仍保留原0家结论。寿命3/5是供给盘点窗口，不是已采用的行业寿命，也未依据预测效果选择。
 
-2023起点的上一完整年度为2022；五年寿命需要2017–2022，现有档案始于2018，因此全部缺最早摊销年度。不能少取一年、将2017归零，或事后只选2024/2025就宣称完成原三起点验证。接续先检查既有更早原始包供给，必要再定向采集。
+2023起点的上一完整年度为2022，五年寿命需要2017–2022。首次档案始于2018，故当时覆盖为0；现已从TDX官方HTTPS地址补采匹配清单的2017年末包，大小4,207,879字节、MD5及二进制解析通过。600家中找到539条记录，157条FN304正值、382条源零；加入连续历史和截止门槛后仅156家齐全。不能把剩余公司补零，或事后只选2024/2025就宣称完成原三起点验证。
 
 仓库根目录复现（输出目录需自行选择；不覆盖不可变原始快照）：
 
@@ -60,6 +60,44 @@ cd valuation/backend
 
 多年历史序列仍使用当前研究资产代理，期初租赁PV及完整经营资本亦未闭合；不能直接用这些诊断估计研发回报。三起点历史序列供给、旧期语义和未来研发兑现周期仍需验证，本次没有产生新增长预测规则。
 
-600家真实源快照另完成[正负向检查](rd-history-checks.json)：全结果重放一致；把2024年末之后记录的FN304/FN314改成非法位值，所有起点结果不变；把一条原本可用的2024年度FN304改零，2025起点五年覆盖准确减少一家，前两起点不变。篡改仅在内存副本进行。已有三份上游清单均列出2017年末包，但MD5不同，本地未找到对应包；后续补采须成对保存新清单与匹配包，不借旧清单认证当前下载。
+600家真实源快照另完成[正负向检查](rd-history-checks.json)：全结果重放一致；把2024年末之后记录的FN304/FN314改成非法位值，所有起点结果不变；把一条原本可用的2024年度FN304改零，2025起点五年覆盖准确减少一家，前两起点不变。篡改仅在内存副本进行。首次盘点时本地未找到2017年末包，旧清单MD5不同；本次已成对保存新取得清单与匹配包，下载收据和正负向检查见下。
 
 本轮验收：Python 3.12全套328通过、4项既有外部测试数据缺失跳过；Go全套测试及构建通过。新回归已纳入既有pytest/CI目录，不增加解释器依赖。文档链接、结果哈希及 `git diff --check` 通过；无生产模型、迁移或依赖变更。
+
+
+## 2017年补采复现
+
+[增量源快照](2017-source.json.gz)保留完整源位及原始包哈希；[下载收据与检查](2017-source-checks.json)记录URL、实际取得时刻、清单与包SHA、篡改拒绝。新原始包保存在 `workspace/tdx-rd-2017-source-20260911/`，旧34包与旧结果未覆盖。后来取得的数据仍只用于经授权的简化回溯，不是严格PIT证据，也未生成标准事实。
+
+在仓库根目录可用既有Go解析器重建该单包到新目录：
+
+```bash
+go run ./cmd/prepare-tdx-history \
+  valuation/research/tdx-capital-inputs/study.json \
+  workspace/tdx-rd-2017-download-20260911/source-manifest.json \
+  workspace/tdx-rd-2017-source-replay
+```
+
+合并仅用于只读盘点，不重新下载或复制旧34包。于 `valuation/backend` 使用同一Python环境执行：
+
+```python
+import gzip, hashlib, json
+from pathlib import Path
+from tools.audit_tdx_rd_history import audit
+p = Path('../research/tdx-capital-inputs')
+b = Path('../../workspace/tdx-capital-inputs-source-20260911/snapshot.json').read_bytes()
+assert hashlib.sha256(b).hexdigest() == json.loads((p/'rd-history-summary.json').read_text())['evidence']['snapshot_sha256']
+s = json.loads(b)
+x = gzip.decompress((p/'2017-source.json.gz').read_bytes())
+assert hashlib.sha256(x).hexdigest() == json.loads((p/'rd-history-2017-summary.json').read_text())['evidence']['additional_source_sha256']
+extra = json.loads(x)
+assert extra['study_sha256'] == s['study_sha256']
+s['records'] += extra['records']
+s['artifacts'] += extra['artifacts']
+r = audit(s, json.loads((p/'study.json').read_text())['samples'])
+expected = json.loads(gzip.decompress((p/'rd-history-2017-result.json.gz').read_bytes()))
+assert all(r[k] == expected[k] for k in r)
+print(r['summary'])
+```
+
+本次实际全结果重放通过，内存篡改单条2017正值为零后2023五年覆盖156→155，后两起点不变；另将原包翻转一字节，既有Go工具以MD5不符拒绝且未发布快照。临时篡改文件已删除。没有修改代码、依赖或迁移，未重跑全套测试；新增数据验证在本地完成，CI仍只覆盖既有小型年度边界回归及此前已入库样本，不声称CI直接重放本次全部原始包。
