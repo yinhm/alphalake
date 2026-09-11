@@ -60,6 +60,16 @@ def test_cash_check_formula_scope_gaps_and_immutability():
     for revenue in (None,0,-1,float('nan'),float('inf')):
         bad_report=copy.deepcopy(report);bad_report['dcf']['revenue_projections']=[] if revenue is None else [revenue]
         with pytest.raises(ValueError,match='revenue'):cash_crosscheck(request,prior,bad_report)
+    basis=result['forecast_basis']
+    assert basis['dcf_reinvestment_basis']=='net_capital_expenditure_plus_change_in_operating_working_capital_policy'
+    assert basis['comparability']=='net_reinvestment_and_gross_cash_capex_not_like_for_like'
+    assert basis['maintenance_capex_status']=='not_separately_estimated'
+    zero_report=copy.deepcopy(report);zero_report['dcf']['reinvestment_projections']=[0]
+    zero=cash_crosscheck(request,prior,zero_report)
+    assert Decimal(zero['comparison']['dcf_reinvestment'])==0
+    assert Decimal(zero['cash_forecast']['capital_expenditure'])>0
+    assert zero['forecast_basis']['maintenance_capex_status']=='not_separately_estimated'
+    assert zero['cash_forecast']==result['cash_forecast']
     c=result['comparison']
     assert Decimal(c['dcf_minus_cash_proxy'])==Decimal(c['nopat_minus_ocf'])-Decimal(c['reinvestment_minus_cash_capex'])
     assert c['classification_status']=='unclassified_difference_not_valuation_error'

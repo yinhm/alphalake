@@ -56,7 +56,10 @@ def cash_crosscheck(request,prior_data,report):
     scaled_ocf=ocf*revenue/now['FN230']
     result['forecast_basis']=dict(cash_revenue_cny=str(now['FN230']),cash_revenue_growth='0',dcf_revenue_cny=str(revenue),
         dcf_revenue_growth=str(revenue/now['FN230']-1),cash_capex_rule='repeat_current_ttm',
-        cash_ocf_rule=MODEL)
+        cash_ocf_rule=MODEL,dcf_reinvestment_basis='net_capital_expenditure_plus_change_in_operating_working_capital_policy',
+        cash_capex_basis='reported_cash_purchase_of_long_lived_assets',
+        maintenance_capex_status='not_separately_estimated',
+        comparability='net_reinvestment_and_gross_cash_capex_not_like_for_like')
     result['revenue_only_sensitivity']=dict(status='unvalidated_sensitivity_not_cash_forecast_or_fcff',
         operating_cashflow=str(scaled_ocf),capital_expenditure=str(capex),ocf_less_capex=str(scaled_ocf-capex),
         change_from_cash_forecast=str(scaled_ocf-ocf),dcf_minus_cash_proxy=str(f-(scaled_ocf-capex)),

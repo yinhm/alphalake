@@ -59,7 +59,7 @@ python -m tools.company_valuation /absolute/market.duckdb 300866 \
 
 `evidence.research_scope_audit`提供[起点子组复核](../valuation/research/tdx-operating-cash-forecast/scope-review.md)的摘要哈希及限制；它使用已评分样本，不代表当前公司获得单独预测有效性批准，亦非完整DCF准入。子组年度WAPE可能退化，金融信号零值不替代业务原文核验。
 
-现金检查另输出`forecast_basis`（两侧收入及增长、现金模型和资本开支规则）与`revenue_only_sensitivity`。后者只把现金模型收入替换为DCF首年收入，保持平均OCF率、现金资本开支及DCF结果不变，明确标为未经验证的敏感性；不替换`cash_forecast`，不称FCFF。缺少或非正/非有限的DCF首年收入拒绝比较；历史缺项仍优先返回原阻断。真实安克敏感性及未闭合税费/再投资分类见[现金桥接报告](anker-cash-bridge-20260911.md)。
+现金检查另输出`forecast_basis`（两侧收入及增长、现金模型和资本开支规则、净再投资/现金资本开支口径及维持性投入未单独估计状态）与`revenue_only_sensitivity`。后者只把现金模型收入替换为DCF首年收入，保持平均OCF率、现金资本开支及DCF结果不变，明确标为未经验证的敏感性；不替换`cash_forecast`，不称FCFF。缺少或非正/非有限的DCF首年收入拒绝比较；历史缺项仍优先返回原阻断。真实安克敏感性及未闭合税费/再投资分类见[现金桥接报告](anker-cash-bridge-20260911.md)。
 
 迁移038只扩展FN114到2024-06-30；其他字段审核有效期不变。真实副本重开重放增改删均零，其后已[备份发布主库schema38](cash-main-publication-20260911.md)；主库重开重放及统一CLI正向验收通过，原备份哈希不变。默认Go/Python回归使用自包含真实样本；1GB限制下的完整主库副本验收另行记录，不依赖CI保有本机数据库。该历史为后来取得的版本，原公告日期边界有验证，但不冒称当时已留存或严格PIT。
 
