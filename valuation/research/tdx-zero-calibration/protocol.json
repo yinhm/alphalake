@@ -1,0 +1,61 @@
+{
+  "protocol_id": "tdx-zero-calibration-v1",
+  "frozen_at": "2026-09-11T10:10:53.326198+00:00",
+  "phase": "development",
+  "inputs": {
+    "parent_protocol": {
+      "path": "valuation/research/tdx-revenue-cagr/protocol.json",
+      "sha256": "9604ee4003117b454ed8fdc2606311117e214dab18d7bc747c1564d280f3a32d"
+    },
+    "snapshot": {
+      "path": "valuation/research/tdx-loss-recovery/development-snapshot.json",
+      "sha256": "9e87dad4b1e261d229b7d5b55f6e57b8b3ee5f4a893076d352971e2f53efe3ff"
+    }
+  },
+  "sample_rule": "all_600_parent_development_codes",
+  "origins": [
+    "2023-06-30",
+    "2024-06-30",
+    "2025-06-30"
+  ],
+  "forecast_cutoff": "origin_year-09-01T00:00:00+08:00",
+  "horizon_years": 1,
+  "evaluation_as_of": "2026-09-10T00:00:00+08:00",
+  "models": [
+    "zero_growth",
+    "zero_growth_half_calibrated",
+    "short_or_flat",
+    "short_or_flat_half_calibrated"
+  ],
+  "training": {
+    "forecast_origin": "one_year_before_current_origin",
+    "forecast_cutoff": "prior_origin_year-09-01T00:00:00+08:00",
+    "realization_cutoff": "current_forecast_cutoff",
+    "cohort": "same_600_development_codes_with_positive_prior_predicted_EBIT_and_available_realized_revenue",
+    "exclude_target_company": true,
+    "minimum_observations": 30,
+    "fit": "existing_fitted_scale_weighted_median_actual_EBIT_over_predicted_EBIT_weight_predicted_EBIT_over_actual_revenue",
+    "refit_separately_for_each_baseline": true,
+    "clip": [
+      0.5,
+      1.5
+    ],
+    "weight": 0.5
+  },
+  "nonpositive_current_EBIT": "retain_uncalibrated_forecast_with_explicit_scope_status",
+  "missing_training": "calibrated_forecast_absent_not_multiplier_one",
+  "missing_short_revenue": "explicit_flat_fallback_in_training_and_prediction",
+  "gates": {
+    "minimum_pairs": 900,
+    "minimum_companies": 300,
+    "minimum_each_origin_pairs": 200,
+    "minimum_applied_each_origin": 100,
+    "minimum_baseline_retention": 0.9,
+    "minimum_primary_improvement_fraction": 0.05,
+    "wape_nonworse": true,
+    "short_and_short_calibrated_primary_and_wape_nonworse": true,
+    "maximum_each_origin_primary_ratio": 1.05,
+    "leave_one_evaluation_company_out_nonworse": true
+  },
+  "boundary": "new_joint_policy_not_previously_validated_combination; one_year_operating_profit_proxy_not_full_DCF_or_Damodaran_growth_identity; source_zeros_follow_existing_operating_proxy; no_positive_profit_sample_deletion; target_company_excluded_from_training_not_full_leave_one_training_peer_out_refit; all_600_previously_exposed_development; later_acquired_not_strict_PIT; current_business_comparability_unknown; no_production_or_new_holdout_before_development_gates_pass"
+}
