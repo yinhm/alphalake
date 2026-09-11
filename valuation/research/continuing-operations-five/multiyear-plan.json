@@ -1,0 +1,27 @@
+{
+  "analysis_id": "continuing-operations-five-multiyear-v1",
+  "inputs": {
+    "study": {
+      "path": "valuation/research/continuing-operations-five/study.json",
+      "sha256": "210c96f365a3e3fcddf7123f1824f95e9010eeba27807577e48f36a7e726bc62"
+    },
+    "snapshot": {
+      "path": "valuation/research/continuing-operations-five/snapshot.json",
+      "sha256": "ab57cd23d2a5ec05ade969eebced5c3274b911f5524f39bfa2e30dcbf823db59"
+    },
+    "helper_protocol": {
+      "path": "valuation/research/tdx-multiyear-growth/protocol.json",
+      "sha256": "ab67a62ce02a1e448765ac4e23e9a6f15e52fb861b160fb212d9ed2e03f2540d"
+    }
+  },
+  "horizons": [
+    2,
+    3
+  ],
+  "models": [
+    "flat_first_five",
+    "zero_growth",
+    "fade_to_terminal_by_year_five"
+  ],
+  "boundary": "固定五家及三起点；复用既有三路径，仅开发诊断，不重新选择候选、不评采用门槛。尚未到期的窗口单列，15组已到期与15组未来窗口合计30，不改生产规则。"
+}
