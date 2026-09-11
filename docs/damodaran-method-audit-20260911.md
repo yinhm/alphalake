@@ -193,3 +193,35 @@ PYTHON
 这是计算输入边界修正，不是新的增长规则或预测有效性证明。完整历史经营资本、FCFF及多公司前瞻有效性仍待完成。
 
 本轮验证：后端全套396通过、4项因既有外部TEST_DATA文件缺失跳过、7项依赖警告；Go全套和构建通过。六项回归在旧代码失败、修正后通过，已有pytest CI自动覆盖。无需新解释器或依赖，未改数据库、旧运行或研究评分。
+
+## 资本效率输入边界
+
+调用链为通用API/标准适配器→`run_full_valuation`→`compute_dcf`→`_reinvestment_path`。旧共享函数将资本效率为零或空直接返回零投入；负值反转投入方向，正无穷使投入为零，NaN传播。输入模型未排除这些显式数值，普通API亦可触发，不能把数据源已有校验当共享引擎的保障。
+
+现于共享再投资函数统一要求两阶段的预测Sales/Capital有限且严格为正；无效值抛出`InvalidReinvestment`，通用API复用422结构化拒绝格式。原公式`Δ收入/Sales-to-Capital`不变；合法正比率下，收入下降的负净再投资及收入不变的零净再投资均保留。缺省比率仍采用原有2.5/继承规则，不把这次修复扩大为新公司资本效率估计。预测路径长度/滞后越界的既有防御逻辑不在本轮范围。
+
+方法依据仍是达摩达兰[增长与再投资](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/growth.htm)：增长应与再投资数量及质量一致，负再投资也可能具有真实经济含义。**有限正分母是本项目收入增量预测分支的适用条件，不是所有企业历史投入资本必须为正的会计定律。**负投入资本、资本释放或效率改善须另外明确经济路径，不能用零/负预测资本效率替代这种解释；不删除对应公司的原始财务证据。
+
+8项新拒绝断言在旧实现全部失败、修复后通过；另验证收入收缩的负投入。API真实调用验证零值修改返回422、原会话完整不变，以及负值新建拒绝且不留新会话。现有引擎测试141项通过，4项依赖外部TEST_DATA的原有案例skip，2条现有依赖弃用警告；新增测试进入既有pytest CI，不依赖原PDF。Go全套与构建通过，无依赖变更。
+
+[真实回执](acceptance/capital-efficiency-input-20260911.json)保留固定五家公司分母：两份合法标准请求经现有`load_run`校验后完整重放，与旧报告逐项相同；另三家原阻断保留。安克126.1378元、苏泊尔43.2526元仍为原时点/原政策条件值，不是更新目标价。引擎版本改变，新生成运行的标识随之变化；未重写旧运行、未修改主库，不能把版本变化解释为财务或估值变化。
+
+本地复验（项目后端虚拟环境；真实运行另依赖本地归档，不声称裸克隆CI覆盖）：
+
+```bash
+PYTHONPATH=valuation/backend workspace/anker-agent-adapter-20260906/venv/bin/python -m pytest valuation/backend/tests/engine -q
+PYTHONPATH=valuation/backend workspace/anker-agent-adapter-20260906/venv/bin/python - <<'PY'
+import json
+from pathlib import Path
+from tools.compare_valuations import load_run, replay
+receipt = json.loads(Path('docs/acceptance/capital-efficiency-input-20260911.json').read_bytes())
+for row in receipt['companies']:
+    if 'run_id' not in row:
+        continue
+    run, evidence = load_run('valuation/backend/data/alphalake_runs', row['run_id'])
+    assert evidence == row['saved_run']
+    report, inputs = replay(run)
+    assert report['final']['value_per_share'] == row['value_per_share']
+print('two complete saved reports unchanged; three original blocks retained')
+PY
+```

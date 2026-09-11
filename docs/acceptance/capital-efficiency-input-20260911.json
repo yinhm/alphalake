@@ -1,0 +1,46 @@
+{
+  "baseline_sha256": "7fe1f8c71040f790f78d631e993eb3f52d848253959b9446cb296e4d9e7a52fa",
+  "engine_revision": "c48ebe11289427c91ba5f76b9f38f743308caa70afa4e729efb2177b04dfb949",
+  "companies": [
+    {
+      "code": "300866",
+      "run_id": "6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b",
+      "saved_run": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b.json",
+        "sha256": "328ffa8de193bb8fe8253a0be686b051f1ea4160ba3c80a182781052a7b028b7"
+      },
+      "status": "complete_report_unchanged",
+      "value_per_share": 126.13784833230838,
+      "sales_to_capital_high": 2.483535697458,
+      "sales_to_capital_stable": 2.483535697458
+    },
+    {
+      "code": "002032",
+      "run_id": "183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d",
+      "saved_run": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d.json",
+        "sha256": "9560ca4d3056791d115b2b10f0f5b84b0cc789fd5663fc12a9d16880fcf42b70"
+      },
+      "status": "complete_report_unchanged",
+      "value_per_share": 43.252612680123605,
+      "sales_to_capital_high": 2.27300234984,
+      "sales_to_capital_stable": 2.27300234984
+    },
+    {
+      "code": "000651",
+      "status": "rejected_input_or_policy",
+      "reason": "financial operations require separate model: FN506"
+    },
+    {
+      "code": "600887",
+      "status": "rejected_input_or_policy",
+      "reason": "financial operations require separate model: FN506"
+    },
+    {
+      "code": "603288",
+      "status": "blocked_review_exclusion",
+      "reason": "generic-valuation-2026/values.json：原披露与后续比较列存在差异，可比历史尚待协调"
+    }
+  ],
+  "boundary": "input-validity fix only; all financial/forecast/valuation results unchanged; old runs not rewritten; no forecast accuracy claim"
+}

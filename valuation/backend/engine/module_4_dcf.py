@@ -46,6 +46,10 @@ class InvalidTerminalValue(ValueError):
     """Gordon终值的增长、折现或资本回报条件不成立。"""
 
 
+class InvalidReinvestment(ValueError):
+    """收入增量法缺少有效的资本效率，不能据此把投入归零。"""
+
+
 def _revenue_growth_path(
     g_year_1: float,
     g_years_2_5: float,
@@ -184,12 +188,11 @@ def _reinvestment_path(
       S/C_t = sc_high if t ≤ high_growth_years else sc_stable
       reinvestment_t = (rev[t + lag] − rev[t + lag − 1]) / S/C_t
     """
+    if any(sc is None or not math.isfinite(sc) or sc <= 0 for sc in (sc_high, sc_stable)):
+        raise InvalidReinvestment("sales-to-capital must be finite and positive")
     reinv = []
     for t in range(1, total_years + 1):
         sc = sc_high if t <= high_growth_years else sc_stable
-        if sc is None or sc == 0:
-            reinv.append(0.0)
-            continue
         idx_a = t + lag
         idx_b = t + lag - 1
         if idx_a >= len(extended_revenue) or idx_b < 0:

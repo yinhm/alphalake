@@ -211,3 +211,46 @@ def test_invalid_terminal_roic_rejected(roic, cf_metrics, cost_of_capital, adjus
         cost_of_capital_stable_override=0.09, roic_stable_override=roic)
     with pytest.raises(ValueError, match='terminal ROIC must be finite and positive'):
         compute_dcf(cf_metrics, cost_of_capital, adjusted, raw, assumptions, macro)
+
+
+@pytest.mark.parametrize('field', ['sales_to_capital_high', 'sales_to_capital_stable'])
+@pytest.mark.parametrize('ratio', [0, -2, float('nan'), float('inf')])
+def test_invalid_capital_efficiency_cannot_remove_reinvestment(field, ratio, cf_metrics, cost_of_capital, adjusted, raw, macro):
+    assumptions = ValuationAssumptions(revenue_growth_next_year=0.1,
+        sales_to_capital_high=2, sales_to_capital_stable=2)
+    setattr(assumptions, field, ratio)
+    with pytest.raises(ValueError, match='sales-to-capital must be finite and positive'):
+        compute_dcf(cf_metrics, cost_of_capital, adjusted, raw, assumptions, macro)
+
+
+def test_valid_capital_efficiency_preserves_cash_release():
+    from engine.module_4_dcf import _reinvestment_path
+    # 收入下降可产生负净再投资；不能与无效资本效率混同归零。
+    assert _reinvestment_path([100, 90, 90, 100], 2, 4, 0, 1, 3) == [-5, 0, 2.5]
+
+
+def test_invalid_capital_efficiency_api_keeps_saved_session(raw, macro, monkeypatch):
+    from fastapi.testclient import TestClient
+    from api.main import app
+    from api import routes, session_store
+    from engine.data_dictionary import CompanyValuationInput
+    monkeypatch.setattr(routes, '_get_damodaran_store', lambda: None)
+    monkeypatch.setattr(routes, '_build_lookups', lambda _: (None, None))
+    monkeypatch.setattr(session_store, '_sessions', {})
+    client = TestClient(app)
+    inputs = CompanyValuationInput(ticker='TEST', raw_financials=[raw], macro_inputs=macro,
+        industry_data={'industry_name': 'Synthetic', 'beta_u': 1},
+        valuation_assumptions=ValuationAssumptions(revenue_growth_next_year=0.1,
+            sales_to_capital_high=2, sales_to_capital_stable=2))
+    saved = client.post('/api/valuation', json={'inputs': inputs.model_dump()})
+    assert saved.status_code == 200, saved.text
+    original = saved.json(); sid = original['id']
+    for field in ('sales_to_capital_high', 'sales_to_capital_stable'):
+        failed = client.patch('/api/valuation/'+sid,
+            json={'overrides': {'valuation_assumptions.'+field: 0}})
+        assert failed.status_code == 422
+        assert failed.json()['detail']['status'] == 'rejected_input_or_policy'
+        assert client.get('/api/valuation/'+sid).json() == original
+    inputs.valuation_assumptions.sales_to_capital_high = -1
+    assert client.post('/api/valuation', json={'inputs': inputs.model_dump()}).status_code == 422
+    assert session_store.list_sessions() == [sid]
