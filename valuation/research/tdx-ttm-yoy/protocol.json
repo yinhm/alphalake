@@ -1,0 +1,35 @@
+{
+  "analysis_id": "tdx-ttm-yoy-v1",
+  "inputs": {
+    "sample_protocol": {
+      "path": "valuation/research/tdx-zero-growth-horizons/protocol.json",
+      "sha256": "71a22981a137f3d2b668fbf660700bc0db919cc297a009eac93fc19478abfbf8"
+    },
+    "source": {
+      "path": "valuation/research/tdx-loss-recovery/development-snapshot.json",
+      "sha256": "9e87dad4b1e261d229b7d5b55f6e57b8b3ee5f4a893076d352971e2f53efe3ff"
+    },
+    "helper_protocol": {
+      "path": "valuation/research/tdx-multiyear-growth/protocol.json",
+      "sha256": "ab67a62ce02a1e448765ac4e23e9a6f15e52fb861b160fb212d9ed2e03f2540d"
+    }
+  },
+  "origins": [
+    "2023-06-30",
+    "2024-06-30",
+    "2025-06-30"
+  ],
+  "horizon": 1,
+  "phase": "development",
+  "candidate": "ttm_yoy",
+  "formula": "current TTM revenue / prior same-period TTM revenue - 1; keep original growth bounds, current margin and one-year horizon",
+  "gates": {
+    "minimum_pairs": 900,
+    "minimum_companies": 300,
+    "minimum_each_origin_pairs": 200,
+    "minimum_baseline_retention": 0.95,
+    "minimum_primary_improvement_fraction": 0.05,
+    "maximum_each_origin_mae_ratio": 1.05
+  },
+  "boundary": "既有600家开发样本，不作为新留出；基线沿用生产输入起点上年1月1日限制及正收入/正EBIT要求，候选额外需要上年完整TTM收入；不删疫情或真实极端，不做逐异常取证，不扫描参数。采用要求收入MAE改善5%、WAPE及零增长对照不退化、利润代理误差不退化；范围缺项保留。"
+}
