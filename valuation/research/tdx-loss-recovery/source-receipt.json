@@ -1,0 +1,12 @@
+{
+  "archive_dir": "workspace/tdx-loss-recovery-source-20260911",
+  "snapshot_sha256": "9e87dad4b1e261d229b7d5b55f6e57b8b3ee5f4a893076d352971e2f53efe3ff",
+  "manifest_sha256": "b62884fd036e7963b64a319d44f6f6cf6baa9bd7207cd320698b6853a082e82b",
+  "development_definition_sha256": "9b0964fef99cc30e1c577a7178c512cfdd9fcb4f80a72346c833fe1cc9e911ef",
+  "records": 18418,
+  "companies": 600,
+  "artifacts": 34,
+  "source_versions_equal_prior_240": true,
+  "all_prior_240_records_equal": true,
+  "boundary": "TDX source research only; same 34 later-acquired archives, not strict PIT; no standard facts or holdout extraction"
+}
