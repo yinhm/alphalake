@@ -30,7 +30,7 @@ def load_inputs():
     return p, *inputs
 
 
-def company_totals(rows, samples, origins):
+def company_totals(rows, samples, origins, *, scope_group=None):
     """保留缺项公司的零个可评价观测；不是把缺项的误差记为零。"""
     codes = sorted(s['code'] for s in samples)
     if len(codes) != len(set(codes)) or len(origins) != len(set(origins)):
@@ -41,6 +41,8 @@ def company_totals(rows, samples, origins):
         raise ValueError('evaluation identities differ')
     totals = np.zeros((len(codes), len(origins), len(KINDS), 6))
     for row in rows:
+        if scope_group is not None and row['origin_scope']['group'] != scope_group:
+            continue
         if row['status'] == 'blocked':
             continue
         if row['status'] != 'evaluated':
@@ -82,9 +84,9 @@ def statistics(totals):
                      ratio(100*(base_cash-candidate_cash), actual)), axis=-1)
 
 
-def analyze(p, parent, rows):
+def analyze(p, parent, rows, *, scope_group=None):
     samples = [s for s in parent['samples'] if s['split'] == 'holdout']
-    origins = parent['origins']; totals = company_totals(rows, samples, origins)
+    origins = parent['origins']; totals = company_totals(rows, samples, origins, scope_group=scope_group)
     windows = ['all']+origins
     if windows != p['windows'] or list(KINDS) != p['targets'] or list(STATISTICS) != p['statistics']:
         raise ValueError('statistic contract differs')
@@ -111,10 +113,15 @@ def analyze(p, parent, rows):
         schemes[name] = dict(draw_counts_sha256=hashlib.sha256(counts.astype('<i8').tobytes()).hexdigest(),
             evaluated_count_range={w:[int(sampled[:,i,0,0].min()), int(sampled[:,i,0,0].max())] for i,w in enumerate(windows)},
             intervals=results)
-    return dict(protocol_sha256=PROTOCOL_SHA, companies=len(samples), candidates=len(rows),
+    result = dict(protocol_sha256=PROTOCOL_SHA, companies=len(samples), candidates=len(rows),
         statuses=dict(Counter(r['status'] for r in rows)), strata=len(strata),
         singleton_strata=sorted(k for k,v in strata.items() if v == 1), schemes=schemes,
         interpretation=p['interpretation'], boundary=p['boundary'])
+    if scope_group is not None:
+        selected = [r for r in rows if r['origin_scope']['group'] == scope_group]
+        result['scope'] = dict(group=scope_group, candidates=len(selected),
+            statuses=dict(Counter(r['status'] for r in selected)), outside_scope_rows=len(rows)-len(selected))
+    return result
 
 
 def study(p, parent, source, receipt):
