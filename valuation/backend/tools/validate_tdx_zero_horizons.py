@@ -20,7 +20,7 @@ def evaluate(p,source,phase):
     inner=p|dict(protocol_id='tdx-multiyear-growth-v1',baseline=MODELS[0],benchmark=MODELS[1],candidate=MODELS[2])
     rows=forecast_rows(inner,source,phase,horizons=(1,2,3))
     out=score(p|dict(protocol_id='tdx-zero-growth-validation-v1'),rows,phase,horizons=(1,2,3))
-    out.update(protocol_id=p['protocol_id'],results=rows,diagnostic_only=MODELS[2])
+    out.update(protocol_id=p['protocol_id'],results=rows,diagnostic_only=MODELS[2],boundary=p['boundary'].replace('same unextracted 120 reserved','120 reserved at protocol freeze'))
     return out
 
 
