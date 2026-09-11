@@ -1013,3 +1013,69 @@ def test_early_commercialization_original_income_and_cutoff():
     with pytest.raises(ValueError,match='row values'):verify(bad,directory,source)
     bad=copy.deepcopy(source);next(r for r in bad['records'] if r['code']=='688443' and r['period']=='2024-03-31')['bits']['FN230']=bits(999999)
     with pytest.raises(ValueError,match='rounding bound'):verify(ledger,directory,bad)
+
+
+def test_working_cash_scope_cutoff_retention_and_frozen_replay(monkeypatch):
+    import tools.backtest_tdx_working_cash as m
+    directory=ROOT/'valuation/research/tdx-working-cash-forecast'
+    p=json.loads((directory/'protocol-v4.json').read_bytes());source=json.loads((directory/'snapshot-v3.json').read_bytes())
+    result=m.study(p,source,'development');scope=result['scope_evaluation']
+    saved=json.loads((directory/'development-v4-summary.json').read_bytes())
+    assert all(result[k]==saved[k] for k in ('summary','by_origin','decision','scope_evaluation'))
+    original=m.evaluate(dict(p,protocol_id='tdx-working-cash-forecast-v3'),source,'development')
+    keys={(r['code'],r['origin']) for r in original if r['status']=='evaluated'}
+    valid=[r for r in result['results'] if r['status']=='evaluated']
+    refused=[r for r in result['results'] if r.get('reason')=='outside_inventory_scope']
+    for model in (p['baseline'],p['benchmark'],p['candidate']):
+        errors=[abs(Decimal(r['forecasts_cny'][model])-Decimal(r['actual']['working_cash_cny'])) for r in valid]
+        mae=sum(e/Decimal(r['actual']['revenue_cny']) for e,r in zip(errors,valid))*100/len(valid)
+        wape=sum(errors)*100/sum(abs(Decimal(r['actual']['working_cash_cny'])) for r in valid)
+        assert result['summary']['models'][model]['mae_pct_actual_revenue']==pytest.approx(float(mae),abs=1e-12)
+        assert result['summary']['models'][model]['wape_pct']==float(wape)
+    assert scope['retained_evaluable_fraction']==len(valid)/len(keys)
+    assert scope['lost_evaluable_pairs']==len(keys)-len(valid)
+    assert scope['scope_refusals']==len(refused)
+    assert all('forecasts_cny' not in r and 'actual' not in r for r in refused)
+    assert scope['unrestricted_summary']==json.loads((directory/'development-v3-summary.json').read_bytes())['summary']
+    bad=copy.deepcopy(p);bad['scope_policy']['maximum_net_inventory_to_ttm_revenue']=2
+    with pytest.raises(ValueError,match='scope policy'):m.study(bad,source,'development')
+    # Exercise the exact boundary before any target read, independently of real data.
+    calls=[]
+    def observe(*args):
+        calls.append(args[-2]);return dict(working_cash_cny='10',revenue_cny='100')
+    monkeypatch.setattr(m,'observation',observe)
+    history=[dict(net_inventory_cny='100',revenue_cny='100')]*2
+    monkeypatch.setattr(m,'inventory_signal',lambda *a:(Decimal(0),dict(history=history,boundary='test')))
+    one=dict(p,samples=[p['samples'][0]],origins=[p['origins'][0]])
+    assert m.evaluate(one,source,'development')[0]['status']=='evaluated' and len(calls)==2
+    calls.clear();history[1]=dict(net_inventory_cny='100.01',revenue_cny='100')
+    row=m.evaluate(one,source,'development')[0]
+    assert row['reason']=='outside_inventory_scope' and len(calls)==1
+    # An apparently perfect restricted cohort cannot pass by discarding most pairs.
+    rows=copy.deepcopy(original)
+    for row in rows:
+        if row['status']=='evaluated':
+            row['errors'][p['candidate']]=dict(cny='0',pct_actual_revenue=0)
+    reduced=copy.deepcopy(rows)
+    for row in reduced[len(reduced)//2:]:row.update(status='blocked',reason='outside_inventory_scope')
+    monkeypatch.setattr(m,'evaluate',lambda protocol,*a:reduced if protocol['protocol_id'].endswith('v4') else rows)
+    decision=m.study(p,source,'development')['decision']
+    assert decision['checks']['primary_improvement'] and not decision['checks']['minimum_retained_evaluable_fraction'] and not decision['passed']
+
+
+def test_working_cash_scope_source_and_holdout_selection_rejected(tmp_path,monkeypatch,capsys):
+    import sys
+    import tools.backtest_tdx_working_cash as m
+    directory=ROOT/'valuation/research/tdx-working-cash-forecast';p=json.loads((directory/'protocol-v4.json').read_bytes())
+    protocol=tmp_path/'protocol.json';snapshot=directory/'snapshot-v3.json'
+    for field in ('source_protocol_sha256','source_snapshot_sha256'):
+        bad=dict(p);bad[field]='0'*64;protocol.write_text(json.dumps(bad))
+        monkeypatch.setattr(sys,'argv',['working_cash',str(protocol),str(snapshot),'--phase','development'])
+        with pytest.raises(SystemExit) as exc:m.main()
+        assert exc.value.code==1 and 'hash differs' in capsys.readouterr().out
+    bad=dict(p);bad.pop('source_snapshot_sha256');protocol.write_text(json.dumps(bad))
+    with pytest.raises(SystemExit):m.main()
+    assert 'binding required' in capsys.readouterr().out
+    monkeypatch.setattr(sys,'argv',['working_cash',str(directory/'protocol-v4.json'),str(snapshot),'--phase','holdout'])
+    with pytest.raises(SystemExit):m.main()
+    assert 'passing development receipt required' in capsys.readouterr().out

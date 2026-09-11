@@ -65,6 +65,9 @@ def evaluate(p,source,split):
                 predictions=dict(repeat_latest=amount,zero_forecast=Decimal(0),half_latest=amount/2)
                 if p['candidate']=='inventory_intensity_half':
                     signal,driver=inventory_signal(index,artifacts,s['code'],end,cutoff);row['driver']=driver
+                    if p['protocol_id']=='tdx-working-cash-forecast-v4' and any(Decimal(h['net_inventory_cny'])>Decimal(h['revenue_cny']) for h in driver['history']):
+                        row['driver']={k:driver[k] for k in ('history','boundary')}
+                        raise ValueError('outside_inventory_scope')
                     predictions.pop('half_latest');predictions['inventory_intensity_half']=signal
                 row.update(base=base,forecasts_cny={m:str(v) for m,v in predictions.items()})
                 actual=observation(index,artifacts,s['code'],target,p['evaluation_as_of']);a=Decimal(actual['working_cash_cny']);rev=Decimal(actual['revenue_cny'])
@@ -120,12 +123,14 @@ def business_diagnostics(p,rows):
 
 
 def study(p,source,phase):
-    candidate={'tdx-working-cash-forecast-v1':'half_latest','tdx-working-cash-forecast-v2':'inventory_intensity_half','tdx-working-cash-forecast-v3':'inventory_intensity_half'}.get(p['protocol_id'])
+    candidate={'tdx-working-cash-forecast-v1':'half_latest','tdx-working-cash-forecast-v2':'inventory_intensity_half','tdx-working-cash-forecast-v3':'inventory_intensity_half','tdx-working-cash-forecast-v4':'inventory_intensity_half'}.get(p['protocol_id'])
     models=('repeat_latest','zero_forecast',candidate)
     if candidate is None or source['contract_version']!='tdx-history-source-v1' or (p['baseline'],p['benchmark'],p['candidate'])!=models:raise ValueError('unsupported study')
     if candidate=='inventory_intensity_half' and (p['driver_policy']['weight']!=.5 or p['driver_policy']['receivables_forecast']!=0 or p['driver_policy']['payables_forecast']!=0):raise ValueError('unsupported inventory driver policy')
     if any(p['gates'][key] is not True for key in ('require_wape_nonworse','require_zero_benchmark_nonworse','require_leave_one_company_out_nonworse')):raise ValueError('required comparison gate disabled')
     if phase not in ('development','holdout'):raise ValueError('invalid phase')
+    scoped=p['protocol_id']=='tdx-working-cash-forecast-v4'
+    if scoped and (p['scope_policy']['id']!='inventory_within_annual_revenue_v1' or type(p['scope_policy']['maximum_net_inventory_to_ttm_revenue']) is not int or p['scope_policy']['maximum_net_inventory_to_ttm_revenue']!=1 or p['gates']['minimum_retained_evaluable_fraction']!=.8):raise ValueError('unsupported scope policy')
     rows=evaluate(p,source,phase);summary=metrics(rows,models);s=summary['models'];b=s['repeat_latest'];c=s[candidate];z=s['zero_forecast'];g=p['gates']
     sufficient=b['n']>=g['minimum_pairs'] and b['mae_pct_actual_revenue'] is not None and b['mae_pct_actual_revenue']>0
     by_origin={o:metrics([r for r in rows if r['origin']==o],models) for o in p['origins']}
@@ -138,7 +143,17 @@ def study(p,source,phase):
     for code in sorted({r['code'] for r in rows if r['status']=='evaluated'}):
         m=metrics([r for r in rows if r['code']!=code],models)['models'];leave.append(m[candidate]['n']>0 and m[candidate]['mae_pct_actual_revenue']<=m['repeat_latest']['mae_pct_actual_revenue'])
     checks['leave_one_company_out_nonworse']=bool(leave) and all(leave)
-    return dict(protocol_id=p['protocol_id'],phase=phase,summary=summary,by_origin=by_origin,decision=dict(passed=all(checks.values()),checks=checks),results=rows,boundary=p['boundary'])
+    scope={}
+    if scoped:
+        reference=evaluate(dict(p,protocol_id='tdx-working-cash-forecast-v3'),source,phase)
+        original={(r['code'],r['origin']) for r in reference if r['status']=='evaluated'}
+        refused=[r for r in rows if r.get('reason')=='outside_inventory_scope']
+        retained=b['n']/len(original) if original else None
+        checks['minimum_retained_evaluable_fraction']=retained is not None and retained>=g['minimum_retained_evaluable_fraction']
+        scope=dict(scope_evaluation=dict(unrestricted_summary=metrics(reference,models),retained_evaluable_fraction=retained,
+            scope_refusals=len(refused),lost_evaluable_pairs=sum((r['code'],r['origin']) in original for r in refused),
+            by_origin={o:dict(unrestricted=metrics([r for r in reference if r['origin']==o],models),scope_refusals=sum(r['origin']==o for r in refused)) for o in p['origins']}))
+    return dict(**scope,protocol_id=p['protocol_id'],phase=phase,summary=summary,by_origin=by_origin,decision=dict(passed=all(checks.values()),checks=checks),results=rows,boundary=p['boundary'])
 
 
 def main():
@@ -148,7 +163,8 @@ def main():
         if args.diagnose_business and args.phase!='development':raise ValueError('business diagnosis is development only')
         raw=args.protocol.read_bytes();data=args.snapshot.read_bytes();p=json.loads(raw);source=json.loads(data);digest=lambda b:hashlib.sha256(b).hexdigest()
         if args.diagnose_components and p['protocol_id']!='tdx-working-cash-forecast-v1':raise ValueError('component diagnosis requires original lagged models')
-        if source['study_sha256']!=digest(raw):raise ValueError('source/protocol hash differs')
+        if p['protocol_id']=='tdx-working-cash-forecast-v4' and (not p.get('source_protocol_sha256') or not p.get('source_snapshot_sha256')):raise ValueError('scope study source binding required')
+        if source['study_sha256']!=p.get('source_protocol_sha256',digest(raw)) or ('source_snapshot_sha256' in p and p['source_snapshot_sha256']!=digest(data)):raise ValueError('source/protocol hash differs')
         evidence=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),history_sha256=digest(Path(__file__).with_name('backtest_tdx_history.py').read_bytes()),component_sha256=digest(Path(__file__).with_name('audit_tdx_reinvestment.py').read_bytes()))
         if args.phase=='holdout':
             if args.selection is None:raise ValueError('passing development receipt required')
@@ -157,7 +173,7 @@ def main():
         result=study(p,source,args.phase);result['evidence']=evidence
         if args.diagnose_components:result['component_diagnostics']=dict(overall=component_diagnostics(result['results']),by_origin={o:component_diagnostics([r for r in result['results'] if r['origin']==o]) for o in p['origins']})
         if args.diagnose_business:result['business_diagnostics']=business_diagnostics(p,result['results'])
-        if p['protocol_id']=='tdx-working-cash-forecast-v3' and args.phase=='development':
+        if p['protocol_id'] in ('tdx-working-cash-forecast-v3','tdx-working-cash-forecast-v4') and args.phase=='development':
             original=set(p['sampling']['original_development_codes']);models=(p['baseline'],p['benchmark'],p['candidate'])
             result['development_cohorts']={name:metrics([r for r in result['results'] if (r['code'] in original)==is_original],models) for name,is_original in [('original60',True),('additional600',False)]}
         print(json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False))
