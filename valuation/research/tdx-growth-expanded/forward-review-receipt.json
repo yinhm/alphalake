@@ -1,0 +1,27 @@
+{
+  "status": "awaiting_evaluation_cutoff",
+  "reviewed_at": "2026-09-11T22:03:09.429024+00:00",
+  "target": "2027-06-30",
+  "evaluation_cutoff": "2027-09-01T00:00:00+08:00",
+  "positions": 120,
+  "statuses": {
+    "awaiting_target": 81,
+    "blocked_inputs": 39
+  },
+  "decision": null,
+  "evidence": {
+    "actual_file_sha256": null,
+    "frozen_files": {
+      "forward-2026H1.json.gz": "fa3ce4da6ce7ca735d42dcf0d9a1a56f3266f5a2dc87a54cd5c4dd0644a06cfc",
+      "forward-plan.json": "2453632c8a3785e45df12bd0b0e6d1ad034e67f76581683f9fd912d8d0750339"
+    },
+    "helpers": {
+      "valuation/backend/tools/backtest_tdx_history.py": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+      "valuation/backend/tools/backtest_tdx_multiyear_growth.py": "03dc950fb28c8d95584fef6608fb1d5ae292cd1a8181aef90d64840a217e2c8a",
+      "valuation/backend/tools/backtest_tdx_origins.py": "414563a51edaa6b9265f34916ed3c58fcff735e72b655bedb10cf208aa2e7efb"
+    },
+    "review_code_sha256": "29766af291c685e704263ef798d64a9abfbe40c323dd309181e8c5319981b8cf"
+  },
+  "validation": "4 Python regressions, no skip; 86 mature rows and all gates match; frozen/future/duplicate rejection; Go tests and build passed",
+  "waiting_output_sha256": "7b89cba2f531fd32ed5a825b316cb970abb57737bf64cca6ea9cb57db7235b69"
+}
