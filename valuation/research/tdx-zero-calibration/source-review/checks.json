@@ -1,0 +1,100 @@
+{
+  "quarter_source_matches": [
+    {
+      "code": "600751",
+      "period": "2021-03-31",
+      "pdf_cny": "85096906000",
+      "source_cny": "85096906752",
+      "pdf_float32_bits": 1369342302,
+      "source_bits": 1369342302,
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2021-06-30",
+      "pdf_cny": "82823453000",
+      "source_cny": "82823454720",
+      "pdf_float32_bits": 1369064781,
+      "source_bits": 1369064781,
+      "status": "matched"
+    },
+    {
+      "code": "600751",
+      "period": "2021-09-30",
+      "pdf_cny": "3699614000",
+      "source_cny": "3846448128",
+      "pdf_float32_bits": 1331463073,
+      "source_bits": 1332036644,
+      "status": "differs_from_later_annual_quarter_table"
+    },
+    {
+      "code": "600751",
+      "period": "2021-12-31",
+      "pdf_cny": "41745000",
+      "source_cny": "-105089000",
+      "pdf_float32_bits": 1277116058,
+      "source_bits": 3435688189,
+      "status": "differs_from_later_annual_quarter_table"
+    },
+    {
+      "code": "688670",
+      "period": "2023-03-31",
+      "pdf_cny": "106219935.77",
+      "source_cny": "106219936",
+      "pdf_float32_bits": 1288345908,
+      "source_bits": 1288345908,
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2023-06-30",
+      "pdf_cny": "20922825.97",
+      "source_cny": "20922826",
+      "pdf_float32_bits": 1268752613,
+      "source_bits": 1268752613,
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2023-09-30",
+      "pdf_cny": "-6299040.71",
+      "source_cny": "-6299040.5",
+      "pdf_float32_bits": 3401595713,
+      "source_bits": 3401595713,
+      "status": "matched"
+    },
+    {
+      "code": "688670",
+      "period": "2023-12-31",
+      "pdf_cny": "13747655.97",
+      "source_cny": "13747656",
+      "pdf_float32_bits": 1263650248,
+      "source_bits": 1263650248,
+      "status": "matched"
+    }
+  ],
+  "ttm_revenue_comparisons": [
+    {
+      "code": "600751",
+      "end": "2022-06-30",
+      "pdf_cny": "3803269000",
+      "source_cny": "3803269128",
+      "delta_cny": "128",
+      "float32_rounding_bound_cny": "135"
+    },
+    {
+      "code": "688670",
+      "end": "2024-06-30",
+      "pdf_cny": "10736784.63",
+      "source_cny": "10736784.75",
+      "delta_cny": "0.12",
+      "float32_rounding_bound_cny": "1.0625"
+    }
+  ],
+  "jindike_2024H1_rd": {
+    "expensed_cny": "12791059.40",
+    "capitalized_cny": "7907105.73",
+    "total_cny": "20698165.13"
+  },
+  "boundary": "four_reports_eight_quarter_comparisons_two_TTM_revenue_checks; not_complete_EBIT_reconciliation; later_comparative_not_original_H1_verification; accounting_RD_total_not_cash_RD_or_future_return; no_source_override"
+}
