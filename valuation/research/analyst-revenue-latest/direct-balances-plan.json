@@ -1,0 +1,32 @@
+{
+  "analysis_id": "same-six-reports-direct-trade-balances-v1",
+  "inputs": {
+    "valuation/research/analyst-revenue-latest/sources.json": "b7daa5ad9802ef6fc0587290f15eb569600161510a6a334e5e1b09a0108aa02e",
+    "valuation/research/analyst-revenue-latest/capital-transmission-result.json.gz": "51a5b69679e3e06b5165b77fecc1f3be6509d84e30600d2f48473cbd4ca8abb0",
+    "valuation/research/continuing-operations-five/capital-snapshot.json": "685f86200322784ecf445e45f3d93a4b8e7d2601d218ab69d84d79513e6c99ed"
+  },
+  "codes": [
+    "300866",
+    "002032"
+  ],
+  "origins": [
+    2023,
+    2024,
+    2025
+  ],
+  "fields": {
+    "FN11": "应收账款净额（不含应收票据、应收款项融资及其他应收）",
+    "FN17": "存货净额",
+    "FN44": "应付账款（不含应付票据及其他应付）"
+  },
+  "expected_positions": 54,
+  "selection": "use same six frozen reports; no replacement; first financial statement forecast appendix with explicit absolute annual columns; no aggregate receivable/payable substitution or unprinted residual",
+  "eligibility": "explicit label matching exact account; million CNY unit; same-year E columns; printed historical amounts must match TDX at source and printed precision; record missing/ambiguous/combined scope per component, without imputing zero",
+  "comparison": "unaltered direct report balances versus all four frozen capital-transmission predictions on identical eligible component positions; do not infer superiority from changed denominator",
+  "metrics": [
+    "per component WAPE and mean absolute error / actual FY revenue",
+    "three-component gross MAE only on positions where all three eligible"
+  ],
+  "decision": "exposed diagnostic, no production adoption; report coverage before accuracy; no follow-up threshold or report selection tuning",
+  "boundary": "balance subset not cashflow; later-acquired report and TDX history not strict PIT; observed historical matching not independent audit or proof all future scope unchanged"
+}
