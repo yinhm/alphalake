@@ -156,6 +156,11 @@ def run_full_valuation(
         raw_financials_history=financials,
     )
 
+    if inputs.adjustment_inputs.has_r_and_d and any(
+        value is None for value in report.cashflow.historical_margin_by_year
+    ):
+        report.warnings.append("Historical R&D-adjusted diagnostics incomplete: consecutive annual R&D inputs required")
+
     if report.cashflow.fcff is None:
         report.warnings.append("Historical FCFF unavailable: incomplete reinvestment inputs")
     if report.cashflow.fcfe is None:

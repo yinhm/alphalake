@@ -239,3 +239,58 @@ class TestCashFlowAndGrowth:
         )
 
         assert result.fcfe == pytest.approx(150.0 - result.reinvestment_equity, rel=1e-6)
+
+
+@pytest.mark.parametrize('life', [3, 5])
+def test_historical_rd_uses_each_years_cohorts(cost_of_capital, life):
+    from decimal import Decimal
+    from engine.module_1_adjustments import compute_adjustments
+
+    history = [RawFinancials(fiscal_year=y, revenues=1000, ebit=200,
+        bv_equity=500, bv_debt=100, cash_and_marketable_securities=20,
+        earnings_before_tax=100, total_tax_expense=20,
+        r_and_d_expense=100+10*(y-2017)) for y in range(2025,2016,-1)]
+
+    def calculate(rows):
+        rd = AdjustmentInputs(has_r_and_d=True, amortization_period_n=life,
+            r_and_d_expense_current=rows[0].r_and_d_expense,
+            r_and_d_expense_past=[r.r_and_d_expense for r in rows[1:life+1]])
+        return compute_cashflow_and_growth(compute_adjustments(rows[0],rd,.06), rows[0],
+            rd, cost_of_capital, rows[1], raw_financials_history=rows)
+
+    result = calculate(history)
+    for i in range(len(history)-life):
+        amounts = [Decimal(str(r.r_and_d_expense)) for r in history[i:i+life+1]]
+        opening = sum(amounts[j]*Decimal(life-j+1)/life for j in range(1,life+1))
+        closing = sum(amounts[j]*Decimal(life-j)/life for j in range(life))
+        delta = amounts[0]-sum(amounts[1:])/life
+        assert result.historical_roic_by_year[i] == pytest.approx(float((Decimal(160)+delta)/(580+opening)))
+        assert result.historical_s_c_by_year[i] == pytest.approx(float(Decimal(1000)/(580+closing)))
+        assert result.historical_margin_by_year[i] == pytest.approx(float((Decimal(200)+delta)/1000))
+    # A closing asset needs n cohorts; the year's amortization needs n+1.
+    assert result.historical_s_c_by_year[-life] is not None
+    assert result.historical_margin_by_year[-life] is None
+    assert result.historical_roic_by_year[-life:] == [None]*life
+    future = [r.model_copy(deep=True) for r in history]
+    future[0].r_and_d_expense = 1000000
+    changed = calculate(future)
+    for name in ('historical_roic_by_year','historical_s_c_by_year','historical_margin_by_year'):
+        assert getattr(changed,name)[1:] == getattr(result,name)[1:]
+    missing = [r.model_copy(deep=True) for r in history]
+    missing[-1].r_and_d_expense = None
+    changed = calculate(missing)
+    assert changed.historical_s_c_by_year[-life] is None
+    assert changed.historical_revenue_growth_by_year == result.historical_revenue_growth_by_year
+    # A duplicated/missing year cannot become an annual cohort merely by its position.
+    gap = [r.model_copy(deep=True) for r in history]
+    gap[-1].fiscal_year = gap[-2].fiscal_year
+    changed = calculate(gap)
+    assert changed.historical_s_c_by_year[-life] is None
+
+    for invalid in (-1.0, float('nan'), float('inf')):
+        invalid_history = [r.model_copy(deep=True) for r in history]
+        invalid_history[-1].r_and_d_expense = invalid
+        assert calculate(invalid_history).historical_s_c_by_year[-life] is None
+    explicit_zero = [r.model_copy(deep=True) for r in history]
+    explicit_zero[-1].r_and_d_expense = 0.0
+    assert calculate(explicit_zero).historical_s_c_by_year[-life] is not None

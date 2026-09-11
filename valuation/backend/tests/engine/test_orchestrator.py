@@ -94,6 +94,8 @@ class TestOrchestrator:
         assert report.adjusted is not None
         assert report.cost_of_capital is not None
         assert report.cashflow is not None
+        assert report.cashflow.historical_margin_by_year == [None, None]
+        assert "Historical R&D-adjusted diagnostics incomplete: consecutive annual R&D inputs required" in report.warnings
         assert report.dcf is not None
         assert report.multiples is not None
         assert report.final is not None

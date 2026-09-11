@@ -7,7 +7,10 @@ return metrics, and expected fundamental growth rates.
 
 from __future__ import annotations
 
-from .module_1_adjustments import after_tax_operating_income
+from collections import Counter
+import math
+
+from .module_1_adjustments import after_tax_operating_income, capitalize_r_and_d
 
 from .data_dictionary import (
     AdjustedFinancials,
@@ -44,29 +47,33 @@ def _revenue_cagr(history: list[RawFinancials], years: int) -> float | None:
 
 def _compute_historical_series(
     history: list[RawFinancials],
-    r_and_d_asset_current: float,
+    r_and_d_life: int | None,
 ) -> dict:
     """Compute 10-year historical diagnostic series for three-story examination.
 
     Convention:
-      NOPAT_i        = raw_EBIT_i × (1 - effective_tax_i)       per-year tax
+      NOPAT_i        = raw_EBIT_i × (1 - effective_tax_i) + R&D net adjustment
       effective_tax_i = |tax_exp_i| / |ebt_i|                   IQ_INC_TAX/IQ_EBT_EXCL
                       (falls back to 0.21 if EBT <= 0 or missing)
-      IC_i           = bv_equity_i + R&D_asset_proxy + bv_debt_i - cash_i
+      IC_i           = bv_equity_i + year-specific R&D asset + bv_debt_i - cash_i
       ROIC_i         = NOPAT_i / IC_{i+1}   (prior-year IC, standard)
       S_C_i          = Revenue_i / IC_i      (current-year IC)
       Margin_i       = EBIT_i / Revenue_i    (pre-tax operating margin)
       RevGrowth_i    = Revenue_i / Revenue_{i+1} - 1
       RevCAGR_n      = (Rev[0]/Rev[n]) ** (1/n) - 1            geometric
 
-    R&D asset uses the current-year value as a proxy for historical IC.
-    The strictly correct version re-runs Module 1's R&D capitalization per
-    year; diagnostic only, so we accept the approximation.
+    When R&D is enabled, each year uses only its own and earlier annual
+    expenses: n cohorts for closing capital, n+1 for amortization/NOPAT.
+    Missing, invalid, duplicate or nonconsecutive cohorts leave nulls.
+    Explicit raw-input zeros are allowed; unresolved provider zeros must
+    not be supplied as known zero expenses.
 
     DISPLAY window is 10 years. Prior-year denominators reach into year 10
     (index 10) so ROIC and revenue growth can compute for the oldest
     displayed year when the CIQ template returned 11 annual years (default).
     """
+    if r_and_d_life is not None and r_and_d_life <= 0:
+        raise ValueError('R&D amortization life must be positive')
     n_display = min(len(history), 10)
     n_total = min(len(history), 11)  # display + 1 lookback slot
     roic: list[float | None] = [None] * n_display
@@ -75,21 +82,37 @@ def _compute_historical_series(
     rev_growth: list[float | None] = [None] * n_display
     nopat_series: list[float | None] = [None] * n_display  # for NOPAT-weighted ROIC avg
 
-    # Per-year IC
+    # Per-year research cohorts; never borrow the current adjustment input.
+    year_counts = Counter(f.fiscal_year for f in history)
+    research_delta: list[float | None] = []
     ic_current: list[float | None] = []
     for i in range(n_total):
         f = history[i]
-        bv_eq = f.bv_equity
-        bv_debt = f.bv_debt
-        cash = f.cash_and_marketable_securities
-        if bv_eq is not None and bv_debt is not None and cash is not None:
-            ic_current.append(bv_eq + r_and_d_asset_current + bv_debt - cash)
+        asset = delta = 0.0
+        if r_and_d_life is not None:
+            n = r_and_d_life
+            cohort = history[i:i+n+1]
+            valid = [r.r_and_d_expense is not None and math.isfinite(r.r_and_d_expense)
+                     and r.r_and_d_expense >= 0 and r.fiscal_year == f.fiscal_year-j
+                     and year_counts[r.fiscal_year] == 1 for j, r in enumerate(cohort)]
+            asset = delta = None
+            if len(cohort) >= n and all(valid[:n]):
+                # The nth past year's closing weight is zero; no need to invent it.
+                _, _, asset = capitalize_r_and_d(cohort[0].r_and_d_expense,
+                    [r.r_and_d_expense for r in cohort[1:n]], n)
+            if len(cohort) == n+1 and all(valid):
+                _, amortization, _ = capitalize_r_and_d(cohort[0].r_and_d_expense,
+                    [r.r_and_d_expense for r in cohort[1:]], n)
+                delta = cohort[0].r_and_d_expense - amortization
+        research_delta.append(delta)
+        if all(v is not None for v in (f.bv_equity, f.bv_debt, f.cash_and_marketable_securities, asset)):
+            ic_current.append(f.bv_equity + asset + f.bv_debt - f.cash_and_marketable_securities)
         else:
             ic_current.append(None)
 
     for i in range(n_display):
         f = history[i]
-        ebit_i = f.ebit
+        ebit_i = f.ebit + research_delta[i] if research_delta[i] is not None else None
         rev_i = f.revenues
 
         # Per-year effective tax rate (falls back to 21% marginal default)
@@ -108,7 +131,7 @@ def _compute_historical_series(
 
         # ROIC — prior-year IC with per-year NOPAT
         if i + 1 < n_total and ebit_i is not None and ic_current[i + 1] not in (None, 0):
-            nopat_i = ebit_i * (1 - eff_tax_i)
+            nopat_i = after_tax_operating_income(AdjustedFinancials(adjusted_ebit=ebit_i), f, eff_tax_i)
             nopat_series[i] = nopat_i
             roic[i] = nopat_i / ic_current[i + 1]
 
@@ -249,7 +272,7 @@ def compute_cashflow_and_growth(
     if raw_financials_history:
         historical = _compute_historical_series(
             raw_financials_history,
-            r_and_d_asset_current=adjusted.value_of_research_asset or 0.0,
+            r_and_d_life=adj_inputs.amortization_period_n if adj_inputs.has_r_and_d else None,
         )
 
     return CashFlowMetrics(
