@@ -32,10 +32,10 @@ def annual(index,artifacts,code,year,cutoff):
     return observed|dict(year=year,margin=observed['ebit']/observed['revenue'])
 
 
-def metrics(rows):
-    out=base_metrics(rows,MODELS);valid=[r for r in rows if r['status']=='evaluated']
+def metrics(rows,models=MODELS):
+    out=base_metrics(rows,models);valid=[r for r in rows if r['status']=='evaluated']
     denominator=sum(abs(r['actual']['ebit']) for r in valid)
-    for model in MODELS:
+    for model in models:
         out['models'][model]['ebit_wape_pct']=100*sum(abs(r['errors'][model]['ebit_error_million_cny']) for r in valid)/denominator if denominator else None
     return out
 
@@ -76,19 +76,23 @@ def study(p,source,phase):
                 if MODELS[1] in forecasts:row.update(status='evaluated',errors={m:error(f,actual) for m,f in forecasts.items()})
                 else:row['status']='blocked_candidate'
             except (ValueError,KeyError,ArithmeticError) as exc:row['reason']=str(exc)
-    summary=metrics(rows);by_horizon={str(h):metrics([r for r in rows if r['horizon']==h]) for h in (1,2,3)}
-    by_window={w['origin']+':'+str(w['horizon']):metrics([r for r in rows if (r['origin'],r['horizon'])==(w['origin'],w['horizon'])]) for w in p['windows']}
+    return summarize(p,rows,phase)
+
+
+def summarize(p,rows,phase,models=MODELS):
+    summary=metrics(rows,models);by_horizon={str(h):metrics([r for r in rows if r['horizon']==h],models) for h in (1,2,3)}
+    by_window={w['origin']+':'+str(w['horizon']):metrics([r for r in rows if (r['origin'],r['horizon'])==(w['origin'],w['horizon'])],models) for w in p['windows']}
     g=p['gates'];valid_codes={r['code'] for r in rows if r['status']=='evaluated'}
     if any(v is not True for k,v in g.items() if k.startswith('require_')):raise ValueError('required gate disabled')
-    def nonworse(m,key,base=MODELS[0],ratio=1):
-        a=m['models'][base][key];b=m['models'][MODELS[1]][key]
+    def nonworse(m,key,base=models[0],ratio=1):
+        a=m['models'][base][key];b=m['models'][models[1]][key]
         return a is not None and b is not None and b<=a*ratio
-    sufficient=summary['models'][MODELS[1]]['ebit_n']>=g[phase+'_minimum_pairs'] and len(valid_codes)>=g[phase+'_minimum_companies']
+    sufficient=summary['models'][models[1]]['ebit_n']>=g[phase+'_minimum_pairs'] and len(valid_codes)>=g[phase+'_minimum_companies']
     key='ebit_mae_pct_actual_revenue'
-    checks=dict(minimum_sample=sufficient,primary_improvement=sufficient and summary['models'][MODELS[0]][key]>0 and nonworse(summary,key,ratio=1-g['minimum_primary_improvement_fraction']),ebit_wape_nonworse=nonworse(summary,'ebit_wape_pct'),
-        production_comparator_nonworse=all(nonworse(summary,k,MODELS[2]) for k in (key,'ebit_wape_pct')),
+    checks=dict(minimum_sample=sufficient,primary_improvement=sufficient and summary['models'][models[0]][key]>0 and nonworse(summary,key,ratio=1-g['minimum_primary_improvement_fraction']),ebit_wape_nonworse=nonworse(summary,'ebit_wape_pct'),
+        production_comparator_nonworse=all(nonworse(summary,k,models[2]) for k in (key,'ebit_wape_pct')),
         each_horizon_nonworse=all(nonworse(m,key) for m in by_horizon.values()),each_window_within_tolerance=all(nonworse(m,key,ratio=g['maximum_each_window_primary_ratio']) for m in by_window.values()),
-        leave_one_company_out_nonworse=bool(valid_codes) and all(nonworse(metrics([r for r in rows if r['code']!=code]),key) for code in valid_codes))
+        leave_one_company_out_nonworse=bool(valid_codes) and all(nonworse(metrics([r for r in rows if r['code']!=code],models),key) for code in valid_codes))
     return dict(protocol_id=p['protocol_id'],phase=phase,baseline_evaluable=sum(r['baseline_status']=='evaluated' for r in rows),evaluated_companies=len(valid_codes),summary=summary,by_horizon=by_horizon,by_window=by_window,decision=dict(passed=all(checks.values()),checks=checks),results=rows,boundary=p['boundary'])
 
 
