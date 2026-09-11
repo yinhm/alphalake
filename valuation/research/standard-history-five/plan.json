@@ -1,0 +1,26 @@
+{
+  "scope": "fixed-five standard-chain historical availability and unchanged-model review; not new forecast candidate",
+  "codes": [
+    "300866",
+    "002032",
+    "000651",
+    "600887",
+    "603288"
+  ],
+  "origins": [
+    "2023-06-30",
+    "2024-06-30",
+    "2025-06-30"
+  ],
+  "forecast_cutoff": "origin year August 31 16:00:00 UTC",
+  "actual_as_of": "2026-09-10T00:00:00+00:00",
+  "database": "workspace/auto-valuation-20260909/market.duckdb",
+  "policy": "existing standard-history-2025H1 policy; change approved report period and review description only; all numerical parameters fixed",
+  "inputs": {
+    "valuation/research/continuing-operations-five/study.json": "210c96f365a3e3fcddf7123f1824f95e9010eeba27807577e48f36a7e726bc62",
+    "valuation/research/standard-history-2025H1/policy.json": "32d4c127a7ef4257c3e97c036aa4b32b348d3664670c691b6a160fc0598d1bab"
+  },
+  "stop": "single read-only audit of 15 positions; no data downloads, mapping relaxation, source fallback, new source investigations or database writes in this phase",
+  "decision": "retain all blocked positions; evaluate and replay only admitted runs using existing review; distinguish standard availability, economic forecast errors and full DCF validity; choose next work from missing input types, not future error rankings",
+  "boundary": "later-acquired source versions; retrospective constant policy; not strict PIT, prospective forecast, company research approval or validated current target price"
+}
