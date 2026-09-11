@@ -1,0 +1,141 @@
+{
+  "audit_id": "tdx-half-growth-source-review-v1",
+  "source": {
+    "path": "valuation/research/tdx-half-growth/first-year-holdout-snapshot.json",
+    "sha256": "667ee5b1cf7e4e15e8048d645d6cf1dd66dfd65ca353e561032e769859ffe625"
+  },
+  "documents": [
+    {
+      "code": "000876",
+      "announcement_id": "1218637101",
+      "full_path": "workspace/tdx-half-growth-scope-20260911/000876-disposal-1218637101.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-12-16/1218637101.PDF",
+      "full_sha256": "bb62587e4855aef3d8cda198281c3adde94e72d0e0a9e27a74daaba31759fa94",
+      "fetched_at": "2026-09-11T05:55:38.261518+00:00",
+      "selected_path": "valuation/research/tdx-half-growth/scope-evidence/000876-comparability-1218637101.pdf",
+      "selected_sha256": "eeb05ba0da2fb564482a14d2db23ef86b1a4e165313a27bfcafffea305739f4f",
+      "original_pages": [
+        5,
+        6,
+        7
+      ],
+      "checks": [],
+      "contains": [
+        [
+          6,
+          "单位：万元"
+        ],
+        [
+          6,
+          "2023年1-8月"
+        ],
+        [
+          6,
+          "营业收入1,363,163.061,851,910.75"
+        ]
+      ]
+    },
+    {
+      "code": "000876",
+      "announcement_id": "1218637100",
+      "full_path": "workspace/tdx-half-growth-scope-20260911/000876-disposal-1218637100.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2023-12-16/1218637100.PDF",
+      "full_sha256": "cb7b937f85a2f8665c374432086d985cae2470daba059166f147d04d44b2cecb",
+      "fetched_at": "2026-09-11T05:55:37.869815+00:00",
+      "selected_path": "valuation/research/tdx-half-growth/scope-evidence/000876-comparability-1218637100.pdf",
+      "selected_sha256": "6470197c855167fc513933fb776ec6c7f45d378805b719bac283fcce39e009b6",
+      "original_pages": [
+        4,
+        5,
+        6,
+        13
+      ],
+      "checks": [],
+      "contains": [
+        [
+          5,
+          "单位：万元"
+        ],
+        [
+          5,
+          "项目2023年1-11月2022年度"
+        ],
+        [
+          6,
+          "营业收入369,977.45350,531.64"
+        ],
+        [
+          13,
+          "2023年1-11月，标的公司向新希望及其子公司采购猪禽等原料肉，交易金额为860,873,795.96元"
+        ],
+        [
+          13,
+          "标的公司向新希望及其子公司销售猪禽等肉产品及其他食品原辅料等，交易金额为103,984,895.76元"
+        ],
+        [
+          13,
+          "该类购销业务将因本次交易完成而被动转变为新希望的日常关联交易"
+        ]
+      ]
+    },
+    {
+      "code": "000876",
+      "announcement_id": "1219915578",
+      "full_path": "workspace/tdx-half-growth-scope-20260911/000876-2023.pdf",
+      "url": "https://static.cninfo.com.cn/finalpage/2024-04-30/1219915578.PDF",
+      "full_sha256": "f74f9058470d3cdb818723226ce1b77e2f1c5a2bdba2bdda6a038a8658202d1c",
+      "fetched_at": "2026-09-11T05:56:37.497049+00:00",
+      "selected_path": "valuation/research/tdx-half-growth/scope-evidence/000876-comparability-1219915578.pdf",
+      "selected_sha256": "fa8433588d8f2c42f775be18dccc7adfc660c14f0219a14d4ed46f50a13ab19b",
+      "original_pages": [
+        30,
+        31,
+        395,
+        396
+      ],
+      "checks": [],
+      "contains": [
+        [
+          30,
+          "实现营业收入46.14亿元"
+        ],
+        [
+          30,
+          "由生猪屠宰加上深加工肉制品和预制菜，则营业收入合计为116.72亿元"
+        ],
+        [
+          30,
+          "公司共屠宰生猪396万头，同比增长36%，实现营业收入70.58亿元"
+        ],
+        [
+          30,
+          "因涉及到向内部屠宰厂销售产生抵减，与每月生猪销售情况简报中的累计销售收入相比较小"
+        ]
+      ]
+    }
+  ],
+  "catalogues": [
+    {
+      "path": "valuation/research/tdx-half-growth/scope-evidence/disposal-catalogue.json",
+      "sha256": "212134b3c567972de9efee92142ddff5086de4a1b079870891724156fa12fb03"
+    },
+    {
+      "path": "valuation/research/tdx-half-growth/scope-evidence/disposal-report-catalogue.json",
+      "sha256": "c907018ff969d93f40f97c57aa82ef7836c900d76a473efcda00817350adb276"
+    }
+  ],
+  "comparison": {
+    "status": "missing_period_matched_external_revenue_and_eliminations",
+    "adjusted_ttm_revenue_cny": null,
+    "missing": [
+      "2023H2被处置业务对外收入",
+      "继续经营集团与两项被处置业务的双向收入抵销及含税口径",
+      "两项被处置业务彼此交易的排除"
+    ],
+    "observed_periods": {
+      "zhongxin": "2023-01-01/2023-08-31",
+      "deyang": "2023-01-01/2023-11-30",
+      "annual_segment": "2023-01-01/2023-12-31"
+    }
+  }
+}

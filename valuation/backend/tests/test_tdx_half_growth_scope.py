@@ -96,3 +96,24 @@ def test_disposal_disclosure_and_accounting_date_boundaries():
     with pytest.raises(ValueError, match='identity differs'): review_disclosures(changed)
     changed = copy.deepcopy(config); changed['catalogues'][0]['sha256'] = '0'*64
     with pytest.raises(ValueError, match='catalogue hash differs'): review_disclosures(changed)
+
+
+def test_comparability_scope_and_unfilled_adjustment():
+    config = json.loads((DIR/'comparability-review.json').read_text())
+    result = audit(config)
+    saved = json.loads((DIR/'comparability-result.json').read_text())
+    assert result == {k: v for k, v in saved.items() if k != 'evidence'}
+    assert result['business_phrases'] == 13 and result['checks'] == []
+    comparison = config['comparison']
+    assert comparison['adjusted_ttm_revenue_cny'] is None
+    assert comparison['status'] == 'missing_period_matched_external_revenue_and_eliminations'
+    assert len(comparison['missing']) == 3
+    assert comparison['observed_periods'] == {'zhongxin': '2023-01-01/2023-08-31', 'deyang': '2023-01-01/2023-11-30', 'annual_segment': '2023-01-01/2023-12-31'}
+    # 原文三个亿元数值的量级核对；不将这个差额冒充可比TTM调整。
+    assert Decimal('116.72')-Decimal('46.14') == Decimal('70.58')
+    changed = copy.deepcopy(config)
+    changed['documents'][1]['contains'][3][1] = changed['documents'][1]['contains'][3][1].replace('860,873,795.96', '860,873,795.97')
+    with pytest.raises(ValueError, match='business phrase missing'): audit(changed)
+    changed = copy.deepcopy(config)
+    changed['documents'][0]['contains'][1][1] = '2023年1-12月'
+    with pytest.raises(ValueError, match='business phrase missing'): audit(changed)
