@@ -1,0 +1,121 @@
+{
+  "protocol_id": "tdx-working-cash-forecast-v2",
+  "phase": "development",
+  "summary": {
+    "candidates": 180,
+    "statuses": {
+      "blocked": 17,
+      "evaluated": 163
+    },
+    "models": {
+      "repeat_latest": {
+        "n": 163,
+        "mae_pct_actual_revenue": 15.25451852687434,
+        "wape_pct": 115.4316221525107
+      },
+      "zero_forecast": {
+        "n": 163,
+        "mae_pct_actual_revenue": 10.443441389655744,
+        "wape_pct": 100.0
+      },
+      "inventory_intensity_half": {
+        "n": 163,
+        "mae_pct_actual_revenue": 10.565783562420412,
+        "wape_pct": 110.37137731106571
+      }
+    }
+  },
+  "by_origin": {
+    "2023-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "blocked": 8,
+        "evaluated": 52
+      },
+      "models": {
+        "repeat_latest": {
+          "n": 52,
+          "mae_pct_actual_revenue": 14.40343395713727,
+          "wape_pct": 129.60432001388955
+        },
+        "zero_forecast": {
+          "n": 52,
+          "mae_pct_actual_revenue": 8.39901591722102,
+          "wape_pct": 100.0
+        },
+        "inventory_intensity_half": {
+          "n": 52,
+          "mae_pct_actual_revenue": 7.745213299301077,
+          "wape_pct": 107.0117602379907
+        }
+      }
+    },
+    "2024-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "blocked": 6,
+        "evaluated": 54
+      },
+      "models": {
+        "repeat_latest": {
+          "n": 54,
+          "mae_pct_actual_revenue": 14.422139024894305,
+          "wape_pct": 103.25354370081345
+        },
+        "zero_forecast": {
+          "n": 54,
+          "mae_pct_actual_revenue": 12.313705140269446,
+          "wape_pct": 100.0
+        },
+        "inventory_intensity_half": {
+          "n": 54,
+          "mae_pct_actual_revenue": 13.041986020396864,
+          "wape_pct": 118.83146332684794
+        }
+      }
+    },
+    "2025-06-30": {
+      "candidates": 60,
+      "statuses": {
+        "evaluated": 57,
+        "blocked": 3
+      },
+      "models": {
+        "repeat_latest": {
+          "n": 57,
+          "mae_pct_actual_revenue": 16.819516609913805,
+          "wape_pct": 117.3595740789377
+        },
+        "zero_forecast": {
+          "n": 57,
+          "mae_pct_actual_revenue": 10.53670247796216,
+          "wape_pct": 100.0
+        },
+        "inventory_intensity_half": {
+          "n": 57,
+          "mae_pct_actual_revenue": 10.793059368586674,
+          "wape_pct": 105.63421572318046
+        }
+      }
+    }
+  },
+  "decision": {
+    "passed": false,
+    "checks": {
+      "minimum_pairs": true,
+      "primary_improvement": true,
+      "wape_nonworse": true,
+      "zero_benchmark_nonworse": false,
+      "each_period_nonworse": true,
+      "leave_one_company_out_nonworse": true
+    }
+  },
+  "boundary": "Later-acquired TDX+FN314 research timing, not strict PIT, standard facts, classified WC or FCFF; current listed industry universe survivor bias; no production policy change",
+  "evidence": {
+    "protocol_sha256": "7ad50fd06ef1815e3dbb40597d85c6768ebffd87c33c3e5ef2df68adb86eee43",
+    "snapshot_sha256": "9be6840d260cca948cd251a91c0aa42f90acaa0ba2aa0839efe9357f564ca96b",
+    "code_sha256": "d0ffa12071ce4c880afdf566b8f0439da49a896c10dbdd9272efe6eb6a2f7a06",
+    "history_sha256": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+    "component_sha256": "75eb978015acbdf2f646f3428bbc893f89cb4edfa8477a24ef8043839cb6fef7"
+  }
+}

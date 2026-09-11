@@ -877,3 +877,48 @@ def test_inventory_gross_net_cash_bridge_and_tampering():
     with pytest.raises(ValueError,match='cash adjustment'):inventory_bridge(report,text,record,Decimal(bridges[0]['net_decrease_cny']))
     bad=copy.deepcopy(ledger);bad['reports'][0].pop('inventory_table')
     with pytest.raises(ValueError,match='partial inventory'):verify(bad,directory,source)
+
+
+def test_working_cash_inventory_driver_signal_and_source_integrity():
+    from collections import defaultdict
+    from tools.backtest_tdx_working_cash import inventory_signal,evaluate,study
+    directory=ROOT/'valuation/research/tdx-working-cash-forecast';p=json.loads((directory/'protocol-v2.json').read_bytes())
+    _,source=fixture();code=source['records'][0]['code'];index=defaultdict(list)
+    for r in source['records']:
+        r['bits'].update(FN17=bits(150 if r['period']>='2025-01-01' else 100),FN230=bits(25),FN146=bits(10),FN147=bits(20),FN148=bits(-5))
+        index[(code,r['period'])].append(r)
+    artifacts={a['file']:a for a in source['artifacts']}
+    # Add previous same-season revenue quarters absent from the minimal fixture.
+    for period,announced in [('2023-09-30',231120),('2023-12-31',240220)]:
+        name='gpcw'+period.replace('-','')+'.zip';artifacts[name]=dict(file=name,report_period=period,fetched_at='2026-09-10T12:00:00Z')
+        r=dict(code=code,period=period,artifact=name,bits=dict(FN314=bits(announced),FN230=bits(25)));index[(code,period)].append(r);source['records'].append(r)
+    source['artifacts']=list(artifacts.values())
+    def signal():return inventory_signal(index,artifacts,code,date(2025,6,30),'2025-09-01T00:00:00+08:00')
+    assert signal()[0]==25  # Half of 150 - 100 * (100/100), not a change in actual FN146.
+    one=dict(p,origins=['2025-06-30'],samples=[dict(code=code,split='development')]);before=evaluate(one,source,'development')[0]
+    assert before['forecasts_cny']['inventory_intensity_half']=='25'
+    changed=copy.deepcopy(source)
+    for r in changed['records']:
+        if r['period']>'2025-06-30':r['bits']['FN17']=bits(9999);r['bits']['FN146']=bits(9999)
+    after=evaluate(one,changed,'development')[0]
+    assert after['forecasts_cny']==before['forecasts_cny'] and after['actual']!=before['actual']
+    row=index[(code,'2024-06-30')][0];row['bits']['FN17']=bits(0)
+    with pytest.raises(ValueError,match='zero ambiguous'):signal()
+    row['bits']['FN17']=bits(100);row['bits']['FN314']=bits(250901)
+    with pytest.raises(ValueError,match='cutoff'):signal()
+    source=json.loads((directory/'snapshot-v2.json').read_bytes());old=json.loads((directory/'snapshot.json').read_bytes());index={(r['code'],r['period']):r for r in source['records']}
+    assert len(source['records'])==len(old['records'])
+    for r in old['records']:
+        current=index[(r['code'],r['period'])]
+        assert current['artifact']==r['artifact'] and all(current['bits'][f]==v for f,v in r['bits'].items())
+    audited=json.loads((ROOT/'valuation/research/tdx-growth-expanded/snapshot-reinvestment.json').read_bytes())
+    audited_index={(r['code'],r['period']):r for r in audited['records']}
+    dev={s['code'] for s in p['samples'] if s['split']=='development'}
+    for r in source['records']:
+        if r['code'] in dev:assert r['bits']['FN17']==audited_index[(r['code'],r['period'])]['bits']['FN17']
+    actual=study(p,source,'development')
+    assert actual['summary']['statuses']=={'blocked':17,'evaluated':163}
+    assert actual['decision']['passed'] is False
+    assert {k for k,v in actual['decision']['checks'].items() if not v}=={'zero_benchmark_nonworse'}
+    saved=json.loads((directory/'development-v2-summary.json').read_bytes())
+    assert {k:v for k,v in actual.items() if k!='results'}=={k:v for k,v in saved.items() if k!='evidence'}

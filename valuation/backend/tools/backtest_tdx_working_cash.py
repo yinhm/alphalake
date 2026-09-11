@@ -9,14 +9,12 @@ from pathlib import Path
 from statistics import mean
 
 from tools.audit_tdx_reinvestment import component
-from tools.backtest_tdx_history import at,available,quarter_periods,window
+from tools.backtest_tdx_history import at,available,quarter_periods,window,value
 
 MODELS=('repeat_latest','zero_forecast','half_latest')
 
 
-def observation(index,artifacts,code,end,cutoff):
-    parts={f:component(index,artifacts,code,end,f,cutoff) for f in ('FN146','FN147','FN148')}
-    if any(p['status']=='blocked' for p in parts.values()):raise ValueError('working cash component blocked: '+str({f:p['issues'] for f,p in parts.items() if p['issues']}))
+def revenue_window(index,artifacts,code,end,cutoff):
     rows={}
     for period in quarter_periods(end):
         matches=index.get((code,period),[])
@@ -26,8 +24,28 @@ def observation(index,artifacts,code,end,cutoff):
         rows[period]=row
     revenue,refs=window(rows,end,'FN230')
     if revenue<=0:raise ValueError('nonpositive revenue')
+    return revenue,refs,rows
+
+
+def observation(index,artifacts,code,end,cutoff):
+    parts={f:component(index,artifacts,code,end,f,cutoff) for f in ('FN146','FN147','FN148')}
+    if any(p['status']=='blocked' for p in parts.values()):raise ValueError('working cash component blocked: '+str({f:p['issues'] for f,p in parts.items() if p['issues']}))
+    revenue,refs,_=revenue_window(index,artifacts,code,end,cutoff)
     amount=sum((Decimal(p['value_cny']) for p in parts.values()),Decimal(0))
     return dict(period=end.isoformat(),working_cash_cny=str(amount),revenue_cny=str(revenue),components=parts,revenue_inputs=refs)
+
+
+def inventory_signal(index,artifacts,code,end,cutoff):
+    history=[]
+    for period in (end,end.replace(year=end.year-1)):
+        revenue,refs,rows=revenue_window(index,artifacts,code,period,cutoff);row=rows[period.isoformat()];inventory=value(row,'FN17')
+        if inventory<=0:raise ValueError('nonpositive inventory; zero ambiguous')
+        history.append(dict(period=period.isoformat(),net_inventory_cny=str(inventory),revenue_cny=str(revenue),revenue_inputs=refs,
+                            inventory_input=dict(field='FN17',artifact=row['artifact'],source_bits=row['bits']['FN17'])))
+    current,prior=history
+    signal=(Decimal(current['net_inventory_cny'])-Decimal(prior['net_inventory_cny'])*Decimal(current['revenue_cny'])/Decimal(prior['revenue_cny']))/2
+    return signal,dict(history=history,inventory_cash_forecast_cny=str(signal),receivables_cash_forecast_cny='0',payables_cash_forecast_cny='0',
+                      boundary='net_inventory_intensity_predictor_not_gross_inventory_or_accounting_identity')
 
 
 def evaluate(p,source,split):
@@ -45,6 +63,9 @@ def evaluate(p,source,split):
             try:
                 base=observation(index,artifacts,s['code'],end,cutoff);amount=Decimal(base['working_cash_cny'])
                 predictions=dict(repeat_latest=amount,zero_forecast=Decimal(0),half_latest=amount/2)
+                if p['candidate']=='inventory_intensity_half':
+                    signal,driver=inventory_signal(index,artifacts,s['code'],end,cutoff);row['driver']=driver
+                    predictions.pop('half_latest');predictions['inventory_intensity_half']=signal
                 row.update(base=base,forecasts_cny={m:str(v) for m,v in predictions.items()})
                 actual=observation(index,artifacts,s['code'],target,p['evaluation_as_of']);a=Decimal(actual['working_cash_cny']);rev=Decimal(actual['revenue_cny'])
                 row.update(status='evaluated',actual=actual,errors={m:dict(cny=str(v-a),pct_actual_revenue=float(100*(v-a)/rev)) for m,v in predictions.items()})
@@ -52,11 +73,11 @@ def evaluate(p,source,split):
     return result
 
 
-def metrics(rows):
+def metrics(rows,models=MODELS):
     valid=[r for r in rows if r['status']=='evaluated'];denominator=sum((abs(Decimal(r['actual']['working_cash_cny'])) for r in valid),Decimal(0))
     return dict(candidates=len(rows),statuses=dict(Counter(r['status'] for r in rows)),models={m:dict(n=len(valid),
         mae_pct_actual_revenue=mean(abs(r['errors'][m]['pct_actual_revenue']) for r in valid) if valid else None,
-        wape_pct=float(100*sum((abs(Decimal(r['errors'][m]['cny'])) for r in valid),Decimal(0))/denominator) if denominator else None) for m in MODELS})
+        wape_pct=float(100*sum((abs(Decimal(r['errors'][m]['cny'])) for r in valid),Decimal(0))/denominator) if denominator else None) for m in models})
 
 
 def component_diagnostics(rows):
@@ -84,20 +105,23 @@ def component_diagnostics(rows):
 
 
 def study(p,source,phase):
-    if p['protocol_id']!='tdx-working-cash-forecast-v1' or source['contract_version']!='tdx-history-source-v1' or (p['baseline'],p['benchmark'],p['candidate'])!=MODELS:raise ValueError('unsupported study')
+    candidate={'tdx-working-cash-forecast-v1':'half_latest','tdx-working-cash-forecast-v2':'inventory_intensity_half'}.get(p['protocol_id'])
+    models=('repeat_latest','zero_forecast',candidate)
+    if candidate is None or source['contract_version']!='tdx-history-source-v1' or (p['baseline'],p['benchmark'],p['candidate'])!=models:raise ValueError('unsupported study')
+    if candidate=='inventory_intensity_half' and (p['driver_policy']['weight']!=.5 or p['driver_policy']['receivables_forecast']!=0 or p['driver_policy']['payables_forecast']!=0):raise ValueError('unsupported inventory driver policy')
     if any(p['gates'][key] is not True for key in ('require_wape_nonworse','require_zero_benchmark_nonworse','require_leave_one_company_out_nonworse')):raise ValueError('required comparison gate disabled')
     if phase not in ('development','holdout'):raise ValueError('invalid phase')
-    rows=evaluate(p,source,phase);summary=metrics(rows);s=summary['models'];b=s['repeat_latest'];c=s['half_latest'];z=s['zero_forecast'];g=p['gates']
+    rows=evaluate(p,source,phase);summary=metrics(rows,models);s=summary['models'];b=s['repeat_latest'];c=s[candidate];z=s['zero_forecast'];g=p['gates']
     sufficient=b['n']>=g['minimum_pairs'] and b['mae_pct_actual_revenue'] is not None and b['mae_pct_actual_revenue']>0
-    by_origin={o:metrics([r for r in rows if r['origin']==o]) for o in p['origins']}
+    by_origin={o:metrics([r for r in rows if r['origin']==o],models) for o in p['origins']}
     checks=dict(minimum_pairs=sufficient,
         primary_improvement=sufficient and c['mae_pct_actual_revenue']<=b['mae_pct_actual_revenue']*(1-g['minimum_primary_improvement_fraction']),
         wape_nonworse=c['wape_pct'] is not None and b['wape_pct'] is not None and c['wape_pct']<=b['wape_pct'],
         zero_benchmark_nonworse=c['mae_pct_actual_revenue'] is not None and c['mae_pct_actual_revenue']<=z['mae_pct_actual_revenue'] and c['wape_pct'] is not None and c['wape_pct']<=z['wape_pct'],
-        each_period_nonworse=all(v['models']['half_latest']['n']>0 and v['models']['half_latest']['mae_pct_actual_revenue']<=v['models']['repeat_latest']['mae_pct_actual_revenue']*g['maximum_each_period_primary_ratio'] for v in by_origin.values()))
+        each_period_nonworse=all(v['models'][candidate]['n']>0 and v['models'][candidate]['mae_pct_actual_revenue']<=v['models']['repeat_latest']['mae_pct_actual_revenue']*g['maximum_each_period_primary_ratio'] for v in by_origin.values()))
     leave=[]
     for code in sorted({r['code'] for r in rows if r['status']=='evaluated'}):
-        m=metrics([r for r in rows if r['code']!=code])['models'];leave.append(m['half_latest']['n']>0 and m['half_latest']['mae_pct_actual_revenue']<=m['repeat_latest']['mae_pct_actual_revenue'])
+        m=metrics([r for r in rows if r['code']!=code],models)['models'];leave.append(m[candidate]['n']>0 and m[candidate]['mae_pct_actual_revenue']<=m['repeat_latest']['mae_pct_actual_revenue'])
     checks['leave_one_company_out_nonworse']=bool(leave) and all(leave)
     return dict(protocol_id=p['protocol_id'],phase=phase,summary=summary,by_origin=by_origin,decision=dict(passed=all(checks.values()),checks=checks),results=rows,boundary=p['boundary'])
 
@@ -107,6 +131,7 @@ def main():
     try:
         if args.diagnose_components and args.phase!='development':raise ValueError('component diagnosis is development only')
         raw=args.protocol.read_bytes();data=args.snapshot.read_bytes();p=json.loads(raw);source=json.loads(data);digest=lambda b:hashlib.sha256(b).hexdigest()
+        if args.diagnose_components and p['protocol_id']!='tdx-working-cash-forecast-v1':raise ValueError('component diagnosis requires original lagged models')
         if source['study_sha256']!=digest(raw):raise ValueError('source/protocol hash differs')
         evidence=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),history_sha256=digest(Path(__file__).with_name('backtest_tdx_history.py').read_bytes()),component_sha256=digest(Path(__file__).with_name('audit_tdx_reinvestment.py').read_bytes()))
         if args.phase=='holdout':
