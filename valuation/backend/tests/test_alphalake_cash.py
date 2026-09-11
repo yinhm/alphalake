@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 from data_sources.alphalake import AlphaLakeRequest
-from data_sources.alphalake_cash import cash_crosscheck,VALIDATION,SCOPE_AUDIT
+from data_sources.alphalake_cash import cash_crosscheck,VALIDATION,SCOPE_AUDIT,UNCERTAINTY
 from tools.backtest_tdx_history import value,quarter_periods
 
 ROOT=Path(__file__).resolve().parents[3]
@@ -94,6 +94,44 @@ def test_cash_check_formula_scope_gaps_and_immutability():
         assert VALIDATION[key]==hashlib.sha256((ROOT/'valuation/research/tdx-operating-cash-forecast'/name).read_bytes()).hexdigest()
 
 
+def test_uncertainty_metadata_matches_frozen_results_and_cannot_mutate_shared_evidence():
+    import hashlib
+    directory = ROOT/'valuation/research/tdx-operating-cash-forecast'
+    p = json.loads((directory/'uncertainty-protocol.json').read_text())
+    assert (UNCERTAINTY['replicates'], UNCERTAINTY['seed']) == (p['sampling']['replicates'], p['sampling']['seed'])
+    assert UNCERTAINTY['confidence_level'] == p['interval']['confidence']
+    assert UNCERTAINTY['current_company_applicability'] == 'not_established_by_research_summary'
+    for population, prefix in [('full_holdout',''), ('forecast_input_subgroup','scope-')]:
+        evidence = UNCERTAINTY['populations'][population]
+        for key, suffix in [('protocol_sha256','protocol.json'), ('result_sha256','result.json')]:
+            assert evidence[key] == hashlib.sha256((directory/(prefix+'uncertainty-'+suffix)).read_bytes()).hexdigest()
+        result = json.loads((directory/(prefix+'uncertainty-result.json')).read_text())
+        scope = result.get('scope', result)
+        assert evidence['candidate_pairs'] == scope['candidates'] and evidence['statuses'] == scope['statuses']
+        assert evidence['outside_scope_pairs'] == scope.get('outside_scope_rows',0)
+        assert UNCERTAINTY['sampled_companies'] == result['companies']
+        assert UNCERTAINTY['sampled_candidate_pairs'] == result['candidates']
+        for kind, metrics in evidence['overall'].items():
+            for metric, values in metrics.items():
+                primary = result['schemes']['stratified']['intervals']['all'][kind][metric]
+                sensitivity = result['schemes']['unstratified_sensitivity']['intervals']['all'][kind][metric]
+                assert values['point'] == primary['point']
+                assert values['stratified_interval'] == primary['interval']
+                assert values['unstratified_sensitivity_interval'] == sensitivity['interval']
+                assert values['unit'] == ('percentage_points' if metric=='wape_reduction_pp' else 'percent_of_baseline_error')
+    request, prior, _ = fixture()
+    report = dict(dcf=dict(fcff_projections=[200],reinvestment_projections=[50],revenue_projections=[2500]))
+    first = cash_crosscheck(request, prior, report)
+    first['evidence']['research_validation'].clear()
+    first['evidence']['research_scope_audit'].clear()
+    first['evidence']['research_uncertainty']['populations'].clear()
+    second = cash_crosscheck(request, prior, report)
+    assert second['evidence']['research_validation'] == VALIDATION
+    assert second['evidence']['research_scope_audit'] == SCOPE_AUDIT
+    assert second['evidence']['research_uncertainty'] == UNCERTAINTY
+    assert second['cash_forecast'] == first['cash_forecast'] and second['comparison'] == first['comparison']
+
+
 def test_real_standard_history_to_company_cash_check(tmp_path):
     import os,subprocess,sys
     from data_sources.alphalake import content_hash
@@ -110,6 +148,7 @@ def test_real_standard_history_to_company_cash_check(tmp_path):
     assert cash['status']=='research_crosscheck_available' and cash['missing']==[]
     assert cash['valuation_run_id']==baseline['valuation']['run_id']
     assert cash['check_id']==content_hash({k:v for k,v in cash.items() if k!='check_id'})
+    assert cash['evidence']['research_uncertainty'] == UNCERTAINTY
     snapshots=[json.loads((output/name).read_text()) for name in ('current.json','prior.json')]
     amounts=[{w['field']:Decimal(w['value']) for w in s['windows'] if w['field'] in ('FN230','FN234','FN114')} for s in snapshots]
     current,prior=amounts;ocf=(current['FN234']+prior['FN234']*current['FN230']/prior['FN230'])/2

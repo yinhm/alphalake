@@ -51,9 +51,15 @@ python -m tools.company_valuation /absolute/market.duckdb 300866 \
 
 [依据](../valuation/research/tdx-operating-cash-forecast/README.md)是三起点留出复验通过的两期TTM现金流率均值×当前TTM收入，资本开支沿用当前值。检查是当前生成的回溯研究核对，不声称该规则在历史估值截止已经可用，也不把现金代理当成FCFF。
 
+`cash_check.evidence.research_uncertainty`现返回版本化的条件重采样证据：分别列出全留出360组（331可评价）与既定预测输入子组255组（244可评价），保留120家公司抽样分母及子组外105组。两套总体OCF/现金代理主误差与WAPE统计均包含点估计、分层区间、不分层敏感性区间及明确单位，并绑定协议和结果哈希。方法为9,999次公司整组抽样、95%逐项百分位区间，三起点及实际值版本截止显式列明；原逐年结果见[全留出复核](../valuation/research/tdx-operating-cash-forecast/uncertainty.md)和[子组复核](../valuation/research/tdx-operating-cash-forecast/scope-uncertainty.md)。
+
+这些是历史误差改善的不确定性，**不是当前公司现金流或估值上下界**。`current_company_applicability=not_established_by_research_summary`明确表示未凭这份摘要判定当前公司的适用性；子组输入齐备不等于完整DCF准入。单期区间跨零、现金代理与WAPE证据较弱、17个单公司行业层和共同冲击等限制随结果返回，不用摘要扩大准入或修改估值。证据以发布时固定内容随代码交付，正常估值无需读取研究目录或重新运行重采样；回归核对每个导出区间与其绑定原结果一致。
+
 成功时列出现金预测、DCF第一年FCFF/再投资，以及两者差额，金额均为人民币元的十进制字符串（引擎原结果为百万元）。按`差额=(DCF NOPAT−预测OCF)−(DCF再投资−预测现金资本开支)`展示算术分解；NOPAT来自DCF已有FCFF与再投资加总，不称独立取数。税项、融资/投资分类、非现金投入、营运项目及不同收入预测假设仍未归因，差额不自动称为估值误差，净差额为零也不证明分类闭合。
 
 `cash_check.status=blocked_missing_standard_history`时按报告期/字段列出`missing_periods`，预测和差额为空；选中估值的状态和退出码仍按估值本身判定。标准证据矛盾或导出失败则作为请求失败，不悄悄忽略。`check_id`绑定现金检查结果、源输入摘要、研究验证摘要与检查代码版本，并引用原`valuation_run_id`；检查随stdout交付，请保存JSON，估值归档不被修改。
+
+不确定性证据接入已完成[两份安克主库前后对照](acceptance/cash-uncertainty-output-20260911.json)：通用情景92.1504元、零增长情景42.2846元及现金预测均不变；仅新增证据、检查代码哈希与`check_id`变化。零增长当前ID与更早归档的差异来自本次之前的政策说明更新，数值输入未变。并发验收另复现了查询以读写方式附加数据库导致的锁冲突，串行复验通过；这项[已记录的运行问题](review-minor-backlog.md)尚未修复，不能把本次结果称为并发验收通过。本次接入验收：专项3项及Python全套368项通过，4项既有外部数据缺失跳过、7条既有警告；Go全套、构建、143个相关文档链接与五份CLI文件哈希检查通过。证据对象按调用隔离，返回值修改不污染后续结果。
 
 [此前主库验收](acceptance/cash-crosscheck-20260911.json)保留缺2024历史的阻断结果。现已完成[真实主库副本正向验收](acceptance/cash-history-upgrade-20260911.json)：三期TDX记录→公告关联→标准物化→两期TTM→统一CLI现金检查，历史不再缺项。[差额解释及复现](anker-cash-bridge-20260911.md)单独记录。现金预测OCF为16.4115亿元，沿用资本开支3.1963亿元，现金代理13.2151亿元；DCF首年FCFF为6.4163亿元，差额−6.7988亿元，仍标记未分类，不能据此修改估值。原run ID和92.1504元条件值完全不变。
 

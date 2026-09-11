@@ -15,4 +15,6 @@
 | 10 | 迁移 021 清除译本相关更正前序后，重链仍依赖目录重放；`status` 尚无待重放提示。现有迁移说明和 ADR 007 已列出操作流程。 | 需要自动化升级巡检时再增加准确的待重放标记及提示；不能将所有 NULL 前序当成待重扫，因为同日精度或没有合格前序也会合法为空。固定身份样本范围是已声明限制，不另作缺陷。 |
 | 11 | Python 子进程校验在普通 Go 测试环境中可能跳过：[SAFE 测试](../internal/source/safe/rates_test.go) 找不到 `python3` 时 skip；[Damodaran 国家风险](../internal/ingest/country_risk_test.go)和[行业 Beta 归档测试](../internal/ingest/beta_yield_test.go)未设置 `ALPHALAKE_TEST_PYTHON` 时 skip，即使本机已有 Python。CI 已安装依赖并显式执行相关归档测试，当前不阻塞。 | 维护本地验收入口时提供显式的完整校验模式，缺解释器、依赖或配置须失败，并清楚区分 Go 契约校验与真实解析覆盖；用缺 Python/未配置环境验证严格入口不会静默跳过。 |
 
+本次另发现需要优先处理的运行问题：两路主库现金验收并发执行时，`valuation-readiness`复现DuckDB文件锁冲突。调用链为[`runValuationReadiness`](../cmd/alphalake/commands_valuation.go)→[`duckstore.Open`](../internal/store/duckdb/store.go)，查询仍以默认读写方式ATTACH；Python入口捕获子进程异常后只返回退出码说明，未展开底层stderr。串行复验用于完成本次证据输出验收，不代表并发问题已修复。关闭标准：查询链使用明确只读连接，跨进程并发查询同库通过，读路径不能写入或创建数据库；合法写入链保留，错误原因在结构化失败中可见。
+
 完成后删除对应待办，并在相关验收记录写明提交与验证结果；本清单不重复维护已关闭事项。

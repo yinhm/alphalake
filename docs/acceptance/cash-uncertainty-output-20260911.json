@@ -1,0 +1,77 @@
+{
+  "database": "workspace/auto-valuation-20260909/market.duckdb",
+  "report_period": "2026-06-30",
+  "information_as_of": "2026-09-10T22:18:56.906406Z",
+  "cases": [
+    {
+      "scenario": "baseline",
+      "valuation_run_id": "87d9194eaf0df549a13eae2340eeb55ccc5d808251f4ddc9cef1c08ffcbfd695",
+      "value_per_share": {
+        "value": 92.15042148953913,
+        "currency": "CNY",
+        "unit": "CNY/share"
+      },
+      "engine_revision": "bf7df3a29fb22514fdab88446385cd5895018549083d6b56223b2488c96efbc9",
+      "valuation_and_non_cash_envelope_identical": true,
+      "all_cash_content_identical_except_new_research_evidence_code_hash_check_id": true,
+      "old_check_id": "2b7cb556bef3891c3f2e511076d905edeb1989f1d67c874ba77188f592364bfb",
+      "new_check_id": "4d53fb9d9be8f18798c2bf904948d697d133b4bb8fffc1ffad96b8fc3ed09afa",
+      "cash_forecast": {
+        "operating_cashflow": "1641145397.607068123982006781",
+        "capital_expenditure": "319634280.0000000000",
+        "ocf_less_capex": "1321511117.607068123982006781"
+      },
+      "old_file": "workspace/cash-uncertainty-output-20260911/baseline-before.json",
+      "old_sha256": "3dfadfe714c91faf6a98992f7bafd48736d5f48b049618a79d3e988d09dcd725",
+      "new_file": "workspace/cash-uncertainty-output-20260911/baseline-after.json",
+      "new_sha256": "cf17fbaf2c39e0442fcc53e426470545ce54e4fedd82a61ceaf3821510c23b24"
+    },
+    {
+      "scenario": "zero",
+      "valuation_run_id": "ef7a5720fefbaefa683ec396a1335e39eaadb3c4842adba4cf1005a02cd6b44b",
+      "value_per_share": {
+        "value": 42.284555083108394,
+        "currency": "CNY",
+        "unit": "CNY/share"
+      },
+      "engine_revision": "bf7df3a29fb22514fdab88446385cd5895018549083d6b56223b2488c96efbc9",
+      "valuation_and_non_cash_envelope_identical": true,
+      "all_cash_content_identical_except_new_research_evidence_code_hash_check_id": true,
+      "old_check_id": "e966ef6badbc1e5b1465715c4eb6fbe509905b44cf30cb6ddf7031663bdc566b",
+      "new_check_id": "c259afb7f0de6f673b024ae970f75780c39afe13581357f86027c86b260e5580",
+      "cash_forecast": {
+        "operating_cashflow": "1641145397.607068123982006781",
+        "capital_expenditure": "319634280.0000000000",
+        "ocf_less_capex": "1321511117.607068123982006781"
+      },
+      "old_file": "workspace/cash-uncertainty-output-20260911/zero-before.json",
+      "old_sha256": "601ac6ee924f7227c67e80a6adac90d5a7b5e55439ffaa8ccf4c4791edfea3f3",
+      "new_file": "workspace/cash-uncertainty-output-20260911/zero-after.json",
+      "new_sha256": "e650234c42e82ab0a24307c084e89f8a112eb0c3253f129211c2cb72dbee29ed"
+    }
+  ],
+  "existing_zero_reference": {
+    "run_id": "c372953ebae98a876aae0e5165b869f9b2b42b0f17027dd20c034a214ec4af3c",
+    "difference_before_this_change": "policy.review_note_only; numeric_inputs_and_42.284555083108394_value_unchanged"
+  },
+  "operational_failure": {
+    "file": "workspace/cash-uncertainty-output-20260911/zero-after-concurrent-failure.json",
+    "sha256": "e1ab30acc4f0493a738c08445d0b44544dc2dd48fdd8c9716777062ec6ec5bfd",
+    "status": "retained_failure_then_serial_replay_succeeded",
+    "root_cause": "valuation-readiness_uses_duckstore_Open_default_read_write_ATTACH",
+    "independently_reproduced_stderr_excerpt": "Could not set lock on file; Conflicting lock is held",
+    "unresolved": "concurrent_read_only_query_connections_and_subprocess_stderr_propagation",
+    "backlog": "docs/review-minor-backlog.md"
+  },
+  "boundary": "two_existing_Anker_policy_scenarios_not_market_accuracy_validation; new_evidence_not_company_prediction_interval; no_database_copy_or_financial_restatement",
+  "checks": {
+    "targeted_python": "3 passed in 19.28s including real standard-history CLI",
+    "full_python": "368 passed, 4 existing external-data skips, 7 existing warnings in 473.62s",
+    "go_test": "passed",
+    "go_build": "passed",
+    "local_document_links": 143,
+    "cli_receipt_file_hashes": 5,
+    "diff_check": "passed",
+    "concurrent_cli": "failed_existing_lock_conflict_retained_and_backlogged; serial_before_after_passed"
+  }
+}

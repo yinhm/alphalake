@@ -43,7 +43,7 @@
 
 ## 系统边界与验证
 
-维持OCF合理性检查的限定用途，不替换DCF再投资、不扩大准入、不把区间转换成估值上下界。现有`--cash-check`仍引用原范围摘要；本轮不修改生产输出，新不确定性结果尚未附加到结构化证据中。后续接入必须同时标明全留出与子组分母，并保持数值计算不受证据更新影响。
+维持OCF合理性检查的限定用途，不替换DCF再投资、不扩大准入、不把区间转换成估值上下界。后续已将本结果与全留出区间加入统一`--cash-check`的`evidence.research_uncertainty`，见[输出契约](../../../docs/company-valuation-entry.md#显式现金交叉检查)。两套分母分别返回，保留原范围摘要和研究哈希；不根据此摘要认定当前公司适用性，不修改现金预测或估值。以下验收记录仅指本研究提交时的范围，接口接入另作前后对照。
 
 ```sh
 workspace/anker-agent-adapter-20260906/venv/bin/python -m tools.audit_tdx_ocf_scope_uncertainty
