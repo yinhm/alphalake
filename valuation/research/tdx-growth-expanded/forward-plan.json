@@ -1,0 +1,23 @@
+{
+  "study_id": "fixed-calibration-forward-h1-v1",
+  "designed_at": "2026-09-11T21:56:15+00:00",
+  "origin": "2026-06-30",
+  "target": "2027-06-30",
+  "forecast_cutoff": "2026-09-01T00:00:00+08:00",
+  "evaluation_cutoff": "2027-09-01T00:00:00+08:00",
+  "parent_path": "valuation/research/tdx-growth-expanded/q3-protocol.json",
+  "parent_sha256": "9782771f0bae59a65a46565dd1a4991948ec4ec13941142f4771cc0030428b78",
+  "source_path": "valuation/research/tdx-growth-expanded/snapshot-v7.json",
+  "source_sha256": "56d8019d94a599c2baf1340ff5c08a4b94478c96bb6849e46ebb779fb1658b3c",
+  "models": [
+    "current_rule",
+    "zero_growth",
+    "bias_half"
+  ],
+  "sample": "unchanged parent holdout 120 companies, all input rejections retained; parent development 60 used for prior-window fit",
+  "policy": "unchanged parent numerical policy and half calibration; forecast first year only; no full DCF or production adoption",
+  "gates": "unchanged parent validation gates; future pass is additional evidence, not replacement of historical failures or automatic adoption",
+  "actual_version": "first evaluation at fixed cutoff; persist fetched source and FN314 availability; revisions are separate later reviews, never overwrite frozen forecasts",
+  "stop": "publish forecasts once, no refit after observing target; evaluate once at fixed cutoff with missing/failed rows retained; no sample/threshold tuning",
+  "boundary": "saved in September 2026, not a June 2026 or historical contemporaneous forecast; origin source acquired later; known companies, not new-company holdout; no strict PIT, calibrated value interval or full DCF accuracy claim"
+}
