@@ -97,11 +97,43 @@ UNCERTAINTY = {'schema_version': 'cash-research-uncertainty-v1',
                  'research_obtained_later_not_available_at_historical_information_cutoff',
                  'reported_OCF_less_cash_capex_not_FCFF_no_valuation_adjustment']}
 
+# Fixed subsequent evidence; include failures alongside the original positive study.
+REPLICATION = {'status': 'failed_new_company_replication_no_generalization',
+ 'protocol_sha256': 'c7e0610e13027f015de79c1d4d556e3abe0e8249b174f65184e9f7335287e457',
+ 'summary_sha256': '5a7e4722e82375c2b35ece34d942abcdd44eabc7111f30cb99287559489a5a03',
+ 'sampled_companies': 120,
+ 'origins': ['2023-06-30', '2024-06-30', '2025-06-30'],
+ 'evaluation_as_of': '2026-09-10T00:00:00+08:00',
+ 'summary': {'candidates': 360,
+             'statuses': {'evaluated': 324, 'blocked': 36},
+             'metrics': {'ocf_cny': {'repeat_latest': {'n': 324,
+                                                       'mae_pct_actual_revenue': 12.191965945181977,
+                                                       'wape_pct': 79.05549150791553},
+                                     'mean_two_ocf_margins': {'n': 324,
+                                                              'mae_pct_actual_revenue': 12.786295933919783,
+                                                              'wape_pct': 71.21827512924511}},
+                         'cash_proxy_cny': {'repeat_latest': {'n': 324,
+                                                              'mae_pct_actual_revenue': 15.83186855235753,
+                                                              'wape_pct': 134.9900927640204},
+                                            'mean_two_ocf_margins': {'n': 324,
+                                                                     'mae_pct_actual_revenue': 16.555232485309638,
+                                                                     'wape_pct': 132.63689431195448}}}},
+ 'decision': {'passed': False,
+              'checks': {'minimum_pairs': True,
+                         'primary_improvement': False,
+                         'wape_nonworse': True,
+                         'zero_benchmark_nonworse': True,
+                         'each_period_nonworse': False,
+                         'cash_proxy_nonworse': False,
+                         'leave_one_company_out_nonworse': False}},
+ 'boundary': 'original_holdout_improvement_not_replicated_in_new_companies; diagnostic_only_no_FCFF_or_valuation_adjustment; '
+             'fixed_origins_later_acquired_survivor_sample_not_strict_PIT'}
+
 def cash_crosscheck(request,prior_data,report):
     current=request.data;prior=Snapshot.model_validate(prior_data)
     result=dict(model_id=MODEL,status='blocked_missing_standard_history',code=current.code,report_period=current.report_period.isoformat(),
         information_as_of=current.information_as_of.isoformat(),unit='CNY',cash_forecast=None,comparison=None,missing=[],
-        evidence=dict(research_validation=VALIDATION,research_scope_audit=SCOPE_AUDIT,research_uncertainty=UNCERTAINTY,current_snapshot_sha256=content_hash(current.model_dump(mode='json')),prior_snapshot_sha256=content_hash(prior.model_dump(mode='json')),
+        evidence=dict(research_validation=VALIDATION,research_scope_audit=SCOPE_AUDIT,research_uncertainty=UNCERTAINTY,research_replication=REPLICATION,current_snapshot_sha256=content_hash(current.model_dump(mode='json')),prior_snapshot_sha256=content_hash(prior.model_dump(mode='json')),
                       code_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()),
         boundary='retrospective_research_crosscheck_not_asof_policy; reported_OCF_less_cash_capex_not_FCFF; no_valuation_adjustment; formula_validation_not_independent_semantic_evidence')
     result['evidence'] = deepcopy(result['evidence'])

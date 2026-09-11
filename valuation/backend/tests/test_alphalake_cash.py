@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 from data_sources.alphalake import AlphaLakeRequest
-from data_sources.alphalake_cash import cash_crosscheck,VALIDATION,SCOPE_AUDIT,UNCERTAINTY
+from data_sources.alphalake_cash import cash_crosscheck,VALIDATION,SCOPE_AUDIT,UNCERTAINTY,REPLICATION
 from tools.backtest_tdx_history import value,quarter_periods
 
 ROOT=Path(__file__).resolve().parents[3]
@@ -125,10 +125,12 @@ def test_uncertainty_metadata_matches_frozen_results_and_cannot_mutate_shared_ev
     first['evidence']['research_validation'].clear()
     first['evidence']['research_scope_audit'].clear()
     first['evidence']['research_uncertainty']['populations'].clear()
+    first['evidence']['research_replication'].clear()
     second = cash_crosscheck(request, prior, report)
     assert second['evidence']['research_validation'] == VALIDATION
     assert second['evidence']['research_scope_audit'] == SCOPE_AUDIT
     assert second['evidence']['research_uncertainty'] == UNCERTAINTY
+    assert second['evidence']['research_replication'] == REPLICATION
     assert second['cash_forecast'] == first['cash_forecast'] and second['comparison'] == first['comparison']
 
 
@@ -149,6 +151,8 @@ def test_real_standard_history_to_company_cash_check(tmp_path):
     assert cash['valuation_run_id']==baseline['valuation']['run_id']
     assert cash['check_id']==content_hash({k:v for k,v in cash.items() if k!='check_id'})
     assert cash['evidence']['research_uncertainty'] == UNCERTAINTY
+    assert cash['evidence']['research_replication'] == REPLICATION
+    assert cash['evidence']['research_replication']['decision']['passed'] is False
     snapshots=[json.loads((output/name).read_text()) for name in ('current.json','prior.json')]
     amounts=[{w['field']:Decimal(w['value']) for w in s['windows'] if w['field'] in ('FN230','FN234','FN114')} for s in snapshots]
     current,prior=amounts;ocf=(current['FN234']+prior['FN234']*current['FN230']/prior['FN230'])/2
@@ -168,3 +172,52 @@ def test_real_standard_history_to_company_cash_check(tmp_path):
     missing=copy.deepcopy(snapshots[1]);missing['windows']=[w for w in missing['windows'] if w['field']!='FN234']
     blocked=cash_crosscheck(request,missing,{'dcf':{}})
     assert blocked['status']=='blocked_missing_standard_history' and blocked['cash_forecast'] is None
+
+
+def test_failed_cash_replication_is_bound_to_actual_result():
+    import gzip, hashlib
+    from tools.backtest_tdx_operating_cash import study
+    directory = ROOT/'valuation/research/tdx-operating-cash-replication'
+    p = json.loads((directory/'protocol.json').read_bytes())
+    source = json.loads(gzip.decompress((directory/'snapshot.json.gz').read_bytes()))
+    saved = json.loads(gzip.decompress((directory/'holdout.json.gz').read_bytes()))
+    assert source['study_sha256'] == REPLICATION['protocol_sha256'] == hashlib.sha256((directory/'protocol.json').read_bytes()).hexdigest()
+    assert hashlib.sha256((directory/'holdout-summary.json').read_bytes()).hexdigest() == REPLICATION['summary_sha256']
+    assert hashlib.sha256(gzip.decompress((directory/'snapshot.json.gz').read_bytes())).hexdigest() == saved['evidence']['snapshot_sha256']
+    result = study(p, source, 'holdout')
+    assert result == {k:v for k,v in saved.items() if k!='evidence'}
+    assert result['decision'] == REPLICATION['decision'] and result['decision']['passed'] is False
+    assert result['summary']['candidates'] == REPLICATION['summary']['candidates'] == 360
+    assert result['summary']['statuses'] == REPLICATION['summary']['statuses'] == {'evaluated':324,'blocked':36}
+    for kind, models in REPLICATION['summary']['metrics'].items():
+        for model, values in models.items():
+            assert values == result['summary']['targets'][kind][model]
+    audit = json.loads(gzip.decompress((directory/'sampling.json.gz').read_bytes()))
+    holdout = {s['code'] for s in p['samples'] if s['split']=='holdout'}
+    assert len(holdout) == REPLICATION['sampled_companies'] == 120
+    assert holdout == set(audit['selected_codes']) and not holdout.intersection(audit['excluded_codes'])
+    assert result['by_origin'].keys() == dict.fromkeys(REPLICATION['origins']).keys()
+    universe = json.loads((ROOT/audit['universe']['path']).read_bytes())
+    assert hashlib.sha256((ROOT/audit['universe']['path']).read_bytes()).hexdigest() == audit['universe']['sha256']
+    eligible = [r for r in universe['companies'] if r['code'] not in audit['excluded_codes']]
+    assert len(eligible) == audit['eligible_count']
+    selected = sorted(eligible, key=lambda r:hashlib.sha256((audit['seed']+':'+r['code']).encode()).hexdigest())[:120]
+    assert [r['code'] for r in selected] == audit['selected_codes']
+    valid = [r for r in result['results'] if r['status']=='evaluated']
+    for kind in ('ocf_cny','cash_proxy_cny'):
+        for model, score in result['summary']['targets'][kind].items():
+            distances = [abs(Decimal(r['forecasts'][model][kind])-Decimal(r['actual'][kind])) for r in valid]
+            mae = sum(d/Decimal(r['actual']['revenue_cny']) for d,r in zip(distances,valid))*100/len(valid)
+            wape = sum(distances)*100/sum(abs(Decimal(r['actual'][kind])) for r in valid)
+            assert score['mae_pct_actual_revenue'] == pytest.approx(float(mae),rel=1e-14)
+            assert score['wape_pct'] == pytest.approx(float(wape),rel=1e-14)
+    # Missing future outcome must keep the already computed forecast.
+    row = next(r for r in result['results'] if r['status']=='evaluated' and r['origin']=='2025-06-30')
+    changed = copy.deepcopy(source)
+    changed['records'] = [r for r in changed['records'] if (r['code'],r['period'])!=(row['code'],row['target'])]
+    from tools.backtest_tdx_operating_cash import evaluate
+    rerun = evaluate(p, changed, 'holdout')
+    for original, altered in zip(result['results'],rerun):
+        assert original.get('forecasts') == altered.get('forecasts')
+    altered = next(r for r in rerun if (r['code'],r['origin'])==(row['code'],row['origin']))
+    assert altered['status']=='blocked' and 'errors' not in altered and altered['actual_fcff'] is None

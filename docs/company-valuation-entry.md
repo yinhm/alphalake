@@ -58,7 +58,7 @@ python -m tools.company_valuation /absolute/market.duckdb 300866 \
   --cash-check > company-with-cash-check.json
 ```
 
-[依据](../valuation/research/tdx-operating-cash-forecast/README.md)是三起点留出复验通过的两期TTM现金流率均值×当前TTM收入，资本开支沿用当前值。检查是当前生成的回溯研究核对，不声称该规则在历史估值截止已经可用，也不把现金代理当成FCFF。
+[原研究](../valuation/research/tdx-operating-cash-forecast/README.md)采用两期TTM现金流率均值×当前TTM收入，资本开支沿用当前值，曾在原120家三起点通过；[新120家复验](../valuation/research/tdx-operating-cash-replication/README.md)未通过，不能只据原6.84%改善宣称普遍有效。`cash_check.evidence.research_replication`返回失败状态、协议/摘要哈希、样本分母、误差和门槛；现金公式及选中估值不变，检查证据变化会改变check ID。检查是当前生成的回溯研究核对，不声称该规则在历史估值截止已经可用，也不把现金代理当成FCFF。
 
 `cash_check.evidence.research_uncertainty`现返回版本化的条件重采样证据：分别列出全留出360组（331可评价）与既定预测输入子组255组（244可评价），保留120家公司抽样分母及子组外105组。两套总体OCF/现金代理主误差与WAPE统计均包含点估计、分层区间、不分层敏感性区间及明确单位，并绑定协议和结果哈希。方法为9,999次公司整组抽样、95%逐项百分位区间，三起点及实际值版本截止显式列明；原逐年结果见[全留出复核](../valuation/research/tdx-operating-cash-forecast/uncertainty.md)和[子组复核](../valuation/research/tdx-operating-cash-forecast/scope-uncertainty.md)。
 

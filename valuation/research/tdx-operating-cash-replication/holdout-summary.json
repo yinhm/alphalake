@@ -1,0 +1,211 @@
+{
+  "protocol_id": "tdx-operating-cash-forecast-v1",
+  "phase": "holdout",
+  "summary": {
+    "candidates": 360,
+    "statuses": {
+      "evaluated": 324,
+      "blocked": 36
+    },
+    "targets": {
+      "ocf_cny": {
+        "repeat_latest": {
+          "n": 324,
+          "mae_pct_actual_revenue": 12.191965945181977,
+          "wape_pct": 79.05549150791553
+        },
+        "zero_ocf": {
+          "n": 324,
+          "mae_pct_actual_revenue": 15.851028630880105,
+          "wape_pct": 100.0
+        },
+        "mean_two_ocf_margins": {
+          "n": 324,
+          "mae_pct_actual_revenue": 12.786295933919783,
+          "wape_pct": 71.21827512924511
+        }
+      },
+      "cash_proxy_cny": {
+        "repeat_latest": {
+          "n": 324,
+          "mae_pct_actual_revenue": 15.83186855235753,
+          "wape_pct": 134.9900927640204
+        },
+        "zero_ocf": {
+          "n": 324,
+          "mae_pct_actual_revenue": 19.557117328220865,
+          "wape_pct": 180.47240768599636
+        },
+        "mean_two_ocf_margins": {
+          "n": 324,
+          "mae_pct_actual_revenue": 16.555232485309638,
+          "wape_pct": 132.63689431195448
+        }
+      }
+    }
+  },
+  "by_origin": {
+    "2023-06-30": {
+      "candidates": 120,
+      "statuses": {
+        "evaluated": 103,
+        "blocked": 17
+      },
+      "targets": {
+        "ocf_cny": {
+          "repeat_latest": {
+            "n": 103,
+            "mae_pct_actual_revenue": 14.194118634966097,
+            "wape_pct": 135.13695674453314
+          },
+          "zero_ocf": {
+            "n": 103,
+            "mae_pct_actual_revenue": 16.099792077476422,
+            "wape_pct": 100.0
+          },
+          "mean_two_ocf_margins": {
+            "n": 103,
+            "mae_pct_actual_revenue": 13.28857735048523,
+            "wape_pct": 95.91925747627292
+          }
+        },
+        "cash_proxy_cny": {
+          "repeat_latest": {
+            "n": 103,
+            "mae_pct_actual_revenue": 18.30738006390496,
+            "wape_pct": 235.74888206463467
+          },
+          "zero_ocf": {
+            "n": 103,
+            "mae_pct_actual_revenue": 20.03356362549052,
+            "wape_pct": 174.42317304316632
+          },
+          "mean_two_ocf_margins": {
+            "n": 103,
+            "mae_pct_actual_revenue": 16.671596813117535,
+            "wape_pct": 161.9546563600709
+          }
+        }
+      }
+    },
+    "2024-06-30": {
+      "candidates": 120,
+      "statuses": {
+        "evaluated": 107,
+        "blocked": 13
+      },
+      "targets": {
+        "ocf_cny": {
+          "repeat_latest": {
+            "n": 107,
+            "mae_pct_actual_revenue": 10.752860584748646,
+            "wape_pct": 50.850960223760815
+          },
+          "zero_ocf": {
+            "n": 107,
+            "mae_pct_actual_revenue": 15.357289289367204,
+            "wape_pct": 100.0
+          },
+          "mean_two_ocf_margins": {
+            "n": 107,
+            "mae_pct_actual_revenue": 13.230292450295405,
+            "wape_pct": 75.07458823743836
+          }
+        },
+        "cash_proxy_cny": {
+          "repeat_latest": {
+            "n": 107,
+            "mae_pct_actual_revenue": 11.989841309654329,
+            "wape_pct": 84.34361839271807
+          },
+          "zero_ocf": {
+            "n": 107,
+            "mae_pct_actual_revenue": 17.346655813052323,
+            "wape_pct": 181.7625278040866
+          },
+          "mean_two_ocf_margins": {
+            "n": 107,
+            "mae_pct_actual_revenue": 15.234344595189011,
+            "wape_pct": 154.74660033630218
+          }
+        }
+      }
+    },
+    "2025-06-30": {
+      "candidates": 120,
+      "statuses": {
+        "evaluated": 114,
+        "blocked": 6
+      },
+      "targets": {
+        "ocf_cny": {
+          "repeat_latest": {
+            "n": 114,
+            "mae_pct_actual_revenue": 11.733742669029363,
+            "wape_pct": 58.16007134680139
+          },
+          "zero_ocf": {
+            "n": 114,
+            "mae_pct_actual_revenue": 16.0896906882701,
+            "wape_pct": 100.0
+          },
+          "mean_two_ocf_margins": {
+            "n": 114,
+            "mae_pct_actual_revenue": 11.915746695687918,
+            "wape_pct": 50.564047727135424
+          }
+        },
+        "cash_proxy_cny": {
+          "repeat_latest": {
+            "n": 114,
+            "mae_pct_actual_revenue": 17.201335475865047,
+            "wape_pct": 100.16407491601709
+          },
+          "zero_ocf": {
+            "n": 114,
+            "mae_pct_actual_revenue": 21.201375341416124,
+            "wape_pct": 183.92396179172147
+          },
+          "mean_two_ocf_margins": {
+            "n": 114,
+            "mae_pct_actual_revenue": 17.689877033368358,
+            "wape_pct": 93.86245745419525
+          }
+        }
+      }
+    }
+  },
+  "decision": {
+    "passed": false,
+    "checks": {
+      "minimum_pairs": true,
+      "primary_improvement": false,
+      "wape_nonworse": true,
+      "zero_benchmark_nonworse": true,
+      "each_period_nonworse": false,
+      "cash_proxy_nonworse": false,
+      "leave_one_company_out_nonworse": false
+    }
+  },
+  "refusals": {
+    "negative capex or nonpositive revenue: 2022-06-30": 1,
+    "missing source identity: 2021-09-30": 3,
+    "missing source identity: 2022-09-30": 17,
+    "missing source identity: 2022-06-30": 4,
+    "missing source identity: 2023-09-30": 5,
+    "missing source identity: 2024-09-30": 4,
+    "missing source identity: 2023-06-30": 1,
+    "negative capex or nonpositive revenue: 2026-06-30": 1
+  },
+  "boundary": "既有固定规则的新公司复验；原60家开发不改，用于校验选择回执；120家排除本地研究samples/results已涉及公司，非新时间窗口、非严格PIT；当前生存者总体；不按未来误差/异常年份删样本；报表OCF及OCF减购建现金不是FCFF，不替换生产DCF。",
+  "evidence": {
+    "protocol_sha256": "c7e0610e13027f015de79c1d4d556e3abe0e8249b174f65184e9f7335287e457",
+    "snapshot_sha256": "077dd10a81469c152b6065298a2cc87bed7d6e0e319a5f2e22d4758970b29499",
+    "code_sha256": "f31fbc00624d04ffe5a2aca77180e7e28e88650eeef531e3d11a052e6830a544",
+    "helpers": {
+      "backtest_tdx_capex": "7ccc05b8e2325cf9009ed7fd629f6de7b8a5ffc7ab46082c51d95c42c777767d",
+      "backtest_tdx_history": "8165fee901f94220abe6ae71b0f65c4b4336f68a601c47ab72cb7da82137238d",
+      "audit_tdx_reinvestment": "75eb978015acbdf2f646f3428bbc893f89cb4edfa8477a24ef8043839cb6fef7"
+    }
+  }
+}
