@@ -1,0 +1,96 @@
+{
+  "method": "terminal_ROIC_equal_WACC_no_perpetual_excess_returns_sensitivity_not_forecast_validation",
+  "source": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm",
+  "report_period": "2026-06-30",
+  "information_as_of": "2026-09-10T04:42:23Z",
+  "engine_revision": "bf7df3a29fb22514fdab88446385cd5895018549083d6b56223b2488c96efbc9",
+  "denominator": 5,
+  "evaluated": 2,
+  "blocked": 3,
+  "companies": [
+    {
+      "code": "300866",
+      "status": "terminal_roic_only_sensitivity",
+      "baseline_run_id": "6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b",
+      "baseline_file": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b.json",
+        "sha256": "328ffa8de193bb8fe8253a0be686b051f1ea4160ba3c80a182781052a7b028b7"
+      },
+      "scenario_request_sha256": "569d78361e1505586b5773f3e3fd74c7c9d4c7b50e299e6193a9243eab00a4f7",
+      "resolved_changed_paths": [
+        "/prepared_ttm/provenance/assumption_rules",
+        "/prepared_ttm/provenance/valuation_policy",
+        "/valuation_assumptions/roic_stable_override"
+      ],
+      "wacc": 0.08075367197021832,
+      "terminal_growth": 0.02,
+      "terminal_roic_before": 0.1,
+      "terminal_roic_after": 0.08075367197021832,
+      "terminal_reinvestment_rate_before": 0.2,
+      "terminal_reinvestment_rate_after": 0.24766675634732663,
+      "value_before": 126.13784833230838,
+      "value_after": 119.83396547562994,
+      "value_delta": -6.30388285667844,
+      "value_relative_change": -0.04997614070656215,
+      "terminal_value_after_million_cny": 118320.18192313277,
+      "decimal_terminal_value_after": "118320.1819231327789103698593",
+      "checks": [
+        "only_request_terminal_roic_changed",
+        "resolved_change_limited_to_terminal_roic_and_two_provenance_hashes",
+        "ten_year_cashflows_and_discounts_identical",
+        "wacc_and_equity_bridge_identical",
+        "decimal_terminal_and_per_share_delta_match"
+      ]
+    },
+    {
+      "code": "002032",
+      "status": "terminal_roic_only_sensitivity",
+      "baseline_run_id": "183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d",
+      "baseline_file": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d.json",
+        "sha256": "9560ca4d3056791d115b2b10f0f5b84b0cc789fd5663fc12a9d16880fcf42b70"
+      },
+      "scenario_request_sha256": "66cf87d05f1ae03458f76d28731e5d23bd8ea39a81a59bb4d78d0adea47535c4",
+      "resolved_changed_paths": [
+        "/prepared_ttm/provenance/assumption_rules",
+        "/prepared_ttm/provenance/valuation_policy",
+        "/valuation_assumptions/roic_stable_override"
+      ],
+      "wacc": 0.057531403615019586,
+      "terminal_growth": 0.02,
+      "terminal_roic_before": 0.1,
+      "terminal_roic_after": 0.057531403615019586,
+      "terminal_reinvestment_rate_before": 0.2,
+      "terminal_reinvestment_rate_after": 0.34763622549230916,
+      "value_before": 43.252612680123605,
+      "value_after": 38.00047127187885,
+      "value_delta": -5.252141408244755,
+      "value_relative_change": -0.12142946015971735,
+      "terminal_value_after_million_cny": 33127.801434669804,
+      "decimal_terminal_value_after": "33127.80143466980010133202375",
+      "checks": [
+        "only_request_terminal_roic_changed",
+        "resolved_change_limited_to_terminal_roic_and_two_provenance_hashes",
+        "ten_year_cashflows_and_discounts_identical",
+        "wacc_and_equity_bridge_identical",
+        "decimal_terminal_and_per_share_delta_match"
+      ]
+    },
+    {
+      "code": "000651",
+      "status": "rejected_input_or_policy",
+      "reason": "financial operations require separate model: FN506"
+    },
+    {
+      "code": "600887",
+      "status": "rejected_input_or_policy",
+      "reason": "financial operations require separate model: FN506"
+    },
+    {
+      "code": "603288",
+      "status": "blocked_review_exclusion",
+      "reason": "generic-valuation-2026/values.json：原披露与后续比较列存在差异，可比历史尚待协调"
+    }
+  ],
+  "boundary": "仅终值ROIC改为既有WACC；非公司ROIC估计、非默认政策采用、非当前目标价。保留原增长、显式期再投资、参考权重及全部阻断。"
+}

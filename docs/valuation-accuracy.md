@@ -52,6 +52,51 @@ print('two complete reports and forecast paths replayed')
 PYTHON
 ```
 
+## 终值超额回报单因素对照（2026-09-11）
+
+复用上方五家公司名单，两个可计算结果进入敏感性，三个阻断原样保留。[回执](acceptance/terminal-roic-sensitivity-20260911.json)固定唯一变化：将终值ROIC从10%改为各自既有WACC。方法来自达摩达兰[稳定增长与超额回报](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm)：稳定期再投资率为g/ROIC。ROIC=WACC是无持续超额回报对照，不是所有公司的必然终态，也不是本轮估计出的公司回报。
+
+| 公司 | 既有WACC | 原条件值（元） | 无持续超额回报对照（元） | 变化 |
+| --- | ---: | ---: | ---: | ---: |
+| 安克创新 | 8.0754% | 126.1378 | 119.8340 | −5.00% |
+| 苏泊尔 | 5.7531% | 43.2526 | 38.0005 | −12.14% |
+
+两家公司g均固定2%；稳定期再投资率由20%分别升至约24.77%、34.76%。十年收入、EBIT、再投资、FCFF、折现因子以及完整WACC输出和股权桥接逐项相同；请求只变`terminal_roic`，解析输入还按内容更新两个政策血缘哈希。Decimal另用`TV=第11年NOPAT/WACC`及`每股差额=终值现值差额/摊薄股数`复算，两项均通过；这仍是公式核验，不是第二条经济预测证据。
+
+当前通用政策固定10%终值ROIC，在这两家公司上隐含永久超额回报，不能因为行业WACC已接入就视为公司事实。该假设在苏泊尔的价值影响超过原一年期利润校准的安克示例，但跨公司不能作为同样本效果比较。后续应把长期竞争优势、资本回报与增长衰减列为显式估值解释；保持本次敏感性与生产采用分离，不以降低估值或贴近股价证明更准确。现阶段没有修改政策或保存新的生产run。
+
+本地复算唯一政策变化（同上后端环境与保留的运行文件）：
+
+```bash
+PYTHONPATH=valuation/backend workspace/anker-agent-adapter-20260906/venv/bin/python - <<'PYTHON'
+import json
+from copy import deepcopy
+from dataclasses import asdict
+from fastapi.encoders import jsonable_encoder
+from tools.compare_valuations import load_run, replay
+from data_sources.alphalake import AlphaLakeRequest, build_inputs, content_hash
+from engine.orchestrator import run_full_valuation
+receipt = json.load(open('docs/acceptance/terminal-roic-sensitivity-20260911.json'))
+for row in receipt['companies']:
+    if 'baseline_run_id' not in row:
+        continue
+    run, evidence = load_run('valuation/backend/data/alphalake_runs', row['baseline_run_id'])
+    assert evidence['sha256'] == row['baseline_file']['sha256']
+    before, baseline_inputs = replay(run)
+    request = deepcopy(run['request'])
+    request['policy']['terminal_roic'] = before['cost_of_capital']['wacc']
+    assert content_hash(request) == row['scenario_request_sha256']
+    inputs, audit = build_inputs(AlphaLakeRequest.model_validate(request))
+    after = jsonable_encoder(asdict(run_full_valuation(inputs)))
+    assert after['final']['value_per_share'] == row['value_after']
+    for key in ('revenue_projections', 'ebit_projections', 'reinvestment_projections', 'fcff_projections', 'discount_factors', 'pv_fcff'):
+        assert before['dcf'][key] == after['dcf'][key]
+    assert before['cost_of_capital'] == after['cost_of_capital']
+    assert baseline_inputs['equity_bridge'] == inputs.equity_bridge.model_dump(mode='json')
+print('two terminal-only scenarios replayed; three blocked companies retained')
+PYTHON
+```
+
 ## 已完成研究与历史验收
 
 以下按研究发生时的协议、样本和结论保留；其中“下一步”“首轮”描述属于当时阶段，不覆盖上方当前执行顺序。
