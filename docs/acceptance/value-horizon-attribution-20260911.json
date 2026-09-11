@@ -1,0 +1,110 @@
+{
+  "scope": "fixed_five_existing_standard_runs_two_replayed_three_blocks_retained",
+  "companies": [
+    {
+      "code": "300866",
+      "name": "安克创新",
+      "status": "illustrative_book_equity_scenario",
+      "run_id": "6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b",
+      "saved_run": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/6326e04e4a3ea7b91c95d130d28948292dc99d36fbb49965afd41b2d8705fc3b.json",
+        "sha256": "328ffa8de193bb8fe8253a0be686b051f1ea4160ba3c80a182781052a7b028b7"
+      },
+      "report_period": "2026-06-30",
+      "information_as_of": "2026-09-10T04:42:23Z",
+      "components": {
+        "year_1": {
+          "pv_million_cny": 154.3047039367559,
+          "share_of_operating_value": 0.002177612334518805,
+          "per_share_cny": 0.2820917087160479
+        },
+        "years_2_5": {
+          "pv_million_cny": 807.3172798008791,
+          "share_of_operating_value": 0.01139319814310467,
+          "per_share_cny": 1.4758948050499052
+        },
+        "years_6_10": {
+          "pv_million_cny": 12025.57894122235,
+          "share_of_operating_value": 0.16970998526959055,
+          "per_share_cny": 21.984528178865666
+        },
+        "terminal": {
+          "pv_million_cny": 57872.3829829596,
+          "share_of_operating_value": 0.8167192042527859,
+          "per_share_cny": 105.7992335076433
+        }
+      },
+      "net_equity_bridge_million_cny": -1861.939734945001,
+      "net_equity_bridge_per_share_cny": -3.403899867966547,
+      "selected_case": "not_converted",
+      "selected_shares_million": 547.00191168,
+      "operating_ownership": 1.0,
+      "value_per_share_cny": 126.13784833230838,
+      "first_year_fcff_million_cny": 166.76537538192633,
+      "last_year_fcff_million_cny": 8328.217632877213,
+      "first_year_fcff_100million_cny_local_value_effect": 0.1691548428863012
+    },
+    {
+      "code": "002032",
+      "name": "苏 泊 尔",
+      "status": "illustrative_book_equity_scenario",
+      "run_id": "183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d",
+      "saved_run": {
+        "path": "/root/alphalake/valuation/backend/data/alphalake_runs/183cd3b67d3459853509e44de88cee076905ae27be7408d5c1a022114ee9031d.json",
+        "sha256": "9560ca4d3056791d115b2b10f0f5b84b0cc789fd5663fc12a9d16880fcf42b70"
+      },
+      "report_period": "2026-06-30",
+      "information_as_of": "2026-09-10T04:42:23Z",
+      "components": {
+        "year_1": {
+          "pv_million_cny": 1784.1535475553662,
+          "share_of_operating_value": 0.048671194158710344,
+          "per_share_cny": 2.186782825833357
+        },
+        "years_2_5": {
+          "pv_million_cny": 6125.930439196867,
+          "share_of_operating_value": 0.16711361542701078,
+          "per_share_cny": 7.508366920011289
+        },
+        "years_6_10": {
+          "pv_million_cny": 5527.311539841118,
+          "share_of_operating_value": 0.15078346451733243,
+          "per_share_cny": 6.774657912664883
+        },
+        "terminal": {
+          "pv_million_cny": 23219.883555926725,
+          "share_of_operating_value": 0.6334317258969464,
+          "per_share_cny": 28.45990618213605
+        }
+      },
+      "net_equity_bridge_million_cny": -1368.3141964562528,
+      "net_equity_bridge_per_share_cny": -1.677101160521975,
+      "selected_case": "not_converted",
+      "selected_shares_million": 815.8805376,
+      "operating_ownership": 1.0,
+      "value_per_share_cny": 43.252612680123605,
+      "first_year_fcff_million_cny": 1886.7984054109431,
+      "last_year_fcff_million_cny": 1669.3218095167022,
+      "first_year_fcff_100million_cny_local_value_effect": 0.11589912412275317
+    },
+    {
+      "code": "000651",
+      "name": "格力电器",
+      "status": "rejected_input_or_policy",
+      "reason": "financial operations require separate model: FN506"
+    },
+    {
+      "code": "600887",
+      "name": "伊利股份",
+      "status": "rejected_input_or_policy",
+      "reason": "financial operations require separate model: FN506"
+    },
+    {
+      "code": "603288",
+      "name": "海天味业",
+      "status": "blocked_review_exclusion",
+      "reason": "generic-valuation-2026/values.json：原披露与后续比较列存在差异，可比历史尚待协调"
+    }
+  ],
+  "boundary": "PV allocation is not forecast accuracy or an error bound; one-year cash derivative holds all subsequent cashflows, WACC, ownership, shares, conversion branch and bridge fixed; no new valuation or adoption"
+}

@@ -1,5 +1,7 @@
 # AlphaLake 实现状态
 
+[两份基线的价值期间分解](value-horizon-attribution-20260911.md)已完成：安克首年/前五年FCFF现值仅占经营价值0.22%/1.36%，苏泊尔4.87%/21.58%；优先级转向多年资本投入与现金释放，未变更估值或声称准确度改善。
+
 [对数增长校准的新公司验证](../valuation/research/tdx-growth-calibration/README.md)未通过：开发收入误差改善6.51%，新120家249/360组仅改善1.44%，WAPE及2024单期恶化。不发布生产政策，开发成功与验证失败并列保留。
 
 [经验预测范围开发](../valuation/research/tdx-past-error-bands/README.md)未通过：三起点632/900项可评价，2025期收入/EBIT代理覆盖低于冻结90%门槛，范围仍宽；未发布为单公司预测或DCF置信区间。
