@@ -254,3 +254,27 @@ def test_invalid_capital_efficiency_api_keeps_saved_session(raw, macro, monkeypa
     inputs.valuation_assumptions.sales_to_capital_high = -1
     assert client.post('/api/valuation', json={'inputs': inputs.model_dump()}).status_code == 422
     assert session_store.list_sessions() == [sid]
+
+
+@pytest.mark.parametrize('missing', ['bv_equity', 'bv_debt', 'cash_and_marketable_securities'])
+def test_implied_roic_requires_complete_opening_capital(cf_metrics, cost_of_capital, adjusted, raw, macro, missing):
+    from decimal import Decimal as D
+    raw = raw.model_copy(update=dict(bv_equity=500., bv_debt=300., cash_and_marketable_securities=100.))
+    assumptions = ValuationAssumptions(revenue_growth_next_year=.05)
+    complete = compute_dcf(cf_metrics, cost_of_capital, adjusted, raw, assumptions, macro)
+    capital = D(700)
+    for ebit, cash, reinvestment, roic in zip(complete.ebit_projections, complete.fcff_projections,
+                                           complete.reinvestment_projections, complete.implied_roic_projections):
+        assert roic == pytest.approx(float((D(str(cash))+D(str(reinvestment)))/capital))
+        capital += D(str(reinvestment))
+    incomplete = compute_dcf(cf_metrics, cost_of_capital, adjusted,
+                             raw.model_copy(update={missing: None}), assumptions, macro)
+    assert incomplete.implied_roic_projections == [None]*10
+    assert incomplete.implied_roic_terminal is None
+    for name in ('revenue_projections', 'fcff_projections', 'pv_fcff', 'value_of_operating_assets'):
+        assert getattr(incomplete, name) == getattr(complete, name)
+    # Explicitly supplied zero debt/cash is different from missing capital.
+    zero = compute_dcf(cf_metrics, cost_of_capital, adjusted,
+                       raw.model_copy(update=dict(bv_debt=0., cash_and_marketable_securities=0.)), assumptions, macro)
+    assert zero.implied_roic_projections[0] == pytest.approx(
+        (zero.fcff_projections[0]+zero.reinvestment_projections[0])/500.)

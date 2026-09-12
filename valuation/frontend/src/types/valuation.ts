@@ -316,7 +316,7 @@ export interface DCFResult {
   value_of_equity: number | null;
   value_per_share_pre_options: number | null;
   // Implied ROIC path forced by the three stories (per-year + terminal).
-  implied_roic_projections: number[];
+  implied_roic_projections: (number | null)[];
   implied_roic_terminal: number | null;
 }
 

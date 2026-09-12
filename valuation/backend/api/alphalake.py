@@ -88,6 +88,53 @@ def growth_path_sensitivity(inputs, report):
         boundary='同一财务与信息时点，仅改十年收入增长路径；利润率、税率、资本效率、WACC、终值增长/ROIC及股权股本桥接输入不变。收入变化同时影响利润、再投资和终值金额；零收入增量再投资不等于零现金资本开支。中期样本改善不证明一年、第四年至终值、当前公司或完整DCF有效；不是价格区间、概率界限或推荐值。')
 
 
+def method_assessment(inputs, audit, report):
+    """当前通用账面FCFF的实际接入范围；不以计算成功声称公司估值完备。"""
+    if audit.get('valuation_scope') != 'report_date_book_equity_scenario':
+        return None
+    a = inputs.valuation_assumptions
+    last_nopat = report.dcf.fcff_projections[-1] + report.dcf.reinvestment_projections[-1]
+    return dict(
+        status='conditional_fcff_not_full_company_valuation',
+        scope='nonfinancial_book_fcff',
+        facts=dict(source='alphalake_standard_facts', lineage='audit.consumed_inputs',
+                   monetary_unit='million_CNY', share_unit='million_shares'),
+        operating_profit=dict(basis='FN86+FN305-FN306-FN83-FN82-FN301',
+                              rd='expensed_not_capitalized',
+                              leases='reported_interest_scope_not_fully_reconciled'),
+        forecast=dict(basis='historical_quarter_yoy_policy' if 'forecast_rule_evidence' in audit else 'explicit_annual_policy',
+                      company_evidence_status='not_established_by_calculation',
+                      policy_location='audit.assumptions'),
+        reinvestment=dict(basis='net_reinvestment_equals_revenue_change_over_sales_to_capital',
+                          capital_efficiency_source='industry_reference_with_policy' if 'capital_reference' in audit else 'explicit_policy',
+                          capital_efficiency=a.sales_to_capital_high,
+                          historical_fcff_status=audit['historical_fcff_status'],
+                          implied_roic_status='missing_opening_capital' if all(v is None for v in report.dcf.implied_roic_projections) else 'model_implied_not_reported_fact',
+                          capital_release_years=[i+1 for i,v in enumerate(report.dcf.reinvestment_projections) if v < 0]),
+        wacc=dict(basis=report.cost_of_capital.capital_structure_basis,
+                  source='reference_snapshot_with_policy' if 'wacc_reference' in audit else 'explicit_policy',
+                  reference_location='audit.wacc_reference' if 'wacc_reference' in audit else None,
+                  forecast_wacc=report.cost_of_capital.wacc, terminal_wacc=a.cost_of_capital_stable_override,
+                  terminal_risk_basis='constant_wacc_policy'),
+        terminal=dict(growth=a.growth_perpetuity_rate, roic=a.roic_stable_override,
+                      reinvestment_rate=a.growth_perpetuity_rate/a.roic_stable_override,
+                      last_explicit_reinvestment_rate=report.dcf.reinvestment_projections[-1]/last_nopat if last_nopat else None,
+                      pv_share=report.dcf.pv_terminal_value/report.dcf.value_of_operating_assets if report.dcf.value_of_operating_assets else None,
+                      company_evidence_status='growth_return_and_risk_require_joint_review'),
+        equity_bridge=dict(basis='report_date_book_claims_no_conversion',
+                           detail_location='report.equity_bridge',
+                           financial_investments='no_credit_pending_classification',
+                           options='not_priced_not_asserted_absent'),
+        unresolved=[
+            dict(item='growth_margin_and_capital_efficiency', treatment='explicit_policy', reason='增长、利润率与资本效率的公司依据尚未闭合'),
+            dict(item='rd_and_leases', treatment='reported_basis', reason='研发保留费用化；租赁利息范围待核验，不重复资本化已入账租赁'),
+            dict(item='historical_operating_capital', treatment='missing_not_zero', reason='历史经营资本及FCFF分类未闭合，不用预测投入冒充历史资本'),
+            dict(item='terminal_growth_return_and_risk', treatment='explicit_policy', reason='稳定增长、回报及固定WACC须联合论证；公式成立不代表参数合理'),
+            dict(item='equity_claims_and_assets', treatment='book_scenario', reason='金融投资不计值、到期债务未拆分、少数股权账面代理及未定价期权均限制结论'),
+        ],
+        boundary='条件模型可以复算；以上缺口没有被归零或认定无影响。未提供当前目标价、预测准确性认证或完整公司估值认证。')
+
+
 def evaluate(request: AlphaLakeRequest):
     inputs, audit = build_inputs(request)
     revision = ENGINE_REVISION
@@ -99,6 +146,7 @@ def evaluate(request: AlphaLakeRequest):
     result = dict(run_id=run_id,engine_revision=revision,runtime_versions=runtime_versions(),status=('illustrative_enterprise_value_only' if audit.get('valuation_scope')=='operating_enterprise_value_only_no_equity_bridge' else 'illustrative_book_equity_scenario' if audit.get('valuation_scope')=='report_date_book_equity_scenario' else 'illustrative_valuation_completed'),
         request=request_data,inputs=inputs.model_dump(mode='json'),audit=audit,
         report=jsonable_encoder(asdict(report)),
+        method_assessment=method_assessment(inputs,audit,report),
         terminal_sensitivity=(terminal_return_sensitivity(inputs,report)
                               if audit.get('valuation_scope')=='report_date_book_equity_scenario' else None),
         growth_sensitivity=(growth_path_sensitivity(inputs,report)

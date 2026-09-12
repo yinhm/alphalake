@@ -3,6 +3,9 @@ import json
 import os
 from pathlib import Path
 import subprocess
+from copy import deepcopy
+
+import pytest
 
 from api.alphalake import evaluate
 from data_sources.alphalake import AlphaLakeRequest
@@ -39,7 +42,7 @@ def test_standard_history_forecast(tmp_path, monkeypatch):
     assert all(m['status']=='evaluated' for m in metrics.values())
 
 
-def test_archived_real_main_copy_review(tmp_path):
+def test_archived_real_main_copy_review(tmp_path,monkeypatch):
     import gzip
     import hashlib
     from tools.compare_valuations import load_run
@@ -53,7 +56,16 @@ def test_archived_real_main_copy_review(tmp_path):
         contents[name] = json.loads(raw)
         if name == 'run.json.gz':
             (tmp_path/(receipt['run_id']+'.json')).write_bytes(raw)
-    run, _ = load_run(tmp_path, receipt['run_id']); replay(run)
+    old, _ = load_run(tmp_path, receipt['run_id'])
+    with pytest.raises(ValueError,match='cannot exactly reproduce'):
+        replay(old)  # 生产的历史报告严格核对不因本轮放宽。
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path/'current'))
+    run = evaluate(AlphaLakeRequest.model_validate(old['request'])); replay(run)
+    expected_report = deepcopy(old['report'])
+    expected_report['dcf']['implied_roic_projections'] = [None]*10
+    expected_report['dcf']['implied_roic_terminal'] = None
+    assert run['report'] == expected_report
+    assert run['request'] == old['request'] and run['inputs'] == old['inputs']
     saved = contents['review.json.gz']; calls = []
     def export(period):
         calls.append(period)
@@ -61,7 +73,7 @@ def test_archived_real_main_copy_review(tmp_path):
     from api.alphalake import ENGINE_REVISION
     from data_sources.alphalake import content_hash
     # 实际复核代码版本变化会产生新review ID，旧归档本身不改写。
-    expected = saved | {'current_engine_revision': ENGINE_REVISION}
+    expected = saved | dict(current_engine_revision=ENGINE_REVISION,forecast_engine_revision=ENGINE_REVISION,run_id=run['run_id'])
     expected['review_id'] = content_hash({k:v for k,v in expected.items() if k!='review_id'})
     assert review(run, saved['evaluation_as_of'], export) == expected
     assert calls == ['2026-06-30']

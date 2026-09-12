@@ -107,6 +107,7 @@ def test_real_http_forecast_bridge_and_replay(exports,tmp_path,monkeypatch,compa
     stored, = tmp_path.glob('*.json')
     assert json.loads(stored.read_text()) == result
     assert result['terminal_sensitivity'] is None
+    assert result['method_assessment'] is None
     report,p = result['report'],req['policy']['parameters']
     assert report['cashflow']['fcff'] is None and report['cashflow']['fcfe'] is None
     assert report['final']['value_per_share'] == report['equity_bridge']['per_share']
@@ -1119,6 +1120,7 @@ def test_company_entry_selection_summary_and_no_fallback(exports,tmp_path,monkey
     explicit=company_valuation(scan,'300866',[specific,generic],export,tmp_path,select='industry-v1')
     assert explicit['selection']['policy_version']=='industry-v1'
     assert explicit['valuation']['policy_id']=='nonfinancial-history-fcff-v1'
+    assert explicit['valuation']['method_assessment']['status']=='conditional_fcff_not_full_company_valuation'
     assert explicit['valuation']['terminal_sensitivity']['method']=='terminal_roic_equals_terminal_wacc'
     assert explicit['valuation']['growth_sensitivity']['status']=='illustrative_growth_path_sensitivity'
     assert result['valuation']['growth_sensitivity'] is None

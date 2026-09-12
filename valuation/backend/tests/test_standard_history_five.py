@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 
 from tools.audit_standard_history_five import audit
+from api.alphalake import ENGINE_REVISION, runtime_versions
+from data_sources.alphalake import content_hash
 
 
 def test_archived_standard_history_five(tmp_path,monkeypatch):
@@ -27,7 +29,24 @@ def test_archived_standard_history_five(tmp_path,monkeypatch):
         k=code,period,datetime.fromisoformat(cutoff);calls.append(k)
         return deepcopy(snapshots[k])
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path/'runs'))
-    assert audit(plan,policy,export)==expected
+    actual = audit(plan,policy,export)
+    # 旧证据不改写；仅允许本轮缺资本ROIC修正、新披露及可重建运行元数据。
+    for before,after in zip(expected['rows'],actual['rows'],strict=True):
+        if 'run' not in before: continue
+        old,new = before['run'],after['run']
+        assert new['report']['dcf']['implied_roic_projections'] == [None]*10
+        assert new['report']['dcf']['implied_roic_terminal'] is None
+        old['report']['dcf']['implied_roic_projections'] = [None]*10
+        old['report']['dcf']['implied_roic_terminal'] = None
+        assert new['method_assessment']['reinvestment']['implied_roic_status'] == 'missing_opening_capital'
+        old['method_assessment'] = new['method_assessment']
+        old['engine_revision'] = ENGINE_REVISION
+        old['runtime_versions'] = runtime_versions()
+        old['run_id'] = content_hash(dict(request=old['request'],engine_revision=ENGINE_REVISION))
+        prior_review = before['review']
+        prior_review.update(run_id=old['run_id'],current_engine_revision=ENGINE_REVISION,forecast_engine_revision=ENGINE_REVISION)
+        prior_review['review_id'] = content_hash({k:v for k,v in prior_review.items() if k!='review_id'})
+    assert actual == expected
     assert len(calls)==16  # 15个预测起点，仅一个获准运行查询一个到期实际。
     assert sum(not r['snapshot']['facts'] for r in expected['rows'])==9
     valid=next(r for r in expected['rows'] if 'run' in r)

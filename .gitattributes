@@ -11,3 +11,4 @@ internal/ingest/testdata/bse-valuation-2026/*.csv text eol=lf
 valuation/research/tdx-zero-calibration/source-review/*.pdf binary
 valuation/research/tdx-zero-calibration/earnings-review/*.pdf binary
 valuation/research/tdx-zero-calibration/closing-review/*.pdf binary
+valuation/research/method-closure-20260912/*.gz binary

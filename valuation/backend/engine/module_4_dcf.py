@@ -372,18 +372,20 @@ def compute_dcf(
     # --- Invested capital + ROIC path ---
     # IC_base = Adjusted BV Equity (includes R&D asset from M1) + BV Debt − cash + lease PV
     # Note: adjusted_bv_equity already = raw.bv_equity + value_of_research_asset
-    ic_base = (
-        (adjusted.adjusted_bv_equity if adjusted.adjusted_bv_equity is not None else (raw.bv_equity or 0.0))
-        + (raw.bv_debt or 0.0)
-        - (raw.cash_and_marketable_securities or 0.0)
-        + (adjusted.pv_of_operating_leases or 0.0)
-    )
+    equity_base = adjusted.adjusted_bv_equity if adjusted.adjusted_bv_equity is not None else raw.bv_equity
+    capital_parts = (equity_base, raw.bv_debt, raw.cash_and_marketable_securities,
+                     adjusted.pv_of_operating_leases)
+    # Missing opening capital cannot be reconstructed from future reinvestment.
+    ic_base = (equity_base + raw.bv_debt - raw.cash_and_marketable_securities
+               + adjusted.pv_of_operating_leases
+               if all(v is not None and math.isfinite(v) for v in capital_parts) else None)
     ic_path = [ic_base]
     roic_path = []
     for t_idx in range(n):
         ic_prev = ic_path[-1]
-        roic_path.append(nopat_projections[t_idx] / ic_prev if ic_prev > 0 else 0.0)
-        ic_path.append(ic_prev + reinvestment_projections[t_idx])
+        roic_path.append(nopat_projections[t_idx] / ic_prev
+                         if ic_prev is not None and ic_prev > 0 else None)
+        ic_path.append(ic_prev + reinvestment_projections[t_idx] if ic_prev is not None else None)
 
     # --- Failure overlay (BEFORE equity bridge, per Ginzu B40→B43) ---
     p_failure = assumptions.failure_probability
@@ -437,8 +439,8 @@ def compute_dcf(
     # roic_path already computed per-year from NOPAT_t / IC_{t-1}. Terminal
     # uses the last IC entry (end of year 10) as the denominator for the
     # terminal year's NOPAT.
-    ic_last = ic_path[-1] if ic_path else 0.0
-    implied_roic_terminal = nopat_terminal / ic_last if ic_last > 0 else None
+    ic_last = ic_path[-1] if ic_path else None
+    implied_roic_terminal = nopat_terminal / ic_last if ic_last is not None and ic_last > 0 else None
 
     return DCFResult(
         revenue_projections=revenue_projections,

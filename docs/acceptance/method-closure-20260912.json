@@ -1,0 +1,1024 @@
+{
+  "scope": "two_fixed_companies_fresh_standard_database_CLI_and_independent_arithmetic_not_full_company_valuation",
+  "database": "workspace/auto-valuation-20260909/market.duckdb",
+  "report_period": "2026-06-30",
+  "information_as_of": "2026-09-10T04:42:23Z",
+  "share_date": "2026-06-30",
+  "selected_companies": 2,
+  "successful_conditional_calculations": 2,
+  "full_company_valuation_certifications": 0,
+  "companies": [
+    {
+      "code": "300866",
+      "before_cli": {
+        "path": "workspace/method-closure-20260912/300866-before.json",
+        "sha256": "8abac366d3b7a8dee10d47cc3033a903a9b10617d78571db3e1befc3a80cb4fd"
+      },
+      "after_cli": {
+        "path": "workspace/method-closure-20260912/300866-after.json",
+        "sha256": "67ce6291cda46d50a4d7c2a14d2918b748792a4c33841f0be478cf0156de16a8"
+      },
+      "before_run": {
+        "path": "/root/alphalake/workspace/method-closure-20260912/before-runs/32d220a01b31c1d26be805a29f8ad5330b68b1a7410e40875ac7709410dc684d.json",
+        "sha256": "241408f7ad2daea9d5e1347ec213505997e6aeacc340520bb05140ce4767094d"
+      },
+      "after_run": {
+        "path": "/root/alphalake/workspace/method-closure-20260912/after-runs/3055db7c6dd32881785c6102f8b7d2107b632def4955cc910a702f2ba24e9a9c.json",
+        "sha256": "335c1124959a33299044151a66fab9e9659fbe3032314197e96c3f3687486234"
+      },
+      "before_run_id": "32d220a01b31c1d26be805a29f8ad5330b68b1a7410e40875ac7709410dc684d",
+      "after_run_id": "3055db7c6dd32881785c6102f8b7d2107b632def4955cc910a702f2ba24e9a9c",
+      "engine_revision": "a6c1275b5398aa9aa461d46610d1bee317959bd3b9fe57ffc28517e9f2d4cd9b",
+      "request_snapshot": {
+        "path": "valuation/research/method-closure-20260912/300866-request.json.gz",
+        "sha256": "c2652f748dd559aece6ddd7817fa0b0ad1493dc40ed8607489b9528b8b1dce0a"
+      },
+      "actual_report_changes": [
+        {
+          "path": "/dcf/implied_roic_projections/0",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.0,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/1",
+          "before_present": true,
+          "after_present": true,
+          "before": 1.2725493232881768,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/2",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.694117812702642,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/3",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.5034261059162018,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/4",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.40964329929991977,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/5",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.3439576876568549,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/6",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.3044945091155934,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/7",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.2781338979104991,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/8",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.2593277983384697,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/9",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.24541853024080995,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_terminal",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.24369197200784326,
+          "after": null
+        }
+      ],
+      "independent_decimal": {
+        "code": "300866",
+        "unit": "million_CNY_except_per_share_CNY",
+        "wacc": "0.08075367197021830120475312161",
+        "sales_to_capital": "2.4835356974580",
+        "years": [
+          {
+            "year": 1,
+            "revenue": "41103.17998080000",
+            "nopat": "2925.143281450195312500000000",
+            "net_reinvestment": "2758.377906068270585852880564",
+            "fcff": "166.765375381924726647119436",
+            "pv": "154.3047039367544086053807097"
+          },
+          {
+            "year": 2,
+            "revenue": "49323.815976960000",
+            "nopat": "3510.171937740234375000000000",
+            "net_reinvestment": "3310.053487281924703023456677",
+            "fcff": "200.118450458309671976543323",
+            "pv": "171.3301092806352195633432568"
+          },
+          {
+            "year": 3,
+            "revenue": "59188.5791723520000",
+            "nopat": "4212.206325288281250000000000",
+            "net_reinvestment": "3972.064184738309643628148013",
+            "fcff": "240.142140549971606371851987",
+            "pv": "190.2340343308384856332531557"
+          },
+          {
+            "year": 4,
+            "revenue": "71026.29500682240000",
+            "nopat": "5054.647590345937500000000000",
+            "net_reinvestment": "4766.477021685971572353777615",
+            "fcff": "288.170568659965927646222385",
+            "pv": "211.2237479432748897470815601"
+          },
+          {
+            "year": 5,
+            "revenue": "85231.554008186880000",
+            "nopat": "6065.577108415125000000000000",
+            "net_reinvestment": "5719.772426023165886824533138",
+            "fcff": "345.804682391959113175466862",
+            "pv": "234.5293882461262193110341952"
+          },
+          {
+            "year": 6,
+            "revenue": "99209.528865529528320000",
+            "nopat": "7060.331754195205500000000000",
+            "net_reinvestment": "5628.256067206795232635340608",
+            "fcff": "1432.075686988410267364659392",
+            "pv": "898.6811926210065231197203710"
+          },
+          {
+            "year": 7,
+            "revenue": "111908.348560317307944960000",
+            "nopat": "7964.054218732191804000000000",
+            "net_reinvestment": "5113.201999788261190858565048",
+            "fcff": "2850.852218943930613141434952",
+            "pv": "1655.341742688219174051290806"
+          },
+          {
+            "year": 8,
+            "revenue": "122203.9166278665002758963200",
+            "nopat": "8696.747206855553449968000000",
+            "net_reinvestment": "4145.528521328332760488581613",
+            "fcff": "4551.218685527220689479418387",
+            "pv": "2445.197514498231829493650054"
+          },
+          {
+            "year": 9,
+            "revenue": "129047.3359590270242913465139",
+            "nopat": "9183.765050439464443166208000",
+            "net_reinvestment": "2755.514784089893532276062413",
+            "fcff": "6428.250266349570910890145587",
+            "pv": "3195.599161852431649807943430"
+          },
+          {
+            "year": 10,
+            "revenue": "131628.2826782075647771734442",
+            "nopat": "9367.440351448253732029532160",
+            "net_reinvestment": "1039.222718571045560744114979",
+            "fcff": "8328.217632877208171285417181",
+            "pv": "3830.759329562450853384970021"
+          }
+        ],
+        "terminal_nopat": "9554.789158477218806670122805",
+        "terminal_reinvestment": "1910.957831695443761334024561",
+        "pv_terminal": "57872.38298295956762779699938",
+        "operating_value": "70859.58390791953688051466694",
+        "bridge": {
+          "cash_recovery_scenario": "2393.80561920000",
+          "operating_cash_reserve": "-1027.579499520000",
+          "debt_book_proxy": "-3066.91580662500",
+          "minority_book_proxy": "-161.25004800000",
+          "additional_claims_scenario": "0.0"
+        },
+        "equity_value": "68997.64417297453688051466694",
+        "shares_million": "547.001911680000",
+        "value_per_share": "126.1378483323082942840852833"
+      },
+      "method_assessment": {
+        "boundary": "条件模型可以复算；以上缺口没有被归零或认定无影响。未提供当前目标价、预测准确性认证或完整公司估值认证。",
+        "equity_bridge": {
+          "basis": "report_date_book_claims_no_conversion",
+          "detail_location": "report.equity_bridge",
+          "financial_investments": "no_credit_pending_classification",
+          "options": "not_priced_not_asserted_absent"
+        },
+        "facts": {
+          "lineage": "audit.consumed_inputs",
+          "monetary_unit": "million_CNY",
+          "share_unit": "million_shares",
+          "source": "alphalake_standard_facts"
+        },
+        "forecast": {
+          "basis": "historical_quarter_yoy_policy",
+          "company_evidence_status": "not_established_by_calculation",
+          "policy_location": "audit.assumptions"
+        },
+        "operating_profit": {
+          "basis": "FN86+FN305-FN306-FN83-FN82-FN301",
+          "leases": "reported_interest_scope_not_fully_reconciled",
+          "rd": "expensed_not_capitalized"
+        },
+        "reinvestment": {
+          "basis": "net_reinvestment_equals_revenue_change_over_sales_to_capital",
+          "capital_efficiency": 2.483535697458,
+          "capital_efficiency_source": "industry_reference_with_policy",
+          "capital_release_years": [],
+          "historical_fcff_status": "missing_classification_not_zero",
+          "implied_roic_status": "missing_opening_capital"
+        },
+        "scope": "nonfinancial_book_fcff",
+        "status": "conditional_fcff_not_full_company_valuation",
+        "terminal": {
+          "company_evidence_status": "growth_return_and_risk_require_joint_review",
+          "growth": 0.02,
+          "last_explicit_reinvestment_rate": 0.11093988107545005,
+          "pv_share": 0.8167192042527859,
+          "reinvestment_rate": 0.19999999999999998,
+          "roic": 0.1
+        },
+        "unresolved": [
+          {
+            "item": "growth_margin_and_capital_efficiency",
+            "reason": "增长、利润率与资本效率的公司依据尚未闭合",
+            "treatment": "explicit_policy"
+          },
+          {
+            "item": "rd_and_leases",
+            "reason": "研发保留费用化；租赁利息范围待核验，不重复资本化已入账租赁",
+            "treatment": "reported_basis"
+          },
+          {
+            "item": "historical_operating_capital",
+            "reason": "历史经营资本及FCFF分类未闭合，不用预测投入冒充历史资本",
+            "treatment": "missing_not_zero"
+          },
+          {
+            "item": "terminal_growth_return_and_risk",
+            "reason": "稳定增长、回报及固定WACC须联合论证；公式成立不代表参数合理",
+            "treatment": "explicit_policy"
+          },
+          {
+            "item": "equity_claims_and_assets",
+            "reason": "金融投资不计值、到期债务未拆分、少数股权账面代理及未定价期权均限制结论",
+            "treatment": "book_scenario"
+          }
+        ],
+        "wacc": {
+          "basis": "industry_reference_weights",
+          "forecast_wacc": 0.08075367197021832,
+          "reference_location": "audit.wacc_reference",
+          "source": "reference_snapshot_with_policy",
+          "terminal_risk_basis": "constant_wacc_policy",
+          "terminal_wacc": 0.08075367197021832
+        }
+      },
+      "capital_efficiency_double_sensitivity": {
+        "run_id": "fff319c4c75e074b756bb65851a6966c47f17d654125a772df745e83d11f2cb7",
+        "value_per_share": "150.3440341248124459257863581",
+        "years": [
+          {
+            "year": 1,
+            "revenue": "41103.17998080000",
+            "nopat": "2925.143281450195312500000000",
+            "net_reinvestment": "1379.188953034135292926440282",
+            "fcff": "1545.954328416060019573559718",
+            "pv": "1430.440967734839194346054608"
+          },
+          {
+            "year": 2,
+            "revenue": "49323.815976960000",
+            "nopat": "3510.171937740234375000000000",
+            "net_reinvestment": "1655.026743640962351511728339",
+            "fcff": "1855.145194099272023488271661",
+            "pv": "1588.270487346637880749946753"
+          },
+          {
+            "year": 3,
+            "revenue": "59188.5791723520000",
+            "nopat": "4212.206325288281250000000000",
+            "net_reinvestment": "1986.032092369154821814074006",
+            "fcff": "2226.174232919126428185925994",
+            "pv": "1763.514327313325019558280959"
+          },
+          {
+            "year": 4,
+            "revenue": "71026.29500682240000",
+            "nopat": "5054.647590345937500000000000",
+            "net_reinvestment": "2383.238510842985786176888808",
+            "fcff": "2671.409079502951713823111192",
+            "pv": "1958.093918772552073986037683"
+          },
+          {
+            "year": 5,
+            "revenue": "85231.554008186880000",
+            "nopat": "6065.577108415125000000000000",
+            "net_reinvestment": "2859.886213011582943412266569",
+            "fcff": "3205.690895403542056587733431",
+            "pv": "2174.142696405117697999797600"
+          },
+          {
+            "year": 6,
+            "revenue": "99209.528865529528320000",
+            "nopat": "7060.331754195205500000000000",
+            "net_reinvestment": "2814.128033603397616317670304",
+            "fcff": "4246.203720591807883682329696",
+            "pv": "2664.652056036255902318830057"
+          },
+          {
+            "year": 7,
+            "revenue": "111908.348560317307944960000",
+            "nopat": "7964.054218732191804000000000",
+            "net_reinvestment": "2556.600999894130595429282524",
+            "fcff": "5407.453218838061208570717476",
+            "pv": "3139.827092858672175467927223"
+          },
+          {
+            "year": 8,
+            "revenue": "122203.9166278665002758963200",
+            "nopat": "8696.747206855553449968000000",
+            "net_reinvestment": "2072.764260664166380244290806",
+            "fcff": "6623.982946191387069723709194",
+            "pv": "3558.815287784742763500072166"
+          },
+          {
+            "year": 9,
+            "revenue": "129047.3359590270242913465139",
+            "nopat": "9183.765050439464443166208000",
+            "net_reinvestment": "1377.757392044946766138031207",
+            "fcff": "7806.007658394517677028176793",
+            "pv": "3880.507213784117290764375467"
+          },
+          {
+            "year": 10,
+            "revenue": "131628.2826782075647771734442",
+            "nopat": "9367.440351448253732029532160",
+            "net_reinvestment": "519.6113592855227803720574895",
+            "fcff": "8847.828992162730951657474670",
+            "pv": "4069.766779904736016373443392"
+          }
+        ],
+        "boundary": "只有参考资本效率倍率翻倍；财务、收入增长、利润、WACC、终值参数与股权桥接相同，未采用此政策"
+      },
+      "terminal_sensitivity": {
+        "baseline_value_per_share": 126.13784833230838,
+        "boundary": "仅终值ROIC改为终值WACC；显式期现金流、折现与股权桥接不变。无持续超额回报是假设对照，不是公司回报估计、预测验证或推荐估值。",
+        "counterfactual_equity_status": "positive_equity_residual",
+        "counterfactual_value_per_share": 119.83396547562994,
+        "currency": "CNY",
+        "delta_per_share": -6.303882856678442,
+        "method": "terminal_roic_equals_terminal_wacc",
+        "source": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm",
+        "status": "illustrative_terminal_only_sensitivity",
+        "terminal_growth": 0.02,
+        "terminal_pv_share": 0.8167192042527859,
+        "terminal_roic": 0.1,
+        "terminal_wacc": 0.08075367197021832,
+        "unit": "CNY/share"
+      },
+      "growth_sensitivity": {
+        "baseline_fcff_million_cny": [
+          166.76537538192633,
+          200.11845045831114,
+          240.14214054997274,
+          288.1705686599689,
+          345.8046823919585,
+          1432.0756869884144,
+          2850.8522189439273,
+          4551.218685527217,
+          6428.250266349569,
+          8328.217632877213
+        ],
+        "baseline_growth": [
+          0.2,
+          0.2,
+          0.2,
+          0.2,
+          0.2,
+          0.164,
+          0.128,
+          0.092,
+          0.055999999999999994,
+          0.01999999999999999
+        ],
+        "baseline_value_per_share": 126.13784833230838,
+        "boundary": "同一财务与信息时点，仅改十年收入增长路径；利润率、税率、资本效率、WACC、终值增长/ROIC及股权股本桥接输入不变。收入变化同时影响利润、再投资和终值金额；零收入增量再投资不等于零现金资本开支。中期样本改善不证明一年、第四年至终值、当前公司或完整DCF有效；不是价格区间、概率界限或推荐值。",
+        "counterfactual_equity_status": "positive_equity_residual",
+        "counterfactual_fcff_million_cny": [
+          2437.6194012084966,
+          2437.6194012084966,
+          2437.6194012084966,
+          2437.6194012084966,
+          2437.6194012084966,
+          2392.2023206919644,
+          2356.172381136135,
+          2329.058221355919,
+          2310.4918187169305,
+          2300.200344900421
+        ],
+        "counterfactual_growth": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.004,
+          0.008,
+          0.012,
+          0.016,
+          0.02
+        ],
+        "counterfactual_value_per_share": 55.14182439288226,
+        "currency": "CNY",
+        "delta_per_share": -70.99602393942612,
+        "evidence": {
+          "adoption": "not_adopted_as_default_or_company_specific_forecast",
+          "counterevidence": "one_year_validation_failed_and_some_medium_horizon_windows_worsened",
+          "medium_horizon": "two_disjoint_120_company_cohorts_show_average_improvement_in_common_two_and_three_year_windows",
+          "receipt": {
+            "path": "docs/acceptance/zero-growth-common-windows-20260911.json",
+            "sha256": "1aa85158546b71ab986a0be0a31c32f02448be1c3dc455d9105523204faa75ca"
+          },
+          "review": "docs/zero-growth-common-windows-20260911.md"
+        },
+        "method": "zero_first_five_then_fade_to_unchanged_terminal_growth",
+        "status": "illustrative_growth_path_sensitivity",
+        "unit": "CNY/share"
+      },
+      "checks": [
+        "fresh_database_CLI_before_and_after",
+        "exact_request_and_inputs_unchanged",
+        "only_implied_ROIC_report_fields_changed",
+        "independent_decimal_standard_windows_wacc_forecast_terminal_bridge",
+        "summary_assessment_equals_saved_result",
+        "idempotent_current_replay"
+      ]
+    },
+    {
+      "code": "002032",
+      "before_cli": {
+        "path": "workspace/method-closure-20260912/002032-before.json",
+        "sha256": "91a74387cc326730348c2735e899e5014b1060bd6f9f55eea38e4127fc38e647"
+      },
+      "after_cli": {
+        "path": "workspace/method-closure-20260912/002032-after.json",
+        "sha256": "b1883ece380b24e6a0d823495844228df167e5bae15fcf6215174ba33fcae547"
+      },
+      "before_run": {
+        "path": "/root/alphalake/workspace/method-closure-20260912/before-runs/c0703db2fb21b318034fee4249574fc74d0dd286c5a4ab2f8968938a1e05f189.json",
+        "sha256": "cbf29e64535455d88d10fd2dbab4a02af090b67b4c7435046e9702f98e36b978"
+      },
+      "after_run": {
+        "path": "/root/alphalake/workspace/method-closure-20260912/after-runs/bae1f4eeab9dc0fff3a5017531ecfef3ddb09453098bba449cc6fb557f751192.json",
+        "sha256": "72fff268a3f8aa360b11d01c3ec0ff093007c7b0741c5b06383dffe612f5099c"
+      },
+      "before_run_id": "c0703db2fb21b318034fee4249574fc74d0dd286c5a4ab2f8968938a1e05f189",
+      "after_run_id": "bae1f4eeab9dc0fff3a5017531ecfef3ddb09453098bba449cc6fb557f751192",
+      "engine_revision": "a6c1275b5398aa9aa461d46610d1bee317959bd3b9fe57ffc28517e9f2d4cd9b",
+      "request_snapshot": {
+        "path": "valuation/research/method-closure-20260912/002032-request.json.gz",
+        "sha256": "08efcb32de33336a835737581c0a7071e5d5e0a5406f1301cb876d89a2f1625b"
+      },
+      "actual_report_changes": [
+        {
+          "path": "/dcf/implied_roic_projections/0",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.0,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/1",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.0,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/2",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.0,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/3",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.0,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/4",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.0,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/5",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.0,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/6",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.0,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/7",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.0,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/8",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.0,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_projections/9",
+          "before_present": true,
+          "after_present": true,
+          "before": 0.0,
+          "after": null
+        },
+        {
+          "path": "/dcf/implied_roic_terminal",
+          "before_present": true,
+          "after_present": true,
+          "before": 11.18005093594741,
+          "after": null
+        }
+      ],
+      "independent_decimal": {
+        "code": "002032",
+        "unit": "million_CNY_except_per_share_CNY",
+        "wacc": "0.05753140361501958735012856126",
+        "sales_to_capital": "2.2730023498400",
+        "years": [
+          {
+            "year": 1,
+            "revenue": "22565.77705136191488881439315",
+            "nopat": "1825.977531799520153845493156",
+            "net_reinvestment": "-60.82087361142255350657004757",
+            "fcff": "1886.798405410942707352063204",
+            "pv": "1784.153547555365907905142453"
+          },
+          {
+            "year": 2,
+            "revenue": "22428.37284980891377680601056",
+            "nopat": "1814.859058713502920928035766",
+            "net_reinvestment": "-60.45053211787185224302213606",
+            "fcff": "1875.309590831374773171057902",
+            "pv": "1676.819938248779401685422417"
+          },
+          {
+            "year": 3,
+            "revenue": "22291.80530965522744228650836",
+            "nopat": "1803.808286594015467989387166",
+            "net_reinvestment": "-60.08244565312461107838367953",
+            "fcff": "1863.890732247140079067770846",
+            "pv": "1575.943454620957631287779860"
+          },
+          {
+            "year": 4,
+            "revenue": "22156.06933642565649807631131",
+            "nopat": "1792.824803206317142504938726",
+            "net_reinvestment": "-59.71660048619201836196419812",
+            "fcff": "1852.541403692509160866902924",
+            "pv": "1481.135639856735951195326755"
+          },
+          {
+            "year": 5,
+            "revenue": "22021.15986666552859269631574",
+            "nopat": "1781.908198825786277121481617",
+            "net_reinvestment": "-59.35298296969397442776361666",
+            "fcff": "1841.261181795480251549245234",
+            "pv": "1392.031406470393637581536218"
+          },
+          {
+            "year": 6,
+            "revenue": "22001.97410700121806662366181",
+            "nopat": "1780.355725538569155198815084",
+            "net_reinvestment": "-8.440712639677226948314543675",
+            "fcff": "1788.796438178246382147129628",
+            "pv": "1278.796047325226290401151165"
+          },
+          {
+            "year": 7,
+            "revenue": "22097.60719436790322307186329",
+            "nopat": "1788.094163635813785216506465",
+            "net_reinvestment": "42.07346612440453967331191116",
+            "fcff": "1746.020697511409245543194554",
+            "pv": "1180.311065397953914454801999"
+          },
+          {
+            "year": 8,
+            "revenue": "22308.95708441756564678084402",
+            "nopat": "1805.196173892344750722890775",
+            "net_reinvestment": "92.98269756058090099144581798",
+            "fcff": "1712.213476331763849731444957",
+            "pv": "1094.489827092575795991066892"
+          },
+          {
+            "year": 9,
+            "revenue": "22638.73231551087492933677285",
+            "nopat": "1831.880925813353156543929061",
+            "net_reinvestment": "145.0835416498899128810452906",
+            "fcff": "1686.797384163463243662883770",
+            "pv": "1019.585063291139185451300227"
+          },
+          {
+            "year": 10,
+            "revenue": "23091.50696182109242792350831",
+            "nopat": "1868.518544329620219674807642",
+            "net_reinvestment": "199.1967348129178028156470267",
+            "fcff": "1669.321809516702416859160615",
+            "pv": "954.1295367342242580840112590"
+          }
+        ],
+        "terminal_nopat": "1905.888915216212624068303796",
+        "terminal_reinvestment": "381.1777830432425248136607592",
+        "pv_terminal": "23219.88355592672335275972740",
+        "operating_value": "36657.27908252007532679726665",
+        "bridge": {
+          "cash_recovery_scenario": "823.23031040000",
+          "operating_cash_reserve": "-681.120691200000",
+          "debt_book_proxy": "-1478.491453656250",
+          "minority_book_proxy": "-31.93236200000",
+          "additional_claims_scenario": "0.0"
+        },
+        "equity_value": "35288.96488606382532679726665",
+        "shares_million": "815.880537600000",
+        "value_per_share": "43.25261268012360701616185562"
+      },
+      "method_assessment": {
+        "boundary": "条件模型可以复算；以上缺口没有被归零或认定无影响。未提供当前目标价、预测准确性认证或完整公司估值认证。",
+        "equity_bridge": {
+          "basis": "report_date_book_claims_no_conversion",
+          "detail_location": "report.equity_bridge",
+          "financial_investments": "no_credit_pending_classification",
+          "options": "not_priced_not_asserted_absent"
+        },
+        "facts": {
+          "lineage": "audit.consumed_inputs",
+          "monetary_unit": "million_CNY",
+          "share_unit": "million_shares",
+          "source": "alphalake_standard_facts"
+        },
+        "forecast": {
+          "basis": "historical_quarter_yoy_policy",
+          "company_evidence_status": "not_established_by_calculation",
+          "policy_location": "audit.assumptions"
+        },
+        "operating_profit": {
+          "basis": "FN86+FN305-FN306-FN83-FN82-FN301",
+          "leases": "reported_interest_scope_not_fully_reconciled",
+          "rd": "expensed_not_capitalized"
+        },
+        "reinvestment": {
+          "basis": "net_reinvestment_equals_revenue_change_over_sales_to_capital",
+          "capital_efficiency": 2.27300234984,
+          "capital_efficiency_source": "industry_reference_with_policy",
+          "capital_release_years": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "historical_fcff_status": "missing_classification_not_zero",
+          "implied_roic_status": "missing_opening_capital"
+        },
+        "scope": "nonfinancial_book_fcff",
+        "status": "conditional_fcff_not_full_company_valuation",
+        "terminal": {
+          "company_evidence_status": "growth_return_and_risk_require_joint_review",
+          "growth": 0.02,
+          "last_explicit_reinvestment_rate": 0.10660677434399539,
+          "pv_share": 0.6334317258969464,
+          "reinvestment_rate": 0.19999999999999998,
+          "roic": 0.1
+        },
+        "unresolved": [
+          {
+            "item": "growth_margin_and_capital_efficiency",
+            "reason": "增长、利润率与资本效率的公司依据尚未闭合",
+            "treatment": "explicit_policy"
+          },
+          {
+            "item": "rd_and_leases",
+            "reason": "研发保留费用化；租赁利息范围待核验，不重复资本化已入账租赁",
+            "treatment": "reported_basis"
+          },
+          {
+            "item": "historical_operating_capital",
+            "reason": "历史经营资本及FCFF分类未闭合，不用预测投入冒充历史资本",
+            "treatment": "missing_not_zero"
+          },
+          {
+            "item": "terminal_growth_return_and_risk",
+            "reason": "稳定增长、回报及固定WACC须联合论证；公式成立不代表参数合理",
+            "treatment": "explicit_policy"
+          },
+          {
+            "item": "equity_claims_and_assets",
+            "reason": "金融投资不计值、到期债务未拆分、少数股权账面代理及未定价期权均限制结论",
+            "treatment": "book_scenario"
+          }
+        ],
+        "wacc": {
+          "basis": "industry_reference_weights",
+          "forecast_wacc": 0.057531403615019586,
+          "reference_location": "audit.wacc_reference",
+          "source": "reference_snapshot_with_policy",
+          "terminal_risk_basis": "constant_wacc_policy",
+          "terminal_wacc": 0.057531403615019586
+        }
+      },
+      "capital_efficiency_double_sensitivity": {
+        "run_id": "cbe9a825ab6e11d7f0ad1e47c48ca477107aac54d0b4e1e80223cc6e9e779bf1",
+        "value_per_share": "43.27002528312941766506495515",
+        "years": [
+          {
+            "year": 1,
+            "revenue": "22565.77705136191488881439315",
+            "nopat": "1825.977531799520153845493156",
+            "net_reinvestment": "-30.41043680571127675328502378",
+            "fcff": "1856.387968605231430598778180",
+            "pv": "1755.397487260837012088392465"
+          },
+          {
+            "year": 2,
+            "revenue": "22428.37284980891377680601056",
+            "nopat": "1814.859058713502920928035766",
+            "net_reinvestment": "-30.22526605893592612151106803",
+            "fcff": "1845.084324772438847049546834",
+            "pv": "1649.793825326257078803091206"
+          },
+          {
+            "year": 3,
+            "revenue": "22291.80530965522744228650836",
+            "nopat": "1803.808286594015467989387166",
+            "net_reinvestment": "-30.04122282656230553919183976",
+            "fcff": "1833.849509420577773528579006",
+            "pv": "1550.543216472204846759966209"
+          },
+          {
+            "year": 4,
+            "revenue": "22156.06933642565649807631131",
+            "nopat": "1792.824803206317142504938726",
+            "net_reinvestment": "-29.85830024309600918098209906",
+            "fcff": "1822.683103449413151685920825",
+            "pv": "1457.263464828720751548126394"
+          },
+          {
+            "year": 5,
+            "revenue": "22021.15986666552859269631574",
+            "nopat": "1781.908198825786277121481617",
+            "net_reinvestment": "-29.67649148484698721388180833",
+            "fcff": "1811.584690310633264335363425",
+            "pv": "1369.595367200573835778907774"
+          },
+          {
+            "year": 6,
+            "revenue": "22001.97410700121806662366181",
+            "nopat": "1780.355725538569155198815084",
+            "net_reinvestment": "-4.220356319838613474157271837",
+            "fcff": "1784.576081858407768672972356",
+            "pv": "1275.778948864537232089427310"
+          },
+          {
+            "year": 7,
+            "revenue": "22097.60719436790322307186329",
+            "nopat": "1788.094163635813785216506465",
+            "net_reinvestment": "21.03673306220226983665595558",
+            "fcff": "1767.057430573611515379850509",
+            "pv": "1194.531909886527380245096958"
+          },
+          {
+            "year": 8,
+            "revenue": "22308.95708441756564678084402",
+            "nopat": "1805.196173892344750722890775",
+            "net_reinvestment": "46.49134878029045049572290899",
+            "fcff": "1758.704825112054300227167866",
+            "pv": "1124.208264069754000803478712"
+          },
+          {
+            "year": 9,
+            "revenue": "22638.73231551087492933677285",
+            "nopat": "1831.880925813353156543929061",
+            "net_reinvestment": "72.54177082494495644052264532",
+            "fcff": "1759.339154988408200103406416",
+            "pv": "1063.432953199080434156122030"
+          },
+          {
+            "year": 10,
+            "revenue": "23091.50696182109242792350831",
+            "nopat": "1868.518544329620219674807642",
+            "net_reinvestment": "99.59836740645890140782351335",
+            "fcff": "1768.920176923161318266984129",
+            "pv": "1011.056693386255569915795894"
+          }
+        ],
+        "boundary": "只有参考资本效率倍率翻倍；财务、收入增长、利润、WACC、终值参数与股权桥接相同，未采用此政策"
+      },
+      "terminal_sensitivity": {
+        "baseline_value_per_share": 43.252612680123605,
+        "boundary": "仅终值ROIC改为终值WACC；显式期现金流、折现与股权桥接不变。无持续超额回报是假设对照，不是公司回报估计、预测验证或推荐估值。",
+        "counterfactual_equity_status": "positive_equity_residual",
+        "counterfactual_value_per_share": 38.00047127187885,
+        "currency": "CNY",
+        "delta_per_share": -5.2521414082447535,
+        "method": "terminal_roic_equals_terminal_wacc",
+        "source": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm",
+        "status": "illustrative_terminal_only_sensitivity",
+        "terminal_growth": 0.02,
+        "terminal_pv_share": 0.6334317258969464,
+        "terminal_roic": 0.1,
+        "terminal_wacc": 0.057531403615019586,
+        "unit": "CNY/share"
+      },
+      "growth_sensitivity": {
+        "baseline_fcff_million_cny": [
+          1886.7984054109431,
+          1875.3095908313758,
+          1863.8907322471405,
+          1852.541403692509,
+          1841.2611817954808,
+          1788.7964381782465,
+          1746.02069751141,
+          1712.213476331765,
+          1686.797384163463,
+          1669.3218095167022
+        ],
+        "baseline_growth": [
+          -0.006089052517015289,
+          -0.006089052517015289,
+          -0.006089052517015289,
+          -0.006089052517015289,
+          -0.006089052517015289,
+          -0.0008712420136122315,
+          0.004346568489790826,
+          0.009564378993193883,
+          0.014782189496596942,
+          0.019999999999999997
+        ],
+        "baseline_value_per_share": 43.252612680123605,
+        "boundary": "同一财务与信息时点，仅改十年收入增长路径；利润率、税率、资本效率、WACC、终值增长/ROIC及股权股本桥接输入不变。收入变化同时影响利润、再投资和终值金额；零收入增量再投资不等于零现金资本开支。中期样本改善不证明一年、第四年至终值、当前公司或完整DCF有效；不是价格区间、概率界限或推荐值。",
+        "counterfactual_equity_status": "positive_equity_residual",
+        "counterfactual_fcff_million_cny": [
+          1837.164120612305,
+          1837.164120612305,
+          1837.164120612305,
+          1837.164120612305,
+          1837.164120612305,
+          1804.5585323635987,
+          1779.0407558913507,
+          1760.275183251967,
+          1748.0046119802364,
+          1742.044510325636
+        ],
+        "counterfactual_growth": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.004,
+          0.008,
+          0.012,
+          0.016,
+          0.02
+        ],
+        "counterfactual_value_per_share": 44.52166991507971,
+        "currency": "CNY",
+        "delta_per_share": 1.269057234956108,
+        "evidence": {
+          "adoption": "not_adopted_as_default_or_company_specific_forecast",
+          "counterevidence": "one_year_validation_failed_and_some_medium_horizon_windows_worsened",
+          "medium_horizon": "two_disjoint_120_company_cohorts_show_average_improvement_in_common_two_and_three_year_windows",
+          "receipt": {
+            "path": "docs/acceptance/zero-growth-common-windows-20260911.json",
+            "sha256": "1aa85158546b71ab986a0be0a31c32f02448be1c3dc455d9105523204faa75ca"
+          },
+          "review": "docs/zero-growth-common-windows-20260911.md"
+        },
+        "method": "zero_first_five_then_fade_to_unchanged_terminal_growth",
+        "status": "illustrative_growth_path_sensitivity",
+        "unit": "CNY/share"
+      },
+      "checks": [
+        "fresh_database_CLI_before_and_after",
+        "exact_request_and_inputs_unchanged",
+        "only_implied_ROIC_report_fields_changed",
+        "independent_decimal_standard_windows_wacc_forecast_terminal_bridge",
+        "summary_assessment_equals_saved_result",
+        "idempotent_current_replay"
+      ]
+    }
+  ],
+  "boundaries": [
+    "原五家中另三家本轮未重跑，不解除既有阻断",
+    "参考包按原请求固定，不重新选择最新市场参数",
+    "数值/血缘核验不等于逐公司全部原文核验",
+    "没有修改数据库或历史运行，没有预测准确度新证据"
+  ],
+  "validation": {
+    "python_interpreter": "workspace/anker-agent-adapter-20260906/venv/bin/python (3.12)",
+    "python_full_first": "420 passed, 2 failed (old full-report expectations), 4 existing external-fixture skips, 7 warnings; 590.62 seconds",
+    "historical_regression_after_fix": "3 passed; strict old-run replay rejection and all other report/forecast/actual values unchanged",
+    "opening_capital_regression": "3 negative cases failed before correction; all 29 M4 tests passed after correction",
+    "snapshots_and_independent_decimal": "2 passed, includes deterministic snapshot hashes, idempotency, cashflow/PV/WACC tamper rejection and policy/missing-input rejection",
+    "python_ci": "existing backend pytest job includes both new offline snapshots and the independent Decimal verifier; live main-database query remains local acceptance",
+    "go_test": "./... passed",
+    "go_build": "./cmd/alphalake passed",
+    "go_source_changes": false,
+    "frontend_type_contract": "tsc --noEmit --skipLibCheck --target ES2020 valuation/frontend/src/types/valuation.ts passed",
+    "frontend_full": {
+      "status": "failed_existing_baseline",
+      "exit_code": 2,
+      "errors": 25,
+      "same_errors_as_HEAD_type_contract": true,
+      "boundary": "No claim of full frontend build acceptance"
+    },
+    "existing_pdf_evidence": [
+      "Anker four annual reports: 180 historical amounts + 7 capital-expenditure amounts; passed",
+      "Supor three annual reports: existing 52 amounts and 12 TDX source values; passed"
+    ],
+    "dependency_changes": false,
+    "verifier_sha256": "32effc7ca550602a3dcf4d69e2afaeb4d60a22b037b5f69ad00c1ba3c97096bf",
+    "logs": {
+      "pytest.log": {
+        "path": "workspace/method-closure-20260912/pytest.log",
+        "sha256": "a1e13c97ea5a0c208226beafcfc614b694fe9e5512902a691bd27ad0a30955a3"
+      },
+      "history-regression.log": {
+        "path": "workspace/method-closure-20260912/history-regression.log",
+        "sha256": "1dbd067b3345c74c3edd88bf3d806a21d91589a18dcfadc5d3d52273c6ac4180"
+      },
+      "go-test.log": {
+        "path": "workspace/method-closure-20260912/go-test.log",
+        "sha256": "1d04ee5850cefcff748fec4f352bb7d94f05570e96ceea368dc1d51d65787969"
+      },
+      "go-build.log": {
+        "path": "workspace/method-closure-20260912/go-build.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "typescript.log": {
+        "path": "workspace/method-closure-20260912/typescript.log",
+        "sha256": "f64987650194bbd437956bc9ebbe98cd8034727b8cd3c9dcb2f5c4b2c311c0b8"
+      },
+      "typescript-baseline.log": {
+        "path": "workspace/method-closure-20260912/typescript-baseline.log",
+        "sha256": "f64987650194bbd437956bc9ebbe98cd8034727b8cd3c9dcb2f5c4b2c311c0b8"
+      },
+      "typescript-contract.log": {
+        "path": "workspace/method-closure-20260912/typescript-contract.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "anker-evidence.log": {
+        "path": "workspace/method-closure-20260912/anker-evidence.log",
+        "sha256": "04d490b0006a41a7491f1b677d1b05c82b29156e5282081850f5c7045ef4d50a"
+      },
+      "supor-evidence.log": {
+        "path": "workspace/method-closure-20260912/supor-evidence.log",
+        "sha256": "f8feefa793245eac6c66fc8514e0c9b6141af0c0afc0885d462fba5419b4f9ae"
+      },
+      "final-regression.log": {
+        "path": "workspace/method-closure-20260912/final-regression.log",
+        "sha256": "3eb09d4c3fa045f82ab1c1943ae50972ceaaacf969fcf0d554d8b715f8ab13d9"
+      }
+    },
+    "final_targeted_regression": "4 passed in 1.39 seconds: both originally failing history tests and both real method-closure cases",
+    "execution_basis": "Full first run plus corrected failing-test replay; no second full Python run. Final covered set: 422 passing tests and 4 existing external-fixture skips."
+  }
+}

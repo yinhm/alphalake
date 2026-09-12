@@ -498,7 +498,7 @@ class DCFResult(BaseModel):
     value_per_share_pre_options: float | None = Field(default=None)
     # Implied ROIC path (per-year closed-loop output of the three-story
     # examination). Years 1..10; terminal is reported separately.
-    implied_roic_projections: list[float] = Field(default_factory=list)
+    implied_roic_projections: list[float | None] = Field(default_factory=list)
     implied_roic_terminal: float | None = Field(default=None)
 
 
