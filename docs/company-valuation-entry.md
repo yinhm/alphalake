@@ -36,6 +36,12 @@ PYTHONPATH=valuation/backend python -m tools.review_valuation_forecast \
 
 真实验收未查询主库，复用已有标准链请求并通过当前引擎完整重放。现有集成回归覆盖独立现金流/终值复算、请求不变与输入不变、零增长同值、幂等保存、对照负股权残值、专项不套用及统一摘要透传，进入现有pytest CI；依赖现有后端Python及Go自包含样本，无新依赖。只增加一次引擎内存计算，不修改默认政策或财务源。 本轮后端全套385项通过、4项既有外部样本跳过、7条警告（487.77秒）；最终证据哈希及负残值补充回归通过。Go全套与构建通过；无Go代码、依赖或CI配置变更。
 
+## 通用DCF的方法范围与缺口
+
+成功的通用账面／历史／校准DCF在`valuation.method_assessment`返回结构化方法披露，完整API及保存运行对应顶层同名字段。状态为`conditional_fcff_not_full_company_valuation`：标准事实来源与血缘入口、经营EBIT调整、研发费用化／租赁范围、预测政策来源、资本效率参考／政策、历史FCFF缺项、资本释放年份、WACC来源与终值风险政策、末年及终值再投资率、终值占比、股权桥接边界和`unresolved`五类事项分别展示。
+
+它不是新的评分、自动政策批准或估值修正。必需输入仍按原校验拒绝，未分类金融投资、期权等经济缺口在显式账面情景下保留；不把未定价当不存在。专项／仅企业价值返回null；旧归档没有该字段时摘要也返回null。共享M4在缺期初资本时将`implied_roic_projections`各年及`implied_roic_terminal`留空，不借未来投入构造期初资本；API列表允许null，前端类型同步。含旧ROIC诊断的历史报告不能通过当前引擎的整报告严格重放；应保留旧文件，以原请求生成新运行，再比较或核验，不放宽旧报告一致性检查。方法依据、两公司复验和限制见[本轮验收](../valuation/research/method-closure-20260912/README.md)。
+
 ## 通用DCF的终值回报对照
 
 成功的通用账面DCF（含历史增长和显式一年校准政策）现在自动输出`valuation.terminal_sensitivity`；完整API/归档运行对应顶层同名字段。内容包含原终值ROIC、终值WACC、增长率、终值现值占比、原每股条件值、`counterfactual_value_per_share`与差额，金额单位为CNY/share。专项模型和仅企业价值模型输出null；不由此推断其没有终值风险。

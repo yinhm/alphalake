@@ -2,6 +2,8 @@
 
 本轮检查普通非金融FCFF路径：标准窗口→`build_book_dcf_inputs`→`compute_dcf`，历史增长与零增长显式政策共用该路径。结论是已检查的净再投资与终值公式一致，测试的一处弱断言已补强；另修正WACC代理分支错误继承的市场资本结构标签；不代表所有估值模型、公司WACC或全部默认参数完成核对。
 
+当前通用路径进一步核对见[2026-09-12闭环验收](../valuation/research/method-closure-20260912/README.md)：补查实际M1—M6接入范围，并修复M4缺期初资本仍产生隐含ROIC的问题；新增统一结构化缺口披露。下文为历次修复的当时范围与结果，“报告不变”不包含本次有意修正的ROIC诊断字段。
+
 方法依据：[达摩达兰增长与再投资说明](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/invfables/growthdeterminants.htm)、[终值中的超额回报](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm)。增长、再投资与资本回报应联动，终值需要为稳定增长扣除相应再投资；是否存在超额回报决定增长对价值的影响。方法依据与公司预测实证分别记录。
 
 | 检查项 | 当前普通FCFF实现 | 结论与边界 |

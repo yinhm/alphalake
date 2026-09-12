@@ -6,7 +6,7 @@ AlphaLake 是面向投资研究、本地优先且可复现的金融市场数据�
 
 它通过多个数据源适配器采集数据，将记录归一化为标准模型，在 DuckDB 中存储分析数据，并保留重建、校验和派生数据集所需的血缘信息。数据源提供稳定文件时，系统将其保存为不可变的原始证据。
 
-下一阶段主线是[持续经营公司的预测与完整条件估值对照](docs/valuation-accuracy.md)：复用现有数据链及估值入口，检验增长、利润率与再投资的一致性。[价值期间分解](docs/value-horizon-attribution-20260911.md)已确认两份基线由远期与终值主导，[资本效率单因素对照](docs/capital-efficiency-counterfactual-20260911.md)进一步显示投入代理显著影响现金路径；[多起点余额路径检验](valuation/research/continuing-operations-five/trade-balance-path.md)未支持统一按收入同比例预测三项营运余额；[公司前瞻收入来源试验](valuation/research/analyst-revenue-pilot/README.md)已取得三个历史版本，但未支持替换规则；固定同券商缺覆盖后，[最新研报规则](valuation/research/analyst-revenue-latest/README.md)补齐两家公司六个起点，但改善未跨公司、跨起点成立，不替换默认预测；[年度资金占用传递检验](valuation/research/analyst-revenue-latest/capital-transmission.md)亦未支持稳定改善；[券商直接余额预测](valuation/research/analyst-revenue-latest/direct-balances.md)受科目范围与混合效果限制，未替换规则；[统一入口](docs/company-valuation-entry.md#历史增长政策的增长路径对照)已并列增长情景及正反研究证据，并支持[保存预测的到期核验](docs/company-valuation-entry.md#已保存预测的到期核验)，主估值不变；[安克2025H1标准历史链](valuation/research/standard-history-2025H1/README.md)已完成一项真实到期核验，利润预测偏差大于收入，单例不改规则；继续联合检验增长与资本需求，暂停增加同类一年统计候选。半量利润校准仅有局部历史改善，后续窗口未达采用门槛，不扩大默认采用；经营现金流预测在新增120家公司未复现原改善，仅保留显式研究交叉检查并同时展示失败证据。疫情异常与重大经营断裂转为边界记录，不再围绕个案追加研究。数据齐备、计算正确、预测改善和完整估值有效性分别报告。
+当前已完成[普通非金融企业估值闭环验收](valuation/research/method-closure-20260912/README.md)：复用标准数据和共享引擎，逐项对齐经营收益、再投资、WACC、终值及股权桥接；修正缺资本仍生成隐含ROIC的诊断，统一入口新增方法范围与缺口披露。安克、苏泊尔固定时点条件值保持不变。计算和输入衔接可复验，公司预测依据、完整经营资本及市场股权桥接仍有明确缺口；不称完整公允价值或预测准确性认证。[历史预测研究](docs/valuation-accuracy.md)单独保留，失败候选不推广，未来评分等待数据不阻塞当前方法验收。
 
 ## 初始范围
 
