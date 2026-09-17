@@ -164,15 +164,23 @@ class CalibratedHistoricalDCFPolicy(HistoricalDCFPolicy):
         return self
 
 
+class ReviewedRestrictedComponent(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    item: str = Field(pattern=r'^[a-z][a-z0-9_]*$')
+    import_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    evidence_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+
+
 class ReviewedAssetAddback(BaseModel):
-    """整项标准金融资产的分类审核；金额仍取TDX，不支持混合科目直接加回。"""
+    """标准金融资产分类审核；受限分量须另有同期间、同原文证据。"""
     model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
     field: Literal['FN9', 'FN19', 'FN25', 'FN430', 'FN431', 'FN433']
     item: str = Field(pattern=r'^[a-z][a-z0-9_]*$')
     import_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
     source_artifact_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
     evidence_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
-    classification: Literal['nonoperating_unrestricted_financial_asset', 'nonconsolidated_equity_holding']
+    classification: Literal['nonoperating_unrestricted_financial_asset', 'nonoperating_partially_restricted_financial_asset', 'nonconsolidated_equity_holding']
+    restricted_component: ReviewedRestrictedComponent | None = None
     valuation_basis: Literal['reported_book_value_proxy']
     recovery: float = Field(ge=0, le=1)
     review_note: str = Field(min_length=1)
@@ -192,9 +200,19 @@ class ReviewedHistoricalDCFPolicy(HistoricalDCFPolicy):
             raise ValueError('aware ordered review validity required')
         if len({r.field for r in self.asset_addbacks}) != len(self.asset_addbacks) or len({r.item for r in self.asset_addbacks}) != len(self.asset_addbacks):
             raise ValueError('duplicate reviewed asset field or evidence')
+        evidence_items = [r.item for r in self.asset_addbacks]
         for r in self.asset_addbacks:
+            partial = r.classification == 'nonoperating_partially_restricted_financial_asset'
+            if partial != (r.restricted_component is not None):
+                raise ValueError('partial asset classification requires restricted component evidence only')
+            if partial:
+                if r.field not in ('FN19', 'FN431'):
+                    raise ValueError('restricted components currently support FN19/FN431 only')
+                evidence_items.append(r.restricted_component.item)
             if (r.field == 'FN25') != (r.classification == 'nonconsolidated_equity_holding'):
                 raise ValueError('equity holding classification requires FN25 only')
+        if len(set(evidence_items)) != len(evidence_items):
+            raise ValueError('duplicate reviewed asset component evidence')
         return self
 
 
@@ -698,20 +716,24 @@ def apply_reviewed_assets(d, policy, inputs, audit):
         if w['calculation_basis'] != 'instant' or len(w['source_fact_ids']) != 1:
             raise ValueError('asset addback requires one period-end source fact')
         f = facts[w['source_fact_ids'][0]]
-        matches = [r for r in d.supplements if r['period'] == d.report_period.isoformat() and r['item'] == rule.item]
-        if not matches:
-            raise MissingInputs(['CNINFO/'+d.report_period.isoformat()+'/'+rule.item])
-        if len(matches) != 1:
-            raise ValueError('ambiguous asset review supplement')
-        r = matches[0]
-        if (r.get('unit'), r.get('period_basis'), r.get('scope')) != ('CNY', 'instant', 'consolidated_note_component'):
-            raise ValueError('incompatible asset review supplement scope/unit/period')
-        if (content_hash(r) != rule.evidence_sha256 or r.get('import_sha256') != rule.import_sha256 or f['artifact_sha256'] != rule.source_artifact_sha256
-                or not r.get('reviewer') or not r.get('review_note') or not r.get('available_at')
-                or not r.get('pdf_sha256') or r.get('pdf_page', 0) <= 0
-                or r.get('announcement_id') != f['announcement_id'] or r.get('pdf_sha256') != f.get('pdf_sha256')
-                or r.get('pdf_url') != f.get('pdf_url')):
-            raise ValueError('asset review evidence differs from approved current filing/source')
+        def reviewed_note(binding):
+            matches = [r for r in d.supplements if r['period'] == d.report_period.isoformat() and r['item'] == binding.item]
+            if not matches:
+                raise MissingInputs(['CNINFO/'+d.report_period.isoformat()+'/'+binding.item])
+            if len(matches) != 1:
+                raise ValueError('ambiguous asset review supplement')
+            r = matches[0]
+            if (r.get('unit'), r.get('period_basis'), r.get('scope')) != ('CNY', 'instant', 'consolidated_note_component'):
+                raise ValueError('incompatible asset review supplement scope/unit/period')
+            if (content_hash(r) != binding.evidence_sha256 or r.get('import_sha256') != binding.import_sha256 or f['artifact_sha256'] != rule.source_artifact_sha256
+                    or not r.get('reviewer') or not r.get('review_note') or not r.get('available_at')
+                    or not r.get('pdf_sha256') or r.get('pdf_page', 0) <= 0
+                    or r.get('announcement_id') != f['announcement_id'] or r.get('pdf_sha256') != f.get('pdf_sha256')
+                    or r.get('pdf_url') != f.get('pdf_url')):
+                raise ValueError('asset review evidence differs from approved current filing/source')
+            return r
+
+        r = reviewed_note(rule)
         # PDF整项金额须在源精度下与TDX一致；不把原文小数写回标准金额。
         reported = Decimal(r['value'])
         if not reported.is_finite() or reported < 0:
@@ -719,18 +741,28 @@ def apply_reviewed_assets(d, policy, inputs, audit):
         bits = struct.unpack('<I', struct.pack('<f', float(reported/Decimal(f['multiplier']))))[0]
         if bits != f['bits']:
             raise ValueError('asset review total differs from standard source precision')
+        restricted = reviewed_note(rule.restricted_component) if rule.restricted_component else None
+        restricted_value = Decimal(restricted['value']) if restricted else Decimal(0)
+        if not restricted_value.is_finite() or restricted_value < 0 or restricted_value > reported or restricted_value > Decimal(str(value))*1000000:
+            raise ValueError('invalid reviewed restricted amount')
+        eligible = value - float(restricted_value/1000000)
         component = 'reviewed_asset_'+rule.field
-        inputs.equity_bridge.components[component] = value*rule.recovery
+        inputs.equity_bridge.components[component] = eligible*rule.recovery
         adopted.append(dict(rule=rule.model_dump(mode='json'), supplement=r,
-                            standard_value_million_cny=value, adopted_value_million_cny=value*rule.recovery,
+                            standard_value_million_cny=value, restricted_supplement=restricted,
+                            restricted_value_million_cny=float(restricted_value/1000000),
+                            eligible_value_million_cny=eligible, adopted_value_million_cny=eligible*rule.recovery,
                             source_fact_id=f['fact_id']))
     inputs.equity_bridge.policy_id = policy.policy_id
     audit['reviewed_assets'] = adopted
-    audit['required_input_count'] += 2*len(adopted)
-    audit['available_required_input_count'] += 2*len(adopted)
+    evidence_count = 2*len(adopted)+sum(r['restricted_supplement'] is not None for r in adopted)
+    audit['required_input_count'] += evidence_count
+    audit['available_required_input_count'] += evidence_count
     audit['consumed_inputs'] += consumed
     audit['consumed_inputs'] += [dict(source='cninfo', item=r['supplement']['item'],
         period=r['supplement']['period'], import_sha256=r['supplement']['import_sha256']) for r in adopted]
+    audit['consumed_inputs'] += [dict(source='cninfo', item=r['item'], period=r['period'],
+        import_sha256=r['import_sha256']) for a in adopted if (r := a['restricted_supplement']) is not None]
     audit['assumptions']['bridge'] = policy.model_dump(mode='json')
     audit['boundaries'] = [b for b in audit['boundaries'] if not b.startswith('nonoperating financial investments receive no credit')]
-    audit['boundaries'].append('only explicitly reviewed whole asset fields credited using standard book amounts and policy recoveries; remaining assets unreviewed, not zero; book proxies not market valuations')
+    audit['boundaries'].append('only explicitly reviewed asset fields credited using standard book amounts less separately reviewed restricted components, then policy recoveries; excluded restricted amounts are not assumed permanently lost; remaining assets unreviewed, not zero; book proxies not market valuations')

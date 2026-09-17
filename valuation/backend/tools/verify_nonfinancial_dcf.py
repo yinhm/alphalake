@@ -108,7 +108,16 @@ def verify(run):
             row = rows[0]
             expected = sum(D(facts[i]['value'])*D(c) for i,c in zip(row['source_fact_ids'], row['input_coefficients'], strict=True))
             near(row['value'], expected, 'reviewed asset '+rule['field'])
-            components['reviewed_asset_'+rule['field']] = expected/1000000*D(str(rule['recovery']))
+            restriction = rule.get('restricted_component')
+            restricted = D(0)
+            if restriction:
+                matches = [r for r in d['supplements'] if r['item'] == restriction['item'] and r['period'] == d['report_period']]
+                if len(matches) != 1:
+                    raise ValueError('missing or ambiguous restricted asset component')
+                restricted = D(matches[0]['value'])
+                if not restricted.is_finite() or not 0 <= restricted <= expected:
+                    raise ValueError('invalid restricted asset component')
+            components['reviewed_asset_'+rule['field']] = (expected-restricted)/1000000*D(str(rule['recovery']))
     shares = w['FN238']*(1+D(str(p['extra_dilution_rate']))); equity = ev+sum(components.values()); value = equity/shares
     bridge = run['inputs']['equity_bridge']
     if set(bridge['components']) != set(components) or bridge['operating_ownership'] != 1 or bridge['conversion_release'] != 0 or bridge['conversion_shares'] != 0:

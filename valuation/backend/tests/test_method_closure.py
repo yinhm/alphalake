@@ -99,7 +99,68 @@ def test_growth_capital_economic_diagnostics(tmp_path, monkeypatch):
         assert row['fcff_million_cny'] < 0
         assert 'negative_fcff_requires_funding_plan_not_automatic_rejection' in row['flags']
         assert 'revenue_growth_return_proxy_below_wacc' in row['flags']
+
 def test_supor_restricted_asset_evidence():
     import runpy
 
     runpy.run_module('tools.verify_supor_reviewed_assets', run_name='__main__')
+
+
+def test_partial_asset_policy_with_explicit_synthetic_archive(tmp_path, monkeypatch):
+    """标准请求+人工归档关联夹具；不冒称镜像已入生产库。"""
+    from data_sources.alphalake import content_hash
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
+    request = json.loads(gzip.decompress((ROOT/'002032-request.json.gz').read_bytes()))
+    baseline = evaluate(AlphaLakeRequest.model_validate(request))
+    receipt = json.loads((ROOT.parent/'reviewed-assets-20260917/supor/receipt.json').read_bytes())
+    request['policy'].update(policy_id='nonfinancial-reviewed-history-fcff-v1',
+        financial_asset_policy='reviewed_standard_asset_addbacks', code='002032',
+        reviewed_at=request['data']['information_as_of'], valid_until='2026-10-17T00:00:00Z',
+        asset_addbacks=[])
+    for field, total, restricted in (('FN19', 'current_total', 'current_restricted'),
+                                      ('FN431', 'noncurrent_total', 'noncurrent_restricted')):
+        fact = next(f for f in request['data']['facts'] if f['field'] == field and f['period'] == '2026-06-30')
+        fact['pdf_sha256'] = receipt['sha256']  # 人工关联夹具，只验证适配器边界。
+        notes = []
+        for key in (total, restricted):
+            note = dict(code='002032', item=key, period='2026-06-30', value=receipt['amounts_cny'][key],
+                unit='CNY', period_basis='instant', scope='consolidated_note_component',
+                import_sha256='1'*64, reviewer='synthetic archive test', review_note='not a production archive',
+                available_at=fact['available_at'], announcement_id=fact['announcement_id'],
+                pdf_sha256=receipt['sha256'], pdf_url=fact['pdf_url'], pdf_page=86 if field == 'FN19' else 87)
+            request['data']['supplements'].append(note)
+            notes.append(dict(item=key, import_sha256=note['import_sha256'], evidence_sha256=content_hash(note)))
+        request['policy']['asset_addbacks'].append(dict(field=field, **notes[0],
+            source_artifact_sha256=fact['artifact_sha256'], restricted_component=notes[1],
+            classification='nonoperating_partially_restricted_financial_asset',
+            valuation_basis='reported_book_value_proxy', recovery=1, review_note='exclude pledged component'))
+    result = evaluate(AlphaLakeRequest.model_validate(request))
+    verify(result)
+    for key in ('revenue_projections', 'ebit_projections', 'reinvestment_projections', 'fcff_projections', 'value_of_operating_assets'):
+        assert result['report']['dcf'][key] == baseline['report']['dcf'][key]
+    expected = (1823720960 - 750000000 + 967473281.25 - 20000000)/1e6
+    assert sum(v for k, v in result['inputs']['equity_bridge']['components'].items() if k.startswith('reviewed_asset_')) == pytest.approx(expected)
+    assert result['report']['final']['value_per_share']-baseline['report']['final']['value_per_share'] == pytest.approx(expected/result['inputs']['equity_bridge']['shares'])
+    haircut = deepcopy(request)
+    for rule in haircut['policy']['asset_addbacks']:
+        rule['recovery'] = .5
+    discounted = evaluate(AlphaLakeRequest.model_validate(haircut))
+    verify(discounted)
+    assert sum(v for k, v in discounted['inputs']['equity_bridge']['components'].items() if k.startswith('reviewed_asset_')) == pytest.approx(expected*.5)
+    for problem in ('missing', 'negative', 'too_large', 'changed', 'unit', 'period', 'pdf', 'scope', 'duplicate', 'classification'):
+        bad = deepcopy(request)
+        rule = bad['policy']['asset_addbacks'][0]
+        note = next(r for r in bad['data']['supplements'] if r['item'] == rule['restricted_component']['item'])
+        if problem == 'missing': bad['data']['supplements'].remove(note)
+        elif problem in ('negative', 'too_large'):
+            note['value'] = '-1' if problem == 'negative' else '3000000000'
+            rule['restricted_component']['evidence_sha256'] = content_hash(note)
+        elif problem == 'changed': note['value'] = '0'
+        elif problem == 'unit': note['unit'] = 'USD'
+        elif problem == 'period': note['period'] = '2025-06-30'
+        elif problem == 'pdf': note['pdf_sha256'] = '0'*64
+        elif problem == 'scope': note['scope'] = 'consolidated_statement'
+        elif problem == 'duplicate': rule['restricted_component'] = {k:rule[k] for k in ('item','import_sha256','evidence_sha256')}
+        else: rule['classification'] = 'nonoperating_unrestricted_financial_asset'
+        with pytest.raises(ValueError):
+            evaluate(AlphaLakeRequest.model_validate(bad))

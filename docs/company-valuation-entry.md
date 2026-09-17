@@ -178,7 +178,7 @@ WACC来源解读：`approach_used`为`direct`、`industry_average`或`decile`时
 
 ## 经审核的标准资产加回
 
-显式公司分配可使用`nonfinancial-reviewed-history-fcff-v1`，审核绑定及真实验收见[已审核资产链路](../valuation/research/reviewed-assets-20260917/README.md)。该政策仅增加指定的整项标准资产，未审核资产不自动计值；失效证据不会降级为默认行业政策。统一摘要通过`method_assessment.equity_bridge.reviewed_assets`保留采纳值、标准源和原文补充。
+显式公司分配可使用`nonfinancial-reviewed-history-fcff-v1`，审核绑定及真实验收见[已审核资产链路](../valuation/research/reviewed-assets-20260917/README.md)。该政策仅增加指定的已审核标准资产；FN19/FN431允许以`nonoperating_partially_restricted_financial_asset`分类绑定`restricted_component`（item/import_sha256/evidence_sha256），先从TDX总额扣除同原文已审核受限额，再乘显式回收率。其余混合科目不支持拆分，未审核资产不自动计值；失效证据不会降级为默认行业政策。统一摘要通过`method_assessment.equity_bridge.reviewed_assets`保留采纳值、标准源和原文补充。
 
 ## 增长与资本联合审核及自动重估
 
