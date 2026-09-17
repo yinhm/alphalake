@@ -99,3 +99,7 @@ def test_growth_capital_economic_diagnostics(tmp_path, monkeypatch):
         assert row['fcff_million_cny'] < 0
         assert 'negative_fcff_requires_funding_plan_not_automatic_rejection' in row['flags']
         assert 'revenue_growth_return_proxy_below_wacc' in row['flags']
+def test_supor_restricted_asset_evidence():
+    import runpy
+
+    runpy.run_module('tools.verify_supor_reviewed_assets', run_name='__main__')

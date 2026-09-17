@@ -1,0 +1,24 @@
+{
+  "code": "002032",
+  "period": "2026-06-30",
+  "retrieved_at": "2026-09-17T16:38:19.241265+00:00",
+  "retrieval_url": "https://file.finance.sina.com.cn/211.154.219.97:9494/MRGG/CNSESZ_STOCK/2026/2026-8/2026-08-28/12563787.PDF",
+  "discovery_url": "https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?id=12563787&stockid=002032",
+  "canonical_url": "https://static.cninfo.com.cn/finalpage/2026-08-28/1225522987.PDF",
+  "canonical_announcement_id": "1225522987",
+  "retrieval_source": "sina_issuer_announcement_mirror",
+  "canonical_byte_identity": "not_verified",
+  "file": "12563787.pdf",
+  "sha256": "7460d1d9513785afd2596cea30d6a33b2a1a524089b77cec862222dd2d86ff45",
+  "pages": 133,
+  "request_snapshot": "valuation/research/method-closure-20260912/002032-request.json.gz",
+  "request_sha256": "08efcb32de33336a835737581c0a7071e5d5e0a5406f1301cb876d89a2f1625b",
+  "amounts_cny": {
+    "current_total": "1823720958.90",
+    "current_restricted": "750000000.00",
+    "combined_total": "2791194260.28",
+    "noncurrent_total": "967473301.38",
+    "noncurrent_restricted": "20000000.00"
+  },
+  "production_status": "not_imported; mirror provenance and partial restricted-asset policy require explicit integration"
+}
