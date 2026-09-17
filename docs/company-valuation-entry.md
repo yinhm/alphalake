@@ -175,3 +175,7 @@ python -m tools.company_valuation /absolute/market.duckdb 300866 \
 这是本地命令和结果契约的实际检查，没有独立agent行为评测或外部客户端加载验收；不新增财报原文审核或全市场估值覆盖。未改动程序，未重跑Go/Python全套测试。
 
 WACC来源解读：`approach_used`为`direct`、`industry_average`或`decile`时，`capital_structure_basis=not_used`表示未用公司资本结构计算该WACC。不要把这些分支的兼容占位权重当成公司市场权重；具体方法核对及旧/新run ID边界见[方法审计](damodaran-method-audit-20260911.md)。
+
+## 经审核的标准资产加回
+
+显式公司分配可使用`nonfinancial-reviewed-history-fcff-v1`，审核绑定及真实验收见[已审核资产链路](../valuation/research/reviewed-assets-20260917/README.md)。该政策仅增加指定的整项标准资产，未审核资产不自动计值；失效证据不会降级为默认行业政策。统一摘要通过`method_assessment.equity_bridge.reviewed_assets`保留采纳值、标准源和原文补充。

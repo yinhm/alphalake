@@ -1,0 +1,318 @@
+{
+  "scope": "isolated_real_archive_database_not_main_database",
+  "database": "workspace/reviewed-assets-20260917/standard/acceptance.duckdb",
+  "before_run_id": "6e574f081aabe39939b8feed6001bd483f0e7d19205f9c02018058d3a1450f30",
+  "after_run_id": "736e19a5993c6749d6a98a5fcd77dad90fc0025d23081671b33ecc952200dd6b",
+  "before_value": 126.13784833230838,
+  "after_value": 127.15446348506366,
+  "delta": {
+    "after_minus_before": "1.01661515275528",
+    "currency": "CNY",
+    "unit": "CNY/share"
+  },
+  "independent_calculation": {
+    "code": "300866",
+    "unit": "million_CNY_except_per_share_CNY",
+    "wacc": "0.08075367197021832",
+    "sales_to_capital": "2.4835356974580",
+    "years": [
+      {
+        "year": 1,
+        "revenue": "41103.17998080000",
+        "nopat": "2925.143281450195312500000000",
+        "net_reinvestment": "2758.377906068270585852880564",
+        "fcff": "166.765375381924726647119436",
+        "pv": "154.3047039367544059218876251"
+      },
+      {
+        "year": 2,
+        "revenue": "49323.815976960000",
+        "nopat": "3510.171937740234375000000000",
+        "net_reinvestment": "3310.053487281924703023456677",
+        "fcff": "200.118450458309671976543323",
+        "pv": "171.3301092806352136041838571"
+      },
+      {
+        "year": 3,
+        "revenue": "59188.5791723520000",
+        "nopat": "4212.206325288281250000000000",
+        "net_reinvestment": "3972.064184738309643628148013",
+        "fcff": "240.142140549971606371851987",
+        "pv": "190.2340343308384757082469330"
+      },
+      {
+        "year": 4,
+        "revenue": "71026.29500682240000",
+        "nopat": "5054.647590345937500000000000",
+        "net_reinvestment": "4766.477021685971572353777615",
+        "fcff": "288.170568659965927646222385",
+        "pv": "211.2237479432748750536223859"
+      },
+      {
+        "year": 5,
+        "revenue": "85231.554008186880000",
+        "nopat": "6065.577108415125000000000000",
+        "net_reinvestment": "5719.772426023165886824533138",
+        "fcff": "345.804682391959113175466862",
+        "pv": "234.5293882461261989176833949"
+      },
+      {
+        "year": 6,
+        "revenue": "99209.528865529528320000",
+        "nopat": "7060.331754195205500000000000",
+        "net_reinvestment": "5628.256067206795232635340608",
+        "fcff": "1432.075686988410267364659392",
+        "pv": "898.6811926210064293466322862"
+      },
+      {
+        "year": 7,
+        "revenue": "111908.348560317307944960000",
+        "nopat": "7964.054218732191804000000000",
+        "net_reinvestment": "5113.201999788261190858565048",
+        "fcff": "2850.852218943930613141434952",
+        "pv": "1655.341742688218972536456578"
+      },
+      {
+        "year": 8,
+        "revenue": "122203.9166278665002758963200",
+        "nopat": "8696.747206855553449968000000",
+        "net_reinvestment": "4145.528521328332760488581613",
+        "fcff": "4551.218685527220689479418387",
+        "pv": "2445.197514498231489300748434"
+      },
+      {
+        "year": 9,
+        "revenue": "129047.3359590270242913465139",
+        "nopat": "9183.765050439464443166208000",
+        "net_reinvestment": "2755.514784089893532276062413",
+        "fcff": "6428.250266349570910890145587",
+        "pv": "3195.599161852431149639689970"
+      },
+      {
+        "year": 10,
+        "revenue": "131628.2826782075647771734442",
+        "nopat": "9367.440351448253732029532160",
+        "net_reinvestment": "1039.222718571045560744114979",
+        "fcff": "8328.217632877208171285417181",
+        "pv": "3830.759329562450187182585549"
+      }
+    ],
+    "terminal_nopat": "9554.789158477218806670122805",
+    "terminal_reinvestment": "1910.957831695443761334024561",
+    "pv_terminal": "57872.38298295953965941793090",
+    "operating_value": "70859.58390791950705662966791",
+    "bridge": {
+      "cash_recovery_scenario": "2393.80561920000",
+      "operating_cash_reserve": "-1027.579499520000",
+      "debt_book_proxy": "-3066.91580662500",
+      "minority_book_proxy": "-161.25004800000",
+      "additional_claims_scenario": "0.0",
+      "reviewed_asset_FN25": "556.09043200000"
+    },
+    "equity_value": "69553.73460497450705662966791",
+    "shares_million": "547.001911680000",
+    "value_per_share": "127.1544634850635318654059807"
+  },
+  "comparison": {
+    "contract_version": "alphalake-valuation-comparison-v1",
+    "status": "compared",
+    "before": {
+      "run_id": "6e574f081aabe39939b8feed6001bd483f0e7d19205f9c02018058d3a1450f30",
+      "engine_revision": "c9b854f28ccac51d8983b70c168c167eba7065cb876b7d5d0e5b23eabc1e561d",
+      "runtime_versions": {
+        "fastapi": "0.141.1",
+        "numpy": "2.5.3",
+        "pydantic": "2.12.5",
+        "python": "3.12.3",
+        "scipy": "1.18.1"
+      },
+      "code": "300866",
+      "report_period": "2026-06-30",
+      "information_as_of": "2026-09-17T00:00:00Z",
+      "instrument_ids": [
+        2
+      ],
+      "policy_id": "nonfinancial-history-fcff-v1",
+      "scenario": "industry-mechanical-initial",
+      "capital_basis": "report_date_book_debt_no_conversion_scenario",
+      "value_per_share": 126.13784833230838,
+      "wacc": 0.08075367197021832
+    },
+    "after": {
+      "run_id": "736e19a5993c6749d6a98a5fcd77dad90fc0025d23081671b33ecc952200dd6b",
+      "engine_revision": "c9b854f28ccac51d8983b70c168c167eba7065cb876b7d5d0e5b23eabc1e561d",
+      "runtime_versions": {
+        "fastapi": "0.141.1",
+        "numpy": "2.5.3",
+        "pydantic": "2.12.5",
+        "python": "3.12.3",
+        "scipy": "1.18.1"
+      },
+      "code": "300866",
+      "report_period": "2026-06-30",
+      "information_as_of": "2026-09-17T00:00:00Z",
+      "instrument_ids": [
+        2
+      ],
+      "policy_id": "nonfinancial-reviewed-history-fcff-v1",
+      "scenario": "industry-mechanical-initial",
+      "capital_basis": "report_date_book_debt_no_conversion_scenario",
+      "value_per_share": 127.15446348506366,
+      "wacc": 0.08075367197021832
+    },
+    "value_difference": {
+      "after_minus_before": "1.01661515275528",
+      "currency": "CNY",
+      "unit": "CNY/share"
+    },
+    "changes": {
+      "equity_and_share_policy": {
+        "count": 2,
+        "items": [
+          {
+            "path": "/policy/asset_addbacks",
+            "before_present": false,
+            "after_present": true,
+            "before": null,
+            "after": [
+              {
+                "classification": "nonconsolidated_equity_holding",
+                "evidence_sha256": "a026346c0f8b0272315d54f1dff1b9f0e522fb8ed45e470b040c4f6d03af103d",
+                "field": "FN25",
+                "import_sha256": "df540a29792ac1da6738e7e3f665c720504ea0e5b659d86c6342f9850f865897",
+                "item": "reviewed_associate_investments",
+                "recovery": 1.0,
+                "review_note": "第108页全部为联营企业；采用已计提减值后的账面金额代理，尚未逐家估计市场价值。",
+                "source_artifact_sha256": "6366c4224e1a08de7bdb8e45ec6af624a20205f70a305eaf66a33d78aaa6578c",
+                "valuation_basis": "reported_book_value_proxy"
+              }
+            ]
+          },
+          {
+            "path": "/policy/financial_asset_policy",
+            "before_present": true,
+            "after_present": true,
+            "before": "no_credit_pending_classification",
+            "after": "reviewed_standard_asset_addbacks"
+          }
+        ],
+        "omitted_count": 0
+      },
+      "model_and_policy": {
+        "count": 4,
+        "items": [
+          {
+            "path": "/policy/code",
+            "before_present": false,
+            "after_present": true,
+            "before": null,
+            "after": "300866"
+          },
+          {
+            "path": "/policy/policy_id",
+            "before_present": true,
+            "after_present": true,
+            "before": "nonfinancial-history-fcff-v1",
+            "after": "nonfinancial-reviewed-history-fcff-v1"
+          },
+          {
+            "path": "/policy/reviewed_at",
+            "before_present": false,
+            "after_present": true,
+            "before": null,
+            "after": "2026-09-17T00:00:00Z"
+          },
+          {
+            "path": "/policy/valid_until",
+            "before_present": false,
+            "after_present": true,
+            "before": null,
+            "after": "2026-10-17T00:00:00Z"
+          }
+        ],
+        "omitted_count": 0
+      }
+    },
+    "derived": {
+      "forecast_unchanged": true,
+      "equity_bridge_inputs_unchanged": false,
+      "equity_bridge_before": {
+        "policy_id": "nonfinancial-book-fcff-v1",
+        "status": "illustrative_policy_not_reported_fact",
+        "operating_value": 70859.58390791959,
+        "operating_ownership": 1.0,
+        "components": {
+          "cash_recovery_scenario": 2393.8056192,
+          "operating_cash_reserve": -1027.5794995200001,
+          "debt_book_proxy": -3066.9158066249997,
+          "minority_book_proxy": -161.250048,
+          "additional_claims_scenario": -0.0
+        },
+        "equity_no_conversion": 68997.64417297459,
+        "equity_if_converted": 68997.64417297459,
+        "shares_no_conversion": 547.00191168,
+        "shares_if_converted": 547.00191168,
+        "per_share_no_conversion": 126.13784833230838,
+        "per_share_if_converted": 126.13784833230838,
+        "selected_case": "not_converted",
+        "per_share": 126.13784833230838
+      },
+      "equity_bridge_after": {
+        "policy_id": "nonfinancial-reviewed-history-fcff-v1",
+        "status": "illustrative_policy_not_reported_fact",
+        "operating_value": 70859.58390791959,
+        "operating_ownership": 1.0,
+        "components": {
+          "cash_recovery_scenario": 2393.8056192,
+          "operating_cash_reserve": -1027.5794995200001,
+          "debt_book_proxy": -3066.9158066249997,
+          "minority_book_proxy": -161.250048,
+          "additional_claims_scenario": -0.0,
+          "reviewed_asset_FN25": 556.090432
+        },
+        "equity_no_conversion": 69553.73460497458,
+        "equity_if_converted": 69553.73460497458,
+        "shares_no_conversion": 547.00191168,
+        "shares_if_converted": 547.00191168,
+        "per_share_no_conversion": 127.15446348506366,
+        "per_share_if_converted": 127.15446348506366,
+        "selected_case": "not_converted",
+        "per_share": 127.15446348506366
+      }
+    },
+    "verification": {
+      "method": "current_engine_report_replay_exact",
+      "engine_revision": "c9b854f28ccac51d8983b70c168c167eba7065cb876b7d5d0e5b23eabc1e561d",
+      "runtime_versions": {
+        "python": "3.12.3",
+        "pydantic": "2.12.5",
+        "numpy": "2.5.3",
+        "scipy": "1.18.1",
+        "fastapi": "0.141.1"
+      },
+      "normalization_changes": [
+        {
+          "count": 0,
+          "omitted_count": 0,
+          "items": []
+        },
+        {
+          "count": 0,
+          "omitted_count": 0,
+          "items": []
+        }
+      ],
+      "saved_engine_changed": false
+    },
+    "attribution": {
+      "status": "not_attributed",
+      "wacc_contribution_per_share": null,
+      "reason": "仅列差异；未满足限定的通用模型WACC单因素条件，不分摊贡献。"
+    },
+    "boundary": "请求哈希不认证来源；重算不是独立财报核验。数组按保存顺序比较，同代码不证明跨库证券身份相同。条件估值非当前目标价。"
+  },
+  "selected_company_count": 1,
+  "approved_asset_count": 1,
+  "supor_status": "missing_current_period_classification_no_adoption",
+  "wacc_basis": "fixed_previous_reference_result_explicit_acceptance_policy_not_current_market_wacc"
+}

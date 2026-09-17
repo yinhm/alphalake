@@ -1375,3 +1375,73 @@ def test_first_year_calibration_standard_chain(exports,tmp_path,monkeypatch,code
         else:bad['policy_id']='nonfinancial-history-fcff-v1'
         with pytest.raises(ValueError):evaluate(AlphaLakeRequest(data=data,policy=bad))
     assert len(list(tmp_path.glob('*.json')))==2
+
+
+def test_reviewed_asset_standard_chain(exports, tmp_path, monkeypatch):
+    """真实TDX→标准→已归档附注→统一入口；不将账面代理当公允价值。"""
+    import gzip
+    import hashlib
+    from api.alphalake import evaluate
+    from data_sources.alphalake import content_hash
+    from tools.verify_nonfinancial_dcf import verify
+    from pypdf import PdfReader
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
+    original = json.loads(gzip.decompress((REPO/'valuation/research/method-closure-20260912/300866-request.json.gz').read_bytes()))
+    frozen = evaluate(AlphaLakeRequest.model_validate(original))
+    original['policy']['wacc'] = frozen['report']['cost_of_capital']['wacc']
+    original['wacc_binding'] = None
+    original['policy']['review_note'] += '；本验收显式固定旧WACC，只检查资产加回，不称当前市场WACC。'
+    original['data'] = copy.deepcopy(exports['300866'])
+    # 资本参考允许较早快照；WACC在本试验显式固定，未放宽市场参考的时点门槛。
+    original['data']['information_as_of'] = '2026-09-17T00:00:00Z'
+    baseline = evaluate(AlphaLakeRequest.model_validate(original))
+    request = copy.deepcopy(original)
+    note = next(r for r in request['data']['supplements'] if r['item'] == 'reviewed_associate_investments')
+    window = next(r for r in request['data']['windows'] if r['field'] == 'FN25')
+    fact = next(r for r in request['data']['facts'] if r['fact_id'] == window['source_fact_ids'][0])
+    request['policy'].update(policy_id='nonfinancial-reviewed-history-fcff-v1',
+        financial_asset_policy='reviewed_standard_asset_addbacks', code='300866',
+        reviewed_at='2026-09-17T00:00:00Z', valid_until='2026-10-17T00:00:00Z',
+        asset_addbacks=[dict(field='FN25', item=note['item'], import_sha256=note['import_sha256'],
+            source_artifact_sha256=fact['artifact_sha256'], evidence_sha256=content_hash(note), classification='nonconsolidated_equity_holding',
+            valuation_basis='reported_book_value_proxy', recovery=1,
+            review_note='全部为联营企业，经营收益已排除投资收益；账面值仅为显式代理。')])
+    pdf = REPO/'internal/ingest/testdata/anker-valuation-2026/1225533054.pdf'
+    assert hashlib.sha256(pdf.read_bytes()).hexdigest() == note['pdf_sha256']
+    page = PdfReader(pdf).pages[note['pdf_page']-1].extract_text()
+    assert '本集团的长期股权投资全部为对联营企业的投资' in page
+    assert '556,090,434.30' in page
+    result = evaluate(AlphaLakeRequest.model_validate(request)); verify(result)
+    assert evaluate(AlphaLakeRequest.model_validate(request)) == result
+    for key in ('revenue_projections', 'ebit_projections', 'reinvestment_projections', 'fcff_projections', 'value_of_operating_assets'):
+        assert baseline['report']['dcf'][key] == result['report']['dcf'][key]
+    shares = result['inputs']['equity_bridge']['shares']
+    delta = float(window['value'])/1e6/shares
+    near(result['report']['final']['value_per_share']-baseline['report']['final']['value_per_share'], delta)
+    from tools.batch_valuate_alphalake import BatchPolicy
+    from tools.company_valuation import company_valuation
+    data = request['data']
+    company = dict(instrument_id=data['facts'][0]['instrument_id'], name='安克创新', symbols=['sz300866'],
+                   exchange_mic='XSHE', financial_status='financial_core_complete_requires_policy', missing_core_fields=[])
+    scan = dict(contract_version='alphalake-readiness-v1', report_period=data['report_period'],
+                information_as_of=data['information_as_of'], universe_scope='two-company archive chain, selected Anker',
+                universe_count=1, companies=[company])
+    batch = BatchPolicy(policy_version='reviewed-associates-20260917', review_note='整项联营投资账面代理验收',
+        assignments={'300866': {k:v for k,v in request.items() if k != 'data'}})
+    unified = company_valuation(scan, '300866', [batch], lambda _:data, tmp_path)
+    assert unified['valuation']['run_id'] == result['run_id']
+    assert unified['valuation']['method_assessment']['equity_bridge']['financial_investments'] == 'reviewed_selected_standard_assets'
+    for problem in ('missing', 'period', 'unit', 'amount', 'hash', 'revision', 'future', 'expired', 'code', 'duplicate'):
+        bad = copy.deepcopy(request)
+        r = next(r for r in bad['data']['supplements'] if r['item'] == note['item'])
+        if problem == 'missing': bad['data']['supplements'].remove(r)
+        elif problem == 'period': r['period'] = '2025-06-30'
+        elif problem == 'unit': r['unit'] = 'USD'
+        elif problem == 'amount': r['value'] = '1'
+        elif problem == 'hash': r['pdf_sha256'] = '0'*64
+        elif problem == 'revision': bad['policy']['asset_addbacks'][0]['source_artifact_sha256'] = '0'*64
+        elif problem == 'future': bad['policy']['reviewed_at'] = '2026-09-18T00:00:00Z'
+        elif problem == 'expired': bad['policy']['valid_until'] = '2026-09-16T00:00:00Z'
+        elif problem == 'code': bad['policy']['code'] = '002032'
+        else: bad['policy']['asset_addbacks'].append(copy.deepcopy(bad['policy']['asset_addbacks'][0]))
+        with pytest.raises(ValueError): evaluate(AlphaLakeRequest.model_validate(bad))

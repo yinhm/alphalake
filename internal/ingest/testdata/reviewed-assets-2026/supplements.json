@@ -1,0 +1,16 @@
+[
+  {
+    "code": "300866",
+    "period": "2026-06-30",
+    "item": "reviewed_associate_investments",
+    "value": "556090434.30",
+    "unit": "CNY",
+    "period_basis": "instant",
+    "scope": "consolidated_note_component",
+    "announcement_id": "1225533054",
+    "pdf_sha256": "ff81b9e7c2e8eb04bd450fce3c084b28f5b4be4c1e2638250160b7bb813ebac1",
+    "pdf_page": 108,
+    "reviewer": "alphalake-company-input-review-20260917",
+    "review_note": "2026H1第108页明确全部长期股权投资为联营企业，合计期末556090434.30元；集团份额已包含，不再次乘持股比例。经营EBIT已剔除投资收益，整项单独桥接；本证据证明组成及账面数，不证明市场价值，采用倍率须另列政策。"
+  }
+]

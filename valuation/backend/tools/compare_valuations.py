@@ -74,7 +74,7 @@ def category(path):
         return 'wacc_and_market_inputs'
     if path.startswith('/capital_binding'):
         return 'capital_efficiency_reference'
-    if any(path.startswith('/policy/'+p) for p in ('capital_basis','capital_carry_reason','debt_basis','bridge','cash_recovery','operating_cash_ratio','minority_book_multiple','debt_book_multiple','extra_dilution_rate','additional_claims','financial_asset_policy')):
+    if any(path.startswith('/policy/'+p) for p in ('capital_basis','capital_carry_reason','debt_basis','bridge','cash_recovery','operating_cash_ratio','minority_book_multiple','debt_book_multiple','extra_dilution_rate','additional_claims','financial_asset_policy','asset_addbacks')):
         return 'equity_and_share_policy'
     # 公司parameters含预测及桥接，不能根据不完整关键字表硬分成纯预测。
     return 'model_and_policy'

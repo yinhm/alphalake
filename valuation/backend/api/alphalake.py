@@ -123,14 +123,15 @@ def method_assessment(inputs, audit, report):
                       company_evidence_status='growth_return_and_risk_require_joint_review'),
         equity_bridge=dict(basis='report_date_book_claims_no_conversion',
                            detail_location='report.equity_bridge',
-                           financial_investments='no_credit_pending_classification',
+                           financial_investments='reviewed_selected_standard_assets' if audit.get('reviewed_assets') else 'no_credit_pending_classification',
+                           reviewed_assets=audit.get('reviewed_assets', []),
                            options='not_priced_not_asserted_absent'),
         unresolved=[
             dict(item='growth_margin_and_capital_efficiency', treatment='explicit_policy', reason='增长、利润率与资本效率的公司依据尚未闭合'),
             dict(item='rd_and_leases', treatment='reported_basis', reason='研发保留费用化；租赁利息范围待核验，不重复资本化已入账租赁'),
             dict(item='historical_operating_capital', treatment='missing_not_zero', reason='历史经营资本及FCFF分类未闭合，不用预测投入冒充历史资本'),
             dict(item='terminal_growth_return_and_risk', treatment='explicit_policy', reason='稳定增长、回报及固定WACC须联合论证；公式成立不代表参数合理'),
-            dict(item='equity_claims_and_assets', treatment='book_scenario', reason='金融投资不计值、到期债务未拆分、少数股权账面代理及未定价期权均限制结论'),
+            dict(item='equity_claims_and_assets', treatment='book_scenario', reason='未审核金融投资不计值、已审核投资按显式账面代理；到期债务未拆分、少数股权账面代理及未定价期权均限制结论'),
         ],
         boundary='条件模型可以复算；以上缺口没有被归零或认定无影响。未提供当前目标价、预测准确性认证或完整公司估值认证。')
 
@@ -150,7 +151,7 @@ def evaluate(request: AlphaLakeRequest):
         terminal_sensitivity=(terminal_return_sensitivity(inputs,report)
                               if audit.get('valuation_scope')=='report_date_book_equity_scenario' else None),
         growth_sensitivity=(growth_path_sensitivity(inputs,report)
-                            if request.policy.policy_id in ('nonfinancial-history-fcff-v1', 'nonfinancial-history-fcff-calibrated-v1') else None))
+                            if request.policy.policy_id in ('nonfinancial-history-fcff-v1', 'nonfinancial-history-fcff-calibrated-v1', 'nonfinancial-reviewed-history-fcff-v1') else None))
     # 保存输入/政策/引擎版本与输出。同内容重放不覆盖；失败不产生成功记录。
     root = Path(os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(Path(__file__).resolve().parents[1]/'data/alphalake_runs')))
     root.mkdir(parents=True,exist_ok=True)

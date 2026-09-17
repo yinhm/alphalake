@@ -12,7 +12,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from api.alphalake import evaluate, ENGINE_REVISION
-from data_sources.alphalake import Policy, ScreenPolicy, BookDCFPolicy, HistoricalDCFPolicy, CalibratedHistoricalDCFPolicy, WACCBinding, AlphaLakeRequest, MissingInputs, content_hash
+from data_sources.alphalake import Policy, ScreenPolicy, BookDCFPolicy, HistoricalDCFPolicy, CalibratedHistoricalDCFPolicy, ReviewedHistoricalDCFPolicy, WACCBinding, AlphaLakeRequest, MissingInputs, content_hash
 from data_sources.alphalake_wacc import WACCPolicy, ReferenceSnapshot
 from data_sources.alphalake_capital import CapitalBinding, CapitalPolicy, CapitalReferences
 
@@ -27,7 +27,7 @@ def execution_error_reason(error):
 
 class Assignment(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy | CalibratedHistoricalDCFPolicy
+    policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy | CalibratedHistoricalDCFPolicy | ReviewedHistoricalDCFPolicy
     wacc_binding: WACCBinding | None = None
     capital_binding: CapitalBinding | None = None
 

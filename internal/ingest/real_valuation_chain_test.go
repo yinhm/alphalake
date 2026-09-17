@@ -348,6 +348,9 @@ func TestRealValuationStandardChain(t *testing.T) {
 		t.Fatal("incomplete debt maturity table")
 	}
 	supplements = append(supplements, debtSupplements...)
+	var assetSupplements []duckstore.ReviewedSupplement
+	check(json.Unmarshal(readFinancialSample(t, "testdata/reviewed-assets-2026", "supplements.json"), &assetSupplements))
+	supplements = append(supplements, assetSupplements...)
 	n, err = duckstore.ImportReviewedSupplements(ctx, db, supplements)
 	check(err)
 	if n != len(supplements) {
@@ -408,7 +411,7 @@ func TestRealValuationStandardChain(t *testing.T) {
 		}
 		var notes []any
 		check(json.Unmarshal(snapshot["supplements"].(json.RawMessage), &notes))
-		want := map[string]int{"300866": 29 + len(debtSupplements), "600519": 5, "999999": 0}[code]
+		want := map[string]int{"300866": 29 + len(debtSupplements) + len(assetSupplements), "600519": 5, "999999": 0}[code]
 		if len(notes) != want {
 			t.Fatalf("%s exported supplements %d", code, len(notes))
 		}

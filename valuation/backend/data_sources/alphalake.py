@@ -164,10 +164,44 @@ class CalibratedHistoricalDCFPolicy(HistoricalDCFPolicy):
         return self
 
 
+class ReviewedAssetAddback(BaseModel):
+    """整项标准金融资产的分类审核；金额仍取TDX，不支持混合科目直接加回。"""
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    field: Literal['FN9', 'FN19', 'FN25', 'FN430', 'FN431', 'FN433']
+    item: str = Field(pattern=r'^[a-z][a-z0-9_]*$')
+    import_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    source_artifact_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    evidence_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    classification: Literal['nonoperating_unrestricted_financial_asset', 'nonconsolidated_equity_holding']
+    valuation_basis: Literal['reported_book_value_proxy']
+    recovery: float = Field(ge=0, le=1)
+    review_note: str = Field(min_length=1)
+
+
+class ReviewedHistoricalDCFPolicy(HistoricalDCFPolicy):
+    policy_id: Literal['nonfinancial-reviewed-history-fcff-v1']
+    financial_asset_policy: Literal['reviewed_standard_asset_addbacks']
+    code: str = Field(pattern=r'^\d{6}$')
+    reviewed_at: datetime
+    valid_until: datetime
+    asset_addbacks: list[ReviewedAssetAddback] = Field(min_length=1)
+
+    @model_validator(mode='after')
+    def reviewed_scope(self):
+        if self.reviewed_at.utcoffset() is None or self.valid_until.utcoffset() is None or self.valid_until < self.reviewed_at:
+            raise ValueError('aware ordered review validity required')
+        if len({r.field for r in self.asset_addbacks}) != len(self.asset_addbacks) or len({r.item for r in self.asset_addbacks}) != len(self.asset_addbacks):
+            raise ValueError('duplicate reviewed asset field or evidence')
+        for r in self.asset_addbacks:
+            if (r.field == 'FN25') != (r.classification == 'nonconsolidated_equity_holding'):
+                raise ValueError('equity holding classification requires FN25 only')
+        return self
+
+
 class AlphaLakeRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     data: Snapshot
-    policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy | CalibratedHistoricalDCFPolicy
+    policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy | CalibratedHistoricalDCFPolicy | ReviewedHistoricalDCFPolicy
     wacc_binding: WACCBinding | None = None
     capital_binding: CapitalBinding | None = None
 
@@ -305,6 +339,8 @@ def build_inputs(request: AlphaLakeRequest):
             inputs,audit = build_book_dcf_inputs(d,policy)
         else:
             inputs,audit = build_earnings_power_inputs(d,policy)
+        if isinstance(policy, ReviewedHistoricalDCFPolicy):
+            apply_reviewed_assets(d, policy, inputs, audit)
         if capital_audit is not None:
             audit['capital_reference']=capital_audit
             audit['boundaries']+=capital_audit['boundaries']
@@ -623,7 +659,9 @@ def build_historical_dcf_inputs(d, policy):
         if period in quarters:raise ValueError('duplicate quarterly revenue history')
         quarters[period]=(validated_source_value(f),f['fact_id'])
     annual,evidence=historical_forecast(revenue,ebit,quarters,d.report_period,policy)
-    parameters=policy.model_dump(exclude={'policy_id','annual_forecast','growth_floor','growth_ceiling','growth_shift','margin_shift','calibration'})
+    parameters=policy.model_dump(exclude={'policy_id','annual_forecast','growth_floor','growth_ceiling','growth_shift','margin_shift','calibration','code','reviewed_at','valid_until','asset_addbacks'})
+    if isinstance(policy, ReviewedHistoricalDCFPolicy):
+        parameters['financial_asset_policy'] = 'no_credit_pending_classification'
     generated=BookDCFPolicy(policy_id='nonfinancial-book-fcff-v1',annual_forecast=annual,**parameters)
     inputs,audit=build_book_dcf_inputs(d,generated)
     inputs.prepared_ttm.provenance['assumption_rules']=content_hash(policy.model_dump(mode='json'))
@@ -635,3 +673,59 @@ def build_historical_dcf_inputs(d, policy):
         source_fact_ids=sorted({i for r in evidence['revenue_yoy_pairs'] for i in r['source_fact_ids']})))
     audit['boundaries'].append('median recent quarterly YOY with policy cap/shift and five-year fade; mechanical starting scenario, not researched growth forecast')
     return inputs,audit
+
+
+def apply_reviewed_assets(d, policy, inputs, audit):
+    """绑定标准源版本与已入库原文补充，阻止旧审核随修订金额自动沿用。"""
+    if policy.code != d.code or policy.approved_report_period != d.report_period:
+        raise ValueError('asset review security/report period differs')
+    if not policy.reviewed_at <= d.information_as_of <= policy.valid_until:
+        raise ValueError('asset review unavailable or expired at cutoff')
+    window, consumed = standard_window_reader(d)
+    facts = {r['fact_id']: r for r in d.facts}
+    windows = {r['field']: r for r in d.windows}
+    adopted = []
+    for rule in policy.asset_addbacks:
+        value = window(rule.field)
+        if value < 0:
+            raise ValueError('negative reviewed financial asset')
+        w = windows[rule.field]
+        if w['calculation_basis'] != 'instant' or len(w['source_fact_ids']) != 1:
+            raise ValueError('asset addback requires one period-end source fact')
+        f = facts[w['source_fact_ids'][0]]
+        matches = [r for r in d.supplements if r['period'] == d.report_period.isoformat() and r['item'] == rule.item]
+        if not matches:
+            raise MissingInputs(['CNINFO/'+d.report_period.isoformat()+'/'+rule.item])
+        if len(matches) != 1:
+            raise ValueError('ambiguous asset review supplement')
+        r = matches[0]
+        if (r.get('unit'), r.get('period_basis'), r.get('scope')) != ('CNY', 'instant', 'consolidated_note_component'):
+            raise ValueError('incompatible asset review supplement scope/unit/period')
+        if (content_hash(r) != rule.evidence_sha256 or r.get('import_sha256') != rule.import_sha256 or f['artifact_sha256'] != rule.source_artifact_sha256
+                or not r.get('reviewer') or not r.get('review_note') or not r.get('available_at')
+                or not r.get('pdf_sha256') or r.get('pdf_page', 0) <= 0
+                or r.get('announcement_id') != f['announcement_id'] or r.get('pdf_sha256') != f.get('pdf_sha256')
+                or r.get('pdf_url') != f.get('pdf_url')):
+            raise ValueError('asset review evidence differs from approved current filing/source')
+        # PDF整项金额须在源精度下与TDX一致；不把原文小数写回标准金额。
+        reported = Decimal(r['value'])
+        if not reported.is_finite() or reported < 0:
+            raise ValueError('invalid reviewed asset amount')
+        bits = struct.unpack('<I', struct.pack('<f', float(reported/Decimal(f['multiplier']))))[0]
+        if bits != f['bits']:
+            raise ValueError('asset review total differs from standard source precision')
+        component = 'reviewed_asset_'+rule.field
+        inputs.equity_bridge.components[component] = value*rule.recovery
+        adopted.append(dict(rule=rule.model_dump(mode='json'), supplement=r,
+                            standard_value_million_cny=value, adopted_value_million_cny=value*rule.recovery,
+                            source_fact_id=f['fact_id']))
+    inputs.equity_bridge.policy_id = policy.policy_id
+    audit['reviewed_assets'] = adopted
+    audit['required_input_count'] += 2*len(adopted)
+    audit['available_required_input_count'] += 2*len(adopted)
+    audit['consumed_inputs'] += consumed
+    audit['consumed_inputs'] += [dict(source='cninfo', item=r['supplement']['item'],
+        period=r['supplement']['period'], import_sha256=r['supplement']['import_sha256']) for r in adopted]
+    audit['assumptions']['bridge'] = policy.model_dump(mode='json')
+    audit['boundaries'] = [b for b in audit['boundaries'] if not b.startswith('nonoperating financial investments receive no credit')]
+    audit['boundaries'].append('only explicitly reviewed whole asset fields credited using standard book amounts and policy recoveries; remaining assets unreviewed, not zero; book proxies not market valuations')

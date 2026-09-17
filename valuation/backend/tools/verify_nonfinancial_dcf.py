@@ -20,7 +20,7 @@ def near(actual, expected, label):
 
 def verify(run):
     req = run['request']; p = req['policy']; d = req['data']; report = run['report']; dcf = report['dcf']
-    if p['policy_id'] not in ('nonfinancial-history-fcff-v1', 'nonfinancial-book-fcff-v1'):
+    if p['policy_id'] not in ('nonfinancial-history-fcff-v1', 'nonfinancial-book-fcff-v1', 'nonfinancial-reviewed-history-fcff-v1'):
         raise ValueError('unsupported policy for independent verifier')
     facts = {r['fact_id']: r for r in d['facts']}
     w = {}
@@ -72,7 +72,7 @@ def verify(run):
     else: wacc = D(str(p['wacc']))
     g = D(str(p['terminal_growth'])); roic = D(str(p['terminal_roic']))
     if not 0 <= g < min(wacc,roic) or sc <= 0: raise ValueError('invalid terminal/capital policy')
-    if p['policy_id'] == 'nonfinancial-history-fcff-v1':
+    if p['policy_id'] in ('nonfinancial-history-fcff-v1', 'nonfinancial-reviewed-history-fcff-v1'):
         q = {r['period']:D(r['value']) for r in d['facts'] if r['field'] == 'FN230'}
         end = date.fromisoformat(d['report_period']); start = end.replace(year=end.year-1).isoformat()
         pairs = [v/q[f'{int(day[:4])-1}{day[4:]}']-1 for day,v in q.items()
@@ -100,6 +100,15 @@ def verify(run):
         debt_book_proxy=-sum(w[f] for f in ('FN41','FN52','FN55','FN56','FN439'))*D(str(p['debt_book_multiple'])),
         minority_book_proxy=-w['FN69']*D(str(p['minority_book_multiple'])),
         additional_claims_scenario=-D(str(p['additional_claims_million_cny'])))
+    if p['policy_id'] == 'nonfinancial-reviewed-history-fcff-v1':
+        for rule in p['asset_addbacks']:
+            rows = [r for r in d['windows'] if r['field'] == rule['field']]
+            if len(rows) != 1 or rows[0]['value'] is None:
+                raise ValueError('missing reviewed asset standard window')
+            row = rows[0]
+            expected = sum(D(facts[i]['value'])*D(c) for i,c in zip(row['source_fact_ids'], row['input_coefficients'], strict=True))
+            near(row['value'], expected, 'reviewed asset '+rule['field'])
+            components['reviewed_asset_'+rule['field']] = expected/1000000*D(str(rule['recovery']))
     shares = w['FN238']*(1+D(str(p['extra_dilution_rate']))); equity = ev+sum(components.values()); value = equity/shares
     bridge = run['inputs']['equity_bridge']
     if set(bridge['components']) != set(components) or bridge['operating_ownership'] != 1 or bridge['conversion_release'] != 0 or bridge['conversion_shares'] != 0:
