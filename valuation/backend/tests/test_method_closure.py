@@ -53,3 +53,49 @@ def test_real_standard_method_closure(code,tmp_path,monkeypatch):
     for before,after in zip(baseline['report']['dcf']['reinvestment_projections'],scenario['report']['dcf']['reinvestment_projections']):
         assert after == pytest.approx(before/2)
     assert float(checked['value_per_share']) == pytest.approx(baseline['report']['final']['value_per_share'])
+
+
+def test_growth_capital_economic_diagnostics(tmp_path, monkeypatch):
+    from api.alphalake import growth_capital_consistency
+    from data_sources.alphalake import build_inputs
+    from engine.orchestrator import run_full_valuation
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
+    for code in ('300866', '002032'):
+        req = AlphaLakeRequest.model_validate_json(gzip.decompress((ROOT/f'{code}-request.json.gz').read_bytes()))
+        inputs, audit = build_inputs(req)
+        report = run_full_valuation(inputs)
+        review = growth_capital_consistency(inputs, report, audit)
+        assert review['company_capital_efficiency_verified'] is False
+        assert review['company_evidence']['rd_expense_million_cny'] > 0
+        assert review['company_evidence']['cash_capex_million_cny'] > 0
+        incomplete = req.model_copy(deep=True)
+        incomplete.data.windows = [w for w in incomplete.data.windows if w['field'] != 'FN304']
+        missing_inputs, missing_audit = build_inputs(incomplete)
+        assert missing_audit['company_capital_evidence']['rd_expense_million_cny'] is None
+        assert run_full_valuation(missing_inputs).final.value_per_share == report.final.value_per_share
+        assert report.cashflow.fcff is None
+        assert report.dcf.implied_roic_projections == [None]*10
+        for row in review['years']:
+            assert row['revenue_contribution_million_cny']+row['margin_tax_contribution_million_cny'] == pytest.approx(row['nopat_change_million_cny'], abs=1e-8)
+            assert row['fcff_million_cny'] == pytest.approx(row['nopat_million_cny']-row['net_reinvestment_million_cny'])
+        release = [r['year'] for r in review['years'] if 'capital_release_requires_recoverability_evidence' in r['flags']]
+        assert release == ([] if code == '300866' else [1,2,3,4,5,6])
+        if code == '002032':
+            assert all(review['years'][i]['revenue_linked_incremental_return_proxy'] is None for i in range(6))
+        # 改变利润率与税率时不能仍把全部利润增长归给收入；零投入不计算回报。
+        changed = inputs.model_copy(deep=True)
+        changed.valuation_assumptions.annual_forecast[0].growth = 0
+        changed.valuation_assumptions.annual_forecast[0].margin *= .8
+        changed.valuation_assumptions.annual_forecast[0].tax = .3
+        counter = growth_capital_consistency(changed, run_full_valuation(changed), audit)['years'][0]
+        assert counter['revenue_contribution_million_cny'] == 0
+        assert counter['revenue_linked_incremental_return_proxy'] is None
+        assert counter['margin_tax_contribution_million_cny'] == pytest.approx(counter['nopat_change_million_cny'])
+        # 高投入需求产生负FCFF，保留而非归零或拒绝；低边际回报给出审核信号。
+        changed = inputs.model_copy(deep=True)
+        changed.valuation_assumptions.annual_forecast[0].growth = .2
+        changed.valuation_assumptions.sales_to_capital_high = .1
+        row = growth_capital_consistency(changed, run_full_valuation(changed), audit)['years'][0]
+        assert row['fcff_million_cny'] < 0
+        assert 'negative_fcff_requires_funding_plan_not_automatic_rejection' in row['flags']
+        assert 'revenue_growth_return_proxy_below_wacc' in row['flags']

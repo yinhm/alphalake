@@ -580,6 +580,11 @@ def build_book_dcf_inputs(d, policy):
     if values['FN238']<=0 or any(values[f]<0 for f in fields):
         raise ValueError('positive shares and nonnegative book claims/cash required')
     raw=inputs.prepared_ttm.financials
+    rd, cash_capex = window('FN304',False), window('FN114',False)
+    audit['company_capital_evidence'] = dict(source='tdx_standard_ttm',
+        rd_expense_million_cny=rd, rd_to_revenue=rd/raw.revenues if rd is not None else None,
+        cash_capex_million_cny=cash_capex,
+        boundary='研发费用及购建现金仅为投入分量；不代表完整净再投资，不能直接推出收入增长或公司边际资本效率。')
     raw.shares_outstanding=values['FN238']
     debt=sum(values[f] for f in ('FN41','FN52','FN55','FN56','FN439'))
     components=dict(cash_recovery_scenario=values['FN133']*policy.cash_recovery,

@@ -88,6 +88,56 @@ def growth_path_sensitivity(inputs, report):
         boundary='同一财务与信息时点，仅改十年收入增长路径；利润率、税率、资本效率、WACC、终值增长/ROIC及股权股本桥接输入不变。收入变化同时影响利润、再投资和终值金额；零收入增量再投资不等于零现金资本开支。中期样本改善不证明一年、第四年至终值、当前公司或完整DCF有效；不是价格区间、概率界限或推荐值。')
 
 
+def growth_capital_consistency(inputs, report, audit):
+    """收入增量法的经济输入诊断；不把代数分解称为公司实际ROIC。"""
+    a = inputs.valuation_assumptions
+    raw = inputs.prepared_ttm.financials
+    previous_revenue = raw.revenues
+    previous_margin = raw.ebit/raw.revenues*(1-inputs.macro_inputs.tax_rate_effective)
+    previous_nopat = previous_revenue*previous_margin
+    years = []
+    for i, (forecast, revenue, ebit, reinvestment, fcff) in enumerate(zip(
+            a.annual_forecast, report.dcf.revenue_projections, report.dcf.ebit_projections,
+            report.dcf.reinvestment_projections, report.dcf.fcff_projections, strict=True), 1):
+        nopat = fcff+reinvestment
+        margin = nopat/revenue
+        revenue_change = revenue-previous_revenue
+        # 精确代数分解，交叉项归入收入贡献；不声称独立经济因果识别。
+        growth_part = revenue_change*margin
+        profitability_part = previous_revenue*(margin-previous_margin)
+        marginal_return = growth_part/reinvestment if reinvestment > 0 and revenue_change > 0 else None
+        flags = []
+        if reinvestment < 0:
+            flags.append('capital_release_requires_recoverability_evidence')
+        if fcff < 0:
+            flags.append('negative_fcff_requires_funding_plan_not_automatic_rejection')
+        if marginal_return is not None and marginal_return < report.cost_of_capital.wacc:
+            flags.append('revenue_growth_return_proxy_below_wacc')
+        years.append(dict(year=i, revenue_growth=forecast.growth, operating_margin=forecast.margin,
+            tax_policy=forecast.tax, revenue_million_cny=revenue, ebit_million_cny=ebit,
+            nopat_million_cny=nopat, net_reinvestment_million_cny=reinvestment, fcff_million_cny=fcff,
+            nopat_change_million_cny=nopat-previous_nopat,
+            revenue_contribution_million_cny=growth_part,
+            margin_tax_contribution_million_cny=profitability_part,
+            reinvestment_rate=reinvestment/nopat if nopat > 0 else None,
+            revenue_linked_incremental_return_proxy=marginal_return,
+            flags=flags))
+        previous_revenue, previous_margin, previous_nopat = revenue, margin, nopat
+    return dict(status='requires_company_economic_review',
+        method='revenue_change_over_marginal_sales_to_capital_zero_lag',
+        capital_efficiency=a.sales_to_capital_high,
+        capital_basis='historical_industry_average_as_marginal_proxy' if 'capital_reference' in audit else 'explicit_marginal_policy',
+        company_capital_efficiency_verified=False,
+        company_evidence=audit.get('company_capital_evidence'),
+        accounting_scope='rd_expensed_reported_leases_industry_capital_scope_not_reconciled',
+        baseline_nopat_policy_proxy=raw.ebit*(1-inputs.macro_inputs.tax_rate_effective),
+        years=years,
+        review_actions=['justify_joint_growth_margin_and_marginal_capital_policy',
+                        'reconcile_rd_lease_and_operating_capital_scope_before_company_ratio_adoption'],
+        method_source='https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/growth.htm',
+        boundary='利润变化是模型代数分解；增量回报代理仅在正收入增量和正投入时定义，不是实际或完整隐含ROIC。负再投资保留但须核验可回收资本；负FCFF不是错误。研发费用不直接换算增长，行业平均不自动成为公司边际效率。')
+
+
 def method_assessment(inputs, audit, report):
     """当前通用账面FCFF的实际接入范围；不以计算成功声称公司估值完备。"""
     if audit.get('valuation_scope') != 'report_date_book_equity_scenario':
@@ -105,6 +155,7 @@ def method_assessment(inputs, audit, report):
         forecast=dict(basis='historical_quarter_yoy_policy' if 'forecast_rule_evidence' in audit else 'explicit_annual_policy',
                       company_evidence_status='not_established_by_calculation',
                       policy_location='audit.assumptions'),
+        growth_capital_consistency=growth_capital_consistency(inputs, report, audit),
         reinvestment=dict(basis='net_reinvestment_equals_revenue_change_over_sales_to_capital',
                           capital_efficiency_source='industry_reference_with_policy' if 'capital_reference' in audit else 'explicit_policy',
                           capital_efficiency=a.sales_to_capital_high,

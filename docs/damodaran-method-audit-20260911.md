@@ -227,3 +227,11 @@ for row in receipt['companies']:
 print('two complete saved reports unchanged; three original blocks retained')
 PY
 ```
+
+## 增长—资本需求的联合输入诊断（2026-09-17）
+
+通用账面/历史FCFF的`method_assessment.growth_capital_consistency`现从同一标准窗口读取FN304研发费用与FN114购建现金，并逐年并列增长、利润率、税率、NOPAT、净再投资、FCFF。缺分量留null，研发费用不再扣一次或直接转换为增长，购建现金不冒充完整净再投资。
+
+依据[达摩达兰增长基本面](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/growth.htm)对新增投入回报、既有资产效率以及研发/租赁一致性的区分，新增模型诊断：以m=模型NOPAT/收入作`ΔNOPAT=Δ收入×m本期+收入上期×Δm`分解，交叉项归收入，属于代数分解而非独立因果证据。仅在收入增量和净投入均正时显示“收入贡献/净投入”代理，不把它改名为公司实际ROIC或此前缺分母的完整隐含ROIC。
+
+资本释放、负FCFF及增长回报代理低于WACC分别提示可回收性、资金来源和经济依据审核；不把负值直接判错。行业历史平均采用为边际资本代理的声明保留，研发费用化与参考资本化口径尚未协调，公司资本效率verified仍为false。两份冻结标准请求的财务预测和条件每股值不变；相关回归核对收入/利润变化分解、零投入留空、负FCFF保留、缺研发字段不归零或改变原估值。未据此声称预测准确性提高。
