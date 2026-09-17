@@ -37,56 +37,10 @@
 
 ## 验证与下一步
 
-既有历史样本默认校验重新执行，验证原文金额及派生表；下面的衔接检查精确重建回执，并分别翻转元字段FN136和万元字段FN581的一位，额外不匹配必须被拒绝。已有PDF校验在CI，新衔接脚本属于本地验收，未新增CI步骤。无生产代码、迁移、依赖或Go改动，不重跑Go全套。
+既有历史样本默认校验重新执行，验证原文金额及派生表；下面的衔接检查精确重建回执，并分别翻转元字段FN136和万元字段FN581的一位，额外不匹配必须被拒绝。已有PDF校验在CI，衔接脚本现位于backend/tools并纳入backend pytest，CI复验既有回执、保留冲突及拒绝篡改。无生产代码、迁移、依赖或Go改动，不重跑Go全套。
 
 后续盘点确认既有分类台账已覆盖2025年的主要余额—现金差额，因此不重复该核对；已转入[五家多起点余额路径检验](trade-balance-path.md)，30个到期位置显示比例预测的总体改善集中在安克，未支持统一采用。未分类部分不归零，不再扫描一年增长参数。
 
 ```bash
-PYTHONPATH=valuation/backend workspace/anker-agent-adapter-20260906/venv/bin/python - <<'PY'
-import csv, gzip, hashlib, json, struct
-from copy import deepcopy
-from decimal import Decimal as D, ROUND_HALF_UP
-from pathlib import Path
-p=Path('valuation/research/continuing-operations-five')
-source_path=p/'capital-snapshot.json'
-ledger_path=Path('internal/ingest/testdata/anker-history-2026/reported.csv')
-source=json.loads(source_path.read_bytes());ledger=list(csv.DictReader(ledger_path.open()))
-fields={'FN114':('cash_capex',1),'FN304':('rd_expense',1),'FN136':('cf_fixed_da',1),'FN137':('cf_intangible_da',1),'FN138':('cf_deferred_da',1),'FN146':('cf_inventory',1),'FN147':('cf_receivables',1),'FN148':('cf_payables',1),'FN579':('cf_property_da',10000),'FN581':('cf_rou_da',10000)}
-bits=lambda n:struct.unpack('<I',struct.pack('<f',float(n)))[0]
-value=lambda n:D(str(struct.unpack('<f',struct.pack('<I',n))[0]))
-def build(s):
- index={(r['code'],r['period']):r for r in s['records']}
- assert len(index)==len(s['records'])
- rows=[];comparisons=[]
- for year in range(2021,2026):
-  r=index['300866',f'{year}-12-31'];amounts={};conflicts=[]
-  for field,(key,multiplier) in fields.items():
-   pdf,=[x for x in ledger if x['year']==str(year) and x['key']==key]
-   encoded=D(pdf['value'])/multiplier
-   if multiplier==10000:encoded=encoded.quantize(D('.01'),rounding=ROUND_HALF_UP)
-   matched=r['bits'][field]==bits(encoded)
-   comparisons.append(dict(year=year,field=field,source_bits=r['bits'][field],source_value=str(value(r['bits'][field])),value_multiplier=multiplier,pdf_row_id=pdf['id'],pdf_id=pdf['pdf_id'],pdf_page=int(pdf['pdf_page']),pdf_column=int(pdf['column']),pdf_decimal=pdf['value'],expected_source_bits=bits(encoded),status='source_precision_match' if matched else 'source_pdf_version_conflict_unresolved'))
-   amounts[field]=value(r['bits'][field])*multiplier
-   if not matched:conflicts.append(field)
-  da=sum((amounts[f] for f in ('FN136','FN137','FN138','FN579')),D(0))
-  wc=-sum((amounts[f] for f in ('FN146','FN147','FN148')),D(0))
-  subtotal=amounts['FN114']-da+wc
-  rows.append(dict(year=year,cash_capex_cny=str(amounts['FN114']),matched_nonlease_da_cny=str(da),cashflow_wc_cash_use_cny=str(wc),rou_depreciation_separate_cny=str(amounts['FN581']),rd_expense_separate_cny=str(amounts['FN304']),source_formula_subtotal_cny=str(subtotal),evidence_supported_subtotal_cny=None if conflicts else str(subtotal),conflict_fields=conflicts,classified_reinvestment=None,actual_fcff=None,status='source_pdf_conflict' if conflicts else 'matched_components_not_full_reinvestment'))
- conflicts=[(c['year'],c['field']) for c in comparisons if c['status']!='source_precision_match']
- assert conflicts==[(2022,'FN148')],conflicts
- return dict(code='300866',years=list(range(2021,2026)),comparison_count=50,matched_count=49,conflict_count=1,comparisons=comparisons,annual_components=rows,boundary='source_precision_preserved; later_acquired_and_restated_versions; source_subtotal_is_not_full_net_reinvestment_or_FCFF; excluded_lease_investment_RD_reclassification_disposal_and_other_adjustments_not_zero; no_capital_ratio_adoption_or_forecast_validation')
-r=build(source)
-for field in ('FN136','FN581'):
- changed=deepcopy(source)
- row=next(x for x in changed['records'] if x['code']=='300866' and x['period']=='2024-12-31');row['bits'][field]^=1
- try:build(changed)
- except AssertionError:pass
- else:raise AssertionError('source tamper accepted')
-r['evidence']={str(x):hashlib.sha256(x.read_bytes()).hexdigest() for x in (source_path,ledger_path,Path('internal/ingest/testdata/anker-history-2026/annual-inputs.csv'))}
-r['verification']=['one_yuan_field_bit_tamper_rejected','one_wanyuan_field_bit_tamper_rejected','known_2022_conflict_retained_not_overwritten']
-data=(json.dumps(r,ensure_ascii=False,indent=2)+'\n').encode();target=p/'anker-capital-components.json.gz'
-if target.exists():assert gzip.decompress(target.read_bytes())==data
-else:target.write_bytes(gzip.compress(data,mtime=0))
-print('50 comparisons: 49 matches, 1 retained conflict; yuan/wanyuan tamper rejected')
-PY
+PYTHONPATH=valuation/backend workspace/anker-agent-adapter-20260906/venv/bin/PYTHONPATH=valuation/backend python -m tools.review_anker_capital_evidence
 ```

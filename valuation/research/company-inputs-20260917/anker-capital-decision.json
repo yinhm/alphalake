@@ -1,0 +1,47 @@
+{
+  "code": "300866",
+  "historical_years": [
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "historical_source_matches": 49,
+  "source_conflicts": 1,
+  "rd_scenario": {
+    "period": "FY-2025",
+    "source": "existing_pdf_decimal_research_not_standard_fact",
+    "assumed_life_years": 5,
+    "opening_asset_cny": "4312668953.906000",
+    "closing_asset_cny": "6015732848.322000",
+    "amortization_cny": "1189721559.384000",
+    "earnings_and_reinvestment_adjustment_cny": "1703063894.416000",
+    "fcff_change_from_reclassification_cny": "0",
+    "boundary": "same tax and same cash flows; increase both NOPAT and reinvestment, not an added cash outflow or growth forecast"
+  },
+  "classified_wc_gaps": [
+    {
+      "period": "FY-2025",
+      "reason": "2024 opening loan allowance and mixed classifications missing"
+    },
+    {
+      "period": "TTM-2026-06-30",
+      "reason": "2025H1 other_payables residual includes undisclosed classifications"
+    }
+  ],
+  "company_marginal_sales_to_capital": null,
+  "decision": "retain_explicit_industry_proxy_no_company_ratio_adoption",
+  "reasons": [
+    "full_operating_working_capital_not_classified",
+    "lease_additions_disposals_and_noncash_investment_not_reconciled",
+    "rd_reclassification_not_proof_of_incremental_sales_productivity",
+    "historical_source_research_not_complete_standard_company_capital_history"
+  ],
+  "stopping_rule": "do_not_fit_ratio_to_incomplete_subtotals_or_scan_growth_thresholds; reopen when classified capital bridge is supplied",
+  "evidence": {
+    "internal/ingest/testdata/anker-history-2026/rd-cohorts.csv": "41119c98e6c545699ce90c27c8e678145bccb6395995c2c74189f9cb32675d43",
+    "internal/ingest/testdata/anker-valuation-2026/working-capital.csv": "199a9842f399aa5e67e08087febd7b2a09fcf036aef3e493d9e633a7738c257e"
+  },
+  "baseline_policy_unchanged": true
+}

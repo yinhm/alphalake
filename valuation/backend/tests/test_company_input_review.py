@@ -67,3 +67,11 @@ def test_anker_asset_amounts_against_existing_pdf_ledger():
         assert fact['pdf_url'] == manifest['url']
         assert fact['period'] == original['period'] == '2026-06-30'
         assert struct.unpack('<I', struct.pack('<f', float(original['value'])))[0] == fact['bits']
+
+
+def test_anker_capital_evidence_does_not_approve_incomplete_ratio():
+    from tools.review_anker_capital_evidence import ROOT, review
+    expected = json.loads((ROOT/'valuation/research/company-inputs-20260917/anker-capital-decision.json').read_bytes())
+    assert review() == expected
+    assert expected['company_marginal_sales_to_capital'] is None
+    assert expected['baseline_policy_unchanged']
