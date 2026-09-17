@@ -35,7 +35,7 @@
     "allowance_cny": "2656060.72",
     "remaining_unclassified_other_payables_cny": "59852820.39",
     "status": "supplement_imported_and_replayed_in_main_copy",
-    "standard_parent_FN13": "not_available_for_2024",
+    "standard_parent_FN13": "schema40_standard_available_from_2024_12_31_in_isolated_real_chain",
     "full_operating_capital": null,
     "historical_fcff": null
   },

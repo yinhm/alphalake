@@ -115,7 +115,7 @@ def verify_opening_2024():
     from pypdf import PdfReader
     directory = ROOT/'valuation/research/company-inputs-20260917/anker-opening-2024'
     receipt = json.loads((directory/'acceptance.json').read_bytes())
-    pdf = directory/'1223379891.pdf'
+    pdf = ROOT/'internal/ingest/testdata/anker-cash-history-2024/1223379891.pdf'
     assert hashlib.sha256(pdf.read_bytes()).hexdigest() == receipt['pdf_sha256']
     reader = PdfReader(pdf)
     pages = {p: re.sub(r'\s+', '', reader.pages[p-1].extract_text()) for p in (155, 158, 174)}
@@ -144,14 +144,23 @@ def verify_opening_2024():
     net = values['opening_related_party_loan_gross']-values['opening_related_party_loan_allowance']
     assert str(net) == receipt['net_loan_cny']
     assert not any(w['field'] == 'FN13' for w in exported['windows'])
-    # 仅作旧期TDX源位核验，不冒称该字段已发布为2024标准事实。
+    # 保留升级前导出，再核对schema40的真实标准链，不能仅改审核结论。
     source = json.loads((ROOT/'valuation/research/continuing-operations-five/capital-snapshot.json').read_bytes())
     row, = [r for r in source['records'] if r['code']=='300866' and r['period']=='2024-12-31']
     assert '合计126,612,165.9294,456,598.14' in pages[155]
     assert row['bits']['FN13'] == struct.unpack('<I', struct.pack('<f', 126612165.92))[0]
+    after_raw = gzip.decompress((directory/'schema40-export.json.gz').read_bytes())
+    after_receipt = json.loads((directory/'schema40-acceptance.json').read_bytes())
+    assert hashlib.sha256(after_raw).hexdigest() == after_receipt['export_sha256']
+    after = json.loads(after_raw)
+    from data_sources.alphalake import Snapshot, standard_window_reader
+    window, _ = standard_window_reader(Snapshot.model_validate(after))
+    assert Decimal(str(window('FN13')))*1000000 == Decimal('126612168')
+    assert after_receipt['valid_from'] == '2024-12-31'
+    assert {r['item']: Decimal(r['value']) for r in after['supplements']} == values
     return dict(net_loan_cny=str(net), allowance_cny=str(values['opening_related_party_loan_allowance']),
         remaining_unclassified_other_payables_cny=str(values['opening_other_payables_unclassified']),
-        status='supplement_imported_and_replayed_in_main_copy', standard_parent_FN13='not_available_for_2024',
+        status='supplement_imported_and_replayed_in_main_copy', standard_parent_FN13='schema40_standard_available_from_2024_12_31_in_isolated_real_chain',
         full_operating_capital=None, historical_fcff=None)
 
 

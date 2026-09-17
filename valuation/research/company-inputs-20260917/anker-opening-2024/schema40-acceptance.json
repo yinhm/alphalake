@@ -1,0 +1,19 @@
+{
+  "schema": 40,
+  "scope": "single_company_real_cropped_source_chain_not_main_publication",
+  "database": "workspace/anker-receivables-history-20260917/acceptance.duckdb",
+  "code": "300866",
+  "report_period": "2024-12-31",
+  "information_as_of": "2026-09-17T16:50:00Z",
+  "field": "FN13",
+  "canonical_field": "other_receivables",
+  "value_cny": "126612168.0000000000",
+  "pdf_value_cny": "126612165.92",
+  "valid_from": "2024-12-31",
+  "inserted": 1,
+  "revoke_removed": 1,
+  "restore_inserted": 1,
+  "replay_changes": 0,
+  "supplements_imported": 3,
+  "export_sha256": "c2fa2adfd5d40ff6b0fc3d466b105d6a7ba881f90eb90427556a2de2a3ce1c97"
+}

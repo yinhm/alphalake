@@ -13,7 +13,7 @@
 
 使用既有`import-supplements`在`workspace/supor-reviewed-assets-20260917/acceptance.duckdb`主库副本导入3项，重放新增0；通过`export-valuation`按2024-12-31、信息截止2026-09-17T16:50:00Z导出并冻结[完整结果](export.json.gz)。57条标准事实、16个窗口与导入前一致，原主库未写入。补充依赖已有已归档、已解析公告，不制造标准事实或替代TDX总额。
 
-另从原文核验其他应收款净额126,612,165.92元，编码与已有2024 TDX FN13源位一致；**FN13标准映射从2025开始，2024标准窗口仍不存在**。这次只补附注，不借源位匹配偷偷发布标准历史；该标准期间覆盖和其他混合项目分类都是下一步剩余缺口。完整经营资本、净再投资、历史FCFF和公司倍率继续为空。
+另从原文核验其他应收款净额126,612,165.92元，编码与已有2024 TDX FN13源位一致；**原schema39映射从2025开始，旧导出仍保留该缺口；迁移040现将FN13有效期扩至已核验的2024-12-31**，不扩展更早季度。已有库须迁移并重新物化才能新增旧期事实。采用真实裁剪gpcw、原CNINFO目录/PDF的新隔离链完成迁移、撤销删除、恢复、重放及重开导出，详情见[升级回执](schema40-acceptance.json)和[标准导出](schema40-export.json.gz)。新链3项补充由生产入口重新导入，Python适配器读取FN13标准窗口126,612,168元，不恢复PDF小数。两个验收库范围分别保留，不冒称主库已经发布；剩余缺口是其他混合项目及完整资本分类。完整经营资本、净再投资、历史FCFF和公司倍率继续为空。
 
 ```bash
 ./alphalake import-supplements <已有原文的db> valuation/research/company-inputs-20260917/anker-opening-2024/supplements.json
@@ -22,3 +22,5 @@ PYTHONPATH=valuation/backend python -m pytest -q valuation/backend/tests/test_co
 ```
 
 校验连接完整原文哈希、页/标签/本期列、金额、TDX源位与实际补充导出；将准备增加0.01元必须拒绝。纳入现有backend pytest，无新增依赖。公司资本审核回执同步更新，旧期原文新取证不冒称2026-09-06已知。
+
+原文PDF复用仓库中[已有完整年报](../../../../internal/ingest/testdata/anker-cash-history-2024/1223379891.pdf)，已删除本目录逐字节相同的重复副本。新增Go真实链测试为`TestRealAnkerReceivablesHistory`，Python回归同时验证升级前缺项与升级后标准窗口，不将源位匹配单独当作物化完成证据。

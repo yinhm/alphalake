@@ -82,6 +82,9 @@ def test_anker_opening_allowance_tamper_rejected(tmp_path, monkeypatch):
     from tools import review_anker_capital_evidence as module
     relative = Path('valuation/research/company-inputs-20260917/anker-opening-2024')
     shutil.copytree(module.ROOT/relative, tmp_path/relative)
+    pdf_relative = Path('internal/ingest/testdata/anker-cash-history-2024/1223379891.pdf')
+    (tmp_path/pdf_relative).parent.mkdir(parents=True)
+    shutil.copyfile(module.ROOT/pdf_relative, tmp_path/pdf_relative)
     notes_path = tmp_path/relative/'supplements.json'
     notes = json.loads(notes_path.read_bytes())
     notes[1]['value'] = '2656060.73'
