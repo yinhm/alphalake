@@ -1,0 +1,18 @@
+{
+  "code": "300866",
+  "report_period": "2024-12-31",
+  "source_url": "https://static.cninfo.com.cn/finalpage/2025-04-29/1223379891.PDF",
+  "first_acquired_at": "2026-09-11T14:58:40.143997+00:00",
+  "source_archive": "valuation/research/damodaran-growth-history/anker-pilot/protocol.json",
+  "pdf_sha256": "204d64010810bc228ab9fac13eb42bdebc40bf53e0e7baff041b664da4725ee8",
+  "database": "workspace/supor-reviewed-assets-20260917/acceptance.duckdb",
+  "scope": "main_database_copy_not_main_publication",
+  "inserted": 3,
+  "replay_inserted": 0,
+  "facts_unchanged": 57,
+  "windows_unchanged": 16,
+  "net_loan_cny": "23904546.45",
+  "remaining_other_payables_unclassified_cny": "59852820.39",
+  "standard_FN13_window": "absent_mapping_starts_2025_not_zero",
+  "export_sha256": "c5038e9abe7f7741b329dbd4731952c113999607c1f46cf17317269518e8f565"
+}

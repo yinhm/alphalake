@@ -23,13 +23,22 @@
   "classified_wc_gaps": [
     {
       "period": "FY-2025",
-      "reason": "2024 opening loan allowance and mixed classifications missing"
+      "reason": "2024 mixed classifications remain; opening loan allowance now verified"
     },
     {
       "period": "TTM-2026-06-30",
       "reason": "2025H1 other_payables residual includes undisclosed classifications"
     }
   ],
+  "opening_2024_evidence": {
+    "net_loan_cny": "23904546.45",
+    "allowance_cny": "2656060.72",
+    "remaining_unclassified_other_payables_cny": "59852820.39",
+    "status": "supplement_imported_and_replayed_in_main_copy",
+    "standard_parent_FN13": "not_available_for_2024",
+    "full_operating_capital": null,
+    "historical_fcff": null
+  },
   "company_marginal_sales_to_capital": null,
   "decision": "retain_explicit_industry_proxy_no_company_ratio_adoption",
   "reasons": [

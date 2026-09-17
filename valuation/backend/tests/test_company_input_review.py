@@ -75,3 +75,17 @@ def test_anker_capital_evidence_does_not_approve_incomplete_ratio():
     assert review() == expected
     assert expected['company_marginal_sales_to_capital'] is None
     assert expected['baseline_policy_unchanged']
+
+
+def test_anker_opening_allowance_tamper_rejected(tmp_path, monkeypatch):
+    import shutil
+    from tools import review_anker_capital_evidence as module
+    relative = Path('valuation/research/company-inputs-20260917/anker-opening-2024')
+    shutil.copytree(module.ROOT/relative, tmp_path/relative)
+    notes_path = tmp_path/relative/'supplements.json'
+    notes = json.loads(notes_path.read_bytes())
+    notes[1]['value'] = '2656060.73'
+    notes_path.write_text(json.dumps(notes))
+    monkeypatch.setattr(module, 'ROOT', tmp_path)
+    with pytest.raises(AssertionError):
+        module.verify_opening_2024()

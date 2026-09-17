@@ -91,7 +91,8 @@ def review():
             amortization_cny=str(amortization), earnings_and_reinvestment_adjustment_cny=str(adjustment),
             fcff_change_from_reclassification_cny='0',
             boundary='same tax and same cash flows; increase both NOPAT and reinvestment, not an added cash outflow or growth forecast'),
-        classified_wc_gaps=[dict(period=r['period'], reason=r['formula']) for r in missing],
+        classified_wc_gaps=[dict(period=r['period'], reason=('2024 mixed classifications remain; opening loan allowance now verified' if r['period']=='FY-2025' else r['formula'])) for r in missing],
+        opening_2024_evidence=verify_opening_2024(),
         company_marginal_sales_to_capital=None,
         decision='retain_explicit_industry_proxy_no_company_ratio_adoption',
         reasons=['full_operating_working_capital_not_classified',
@@ -102,6 +103,56 @@ def review():
         evidence={str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
                   for p in (history/'rd-cohorts.csv', wc_path)},
         baseline_policy_unchanged=True)
+
+
+
+
+def verify_opening_2024():
+    """新增取证与标准导出分开核验；不把附注净额当作FN13总额。"""
+    import gzip
+    import re
+    import struct
+    from pypdf import PdfReader
+    directory = ROOT/'valuation/research/company-inputs-20260917/anker-opening-2024'
+    receipt = json.loads((directory/'acceptance.json').read_bytes())
+    pdf = directory/'1223379891.pdf'
+    assert hashlib.sha256(pdf.read_bytes()).hexdigest() == receipt['pdf_sha256']
+    reader = PdfReader(pdf)
+    pages = {p: re.sub(r'\s+', '', reader.pages[p-1].extract_text()) for p in (155, 158, 174)}
+    assert '关联方借款26,560,607.1733,393,069.60' in pages[155]
+    assert '本期末关联方借款系前期因处置子公司股权形成的其他应收款项' in pages[155]
+    assert '客户1关联方借款26,560,607.171年内，1-2年内18.66%2,656,060.72' in pages[158]
+    assert '其他59,852,820.3959,382,099.92' in pages[174]
+    raw = gzip.decompress((directory/'export.json.gz').read_bytes())
+    assert hashlib.sha256(raw).hexdigest() == receipt['export_sha256']
+    exported = json.loads(raw)
+    assert exported['code'] == '300866' and exported['report_period'] == '2024-12-31'
+    expected = json.loads((directory/'supplements.json').read_bytes())
+    values = {}
+    for note in expected:
+        assert note['period'] == '2024-12-31' and note['announcement_id'] == '1223379891'
+        assert note['pdf_sha256'] == receipt['pdf_sha256']
+        assert format(Decimal(note['value']), ',.2f') in pages[note['pdf_page']]
+        matches = [r for r in exported['supplements'] if r['item'] == note['item']]
+        assert len(matches) == 1
+        current = matches[0]
+        for key in ('code', 'period', 'unit', 'period_basis', 'scope', 'announcement_id', 'pdf_sha256', 'pdf_page', 'reviewer', 'review_note'):
+            assert current[key] == note[key]
+        assert current['pdf_url'] == receipt['source_url']
+        assert Decimal(current['value']) == Decimal(note['value'])
+        values[note['item']] = Decimal(note['value'])
+    net = values['opening_related_party_loan_gross']-values['opening_related_party_loan_allowance']
+    assert str(net) == receipt['net_loan_cny']
+    assert not any(w['field'] == 'FN13' for w in exported['windows'])
+    # 仅作旧期TDX源位核验，不冒称该字段已发布为2024标准事实。
+    source = json.loads((ROOT/'valuation/research/continuing-operations-five/capital-snapshot.json').read_bytes())
+    row, = [r for r in source['records'] if r['code']=='300866' and r['period']=='2024-12-31']
+    assert '合计126,612,165.9294,456,598.14' in pages[155]
+    assert row['bits']['FN13'] == struct.unpack('<I', struct.pack('<f', 126612165.92))[0]
+    return dict(net_loan_cny=str(net), allowance_cny=str(values['opening_related_party_loan_allowance']),
+        remaining_unclassified_other_payables_cny=str(values['opening_other_payables_unclassified']),
+        status='supplement_imported_and_replayed_in_main_copy', standard_parent_FN13='not_available_for_2024',
+        full_operating_capital=None, historical_fcff=None)
 
 
 if __name__ == '__main__':

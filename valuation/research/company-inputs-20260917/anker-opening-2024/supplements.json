@@ -1,0 +1,44 @@
+[
+  {
+    "code": "300866",
+    "period": "2024-12-31",
+    "item": "opening_related_party_loan_gross",
+    "value": "26560607.17",
+    "unit": "CNY",
+    "period_basis": "instant",
+    "scope": "consolidated_note_component",
+    "announcement_id": "1223379891",
+    "pdf_sha256": "204d64010810bc228ab9fac13eb42bdebc40bf53e0e7baff041b664da4725ee8",
+    "pdf_page": 158,
+    "reviewer": "alphalake-company-capital-review-20260917",
+    "review_note": "2024年年报本期期末列；第155页关联方借款总额与第158页客户1余额相同且说明来自处置子公司。第174页其他应付款其他项保留未分类，不归零；金额不替代TDX总额。"
+  },
+  {
+    "code": "300866",
+    "period": "2024-12-31",
+    "item": "opening_related_party_loan_allowance",
+    "value": "2656060.72",
+    "unit": "CNY",
+    "period_basis": "instant",
+    "scope": "consolidated_note_component",
+    "announcement_id": "1223379891",
+    "pdf_sha256": "204d64010810bc228ab9fac13eb42bdebc40bf53e0e7baff041b664da4725ee8",
+    "pdf_page": 158,
+    "reviewer": "alphalake-company-capital-review-20260917",
+    "review_note": "2024年年报本期期末列；第155页关联方借款总额与第158页客户1余额相同且说明来自处置子公司。第174页其他应付款其他项保留未分类，不归零；金额不替代TDX总额。"
+  },
+  {
+    "code": "300866",
+    "period": "2024-12-31",
+    "item": "opening_other_payables_unclassified",
+    "value": "59852820.39",
+    "unit": "CNY",
+    "period_basis": "instant",
+    "scope": "consolidated_note_component",
+    "announcement_id": "1223379891",
+    "pdf_sha256": "204d64010810bc228ab9fac13eb42bdebc40bf53e0e7baff041b664da4725ee8",
+    "pdf_page": 174,
+    "reviewer": "alphalake-company-capital-review-20260917",
+    "review_note": "2024年年报本期期末列；第155页关联方借款总额与第158页客户1余额相同且说明来自处置子公司。第174页其他应付款其他项保留未分类，不归零；金额不替代TDX总额。"
+  }
+]
