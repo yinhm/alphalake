@@ -1,0 +1,58 @@
+[
+  {
+    "code": "002032",
+    "period": "2026-06-30",
+    "item": "reviewed_current_total",
+    "value": "1823720958.90",
+    "unit": "CNY",
+    "period_basis": "instant",
+    "scope": "consolidated_note_component",
+    "announcement_id": "1225522987",
+    "pdf_sha256": "7460d1d9513785afd2596cea30d6a33b2a1a524089b77cec862222dd2d86ff45",
+    "pdf_page": 86,
+    "reviewer": "alphalake-company-input-review-20260917",
+    "review_note": "原文总额，与TDX源位对账；不恢复源精度。 第87页合计已扣除一年内到期部分，避免重复计值。"
+  },
+  {
+    "code": "002032",
+    "period": "2026-06-30",
+    "item": "reviewed_current_restricted",
+    "value": "750000000.00",
+    "unit": "CNY",
+    "period_basis": "instant",
+    "scope": "consolidated_note_component",
+    "announcement_id": "1225522987",
+    "pdf_sha256": "7460d1d9513785afd2596cea30d6a33b2a1a524089b77cec862222dd2d86ff45",
+    "pdf_page": 86,
+    "reviewer": "alphalake-company-input-review-20260917",
+    "review_note": "本期银行承兑汇票质押大额存单；非上年比较列。 第87页合计已扣除一年内到期部分，避免重复计值。"
+  },
+  {
+    "code": "002032",
+    "period": "2026-06-30",
+    "item": "reviewed_noncurrent_total",
+    "value": "967473301.38",
+    "unit": "CNY",
+    "period_basis": "instant",
+    "scope": "consolidated_note_component",
+    "announcement_id": "1225522987",
+    "pdf_sha256": "7460d1d9513785afd2596cea30d6a33b2a1a524089b77cec862222dd2d86ff45",
+    "pdf_page": 87,
+    "reviewer": "alphalake-company-input-review-20260917",
+    "review_note": "原文总额，与TDX源位对账；不恢复源精度。 第87页合计已扣除一年内到期部分，避免重复计值。"
+  },
+  {
+    "code": "002032",
+    "period": "2026-06-30",
+    "item": "reviewed_noncurrent_restricted",
+    "value": "20000000.00",
+    "unit": "CNY",
+    "period_basis": "instant",
+    "scope": "consolidated_note_component",
+    "announcement_id": "1225522987",
+    "pdf_sha256": "7460d1d9513785afd2596cea30d6a33b2a1a524089b77cec862222dd2d86ff45",
+    "pdf_page": 87,
+    "reviewer": "alphalake-company-input-review-20260917",
+    "review_note": "本期银行承兑汇票质押大额存单；非上年比较列。 第87页合计已扣除一年内到期部分，避免重复计值。"
+  }
+]

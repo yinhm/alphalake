@@ -1,0 +1,13 @@
+{
+  "code": "002032",
+  "period": "2026-06-30",
+  "sha256": "7460d1d9513785afd2596cea30d6a33b2a1a524089b77cec862222dd2d86ff45",
+  "canonical_url": "https://static.cninfo.com.cn/finalpage/2026-08-28/1225522987.PDF",
+  "retrieval_url": "https://file.finance.sina.com.cn/211.154.219.97:9494/MRGG/CNSESZ_STOCK/2026/2026-8/2026-08-28/12563787.PDF",
+  "retrieval_source": "sina_issuer_announcement_mirror",
+  "announcement_id": "1225522987",
+  "fetched_at": "2026-09-17T16:38:19.241265+00:00",
+  "reviewed_at": "2026-09-17T16:48:57.653484+00:00",
+  "reviewer": "alphalake-company-input-review-20260917",
+  "review_note": "新浪发行人公告镜像；133页苏泊尔2026H1，证券/报告期与CNINFO目录一致，第86/87页原文金额和受限性质核对，FN19/FN431源位相同。未证明与CNINFO二进制逐字节相同。"
+}

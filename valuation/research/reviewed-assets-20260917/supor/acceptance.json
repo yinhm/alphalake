@@ -1,0 +1,47 @@
+{
+  "database_scope": "main_database_copy_not_main_publication",
+  "code": "002032",
+  "report_period": "2026-06-30",
+  "information_as_of": "2026-09-17T16:50:00Z",
+  "document_review": {
+    "code": "002032",
+    "period": "2026-06-30",
+    "sha256": "7460d1d9513785afd2596cea30d6a33b2a1a524089b77cec862222dd2d86ff45",
+    "canonical_url": "https://static.cninfo.com.cn/finalpage/2026-08-28/1225522987.PDF",
+    "retrieval_url": "https://file.finance.sina.com.cn/211.154.219.97:9494/MRGG/CNSESZ_STOCK/2026/2026-8/2026-08-28/12563787.PDF",
+    "retrieval_source": "sina_issuer_announcement_mirror",
+    "announcement_id": "1225522987",
+    "fetched_at": "2026-09-17T16:38:19.241265+00:00",
+    "reviewed_at": "2026-09-17T16:48:57.653484+00:00",
+    "reviewer": "alphalake-company-input-review-20260917",
+    "review_note": "新浪发行人公告镜像；133页苏泊尔2026H1，证券/报告期与CNINFO目录一致，第86/87页原文金额和受限性质核对，FN19/FN431源位相同。未证明与CNINFO二进制逐字节相同。"
+  },
+  "wacc_fixed": 0.057531403615019586,
+  "before_run_id": "8960707238162b1792282feb612777d8630a63174dcbb34565c3136c1f00e17f",
+  "after_run_id": "7b11962831c81dea8e1dccd0b117fa48a734109d98de65304f74ad7fec840087",
+  "before_value": 43.252612680123605,
+  "after_value": 45.72992908626753,
+  "operating_inputs_unchanged": true,
+  "independent_decimal_verification": "passed",
+  "addback_million_cny": 2021.1942412500002,
+  "shares_million": 815.8805376,
+  "unified_company_cli": {
+    "run_id": "7b11962831c81dea8e1dccd0b117fa48a734109d98de65304f74ad7fec840087",
+    "status": "illustrative_book_equity_scenario",
+    "universe_count": 1,
+    "universe_scope": "local_security_code_candidates:002032",
+    "value_per_share": {
+      "value": 45.72992908626753,
+      "currency": "CNY",
+      "unit": "CNY/share"
+    }
+  },
+  "main_comparison": {
+    "facts_equal_except_document_metadata": 383,
+    "all_windows_equal": 80,
+    "main_supplement_count": 0,
+    "main_current_pdf_sha256": null,
+    "main_export_sha256": "629aa60a0e502c90f7f99c367e765136f9c9f38a28321cea3aff8cbdb01913e5",
+    "copy_export_sha256": "0ee44952d2ab9a828f66aed7dc01539f69d5e12235859fa1d021269b013ca787"
+  }
+}

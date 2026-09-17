@@ -37,6 +37,15 @@ class Snapshot(BaseModel):
         for r in self.facts + self.windows + self.supplements + self.source_conflicts:
             if r.get('code') != self.code:
                 raise ValueError('mixed security identity')
+            if (provenance := r.get('document_provenance')) is not None:
+                reviewed_at = datetime.fromisoformat(provenance['reviewed_at'])
+                if reviewed_at.utcoffset() is None or reviewed_at > self.information_as_of:
+                    raise ValueError('future or ambiguous document review time')
+                if (provenance['code'] != self.code or provenance['period'] != r.get('period')
+                        or provenance['announcement_id'] != r.get('announcement_id')
+                        or provenance['canonical_url'] != r.get('pdf_url')
+                        or provenance['sha256'] != r.get('pdf_sha256')):
+                    raise ValueError('document review identity differs')
             if r.get('available_at') is not None:
                 if not isinstance(r['available_at'],str):
                     raise ValueError('invalid disclosure time')
@@ -729,7 +738,8 @@ def apply_reviewed_assets(d, policy, inputs, audit):
                     or not r.get('reviewer') or not r.get('review_note') or not r.get('available_at')
                     or not r.get('pdf_sha256') or r.get('pdf_page', 0) <= 0
                     or r.get('announcement_id') != f['announcement_id'] or r.get('pdf_sha256') != f.get('pdf_sha256')
-                    or r.get('pdf_url') != f.get('pdf_url')):
+                    or r.get('pdf_url') != f.get('pdf_url')
+                    or r.get('document_provenance') != f.get('document_provenance')):
                 raise ValueError('asset review evidence differs from approved current filing/source')
             return r
 
@@ -759,9 +769,9 @@ def apply_reviewed_assets(d, policy, inputs, audit):
     audit['required_input_count'] += evidence_count
     audit['available_required_input_count'] += evidence_count
     audit['consumed_inputs'] += consumed
-    audit['consumed_inputs'] += [dict(source='cninfo', item=r['supplement']['item'],
+    audit['consumed_inputs'] += [dict(source=r['supplement'].get('document_provenance', {}).get('retrieval_source', 'cninfo'), item=r['supplement']['item'],
         period=r['supplement']['period'], import_sha256=r['supplement']['import_sha256']) for r in adopted]
-    audit['consumed_inputs'] += [dict(source='cninfo', item=r['item'], period=r['period'],
+    audit['consumed_inputs'] += [dict(source=r.get('document_provenance', {}).get('retrieval_source', 'cninfo'), item=r['item'], period=r['period'],
         import_sha256=r['import_sha256']) for a in adopted if (r := a['restricted_supplement']) is not None]
     audit['assumptions']['bridge'] = policy.model_dump(mode='json')
     audit['boundaries'] = [b for b in audit['boundaries'] if not b.startswith('nonoperating financial investments receive no credit')]

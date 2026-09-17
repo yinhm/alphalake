@@ -43,3 +43,9 @@ Go 标准链新增独立财务公司公告目录及实际 PDF 归档、文档 UR
 两家公司模型仍有历史 FCFF 分类缺口，不能因固定 61 项取值可复验就声称历史 FCFF 已闭合，或无需预测与市场参数即可自动估值。
 
 验收：全套 Go 测试、构建、vet、标准链完整 PDF 重提取、61 项供给重建及五路负向检查全部通过；安克/茅台实际目标引擎均完成快照重建后的默认重放。六个估值情景的两位小数展示值不变，源精度差异继续单列。没有依赖变更，外部估值项目未修改。
+
+## 经审核的镜像原文关联（2026-09-17）
+
+`import-reviewed-document`仅为已有、已解析且尚无原文的CNINFO公告补齐经人工核验的镜像；代码、报告期、公告ID和canonical URL必须匹配。`fundamental.filing`保持CNINFO身份，`meta.artifact`及`filing_document`保存实际下载来源/URL；审核JSON另行不可变归档，并以现有`meta.validation_result`保存关联。选择原文、历史和审核关联在同一事务发布，不推进采集检查点，不覆盖已有原文或审核。失败可能留下未关联原始归档，不会发布部分关联。
+
+标准事实与补充导出仅对镜像增加`document_provenance`，保持普通CNINFO导出兼容；估值校验公告/公司/报告期/PDF哈希与审核时点。镜像文件不声称与CNINFO二进制相同，TDX数值不变。真实范围及复验见[苏泊尔副本验收](../../valuation/research/reviewed-assets-20260917/supor/README.md)。

@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/yinhm/alphalake/internal/ingest"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
 )
 
@@ -127,5 +128,42 @@ func runSupplementImport(ctx context.Context, args []string) error {
 		return err
 	}
 	fmt.Printf("reviewed supplements: inserted=%d unchanged=%d\n", n, len(records)-n)
+	return nil
+}
+
+// runReviewedDocumentImport performs no network access; the reviewed manifest
+// describes the actual download, separately from the CNINFO identity.
+func runReviewedDocumentImport(ctx context.Context, args []string) error {
+	if len(args) != 4 {
+		return errors.New("usage: import-reviewed-document <db-path> <artifact-root> <review-json> <pdf-file>")
+	}
+	raw, err := os.Open(args[2])
+	if err != nil {
+		return err
+	}
+	defer raw.Close()
+	var review ingest.ReviewedDocument
+	decoder := json.NewDecoder(raw)
+	decoder.DisallowUnknownFields()
+	if err = decoder.Decode(&review); err != nil {
+		return err
+	}
+	if err = decoder.Decode(new(any)); err != io.EOF {
+		return errors.New("trailing review JSON")
+	}
+	content, err := os.ReadFile(args[3])
+	if err != nil {
+		return err
+	}
+	db, err := duckstore.OpenAndMigrate(ctx, args[0])
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	inserted, err := ingest.ImportReviewedDocument(ctx, db, args[1], review, content)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("reviewed document: attached=%t\n", inserted)
 	return nil
 }

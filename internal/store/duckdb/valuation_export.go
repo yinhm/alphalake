@@ -168,6 +168,40 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
     QUALIFY row_number() OVER(PARTITION BY s.provider_code,s.report_period,s.item ORDER BY f.announcement_time DESC,f.filing_id DESC)=1
     ORDER BY s.report_period,s.item) x`, []any{code, end, end, asof, asof}},
 	}
+	// Mirror metadata is added only for independently reviewed documents, so
+	// existing CNINFO-only exported evidence remains byte-compatible.
+	mirrors := map[string]json.RawMessage{}
+	rows, err := tx.QueryContext(ctx, `SELECT f.source_filing_id,v.details
+ FROM fundamental.filing f JOIN meta.artifact a ON a.artifact_id=f.artifact_id
+ LEFT JOIN meta.validation_result v ON v.subject_key=CAST(f.filing_id AS VARCHAR)
+ AND v.source='document-review' AND v.dataset='filing_document' AND v.rule_code='reviewed_mirror_binding' AND v.passed=true
+ WHERE f.source='cninfo' AND f.provider_code=? AND f.report_period<=CAST(? AS DATE)
+ AND f.report_period>=make_date(year(CAST(? AS DATE))-1,1,1) AND a.source<>'cninfo'`, code, end, end)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var id string
+		var details sql.NullString
+		if err = rows.Scan(&id, &details); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		if !details.Valid || !json.Valid([]byte(details.String)) {
+			rows.Close()
+			return nil, errors.New("mirror document lacks explicit review")
+		}
+		if _, exists := mirrors[id]; exists {
+			rows.Close()
+			return nil, errors.New("ambiguous mirror document review")
+		}
+		mirrors[id] = json.RawMessage(details.String)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return nil, err
+	}
 	for _, q := range queries {
 		var raw sql.NullString
 		if err = tx.QueryRowContext(ctx, q.query, q.args...).Scan(&raw); err != nil {
@@ -175,6 +209,26 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
 		}
 		if !raw.Valid {
 			raw.String = "[]"
+		}
+		if len(mirrors) > 0 && (q.name == "facts" || q.name == "supplements") {
+			var records []map[string]json.RawMessage
+			if err = json.Unmarshal([]byte(raw.String), &records); err != nil {
+				return nil, err
+			}
+			for _, r := range records {
+				var id string
+				if err = json.Unmarshal(r["announcement_id"], &id); err != nil {
+					return nil, err
+				}
+				if review, ok := mirrors[id]; ok {
+					r["document_provenance"] = review
+				}
+			}
+			encoded, err := json.Marshal(records)
+			if err != nil {
+				return nil, err
+			}
+			raw.String = string(encoded)
 		}
 		output[q.name] = json.RawMessage(raw.String)
 	}

@@ -51,7 +51,7 @@ def verify(receipt):
         results.append({'field': field, 'standard_total_cny': fact['value'],
                         'pdf_total_cny': a[total], 'restricted_cny': a[restricted]})
     return {'pdf_amounts_checked': 5, 'source_bits_checked': 2, 'components': results,
-            'valuation_addback': None, 'status': receipt['production_status']}
+            'valuation_addback': None, 'retrieval_snapshot_status': receipt['production_status']}
 
 
 if __name__ == '__main__':

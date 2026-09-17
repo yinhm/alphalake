@@ -164,3 +164,30 @@ def test_partial_asset_policy_with_explicit_synthetic_archive(tmp_path, monkeypa
         else: rule['classification'] = 'nonoperating_unrestricted_financial_asset'
         with pytest.raises(ValueError):
             evaluate(AlphaLakeRequest.model_validate(bad))
+
+
+def test_supor_real_mirror_export_replay(tmp_path, monkeypatch):
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
+    directory = ROOT.parent/'reviewed-assets-20260917/supor'
+    requests = [json.loads(gzip.decompress((directory/(name+'-request.json.gz')).read_bytes())) for name in ('before','after')]
+    before, after = [evaluate(AlphaLakeRequest.model_validate(r)) for r in requests]
+    verify(before)
+    verify(after)
+    receipt = json.loads((directory/'acceptance.json').read_bytes())
+    assert before['report']['final']['value_per_share'] == pytest.approx(receipt['before_value'])
+    assert after['report']['final']['value_per_share'] == pytest.approx(receipt['after_value'])
+    for key in ('revenue_projections','ebit_projections','reinvestment_projections','fcff_projections','value_of_operating_assets'):
+        assert before['report']['dcf'][key] == after['report']['dcf'][key]
+    expected_review = deepcopy(receipt['document_review'])
+    for key in ('fetched_at', 'reviewed_at'):
+        expected_review[key] = expected_review[key].replace('+00:00', 'Z')
+    for note in requests[1]['data']['supplements']:
+        assert note['document_provenance'] == expected_review
+    bad = deepcopy(requests[1])
+    bad['data']['information_as_of'] = '2026-09-17T00:00:00Z'
+    with pytest.raises(ValueError, match='document review time'):
+        AlphaLakeRequest.model_validate(bad)
+    bad = deepcopy(requests[1])
+    bad['data']['supplements'][0]['document_provenance']['canonical_url'] += '?changed'
+    with pytest.raises(ValueError, match='document review identity'):
+        AlphaLakeRequest.model_validate(bad)
