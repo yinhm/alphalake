@@ -85,10 +85,38 @@ def run_cycle(args, root):
         ledger['information_as_of'] = args.as_of or timestamp()
         if materialized:
             reference_args = ['--reference-database',args.reference_database] if getattr(args,'reference_database',None) else []
-            stage('batch-valuation',[sys.executable,'-m','tools.batch_valuate_alphalake',args.database,
+            state = getattr(args, 'incremental_state', None)
+            previous_args = ['--previous-report',str(state)] if state and Path(state).exists() else []
+            code = stage('batch-valuation',[sys.executable,'-m','tools.batch_valuate_alphalake',args.database,
                   '--period',args.period,'--as-of',ledger['information_as_of'],'--policy',args.policy,
-                  '--output-dir',str(root/'batches'),'--alphalake',args.alphalake,*reference_args])
-        ledger['status'] = 'completed' if all(r['status']=='completed' for r in ledger['stages']) else 'partial_or_failed'
+                  '--output-dir',str(root/'batches'),'--alphalake',args.alphalake,
+                  '--query-timeout',str(args.stage_timeout),*previous_args,*reference_args])
+            if code == 0 and state:
+                try:
+                    receipt = json.loads((root/'batch-valuation.log').read_text())
+                    report = Path(receipt['report']).resolve()
+                    if report.parent != (root/'batches').resolve():
+                        raise ValueError('batch report outside cycle directory')
+                    payload = report.read_bytes()
+                    batch = json.loads(payload)
+                    if batch['contract_version'] != 'alphalake-batch-v1' or batch['source_database'] != args.database:
+                        raise ValueError('batch state contract/database mismatch')
+                    counts = batch['automation_counts']
+                    if not isinstance(counts, dict) or batch['universe_count'] != len(batch['companies']):
+                        raise ValueError('incomplete batch state')
+                    target_state = Path(state); target_state.parent.mkdir(parents=True, exist_ok=True)
+                    with tempfile.NamedTemporaryFile(dir=target_state.parent, delete=False) as output:
+                        pending = Path(output.name)
+                        try:
+                            output.write(payload); output.flush(); os.fsync(output.fileno())
+                            os.replace(pending, target_state)
+                        finally:
+                            pending.unlink(missing_ok=True)
+                    ledger['incremental_state'] = dict(status='published_attempt', path=str(target_state),
+                        batch_report=str(report), automation_counts=counts)
+                except (OSError, ValueError, KeyError, TypeError) as error:
+                    ledger['incremental_state'] = dict(status='failed', reason=str(error))
+        ledger['status'] = 'completed' if all(r['status']=='completed' for r in ledger['stages']) and ledger.get('incremental_state',{}).get('status') != 'failed' else 'partial_or_failed'
     except KeyboardInterrupt:
         ledger['status'] = 'canceled'
     finally:
@@ -124,6 +152,7 @@ def main():
     policy = BatchPolicy.model_validate_json(Path(args.policy).read_text())
     if any(p.approved_report_period!=period for p in [a.policy for a in policy.assignments.values()]+[r.policy for r in policy.industry_rules]):
         parser.error('policy report period differs from requested period')
+    args.incremental_state = str((Path(args.output_dir)/'incremental-state.json').resolve())
     args.database = str(Path(args.database).resolve())
     args.policy = str(Path(args.policy).resolve())
     args.alphalake = str(Path(args.alphalake).resolve())

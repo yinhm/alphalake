@@ -48,3 +48,39 @@ def test_refresh_stage_timeout_stops_child(tmp_path):
         'import signal,time;signal.signal(signal.SIGINT,lambda *_:exit(0));print("started",flush=True);time.sleep(60)'],log,1)
     assert code==124
     assert log.read_text()=='started\n'
+
+
+def test_refresh_publishes_attempt_state_and_retains_on_failure(tmp_path, monkeypatch):
+    state = tmp_path/'incremental-state.json'
+    old = dict(contract_version='alphalake-batch-v1', source_database='test.duckdb',
+               universe_count=0, companies=[], automation_counts={'computable':0})
+    state.write_text(json.dumps(old))
+    args = SimpleNamespace(database='test.duckdb', period='2026-06-30', as_of='2026-09-17T00:00:00Z', latest=6,
+        filings_start='2026-09-01', filings_end='2026-09-17', alphalake='alphalake', policy='policy.json',
+        stage_timeout=10, reference_database=None, sync_references=False, incremental_state=str(state))
+    def execute(command, log, timeout):
+        if log.stem == 'batch-valuation':
+            assert command[command.index('--previous-report')+1] == str(state)
+            output = Path(command[command.index('--output-dir')+1]);output.mkdir()
+            report = output/'batch-1.json'
+            report.write_text(json.dumps(old | {'attempt':'new'}))
+            log.write_text(json.dumps({'report':str(report)}))
+        else:
+            log.write_text(log.stem)
+        return 0
+    monkeypatch.setattr(refresh, 'execute', execute)
+    root = tmp_path/'first';root.mkdir()
+    assert refresh.run_cycle(args, root) == 0
+    published = state.read_bytes()
+    assert json.loads(published)['attempt'] == 'new'
+    # 子进程失败不发布；成功退出但输出损坏同样不能覆盖最后状态。
+    for malformed in (False, True):
+        def fail(command, log, timeout):
+            if log.stem == 'batch-valuation':
+                log.write_text('invalid json')
+                return 0 if malformed else 1
+            return execute(command, log, timeout)
+        monkeypatch.setattr(refresh, 'execute', fail)
+        root = tmp_path/str(malformed);root.mkdir()
+        assert refresh.run_cycle(args, root) == 1
+        assert state.read_bytes() == published

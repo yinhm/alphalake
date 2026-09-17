@@ -38,4 +38,4 @@ PYTHONPATH=valuation/backend python -m pytest -q valuation/backend/tests/test_al
 
 回归包含真实Go入库/重开导出、PDF哈希/第108页金额及分类文字、统一入口、幂等重放、独立DCF与股数差额、十路拒绝。已运行相关Python三模块91项通过，Go全套测试与构建通过；本地未重跑整个Python套件。CI完整backend pytest自动包含新增用例，需backend依赖及pypdf（已有配置）。无生产Go逻辑、迁移或依赖变更。
 
-尚未完成三项目标中的增长—资本需求联合诊断和更新触发的增量重估；此文不把第一项局部验收作为整个目标完成。
+后续已接通[增长—资本需求联合诊断及增量重估](../automatic-valuation-20260917/README.md)。公司资本效率实证与苏泊尔原件/受限分量仍缺，不把本阶段局部验收当作全部数据缺口完成。

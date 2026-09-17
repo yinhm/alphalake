@@ -57,6 +57,7 @@ func runValuationReadiness(ctx context.Context, args []string) error {
 		return errors.New("usage: valuation-readiness <db-path> --period YYYY-MM-DD --as-of RFC3339")
 	}
 	fs := flag.NewFlagSet("valuation-readiness", flag.ContinueOnError)
+	code := fs.String("code", "", "optional six-digit security code; preserve ambiguous candidates")
 	period := fs.String("period", "", "required quarter end")
 	asof := fs.String("as-of", "", "information cutoff")
 	if err := fs.Parse(args[1:]); err != nil {
@@ -81,7 +82,12 @@ func runValuationReadiness(ctx context.Context, args []string) error {
 		return err
 	}
 	defer db.Close()
-	out, err := duckstore.ExportValuationReadiness(ctx, db, end, at)
+	var out map[string]any
+	if *code == "" {
+		out, err = duckstore.ExportValuationReadiness(ctx, db, end, at)
+	} else {
+		out, err = duckstore.ExportCompanyValuationReadiness(ctx, db, end, at, *code)
+	}
 	if err != nil {
 		return err
 	}

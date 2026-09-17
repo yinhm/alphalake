@@ -1,0 +1,694 @@
+{
+  "scope": "five_cycles_isolated_archive_database_and_separate_main_database_single_security_refusal",
+  "cycles": [
+    {
+      "name": "initial",
+      "as_of": "2026-09-17T00:00:00Z",
+      "report": "/root/alphalake/workspace/automatic-valuation-20260917/final-initial/batch-754qqk3i.json",
+      "universe_count": 2,
+      "automation_counts": {
+        "computable": 1,
+        "conditional_valuations": 1,
+        "execution_failed": 0,
+        "rejected": 0,
+        "requires_human_review": 2
+      },
+      "status_counts": {
+        "blocked_policy_not_assigned": 1,
+        "illustrative_book_equity_scenario": 1
+      },
+      "company": {
+        "code": "300866",
+        "financial_status": "financial_core_complete_requires_policy",
+        "human_review_required": true,
+        "instrument_id": 2,
+        "last_success": {
+          "run_file_sha256": "576e1887e177c9217cb8bca699de87d5bdbadd590873aa6ed4b8306d195d77d3",
+          "run_id": "22480525f54b72b23bbc9d37a3aed165606e273199286513aa9c1a4258be0de6",
+          "signature": "e642e710a5bb19edd28b9d3b88c1a752a1fb490f9144b002f35a68a1dbc1e6db"
+        },
+        "missing_core_fields": [],
+        "name": "安克创新",
+        "operating_enterprise_value_million_cny": 70859.58390791959,
+        "policy_route": {
+          "kind": "explicit_company_assignment"
+        },
+        "refresh": {
+          "action": "initial_valuation",
+          "checked_as_of": "2026-09-17T00:00:00+00:00",
+          "comparison": null
+        },
+        "run_id": "22480525f54b72b23bbc9d37a3aed165606e273199286513aa9c1a4258be0de6",
+        "status": "illustrative_book_equity_scenario",
+        "symbols": [
+          "sz300866"
+        ],
+        "value_per_share": 127.15446348506366
+      }
+    },
+    {
+      "name": "repeat",
+      "as_of": "2026-09-17T00:00:00Z",
+      "report": "/root/alphalake/workspace/automatic-valuation-20260917/final-repeat/batch-vuhk3o96.json",
+      "universe_count": 2,
+      "automation_counts": {
+        "computable": 1,
+        "conditional_valuations": 1,
+        "execution_failed": 0,
+        "rejected": 0,
+        "requires_human_review": 2
+      },
+      "status_counts": {
+        "blocked_policy_not_assigned": 1,
+        "illustrative_book_equity_scenario": 1
+      },
+      "company": {
+        "code": "300866",
+        "financial_status": "financial_core_complete_requires_policy",
+        "human_review_required": true,
+        "instrument_id": 2,
+        "last_success": {
+          "run_file_sha256": "576e1887e177c9217cb8bca699de87d5bdbadd590873aa6ed4b8306d195d77d3",
+          "run_id": "22480525f54b72b23bbc9d37a3aed165606e273199286513aa9c1a4258be0de6",
+          "signature": "e642e710a5bb19edd28b9d3b88c1a752a1fb490f9144b002f35a68a1dbc1e6db"
+        },
+        "missing_core_fields": [],
+        "name": "安克创新",
+        "operating_enterprise_value_million_cny": 70859.58390791959,
+        "policy_route": {
+          "kind": "explicit_company_assignment"
+        },
+        "refresh": {
+          "action": "reused_unchanged",
+          "checked_as_of": "2026-09-17T00:00:00+00:00",
+          "comparison": null
+        },
+        "run_id": "22480525f54b72b23bbc9d37a3aed165606e273199286513aa9c1a4258be0de6",
+        "status": "illustrative_book_equity_scenario",
+        "symbols": [
+          "sz300866"
+        ],
+        "value_per_share": 127.15446348506366
+      }
+    },
+    {
+      "name": "next_day",
+      "as_of": "2026-09-18T00:00:00Z",
+      "report": "/root/alphalake/workspace/automatic-valuation-20260917/final-next_day/batch-6i1069jd.json",
+      "universe_count": 2,
+      "automation_counts": {
+        "computable": 1,
+        "conditional_valuations": 1,
+        "execution_failed": 0,
+        "rejected": 0,
+        "requires_human_review": 2
+      },
+      "status_counts": {
+        "blocked_policy_not_assigned": 1,
+        "illustrative_book_equity_scenario": 1
+      },
+      "company": {
+        "code": "300866",
+        "financial_status": "financial_core_complete_requires_policy",
+        "human_review_required": true,
+        "instrument_id": 2,
+        "last_success": {
+          "run_file_sha256": "576e1887e177c9217cb8bca699de87d5bdbadd590873aa6ed4b8306d195d77d3",
+          "run_id": "22480525f54b72b23bbc9d37a3aed165606e273199286513aa9c1a4258be0de6",
+          "signature": "e642e710a5bb19edd28b9d3b88c1a752a1fb490f9144b002f35a68a1dbc1e6db"
+        },
+        "missing_core_fields": [],
+        "name": "安克创新",
+        "operating_enterprise_value_million_cny": 70859.58390791959,
+        "policy_route": {
+          "kind": "explicit_company_assignment"
+        },
+        "refresh": {
+          "action": "reused_unchanged",
+          "checked_as_of": "2026-09-18T00:00:00+00:00",
+          "comparison": null
+        },
+        "run_id": "22480525f54b72b23bbc9d37a3aed165606e273199286513aa9c1a4258be0de6",
+        "status": "illustrative_book_equity_scenario",
+        "symbols": [
+          "sz300866"
+        ],
+        "value_per_share": 127.15446348506366
+      }
+    },
+    {
+      "name": "expired",
+      "as_of": "2026-10-18T00:00:00Z",
+      "report": "/root/alphalake/workspace/automatic-valuation-20260917/final-expired/batch-vdt2zfp3.json",
+      "universe_count": 2,
+      "automation_counts": {
+        "computable": 0,
+        "conditional_valuations": 0,
+        "execution_failed": 0,
+        "rejected": 1,
+        "requires_human_review": 2
+      },
+      "status_counts": {
+        "blocked_policy_not_assigned": 1,
+        "rejected_input_or_policy": 1
+      },
+      "company": {
+        "code": "300866",
+        "financial_status": "financial_core_complete_requires_policy",
+        "human_review_required": true,
+        "instrument_id": 2,
+        "last_success": {
+          "run_file_sha256": "576e1887e177c9217cb8bca699de87d5bdbadd590873aa6ed4b8306d195d77d3",
+          "run_id": "22480525f54b72b23bbc9d37a3aed165606e273199286513aa9c1a4258be0de6",
+          "signature": "e642e710a5bb19edd28b9d3b88c1a752a1fb490f9144b002f35a68a1dbc1e6db"
+        },
+        "missing_core_fields": [],
+        "name": "安克创新",
+        "policy_route": {
+          "kind": "explicit_company_assignment"
+        },
+        "reason": "asset review unavailable or expired at cutoff",
+        "refresh": {
+          "action": "blocked_current_inputs",
+          "comparison": null
+        },
+        "status": "rejected_input_or_policy",
+        "symbols": [
+          "sz300866"
+        ]
+      }
+    },
+    {
+      "name": "recovered",
+      "as_of": "2026-09-18T00:00:00Z",
+      "report": "/root/alphalake/workspace/automatic-valuation-20260917/final-recovered/batch-jev2pbd_.json",
+      "universe_count": 2,
+      "automation_counts": {
+        "computable": 1,
+        "conditional_valuations": 1,
+        "execution_failed": 0,
+        "rejected": 0,
+        "requires_human_review": 2
+      },
+      "status_counts": {
+        "blocked_policy_not_assigned": 1,
+        "illustrative_book_equity_scenario": 1
+      },
+      "company": {
+        "code": "300866",
+        "financial_status": "financial_core_complete_requires_policy",
+        "human_review_required": true,
+        "instrument_id": 2,
+        "last_success": {
+          "run_file_sha256": "576e1887e177c9217cb8bca699de87d5bdbadd590873aa6ed4b8306d195d77d3",
+          "run_id": "22480525f54b72b23bbc9d37a3aed165606e273199286513aa9c1a4258be0de6",
+          "signature": "e642e710a5bb19edd28b9d3b88c1a752a1fb490f9144b002f35a68a1dbc1e6db"
+        },
+        "missing_core_fields": [],
+        "name": "安克创新",
+        "operating_enterprise_value_million_cny": 70859.58390791959,
+        "policy_route": {
+          "kind": "explicit_company_assignment"
+        },
+        "refresh": {
+          "action": "reused_unchanged",
+          "checked_as_of": "2026-09-18T00:00:00+00:00",
+          "comparison": null
+        },
+        "run_id": "22480525f54b72b23bbc9d37a3aed165606e273199286513aa9c1a4258be0de6",
+        "status": "illustrative_book_equity_scenario",
+        "symbols": [
+          "sz300866"
+        ],
+        "value_per_share": 127.15446348506366
+      }
+    }
+  ],
+  "economic_diagnostics": [
+    {
+      "code": "300866",
+      "run_id": "c05563fa862a1f84e3f00fc16cfed5235004e4d4f86bee45cd8f36fa2699ab18",
+      "value_per_share": 126.13784833230838,
+      "assessment": {
+        "status": "requires_company_economic_review",
+        "method": "revenue_change_over_marginal_sales_to_capital_zero_lag",
+        "capital_efficiency": 2.483535697458,
+        "capital_basis": "historical_industry_average_as_marginal_proxy",
+        "company_capital_efficiency_verified": false,
+        "company_evidence": {
+          "source": "tdx_standard_ttm",
+          "rd_expense_million_cny": 3567.709568,
+          "rd_to_revenue": 0.10415864377403028,
+          "cash_capex_million_cny": 319.63428,
+          "boundary": "研发费用及购建现金仅为投入分量；不代表完整净再投资，不能直接推出收入增长或公司边际资本效率。"
+        },
+        "accounting_scope": "rd_expensed_reported_leases_industry_capital_scope_not_reconciled",
+        "baseline_nopat_policy_proxy": 2437.6194012084966,
+        "years": [
+          {
+            "year": 1,
+            "revenue_growth": 0.2,
+            "operating_margin": 0.09488781753030885,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 41103.1799808,
+            "ebit_million_cny": 3900.191041933594,
+            "nopat_million_cny": 2925.1432814501954,
+            "net_reinvestment_million_cny": 2758.377906068269,
+            "fcff_million_cny": 166.76537538192633,
+            "nopat_change_million_cny": 487.52388024169886,
+            "revenue_contribution_million_cny": 487.52388024169903,
+            "margin_tax_contribution_million_cny": 0.0,
+            "reinvestment_rate": 0.9429889891413288,
+            "revenue_linked_incremental_return_proxy": 0.17674296156780228,
+            "flags": []
+          },
+          {
+            "year": 2,
+            "revenue_growth": 0.2,
+            "operating_margin": 0.09488781753030885,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 49323.815976959995,
+            "ebit_million_cny": 4680.2292503203125,
+            "nopat_million_cny": 3510.171937740234,
+            "net_reinvestment_million_cny": 3310.053487281923,
+            "fcff_million_cny": 200.11845045831114,
+            "nopat_change_million_cny": 585.0286562900387,
+            "revenue_contribution_million_cny": 585.0286562900388,
+            "margin_tax_contribution_million_cny": 0.0,
+            "reinvestment_rate": 0.9429889891413289,
+            "revenue_linked_incremental_return_proxy": 0.17674296156780228,
+            "flags": []
+          },
+          {
+            "year": 3,
+            "revenue_growth": 0.2,
+            "operating_margin": 0.09488781753030885,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 59188.579172351994,
+            "ebit_million_cny": 5616.275100384375,
+            "nopat_million_cny": 4212.206325288282,
+            "net_reinvestment_million_cny": 3972.064184738309,
+            "fcff_million_cny": 240.14214054997274,
+            "nopat_change_million_cny": 702.0343875480476,
+            "revenue_contribution_million_cny": 702.0343875480469,
+            "margin_tax_contribution_million_cny": 0.0,
+            "reinvestment_rate": 0.942988989141329,
+            "revenue_linked_incremental_return_proxy": 0.17674296156780228,
+            "flags": []
+          },
+          {
+            "year": 4,
+            "revenue_growth": 0.2,
+            "operating_margin": 0.09488781753030885,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 71026.29500682239,
+            "ebit_million_cny": 6739.53012046125,
+            "nopat_million_cny": 5054.647590345938,
+            "net_reinvestment_million_cny": 4766.477021685969,
+            "fcff_million_cny": 288.1705686599689,
+            "nopat_change_million_cny": 842.441265057656,
+            "revenue_contribution_million_cny": 842.4412650576559,
+            "margin_tax_contribution_million_cny": 0.0,
+            "reinvestment_rate": 0.9429889891413287,
+            "revenue_linked_incremental_return_proxy": 0.17674296156780228,
+            "flags": []
+          },
+          {
+            "year": 5,
+            "revenue_growth": 0.2,
+            "operating_margin": 0.09488781753030885,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 85231.55400818687,
+            "ebit_million_cny": 8087.4361445535,
+            "nopat_million_cny": 6065.577108415125,
+            "net_reinvestment_million_cny": 5719.772426023166,
+            "fcff_million_cny": 345.8046823919585,
+            "nopat_change_million_cny": 1010.929518069187,
+            "revenue_contribution_million_cny": 1010.9295180691877,
+            "margin_tax_contribution_million_cny": 0.0,
+            "reinvestment_rate": 0.9429889891413294,
+            "revenue_linked_incremental_return_proxy": 0.17674296156780228,
+            "flags": []
+          },
+          {
+            "year": 6,
+            "revenue_growth": 0.164,
+            "operating_margin": 0.09488781753030885,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 99209.5288655295,
+            "ebit_million_cny": 9413.775672260272,
+            "nopat_million_cny": 7060.331754195204,
+            "net_reinvestment_million_cny": 5628.256067206789,
+            "fcff_million_cny": 1432.0756869884144,
+            "nopat_change_million_cny": 994.754645780079,
+            "revenue_contribution_million_cny": 994.7546457800794,
+            "margin_tax_contribution_million_cny": -1.1828254210558951e-12,
+            "reinvestment_rate": 0.7971659495833912,
+            "revenue_linked_incremental_return_proxy": 0.17674296156780225,
+            "flags": []
+          },
+          {
+            "year": 7,
+            "revenue_growth": 0.128,
+            "operating_margin": 0.09488781753030885,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 111908.34856031729,
+            "ebit_million_cny": 10618.738958309588,
+            "nopat_million_cny": 7964.054218732192,
+            "net_reinvestment_million_cny": 5113.201999788264,
+            "fcff_million_cny": 2850.8522189439273,
+            "nopat_change_million_cny": 903.7224645369879,
+            "revenue_contribution_million_cny": 903.722464536987,
+            "margin_tax_contribution_million_cny": 1.3768087901090617e-12,
+            "reinvestment_rate": 0.6420350564366502,
+            "revenue_linked_incremental_return_proxy": 0.17674296156780228,
+            "flags": []
+          },
+          {
+            "year": 8,
+            "revenue_growth": 0.092,
+            "operating_margin": 0.09488781753030885,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 122203.91662786649,
+            "ebit_million_cny": 11595.662942474071,
+            "nopat_million_cny": 8696.747206855554,
+            "net_reinvestment_million_cny": 4145.528521328338,
+            "fcff_million_cny": 4551.218685527217,
+            "nopat_change_million_cny": 732.6929881233627,
+            "revenue_contribution_million_cny": 732.6929881233626,
+            "margin_tax_contribution_million_cny": 0.0,
+            "reinvestment_rate": 0.4766757527527604,
+            "revenue_linked_incremental_return_proxy": 0.17674296156780228,
+            "flags": []
+          },
+          {
+            "year": 9,
+            "revenue_growth": 0.055999999999999994,
+            "operating_margin": 0.09488781753030885,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 129047.33595902703,
+            "ebit_million_cny": 12245.02006725262,
+            "nopat_million_cny": 9183.765050439466,
+            "net_reinvestment_million_cny": 2755.5147840898976,
+            "fcff_million_cny": 6428.250266349569,
+            "nopat_change_million_cny": 487.0178435839116,
+            "revenue_contribution_million_cny": 487.01784358391177,
+            "margin_tax_contribution_million_cny": 0.0,
+            "reinvestment_rate": 0.30004195109042336,
+            "revenue_linked_incremental_return_proxy": 0.17674296156780228,
+            "flags": []
+          },
+          {
+            "year": 10,
+            "revenue_growth": 0.01999999999999999,
+            "operating_margin": 0.09488781753030885,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 131628.28267820756,
+            "ebit_million_cny": 12489.920468597673,
+            "nopat_million_cny": 9367.440351448255,
+            "net_reinvestment_million_cny": 1039.2227185710415,
+            "fcff_million_cny": 8328.217632877213,
+            "nopat_change_million_cny": 183.67530100878867,
+            "revenue_contribution_million_cny": 183.6753010087886,
+            "margin_tax_contribution_million_cny": 0.0,
+            "reinvestment_rate": 0.11093988107545005,
+            "revenue_linked_incremental_return_proxy": 0.1767429615678023,
+            "flags": []
+          }
+        ],
+        "review_actions": [
+          "justify_joint_growth_margin_and_marginal_capital_policy",
+          "reconcile_rd_lease_and_operating_capital_scope_before_company_ratio_adoption"
+        ],
+        "method_source": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/growth.htm",
+        "boundary": "利润变化是模型代数分解；增量回报代理仅在正收入增量和正投入时定义，不是实际或完整隐含ROIC。负再投资保留但须核验可回收资本；负FCFF不是错误。研发费用不直接换算增长，行业平均不自动成为公司边际效率。"
+      }
+    },
+    {
+      "code": "002032",
+      "run_id": "9b925b5fcd640232aa928ddde5dc047a7c27faf4c36e88b2faa32628dfb02e5d",
+      "value_per_share": 43.252612680123605,
+      "assessment": {
+        "status": "requires_company_economic_review",
+        "method": "revenue_change_over_marginal_sales_to_capital_zero_lag",
+        "capital_efficiency": 2.27300234984,
+        "capital_basis": "historical_industry_average_as_marginal_proxy",
+        "company_capital_efficiency_verified": false,
+        "company_evidence": {
+          "source": "tdx_standard_ttm",
+          "rd_expense_million_cny": 479.402032,
+          "rd_to_revenue": 0.021115290059184156,
+          "cash_capex_million_cny": 203.213664,
+          "boundary": "研发费用及购建现金仅为投入分量；不代表完整净再投资，不能直接推出收入增长或公司边际资本效率。"
+        },
+        "accounting_scope": "rd_expensed_reported_leases_industry_capital_scope_not_reconciled",
+        "baseline_nopat_policy_proxy": 1837.164120612305,
+        "years": [
+          {
+            "year": 1,
+            "revenue_growth": -0.006089052517015289,
+            "operating_margin": 0.10789066574240082,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 22565.777051361914,
+            "ebit_million_cny": 2434.6367090660274,
+            "nopat_million_cny": 1825.9775317995204,
+            "net_reinvestment_million_cny": -60.820873611422805,
+            "fcff_million_cny": 1886.7984054109431,
+            "nopat_change_million_cny": -11.186588812784748,
+            "revenue_contribution_million_cny": -11.186588812784581,
+            "margin_tax_contribution_million_cny": -3.150816141328505e-13,
+            "reinvestment_rate": -0.03330866483963972,
+            "revenue_linked_incremental_return_proxy": null,
+            "flags": [
+              "capital_release_requires_recoverability_evidence"
+            ]
+          },
+          {
+            "year": 2,
+            "revenue_growth": -0.006089052517015289,
+            "operating_margin": 0.10789066574240082,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 22428.37284980891,
+            "ebit_million_cny": 2419.812078284671,
+            "nopat_million_cny": 1814.8590587135031,
+            "net_reinvestment_million_cny": -60.45053211787272,
+            "fcff_million_cny": 1875.3095908313758,
+            "nopat_change_million_cny": -11.118473086017275,
+            "revenue_contribution_million_cny": -11.118473086017396,
+            "margin_tax_contribution_million_cny": 3.1316306563724964e-13,
+            "reinvestment_rate": -0.03330866483964006,
+            "revenue_linked_incremental_return_proxy": null,
+            "flags": [
+              "capital_release_requires_recoverability_evidence"
+            ]
+          },
+          {
+            "year": 3,
+            "revenue_growth": -0.006089052517015289,
+            "operating_margin": 0.10789066574240082,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 22291.805309655225,
+            "ebit_million_cny": 2405.0777154586876,
+            "nopat_million_cny": 1803.8082865940157,
+            "net_reinvestment_million_cny": -60.08244565312465,
+            "fcff_million_cny": 1863.8907322471405,
+            "nopat_change_million_cny": -11.05077211948742,
+            "revenue_contribution_million_cny": -11.050772119487464,
+            "margin_tax_contribution_million_cny": 0.0,
+            "reinvestment_rate": -0.0333086648396396,
+            "revenue_linked_incremental_return_proxy": null,
+            "flags": [
+              "capital_release_requires_recoverability_evidence"
+            ]
+          },
+          {
+            "year": 4,
+            "revenue_growth": -0.006089052517015289,
+            "operating_margin": 0.10789066574240082,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 22156.069336425655,
+            "ebit_million_cny": 2390.433070941757,
+            "nopat_million_cny": 1792.8248032063175,
+            "net_reinvestment_million_cny": -59.716600486191574,
+            "fcff_million_cny": 1852.541403692509,
+            "nopat_change_million_cny": -10.983483387698243,
+            "revenue_contribution_million_cny": -10.983483387698247,
+            "margin_tax_contribution_million_cny": 0.0,
+            "reinvestment_rate": -0.03330866483963933,
+            "revenue_linked_incremental_return_proxy": null,
+            "flags": [
+              "capital_release_requires_recoverability_evidence"
+            ]
+          },
+          {
+            "year": 5,
+            "revenue_growth": -0.006089052517015289,
+            "operating_margin": 0.10789066574240082,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 22021.159866665526,
+            "ebit_million_cny": 2375.877598434382,
+            "nopat_million_cny": 1781.9081988257865,
+            "net_reinvestment_million_cny": -59.35298296969426,
+            "fcff_million_cny": 1841.2611817954808,
+            "nopat_change_million_cny": -10.916604380530998,
+            "revenue_contribution_million_cny": -10.916604380530922,
+            "margin_tax_contribution_million_cny": 0.0,
+            "reinvestment_rate": -0.03330866483963974,
+            "revenue_linked_incremental_return_proxy": null,
+            "flags": [
+              "capital_release_requires_recoverability_evidence"
+            ]
+          },
+          {
+            "year": 6,
+            "revenue_growth": -0.0008712420136122315,
+            "operating_margin": 0.10789066574240082,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 22001.974107001217,
+            "ebit_million_cny": 2373.8076340514262,
+            "nopat_million_cny": 1780.3557255385697,
+            "net_reinvestment_million_cny": -8.44071263967675,
+            "fcff_million_cny": 1788.7964381782465,
+            "nopat_change_million_cny": -1.5524732872167988,
+            "revenue_contribution_million_cny": -1.5524732872170348,
+            "margin_tax_contribution_million_cny": 0.0,
+            "reinvestment_rate": -0.004741025918920432,
+            "revenue_linked_incremental_return_proxy": null,
+            "flags": [
+              "capital_release_requires_recoverability_evidence"
+            ]
+          },
+          {
+            "year": 7,
+            "revenue_growth": 0.004346568489790826,
+            "operating_margin": 0.10789066574240082,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 22097.6071943679,
+            "ebit_million_cny": 2384.125551514419,
+            "nopat_million_cny": 1788.0941636358143,
+            "net_reinvestment_million_cny": 42.07346612440437,
+            "fcff_million_cny": 1746.02069751141,
+            "nopat_change_million_cny": 7.738438097244625,
+            "revenue_contribution_million_cny": 7.738438097244601,
+            "margin_tax_contribution_million_cny": 0.0,
+            "reinvestment_rate": 0.023529782144612814,
+            "revenue_linked_incremental_return_proxy": 0.1839268025687093,
+            "flags": []
+          },
+          {
+            "year": 8,
+            "revenue_growth": 0.009564378993193883,
+            "operating_margin": 0.10789066574240082,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 22308.95708441756,
+            "ebit_million_cny": 2406.9282318564597,
+            "nopat_million_cny": 1805.1961738923446,
+            "net_reinvestment_million_cny": 92.98269756057971,
+            "fcff_million_cny": 1712.213476331765,
+            "nopat_change_million_cny": 17.10201025653032,
+            "revenue_contribution_million_cny": 17.10201025653075,
+            "margin_tax_contribution_million_cny": -3.066659037038719e-13,
+            "reinvestment_rate": 0.05150836175333311,
+            "revenue_linked_incremental_return_proxy": 0.18392680256870927,
+            "flags": []
+          },
+          {
+            "year": 9,
+            "revenue_growth": 0.014782189496596942,
+            "operating_margin": 0.10789066574240082,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 22638.73231551087,
+            "ebit_million_cny": 2442.507901084471,
+            "nopat_million_cny": 1831.8809258133533,
+            "net_reinvestment_million_cny": 145.0835416498903,
+            "fcff_million_cny": 1686.797384163463,
+            "nopat_change_million_cny": 26.684751921008683,
+            "revenue_contribution_million_cny": 26.684751921008484,
+            "margin_tax_contribution_million_cny": 3.09598972631186e-13,
+            "reinvestment_rate": 0.07919922065102203,
+            "revenue_linked_incremental_return_proxy": 0.1839268025687093,
+            "flags": []
+          },
+          {
+            "year": 10,
+            "revenue_growth": 0.019999999999999997,
+            "operating_margin": 0.10789066574240082,
+            "tax_policy": 0.25,
+            "revenue_million_cny": 23091.50696182109,
+            "ebit_million_cny": 2491.358059106161,
+            "nopat_million_cny": 1868.518544329621,
+            "net_reinvestment_million_cny": 199.19673481291863,
+            "fcff_million_cny": 1669.3218095167022,
+            "nopat_change_million_cny": 36.637618516267594,
+            "revenue_contribution_million_cny": 36.63761851626723,
+            "margin_tax_contribution_million_cny": 3.141755233125719e-13,
+            "reinvestment_rate": 0.10660677434399539,
+            "revenue_linked_incremental_return_proxy": 0.1839268025687093,
+            "flags": []
+          }
+        ],
+        "review_actions": [
+          "justify_joint_growth_margin_and_marginal_capital_policy",
+          "reconcile_rd_lease_and_operating_capital_scope_before_company_ratio_adoption"
+        ],
+        "method_source": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/growth.htm",
+        "boundary": "利润变化是模型代数分解；增量回报代理仅在正收入增量和正投入时定义，不是实际或完整隐含ROIC。负再投资保留但须核验可回收资本；负FCFF不是错误。研发费用不直接换算增长，行业平均不自动成为公司边际效率。"
+      }
+    }
+  ],
+  "supor_main_database": {
+    "database": "workspace/auto-valuation-20260909/market.duckdb",
+    "result": {
+      "contract_version": "alphalake-company-valuation-v1",
+      "code": "002032",
+      "report_period": "2026-06-30",
+      "information_as_of": "2026-09-17T00:00:00Z",
+      "readiness_sha256": "aef0ebb9380e459e7341c7e257fb9cefceb2367b15c79699392d2b6135bd8736",
+      "universe_count": 1,
+      "universe_scope": "local_security_code_candidates:002032",
+      "selection": {
+        "policy_version": "reviewed-associate-book-20260917-v1",
+        "reason": "configured_company_exclusion_or_assignment_precedes_industry",
+        "fallback_applied": false
+      },
+      "valuation": null,
+      "candidates": [
+        {
+          "policy_version": "reviewed-associate-book-20260917-v1",
+          "policy_sha256": "546076d8dc4f001397012fc9c2a1de00695ffd897b2378b7b7a16733b4df8809",
+          "kind": "company_exclusion",
+          "configured_policy": null,
+          "status": "blocked_review_exclusion",
+          "policy_route": null,
+          "reason": "同期间金融资产分类证据未取得，不沿用2024年附注，不自动采用账面加回。",
+          "missing": [],
+          "valuation": null
+        }
+      ],
+      "boundary": "条件估值；仅评估显式提供的政策集合，非当前目标价或自动政策审核。",
+      "security": {
+        "instrument_id": 28842,
+        "name": "苏 泊 尔",
+        "symbols": [
+          "sz002032"
+        ],
+        "exchange_mic": "XSHE",
+        "financial_status": "financial_core_complete_requires_policy",
+        "missing_core_fields": []
+      },
+      "status": "blocked_review_exclusion",
+      "reason": "同期间金融资产分类证据未取得，不沿用2024年附注，不自动采用账面加回。",
+      "missing": []
+    },
+    "elapsed_seconds": 2.715585150755942,
+    "query_environment": {
+      "ALPHALAKE_DUCKDB_MEMORY_LIMIT": "1536MiB",
+      "ALPHALAKE_DUCKDB_THREADS": "1"
+    }
+  },
+  "boundaries": [
+    "fresh source sync stages tested with controlled subprocesses; no claim of live full-market refresh",
+    "Supor PDF text is discoverable but no original binary archived; no asset addback approved",
+    "capital efficiency remains policy proxy; company net reinvestment not closed"
+  ]
+}

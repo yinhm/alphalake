@@ -51,7 +51,7 @@ PYTHONPATH=valuation/backend python -m tools.review_valuation_forecast \
 已完成[两份真实标准请求验收](acceptance/terminal-sensitivity-output-20260911.json)：安克、苏泊尔原请求、解析输入和完整报告均与历史运行一致，对照分别119.8340元、38.0005元，匹配前轮单因素复算。新增输出使引擎版本/run ID更新，不是财务或估值变化；旧运行原样保留。此验收重放归档请求，没有重新查询主库。Python回归覆盖终值ROIC与WACC的高/等/低关系、零增长、幂等归档、专项不套用及统一摘要透传；依赖现有后端Python环境和自包含Go真实样本，进入现有pytest CI。 本轮Python全套375项通过、4项既有外部样本缺失跳过、7条既有警告（474.76秒）；补充非正对照分支回归通过，Go全套及构建通过。没有Go代码或依赖变更。
 
 
-`tools.company_valuation` 从实际数据库扫描证券身份、共享一次当前标准估值输入（显式现金检查另读上年同期窗口），按显式提供的政策集合计算候选结果并输出JSON。复用`run_batch`、参考版本选择及共享估值引擎；不启动HTTP服务，不读取样本PDF直算，不自动发现或批准目录中的政策。
+`tools.company_valuation` 从实际数据库按代码查询全部候选证券身份（`valuation-readiness --code`），不先计算全市场财务就绪度；共享一次当前标准估值输入（显式现金检查另读上年同期窗口），按显式提供的政策集合计算候选结果并输出JSON。复用`run_batch`、参考版本选择及共享估值引擎；不启动HTTP服务，不读取样本PDF直算，不自动发现或批准目录中的政策。
 
 ## 使用
 
@@ -82,7 +82,7 @@ Path('data/reviewed-policy.json').write_text(json.dumps(bundle, ensure_ascii=Fal
 默认选择规则：
 
 1. 本地证券身份或源记录冲突先阻断。
-2. 配置中有该代码的显式公司assignment时，优先于行业配置；不等于程序自动认定该政策更准确。
+2. 配置中有该代码的显式公司assignment或exclusion时，优先于行业配置；不等于程序自动认定该政策更准确。
 3. 同级多个公司配置，或多个命中/待核验的行业候选，返回`blocked_ambiguous_policy`；不按价格高低或文件顺序选取。
 4. 公司政策过期、缺补充输入或不适用时，保留其阻断；行业候选即使成功也不会悄悄成为默认结果。
 5. 可用`--select reviewed-companies-2026H1-v1`显式选择传入的版本。被选政策仍执行全部生产校验，不会因手动选择绕过缺项和时点规则。
@@ -179,3 +179,7 @@ WACC来源解读：`approach_used`为`direct`、`industry_average`或`decile`时
 ## 经审核的标准资产加回
 
 显式公司分配可使用`nonfinancial-reviewed-history-fcff-v1`，审核绑定及真实验收见[已审核资产链路](../valuation/research/reviewed-assets-20260917/README.md)。该政策仅增加指定的整项标准资产，未审核资产不自动计值；失效证据不会降级为默认行业政策。统一摘要通过`method_assessment.equity_bridge.reviewed_assets`保留采纳值、标准源和原文补充。
+
+## 增长与资本联合审核及自动重估
+
+统一摘要的`method_assessment.growth_capital_consistency`提供标准TTM研发/购建现金、逐年NOPAT变化分解、净再投资/FCFF及资本释放/资金来源提示。公司资本效率仍为待核验代理，不用计算通过证明输入合理。批次`--previous-report`及刷新入口的`incremental-state.json`负责先验证再复用、变化重算与失败恢复；字段、命令、两公司边界及实际验收见[自动重估说明](../valuation/research/automatic-valuation-20260917/README.md)。单公司输出的`universe_scope=local_security_code_candidates:<code>`和count只表示该代码候选，不能当全市场分母。

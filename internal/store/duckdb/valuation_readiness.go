@@ -13,6 +13,18 @@ import (
 // 这里只检查标准财务窗口，不把字段齐全等同于模型或市场数据就绪。
 // ponytail: 行业仅保留最新观察，回溯早于该观察时保守不输出；历史行业回测需独立观察日志。
 func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Time) (map[string]any, error) {
+	return exportValuationReadiness(ctx, db, end, asof, "")
+}
+
+// ExportCompanyValuationReadiness 先限定证券主数据，再复用相同就绪度检查；保留同代码的所有候选身份。
+func ExportCompanyValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Time, code string) (map[string]any, error) {
+	if !sixDigitCode.MatchString(code) {
+		return nil, errors.New("six-digit security code required")
+	}
+	return exportValuationReadiness(ctx, db, end, asof, code)
+}
+
+func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Time, code string) (map[string]any, error) {
 	if end.IsZero() || asof.IsZero() || end.After(asof) || end.AddDate(0, 0, 1).Day() != 1 || int(end.Month())%3 != 0 {
 		return nil, errors.New("quarter-end period and later information cutoff required")
 	}
@@ -35,6 +47,7 @@ func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
  AND (i.delist_date IS NULL OR i.delist_date>CAST(? AS DATE))
  AND (i.status='active' OR i.delist_date IS NOT NULL)
  GROUP BY i.instrument_id,i.name,i.exchange_mic
+ HAVING (?='' OR bool_or(substr(d.identifier_value,3)=?))
  ), latest AS (
  SELECT instrument_id,max(report_period) AS latest_report_period FROM fundamental.fact_asof(CAST(? AS TIMESTAMPTZ))
  WHERE primary_source='tdx' AND report_period<=CAST(? AS DATE) GROUP BY instrument_id
@@ -62,7 +75,7 @@ func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
  SELECT u.*,CAST(l.latest_report_period AS VARCHAR) AS latest_report_period,NULL AS fields,c.industry_memberships,q.source_conflicts
  FROM universe u LEFT JOIN latest l USING(instrument_id) LEFT JOIN industries c USING(instrument_id) LEFT JOIN conflicts q ON q.provider_code=substr(u.symbols[1],3)) r ORDER BY instrument_id`,
 		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"),
-		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof, end, asof, asof, asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof, end, end)
+		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), code, code, asof, end, asof, asof, asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof, end, end)
 	if err != nil {
 		return nil, err
 	}
@@ -203,8 +216,12 @@ func ExportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
+	scope := "local_known_mainland_CNY_equities_not_verified_exchange_census_or_historical_master_snapshot"
+	if code != "" {
+		scope = "local_security_code_candidates:" + code
+	}
 	return map[string]any{"contract_version": "alphalake-readiness-v1", "report_period": end.Format("2006-01-02"), "information_as_of": asof.UTC().Format(time.RFC3339Nano),
 		"company_industry_reference": companyReference,
-		"universe_scope":             "local_known_mainland_CNY_equities_not_verified_exchange_census_or_historical_master_snapshot",
+		"universe_scope":             scope,
 		"required_core_fields":       required, "universe_count": len(rows), "financial_status_counts": counts, "missing_core_field_counts": gaps, "companies": rows}, nil
 }

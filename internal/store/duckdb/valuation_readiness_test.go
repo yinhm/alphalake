@@ -133,3 +133,39 @@ func TestReadinessIndustryRequiresPublishedObservation(t *testing.T) {
 		}
 	}
 }
+
+func TestCompanyReadinessPreservesCodeAmbiguity(t *testing.T) {
+	ctx := t.Context()
+	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "company.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	_, err = db.ExecContext(ctx, `INSERT INTO ref.instrument(instrument_id,instrument_type,exchange_mic,currency,name) VALUES
+ (1,'equity','XSHG','CNY','候选一'),(2,'equity','XSHE','CNY','候选二'),(3,'equity','XSHE','CNY','另一公司');
+ INSERT INTO ref.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_from) VALUES
+ (1,'tdx','symbol','sh600001','2025-01-01'),(2,'tdx','symbol','sz600001','2025-01-01'),(3,'tdx','symbol','sz000001','2025-01-01');`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	end := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
+	asof := end.AddDate(0, 3, 0)
+	out, err := ExportCompanyValuationReadiness(ctx, db, end, asof, "600001")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if out["universe_count"] != 2 || out["universe_scope"] != "local_security_code_candidates:600001" {
+		t.Fatal(out)
+	}
+	counts := out["financial_status_counts"].(map[string]int)
+	if counts["blocked_no_standard_facts"] != 2 {
+		t.Fatal(counts)
+	}
+	out, err = ExportCompanyValuationReadiness(ctx, db, end, asof, "999999")
+	if err != nil || out["universe_count"] != 0 {
+		t.Fatal(out, err)
+	}
+	if _, err = ExportCompanyValuationReadiness(ctx, db, end, asof, "bad"); err == nil {
+		t.Fatal("accepted invalid code")
+	}
+}

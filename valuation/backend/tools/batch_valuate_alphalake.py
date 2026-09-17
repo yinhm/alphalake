@@ -101,7 +101,7 @@ def match_industry_rules(company, rules, cutoff):
     return matches
 
 
-def run_batch(readiness, policy, export):
+def run_batch(readiness, policy, export, *, evaluator=evaluate):
     """export 复用生产 Go 导出；每份证券快照独立事务，整批并非跨库原子快照。"""
     if readiness['contract_version'] != 'alphalake-readiness-v1':
         raise ValueError('unsupported readiness contract')
@@ -178,7 +178,7 @@ def run_batch(readiness, policy, export):
                     if identities and identities != {company['instrument_id']}:
                         raise ValueError('export differs from scanned instrument identity')
                     request = AlphaLakeRequest(data=data,**assignment.model_dump())
-                    result = evaluate(request)
+                    result = evaluator(request)
                     row.update(status=result['status'],run_id=result['run_id'],
                         value_per_share=result['report']['final']['value_per_share'],
                         operating_enterprise_value_million_cny=result['report']['dcf']['value_of_operating_assets'])
@@ -218,22 +218,32 @@ def load_policy(raw_policy, reference_database, alphalake, as_of):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('database')
+    parser.add_argument('--query-timeout',type=int,default=300,help='单次标准查询秒数；刷新入口受整个阶段超时约束')
     parser.add_argument('--period',required=True)
     parser.add_argument('--as-of',required=True)
     parser.add_argument('--policy',required=True,help='versioned assignments JSON; empty assignments allowed for census')
     parser.add_argument('--output-dir',required=True)
+    parser.add_argument('--previous-report',help='前一批次JSON，核验后复用未变化运行；失败保留最后成功记录')
     parser.add_argument('--alphalake',default=str(Path(__file__).resolve().parents[3]/'alphalake'))
     parser.add_argument('--reference-database',help='按同一信息时点自动选择此库四类WACC参考版本')
     args=parser.parse_args()
+    if args.query_timeout < 1:
+        parser.error('positive query timeout required')
     try:
         policy=load_policy(json.loads(Path(args.policy).read_text()),args.reference_database,args.alphalake,args.as_of)
     except ValueError as error:
         parser.error(str(error))
     def command(name,*extra):
         return json.loads(subprocess.check_output([args.alphalake,name,args.database,*extra,
-            '--period',args.period,'--as-of',args.as_of],text=True,stderr=subprocess.PIPE,timeout=300))
+            '--period',args.period,'--as-of',args.as_of],text=True,stderr=subprocess.PIPE,timeout=args.query_timeout))
     readiness=command('valuation-readiness')
-    result=run_batch(readiness,policy,lambda code:command('export-valuation',code))
+    from tools.incremental_valuation import run_incremental_batch
+    previous=json.loads(Path(args.previous_report).read_text()) if args.previous_report else None
+    if previous and previous.get('source_database') != str(Path(args.database).resolve()):
+        raise ValueError('previous report belongs to a different database')
+    runs=os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(Path(__file__).resolve().parents[1]/'data/alphalake_runs'))
+    result=run_incremental_batch(readiness,policy,lambda code:command('export-valuation',code),previous,runs)
+    result['source_database']=str(Path(args.database).resolve())
     # 每次尝试独立留档（包括失败）；成功单公司结果仍用既有内容寻址存储。
     root=Path(args.output_dir);root.mkdir(parents=True,exist_ok=True)
     with tempfile.NamedTemporaryFile(mode='w',encoding='utf-8',prefix='batch-',suffix='.tmp',dir=root,delete=False) as f:
@@ -247,6 +257,6 @@ def main():
 if __name__=='__main__':
     try:
         main()
-    except (OSError, subprocess.SubprocessError) as error:
+    except (OSError, subprocess.SubprocessError, ValueError, KeyError) as error:
         print(execution_error_reason(error), file=sys.stderr)
         raise SystemExit(1)

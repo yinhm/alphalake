@@ -84,7 +84,7 @@ def company_valuation(readiness, code, policies, export, run_directory, select=N
         assignment=policy.assignments.get(code)
         configured=assignment.policy if assignment else next((r.policy for r in policy.industry_rules if r.rule_id==route.get('rule_id')),None)
         candidate=dict(policy_version=policy.policy_version,policy_sha256=content_hash(policy.model_dump(mode='json')),
-                       kind='company_assignment' if code in policy.assignments else 'industry_rules',
+                       kind='company_exclusion' if code in policy.exclusions else 'company_assignment' if code in policy.assignments else 'industry_rules',
                        configured_policy=configured.model_dump(mode='json') if configured else None,
                        status=row['status'],policy_route=row.get('policy_route'),
                        reason=row.get('reason'),missing=row.get('missing',[]),valuation=None)
@@ -96,8 +96,8 @@ def company_valuation(readiness, code, policies, export, run_directory, select=N
         preferred=[c for c in candidates if c['policy_version']==select]
         reason='explicit_policy_version'
     else:
-        preferred=[c for c in candidates if c['kind']=='company_assignment']
-        reason='configured_company_assignment_precedes_industry'
+        preferred=[c for c in candidates if c['kind'] in ('company_assignment','company_exclusion')]
+        reason='configured_company_exclusion_or_assignment_precedes_industry' if any(c['kind']=='company_exclusion' for c in preferred) else 'configured_company_assignment_precedes_industry'
         if not preferred:
             # 未命中行业的配置不与真正命中的候选争夺默认结果。
             preferred=[c for c in candidates if c['status'] not in ('blocked_no_reviewed_industry_policy','blocked_policy_not_assigned')]
@@ -136,7 +136,7 @@ def main():
         def command(name,*extra,period=None):
             return json.loads(subprocess.check_output([args.alphalake,name,args.database,*extra,
                 '--period',period or args.period,'--as-of',args.as_of],text=True,stderr=subprocess.PIPE,timeout=300))
-        readiness=command('valuation-readiness')
+        readiness=command('valuation-readiness','--code',args.code)
         runs=os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(Path(__file__).resolve().parents[1]/'data/alphalake_runs'))
         result=company_valuation(readiness,args.code,policies,lambda code:command('export-valuation',code),runs,args.select)
         if args.cash_check:

@@ -1106,6 +1106,12 @@ def test_company_entry_selection_summary_and_no_fallback(exports,tmp_path,monkey
         policy=json.loads((REPO/'valuation/examples/anker-2026H1-revised.json').read_text()))})
     calls=[]
     def export(code):calls.append(code);return exports[code]
+    excluded=BatchPolicy(policy_version='review-pending',review_note='缺证不降级',assignments={},exclusions={'300866':'同期间证据未审核'})
+    blocked=company_valuation(scan,'300866',[generic,excluded],export,tmp_path)
+    assert blocked['status']=='blocked_review_exclusion'
+    assert blocked['candidates'][1]['kind']=='company_exclusion'
+    assert company_valuation(scan,'300866',[specific,excluded],export,tmp_path)['status']=='blocked_ambiguous_policy'
+    calls.clear()
     result=company_valuation(scan,'300866',[generic,specific],export,tmp_path)
     assert calls==['300866']  # 两个候选共享同一标准导出。
     assert result['selection']==dict(policy_version='anker-v2',reason='configured_company_assignment_precedes_industry',fallback_applied=False)
