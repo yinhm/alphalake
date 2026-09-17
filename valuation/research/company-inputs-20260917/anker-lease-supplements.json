@@ -1,0 +1,44 @@
+[
+  {
+    "code": "300866",
+    "period": "2025-06-30",
+    "item": "reviewed_rou_additions",
+    "value": "135396200.07",
+    "unit": "CNY",
+    "period_basis": "ytd",
+    "scope": "consolidated_note_component",
+    "announcement_id": "1224614835",
+    "pdf_sha256": "e1aff2dcb92aea9bcc8b3b69b66051b2e27c68026dbbff77d56ef27373dee674",
+    "pdf_page": 124,
+    "reviewer": "alphalake-company-capital-review-20260917",
+    "review_note": "使用权资产原值本期增加金额；非租金现金支付或租赁负债增加额。与同期标准购建现金、经核验的折旧组成衔接，只作已识别长期投入分量，不能作为完整净再投资。"
+  },
+  {
+    "code": "300866",
+    "period": "2025-12-31",
+    "item": "reviewed_rou_additions",
+    "value": "316865131.43",
+    "unit": "CNY",
+    "period_basis": "ytd",
+    "scope": "consolidated_note_component",
+    "announcement_id": "1225090973",
+    "pdf_sha256": "8dadc4bfd7282738697a5ee82d9b25faa657e053e3f480e71dd6ae9987703202",
+    "pdf_page": 161,
+    "reviewer": "alphalake-company-capital-review-20260917",
+    "review_note": "使用权资产原值本期增加金额；非租金现金支付或租赁负债增加额。与同期标准购建现金、经核验的折旧组成衔接，只作已识别长期投入分量，不能作为完整净再投资。"
+  },
+  {
+    "code": "300866",
+    "period": "2026-06-30",
+    "item": "reviewed_rou_additions",
+    "value": "134755397.43",
+    "unit": "CNY",
+    "period_basis": "ytd",
+    "scope": "consolidated_note_component",
+    "announcement_id": "1225533054",
+    "pdf_sha256": "ff81b9e7c2e8eb04bd450fce3c084b28f5b4be4c1e2638250160b7bb813ebac1",
+    "pdf_page": 112,
+    "reviewer": "alphalake-company-capital-review-20260917",
+    "review_note": "使用权资产原值本期增加金额；非租金现金支付或租赁负债增加额。与同期标准购建现金、经核验的折旧组成衔接，只作已识别长期投入分量，不能作为完整净再投资。"
+  }
+]

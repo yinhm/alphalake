@@ -93,10 +93,11 @@ def review():
             boundary='same tax and same cash flows; increase both NOPAT and reinvestment, not an added cash outflow or growth forecast'),
         classified_wc_gaps=[dict(period=r['period'], reason=('2024 mixed classifications remain; opening loan allowance now verified' if r['period']=='FY-2025' else r['formula'])) for r in missing],
         opening_2024_evidence=verify_opening_2024(),
+        identified_capital=verify_identified_capital(),
         company_marginal_sales_to_capital=None,
         decision='retain_explicit_industry_proxy_no_company_ratio_adoption',
         reasons=['full_operating_working_capital_not_classified',
-                 'lease_additions_disposals_and_noncash_investment_not_reconciled',
+                 'lease_additions_and_da_verified_but_full_non_cash_investment_bridge_not_complete',
                  'rd_reclassification_not_proof_of_incremental_sales_productivity',
                  'historical_source_research_not_complete_standard_company_capital_history'],
         stopping_rule='do_not_fit_ratio_to_incomplete_subtotals_or_scan_growth_thresholds; reopen when classified capital bridge is supplied',
@@ -162,6 +163,48 @@ def verify_opening_2024():
         remaining_unclassified_other_payables_cny=str(values['opening_other_payables_unclassified']),
         status='supplement_imported_and_replayed_in_main_copy', standard_parent_FN13='schema40_standard_available_from_2024_12_31_in_isolated_real_chain',
         full_operating_capital=None, historical_fcff=None)
+
+
+
+
+def verify_identified_capital():
+    import gzip
+    import re
+    from pypdf import PdfReader
+    from data_sources.alphalake import Snapshot, standard_window_reader
+    directory = ROOT/'valuation/research/company-inputs-20260917'
+    raw = gzip.decompress((directory/'anker-capital-standard.json.gz').read_bytes())
+    data = json.loads(raw)
+    assert data['code'] == '300866' and data['report_period'] == '2026-06-30'
+    window, _ = standard_window_reader(Snapshot.model_validate(data))
+    notes = json.loads((directory/'anker-lease-supplements.json').read_bytes())
+    reports = ROOT/'internal/ingest/testdata/anker-valuation-2026'
+    amounts = {}
+    for note in notes:
+        pdf = reports/(note['announcement_id']+'.pdf')
+        assert hashlib.sha256(pdf.read_bytes()).hexdigest() == note['pdf_sha256']
+        page = re.sub(r'\s+', '', PdfReader(pdf).pages[note['pdf_page']-1].extract_text())
+        assert '使用权资产' in page
+        assert '2.本期增加金额'+format(Decimal(note['value']), ',.2f') in page
+        matches = [r for r in data['supplements'] if r['period']==note['period'] and r['item']==note['item']]
+        current, = matches
+        for key in ('code','period','unit','period_basis','scope','announcement_id','pdf_sha256','pdf_page','reviewer','review_note'):
+            assert current[key] == note[key]
+        assert Decimal(current['value']) == Decimal(note['value'])
+        facts = [r for r in data['facts'] if r['period']==note['period']]
+        assert facts and all(r['announcement_id']==note['announcement_id'] and r['pdf_sha256']==note['pdf_sha256'] for r in facts)
+        amounts[note['period']] = Decimal(current['value'])
+    additions = amounts['2025-12-31']+amounts['2026-06-30']-amounts['2025-06-30']
+    depreciation = sum(Decimal(str(window(f))) for f in ('FN136','FN137','FN138','FN579','FN581'))
+    capex = Decimal(str(window('FN114')))
+    identified = capex+additions/1000000-depreciation
+    return dict(period='TTM-2026-06-30', scope='real_isolated_standard_chain_not_main_publication',
+        cash_capex_million_cny=str(capex), rou_additions_million_cny=str(additions/1000000),
+        da_including_rou_million_cny=str(depreciation), identified_long_lived_investment_million_cny=str(identified),
+        formula='standard_FN114 + reviewed_ROU_additions - standard_FN136_FN137_FN138_FN579_FN581',
+        boundary='Anker reviewed component scope only; lease financing cash payments not deducted again; disposal cash, acquisitions, WC and RD reclassification not completed',
+        full_net_reinvestment=None, historical_fcff=None, company_capital_ratio=None,
+        snapshot_sha256=hashlib.sha256(raw).hexdigest())
 
 
 if __name__ == '__main__':

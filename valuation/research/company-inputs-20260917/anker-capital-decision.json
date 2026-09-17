@@ -39,11 +39,25 @@
     "full_operating_capital": null,
     "historical_fcff": null
   },
+  "identified_capital": {
+    "period": "TTM-2026-06-30",
+    "scope": "real_isolated_standard_chain_not_main_publication",
+    "cash_capex_million_cny": "319.63428",
+    "rou_additions_million_cny": "316.2243287900",
+    "da_including_rou_million_cny": "258.9350467976074219",
+    "identified_long_lived_investment_million_cny": "376.9235619923925781",
+    "formula": "standard_FN114 + reviewed_ROU_additions - standard_FN136_FN137_FN138_FN579_FN581",
+    "boundary": "Anker reviewed component scope only; lease financing cash payments not deducted again; disposal cash, acquisitions, WC and RD reclassification not completed",
+    "full_net_reinvestment": null,
+    "historical_fcff": null,
+    "company_capital_ratio": null,
+    "snapshot_sha256": "86764ede9bbc0026fe458264afe3d4afcb80e398de4efde79ef6145413a80a2e"
+  },
   "company_marginal_sales_to_capital": null,
   "decision": "retain_explicit_industry_proxy_no_company_ratio_adoption",
   "reasons": [
     "full_operating_working_capital_not_classified",
-    "lease_additions_disposals_and_noncash_investment_not_reconciled",
+    "lease_additions_and_da_verified_but_full_non_cash_investment_bridge_not_complete",
     "rd_reclassification_not_proof_of_incremental_sales_productivity",
     "historical_source_research_not_complete_standard_company_capital_history"
   ],

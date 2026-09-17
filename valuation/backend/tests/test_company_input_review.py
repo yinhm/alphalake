@@ -92,3 +92,22 @@ def test_anker_opening_allowance_tamper_rejected(tmp_path, monkeypatch):
     monkeypatch.setattr(module, 'ROOT', tmp_path)
     with pytest.raises(AssertionError):
         module.verify_opening_2024()
+
+
+def test_anker_lease_additions_tamper_rejected(tmp_path, monkeypatch):
+    import shutil
+    from tools import review_anker_capital_evidence as module
+    directory = Path('valuation/research/company-inputs-20260917')
+    (tmp_path/directory).mkdir(parents=True)
+    for name in ('anker-capital-standard.json.gz', 'anker-lease-supplements.json'):
+        shutil.copyfile(module.ROOT/directory/name, tmp_path/directory/name)
+    reports = Path('internal/ingest/testdata/anker-valuation-2026')
+    (tmp_path/reports).parent.mkdir(parents=True)
+    (tmp_path/reports).symlink_to(module.ROOT/reports, target_is_directory=True)
+    path = tmp_path/directory/'anker-lease-supplements.json'
+    notes = json.loads(path.read_bytes())
+    notes[0]['value'] = '135396200.08'
+    path.write_text(json.dumps(notes))
+    monkeypatch.setattr(module, 'ROOT', tmp_path)
+    with pytest.raises(AssertionError):
+        module.verify_identified_capital()
