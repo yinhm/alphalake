@@ -41,7 +41,7 @@ import gzip,hashlib,json,math
 from collections import Counter
 from decimal import Decimal as D
 from pathlib import Path
-from tools.tdx_research_source import source_value as value
+from tools.tdx_research_source import financial_value as value, source_field
 root=Path('valuation/research');specs=[('tdx-zero-growth-validation','holdout-result.json','snapshot.json'),('tdx-zero-growth-horizons','holdout-result.json.gz','holdout-snapshot.json')]
 data=[];hashes={}
 for folder,result,snapshot in specs:
@@ -68,9 +68,9 @@ for folder,result,source in data:
  for r in rows:
   if r['status']!='evaluated':continue
   for side in ('base','actual'):
-   total=D(0);refs=[ref for ref in r[side]['source_inputs'] if ref['field']=='FN230'];assert len(refs)==4
+   total=D(0);refs=[ref for ref in r[side]['source_inputs'] if ref['field']==source_field('revenue')];assert len(refs)==4
    for ref in refs:
-    sr=idx[r['code'],ref['period']];assert sr['artifact']==ref['artifact'];used.add(ref['artifact']);total+=value(sr,'FN230')*ref['coefficient']
+    sr=idx[r['code'],ref['period']];assert sr['artifact']==ref['artifact'];used.add(ref['artifact']);total+=value(sr,'revenue')*ref['coefficient']
    assert math.isclose(float(total/1000000),r[side]['revenue'],rel_tol=1e-12,abs_tol=1e-9);checked+=1
   assert r['forecasts']['zero_growth']['revenue']==r['base']['revenue']
   assert abs(r['forecasts']['zero_growth']['ebit']-r['base']['ebit'])<=4*math.ulp(r['base']['ebit'])

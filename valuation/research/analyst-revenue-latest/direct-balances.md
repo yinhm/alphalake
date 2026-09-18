@@ -54,13 +54,13 @@ from pathlib import Path
 import gzip,hashlib,io,json,re
 from pypdf import PdfReader
 from tools.backtest_tdx_history import at, available
-from tools.tdx_research_source import source_value as value
+from tools.tdx_research_source import financial_value as value, canonical_field, source_field, canonical_components
 p=Path('valuation/research/analyst-revenue-latest');plan=json.loads((p/'direct-balances-plan.json').read_bytes());inputs={}
 for file,sha in plan['inputs'].items():
  raw=Path(file).read_bytes();assert hashlib.sha256(raw).hexdigest()==sha;inputs[Path(file).name]=json.loads(gzip.decompress(raw) if file.endswith('.gz') else raw)
 sources=inputs['sources.json'];source=inputs['capital-snapshot.json'];baseline=inputs['capital-transmission-result.json.gz'];artifacts={a['file']:a for a in source['artifacts']}
 specs=[(2,['应收款项','存货','应付款项']),(6,['应收票据及应收账款','存货','应付票据及应付账款']),(3,['应收款项','存货净额','应付款项']),(3,['应收账款','存货','应付账款']),(3,['应收账款','存货','应付账款']),(2,['应收款项','存货','应付款项'])]
-fields=tuple(plan['fields']);exact={'FN11':('应收账款',),'FN17':('存货','存货净额'),'FN44':('应付账款',)}
+fields=tuple(canonical_field(f) for f in plan['fields']);exact={'accounts_receivable':('应收账款',),'inventories':('存货','存货净额'),'accounts_payable':('应付账款',)}
 def parse(header,line,label,unit):
  assert '百万元' in re.sub(r'\s+','',unit)
  cols=re.findall(r'(20\d{2})([AE]?)',header);assert len(cols)%2==0 and cols[:len(cols)//2]==cols[len(cols)//2:];cols=cols[:len(cols)//2]
@@ -77,7 +77,7 @@ def inspect(e):
   r=records[0];a=artifacts[r['artifact']]
   if a['report_period']!=r['period'] or available(r,a)>at(e['cutoff']):checks.append(dict(year=y,status='anchor_not_available'));continue
   amount=value(r,e['field']);printed=D(n);match=(amount/1000000).quantize(D(1).scaleb(printed.as_tuple().exponent))==printed
-  checks.append(dict(year=y,status='matched' if match else 'historical_value_conflict',printed_million_cny=n,tdx_cny=str(amount),artifact=r['artifact'],bits=r['bits'][e['field']]))
+  checks.append(dict(year=y,status='matched' if match else 'historical_value_conflict',printed_million_cny=n,tdx_cny=str(amount),artifact=r['artifact'],bits=r['bits'][source_field(e['field'])]))
  return ('eligible' if checks and all(c['status']=='matched' for c in checks) else 'blocked_historical_anchor'),checks
 evidence=[]
 for s,(page,labels) in zip(sources,specs):
@@ -100,7 +100,7 @@ for e in evidence:
   if e['status']!='eligible':continue
   row['status']=b['status']
   if b['status']!='evaluated':continue
-  predictions={m:D(v[f]) for m,v in b['predictions_cny'].items()};predictions['direct_broker']=D(n)*1000000;actual=D(b['actual_balances_cny'][f])
+  predictions={m:D(canonical_components(v)[f]) for m,v in b['predictions_cny'].items()};predictions['direct_broker']=D(n)*1000000;actual=D(canonical_components(b['actual_balances_cny'])[f])
   row.update(actual_cny=str(actual),actual_revenue_cny=b['actual_revenue_cny'],predictions_cny={m:str(v) for m,v in predictions.items()},errors_cny={m:str(v-actual) for m,v in predictions.items()})
 assert len(rows)==plan['expected_positions']
 models=tuple(baseline['summary']['metrics'])[:-1]+('direct_broker',)
@@ -113,8 +113,13 @@ full=[r for r in rows if (r['code'],r['origin'],r['target_year']) in full_keys]
 clean=next(e for e in evidence if e['status']=='eligible');bad=deepcopy(clean);y,k,n=bad['values'][0];bad['values'][0]=(y,k,str(D(n)+1));assert inspect(bad)[0]=='blocked_historical_anchor'
 bad=deepcopy(clean);bad['label']='应收款项';assert inspect(bad)[0]=='blocked_scope'
 result=dict(plan_sha256=hashlib.sha256((p/'direct-balances-plan.json').read_bytes()).hexdigest(),coverage=dict(Counter(r['status'] for r in rows)),by_field={f:summarize([r for r in rows if r['field']==f]) for f in fields},by_company={c:{f:summarize([r for r in rows if r['code']==c and r['field']==f]) for f in fields} for c in plan['codes']},by_origin={str(o):{f:summarize([r for r in rows if r['origin']==o and r['field']==f]) for f in fields} for o in plan['origins']},complete_three_component_positions=len(full_keys),complete_three_component_gross_mae_pct_revenue={m:float(sum((abs(D(r['errors_cny'][m]))/D(r['actual_revenue_cny'])*100 for r in full),D(0))/len(full_keys)) if full_keys else None for m in models},results=rows,validation=['all_frozen_input_and_PDF_hashes','54_positions_retained','wrong_unit_rejected','historical_anchor_tamper_removes_eligibility','ambiguous_label_never_promoted_by_matching_numbers'],decision=plan['decision'],boundary=plan['boundary'])
+# 仅序列化旧源证据时恢复源键和field标签；财务计算使用通用名称。
+def source_archive(v):
+ if isinstance(v,dict):return {(source_field(k) if k in fields else k):(source_field(x) if k=='field' and x in fields else source_archive(x)) for k,x in v.items()}
+ if isinstance(v,list):return [source_archive(x) for x in v]
+ return v
 for name,data in [('direct-balances-sources.json',evidence),('direct-balances-result.json',result)]:
- text=json.dumps(data,ensure_ascii=False,indent=2)+'\n';path=p/name
+ text=json.dumps(source_archive(data),ensure_ascii=False,indent=2)+'\n';path=p/name
  if path.exists():assert path.read_text()==text
  else:path.write_text(text)
 print(result['coverage']);print('complete',result['complete_three_component_positions'],result['complete_three_component_gross_mae_pct_revenue'])

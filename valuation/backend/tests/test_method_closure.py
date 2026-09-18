@@ -220,3 +220,18 @@ def test_application_layers_do_not_depend_on_fn_identifiers():
               'incremental_valuation.py', 'review_company_inputs.py', 'review_valuation_forecast.py')]
     for path in paths:
         assert not re.search(r'\bFN[0-9]+\b', path.read_text()), path
+
+
+def test_research_models_use_canonical_field_keys():
+    import ast
+    import re
+    tools = Path(__file__).resolve().parents[1]/'tools'
+    paths = list(tools.glob('backtest_*.py')) + [tools/name for name in (
+        'audit_tdx_reinvestment.py', 'audit_tdx_reinvestment_inputs.py',
+        'audit_tdx_cash_scope.py', 'diagnose_debt_materiality.py')]
+    for path in paths:
+        tree = ast.parse(path.read_text())
+        # 边界说明可提及源编号；计算用的字段键不能再是FN编号。
+        forbidden = [n.value for n in ast.walk(tree) if isinstance(n, ast.Constant)
+                     and isinstance(n.value, str) and re.fullmatch(r'FN[0-9]+', n.value)]
+        assert not forbidden, (path, forbidden)

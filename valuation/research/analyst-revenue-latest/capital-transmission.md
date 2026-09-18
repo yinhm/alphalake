@@ -52,23 +52,23 @@ from decimal import Decimal as D
 import gzip,hashlib,json
 from pathlib import Path
 from tools.backtest_tdx_history import at, available
-from tools.tdx_research_source import source_value as value
+from tools.tdx_research_source import financial_value as value, canonical_field, source_field
 from tools.backtest_tdx_working_cash import revenue_window
 p=Path('valuation/research/analyst-revenue-latest');plan=json.loads((p/'capital-transmission-plan.json').read_bytes())
 loaded={}
 for path,sha in plan['inputs'].items():
  raw=Path(path).read_bytes();assert hashlib.sha256(raw).hexdigest()==sha;loaded[Path(path).name]=json.loads(raw)
-source=loaded['capital-snapshot.json'];baseline=loaded['comparison.json'];fields=tuple(plan['fields']);models=('broker','current_rule_fy_bridge','zero_growth_fy_bridge','repeat_balance')
+source=loaded['capital-snapshot.json'];baseline=loaded['comparison.json'];fields=tuple(canonical_field(f) for f in plan['fields']);models=('broker','current_rule_fy_bridge','zero_growth_fy_bridge','repeat_balance')
 assert len(baseline['results'])==18 and {(r['code'],r['origin_year'],r['target_year']-r['origin_year']) for r in baseline['results']}=={(c,o,h) for c in plan['codes'] for o in plan['origins'] for h in plan['horizons']}
 def evaluate(s):
  index=defaultdict(list);artifacts={a['file']:a for a in s['artifacts']};assert len(artifacts)==len(s['artifacts'])
  for r in s['records']:index[r['code'],r['period']].append(r)
  def observation(code,year,cutoff):
   end=date(year,12,31);revenue,refs,quarters=revenue_window(index,artifacts,code,end,cutoff)
-  if any(value(r,'FN230')<=0 for r in quarters.values()):raise ValueError('nonpositive/ambiguous revenue quarter')
+  if any(value(r,'revenue')<=0 for r in quarters.values()):raise ValueError('nonpositive/ambiguous revenue quarter')
   r=quarters[end.isoformat()];balances={f:value(r,f) for f in fields}
   if any(v<=0 for v in balances.values()):raise ValueError('nonpositive/ambiguous balance')
-  return balances,revenue,dict(period=end.isoformat(),artifact=r['artifact'],balance_bits={f:r['bits'][f] for f in fields},revenue_inputs=refs)
+  return balances,revenue,dict(period=end.isoformat(),artifact=r['artifact'],balance_bits={source_field(f):r['bits'][source_field(f)] for f in fields},revenue_inputs=refs)
  rows=[]
  for b in baseline['results']:
   c=b['code'];o=b['origin_year'];y=b['target_year'];row=dict(code=c,origin=o,target_year=y,horizon=y-o,status='blocked_input',actual_fcff=None);rows.append(row)
@@ -80,7 +80,7 @@ def evaluate(s):
    row['status']='blocked_actual';actual,actual_r,actual_refs=observation(c,y,plan['evaluation_as_of'])
    errors={m:{f:vals[f]-actual[f] for f in fields} for m,vals in predictions.items()}
    oracle={f:amounts[f]*actual_r/rev-actual[f] for f in fields}
-   row.update(status='evaluated',actual_source=actual_refs,actual_balances_cny={f:str(v) for f,v in actual.items()},actual_revenue_cny=str(actual_r),errors_cny={m:{f:str(v) for f,v in vals.items()} for m,vals in errors.items()},signed_net_error_cny={m:str(vals['FN11']+vals['FN17']-vals['FN44']) for m,vals in errors.items()},hindsight_intensity_error_cny={f:str(v) for f,v in oracle.items()})
+   row.update(status='evaluated',actual_source=actual_refs,actual_balances_cny={f:str(v) for f,v in actual.items()},actual_revenue_cny=str(actual_r),errors_cny={m:{f:str(v) for f,v in vals.items()} for m,vals in errors.items()},signed_net_error_cny={m:str(vals['accounts_receivable']+vals['inventories']-vals['accounts_payable']) for m,vals in errors.items()},hindsight_intensity_error_cny={f:str(v) for f,v in oracle.items()})
    for m in models[:3]:
     for f in fields:
      attribution=amounts[f]*(D(b['predictions_cny'][m])-actual_r)/rev+oracle[f]
@@ -107,7 +107,12 @@ late=deepcopy(source);import struct
 next(r for r in late['records'] if r['code']=='300866' and r['period']=='2022-12-31')['bits']['FN314']=struct.unpack('<I',struct.pack('<f',230901))[0]
 blocked=evaluate(late);assert sum(r['status']=='blocked_input' for r in blocked)==3
 result=dict(plan_sha256=hashlib.sha256((p/'capital-transmission-plan.json').read_bytes()).hexdigest(),summary=summarize(rows),by_company={c:summarize([r for r in rows if r['code']==c]) for c in plan['codes']},by_origin={str(o):summarize([r for r in rows if r['origin']==o]) for o in plan['origins']},by_horizon={str(h):summarize([r for r in rows if r['horizon']==h]) for h in plan['horizons']},results=rows,validation=['source_hashes_and_exact_18_positions','first_case_independent_cross_multiplication','signed_error_attribution_identity','future_inventory_bit_changes_three_actual_errors_only','missing_future_quarter_retains_18_predictions','late_base_FN314_blocks_three_inputs'],decision=plan['decision'],boundary=plan['boundary'])
-encoded=(json.dumps(result,ensure_ascii=False,indent=2)+'\n').encode();path=p/'capital-transmission-result.json.gz'
+# 仅在核对旧归档时恢复源键；上面的预测、误差和汇总均用通用字段。
+def source_archive(v):
+ if isinstance(v,dict):return {(source_field(k) if k in fields else k):source_archive(x) for k,x in v.items()}
+ if isinstance(v,list):return [source_archive(x) for x in v]
+ return v
+encoded=(json.dumps(source_archive(result),ensure_ascii=False,indent=2)+'\n').encode();path=p/'capital-transmission-result.json.gz'
 if path.exists():assert gzip.decompress(path.read_bytes())==encoded
 else:path.write_bytes(gzip.compress(encoded,mtime=0))
 print(json.dumps(result['summary'],ensure_ascii=False,indent=2))

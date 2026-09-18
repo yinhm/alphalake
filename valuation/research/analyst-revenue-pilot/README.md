@@ -130,7 +130,7 @@ from datetime import date
 from decimal import Decimal as D
 from pathlib import Path
 from tools.backtest_tdx_history import available, at
-from tools.tdx_research_source import source_value as value
+from tools.tdx_research_source import financial_value as value, source_field
 p=Path('valuation/research/analyst-revenue-pilot');plan=json.loads((p/'protocol.json').read_bytes())
 source_path=Path('valuation/research/continuing-operations-five/capital-snapshot.json');baseline_path=Path('valuation/research/continuing-operations-five/baseline.json')
 source=json.loads(source_path.read_bytes());base=json.loads(baseline_path.read_bytes());forecasts=list(csv.DictReader((p/'forecasts.csv').open()))
@@ -144,7 +144,7 @@ def evaluate(s):
    if len(rows)!=1:raise ValueError('missing_or_duplicate_quarter')
    r=rows[0];a=artifacts[r['artifact']]
    if a['report_period']!=period or available(r,a)>at(cutoff):raise ValueError('quarter_period_or_cutoff')
-   amount=value(r,'FN230')
+   amount=value(r,'revenue')
    if amount<=0:raise ValueError('nonpositive_or_ambiguous_quarter_revenue')
    total+=amount;refs.append(dict(period=period,artifact=r['artifact'],field='FN230',bits=r['bits']['FN230']))
   return total,refs

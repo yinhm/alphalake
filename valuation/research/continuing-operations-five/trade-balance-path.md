@@ -61,14 +61,14 @@ from datetime import date
 from decimal import Decimal as D
 from pathlib import Path
 from tools.backtest_tdx_history import at, available
-from tools.tdx_research_source import source_value as value
+from tools.tdx_research_source import financial_value as value, canonical_field, source_field
 from tools.backtest_tdx_working_cash import revenue_window
 p=Path('valuation/research/continuing-operations-five')
 plan=json.loads((p/'trade-balance-plan.json').read_bytes())
 for name,digest in plan['inputs'].items():assert hashlib.sha256((p/name).read_bytes()).hexdigest()==digest
 source=json.loads((p/'capital-snapshot.json').read_bytes());base=json.loads((p/'baseline.json').read_bytes())
 multi=json.loads(gzip.decompress((p/'multiyear-result.json.gz').read_bytes()))
-fields=tuple(plan['fields']);models=('proportional_revenue','repeat_balance','actual_revenue_counterfactual')
+fields=tuple(canonical_field(f) for f in plan['fields']);models=('proportional_revenue','repeat_balance','actual_revenue_counterfactual')
 origins={(o['origin'],r['code']):r for o in base['origins'] for r in o['results']}
 def analyze(s):
  artifacts={a['file']:a for a in s['artifacts']};assert len(artifacts)==len(s['artifacts'])
@@ -81,7 +81,7 @@ def analyze(s):
   if a['report_period']!=period or available(r,a)>at(cutoff):raise ValueError('balance_period_or_cutoff')
   v={f:value(r,f) for f in fields}
   if any(x<=0 for x in v.values()):raise ValueError('nonpositive_or_ambiguous_balance')
-  return v,dict(artifact=r['artifact'],period=period,bits={f:r['bits'][f] for f in fields})
+  return v,dict(artifact=r['artifact'],period=period,bits={source_field(f):r['bits'][source_field(f)] for f in fields})
  rows=[]
  for code in plan['codes']:
   for origin in plan['origins']:
@@ -117,7 +117,7 @@ def summarize(rows):
   for f in fields:
    denom=sum((D(r['actual_balances_cny'][f]) for r in valid),D(0))
    out[m]['components'][f]=dict(wape_pct=float(100*sum((abs(D(r['errors_cny'][m][f])) for r in valid),D(0))/denom) if denom else None)
-  out[m]['mean_signed_three_balance_net_error_pct_revenue']=float(sum(((D(r['errors_cny'][m]['FN11'])+D(r['errors_cny'][m]['FN17'])-D(r['errors_cny'][m]['FN44']))/D(r['actual_revenue_cny'])*100 for r in valid),D(0))/len(valid)) if valid else None
+  out[m]['mean_signed_three_balance_net_error_pct_revenue']=float(sum(((D(r['errors_cny'][m]['accounts_receivable'])+D(r['errors_cny'][m]['inventories'])-D(r['errors_cny'][m]['accounts_payable']))/D(r['actual_revenue_cny'])*100 for r in valid),D(0))/len(valid)) if valid else None
  return dict(positions=len(rows),statuses=dict(Counter(r['status'] for r in rows)),models=out)
 rows=analyze(source);assert len(rows)==45
 changed=deepcopy(source);next(r for r in changed['records'] if (r['code'],r['period'])==('300866','2026-06-30'))['bits']['FN17']^=1
@@ -132,7 +132,12 @@ duplicate_rows=analyze(duplicated)
 assert sum(r['status']=='blocked_actual' for r in duplicate_rows)==3
 assert [r.get('predictions') for r in rows]==[r.get('predictions') for r in duplicate_rows]
 result=dict(plan_sha256=hashlib.sha256((p/'trade-balance-plan.json').read_bytes()).hexdigest(),boundary=plan['boundary'],summary=summarize(rows),by_origin={o:summarize([r for r in rows if r['origin']==o]) for o in plan['origins']},by_horizon={str(h):summarize([r for r in rows if r['horizon']==h]) for h in plan['horizons']},by_company={c:summarize([r for r in rows if r['code']==c]) for c in plan['codes']},results=rows,validation=['all_frozen_revenue_paths_match','future_balance_bit_tamper_preserves_all_forecasts_changes_errors','missing_future_balance_retains_forecasts_and_all_positions','decimal_signed_error_attribution_closes','duplicate_future_identity_blocks_actual_retains_forecasts'],decision='diagnostic_only_no_production_adoption')
-encoded=(json.dumps(result,ensure_ascii=False,indent=2)+'\n').encode();target=p/'trade-balance-result.json.gz'
+# 仅在核对旧归档时恢复源键；上面的预测、误差和汇总均用通用字段。
+def source_archive(v):
+ if isinstance(v,dict):return {(source_field(k) if k in fields else k):source_archive(x) for k,x in v.items()}
+ if isinstance(v,list):return [source_archive(x) for x in v]
+ return v
+encoded=(json.dumps(source_archive(result),ensure_ascii=False,indent=2)+'\n').encode();target=p/'trade-balance-result.json.gz'
 if target.exists():assert gzip.decompress(target.read_bytes())==encoded
 else:target.write_bytes(gzip.compress(encoded,mtime=0))
 print(json.dumps(result['summary'],ensure_ascii=False,indent=2))
