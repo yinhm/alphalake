@@ -1,0 +1,32 @@
+[
+  {
+    "code": "300866",
+    "period": "2025-06-30",
+    "item": "reviewed_asset_disposal_cash_zero",
+    "value": "0.00",
+    "unit": "CNY",
+    "period_basis": "ytd",
+    "scope": "consolidated_note_component",
+    "announcement_id": "1224614835",
+    "pdf_sha256": "e1aff2dcb92aea9bcc8b3b69b66051b2e27c68026dbbff77d56ef27373dee674",
+    "pdf_page": 74,
+    "reviewer": "alphalake-disposal-cash-review-20260918",
+    "reviewed_at": "2026-09-18T13:30:43Z",
+    "review_note": "合并现金流量表本期处置长期资产现金行为破折号；本期投资现金流入各项与小计闭合，确认该行本期为零。仅该公司/期间/原文，作为显式补充，不把TDX源零通用化或写为标准事实。"
+  },
+  {
+    "code": "300866",
+    "period": "2025-12-31",
+    "item": "reviewed_asset_disposal_cash_zero",
+    "value": "0.00",
+    "unit": "CNY",
+    "period_basis": "ytd",
+    "scope": "consolidated_note_component",
+    "announcement_id": "1225090973",
+    "pdf_sha256": "8dadc4bfd7282738697a5ee82d9b25faa657e053e3f480e71dd6ae9987703202",
+    "pdf_page": 115,
+    "reviewer": "alphalake-disposal-cash-review-20260918",
+    "reviewed_at": "2026-09-18T13:30:43Z",
+    "review_note": "合并现金流量表本期处置长期资产现金行为破折号；本期投资现金流入各项与小计闭合，确认该行本期为零。仅该公司/期间/原文，作为显式补充，不把TDX源零通用化或写为标准事实。"
+  }
+]

@@ -180,6 +180,12 @@ class ReviewedRestrictedComponent(BaseModel):
     evidence_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
 
 
+class ReviewedDisposalZero(ReviewedRestrictedComponent):
+    item: Literal['reviewed_asset_disposal_cash_zero']
+    period: date
+    source_artifact_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+
+
 class ReviewedAssetAddback(BaseModel):
     """标准金融资产分类审核；受限分量须另有同期间、同原文证据。"""
     model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
@@ -202,6 +208,7 @@ class ReviewedHistoricalDCFPolicy(HistoricalDCFPolicy):
     reviewed_at: datetime
     valid_until: datetime
     asset_addbacks: list[ReviewedAssetAddback] = Field(min_length=1)
+    disposal_cash_zeros: list[ReviewedDisposalZero] = Field(default_factory=list)
 
     @model_validator(mode='after')
     def reviewed_scope(self):
@@ -220,6 +227,8 @@ class ReviewedHistoricalDCFPolicy(HistoricalDCFPolicy):
                 evidence_items.append(r.restricted_component.item)
             if (r.field == 'FN25') != (r.classification == 'nonconsolidated_equity_holding'):
                 raise ValueError('equity holding classification requires FN25 only')
+        if len({r.period for r in self.disposal_cash_zeros}) != len(self.disposal_cash_zeros):
+            raise ValueError('duplicate disposal zero period')
         if len(set(evidence_items)) != len(evidence_items):
             raise ValueError('duplicate reviewed asset component evidence')
         return self
@@ -368,6 +377,8 @@ def build_inputs(request: AlphaLakeRequest):
             inputs,audit = build_earnings_power_inputs(d,policy)
         if isinstance(policy, ReviewedHistoricalDCFPolicy):
             apply_reviewed_assets(d, policy, inputs, audit)
+            if policy.disposal_cash_zeros:
+                apply_reviewed_disposal_zeros(d, policy, audit)
         if capital_audit is not None:
             audit['capital_reference']=capital_audit
             audit['boundaries']+=capital_audit['boundaries']
@@ -700,7 +711,7 @@ def build_historical_dcf_inputs(d, policy):
         if period in quarters:raise ValueError('duplicate quarterly revenue history')
         quarters[period]=(validated_source_value(f),f['fact_id'])
     annual,evidence=historical_forecast(revenue,ebit,quarters,d.report_period,policy)
-    parameters=policy.model_dump(exclude={'policy_id','annual_forecast','growth_floor','growth_ceiling','growth_shift','margin_shift','calibration','code','reviewed_at','valid_until','asset_addbacks'})
+    parameters=policy.model_dump(exclude={'policy_id','annual_forecast','growth_floor','growth_ceiling','growth_shift','margin_shift','calibration','code','reviewed_at','valid_until','asset_addbacks','disposal_cash_zeros'})
     if isinstance(policy, ReviewedHistoricalDCFPolicy):
         parameters['financial_asset_policy'] = 'no_credit_pending_classification'
     generated=BookDCFPolicy(policy_id='nonfinancial-book-fcff-v1',annual_forecast=annual,**parameters)
@@ -785,3 +796,71 @@ def apply_reviewed_assets(d, policy, inputs, audit):
     audit['assumptions']['bridge'] = policy.model_dump(mode='json')
     audit['boundaries'] = [b for b in audit['boundaries'] if not b.startswith('nonoperating financial investments receive no credit')]
     audit['boundaries'].append('only explicitly reviewed asset fields credited using standard book amounts less separately reviewed restricted components, then policy recoveries; excluded restricted amounts are not assumed permanently lost; remaining assets unreviewed, not zero; book proxies not market valuations')
+
+
+def apply_reviewed_disposal_zeros(d, policy, audit):
+    """只对明确绑定的缺期采用原文审核零；标准窗口及TDX事实保持原样。"""
+    end = d.report_period.isoformat()
+    periods = [end] if d.report_period.month == 12 else [end, f'{d.report_period.year-1}-12-31', d.report_period.replace(year=d.report_period.year-1).isoformat()]
+    coefficients = [1] if len(periods) == 1 else [1, 1, -1]
+    windows = [w for w in d.windows if w['field'] == 'FN110']
+    if len(windows) != 1:
+        raise MissingInputs(['TDX/FN110'])
+    w = windows[0]
+    bindings = {r.period.isoformat(): r for r in policy.disposal_cash_zeros}
+    if (w['calculation_basis'] != 'ytd' or w['unit'] != 'CNY' or w['statement_scope'] != 'provider_default'
+            or w['input_periods'] != periods or w['input_coefficients'] != coefficients
+            or w['required_inputs'] != len(periods) or len(w['source_fact_ids']) != len(periods)
+            or set(w['missing_periods']) != set(bindings)
+            or w['available_inputs'] != len(periods)-len(bindings)
+            or w['coverage_status'] != 'missing_inputs' or w['value'] is not None):
+        raise ValueError('disposal review must bind exactly the missing standard periods')
+    total = Decimal(0)
+    sources = []
+    for period, coefficient, fid in zip(periods, coefficients, w['source_fact_ids'], strict=True):
+        facts = [f for f in d.facts if f['period'] == period and f['field'] == 'FN110']
+        if period not in bindings:
+            if len(facts) != 1 or facts[0]['fact_id'] != fid:
+                raise ValueError('disposal standard lineage differs')
+            f = facts[0]
+            validated_source_value(f)
+            basis = {3:'Q1', 6:'H1', 9:'9M', 12:'FY'}[int(period[5:7])]
+            if (f['unit'], f['statement_scope'], f['period_type'], f['multiplier']) != ('CNY','provider_default',basis,1):
+                raise ValueError('incompatible disposal source scope')
+            total += coefficient*Decimal(f['value'])
+            sources.append(dict(period=period, coefficient=coefficient, standard_fact=f))
+            continue
+        if facts or fid is not None:
+            raise ValueError('reviewed zero cannot override a standard fact')
+        binding = bindings[period]
+        notes = [n for n in d.supplements if n['period'] == period and n['item'] == binding.item]
+        if not notes:
+            raise MissingInputs(['CNINFO/'+period+'/'+binding.item])
+        if len(notes) != 1:
+            raise ValueError('ambiguous disposal zero review')
+        note = notes[0]
+        # 同期购建现金事实作为公告和源包锚点，不用另一期PDF补零。
+        anchors = [f for f in d.facts if f['period'] == period and f['field'] == 'FN114']
+        if len(anchors) != 1:
+            raise MissingInputs(['TDX/'+period+'/FN114'])
+        anchor = anchors[0]
+        validated_source_value(anchor)
+        if (note['unit'],note['period_basis'],note['scope']) != ('CNY','ytd','consolidated_note_component') or Decimal(note['value']) != 0:
+            raise ValueError('only explicitly reviewed zero disposal cash supported')
+        if (content_hash(note) != binding.evidence_sha256 or note['import_sha256'] != binding.import_sha256
+                or anchor['artifact_sha256'] != binding.source_artifact_sha256
+                or not note.get('reviewer') or not note.get('review_note') or not note.get('available_at')
+                or not note.get('pdf_sha256') or note.get('pdf_page',0) <= 0
+                or any(note.get(k) != anchor.get(k) for k in ('announcement_id','pdf_sha256','pdf_url','document_provenance'))):
+            raise ValueError('disposal review evidence differs from approved filing/source')
+        sources.append(dict(period=period, coefficient=coefficient, supplement=note, source_anchor=anchor))
+    evidence = audit['company_capital_evidence']
+    disposal = float(total/1000000)
+    capex = evidence['cash_capex_million_cny']
+    evidence.update(reviewed_asset_disposal_cash_million_cny=disposal,
+        reviewed_cash_capex_after_disposals_million_cny=capex-disposal if capex is not None else None,
+        reviewed_disposal_status='standard_plus_explicit_reviewed_zeros_not_standard_ttm',
+        reviewed_disposal_sources=sources)
+    audit['consumed_inputs'] += sources
+    audit['required_input_count'] += len(sources)+len(bindings)
+    audit['available_required_input_count'] += len(sources)+len(bindings)

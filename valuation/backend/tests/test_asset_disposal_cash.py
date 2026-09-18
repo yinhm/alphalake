@@ -58,3 +58,44 @@ def test_disposal_evidence_and_missing_ttm(monkeypatch):
     _, complete = build_inputs(parsed)
     assert complete['company_capital_evidence']['cash_capex_after_disposals_million_cny'] == pytest.approx(319.61693)
     assert complete['company_capital_evidence']['cash_capex_after_disposals_status'] == 'cash_component_not_total_reinvestment'
+
+
+def test_reviewed_zero_real_lifecycle(tmp_path, monkeypatch):
+    import os
+    import subprocess
+    from tools.verify_disposal_review import verify_chain, request_for, approve_zeros
+    directory = tmp_path/'source'
+    env = dict(os.environ, ALPHALAKE_DISPOSAL_EXPORT_DIR=str(directory))
+    subprocess.run(['go','test','./internal/ingest','-run','^TestRealAssetDisposalCash$','-count=1'],cwd=ROOT,env=env,check=True,capture_output=True)
+    monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path/'runs'))
+    receipt, _ = verify_chain(directory,tmp_path/'runs')
+    assert receipt['reviewed_cash_capex_after_disposals_cny']=='319616930'
+    assert receipt['dcf_report_unchanged'] and receipt['historical_fcff'] is None
+    data = json.loads((directory/'disposal-reviewed-export.json').read_text())
+    request = approve_zeros(request_for(data))
+    notes = json.loads((ROOT/'valuation/research/disposal-cash-20260918/zero-supplements.json').read_text())
+    evidence = {r['period']:r for r in verify()}
+    for note in notes:
+        assert note['pdf_sha256']==evidence[note['period']]['pdf_sha256']
+        assert note['pdf_page']==evidence[note['period']]['page']
+        assert note['value']=='0.00' and evidence[note['period']]['source_bits']==0
+    for problem in ('amount','unit','period','hash','source','filing','missing','expired','future','duplicate','override'):
+        bad = deepcopy(request)
+        rule = bad['policy']['disposal_cash_zeros'][0]
+        note = next(n for n in bad['data']['supplements'] if n['period']==rule['period'] and n['item']==rule['item'])
+        if problem=='amount': note['value']='0.01'
+        elif problem=='unit': note['unit']='CNY/share'
+        elif problem=='period': note['period_basis']='instant'
+        elif problem=='hash': rule['evidence_sha256']='0'*64
+        elif problem=='source': rule['source_artifact_sha256']='0'*64
+        elif problem=='filing': note['announcement_id']='different'
+        elif problem=='missing': bad['data']['supplements'].remove(note)
+        elif problem=='expired': bad['data']['information_as_of']='2026-10-18T00:00:00Z'
+        elif problem=='future': bad['policy']['reviewed_at']='2026-09-19T00:00:00Z'
+        elif problem=='duplicate': bad['policy']['disposal_cash_zeros'].append(deepcopy(rule))
+        elif problem=='override':
+            fact = deepcopy(next(f for f in bad['data']['facts'] if f['field']=='FN110'))
+            fact['period']=rule['period'];fact['fact_id']=999999
+            bad['data']['facts'].append(fact)
+        with pytest.raises(ValueError):
+            build_inputs(AlphaLakeRequest.model_validate(bad))

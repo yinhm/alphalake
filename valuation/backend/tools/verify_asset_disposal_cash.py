@@ -1,5 +1,6 @@
 """安克三期处置现金：原文语义、列序及真实TDX源位；不将源零自动批准为标准零。"""
 import csv
+from decimal import Decimal
 import hashlib
 import json
 from pathlib import Path
@@ -14,7 +15,8 @@ ROOT = Path(__file__).resolve().parents[3]
 def verify(override=None):
     directory = ROOT/'internal/ingest/testdata/anker-valuation-2026'
     reports = json.loads((directory/'reports.json').read_text())
-    rows = [r for r in csv.DictReader((directory/'reported.csv').open()) if r['key'] == 'cash_disposals']
+    ledger = list(csv.DictReader((directory/'reported.csv').open()))
+    rows = [r for r in ledger if r['key'] == 'cash_disposals']
     assert len(rows) == 3
     output = []
     for row in rows:
@@ -30,6 +32,16 @@ def verify(override=None):
         token = '-' if float(value) == 0 else format(float(value), ',.2f')
         label = re.sub(r'\s+', '', row['label'])
         assert label+token in compact, 'current-period disposal cash differs'
+        # 核对本期其他流入与小计，破折号的零解释不只依赖TDX零位。
+        cash = {}
+        for key in ('cash_investment_recovery','cash_investment_income','cash_other_investing_in','cash_investing_in'):
+            item, = [r for r in ledger if r['period']==row['period'] and r['key']==key]
+            assert item['pdf_id'] == row['pdf_id'] and item['pdf_page'] == row['pdf_page']
+            pattern = re.escape(re.sub(r'\s+', '', item['label']))+r'(?:七、58\(2\))?'+re.escape(item['printed'])
+            assert re.search(pattern, compact), key
+            cash[key] = Decimal(item['value'])
+        assert sum(cash[k] for k in ('cash_investment_recovery','cash_investment_income','cash_other_investing_in'))+Decimal(value) == cash['cash_investing_in']
+
         path = ROOT/'internal/ingest/testdata/valuation-chain-2026'/('gpcw'+row['period'].replace('-','')+'.zip')
         with zipfile.ZipFile(path) as archive:
             raw = archive.read(archive.namelist()[0])

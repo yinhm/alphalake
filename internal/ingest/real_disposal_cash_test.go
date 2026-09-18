@@ -99,6 +99,67 @@ func TestRealAssetDisposalCash(t *testing.T) {
 	raw, err := json.MarshalIndent(data, "", "  ")
 	check(err)
 	check(os.WriteFile(filepath.Join(out, "disposal-export.json"), raw, 0644))
+	check(db.Close())
+	db, err = duck.OpenAndMigrate(ctx, path)
+	check(err)
+	manifest, err := os.ReadFile("../../valuation/research/disposal-cash-20260918/zero-supplements.json")
+	check(err)
+	var notes []duck.ReviewedSupplement
+	check(json.Unmarshal(manifest, &notes))
+	inserted, err := duck.ImportReviewedSupplements(ctx, db, notes)
+	check(err)
+	if inserted != 2 {
+		t.Fatal("zero review inserts", inserted)
+	}
+	inserted, err = duck.ImportReviewedSupplements(ctx, db, notes)
+	check(err)
+	if inserted != 0 {
+		t.Fatal("zero review replay", inserted)
+	}
+	exportReview := func(name string) {
+		check(db.Close())
+		db, err = duck.OpenAndMigrate(ctx, path)
+		check(err)
+		snapshot, e := duck.ExportValuationData(ctx, db, "300866", time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC), time.Date(2026, 9, 18, 13, 30, 43, 0, time.UTC))
+		check(e)
+		b, e := json.MarshalIndent(snapshot, "", "  ")
+		check(e)
+		check(os.WriteFile(filepath.Join(out, name+".json"), b, 0644))
+		var count int
+		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE provider_code='300866' AND source_provider_field='FN110' AND report_period IN (DATE '2025-06-30',DATE '2025-12-31')`).Scan(&count))
+		if count != 0 {
+			t.Fatal("reviewed zeros leaked into standard facts")
+		}
+	}
+	exportReview("disposal-reviewed-export")
+	var hash string
+	check(db.QueryRowContext(ctx, `SELECT import_sha256 FROM fundamental.reviewed_supplement WHERE provider_code='300866' AND item='reviewed_asset_disposal_cash_zero' AND report_period=DATE '2025-06-30'`).Scan(&hash))
+	revoke := notes[0]
+	revoke.Action = "revoke"
+	revoke.SupersedesSHA256 = hash
+	revoke.ReviewNote = "隔离测试撤销：检验失效传播，不代表原审核结论改变。"
+	_, err = duck.ImportReviewedSupplements(ctx, db, []duck.ReviewedSupplement{revoke})
+	check(err)
+	inserted, err = duck.ImportReviewedSupplements(ctx, db, notes)
+	check(err)
+	if inserted != 0 {
+		t.Fatal("old publish replay")
+	}
+	exportReview("disposal-revoked-export")
+	check(db.QueryRowContext(ctx, `SELECT import_sha256 FROM fundamental.reviewed_supplement WHERE provider_code='300866' AND item='reviewed_asset_disposal_cash_zero' AND report_period=DATE '2025-06-30' AND review_state='revoked'`).Scan(&hash))
+	restore := notes[0]
+	restore.Action = "replace"
+	restore.SupersedesSHA256 = hash
+	restore.ReviewNote = "隔离测试重新审核相同原文后恢复；采用政策必须重新绑定。"
+	_, err = duck.ImportReviewedSupplements(ctx, db, []duck.ReviewedSupplement{restore})
+	check(err)
+	exportReview("disposal-restored-export")
+	var actions int
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.supplement_review_history WHERE provider_code='300866' AND item='reviewed_asset_disposal_cash_zero'`).Scan(&actions))
+	if actions != 4 {
+		t.Fatal("missing review history", actions)
+	}
+
 }
 
 // 旧真实样本的计数验收固定在原字段范围；新增FN110由本文件独立验证。
