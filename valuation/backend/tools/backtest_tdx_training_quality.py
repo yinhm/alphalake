@@ -5,7 +5,7 @@ import hashlib
 import json
 
 from tools import diagnose_tdx_training_exclusions as prior
-from tools.backtest_tdx_history import value
+from tools.tdx_research_source import financial_value, canonical_field
 
 DIRECTORY = prior.DIRECTORY
 PROTOCOL_SHA = '3608de611c2d5d3721f879cde78ce94c18425ae8dd1a289ddd1fd50cd5e9e365'
@@ -34,12 +34,13 @@ def study(p, result, source):
             zeros = []
             refs = entry['prior']['current']['source_inputs'] + entry['realized']['source_inputs']
             for ref in refs:
-                if ref['field'] not in ('FN305','FN306'):
+                field = canonical_field(ref['field'])
+                if field not in ('interest_expense','interest_income'):
                     continue
                 found = index[entry['code'],ref['period']]
                 if len(found) != 1:
                     raise ValueError('training source identity differs')
-                if value(found[0],ref['field']) == 0:
+                if financial_value(found[0],field) == 0:
                     zeros.append(dict(period=ref['period'],field=ref['field']))
             if zeros:
                 removed[origin].append(dict(code=entry['code'],zero_inputs=zeros))

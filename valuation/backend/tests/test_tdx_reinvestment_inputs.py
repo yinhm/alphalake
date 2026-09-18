@@ -2,6 +2,7 @@
 import copy
 import struct
 from tools.audit_tdx_reinvestment_inputs import audit, FIELDS
+from tools.tdx_research_source import source_field
 
 
 def test_reinvestment_source_boundaries():
@@ -11,7 +12,7 @@ def test_reinvestment_source_boundaries():
         period=f'{year}-12-31';file=period+'.zip'
         source['artifacts'].append(dict(file=file,report_period=period,fetched_at='2026-09-11T00:00:00Z'))
         source['records'].append(dict(code='000001',period=period,artifact=file,
-            bits={**{f:bits(100) for f in FIELDS},'FN314':bits((year-1999)*10000+430)}))
+            bits={**{source_field(f):bits(100) for f in FIELDS},'FN314':bits((year-1999)*10000+430)}))
     expected=audit(source,[dict(code='000001')])
     assert all(all(r['complete_source_groups'].values()) for r in expected['results'])
     for action,reason in [('zero','source_zero_ambiguous'),('missing','missing_field'),

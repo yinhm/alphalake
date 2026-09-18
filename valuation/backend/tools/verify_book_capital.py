@@ -7,7 +7,7 @@ import struct
 import subprocess
 from tools import verify_cnty_debt as cnty, verify_five_debt as five
 from tools import verify_debt_maturities as maturity
-from tools.backtest_tdx_history import value
+from tools.tdx_research_source import source_value as value, financial_value, source_components
 
 DIRECTORY = maturity.DIRECTORY
 FIELDS = ('FN72', 'FN8', 'FN25', 'FN133')
@@ -71,15 +71,15 @@ def verify():
                 raise ValueError('source bits differ')
             refs.append(dict(field=field, page=row['page'], pdf_cny=amounts[0], comparative_cny=amounts[1],
                              source_cny=str(value(source, field)), source_bits=source['bits'][field]))
-        debt = sum(value(source, f) * (10000 if f == 'FN439' else 1)
-                   for f in ('FN41', 'FN55', 'FN52', 'FN56', 'FN439'))
-        gross = value(source, 'FN72') + debt
-        cash_cases = {field: str(gross - value(source, field)) for field in ('FN8', 'FN133')}
+        debt = sum(financial_value(source, f)
+                   for f in ('short_term_borrowings', 'long_term_borrowings', 'current_portion_noncurrent_liabilities', 'bonds_payable', 'lease_liabilities'))
+        gross = financial_value(source, 'total_equity') + debt
+        cash_cases = {field: str(gross - financial_value(source, field)) for field in ('monetary_funds', 'cash_and_cash_equivalents')}
         results.append(dict(code=code, period=source['period'], source_matches=refs,
             common_debt_subtotal_cny=str(debt), equity_plus_common_debt_cny=str(gross),
-            arithmetic_capital_after_full_cash_deduction_cny=cash_cases,
-            monetary_funds_less_cash_equivalents_cny=str(value(source, 'FN8') - value(source, 'FN133')),
-            long_term_equity_investments_cny=str(value(source, 'FN25')),
+            arithmetic_capital_after_full_cash_deduction_cny=source_components(cash_cases),
+            monetary_funds_less_cash_equivalents_cny=str(financial_value(source, 'monetary_funds') - financial_value(source, 'cash_and_cash_equivalents')),
+            long_term_equity_investments_cny=str(financial_value(source, 'long_term_equity_investments')),
             full_operating_capital=None, economic_roic=None))
     comparisons = []
     for code in ('000035', *five.CODES):

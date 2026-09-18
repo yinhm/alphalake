@@ -6,6 +6,15 @@ import struct
 
 # 语义对应已审核的生产映射；历史研究外推边界保持原协议。
 FIELDS = {
+    'lease_liabilities': ('FN439', 'instant'),
+    'current_portion_noncurrent_liabilities': ('FN52', 'instant'),
+    'bonds_payable': ('FN56', 'instant'),
+    'long_term_borrowings': ('FN55', 'instant'),
+    'short_term_borrowings': ('FN41', 'instant'),
+    'long_term_equity_investments': ('FN25', 'instant'),
+    'cash_and_cash_equivalents': ('FN133', 'instant'),
+    'monetary_funds': ('FN8', 'instant'),
+    'total_equity': ('FN72', 'instant'),
     'taxes_paid': ('FN104', 'ytd'),
     'income_tax_expense': ('FN93', 'ytd'),
     'profit_before_tax': ('FN92', 'ytd'),
@@ -41,6 +50,7 @@ FIELDS = {
     'research_and_development_expense': ('FN304', 'ytd'),
 }
 VALUE_MULTIPLIERS = {
+    'lease_liabilities': 10000,
     'investment_property_depreciation_amortization': 10000,
     'right_of_use_depreciation': 10000,
     'financial_business_interest_income': 10000,
@@ -118,3 +128,8 @@ def source_signal_archive(parts, inputs):
     """旧信号归档使用源编码单位；仅序列化，禁止回流经营计算。"""
     return dict(signals={source_field(field): str(amount / VALUE_MULTIPLIERS.get(field, 1)) for field, amount in parts.items()},
                 source_inputs=[r | dict(multiplier=1) if 'multiplier' in r else r for r in inputs])
+
+
+def canonical_field(provider):
+    """将冻结源引用转换为通用名称；未知字段拒绝。"""
+    return {key: field for field, (key, _) in FIELDS.items()}[provider]

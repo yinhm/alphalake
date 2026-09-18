@@ -5,14 +5,15 @@ import hashlib
 import json
 from pathlib import Path
 
-from tools.backtest_tdx_history import at, available, value
+from tools.backtest_tdx_history import at, available
+from tools.tdx_research_source import financial_value, source_evidence, source_components
 
 GROUPS = {
-    'book_capital_components': ('FN72', 'FN8', 'FN133', 'FN25'),
-    'debt_components': ('FN41', 'FN55', 'FN56', 'FN52', 'FN439'),
-    'cash_capex_and_amortization': ('FN114', 'FN136', 'FN137', 'FN138'),
-    'rd_expensed': ('FN304',),
-    'working_capital_reconciliation': ('FN146', 'FN147', 'FN148'),
+    'book_capital_components': ('total_equity', 'monetary_funds', 'cash_and_cash_equivalents', 'long_term_equity_investments'),
+    'debt_components': ('short_term_borrowings', 'long_term_borrowings', 'bonds_payable', 'current_portion_noncurrent_liabilities', 'lease_liabilities'),
+    'cash_capex_and_amortization': ('capital_expenditure_cash', 'depreciation_depletion', 'intangible_amortization', 'deferred_expense_amortization'),
+    'rd_expensed': ('research_and_development_expense',),
+    'working_capital_reconciliation': ('inventory_decrease_cashflow', 'operating_receivables_decrease_cashflow', 'operating_payables_increase_cashflow'),
 }
 FIELDS = tuple(dict.fromkeys(f for group in GROUPS.values() for f in group))
 
@@ -51,9 +52,10 @@ def audit(source, samples):
                     entry = dict(status=status)
                     if status == 'available':
                         try:
-                            amount = value(row, field)
+                            amount = financial_value(row, field)
+                            evidence = source_evidence(row, field)
                             entry = dict(status='nonzero_source' if amount else 'source_zero_ambiguous',
-                                         bits=row['bits'][field], source_value=str(amount))
+                                         bits=evidence['bits'], source_value=evidence['source_value'])
                         except KeyError:
                             entry['status'] = 'missing_field'
                         except (ValueError, ArithmeticError):
@@ -69,8 +71,8 @@ def audit(source, samples):
         rows = [r for r in results if r['origin'].startswith(str(year))]
         summary[str(year)] = dict(candidates=len(rows),annual_slots=len(rows)*2,
             complete_source_groups={name:sum(r['complete_source_groups'][name] for r in rows) for name in GROUPS},
-            field_status={f:dict(Counter(p['fields'][f]['status'] for r in rows for p in r['annual_inputs'])) for f in FIELDS})
-    return dict(summary=summary,results=results,
+            field_status=source_components({f:dict(Counter(p['fields'][f]['status'] for r in rows for p in r['annual_inputs'])) for f in FIELDS}))
+    return dict(summary=summary,results=[r|dict(annual_inputs=[p|dict(fields=source_components(p['fields'])) for p in r['annual_inputs']]) for r in results],
         boundary='later_acquired_source_only_not_strict_PIT; two_FY_not_H1_TTM; source_units_not_converted; '
         'zeros_unresolved; no_classified_capital_reinvestment_ROIC_growth_or_valuation')
 

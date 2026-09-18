@@ -4,7 +4,7 @@ import json
 from tools import verify_financing_payables as financing
 from tools import verify_debt_maturities as maturity
 from tools import verify_cnty_debt as cnty, verify_five_debt as five
-from tools.backtest_tdx_history import value
+from tools.tdx_research_source import financial_value, source_components
 
 
 def diagnose():
@@ -23,8 +23,8 @@ def diagnose():
         if len(matches) != 1:
             raise ValueError('source identity differs')
         row = matches[0]
-        amounts = {f: value(row, f) * (10000 if f == 'FN439' else 1)
-                   for f in ('FN41', 'FN55', 'FN52', 'FN56', 'FN439')}
+        amounts = {f: financial_value(row, f)
+                   for f in ('short_term_borrowings', 'long_term_borrowings', 'current_portion_noncurrent_liabilities', 'bonds_payable', 'lease_liabilities')}
         subtotal = sum(amounts.values())
         if subtotal <= 0:
             raise ValueError('subtotal must be positive')
@@ -40,7 +40,7 @@ def diagnose():
                 extra = Decimal(parents[cnty][1]['additional_2022_financing_claims_cny'])
             else:
                 extra = Decimal(next(r['values'][1] for r in parents[cnty][0]['rows'] if r['key'] == 'payables'))
-        results.append(dict(code=code, period=period, source_components_cny={f: str(v) for f, v in amounts.items()},
+        results.append(dict(code=code, period=period, source_components_cny=source_components({f: str(v) for f, v in amounts.items()}),
             common_field_subtotal_cny=str(subtotal),
             separately_reported_interest=measure(sum(interests) if interests else None),
             unclassified_current_payable=measure(Decimal(p['unclassified_current_payable_cny']) if p else None),
