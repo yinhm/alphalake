@@ -1,5 +1,7 @@
 # 统一公司估值入口
 
+当前财务输入使用`alphalake-valuation-v2`，就绪度使用`alphalake-readiness-v2`，要求财务库schema46。业务字段使用通用报表名称，源编号仅留血缘；旧请求与运行的迁移边界见[ADR 018](decisions/018-standard-financial-consumption.md)。
+
 ## 已保存预测的到期核验
 
 新增只读命令`tools.review_valuation_forecast`，使用已有run ID核验历史增长及显式一年校准政策的十年收入/调整EBIT预测。先复用`load_run`检查请求/引擎哈希，再用当前引擎完整重放原报告；当前引擎不能复现时拒绝，不悄悄改用新预测。此工具不执行新估值，不改政策或旧运行。
