@@ -9,7 +9,8 @@ from pathlib import Path
 
 from tools.audit_tdx_reinvestment import component
 from tools.backtest_tdx_cash_revenue import revenue_forecast
-from tools.backtest_tdx_history import at,available,value
+from tools.backtest_tdx_history import at,available
+from tools.tdx_research_source import financial_value,source_field,source_signal_archive
 from tools.backtest_tdx_operating_cash import study,metrics
 
 ROOT=Path(__file__).resolve().parents[3]
@@ -22,17 +23,17 @@ def origin_scope(forecast_protocol,index,artifacts,code,end,cutoff):
         return dict(group='forecast_blocked',reason=str(exc))
     signals={};refs=[]
     try:
-        for field in ('FN506','FN509','FN510'):
+        for field in ('financial_business_interest_income','financial_business_interest_expense','financial_business_fee_expense'):
             c=component(index,artifacts,code,end,field,cutoff)
-            if c['status']=='blocked':raise ValueError(field+':'+str(c['issues']))
-            signals[field]=c['value_cny'];refs+=c['source_inputs']
+            if c['status']=='blocked':raise ValueError(source_field(field)+':'+str(c['issues']))
+            signals[field]=Decimal(c['value_cny']);refs+=c['source_inputs']
         rows=index.get((code,end.isoformat()),[])
         if len(rows)!=1:raise ValueError('instant signal identity differs')
         r=rows[0];a=artifacts[r['artifact']]
         if a['report_period']!=end.isoformat() or available(r,a)>at(cutoff):raise ValueError('instant signal period/cutoff differs')
-        signals['FN413']=str(value(r,'FN413'));refs.append(dict(period=end.isoformat(),field='FN413',bits=r['bits']['FN413'],artifact=r['artifact'],coefficient=1))
+        signals['deposits_and_interbank_placements']=financial_value(r,'deposits_and_interbank_placements');refs.append(dict(period=end.isoformat(),field=source_field('deposits_and_interbank_placements'),bits=r['bits'][source_field('deposits_and_interbank_placements')],artifact=r['artifact'],coefficient=1))
         group='forecast_ready_financial_signal' if any(Decimal(v)!=0 for v in signals.values()) else 'forecast_ready_no_financial_signal'
-        return dict(group=group,signals=signals,source_inputs=refs,forecast_rule=evidence['rule'])
+        return dict(group=group,**source_signal_archive(signals,refs),forecast_rule=evidence['rule'])
     except (ValueError,KeyError,ArithmeticError) as exc:
         return dict(group='financial_signal_unknown',reason=str(exc),forecast_rule=evidence['rule'])
 

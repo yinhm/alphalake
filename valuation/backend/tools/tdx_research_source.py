@@ -6,6 +6,24 @@ import struct
 
 # 语义对应已审核的生产映射；历史研究外推边界保持原协议。
 FIELDS = {
+    'taxes_paid': ('FN104', 'ytd'),
+    'income_tax_expense': ('FN93', 'ytd'),
+    'profit_before_tax': ('FN92', 'ytd'),
+    'operating_payables_increase_cashflow': ('FN148', 'ytd'),
+    'operating_receivables_decrease_cashflow': ('FN147', 'ytd'),
+    'inventory_decrease_cashflow': ('FN146', 'ytd'),
+    'right_of_use_depreciation': ('FN581', 'ytd'),
+    'investment_property_depreciation_amortization': ('FN579', 'ytd'),
+    'deferred_expense_amortization': ('FN138', 'ytd'),
+    'intangible_amortization': ('FN137', 'ytd'),
+    'depreciation_depletion': ('FN136', 'ytd'),
+    'taxes_payable': ('FN47', 'instant'),
+    'payroll_payable': ('FN46', 'instant'),
+    'accounts_payable': ('FN44', 'instant'),
+    'inventories': ('FN17', 'instant'),
+    'other_receivables': ('FN13', 'instant'),
+    'prepayments': ('FN12', 'instant'),
+    'accounts_receivable': ('FN11', 'instant'),
     'revenue': ('FN230', 'quarter'),
     'operating_cash_flow': ('FN234', 'quarter'),
     'operating_profit_cumulative': ('FN86', 'ytd'),
@@ -23,6 +41,8 @@ FIELDS = {
     'research_and_development_expense': ('FN304', 'ytd'),
 }
 VALUE_MULTIPLIERS = {
+    'investment_property_depreciation_amortization': 10000,
+    'right_of_use_depreciation': 10000,
     'financial_business_interest_income': 10000,
     'financial_business_interest_expense': 10000,
     'financial_business_fee_expense': 10000,
@@ -58,7 +78,9 @@ def available(row,artifact):
 
 def financial_value(row, field):
     """只接收通用字段并归一化为元；源值、源位另行保留，未知名称拒绝。"""
-    return source_value(row, FIELDS[field][0]) * VALUE_MULTIPLIERS.get(field, 1)
+    value = source_value(row, FIELDS[field][0])
+    multiplier = VALUE_MULTIPLIERS.get(field, 1)
+    return value if multiplier == 1 else value * multiplier
 
 
 def period_basis(field):
@@ -77,3 +99,22 @@ def source_components(parts):
 def evidence_value(evidence, field):
     """按通用字段解码冻结单字段证据；编码及倍率仍由源适配负责。"""
     return financial_value({"bits": {source_field(field): evidence["bits"]}}, field)
+
+
+def source_evidence(row, field):
+    """归档源位及编码值；应用金额另由financial_value交付。"""
+    provider = source_field(field)
+    return dict(field=provider, bits=row['bits'][provider], source_value=str(source_value(row, provider)),
+                multiplier=VALUE_MULTIPLIERS.get(field, 1))
+
+
+def canonical_components(parts):
+    """读取冻结源分量字典；未知编号拒绝，返回通用键。"""
+    names = {provider: field for field, (provider, _) in FIELDS.items()}
+    return {names[provider]: amount for provider, amount in parts.items()}
+
+
+def source_signal_archive(parts, inputs):
+    """旧信号归档使用源编码单位；仅序列化，禁止回流经营计算。"""
+    return dict(signals={source_field(field): str(amount / VALUE_MULTIPLIERS.get(field, 1)) for field, amount in parts.items()},
+                source_inputs=[r | dict(multiplier=1) if 'multiplier' in r else r for r in inputs])

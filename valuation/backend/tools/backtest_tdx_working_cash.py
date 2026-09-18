@@ -9,7 +9,8 @@ from pathlib import Path
 from statistics import mean
 
 from tools.audit_tdx_reinvestment import component
-from tools.backtest_tdx_history import at,available,quarter_periods,window,value
+from tools.backtest_tdx_history import at,available,quarter_periods,window
+from tools.tdx_research_source import financial_value,source_field,source_components,canonical_components
 
 MODELS=('repeat_latest','zero_forecast','half_latest')
 
@@ -28,20 +29,20 @@ def revenue_window(index,artifacts,code,end,cutoff):
 
 
 def observation(index,artifacts,code,end,cutoff):
-    parts={f:component(index,artifacts,code,end,f,cutoff) for f in ('FN146','FN147','FN148')}
-    if any(p['status']=='blocked' for p in parts.values()):raise ValueError('working cash component blocked: '+str({f:p['issues'] for f,p in parts.items() if p['issues']}))
+    parts={f:component(index,artifacts,code,end,f,cutoff) for f in ('inventory_decrease_cashflow','operating_receivables_decrease_cashflow','operating_payables_increase_cashflow')}
+    if any(p['status']=='blocked' for p in parts.values()):raise ValueError('working cash component blocked: '+str(source_components({f:p['issues'] for f,p in parts.items() if p['issues']})))
     revenue,refs,_=revenue_window(index,artifacts,code,end,cutoff)
     amount=sum((Decimal(p['value_cny']) for p in parts.values()),Decimal(0))
-    return dict(period=end.isoformat(),working_cash_cny=str(amount),revenue_cny=str(revenue),components=parts,revenue_inputs=refs)
+    return dict(period=end.isoformat(),working_cash_cny=str(amount),revenue_cny=str(revenue),components=source_components(parts),revenue_inputs=refs)
 
 
 def inventory_signal(index,artifacts,code,end,cutoff):
     history=[]
     for period in (end,end.replace(year=end.year-1)):
-        revenue,refs,rows=revenue_window(index,artifacts,code,period,cutoff);row=rows[period.isoformat()];inventory=value(row,'FN17')
+        revenue,refs,rows=revenue_window(index,artifacts,code,period,cutoff);row=rows[period.isoformat()];inventory=financial_value(row,'inventories')
         if inventory<=0:raise ValueError('nonpositive inventory; zero ambiguous')
         history.append(dict(period=period.isoformat(),net_inventory_cny=str(inventory),revenue_cny=str(revenue),revenue_inputs=refs,
-                            inventory_input=dict(field='FN17',artifact=row['artifact'],source_bits=row['bits']['FN17'])))
+                            inventory_input=dict(field=source_field('inventories'),artifact=row['artifact'],source_bits=row['bits'][source_field('inventories')])))
     current,prior=history
     signal=(Decimal(current['net_inventory_cny'])-Decimal(prior['net_inventory_cny'])*Decimal(current['revenue_cny'])/Decimal(prior['revenue_cny']))/2
     return signal,dict(history=history,inventory_cash_forecast_cny=str(signal),receivables_cash_forecast_cny='0',payables_cash_forecast_cny='0',
@@ -85,11 +86,11 @@ def metrics(rows,models=MODELS):
 
 def component_diagnostics(rows):
     """事后开发诊断，不选择分项倍率，也不扩大原共同可评价集合。"""
-    valid=[r for r in rows if r['status']=='evaluated'];fields=('FN146','FN147','FN148');parts={};gross={m:Decimal(0) for m in MODELS};net={m:Decimal(0) for m in MODELS}
+    valid=[r for r in rows if r['status']=='evaluated'];fields=('inventory_decrease_cashflow','operating_receivables_decrease_cashflow','operating_payables_increase_cashflow');parts={};gross={m:Decimal(0) for m in MODELS};net={m:Decimal(0) for m in MODELS}
     for field in fields:
         projected=[];same=opposite=zeros=0
         for row in valid:
-            base=Decimal(row['base']['components'][field]['value_cny']);actual=Decimal(row['actual']['components'][field]['value_cny']);rev=Decimal(row['actual']['revenue_cny'])
+            base=Decimal(canonical_components(row['base']['components'])[field]['value_cny']);actual=Decimal(canonical_components(row['actual']['components'])[field]['value_cny']);rev=Decimal(row['actual']['revenue_cny'])
             if base*actual>0:same+=1
             elif base*actual<0:opposite+=1
             else:zeros+=1
@@ -100,7 +101,7 @@ def component_diagnostics(rows):
         parts[field]=dict(metrics=metrics(projected),direction=dict(same=same,opposite=opposite,either_zero=zeros))
     for row in valid:
         for m in MODELS:net[m]+=abs(Decimal(row['forecasts_cny'][m])-Decimal(row['actual']['working_cash_cny']))/Decimal(row['actual']['revenue_cny'])
-    return dict(candidates=len(rows),statuses=dict(Counter(r['status'] for r in rows)),components=parts,
+    return dict(candidates=len(rows),statuses=dict(Counter(r['status'] for r in rows)),components=source_components(parts),
                 cancellation={m:dict(sum_component_absolute_error_pct_revenue=float(100*gross[m]/len(valid)) if valid else None,
                     net_absolute_error_pct_revenue=float(100*net[m]/len(valid)) if valid else None,
                     offset_fraction=float(1-net[m]/gross[m]) if gross[m] else None) for m in MODELS},

@@ -438,7 +438,7 @@ def test_cash_anomaly_original_documents_and_tampering():
     with pytest.raises(ValueError,match='TDX bits'):verify_anomaly(ledger,evidence,bad)
 
 
-def test_reinvestment_coverage_preserves_sources_and_rejects_ambiguous_inputs():
+def test_reinvestment_coverage_preserves_sources_and_rejects_ambiguous_inputs(monkeypatch):
     import hashlib
     from collections import defaultdict
     from tools.audit_tdx_reinvestment import audit,component
@@ -460,28 +460,44 @@ def test_reinvestment_coverage_preserves_sources_and_rejects_ambiguous_inputs():
     with pytest.raises(ValueError,match='source rules'):audit(invalid,source)
     original,synthetic=fixture();index=defaultdict(list)
     for r in synthetic['records']:
-        r['bits'].update(FN579=bits(1.25),FN581=bits(2),FN114=bits(100),FN234=bits(100),FN11=bits(int(r['period'][:4])))
+        r['bits'].update(FN579=bits(1.25),FN581=bits(2),FN506=bits(1.25),FN114=bits(100),FN234=bits(100),FN11=bits(int(r['period'][:4])))
         index[(r['code'],r['period'])].append(r)
     artifacts={a['file']:a for a in synthetic['artifacts']}
     def part(field,cutoff=original['evaluation_as_of']):
         return component(index,artifacts,'600519',date(2026,6,30),field,cutoff)
-    assert Decimal(part('FN579')['value_cny'])==12500
-    assert Decimal(part('FN581')['value_cny'])==20000
-    assert Decimal(part('FN114')['value_cny'])==100
-    assert Decimal(part('FN234')['value_cny'])==400
-    assert Decimal(part('FN11')['value_cny'])==1
+    assert Decimal(part('investment_property_depreciation_amortization')['value_cny'])==12500
+    assert Decimal(part('right_of_use_depreciation')['value_cny'])==20000
+    finance=part('financial_business_interest_income')
+    assert Decimal(finance['value_cny'])==12500
+    assert finance['source_inputs'][0]['source_value']=='1.25'
+    assert finance['source_inputs'][0]['multiplier']==10000
+    assert Decimal(part('capital_expenditure_cash')['value_cny'])==100
+    assert Decimal(part('operating_cash_flow')['value_cny'])==400
+    assert Decimal(part('accounts_receivable')['value_cny'])==1
+    from tools import tdx_research_source as adapter
+    before = part('right_of_use_depreciation')
+    with monkeypatch.context() as patch:
+        patch.setitem(adapter.FIELDS, 'right_of_use_depreciation', ('vendor_rou_da', 'ytd'))
+        for rows in index.values():
+            for r in rows:r['bits']['vendor_rou_da'] = r['bits'].pop('FN581')
+        after = part('right_of_use_depreciation')
+        assert after['value_cny'] == before['value_cny']
+        assert after['issues'] == before['issues']
+        for rows in index.values():
+            for r in rows:r['bits']['FN581'] = r['bits'].pop('vendor_rou_da')
+    with pytest.raises(KeyError):part('FN581')
     row=index[('600519','2026-06-30')][0]
     row['bits']['FN579']=bits(0)
-    assert part('FN579')['issues']==['source_zero_ambiguous'] and part('FN579')['value_cny'] is None
+    assert part('investment_property_depreciation_amortization')['issues']==['source_zero_ambiguous'] and part('investment_property_depreciation_amortization')['value_cny'] is None
     del row['bits']['FN579']
-    assert part('FN579')['issues']==['missing_field']
+    assert part('investment_property_depreciation_amortization')['issues']==['missing_field']
     row['bits']['FN579']=0x7f800000
-    assert part('FN579')['issues']==['invalid_source']
+    assert part('investment_property_depreciation_amortization')['issues']==['invalid_source']
     index[('600519','2025-06-30')][0]['bits']['FN114']=bits(1000)
-    assert part('FN114')['issues']==['negative_cumulative_capex']
-    assert part('FN581','2026-07-01T00:00:00+08:00')['issues']==['unavailable_at_cutoff']
+    assert part('capital_expenditure_cash')['issues']==['negative_cumulative_capex']
+    assert part('right_of_use_depreciation','2026-07-01T00:00:00+08:00')['issues']==['unavailable_at_cutoff']
     index[('600519','2026-06-30')].append(copy.deepcopy(row))
-    assert part('FN581')['issues']==['duplicate_identity']
+    assert part('right_of_use_depreciation')['issues']==['duplicate_identity']
 
 
 def test_depreciation_scope_reconciliation_and_tampering():
@@ -1175,6 +1191,8 @@ def test_research_operating_model_uses_canonical_fields(monkeypatch):
         row = {'bits': {source.source_field(field): bits(1.25)}}
         assert source.financial_value(row, field) == Decimal('12500')
         assert source.source_value(row, source.source_field(field)) == Decimal('1.25')
+    tiny = {'bits': {'FN230': 1}}
+    assert source.financial_value(tiny, 'revenue') == source.source_value(tiny, 'FN230')
     study, snapshot = fixture()
     original = run(study, snapshot)
     renamed = copy.deepcopy(snapshot)

@@ -17,7 +17,7 @@ MODELS=('repeat_latest','zero_ocf','mean_two_ocf_margins')
 
 def observation(index,artifacts,code,end,cutoff):
     result=financial(index,artifacts,code,end,cutoff)
-    ocf=component(index,artifacts,code,end,'FN234',cutoff)
+    ocf=component(index,artifacts,code,end,'operating_cash_flow',cutoff)
     if ocf['status']=='blocked':raise ValueError('OCF blocked: '+str(ocf['issues']))
     result.update(ocf_cny=ocf['value_cny'],ocf_inputs=ocf['source_inputs'])
     return result
@@ -85,7 +85,7 @@ def main():
         raw=args.protocol.read_bytes();data=args.snapshot.read_bytes();p=json.loads(raw);source=json.loads(data);digest=lambda b:hashlib.sha256(b).hexdigest()
         if source['study_sha256']!=digest(raw):raise ValueError('source/protocol hash differs')
         evidence=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),
-            helpers={n:digest(Path(__file__).with_name(n+'.py').read_bytes()) for n in ('backtest_tdx_capex','backtest_tdx_history','audit_tdx_reinvestment')})
+            helpers={n:digest(Path(__file__).with_name(n+'.py').read_bytes()) for n in ('backtest_tdx_capex','backtest_tdx_history','tdx_research_source','audit_tdx_reinvestment')})
         if args.phase=='holdout':
             if args.selection is None:raise ValueError('passing development receipt required')
             selected=json.loads(args.selection.read_bytes());dev=study(p,source,'development')

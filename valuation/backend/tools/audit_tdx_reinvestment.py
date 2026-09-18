@@ -7,31 +7,32 @@ import hashlib
 import json
 from pathlib import Path
 
-from tools.backtest_tdx_history import at,available,value,quarter_periods
+from tools.backtest_tdx_history import at,available,quarter_periods
+from tools.tdx_research_source import financial_value,period_basis,source_field,source_evidence,source_components,VALUE_MULTIPLIERS
 
-BALANCES=('FN11','FN12','FN13','FN17','FN44','FN46','FN47')
-AMBIGUOUS=('FN136','FN137','FN138','FN579','FN581','FN146','FN147','FN148','FN104')
-SCALES={'FN579':10000,'FN581':10000}
+BALANCES=('accounts_receivable','prepayments','other_receivables','inventories','accounts_payable','payroll_payable','taxes_payable')
+AMBIGUOUS=('depreciation_depletion','intangible_amortization','deferred_expense_amortization','investment_property_depreciation_amortization','right_of_use_depreciation','inventory_decrease_cashflow','operating_receivables_decrease_cashflow','operating_payables_increase_cashflow','taxes_paid')
+SCALES={f:VALUE_MULTIPLIERS[f] for f in ('investment_property_depreciation_amortization','right_of_use_depreciation')}
 GROUPS={
-    'capital_expenditure_cash':('FN114',),
-    'reported_operating_cashflow':('FN234',),
-    'depreciation_core':('FN136','FN137','FN138'),
-    'depreciation_extensions':('FN579','FN581'),
-    'cashflow_wc_reconciliation':('FN146','FN147','FN148'),
+    'capital_expenditure_cash':('capital_expenditure_cash',),
+    'reported_operating_cashflow':('operating_cash_flow',),
+    'depreciation_core':('depreciation_depletion','intangible_amortization','deferred_expense_amortization'),
+    'depreciation_extensions':('investment_property_depreciation_amortization','right_of_use_depreciation'),
+    'cashflow_wc_reconciliation':('inventory_decrease_cashflow','operating_receivables_decrease_cashflow','operating_payables_increase_cashflow'),
     'partial_balance_changes':BALANCES,
-    'income_tax_accrual':('FN92','FN93'),
-    'all_taxes_paid':('FN104',),
+    'income_tax_accrual':('profit_before_tax','income_tax_expense'),
+    'all_taxes_paid':('taxes_paid',),
 }
 
 
 def component(index,artifacts,code,end,field,cutoff):
-    if field in BALANCES:
+    if period_basis(field)=='instant':
         periods=[(end.isoformat(),1),(end.replace(year=end.year-1).isoformat(),-1)]
-    elif field=='FN234':periods=[(p,1) for p in quarter_periods(end)]
+    elif period_basis(field)=='quarter':periods=[(p,1) for p in quarter_periods(end)]
     else:periods=[(end.isoformat(),1),(f'{end.year-1}-12-31',1),(end.replace(year=end.year-1).isoformat(),-1)]
     inputs=[];issues=[];total=Decimal(0)
     for period,coefficient in periods:
-        rows=index.get((code,period),[]);item=dict(period=period,coefficient=coefficient,field=field)
+        rows=index.get((code,period),[]);item=dict(period=period,coefficient=coefficient,field=source_field(field))
         if not rows:reason='missing_record'
         elif len(rows)!=1:reason='duplicate_identity'
         else:
@@ -40,26 +41,26 @@ def component(index,artifacts,code,end,field,cutoff):
                 artifact=artifacts[row['artifact']]
                 if artifact['report_period']!=period:raise ValueError('artifact period differs')
                 if available(row,artifact)>at(cutoff):reason='unavailable_at_cutoff'
-                elif field not in row['bits']:reason='missing_field'
+                elif source_field(field) not in row['bits']:reason='missing_field'
                 else:
-                    n=value(row,field);item.update(bits=row['bits'][field],source_value=str(n),multiplier=SCALES.get(field,1))
+                    n=financial_value(row,field);item.update(source_evidence(row,field))
                     if field in AMBIGUOUS and n==0:reason='source_zero_ambiguous'
-                    else:reason=None;total+=n*SCALES.get(field,1)*coefficient
+                    else:reason=None;total+=n*coefficient
             except (ValueError,KeyError,ArithmeticError) as exc:
                 reason='invalid_source';item['detail']=str(exc)
         item['status']=reason or 'available_source_component';inputs.append(item)
         if reason:issues.append(reason)
-    if not issues and field=='FN114' and total<0:issues.append('negative_cumulative_capex')
+    if not issues and field=='capital_expenditure_cash' and total<0:issues.append('negative_cumulative_capex')
     return dict(status='blocked' if issues else 'available_source_component',issues=sorted(set(issues)),
-                value_cny=None if issues else str(total),period_basis='instant_yoy_change' if field in BALANCES else 'ttm',source_inputs=inputs)
+                value_cny=None if issues else str(total),period_basis='instant_yoy_change' if period_basis(field)=='instant' else 'ttm',source_inputs=inputs)
 
 
 def audit(protocol,source):
     if protocol['protocol_id']!='tdx-reinvestment-coverage-v1' or source['contract_version']!='tdx-history-source-v1':raise ValueError('unsupported audit protocol/source')
     rules=protocol['source_rules']
-    if rules['multipliers']!=SCALES or set(rules['zero_ambiguous'])!=set(AMBIGUOUS):raise ValueError('source rules differ')
+    if rules['multipliers']!=source_components(SCALES) or set(rules['zero_ambiguous'])!={source_field(f) for f in AMBIGUOUS}:raise ValueError('source rules differ')
     fields=tuple(f for group in GROUPS.values() for f in group)
-    if set(protocol['additional_source_fields'])!={int(f[2:]) for f in fields}:raise ValueError('audit fields differ')
+    if set(protocol['additional_source_fields'])!={int(source_field(f)[2:]) for f in fields}:raise ValueError('audit fields differ')
     samples=[s for s in protocol['samples'] if s['split']==protocol['audit_split']]
     if not samples or len({s['code'] for s in samples})!=len(samples):raise ValueError('empty or duplicate sample')
     periods=protocol['periods']
@@ -77,10 +78,10 @@ def audit(protocol,source):
                              actual_fcff=None,fcff_status='missing_classification_evidence'))
     def summary(selected):
         return dict(candidates=len(selected),source_groups_available={g:sum(r['source_groups_available'][g] for r in selected) for g in GROUPS},
-                    components={f:dict(available=sum(r['components'][f]['status']=='available_source_component' for r in selected),
-                        issues=dict(Counter(i for r in selected for i in r['components'][f]['issues']))) for f in fields},actual_fcff_complete=0)
+                    components=source_components({f:dict(available=sum(r['components'][f]['status']=='available_source_component' for r in selected),
+                        issues=dict(Counter(i for r in selected for i in r['components'][f]['issues']))) for f in fields}),actual_fcff_complete=0)
     return dict(protocol_id=protocol['protocol_id'],scope=dict(securities=len(samples),periods=periods,evaluation_as_of=protocol['evaluation_as_of'],database='none_research_source_snapshot'),
-                summary=summary(rows),by_period={p:summary([r for r in rows if r['period']==p]) for p in periods},results=rows,
+                summary=summary(rows),by_period={p:summary([r for r in rows if r['period']==p]) for p in periods},results=[r|dict(components=source_components(r['components'])) for r in rows],
                 classification_gaps=['operating_vs_nonoperating_working_capital','operating_income_tax_and_interest_tax_shield','acquisitions_and_noncash_reinvestment','depreciation_operating_scope'],
                 boundary='源分量可用不等于标准事实、原文逐公司审核或经营分类闭合；余额差不等于现金流营运调节；各项税费不等于经营所得税；不得将缺项归零或生成实际FCFF')
 
