@@ -113,6 +113,19 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
 		return nil, err
 	}
 	defer tx.Rollback()
+	// 物化已拒绝重叠映射；只读导出也需保护尚未重新物化的目录变更。
+	var overlapping bool
+	if err := tx.QueryRowContext(ctx, `SELECT EXISTS (
+ SELECT 1 FROM fundamental.provider_field a JOIN fundamental.provider_field b
+ ON a.source=b.source AND a.provider_field=b.provider_field AND a.valid_from<b.valid_from
+ WHERE a.source='tdx' AND a.canonical_field IS NOT NULL AND b.canonical_field IS NOT NULL
+ AND (a.valid_to IS NULL OR b.valid_from<a.valid_to)
+ AND (b.valid_to IS NULL OR a.valid_from<b.valid_to))`).Scan(&overlapping); err != nil {
+		return nil, fmt.Errorf("validate export mapping intervals: %w", err)
+	}
+	if overlapping {
+		return nil, errors.New("overlapping canonical field mappings; repair catalogue before valuation export")
+	}
 	output := map[string]any{"contract_version": "alphalake-valuation-v1", "code": code, "report_period": end.Format("2006-01-02"), "information_as_of": asof.UTC().Format(time.RFC3339Nano)}
 	// 以窗口分区键限定候选证券，避免逐公司重排全市场事实。不能提前按代码
 	// 筛选版本：同一证券的其他代码/来源可能已取代旧事实；代码复用须保留全部身份。
@@ -146,6 +159,8 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
     JOIN meta.artifact a ON a.artifact_id=p.artifact_id
     JOIN fundamental.filing d ON d.filing_id=f.source_filing_id
     JOIN fundamental.provider_field m ON m.source=f.primary_source AND m.provider_field=f.source_provider_field
+      AND m.canonical_field=f.canonical_field
+      AND m.valid_from<=f.report_period AND (m.valid_to IS NULL OR f.report_period<m.valid_to)
     WHERE f.instrument_id BETWEEN ? AND ? AND f.provider_code=? AND f.primary_source='tdx' AND f.report_period<=CAST(? AS DATE)
       AND f.report_period>=make_date(year(CAST(? AS DATE))-1,1,1)
     ORDER BY f.report_period,f.source_provider_field,f.fact_id) x`, []any{asof, first.Int64, last.Int64, code, end, end}},

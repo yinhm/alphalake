@@ -1,6 +1,6 @@
 # AlphaLake 实现状态
 
-数据库设计自查见 [ADR 017](decisions/017-database-design-review.md)：`ref → core` 与风险参考拆分方向已确认，映射关联和审核版本存在待修要求；本轮仅文档整理，主库仍为 schema 39，未执行设计迁移。
+数据库设计自查见 [ADR 017](decisions/017-database-design-review.md)：`ref → core` 与风险参考拆分方向已确认，估值导出已修复字段映射的有效期关联并拒绝目录重叠，回归覆盖边界、倍率和同语义拆分不变；审核版本仍待修。主库仍为 schema 39，未执行设计迁移。
 
 公司输入、经济诊断及增量重估的当前交付核对见[三项验收汇总](company-input-delivery-20260917.md)，公司参数拒绝和生产发布边界分别保留。
 
