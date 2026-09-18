@@ -612,6 +612,15 @@ def build_book_dcf_inputs(d, policy):
         rd_expense_million_cny=rd, rd_to_revenue=rd/raw.revenues if rd is not None else None,
         cash_capex_million_cny=cash_capex,
         boundary='研发费用及购建现金仅为投入分量；不代表完整净再投资，不能直接推出收入增长或公司边际资本效率。')
+    # 旧快照无此字段时保持旧诊断；新标准链的缺期不能被当作零处置。
+    if any(w['field'] == 'FN110' for w in d.windows):
+        disposal = window('FN110', False)
+        audit['company_capital_evidence'].update(
+            asset_disposal_cash_million_cny=disposal,
+            cash_capex_after_disposals_million_cny=(cash_capex-disposal
+                if cash_capex is not None and disposal is not None else None),
+            cash_capex_after_disposals_status=('cash_component_not_total_reinvestment'
+                if cash_capex is not None and disposal is not None else 'missing_standard_cash_components'))
     raw.shares_outstanding=values['FN238']
     debt=sum(values[f] for f in ('FN41','FN52','FN55','FN56','FN439'))
     components=dict(cash_recovery_scenario=values['FN133']*policy.cash_recovery,
