@@ -7,7 +7,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from tools.backtest_tdx_history import value
+from tools.tdx_research_source import evidence_value
 from tools.backtest_tdx_revenue_cagr import metrics
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -28,7 +28,7 @@ def signal(row, life):
         raise ValueError('RD annual periods differ')
     if any(r['status'] != 'positive_source' for r in inputs):
         return dict(group='rd_history_unavailable',net_rd_cny=None,selected=BASE)
-    amounts = [value({'bits':{'FN304':r['bits']}},'FN304') for r in inputs]
+    amounts = [evidence_value(r,'research_and_development_expense') for r in inputs]
     if any(n <= 0 or n != Decimal(r['value_cny']) for n,r in zip(amounts,inputs)):
         raise ValueError('RD source bits/value differ')
     scaled = life*amounts[0]-sum(amounts[1:])
@@ -111,5 +111,5 @@ def load_inputs(path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__);parser.add_argument('protocol',type=Path);args=parser.parse_args()
     result = study(*load_inputs(args.protocol))
-    result['evidence'] = dict(protocol_sha256=PROTOCOL_SHA,tool_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
+    result['evidence'] = dict(source_adapter_sha256=hashlib.sha256(Path(__file__).with_name('tdx_research_source.py').read_bytes()).hexdigest(),protocol_sha256=PROTOCOL_SHA,tool_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
     print(json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False))

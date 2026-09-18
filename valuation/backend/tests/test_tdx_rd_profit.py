@@ -28,7 +28,7 @@ def test_saved_development_arithmetic():
             continue
         refs = row['rd']['source_inputs']; year = int(row['origin'][:4])
         assert [r['period'] for r in refs] == [f'{year-i}-12-31' for i in range(6)]
-        rd = [tool.value({'bits':{'FN304':r['bits']}}, 'FN304')/1000000 for r in refs]
+        rd = [Decimal.from_float(struct.unpack('<f',struct.pack('<I',r['bits']))[0])/1000000 for r in refs]
         assert all(d*1000000 == Decimal(r['value_cny']) for d,r in zip(rd,refs))
         current = row['base']; prior = row['rd']['prior_operating']
         budget = (rd[0] + rd[1]*Decimal(str(current['revenue']))/Decimal(str(prior['revenue'])))/2
@@ -43,7 +43,7 @@ def test_saved_development_arithmetic():
         assert observed['ebit_wape_pct'] == pytest.approx(float(wape), abs=1e-10)
 
 
-def test_rd_profit_formula_time_boundary_and_missing(tmp_path):
+def test_rd_profit_formula_time_boundary_and_missing(tmp_path, monkeypatch):
     p = json.loads((tool.ROOT/'valuation/research/tdx-rd-profit/protocol.json').read_bytes())
     parent = dict(samples=[dict(code='000001', split='development')], growth_floor=-.1, growth_ceiling=.2)
     bits = lambda n: struct.unpack('<I', struct.pack('<f', n))[0]
@@ -89,6 +89,13 @@ def test_rd_profit_formula_time_boundary_and_missing(tmp_path):
     loss = tool.study(p,parent,changed)['results'][0]
     assert loss['profit_group'] == 'nonpositive' and loss['status'] == 'evaluated'
     assert loss['forecasts'][tool.PRIMARY]['ebit'] == pytest.approx(-85)
+    from tools import tdx_research_source as adapter
+    renamed = copy.deepcopy(source)
+    for row in renamed['records']:
+        row['bits']['vendor_rd_expense'] = row['bits'].pop('FN304')
+    with monkeypatch.context() as patch:
+        patch.setitem(adapter.FIELDS, 'research_and_development_expense', ('vendor_rd_expense', 'ytd'))
+        assert tool.study(p, parent, renamed) == result
     parent['samples'] *= 2
     with pytest.raises(ValueError,match='unique development'):
         tool.study(p,parent,source)

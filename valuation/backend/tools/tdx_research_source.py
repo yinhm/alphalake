@@ -20,6 +20,7 @@ FIELDS = {
     'deposits_and_interbank_placements': ('FN413', 'instant'),
     'capital_expenditure_cash': ('FN114', 'ytd'),
     'construction_in_progress': ('FN28', 'instant'),
+    'research_and_development_expense': ('FN304', 'ytd'),
 }
 VALUE_MULTIPLIERS = {
     'financial_business_interest_income': 10000,
@@ -71,3 +72,8 @@ def source_field(field):
 
 def source_components(parts):
     return {source_field(field): amount for field, amount in parts.items()}
+
+
+def evidence_value(evidence, field):
+    """按通用字段解码冻结单字段证据；编码及倍率仍由源适配负责。"""
+    return financial_value({"bits": {source_field(field): evidence["bits"]}}, field)

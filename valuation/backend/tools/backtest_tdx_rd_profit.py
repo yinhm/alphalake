@@ -8,7 +8,8 @@ import json
 from pathlib import Path
 
 from engine.module_1_adjustments import capitalize_r_and_d
-from tools.backtest_tdx_history import at, available, value, error
+from tools.backtest_tdx_history import at, available, error
+from tools.tdx_research_source import financial_value, source_field, evidence_value
 from tools.backtest_tdx_normalized_margin import annual, metrics
 from tools.backtest_tdx_revenue_cagr import predictions
 
@@ -27,10 +28,10 @@ def rd_inputs(index, artifacts, code, year, cutoff):
         r = matches[0]; a = artifacts[r['artifact']]
         if a['report_period'] != period or available(r, a) > at(cutoff):
             raise ValueError('RD period/cutoff differs: '+period)
-        amount = value(r, 'FN304')
+        amount = financial_value(r, 'research_and_development_expense')
         if amount <= 0:
             raise ValueError('RD source zero ambiguous or negative: '+period)
-        refs.append(dict(period=period, artifact=r['artifact'], bits=r['bits']['FN304'], value_cny=str(amount)))
+        refs.append(dict(period=period, artifact=r['artifact'], bits=r['bits'][source_field('research_and_development_expense')], value_cny=str(amount)))
     return refs
 
 
@@ -76,7 +77,7 @@ def study(p, parent, source):
                 try:
                     refs = rd_inputs(index, artifacts, code, end.year, cutoff)
                     previous = annual(index, artifacts, code, end.year-1, cutoff)
-                    rd = [float(value({'bits': {'FN304': r['bits']}}, 'FN304')/1000000) for r in refs]
+                    rd = [float(evidence_value(r, 'research_and_development_expense')/1000000) for r in refs]
                     next_rd = (rd[0]/base['revenue'] + rd[1]/previous['revenue'])/2*base['revenue']
                     _, amortization, asset = capitalize_r_and_d(rd[0], rd[1:], 5)
                     _, next_amortization, next_asset = capitalize_r_and_d(next_rd, rd[:5], 5)

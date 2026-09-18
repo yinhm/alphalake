@@ -5,7 +5,8 @@ import hashlib
 import json
 from pathlib import Path
 
-from tools.backtest_tdx_history import at, available, value
+from tools.backtest_tdx_history import at, available
+from tools.tdx_research_source import financial_value, source_field
 
 
 def audit(source, samples):
@@ -41,11 +42,11 @@ def audit(source, samples):
                             raise ValueError('artifact period differs')
                         if available(row, artifact) > at(cutoff):
                             item['status'] = 'unavailable_at_cutoff'
-                        elif 'FN304' not in row['bits']:
+                        elif source_field('research_and_development_expense') not in row['bits']:
                             item['status'] = 'missing_field'
                         else:
-                            amount = value(row, 'FN304')
-                            item.update(bits=row['bits']['FN304'], value_cny=str(amount))
+                            amount = financial_value(row, 'research_and_development_expense')
+                            item.update(bits=row['bits'][source_field('research_and_development_expense')], value_cny=str(amount))
                             item['status'] = ('positive_source' if amount > 0 else
                                               'source_zero_ambiguous' if amount == 0 else 'negative_source')
                     except (ValueError, KeyError, ArithmeticError):
