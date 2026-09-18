@@ -255,15 +255,29 @@ func repairFilingQueries(ctx context.Context, db *sql.DB, source ingest.CNINFOFi
 }
 
 func runMaterializeFundamentals(ctx context.Context, args []string) error {
-	if len(args) != 1 {
-		return fmt.Errorf("usage: alphalake materialize-fundamentals <db-path>")
+	if len(args) < 1 {
+		return fmt.Errorf("usage: alphalake materialize-fundamentals <db-path> [--field FN110]")
 	}
+	fs := flag.NewFlagSet("materialize-fundamentals", flag.ContinueOnError)
+	field := fs.String("field", "", "only rebuild this field using existing filing links")
+	if err := fs.Parse(args[1:]); err != nil {
+		return err
+	}
+	if fs.NArg() != 0 {
+		return fmt.Errorf("unexpected arguments")
+	}
+	var fields []string
+	fs.Visit(func(f *flag.Flag) {
+		if f.Name == "field" {
+			fields = []string{*field}
+		}
+	})
 	db, err := duckstore.OpenAndMigrate(ctx, args[0])
 	if err != nil {
 		return err
 	}
 	defer db.Close()
-	summary, materializeErr := ingest.MaterializeProviderFundamentals(ctx, db, "tdx")
+	summary, materializeErr := ingest.MaterializeProviderFundamentals(ctx, db, "tdx", fields...)
 	fmt.Printf("fundamental materialization: run=%d filing_resolution_attempted=%d filing_resolution_recovered=%d filing_resolution_pending=%d link_records=%d linked=%d link_pending=%d link_ambiguous=%d links_removed=%d candidates=%d materialized=%d inserted=%d updated=%d removed=%d rejected=%d\n",
 		summary.RunID,
 		summary.FilingResolutionAttempted, summary.FilingResolutionRecovered, summary.FilingResolutionPending,

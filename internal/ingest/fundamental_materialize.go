@@ -37,7 +37,7 @@ type FundamentalMaterializationSummary struct {
 // network I/O: provider facts and authoritative filing evidence must already be
 // present. Retained pending filings are first retried against the current temporal
 // security master, then provider/filing links and canonical facts are reconciled.
-func MaterializeProviderFundamentals(ctx context.Context, db *sql.DB, providerSource string) (summary FundamentalMaterializationSummary, retErr error) {
+func MaterializeProviderFundamentals(ctx context.Context, db *sql.DB, providerSource string, fields ...string) (summary FundamentalMaterializationSummary, retErr error) {
 	if db == nil {
 		return summary, errors.New("duckdb is nil")
 	}
@@ -54,25 +54,28 @@ func MaterializeProviderFundamentals(ctx context.Context, db *sql.DB, providerSo
 		finalizeTrackedRun(ctx, db, runID, fundamentalMaterializationRunStatus(summary, retErr), &retErr)
 	}()
 
-	filingResolution, err := duckstore.RefreshPendingFilingResolutions(ctx, db, runID, 500)
-	if err != nil {
-		return summary, fmt.Errorf("refresh pending filing resolutions: %w", err)
-	}
-	summary.FilingResolutionAttempted = filingResolution.Attempted
-	summary.FilingResolutionRecovered = filingResolution.Recovered
-	summary.FilingResolutionPending = filingResolution.StillPending
+	// 限定字段重算只消费既有公告关联，不扩展身份或关联范围。
+	if len(fields) == 0 {
+		filingResolution, err := duckstore.RefreshPendingFilingResolutions(ctx, db, runID, 500)
+		if err != nil {
+			return summary, fmt.Errorf("refresh pending filing resolutions: %w", err)
+		}
+		summary.FilingResolutionAttempted = filingResolution.Attempted
+		summary.FilingResolutionRecovered = filingResolution.Recovered
+		summary.FilingResolutionPending = filingResolution.StillPending
 
-	links, err := duckstore.RefreshProviderFilingLinks(ctx, db, runID, providerSource)
-	if err != nil {
-		return summary, fmt.Errorf("refresh provider filing links: %w", err)
-	}
-	summary.LinkRecords = links.Records
-	summary.Linked = links.Linked
-	summary.LinkPending = links.Pending
-	summary.LinkAmbiguous = links.Ambiguous
-	summary.LinksRemoved = links.Removed
+		links, err := duckstore.RefreshProviderFilingLinks(ctx, db, runID, providerSource)
+		if err != nil {
+			return summary, fmt.Errorf("refresh provider filing links: %w", err)
+		}
+		summary.LinkRecords = links.Records
+		summary.Linked = links.Linked
+		summary.LinkPending = links.Pending
+		summary.LinkAmbiguous = links.Ambiguous
+		summary.LinksRemoved = links.Removed
 
-	facts, err := duckstore.MaterializeCanonicalFundamentals(ctx, db, runID, providerSource)
+	}
+	facts, err := duckstore.MaterializeCanonicalFundamentals(ctx, db, runID, providerSource, fields...)
 	if err != nil {
 		return summary, fmt.Errorf("materialize canonical fundamentals: %w", err)
 	}

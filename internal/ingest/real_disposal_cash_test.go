@@ -37,7 +37,10 @@ func TestRealAssetDisposalCash(t *testing.T) {
 	_, err = db.ExecContext(ctx, `DELETE FROM meta.schema_version WHERE version=45`)
 	check(err)
 	check(duck.Apply(ctx, db))
-	_, err = MaterializeProviderFundamentals(ctx, db, "tdx")
+	var unchanged string
+	otherFacts := `SELECT CAST(count(*) AS VARCHAR)||':'||CAST(bit_xor(hash(f)) AS VARCHAR)||':'||CAST(sum(CAST(hash(f) AS HUGEINT)) AS VARCHAR) FROM fundamental.fact f WHERE source_provider_field<>'FN110'`
+	check(db.QueryRowContext(ctx, otherFacts).Scan(&unchanged))
+	_, err = MaterializeProviderFundamentals(ctx, db, "tdx", "FN110")
 	check(err)
 	for _, p := range []string{"2025-06-30", "2025-12-31", "2026-06-30"} {
 		var bits uint32
@@ -75,7 +78,7 @@ func TestRealAssetDisposalCash(t *testing.T) {
 	}
 	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE provider_field='FN110'`)
 	check(err)
-	_, err = MaterializeProviderFundamentals(ctx, db, "tdx")
+	_, err = MaterializeProviderFundamentals(ctx, db, "tdx", "FN110")
 	check(err)
 	var n int
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE source_provider_field='FN110'`).Scan(&n))
@@ -84,9 +87,9 @@ func TestRealAssetDisposalCash(t *testing.T) {
 	}
 	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=1 WHERE provider_field='FN110'`)
 	check(err)
-	_, err = MaterializeProviderFundamentals(ctx, db, "tdx")
+	_, err = MaterializeProviderFundamentals(ctx, db, "tdx", "FN110")
 	check(err)
-	replay, err := MaterializeProviderFundamentals(ctx, db, "tdx")
+	replay, err := MaterializeProviderFundamentals(ctx, db, "tdx", "FN110")
 	check(err)
 	if replay.Inserted+replay.Updated+replay.Removed != 0 {
 		t.Fatal("non-idempotent", replay)
@@ -156,6 +159,11 @@ func TestRealAssetDisposalCash(t *testing.T) {
 	exportReview("disposal-restored-export")
 	var actions int
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.supplement_review_history WHERE provider_code='300866' AND item='reviewed_asset_disposal_cash_zero'`).Scan(&actions))
+	var after string
+	check(db.QueryRowContext(ctx, otherFacts).Scan(&after))
+	if after != unchanged {
+		t.Fatal("scoped rebuild changed other facts")
+	}
 	if actions != 4 {
 		t.Fatal("missing review history", actions)
 	}

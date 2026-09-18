@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -44,8 +45,15 @@ type CanonicalFundamentalResult struct {
 // field mappings with known units are eligible. The operation is deterministic
 // and set-based: canonical rows are inserted, corrected in place by immutable raw
 // identity, or removed if their source record is no longer safely materializable.
-func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRunID int64, providerSource string) (CanonicalFundamentalResult, error) {
+func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRunID int64, providerSource string, fields ...string) (CanonicalFundamentalResult, error) {
 	var result CanonicalFundamentalResult
+	field := ""
+	if len(fields) > 1 || (len(fields) == 1 && !regexp.MustCompile(`^FN[1-9][0-9]*$`).MatchString(fields[0])) {
+		return result, errors.New("one explicit FN field required")
+	}
+	if len(fields) == 1 {
+		field = fields[0]
+	}
 	if db == nil {
 		return result, errors.New("duckdb is nil")
 	}
@@ -94,12 +102,12 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 			 AND m.provider_field=pf.provider_field
 			 AND (m.valid_from IS NULL OR m.valid_from <= pf.report_period)
 			 AND (m.valid_to IS NULL OR m.valid_to > pf.report_period)
-			WHERE pf.source=?
+			WHERE pf.source=? AND (?='' OR pf.provider_field=?)
 			  AND m.canonical_field IS NOT NULL
 			GROUP BY pf.provider_fact_id
 			HAVING count(*) > 1
 		)
-	`, providerSource).Scan(&ambiguousMappings); err != nil {
+	`, providerSource, field, field).Scan(&ambiguousMappings); err != nil {
 		return result, fmt.Errorf("validate provider field mapping intervals: %w", err)
 	}
 	if ambiguousMappings != 0 {
@@ -142,7 +150,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 			 AND m.provider_field=pf.provider_field
 			 AND (m.valid_from IS NULL OR m.valid_from <= pf.report_period)
 			 AND (m.valid_to IS NULL OR m.valid_to > pf.report_period)
-			WHERE pf.source=?
+			WHERE pf.source=? AND (?='' OR pf.provider_field=?)
 			  AND m.canonical_field IS NOT NULL
 		)
 		SELECT
@@ -167,7 +175,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 				ELSE NULL
 			END AS rejection_rule
 		FROM candidates
-	`, providerSource); err != nil {
+	`, providerSource, field, field); err != nil {
 		return result, fmt.Errorf("build fundamental rejection stage: %w", err)
 	}
 
@@ -298,7 +306,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 	if err := conn.QueryRowContext(ctx, `
 		SELECT count(*)
 		FROM fundamental.fact f
-		WHERE f.primary_source=?
+		WHERE f.primary_source=? AND (?='' OR f.source_provider_field=?)
 		  AND f.provider_code IS NOT NULL
 		  AND f.materializer_version <> 'legacy'
 		  AND NOT EXISTS (
@@ -308,12 +316,12 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 			  AND s.provider_code=f.provider_code
 			  AND s.source_provider_field=f.source_provider_field
 		  )
-	`, providerSource).Scan(&result.Removed); err != nil {
+	`, providerSource, field, field).Scan(&result.Removed); err != nil {
 		return result, fmt.Errorf("count stale canonical fundamental facts: %w", err)
 	}
 	if _, err := conn.ExecContext(ctx, `
 		DELETE FROM fundamental.fact f
-		WHERE f.primary_source=?
+		WHERE f.primary_source=? AND (?='' OR f.source_provider_field=?)
 		  AND f.provider_code IS NOT NULL
 		  AND f.materializer_version <> 'legacy'
 		  AND NOT EXISTS (
@@ -323,7 +331,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 			  AND s.provider_code=f.provider_code
 			  AND s.source_provider_field=f.source_provider_field
 		  )
-	`, providerSource); err != nil {
+	`, providerSource, field, field); err != nil {
 		return result, fmt.Errorf("remove stale canonical fundamental facts: %w", err)
 	}
 
