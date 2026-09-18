@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 from tools.migrate_standard_contract import upgrade_legacy
+from tools.tdx_research_source import canonical_components
 from decimal import Decimal
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -35,10 +36,11 @@ def verify_components():
        comparisons.append(dict(year=year,field=field,source_bits=r['bits'][field],source_value=str(value(r['bits'][field])),value_multiplier=multiplier,pdf_row_id=pdf['id'],pdf_id=pdf['pdf_id'],pdf_page=int(pdf['pdf_page']),pdf_column=int(pdf['column']),pdf_decimal=pdf['value'],expected_source_bits=bits(encoded),status='source_precision_match' if matched else 'source_pdf_version_conflict_unresolved'))
        amounts[field]=value(r['bits'][field])*multiplier
        if not matched:conflicts.append(field)
-      da=sum((amounts[f] for f in ('FN136','FN137','FN138','FN579')),D(0))
-      wc=-sum((amounts[f] for f in ('FN146','FN147','FN148')),D(0))
-      subtotal=amounts['FN114']-da+wc
-      rows.append(dict(year=year,cash_capex_cny=str(amounts['FN114']),matched_nonlease_da_cny=str(da),cashflow_wc_cash_use_cny=str(wc),rou_depreciation_separate_cny=str(amounts['FN581']),rd_expense_separate_cny=str(amounts['FN304']),source_formula_subtotal_cny=str(subtotal),evidence_supported_subtotal_cny=None if conflicts else str(subtotal),conflict_fields=conflicts,classified_reinvestment=None,actual_fcff=None,status='source_pdf_conflict' if conflicts else 'matched_components_not_full_reinvestment'))
+      amounts=canonical_components(amounts)
+      da=sum((amounts[f] for f in ('depreciation_depletion','intangible_amortization','deferred_expense_amortization','investment_property_depreciation_amortization')),D(0))
+      wc=-sum((amounts[f] for f in ('inventory_decrease_cashflow','operating_receivables_decrease_cashflow','operating_payables_increase_cashflow')),D(0))
+      subtotal=amounts['capital_expenditure_cash']-da+wc
+      rows.append(dict(year=year,cash_capex_cny=str(amounts['capital_expenditure_cash']),matched_nonlease_da_cny=str(da),cashflow_wc_cash_use_cny=str(wc),rou_depreciation_separate_cny=str(amounts['right_of_use_depreciation']),rd_expense_separate_cny=str(amounts['research_and_development_expense']),source_formula_subtotal_cny=str(subtotal),evidence_supported_subtotal_cny=None if conflicts else str(subtotal),conflict_fields=conflicts,classified_reinvestment=None,actual_fcff=None,status='source_pdf_conflict' if conflicts else 'matched_components_not_full_reinvestment'))
      conflicts=[(c['year'],c['field']) for c in comparisons if c['status']!='source_precision_match']
      assert conflicts==[(2022,'FN148')],conflicts
      return dict(code='300866',years=list(range(2021,2026)),comparison_count=50,matched_count=49,conflict_count=1,comparisons=comparisons,annual_components=rows,boundary='source_precision_preserved; later_acquired_and_restated_versions; source_subtotal_is_not_full_net_reinvestment_or_FCFF; excluded_lease_investment_RD_reclassification_disposal_and_other_adjustments_not_zero; no_capital_ratio_adoption_or_forecast_validation')

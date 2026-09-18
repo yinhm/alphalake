@@ -10,7 +10,7 @@ import re
 
 from pypdf import PdfReader
 from tools.backtest_tdx_history import available, at, window
-from tools.tdx_research_source import source_value as value
+from tools.tdx_research_source import financial_value
 
 
 def build(directory, pdf_directory, history_source=None):
@@ -75,7 +75,7 @@ def build(directory, pdf_directory, history_source=None):
                 if available(record,artifacts[record['artifact']]) > at(str(int(report['provider_date'][:4]))+'-09-01T00:00:00+08:00'):
                     status = 'unavailable_source_history'
                 else:
-                    encoded = value(record,'FN86')/1000000
+                    encoded = financial_value(record,'operating_profit_cumulative')/1000000
                     status = 'matched' if encoded.quantize(D(1),rounding=ROUND_HALF_UP)==amount else 'history_amount_differs'
             history.append(dict(info_code=report['info_code'],year=year,printed_million_cny=str(amount),status=status))
             if status != 'matched':issues.append(status+':'+str(year))
@@ -98,7 +98,7 @@ def build(directory, pdf_directory, history_source=None):
             actual = records[r['code'],str(r['target_year'])+'-12-31']
             if available(actual,artifacts[actual['artifact']]) > at('2026-09-10T00:00:00+08:00'):
                 raise ValueError('actual not available at fixed cutoff')
-            profit = value(actual,'FN86'); revenue = D(original['actual_revenue_cny'])
+            profit = financial_value(actual,'operating_profit_cumulative'); revenue = D(original['actual_revenue_cny'])
             r.update(actual_profit_cny=str(profit),actual_revenue_cny=str(revenue),origin_reported_margin=str(margin),actual_bits=actual['bits']['FN86'],profit_predictions_cny={k:str(v) for k,v in predicted.items()},profit_errors_cny={k:str(v-profit) for k,v in predicted.items()},paired_revenue_errors_pct={k:original['errors_pct_actual'][k] for k in ('broker','current_rule_fy_bridge')})
         output.append(r)
     if len(output) != plan['positions']:

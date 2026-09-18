@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 
 from pypdf import PdfReader
-from tools.tdx_research_source import source_value as value
+from tools.tdx_research_source import financial_value
 
 
 def verify(directory, pdf_directory):
@@ -38,7 +38,7 @@ def verify(directory, pdf_directory):
             h = dict(year=year,printed_million_cny=amount)
             if record is None: h['status'] = 'missing_in_frozen_source'
             else:
-                actual = value(record,'FN114')
+                actual = financial_value(record,'capital_expenditure_cash')
                 h.update(tdx_purchase_cash_cny=str(actual),bits=record['bits']['FN114'],artifact=record['artifact'],status='numeric_match_only' if (actual/1000000).quantize(Decimal(1),rounding=ROUND_HALF_UP)==abs(amount) else 'differs_from_gross_purchase_cash')
             history.append(h)
         assert history == row['historical'], 'historical diagnostic differs'

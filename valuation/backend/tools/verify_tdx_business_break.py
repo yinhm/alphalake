@@ -10,7 +10,7 @@ import struct
 
 from pypdf import PdfReader
 from tools.backtest_tdx_history import at, available
-from tools.tdx_research_source import source_value as value
+from tools.tdx_research_source import financial_value
 
 
 def verify(ledger,directory,source):
@@ -54,10 +54,10 @@ def verify(ledger,directory,source):
             if len(records)!=1:raise ValueError('source identity not unique')
             record=records[0];artifact=artifacts[record['artifact']]
             if artifact['report_period']!=period or available(record,artifact)>cutoff:raise ValueError('source period/cutoff differs')
-            revenue=value(record,'FN230');bits=record['bits']['FN230'];half_revenue+=revenue;bound+=Decimal(2)**(max(((bits>>23)&255)-127,-126)-24)
+            revenue=financial_value(record,'revenue');bits=record['bits']['FN230'];half_revenue+=revenue;bound+=Decimal(2)**(max(((bits>>23)&255)-127,-126)-24)
             refs.append(dict(period=period,field='FN230',source_bits=bits,artifact=record['artifact']))
             if month=='06-30':
-                inventory=value(record,'FN17')
+                inventory=financial_value(record,'inventories')
                 if record['bits']['FN17']!=struct.unpack('<I',struct.pack('<f',float(amounts['inventory'])))[0]:raise ValueError('inventory source bits differ')
                 refs.append(dict(period=period,field='FN17',source_bits=record['bits']['FN17'],artifact=record['artifact']))
         if abs(half_revenue-amounts['revenue'])>bound:raise ValueError('revenue exceeds source rounding bound')

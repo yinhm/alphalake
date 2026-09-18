@@ -10,7 +10,7 @@ import struct
 
 from pypdf import PdfReader
 from tools.backtest_tdx_history import quarter_periods, available, at
-from tools.tdx_research_source import source_value as value
+from tools.tdx_research_source import source_value as value, financial_value, canonical_field
 
 
 
@@ -32,17 +32,17 @@ def cash_bridge(amounts,record,source,code,period,tdx_da,pdf_da,cutoff):
         if len(rows)!=1:raise ValueError('cash quarter identity not unique')
         r=rows[0];a=artifacts[r['artifact']]
         if a['report_period']!=p or available(r,a)>at(cutoff):raise ValueError('cash quarter period/cutoff differs')
-        n=value(r,'FN234');bits=r['bits']['FN234'];ocf+=n
+        n=financial_value(r,'operating_cash_flow');bits=r['bits']['FN234'];ocf+=n
         bound+=Decimal(2)**(max(((bits>>23)&255)-127,-126)-24)
         quarters.append(dict(period=p,artifact=r['artifact'],field='FN234',source_bits=bits,value_cny=str(n)))
     if abs(ocf-amounts['cash_ocf'])>bound:raise ValueError('quarter OCF exceeds source rounding bound')
-    source_wc=sum((value(record,f) for f in ('FN146','FN147','FN148')),Decimal(0))
+    source_wc=sum((financial_value(record,f) for f in ('inventory_decrease_cashflow','operating_receivables_decrease_cashflow','operating_payables_increase_cashflow')),Decimal(0))
     pdf_wc=sum((amounts[k] for k in ('cash_inventory','cash_receivables','cash_payables')),Decimal(0))
-    source_net=value(record,'FN92')-value(record,'FN93')
+    source_net=financial_value(record,'profit_before_tax')-financial_value(record,'income_tax_expense')
     return dict(checked_source_inputs=checked,ocf_quarters=quarters,ocf_rounding_bound_cny=str(bound),
                 source=dict(operating_cashflow=str(ocf),net_income_derived=str(source_net),reported_da=str(tdx_da),
                             working_capital_cash_adjustment=str(source_wc),unclassified_other_adjustments=str(ocf-source_net-tdx_da-source_wc),
-                            capex_cash=str(value(record,'FN114')),reported_ocf_less_capex=str(ocf-value(record,'FN114'))),
+                            capex_cash=str(financial_value(record,'capital_expenditure_cash')),reported_ocf_less_capex=str(ocf-financial_value(record,'capital_expenditure_cash'))),
                 pdf=dict(operating_cashflow=str(amounts['cash_ocf']),net_income_derived=str(amounts['cash_net_income']),reported_da=str(pdf_da),
                          working_capital_cash_adjustment=str(pdf_wc),unclassified_other_adjustments=str(amounts['cash_ocf']-amounts['cash_net_income']-pdf_da-pdf_wc),
                          capex_cash=str(amounts['cash_capex']),reported_ocf_less_capex=str(amounts['cash_ocf']-amounts['cash_capex'])),
@@ -73,8 +73,8 @@ def inventory_bridge(report,text,record,cash_amount):
         if record['bits'][field]!=struct.unpack('<I',struct.pack('<f',float(amount)))[0]:raise ValueError('inventory source bits differ: '+field)
     return dict(gross_open_cny=str(gross_open),gross_close_cny=str(gross_close),provision_open_cny=str(provision_open),provision_close_cny=str(provision_close),
         net_open_cny=str(net_open),net_close_cny=str(net_close),gross_decrease_cny=str(gross_open-gross_close),net_decrease_cny=str(net_open-net_close),
-        provision_decrease_cny=str(provision_open-provision_close),pdf_cash_adjustment_cny=str(cash_amount),source_net_close_cny=str(value(record,'FN17')),
-        source_cash_adjustment_cny=str(value(record,'FN146')),source_net_minus_pdf_cny=str(value(record,'FN17')-net_close),source_cash_minus_pdf_cny=str(value(record,'FN146')-cash_amount),
+        provision_decrease_cny=str(provision_open-provision_close),pdf_cash_adjustment_cny=str(cash_amount),source_net_close_cny=str(financial_value(record,'inventories')),
+        source_cash_adjustment_cny=str(financial_value(record,'inventory_decrease_cashflow')),source_net_minus_pdf_cny=str(financial_value(record,'inventories')-net_close),source_cash_minus_pdf_cny=str(financial_value(record,'inventory_decrease_cashflow')-cash_amount),
         checked_source_inputs=[dict(field=f,source_bits=record['bits'][f],artifact=record['artifact']) for f in ('FN17','FN146')],
         boundary='company_period_reconciliation_not_universal_inventory_identity_or_classified_FCFF')
 
@@ -137,7 +137,7 @@ def verify(ledger,directory,source):
             if multiplier==10000:encoded=encoded.quantize(Decimal('.01'),rounding=ROUND_HALF_UP)
             bits=struct.unpack('<I',struct.pack('<f',float(encoded)))[0]
             if record['bits'][field]!=bits:raise ValueError('TDX bits differ: '+field)
-            amount=value(record,field)*multiplier;tdx_total+=amount
+            amount=financial_value(record,canonical_field(field));tdx_total+=amount
             consumed.append(dict(field=field,source_bits=bits,multiplier=multiplier,value_cny=str(amount),artifact=record['artifact']))
         combined={'FN579':'included_in_FN136'}
         if included_rou:combined['FN581']='included_in_FN136'
