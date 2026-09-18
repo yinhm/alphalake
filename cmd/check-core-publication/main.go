@@ -41,6 +41,7 @@ func run(args []string) error {
 	}
 	base, candidate := args[0], args[1]
 	fs := flag.NewFlagSet("check-core-publication", flag.ContinueOnError)
+	standard := fs.Bool("standard-fields", false, "fixed schema45 to46 standard financial semantics publication")
 	disposal := fs.Bool("disposal-cash", false, "fixed schema44 to45 FN110 and Anker reviewed zero publication")
 	assets := fs.Bool("reviewed-assets", false, "fixed two-company schema44 asset publication")
 	rawRoot := fs.String("raw-root", "", "artifact root for reviewed asset publication")
@@ -50,7 +51,7 @@ func run(args []string) error {
 	if e := fs.Parse(args[2:]); e != nil {
 		return e
 	}
-	if *assets && *disposal {
+	if (*assets && *disposal) || (*standard && (*assets || *disposal)) {
 		return fmt.Errorf("choose one publication scope")
 	}
 	if fs.NArg() != 0 {
@@ -109,7 +110,15 @@ func run(args []string) error {
 		return e
 	}
 	checks := map[string]summary{}
-	if *disposal {
+	if *standard {
+		if bv != 45 || cv != 46 {
+			return fmt.Errorf("standard fields require schema45 to46")
+		}
+		checks, e = checkStandardFields(ctx, db)
+		if e != nil {
+			return e
+		}
+	} else if *disposal {
 		if bv != 44 || cv != 45 || *rawRoot == "" {
 			return fmt.Errorf("disposal publication requires schema44 to45 and raw root")
 		}
@@ -272,6 +281,16 @@ func run(args []string) error {
 
 	}
 	var scopeCounts map[string]any
+	if *standard {
+		var normalized, fields int
+		if e = db.QueryRowContext(ctx, `SELECT count(*) FROM baseline.fundamental.fact WHERE canonical_field='total_shares' AND materializer_version<>'legacy' AND period_type<>'instant'`).Scan(&normalized); e != nil {
+			return e
+		}
+		if e = db.QueryRowContext(ctx, `SELECT count(*) FROM candidate.fundamental.field`).Scan(&fields); e != nil {
+			return e
+		}
+		scopeCounts = map[string]any{"standard_fields": fields, "normalized_share_period_labels": normalized, "financial_values_changed": 0, "boundary": "schema and identifiers only; no new company evidence or valuation assumptions"}
+	}
 	if *disposal {
 		var facts, companies, periods int
 		var first, last string
@@ -284,6 +303,9 @@ func run(args []string) error {
 	backup := ""
 	if *publish {
 		backup = base + ".pre-core-risk-20260918"
+		if *standard {
+			backup = base + ".pre-standard-fields-20260918"
+		}
 		if *disposal {
 			backup = base + ".pre-disposal-cash-20260918"
 		}
