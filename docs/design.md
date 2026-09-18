@@ -9,7 +9,7 @@
 
 本文约束架构和兼容性方向，并不表示所有未来领域都已实现。当前可执行状态见[实现状态](implementation-status.md)，详细决策保存在[决策目录](decisions/)。
 
-多市场身份与 WACC 数据见 [ADR 016](decisions/016-multi-market-wacc-data.md)：参考发布、固定版本估值桥接及限定公司的 listing 已实现，尚非全市场多市场身份支持。本轮领域命名、风险参考拆分及版本边界以 [ADR 017](decisions/017-database-design-review.md) 为准；`ref → core` 和风险参考拆分已由迁移043/044实现，详见[升级说明](core-risk-migration.md)；主库尚未发布。
+多市场身份与 WACC 数据见 [ADR 016](decisions/016-multi-market-wacc-data.md)：参考发布、固定版本估值桥接及限定公司的 listing 已实现，尚非全市场多市场身份支持。本轮领域命名、风险参考拆分及版本边界以 [ADR 017](decisions/017-database-design-review.md) 为准；`ref → core` 和风险参考拆分已由迁移043/044实现，详见[升级说明](core-risk-migration.md)；财务主库及实际参考库已[发布schema44](core-main-publication-20260918.md)。
 
 ## 1. 产品定义
 
