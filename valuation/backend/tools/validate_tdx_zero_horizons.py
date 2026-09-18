@@ -35,7 +35,7 @@ def load(p,raw):
     if definition!=dict(parent_protocol_sha256=p['parent_protocol_sha256'],phase='development',samples=[s for s in p['samples'] if s['split']=='development']):raise ValueError('development definition differs')
     if source['study_sha256']!=p['development_definition_sha256']:raise ValueError('development source binding differs')
     result=evaluate(p,source,'development')
-    result['evidence']=dict(protocol_sha256=digest(raw),snapshot_sha256=p['development_snapshot_sha256'],code_sha256=digest(Path(__file__).read_bytes()),helpers={name:digest((ROOT/'valuation/backend'/name).read_bytes()) for name in ['tools/backtest_tdx_multiyear_growth.py','tools/validate_tdx_zero_growth.py','tools/backtest_tdx_cash_revenue.py','tools/backtest_tdx_history.py','data_sources/alphalake.py','engine/module_4_dcf.py']})
+    result['evidence']=dict(protocol_sha256=digest(raw),snapshot_sha256=p['development_snapshot_sha256'],code_sha256=digest(Path(__file__).read_bytes()),helpers={name:digest((ROOT/'valuation/backend'/name).read_bytes()) for name in ['tools/backtest_tdx_multiyear_growth.py','tools/validate_tdx_zero_growth.py','tools/backtest_tdx_cash_revenue.py','tools/backtest_tdx_history.py', 'tools/tdx_research_source.py','data_sources/alphalake.py','engine/module_4_dcf.py']})
     return source,result
 
 

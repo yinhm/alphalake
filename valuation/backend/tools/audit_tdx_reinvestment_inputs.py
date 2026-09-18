@@ -83,7 +83,7 @@ if __name__ == '__main__':
     if source['study_sha256'] != hashlib.sha256(config).hexdigest():
         raise ValueError('study hash differs')
     result = audit(source,json.loads(config)['samples'])
-    result['evidence'] = dict(snapshot_sha256=hashlib.sha256(raw).hexdigest(),study_sha256=source['study_sha256'],
+    result['evidence'] = dict(source_adapter_sha256=hashlib.sha256(Path(__file__).with_name('tdx_research_source.py').read_bytes()).hexdigest(), snapshot_sha256=hashlib.sha256(raw).hexdigest(),study_sha256=source['study_sha256'],
         tool_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         helper_sha256=hashlib.sha256(Path(__file__).with_name('backtest_tdx_history.py').read_bytes()).hexdigest())
     print(json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False))

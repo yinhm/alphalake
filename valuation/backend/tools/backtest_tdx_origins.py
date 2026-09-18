@@ -203,7 +203,7 @@ def main():
         raw=a.protocol.read_bytes();source=a.snapshot.read_bytes();protocol=json.loads(raw);snapshot=json.loads(source)
         if snapshot['study_sha256']!=protocol.get('source_study_sha256',digest(raw)):raise ValueError('source study differs from protocol')
         if 'source_snapshot_sha256' in protocol and protocol['source_snapshot_sha256']!=digest(source):raise ValueError('source snapshot differs from protocol')
-        evidence=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(source),
+        evidence=dict(source_adapter_sha256=hashlib.sha256(Path(__file__).with_name('tdx_research_source.py').read_bytes()).hexdigest(), protocol_sha256=digest(raw),snapshot_sha256=digest(source),
                       rule_code_sha256=digest((Path(__file__).resolve().parents[1]/'data_sources/alphalake.py').read_bytes()),
                       calibration_code_sha256=digest((Path(__file__).resolve().parents[1]/'data_sources/alphalake_calibration.py').read_bytes()),
                       base_backtest_sha256=digest((Path(__file__).parent/'backtest_tdx_history.py').read_bytes()),code_sha256=digest(Path(__file__).read_bytes()))

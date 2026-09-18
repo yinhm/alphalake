@@ -22,7 +22,7 @@ def revenue_window(index,artifacts,code,end,cutoff):
         row=matches[0];a=artifacts[row['artifact']]
         if a['report_period']!=period or available(row,a)>at(cutoff):raise ValueError('revenue period/cutoff differs')
         rows[period]=row
-    revenue,refs=window(rows,end,'FN230')
+    revenue,refs=window(rows,end,'revenue')
     if revenue<=0:raise ValueError('nonpositive revenue')
     return revenue,refs,rows
 
@@ -165,7 +165,7 @@ def main():
         if args.diagnose_components and p['protocol_id']!='tdx-working-cash-forecast-v1':raise ValueError('component diagnosis requires original lagged models')
         if p['protocol_id']=='tdx-working-cash-forecast-v4' and (not p.get('source_protocol_sha256') or not p.get('source_snapshot_sha256')):raise ValueError('scope study source binding required')
         if source['study_sha256']!=p.get('source_protocol_sha256',digest(raw)) or ('source_snapshot_sha256' in p and p['source_snapshot_sha256']!=digest(data)):raise ValueError('source/protocol hash differs')
-        evidence=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),history_sha256=digest(Path(__file__).with_name('backtest_tdx_history.py').read_bytes()),component_sha256=digest(Path(__file__).with_name('audit_tdx_reinvestment.py').read_bytes()))
+        evidence=dict(source_adapter_sha256=hashlib.sha256(Path(__file__).with_name('tdx_research_source.py').read_bytes()).hexdigest(), protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),history_sha256=digest(Path(__file__).with_name('backtest_tdx_history.py').read_bytes()),component_sha256=digest(Path(__file__).with_name('audit_tdx_reinvestment.py').read_bytes()))
         if args.phase=='holdout':
             if args.selection is None:raise ValueError('passing development receipt required')
             selected=json.loads(args.selection.read_bytes());dev=study(p,source,'development')

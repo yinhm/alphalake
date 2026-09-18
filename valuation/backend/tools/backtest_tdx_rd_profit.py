@@ -151,7 +151,7 @@ def load_inputs(path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__); parser.add_argument('protocol', type=Path)
     result = study(*load_inputs(parser.parse_args().protocol))
-    names = ('engine/module_1_adjustments.py', 'tools/backtest_tdx_history.py', 'tools/backtest_tdx_normalized_margin.py', 'tools/backtest_tdx_revenue_cagr.py')
+    names = ('engine/module_1_adjustments.py', 'tools/backtest_tdx_history.py', 'tools/tdx_research_source.py', 'tools/backtest_tdx_normalized_margin.py', 'tools/backtest_tdx_revenue_cagr.py')
     result['evidence'] = dict(protocol_sha256=PROTOCOL_SHA, tool_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         helpers={n:hashlib.sha256((ROOT/'valuation/backend'/n).read_bytes()).hexdigest() for n in names})
     print(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False))

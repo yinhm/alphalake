@@ -86,7 +86,7 @@ def main():
     result = diagnose(p, json.loads(data))
     result['evidence'] = dict(protocol_sha256=hashlib.sha256(raw).hexdigest(),
         snapshot_sha256=hashlib.sha256(data).hexdigest(), helpers={f: hashlib.sha256((ROOT/'valuation/backend'/f).read_bytes()).hexdigest()
-        for f in ('tools/audit_tdx_origin_inputs.py', 'tools/backtest_tdx_history.py', 'tools/backtest_tdx_normalized_margin.py')})
+        for f in ('tools/audit_tdx_origin_inputs.py', 'tools/backtest_tdx_history.py', 'tools/tdx_research_source.py', 'tools/backtest_tdx_normalized_margin.py')})
     print(json.dumps(result, ensure_ascii=False, allow_nan=False, indent=2))
 
 

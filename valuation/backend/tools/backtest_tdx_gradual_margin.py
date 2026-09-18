@@ -7,7 +7,8 @@ import json
 from pathlib import Path
 
 from data_sources.alphalake import HistoricalDCFPolicy,historical_forecast
-from tools.backtest_tdx_history import value,error
+from tools.backtest_tdx_history import error
+from tools.tdx_research_source import financial_value,source_field
 from tools.backtest_tdx_normalized_margin import study,summarize,MODELS
 
 ROOT=Path(__file__).resolve().parents[3]
@@ -23,7 +24,7 @@ def forecast(row,index,base_policy):
         end=date.fromisoformat(pair['period'])
         for period in (end,end.replace(year=end.year-1)):
             source=index[(code,period.isoformat())]
-            quarters[period]=(value(source,'FN230'),source['artifact']+':'+code+':FN230')
+            quarters[period]=(financial_value(source,'revenue'),source['artifact']+':'+code+':'+source_field('revenue'))
     base=row['base'];current=base['ebit']/base['revenue']
     policy=HistoricalDCFPolicy.model_validate(base_policy|dict(approved_report_period=row['origin'],growth_floor=0,growth_ceiling=0,margin_shift=row['normalized_margin']-current))
     annual,evidence=historical_forecast(base['revenue'],base['ebit'],quarters,date.fromisoformat(row['origin']),policy)
@@ -60,7 +61,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('protocol',type=Path);args=parser.parse_args()
     try:
         raw=args.protocol.read_bytes();out=run(json.loads(raw))
-        out['evidence']=dict(protocol_sha256=digest(raw),code_sha256=digest(Path(__file__).read_bytes()),helpers={name:digest((ROOT/'valuation/backend'/name).read_bytes()) for name in ['tools/backtest_tdx_normalized_margin.py','tools/backtest_tdx_history.py','data_sources/alphalake.py']})
+        out['evidence']=dict(protocol_sha256=digest(raw),code_sha256=digest(Path(__file__).read_bytes()),helpers={name:digest((ROOT/'valuation/backend'/name).read_bytes()) for name in ['tools/backtest_tdx_normalized_margin.py','tools/backtest_tdx_history.py', 'tools/tdx_research_source.py','data_sources/alphalake.py']})
         print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))
     except (ValueError,KeyError,TypeError,OSError) as exc:
         print(json.dumps(dict(status='rejected',reason=str(exc)),ensure_ascii=False));raise SystemExit(1)

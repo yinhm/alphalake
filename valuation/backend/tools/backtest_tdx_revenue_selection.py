@@ -124,7 +124,7 @@ def main():
     result = study(p, base, inputs['snapshot'], inputs['origin_diagnostics'])
     result['evidence'] = dict(protocol_sha256=PROTOCOL_SHA, parent_protocol_sha256=p['parent_protocol_sha256'], snapshot_sha256=base['snapshot_sha256'],
         origin_diagnostics_sha256=base['origin_diagnostics_sha256'], helpers={name: hashlib.sha256((ROOT/'valuation/backend'/name).read_bytes()).hexdigest()
-        for name in ('tools/backtest_tdx_revenue_selection.py', 'tools/backtest_tdx_revenue_cagr.py', 'tools/backtest_tdx_history.py')})
+        for name in ('tools/backtest_tdx_revenue_selection.py', 'tools/backtest_tdx_revenue_cagr.py', 'tools/backtest_tdx_history.py', 'tools/tdx_research_source.py')})
     print(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False))
 
 

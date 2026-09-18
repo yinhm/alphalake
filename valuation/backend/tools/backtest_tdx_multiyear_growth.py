@@ -96,7 +96,7 @@ def main():
         raw=args.protocol.read_bytes();p=json.loads(raw);digest=lambda b:hashlib.sha256(b).hexdigest();parent=(ROOT/p['parent_protocol']).read_bytes();data=(ROOT/p['snapshot']).read_bytes();parent_data=json.loads(parent);source=json.loads(data)
         if digest(parent)!=p['parent_protocol_sha256'] or digest(data)!=p['snapshot_sha256'] or source['study_sha256']!=parent_data['parent_protocol_sha256']:raise ValueError('parent/source binding differs')
         if p['samples']!=parent_data['samples'] or p['base_policy']!=parent_data['base_policy']:raise ValueError('sample or base policy differs')
-        out=study(p,source);out['evidence']=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),helpers={name:digest((ROOT/'valuation/backend'/name).read_bytes()) for name in ['tools/backtest_tdx_cash_revenue.py','tools/backtest_tdx_history.py','data_sources/alphalake.py','engine/module_4_dcf.py']})
+        out=study(p,source);out['evidence']=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),helpers={name:digest((ROOT/'valuation/backend'/name).read_bytes()) for name in ['tools/backtest_tdx_cash_revenue.py','tools/backtest_tdx_history.py', 'tools/tdx_research_source.py','data_sources/alphalake.py','engine/module_4_dcf.py']})
         print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))
     except (ValueError,KeyError,TypeError,OSError) as exc:
         print(json.dumps(dict(status='rejected',reason=str(exc)),ensure_ascii=False));raise SystemExit(1)

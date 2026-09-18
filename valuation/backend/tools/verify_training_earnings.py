@@ -9,7 +9,8 @@ from statistics import median
 
 from tools import backtest_tdx_zero_calibration as joint
 from tools import diagnose_tdx_training_exclusions as exclusions
-from tools.backtest_tdx_history import EBIT, value
+from tools.backtest_tdx_history import OPERATING_COMPONENTS
+from tools.tdx_research_source import source_field, source_value as value
 
 DIRECTORY = exclusions.DIRECTORY / 'earnings-review'
 LABELS = dict(FN86='三、营业利润', FN305='其中：利息费用', FN306='利息收入',
@@ -142,7 +143,7 @@ def verify(ledger=None):
                 parts[field] = sum(value(index[code,r['period']][0],field)*r['coefficient'] for r in refs)
                 if float(parts[field]) != current['ebit_components_cny'][field]:
                     raise ValueError('stored TTM component differs')
-            source_ebit = sum(parts[f]*sign for f,sign in EBIT.items())
+            source_ebit = sum(parts[source_field(f)]*sign for f,sign in OPERATING_COMPONENTS.items())
             refs = [r for r in current['source_inputs'] if r['field']=='FN86']
             end = refs[0]['period']
             window = dict(code=code,end=end,source_ebit_proxy_cny=str(source_ebit),

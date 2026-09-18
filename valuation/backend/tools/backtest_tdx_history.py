@@ -1,43 +1,19 @@
 """TDX源层简化回溯：只评价经营预测，不发布标准事实或DCF结论。"""
 import argparse
 from collections import Counter
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, timedelta
 from decimal import Decimal
 import hashlib
 import json
-import math
 from pathlib import Path
 from statistics import mean, median
-import struct
 
 from data_sources.alphalake import HistoricalDCFPolicy, historical_forecast
+from tools.tdx_research_source import (at, available, source_value as value, financial_value,
+    period_basis, source_field, source_components, TIME_BOUNDARY)
 
 CONTRACT='tdx-history-backtest-v2'
-EBIT={'FN86':1,'FN305':1,'FN306':-1,'FN83':-1,'FN82':-1,'FN301':-1}
-
-
-def at(value):
-    result=datetime.fromisoformat(value)
-    if result.utcoffset() is None:raise ValueError('timezone required')
-    return result
-
-
-def value(row,field):
-    bits=row['bits'][field]
-    if isinstance(bits,bool) or not isinstance(bits,int) or not 0<=bits<=0xffffffff:
-        raise ValueError('invalid float32 bits: '+field)
-    n=struct.unpack('<f',struct.pack('<I',bits))[0]
-    if not math.isfinite(n):raise ValueError('nonfinite source: '+field)
-    return Decimal.from_float(n)
-
-
-def available(row,artifact):
-    n=value(row,'FN314')
-    if n!=int(n) or not 10000<=n<=991231:raise ValueError('missing/invalid FN314')
-    day=date.fromisoformat(f'{2000+int(n)//10000:04d}-{int(n)//100%100:02d}-{int(n)%100:02d}')
-    if day<=date.fromisoformat(row['period']) or day>at(artifact['fetched_at']).astimezone(timezone(timedelta(hours=8))).date():
-        raise ValueError('FN314 outside report/fetch dates')
-    return datetime.combine(day+timedelta(days=1),datetime.min.time(),timezone(timedelta(hours=8)))
+OPERATING_COMPONENTS={'operating_profit_cumulative':1,'interest_expense':1,'interest_income':-1,'investment_income':-1,'fair_value_change_income':-1,'asset_disposal_income':-1}
 
 
 def quarter_periods(end):
@@ -48,20 +24,20 @@ def quarter_periods(end):
 
 
 def window(rows,end,field):
-    periods=[(p,1) for p in quarter_periods(end)] if field=='FN230' else [(end.isoformat(),1),(f'{end.year-1}-12-31',1),(end.replace(year=end.year-1).isoformat(),-1)]
-    if field!='FN230' and end.month==12:periods=[(end.isoformat(),1)]
-    total=sum((value(rows[p],field)*coefficient for p,coefficient in periods),Decimal(0))
-    return total, [dict(period=p,coefficient=c,field=field,artifact=rows[p]['artifact']) for p,c in periods]
+    periods=[(p,1) for p in quarter_periods(end)] if period_basis(field)=='quarter' else [(end.isoformat(),1),(f'{end.year-1}-12-31',1),(end.replace(year=end.year-1).isoformat(),-1)]
+    if period_basis(field)=='instant' or (period_basis(field)=='ytd' and end.month==12):periods=[(end.isoformat(),1)]
+    total=sum((financial_value(rows[p],field)*coefficient for p,coefficient in periods),Decimal(0))
+    return total, [dict(period=p,coefficient=c,field=source_field(field),artifact=rows[p]['artifact']) for p,c in periods]
 
 
 def operating(rows,end):
-    revenue,refs=window(rows,end,'FN230');parts={}
-    for field,sign in EBIT.items():
+    revenue,refs=window(rows,end,'revenue');parts={}
+    for field in OPERATING_COMPONENTS:
         n,r=window(rows,end,field);parts[field]=float(n);refs+=r
     # 与生产入口一样逐分量转为百万元float，再按固定顺序加减。
     w={f:v/1e6 for f,v in parts.items()}
-    ebit=w['FN86']+w['FN305']-w['FN306']-w['FN83']-w['FN82']-w['FN301']
-    return dict(revenue=float(revenue/Decimal(1000000)),ebit=ebit,ebit_components_cny=parts,source_inputs=refs)
+    ebit=w['operating_profit_cumulative']+w['interest_expense']-w['interest_income']-w['investment_income']-w['fair_value_change_income']-w['asset_disposal_income']
+    return dict(revenue=float(revenue/Decimal(1000000)),ebit=ebit,ebit_components_cny=source_components(parts),source_inputs=refs)
 
 
 def error(predicted,actual):
@@ -121,7 +97,7 @@ def run(study,snapshot):
                 if day<=origin and usable<=cutoff:base_rows[p]=row
                 if day<=target and usable<=evaluation:actual_rows[p]=row
             base=operating(base_rows,origin)
-            quarters={date.fromisoformat(p):(value(v,'FN230'),v['artifact']+':'+sample['code']+':FN230') for p,v in base_rows.items()}
+            quarters={date.fromisoformat(p):(financial_value(v,'revenue'),v['artifact']+':'+sample['code']+':'+source_field('revenue')) for p,v in base_rows.items()}
             forecast,evidence=historical_forecast(base['revenue'],base['ebit'],quarters,origin,policy)
             first=forecast[0];predicted_revenue=base['revenue']*(1+first.growth)
             predicted=dict(revenue=predicted_revenue,ebit=predicted_revenue*first.margin)
@@ -130,9 +106,9 @@ def run(study,snapshot):
             if actual['revenue']<=0:raise ValueError('positive actual revenue required for error scaling')
             flags=[]
             for stage,rows,end in [('base',base_rows,origin),('actual',actual_rows,target)]:
-                for field in ('FN506','FN509','FN510','FN413'):
-                    n=value(rows[end.isoformat()],field) if field=='FN413' else window(rows,end,field)[0]
-                    if n!=0:flags.append(stage+':'+field)
+                for field in ('financial_business_interest_income','financial_business_interest_expense','financial_business_fee_expense','deposits_and_interbank_placements'):
+                    n=financial_value(rows[end.isoformat()],field) if field=='deposits_and_interbank_placements' else window(rows,end,field)[0]
+                    if n!=0:flags.append(stage+':'+source_field(field))
             r.update(status='evaluated',actual=actual,financial_scope_flags=flags,
                      profit_scope='financial_fields_present' if flags else 'no_financial_fields_detected',
                      profit_basis='consolidated_adjusted_ebit_proxy',
@@ -146,7 +122,7 @@ def run(study,snapshot):
                          for s in ('no_financial_fields_detected','financial_fields_present','not_evaluated')},
         by_split={s:metrics([r for r in output if r['split']==s]) for s in ('development','holdout')},
         by_stratum={s:metrics([r for r in output if r['stratum']==s]) for s in sorted({r['stratum'] for r in output})},
-        boundaries=['简化TDX历史回溯，FN314日期精度，无CNINFO逐公司核验；可能包含后续修订，不是严格PIT或前瞻检验',
+        boundaries=[TIME_BOUNDARY,
                     '2024字段语义沿用已审核后续期间映射，研究外推不扩大生产映射有效期；代码/人工分层不是标准历史身份',
                     '仅非金融主业固定样本的经营预测子规则；合并调整EBIT代理包含未拆分金融业务，非纯实业利润或完整DCF准入；汇总覆盖全部可评价样本并按金融字段信号分组，非行业分类，零字段不证明无兼营',
                     '同一历史起点、目的抽样且存在幸存者偏差；留出组未调参，但不是时间样本外验证',
@@ -160,7 +136,7 @@ def main():
         study=json.loads(study_raw);snapshot=json.loads(snapshot_raw)
         if hashlib.sha256(study_raw).hexdigest()!=snapshot['study_sha256']:raise ValueError('frozen study hash mismatch')
         out=run(study,snapshot)
-        out['evidence']=dict(study_sha256=hashlib.sha256(study_raw).hexdigest(),snapshot_sha256=hashlib.sha256(snapshot_raw).hexdigest(),
+        out['evidence']=dict(source_adapter_sha256=hashlib.sha256(Path(__file__).with_name('tdx_research_source.py').read_bytes()).hexdigest(),study_sha256=hashlib.sha256(study_raw).hexdigest(),snapshot_sha256=hashlib.sha256(snapshot_raw).hexdigest(),
             forecast_code_sha256=hashlib.sha256((Path(__file__).resolve().parents[1]/'data_sources/alphalake.py').read_bytes()).hexdigest(),
             backtest_code_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
         print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))

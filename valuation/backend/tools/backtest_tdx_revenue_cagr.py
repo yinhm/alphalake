@@ -9,7 +9,8 @@ import json
 from pathlib import Path
 from statistics import mean, median
 
-from tools.backtest_tdx_history import at, available, quarter_periods, value
+from tools.backtest_tdx_history import at, available, quarter_periods
+from tools.tdx_research_source import financial_value, source_field
 
 ROOT = Path(__file__).resolve().parents[3]
 MODELS = ('short_quarter_yoy_median_revenue_only', 'three_year_ttm_cagr', 'zero_growth')
@@ -18,7 +19,7 @@ PROTOCOL_SHA = '9604ee4003117b454ed8fdc2606311117e214dab18d7bc747c1564d280f3a32d
 
 def quarter(index, artifacts, code, period, cutoff):
     matches = index.get((code, period), [])
-    out = dict(period=period, field='FN230', information_as_of=cutoff, status='missing')
+    out = dict(period=period, field=source_field('revenue'), information_as_of=cutoff, status='missing')
     if not matches:
         return out
     if len(matches) != 1:
@@ -29,7 +30,7 @@ def quarter(index, artifacts, code, period, cutoff):
     out.update(artifact=r['artifact'])
     if available(r, a) > at(cutoff):
         return out | dict(status='unavailable_at_cutoff')
-    return out | dict(status='available', bits=r['bits']['FN230'], value_cny=str(value(r, 'FN230')))
+    return out | dict(status='available', bits=r['bits'][source_field('revenue')], value_cny=str(financial_value(r, 'revenue')))
 
 
 def revenue(index, artifacts, code, end, cutoff):
@@ -162,7 +163,7 @@ def main():
     p, inputs = load_inputs(args.protocol)
     result = study(p, inputs['snapshot'], inputs['origin_diagnostics'])
     result['evidence'] = dict(protocol_sha256=PROTOCOL_SHA, snapshot_sha256=p['snapshot_sha256'], origin_diagnostics_sha256=p['origin_diagnostics_sha256'],
-        helpers={name: hashlib.sha256((ROOT/'valuation/backend'/name).read_bytes()).hexdigest() for name in ('tools/backtest_tdx_revenue_cagr.py', 'tools/backtest_tdx_history.py', 'data_sources/alphalake.py')})
+        helpers={name: hashlib.sha256((ROOT/'valuation/backend'/name).read_bytes()).hexdigest() for name in ('tools/backtest_tdx_revenue_cagr.py', 'tools/backtest_tdx_history.py', 'tools/tdx_research_source.py', 'data_sources/alphalake.py')})
     print(json.dumps(result, ensure_ascii=False, allow_nan=False, indent=2))
 
 

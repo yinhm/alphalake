@@ -104,7 +104,7 @@ def main():
         if definition!=dict(parent_protocol_sha256=digest(raw),phase='development',samples=[s for s in p['samples'] if s['split']=='development']):raise ValueError('development definition differs')
         data=args.snapshot.read_bytes();source=json.loads(data)
         if source['study_sha256']!=digest(frozen):raise ValueError('source binding differs')
-        out=study(p,source,'development');out['evidence']=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),helpers={name:digest((ROOT/'valuation/backend'/name).read_bytes()) for name in ['tools/backtest_tdx_history.py','tools/backtest_tdx_cash_revenue.py','tools/backtest_tdx_multiyear_growth.py','tools/validate_tdx_zero_growth.py','data_sources/alphalake.py']})
+        out=study(p,source,'development');out['evidence']=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),helpers={name:digest((ROOT/'valuation/backend'/name).read_bytes()) for name in ['tools/backtest_tdx_history.py', 'tools/tdx_research_source.py','tools/backtest_tdx_cash_revenue.py','tools/backtest_tdx_multiyear_growth.py','tools/validate_tdx_zero_growth.py','data_sources/alphalake.py']})
         print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))
     except (ValueError,KeyError,TypeError,OSError) as exc:
         print(json.dumps(dict(status='rejected',reason=str(exc)),ensure_ascii=False));raise SystemExit(1)

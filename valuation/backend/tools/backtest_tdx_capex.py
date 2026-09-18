@@ -8,7 +8,8 @@ import json
 from pathlib import Path
 from statistics import mean,median
 
-from tools.backtest_tdx_history import at,available,window,quarter_periods,value
+from tools.backtest_tdx_history import at,available,window,quarter_periods
+from tools.tdx_research_source import financial_value,source_field
 from data_sources.alphalake_calibration import weighted_median
 
 BASE='repeat_latest_capex'
@@ -26,7 +27,7 @@ def financial(index,artifacts,code,end,cutoff):
         if a['report_period']!=period:raise ValueError('artifact period differs')
         if available(row,a)>at(cutoff):raise ValueError('source not available at cutoff: '+period)
         rows[period]=row
-    capex,refs=window(rows,end,'FN114');revenue,more=window(rows,end,'FN230')
+    capex,refs=window(rows,end,'capital_expenditure_cash');revenue,more=window(rows,end,'revenue')
     if capex<0 or revenue<=0:raise ValueError('negative capex or nonpositive revenue: '+end.isoformat())
     return dict(period=end.isoformat(),capex_cny=str(capex),revenue_cny=str(revenue),source_inputs=refs+more)
 
@@ -37,11 +38,11 @@ def cip_group(index,artifacts,code,end,cutoff,capex):
     if len(rows)!=1:raise ValueError('CIP source identity not unique')
     row=rows[0];artifact=artifacts[row['artifact']]
     if artifact['report_period']!=end.isoformat() or available(row,artifact)>at(cutoff):raise ValueError('CIP period/cutoff differs')
-    cip=value(row,'FN28')
+    cip=financial_value(row,'construction_in_progress')
     if cip<=0 or capex<=0:raise ValueError('nonpositive CIP or capex; group undefined')
     ratio=cip/capex
     return dict(group='low' if ratio<Decimal('.5') else 'high',cip_cny=str(cip),cip_to_capex=str(ratio),
-                period=end.isoformat(),artifact=row['artifact'],field='FN28',source_bits=row['bits']['FN28'])
+                period=end.isoformat(),artifact=row['artifact'],field=source_field('construction_in_progress'),source_bits=row['bits'][source_field('construction_in_progress')])
 
 
 def fit_cip_scale(p,source,origin):
@@ -181,7 +182,7 @@ def main():
     try:
         raw=args.protocol.read_bytes();data=args.snapshot.read_bytes();p=json.loads(raw);source=json.loads(data);digest=lambda b:hashlib.sha256(b).hexdigest()
         if source['study_sha256']!=p.get('source_protocol_sha256',digest(raw)) or (p.get('source_snapshot_sha256') and p['source_snapshot_sha256']!=digest(data)):raise ValueError('source/protocol hash differs')
-        evidence=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),dependency_sha256=digest(Path(__file__).with_name('backtest_tdx_history.py').read_bytes()),calibration_dependency_sha256=digest((Path(__file__).resolve().parents[1]/'data_sources/alphalake_calibration.py').read_bytes()))
+        evidence=dict(source_adapter_sha256=hashlib.sha256(Path(__file__).with_name('tdx_research_source.py').read_bytes()).hexdigest(), protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),dependency_sha256=digest(Path(__file__).with_name('backtest_tdx_history.py').read_bytes()),calibration_dependency_sha256=digest((Path(__file__).resolve().parents[1]/'data_sources/alphalake_calibration.py').read_bytes()))
         selection=None
         if args.phase=='holdout':
             if args.selection is None:raise ValueError('selection receipt required')

@@ -43,7 +43,8 @@ def test_loss_path_and_outcome_isolation():
 def test_real_replay_decimal_and_source_binding(tmp_path):
     from decimal import Decimal
     import gzip,hashlib,subprocess,sys
-    from tools.backtest_tdx_history import value,EBIT
+    from tools.backtest_tdx_history import OPERATING_COMPONENTS
+    from tools.tdx_research_source import financial_value as value
     p=json.loads((DIR/'protocol.json').read_text());source=json.loads((DIR/'development-snapshot.json').read_text())
     saved=json.loads(gzip.decompress((DIR/'development-result.json.gz').read_bytes()));actual=study(p,source)
     assert actual=={k:v for k,v in saved.items() if k!='evidence'}
@@ -56,8 +57,8 @@ def test_real_replay_decimal_and_source_binding(tmp_path):
     for r in valid:
         margins=[]
         for year in range(int(r['origin'][:4])-5,int(r['origin'][:4])):
-            revenue=sum(value(index[r['code'],str(year)+'-'+suffix],'FN230') for suffix in ('03-31','06-30','09-30','12-31'))
-            ebit=sum(value(index[r['code'],str(year)+'-12-31'],field)*sign for field,sign in EBIT.items())
+            revenue=sum(value(index[r['code'],str(year)+'-'+suffix],'revenue') for suffix in ('03-31','06-30','09-30','12-31'))
+            ebit=sum(value(index[r['code'],str(year)+'-12-31'],field)*sign for field,sign in OPERATING_COMPONENTS.items())
             margins.append(ebit/revenue)
         normal=sum(margins)/5
         current=Decimal(str(r['base']['ebit']))/Decimal(str(r['base']['revenue']))

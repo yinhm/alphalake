@@ -104,7 +104,7 @@ def study(p, inputs):
                              windows=windows)
     strata = Counter(s['stratum'] for s in samples)
     code_files = [Path(__file__), Path(original.__file__),
-                  ROOT/'valuation/backend/tools/backtest_tdx_history.py',
+                  ROOT/'valuation/backend/tools/backtest_tdx_history.py', ROOT/'valuation/backend/tools/tdx_research_source.py',
                   ROOT/'valuation/backend/tools/audit_tdx_ocf_uncertainty.py',
                   ROOT/'valuation/backend/data_sources/alphalake_calibration.py',
                   ROOT/'valuation/backend/data_sources/alphalake.py']

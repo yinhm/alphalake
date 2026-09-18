@@ -83,7 +83,7 @@ if __name__=='__main__':
     result['evidence']=dict(frozen_files=hashes,actual_file_sha256=actual_digest,
         review_code_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         helpers={name:hashlib.sha256(Path(name).read_bytes()).hexdigest() for name in (
-            'valuation/backend/tools/backtest_tdx_history.py','valuation/backend/tools/backtest_tdx_multiyear_growth.py','valuation/backend/tools/backtest_tdx_origins.py')})
+            'valuation/backend/tools/backtest_tdx_history.py', 'valuation/backend/tools/tdx_research_source.py','valuation/backend/tools/backtest_tdx_multiyear_growth.py','valuation/backend/tools/backtest_tdx_origins.py')})
     raw=json.dumps(result,ensure_ascii=False,sort_keys=True,indent=2,allow_nan=False).encode()+b'\n'
     with args.output.open('xb') as f:f.write(gzip.compress(raw,mtime=0))
     print(json.dumps({k:result[k] for k in ('status','positions','statuses','decision')},ensure_ascii=False))

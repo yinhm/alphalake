@@ -44,7 +44,7 @@ def run(p):
     parent,original=data['parent_protocol'],data['parent_result']
     if any(p[k]!=parent[k] for k in ('windows','evaluation_as_of')) or [s for s in p['samples'] if s['split']=='development']!=[s for s in parent['samples'] if s['split']=='development']:raise ValueError('development scope differs')
     if original['phase']!='development' or original['evidence']['protocol_sha256']!=p['parent_protocol_sha256'] or original['evidence']['snapshot_sha256']!=parent['development_snapshot_sha256']:raise ValueError('parent evidence binding differs')
-    for name in ('tools/backtest_tdx_multiyear_growth.py','tools/backtest_tdx_cash_revenue.py','tools/backtest_tdx_history.py','data_sources/alphalake.py','engine/module_4_dcf.py'):
+    for name in ('tools/backtest_tdx_multiyear_growth.py','tools/backtest_tdx_cash_revenue.py','tools/backtest_tdx_history.py', 'tools/tdx_research_source.py','data_sources/alphalake.py','engine/module_4_dcf.py'):
         if digest((ROOT/'valuation/backend'/name).read_bytes())!=original['evidence']['helpers'][name]:raise ValueError('parent forecast implementation differs')
     return compare(p,original,'development')
 
@@ -75,7 +75,7 @@ def compare(p,original,phase):
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('protocol',type=Path);parser.add_argument('--phase',choices=['development','holdout'],default='development');parser.add_argument('--snapshot',type=Path);parser.add_argument('--selection',type=Path);args=parser.parse_args()
     try:
-        raw=args.protocol.read_bytes();out=run(json.loads(raw));out['evidence']=dict(protocol_sha256=digest(raw),code_sha256=digest(Path(__file__).read_bytes()),helpers={name:digest((ROOT/'valuation/backend'/name).read_bytes()) for name in ['tools/backtest_tdx_normalized_margin.py','tools/backtest_tdx_history.py','tools/validate_tdx_zero_growth.py','tools/backtest_tdx_multiyear_growth.py','tools/backtest_tdx_cash_revenue.py','data_sources/alphalake.py','engine/module_4_dcf.py']})
+        raw=args.protocol.read_bytes();out=run(json.loads(raw));out['evidence']=dict(protocol_sha256=digest(raw),code_sha256=digest(Path(__file__).read_bytes()),helpers={name:digest((ROOT/'valuation/backend'/name).read_bytes()) for name in ['tools/backtest_tdx_normalized_margin.py','tools/backtest_tdx_history.py', 'tools/tdx_research_source.py','tools/validate_tdx_zero_growth.py','tools/backtest_tdx_multiyear_growth.py','tools/backtest_tdx_cash_revenue.py','data_sources/alphalake.py','engine/module_4_dcf.py']})
         if args.phase=='holdout':
             from tools.backtest_tdx_multiyear_growth import forecast_rows
             p=json.loads(raw)

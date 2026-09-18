@@ -92,7 +92,7 @@ def main():
         digest=lambda b:hashlib.sha256(b).hexdigest()
         if source['study_sha256']!=digest(raw):raise ValueError('source protocol hash differs')
         result=audit(json.loads(raw),source)
-        result['evidence']=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),
+        result['evidence']=dict(source_adapter_sha256=hashlib.sha256(Path(__file__).with_name('tdx_research_source.py').read_bytes()).hexdigest(), protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),
                                shared_parser_sha256=digest(Path(__file__).with_name('backtest_tdx_history.py').read_bytes()))
         print(json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False))
     except (ValueError,KeyError,TypeError,OSError) as exc:

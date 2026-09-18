@@ -1165,3 +1165,32 @@ def test_operating_cash_locked_holdout_and_independent_errors():
     for row in changed['records']:
         if row['code'] in held:row['bits']['FN234']=bits(123456)
     assert m.study(p,changed,'development')==m.study(p,source,'development')
+
+
+def test_research_operating_model_uses_canonical_fields(monkeypatch):
+    from tools import tdx_research_source as source
+    from tools.backtest_tdx_history import window
+    for field in ('financial_business_interest_income', 'financial_business_interest_expense',
+                  'financial_business_fee_expense', 'deposits_and_interbank_placements'):
+        row = {'bits': {source.source_field(field): bits(1.25)}}
+        assert source.financial_value(row, field) == Decimal('12500')
+        assert source.source_value(row, source.source_field(field)) == Decimal('1.25')
+    study, snapshot = fixture()
+    original = run(study, snapshot)
+    renamed = copy.deepcopy(snapshot)
+    for field, (provider_field, basis) in list(source.FIELDS.items()):
+        replacement = 'vendor_' + field
+        for row in renamed['records']:
+            if provider_field in row['bits']:
+                row['bits'][replacement] = row['bits'].pop(provider_field)
+        monkeypatch.setitem(source.FIELDS, field, (replacement, basis))
+    changed = run(study, renamed)
+    assert changed['summary'] == original['summary']
+    for before, after in zip(original['results'], changed['results'], strict=True):
+        assert before['forecast'] == after['forecast']
+        assert before['errors'] == after['errors']
+        for stage in ('base', 'actual'):
+            assert (before[stage]['revenue'], before[stage]['ebit']) == (after[stage]['revenue'], after[stage]['ebit'])
+    with pytest.raises(KeyError):
+        window({}, date(2026,6,30), 'FN230')
+    assert not __import__('re').search(r'\bFN[0-9]+\b', (ROOT/'valuation/backend/tools/backtest_tdx_history.py').read_text())

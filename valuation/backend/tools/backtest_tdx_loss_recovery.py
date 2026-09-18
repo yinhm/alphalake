@@ -72,7 +72,7 @@ def main():
         if definition!=dict(parent_protocol_sha256=digest(raw),phase='development',samples=expected):raise ValueError('development source definition differs')
         source_raw=args.snapshot.read_bytes();source=json.loads(source_raw)
         if source['study_sha256']!=digest(definition_raw):raise ValueError('source binding differs')
-        out=study(p,source);out['evidence']=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(source_raw),code_sha256=digest(Path(__file__).read_bytes()),helpers={name:digest((ROOT/'valuation/backend'/name).read_bytes()) for name in ['tools/backtest_tdx_normalized_margin.py','tools/backtest_tdx_multiyear_growth.py','tools/backtest_tdx_history.py','tools/validate_tdx_zero_growth.py']})
+        out=study(p,source);out['evidence']=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(source_raw),code_sha256=digest(Path(__file__).read_bytes()),helpers={name:digest((ROOT/'valuation/backend'/name).read_bytes()) for name in ['tools/backtest_tdx_normalized_margin.py','tools/backtest_tdx_multiyear_growth.py','tools/backtest_tdx_history.py', 'tools/tdx_research_source.py','tools/validate_tdx_zero_growth.py']})
         print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))
     except (ValueError,KeyError,TypeError,OSError) as exc:
         print(json.dumps(dict(status='rejected',reason=str(exc)),ensure_ascii=False));raise SystemExit(1)

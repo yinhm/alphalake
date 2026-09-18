@@ -10,7 +10,8 @@ import re
 import struct
 from statistics import mean,median
 
-from tools.backtest_tdx_history import at,available,value,window,quarter_periods
+from tools.backtest_tdx_history import at,available,window,quarter_periods
+from tools.tdx_research_source import source_value as value,financial_value,source_field
 from tools.backtest_tdx_origins import study,fit_calibration,evaluate
 
 MODELS=('current_rule','bias_half')
@@ -53,10 +54,10 @@ def cash_actual(source,code,target,cutoff):
         a=artifacts[r['artifact']]
         if a['report_period']!=r['period']:raise ValueError('cash artifact period differs')
         if available(r,a)<=at(cutoff):rows[r['period']]=r
-    ocf=sum((value(rows[p],'FN234') for p in periods),Decimal(0))
-    capex,refs=window(rows,target,'FN114')
+    ocf=sum((financial_value(rows[p],'operating_cash_flow') for p in periods),Decimal(0))
+    capex,refs=window(rows,target,'capital_expenditure_cash')
     if capex<0:raise ValueError('negative cumulative cash capex requires source review')
-    refs=[dict(period=p,coefficient=1,field='FN234',artifact=rows[p]['artifact']) for p in periods]+refs
+    refs=[dict(period=p,coefficient=1,field=source_field('operating_cash_flow'),artifact=rows[p]['artifact']) for p in periods]+refs
     return dict(operating_cash_flow=float(ocf/Decimal(1000000)),capital_expenditure_cash=float(capex/Decimal(1000000)),
                 reported_ocf_less_capex=float((ocf-capex)/Decimal(1000000)),source_inputs=refs)
 
@@ -71,7 +72,7 @@ def summarize(rows):
 
 def diagnose(p,source):
     cash=p['cash_proxy']
-    if (cash['operating_cash_flow_field'],cash['operating_cash_flow_period_basis'],cash['capital_expenditure_field'],cash['capital_expenditure_period_basis'],cash['use'])!=('FN234','quarter','FN114','ytd','diagnostic_only_not_model_selection'):
+    if (cash['operating_cash_flow_field'],cash['operating_cash_flow_period_basis'],cash['capital_expenditure_field'],cash['capital_expenditure_period_basis'],cash['use'])!=(source_field('operating_cash_flow'),'quarter',source_field('capital_expenditure_cash'),'ytd','diagnostic_only_not_model_selection'):
         raise ValueError('unsupported cash proxy definition')
     dev=study(p,source,'development')
     if p.get('fixed_validation_model')!='bias_half' or dev['selection']['model']!='bias_half':raise ValueError('frozen calibration selection differs')
@@ -103,7 +104,7 @@ def main():
         if source['study_sha256']!=digest(raw):raise ValueError('cash source protocol differs')
         result=diagnose(p,source)
         result['evidence']=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),
-            dependencies={name:digest((Path(__file__).resolve().parents[1]/name).read_bytes()) for name in ('tools/backtest_tdx_history.py','tools/backtest_tdx_origins.py','data_sources/alphalake.py','data_sources/alphalake_calibration.py')})
+            dependencies={name:digest((Path(__file__).resolve().parents[1]/name).read_bytes()) for name in ('tools/backtest_tdx_history.py', 'tools/tdx_research_source.py','tools/backtest_tdx_origins.py','data_sources/alphalake.py','data_sources/alphalake_calibration.py')})
         print(json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False))
     except (ValueError,KeyError,TypeError,OSError) as exc:
         print(json.dumps(dict(status='rejected',reason=str(exc)),ensure_ascii=False));raise SystemExit(1)

@@ -88,7 +88,7 @@ def build(directory, pdf_directory, history_source=None):
         r['revenue_predictions_cny'] = original['predictions_cny']
         end = date(r['origin_year'],6,30)
         known = {period:record for (code,period),record in records.items() if code==r['code'] and available(record,artifacts[record['artifact']])<=at(original['forecast_as_of'])}
-        margin = window(known,end,'FN86')[0]/window(known,end,'FN230')[0]
+        margin = window(known,end,'operating_profit_cumulative')[0]/window(known,end,'revenue')[0]
         predicted = dict(broker=D(r['broker_operating_profit_cny']),companion_benchmark=D(original['predictions_cny']['current_rule_fy_bridge'])*margin)
         r.update(origin_reported_margin=str(margin),profit_predictions_cny={k:str(v) for k,v in predicted.items()})
         if r['historical_anchor_issues']:

@@ -86,7 +86,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('config',type=Path);parser.add_argument('--raw-dir',type=Path);args=parser.parse_args()
     try:
         raw=args.config.read_bytes();out=audit(json.loads(raw),args.raw_dir)
-        out['evidence']=dict(config_sha256=digest(raw),code_sha256=digest(Path(__file__).read_bytes()),source_decoder_sha256=digest((ROOT/'valuation/backend/tools/backtest_tdx_history.py').read_bytes()),pypdf_version=pypdf_version)
+        out['evidence']=dict(source_adapter_sha256=hashlib.sha256(Path(__file__).with_name('tdx_research_source.py').read_bytes()).hexdigest(), config_sha256=digest(raw),code_sha256=digest(Path(__file__).read_bytes()),source_decoder_sha256=digest((ROOT/'valuation/backend/tools/backtest_tdx_history.py').read_bytes()),pypdf_version=pypdf_version)
         print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))
     except (ValueError,KeyError,IndexError,OSError) as exc:
         print(json.dumps(dict(status='rejected',reason=str(exc)),ensure_ascii=False));raise SystemExit(1)

@@ -9,7 +9,8 @@ from pathlib import Path
 from statistics import mean
 
 from data_sources.alphalake import HistoricalDCFPolicy,historical_forecast
-from tools.backtest_tdx_history import at,available,operating,value
+from tools.backtest_tdx_history import at,available,operating
+from tools.tdx_research_source import financial_value,source_field
 from tools.backtest_tdx_operating_cash import observation
 
 MODELS=('mean_two_ocf_margins_zero_growth','mean_two_ocf_margins_production_revenue')
@@ -25,7 +26,7 @@ def revenue_forecast(p,index,artifacts,code,end,cutoff):
         if a['report_period']!=period:raise ValueError('revenue artifact period differs')
         if available(row,a)<=at(cutoff):history[period]=row
     base=operating(history,end)
-    quarters={date.fromisoformat(k):(value(v,'FN230'),v['artifact']+':'+code+':FN230') for k,v in history.items()}
+    quarters={date.fromisoformat(k):(financial_value(v,'revenue'),v['artifact']+':'+code+':'+source_field('revenue')) for k,v in history.items()}
     policy=HistoricalDCFPolicy.model_validate(p['base_policy']|dict(approved_report_period=end.isoformat()))
     forecast,evidence=historical_forecast(base['revenue'],base['ebit'],quarters,end,policy)
     # Match the production float revenue multiplication, then return CNY for Decimal cash math.
@@ -96,7 +97,7 @@ def main():
         parent_data=json.loads(parent)
         if p['samples']!=[s for s in parent_data['samples'] if s['split']=='development']:raise ValueError('development sample differs')
         out=study(p,source);out['evidence']=dict(protocol_sha256=digest(raw),snapshot_sha256=digest(data),code_sha256=digest(Path(__file__).read_bytes()),
-            helpers={name:digest((Path(__file__).resolve().parents[1]/name).read_bytes()) for name in ['tools/backtest_tdx_history.py','tools/backtest_tdx_operating_cash.py','tools/backtest_tdx_capex.py','tools/audit_tdx_reinvestment.py','data_sources/alphalake.py']})
+            helpers={name:digest((Path(__file__).resolve().parents[1]/name).read_bytes()) for name in ['tools/backtest_tdx_history.py', 'tools/tdx_research_source.py','tools/backtest_tdx_operating_cash.py','tools/backtest_tdx_capex.py','tools/audit_tdx_reinvestment.py','data_sources/alphalake.py']})
         print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))
     except (ValueError,KeyError,TypeError,OSError) as exc:
         print(json.dumps(dict(status='rejected',reason=str(exc)),ensure_ascii=False));raise SystemExit(1)

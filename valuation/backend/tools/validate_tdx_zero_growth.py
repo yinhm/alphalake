@@ -62,7 +62,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('protocol',type=Path);parser.add_argument('--phase',required=True,choices=['development','holdout']);parser.add_argument('--snapshot',type=Path);parser.add_argument('--selection',type=Path);args=parser.parse_args()
     try:
         raw=args.protocol.read_bytes();p=json.loads(raw);verify_sampling(p);parent,source,rows=load_development(p)
-        evidence=dict(protocol_sha256=digest(raw),code_sha256=digest(Path(__file__).read_bytes()),helpers={name:digest((ROOT/'valuation/backend'/name).read_bytes()) for name in ['tools/backtest_tdx_multiyear_growth.py','tools/backtest_tdx_cash_revenue.py','tools/backtest_tdx_history.py','data_sources/alphalake.py','engine/module_4_dcf.py']})
+        evidence=dict(protocol_sha256=digest(raw),code_sha256=digest(Path(__file__).read_bytes()),helpers={name:digest((ROOT/'valuation/backend'/name).read_bytes()) for name in ['tools/backtest_tdx_multiyear_growth.py','tools/backtest_tdx_cash_revenue.py','tools/backtest_tdx_history.py', 'tools/tdx_research_source.py','data_sources/alphalake.py','engine/module_4_dcf.py']})
         dev=score(p,rows,'development');dev['evidence']=evidence;dev['results_reference']=dict(path=p['development_result'],sha256=p['development_result_sha256'])
         if args.phase=='development':out=dev
         else:
