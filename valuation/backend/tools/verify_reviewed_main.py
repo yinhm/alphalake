@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 
 from data_sources.alphalake import AlphaLakeRequest, content_hash
 from tools.incremental_valuation import evaluate_changed
+from tools.migrate_standard_contract import upgrade_legacy
 from tools.verify_nonfinancial_dcf import verify
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -21,7 +22,7 @@ SOURCES = {'300866': ROOT/'valuation/research/reviewed-assets-20260917',
 
 
 def bind(request, data):
-    request = deepcopy(request)
+    request = upgrade_legacy(request)
     request['data'] = data
     notes = {r['item']: r for r in data['supplements']}
     for rule in request['policy']['asset_addbacks']:

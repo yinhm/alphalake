@@ -149,7 +149,7 @@ def method_assessment(inputs, audit, report):
         scope='nonfinancial_book_fcff',
         facts=dict(source='alphalake_standard_facts', lineage='audit.consumed_inputs',
                    monetary_unit='million_CNY', share_unit='million_shares'),
-        operating_profit=dict(basis='FN86+FN305-FN306-FN83-FN82-FN301',
+        operating_profit=dict(basis='operating_profit_cumulative+interest_expense-interest_income-investment_income-fair_value_change_income-asset_disposal_income',
                               rd='expensed_not_capitalized',
                               leases='reported_interest_scope_not_fully_reconciled'),
         forecast=dict(basis='historical_quarter_yoy_policy' if 'forecast_rule_evidence' in audit else 'explicit_annual_policy',

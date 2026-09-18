@@ -25,7 +25,7 @@ def approve_zeros(request):
     assert len(notes)==2
     bindings = []
     for note in notes:
-        f, = [f for f in data['facts'] if f['period']==note['period'] and f['field']=='FN114']
+        f, = [f for f in data['facts'] if f['period']==note['period'] and f['field']=='capital_expenditure_cash']
         bindings.append(dict(period=note['period'], item=note['item'], import_sha256=note['import_sha256'],
             evidence_sha256=content_hash(note), source_artifact_sha256=f['artifact_sha256']))
     request['policy']['disposal_cash_zeros'] = bindings

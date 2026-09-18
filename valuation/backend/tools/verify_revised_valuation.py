@@ -14,8 +14,8 @@ def verify(path):
     notes={r['item']:D(r['value'])/(1 if r['unit']=='CNY/share' else 1000000) for r in req['data']['supplements'] if r['period']==period}
     binding=req.get('wacc_binding')
     wacc=D(str(run['report']['cost_of_capital']['wacc'])) if binding else D(str(p['wacc']))
-    book=(w['FN41']+w['FN55']+w['FN56']+w['FN439']+sum(notes[k] for k in ['current_loans','current_bonds','current_leases']))*D(str(p['debt_multiple']))
-    bond=(w['FN56']+notes['current_bonds'])*D(str(p['debt_multiple']))
+    book=(w['short_term_borrowings']+w['long_term_borrowings']+w['bonds_payable']+w['lease_liabilities']+sum(notes[k] for k in ['current_loans','current_bonds','current_leases']))*D(str(p['debt_multiple']))
+    bond=(w['bonds_payable']+notes['current_bonds'])*D(str(p['debt_multiple']))
     if policy['debt_basis']=='wacc_estimate':
         assert binding
         kd=D(str(run['report']['cost_of_capital']['cost_of_debt_pretax']))
@@ -23,17 +23,17 @@ def verify(path):
             return sum(notes[f'debt_cf_{key}_{bucket}']/(1+kd)**year for bucket,year in [('0_1',0),('1_2',1),('2_5',2),('5_plus',5)])
         book=sum(pv(key) for key in ('short','long','lease','bond'));bond=pv('bond')
     components=dict(
-        excess_cash=w['FN133']+(w['FN8']-w['FN133']-notes['extra_restricted_cash'])*D(str(p['cash_other_recovery']))-w['FN230']*D(str(p['operating_cash_ratio'])),
-        financial_assets_after_haircut=notes['extra_current_financial_debt']+notes['extra_noncurrent_financial_debt']+notes['deposits']+(notes['extra_current_financial_equity']+notes['extra_noncurrent_financial_equity']+w['FN25']+notes['loan_receivable']-notes['loan_allowance'])*D(str(p['investment_recovery'])),
-        debt_claim_proxy=-book,minority_claim_proxy=-w['FN97']*D(str(p['minority_earnings_multiple'])),
-        convertible_option_book_proxy=-w['FN299'],existing_other_claims=-sum(notes[k] for k in ['income_tax_payable','repurchase_payable','capex_payable','ipo_payable'])-w['FN59'])
-    shares=w['FN238']
+        excess_cash=w['cash_and_cash_equivalents']+(w['monetary_funds']-w['cash_and_cash_equivalents']-notes['extra_restricted_cash'])*D(str(p['cash_other_recovery']))-w['revenue']*D(str(p['operating_cash_ratio'])),
+        financial_assets_after_haircut=notes['extra_current_financial_debt']+notes['extra_noncurrent_financial_debt']+notes['deposits']+(notes['extra_current_financial_equity']+notes['extra_noncurrent_financial_equity']+w['long_term_equity_investments']+notes['loan_receivable']-notes['loan_allowance'])*D(str(p['investment_recovery'])),
+        debt_claim_proxy=-book,minority_claim_proxy=-w['net_income_minority_ytd']*D(str(p['minority_earnings_multiple'])),
+        convertible_option_book_proxy=-w['other_equity_instruments'],existing_other_claims=-sum(notes[k] for k in ['income_tax_payable','repurchase_payable','capex_payable','ipo_payable'])-w['provisions'])
+    shares=w['total_shares']
     if policy['capital_basis']=='disclosed_share_scenario':
         market=binding['market_capital'];mp=binding['policy']['market']
         shares=sum(D(r['value']) for r in market['share_counts'] if r['share_basis']=='outstanding')/1000000
         components['post_report_funding_cash_scenario']=sum(D(r['net_proceeds']) for r in market['funding_events'])*D(market['fx']['value'])*D(str(mp['funding_cash_retention']))/1000000
     shares*=1+D(str(p['extra_dilution_rate']))
-    release=bond+w['FN299'];dilution=notes['convertible_face']/notes['extra_conversion_price']
+    release=bond+w['other_equity_instruments'];dilution=notes['convertible_face']/notes['extra_conversion_price']
     def near(actual,expected):
         assert abs(D(str(actual))-expected)<=max(D('1e-7'),abs(expected)*D('1e-11')),(actual,expected)
     bridge=run['inputs']['equity_bridge']
@@ -41,7 +41,7 @@ def verify(path):
     for key,value in components.items(): near(bridge['components'][key],value)
     near(bridge['shares'],shares);near(bridge['conversion_release'],release);near(bridge['conversion_shares'],dilution)
     if binding: wacc=D(verify_wacc(path)['wacc'])
-    rev=w['FN230'];total=D(0)
+    rev=w['revenue'];total=D(0)
     forecast=policy['annual_forecast'];assert len(forecast)==10
     for year,row in enumerate(forecast,1):
         previous=rev;rev*=1+D(str(row['growth']))

@@ -24,7 +24,7 @@ def verify(run):
         raise ValueError('unsupported policy for independent verifier')
     facts = {r['fact_id']: r for r in d['facts']}
     w = {}
-    for field in 'FN230 FN86 FN305 FN306 FN83 FN82 FN301 FN238 FN133 FN41 FN52 FN55 FN56 FN439 FN69'.split():
+    for field in 'revenue operating_profit_cumulative interest_expense interest_income investment_income fair_value_change_income asset_disposal_income total_shares cash_and_cash_equivalents short_term_borrowings current_portion_noncurrent_liabilities long_term_borrowings bonds_payable lease_liabilities noncontrolling_interests'.split():
         rows = [r for r in d['windows'] if r['field'] == field]
         if len(rows) != 1 or rows[0]['value'] is None:
             raise ValueError('missing/ambiguous window: '+field)
@@ -32,7 +32,7 @@ def verify(run):
         expected = sum(D(facts[i]['value'])*D(c) for i,c in zip(row['source_fact_ids'], row['input_coefficients'], strict=True))
         near(row['value'], expected, 'standard window '+field)
         w[field] = expected / 1000000
-    rev = w['FN230']; ebit = w['FN86']+w['FN305']-w['FN306']-w['FN83']-w['FN82']-w['FN301']
+    rev = w['revenue']; ebit = w['operating_profit_cumulative']+w['interest_expense']-w['interest_income']-w['investment_income']-w['fair_value_change_income']-w['asset_disposal_income']
     margin = ebit/rev
     near(run['inputs']['prepared_ttm']['financials']['revenues'], rev, 'base revenue')
     near(report['adjusted']['adjusted_ebit'], ebit, 'base EBIT')
@@ -73,7 +73,7 @@ def verify(run):
     g = D(str(p['terminal_growth'])); roic = D(str(p['terminal_roic']))
     if not 0 <= g < min(wacc,roic) or sc <= 0: raise ValueError('invalid terminal/capital policy')
     if p['policy_id'] in ('nonfinancial-history-fcff-v1', 'nonfinancial-reviewed-history-fcff-v1'):
-        q = {r['period']:D(r['value']) for r in d['facts'] if r['field'] == 'FN230'}
+        q = {r['period']:D(r['value']) for r in d['facts'] if r['field'] == 'revenue'}
         end = date.fromisoformat(d['report_period']); start = end.replace(year=end.year-1).isoformat()
         pairs = [v/q[f'{int(day[:4])-1}{day[4:]}']-1 for day,v in q.items()
                  if start < day <= end.isoformat() and v >= 0 and q.get(f'{int(day[:4])-1}{day[4:]}',0) > 0]
@@ -95,10 +95,10 @@ def verify(run):
         years.append(dict(year=y,revenue=str(rev),nopat=str(nopat),net_reinvestment=str(reinvestment),fcff=str(fcff),pv=str(pv)))
     terminal_nopat = rev*(1+g)*row['margin']*(1-row['tax'])
     tv = terminal_nopat*(1-g/roic)/(wacc-g); pv_terminal = tv/(1+wacc)**10; ev = total+pv_terminal
-    components = dict(cash_recovery_scenario=w['FN133']*D(str(p['cash_recovery'])),
-        operating_cash_reserve=-w['FN230']*D(str(p['operating_cash_ratio'])),
-        debt_book_proxy=-sum(w[f] for f in ('FN41','FN52','FN55','FN56','FN439'))*D(str(p['debt_book_multiple'])),
-        minority_book_proxy=-w['FN69']*D(str(p['minority_book_multiple'])),
+    components = dict(cash_recovery_scenario=w['cash_and_cash_equivalents']*D(str(p['cash_recovery'])),
+        operating_cash_reserve=-w['revenue']*D(str(p['operating_cash_ratio'])),
+        debt_book_proxy=-sum(w[f] for f in ('short_term_borrowings','current_portion_noncurrent_liabilities','long_term_borrowings','bonds_payable','lease_liabilities'))*D(str(p['debt_book_multiple'])),
+        minority_book_proxy=-w['noncontrolling_interests']*D(str(p['minority_book_multiple'])),
         additional_claims_scenario=-D(str(p['additional_claims_million_cny'])))
     if p['policy_id'] == 'nonfinancial-reviewed-history-fcff-v1':
         for rule in p['asset_addbacks']:
@@ -118,7 +118,7 @@ def verify(run):
                 if not restricted.is_finite() or not 0 <= restricted <= expected:
                     raise ValueError('invalid restricted asset component')
             components['reviewed_asset_'+rule['field']] = (expected-restricted)/1000000*D(str(rule['recovery']))
-    shares = w['FN238']*(1+D(str(p['extra_dilution_rate']))); equity = ev+sum(components.values()); value = equity/shares
+    shares = w['total_shares']*(1+D(str(p['extra_dilution_rate']))); equity = ev+sum(components.values()); value = equity/shares
     bridge = run['inputs']['equity_bridge']
     if set(bridge['components']) != set(components) or bridge['operating_ownership'] != 1 or bridge['conversion_release'] != 0 or bridge['conversion_shares'] != 0:
         raise ValueError('unsupported equity bridge')

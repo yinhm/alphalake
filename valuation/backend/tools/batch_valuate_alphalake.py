@@ -103,7 +103,7 @@ def match_industry_rules(company, rules, cutoff):
 
 def run_batch(readiness, policy, export, *, evaluator=evaluate):
     """export 复用生产 Go 导出；每份证券快照独立事务，整批并非跨库原子快照。"""
-    if readiness['contract_version'] != 'alphalake-readiness-v1':
+    if readiness['contract_version'] != 'alphalake-readiness-v2':
         raise ValueError('unsupported readiness contract')
     results = []
     for company in readiness['companies']:

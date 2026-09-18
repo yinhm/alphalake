@@ -8,6 +8,7 @@ from copy import deepcopy
 import pytest
 
 from api.alphalake import evaluate
+from tools.migrate_standard_contract import upgrade_legacy
 from data_sources.alphalake import AlphaLakeRequest
 from tools.compare_valuations import replay
 from tools.review_valuation_forecast import review
@@ -57,23 +58,33 @@ def test_archived_real_main_copy_review(tmp_path,monkeypatch):
         if name == 'run.json.gz':
             (tmp_path/(receipt['run_id']+'.json')).write_bytes(raw)
     old, _ = load_run(tmp_path, receipt['run_id'])
-    with pytest.raises(ValueError,match='cannot exactly reproduce'):
+    with pytest.raises(ValueError,match='alphalake-valuation-v2'):
         replay(old)  # 生产的历史报告严格核对不因本轮放宽。
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path/'current'))
-    run = evaluate(AlphaLakeRequest.model_validate(old['request'])); replay(run)
+    run = evaluate(AlphaLakeRequest.model_validate(upgrade_legacy(old['request']))); replay(run)
     expected_report = deepcopy(old['report'])
     expected_report['dcf']['implied_roic_projections'] = [None]*10
     expected_report['dcf']['implied_roic_terminal'] = None
     assert run['report'] == expected_report
-    assert run['request'] == old['request'] and run['inputs'] == old['inputs']
+    from data_sources.alphalake import content_hash
+    assert run['request'] == AlphaLakeRequest.model_validate(upgrade_legacy(old['request'])).model_dump(mode='json')
+    old_inputs = deepcopy(old['inputs'])
+    old_inputs['prepared_ttm']['provenance']['alphalake_snapshot'] = content_hash(run['request']['data'])
+    assert run['inputs'] == old_inputs
     saved = contents['review.json.gz']; calls = []
     def export(period):
         calls.append(period)
-        return saved['results'][0]['actual_snapshot']
+        return upgrade_legacy(saved['results'][0]['actual_snapshot'])
     from api.alphalake import ENGINE_REVISION
     from data_sources.alphalake import content_hash
-    # 实际复核代码版本变化会产生新review ID，旧归档本身不改写。
-    expected = saved | dict(current_engine_revision=ENGINE_REVISION,forecast_engine_revision=ENGINE_REVISION,run_id=run['run_id'])
-    expected['review_id'] = content_hash({k:v for k,v in expected.items() if k!='review_id'})
-    assert review(run, saved['evaluation_as_of'], export) == expected
+    # 新契约改变证据哈希/运行标识；原预测与全部实际误差保持不变。
+    result = review(run, saved['evaluation_as_of'], export)
+    assert result['statuses'] == saved['statuses']
+    for old_row,new_row in zip(saved['results'],result['results'],strict=True):
+        for key in ('status','horizon','target_period','metrics','predictions_million_cny','actual_fcff'):
+            assert old_row.get(key)==new_row.get(key)
+        if 'actual_snapshot' in old_row:
+            assert new_row['actual_snapshot']==upgrade_legacy(old_row['actual_snapshot'])
+            assert new_row['actual_snapshot_sha256']==content_hash(new_row['actual_snapshot'])
+    assert result['review_id']==content_hash({k:v for k,v in result.items() if k!='review_id'})
     assert calls == ['2026-06-30']

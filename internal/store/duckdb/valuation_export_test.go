@@ -47,7 +47,7 @@ func TestValuationExportCandidateIdentitiesPreserveVersionSelection(t *testing.T
 		if err = json.Unmarshal(result["windows"].(json.RawMessage), &windows); err != nil {
 			t.Fatal(err)
 		}
-		want := map[int64]string{1: "1.0000000000", 9007199254740993: "2.0000000000", 3: ""}
+		want := map[int64]string{1: "1.0000000000", 9007199254740993: "2.0000000000", 3: "", 5: "7.0000000000"}
 		if month == 7 {
 			want[4] = "4.0000000000"
 			want[5] = "6.0000000000"
@@ -58,7 +58,7 @@ func TestValuationExportCandidateIdentitiesPreserveVersionSelection(t *testing.T
 			if !ok {
 				t.Fatalf("superseded/future/unrelated identity leaked: %+v", w)
 			}
-			if w.Field != "FN8" {
+			if w.Field != "monetary_funds" {
 				continue
 			}
 			if found[w.ID] {

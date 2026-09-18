@@ -114,6 +114,15 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 		return result, fmt.Errorf("%d provider facts have overlapping canonical field mappings", ambiguousMappings)
 	}
 
+	// 046起，源映射必须符合独立标准目录；旧版本仅供历史迁移验收。
+	var hasStandardCatalogue bool
+	if err := conn.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema='fundamental' AND table_name='field')`).Scan(&hasStandardCatalogue); err != nil {
+		return result, err
+	}
+	standardMatch := "TRUE"
+	if hasStandardCatalogue {
+		standardMatch = `EXISTS(SELECT 1 FROM fundamental.field c WHERE c.canonical_field=m.canonical_field AND c.unit=m.unit AND c.value_kind=m.value_kind AND c.period_basis=m.period_basis)`
+	}
 	if _, err := conn.ExecContext(ctx, `
 		CREATE TEMP TABLE `+fundamentalRejectStage+` AS
 		WITH candidates AS (
@@ -131,6 +140,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 				m.unit,
 				m.value_kind,
 				m.period_basis,
+                `+standardMatch+` AS standard_semantics_valid,
 				l.filing_id,
 				f.instrument_id AS filing_instrument_id,
 				f.report_period AS filing_report_period,
@@ -169,8 +179,9 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 				WHEN value IS NULL OR NOT isfinite(value) THEN 'provider_value_not_finite'
 				-- TDX 部分源零无法区分未披露与真实零；已识别现金流缺口及新批次字段统一保守拒绝。
 				WHEN primary_source='tdx' AND provider_field IN ('FN110','FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579','FN19','FN20','FN27','FN28','FN33','FN37','FN50','FN53','FN60','FN95','FN96','FN97','FN99','FN104','FN136','FN137','FN138','FN146','FN147','FN148','FN304','FN581') AND value=0 THEN 'provider_zero_ambiguous'
-				WHEN period_basis NOT IN ('report','instant','ytd') OR period_basis IS NULL THEN 'canonical_period_unknown'
+				WHEN period_basis NOT IN ('report','instant','ytd','quarter') OR period_basis IS NULL THEN 'canonical_period_unknown'
 				WHEN value_kind NOT IN ('monetary','shares') OR unit IS NULL OR trim(unit)='' THEN 'canonical_unit_unknown'
+				WHEN NOT standard_semantics_valid THEN 'canonical_definition_mismatch'
 				WHEN try_cast(cast(value AS VARCHAR) AS DECIMAL(38,10)) IS NULL THEN 'canonical_decimal_overflow'
 				ELSE NULL
 			END AS rejection_rule
@@ -198,10 +209,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 			CASE
 				WHEN period_basis='instant' THEN 'instant'
 				WHEN period_basis='ytd' AND month(report_period)=9 THEN '9M'
-				-- FN230-FN237 are single-quarter flows even in H1/FY packages.
-				WHEN primary_source='tdx' AND provider_field IN (
-					'FN230','FN231','FN232','FN233','FN234','FN235','FN236','FN237'
-				) THEN 'Q' || cast(quarter(report_period) AS VARCHAR)
+				WHEN period_basis='quarter' THEN 'Q' || cast(quarter(report_period) AS VARCHAR)
 				WHEN month(report_period)=3 AND day(report_period)=31 THEN 'Q1'
 				WHEN month(report_period)=6 AND day(report_period)=30 THEN 'H1'
 				WHEN month(report_period)=9 AND day(report_period)=30 THEN 'Q3'

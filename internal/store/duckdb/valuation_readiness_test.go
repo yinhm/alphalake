@@ -49,7 +49,7 @@ func TestReadinessBatchesKeepFieldsAndLargeIDs(t *testing.T) {
 		found := false
 		for _, value := range row["fields"].([]any) {
 			field := value.(map[string]any)
-			if field["field"] != "FN8" {
+			if field["field"] != "monetary_funds" {
 				continue
 			}
 			found = true

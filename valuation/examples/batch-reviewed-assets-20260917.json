@@ -1666,7 +1666,7 @@
         "valid_until": "2026-10-17T00:00:00Z",
         "asset_addbacks": [
           {
-            "field": "FN25",
+            "field": "long_term_equity_investments",
             "item": "reviewed_associate_investments",
             "import_sha256": "df540a29792ac1da6738e7e3f665c720504ea0e5b659d86c6342f9850f865897",
             "evidence_sha256": "a026346c0f8b0272315d54f1dff1b9f0e522fb8ed45e470b040c4f6d03af103d",

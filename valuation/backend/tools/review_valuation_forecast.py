@@ -55,15 +55,15 @@ def review(run, evaluation_as_of, export):
             if actual.source_conflicts:
                 raise ValueError('actual source conflict requires review')
             window, consumed = standard_window_reader(actual)
-            for field in ('FN506', 'FN509', 'FN510', 'FN413'):
+            for field in ('financial_business_interest_income', 'financial_business_interest_expense', 'financial_business_fee_expense', 'deposits_and_interbank_placements'):
                 value = window(field, False)
                 if value is not None and value != 0:
                     raise ValueError('actual financial operations require separate model: '+field)
             metrics = {}
             for name in predictions:
                 try:
-                    value = (window('FN230') if name == 'revenue' else
-                             window('FN86')+window('FN305')-window('FN306')-window('FN83')-window('FN82')-window('FN301'))
+                    value = (window('revenue') if name == 'revenue' else
+                             window('operating_profit_cumulative')+window('interest_expense')-window('interest_income')-window('investment_income')-window('fair_value_change_income')-window('asset_disposal_income'))
                     error = predictions[name]-value
                     metrics[name] = dict(status='evaluated', actual_million_cny=value,
                                          signed_error_million_cny=error, absolute_error_million_cny=abs(error))

@@ -25,6 +25,9 @@ func ExportCompanyValuationReadiness(ctx context.Context, db *sql.DB, end, asof 
 }
 
 func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Time, code string) (map[string]any, error) {
+	if err := requireStandardFinancialSchema(ctx, db); err != nil {
+		return nil, err
+	}
 	if end.IsZero() || asof.IsZero() || end.After(asof) || end.AddDate(0, 0, 1).Day() != 1 || int(end.Month())%3 != 0 {
 		return nil, errors.New("quarter-end period and later information cutoff required")
 	}
@@ -128,9 +131,9 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 	for start := 0; start < len(ids); start += batchSize {
 		if err := func() error {
 			windowRows, err := tx.QueryContext(ctx, `SELECT instrument_id,CAST(to_json(list(struct_pack(
- field:=source_provider_field,canonical_field:=canonical_field,value:=CAST(value AS VARCHAR),unit:=unit,
+ field:=canonical_field,canonical_field:=canonical_field,value:=CAST(value AS VARCHAR),unit:=unit,
  scope:=statement_scope,status:=coverage_status,required_inputs:=required_inputs,available_inputs:=available_inputs,
- missing_periods:=missing_periods,source_fact_ids:=source_fact_ids) ORDER BY source_provider_field,provider_code,statement_scope)) AS VARCHAR)
+ missing_periods:=missing_periods,source_fact_ids:=source_fact_ids) ORDER BY canonical_field,provider_code,statement_scope)) AS VARCHAR)
  FROM fundamental.ttm_asof(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE), min_instrument_id := ?, max_instrument_id := ?)
  GROUP BY instrument_id`, asof, end, ids[start], ids[min(start+batchSize, len(ids))-1])
 			if err != nil {
@@ -158,7 +161,7 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 			return nil, err
 		}
 	}
-	required := []string{"FN230", "FN86", "FN305", "FN306", "FN83", "FN82", "FN301", "FN238", "FN133", "FN41", "FN52", "FN55", "FN56", "FN439", "FN69"}
+	required := []string{"revenue", "operating_profit_cumulative", "interest_expense", "interest_income", "investment_income", "fair_value_change_income", "asset_disposal_income", "total_shares", "cash_and_cash_equivalents", "short_term_borrowings", "current_portion_noncurrent_liabilities", "long_term_borrowings", "bonds_payable", "lease_liabilities", "noncontrolling_interests"}
 	counts := map[string]int{}
 	gaps := map[string]int{}
 	symbolOwners := map[string]int{}
@@ -175,7 +178,7 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 			for _, v := range fields {
 				f := v.(map[string]any)
 				unit := "CNY"
-				if f["field"] == "FN238" {
+				if f["field"] == "total_shares" {
 					unit = "share"
 				}
 				if f["status"] == "complete" && f["value"] != nil && f["scope"] == "provider_default" && f["unit"] == unit {
@@ -220,7 +223,7 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 	if code != "" {
 		scope = "local_security_code_candidates:" + code
 	}
-	return map[string]any{"contract_version": "alphalake-readiness-v1", "report_period": end.Format("2006-01-02"), "information_as_of": asof.UTC().Format(time.RFC3339Nano),
+	return map[string]any{"contract_version": "alphalake-readiness-v2", "report_period": end.Format("2006-01-02"), "information_as_of": asof.UTC().Format(time.RFC3339Nano),
 		"company_industry_reference": companyReference,
 		"universe_scope":             scope,
 		"required_core_fields":       required, "universe_count": len(rows), "financial_status_counts": counts, "missing_core_field_counts": gaps, "companies": rows}, nil

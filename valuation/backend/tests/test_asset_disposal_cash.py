@@ -1,5 +1,6 @@
 """真实原文与新标准导出；缺期不得变零，诊断不修改DCF。"""
 from copy import deepcopy
+from tools.migrate_standard_contract import upgrade_legacy
 from dataclasses import asdict
 import gzip
 import hashlib
@@ -22,9 +23,9 @@ def test_disposal_evidence_and_missing_ttm(monkeypatch):
             verify({row['period']:str(float(row['pdf_value_cny'])+.01)})
     directory = ROOT/'valuation/research/disposal-cash-20260918'
     raw = gzip.decompress((directory/'standard-export.json.gz').read_bytes())
-    assert hashlib.sha256(raw).hexdigest() == json.loads((directory/'receipt.json').read_text())['export_sha256']
-    request = json.loads(gzip.decompress((ROOT/'valuation/research/reviewed-assets-20260917/before-request.json.gz').read_bytes()))
-    request['data'] = json.loads(raw)
+    assert hashlib.sha256(raw).hexdigest() == upgrade_legacy(json.loads((directory/'receipt.json').read_text()))['export_sha256']
+    request = upgrade_legacy(json.loads(gzip.decompress((ROOT/'valuation/research/reviewed-assets-20260917/before-request.json.gz').read_bytes())))
+    request['data'] = upgrade_legacy(json.loads(raw))
     parsed = AlphaLakeRequest.model_validate(request)
     inputs, audit = build_inputs(parsed)
     cap = audit['company_capital_evidence']
@@ -32,16 +33,16 @@ def test_disposal_evidence_and_missing_ttm(monkeypatch):
     assert cap['asset_disposal_cash_million_cny'] is None
     assert cap['cash_capex_after_disposals_million_cny'] is None
     assert cap['cash_capex_after_disposals_status'] == 'missing_standard_cash_components'
-    window, = [w for w in parsed.data.windows if w['field']=='FN110']
+    window, = [w for w in parsed.data.windows if w['field']=='long_lived_asset_disposal_cash']
     assert window['available_inputs'] == 1 and window['missing_periods'] == ['2025-12-31','2025-06-30']
     old = parsed.model_copy(deep=True)
-    old.data.windows = [w for w in old.data.windows if w['field']!='FN110']
-    old.data.facts = [f for f in old.data.facts if f['field']!='FN110']
+    old.data.windows = [w for w in old.data.windows if w['field']!='long_lived_asset_disposal_cash']
+    old.data.facts = [f for f in old.data.facts if f['field']!='long_lived_asset_disposal_cash']
     before, _ = build_inputs(old)
     assert asdict(run_full_valuation(before)) == asdict(run_full_valuation(inputs))
     # 把缺期窗口伪装成完成仍须由共享血缘校验拒绝。
     bad = deepcopy(request)
-    w = next(w for w in bad['data']['windows'] if w['field']=='FN110')
+    w = next(w for w in bad['data']['windows'] if w['field']=='long_lived_asset_disposal_cash')
     w.update(coverage_status='complete', value='17350')
     with pytest.raises(ValueError):
         build_inputs(AlphaLakeRequest.model_validate(bad))
@@ -52,7 +53,7 @@ def test_disposal_evidence_and_missing_ttm(monkeypatch):
     def complete_reader(data):
         window, consumed = reader(data)
         def value(field, required=True):
-            return 0.01735 if field == 'FN110' else window(field, required)
+            return 0.01735 if field == 'long_lived_asset_disposal_cash' else window(field, required)
         return value, consumed
     monkeypatch.setattr(alphalake, 'standard_window_reader', complete_reader)
     _, complete = build_inputs(parsed)
@@ -71,9 +72,9 @@ def test_reviewed_zero_real_lifecycle(tmp_path, monkeypatch):
     receipt, _ = verify_chain(directory,tmp_path/'runs')
     assert receipt['reviewed_cash_capex_after_disposals_cny']=='319616930'
     assert receipt['dcf_report_unchanged'] and receipt['historical_fcff'] is None
-    data = json.loads((directory/'disposal-reviewed-export.json').read_text())
+    data = upgrade_legacy(json.loads((directory/'disposal-reviewed-export.json').read_text()))
     request = approve_zeros(request_for(data))
-    notes = json.loads((ROOT/'valuation/research/disposal-cash-20260918/zero-supplements.json').read_text())
+    notes = upgrade_legacy(json.loads((ROOT/'valuation/research/disposal-cash-20260918/zero-supplements.json').read_text()))
     evidence = {r['period']:r for r in verify()}
     for note in notes:
         assert note['pdf_sha256']==evidence[note['period']]['pdf_sha256']
@@ -94,7 +95,7 @@ def test_reviewed_zero_real_lifecycle(tmp_path, monkeypatch):
         elif problem=='future': bad['policy']['reviewed_at']='2026-09-19T00:00:00Z'
         elif problem=='duplicate': bad['policy']['disposal_cash_zeros'].append(deepcopy(rule))
         elif problem=='override':
-            fact = deepcopy(next(f for f in bad['data']['facts'] if f['field']=='FN110'))
+            fact = deepcopy(next(f for f in bad['data']['facts'] if f['field']=='long_lived_asset_disposal_cash'))
             fact['period']=rule['period'];fact['fact_id']=999999
             bad['data']['facts'].append(fact)
         with pytest.raises(ValueError):

@@ -1644,7 +1644,7 @@
           {
             "classification": "nonconsolidated_equity_holding",
             "evidence_sha256": "a026346c0f8b0272315d54f1dff1b9f0e522fb8ed45e470b040c4f6d03af103d",
-            "field": "FN25",
+            "field": "long_term_equity_investments",
             "import_sha256": "df540a29792ac1da6738e7e3f665c720504ea0e5b659d86c6342f9850f865897",
             "item": "reviewed_associate_investments",
             "recovery": 1.0,
@@ -3338,7 +3338,7 @@
           {
             "classification": "nonoperating_partially_restricted_financial_asset",
             "evidence_sha256": "eba8d447dafd08fa373afee0ea0c98856f40c4d5a280d8337a1c74eb5a2f6c22",
-            "field": "FN19",
+            "field": "noncurrent_assets_due_within_one_year",
             "import_sha256": "4331cbf131a186acba7c3a21bd83111534ae62345b977acec8197b76f9ead817",
             "item": "reviewed_current_total",
             "recovery": 1,
@@ -3354,7 +3354,7 @@
           {
             "classification": "nonoperating_partially_restricted_financial_asset",
             "evidence_sha256": "289a986a456ca63551879c908699d95aba6c13d4f14020db238a9516c3a18bac",
-            "field": "FN431",
+            "field": "other_debt_investments",
             "import_sha256": "5c61464883e1f7c1e555bd9c6f955d5ff59bfd56ef98c065ebb7e967b1af84a5",
             "item": "reviewed_noncurrent_total",
             "recovery": 1,

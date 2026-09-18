@@ -11,7 +11,7 @@ from engine.data_dictionary import CompanyValuationInput
 from engine.orchestrator import run_full_valuation
 from tools.verify_nonfinancial_dcf import verify
 
-ASSET_FIELDS = ('FN9', 'FN19', 'FN25', 'FN430', 'FN431', 'FN433')
+ASSET_FIELDS = ('trading_financial_assets', 'noncurrent_assets_due_within_one_year', 'long_term_equity_investments', 'debt_investments', 'other_debt_investments', 'other_noncurrent_financial_assets')
 
 
 def review(request):

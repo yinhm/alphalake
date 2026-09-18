@@ -89,6 +89,20 @@ func TestRealAssetDisposalCash(t *testing.T) {
 	check(err)
 	_, err = MaterializeProviderFundamentals(ctx, db, "tdx", "FN110")
 	check(err)
+
+	// 源映射不能独自改写通用期间语义；不匹配时删除已有事实，恢复后重建。
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET period_basis='quarter' WHERE provider_field='FN110'`)
+	check(err)
+	_, err = MaterializeProviderFundamentals(ctx, db, "tdx", "FN110")
+	check(err)
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE source_provider_field='FN110'`).Scan(&n))
+	if n != 0 {
+		t.Fatal("source mapping bypassed standard catalogue")
+	}
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET period_basis='ytd' WHERE provider_field='FN110'`)
+	check(err)
+	_, err = MaterializeProviderFundamentals(ctx, db, "tdx", "FN110")
+	check(err)
 	replay, err := MaterializeProviderFundamentals(ctx, db, "tdx", "FN110")
 	check(err)
 	if replay.Inserted+replay.Updated+replay.Removed != 0 {

@@ -99,4 +99,11 @@ func TestFinancialWindows(t *testing.T) {
 			t.Fatalf("identity outside scope %v: %d rows", bounds, count)
 		}
 	}
+	// 标准派生不读源目录、不以供应商或字段编号决定语义。
+	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field;
+        UPDATE fundamental.fact SET primary_source='another_vendor', source_provider_field='opaque_source_key'`)
+	check(err)
+	assert(after, "2026-03-31", "monetary_funds", sql.NullFloat64{Float64: 500, Valid: true}, 1, 1)
+	assert(after, "2026-03-31", "income_tax_expense", sql.NullFloat64{}, 2, 3)
+
 }

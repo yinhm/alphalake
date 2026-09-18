@@ -150,7 +150,7 @@ def cash_crosscheck(request,prior_data,report):
     observations=[]
     for d in (current,prior):
         window,consumed=standard_window_reader(d);values={};windows={r['field']:r for r in d.windows}
-        for field,basis in [('FN230','quarter'),('FN234','quarter'),('FN114','ytd')]:
+        for field,basis in [('revenue','quarter'),('operating_cash_flow','quarter'),('capital_expenditure_cash','ytd')]:
             if window(field,False) is None:
                 result['missing'].append(dict(period=d.report_period.isoformat(),field=field,missing_periods=windows.get(field,{}).get('missing_periods',[])));continue
             if windows[field]['calculation_basis']!=basis:raise ValueError('cash field period basis differs')
@@ -161,19 +161,19 @@ def cash_crosscheck(request,prior_data,report):
     result['observations']=observations
     if result['missing']:return result
     now,before=({f:Decimal(v) for f,v in o['values_cny'].items()} for o in observations)
-    if min(now['FN230'],before['FN230'])<=0 or min(now['FN114'],before['FN114'])<0:
+    if min(now['revenue'],before['revenue'])<=0 or min(now['capital_expenditure_cash'],before['capital_expenditure_cash'])<0:
         result['status']='blocked_nonpositive_revenue_or_negative_capex';return result
-    ocf=(now['FN234']+before['FN234']*now['FN230']/before['FN230'])/2
-    capex=now['FN114'];cash=ocf-capex
+    ocf=(now['operating_cash_flow']+before['operating_cash_flow']*now['revenue']/before['revenue'])/2
+    capex=now['capital_expenditure_cash'];cash=ocf-capex
     dcf=report.get('dcf') or {};fcff=dcf.get('fcff_projections',[]);reinvest=dcf.get('reinvestment_projections',[]);revenues=dcf.get('revenue_projections',[])
     if not fcff or not reinvest or not revenues:raise ValueError('first-year DCF cashflow and revenue required')
     f=Decimal(str(fcff[0]))*1000000;r=Decimal(str(reinvest[0]))*1000000
     if not f.is_finite() or not r.is_finite():raise ValueError('nonfinite DCF cashflow')
     revenue=Decimal(str(revenues[0]))*1000000
     if not revenue.is_finite() or revenue<=0:raise ValueError('positive finite DCF revenue required')
-    scaled_ocf=ocf*revenue/now['FN230']
-    result['forecast_basis']=dict(cash_revenue_cny=str(now['FN230']),cash_revenue_growth='0',dcf_revenue_cny=str(revenue),
-        dcf_revenue_growth=str(revenue/now['FN230']-1),cash_capex_rule='repeat_current_ttm',
+    scaled_ocf=ocf*revenue/now['revenue']
+    result['forecast_basis']=dict(cash_revenue_cny=str(now['revenue']),cash_revenue_growth='0',dcf_revenue_cny=str(revenue),
+        dcf_revenue_growth=str(revenue/now['revenue']-1),cash_capex_rule='repeat_current_ttm',
         cash_ocf_rule=MODEL,dcf_reinvestment_basis='net_capital_expenditure_plus_change_in_operating_working_capital_policy',
         cash_capex_basis='reported_cash_purchase_of_long_lived_assets',
         maintenance_capex_status='not_separately_estimated',

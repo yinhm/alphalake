@@ -106,7 +106,17 @@ func openSchema44(ctx context.Context, path string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field='FN110'; DELETE FROM meta.schema_version WHERE version=45`)
+	// 仅测试夹具：回退046新增目录/宏和045映射，恢复真正的44结构。
+	oldWindow, err := duck.Read("035_scoped_financial_windows.sql")
+	if err == nil {
+		_, err = db.ExecContext(ctx, string(oldWindow))
+	}
+	if err == nil {
+		_, err = db.ExecContext(ctx, `DROP TABLE fundamental.field;
+            UPDATE fundamental.provider_field SET period_basis='report' WHERE source='tdx' AND provider_field BETWEEN 'FN230' AND 'FN238';
+            DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field='FN110';
+            DELETE FROM meta.schema_version WHERE version>=45`)
+	}
 	if err != nil {
 		db.Close()
 		return nil, err

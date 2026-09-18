@@ -53,7 +53,7 @@ def company_valuation(readiness, code, policies, export, run_directory, select=N
         raise ValueError('six-digit security code required')
     if readiness['universe_count']!=len(readiness['companies']):
         raise ValueError('universe count differs from company rows')
-    if readiness['contract_version']!='alphalake-readiness-v1':
+    if readiness['contract_version']!='alphalake-readiness-v2':
         raise ValueError('unsupported readiness contract')
     versions=[p.policy_version for p in policies]
     if not versions or len(set(versions))!=len(versions):

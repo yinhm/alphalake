@@ -168,8 +168,23 @@ func ImportReviewedSupplements(ctx context.Context, db *sql.DB, records []Review
 	return inserted, nil
 }
 
+// v2依赖通用期间语义；只读出口不能把尚未迁移的旧库冒充新契约。
+func requireStandardFinancialSchema(ctx context.Context, db *sql.DB) error {
+	version, err := CurrentSchemaVersion(ctx, db)
+	if err != nil {
+		return err
+	}
+	if version < 46 {
+		return errors.New("standard financial contract v2 requires schema46; upgrade a backed-up database first")
+	}
+	return nil
+}
+
 // ExportValuationData 查询同一事务快照，数值以十进制字符串交付，未知证券返回空数据。
 func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof time.Time) (map[string]any, error) {
+	if err := requireStandardFinancialSchema(ctx, db); err != nil {
+		return nil, err
+	}
 	if !sixDigitCode.MatchString(code) || end.IsZero() || asof.IsZero() {
 		return nil, errors.New("code, report period and ASOF are required")
 	}
@@ -194,7 +209,7 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
 	if overlapping {
 		return nil, errors.New("overlapping canonical field mappings; repair catalogue before valuation export")
 	}
-	output := map[string]any{"contract_version": "alphalake-valuation-v1", "code": code, "report_period": end.Format("2006-01-02"), "information_as_of": asof.UTC().Format(time.RFC3339Nano)}
+	output := map[string]any{"contract_version": "alphalake-valuation-v2", "code": code, "report_period": end.Format("2006-01-02"), "information_as_of": asof.UTC().Format(time.RFC3339Nano)}
 	// 以窗口分区键限定候选证券，避免逐公司重排全市场事实。不能提前按代码
 	// 筛选版本：同一证券的其他代码/来源可能已取代旧事实；代码复用须保留全部身份。
 	var first, last sql.NullInt64
@@ -216,7 +231,7 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
       AND report_period>=make_date(year(CAST(? AS DATE))-1,1,1)
     ORDER BY report_period,artifact_id) x`, []any{asof, code, end, end}},
 		{"facts", `SELECT CAST(to_json(list(x)) AS VARCHAR) FROM (
-    SELECT f.instrument_id,f.provider_code AS code,CAST(f.report_period AS VARCHAR) AS period,f.source_provider_field AS field,
+    SELECT f.instrument_id,f.provider_code AS code,CAST(f.report_period AS VARCHAR) AS period,f.canonical_field AS field,f.primary_source AS source,f.source_provider_field,
       f.canonical_field,CAST(f.value AS VARCHAR) AS value,f.unit,f.period_type,f.statement_scope,
       f.fact_id,f.revision_key,f.normalization_rule,f.materializer_version,
       CAST(f.announcement_time AS VARCHAR) AS available_at,a.sha256 AS artifact_sha256,
@@ -231,12 +246,12 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
       AND m.valid_from<=f.report_period AND (m.valid_to IS NULL OR f.report_period<m.valid_to)
     WHERE f.instrument_id BETWEEN ? AND ? AND f.provider_code=? AND f.primary_source='tdx' AND f.report_period<=CAST(? AS DATE)
       AND f.report_period>=make_date(year(CAST(? AS DATE))-1,1,1)
-    ORDER BY f.report_period,f.source_provider_field,f.fact_id) x`, []any{asof, first.Int64, last.Int64, code, end, end}},
+    ORDER BY f.report_period,f.canonical_field,f.fact_id) x`, []any{asof, first.Int64, last.Int64, code, end, end}},
 		{"windows", `SELECT CAST(to_json(list(x)) AS VARCHAR) FROM (
-    SELECT instrument_id,provider_code AS code,source_provider_field AS field,canonical_field,CAST(value AS VARCHAR) AS value,
+    SELECT instrument_id,provider_code AS code,canonical_field AS field,canonical_field,CAST(value AS VARCHAR) AS value,
       unit,statement_scope,period_type,calculation_basis,coverage_status,required_inputs,available_inputs,
       CAST(latest_input_announcement_time AS VARCHAR) AS available_at,input_periods,input_coefficients,source_fact_ids,source_filing_ids,missing_periods
-    FROM fundamental.ttm_asof(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE), min_instrument_id := ?, max_instrument_id := ?) WHERE provider_code=? ORDER BY source_provider_field,instrument_id) x`, []any{asof, end, first.Int64, last.Int64, code}},
+    FROM fundamental.ttm_asof(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE), min_instrument_id := ?, max_instrument_id := ?) WHERE provider_code=? ORDER BY canonical_field,instrument_id) x`, []any{asof, end, first.Int64, last.Int64, code}},
 		{"supplements", `SELECT CAST(to_json(list(x)) AS VARCHAR) FROM (
  SELECT * EXCLUDE(review_state) FROM (
     SELECT s.provider_code AS code,CAST(s.report_period AS VARCHAR) AS period,s.item,CAST(s.value AS VARCHAR) AS value,

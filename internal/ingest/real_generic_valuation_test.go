@@ -180,6 +180,7 @@ func verifyGenericValuationSample(t *testing.T, dir, instrumentsJSON string, rep
 		var decoded struct {
 			Facts []struct {
 				Field, Period, Value, Unit string
+				SourceProviderField        string `json:"source_provider_field"`
 				Bits                       uint32
 				Multiplier                 float64
 			}
@@ -197,7 +198,7 @@ func verifyGenericValuationSample(t *testing.T, dir, instrumentsJSON string, rep
 			check(err)
 			found := 0
 			for _, fact := range decoded.Facts {
-				if fact.Field != fmt.Sprintf("FN%d", row.Field) || fact.Period != period.Format("2006-01-02") {
+				if fact.SourceProviderField != fmt.Sprintf("FN%d", row.Field) || fact.Period != period.Format("2006-01-02") {
 					continue
 				}
 				found++

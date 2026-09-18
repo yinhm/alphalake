@@ -3,6 +3,7 @@ import csv
 import hashlib
 import json
 from pathlib import Path
+from tools.migrate_standard_contract import upgrade_legacy
 from decimal import Decimal
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -126,7 +127,7 @@ def verify_opening_2024():
     assert '其他59,852,820.3959,382,099.92' in pages[174]
     raw = gzip.decompress((directory/'export.json.gz').read_bytes())
     assert hashlib.sha256(raw).hexdigest() == receipt['export_sha256']
-    exported = json.loads(raw)
+    exported = upgrade_legacy(json.loads(raw))
     assert exported['code'] == '300866' and exported['report_period'] == '2024-12-31'
     expected = json.loads((directory/'supplements.json').read_bytes())
     values = {}
@@ -144,7 +145,7 @@ def verify_opening_2024():
         values[note['item']] = Decimal(note['value'])
     net = values['opening_related_party_loan_gross']-values['opening_related_party_loan_allowance']
     assert str(net) == receipt['net_loan_cny']
-    assert not any(w['field'] == 'FN13' for w in exported['windows'])
+    assert all(w['coverage_status'] != 'complete' for w in exported['windows'] if w['field'] == 'other_receivables')
     # 保留升级前导出，再核对schema40的真实标准链，不能仅改审核结论。
     source = json.loads((ROOT/'valuation/research/continuing-operations-five/capital-snapshot.json').read_bytes())
     row, = [r for r in source['records'] if r['code']=='300866' and r['period']=='2024-12-31']
@@ -153,10 +154,10 @@ def verify_opening_2024():
     after_raw = gzip.decompress((directory/'schema40-export.json.gz').read_bytes())
     after_receipt = json.loads((directory/'schema40-acceptance.json').read_bytes())
     assert hashlib.sha256(after_raw).hexdigest() == after_receipt['export_sha256']
-    after = json.loads(after_raw)
+    after = upgrade_legacy(json.loads(after_raw))
     from data_sources.alphalake import Snapshot, standard_window_reader
     window, _ = standard_window_reader(Snapshot.model_validate(after))
-    assert Decimal(str(window('FN13')))*1000000 == Decimal('126612168')
+    assert Decimal(str(window('other_receivables')))*1000000 == Decimal('126612168')
     assert after_receipt['valid_from'] == '2024-12-31'
     assert {r['item']: Decimal(r['value']) for r in after['supplements']} == values
     return dict(net_loan_cny=str(net), allowance_cny=str(values['opening_related_party_loan_allowance']),
@@ -174,7 +175,7 @@ def verify_identified_capital():
     from data_sources.alphalake import Snapshot, standard_window_reader
     directory = ROOT/'valuation/research/company-inputs-20260917'
     raw = gzip.decompress((directory/'anker-capital-standard.json.gz').read_bytes())
-    data = json.loads(raw)
+    data = upgrade_legacy(json.loads(raw))
     assert data['code'] == '300866' and data['report_period'] == '2026-06-30'
     window, _ = standard_window_reader(Snapshot.model_validate(data))
     notes = json.loads((directory/'anker-lease-supplements.json').read_bytes())
@@ -195,13 +196,13 @@ def verify_identified_capital():
         assert facts and all(r['announcement_id']==note['announcement_id'] and r['pdf_sha256']==note['pdf_sha256'] for r in facts)
         amounts[note['period']] = Decimal(current['value'])
     additions = amounts['2025-12-31']+amounts['2026-06-30']-amounts['2025-06-30']
-    depreciation = sum(Decimal(str(window(f))) for f in ('FN136','FN137','FN138','FN579','FN581'))
-    capex = Decimal(str(window('FN114')))
+    depreciation = sum(Decimal(str(window(f))) for f in ('depreciation_depletion','intangible_amortization','deferred_expense_amortization','investment_property_depreciation_amortization','right_of_use_depreciation'))
+    capex = Decimal(str(window('capital_expenditure_cash')))
     identified = capex+additions/1000000-depreciation
     return dict(period='TTM-2026-06-30', scope='real_isolated_standard_chain_not_main_publication',
         cash_capex_million_cny=str(capex), rou_additions_million_cny=str(additions/1000000),
         da_including_rou_million_cny=str(depreciation), identified_long_lived_investment_million_cny=str(identified),
-        formula='standard_FN114 + reviewed_ROU_additions - standard_FN136_FN137_FN138_FN579_FN581',
+        formula='capital_expenditure_cash + reviewed_ROU_additions - matched_standard_depreciation_amortization',
         boundary='Anker reviewed component scope only; lease financing cash payments not deducted again; disposal cash, acquisitions, WC and RD reclassification not completed',
         full_net_reinvestment=None, historical_fcff=None, company_capital_ratio=None,
         snapshot_sha256=hashlib.sha256(raw).hexdigest())

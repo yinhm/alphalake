@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 
 from tools.audit_standard_history_five import audit
+from tools.migrate_standard_contract import upgrade_legacy
+from data_sources.alphalake import AlphaLakeRequest
 from api.alphalake import ENGINE_REVISION, runtime_versions
 from data_sources.alphalake import content_hash
 
@@ -27,26 +29,33 @@ def test_archived_standard_history_five(tmp_path,monkeypatch):
     calls=[]
     def export(code,period,cutoff):
         k=code,period,datetime.fromisoformat(cutoff);calls.append(k)
-        return deepcopy(snapshots[k])
+        return upgrade_legacy(snapshots[k])
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path/'runs'))
     actual = audit(plan,policy,export)
-    # 旧证据不改写；仅允许本轮缺资本ROIC修正、新披露及可重建运行元数据。
+    # 契约/字段名称与哈希允许变化；分母、财务快照、全部经济输入和报告不得变化。
+    assert {k:v for k,v in actual.items() if k!='rows'} == {k:v for k,v in expected.items() if k!='rows'}
+    mapping={w['field']:w['canonical_field'] for row in expected['rows'] for w in row['snapshot']['windows']}
     for before,after in zip(expected['rows'],actual['rows'],strict=True):
-        if 'run' not in before: continue
-        old,new = before['run'],after['run']
-        assert new['report']['dcf']['implied_roic_projections'] == [None]*10
-        assert new['report']['dcf']['implied_roic_terminal'] is None
-        old['report']['dcf']['implied_roic_projections'] = [None]*10
-        old['report']['dcf']['implied_roic_terminal'] = None
-        assert new['method_assessment']['reinvestment']['implied_roic_status'] == 'missing_opening_capital'
-        old['method_assessment'] = new['method_assessment']
-        old['engine_revision'] = ENGINE_REVISION
-        old['runtime_versions'] = runtime_versions()
-        old['run_id'] = content_hash(dict(request=old['request'],engine_revision=ENGINE_REVISION))
-        prior_review = before['review']
-        prior_review.update(run_id=old['run_id'],current_engine_revision=ENGINE_REVISION,forecast_engine_revision=ENGINE_REVISION)
-        prior_review['review_id'] = content_hash({k:v for k,v in prior_review.items() if k!='review_id'})
-    assert actual == expected
+        assert (before['code'],before['period'],before['status']) == (after['code'],after['period'],after['status'])
+        assert after['snapshot'] == upgrade_legacy(before['snapshot'])
+        if 'run' not in before:
+            assert after['missing'] == [item.replace(item.split('/')[-1],mapping.get(item.split('/')[-1],item.split('/')[-1])) for item in before['missing']]
+            continue
+        old,new=deepcopy(before['run']),after['run']
+        old['report']['dcf']['implied_roic_projections']=[None]*10
+        old['report']['dcf']['implied_roic_terminal']=None
+        assert new['report']==old['report']
+        assert new['request']==AlphaLakeRequest.model_validate(upgrade_legacy(old['request'])).model_dump(mode='json')
+        old['inputs']['prepared_ttm']['provenance']['alphalake_snapshot']=content_hash(new['request']['data'])
+        assert new['inputs']==old['inputs']
+        assert new['method_assessment']['reinvestment']['implied_roic_status']=='missing_opening_capital'
+        assert after['review']['statuses']==before['review']['statuses']
+        for x,y in zip(before['review']['results'],after['review']['results'],strict=True):
+            for metric_key in ('status','horizon','target_period','metrics','predictions_million_cny','actual_fcff'):
+                assert x.get(metric_key)==y.get(metric_key)
+            if 'actual_snapshot' in x:
+                assert y['actual_snapshot']==upgrade_legacy(x['actual_snapshot'])
+                assert y['actual_snapshot_sha256']==content_hash(y['actual_snapshot'])
     assert len(calls)==16  # 15个预测起点，仅一个获准运行查询一个到期实际。
     assert sum(not r['snapshot']['facts'] for r in expected['rows'])==9
     valid=next(r for r in expected['rows'] if 'run' in r)

@@ -210,7 +210,7 @@ func TestRealFinancialWorkflow(t *testing.T) {
 		}
 	}
 	count("SELECT count(*) FROM fundamental.fact WHERE source_provider_field<>'FN238' AND period_type='Q4' AND unit='CNY'", 48)
-	count("SELECT count(*) FROM fundamental.fact WHERE source_provider_field='FN238' AND period_type='FY' AND unit='share'", 6)
+	count("SELECT count(*) FROM fundamental.fact WHERE source_provider_field='FN238' AND period_type='instant' AND unit='share'", 6)
 	count("SELECT count(*) FROM fundamental.fact WHERE period_type='instant' AND unit='CNY'", 201)
 	count("SELECT count(*) FROM fundamental.fact WHERE period_type='FY' AND unit='CNY'", 142)
 	count("SELECT count(*) FROM fundamental.fact WHERE provider_code='603659' AND canonical_field='bonds_payable' AND period_type='instant' AND value=199443184 AND unit='CNY'", 1)

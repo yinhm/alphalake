@@ -275,7 +275,7 @@ func TestMaterializeSingleQuarterFlowsAndRepairLegacyPeriods(t *testing.T) {
 	if _, err := MaterializeCanonicalFundamentals(ctx, db, 3, "tdx"); err != nil {
 		t.Fatal(err)
 	}
-	for q, stockPeriod := range []string{"Q1", "H1", "Q3", "FY"} {
+	for q, stockPeriod := range []string{"instant", "instant", "instant", "instant"} {
 		var flows, stocks int
 		err := db.QueryRowContext(ctx, `SELECT count(*) FILTER (WHERE source_provider_field <> 'FN238' AND period_type=?),
    count(*) FILTER (WHERE source_provider_field='FN238' AND period_type=?)

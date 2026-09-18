@@ -4,6 +4,7 @@ from decimal import Decimal
 import hashlib
 import json
 import math
+import re
 import struct
 from statistics import median
 from typing import Literal
@@ -18,7 +19,7 @@ from engine.data_dictionary import (CompanyValuationInput, PreparedTTM, RawFinan
 
 class Snapshot(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    contract_version: Literal['alphalake-valuation-v1']
+    contract_version: Literal['alphalake-valuation-v2']
     code: str = Field(pattern=r'^\d{6}$')
     report_period: date
     information_as_of: datetime
@@ -33,6 +34,9 @@ class Snapshot(BaseModel):
             raise ValueError('timezone-aware ASOF after report period required')
         if self.report_period.month % 3 or (self.report_period + timedelta(days=1)).day != 1:
             raise ValueError('quarter-end report period required')
+        for row in self.facts + self.windows:
+            if not re.fullmatch(r'[a-z][a-z0-9_]*', row.get('field', '')) or row.get('canonical_field') != row['field']:
+                raise ValueError('standard field identity required; source codes belong in lineage')
         identities = set()
         for r in self.facts + self.windows + self.supplements + self.source_conflicts:
             if r.get('code') != self.code:
@@ -189,7 +193,7 @@ class ReviewedDisposalZero(ReviewedRestrictedComponent):
 class ReviewedAssetAddback(BaseModel):
     """标准金融资产分类审核；受限分量须另有同期间、同原文证据。"""
     model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
-    field: Literal['FN9', 'FN19', 'FN25', 'FN430', 'FN431', 'FN433']
+    field: Literal['trading_financial_assets', 'noncurrent_assets_due_within_one_year', 'long_term_equity_investments', 'debt_investments', 'other_debt_investments', 'other_noncurrent_financial_assets']
     item: str = Field(pattern=r'^[a-z][a-z0-9_]*$')
     import_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
     source_artifact_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
@@ -222,11 +226,11 @@ class ReviewedHistoricalDCFPolicy(HistoricalDCFPolicy):
             if partial != (r.restricted_component is not None):
                 raise ValueError('partial asset classification requires restricted component evidence only')
             if partial:
-                if r.field not in ('FN19', 'FN431'):
-                    raise ValueError('restricted components currently support FN19/FN431 only')
+                if r.field not in ('noncurrent_assets_due_within_one_year', 'other_debt_investments'):
+                    raise ValueError('restricted components currently support noncurrent_assets_due_within_one_year/other_debt_investments only')
                 evidence_items.append(r.restricted_component.item)
-            if (r.field == 'FN25') != (r.classification == 'nonconsolidated_equity_holding'):
-                raise ValueError('equity holding classification requires FN25 only')
+            if (r.field == 'long_term_equity_investments') != (r.classification == 'nonconsolidated_equity_holding'):
+                raise ValueError('equity holding classification requires long_term_equity_investments only')
         if len({r.period for r in self.disposal_cash_zeros}) != len(self.disposal_cash_zeros):
             raise ValueError('duplicate disposal zero period')
         if len(set(evidence_items)) != len(evidence_items):
@@ -311,7 +315,7 @@ def standard_window_reader(d: Snapshot):
             if required:
                 raise MissingInputs(['TDX/'+field])
             return None
-        unit = 'share' if field == 'FN238' else 'CNY'
+        unit = 'share' if field == 'total_shares' else 'CNY'
         if r['unit'] != unit or r['statement_scope'] != 'provider_default':
             raise ValueError('unsupported standard unit/scope: '+field)
         ids, periods, coefficients = r['source_fact_ids'], r['input_periods'], r['input_coefficients']
@@ -339,7 +343,7 @@ def standard_window_reader(d: Snapshot):
             if not f or f['field'] != field or f['period'] != period or f['unit'] != unit or f['statement_scope'] != r['statement_scope']:
                 raise ValueError('window does not match source facts: '+field)
             month = int(period[5:7])
-            expected_type = ('instant' if basis == 'instant' and field != 'FN238' else
+            expected_type = ('instant' if basis == 'instant' else
                              f'Q{month//3}' if basis == 'quarter' else
                              {3:'Q1',6:'H1',9:'9M' if basis == 'ytd' else 'Q3',12:'FY'}[month])
             if f['period_type'] != expected_type or r['period_type'] != ('instant' if basis == 'instant' else 'TTM'):
@@ -366,8 +370,8 @@ def build_inputs(request: AlphaLakeRequest):
         reference_components = reference_audit = None
         if request.wacc_binding is not None:
             window,_ = standard_window_reader(d)
-            ebit = window('FN86')+window('FN305')-window('FN306')-window('FN83')-window('FN82')-window('FN301')
-            reference_components,reference_audit = resolve_wacc(request.wacc_binding,d.code,d.report_period,d.information_as_of,ebit=ebit,interest=window('FN305'))
+            ebit = window('operating_profit_cumulative')+window('interest_expense')-window('interest_income')-window('investment_income')-window('fair_value_change_income')-window('asset_disposal_income')
+            reference_components,reference_audit = resolve_wacc(request.wacc_binding,d.code,d.report_period,d.information_as_of,ebit=ebit,interest=window('interest_expense'))
             policy = type(policy).model_validate(policy.model_dump() | {'wacc':reference_audit['result']['wacc']})
         if isinstance(policy, HistoricalDCFPolicy):
             inputs,audit = build_historical_dcf_inputs(d,policy)
@@ -426,10 +430,10 @@ def build_inputs(request: AlphaLakeRequest):
     def note_ttm(item):
         return note(item) if d.report_period.month == 12 else note(item,annual)+note(item)-note(item,prior)
 
-    required_windows = ('FN230 FN86 FN305 FN306 FN83 FN82 FN301 FN238 '+
-        ('FN136 FN137 FN138 FN579 FN581 FN8 FN133 FN25 FN69 FN41 FN55 FN56 FN439 FN59 FN299 FN72' if anker else
-         'FN506 FN509 FN510 FN520 FN97 FN8 FN403 FN409 FN19 FN411 FN430 FN431 FN433 FN25 FN413 FN52 FN439')).split()
-    if revised: required_windows.append('FN97')
+    required_windows = ('revenue operating_profit_cumulative interest_expense interest_income investment_income fair_value_change_income asset_disposal_income total_shares '+
+        ('depreciation_depletion intangible_amortization deferred_expense_amortization investment_property_depreciation_amortization right_of_use_depreciation monetary_funds cash_and_cash_equivalents long_term_equity_investments noncontrolling_interests short_term_borrowings long_term_borrowings bonds_payable lease_liabilities provisions other_equity_instruments total_equity' if anker else
+         'financial_business_interest_income financial_business_interest_expense financial_business_fee_expense credit_impairment_income net_income_minority_ytd monetary_funds funds_lent financial_assets_purchased_under_resale_agreements noncurrent_assets_due_within_one_year loans_and_advances_noncurrent debt_investments other_debt_investments other_noncurrent_financial_assets long_term_equity_investments deposits_and_interbank_placements current_portion_noncurrent_liabilities lease_liabilities')).split()
+    if revised: required_windows.append('net_income_minority_ytd')
     missing = ['TDX/'+f for f in required_windows if f not in windows or windows[f].get('coverage_status') != 'complete' or windows[f].get('value') is None]
     end_notes = ('extra_restricted_cash extra_current_financial_debt extra_noncurrent_financial_debt deposits extra_current_financial_equity extra_noncurrent_financial_equity loan_receivable loan_allowance income_tax_payable repurchase_payable capex_payable ipo_payable current_loans current_bonds current_leases convertible_face extra_conversion_price'.split()
                  if anker else ['finance_equity','income_tax_payable'])
@@ -439,55 +443,55 @@ def build_inputs(request: AlphaLakeRequest):
     if missing:
         raise MissingInputs(missing)
     w = {f:window(f) for f in required_windows}
-    revenue, shares = w['FN230'], w['FN238']
+    revenue, shares = w['revenue'], w['total_shares']
     if revenue <= 0 or shares <= 0:
         raise ValueError('positive revenue and closing shares required')
     if anker:
-        ebit = w['FN86']+w['FN305']-w['FN306']-w['FN83']+note_ttm('forward_realized')-w['FN82']+note_ttm('fv_forward_asset')+note_ttm('fv_forward_liability')-w['FN301']
-        da = sum(w[f] for f in ['FN136','FN137','FN138','FN579','FN581'])
-        other_cash = w['FN8']-w['FN133']-note('extra_restricted_cash')
-        excess = w['FN133']+other_cash*p['cash_other_recovery']-revenue*p['operating_cash_ratio']
+        ebit = w['operating_profit_cumulative']+w['interest_expense']-w['interest_income']-w['investment_income']+note_ttm('forward_realized')-w['fair_value_change_income']+note_ttm('fv_forward_asset')+note_ttm('fv_forward_liability')-w['asset_disposal_income']
+        da = sum(w[f] for f in ['depreciation_depletion','intangible_amortization','deferred_expense_amortization','investment_property_depreciation_amortization','right_of_use_depreciation'])
+        other_cash = w['monetary_funds']-w['cash_and_cash_equivalents']-note('extra_restricted_cash')
+        excess = w['cash_and_cash_equivalents']+other_cash*p['cash_other_recovery']-revenue*p['operating_cash_ratio']
         if excess < 0 or other_cash < 0:
             raise ValueError('cash classification or operating reserve not supported')
         investments = note('extra_current_financial_debt')+note('extra_noncurrent_financial_debt')+note('deposits')
-        risky = note('extra_current_financial_equity')+note('extra_noncurrent_financial_equity')+w['FN25']+note('loan_receivable')-note('loan_allowance')
-        convertible = w['FN56']+note('current_bonds')
-        debt = w['FN41']+w['FN55']+w['FN56']+w['FN439']+sum(note(k) for k in ['current_loans','current_bonds','current_leases'])
-        claims = sum(note(k) for k in ['income_tax_payable','repurchase_payable','capex_payable','ipo_payable'])+w['FN59']
-        minority_claim = w['FN97']*p['minority_earnings_multiple'] if revised else w['FN69']*p['minority_multiple']
+        risky = note('extra_current_financial_equity')+note('extra_noncurrent_financial_equity')+w['long_term_equity_investments']+note('loan_receivable')-note('loan_allowance')
+        convertible = w['bonds_payable']+note('current_bonds')
+        debt = w['short_term_borrowings']+w['long_term_borrowings']+w['bonds_payable']+w['lease_liabilities']+sum(note(k) for k in ['current_loans','current_bonds','current_leases'])
+        claims = sum(note(k) for k in ['income_tax_payable','repurchase_payable','capex_payable','ipo_payable'])+w['provisions']
+        minority_claim = w['net_income_minority_ytd']*p['minority_earnings_multiple'] if revised else w['noncontrolling_interests']*p['minority_multiple']
         if minority_claim<0: raise ValueError('negative minority earnings cannot value the claim with this policy')
         components = dict(excess_cash=excess,financial_assets_after_haircut=investments+risky*p['investment_recovery'],
             debt_claim_proxy=-debt*p['debt_multiple'],minority_claim_proxy=-minority_claim,
-            convertible_option_book_proxy=-w['FN299'],existing_other_claims=-claims)
+            convertible_option_book_proxy=-w['other_equity_instruments'],existing_other_claims=-claims)
         conversion_price, face = note('extra_conversion_price'), note('convertible_face')
         if conversion_price <= 0 or face <= 0:
             raise ValueError('positive conversion price and remaining face required')
         bridge = EquityBridgeInputs(policy_id=policy.policy_id,components=components,operating_ownership=1,
-            shares=shares*(1+p['extra_dilution_rate']),conversion_release=convertible*p['debt_multiple']+w['FN299'],conversion_shares=face/conversion_price)
+            shares=shares*(1+p['extra_dilution_rate']),conversion_release=convertible*p['debt_multiple']+w['other_equity_instruments'],conversion_shares=face/conversion_price)
         raw = RawFinancials(fiscal_year=d.report_period.year,revenues=revenue,ebit=ebit,d_a=da,
-            capex=window('FN114',False),r_and_d_expense=window('FN304',False),bv_equity=w['FN72'],
-            bv_debt=debt,cash_and_marketable_securities=w['FN133'],minority_interests=w['FN69'],shares_outstanding=shares)
+            capex=window('capital_expenditure_cash',False),r_and_d_expense=window('research_and_development_expense',False),bv_equity=w['total_equity'],
+            bv_debt=debt,cash_and_marketable_securities=w['cash_and_cash_equivalents'],minority_interests=w['noncontrolling_interests'],shares_outstanding=shares)
     else:
-        ebit = w['FN86']-w['FN506']+w['FN509']+w['FN510']-w['FN83']-w['FN82']-w['FN520']-w['FN301']+w['FN305']-w['FN306']
+        ebit = w['operating_profit_cumulative']-w['financial_business_interest_income']+w['financial_business_interest_expense']+w['financial_business_fee_expense']-w['investment_income']-w['fair_value_change_income']-w['credit_impairment_income']-w['asset_disposal_income']+w['interest_expense']-w['interest_income']
         if ebit <= 0:
             raise ValueError('liquor minority proxy requires positive EBIT')
         # 沿用已审核的 25% NOPAT 分母代理，不宣称精确去合并。
-        minority = (w['FN97']-note_ttm('finance_net_income')*(1-p['finance_ownership']))/(ebit*.75)*p['minority_scale']
+        minority = (w['net_income_minority_ytd']-note_ttm('finance_net_income')*(1-p['finance_ownership']))/(ebit*.75)*p['minority_scale']
         if not 0 <= minority < 1:
             raise ValueError('invalid operating minority proxy')
         ownership = 1-minority
         finance_equity = note('finance_equity')
-        pool = dict(financial_gross=sum(w[f] for f in ['FN8','FN403','FN409','FN19','FN411','FN430','FN431'])*p['financial_asset_recovery'],
-            risk_assets=(w['FN433']+w['FN25'])*p['risk_asset_recovery'],external_deposits=-w['FN413'],
+        pool = dict(financial_gross=sum(w[f] for f in ['monetary_funds','funds_lent','financial_assets_purchased_under_resale_agreements','noncurrent_assets_due_within_one_year','loans_and_advances_noncurrent','debt_investments','other_debt_investments'])*p['financial_asset_recovery'],
+            risk_assets=(w['other_noncurrent_financial_assets']+w['long_term_equity_investments'])*p['risk_asset_recovery'],external_deposits=-w['deposits_and_interbank_placements'],
             full_finance_book_equity_removed=-finance_equity,operating_cash_reserve=-revenue*p['operating_cash_ratio'],
-            income_tax_payable=-note('income_tax_payable'),lease_debt=-w['FN52']-w['FN439'])
+            income_tax_payable=-note('income_tax_payable'),lease_debt=-w['current_portion_noncurrent_liabilities']-w['lease_liabilities'])
         components = {k:v*ownership for k,v in pool.items()}
         components['owned_finance_equity_value'] = finance_equity*p['finance_ownership']*p['finance_pb']
         bridge = EquityBridgeInputs(policy_id=policy.policy_id,components=components,operating_ownership=ownership,
             shares=shares,conversion_release=0,conversion_shares=0)
         raw = RawFinancials(fiscal_year=d.report_period.year,revenues=revenue,ebit=ebit,shares_outstanding=shares)
     if request.wacc_binding is not None:
-        reference_components, reference_audit = resolve_wacc(request.wacc_binding, d.code, d.report_period, d.information_as_of, ebit=ebit, interest=w['FN305'], debt=debt if anker else w['FN52']+w['FN439'], bridge=bridge, note=note)
+        reference_components, reference_audit = resolve_wacc(request.wacc_binding, d.code, d.report_period, d.information_as_of, ebit=ebit, interest=w['interest_expense'], debt=debt if anker else w['current_portion_noncurrent_liabilities']+w['lease_liabilities'], bridge=bridge, note=note)
         p['wacc'] = reference_audit['result']['wacc']
         if p['wacc'] <= p['terminal_growth']:
             raise ValueError('reference WACC must exceed terminal growth')
@@ -500,7 +504,7 @@ def build_inputs(request: AlphaLakeRequest):
         bond=debt_value['components']['bond']
         rate=Decimal(1)+Decimal(str(debt_value['discount_rate']))
         bond_pv=sum(Decimal(bond[i])/rate**t for i,t in enumerate((0,1,2,5)))
-        bridge.conversion_release=float(bond_pv)+w['FN299']
+        bridge.conversion_release=float(bond_pv)+w['other_equity_instruments']
     capital_audit=None
     if revised:
         market=reference_audit.get('market_capital') if reference_audit else None
@@ -560,18 +564,18 @@ def build_earnings_power_inputs(d, policy):
     if d.report_period != policy.approved_report_period:
         raise ValueError('screening policy is not approved for report period')
     window, consumed = standard_window_reader(d)
-    required = 'FN230 FN86 FN305 FN306 FN83 FN82 FN301'.split()
+    required = 'revenue operating_profit_cumulative interest_expense interest_income investment_income fair_value_change_income asset_disposal_income'.split()
     values = {f:window(f,False) for f in required}
     missing = ['TDX/'+f for f,v in values.items() if v is None]
     if missing:
         raise MissingInputs(missing)
     # 已知金融业务不得套用普通企业经营价值；缺字段不等于不存在，范围须另行审核。
-    for field in ('FN506','FN509','FN510','FN413'):
+    for field in ('financial_business_interest_income','financial_business_interest_expense','financial_business_fee_expense','deposits_and_interbank_placements'):
         value = window(field,False)
         if value is not None and value != 0:
             raise ValueError('financial operations require separate model: '+field)
-    revenue = values['FN230']
-    ebit = values['FN86']+values['FN305']-values['FN306']-values['FN83']-values['FN82']-values['FN301']
+    revenue = values['revenue']
+    ebit = values['operating_profit_cumulative']+values['interest_expense']-values['interest_income']-values['investment_income']-values['fair_value_change_income']-values['asset_disposal_income']
     if revenue <= 0 or ebit <= 0:
         raise ValueError('positive revenue and adjusted EBIT required for earnings-power screen')
     margin=ebit/revenue
@@ -611,36 +615,36 @@ def build_earnings_power_inputs(d, policy):
 def build_book_dcf_inputs(d, policy):
     inputs,audit=build_earnings_power_inputs(d,policy)
     window,consumed=standard_window_reader(d)
-    fields='FN238 FN133 FN41 FN52 FN55 FN56 FN439 FN69'.split()
+    fields='total_shares cash_and_cash_equivalents short_term_borrowings current_portion_noncurrent_liabilities long_term_borrowings bonds_payable lease_liabilities noncontrolling_interests'.split()
     values={f:window(f,False) for f in fields}
     missing=['TDX/'+f for f,v in values.items() if v is None]
     if missing: raise MissingInputs(missing)
-    if values['FN238']<=0 or any(values[f]<0 for f in fields):
+    if values['total_shares']<=0 or any(values[f]<0 for f in fields):
         raise ValueError('positive shares and nonnegative book claims/cash required')
     raw=inputs.prepared_ttm.financials
-    rd, cash_capex = window('FN304',False), window('FN114',False)
+    rd, cash_capex = window('research_and_development_expense',False), window('capital_expenditure_cash',False)
     audit['company_capital_evidence'] = dict(source='tdx_standard_ttm',
         rd_expense_million_cny=rd, rd_to_revenue=rd/raw.revenues if rd is not None else None,
         cash_capex_million_cny=cash_capex,
         boundary='研发费用及购建现金仅为投入分量；不代表完整净再投资，不能直接推出收入增长或公司边际资本效率。')
     # 旧快照无此字段时保持旧诊断；新标准链的缺期不能被当作零处置。
-    if any(w['field'] == 'FN110' for w in d.windows):
-        disposal = window('FN110', False)
+    if any(w['field'] == 'long_lived_asset_disposal_cash' for w in d.windows):
+        disposal = window('long_lived_asset_disposal_cash', False)
         audit['company_capital_evidence'].update(
             asset_disposal_cash_million_cny=disposal,
             cash_capex_after_disposals_million_cny=(cash_capex-disposal
                 if cash_capex is not None and disposal is not None else None),
             cash_capex_after_disposals_status=('cash_component_not_total_reinvestment'
                 if cash_capex is not None and disposal is not None else 'missing_standard_cash_components'))
-    raw.shares_outstanding=values['FN238']
-    debt=sum(values[f] for f in ('FN41','FN52','FN55','FN56','FN439'))
-    components=dict(cash_recovery_scenario=values['FN133']*policy.cash_recovery,
+    raw.shares_outstanding=values['total_shares']
+    debt=sum(values[f] for f in ('short_term_borrowings','current_portion_noncurrent_liabilities','long_term_borrowings','bonds_payable','lease_liabilities'))
+    components=dict(cash_recovery_scenario=values['cash_and_cash_equivalents']*policy.cash_recovery,
         operating_cash_reserve=-raw.revenues*policy.operating_cash_ratio,
         debt_book_proxy=-debt*policy.debt_book_multiple,
-        minority_book_proxy=-values['FN69']*policy.minority_book_multiple,
+        minority_book_proxy=-values['noncontrolling_interests']*policy.minority_book_multiple,
         additional_claims_scenario=-policy.additional_claims_million_cny)
     inputs.equity_bridge=EquityBridgeInputs(policy_id=policy.policy_id,components=components,operating_ownership=1,
-        shares=values['FN238']*(1+policy.extra_dilution_rate),conversion_release=0,conversion_shares=0)
+        shares=values['total_shares']*(1+policy.extra_dilution_rate),conversion_release=0,conversion_shares=0)
     inputs.valuation_assumptions=ValuationAssumptions(projection_years=10,high_growth_years=5,
         annual_forecast=policy.annual_forecast,sales_to_capital_high=policy.sales_to_capital,
         sales_to_capital_stable=policy.sales_to_capital,override_reinvestment_lag=True,reinvestment_lag_years=0,
@@ -654,7 +658,7 @@ def build_book_dcf_inputs(d, policy):
         terminal_roic=policy.terminal_roic,wacc=policy.wacc,bridge=policy.model_dump(mode='json',exclude={'annual_forecast'}))
     audit['boundaries']=[b for b in audit['boundaries'] if not b.startswith(('zero nominal','maintenance capex','no equity value'))]
     audit['boundaries'] += ['report-date shares and book claims; not a current-date securities rollforward',
-        'all FN52 treated as debt proxy without maturity-note split',
+        'all current_portion_noncurrent_liabilities treated as debt proxy without maturity-note split',
         'nonoperating financial investments receive no credit pending classification; not asserted zero',
         'no-conversion scenario only; convertible choice and employee options not priced',
         'additional claims amount is a policy scenario, not a claim that undisclosed obligations are absent',
@@ -697,13 +701,13 @@ def build_historical_dcf_inputs(d, policy):
         if d.code not in policy.calibration.approved_codes or policy.calibration.prepared_at>d.information_as_of:
             raise ValueError('calibration not approved or not yet available for valuation')
     window,_=standard_window_reader(d)
-    revenue=window('FN230')
-    ebit=window('FN86')+window('FN305')-window('FN306')-window('FN83')-window('FN82')-window('FN301')
+    revenue=window('revenue')
+    ebit=window('operating_profit_cumulative')+window('interest_expense')-window('interest_income')-window('investment_income')-window('fair_value_change_income')-window('asset_disposal_income')
     if revenue<=0 or ebit<=0:
         raise ValueError('positive revenue and EBIT required for historical forecast rules')
     quarters={}
     for f in d.facts:
-        if f['field']!='FN230':continue
+        if f['field']!='revenue':continue
         period=date.fromisoformat(f['period'])
         if period>d.report_period:continue
         if period.month%3 or (period+timedelta(days=1)).day!=1 or f['period_type']!=f'Q{period.month//3}' or f['unit']!='CNY' or f['statement_scope']!='provider_default':
@@ -721,7 +725,7 @@ def build_historical_dcf_inputs(d, policy):
     audit['forecast_rule_evidence']=evidence
     if isinstance(policy,CalibratedHistoricalDCFPolicy):
         audit['boundaries'].append('research-estimated calibration changes first-year EBIT only; later years and terminal assumptions are unvalidated baseline policies, not calibrated forecasts')
-    audit['consumed_inputs'].append(dict(source='tdx',field='FN230',purpose='historical_growth_rule',
+    audit['consumed_inputs'].append(dict(source='tdx',field='revenue',purpose='historical_growth_rule',
         source_fact_ids=sorted({i for r in evidence['revenue_yoy_pairs'] for i in r['source_fact_ids']})))
     audit['boundaries'].append('median recent quarterly YOY with policy cap/shift and five-year fade; mechanical starting scenario, not researched growth forecast')
     return inputs,audit
@@ -803,9 +807,9 @@ def apply_reviewed_disposal_zeros(d, policy, audit):
     end = d.report_period.isoformat()
     periods = [end] if d.report_period.month == 12 else [end, f'{d.report_period.year-1}-12-31', d.report_period.replace(year=d.report_period.year-1).isoformat()]
     coefficients = [1] if len(periods) == 1 else [1, 1, -1]
-    windows = [w for w in d.windows if w['field'] == 'FN110']
+    windows = [w for w in d.windows if w['field'] == 'long_lived_asset_disposal_cash']
     if len(windows) != 1:
-        raise MissingInputs(['TDX/FN110'])
+        raise MissingInputs(['TDX/long_lived_asset_disposal_cash'])
     w = windows[0]
     bindings = {r.period.isoformat(): r for r in policy.disposal_cash_zeros}
     if (w['calculation_basis'] != 'ytd' or w['unit'] != 'CNY' or w['statement_scope'] != 'provider_default'
@@ -818,7 +822,7 @@ def apply_reviewed_disposal_zeros(d, policy, audit):
     total = Decimal(0)
     sources = []
     for period, coefficient, fid in zip(periods, coefficients, w['source_fact_ids'], strict=True):
-        facts = [f for f in d.facts if f['period'] == period and f['field'] == 'FN110']
+        facts = [f for f in d.facts if f['period'] == period and f['field'] == 'long_lived_asset_disposal_cash']
         if period not in bindings:
             if len(facts) != 1 or facts[0]['fact_id'] != fid:
                 raise ValueError('disposal standard lineage differs')
@@ -840,9 +844,9 @@ def apply_reviewed_disposal_zeros(d, policy, audit):
             raise ValueError('ambiguous disposal zero review')
         note = notes[0]
         # 同期购建现金事实作为公告和源包锚点，不用另一期PDF补零。
-        anchors = [f for f in d.facts if f['period'] == period and f['field'] == 'FN114']
+        anchors = [f for f in d.facts if f['period'] == period and f['field'] == 'capital_expenditure_cash']
         if len(anchors) != 1:
-            raise MissingInputs(['TDX/'+period+'/FN114'])
+            raise MissingInputs(['TDX/'+period+'/capital_expenditure_cash'])
         anchor = anchors[0]
         validated_source_value(anchor)
         if (note['unit'],note['period_basis'],note['scope']) != ('CNY','ytd','consolidated_note_component') or Decimal(note['value']) != 0:

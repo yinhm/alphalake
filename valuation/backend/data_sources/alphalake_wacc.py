@@ -242,7 +242,7 @@ def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_o
         debt_audit = dict(status='synthetic_estimate_not_observed_rating', ebit_million_cny=ebit,
             gross_interest_million_cny=interest, coverage_ratio=str(coverage), rating=band['rating'],
             corporate_default_spread=credit, sovereign_spread_added=sovereign, debt_cost_pretax=kd,
-            financial_basis='same TTM policy operating EBIT and TDX FN305 gross interest; see consumed_inputs')
+            financial_basis='same TTM policy operating EBIT and TDX interest_expense gross interest; see consumed_inputs')
     if p.credit_band_debt is not None:
         cp=p.credit_band_debt
         band,credit=select(s.credit_spreads,cp.max_credit_age_days,rating=cp.rating)

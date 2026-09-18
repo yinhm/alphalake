@@ -13,6 +13,7 @@ import pytest
 from fastapi.testclient import TestClient
 from fastapi.encoders import jsonable_encoder
 from api.main import app
+from tools.migrate_standard_contract import upgrade_legacy
 from data_sources.alphalake import build_inputs, AlphaLakeRequest
 from engine.orchestrator import run_full_valuation
 
@@ -26,7 +27,7 @@ def test_saved_forecast_review_standard_actuals_and_boundaries(exports):
     from decimal import Decimal
     import struct
     actual=copy.deepcopy(exports['300866']);window,_=standard_window_reader(Snapshot.model_validate(actual))
-    revenue=window('FN230');ebit=window('FN86')+window('FN305')-window('FN306')-window('FN83')-window('FN82')-window('FN301')
+    revenue=window('revenue');ebit=window('operating_profit_cumulative')+window('interest_expense')-window('interest_income')-window('investment_income')-window('fair_value_change_income')-window('asset_disposal_income')
     # 人工预测夹具；实际来源为Go标准导出。不冒称存在2025年的真实历史运行。
     run=dict(run_id='1'*64,engine_revision='synthetic_forecast_fixture',request=dict(policy=dict(policy_id='nonfinancial-history-fcff-v1'),
         data=dict(code='300866',report_period='2025-06-30',information_as_of='2025-09-01T00:00:00+08:00',facts=actual['facts'])),
@@ -40,12 +41,12 @@ def test_saved_forecast_review_standard_actuals_and_boundaries(exports):
     near(metrics['adjusted_ebit']['signed_error_million_cny'],3)
     assert checked==review(run,actual['information_as_of'],export)
     assert checked['results'][0]['actual_snapshot']==actual
-    missing=copy.deepcopy(actual);missing['windows']=[w for w in missing['windows'] if w['field']!='FN305']
+    missing=copy.deepcopy(actual);missing['windows']=[w for w in missing['windows'] if w['field']!='interest_expense']
     partial=review(run,actual['information_as_of'],lambda _:missing)['results'][0]
     assert partial['status']=='partial_actual' and partial['metrics']['revenue']==metrics['revenue']
     for failure in ('bits','conflict','identity','period','duplicate'):
         bad=copy.deepcopy(actual)
-        if failure=='bits':next(f for f in bad['facts'] if f['field']=='FN230' and f['period']==bad['report_period'])['value']='1'
+        if failure=='bits':next(f for f in bad['facts'] if f['field']=='revenue' and f['period']==bad['report_period'])['value']='1'
         elif failure=='conflict':bad['source_conflicts']=[dict(code='300866',period='2026-06-30')]
         elif failure=='identity':
             for f in bad['facts']:f['instrument_id']+=1
@@ -55,17 +56,17 @@ def test_saved_forecast_review_standard_actuals_and_boundaries(exports):
         assert blocked['statuses']=={'blocked_actual':1,'not_yet_observable':9},failure
     loss=copy.deepcopy(actual)
     for f in loss['facts']:
-        if f['field']=='FN86':
+        if f['field']=='operating_profit_cumulative':
             f['bits']=struct.unpack('<I',struct.pack('<f',-1e12))[0]
             f['value']=str(Decimal.from_float(struct.unpack('<f',struct.pack('<I',f['bits']))[0]))
-    facts={f['fact_id']:f for f in loss['facts']};w=next(w for w in loss['windows'] if w['field']=='FN86')
+    facts={f['fact_id']:f for f in loss['facts']};w=next(w for w in loss['windows'] if w['field']=='operating_profit_cumulative')
     w['value']=str(sum(Decimal(facts[i]['value'])*c for i,c in zip(w['source_fact_ids'],w['input_coefficients'])))
     negative=review(run,actual['information_as_of'],lambda _:loss)['results'][0]
     assert negative['status']=='evaluated' and negative['metrics']['adjusted_ebit']['actual_million_cny']<0
     zero=copy.deepcopy(actual)
     for f in zero['facts']:
-        if f['field']=='FN230':f.update(bits=0,value='0')
-    next(w for w in zero['windows'] if w['field']=='FN230')['value']='0'
+        if f['field']=='revenue':f.update(bits=0,value='0')
+    next(w for w in zero['windows'] if w['field']=='revenue')['value']='0'
     zero_result=review(run,actual['information_as_of'],lambda _:zero)['results'][0]
     assert zero_result['status']=='evaluated'
     assert all(m['absolute_error_pct_actual_revenue'] is None for m in zero_result['metrics'].values())
@@ -160,19 +161,19 @@ def test_rejects_incompatible_or_incomplete_inputs(exports,tmp_path,monkeypatch,
     if mode=='missing_note':
         data['supplements'] = [r for r in data['supplements'] if r['item']!='current_leases']
     elif mode=='missing_standard':
-        data['windows'] = [r for r in data['windows'] if r['field']!='FN230']
+        data['windows'] = [r for r in data['windows'] if r['field']!='revenue']
     elif mode=='unit':
-        next(r for r in data['windows'] if r['field']=='FN230')['unit']='million_CNY'
+        next(r for r in data['windows'] if r['field']=='revenue')['unit']='million_CNY'
     elif mode=='window_value':
-        next(r for r in data['windows'] if r['field']=='FN230')['value']='1'
+        next(r for r in data['windows'] if r['field']=='revenue')['value']='1'
     elif mode=='source_bits':
-        next(r for r in data['facts'] if r['field']=='FN230' and r['period']=='2026-06-30')['bits']=0
+        next(r for r in data['facts'] if r['field']=='revenue' and r['period']=='2026-06-30')['bits']=0
     elif mode=='future':
         data['supplements'][0]['available_at']='2027-01-01T00:00:00+00:00'
     elif mode=='no_time':
         next(r for r in data['supplements'] if r['item']=='current_leases')['available_at']=None
     elif mode=='wrong_basis':
-        r=next(r for r in data['windows'] if r['field']=='FN86')
+        r=next(r for r in data['windows'] if r['field']=='operating_profit_cumulative')
         r.update(calculation_basis='instant',period_type='instant',required_inputs=1,available_inputs=1,
                  source_fact_ids=r['source_fact_ids'][:1],input_periods=r['input_periods'][:1],input_coefficients=[1])
         r['value']=next(f['value'] for f in data['facts'] if f['fact_id']==r['source_fact_ids'][0])
@@ -213,7 +214,7 @@ def test_updated_assumption_recalculates_and_preserves_previous(exports,tmp_path
 def test_optional_historical_cashflow_missing_does_not_fake_fcff(exports,tmp_path,monkeypatch):
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
     req=request_for(exports,'anker')
-    req['data']['windows']=[r for r in req['data']['windows'] if r['field']!='FN114']
+    req['data']['windows']=[r for r in req['data']['windows'] if r['field']!='capital_expenditure_cash']
     with TestClient(app) as client:
         response=client.post('/api/valuation/from-alphalake',json=req)
     assert response.status_code==200,response.text
@@ -338,7 +339,7 @@ def test_synthetic_debt_through_standard_financial_chain(exports,reference_expor
         assert response.status_code==200,response.text
         r=response.json(); a=r['audit']['wacc_reference']['synthetic_debt']
         ebit=r['inputs']['prepared_ttm']['financials']['ebit']
-        interest=next(D(w['value'])/D(1000000) for w in req['data']['windows'] if w['field']=='FN305')
+        interest=next(D(w['value'])/D(1000000) for w in req['data']['windows'] if w['field']=='interest_expense')
         near(float(a['coverage_ratio']),float(D(str(ebit))/interest))
         assert a['rating']=='Aaa/AAA'
         # In this explicit policy RF deducts, then Kd adds the same country spread.
@@ -552,7 +553,7 @@ def test_revised_anker_annual_forecast(exports,reference_export,market_export,tm
         for request,result in [(req,direct.json()),(bound,response.json())]:
             p=request['policy']['parameters'];forecast=request['policy']['annual_forecast']
             windows={r['field']:D(r['value'])/1000000 for r in request['data']['windows'] if r['value'] is not None}
-            rev=windows['FN230'];pv=D(0);wacc=D(str(result['report']['cost_of_capital']['wacc']))
+            rev=windows['revenue'];pv=D(0);wacc=D(str(result['report']['cost_of_capital']['wacc']))
             for i,row in enumerate(forecast):
                 before=rev;rev*=1+D(str(row['growth']))
                 reinv=(rev-before)/D(str(p['sales_to_capital']))
@@ -566,7 +567,7 @@ def test_revised_anker_annual_forecast(exports,reference_export,market_export,tm
             bridge=result['inputs']['equity_bridge'];eq=pv+tv+sum(D(str(x)) for x in bridge['components'].values())
             plain=eq/D(str(bridge['shares']));converted=(eq+D(str(bridge['conversion_release'])))/(D(str(bridge['shares']))+D(str(bridge['conversion_shares'])))
             near(float(min(plain,converted)),result['report']['final']['value_per_share'])
-            near(bridge['components']['minority_claim_proxy'],-float(windows['FN97']*15))
+            near(bridge['components']['minority_claim_proxy'],-float(windows['net_income_minority_ytd']*15))
             subprocess.run([sys.executable,str(REPO/'valuation/backend/tools/verify_revised_valuation.py'),str(tmp_path/(result['run_id']+'.json'))],check=True,capture_output=True,text=True)
             assert result['report']['cashflow']['fcff'] is None
         audit=response.json()['audit']['wacc_reference']['market_capital']['debt_valuation']
@@ -579,7 +580,7 @@ def test_revised_anker_annual_forecast(exports,reference_export,market_export,tm
             elif case=='growth': bad['policy']['annual_forecast'][0]['growth']=-1
             elif case=='legacy_scalar': bad['policy']['parameters']['growth']=.12
             elif case=='version': bad['policy']['policy_id']='anker-consolidated-v1'
-            elif case=='missing_nci': bad['data']['windows']=[r for r in bad['data']['windows'] if r['field']!='FN97']
+            elif case=='missing_nci': bad['data']['windows']=[r for r in bad['data']['windows'] if r['field']!='net_income_minority_ytd']
             else: bad.pop('wacc_binding');bad['policy']['parameters']['wacc']=.075
             assert client.post('/api/valuation/from-alphalake',json=bad).status_code==422,case
 
@@ -628,8 +629,8 @@ def test_batch_keeps_denominator_and_isolates_missing_inputs(exports,tmp_path,mo
         companies.append(dict(instrument_id=request['data']['facts'][0]['instrument_id'],name=symbol,
             symbols=[symbol],financial_status='financial_core_complete_requires_policy',missing_core_fields=[]))
     companies.append(dict(instrument_id=999999,name='无事实',symbols=['sz999999'],
-        financial_status='blocked_no_standard_facts',missing_core_fields=['FN230']))
-    readiness=dict(contract_version='alphalake-readiness-v1',report_period=requests[0]['data']['report_period'],
+        financial_status='blocked_no_standard_facts',missing_core_fields=['revenue']))
+    readiness=dict(contract_version='alphalake-readiness-v2',report_period=requests[0]['data']['report_period'],
         information_as_of=requests[0]['data']['information_as_of'],universe_scope='test_known_universe',universe_count=3,companies=companies)
     result=run_batch(readiness,policy,lambda code:exports[code])
     assert result['status_counts']=={'illustrative_valuation_completed':2,'blocked_policy_not_assigned':1}
@@ -660,7 +661,7 @@ def test_generic_earnings_power_has_no_unreviewed_equity_value(exports,tmp_path,
         near(result['report']['dcf']['value_of_operating_assets'],ebit*.75/.1)
         assert result['report']['dcf']['reinvestment_projections']==[0]*10
         assert client.post('/api/valuation/from-alphalake',json=dict(data=exports['600519'],policy=policy)).status_code==422
-        missing=copy.deepcopy(exports['300866']);missing['windows']=[r for r in missing['windows'] if r['field']!='FN305']
+        missing=copy.deepcopy(exports['300866']);missing['windows']=[r for r in missing['windows'] if r['field']!='interest_expense']
         assert client.post('/api/valuation/from-alphalake',json=dict(data=missing,policy=policy)).status_code==422
 
 
@@ -679,7 +680,7 @@ def test_generic_book_dcf_forecast_and_equity_bridge(exports,tmp_path,monkeypatc
         result=response.json();assert result['status']=='illustrative_book_equity_scenario'
         assert result['growth_sensitivity'] is None  # 显式逐年政策不套历史规则研究。
         w={r['field']:float(r['value'])/1e6 for r in exports['300866']['windows'] if r['value'] is not None}
-        rev=w['FN230'];pv=0
+        rev=w['revenue'];pv=0
         for year,row in enumerate(policy['annual_forecast'],1):
             previous=rev;rev*=1+row['growth']
             cash=rev*row['margin']*(1-row['tax'])-(rev-previous)/3
@@ -687,8 +688,8 @@ def test_generic_book_dcf_forecast_and_equity_bridge(exports,tmp_path,monkeypatc
             pv+=cash/1.1**year
         terminal=rev*1.02*.09*.75*(1-.02/.1)/(.1-.02)
         ev=pv+terminal/1.1**10
-        fixed=w['FN133']*.8-w['FN230']*.03-sum(w[f] for f in ('FN41','FN52','FN55','FN56','FN439'))-w['FN69']*1.5-50
-        near(result['report']['final']['value_per_share'],(ev+fixed)/(w['FN238']*1.02))
+        fixed=w['cash_and_cash_equivalents']*.8-w['revenue']*.03-sum(w[f] for f in ('short_term_borrowings','current_portion_noncurrent_liabilities','long_term_borrowings','bonds_payable','lease_liabilities'))-w['noncontrolling_interests']*1.5-50
+        near(result['report']['final']['value_per_share'],(ev+fixed)/(w['total_shares']*1.02))
         assert result['report']['cashflow']['fcff'] is None
         assert result['terminal_sensitivity']['delta_per_share']==0
         # 真正单因素：高于/低于WACC及零增长；用终值公式独立核对影响。
@@ -700,14 +701,14 @@ def test_generic_book_dcf_forecast_and_equity_bridge(exports,tmp_path,monkeypatc
             observed=response.json();sensitivity=observed['terminal_sensitivity']
             assert client.post('/api/valuation/from-alphalake',json=req).json()==observed
             near(sensitivity['counterfactual_value_per_share'],
-                 (pv+rev*(1+growth)*.09*.75/.1/1.1**10+fixed)/(w['FN238']*1.02))
+                 (pv+rev*(1+growth)*.09*.75/.1/1.1**10+fixed)/(w['total_shares']*1.02))
             inputs,_=build_inputs(AlphaLakeRequest.model_validate(req))
             direct=run_full_valuation(inputs)
             assert observed['report']['dcf']==jsonable_encoder(asdict(direct))['dcf']
             near(sensitivity['delta_per_share'],sensitivity['counterfactual_value_per_share']-observed['report']['final']['value_per_share'])
             if growth==0: near(sensitivity['delta_per_share'],0)
             if roic>.1 and growth>0:
-                claims=changed['additional_claims_million_cny']+(sensitivity['baseline_value_per_share']+sensitivity['counterfactual_value_per_share'])/2*w['FN238']*1.02
+                claims=changed['additional_claims_million_cny']+(sensitivity['baseline_value_per_share']+sensitivity['counterfactual_value_per_share'])/2*w['total_shares']*1.02
                 stressed=client.post('/api/valuation/from-alphalake',json=dict(data=exports['300866'],policy=changed|dict(additional_claims_million_cny=claims)))
                 assert stressed.status_code==200,stressed.text
                 stress=stressed.json()
@@ -715,7 +716,7 @@ def test_generic_book_dcf_forecast_and_equity_bridge(exports,tmp_path,monkeypatc
                 assert stress['terminal_sensitivity']['counterfactual_value_per_share']<0
                 assert stress['terminal_sensitivity']['counterfactual_equity_status']=='nonpositive_equity_residual_requires_distress_model'
         assert client.post('/api/valuation/from-alphalake',json=dict(data=exports['600519'],policy=policy)).status_code==422
-        for field in ('FN238','FN52','FN133'):
+        for field in ('total_shares','current_portion_noncurrent_liabilities','cash_and_cash_equivalents'):
             bad=copy.deepcopy(exports['300866']);bad['windows']=[r for r in bad['windows'] if r['field']!=field]
             assert client.post('/api/valuation/from-alphalake',json=dict(data=bad,policy=policy)).status_code==422
         invalid=policy|dict(terminal_growth=.1)
@@ -725,11 +726,11 @@ def test_generic_book_dcf_forecast_and_equity_bridge(exports,tmp_path,monkeypatc
         response=client.post('/api/valuation/from-alphalake',json=dict(data=exports['300866'],policy=automatic))
         assert response.status_code==200,response.text
         auto=response.json()
-        q={f['period']:float(f['value']) for f in exports['300866']['facts'] if f['field']=='FN230'}
+        q={f['period']:float(f['value']) for f in exports['300866']['facts'] if f['field']=='revenue'}
         expected=min(.2,max(-.1,((q['2026-03-31']/q['2025-03-31']-1)+(q['2026-06-30']/q['2025-06-30']-1))/2))
         near(auto['audit']['forecast_rule_evidence']['clipped_scenario_growth'],expected)
         generated=auto['audit']['generated_policy'];assert len(generated['annual_forecast'])==10
-        rev=w['FN230'];pv=0;ebit=w['FN86']+w['FN305']-w['FN306']-w['FN83']-w['FN82']-w['FN301'];margin=ebit/rev
+        rev=w['revenue'];pv=0;ebit=w['operating_profit_cumulative']+w['interest_expense']-w['interest_income']-w['investment_income']-w['fair_value_change_income']-w['asset_disposal_income'];margin=ebit/rev
         for year in range(1,11):
             growth=expected if year<=5 else expected+(.02-expected)*(year-5)/5
             previous=rev;rev*=1+growth
@@ -737,7 +738,7 @@ def test_generic_book_dcf_forecast_and_equity_bridge(exports,tmp_path,monkeypatc
             near(auto['report']['dcf']['fcff_projections'][year-1],cash)
             pv+=cash/1.1**year
         ev=pv+rev*1.02*margin*.75*(1-.02/.1)/(.1-.02)/1.1**10
-        near(auto['report']['final']['value_per_share'],(ev+fixed)/(w['FN238']*1.02))
+        near(auto['report']['final']['value_per_share'],(ev+fixed)/(w['total_shares']*1.02))
         sensitivity=auto['growth_sensitivity']
         assert sensitivity['evidence']['adoption']=='not_adopted_as_default_or_company_specific_forecast'
         assert 'one_year_validation_failed' in sensitivity['evidence']['counterevidence']
@@ -745,15 +746,15 @@ def test_generic_book_dcf_forecast_and_equity_bridge(exports,tmp_path,monkeypatc
         receipt=sensitivity['evidence']['receipt']
         assert sha256((REPO/receipt['path']).read_bytes()).hexdigest()==receipt['sha256']
         # 从四个冻结驱动独立复算零增长对照，不复制引擎的增长生成函数。
-        rev=w['FN230'];zero_pv=0
+        rev=w['revenue'];zero_pv=0
         for year,g in enumerate([0]*5+[.004,.008,.012,.016,.02],1):
             previous=rev;rev*=1+g
             cash=rev*margin*.75-(rev-previous)/3
             near(sensitivity['counterfactual_fcff_million_cny'][year-1],cash)
             zero_pv+=cash/1.1**year
         zero_ev=zero_pv+rev*1.02*margin*.75*(1-.02/.1)/(.1-.02)/1.1**10
-        near(sensitivity['counterfactual_value_per_share'],(zero_ev+fixed)/(w['FN238']*1.02))
-        near(sensitivity['delta_per_share'],(zero_ev-ev)/(w['FN238']*1.02))
+        near(sensitivity['counterfactual_value_per_share'],(zero_ev+fixed)/(w['total_shares']*1.02))
+        near(sensitivity['delta_per_share'],(zero_ev-ev)/(w['total_shares']*1.02))
         assert sensitivity['baseline_fcff_million_cny']==auto['report']['dcf']['fcff_projections']
         from api.alphalake import growth_path_sensitivity
         original_inputs,_=build_inputs(AlphaLakeRequest.model_validate(dict(data=exports['300866'],policy=automatic)))
@@ -768,16 +769,16 @@ def test_generic_book_dcf_forecast_and_equity_bridge(exports,tmp_path,monkeypatc
         assert zero['growth_sensitivity']['delta_per_share']==0
         assert client.post('/api/valuation/from-alphalake',json=zero_req).json()==zero
         assert auto['report']['final']['value_per_share']>sensitivity['counterfactual_value_per_share']
-        claims=automatic['additional_claims_million_cny']+(auto['report']['final']['value_per_share']+sensitivity['counterfactual_value_per_share'])/2*w['FN238']*1.02
+        claims=automatic['additional_claims_million_cny']+(auto['report']['final']['value_per_share']+sensitivity['counterfactual_value_per_share'])/2*w['total_shares']*1.02
         stressed=client.post('/api/valuation/from-alphalake',json=dict(data=exports['300866'],policy=automatic|dict(additional_claims_million_cny=claims)))
         assert stressed.status_code==200,stressed.text
         assert stressed.json()['growth_sensitivity']['counterfactual_value_per_share']<0
         assert stressed.json()['growth_sensitivity']['counterfactual_equity_status']=='nonpositive_equity_residual_requires_distress_model'
         # 2025Q1 位于当前 TTM 窗口之外，历史规则也必须校验其源位。
         corrupted=copy.deepcopy(exports['300866'])
-        next(f for f in corrupted['facts'] if f['field']=='FN230' and f['period']=='2025-03-31')['value']='1'
+        next(f for f in corrupted['facts'] if f['field']=='revenue' and f['period']=='2025-03-31')['value']='1'
         assert client.post('/api/valuation/from-alphalake',json=dict(data=corrupted,policy=automatic)).status_code==422
-        short=copy.deepcopy(exports['300866']);short['facts']=[f for f in short['facts'] if not(f['field']=='FN230' and f['period']=='2025-03-31')]
+        short=copy.deepcopy(exports['300866']);short['facts']=[f for f in short['facts'] if not(f['field']=='revenue' and f['period']=='2025-03-31')]
         assert client.post('/api/valuation/from-alphalake',json=dict(data=short,policy=automatic)).status_code==422
         distressed=automatic|dict(additional_claims_million_cny=1e9)
         assert client.post('/api/valuation/from-alphalake',json=dict(data=exports['300866'],policy=distressed)).status_code==422
@@ -796,7 +797,7 @@ def test_batch_industry_rules_gate_age_conflict_and_override(exports,tmp_path,mo
         observed_at=(at-timedelta(hours=1)).isoformat(),run_finished_at=at.isoformat())
     company=dict(instrument_id=data['facts'][0]['instrument_id'],name='anker',symbols=['sz300866'],
         financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[member])
-    scan=dict(contract_version='alphalake-readiness-v1',report_period=data['report_period'],information_as_of=data['information_as_of'],
+    scan=dict(contract_version='alphalake-readiness-v2',report_period=data['report_period'],information_as_of=data['information_as_of'],
         universe_scope='test',universe_count=1,companies=[company])
     calls=[]
     def export(code):calls.append(code);return exports[code]
@@ -806,9 +807,9 @@ def test_batch_industry_rules_gate_age_conflict_and_override(exports,tmp_path,mo
     assert calls==['300866']
     calls.clear();stale=copy.deepcopy(scan);stale['companies'][0]['industry_memberships'][0]['observed_at']=(at-timedelta(days=31)).isoformat()
     assert run_batch(stale,policy,export)['companies'][0]['status']=='blocked_no_reviewed_industry_policy'
-    incomplete=copy.deepcopy(scan);incomplete['companies'][0]['missing_core_fields']=['FN238']
+    incomplete=copy.deepcopy(scan);incomplete['companies'][0]['missing_core_fields']=['total_shares']
     blocked=run_batch(incomplete,policy,lambda code:pytest.fail('known core gap must not repeat TTM export'))
-    assert blocked['companies'][0]['missing']==['TDX/FN238']
+    assert blocked['companies'][0]['missing']==['TDX/total_shares']
     assert blocked['companies'][0]['status']=='blocked_missing_inputs'
 
     assert not calls
@@ -844,7 +845,7 @@ def test_source_conflict_blocks_old_usable_values(exports,tmp_path,monkeypatch):
         response=client.post('/api/valuation/from-alphalake',json=req)
         assert response.status_code==422 and response.json()['detail']['status']=='blocked_missing_inputs'
     policy=BatchPolicy(policy_version='blocked-source-test',review_note='old usable facts remain blocked',assignments={'300866':dict(policy=req['policy'])})
-    readiness=dict(contract_version='alphalake-readiness-v1',report_period=req['data']['report_period'],
+    readiness=dict(contract_version='alphalake-readiness-v2',report_period=req['data']['report_period'],
         information_as_of=req['data']['information_as_of'],universe_scope='test',universe_count=1,
         companies=[dict(instrument_id=req['data']['facts'][0]['instrument_id'],name='Anker',symbols=['sz300866'],
                         financial_status='blocked_source_record_conflict',missing_core_fields=[],source_conflicts=[conflict])])
@@ -872,17 +873,17 @@ def test_new_companies_standard_chain_and_review_hold(tmp_path,monkeypatch):
         assert result['status']=='illustrative_book_equity_scenario'
         w={r['field']:float(r['value'])/1e6 for r in data['windows'] if r['value'] is not None}
         facts={(r['field'],r['period']):Decimal(r['value']) for r in data['facts']}
-        revenue=sum(facts['FN230',p] for p in ('2025-09-30','2025-12-31','2026-03-31','2026-06-30'))
-        near(w['FN230'],float(revenue)/1e6)
-        for field in ('FN86','FN305','FN306','FN83','FN82','FN301'):
+        revenue=sum(facts['revenue',p] for p in ('2025-09-30','2025-12-31','2026-03-31','2026-06-30'))
+        near(w['revenue'],float(revenue)/1e6)
+        for field in ('operating_profit_cumulative','interest_expense','interest_income','investment_income','fair_value_change_income','asset_disposal_income'):
             expected=facts[field,'2025-12-31']+facts[field,'2026-06-30']-facts[field,'2025-06-30']
             near(w[field],float(expected)/1e6)
-        for field in ('FN238','FN133','FN41','FN52','FN55','FN56','FN439','FN69'):
+        for field in ('total_shares','cash_and_cash_equivalents','short_term_borrowings','current_portion_noncurrent_liabilities','long_term_borrowings','bonds_payable','lease_liabilities','noncontrolling_interests'):
             near(w[field],float(facts[field,'2026-06-30'])/1e6)
-        q={r['period']:float(r['value']) for r in data['facts'] if r['field']=='FN230'}
+        q={r['period']:float(r['value']) for r in data['facts'] if r['field']=='revenue'}
         growth=min(.2,max(-.1,((q['2026-03-31']/q['2025-03-31']-1)+(q['2026-06-30']/q['2025-06-30']-1))/2))
         near(result['audit']['forecast_rule_evidence']['clipped_scenario_growth'],growth)
-        rev=w['FN230'];margin=(w['FN86']+w['FN305']-w['FN306']-w['FN83']-w['FN82']-w['FN301'])/rev;pv=0
+        rev=w['revenue'];margin=(w['operating_profit_cumulative']+w['interest_expense']-w['interest_income']-w['investment_income']-w['fair_value_change_income']-w['asset_disposal_income'])/rev;pv=0
         for year in range(1,11):
             rate=growth if year<=5 else growth+(.02-growth)*(year-5)/5
             previous=rev;rev*=1+rate
@@ -890,15 +891,15 @@ def test_new_companies_standard_chain_and_review_hold(tmp_path,monkeypatch):
             near(result['report']['dcf']['fcff_projections'][year-1],cash)
             pv+=cash/1.1**year
         ev=pv+rev*1.02*margin*.75*(1-.02/.1)/(.1-.02)/1.1**10
-        fixed=max(0,w['FN133']*.8-w['FN230']*.03)-sum(w[f] for f in ('FN41','FN52','FN55','FN56','FN439'))-w['FN69']
-        near(result['report']['final']['value_per_share'],(ev+fixed)/(w['FN238']*1.02))
+        fixed=max(0,w['cash_and_cash_equivalents']*.8-w['revenue']*.03)-sum(w[f] for f in ('short_term_borrowings','current_portion_noncurrent_liabilities','long_term_borrowings','bonds_payable','lease_liabilities'))-w['noncontrolling_interests']
+        near(result['report']['final']['value_per_share'],(ev+fixed)/(w['total_shares']*1.02))
         assert result['report']['cashflow']['fcff'] is None
         companies.append(dict(instrument_id=data['facts'][0]['instrument_id'],name=code,symbols=[('sz' if code=='300124' else 'sh')+code],
                               financial_status='financial_core_complete_requires_policy',missing_core_fields=[]))
     policy=BatchPolicy(policy_version='real-comparative-review-v1',review_note='已知原文比较列差异未协调',
                        assignments={code:dict(policy=profile) for code in ('300124','603288')},
                        exclusions={code:'generic-valuation-2026/values.json：旧披露与新比较列不一致，暂停自动历史预测' for code in ('300124','603288')})
-    scan=dict(contract_version='alphalake-readiness-v1',report_period=data['report_period'],information_as_of=data['information_as_of'],
+    scan=dict(contract_version='alphalake-readiness-v2',report_period=data['report_period'],information_as_of=data['information_as_of'],
               universe_scope='real_two_company_sample',universe_count=2,companies=companies)
     result=run_batch(scan,policy,lambda code:pytest.fail('review hold must precede export'))
     assert result['status_counts']=={'blocked_review_exclusion':2}
@@ -984,7 +985,7 @@ def test_industry_wacc_routes_real_reference_and_financial_packets(exports,refer
     policy=BatchPolicy(policy_version='reference-routing-test',review_note='explicit target-weight reference scenario',
         assignments={},industry_rules=[rule],wacc_references=reference_export)
     member=dict(source='tdx',taxonomy_code='test-routing',node_code='TEST',observed_at=d['information_as_of'],run_finished_at=d['information_as_of'])
-    scan=dict(contract_version='alphalake-readiness-v1',report_period=d['report_period'],information_as_of=d['information_as_of'],
+    scan=dict(contract_version='alphalake-readiness-v2',report_period=d['report_period'],information_as_of=d['information_as_of'],
         universe_count=1,universe_scope='test',companies=[dict(instrument_id=d['facts'][0]['instrument_id'],name='anker',symbols=['sz300866'],
         financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[member])])
     result=run_batch(scan,policy,lambda code:d)
@@ -1021,10 +1022,10 @@ def test_bear_standard_chain_preserves_interest_scope_review(tmp_path,monkeypatc
     ledger=json.loads((REPO/'internal/ingest/testdata/bear-valuation-2026/values.json').read_text())
     scope=next(r for r in ledger if r['comparison']=='different_float32')
     assert scope['kind']=='interest_including_separate_lease'
-    fact=next(f for f in result['request']['data']['facts'] if f['field']=='FN305' and f['period']=='2025-12-31')
+    fact=next(f for f in result['request']['data']['facts'] if f['field']=='interest_expense' and f['period']=='2025-12-31')
     assert fact['bits']==scope['source_bits']
     assert float(fact['value'])!=float(scope['pdf_value'])
-    scan=dict(contract_version='alphalake-readiness-v1',report_period=d['report_period'],information_as_of=d['information_as_of'],universe_scope='test',universe_count=1,
+    scan=dict(contract_version='alphalake-readiness-v2',report_period=d['report_period'],information_as_of=d['information_as_of'],universe_scope='test',universe_count=1,
         companies=[dict(instrument_id=fact['instrument_id'],name='小熊电器',symbols=['sz002959'],financial_status='financial_core_complete_requires_policy',missing_core_fields=[])])
     policy=BatchPolicy(policy_version='bear-scope-review-v1',review_note='不能把主表位匹配当租赁口径统一',assignments={'002959':dict(policy=p)},
         exclusions={'002959':'年度主表利息不含附注另列租赁融资费用，半年报包含；政策尚待审核'})
@@ -1079,7 +1080,7 @@ def test_capital_reference_binding_and_industry_route(exports,tmp_path,monkeypat
     at=datetime.fromisoformat(data['information_as_of'])
     member=dict(source='tdx',taxonomy_code='tdx_shenwan_industry',node_code='X400202',node_id=1,ingest_run_id=1,observed_at=at.isoformat(),run_finished_at=at.isoformat())
     company=dict(instrument_id=data['facts'][0]['instrument_id'],name='anker',symbols=['sz300866'],financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[member])
-    scan=dict(contract_version='alphalake-readiness-v1',report_period=data['report_period'],information_as_of=data['information_as_of'],universe_scope='controlled industry',universe_count=1,companies=[company])
+    scan=dict(contract_version='alphalake-readiness-v2',report_period=data['report_period'],information_as_of=data['information_as_of'],universe_scope='controlled industry',universe_count=1,companies=[company])
     row=run_batch(scan,policy,lambda code:data)['companies'][0]
     assert row['status']=='illustrative_book_equity_scenario' and row['run_id']==result['run_id']
     missing=policy.model_copy(update={'capital_references':None})
@@ -1097,7 +1098,7 @@ def test_company_entry_selection_summary_and_no_fallback(exports,tmp_path,monkey
     company=dict(instrument_id=data['facts'][0]['instrument_id'],name='安克创新',symbols=['sz300866'],exchange_mic='XSHE',
                  financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[dict(
                      source='tdx',taxonomy_code='tdx_industry',node_code='test',observed_at=data['information_as_of'],run_finished_at=data['information_as_of'])])
-    scan=dict(contract_version='alphalake-readiness-v1',report_period=data['report_period'],information_as_of=data['information_as_of'],
+    scan=dict(contract_version='alphalake-readiness-v2',report_period=data['report_period'],information_as_of=data['information_as_of'],
               universe_scope='real financial sample with synthetic classification',universe_count=1,companies=[company])
     profile=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_text())
     generic=BatchPolicy(policy_version='industry-v1',review_note='synthetic industry routing; real financial input',assignments={},industry_rules=[dict(
@@ -1218,7 +1219,7 @@ def test_company_entry_moutai_and_corrupt_saved_result(exports,tmp_path,monkeypa
     data=exports['600519']
     company=dict(instrument_id=data['facts'][0]['instrument_id'],name='贵州茅台',symbols=['sh600519'],exchange_mic='XSHG',
                  financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[])
-    scan=dict(contract_version='alphalake-readiness-v1',report_period=data['report_period'],information_as_of=data['information_as_of'],
+    scan=dict(contract_version='alphalake-readiness-v2',report_period=data['report_period'],information_as_of=data['information_as_of'],
               universe_scope='real financial sample',universe_count=1,companies=[company])
     policy=BatchPolicy(policy_version='moutai-reviewed-v1',review_note='reviewed company policy',assignments={'600519':dict(
         policy=json.loads((REPO/'valuation/examples/moutai-2026H1-central.json').read_text()))})
@@ -1392,7 +1393,7 @@ def test_reviewed_asset_standard_chain(exports, tmp_path, monkeypatch):
     from tools.verify_nonfinancial_dcf import verify
     from pypdf import PdfReader
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
-    original = json.loads(gzip.decompress((REPO/'valuation/research/method-closure-20260912/300866-request.json.gz').read_bytes()))
+    original = upgrade_legacy(json.loads(gzip.decompress((REPO/'valuation/research/method-closure-20260912/300866-request.json.gz').read_bytes())))
     frozen = evaluate(AlphaLakeRequest.model_validate(original))
     original['policy']['wacc'] = frozen['report']['cost_of_capital']['wacc']
     original['wacc_binding'] = None
@@ -1403,12 +1404,12 @@ def test_reviewed_asset_standard_chain(exports, tmp_path, monkeypatch):
     baseline = evaluate(AlphaLakeRequest.model_validate(original))
     request = copy.deepcopy(original)
     note = next(r for r in request['data']['supplements'] if r['item'] == 'reviewed_associate_investments')
-    window = next(r for r in request['data']['windows'] if r['field'] == 'FN25')
+    window = next(r for r in request['data']['windows'] if r['field'] == 'long_term_equity_investments')
     fact = next(r for r in request['data']['facts'] if r['fact_id'] == window['source_fact_ids'][0])
     request['policy'].update(policy_id='nonfinancial-reviewed-history-fcff-v1',
         financial_asset_policy='reviewed_standard_asset_addbacks', code='300866',
         reviewed_at='2026-09-17T00:00:00Z', valid_until='2026-10-17T00:00:00Z',
-        asset_addbacks=[dict(field='FN25', item=note['item'], import_sha256=note['import_sha256'],
+        asset_addbacks=[dict(field='long_term_equity_investments', item=note['item'], import_sha256=note['import_sha256'],
             source_artifact_sha256=fact['artifact_sha256'], evidence_sha256=content_hash(note), classification='nonconsolidated_equity_holding',
             valuation_basis='reported_book_value_proxy', recovery=1,
             review_note='全部为联营企业，经营收益已排除投资收益；账面值仅为显式代理。')])
@@ -1429,7 +1430,7 @@ def test_reviewed_asset_standard_chain(exports, tmp_path, monkeypatch):
     data = request['data']
     company = dict(instrument_id=data['facts'][0]['instrument_id'], name='安克创新', symbols=['sz300866'],
                    exchange_mic='XSHE', financial_status='financial_core_complete_requires_policy', missing_core_fields=[])
-    scan = dict(contract_version='alphalake-readiness-v1', report_period=data['report_period'],
+    scan = dict(contract_version='alphalake-readiness-v2', report_period=data['report_period'],
                 information_as_of=data['information_as_of'], universe_scope='two-company archive chain, selected Anker',
                 universe_count=1, companies=[company])
     batch = BatchPolicy(policy_version='reviewed-associates-20260917', review_note='整项联营投资账面代理验收',

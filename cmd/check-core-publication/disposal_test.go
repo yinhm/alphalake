@@ -48,7 +48,13 @@ func TestDisposalPublication(t *testing.T) {
 	b, e := os.ReadFile(base)
 	must(e)
 	must(os.WriteFile(candidate, b, 0600))
-	db, e = duck.OpenAndMigrate(ctx, candidate)
+	db, e = duck.Open(ctx, candidate)
+	must(e)
+	migration, e := duck.Read("045_asset_disposal_cash.sql")
+	must(e)
+	_, e = db.ExecContext(ctx, string(migration))
+	must(e)
+	_, e = db.ExecContext(ctx, "INSERT INTO meta.schema_version(version,description) VALUES (45,'045_asset_disposal_cash.sql')")
 	must(e)
 	for i, id := range ids[:2] {
 		r := receipts[id]

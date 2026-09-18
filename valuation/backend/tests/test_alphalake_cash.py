@@ -24,6 +24,7 @@ def fixture():
                 period_type=({1:'Q1',2:'H1',3:'9M',4:'FY'}[quarter] if field=='FN114' else f'Q{quarter}'),statement_scope='provider_default',
                 fact_id=len(facts)+1,artifact_sha256='synthetic_standard_provenance',announcement_id='synthetic_filing',available_at='2026-09-01T00:00:00+08:00',
                 bits=row['bits'][field],multiplier=1))
+    names={'FN230':'revenue','FN234':'operating_cash_flow','FN114':'capital_expenditure_cash'}
     def snapshot(year):
         end=date(year,6,30);windows=[]
         included=[f for f in facts if f'{year-1}-01-01'<=f['period']<=end.isoformat()]
@@ -34,7 +35,10 @@ def fixture():
             windows.append(dict(code='002613',instrument_id=1,field=field,coverage_status='complete',unit='CNY',statement_scope='provider_default',period_type='TTM',
                 calculation_basis='ytd' if field=='FN114' else 'quarter',value=str(sum(Decimal(f['value'])*c for f,(p,c) in zip(used,periods))),
                 required_inputs=len(used),available_inputs=len(used),source_fact_ids=[f['fact_id'] for f in used],input_periods=[p for p,c in periods],input_coefficients=[c for p,c in periods]))
-        return dict(contract_version='alphalake-valuation-v1',code='002613',report_period=end.isoformat(),information_as_of='2026-09-10T00:00:00+08:00',facts=included,windows=windows,supplements=[])
+        for row in included+windows:
+            row['canonical_field']=names.get(row['field'],row['field'])
+        from tools.migrate_standard_contract import upgrade_legacy
+        return upgrade_legacy(dict(contract_version='alphalake-valuation-v1',code='002613',report_period=end.isoformat(),information_as_of='2026-09-10T00:00:00+08:00',facts=included,windows=windows,supplements=[]))
     policy=json.loads((ROOT/'valuation/examples/nonfinancial-history-template.json').read_text())
     return AlphaLakeRequest(data=snapshot(2026),policy=policy),snapshot(2025),source
 
@@ -50,7 +54,7 @@ def test_cash_check_formula_scope_gaps_and_immutability():
     prediction=evaluate(p,source,'development')[0]['forecasts']['mean_two_ocf_margins']
     assert result['cash_forecast']['operating_cashflow']==prediction['ocf_cny']
     assert result['cash_forecast']['ocf_less_capex']==prediction['cash_proxy_cny']
-    current_revenue=Decimal(result['observations'][0]['values_cny']['FN230'])
+    current_revenue=Decimal(result['observations'][0]['values_cny']['revenue'])
     original_ocf=Decimal(result['cash_forecast']['operating_cashflow'])
     sensitivity=result['revenue_only_sensitivity']
     assert Decimal(sensitivity['operating_cashflow'])==original_ocf*Decimal(2500000000)/current_revenue
@@ -74,10 +78,10 @@ def test_cash_check_formula_scope_gaps_and_immutability():
     assert Decimal(c['dcf_minus_cash_proxy'])==Decimal(c['nopat_minus_ocf'])-Decimal(c['reinvestment_minus_cash_capex'])
     assert c['classification_status']=='unclassified_difference_not_valuation_error'
     assert (request,prior)==original and report==dict(dcf=dict(fcff_projections=[200],reinvestment_projections=[50],revenue_projections=[2500]))
-    missing=copy.deepcopy(prior);missing['windows']=[w for w in missing['windows'] if w['field']!='FN234']
+    missing=copy.deepcopy(prior);missing['windows']=[w for w in missing['windows'] if w['field']!='operating_cash_flow']
     blocked=cash_crosscheck(request,missing,report)
     assert blocked['status']=='blocked_missing_standard_history' and blocked['cash_forecast'] is None and blocked['comparison'] is None
-    assert blocked['missing']==[dict(period='2025-06-30',field='FN234',missing_periods=[])]
+    assert blocked['missing']==[dict(period='2025-06-30',field='operating_cash_flow',missing_periods=[])]
     bad=copy.deepcopy(prior);bad['report_period']='2024-06-30'
     with pytest.raises(ValueError,match='security/period/cutoff'):cash_crosscheck(request,bad,report)
     bad=copy.deepcopy(prior);bad['facts'][-1]['bits']+=1
@@ -154,22 +158,22 @@ def test_real_standard_history_to_company_cash_check(tmp_path):
     assert cash['evidence']['research_replication'] == REPLICATION
     assert cash['evidence']['research_replication']['decision']['passed'] is False
     snapshots=[json.loads((output/name).read_text()) for name in ('current.json','prior.json')]
-    amounts=[{w['field']:Decimal(w['value']) for w in s['windows'] if w['field'] in ('FN230','FN234','FN114')} for s in snapshots]
-    current,prior=amounts;ocf=(current['FN234']+prior['FN234']*current['FN230']/prior['FN230'])/2
+    amounts=[{w['field']:Decimal(w['value']) for w in s['windows'] if w['field'] in ('revenue','operating_cash_flow','capital_expenditure_cash')} for s in snapshots]
+    current,prior=amounts;ocf=(current['operating_cash_flow']+prior['operating_cash_flow']*current['revenue']/prior['revenue'])/2
     assert Decimal(cash['cash_forecast']['operating_cashflow'])==ocf
-    assert Decimal(cash['cash_forecast']['ocf_less_capex'])==ocf-current['FN114']
+    assert Decimal(cash['cash_forecast']['ocf_less_capex'])==ocf-current['capital_expenditure_cash']
     basis=cash['forecast_basis'];sensitivity=cash['revenue_only_sensitivity']
     assert basis['cash_revenue_growth']=='0' and Decimal(basis['dcf_revenue_growth'])==Decimal('0.2')
-    assert Decimal(sensitivity['operating_cashflow'])==ocf*Decimal(basis['dcf_revenue_cny'])/current['FN230']
+    assert Decimal(sensitivity['operating_cashflow'])==ocf*Decimal(basis['dcf_revenue_cny'])/current['revenue']
     assert sensitivity['capital_expenditure']==cash['cash_forecast']['capital_expenditure']
     older=[f for f in cash['observations'][1]['facts'] if f['period'].startswith('2024')]
     assert len(older)==6 and all(f['announcement_id'] and f['pdf_sha256'] and f['artifact_sha256'] for f in older)
-    assert {f['field'] for f in older}=={'FN230','FN234','FN114'}
+    assert {f['field'] for f in older}=={'revenue','operating_cash_flow','capital_expenditure_cash'}
     # Same-cutoff historical evidence is independently required, not silently replaced by a source snapshot.
     request=AlphaLakeRequest.model_validate(json.loads((runs/(cash['valuation_run_id']+'.json')).read_text())['request'])
     bad=copy.deepcopy(snapshots[1]);bad['facts'][0]['instrument_id']+=100
     with pytest.raises(ValueError):cash_crosscheck(request,bad,{'dcf':{}})
-    missing=copy.deepcopy(snapshots[1]);missing['windows']=[w for w in missing['windows'] if w['field']!='FN234']
+    missing=copy.deepcopy(snapshots[1]);missing['windows']=[w for w in missing['windows'] if w['field']!='operating_cash_flow']
     blocked=cash_crosscheck(request,missing,{'dcf':{}})
     assert blocked['status']=='blocked_missing_standard_history' and blocked['cash_forecast'] is None
 
