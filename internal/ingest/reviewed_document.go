@@ -74,7 +74,7 @@ func ImportReviewedDocument(ctx context.Context, db *sql.DB, root string, review
 	alreadyAttached := false
 	if priorArtifact.Valid || priorHash.Valid {
 		var existing string
-		err = db.QueryRowContext(ctx, `SELECT details FROM meta.validation_result WHERE source='document-review' AND dataset='filing_document' AND rule_code='reviewed_mirror_binding' AND subject_key=? AND passed=true`, fmt.Sprint(id)).Scan(&existing)
+		err = db.QueryRowContext(ctx, `SELECT r.reviewed_record FROM fundamental.document_review r JOIN meta.artifact a ON a.artifact_id=r.review_artifact_id AND a.sha256=sha256(r.reviewed_record) AND a.source='document-review' AND a.dataset='filing_document_binding' WHERE r.filing_id=? AND r.document_artifact_id=? AND r.pdf_sha256=?`, id, priorArtifact.Int64, review.SHA256).Scan(&existing)
 		if err != nil || existing != string(raw) || priorHash.String != review.SHA256 {
 			return false, errors.New("refusing to replace an existing document or its review")
 		}
@@ -84,7 +84,7 @@ func ImportReviewedDocument(ctx context.Context, db *sql.DB, root string, review
 	if err != nil {
 		return false, err
 	}
-	_, err = artifact.Persist(ctx, db, root, artifact.Input{Source: "document-review", Dataset: "filing_document_binding", SourceLocator: review.CanonicalURL, FetchedAt: review.ReviewedAt, MediaType: "application/json", ParserVersion: "reviewed-document-v1", Content: raw})
+	reviewArtifact, err := artifact.Persist(ctx, db, root, artifact.Input{Source: "document-review", Dataset: "filing_document_binding", SourceLocator: review.CanonicalURL, FetchedAt: review.ReviewedAt, MediaType: "application/json", ParserVersion: "reviewed-document-v1", Content: raw})
 	if err != nil {
 		return false, err
 	}
@@ -108,7 +108,9 @@ func ImportReviewedDocument(ctx context.Context, db *sql.DB, root string, review
 	if err != nil {
 		return false, err
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO meta.validation_result(source,dataset,rule_code,severity,subject_type,subject_key,observed_value,expected_value,passed,details,checked_at) VALUES ('document-review','filing_document','reviewed_mirror_binding','info','filing',?,?,?,true,?,?)`, fmt.Sprint(id), review.RetrievalURL, review.CanonicalURL, string(raw), review.ReviewedAt)
+	_, err = tx.ExecContext(ctx, `INSERT INTO fundamental.document_review
+ (filing_id,document_artifact_id,review_artifact_id,pdf_sha256,reviewed_at,recorded_at,reviewed_record)
+ VALUES (?,?,?,?,?,current_timestamp,?)`, id, pdf.ArtifactID, reviewArtifact.ArtifactID, pdf.SHA256, review.ReviewedAt, string(raw))
 	if err != nil {
 		return false, err
 	}

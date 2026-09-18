@@ -243,6 +243,8 @@ alphalake status ./alphalake.duckdb
 alphalake schema
 ```
 
+审核补充支持显式修订、撤销与历史查询，镜像原文审核独立于诊断保存；迁移及时间边界见[审核证据说明](docs/reviewed-evidence-history.md)。
+
 ## 数据布局
 
 数据库位于 `./data/market.duckdb` 时，专业财务原始归档默认布局如下：

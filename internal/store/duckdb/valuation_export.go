@@ -15,25 +15,28 @@ import (
 
 // ReviewedSupplement 是已有原文人工核验后的源补充，不是模型假设。
 type ReviewedSupplement struct {
-	Code           string `json:"code"`
-	Period         string `json:"period"`
-	Item           string `json:"item"`
-	Value          string `json:"value"`
-	Unit           string `json:"unit"`
-	PeriodBasis    string `json:"period_basis"`
-	Scope          string `json:"scope"`
-	AnnouncementID string `json:"announcement_id"`
-	PDFSHA256      string `json:"pdf_sha256"`
-	PDFPage        int    `json:"pdf_page"`
-	Reviewer       string `json:"reviewer"`
-	ReviewNote     string `json:"review_note"`
+	Code             string `json:"code"`
+	Period           string `json:"period"`
+	Item             string `json:"item"`
+	Value            string `json:"value"`
+	Unit             string `json:"unit"`
+	PeriodBasis      string `json:"period_basis"`
+	Scope            string `json:"scope"`
+	AnnouncementID   string `json:"announcement_id"`
+	PDFSHA256        string `json:"pdf_sha256"`
+	PDFPage          int    `json:"pdf_page"`
+	Reviewer         string `json:"reviewer"`
+	ReviewNote       string `json:"review_note"`
+	Action           string `json:"action,omitempty"`
+	SupersedesSHA256 string `json:"supersedes_sha256,omitempty"`
+	ReviewedAt       string `json:"reviewed_at,omitempty"`
 }
 
 var sixDigitCode = regexp.MustCompile(`^[0-9]{6}$`)
 var decimalAmount = regexp.MustCompile(`^-?[0-9]{1,28}(\.[0-9]{1,10})?$`)
 var supplementItem = regexp.MustCompile(`^[a-z][a-z0-9_]*$`)
 
-// ImportReviewedSupplements 原子导入；同一原文/项目改值必须先重新审核，不覆盖旧证据。
+// ImportReviewedSupplements 原子发布审核动作；显式修订或撤销保留旧记录，旧动作重放不覆盖当前头部。
 func ImportReviewedSupplements(ctx context.Context, db *sql.DB, records []ReviewedSupplement) (int, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -42,6 +45,30 @@ func ImportReviewedSupplements(ctx context.Context, db *sql.DB, records []Review
 	defer tx.Rollback()
 	inserted := 0
 	for _, r := range records {
+		action := r.Action
+		if action == "" {
+			action = "publish"
+		}
+		if action != "publish" && action != "replace" && action != "revoke" {
+			return 0, errors.New("unsupported supplement review action")
+		}
+		var reviewedAt any
+		if r.ReviewedAt != "" {
+			at, e := time.Parse(time.RFC3339Nano, r.ReviewedAt)
+			if e != nil || at.After(time.Now()) {
+				return 0, errors.New("invalid supplement review time")
+			}
+			reviewedAt = at
+		}
+		if action == "publish" && r.SupersedesSHA256 != "" {
+			return 0, errors.New("initial supplement cannot supersede a review")
+		}
+		if action != "publish" {
+			h, e := hex.DecodeString(r.SupersedesSHA256)
+			if e != nil || len(h) != 32 || reviewedAt == nil {
+				return 0, errors.New("replacement/revocation requires previous hash and review time")
+			}
+		}
 		if !sixDigitCode.MatchString(r.Code) || !supplementItem.MatchString(r.Item) || !decimalAmount.MatchString(r.Value) || strings.TrimSpace(r.Reviewer) == "" || strings.TrimSpace(r.ReviewNote) == "" || r.PDFPage <= 0 {
 			return 0, errors.New("invalid reviewed supplement")
 		}
@@ -77,18 +104,59 @@ func ImportReviewedSupplements(ctx context.Context, db *sql.DB, records []Review
 		}
 		sum := sha256.Sum256(raw)
 		sha := hex.EncodeToString(sum[:])
-		var previous string
-		err = tx.QueryRowContext(ctx, `SELECT import_sha256 FROM fundamental.reviewed_supplement WHERE provider_code=? AND report_period=CAST(? AS DATE) AND item=? AND source_filing_id=?`, r.Code, r.Period, r.Item, filingID).Scan(&previous)
-		if err == nil {
-			if previous != sha {
-				return 0, fmt.Errorf("conflicting reviewed supplement %s/%s/%s", r.Code, r.Period, r.Item)
-			}
-			continue
-		}
-		if !errors.Is(err, sql.ErrNoRows) {
+		// 已发布的旧动作重放也不重新激活被替代或撤销的记录。
+		var exists bool
+		if err = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM fundamental.supplement_review_history WHERE import_sha256=?)`, sha).Scan(&exists); err != nil {
 			return 0, err
 		}
-		_, err = tx.ExecContext(ctx, `INSERT INTO fundamental.reviewed_supplement VALUES (?,CAST(? AS DATE),?,CAST(? AS DECIMAL(38,10)),?,?,?,?,?,?,?,?,?,?)`, r.Code, r.Period, r.Item, r.Value, r.Unit, r.PeriodBasis, r.Scope, filingID, r.PDFSHA256, r.PDFPage, r.Reviewer, r.ReviewNote, sha, string(raw))
+		if exists {
+			continue
+		}
+		var previous, previousRecord string
+		err = tx.QueryRowContext(ctx, `SELECT import_sha256,reviewed_record FROM fundamental.reviewed_supplement WHERE provider_code=? AND report_period=CAST(? AS DATE) AND item=? AND source_filing_id=?`, r.Code, r.Period, r.Item, filingID).Scan(&previous, &previousRecord)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return 0, err
+		}
+		if action == "publish" && err == nil {
+			return 0, fmt.Errorf("conflicting reviewed supplement %s/%s/%s", r.Code, r.Period, r.Item)
+		}
+		if action != "publish" {
+			if err != nil || previous != r.SupersedesSHA256 {
+				return 0, errors.New("supplement predecessor is not the current review")
+			}
+			var prior ReviewedSupplement
+			if err = json.Unmarshal([]byte(previousRecord), &prior); err != nil {
+				return 0, err
+			}
+			if prior.ReviewedAt != "" {
+				priorTime, e := time.Parse(time.RFC3339Nano, prior.ReviewedAt)
+				if e != nil || reviewedAt.(time.Time).Before(priorTime) {
+					return 0, errors.New("supplement review precedes predecessor")
+				}
+			}
+			if action == "revoke" && (r.Value != prior.Value || r.Unit != prior.Unit || r.PeriodBasis != prior.PeriodBasis || r.Scope != prior.Scope || r.PDFSHA256 != prior.PDFSHA256 || r.PDFPage != prior.PDFPage) {
+				return 0, errors.New("revocation must retain previous evidence and value")
+			}
+		}
+		var predecessor any
+		if r.SupersedesSHA256 != "" {
+			predecessor = r.SupersedesSHA256
+		}
+		_, err = tx.ExecContext(ctx, `INSERT INTO fundamental.supplement_review_history VALUES (?, ?,CAST(? AS DATE),?,?,?,?,?,current_timestamp,?)`, sha, r.Code, r.Period, r.Item, filingID, action, predecessor, reviewedAt, string(raw))
+		if err != nil {
+			return 0, err
+		}
+		state := "active"
+		if action == "revoke" {
+			state = "revoked"
+		}
+		_, err = tx.ExecContext(ctx, `INSERT INTO fundamental.reviewed_supplement
+ (provider_code,report_period,item,value,unit,period_basis,statement_scope,source_filing_id,pdf_sha256,pdf_page,reviewer,review_note,import_sha256,reviewed_record,review_state)
+ VALUES (?,CAST(? AS DATE),?,CAST(? AS DECIMAL(38,10)),?,?,?,?,?,?,?,?,?,?,?)
+ ON CONFLICT(provider_code,report_period,item,source_filing_id) DO UPDATE SET
+ value=excluded.value,unit=excluded.unit,period_basis=excluded.period_basis,statement_scope=excluded.statement_scope,
+ pdf_sha256=excluded.pdf_sha256,pdf_page=excluded.pdf_page,reviewer=excluded.reviewer,review_note=excluded.review_note,
+ import_sha256=excluded.import_sha256,reviewed_record=excluded.reviewed_record,review_state=excluded.review_state`, r.Code, r.Period, r.Item, r.Value, r.Unit, r.PeriodBasis, r.Scope, filingID, r.PDFSHA256, r.PDFPage, r.Reviewer, r.ReviewNote, sha, string(raw), state)
 		if err != nil {
 			return 0, err
 		}
@@ -170,9 +238,10 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
       CAST(latest_input_announcement_time AS VARCHAR) AS available_at,input_periods,input_coefficients,source_fact_ids,source_filing_ids,missing_periods
     FROM fundamental.ttm_asof(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE), min_instrument_id := ?, max_instrument_id := ?) WHERE provider_code=? ORDER BY source_provider_field,instrument_id) x`, []any{asof, end, first.Int64, last.Int64, code}},
 		{"supplements", `SELECT CAST(to_json(list(x)) AS VARCHAR) FROM (
+ SELECT * EXCLUDE(review_state) FROM (
     SELECT s.provider_code AS code,CAST(s.report_period AS VARCHAR) AS period,s.item,CAST(s.value AS VARCHAR) AS value,
       s.unit,s.period_basis,s.statement_scope AS scope,f.source_filing_id AS announcement_id,s.pdf_sha256,s.pdf_page,
-      f.source_url AS pdf_url,CAST(f.announcement_time AS VARCHAR) AS available_at,s.reviewer,s.review_note,s.import_sha256
+      f.source_url AS pdf_url,CAST(f.announcement_time AS VARCHAR) AS available_at,s.reviewer,s.review_note,s.import_sha256,s.review_state
     FROM fundamental.reviewed_supplement s JOIN fundamental.filing f ON f.filing_id=s.source_filing_id
     WHERE s.provider_code=? AND s.report_period<=CAST(? AS DATE) AND s.report_period>=make_date(year(CAST(? AS DATE))-1,1,1)
       AND f.announcement_time<=CAST(? AS TIMESTAMPTZ) AND f.sha256=s.pdf_sha256 AND f.resolution_status='resolved'
@@ -181,15 +250,18 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
         SELECT 1 FROM fundamental.fact_asof(CAST(? AS TIMESTAMPTZ)) current
         WHERE current.source_filing_id=f.filing_id AND current.provider_code=s.provider_code AND current.report_period=s.report_period))
     QUALIFY row_number() OVER(PARTITION BY s.provider_code,s.report_period,s.item ORDER BY f.announcement_time DESC,f.filing_id DESC)=1
-    ORDER BY s.report_period,s.item) x`, []any{code, end, end, asof, asof}},
+     ) selected WHERE review_state='active' ORDER BY period,item) x`, []any{code, end, end, asof, asof}},
 	}
 	// Mirror metadata is added only for independently reviewed documents, so
 	// existing CNINFO-only exported evidence remains byte-compatible.
 	mirrors := map[string]json.RawMessage{}
-	rows, err := tx.QueryContext(ctx, `SELECT f.source_filing_id,v.details
+	rows, err := tx.QueryContext(ctx, `SELECT f.source_filing_id,CASE WHEN proof.artifact_id IS NOT NULL THEN v.reviewed_record END
  FROM fundamental.filing f JOIN meta.artifact a ON a.artifact_id=f.artifact_id
- LEFT JOIN meta.validation_result v ON v.subject_key=CAST(f.filing_id AS VARCHAR)
- AND v.source='document-review' AND v.dataset='filing_document' AND v.rule_code='reviewed_mirror_binding' AND v.passed=true
+ LEFT JOIN fundamental.document_review v ON v.filing_id=f.filing_id
+ AND v.document_artifact_id=f.artifact_id AND v.pdf_sha256=f.sha256
+ LEFT JOIN meta.artifact proof ON proof.artifact_id=v.review_artifact_id
+ AND proof.source='document-review' AND proof.dataset='filing_document_binding'
+ AND proof.sha256=sha256(v.reviewed_record) AND proof.source_locator=f.source_url
  WHERE f.source='cninfo' AND f.provider_code=? AND f.report_period<=CAST(? AS DATE)
  AND f.report_period>=make_date(year(CAST(? AS DATE))-1,1,1) AND a.source<>'cninfo'`, code, end, end)
 	if err != nil {
@@ -251,4 +323,24 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
 		return nil, err
 	}
 	return output, nil
+}
+
+// ExportSupplementReviewHistory 返回审核原文和前序关系，不把审核时间当公告可用时间。
+func ExportSupplementReviewHistory(ctx context.Context, db *sql.DB, code string) (json.RawMessage, error) {
+	if !sixDigitCode.MatchString(code) {
+		return nil, errors.New("six-digit security code required")
+	}
+	var raw sql.NullString
+	err := db.QueryRowContext(ctx, `SELECT CAST(to_json(list(x)) AS VARCHAR) FROM (
+ SELECT h.*,s.import_sha256=h.import_sha256 AS is_current
+ FROM fundamental.supplement_review_history h
+ LEFT JOIN fundamental.reviewed_supplement s USING(provider_code,report_period,item,source_filing_id)
+ WHERE h.provider_code=? ORDER BY h.report_period,h.item,h.recorded_at NULLS FIRST,h.import_sha256) x`, code).Scan(&raw)
+	if err != nil {
+		return nil, err
+	}
+	if !raw.Valid {
+		return json.RawMessage("[]"), nil
+	}
+	return json.RawMessage(raw.String), nil
 }

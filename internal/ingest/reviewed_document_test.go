@@ -109,11 +109,87 @@ func TestReviewedMirrorDocument(t *testing.T) {
 		t.Fatalf("lost provenance: %s %s %s %s", source, locator, canonical, history)
 	}
 	var n int
-	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM meta.validation_result WHERE rule_code='reviewed_mirror_binding' AND passed`).Scan(&n); err != nil || n != 1 {
+	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.document_review`).Scan(&n); err != nil || n != 1 {
 		t.Fatalf("review association %d %v", n, err)
+	}
+	// 清理诊断不影响正式审核及幂等导入。
+	if _, err = db.ExecContext(ctx, `DELETE FROM meta.validation_result`); err != nil {
+		t.Fatal(err)
+	}
+	if inserted, err := ImportReviewedDocument(ctx, db, root, review, pdf); err != nil || inserted {
+		t.Fatalf("replay after diagnostics cleanup: %v %v", inserted, err)
 	}
 	supplement := duckstore.ReviewedSupplement{Code: review.Code, Period: review.Period, Item: "restricted_current_debt_investment", Value: "750000000", Unit: "CNY", PeriodBasis: "instant", Scope: "consolidated_note_component", AnnouncementID: review.AnnouncementID, PDFSHA256: review.SHA256, PDFPage: 86, Reviewer: review.Reviewer, ReviewNote: review.ReviewNote}
 	if n, err := duckstore.ImportReviewedSupplements(ctx, db, []duckstore.ReviewedSupplement{supplement}); err != nil || n != 1 {
 		t.Fatalf("supplement import %d %v", n, err)
 	}
+	// 将真实原文审核样本恢复成 schema40 的旧存储形态，再走正式迁移。
+	legacy, err := json.Marshal(review)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = db.ExecContext(ctx, `INSERT INTO meta.validation_result(source,dataset,rule_code,severity,subject_type,subject_key,passed,details,checked_at)
+ SELECT 'document-review','filing_document','reviewed_mirror_binding','info','filing',CAST(filing_id AS VARCHAR),true,?,? FROM fundamental.filing`, string(legacy), review.ReviewedAt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = db.ExecContext(ctx, `DROP TABLE fundamental.document_review;
+ DROP TABLE fundamental.supplement_review_history;
+ ALTER TABLE fundamental.reviewed_supplement DROP COLUMN review_state;
+ DELETE FROM meta.schema_version WHERE version IN (41,42);`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = db.ExecContext(ctx, `UPDATE meta.validation_result SET details='{}' WHERE rule_code='reviewed_mirror_binding'`); err != nil {
+		t.Fatal(err)
+	}
+	if err = duckstore.Apply(ctx, db); err == nil {
+		t.Fatal("legacy review without archived evidence migrated")
+	}
+	if version, e := duckstore.CurrentSchemaVersion(ctx, db); e != nil || version != 40 {
+		t.Fatalf("failed migration advanced version: %d %v", version, e)
+	}
+	if _, err = db.ExecContext(ctx, `UPDATE meta.validation_result SET details=? WHERE rule_code='reviewed_mirror_binding'`, string(legacy)); err != nil {
+		t.Fatal(err)
+	}
+	if err = duckstore.Apply(ctx, db); err != nil {
+		t.Fatal(err)
+	}
+	if err = duckstore.Apply(ctx, db); err != nil {
+		t.Fatal(err)
+	}
+	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.document_review WHERE recorded_at IS NULL`).Scan(&n); err != nil || n != 1 {
+		t.Fatalf("legacy review time fabricated: %d %v", n, err)
+	}
+	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.supplement_review_history WHERE recorded_at IS NULL AND reviewed_at IS NULL`).Scan(&n); err != nil || n != 1 {
+		t.Fatalf("legacy supplement time fabricated: %d %v", n, err)
+	}
+	end := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
+	asof := time.Date(2026, 9, 18, 0, 0, 0, 0, time.UTC)
+	before, err := duckstore.ExportValuationData(ctx, db, review.Code, end, asof)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = db.ExecContext(ctx, `DELETE FROM meta.validation_result`); err != nil {
+		t.Fatal(err)
+	}
+	after, err := duckstore.ExportValuationData(ctx, db, review.Code, end, asof)
+	if err != nil {
+		t.Fatal(err)
+	}
+	beforeJSON, _ := json.Marshal(before)
+	afterJSON, _ := json.Marshal(after)
+	if string(beforeJSON) != string(afterJSON) {
+		t.Fatal("diagnostic cleanup changed export")
+	}
+	if inserted, err := ImportReviewedDocument(ctx, db, root, review, pdf); err != nil || inserted {
+		t.Fatalf("migrated replay: %v %v", inserted, err)
+	}
+	if _, err = db.ExecContext(ctx, `UPDATE fundamental.document_review SET pdf_sha256='bad'`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = duckstore.ExportValuationData(ctx, db, review.Code, end, asof); err == nil {
+		t.Fatal("mismatched document review accepted")
+	}
+
 }

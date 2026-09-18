@@ -52,6 +52,8 @@ func TestMigrationOrder(t *testing.T) {
 		"038_capex_history_scope.sql",
 		"039_earnings_history_scope.sql",
 		"040_receivables_history_scope.sql",
+		"041_document_review.sql",
+		"042_supplement_review_history.sql",
 	}
 	if len(migrations) != len(want) {
 		t.Fatalf("got %v", migrations)

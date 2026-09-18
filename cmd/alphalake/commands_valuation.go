@@ -167,3 +167,21 @@ func runReviewedDocumentImport(ctx context.Context, args []string) error {
 	fmt.Printf("reviewed document: attached=%t\n", inserted)
 	return nil
 }
+
+func runSupplementHistory(ctx context.Context, args []string) error {
+	if len(args) != 2 {
+		return errors.New("usage: supplement-history <db-path> <six-digit-code>")
+	}
+	db, err := duckstore.OpenReadOnly(ctx, args[0])
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	rows, err := duckstore.ExportSupplementReviewHistory(ctx, db, args[1])
+	if err != nil {
+		return err
+	}
+	encoder := json.NewEncoder(os.Stdout)
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(rows)
+}

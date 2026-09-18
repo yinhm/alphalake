@@ -42,6 +42,8 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return true, runValuationExport(ctx, args[1:])
 	case "import-reviewed-document":
 		return true, runReviewedDocumentImport(ctx, args[1:])
+	case "supplement-history":
+		return true, runSupplementHistory(ctx, args[1:])
 	case "import-supplements":
 		return true, runSupplementImport(ctx, args[1:])
 	case "filing-unresolved":
