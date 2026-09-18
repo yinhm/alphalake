@@ -49,3 +49,9 @@ alphalake supplement-history DB 300866
 - 苏泊尔真实镜像 PDF 验证独立归档绑定、诊断清理不影响导出及重放、错误文档哈希拒绝。
 - 使用同一真实证据构造 schema40 旧存储形态，执行正式 041/042 升级及幂等重放；缺审核归档的迁移拒绝，不推进结构版本；未知旧时间不补造。
 - 这些测试不等于主库升级，也不扩大已审核公司或补充字段的覆盖范围。
+
+## 已有 CNINFO 原件的离线补归档
+
+`import-cninfo-document <db> <raw-root> <receipt-json> <pdf>` 用于有真实下载回执的 CNINFO 原件：回执包含 `code`、`period`、`announcement_id`、`url`、`sha256`、`fetched_at`。必须匹配库内已有且已解析的公告，只填空原文；校验原始下载时间、官方URL、PDF头及内容哈希，拒绝覆盖不同文档或镜像来源。重复导入保持原获取时间，损坏的本地缓存可按相同原件修复，不推进采集检查点。
+
+该入口不从哈希推断真实性；回执必须来自已留存的真实下载记录。镜像仍走前述独立审核入口，不可伪装成官方直接下载。安克2026H1回执来自 `internal/ingest/testdata/anker-valuation-2026/reports.json`。

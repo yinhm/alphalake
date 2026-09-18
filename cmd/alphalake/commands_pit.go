@@ -40,6 +40,8 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return true, runValuationReadiness(ctx, args[1:])
 	case "export-valuation":
 		return true, runValuationExport(ctx, args[1:])
+	case "import-cninfo-document":
+		return true, runDocumentImport(ctx, args[1:], true)
 	case "import-reviewed-document":
 		return true, runReviewedDocumentImport(ctx, args[1:])
 	case "supplement-history":

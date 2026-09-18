@@ -134,8 +134,12 @@ func runSupplementImport(ctx context.Context, args []string) error {
 // runReviewedDocumentImport performs no network access; the reviewed manifest
 // describes the actual download, separately from the CNINFO identity.
 func runReviewedDocumentImport(ctx context.Context, args []string) error {
+	return runDocumentImport(ctx, args, false)
+}
+
+func runDocumentImport(ctx context.Context, args []string, canonical bool) error {
 	if len(args) != 4 {
-		return errors.New("usage: import-reviewed-document <db-path> <artifact-root> <review-json> <pdf-file>")
+		return errors.New("usage: import-reviewed-document|import-cninfo-document <db-path> <artifact-root> <receipt-json> <pdf-file>")
 	}
 	raw, err := os.Open(args[2])
 	if err != nil {
@@ -143,9 +147,14 @@ func runReviewedDocumentImport(ctx context.Context, args []string) error {
 	}
 	defer raw.Close()
 	var review ingest.ReviewedDocument
+	var archived ingest.ArchivedCNINFODocument
+	var receipt any = &review
+	if canonical {
+		receipt = &archived
+	}
 	decoder := json.NewDecoder(raw)
 	decoder.DisallowUnknownFields()
-	if err = decoder.Decode(&review); err != nil {
+	if err = decoder.Decode(receipt); err != nil {
 		return err
 	}
 	if err = decoder.Decode(new(any)); err != io.EOF {
@@ -160,11 +169,16 @@ func runReviewedDocumentImport(ctx context.Context, args []string) error {
 		return err
 	}
 	defer db.Close()
-	inserted, err := ingest.ImportReviewedDocument(ctx, db, args[1], review, content)
+	var inserted bool
+	if canonical {
+		inserted, err = ingest.ImportArchivedCNINFODocument(ctx, db, args[1], archived, content)
+	} else {
+		inserted, err = ingest.ImportReviewedDocument(ctx, db, args[1], review, content)
+	}
 	if err != nil {
 		return err
 	}
-	fmt.Printf("reviewed document: attached=%t\n", inserted)
+	fmt.Printf("archived document: attached=%t\n", inserted)
 	return nil
 }
 
