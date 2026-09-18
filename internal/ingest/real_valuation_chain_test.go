@@ -36,6 +36,9 @@ func TestRealValuationStandardChain(t *testing.T) {
 	db, err := duckstore.OpenAndMigrate(ctx, dbPath)
 	check(err)
 	defer db.Close()
+	// 保留本历史验收的字段分母；045由独立真实处置现金测试验收。
+	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field='FN110'`)
+	check(err)
 	// 025 只新增映射；构造 v24 状态后实际导入全部真实源记录。
 	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field IN ('FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579'); DELETE FROM meta.schema_version WHERE version=25`)
 	check(err)

@@ -160,7 +160,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 				WHEN value_multiplier IS NULL OR value_multiplier NOT IN (1,10000) THEN 'canonical_scale_unknown'
 				WHEN value IS NULL OR NOT isfinite(value) THEN 'provider_value_not_finite'
 				-- TDX 部分源零无法区分未披露与真实零；已识别现金流缺口及新批次字段统一保守拒绝。
-				WHEN primary_source='tdx' AND provider_field IN ('FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579','FN19','FN20','FN27','FN28','FN33','FN37','FN50','FN53','FN60','FN95','FN96','FN97','FN99','FN104','FN136','FN137','FN138','FN146','FN147','FN148','FN304','FN581') AND value=0 THEN 'provider_zero_ambiguous'
+				WHEN primary_source='tdx' AND provider_field IN ('FN110','FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579','FN19','FN20','FN27','FN28','FN33','FN37','FN50','FN53','FN60','FN95','FN96','FN97','FN99','FN104','FN136','FN137','FN138','FN146','FN147','FN148','FN304','FN581') AND value=0 THEN 'provider_zero_ambiguous'
 				WHEN period_basis NOT IN ('report','instant','ytd') OR period_basis IS NULL THEN 'canonical_period_unknown'
 				WHEN value_kind NOT IN ('monetary','shares') OR unit IS NULL OR trim(unit)='' THEN 'canonical_unit_unknown'
 				WHEN try_cast(cast(value AS VARCHAR) AS DECIMAL(38,10)) IS NULL THEN 'canonical_decimal_overflow'

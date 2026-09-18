@@ -33,6 +33,7 @@ func TestRealSixQuarterWindows(t *testing.T) {
 	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "ttm.duckdb"))
 	check(err)
 	defer db.Close()
+	keepPreDisposalFieldScope(t, db)
 	root := filepath.Join(t.TempDir(), "raw")
 	var instruments []domain.InstrumentObservation
 	check(json.Unmarshal(readAnnualSample(t, "instruments.json"), &instruments))

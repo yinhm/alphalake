@@ -24,6 +24,7 @@ func TestCNINFOToPointInTimeFundamentalEndToEnd(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
+	keepPreDisposalFieldScope(t, db)
 	artifactRoot := filepath.Join(t.TempDir(), "raw")
 
 	instrumentID, err := duckstore.UpsertInstrument(ctx, db,

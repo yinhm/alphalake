@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"os"
 	"path/filepath"
 	"testing"
@@ -47,7 +48,7 @@ func TestPublicationRejectsChangesAndPreservesBackup(t *testing.T) {
 	if e = os.WriteFile(candidate, bytes, 0600); e != nil {
 		t.Fatal(e)
 	}
-	db, e = duck.OpenAndMigrate(ctx, candidate)
+	db, e = openSchema44(ctx, candidate)
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -97,4 +98,18 @@ func TestPublicationRejectsChangesAndPreservesBackup(t *testing.T) {
 	if e != nil || v != 44 {
 		t.Fatal("published database cannot reopen", v, e)
 	}
+}
+
+// 固定发布器的验收目标仍是44；撤掉本轮纯目录迁移，避免历史测试随最新版本漂移。
+func openSchema44(ctx context.Context, path string) (*sql.DB, error) {
+	db, err := duck.OpenAndMigrate(ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field='FN110'; DELETE FROM meta.schema_version WHERE version=45`)
+	if err != nil {
+		db.Close()
+		return nil, err
+	}
+	return db, nil
 }

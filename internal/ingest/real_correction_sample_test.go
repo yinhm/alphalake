@@ -51,6 +51,7 @@ func TestRealCorrectionWithoutOriginalProviderVersion(t *testing.T) {
 	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "correction.duckdb"))
 	check(err)
 	defer db.Close()
+	keepPreDisposalFieldScope(t, db)
 	root := filepath.Join(t.TempDir(), "raw")
 	id, err := duckstore.UpsertInstrument(ctx, db,
 		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "浙江东日"},

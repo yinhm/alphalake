@@ -15,7 +15,7 @@ func TestReviewedAssetPublication(t *testing.T) {
 	root := t.TempDir()
 	base := filepath.Join(root, "base.duckdb")
 	candidate := filepath.Join(root, "candidate.duckdb")
-	db, err := duck.OpenAndMigrate(ctx, base)
+	db, err := openSchema44(ctx, base)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func TestReviewedAssetPublication(t *testing.T) {
 	b, err := os.ReadFile(base)
 	must(err)
 	must(os.WriteFile(candidate, b, 0600))
-	db, err = duck.OpenAndMigrate(ctx, candidate)
+	db, err = openSchema44(ctx, candidate)
 	must(err)
 	_, err = ingest.ImportArchivedCNINFODocument(ctx, db, root, a, read("internal/ingest/testdata/anker-valuation-2026/1225533054.pdf"))
 	must(err)
