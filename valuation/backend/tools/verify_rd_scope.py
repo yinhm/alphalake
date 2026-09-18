@@ -9,7 +9,7 @@ import subprocess
 
 from tools.verify_tdx_rd_semantics import DIRECTORY
 from tools.verify_training_earnings import statement
-from tools.backtest_tdx_history import value
+from tools.tdx_research_source import source_value as value
 
 
 def load_inputs():

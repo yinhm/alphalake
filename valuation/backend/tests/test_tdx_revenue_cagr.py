@@ -10,7 +10,7 @@ import pytest
 
 from data_sources.alphalake import HistoricalDCFPolicy, historical_forecast
 from tools import backtest_tdx_revenue_cagr as tool
-from tools.backtest_tdx_history import value
+from tools.tdx_research_source import source_value as value
 
 ROOT = Path(__file__).resolve().parents[3]
 PATH = ROOT/'valuation/research/tdx-revenue-cagr/protocol.json'

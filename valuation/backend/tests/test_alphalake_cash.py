@@ -8,7 +8,8 @@ from pathlib import Path
 import pytest
 from data_sources.alphalake import AlphaLakeRequest
 from data_sources.alphalake_cash import cash_crosscheck,VALIDATION,SCOPE_AUDIT,UNCERTAINTY,REPLICATION
-from tools.backtest_tdx_history import value,quarter_periods
+from tools.backtest_tdx_history import quarter_periods
+from tools.tdx_research_source import source_value as value
 
 ROOT=Path(__file__).resolve().parents[3]
 

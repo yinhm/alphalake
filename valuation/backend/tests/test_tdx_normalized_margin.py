@@ -50,7 +50,7 @@ def test_five_fy_margins_keep_losses_and_future_isolation():
 def test_real_development_replay_decimal_and_source_rejection(tmp_path):
     from decimal import Decimal
     import hashlib,subprocess,sys
-    from tools.backtest_tdx_history import value
+    from tools.tdx_research_source import source_value as value
     p=json.loads((DIR/'protocol.json').read_text());source=json.loads((DIR/'development-snapshot.json').read_text())
     recorded=json.loads((DIR/'development-result.json').read_text());actual=study(p,source,'development')
     assert actual=={k:v for k,v in recorded.items() if k!='evidence'}

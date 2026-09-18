@@ -680,7 +680,7 @@ def test_capex_trend_failure_and_forged_selection_cannot_open_holdout(tmp_path,m
 def test_capex_cip_original_evidence_and_source_bits():
     import hashlib,re
     from pypdf import PdfReader
-    from tools.backtest_tdx_history import value
+    from tools.tdx_research_source import source_value as value
     directory=ROOT/'valuation/research/tdx-capex-forecast'
     ledger=json.loads((directory/'driver-evidence.json').read_text());raw=(directory/'snapshot-v4.json').read_bytes();source=json.loads(raw)
     assert hashlib.sha256(raw).hexdigest()==ledger['snapshot_sha256']
@@ -1186,8 +1186,10 @@ def test_operating_cash_locked_holdout_and_independent_errors():
 def test_research_operating_model_uses_canonical_fields(monkeypatch):
     from tools import tdx_research_source as source
     from tools.backtest_tdx_history import window
+    from tools import backtest_tdx_history as operating_model
+    assert not hasattr(operating_model, 'value')
     for field in ('financial_business_interest_income', 'financial_business_interest_expense',
-                  'financial_business_fee_expense', 'deposits_and_interbank_placements'):
+                  'financial_business_fee_expense', 'deposits_and_interbank_placements', 'lease_liabilities'):
         row = {'bits': {source.source_field(field): bits(1.25)}}
         assert source.financial_value(row, field) == Decimal('12500')
         assert source.source_value(row, source.source_field(field)) == Decimal('1.25')

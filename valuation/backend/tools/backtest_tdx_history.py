@@ -9,7 +9,7 @@ from pathlib import Path
 from statistics import mean, median
 
 from data_sources.alphalake import HistoricalDCFPolicy, historical_forecast
-from tools.tdx_research_source import (at, available, source_value as value, financial_value,
+from tools.tdx_research_source import (at, available, financial_value,
     period_basis, source_field, source_components, TIME_BOUNDARY)
 
 CONTRACT='tdx-history-backtest-v2'

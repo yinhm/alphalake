@@ -60,7 +60,8 @@ from copy import deepcopy
 from datetime import date
 from decimal import Decimal as D
 from pathlib import Path
-from tools.backtest_tdx_history import at, available, value
+from tools.backtest_tdx_history import at, available
+from tools.tdx_research_source import source_value as value
 from tools.backtest_tdx_working_cash import revenue_window
 p=Path('valuation/research/continuing-operations-five')
 plan=json.loads((p/'trade-balance-plan.json').read_bytes())

@@ -9,7 +9,8 @@ import subprocess
 
 from tools import backtest_tdx_zero_calibration as joint
 from tools import diagnose_tdx_training_exclusions as exclusions
-from tools.backtest_tdx_history import quarter_periods, value
+from tools.backtest_tdx_history import quarter_periods
+from tools.tdx_research_source import source_value as value
 from datetime import date
 
 DIRECTORY = exclusions.DIRECTORY / 'source-review'

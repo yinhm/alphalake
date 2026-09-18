@@ -114,7 +114,8 @@ from copy import deepcopy
 from datetime import date
 from decimal import Decimal as D
 from pathlib import Path
-from tools.backtest_tdx_history import available, at, value
+from tools.backtest_tdx_history import available, at
+from tools.tdx_research_source import source_value as value
 p=Path('valuation/research/analyst-revenue-latest');plan=json.loads((p/'protocol.json').read_bytes())
 source_path=Path('valuation/research/continuing-operations-five/capital-snapshot.json');baseline_path=Path('valuation/research/continuing-operations-five/baseline.json')
 source=json.loads(source_path.read_bytes());base=json.loads(baseline_path.read_bytes());forecasts=list(csv.DictReader((p/'forecasts.csv').open()))

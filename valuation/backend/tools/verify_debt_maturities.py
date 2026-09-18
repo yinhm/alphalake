@@ -7,7 +7,8 @@ import re
 import struct
 import subprocess
 from tools import verify_cnty_debt as cnty, verify_five_debt as five
-from tools.backtest_tdx_history import at, available, value
+from tools.backtest_tdx_history import at, available
+from tools.tdx_research_source import source_value as value
 
 DIRECTORY=five.DIRECTORY.parent
 

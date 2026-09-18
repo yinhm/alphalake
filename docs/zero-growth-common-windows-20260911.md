@@ -41,7 +41,7 @@ import gzip,hashlib,json,math
 from collections import Counter
 from decimal import Decimal as D
 from pathlib import Path
-from tools.backtest_tdx_history import value
+from tools.tdx_research_source import source_value as value
 root=Path('valuation/research');specs=[('tdx-zero-growth-validation','holdout-result.json','snapshot.json'),('tdx-zero-growth-horizons','holdout-result.json.gz','holdout-snapshot.json')]
 data=[];hashes={}
 for folder,result,snapshot in specs:

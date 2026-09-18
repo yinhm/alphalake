@@ -53,7 +53,8 @@ from decimal import Decimal as D
 from pathlib import Path
 import gzip,hashlib,io,json,re
 from pypdf import PdfReader
-from tools.backtest_tdx_history import at,available,value
+from tools.backtest_tdx_history import at, available
+from tools.tdx_research_source import source_value as value
 p=Path('valuation/research/analyst-revenue-latest');plan=json.loads((p/'direct-balances-plan.json').read_bytes());inputs={}
 for file,sha in plan['inputs'].items():
  raw=Path(file).read_bytes();assert hashlib.sha256(raw).hexdigest()==sha;inputs[Path(file).name]=json.loads(gzip.decompress(raw) if file.endswith('.gz') else raw)

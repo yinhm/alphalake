@@ -7,7 +7,8 @@ from pathlib import Path
 import re
 import struct
 import subprocess
-from tools.backtest_tdx_history import at, available, value
+from tools.backtest_tdx_history import at, available
+from tools.tdx_research_source import source_value as value
 
 DIRECTORY=Path(__file__).resolve().parents[2]/'research/tdx-capital-inputs/five-debt'
 CODES=('000417','000422','000521','000546','000599')

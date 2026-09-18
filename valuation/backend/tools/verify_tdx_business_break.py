@@ -9,7 +9,8 @@ import re
 import struct
 
 from pypdf import PdfReader
-from tools.backtest_tdx_history import at,available,value
+from tools.backtest_tdx_history import at, available
+from tools.tdx_research_source import source_value as value
 
 
 def verify(ledger,directory,source):

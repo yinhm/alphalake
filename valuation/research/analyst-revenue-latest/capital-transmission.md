@@ -51,7 +51,8 @@ from datetime import date
 from decimal import Decimal as D
 import gzip,hashlib,json
 from pathlib import Path
-from tools.backtest_tdx_history import at,available,value
+from tools.backtest_tdx_history import at, available
+from tools.tdx_research_source import source_value as value
 from tools.backtest_tdx_working_cash import revenue_window
 p=Path('valuation/research/analyst-revenue-latest');plan=json.loads((p/'capital-transmission-plan.json').read_bytes())
 loaded={}

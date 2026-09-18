@@ -9,7 +9,8 @@ from pathlib import Path
 import re
 
 from pypdf import PdfReader
-from tools.backtest_tdx_history import available, at, value, window
+from tools.backtest_tdx_history import available, at, window
+from tools.tdx_research_source import source_value as value
 
 
 def build(directory, pdf_directory, history_source=None):

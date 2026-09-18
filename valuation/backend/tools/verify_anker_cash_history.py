@@ -10,7 +10,7 @@ import struct
 import zipfile
 
 from pypdf import PdfReader
-from tools.backtest_tdx_history import value
+from tools.tdx_research_source import source_value as value
 
 
 def verify(directory,full_archive=None):

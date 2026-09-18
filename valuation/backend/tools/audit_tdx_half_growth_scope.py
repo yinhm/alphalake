@@ -9,7 +9,7 @@ import re
 
 from pypdf import PdfReader
 from tools.audit_tdx_normalized_scope import ROOT, compact, digest
-from tools.backtest_tdx_history import value
+from tools.tdx_research_source import source_value as value
 
 
 def audit(config, raw_dir=None):

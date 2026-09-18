@@ -9,7 +9,7 @@ import struct
 import zipfile
 
 from pypdf import PdfReader
-from tools.backtest_tdx_history import value
+from tools.tdx_research_source import source_value as value
 from tools.verify_anker_cash_history import verify as verify_parent
 
 LABELS = dict(FN86='三、营业利润（亏损以“－”号填列）', FN305='其中：利息费用', FN306='利息收入',

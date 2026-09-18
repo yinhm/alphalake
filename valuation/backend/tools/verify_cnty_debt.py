@@ -8,7 +8,8 @@ import re
 import struct
 import subprocess
 
-from tools.backtest_tdx_history import at, available, value
+from tools.backtest_tdx_history import at, available
+from tools.tdx_research_source import source_value as value
 
 DIRECTORY = Path(__file__).resolve().parents[2]/'research/tdx-capital-inputs/cnty-debt'
 

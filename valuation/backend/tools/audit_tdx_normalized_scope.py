@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 
 from pypdf import PdfReader, __version__ as pypdf_version
-from tools.backtest_tdx_history import value
+from tools.tdx_research_source import source_value as value
 
 ROOT=Path(__file__).resolve().parents[3]
 BASE='zero_growth_current_margin'

@@ -9,7 +9,8 @@ import re
 import struct
 
 from pypdf import PdfReader
-from tools.backtest_tdx_history import value,quarter_periods,available,at
+from tools.backtest_tdx_history import quarter_periods, available, at
+from tools.tdx_research_source import source_value as value
 
 
 
