@@ -41,6 +41,7 @@ func run(args []string) error {
 	}
 	base, candidate := args[0], args[1]
 	fs := flag.NewFlagSet("check-core-publication", flag.ContinueOnError)
+	disposal := fs.Bool("disposal-cash", false, "fixed schema44 to45 FN110 and Anker reviewed zero publication")
 	assets := fs.Bool("reviewed-assets", false, "fixed two-company schema44 asset publication")
 	rawRoot := fs.String("raw-root", "", "artifact root for reviewed asset publication")
 	publish := fs.Bool("publish", false, "publish validated candidate with original backup")
@@ -48,6 +49,9 @@ func run(args []string) error {
 	wantCandidate := fs.String("candidate-sha256", "", "required publication candidate hash")
 	if e := fs.Parse(args[2:]); e != nil {
 		return e
+	}
+	if *assets && *disposal {
+		return fmt.Errorf("choose one publication scope")
 	}
 	if fs.NArg() != 0 {
 		return fmt.Errorf("unexpected arguments")
@@ -105,7 +109,15 @@ func run(args []string) error {
 		return e
 	}
 	checks := map[string]summary{}
-	if *assets {
+	if *disposal {
+		if bv != 44 || cv != 45 || *rawRoot == "" {
+			return fmt.Errorf("disposal publication requires schema44 to45 and raw root")
+		}
+		checks, e = checkDisposalPublication(ctx, db, *rawRoot)
+		if e != nil {
+			return e
+		}
+	} else if *assets {
 		if bv != 44 || cv != 44 || *rawRoot == "" {
 			return fmt.Errorf("reviewed assets require schema44 and raw root")
 		}
@@ -259,10 +271,22 @@ func run(args []string) error {
 		}
 
 	}
+	var scopeCounts map[string]any
+	if *disposal {
+		var facts, companies, periods int
+		var first, last string
+		if e = db.QueryRowContext(ctx, `SELECT count(*),count(DISTINCT provider_code),count(DISTINCT report_period),CAST(min(report_period) AS VARCHAR),CAST(max(report_period) AS VARCHAR) FROM candidate.fundamental.fact WHERE source_provider_field='FN110'`).Scan(&facts, &companies, &periods, &first, &last); e != nil {
+			return e
+		}
+		scopeCounts = map[string]any{"fn110_facts": facts, "companies_with_fn110_fact": companies, "report_periods": periods, "first_period": first, "last_period": last, "boundary": "local existing linked evidence; not whole A-share universe or company PDF-review coverage"}
+	}
 	status := "prepublication_checked"
 	backup := ""
 	if *publish {
 		backup = base + ".pre-core-risk-20260918"
+		if *disposal {
+			backup = base + ".pre-disposal-cash-20260918"
+		}
 		if *assets {
 			backup = base + ".pre-reviewed-assets-20260918"
 		}
@@ -284,7 +308,7 @@ func run(args []string) error {
 		}
 		status = "published_with_backup"
 	}
-	return json.NewEncoder(os.Stdout).Encode(map[string]any{"status": status, "base_schema": bv, "candidate_schema": cv, "base_sha256": bh, "candidate_sha256": ch, "backup": backup, "checks": checks, "comparison": "row counts plus unordered all-column hash XOR/sum; not cryptographic proof of row equality"})
+	return json.NewEncoder(os.Stdout).Encode(map[string]any{"status": status, "base_schema": bv, "candidate_schema": cv, "base_sha256": bh, "candidate_sha256": ch, "backup": backup, "checks": checks, "scope_counts": scopeCounts, "comparison": "row counts plus unordered all-column hash XOR/sum; not cryptographic proof of row equality"})
 }
 func syncDir(p string) error {
 	f, e := os.Open(p)
