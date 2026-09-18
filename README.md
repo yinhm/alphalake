@@ -8,7 +8,7 @@ AlphaLake 是面向投资研究、本地优先且可复现的金融市场数据�
 
 当前已完成[普通非金融企业估值闭环验收](valuation/research/method-closure-20260912/README.md)：复用标准数据和共享引擎，逐项对齐经营收益、再投资、WACC、终值及股权桥接；修正缺资本仍生成隐含ROIC的诊断，统一入口新增方法范围与缺口披露。该轮安克、苏泊尔基线保持不变；后续已审核资产的影响见下文。计算和输入衔接可复验，公司预测依据、完整经营资本及市场股权桥接仍有明确缺口；不称完整公允价值或预测准确性认证。[历史预测研究](docs/valuation-accuracy.md)单独保留，失败候选不推广，未来评分等待数据不阻塞当前方法验收。
 
-[公司输入审阅台账](valuation/research/company-inputs-20260917/README.md)之后，已接通[经审核资产的统一估值链路](valuation/research/reviewed-assets-20260917/README.md)：显式绑定公司、期间及证据版本，缺证或过期拒绝；安克联营投资完成真实隔离库验收。默认行业政策不变；[增长—资本诊断与增量重估](valuation/research/automatic-valuation-20260917/README.md)已接入，保留失败和审核过期，不把旧价格当新结果。苏泊尔[镜像原文及受限分量](valuation/research/reviewed-assets-20260917/supor/README.md)已在主库副本完成归档→补充导入→统一估值验收，固定经营假设43.2526→45.7299元；主库未发布；[安克资本证据联合审核](valuation/research/company-inputs-20260917/README.md#安克公司资本效率的审核结论)仍不足以批准公司倍率，保持显式行业代理。
+[公司输入审阅台账](valuation/research/company-inputs-20260917/README.md)之后，已接通[经审核资产的统一估值链路](valuation/research/reviewed-assets-20260917/README.md)：显式绑定公司、期间及证据版本，缺证或过期拒绝；安克联营投资完成真实隔离库验收。默认行业政策不变；[增长—资本诊断与增量重估](valuation/research/automatic-valuation-20260917/README.md)已接入，保留失败和审核过期，不把旧价格当新结果。苏泊尔[镜像原文及受限分量](valuation/research/reviewed-assets-20260917/supor/README.md)已在主库副本完成归档→补充导入→统一估值验收，固定经营假设43.2526→45.7299元；现已[连同安克资产备份发布主库并重开验收](docs/reviewed-main-publication-20260918.md)，专用政策显式采用；[安克资本证据联合审核](valuation/research/company-inputs-20260917/README.md#安克公司资本效率的审核结论)仍不足以批准公司倍率，保持显式行业代理。
 
 三条主线的交付证据、验证范围及剩余边界汇总于[交付核对](docs/company-input-delivery-20260917.md)。
 
