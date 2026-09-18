@@ -48,7 +48,7 @@ func TestCountryRiskPublication(t *testing.T) {
 	}
 	// Force failure after release/link insertion: the observation unique key must
 	// roll the entire transaction back, including its checkpoint and release row.
-	if _, err := db.ExecContext(ctx, `INSERT INTO reference.country_risk VALUES (999,1,1,'orphan','0','fraction','market_group','mature','2026-07-01','mature_market_erp','implied_mature',0,'reported')`); err != nil {
+	if _, err := db.ExecContext(ctx, `INSERT INTO reference.equity_risk_premium VALUES (999,1,1,'orphan','0','fraction','market_group','mature','2026-07-01','mature_market_erp','implied_mature',0,'reported')`); err != nil {
 		t.Fatal(err)
 	}
 	if _, _, err := PublishCountryRisk(ctx, db, run, a.ArtifactID, parserHash, s); err == nil {
@@ -61,7 +61,7 @@ func TestCountryRiskPublication(t *testing.T) {
 	if count != 0 {
 		t.Fatal("partial publication survived", count)
 	}
-	if _, err := db.ExecContext(ctx, `DELETE FROM reference.country_risk WHERE observation_id=999`); err != nil {
+	if _, err := db.ExecContext(ctx, `DELETE FROM reference.equity_risk_premium WHERE observation_id=999`); err != nil {
 		t.Fatal(err)
 	}
 	id, inserted, err := PublishCountryRisk(ctx, db, run, a.ArtifactID, parserHash, s)
@@ -72,7 +72,7 @@ func TestCountryRiskPublication(t *testing.T) {
 	if err != nil || inserted || id2 != id {
 		t.Fatal("replay", id2, inserted, err)
 	}
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM reference.country_risk`).Scan(&count); err != nil || count != 10 {
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM reference.risk_observation`).Scan(&count); err != nil || count != 10 {
 		t.Fatal(count, err)
 	}
 	if err := FinishIngestRun(ctx, db, run, IngestRunCompleted, nil, nil); err != nil {

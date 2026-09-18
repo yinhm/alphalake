@@ -82,7 +82,7 @@ func TestApplyInstrumentMasterSnapshotRequiresRepeatedAbsenceBeforeCodeReuse(t *
 
 	var validTo time.Time
 	if err := db.QueryRowContext(ctx, `
-		SELECT valid_to FROM ref.instrument_identifier
+		SELECT valid_to FROM core.instrument_identifier
 		WHERE instrument_id=? AND provider='tdx' AND identifier_value='sh600001'
 	`, oldA).Scan(&validTo); err != nil {
 		t.Fatal(err)
@@ -131,7 +131,7 @@ func TestApplyInstrumentMasterSnapshotReturnClearsPendingAbsence(t *testing.T) {
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM meta.checkpoint WHERE source='tdx' AND dataset='instrument_master'`).Scan(&missingEvidence); err != nil { t.Fatal(err) }
 	if missingEvidence != 0 { t.Fatalf("missing evidence rows=%d, want 0 after return", missingEvidence) }
 	var open int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM ref.instrument_identifier WHERE provider='tdx' AND valid_to IS NULL`).Scan(&open); err != nil { t.Fatal(err) }
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx' AND valid_to IS NULL`).Scan(&open); err != nil { t.Fatal(err) }
 	if open != 2 { t.Fatalf("open identifiers=%d, want 2", open) }
 }
 
@@ -150,7 +150,7 @@ func TestApplyInstrumentMasterSnapshotIncompleteDoesNotCloseMissing(t *testing.T
 		Observations: []domain.InstrumentObservation{snapshotObservation("sh600002", "B")},
 	}); err != nil { t.Fatal(err) }
 	var open int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM ref.instrument_identifier WHERE provider='tdx' AND valid_to IS NULL`).Scan(&open); err != nil { t.Fatal(err) }
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx' AND valid_to IS NULL`).Scan(&open); err != nil { t.Fatal(err) }
 	if open != 2 { t.Fatalf("open identifiers=%d, want 2 after incomplete snapshot", open) }
 }
 
@@ -180,7 +180,7 @@ func TestApplyInstrumentMasterSnapshotScopesAuthorityByPartition(t *testing.T) {
 		t.Fatalf("second partitioned result=%#v err=%v", result, err)
 	}
 	var bjOpen int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM ref.instrument_identifier WHERE provider='tdx' AND identifier_value='bj920001' AND valid_to IS NULL`).Scan(&bjOpen); err != nil { t.Fatal(err) }
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx' AND identifier_value='bj920001' AND valid_to IS NULL`).Scan(&bjOpen); err != nil { t.Fatal(err) }
 	if bjOpen != 1 { t.Fatalf("BJ open=%d, want frozen/open after failed partition", bjOpen) }
 }
 
@@ -202,6 +202,6 @@ func TestApplyInstrumentMasterSnapshotRejectsLargeTruncationPerPartition(t *test
 		Partitions: []domain.InstrumentMasterPartition{{Key:"sh", ExchangeMIC:"XSHG", Complete:true, Observations:current}},
 	}); err == nil { t.Fatal("expected suspicious truncation error") }
 	var open int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM ref.instrument_identifier WHERE provider='tdx' AND valid_to IS NULL`).Scan(&open); err != nil { t.Fatal(err) }
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx' AND valid_to IS NULL`).Scan(&open); err != nil { t.Fatal(err) }
 	if open != 100 { t.Fatalf("open identifiers=%d, want rollback to 100", open) }
 }

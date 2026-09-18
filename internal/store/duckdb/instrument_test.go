@@ -43,7 +43,7 @@ func TestUpsertInstrumentIsIdempotentByOpenProviderIdentifier(t *testing.T) {
 	}
 
 	var name string
-	if err := db.QueryRowContext(ctx, `SELECT name FROM ref.instrument WHERE instrument_id = ?`, firstID).Scan(&name); err != nil {
+	if err := db.QueryRowContext(ctx, `SELECT name FROM core.instrument WHERE instrument_id = ?`, firstID).Scan(&name); err != nil {
 		t.Fatalf("query instrument: %v", err)
 	}
 	if name != ref.Name {
@@ -52,7 +52,7 @@ func TestUpsertInstrumentIsIdempotentByOpenProviderIdentifier(t *testing.T) {
 
 	var identifierCount int
 	if err := db.QueryRowContext(ctx, `
-		SELECT count(*) FROM ref.instrument_identifier
+		SELECT count(*) FROM core.instrument_identifier
 		WHERE provider = 'tdx' AND identifier_type = 'symbol' AND identifier_value = 'sh600519'
 	`).Scan(&identifierCount); err != nil {
 		t.Fatalf("count identifiers: %v", err)

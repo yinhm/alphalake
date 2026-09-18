@@ -147,8 +147,8 @@ func resolveFilingInstrument(ctx context.Context, db *sql.DB, code, exchangeMIC 
 		identifier := prefix + code
 		rows, err := db.QueryContext(ctx, `
 			SELECT x.instrument_id
-			FROM ref.instrument_identifier x
-			JOIN ref.instrument i ON i.instrument_id=x.instrument_id
+			FROM core.instrument_identifier x
+			JOIN core.instrument i ON i.instrument_id=x.instrument_id
 			WHERE x.provider='tdx'
 			  AND x.identifier_type='symbol'
 			  AND x.identifier_value=?
@@ -183,8 +183,8 @@ func resolveFilingInstrument(ctx context.Context, db *sql.DB, code, exchangeMIC 
 
 	rows, err := db.QueryContext(ctx, `
 		SELECT x.instrument_id, x.identifier_value
-		FROM ref.instrument_identifier x
-		JOIN ref.instrument i ON i.instrument_id=x.instrument_id
+		FROM core.instrument_identifier x
+		JOIN core.instrument i ON i.instrument_id=x.instrument_id
 		WHERE x.provider='tdx'
 		  AND x.identifier_type='symbol'
 		  AND i.instrument_type='equity'

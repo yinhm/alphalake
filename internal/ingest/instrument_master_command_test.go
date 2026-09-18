@@ -30,7 +30,7 @@ func TestSyncInstrumentMasterDoesNotFetchDaily(t *testing.T) {
 	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM meta.ingest_run WHERE dataset='instrument_master' AND status='completed'`).Scan(&n); err != nil || n != 2 {
 		t.Fatalf("runs %d %v", n, err)
 	}
-	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM ref.instrument`).Scan(&n); err != nil || n != 1 {
+	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument`).Scan(&n); err != nil || n != 1 {
 		t.Fatalf("instruments %d %v", n, err)
 	}
 }

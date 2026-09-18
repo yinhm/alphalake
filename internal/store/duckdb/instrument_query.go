@@ -27,8 +27,8 @@ func ListProviderInstruments(ctx context.Context, db *sql.DB, provider string) (
 		SELECT i.instrument_id, i.instrument_type,
 		       i.exchange_mic, i.currency, i.name, i.list_date, i.delist_date,
 		       x.provider, x.identifier_type, x.identifier_value, x.valid_from, x.valid_to
-		FROM ref.instrument_identifier x
-		JOIN ref.instrument i ON i.instrument_id = x.instrument_id
+		FROM core.instrument_identifier x
+		JOIN core.instrument i ON i.instrument_id = x.instrument_id
 		WHERE x.provider = ? AND x.is_primary = true
 		  AND x.valid_to IS NULL
 		  AND (x.valid_from IS NULL OR x.valid_from <= current_date)
@@ -113,7 +113,7 @@ func resolveInstrumentIdentifiersAtTx(ctx context.Context, tx *sql.Tx, identifie
 	for provider, requested := range requestedByProvider {
 		rows, err := tx.QueryContext(ctx, `
 			SELECT instrument_id, provider, identifier_type, identifier_value
-			FROM ref.instrument_identifier
+			FROM core.instrument_identifier
 			WHERE provider=?
 			  AND (valid_from IS NULL OR valid_from <= ?)
 			  AND (valid_to IS NULL OR valid_to > ?)

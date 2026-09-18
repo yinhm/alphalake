@@ -16,11 +16,27 @@ func TestReviewedMirrorDocument(t *testing.T) {
 	ctx := t.Context()
 	root := t.TempDir()
 	path := filepath.Join(root, "review.duckdb")
-	db, err := duckstore.OpenAndMigrate(ctx, path)
+	db, err := duckstore.Open(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer func() { db.Close() }()
+	migrations, err := duckstore.Migrations()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, m := range migrations[:42] {
+		body, e := duckstore.Read(m.Name)
+		if e != nil {
+			t.Fatal(e)
+		}
+		if _, e = db.ExecContext(ctx, string(body)); e != nil {
+			t.Fatal(e)
+		}
+		if _, e = db.ExecContext(ctx, `INSERT INTO meta.schema_version(version,description) VALUES (?,?) ON CONFLICT DO NOTHING`, m.Version, m.Description); e != nil {
+			t.Fatal(e)
+		}
+	}
 	dir := "../../valuation/research/reviewed-assets-20260917/supor"
 	raw, err := os.ReadFile(filepath.Join(dir, "receipt.json"))
 	if err != nil {
@@ -74,7 +90,7 @@ func TestReviewedMirrorDocument(t *testing.T) {
 	if err = db.Close(); err != nil {
 		t.Fatal(err)
 	}
-	db, err = duckstore.OpenAndMigrate(ctx, path)
+	db, err = duckstore.Open(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}

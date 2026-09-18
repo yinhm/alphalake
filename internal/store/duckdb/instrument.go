@@ -102,7 +102,7 @@ func resolveInstrumentIdentifierAt(ctx context.Context, db interface {
 	asOf = dateUTC(asOf)
 	rows, err := db.QueryContext(ctx, `
 		SELECT instrument_id
-		FROM ref.instrument_identifier
+		FROM core.instrument_identifier
 		WHERE provider=?
 		  AND identifier_type=?
 		  AND identifier_value=?
@@ -157,7 +157,7 @@ func CloseInstrumentIdentifier(ctx context.Context, db *sql.DB, provider, identi
 	defer tx.Rollback()
 	rows, err := tx.QueryContext(ctx, `
 		SELECT instrument_identifier_id, instrument_id, valid_from
-		FROM ref.instrument_identifier
+		FROM core.instrument_identifier
 		WHERE provider=? AND identifier_type=? AND identifier_value=? AND valid_to IS NULL
 	`, provider, identifierType, value)
 	if err != nil {
@@ -193,7 +193,7 @@ func CloseInstrumentIdentifier(ctx context.Context, db *sql.DB, provider, identi
 		return 0, false, fmt.Errorf("valid-to %s must be after valid-from %s", validTo.Format("2006-01-02"), item.validFrom.Time.Format("2006-01-02"))
 	}
 	if _, err := tx.ExecContext(ctx, `
-		UPDATE ref.instrument_identifier SET valid_to=? WHERE instrument_identifier_id=?
+		UPDATE core.instrument_identifier SET valid_to=? WHERE instrument_identifier_id=?
 	`, validTo, item.rowID); err != nil {
 		return 0, false, fmt.Errorf("close instrument identifier: %w", err)
 	}
@@ -227,7 +227,7 @@ func upsertInstrumentTx(ctx context.Context, tx *sql.Tx, ref domain.InstrumentRe
 			return 0, err
 		}
 		if err := tx.QueryRowContext(ctx, `
-			INSERT INTO ref.instrument (
+			INSERT INTO core.instrument (
 				instrument_type, exchange_mic, currency, name, list_date, delist_date
 			) VALUES (?, ?, ?, ?, ?, ?)
 			RETURNING instrument_id
@@ -235,7 +235,7 @@ func upsertInstrumentTx(ctx context.Context, tx *sql.Tx, ref domain.InstrumentRe
 			return 0, fmt.Errorf("insert canonical instrument: %w", err)
 		}
 		if _, err := tx.ExecContext(ctx, `
-			INSERT INTO ref.instrument_identifier (
+			INSERT INTO core.instrument_identifier (
 				instrument_id, provider, identifier_type, identifier_value,
 				valid_from, valid_to, is_primary
 			) VALUES (?, ?, ?, ?, ?, ?, true)
@@ -246,7 +246,7 @@ func upsertInstrumentTx(ctx context.Context, tx *sql.Tx, ref domain.InstrumentRe
 	}
 
 	if _, err := tx.ExecContext(ctx, `
-		UPDATE ref.instrument
+		UPDATE core.instrument
 		SET instrument_type = ?,
 		    exchange_mic = ?,
 		    currency = ?,
@@ -260,7 +260,7 @@ func upsertInstrumentTx(ctx context.Context, tx *sql.Tx, ref domain.InstrumentRe
 	}
 	if identifier.ValidFrom != nil || identifier.ValidTo != nil {
 		if _, err := tx.ExecContext(ctx, `
-			UPDATE ref.instrument_identifier
+			UPDATE core.instrument_identifier
 			SET valid_from=COALESCE(?, valid_from),
 			    valid_to=COALESCE(?, valid_to)
 			WHERE instrument_identifier_id=?
@@ -288,7 +288,7 @@ func inferIdentifierValidFromTx(ctx context.Context, tx *sql.Tx, ref domain.Inst
 	var previousClose sql.NullTime
 	if err := tx.QueryRowContext(ctx, `
 		SELECT max(valid_to)
-		FROM ref.instrument_identifier
+		FROM core.instrument_identifier
 		WHERE provider=? AND identifier_type=? AND identifier_value=? AND valid_to IS NOT NULL
 	`, identifier.Provider, identifier.Type, identifier.Value).Scan(&previousClose); err != nil {
 		return identifier, fmt.Errorf("query previous identifier boundary: %w", err)
@@ -308,13 +308,13 @@ func resolveInstrumentIdentifierTx(ctx context.Context, tx *sql.Tx, identifier d
 	if identifier.ValidFrom == nil {
 		rows, err = tx.QueryContext(ctx, `
 			SELECT instrument_identifier_id, instrument_id
-			FROM ref.instrument_identifier
+			FROM core.instrument_identifier
 			WHERE provider=? AND identifier_type=? AND identifier_value=? AND valid_to IS NULL
 		`, identifier.Provider, identifier.Type, identifier.Value)
 	} else {
 		rows, err = tx.QueryContext(ctx, `
 			SELECT instrument_identifier_id, instrument_id
-			FROM ref.instrument_identifier
+			FROM core.instrument_identifier
 			WHERE provider=?
 			  AND identifier_type=?
 			  AND identifier_value=?

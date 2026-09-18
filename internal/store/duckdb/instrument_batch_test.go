@@ -45,7 +45,7 @@ func TestUpsertInstrumentsIsIdempotentAndOrdered(t *testing.T) {
 	}
 
 	var count int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM ref.instrument_identifier WHERE provider='tdx'`).Scan(&count); err != nil {
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx'`).Scan(&count); err != nil {
 		t.Fatalf("count identifiers: %v", err)
 	}
 	if count != 2 {

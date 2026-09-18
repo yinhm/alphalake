@@ -97,7 +97,7 @@ func TestCountryRiskRealArchiveReplay(t *testing.T) {
 	}
 	var releases, rows, checkpoints, failedRuns int
 	err = db.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM meta.dataset_release),
-  (SELECT count(*) FROM reference.country_risk),
+  (SELECT count(*) FROM reference.risk_observation),
   (SELECT count(*) FROM meta.checkpoint WHERE source='damodaran'),
   (SELECT count(*) FROM meta.ingest_run WHERE ingest_run_id=? AND status='failed' AND error_message IS NOT NULL)`, failed.RunID).Scan(&releases, &rows, &checkpoints, &failedRuns)
 	if err != nil || releases != 1 || rows != 10 || checkpoints != 1 || failedRuns != 1 {

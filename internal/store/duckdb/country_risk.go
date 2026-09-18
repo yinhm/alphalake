@@ -20,7 +20,7 @@ func PublishCountryRisk(ctx context.Context, db *sql.DB, runID, artifactID int64
 	if p.existing {
 		// Replaying an interpretation must agree with all previously published rows.
 		var count int
-		if err = p.tx.QueryRowContext(ctx, `SELECT count(*) FROM reference.country_risk WHERE release_id=?`, p.id).Scan(&count); err != nil {
+		if err = p.tx.QueryRowContext(ctx, `SELECT count(*) FROM reference.risk_observation WHERE release_id=?`, p.id).Scan(&count); err != nil {
 			return 0, false, err
 		}
 		if count != len(s.Observations) {
@@ -28,7 +28,7 @@ func PublishCountryRisk(ctx context.Context, db *sql.DB, runID, artifactID int64
 		}
 		for _, o := range s.Observations {
 			var n int
-			err = p.tx.QueryRowContext(ctx, `SELECT count(*) FROM reference.country_risk WHERE release_id=? AND artifact_id=? AND subject_kind=? AND subject_code=? AND metric_code=? AND observation_date=? AND method_code=? AND value_status='reported' AND raw_unit='fraction' AND source_locator=? AND raw_value=? AND value=CAST(? AS DECIMAL(38,12))`, p.id, artifactID, o.SubjectKind, o.SubjectCode, o.MetricCode, s.ObservationDate, damodaran.Method(o), o.SourceLocator, o.RawValue, o.Value).Scan(&n)
+			err = p.tx.QueryRowContext(ctx, `SELECT count(*) FROM reference.risk_observation WHERE release_id=? AND artifact_id=? AND subject_kind=? AND subject_code=? AND metric_code=? AND observation_date=? AND method_code=? AND value_status='reported' AND raw_unit='fraction' AND source_locator=? AND raw_value=? AND value=CAST(? AS DECIMAL(38,12))`, p.id, artifactID, o.SubjectKind, o.SubjectCode, o.MetricCode, s.ObservationDate, damodaran.Method(o), o.SourceLocator, o.RawValue, o.Value).Scan(&n)
 			if err != nil {
 				return 0, false, err
 			}
@@ -39,7 +39,11 @@ func PublishCountryRisk(ctx context.Context, db *sql.DB, runID, artifactID int64
 		return p.finish(ctx)
 	}
 	for _, o := range s.Observations {
-		_, err = p.tx.ExecContext(ctx, `INSERT INTO reference.country_risk(release_id,artifact_id,source_locator,raw_value,raw_unit,subject_kind,subject_code,observation_date,metric_code,method_code,value,value_status) VALUES (?,?,?,?,'fraction',?,?,?,?,?,CAST(? AS DECIMAL(38,12)),'reported')`, p.id, artifactID, o.SourceLocator, o.RawValue, o.SubjectKind, o.SubjectCode, s.ObservationDate, o.MetricCode, damodaran.Method(o), o.Value)
+		table := "reference.country_risk"
+		if o.MetricCode == "mature_market_erp" || o.MetricCode == "total_equity_risk_premium" {
+			table = "reference.equity_risk_premium"
+		}
+		_, err = p.tx.ExecContext(ctx, `INSERT INTO `+table+`(release_id,artifact_id,source_locator,raw_value,raw_unit,subject_kind,subject_code,observation_date,metric_code,method_code,value,value_status) VALUES (?,?,?,?,'fraction',?,?,?,?,?,CAST(? AS DECIMAL(38,12)),'reported')`, p.id, artifactID, o.SourceLocator, o.RawValue, o.SubjectKind, o.SubjectCode, s.ObservationDate, o.MetricCode, damodaran.Method(o), o.Value)
 		if err != nil {
 			return 0, false, err
 		}

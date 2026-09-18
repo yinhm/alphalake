@@ -55,8 +55,8 @@ func ResolveProviderCodesAt(ctx context.Context, db *sql.DB, provider string, co
 	asOf = dateUTC(asOf)
 	rows, err := db.QueryContext(ctx, `
 		SELECT x.instrument_id, x.identifier_value
-		FROM ref.instrument_identifier x
-		JOIN ref.instrument i ON i.instrument_id=x.instrument_id
+		FROM core.instrument_identifier x
+		JOIN core.instrument i ON i.instrument_id=x.instrument_id
 		WHERE x.provider=?
 		  AND x.identifier_type='symbol'
 		  AND i.instrument_type <> 'index'

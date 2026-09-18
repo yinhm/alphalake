@@ -65,10 +65,10 @@ func TestInstrumentSnapshotPreflightRejectsUnownedFlatObservationBeforeWrites(t 
 func assertNoInstrumentSideEffects(t *testing.T, ctx context.Context, db *sql.DB) {
 	t.Helper()
 	var instruments, identifiers int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM ref.instrument`).Scan(&instruments); err != nil {
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument`).Scan(&instruments); err != nil {
 		t.Fatal(err)
 	}
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM ref.instrument_identifier`).Scan(&identifiers); err != nil {
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier`).Scan(&identifiers); err != nil {
 		t.Fatal(err)
 	}
 	if instruments != 0 || identifiers != 0 {
@@ -100,7 +100,7 @@ func TestLegacyInstrumentSnapshotRetainsGlobalTruncationGuard(t *testing.T) {
 	}
 
 	var open, pending int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM ref.instrument_identifier WHERE provider='tdx' AND valid_to IS NULL`).Scan(&open); err != nil {
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx' AND valid_to IS NULL`).Scan(&open); err != nil {
 		t.Fatal(err)
 	}
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM meta.checkpoint WHERE source='tdx' AND dataset='instrument_master'`).Scan(&pending); err != nil {

@@ -56,13 +56,13 @@ func TestApplyInstrumentMasterSnapshotKeepsHealthyPartitionWhenOtherGuardFails(t
 
 	var bjName string
 	if err := db.QueryRowContext(ctx, `
-		SELECT i.name FROM ref.instrument i
-		JOIN ref.instrument_identifier x ON x.instrument_id=i.instrument_id
+		SELECT i.name FROM core.instrument i
+		JOIN core.instrument_identifier x ON x.instrument_id=i.instrument_id
 		WHERE x.provider='tdx' AND x.identifier_value='bj920001' AND x.valid_to IS NULL
 	`).Scan(&bjName); err != nil { t.Fatal(err) }
 	if bjName != "BJ-new" { t.Fatalf("BJ name=%q, want committed healthy update", bjName) }
 
 	var shOpen int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM ref.instrument_identifier x JOIN ref.instrument i ON i.instrument_id=x.instrument_id WHERE x.provider='tdx' AND x.valid_to IS NULL AND i.exchange_mic='XSHG'`).Scan(&shOpen); err != nil { t.Fatal(err) }
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier x JOIN core.instrument i ON i.instrument_id=x.instrument_id WHERE x.provider='tdx' AND x.valid_to IS NULL AND i.exchange_mic='XSHG'`).Scan(&shOpen); err != nil { t.Fatal(err) }
 	if shOpen != 100 { t.Fatalf("SH open=%d, want failed partition rollback to 100", shOpen) }
 }

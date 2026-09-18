@@ -245,6 +245,8 @@ alphalake schema
 
 审核补充支持显式修订、撤销与历史查询，镜像原文审核独立于诊断保存；迁移及时间边界见[审核证据说明](docs/reviewed-evidence-history.md)。
 
+当前代码结构版本44，身份域已从 `ref` 改为 `core`，国家风险与ERP分表；旧库升级及固定版本兼容性见[结构迁移](docs/core-risk-migration.md)。主库发布状态与副本验收分别记录。
+
 ## 数据布局
 
 数据库位于 `./data/market.duckdb` 时，专业财务原始归档默认布局如下：

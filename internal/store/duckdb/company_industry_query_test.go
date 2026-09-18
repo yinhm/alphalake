@@ -65,16 +65,16 @@ func TestCompanyIndustryProjectionRealSourceAndIdentityBoundaries(t *testing.T) 
 		t.Fatal(err)
 	}
 	day := seen.Add(8 * time.Hour).Format("2006-01-02")
-	_, err = db.ExecContext(ctx, `INSERT INTO ref.instrument(instrument_id,instrument_type,exchange_mic,currency) VALUES
+	_, err = db.ExecContext(ctx, `INSERT INTO core.instrument(instrument_id,instrument_type,exchange_mic,currency) VALUES
  (1,'equity','XSHG','CNY'),(9007199254740993,'equity','XSHE','CNY'),(2,'equity','XSHG','CNY'),(3,'equity','XSHG','CNY'),(4,'equity','XSHG','CNY'),(5,'etf','XSHE','CNY'),(6,'equity','XSHG','CNY')`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = db.ExecContext(ctx, `INSERT INTO ref.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_to) VALUES (9007199254740993,'tdx','symbol','sz300866',CAST(? AS DATE)),(1,'tdx','symbol','sh603288',CAST(? AS DATE))`, day, day)
+	_, err = db.ExecContext(ctx, `INSERT INTO core.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_to) VALUES (9007199254740993,'tdx','symbol','sz300866',CAST(? AS DATE)),(1,'tdx','symbol','sh603288',CAST(? AS DATE))`, day, day)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = db.ExecContext(ctx, `INSERT INTO ref.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_from) VALUES
+	_, err = db.ExecContext(ctx, `INSERT INTO core.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_from) VALUES
  (9007199254740993,'tdx','symbol','sz300866',CAST(? AS DATE)),(2,'tdx','symbol','sh600519',NULL),(2,'tdx','symbol','sh600519',CAST(? AS DATE)),
  (3,'tdx','symbol','sh603288',CAST(? AS DATE)),(6,'tdx','symbol','sh601390',CAST(? AS DATE)+1),(4,'tdx','symbol','sz300124',NULL),(5,'tdx','symbol','sz002959',NULL)`, day, day, day, day)
 	if err != nil {

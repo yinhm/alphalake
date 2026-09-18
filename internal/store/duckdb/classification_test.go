@@ -80,7 +80,7 @@ func TestApplyClassificationSnapshotTracksTemporalMembership(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := db.QueryRowContext(ctx, `SELECT last_observed_at FROM classification.membership m
-		JOIN ref.instrument_identifier i USING(instrument_id) WHERE i.identifier_value='sh600002'`).Scan(&latest); err != nil {
+		JOIN core.instrument_identifier i USING(instrument_id) WHERE i.identifier_value='sh600002'`).Scan(&latest); err != nil {
 		t.Fatal(err)
 	}
 	if !latest.Equal(day1.Add(13 * time.Hour)) {
@@ -101,7 +101,7 @@ func TestApplyClassificationSnapshotTracksTemporalMembership(t *testing.T) {
 	if err := db.QueryRowContext(ctx, `
 		SELECT m.effective_to
 		FROM classification.membership m
-		JOIN ref.instrument_identifier i USING (instrument_id)
+		JOIN core.instrument_identifier i USING (instrument_id)
 		WHERE i.identifier_value='sh600001' AND m.effective_from=?
 	`, day1).Scan(&closedTo); err != nil {
 		t.Fatalf("query closed interval: %v", err)
@@ -124,7 +124,7 @@ func TestApplyClassificationSnapshotTracksTemporalMembership(t *testing.T) {
 	if err := db.QueryRowContext(ctx, `
 		SELECT count(*)
 		FROM classification.membership m
-		JOIN ref.instrument_identifier i USING (instrument_id)
+		JOIN core.instrument_identifier i USING (instrument_id)
 		WHERE i.identifier_value='sh600001'
 	`).Scan(&intervals); err != nil {
 		t.Fatalf("count intervals: %v", err)
@@ -185,9 +185,9 @@ func TestClassificationMarketSnapshotWithUnknownMemberAndBoundedMemory(t *testin
 		t.Fatal(err)
 	}
 	defer db.Close()
-	_, err = db.Exec(`INSERT INTO ref.instrument(instrument_id,instrument_type,exchange_mic,currency,name)
+	_, err = db.Exec(`INSERT INTO core.instrument(instrument_id,instrument_type,exchange_mic,currency,name)
  SELECT i,'equity','XSHG','CNY','synthetic' FROM range(1,6001) r(i);
- INSERT INTO ref.instrument_identifier(instrument_id,provider,identifier_type,identifier_value)
+ INSERT INTO core.instrument_identifier(instrument_id,provider,identifier_type,identifier_value)
  SELECT i,'tdx','symbol','sh'||CAST(600000+i AS VARCHAR) FROM range(1,6001) r(i);`)
 	if err != nil {
 		t.Fatal(err)

@@ -108,7 +108,7 @@ func run() error {
 		}
 		return nil
 	}
-	for _, table := range []string{"ref.instrument", "ref.instrument_identifier", "classification.membership", "fundamental.reviewed_supplement", "meta.checkpoint"} {
+	for _, table := range []string{"core.instrument", "core.instrument_identifier", "classification.membership", "fundamental.reviewed_supplement", "meta.checkpoint"} {
 		q := fmt.Sprintf(`SELECT count(*) FROM ((SELECT * FROM baseline.%s EXCEPT ALL SELECT * FROM candidate.%s) UNION ALL (SELECT * FROM candidate.%s EXCEPT ALL SELECT * FROM baseline.%s))`, table, table, table, table)
 		if err = check(table, q, 0); err != nil {
 			return err

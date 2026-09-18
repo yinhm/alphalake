@@ -38,7 +38,7 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
  list(DISTINCT d.identifier_value ORDER BY d.identifier_value) FILTER (WHERE d.identifier_value IS NOT NULL) AS symbols,
  count(DISTINCT d.identifier_value) AS symbol_count,
  count(d.identifier_value) AS identifier_count
- FROM ref.instrument i LEFT JOIN ref.instrument_identifier d ON d.instrument_id=i.instrument_id
+ FROM core.instrument i LEFT JOIN core.instrument_identifier d ON d.instrument_id=i.instrument_id
  AND d.provider='tdx' AND d.identifier_type='symbol'
  AND (d.valid_from IS NULL OR d.valid_from<=CAST(? AS DATE))
  AND (d.valid_to IS NULL OR d.valid_to>CAST(? AS DATE))

@@ -302,7 +302,7 @@ func applyInstrumentPartition(ctx context.Context, db *sql.DB, source string, as
 				continue
 			}
 			if _, err := tx.ExecContext(ctx, `
-				UPDATE ref.instrument_identifier SET valid_to=?
+				UPDATE core.instrument_identifier SET valid_to=?
 				WHERE instrument_identifier_id=? AND valid_to IS NULL
 			`, firstMissing, item.rowID); err != nil {
 				return result, fmt.Errorf("close missing provider identifier %s/%s: %w", item.identifierType, item.value, err)
@@ -325,8 +325,8 @@ func loadOpenPrimaryProviderIdentifiers(ctx context.Context, tx *sql.Tx, provide
 		SELECT x.instrument_identifier_id, x.instrument_id,
 		       x.identifier_type, x.identifier_value,
 		       COALESCE(i.exchange_mic, ''), x.valid_from
-		FROM ref.instrument_identifier x
-		JOIN ref.instrument i ON i.instrument_id=x.instrument_id
+		FROM core.instrument_identifier x
+		JOIN core.instrument i ON i.instrument_id=x.instrument_id
 		WHERE x.provider=? AND x.is_primary=true AND x.valid_to IS NULL
 	`, provider)
 	if err != nil {

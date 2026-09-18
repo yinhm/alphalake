@@ -9,7 +9,7 @@
 
 本文约束架构和兼容性方向，并不表示所有未来领域都已实现。当前可执行状态见[实现状态](implementation-status.md)，详细决策保存在[决策目录](decisions/)。
 
-多市场身份与 WACC 数据见 [ADR 016](decisions/016-multi-market-wacc-data.md)：参考发布、固定版本估值桥接及限定公司的 listing 已实现，尚非全市场多市场身份支持。本轮领域命名、风险参考拆分及版本边界以 [ADR 017](decisions/017-database-design-review.md) 为准；`ref → core` 已确认，但尚未执行数据库迁移。
+多市场身份与 WACC 数据见 [ADR 016](decisions/016-multi-market-wacc-data.md)：参考发布、固定版本估值桥接及限定公司的 listing 已实现，尚非全市场多市场身份支持。本轮领域命名、风险参考拆分及版本边界以 [ADR 017](decisions/017-database-design-review.md) 为准；`ref → core` 和风险参考拆分已由迁移043/044实现，详见[升级说明](core-risk-migration.md)；主库尚未发布。
 
 ## 1. 产品定义
 
@@ -66,7 +66,7 @@ AlphaLake 不定义一个宽泛的统一适配器接口。分页 HTTP 目录、�
 DuckDB 按领域组织 schema：
 
 - `meta`——结构版本、采集运行、归档、检查点、校验结果、派生状态；
-- `core`（目标名，当前数据库仍为 `ref`）——公司、证券、上市记录、时态标识符和交易所；交易日历目标归入 `market`；
+- `core`（迁移043后名称）——公司、证券、上市记录、时态标识符和交易所；交易日历归入 `market`；
 - `market`——未复权 OHLCV、公司行动、股本、复权区间；
 - `classification`——分类体系、节点、时态成员关系；
 - `fundamental`——数据源字段/事实、公告、数据源—公告关联、标准时点事实；
@@ -79,7 +79,7 @@ DuckDB 按领域组织 schema：
 
 数据源代码是标识符，不是主身份。
 
-`ref.instrument.instrument_id` 是稳定的标准身份。`ref.instrument_identifier` 使用半开有效区间保存数据源标识符：
+`core.instrument.instrument_id` 是稳定的标准身份。`core.instrument_identifier` 使用半开有效区间保存数据源标识符：
 
 ```text
 [valid_from, valid_to)

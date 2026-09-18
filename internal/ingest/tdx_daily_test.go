@@ -63,7 +63,7 @@ func TestSyncTDXDailyPersistsLineageAndThenUsesIncrementalBoundary(t *testing.T)
 	var instrumentID, rowRunID int64
 	if err := db.QueryRowContext(ctx, `
 		SELECT i.instrument_id, d.ingest_run_id
-		FROM ref.instrument_identifier i
+		FROM core.instrument_identifier i
 		JOIN market.ohlcv_daily d USING (instrument_id)
 		WHERE i.provider='tdx' AND i.identifier_value='sh600519' AND d.trade_date=?
 	`, day1).Scan(&instrumentID, &rowRunID); err != nil {

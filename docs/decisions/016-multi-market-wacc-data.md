@@ -4,13 +4,15 @@
 
 状态：部分结构已实现。迁移 027 建立发布版本、归档关联及四类参考观测；后续已接入 CN/HK/US 国家风险的限定发布链（见[同步说明](../country-risk-sync.md)），全球行业 Beta 与人民币国债收益率也已接入（见[说明](../beta-yield-sync.md)），[WACC 固定版本选择器](../wacc-valuation-bridge.md)已实现；迁移 028 及[合成评级利差链](../credit-spread-sync.md)扩展大型非金融利差档位，[港元汇率](../fx-sync.md)已接入；迁移030及[市场WACC](../market-wacc.md)实现证据限定的公司、类别、listing与股本/报价链；迁移031补充[安克两次H股融资事件](../wacc-gap-review-20260909.md)，金额为发行人估计净额，日期明确区分已披露/预计挂牌日，不代表结算日。
 
+本文原 `ref` 名称已由迁移043替换为 `core`，风险参考由044拆分，见[当前迁移说明](../core-risk-migration.md)。以下字段名按新结构表述；历史迁移名称保持原样。
+
 ## 范围与现有基础
 
 目标是让人民币估值先具备可追溯的 WACC 输入，同时允许后续接入港股及其他市场。复用 DuckDB、不可变归档、采集运行、诊断、分类体系和现有估值运行快照；不增加数据库或通用数据平台。
 
 TDX 仍是当前公司财务主要结构化来源，CNINFO 提供公告与核验、显式补充。达摩达兰的风险和行业统计进入独立参考层，不回写公司财务事实。政策、参考估计和公司披露分别留痕。
 
-当前 `ref.company`、`ref.exchange`、交易日历仅有结构；`ref.instrument` 混合证券和上市地点属性。`fundamental.fact` 按证券组织，股本未明确公司总量与股份类别范围，旧日线主键不能保留同来源同日多次修订；迁移 029 已新增[大陆行情兼容观测层](../valuation-quotes.md)保留后续采集版本，后续迁移030已对安克/茅台建立证据限定的 listing 与股份类别关系，但不恢复升级前历史，也不建立全市场历史身份。因此当前能力不能宣称已经支持多市场公司级估值或市场数据双时态。
+当前 `core.company`、`core.exchange`、交易日历仅有结构；`core.instrument` 混合证券和上市地点属性。`fundamental.fact` 按证券组织，股本未明确公司总量与股份类别范围，旧日线主键不能保留同来源同日多次修订；迁移 029 已新增[大陆行情兼容观测层](../valuation-quotes.md)保留后续采集版本，后续迁移030已对安克/茅台建立证据限定的 listing 与股份类别关系，但不恢复升级前历史，也不建立全市场历史身份。因此当前能力不能宣称已经支持多市场公司级估值或市场数据双时态。
 
 本文字段表是迁移与接口的设计契约，不是可执行 DDL。除明确标注可空或条件字段外，字段必填；所有新增 ID 使用稳定内部 BIGINT 主键，外部代码不作主键。外键、枚举、唯一性和数值约束在实际 DDL 落地；时间区间重叠、跨表语义、批次完整性由发布事务校验并留诊断。
 
@@ -28,11 +30,11 @@ company ──< instrument ──< listing ──< 行情观测
 
 | 表 | 目标字段及约束 |
 | --- | --- |
-| `ref.company` | 复用 `company_id`、名称；现有 `country_code` 明确为注册国家，不表达经营暴露。无证据不填公司映射。 |
-| `ref.instrument` | 复用 `instrument_id`、`instrument_type`、`company_id`；股份类别由独立 instrument 表达。旧 `exchange_mic`、`currency` 在迁移过渡期保留，最终由 listing 提供报价属性。 |
-| `ref.listing`（新增） | `listing_id`、`instrument_id`、`exchange_mic`、`trading_currency`、`valid_from`、可空 `valid_to`、`artifact_id`、`recorded_at`。有效区间为半开区间；明确交易场所和报价币种。 |
-| `ref.listing_identifier`（新增） | `listing_identifier_id`、`listing_id`、`provider`、`identifier_type`、`identifier_value`、`market_namespace`、`valid_from`、可空 `valid_to`、`artifact_id`、`recorded_at`。唯一键为来源、类型、命名空间、值、起始日；同一外部标识有效区间不得重叠。 |
-| `ref.instrument_identifier` | 继续承载证券级身份。旧 TDX 标识解析保留；新增 listing 映射不能悄然改变既有 instrument ID。 |
+| `core.company` | 复用 `company_id`、名称；现有 `country_code` 明确为注册国家，不表达经营暴露。无证据不填公司映射。 |
+| `core.instrument` | 复用 `instrument_id`、`instrument_type`、`company_id`；股份类别由独立 instrument 表达。旧 `exchange_mic`、`currency` 在迁移过渡期保留，最终由 listing 提供报价属性。 |
+| `core.listing`（新增） | `listing_id`、`instrument_id`、`exchange_mic`、`trading_currency`、`valid_from`、可空 `valid_to`、`artifact_id`、`recorded_at`。有效区间为半开区间；明确交易场所和报价币种。 |
+| `core.listing_identifier`（新增） | `listing_identifier_id`、`listing_id`、`provider`、`identifier_type`、`identifier_value`、`market_namespace`、`valid_from`、可空 `valid_to`、`artifact_id`、`recorded_at`。唯一键为来源、类型、命名空间、值、起始日；同一外部标识有效区间不得重叠。 |
+| `core.instrument_identifier` | 继续承载证券级身份。旧 TDX 标识解析保留；新增 listing 映射不能悄然改变既有 instrument ID。 |
 
 交易代码是字符串，保留前导零。日期或公司身份未知时，留在待解析证据中，不编造有效起点、不根据名称合并公司。公司—证券关系更正必须保留归档证据及所影响的旧估值快照；正式历史身份查询需要版本化关联后才能开放。
 

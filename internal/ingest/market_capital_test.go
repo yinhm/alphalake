@@ -26,8 +26,8 @@ func TestMarketCapitalArchiveReplay(t *testing.T) {
 		t.Fatal(e)
 	}
 	defer db.Close()
-	_, e = db.ExecContext(ctx, `INSERT INTO ref.instrument(instrument_type,exchange_mic,currency) VALUES ('equity','XSHE','CNY'),('equity','XSHG','CNY');
- INSERT INTO ref.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_from) VALUES (1,'tdx','symbol','sz300866','2026-09-05'),(2,'tdx','symbol','sh600519','2026-09-05')`)
+	_, e = db.ExecContext(ctx, `INSERT INTO core.instrument(instrument_type,exchange_mic,currency) VALUES ('equity','XSHE','CNY'),('equity','XSHG','CNY');
+ INSERT INTO core.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_from) VALUES (1,'tdx','symbol','sz300866','2026-09-05'),(2,'tdx','symbol','sh600519','2026-09-05')`)
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -191,11 +191,11 @@ func TestMarketCapitalArchiveReplay(t *testing.T) {
  UPDATE meta.dataset_release SET available_at=TIMESTAMPTZ '2026-09-09 12:00:00+00',first_seen_at=TIMESTAMPTZ '2026-09-09 12:00:00+00',recorded_at=TIMESTAMPTZ '2026-09-09 12:01:00+00';
  INSERT INTO meta.dataset_release_artifact SELECT * FROM saved_release_links;
  UPDATE meta.ingest_run SET started_at=TIMESTAMPTZ '2026-09-09 12:00:00+00',finished_at=TIMESTAMPTZ '2026-09-09 12:10:00+00';
- CREATE TEMP TABLE saved_listing_identifiers AS SELECT * FROM ref.listing_identifier;
- DELETE FROM ref.listing_identifier;
- UPDATE ref.listing SET recorded_at=TIMESTAMPTZ '2026-09-09 12:01:00+00';
- INSERT INTO ref.listing_identifier SELECT * FROM saved_listing_identifiers;
- UPDATE ref.listing_identifier SET recorded_at=TIMESTAMPTZ '2026-09-09 12:01:00+00';
+ CREATE TEMP TABLE saved_listing_identifiers AS SELECT * FROM core.listing_identifier;
+ DELETE FROM core.listing_identifier;
+ UPDATE core.listing SET recorded_at=TIMESTAMPTZ '2026-09-09 12:01:00+00';
+ INSERT INTO core.listing_identifier SELECT * FROM saved_listing_identifiers;
+ UPDATE core.listing_identifier SET recorded_at=TIMESTAMPTZ '2026-09-09 12:01:00+00';
  UPDATE market.daily_observation SET recorded_at=TIMESTAMPTZ '2026-09-09 12:01:00+00'`)
 	if e != nil {
 		t.Fatal(e)

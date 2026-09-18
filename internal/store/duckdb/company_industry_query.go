@@ -132,13 +132,13 @@ func companyIndustriesAsOf(ctx context.Context, tx *sql.Tx, asof time.Time) (map
 	}
 	day := available.In(time.FixedZone("China", 8*3600)).Format("2006-01-02")
 	identities, err := tx.QueryContext(ctx, `WITH history AS (
- SELECT identifier_value,count(DISTINCT instrument_id) AS identities FROM ref.instrument_identifier
+ SELECT identifier_value,count(DISTINCT instrument_id) AS identities FROM core.instrument_identifier
  WHERE provider='tdx' AND identifier_type='symbol' GROUP BY identifier_value)
  SELECT o.observation_id,count(d.instrument_id),min(d.instrument_id),min(i.exchange_mic),min(i.instrument_type),min(i.currency),min(CAST(d.valid_from AS VARCHAR)),min(CAST(d.valid_to AS VARCHAR)),min(h.identities)
- FROM reference.security_industry o LEFT JOIN ref.instrument_identifier d ON d.provider='tdx' AND d.identifier_type='symbol'
+ FROM reference.security_industry o LEFT JOIN core.instrument_identifier d ON d.provider='tdx' AND d.identifier_type='symbol'
  AND d.identifier_value=(CASE WHEN starts_with(o.exchange_ticker,'SHSE:') THEN 'sh' ELSE 'sz' END)||split_part(o.exchange_ticker,':',2)
  AND (d.valid_from IS NULL OR d.valid_from<=CAST(? AS DATE)) AND (d.valid_to IS NULL OR d.valid_to>CAST(? AS DATE))
- LEFT JOIN ref.instrument i ON i.instrument_id=d.instrument_id
+ LEFT JOIN core.instrument i ON i.instrument_id=d.instrument_id
  LEFT JOIN history h ON h.identifier_value=(CASE WHEN starts_with(o.exchange_ticker,'SHSE:') THEN 'sh' ELSE 'sz' END)||split_part(o.exchange_ticker,':',2)
  WHERE o.release_id=? GROUP BY o.observation_id ORDER BY o.observation_id`, day, day, releaseID)
 	if err != nil {

@@ -117,6 +117,11 @@ func applyMigration(ctx context.Context, db *sql.DB, migration Migration) error 
 		return fmt.Errorf("begin migration %s: %w", migration.Name, err)
 	}
 	defer tx.Rollback()
+	if migration.Version == 43 {
+		if err := prepareCoreSequences(ctx, tx); err != nil {
+			return fmt.Errorf("prepare core migration: %w", err)
+		}
+	}
 	if _, err := tx.ExecContext(ctx, string(body)); err != nil {
 		return fmt.Errorf("apply migration %s: %w", migration.Name, err)
 	}
@@ -187,4 +192,22 @@ func parseMigrationName(name string) (Migration, error) {
 		Name:        name,
 		Description: strings.ReplaceAll(parts[1], "_", " "),
 	}, nil
+}
+
+// DuckDB 尚不支持跨 schema 移表；序列起点同时尊重已有行和已消耗编号。
+func prepareCoreSequences(ctx context.Context, tx *sql.Tx) error {
+	if _, err := tx.ExecContext(ctx, `CREATE SCHEMA core`); err != nil {
+		return err
+	}
+	for _, table := range []string{"company", "instrument", "instrument_identifier", "listing", "listing_identifier"} {
+		var start int64
+		if err := tx.QueryRowContext(ctx, `SELECT greatest(coalesce((SELECT max(`+table+`_id) FROM ref.`+table+`),0)+1,
+ (SELECT coalesce(last_value+1,start_value) FROM duckdb_sequences() WHERE schema_name='ref' AND sequence_name=?))`, table+"_id_seq").Scan(&start); err != nil {
+			return err
+		}
+		if _, err := tx.ExecContext(ctx, fmt.Sprintf("CREATE SEQUENCE core.%s_id_seq START %d", table, start)); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -160,7 +160,7 @@ func loadBSEIdentityEvidence(ctx context.Context, db *sql.DB) (*bseIdentityEvide
 	for _, r := range snapshot.Transitions {
 		result.transitions[r.OldCode], result.transitions[r.NewCode] = r, r
 	}
-	identifiers, err := tx.QueryContext(ctx, `SELECT right(x.identifier_value,6),x.instrument_id,coalesce(i.exchange_mic,''),i.instrument_type,coalesce(i.currency,''),x.valid_from,x.valid_to FROM ref.instrument_identifier x JOIN ref.instrument i USING(instrument_id)
+	identifiers, err := tx.QueryContext(ctx, `SELECT right(x.identifier_value,6),x.instrument_id,coalesce(i.exchange_mic,''),i.instrument_type,coalesce(i.currency,''),x.valid_from,x.valid_to FROM core.instrument_identifier x JOIN core.instrument i USING(instrument_id)
  WHERE x.provider='tdx' AND x.identifier_type='symbol' AND starts_with(x.identifier_value,'bj')
  AND EXISTS (SELECT 1 FROM reference.security_code_transition t WHERE t.release_id=? AND x.identifier_value IN ('bj'||t.old_code,'bj'||t.new_code))`, releaseID)
 	if err != nil {

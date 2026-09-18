@@ -28,7 +28,7 @@ func PublishHKEXQuote(ctx context.Context, db *sql.DB, run, artifact int64, hash
 
 	var count int
 	var listing int64
-	e = p.tx.QueryRowContext(ctx, `SELECT count(*),coalesce(min(l.listing_id),0) FROM ref.listing l JOIN ref.listing_identifier x ON x.listing_id=l.listing_id WHERE x.provider='hkex' AND x.identifier_type='symbol' AND x.identifier_value=? AND x.market_namespace='XHKG' AND l.exchange_mic='XHKG' AND l.trading_currency='HKD' AND x.valid_from<=? AND (x.valid_to IS NULL OR x.valid_to>?) AND l.valid_from<=? AND (l.valid_to IS NULL OR l.valid_to>?)`, s.Symbol, s.ObservationDate, s.ObservationDate, s.ObservationDate, s.ObservationDate).Scan(&count, &listing)
+	e = p.tx.QueryRowContext(ctx, `SELECT count(*),coalesce(min(l.listing_id),0) FROM core.listing l JOIN core.listing_identifier x ON x.listing_id=l.listing_id WHERE x.provider='hkex' AND x.identifier_type='symbol' AND x.identifier_value=? AND x.market_namespace='XHKG' AND l.exchange_mic='XHKG' AND l.trading_currency='HKD' AND x.valid_from<=? AND (x.valid_to IS NULL OR x.valid_to>?) AND l.valid_from<=? AND (l.valid_to IS NULL OR l.valid_to>?)`, s.Symbol, s.ObservationDate, s.ObservationDate, s.ObservationDate, s.ObservationDate).Scan(&count, &listing)
 	if e != nil {
 		return 0, false, e
 	}

@@ -50,7 +50,7 @@ func TestRealFinancialWorkflow(t *testing.T) {
 	check(json.Unmarshal(readAnnualSample(t, "instruments.json"), &instruments))
 	_, err = duckstore.UpsertInstruments(ctx, db, instruments)
 	check(err)
-	count("SELECT count(*) FROM ref.instrument", 7)
+	count("SELECT count(*) FROM core.instrument", 7)
 
 	pages := map[string][]byte{}
 	for i := 1; i <= 3; i++ {

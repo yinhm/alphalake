@@ -78,10 +78,10 @@ func ExportMarketCapital(ctx context.Context, db *sql.DB, code string, day, asof
 	out["releases"] = releases
 	rows, e := read(`SELECT s.observation_id,s.release_id,s.artifact_id,s.instrument_id,i.company_id,s.share_basis,CAST(s.effective_date AS VARCHAR) AS effective_date,CAST(s.value AS VARCHAR) AS value,s.source_locator,l.listing_id,l.exchange_mic,l.trading_currency,x.provider,x.identifier_value AS symbol,
  CAST(l.valid_from AS VARCHAR) AS listing_valid_from,CAST(l.recorded_at AS VARCHAR) AS identity_recorded_at
- FROM market.share_count_observation s JOIN ref.instrument i ON i.instrument_id=s.instrument_id
- JOIN ref.company co ON co.company_id=i.company_id
- JOIN ref.listing l ON l.instrument_id=i.instrument_id AND l.artifact_id=s.artifact_id
- JOIN ref.listing_identifier x ON x.listing_id=l.listing_id AND x.artifact_id=s.artifact_id
+ FROM market.share_count_observation s JOIN core.instrument i ON i.instrument_id=s.instrument_id
+ JOIN core.company co ON co.company_id=i.company_id
+ JOIN core.listing l ON l.instrument_id=i.instrument_id AND l.artifact_id=s.artifact_id
+ JOIN core.listing_identifier x ON x.listing_id=l.listing_id AND x.artifact_id=s.artifact_id
  JOIN meta.dataset_release_artifact a ON a.release_id=s.release_id AND a.artifact_id=s.artifact_id AND a.role='data'
  WHERE s.release_id=? AND s.scope='share_class' AND s.effective_date<=? AND l.valid_from<=? AND (l.valid_to IS NULL OR l.valid_to>?) AND x.valid_from<=? AND (x.valid_to IS NULL OR x.valid_to>?) AND l.recorded_at<=? AND x.recorded_at<=?
  ORDER BY s.instrument_id,s.share_basis`, shares, day, day, day, day, day, asof, asof)
@@ -107,7 +107,7 @@ func ExportMarketCapital(ctx context.Context, db *sql.DB, code string, day, asof
 	out["a_quote"] = quote
 	if hk > 0 {
 		rows, e = read(`SELECT o.observation_id,o.release_id,o.artifact_id,o.listing_id,l.instrument_id,CAST(o.trade_date AS VARCHAR) AS trade_date,CAST(o.close AS VARCHAR) AS close,o.raw_value,o.source_locator,o.adjustment,l.trading_currency AS currency
-   FROM market.listing_close_observation o JOIN ref.listing l ON l.listing_id=o.listing_id JOIN meta.dataset_release_artifact a ON a.release_id=o.release_id AND a.artifact_id=o.artifact_id AND a.role='data'
+   FROM market.listing_close_observation o JOIN core.listing l ON l.listing_id=o.listing_id JOIN meta.dataset_release_artifact a ON a.release_id=o.release_id AND a.artifact_id=o.artifact_id AND a.role='data'
    WHERE o.release_id=? AND o.trade_date=?`, hk, day)
 		if e != nil {
 			return nil, e

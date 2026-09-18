@@ -42,7 +42,7 @@ SELECT r.release_id, r.available_at, r.availability_basis,
        o.subject_code, o.metric_code, o.method_code, o.value,
        o.raw_value, o.source_locator, a.sha256
 FROM meta.dataset_release r
-JOIN reference.country_risk o ON o.release_id = r.release_id
+JOIN reference.risk_observation o ON o.release_id = r.release_id
 JOIN meta.artifact a ON a.artifact_id = o.artifact_id
 WHERE r.release_id = 1
 ORDER BY o.subject_code, o.metric_code;
@@ -63,3 +63,5 @@ ORDER BY o.subject_code, o.metric_code;
 - 全套 Go 测试在指定真实 Python 解释器下通过，跨语言集成测试未跳过；构建、vet 通过。
 - Python 后端 145 passed / 4 skipped；4 项为既有外部条件测试，本轮新增 5 项全部执行。openpyxl 的 Excel 数据验证扩展提示不影响只读数值提取；原文件不经保存改写。
 - workspace 验收库不提交；完整原始测试归档、固定预期、独立 XML 校验和 CI 步骤已入库。既有财务生产库未修改。
+
+迁移044后，国家额外风险和ERP分别入表；此处完整十项查询使用联合视图，固定版本出口不变，见[结构说明](core-risk-migration.md)。

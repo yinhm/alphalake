@@ -1,0 +1,60 @@
+{
+  "date": "2026-09-18",
+  "scope": "temporary_copies_not_main_publication",
+  "financial_database_source": "workspace/auto-valuation-20260909/market.duckdb",
+  "reference_database_source": "workspace/auto-valuation-20260909/references-refresh-live.duckdb",
+  "baseline_schema": 42,
+  "upgraded_schema": 44,
+  "baseline_note": "source copies first upgraded with pre-change schema42 binary; this comparison isolates migrations043/044",
+  "code": "300866",
+  "report_period": "2026-06-30",
+  "information_as_of": "2026-09-18T00:00:00Z",
+  "identity_tables": {
+    "company": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "exchange": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "instrument": {
+      "rows": 52480,
+      "sha256": "51ef388a3c6a097b1f218f22b8288f5669f03333868b8e9258f94c5504535caa"
+    },
+    "instrument_identifier": {
+      "rows": 52480,
+      "sha256": "559c7a782f1ab94109915474ee77653014a752aaea4eafd7a394c922fc989dd7"
+    },
+    "listing": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "listing_identifier": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "trading_calendar": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "exports": {
+    "financial": {
+      "byte_equal": true,
+      "sha256": "027e0ef41c72509f504811b7f6b49e1a143fc04c7701d47cadab668174045fec",
+      "bytes": 394292
+    },
+    "wacc": {
+      "byte_equal": true,
+      "sha256": "1b51cd3117010049379ae11be688ceb9a5f69af79d4b6aa3de230c23e17c95d4",
+      "bytes": 207772
+    }
+  },
+  "boundaries": [
+    "no main publication",
+    "financial export comparison is Anker only",
+    "reference release scope unchanged",
+    "source schema39 to42 is preparation, not claimed as043/044 acceptance"
+  ]
+}

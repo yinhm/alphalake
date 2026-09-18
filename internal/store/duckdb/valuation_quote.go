@@ -40,7 +40,7 @@ func exportValuationQuoteOnTx(ctx context.Context, tx *sql.Tx, symbol string, da
 		return nil, errors.New("no unambiguous instrument identity at market date")
 	}
 	var mic, currency, kind string
-	if err = tx.QueryRowContext(ctx, `SELECT exchange_mic,currency,instrument_type FROM ref.instrument WHERE instrument_id=?`, id).Scan(&mic, &currency, &kind); err != nil {
+	if err = tx.QueryRowContext(ctx, `SELECT exchange_mic,currency,instrument_type FROM core.instrument WHERE instrument_id=?`, id).Scan(&mic, &currency, &kind); err != nil {
 		return nil, err
 	}
 	expected := map[string]string{"sh": "XSHG", "sz": "XSHE", "bj": "XBSE"}[symbol[:2]]

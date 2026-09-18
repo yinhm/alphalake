@@ -26,7 +26,7 @@ func PublishShareClasses(ctx context.Context, db *sql.DB, runID, artifactID int6
 	var aid int64
 	var company sql.NullInt64
 	var count int
-	err = p.tx.QueryRowContext(ctx, `SELECT count(DISTINCT i.instrument_id),coalesce(min(i.instrument_id),0),min(i.company_id) FROM ref.instrument i JOIN ref.instrument_identifier x ON x.instrument_id=i.instrument_id WHERE x.provider='tdx' AND x.identifier_type='symbol' AND x.identifier_value=? AND x.valid_to IS NULL AND i.instrument_type='equity'`, symbol).Scan(&count, &aid, &company)
+	err = p.tx.QueryRowContext(ctx, `SELECT count(DISTINCT i.instrument_id),coalesce(min(i.instrument_id),0),min(i.company_id) FROM core.instrument i JOIN core.instrument_identifier x ON x.instrument_id=i.instrument_id WHERE x.provider='tdx' AND x.identifier_type='symbol' AND x.identifier_value=? AND x.valid_to IS NULL AND i.instrument_type='equity'`, symbol).Scan(&count, &aid, &company)
 	if err != nil {
 		return 0, false, err
 	}
@@ -37,16 +37,16 @@ func PublishShareClasses(ctx context.Context, db *sql.DB, runID, artifactID int6
 		if p.existing {
 			return 0, false, errors.New("published company association removed")
 		}
-		err = p.tx.QueryRowContext(ctx, `INSERT INTO ref.company(legal_name,country_code) VALUES (?,'CN') RETURNING company_id`, s.LegalName).Scan(&company.Int64)
+		err = p.tx.QueryRowContext(ctx, `INSERT INTO core.company(legal_name,country_code) VALUES (?,'CN') RETURNING company_id`, s.LegalName).Scan(&company.Int64)
 		if err == nil {
-			_, err = p.tx.ExecContext(ctx, `UPDATE ref.instrument SET company_id=? WHERE instrument_id=?`, company.Int64, aid)
+			_, err = p.tx.ExecContext(ctx, `UPDATE core.instrument SET company_id=? WHERE instrument_id=?`, company.Int64, aid)
 		}
 		if err != nil {
 			return 0, false, err
 		}
 	} else {
 		var name string
-		if err = p.tx.QueryRowContext(ctx, `SELECT legal_name FROM ref.company WHERE company_id=?`, company.Int64).Scan(&name); err != nil {
+		if err = p.tx.QueryRowContext(ctx, `SELECT legal_name FROM core.company WHERE company_id=?`, company.Int64).Scan(&name); err != nil {
 			return 0, false, err
 		}
 		if name != s.LegalName {
@@ -56,7 +56,7 @@ func PublishShareClasses(ctx context.Context, db *sql.DB, runID, artifactID int6
 	for _, c := range s.Classes {
 		id := aid
 		if c.Kind == "H" {
-			err = p.tx.QueryRowContext(ctx, `SELECT count(*),coalesce(min(instrument_id),0) FROM ref.instrument WHERE company_id=? AND exchange_mic='XHKG' AND currency='HKD' AND instrument_type='equity'`, company.Int64).Scan(&count, &id)
+			err = p.tx.QueryRowContext(ctx, `SELECT count(*),coalesce(min(instrument_id),0) FROM core.instrument WHERE company_id=? AND exchange_mic='XHKG' AND currency='HKD' AND instrument_type='equity'`, company.Int64).Scan(&count, &id)
 			if err != nil {
 				return 0, false, err
 			}
@@ -67,28 +67,28 @@ func PublishShareClasses(ctx context.Context, db *sql.DB, runID, artifactID int6
 				if p.existing {
 					return 0, false, errors.New("published H identity removed")
 				}
-				err = p.tx.QueryRowContext(ctx, `INSERT INTO ref.instrument(instrument_type,exchange_mic,currency,company_id,name) VALUES ('equity','XHKG','HKD',?,?) RETURNING instrument_id`, company.Int64, s.LegalName+" H").Scan(&id)
+				err = p.tx.QueryRowContext(ctx, `INSERT INTO core.instrument(instrument_type,exchange_mic,currency,company_id,name) VALUES ('equity','XHKG','HKD',?,?) RETURNING instrument_id`, company.Int64, s.LegalName+" H").Scan(&id)
 				if err != nil {
 					return 0, false, err
 				}
 			}
 		}
 		var listing int64
-		err = p.tx.QueryRowContext(ctx, `SELECT listing_id FROM ref.listing WHERE instrument_id=? AND exchange_mic=? AND trading_currency=? AND valid_from=? AND artifact_id=?`, id, c.MIC, c.Currency, s.ObservationDate, artifactID).Scan(&listing)
+		err = p.tx.QueryRowContext(ctx, `SELECT listing_id FROM core.listing WHERE instrument_id=? AND exchange_mic=? AND trading_currency=? AND valid_from=? AND artifact_id=?`, id, c.MIC, c.Currency, s.ObservationDate, artifactID).Scan(&listing)
 		if errors.Is(err, sql.ErrNoRows) && !p.existing {
-			if err = p.tx.QueryRowContext(ctx, `SELECT count(*) FROM ref.listing WHERE instrument_id=? AND (valid_to IS NULL OR valid_to>?)`, id, s.ObservationDate).Scan(&count); err != nil {
+			if err = p.tx.QueryRowContext(ctx, `SELECT count(*) FROM core.listing WHERE instrument_id=? AND (valid_to IS NULL OR valid_to>?)`, id, s.ObservationDate).Scan(&count); err != nil {
 				return 0, false, err
 			}
 			if count != 0 {
 				return 0, false, errors.New("overlapping listing evidence; explicit correction required")
 			}
-			err = p.tx.QueryRowContext(ctx, `INSERT INTO ref.listing(instrument_id,exchange_mic,trading_currency,valid_from,artifact_id) VALUES (?,?,?,?,?) RETURNING listing_id`, id, c.MIC, c.Currency, s.ObservationDate, artifactID).Scan(&listing)
+			err = p.tx.QueryRowContext(ctx, `INSERT INTO core.listing(instrument_id,exchange_mic,trading_currency,valid_from,artifact_id) VALUES (?,?,?,?,?) RETURNING listing_id`, id, c.MIC, c.Currency, s.ObservationDate, artifactID).Scan(&listing)
 			if err == nil {
 				provider := "tdx"
 				if c.Kind == "H" {
 					provider = "hkex"
 				}
-				_, err = p.tx.ExecContext(ctx, `INSERT INTO ref.listing_identifier(listing_id,provider,identifier_type,identifier_value,market_namespace,valid_from,artifact_id) VALUES (?,?,'symbol',?,?,?,?)`, listing, provider, c.Symbol, c.MIC, s.ObservationDate, artifactID)
+				_, err = p.tx.ExecContext(ctx, `INSERT INTO core.listing_identifier(listing_id,provider,identifier_type,identifier_value,market_namespace,valid_from,artifact_id) VALUES (?,?,'symbol',?,?,?,?)`, listing, provider, c.Symbol, c.MIC, s.ObservationDate, artifactID)
 			}
 		}
 		if err != nil {
@@ -99,7 +99,7 @@ func PublishShareClasses(ctx context.Context, db *sql.DB, runID, artifactID int6
 		if c.Kind == "H" {
 			provider = "hkex"
 		}
-		err = p.tx.QueryRowContext(ctx, `SELECT count(*) FROM ref.listing_identifier WHERE listing_id=? AND provider=? AND identifier_type='symbol' AND identifier_value=? AND market_namespace=? AND valid_from=? AND valid_to IS NULL AND artifact_id=?`, listing, provider, c.Symbol, c.MIC, s.ObservationDate, artifactID).Scan(&count)
+		err = p.tx.QueryRowContext(ctx, `SELECT count(*) FROM core.listing_identifier WHERE listing_id=? AND provider=? AND identifier_type='symbol' AND identifier_value=? AND market_namespace=? AND valid_from=? AND valid_to IS NULL AND artifact_id=?`, listing, provider, c.Symbol, c.MIC, s.ObservationDate, artifactID).Scan(&count)
 		if err != nil {
 			return 0, false, err
 		}

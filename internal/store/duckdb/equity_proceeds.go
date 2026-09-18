@@ -18,7 +18,7 @@ func PublishEquityProceeds(ctx context.Context, db *sql.DB, run, artifactID int6
 	defer p.tx.Rollback()
 	var company int64
 	var count int
-	err = p.tx.QueryRowContext(ctx, `SELECT count(DISTINCT i.company_id),coalesce(min(i.company_id),0) FROM ref.instrument i JOIN ref.instrument_identifier x ON x.instrument_id=i.instrument_id JOIN ref.company co ON co.company_id=i.company_id WHERE x.provider='tdx' AND x.identifier_type='symbol' AND x.identifier_value='sz300866' AND x.valid_to IS NULL AND co.legal_name='安克创新科技股份有限公司'`).Scan(&count, &company)
+	err = p.tx.QueryRowContext(ctx, `SELECT count(DISTINCT i.company_id),coalesce(min(i.company_id),0) FROM core.instrument i JOIN core.instrument_identifier x ON x.instrument_id=i.instrument_id JOIN core.company co ON co.company_id=i.company_id WHERE x.provider='tdx' AND x.identifier_type='symbol' AND x.identifier_value='sz300866' AND x.valid_to IS NULL AND co.legal_name='安克创新科技股份有限公司'`).Scan(&count, &company)
 	if err != nil {
 		return 0, false, err
 	}

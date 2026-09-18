@@ -112,7 +112,7 @@ func ExportWACCReferences(ctx context.Context, db *sql.DB, asof time.Time, recor
     JOIN meta.artifact a ON a.artifact_id=l.artifact_id WHERE r.release_id IN (?,?,?,?) ORDER BY r.release_id`, []any{country, beta, yield, credit}, 3},
 		{"country_risk", `SELECT o.observation_id,o.release_id,o.artifact_id,o.subject_kind,o.subject_code,o.metric_code,o.method_code,
     CAST(o.observation_date AS VARCHAR) AS observation_date,CAST(o.value AS VARCHAR) AS value,o.value_status,o.raw_value,o.raw_unit,o.source_locator
-    FROM reference.country_risk o JOIN meta.dataset_release_artifact l ON l.release_id=o.release_id AND l.artifact_id=o.artifact_id AND l.role='data'
+    FROM reference.risk_observation o JOIN meta.dataset_release_artifact l ON l.release_id=o.release_id AND l.artifact_id=o.artifact_id AND l.role='data'
     WHERE o.release_id=? AND o.observation_date<=CAST(? AS DATE) ORDER BY o.subject_code,o.metric_code`, []any{country, asof}, 10},
 		{"industry_stats", `SELECT o.observation_id,o.release_id,o.artifact_id,n.source_node_code AS industry,n.name AS industry_name,t.taxonomy_code,
     o.sample_region,o.metric_code,o.method_code,o.statistic_code,o.sample_count,CAST(o.observation_date AS VARCHAR) AS observation_date,

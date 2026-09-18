@@ -2,6 +2,8 @@
 
 首批实现安克 300866（A/H 两类）和茅台 600519（A 类）的标准市场输入到估值 API。输出 `capital_structure_basis=market_equity_estimated_debt`：股价来自市场，股数沿用最新审核披露，债务和经营范围调整采用明确代理。**这是可运行、可复验的市场权重估计链，不是所有输入都已经取得市场公允价值。**
 
+迁移043已将下述历史 `ref` 表迁至 `core`，当前SQL使用新名称；详见[结构迁移](core-risk-migration.md)。
+
 ## 数据层与使用
 
 迁移 030 建立 `ref.listing`、`ref.listing_identifier`、`market.share_count_observation`、`market.listing_close_observation`。沿用原 `ref.company/instrument` 与不可变归档、发布版本、检查点、运行及失败诊断。A 股继续使用原 TDX instrument ID，不重建平行财务证券；H 股是同公司下的另一证券。listing 起点仅为本次证据确认日期，不能解释成初始上市日期。仅开放已审核文档及类别；尚非全市场自动身份治理。

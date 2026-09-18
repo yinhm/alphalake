@@ -93,10 +93,10 @@ func TestBSETransitionPublicationRealEvidence(t *testing.T) {
 	}
 
 	// 只有新代码的标准标识；旧公告通过官方切换边界锚定同一ID，不新增旧区间。
-	if _, err = db.ExecContext(ctx, `INSERT INTO ref.instrument(instrument_id,instrument_type,exchange_mic,currency) VALUES (9007199254740993,'equity','XBSE','CNY'),(2,'equity','XBSE','CNY'),(9,'equity','XBSE','CNY')`); err != nil {
+	if _, err = db.ExecContext(ctx, `INSERT INTO core.instrument(instrument_id,instrument_type,exchange_mic,currency) VALUES (9007199254740993,'equity','XBSE','CNY'),(2,'equity','XBSE','CNY'),(9,'equity','XBSE','CNY')`); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = db.ExecContext(ctx, `INSERT INTO ref.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_from) VALUES (9007199254740993,'tdx','symbol','bj920819','2025-05-06'),(2,'tdx','symbol','bj920123','2025-10-09')`); err != nil {
+	if _, err = db.ExecContext(ctx, `INSERT INTO core.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_from) VALUES (9007199254740993,'tdx','symbol','bj920819','2025-05-06'),(2,'tdx','symbol','bj920123','2025-10-09')`); err != nil {
 		t.Fatal(err)
 	}
 	var realFilings []domain.FilingObservation
@@ -167,11 +167,11 @@ func TestBSETransitionPublicationRealEvidence(t *testing.T) {
 		case "wrong_security":
 			f.ProviderCode = "837023"
 		case "other_known_id":
-			_, err = db.ExecContext(ctx, `INSERT INTO ref.instrument_identifier(instrument_id,provider,identifier_type,identifier_value) VALUES (9,'tdx','symbol','bj833819')`)
+			_, err = db.ExecContext(ctx, `INSERT INTO core.instrument_identifier(instrument_id,provider,identifier_type,identifier_value) VALUES (9,'tdx','symbol','bj833819')`)
 		case "overlap":
-			_, err = db.ExecContext(ctx, `INSERT INTO ref.instrument_identifier(instrument_id,provider,identifier_type,identifier_value) VALUES (9007199254740993,'tdx','symbol','bj920819')`)
+			_, err = db.ExecContext(ctx, `INSERT INTO core.instrument_identifier(instrument_id,provider,identifier_type,identifier_value) VALUES (9007199254740993,'tdx','symbol','bj920819')`)
 		case "missing_anchor":
-			_, err = db.ExecContext(ctx, `UPDATE ref.instrument_identifier SET valid_from='2025-05-07' WHERE identifier_value='bj920819'`)
+			_, err = db.ExecContext(ctx, `UPDATE core.instrument_identifier SET valid_from='2025-05-07' WHERE identifier_value='bj920819'`)
 		}
 		if err != nil {
 			t.Fatal(err)
@@ -180,13 +180,13 @@ func TestBSETransitionPublicationRealEvidence(t *testing.T) {
 			t.Fatal("invalid code/identity accepted", mutation)
 		}
 		if mutation == "other_known_id" {
-			_, err = db.ExecContext(ctx, `DELETE FROM ref.instrument_identifier WHERE identifier_value='bj833819'`)
+			_, err = db.ExecContext(ctx, `DELETE FROM core.instrument_identifier WHERE identifier_value='bj833819'`)
 		}
 		if mutation == "overlap" {
-			_, err = db.ExecContext(ctx, `DELETE FROM ref.instrument_identifier WHERE identifier_value='bj920819' AND valid_from IS NULL`)
+			_, err = db.ExecContext(ctx, `DELETE FROM core.instrument_identifier WHERE identifier_value='bj920819' AND valid_from IS NULL`)
 		}
 		if mutation == "missing_anchor" {
-			_, err = db.ExecContext(ctx, `UPDATE ref.instrument_identifier SET valid_from='2025-05-06' WHERE identifier_value='bj920819'`)
+			_, err = db.ExecContext(ctx, `UPDATE core.instrument_identifier SET valid_from='2025-05-06' WHERE identifier_value='bj920819'`)
 		}
 		if err != nil {
 			t.Fatal(err)
@@ -273,7 +273,7 @@ func TestBSETransitionPublicationRealEvidence(t *testing.T) {
 	}
 	refresh(0) // 重开后仍重新校验；缺少最新证据不回退旧版本。
 	var observations, releases, checkpoints, identities, failed int
-	err = db.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM reference.security_code_transition),(SELECT count(*) FROM meta.dataset_release),(SELECT count(*) FROM meta.checkpoint),(SELECT count(*) FROM ref.instrument_identifier),(SELECT count(*) FROM meta.ingest_run WHERE status='failed')`).Scan(&observations, &releases, &checkpoints, &identities, &failed)
+	err = db.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM reference.security_code_transition),(SELECT count(*) FROM meta.dataset_release),(SELECT count(*) FROM meta.checkpoint),(SELECT count(*) FROM core.instrument_identifier),(SELECT count(*) FROM meta.ingest_run WHERE status='failed')`).Scan(&observations, &releases, &checkpoints, &identities, &failed)
 	if err != nil || observations != 496 || releases != 2 || checkpoints != 2 || identities != 2 || failed != 3 {
 		t.Fatal("reopen publication/failure state", observations, releases, checkpoints, identities, failed, err)
 	}

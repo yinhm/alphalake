@@ -19,14 +19,14 @@ func TestReadinessBatchesKeepFieldsAndLargeIDs(t *testing.T) {
 	}
 	defer db.Close()
 	// 合成事实验证跨批次拼接、稀疏大ID及JSON精度；不作为真实来源证据。
-	_, err = db.ExecContext(ctx, `INSERT INTO ref.instrument(instrument_id,instrument_type,exchange_mic,currency,name)
+	_, err = db.ExecContext(ctx, `INSERT INTO core.instrument(instrument_id,instrument_type,exchange_mic,currency,name)
  SELECT CASE WHEN i=129 THEN 9007199254740993 ELSE i END,'equity','XSHG','CNY','test-'||i FROM range(1,130) r(i);
- INSERT INTO ref.instrument_identifier(instrument_id,provider,identifier_type,identifier_value)
- SELECT instrument_id,'tdx','symbol','sh'||CAST(600000+CAST(substr(name,6) AS INTEGER) AS VARCHAR) FROM ref.instrument;
+ INSERT INTO core.instrument_identifier(instrument_id,provider,identifier_type,identifier_value)
+ SELECT instrument_id,'tdx','symbol','sh'||CAST(600000+CAST(substr(name,6) AS INTEGER) AS VARCHAR) FROM core.instrument;
  INSERT INTO fundamental.fact(fact_id,instrument_id,canonical_field,report_period,announcement_time,period_type,
  statement_scope,currency,unit,value,primary_source,source_provider_field,provider_code,source_filing_id,revision_key,normalization_rule,materializer_version)
  SELECT 9007199254741100+CAST(substr(name,6) AS INTEGER),instrument_id,'monetary_funds','2026-06-30','2026-07-01','instant',
- 'provider_default','CNY','CNY',CAST(substr(name,6) AS INTEGER),'tdx','FN8',CAST(600000+CAST(substr(name,6) AS INTEGER) AS VARCHAR),1,name,'test','test' FROM ref.instrument`)
+ 'provider_default','CNY','CNY',CAST(substr(name,6) AS INTEGER),'tdx','FN8',CAST(600000+CAST(substr(name,6) AS INTEGER) AS VARCHAR),1,name,'test','test' FROM core.instrument`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,9 +70,9 @@ func TestValuationReadinessKeepsMissingCompanies(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	_, err = db.ExecContext(ctx, `INSERT INTO ref.instrument(instrument_id,instrument_type,exchange_mic,currency,name) VALUES
+	_, err = db.ExecContext(ctx, `INSERT INTO core.instrument(instrument_id,instrument_type,exchange_mic,currency,name) VALUES
  (1,'equity','XSHG','CNY','无事实'),(2,'equity','XSHE','CNY','无代码'),(3,'etf','XSHG','CNY','基金'),(4,'equity','XSHG','USD','B股');
- INSERT INTO ref.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_from) VALUES (1,'tdx','symbol','sh600001','2025-01-01');`)
+ INSERT INTO core.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_from) VALUES (1,'tdx','symbol','sh600001','2025-01-01');`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,8 +109,8 @@ func TestReadinessIndustryRequiresPublishedObservation(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	_, err = db.ExecContext(ctx, `INSERT INTO ref.instrument(instrument_id,instrument_type,exchange_mic,currency) VALUES (1,'equity','XSHG','CNY');
- INSERT INTO ref.instrument_identifier(instrument_id,provider,identifier_type,identifier_value) VALUES (1,'tdx','symbol','sh600001');
+	_, err = db.ExecContext(ctx, `INSERT INTO core.instrument(instrument_id,instrument_type,exchange_mic,currency) VALUES (1,'equity','XSHG','CNY');
+ INSERT INTO core.instrument_identifier(instrument_id,provider,identifier_type,identifier_value) VALUES (1,'tdx','symbol','sh600001');
  INSERT INTO classification.taxonomy VALUES (1,'tdx','tdx_industry','industry','industry');
  INSERT INTO classification.node(node_id,taxonomy_id,source_node_code,name) VALUES (1,1,'T010101','test');
  INSERT INTO meta.ingest_run(ingest_run_id,source,dataset,started_at,finished_at,status) VALUES (1,'tdx','classification_industry','2026-09-09 10:00:00+00','2026-09-09 11:00:00+00','completed');
@@ -141,9 +141,9 @@ func TestCompanyReadinessPreservesCodeAmbiguity(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	_, err = db.ExecContext(ctx, `INSERT INTO ref.instrument(instrument_id,instrument_type,exchange_mic,currency,name) VALUES
+	_, err = db.ExecContext(ctx, `INSERT INTO core.instrument(instrument_id,instrument_type,exchange_mic,currency,name) VALUES
  (1,'equity','XSHG','CNY','候选一'),(2,'equity','XSHE','CNY','候选二'),(3,'equity','XSHE','CNY','另一公司');
- INSERT INTO ref.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_from) VALUES
+ INSERT INTO core.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_from) VALUES
  (1,'tdx','symbol','sh600001','2025-01-01'),(2,'tdx','symbol','sz600001','2025-01-01'),(3,'tdx','symbol','sz000001','2025-01-01');`)
 	if err != nil {
 		t.Fatal(err)

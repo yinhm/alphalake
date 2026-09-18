@@ -151,7 +151,7 @@ func TestSyncAllTDXDailyQuarantinesBadRowAndRetriesUntilCorrected(t *testing.T) 
 	}
 
 	var badInstrumentID int64
-	if err := db.QueryRowContext(ctx, `SELECT instrument_id FROM ref.instrument_identifier WHERE provider='tdx' AND identifier_value='sh600001'`).Scan(&badInstrumentID); err != nil {
+	if err := db.QueryRowContext(ctx, `SELECT instrument_id FROM core.instrument_identifier WHERE provider='tdx' AND identifier_value='sh600001'`).Scan(&badInstrumentID); err != nil {
 		t.Fatal(err)
 	}
 	var badRows int
