@@ -36,6 +36,16 @@ func TestRealValuationStandardChain(t *testing.T) {
 	db, err := duckstore.OpenAndMigrate(ctx, dbPath)
 	check(err)
 	defer db.Close()
+	// 冻结 CSV 是 UTC 渲染；TIMESTAMPTZ 的 VARCHAR 转换随会话时区变化。
+	// SET 只作用于单个连接，先限制连接池再钉死时区，非 UTC 环境才可复现；
+	// 每次重开数据库句柄都必须重新钉死。
+	pinUTC := func() {
+		t.Helper()
+		db.SetMaxOpenConns(1)
+		_, err = db.ExecContext(ctx, `SET TimeZone='UTC'`)
+		check(err)
+	}
+	pinUTC()
 	// 保留本历史验收的字段分母；045由独立真实处置现金测试验收。
 	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field='FN110'`)
 	check(err)
@@ -151,6 +161,7 @@ func TestRealValuationStandardChain(t *testing.T) {
 	db, err = duckstore.OpenAndMigrate(ctx, dbPath)
 	check(err)
 	defer db.Close()
+	pinUTC()
 	evidence, err := csv.NewReader(bytes.NewReader(readFinancialSample(t, "testdata/earnings-working-capital-2026", "values.csv"))).ReadAll()
 	check(err)
 	if len(evidence) != 39 {
