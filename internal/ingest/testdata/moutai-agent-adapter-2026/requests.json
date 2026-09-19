@@ -94,6 +94,7 @@
           "after_tax_operating_margin": null,
           "sales_to_capital": null,
           "revenue_growth": null,
+          "expected_ebit_growth": null,
           "std_dev_stock": null,
           "roic": null,
           "ev_ebitda": null,
@@ -112,6 +113,7 @@
           "has_options": false
         },
         "valuation_assumptions": {
+          "annual_forecast": null,
           "projection_years": 10,
           "high_growth_years": 5,
           "stable_growth_rate": null,
@@ -144,6 +146,7 @@
         "methodology_choices": {
           "cost_of_capital_approach": "direct",
           "wacc_direct_input": 0.1,
+          "reference_capital_inputs": null,
           "beta_approach": "single_business_us",
           "beta_direct_input": null,
           "erp_approach": "country_of_incorporation",
@@ -273,6 +276,7 @@
           "after_tax_operating_margin": null,
           "sales_to_capital": null,
           "revenue_growth": null,
+          "expected_ebit_growth": null,
           "std_dev_stock": null,
           "roic": null,
           "ev_ebitda": null,
@@ -291,6 +295,7 @@
           "has_options": false
         },
         "valuation_assumptions": {
+          "annual_forecast": null,
           "projection_years": 10,
           "high_growth_years": 5,
           "stable_growth_rate": null,
@@ -323,6 +328,7 @@
         "methodology_choices": {
           "cost_of_capital_approach": "direct",
           "wacc_direct_input": 0.08,
+          "reference_capital_inputs": null,
           "beta_approach": "single_business_us",
           "beta_direct_input": null,
           "erp_approach": "country_of_incorporation",
@@ -452,6 +458,7 @@
           "after_tax_operating_margin": null,
           "sales_to_capital": null,
           "revenue_growth": null,
+          "expected_ebit_growth": null,
           "std_dev_stock": null,
           "roic": null,
           "ev_ebitda": null,
@@ -470,6 +477,7 @@
           "has_options": false
         },
         "valuation_assumptions": {
+          "annual_forecast": null,
           "projection_years": 10,
           "high_growth_years": 5,
           "stable_growth_rate": null,
@@ -502,6 +510,7 @@
         "methodology_choices": {
           "cost_of_capital_approach": "direct",
           "wacc_direct_input": 0.07,
+          "reference_capital_inputs": null,
           "beta_approach": "single_business_us",
           "beta_direct_input": null,
           "erp_approach": "country_of_incorporation",

@@ -50,6 +50,7 @@
     "total_tax_expense": null
   },
   "assumptions": {
+    "annual_forecast": null,
     "projection_years": 10,
     "high_growth_years": 5,
     "stable_growth_rate": null,
