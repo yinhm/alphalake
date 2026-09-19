@@ -1,0 +1,170 @@
+{
+  "date": "2026-09-19",
+  "retained": [
+    "workspace/auto-valuation-20260909/market.duckdb",
+    "workspace/auto-valuation-20260909/market.duckdb.pre-standard-fields-20260918",
+    "workspace/auto-valuation-20260909/references-refresh-live.duckdb",
+    "workspace/auto-valuation-20260909/references-refresh-live.duckdb.pre-baseline-20260919"
+  ],
+  "removed": [
+    {
+      "path": "workspace/auto-valuation-20260909/market.duckdb.pre-cash-history-20260911",
+      "bytes": 1725706240,
+      "sha256": "84dc65a8a326c7aa75376097e78421c955597d132e52b8625d00a0e4177b70c4",
+      "reason": "superseded_financial_backup_latest_backup_retained"
+    },
+    {
+      "path": "workspace/auto-valuation-20260909/market.duckdb.pre-earnings-history-20260911",
+      "bytes": 1830039552,
+      "sha256": "f25e30ba9dc73481a29ac0c385641d34834fcc73428070bfb742c245d6deb4ec",
+      "reason": "superseded_financial_backup_latest_backup_retained"
+    },
+    {
+      "path": "workspace/auto-valuation-20260909/market.duckdb.pre-core-risk-20260918",
+      "bytes": 2052075520,
+      "sha256": "db55dc644e2bd7cc9c4880b2506a6490f0102805a1f91f09734146388c588723",
+      "reason": "superseded_financial_backup_latest_backup_retained"
+    },
+    {
+      "path": "workspace/auto-valuation-20260909/market.duckdb.pre-reviewed-assets-20260918",
+      "bytes": 2051813376,
+      "sha256": "984e87f57a7d962db1a667d922cabdf9bc31581b881907b4cd056a1b0f36e954",
+      "reason": "superseded_financial_backup_latest_backup_retained"
+    },
+    {
+      "path": "workspace/auto-valuation-20260909/market.duckdb.pre-disposal-cash-20260918",
+      "bytes": 2051813376,
+      "sha256": "4f4ca73063aaca63d7286d0a044e5f98d27ed548108b1bd9719454ba7770f9a5",
+      "reason": "superseded_financial_backup_latest_backup_retained"
+    },
+    {
+      "path": "workspace/supor-reviewed-assets-20260917/acceptance.duckdb",
+      "bytes": 2054172672,
+      "sha256": "437402163bf717443bd6f91d3a826335d99c8fac4c220937a481c2911eb0ffe1",
+      "reason": "isolated_acceptance_published_to_main_with_evidence_retained"
+    },
+    {
+      "path": "workspace/auto-valuation-20260909/capacity-probe.duckdb",
+      "bytes": 212348928,
+      "sha256": "73ef58a6408a0952dc94dc79ef83cec593f47e4544f2459c826978a6754a7ff6",
+      "reason": "rebuildable_capacity_probe"
+    },
+    {
+      "path": "workspace/supplements-f10-20260907/alphalake",
+      "bytes": 85977112,
+      "sha256": "2ee8ff659d6ad646ab993ae871cdf21907ff973aaebf8fd5221059912ed8469d",
+      "reason": "rebuildable_obsolete_executable"
+    },
+    {
+      "path": "workspace/valuation-integration-20260907/alphalake",
+      "bytes": 86018824,
+      "sha256": "db37b7bf52630caf2003fee1566ca87288cb0e1a93b55bc93b0f955b9668ea74",
+      "reason": "rebuildable_obsolete_executable"
+    },
+    {
+      "path": "workspace/valuation-export-performance-20260910/readiness.json",
+      "bytes": 196115519,
+      "sha256": "d53f08a716b2fc917052f46f6133dabc0b8f811c5c8a7d5e671c75e43f06631b",
+      "reason": "rebuildable_historical_readiness_export"
+    },
+    {
+      "path": "workspace/valuation-export-performance-20260910/readiness-final.json",
+      "bytes": 196115519,
+      "sha256": "d53f08a716b2fc917052f46f6133dabc0b8f811c5c8a7d5e671c75e43f06631b",
+      "reason": "rebuildable_historical_readiness_export"
+    },
+    {
+      "path": "workspace/reviewed-assets-20260917/alphalake",
+      "bytes": 86920064,
+      "sha256": "fa01dc05a46117f59b85bc49ef3aa3a82564eea28f633fdd4e768ed3c8574295",
+      "reason": "rebuildable_obsolete_executable"
+    },
+    {
+      "path": "workspace/anker-agent-adapter-20260906/alphalake",
+      "bytes": 85968944,
+      "sha256": "b803491cb78f066b2874d0dc98f5a399bd92e3c93b3e4cb011462be3e24354b8",
+      "reason": "rebuildable_obsolete_executable"
+    },
+    {
+      "path": "workspace/automatic-valuation-20260917/alphalake",
+      "bytes": 86924416,
+      "sha256": "7ec7e98b08ffcd40b7227b8411b342db0b738f59e558e65cb3542b52364d51e7",
+      "reason": "rebuildable_obsolete_executable"
+    },
+    {
+      "path": "workspace/bse-publication-20260910/alphalake",
+      "bytes": 86915224,
+      "sha256": "dc22cbcdde34a9c2805dc7c0ceafbf3bdd49e5e953e36e69888561aef4f38dd9",
+      "reason": "rebuildable_obsolete_executable"
+    },
+    {
+      "path": "workspace/bse-publication-20260910/promoted-readiness.json",
+      "bytes": 201491085,
+      "sha256": "47b17c02b232bc8c137800998d95425b7fddf2c26194bf33930039622c836473",
+      "reason": "rebuildable_historical_readiness_export"
+    },
+    {
+      "path": "workspace/bse-publication-20260910/main-copy-readiness.json",
+      "bytes": 201491085,
+      "sha256": "47b17c02b232bc8c137800998d95425b7fddf2c26194bf33930039622c836473",
+      "reason": "rebuildable_historical_readiness_export"
+    },
+    {
+      "path": "workspace/supplements-20260907/alphalake",
+      "bytes": 85977112,
+      "sha256": "eded1db844521526cfd7a18c2b46d10fe623e836b246bd05a6de6d19d131974f",
+      "reason": "rebuildable_obsolete_executable"
+    },
+    {
+      "path": "workspace/forecast-baseline-20260910/prepare",
+      "bytes": 3694034,
+      "sha256": "9bac8bd02d15ca0e2ed888717da5c43ee66d7f5ebb3a167bde6e296901d3654c",
+      "reason": "rebuildable_obsolete_executable"
+    },
+    {
+      "path": "workspace/auto-valuation-20260909/readiness-bounded.json",
+      "bytes": 200491071,
+      "sha256": "f1a03f3fa80e52717828f0e76f02e3f0cbba1f431dc9d6e67877289f0b00127b",
+      "reason": "rebuildable_historical_readiness_export"
+    },
+    {
+      "path": "workspace/cash-rd-20260906/alphalake",
+      "bytes": 85973040,
+      "sha256": "6313c33c6cce0d88cd4edeec3d5872f90e85bc9e218124eb5b067f33506bb10a",
+      "reason": "rebuildable_obsolete_executable"
+    },
+    {
+      "path": "workspace/fn-balance-20260906/alphalake",
+      "bytes": 85973040,
+      "sha256": "3af2321efe2e1037ea30f4e390a17af2674d4c146a6aeb0f46abf0f7aa1fe199",
+      "reason": "rebuildable_obsolete_executable"
+    },
+    {
+      "path": "workspace/company-industry-publication-20260910/main-readiness.json",
+      "bytes": 201324488,
+      "sha256": "6f0f3ec71d3fafcdd46e99f4016f2ac200ab9dffa84fb536b66f6961babd3f7d",
+      "reason": "rebuildable_historical_readiness_export"
+    },
+    {
+      "path": "workspace/company-industry-publication-20260910/main-readiness-final.json",
+      "bytes": 201588180,
+      "sha256": "efbe06970ba1daa7302504d1d92d1137ad2d78b16a3159bed888d409fdaccb75",
+      "reason": "rebuildable_historical_readiness_export"
+    },
+    {
+      "path": "workspace/fn-expansion-20260906/alphalake",
+      "bytes": 85968944,
+      "sha256": "dc7f14f6e6edd44a0354d101b4a7a36c7a07baf6069323446f86a48b4109a0f3",
+      "reason": "rebuildable_obsolete_executable"
+    }
+  ],
+  "removed_bytes": 14242897365,
+  "verification": {
+    "main_database_sha256": "d7c027df3ec5a14d2d05f423472f954f19a83d2b3969c35de39bd6b65b3ac507",
+    "latest_financial_backup_sha256": "81039648233a209aba2a9d7711bdc0f27299fee2888867454782d7fff1e3a732",
+    "retained_hashes_unchanged": true,
+    "main_database_reopened_schema": 46,
+    "workspace_after": "9.0GiB",
+    "disk_available_after": "24GiB"
+  }
+}
