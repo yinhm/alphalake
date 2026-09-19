@@ -24,13 +24,7 @@ func TestInstrumentSnapshotPreflightRejectsFlatPartitionDriftBeforeWrites(t *tes
 		flat[0],
 		snapshotObservation("sh600002", "B"),
 	}
-	_, err = ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{
-		Source: "tdx",
-		AsOfDate: time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC),
-		Complete: true,
-		Observations: flat,
-		Partitions: []domain.InstrumentMasterPartition{{Key: "sh", ExchangeMIC: "XSHG", Complete: true, Observations: partition}},
-	})
+	_, err = ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{Source: "tdx", AsOfDate: time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC), Observations: flat, Partitions: []domain.InstrumentMasterPartition{{Key: "sh", ExchangeMIC: "XSHG", Complete: true, Observations: partition}}})
 	if err == nil {
 		t.Fatal("expected flat/partition preflight error")
 	}
@@ -49,13 +43,7 @@ func TestInstrumentSnapshotPreflightRejectsUnownedFlatObservationBeforeWrites(t 
 		snapshotObservation("sh600001", "A"),
 		snapshotObservation("sh600002", "B"),
 	}
-	_, err = ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{
-		Source: "tdx",
-		AsOfDate: time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC),
-		Complete: true,
-		Observations: flat,
-		Partitions: []domain.InstrumentMasterPartition{{Key: "sh", ExchangeMIC: "XSHG", Complete: true, Observations: flat[:1]}},
-	})
+	_, err = ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{Source: "tdx", AsOfDate: time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC), Observations: flat, Partitions: []domain.InstrumentMasterPartition{{Key: "sh", ExchangeMIC: "XSHG", Complete: true, Observations: flat[:1]}}})
 	if err == nil {
 		t.Fatal("expected unowned flat observation preflight error")
 	}
@@ -76,9 +64,9 @@ func assertNoInstrumentSideEffects(t *testing.T, ctx context.Context, db *sql.DB
 	}
 }
 
-func TestLegacyInstrumentSnapshotRetainsGlobalTruncationGuard(t *testing.T) {
+func TestInstrumentSnapshotRetainsPartitionTruncationGuard(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "legacy-guard.duckdb"))
+	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "partition-guard.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,11 +80,11 @@ func TestLegacyInstrumentSnapshotRetainsGlobalTruncationGuard(t *testing.T) {
 		return out
 	}
 	day1 := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
-	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{Source: "tdx", AsOfDate: day1, Complete: true, Observations: makeObservations(100)}); err != nil {
+	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(day1, true, makeObservations(100))); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{Source: "tdx", AsOfDate: day1.AddDate(0, 0, 1), Complete: true, Observations: makeObservations(50)}); err == nil {
-		t.Fatal("expected legacy global truncation guard error")
+	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(day1.AddDate(0, 0, 1), true, makeObservations(50))); err == nil {
+		t.Fatal("expected partition truncation guard error")
 	}
 
 	var open, pending int
@@ -107,6 +95,20 @@ func TestLegacyInstrumentSnapshotRetainsGlobalTruncationGuard(t *testing.T) {
 		t.Fatal(err)
 	}
 	if open != 100 || pending != 0 {
-		t.Fatalf("legacy truncation changed state: open=%d pending=%d", open, pending)
+		t.Fatalf("partition truncation changed state: open=%d pending=%d", open, pending)
 	}
+}
+
+func TestInstrumentSnapshotRejectsMissingPartitionsBeforeWrites(t *testing.T) {
+	ctx := context.Background()
+	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "no-partitions.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	_, err = ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{Source: "tdx", AsOfDate: time.Now(), Observations: []domain.InstrumentObservation{snapshotObservation("sh600001", "A")}})
+	if err == nil {
+		t.Fatal("unpartitioned snapshot accepted")
+	}
+	assertNoInstrumentSideEffects(t, ctx, db)
 }

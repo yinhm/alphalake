@@ -13,7 +13,7 @@ import (
 const tdxCorporateActionDataset = "corporate_action"
 
 type TDXCorporateActionSource interface {
-	Instruments(context.Context) ([]domain.InstrumentObservation, error)
+	InstrumentSnapshot(context.Context) (domain.InstrumentMasterSnapshot, error)
 	CorporateActions(context.Context, string) ([]domain.CorporateActionObservation, error)
 }
 
@@ -202,12 +202,12 @@ func reportCorporateActionProgress(options TDXCorporateActionSyncOptions, summar
 		return
 	}
 	options.OnProgress(TDXCorporateActionProgress{
-		RunID: summary.RunID,
+		RunID:     summary.RunID,
 		Processed: summary.Attempted,
-		Total: total,
-		Synced: summary.Synced,
-		Failed: len(summary.Failures) + len(summary.MasterFailures),
-		Symbol: symbol,
+		Total:     total,
+		Synced:    summary.Synced,
+		Failed:    len(summary.Failures) + len(summary.MasterFailures),
+		Symbol:    symbol,
 	})
 }
 

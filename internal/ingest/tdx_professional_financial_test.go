@@ -39,8 +39,8 @@ type fakeProfessionalFinancialSource struct {
 	marketMarker      byte
 }
 
-func (f *fakeProfessionalFinancialSource) Instruments(context.Context) ([]domain.InstrumentObservation, error) {
-	return f.instruments, nil
+func (f *fakeProfessionalFinancialSource) InstrumentSnapshot(context.Context) (domain.InstrumentMasterSnapshot, error) {
+	return testMasterSnapshot(time.Date(2026, 9, 3, 0, 0, 0, 0, time.UTC), true, f.instruments), nil
 }
 
 func (f *fakeProfessionalFinancialSource) ProfessionalFinancialFileList(context.Context) ([]tdxfinancial.FileEntry, []byte, error) {

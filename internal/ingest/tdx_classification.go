@@ -16,7 +16,7 @@ const tdxClassificationDataset = "classification"
 var chinaMarketZone = time.FixedZone("Asia/Shanghai", 8*60*60)
 
 type TDXClassificationSource interface {
-	Instruments(context.Context) ([]domain.InstrumentObservation, error)
+	InstrumentSnapshot(context.Context) (domain.InstrumentMasterSnapshot, error)
 	ClassificationFamilies() []string
 	ClassificationSnapshot(context.Context, string) (domain.ClassificationSnapshot, error)
 }

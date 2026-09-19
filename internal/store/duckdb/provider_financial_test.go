@@ -34,7 +34,7 @@ func TestInsertProviderFinancialRecordsPreservesRawBitsAndRevisions(t *testing.T
 	bits2 := uint32(0x80000000)
 	record := domain.ProviderFinancialRecord{
 		InstrumentID: instrumentID,
-		Provider: "tdx", ProviderCode: "600001", MarketMarker: 7,
+		Provider:     "tdx", ProviderCode: "600001", MarketMarker: 7,
 		ReportPeriod: period,
 		ProviderFields: []domain.ProviderFloat32{
 			{Bits: bits1, Value: float64(math.Float32frombits(bits1))},
@@ -120,9 +120,9 @@ func TestProviderFactReconcileReassignsSameRevisionWithoutDuplicates(t *testing.
 	}
 	record := domain.ProviderFinancialRecord{
 		InstrumentID: oldID, Provider: "tdx", ProviderCode: "600001", MarketMarker: 1,
-		ReportPeriod: time.Date(2020, 12, 31, 0, 0, 0, 0, time.UTC),
+		ReportPeriod:   time.Date(2020, 12, 31, 0, 0, 0, 0, time.UTC),
 		ProviderFields: []domain.ProviderFloat32{{Bits: math.Float32bits(10), Value: 10}, {Bits: math.Float32bits(20), Value: 20}},
-		SourceFile: "gpcw20201231.zip", ArtifactID: 201,
+		SourceFile:     "gpcw20201231.zip", ArtifactID: 201,
 	}
 	if _, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, runID, "tdx", "same-sha", []domain.ProviderFinancialRecord{record}); err != nil {
 		t.Fatal(err)
@@ -164,5 +164,32 @@ func TestProviderFactReconcileReassignsSameRevisionWithoutDuplicates(t *testing.
 	}
 	if total != 0 {
 		t.Fatalf("stale facts after unresolved transition=%d, want 0", total)
+	}
+}
+
+func TestProviderFactsRejectMissingSourceIdentityWithoutBackfill(t *testing.T) {
+	ctx := context.Background()
+	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "missing-source.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	run, err := StartIngestRun(ctx, db, "tdx", "professional_financial", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = db.ExecContext(ctx, `INSERT INTO fundamental.provider_fact(instrument_id,source,report_period,provider_field,value,revision_key) VALUES (1,'tdx',DATE '2025-12-31','FN1',10,'same-sha')`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	record := domain.ProviderFinancialRecord{InstrumentID: 1, Provider: "tdx", ProviderCode: "600001", MarketMarker: 1, ReportPeriod: time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC), ProviderFields: []domain.ProviderFloat32{{Bits: math.Float32bits(10), Value: 10}}, SourceFile: "gpcw20251231.zip", ArtifactID: 1}
+	for _, records := range [][]domain.ProviderFinancialRecord{{record}, nil} {
+		if _, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", "same-sha", records); err == nil {
+			t.Fatal("missing identity accepted")
+		}
+		var count int
+		if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_fact WHERE provider_code IS NULL AND value=10`).Scan(&count); err != nil || count != 1 {
+			t.Fatalf("incomplete evidence changed: %d %v", count, err)
+		}
 	}
 }

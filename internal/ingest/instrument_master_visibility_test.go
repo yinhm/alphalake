@@ -14,10 +14,6 @@ type partitionFailureDailySource struct {
 	snapshot domain.InstrumentMasterSnapshot
 }
 
-func (f *partitionFailureDailySource) Instruments(context.Context) ([]domain.InstrumentObservation, error) {
-	return f.snapshot.Observations, nil
-}
-
 func (f *partitionFailureDailySource) InstrumentSnapshot(context.Context) (domain.InstrumentMasterSnapshot, error) {
 	return f.snapshot, nil
 }
@@ -25,8 +21,8 @@ func (f *partitionFailureDailySource) InstrumentSnapshot(context.Context) (domai
 func (f *partitionFailureDailySource) StockDailyBars(_ context.Context, instrumentID int64, _ string) ([]domain.DailyBar, error) {
 	return []domain.DailyBar{{
 		InstrumentID: instrumentID,
-		TradeDate: time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC),
-		Open: 10, High: 11, Low: 9, Close: 10.5,
+		TradeDate:    time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC),
+		Open:         10, High: 11, Low: 9, Close: 10.5,
 		Volume: 1000, Amount: 10500, Source: "tdx",
 	}}, nil
 }
@@ -44,16 +40,10 @@ func TestDailySyncSurfacesMasterPartitionFailureWithoutBlockingHealthyPartition(
 	defer db.Close()
 
 	sh := observation(domain.InstrumentEquity, "XSHG", "SH-A", "sh600001")
-	source := &partitionFailureDailySource{snapshot: domain.InstrumentMasterSnapshot{
-		Source: "tdx",
-		AsOfDate: time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC),
-		Complete: false,
-		Observations: []domain.InstrumentObservation{sh},
-		Partitions: []domain.InstrumentMasterPartition{
-			{Key: "sh", ExchangeMIC: "XSHG", Complete: true, Observations: []domain.InstrumentObservation{sh}},
-			{Key: "bj", ExchangeMIC: "XBSE", Complete: false, Error: "temporary BJ timeout"},
-		},
-	}}
+	source := &partitionFailureDailySource{snapshot: domain.InstrumentMasterSnapshot{Source: "tdx", AsOfDate: time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC), Observations: []domain.InstrumentObservation{sh}, Partitions: []domain.InstrumentMasterPartition{
+		{Key: "sh", ExchangeMIC: "XSHG", Complete: true, Observations: []domain.InstrumentObservation{sh}},
+		{Key: "bj", ExchangeMIC: "XBSE", Complete: false, Error: "temporary BJ timeout"},
+	}}}
 
 	summary, err := SyncAllTDXDaily(ctx, db, source)
 	if err != nil {

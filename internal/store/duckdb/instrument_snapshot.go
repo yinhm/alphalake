@@ -69,21 +69,6 @@ func ApplyInstrumentMasterSnapshot(ctx context.Context, db *sql.DB, snapshot dom
 	}
 	result.InstrumentIDs = make([]int64, len(snapshot.Observations))
 
-	// Legacy/compatibility snapshots without explicit partitions retain one
-	// transaction and global Complete semantics. They also retain the historical
-	// global truncation guard so compatibility does not silently weaken safety.
-	if len(snapshot.Partitions) == 0 {
-		part, err := applyInstrumentPartition(ctx, db, snapshot.Source, snapshot.AsOfDate, "", snapshot.Complete, snapshot.Observations)
-		if err != nil {
-			return result, err
-		}
-		copy(result.InstrumentIDs, part.InstrumentIDs)
-		result.Closed = part.Closed
-		result.PendingClose = part.PendingClose
-		result.DeferredClose = part.DeferredClose
-		return result, nil
-	}
-
 	applied := 0
 	for _, partition := range snapshot.Partitions {
 		mic := strings.TrimSpace(partition.ExchangeMIC)
@@ -163,7 +148,7 @@ func validateInstrumentMasterSnapshotStructure(snapshot domain.InstrumentMasterS
 		flatIndex[key] = i
 	}
 	if len(snapshot.Partitions) == 0 {
-		return flatIndex, nil
+		return nil, errors.New("instrument snapshot requires exchange partitions")
 	}
 
 	seenMIC := make(map[string]struct{}, len(snapshot.Partitions))
@@ -242,7 +227,7 @@ func applyInstrumentPartition(ctx context.Context, db *sql.DB, source string, as
 			return result, fmt.Errorf("instrument %d: %w", i, err)
 		}
 		mic := strings.TrimSpace(observation.Instrument.ExchangeMIC)
-		if exchangeMIC != "" && mic != exchangeMIC {
+		if mic != exchangeMIC {
 			return result, fmt.Errorf("instrument %s exchange %q does not match partition %q", identifier.Value, mic, exchangeMIC)
 		}
 		key := providerIdentifierKey(identifier.Provider, identifier.Type, identifier.Value)
@@ -262,16 +247,12 @@ func applyInstrumentPartition(ctx context.Context, db *sql.DB, source string, as
 		if err != nil {
 			return result, err
 		}
-		if exchangeMIC != "" {
-			if err := validateInstrumentPartitionSize(open, current, exchangeMIC); err != nil {
-				return result, err
-			}
-		} else if err := validateInstrumentSnapshotSize(open, current); err != nil {
+		if err := validateInstrumentPartitionSize(open, current, exchangeMIC); err != nil {
 			return result, err
 		}
 		for _, item := range open {
 			mic := strings.TrimSpace(item.exchangeMIC)
-			if exchangeMIC != "" && mic != exchangeMIC {
+			if mic != exchangeMIC {
 				continue
 			}
 			key := providerIdentifierKey(source, item.identifierType, item.value)
@@ -365,18 +346,6 @@ func validateInstrumentPartitionSize(open []openProviderIdentifier, current map[
 	}
 	if previous >= 100 && previous-currentCount >= 20 && currentCount*100 < previous*80 {
 		return fmt.Errorf("refuse suspiciously truncated instrument partition %q: %d -> %d", mic, previous, currentCount)
-	}
-	return nil
-}
-
-func validateInstrumentSnapshotSize(open []openProviderIdentifier, current map[string]string) error {
-	previous := len(open)
-	currentCount := len(current)
-	if previous >= 20 && currentCount == 0 {
-		return fmt.Errorf("refuse legacy instrument snapshot that drops from %d identifiers to zero", previous)
-	}
-	if previous >= 100 && previous-currentCount >= 20 && currentCount*100 < previous*80 {
-		return fmt.Errorf("refuse suspiciously truncated legacy instrument snapshot: %d -> %d", previous, currentCount)
 	}
 	return nil
 }

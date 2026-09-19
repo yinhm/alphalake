@@ -32,23 +32,17 @@ func TestApplyInstrumentMasterSnapshotRequiresRepeatedAbsenceBeforeCodeReuse(t *
 	defer db.Close()
 
 	day1 := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
-	first, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{
-		Source: "tdx", AsOfDate: day1, Complete: true,
-		Observations: []domain.InstrumentObservation{
-			snapshotObservation("sh600001", "Old A"),
-			snapshotObservation("sh600002", "B"),
-		},
-	})
+	first, err := ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(day1, true, []domain.InstrumentObservation{
+		snapshotObservation("sh600001", "Old A"),
+		snapshotObservation("sh600002", "B"),
+	}))
 	if err != nil {
 		t.Fatal(err)
 	}
 	oldA := first.InstrumentIDs[0]
 
 	day2 := day1.AddDate(0, 0, 1)
-	second, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{
-		Source: "tdx", AsOfDate: day2, Complete: true,
-		Observations: []domain.InstrumentObservation{snapshotObservation("sh600002", "B")},
-	})
+	second, err := ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(day2, true, []domain.InstrumentObservation{snapshotObservation("sh600002", "B")}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,10 +51,7 @@ func TestApplyInstrumentMasterSnapshotRequiresRepeatedAbsenceBeforeCodeReuse(t *
 	}
 
 	// Same-day rerun is not additional evidence.
-	sameDay, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{
-		Source: "tdx", AsOfDate: day2, Complete: true,
-		Observations: []domain.InstrumentObservation{snapshotObservation("sh600002", "B")},
-	})
+	sameDay, err := ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(day2, true, []domain.InstrumentObservation{snapshotObservation("sh600002", "B")}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,10 +60,7 @@ func TestApplyInstrumentMasterSnapshotRequiresRepeatedAbsenceBeforeCodeReuse(t *
 	}
 
 	day3 := day2.AddDate(0, 0, 1)
-	third, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{
-		Source: "tdx", AsOfDate: day3, Complete: true,
-		Observations: []domain.InstrumentObservation{snapshotObservation("sh600002", "B")},
-	})
+	third, err := ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(day3, true, []domain.InstrumentObservation{snapshotObservation("sh600002", "B")}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,13 +80,10 @@ func TestApplyInstrumentMasterSnapshotRequiresRepeatedAbsenceBeforeCodeReuse(t *
 	}
 
 	day4 := day3.AddDate(0, 0, 1)
-	fourth, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{
-		Source: "tdx", AsOfDate: day4, Complete: true,
-		Observations: []domain.InstrumentObservation{
-			snapshotObservation("sh600001", "New A"),
-			snapshotObservation("sh600002", "B"),
-		},
-	})
+	fourth, err := ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(day4, true, []domain.InstrumentObservation{
+		snapshotObservation("sh600001", "New A"),
+		snapshotObservation("sh600002", "B"),
+	}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,88 +105,139 @@ func TestApplyInstrumentMasterSnapshotRequiresRepeatedAbsenceBeforeCodeReuse(t *
 func TestApplyInstrumentMasterSnapshotReturnClearsPendingAbsence(t *testing.T) {
 	ctx := context.Background()
 	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "return.duckdb"))
-	if err != nil { t.Fatal(err) }
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer db.Close()
 	day1 := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
 	both := []domain.InstrumentObservation{snapshotObservation("sh600001", "A"), snapshotObservation("sh600002", "B")}
-	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{Source:"tdx", AsOfDate:day1, Complete:true, Observations:both}); err != nil { t.Fatal(err) }
-	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{Source:"tdx", AsOfDate:day1.AddDate(0,0,1), Complete:true, Observations:both[1:]}); err != nil { t.Fatal(err) }
-	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{Source:"tdx", AsOfDate:day1.AddDate(0,0,2), Complete:true, Observations:both}); err != nil { t.Fatal(err) }
+	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(day1, true, both)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(day1.AddDate(0, 0, 1), true, both[1:])); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(day1.AddDate(0, 0, 2), true, both)); err != nil {
+		t.Fatal(err)
+	}
 	var missingEvidence int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM meta.checkpoint WHERE source='tdx' AND dataset='instrument_master'`).Scan(&missingEvidence); err != nil { t.Fatal(err) }
-	if missingEvidence != 0 { t.Fatalf("missing evidence rows=%d, want 0 after return", missingEvidence) }
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM meta.checkpoint WHERE source='tdx' AND dataset='instrument_master'`).Scan(&missingEvidence); err != nil {
+		t.Fatal(err)
+	}
+	if missingEvidence != 0 {
+		t.Fatalf("missing evidence rows=%d, want 0 after return", missingEvidence)
+	}
 	var open int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx' AND valid_to IS NULL`).Scan(&open); err != nil { t.Fatal(err) }
-	if open != 2 { t.Fatalf("open identifiers=%d, want 2", open) }
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx' AND valid_to IS NULL`).Scan(&open); err != nil {
+		t.Fatal(err)
+	}
+	if open != 2 {
+		t.Fatalf("open identifiers=%d, want 2", open)
+	}
 }
 
 func TestApplyInstrumentMasterSnapshotIncompleteDoesNotCloseMissing(t *testing.T) {
 	ctx := context.Background()
 	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "partial.duckdb"))
-	if err != nil { t.Fatal(err) }
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer db.Close()
 	day1 := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
-	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{
-		Source: "tdx", AsOfDate: day1, Complete: true,
-		Observations: []domain.InstrumentObservation{snapshotObservation("sh600001", "A"), snapshotObservation("sh600002", "B")},
-	}); err != nil { t.Fatal(err) }
-	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{
-		Source: "tdx", AsOfDate: day1.AddDate(0, 0, 1), Complete: false,
-		Observations: []domain.InstrumentObservation{snapshotObservation("sh600002", "B")},
-	}); err != nil { t.Fatal(err) }
+	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(day1, true, []domain.InstrumentObservation{snapshotObservation("sh600001", "A"), snapshotObservation("sh600002", "B")})); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(day1.AddDate(0, 0, 1), false, []domain.InstrumentObservation{snapshotObservation("sh600002", "B")})); err != nil {
+		t.Fatal(err)
+	}
 	var open int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx' AND valid_to IS NULL`).Scan(&open); err != nil { t.Fatal(err) }
-	if open != 2 { t.Fatalf("open identifiers=%d, want 2 after incomplete snapshot", open) }
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx' AND valid_to IS NULL`).Scan(&open); err != nil {
+		t.Fatal(err)
+	}
+	if open != 2 {
+		t.Fatalf("open identifiers=%d, want 2 after incomplete snapshot", open)
+	}
 }
 
 func TestApplyInstrumentMasterSnapshotScopesAuthorityByPartition(t *testing.T) {
 	ctx := context.Background()
 	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "partitioned.duckdb"))
-	if err != nil { t.Fatal(err) }
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer db.Close()
 	day1 := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
 	initial := []domain.InstrumentObservation{snapshotObservation("sh600001", "SH-A"), snapshotObservation("sh600002", "SH-B"), snapshotObservation("bj920001", "BJ-A")}
-	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{Source:"tdx", AsOfDate:day1, Complete:true, Observations:initial}); err != nil { t.Fatal(err) }
+	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(day1, true, initial)); err != nil {
+		t.Fatal(err)
+	}
 
 	shOnly := []domain.InstrumentObservation{snapshotObservation("sh600002", "SH-B")}
 	partitioned := func(day time.Time) domain.InstrumentMasterSnapshot {
-		return domain.InstrumentMasterSnapshot{
-			Source:"tdx", AsOfDate:day, Complete:false, Observations:shOnly,
-			Partitions: []domain.InstrumentMasterPartition{
-				{Key:"sh", ExchangeMIC:"XSHG", Complete:true, Observations:shOnly},
-				{Key:"bj", ExchangeMIC:"XBSE", Complete:false, Error:"temporary BJ failure"},
-			},
-		}
+		return domain.InstrumentMasterSnapshot{Source: "tdx", AsOfDate: day, Observations: shOnly, Partitions: []domain.InstrumentMasterPartition{
+			{Key: "sh", ExchangeMIC: "XSHG", Complete: true, Observations: shOnly},
+			{Key: "bj", ExchangeMIC: "XBSE", Complete: false, Error: "temporary BJ failure"},
+		}}
 	}
-	if result, err := ApplyInstrumentMasterSnapshot(ctx, db, partitioned(day1.AddDate(0,0,1))); err != nil || result.Closed != 0 || result.PendingClose != 1 {
+	if result, err := ApplyInstrumentMasterSnapshot(ctx, db, partitioned(day1.AddDate(0, 0, 1))); err != nil || result.Closed != 0 || result.PendingClose != 1 {
 		t.Fatalf("first partitioned result=%#v err=%v", result, err)
 	}
-	if result, err := ApplyInstrumentMasterSnapshot(ctx, db, partitioned(day1.AddDate(0,0,2))); err != nil || result.Closed != 1 {
+	if result, err := ApplyInstrumentMasterSnapshot(ctx, db, partitioned(day1.AddDate(0, 0, 2))); err != nil || result.Closed != 1 {
 		t.Fatalf("second partitioned result=%#v err=%v", result, err)
 	}
 	var bjOpen int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx' AND identifier_value='bj920001' AND valid_to IS NULL`).Scan(&bjOpen); err != nil { t.Fatal(err) }
-	if bjOpen != 1 { t.Fatalf("BJ open=%d, want frozen/open after failed partition", bjOpen) }
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx' AND identifier_value='bj920001' AND valid_to IS NULL`).Scan(&bjOpen); err != nil {
+		t.Fatal(err)
+	}
+	if bjOpen != 1 {
+		t.Fatalf("BJ open=%d, want frozen/open after failed partition", bjOpen)
+	}
 }
 
 func TestApplyInstrumentMasterSnapshotRejectsLargeTruncationPerPartition(t *testing.T) {
 	ctx := context.Background()
 	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "truncated.duckdb"))
-	if err != nil { t.Fatal(err) }
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer db.Close()
 	makeObservations := func(n int) []domain.InstrumentObservation {
 		out := make([]domain.InstrumentObservation, 0, n)
-		for i := 0; i < n; i++ { out = append(out, snapshotObservation(fmt.Sprintf("sh%06d", 600000+i), fmt.Sprintf("S%d", i))) }
+		for i := 0; i < n; i++ {
+			out = append(out, snapshotObservation(fmt.Sprintf("sh%06d", 600000+i), fmt.Sprintf("S%d", i)))
+		}
 		return out
 	}
 	day1 := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
-	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{Source:"tdx", AsOfDate:day1, Complete:true, Observations:makeObservations(100)}); err != nil { t.Fatal(err) }
+	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(day1, true, makeObservations(100))); err != nil {
+		t.Fatal(err)
+	}
 	current := makeObservations(50)
-	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{
-		Source:"tdx", AsOfDate:day1.AddDate(0,0,1), Complete:true, Observations:current,
-		Partitions: []domain.InstrumentMasterPartition{{Key:"sh", ExchangeMIC:"XSHG", Complete:true, Observations:current}},
-	}); err == nil { t.Fatal("expected suspicious truncation error") }
+	if _, err := ApplyInstrumentMasterSnapshot(ctx, db, domain.InstrumentMasterSnapshot{Source: "tdx", AsOfDate: day1.AddDate(0, 0, 1), Observations: current, Partitions: []domain.InstrumentMasterPartition{{Key: "sh", ExchangeMIC: "XSHG", Complete: true, Observations: current}}}); err == nil {
+		t.Fatal("expected suspicious truncation error")
+	}
 	var open int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx' AND valid_to IS NULL`).Scan(&open); err != nil { t.Fatal(err) }
-	if open != 100 { t.Fatalf("open identifiers=%d, want rollback to 100", open) }
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx' AND valid_to IS NULL`).Scan(&open); err != nil {
+		t.Fatal(err)
+	}
+	if open != 100 {
+		t.Fatalf("open identifiers=%d, want rollback to 100", open)
+	}
+}
+
+// testMasterSnapshot supplies explicit exchange partitions for test observations.
+func testMasterSnapshot(day time.Time, complete bool, observations []domain.InstrumentObservation) domain.InstrumentMasterSnapshot {
+	snapshot := domain.InstrumentMasterSnapshot{Source: "tdx", AsOfDate: day, Observations: observations}
+	indexes := map[string]int{}
+	for _, observation := range observations {
+		mic := observation.Instrument.ExchangeMIC
+		index, ok := indexes[mic]
+		if !ok {
+			index = len(snapshot.Partitions)
+			indexes[mic] = index
+			snapshot.Partitions = append(snapshot.Partitions, domain.InstrumentMasterPartition{Key: mic, ExchangeMIC: mic, Complete: complete})
+		}
+		snapshot.Partitions[index].Observations = append(snapshot.Partitions[index].Observations, observation)
+	}
+	return snapshot
 }

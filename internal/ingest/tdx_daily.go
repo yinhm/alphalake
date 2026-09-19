@@ -13,7 +13,7 @@ import (
 // TDXDailySource is the narrow source contract needed by daily market-data
 // ingestion. The incremental extension is declared in tdx_daily_all.go.
 type TDXDailySource interface {
-	Instruments(context.Context) ([]domain.InstrumentObservation, error)
+	InstrumentSnapshot(context.Context) (domain.InstrumentMasterSnapshot, error)
 	StockDailyBars(context.Context, int64, string) ([]domain.DailyBar, error)
 }
 

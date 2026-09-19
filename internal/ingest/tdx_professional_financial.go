@@ -24,7 +24,7 @@ const (
 )
 
 type TDXProfessionalFinancialSource interface {
-	instrumentListSource
+	instrumentSnapshotSource
 	ProfessionalFinancialFileList(context.Context) ([]tdxfinancial.FileEntry, []byte, error)
 	ProfessionalFinancialPackage(context.Context, tdxfinancial.FileEntry) ([]byte, error)
 	NormalizeProfessionalFinancialPackage(tdxfinancial.FileEntry, []byte, int64) ([]domain.ProviderFinancialRecord, error)

@@ -18,8 +18,8 @@ type fakeTDXDailySource struct {
 	sinceCalls   []time.Time
 }
 
-func (f *fakeTDXDailySource) Instruments(context.Context) ([]domain.InstrumentObservation, error) {
-	return f.observations, nil
+func (f *fakeTDXDailySource) InstrumentSnapshot(context.Context) (domain.InstrumentMasterSnapshot, error) {
+	return testMasterSnapshot(time.Date(2026, 9, 3, 0, 0, 0, 0, time.UTC), true, f.observations), nil
 }
 
 func (f *fakeTDXDailySource) StockDailyBars(_ context.Context, instrumentID int64, _ string) ([]domain.DailyBar, error) {
@@ -119,4 +119,21 @@ func TestSyncTDXDailyRejectsUnsupportedInstrumentType(t *testing.T) {
 	if count != 0 {
 		t.Fatalf("bar count = %d, want 0", count)
 	}
+}
+
+// testMasterSnapshot supplies explicit exchange partitions for test observations.
+func testMasterSnapshot(day time.Time, complete bool, observations []domain.InstrumentObservation) domain.InstrumentMasterSnapshot {
+	snapshot := domain.InstrumentMasterSnapshot{Source: "tdx", AsOfDate: day, Observations: observations}
+	indexes := map[string]int{}
+	for _, observation := range observations {
+		mic := observation.Instrument.ExchangeMIC
+		index, ok := indexes[mic]
+		if !ok {
+			index = len(snapshot.Partitions)
+			indexes[mic] = index
+			snapshot.Partitions = append(snapshot.Partitions, domain.InstrumentMasterPartition{Key: mic, ExchangeMIC: mic, Complete: complete})
+		}
+		snapshot.Partitions[index].Observations = append(snapshot.Partitions[index].Observations, observation)
+	}
+	return snapshot
 }

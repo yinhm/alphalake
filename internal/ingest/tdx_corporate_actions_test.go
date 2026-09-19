@@ -18,8 +18,8 @@ type fakeCorporateActionSource struct {
 	errors      map[string]error
 }
 
-func (f *fakeCorporateActionSource) Instruments(context.Context) ([]domain.InstrumentObservation, error) {
-	return f.instruments, nil
+func (f *fakeCorporateActionSource) InstrumentSnapshot(context.Context) (domain.InstrumentMasterSnapshot, error) {
+	return testMasterSnapshot(time.Date(2026, 9, 3, 0, 0, 0, 0, time.UTC), true, f.instruments), nil
 }
 
 func (f *fakeCorporateActionSource) CorporateActions(_ context.Context, symbol string) ([]domain.CorporateActionObservation, error) {

@@ -32,9 +32,10 @@ func TestListInstrumentsNormalizesTDXCodeList(t *testing.T) {
 		}},
 	}}
 
-	observations, err := listInstruments(context.Background(), fake, []protocol.Exchange{protocol.ExchangeSH})
+	snapshot, err := loadInstrumentSnapshot(context.Background(), fake, []protocol.Exchange{protocol.ExchangeSH}, time.Now())
+	observations := snapshot.Observations
 	if err != nil {
-		t.Fatalf("listInstruments() error = %v", err)
+		t.Fatalf("loadInstrumentSnapshot() error = %v", err)
 	}
 	if len(observations) != 4 {
 		t.Fatalf("len(observations) = %d, want 4", len(observations))
@@ -72,7 +73,7 @@ func TestInstrumentSnapshotUsesChinaCalendarDate(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC)
-	if !snapshot.Complete || snapshot.Source != Provider || !snapshot.AsOfDate.Equal(want) {
+	if snapshot.Source != Provider || !snapshot.AsOfDate.Equal(want) {
 		t.Fatalf("snapshot metadata = %#v, want complete TDX snapshot at %v", snapshot, want)
 	}
 	if len(snapshot.Partitions) != 1 || !snapshot.Partitions[0].Complete || snapshot.Partitions[0].ExchangeMIC != "XSHG" {
@@ -93,7 +94,7 @@ func TestInstrumentSnapshotKeepsHealthyPartitionWhenAnotherIsEmpty(t *testing.T)
 	if err != nil {
 		t.Fatalf("partial snapshot error=%v", err)
 	}
-	if snapshot.Complete || len(snapshot.Observations) != 1 || len(snapshot.Partitions) != 2 {
+	if len(snapshot.Observations) != 1 || len(snapshot.Partitions) != 2 {
 		t.Fatalf("snapshot=%#v", snapshot)
 	}
 	if !snapshot.Partitions[0].Complete || snapshot.Partitions[1].Complete || snapshot.Partitions[1].Error == "" {

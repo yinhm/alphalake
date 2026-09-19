@@ -14,7 +14,7 @@ import (
 const tdxIndustryDataset = "classification_industry"
 
 type TDXIndustrySource interface {
-	Instruments(context.Context) ([]domain.InstrumentObservation, error)
+	InstrumentSnapshot(context.Context) (domain.InstrumentMasterSnapshot, error)
 	IndustrySnapshotResults(context.Context) ([]domain.ClassificationSnapshotResult, error)
 }
 

@@ -18,8 +18,8 @@ type fakeTDXClassificationSource struct {
 	errors      map[string]error
 }
 
-func (f *fakeTDXClassificationSource) Instruments(context.Context) ([]domain.InstrumentObservation, error) {
-	return f.instruments, nil
+func (f *fakeTDXClassificationSource) InstrumentSnapshot(context.Context) (domain.InstrumentMasterSnapshot, error) {
+	return testMasterSnapshot(time.Date(2026, 9, 3, 0, 0, 0, 0, time.UTC), true, f.instruments), nil
 }
 
 func (f *fakeTDXClassificationSource) ClassificationFamilies() []string {
@@ -63,9 +63,9 @@ func TestSyncTDXClassificationsKeepsSuccessfulFamiliesOnPartialFailure(t *testin
 	concept := fakeClassificationSnapshot("tdx_concept", "concept", "880500", "sh600001", "sz000001")
 	source := &fakeTDXClassificationSource{
 		instruments: instruments,
-		families: []string{"tdx_concept", "tdx_style_region"},
-		snapshots: map[string]domain.ClassificationSnapshot{"tdx_concept": concept},
-		errors: map[string]error{"tdx_style_region": errors.New("TDX block unavailable")},
+		families:    []string{"tdx_concept", "tdx_style_region"},
+		snapshots:   map[string]domain.ClassificationSnapshot{"tdx_concept": concept},
+		errors:      map[string]error{"tdx_style_region": errors.New("TDX block unavailable")},
 	}
 
 	// 2026-09-03 17:30 UTC is already 2026-09-04 in China.

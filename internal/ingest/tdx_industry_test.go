@@ -18,8 +18,8 @@ type fakeIndustrySource struct {
 	results     []domain.ClassificationSnapshotResult
 }
 
-func (f *fakeIndustrySource) Instruments(context.Context) ([]domain.InstrumentObservation, error) {
-	return f.instruments, nil
+func (f *fakeIndustrySource) InstrumentSnapshot(context.Context) (domain.InstrumentMasterSnapshot, error) {
+	return testMasterSnapshot(time.Date(2026, 9, 3, 0, 0, 0, 0, time.UTC), true, f.instruments), nil
 }
 
 func (f *fakeIndustrySource) IndustrySnapshotResults(context.Context) ([]domain.ClassificationSnapshotResult, error) {

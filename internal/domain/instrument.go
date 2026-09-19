@@ -55,12 +55,10 @@ type InstrumentMasterPartition struct {
 // InstrumentMasterSnapshot is one provider's point-in-time security-master
 // observation. Observations is the flat union of usable partition rows for
 // downstream acquisition loops. Partitions carries the destructive-authority
-// boundary. Complete remains as a compatibility/global summary and is true only
-// when every expected partition is complete.
+// boundary; completeness belongs to each partition.
 type InstrumentMasterSnapshot struct {
 	Source       string
 	AsOfDate     time.Time
-	Complete     bool
 	Observations []InstrumentObservation
 	Partitions   []InstrumentMasterPartition
 }

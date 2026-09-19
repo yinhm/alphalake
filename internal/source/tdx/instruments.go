@@ -33,31 +33,13 @@ func (c *Client) InstrumentSnapshot(ctx context.Context) (domain.InstrumentMaste
 	return loadInstrumentSnapshot(ctx, c.requests(ctx), aShareExchanges, time.Now())
 }
 
-// Instruments remains as the narrow compatibility view used by tests and
-// callers that do not need snapshot lifecycle metadata.
-func (c *Client) Instruments(ctx context.Context) ([]domain.InstrumentObservation, error) {
-	snapshot, err := c.InstrumentSnapshot(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return snapshot.Observations, nil
-}
-
-func listInstruments(ctx context.Context, c codeListClient, exchanges []protocol.Exchange) ([]domain.InstrumentObservation, error) {
-	snapshot, err := loadInstrumentSnapshot(ctx, c, exchanges, time.Now())
-	if err != nil {
-		return nil, err
-	}
-	return snapshot.Observations, nil
-}
-
 func loadInstrumentSnapshot(ctx context.Context, c codeListClient, exchanges []protocol.Exchange, observedAt time.Time) (domain.InstrumentMasterSnapshot, error) {
 	if observedAt.IsZero() {
 		return domain.InstrumentMasterSnapshot{}, fmt.Errorf("TDX security-master observation time is zero")
 	}
 	local := observedAt.In(tdxMarketZone)
 	asOf := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, time.UTC)
-	snapshot := domain.InstrumentMasterSnapshot{Source: Provider, AsOfDate: asOf, Complete: true}
+	snapshot := domain.InstrumentMasterSnapshot{Source: Provider, AsOfDate: asOf}
 	usablePartitions := 0
 
 	for _, exchange := range exchanges {
@@ -71,14 +53,12 @@ func loadInstrumentSnapshot(ctx context.Context, c codeListClient, exchanges []p
 		if err != nil {
 			partition.Complete = false
 			partition.Error = fmt.Sprintf("fetch TDX code list: %v", err)
-			snapshot.Complete = false
 			snapshot.Partitions = append(snapshot.Partitions, partition)
 			continue
 		}
 		if resp == nil || len(resp.List) == 0 {
 			partition.Complete = false
 			partition.Error = "TDX code list is empty"
-			snapshot.Complete = false
 			snapshot.Partitions = append(snapshot.Partitions, partition)
 			continue
 		}
@@ -114,9 +94,6 @@ func loadInstrumentSnapshot(ctx context.Context, c codeListClient, exchanges []p
 		}
 		if len(partitionErrors) != 0 {
 			partition.Error = strings.Join(partitionErrors, "; ")
-		}
-		if !partition.Complete {
-			snapshot.Complete = false
 		}
 		if len(partition.Observations) != 0 {
 			usablePartitions++

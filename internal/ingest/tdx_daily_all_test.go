@@ -18,8 +18,8 @@ type fakeIncrementalTDXSource struct {
 	sinceCalls   map[string]time.Time
 }
 
-func (f *fakeIncrementalTDXSource) Instruments(context.Context) ([]domain.InstrumentObservation, error) {
-	return f.observations, nil
+func (f *fakeIncrementalTDXSource) InstrumentSnapshot(context.Context) (domain.InstrumentMasterSnapshot, error) {
+	return testMasterSnapshot(time.Date(2026, 9, 3, 0, 0, 0, 0, time.UTC), true, f.observations), nil
 }
 
 func (f *fakeIncrementalTDXSource) StockDailyBars(_ context.Context, instrumentID int64, symbol string) ([]domain.DailyBar, error) {

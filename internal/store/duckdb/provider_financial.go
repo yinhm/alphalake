@@ -26,7 +26,6 @@ type ProviderFactWriteResult struct {
 // (source, revision_key, provider_code, provider_field); canonical instrument_id
 // is an enrichable link and may change when historical lifecycle evidence is
 // corrected. The transaction therefore:
-//   - backfills raw identity onto legacy rows when safely inferable from staging;
 //   - removes facts that are no longer resolved for this artifact revision;
 //   - updates an existing raw fact in place when its canonical instrument changes;
 //   - inserts only genuinely new raw facts.
@@ -108,42 +107,27 @@ func ReconcileProviderFinancialRecordsForArtifact(
 		}
 	}
 
-	// Migration 012 deliberately leaves pre-existing rows with provider_code=NULL.
-	// On first replay, attach a raw code only where one canonical instrument maps
-	// to exactly one provider code in this artifact revision.
-	if _, err := conn.ExecContext(ctx, `
-		WITH mapping AS (
-			SELECT instrument_id, source, report_period, revision_key,
-			       min(provider_code) AS provider_code,
-			       min(market_marker) AS market_marker
-			FROM temp.main.`+providerFactStageTable+`
-			GROUP BY instrument_id, source, report_period, revision_key
-			HAVING count(DISTINCT provider_code)=1
-		)
-		UPDATE fundamental.provider_fact AS p
-		SET provider_code=m.provider_code, market_marker=m.market_marker
-		FROM mapping m
-		WHERE p.provider_code IS NULL
-		  AND p.instrument_id=m.instrument_id
-		  AND p.source=m.source
-		  AND p.report_period=m.report_period
-		  AND p.revision_key=m.revision_key
-	`); err != nil {
-		return result, fmt.Errorf("backfill legacy provider-fact raw identity: %w", err)
+	// Source identity is mandatory; old incomplete rows require explicit rebuild.
+	// Do not infer a source code from a canonical instrument during ingestion.
+	var incomplete bool
+	if err := conn.QueryRowContext(ctx, `SELECT EXISTS (
+		SELECT 1 FROM fundamental.provider_fact
+		WHERE source=? AND revision_key=? AND (provider_code IS NULL OR trim(provider_code)='')
+	)`, source, artifactSHA).Scan(&incomplete); err != nil {
+		return result, fmt.Errorf("validate stored provider identity: %w", err)
+	}
+	if incomplete {
+		return result, errors.New("stored provider facts lack source identity; rebuild from retained artifacts before ingestion")
 	}
 
-	// Facts absent from the currently-resolved stage are stale. This includes a
-	// record that became unresolved and legacy duplicate facts left under an old
-	// canonical instrument before raw identity was persisted.
+	// Remove facts no longer resolved for this immutable artifact revision.
 	stalePredicate := `
-		p.source=? AND p.revision_key=? AND (
-			p.provider_code IS NULL OR NOT EXISTS (
+		p.source=? AND p.revision_key=? AND NOT EXISTS (
 				SELECT 1 FROM temp.main.` + providerFactStageTable + ` s
 				WHERE s.source=p.source
 				  AND s.revision_key=p.revision_key
 				  AND s.provider_code=p.provider_code
 				  AND s.provider_field=p.provider_field
-			)
 		)`
 	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_fact p WHERE `+stalePredicate, source, artifactSHA).Scan(&result.Removed); err != nil {
 		return result, fmt.Errorf("count stale provider financial facts: %w", err)
