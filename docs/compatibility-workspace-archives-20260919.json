@@ -1,0 +1,32 @@
+[
+  {
+    "source": "workspace/ttm-20260906/import/main.go",
+    "archive": "workspace/ttm-20260906/import/main.go.txt",
+    "sha256": "df202134a775cbfd58073f9e74b125aeaea7aa175272ea332389fec17bc887e7"
+  },
+  {
+    "source": "workspace/auto-valuation-20260909/capacity-probe/main.go",
+    "archive": "workspace/auto-valuation-20260909/capacity-probe/main.go.txt",
+    "sha256": "fedc0c068534f12acc6db02fc7a6f02708791e7bc93a1f2337a39666eb4c9e7d"
+  },
+  {
+    "source": "workspace/auto-valuation-20260909/recover-run/main.go",
+    "archive": "workspace/auto-valuation-20260909/recover-run/main.go.txt",
+    "sha256": "924ca1a1ee32325084f082043d950abc3e4aee8e090f2b4ddd2ac918938685d8"
+  },
+  {
+    "source": "workspace/auto-valuation-20260909/inspect-replay/main.go",
+    "archive": "workspace/auto-valuation-20260909/inspect-replay/main.go.txt",
+    "sha256": "eaf34783cc380f2991f36094dab10a076cdb6b5faa0d9ec7a72c4ceff9f95602"
+  },
+  {
+    "source": "workspace/auto-valuation-20260909/apply-industries/main.go",
+    "archive": "workspace/auto-valuation-20260909/apply-industries/main.go.txt",
+    "sha256": "02813594d8d7566aab4c164cd43185b3ce19f0dedf72bb6159514d5381f2974c"
+  },
+  {
+    "source": "workspace/correction-acceptance-20260905/retain/main.go",
+    "archive": "workspace/correction-acceptance-20260905/retain/main.go.txt",
+    "sha256": "93421415a02f19679286c3e90bc2e57c26f9ad1bba0ddda6b9665734d6f7482a"
+  }
+]

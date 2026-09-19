@@ -34,7 +34,7 @@ func TestRealFinancialWorkflow(t *testing.T) {
 		}
 	}
 	dbPath := filepath.Join(t.TempDir(), "acceptance.duckdb")
-	db, err := duckstore.OpenAndMigrate(ctx, dbPath)
+	db, err := duckstore.OpenInitialized(ctx, dbPath)
 	check(err)
 	defer func() { db.Close() }()
 	keepPreDisposalFieldScope(t, db)
@@ -123,7 +123,7 @@ func TestRealFinancialWorkflow(t *testing.T) {
 	count("SELECT count(*) FROM fundamental.filing", 5)
 	count(fmt.Sprintf("SELECT count(*) FROM meta.ingest_run WHERE ingest_run_id=%d AND status IN ('partial','failed')", interrupted.RunID), 1)
 	check(db.Close())
-	db, err = duckstore.OpenAndMigrate(ctx, dbPath)
+	db, err = duckstore.OpenInitialized(ctx, dbPath)
 	check(err)
 	failSecondPage.Store(false)
 	recovered, err := SyncCNINFOFilingsWithOptions(ctx, db, client, root, options)

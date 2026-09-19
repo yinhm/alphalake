@@ -53,7 +53,7 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 	if fs.NArg() != 0 {
 		return errors.New("unexpected reference arguments")
 	}
-	db, err := duckstore.OpenAndMigrate(ctx, args[0])
+	db, err := duckstore.OpenInitialized(ctx, args[0])
 	if err != nil {
 		return err
 	}

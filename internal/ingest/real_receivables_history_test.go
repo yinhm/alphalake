@@ -31,11 +31,11 @@ func TestRealAnkerReceivablesHistory(t *testing.T) {
 	db, err := duckstore.Open(ctx, path)
 	check(err)
 	defer func() { db.Close() }()
-	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET valid_from=DATE '2025-01-01' WHERE source='tdx' AND provider_field='FN13'; DELETE FROM meta.schema_version WHERE version=40`)
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET valid_from=DATE '2025-01-01' WHERE source='tdx' AND provider_field='FN13'`)
 	check(err)
 	_, err = MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	check(duckstore.Apply(ctx, db))
+	restoreCurrentMappings(t, db, "provider_field='FN13'")
 	added, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
 	if added.Inserted != 1 || added.Updated != 0 || added.Removed != 0 {

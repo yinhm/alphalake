@@ -19,7 +19,7 @@ import (
 func TestRealConflictingSecurityIsolatedAndValuationBlocked(t *testing.T) {
 	ctx := t.Context()
 	dbPath := filepath.Join(t.TempDir(), "conflicts.duckdb")
-	db, err := store.OpenAndMigrate(ctx, dbPath)
+	db, err := store.OpenInitialized(ctx, dbPath)
 	if err != nil {
 		t.Fatal(err)
 	}

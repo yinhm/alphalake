@@ -62,7 +62,7 @@ TDX 协议请求支持[自动换节点重试](docs/tdx-failover.md)：每个独�
 - 显式的数据源事实—公告关联、标准时点基本面物化，以及原始/更正版本的 ASOF 查询；
 - 按公告时点查询年度与 TTM，区分单季、累计和存量，缺期返回空值及输入血缘，见[查询规则](docs/decisions/011-annual-and-ttm-windows.md)；
 - 持久化采集/计算运行状态：`completed`、`partial`、`failed`、`canceled`；
-- 基于数据库的运行状态查询和按版本执行的结构迁移。
+- 基于数据库的运行状态查询和当前结构的一次性初始化。
 
 专业财务数据源事实的 `announcement_time` 有意允许为空。原始 gpcw 包没有逐记录的权威公告时间，AlphaLake **不会**从抓取时间、文件名或报告期推断。标准时点 `fundamental.fact` 通过独立的 CNINFO 公告证据关联后，由 `materialize-fundamentals` 在本地生成。
 
@@ -118,7 +118,7 @@ CI 还会检查 `go mod tidy` 是否产生文件改动，并以 Python 3.12 / [�
 
 ## 命令行
 
-初始化或迁移 DuckDB 数据库：
+初始化当前 DuckDB 数据库（已有schema46直接打开，旧版本明确拒绝）：
 
 ```bash
 alphalake init ./alphalake.duckdb
@@ -239,9 +239,9 @@ alphalake materialize-fundamentals ./alphalake.duckdb
 alphalake status ./alphalake.duckdb
 ```
 
-输出当前/最新结构版本、待执行迁移、校验失败、检查点及近期采集运行。
+输出数据库与代码结构版本、校验失败、检查点及近期采集运行。版本不符时须保留证据并重建，不自动升级。
 
-查看内嵌结构迁移：
+查看当前结构基线：
 
 ```bash
 alphalake schema
@@ -249,7 +249,7 @@ alphalake schema
 
 审核补充支持显式修订、撤销与历史查询，镜像原文审核独立于诊断保存；迁移及时间边界见[审核证据说明](docs/reviewed-evidence-history.md)。
 
-当前代码结构版本46，身份域已从 `ref` 改为 `core`，国家风险与ERP分表；旧库升级及固定版本兼容性见[结构迁移](docs/core-risk-migration.md)。财务主库已[发布至46](docs/standard-fields-publication-20260918.md)，实际参考库保留[已验收的44](docs/core-main-publication-20260918.md)；两公司固定政策估值与参考出口不变。
+当前仅维护schema46，定义见 [schema.sql](internal/store/duckdb/schema.sql)。财务库原为46；实际参考库已备份并一次性升至46，参考数据逐表摘要不变。旧迁移链及专项发布工具退出当前代码，严格历史复验使用原提交；处置记录见[兼容清理](docs/compatibility-cleanup-20260919.md)。
 
 ## 数据布局
 

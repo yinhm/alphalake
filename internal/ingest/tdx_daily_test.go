@@ -33,9 +33,9 @@ func (f *fakeTDXDailySource) StockDailyBarsSince(_ context.Context, instrumentID
 
 func TestSyncTDXDailyPersistsLineageAndThenUsesIncrementalBoundary(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "alphalake.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "alphalake.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 
@@ -96,9 +96,9 @@ func TestSyncTDXDailyPersistsLineageAndThenUsesIncrementalBoundary(t *testing.T)
 
 func TestSyncTDXDailyRejectsUnsupportedInstrumentType(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "unsupported.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "unsupported.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 

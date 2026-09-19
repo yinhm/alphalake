@@ -14,7 +14,7 @@ import (
 
 func TestPersistIsContentAddressedAndIdempotent(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "artifact.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "artifact.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -61,7 +61,7 @@ func TestPersistIsContentAddressedAndIdempotent(t *testing.T) {
 
 func TestPersistSameBytesDifferentLocatorKeepsLineageRows(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "artifact-lineage.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "artifact-lineage.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,7 +85,7 @@ func TestPersistSameBytesDifferentLocatorKeepsLineageRows(t *testing.T) {
 
 func TestPersistRepairsCorruptContentAddressedFile(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "artifact-repair.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "artifact-repair.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -125,7 +125,7 @@ func TestPersistRepairsCorruptContentAddressedFile(t *testing.T) {
 
 func TestLoadHealthyVersionsSkipsCorruptRetainedRevision(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "artifact-healthy.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "artifact-healthy.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

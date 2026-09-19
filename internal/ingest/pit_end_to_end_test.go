@@ -19,7 +19,7 @@ import (
 
 func TestCNINFOToPointInTimeFundamentalEndToEnd(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "pit-end-to-end.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "pit-end-to-end.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

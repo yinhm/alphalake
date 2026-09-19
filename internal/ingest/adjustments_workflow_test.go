@@ -12,7 +12,7 @@ import (
 
 func TestAdjustmentDirtyStateSurvivesNormalSyncWorkflow(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "workflow.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "workflow.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,8 +36,8 @@ func TestAdjustmentDirtyStateSurvivesNormalSyncWorkflow(t *testing.T) {
 	actionRow.Action.RawC1 = 1
 	actions := &fakeCorporateActionSource{
 		instruments: []domain.InstrumentObservation{equity},
-		actions: map[string][]domain.CorporateActionObservation{"sh600001": {actionRow}},
-		errors: map[string]error{},
+		actions:     map[string][]domain.CorporateActionObservation{"sh600001": {actionRow}},
+		errors:      map[string]error{},
 	}
 
 	if _, err := SyncAllTDXDaily(ctx, db, daily); err != nil {

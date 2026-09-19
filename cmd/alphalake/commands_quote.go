@@ -63,7 +63,7 @@ func runMarketSource(ctx context.Context, command string, args []string) error {
 	if fs.NArg() != 0 {
 		return errors.New("unexpected arguments")
 	}
-	db, e := duckstore.OpenAndMigrate(ctx, args[0])
+	db, e := duckstore.OpenInitialized(ctx, args[0])
 	if e != nil {
 		return e
 	}

@@ -12,7 +12,7 @@ import (
 
 func TestApplyInstrumentMasterSnapshotKeepsHealthyPartitionWhenOtherGuardFails(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "partition-isolation.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "partition-isolation.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

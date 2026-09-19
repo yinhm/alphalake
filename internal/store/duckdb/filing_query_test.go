@@ -12,7 +12,7 @@ import (
 
 func TestListFilingResolutionsPage(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "filing-query.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "filing-query.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

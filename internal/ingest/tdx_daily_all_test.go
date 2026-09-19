@@ -64,9 +64,9 @@ func validBar(day time.Time, close float64) domain.DailyBar {
 
 func TestSyncAllTDXDailyUsesPerInstrumentBoundary(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "all.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "all.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 	seedRunID, err := duckstore.StartIngestRun(ctx, db, "tdx", "daily_ohlcv", nil)
@@ -125,9 +125,9 @@ func TestSyncAllTDXDailyUsesPerInstrumentBoundary(t *testing.T) {
 
 func TestSyncAllTDXDailyQuarantinesBadRowAndRetriesUntilCorrected(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "quarantine.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "quarantine.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 

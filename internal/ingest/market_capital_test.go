@@ -21,7 +21,7 @@ func TestMarketCapitalArchiveReplay(t *testing.T) {
 	}
 	ctx := t.Context()
 	dir := t.TempDir()
-	db, e := duckstore.OpenAndMigrate(ctx, filepath.Join(dir, "market.duckdb"))
+	db, e := duckstore.OpenInitialized(ctx, filepath.Join(dir, "market.duckdb"))
 	if e != nil {
 		t.Fatal(e)
 	}

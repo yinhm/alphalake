@@ -10,7 +10,7 @@ import (
 
 func TestProviderFinancialResolutionAcknowledgementSurvivesReplayAndYieldsToResolution(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "resolution.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "resolution.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +75,7 @@ func TestProviderFinancialResolutionAcknowledgementSurvivesReplayAndYieldsToReso
 
 func TestProviderFinancialResolutionCanBeUnacknowledged(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "unack.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "unack.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +115,7 @@ func TestProviderFinancialResolutionCanBeUnacknowledged(t *testing.T) {
 
 func TestListProviderFinancialResolutionsPage(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "resolution-page.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "resolution-page.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -156,7 +156,7 @@ func TestProviderResolutionMarketBatchWithBoundedMemory(t *testing.T) {
 	t.Setenv("ALPHALAKE_DUCKDB_MEMORY_LIMIT", "128MiB")
 	t.Setenv("ALPHALAKE_DUCKDB_THREADS", "1")
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "batch.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "batch.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

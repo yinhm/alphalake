@@ -10,9 +10,9 @@ import (
 
 func TestUpsertInstrumentsIsIdempotentAndOrdered(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "instrument-batch.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "instrument-batch.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 

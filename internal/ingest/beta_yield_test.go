@@ -39,7 +39,7 @@ func TestBetaYieldRealArchiveReplay(t *testing.T) {
 			ctx := t.Context()
 			dir := t.TempDir()
 			dbPath := filepath.Join(dir, "reference.duckdb")
-			db, err := duckstore.OpenAndMigrate(ctx, dbPath)
+			db, err := duckstore.OpenInitialized(ctx, dbPath)
 			if err != nil {
 				t.Fatal(err)
 			}

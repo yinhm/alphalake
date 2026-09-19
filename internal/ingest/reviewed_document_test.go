@@ -16,27 +16,11 @@ func TestReviewedMirrorDocument(t *testing.T) {
 	ctx := t.Context()
 	root := t.TempDir()
 	path := filepath.Join(root, "review.duckdb")
-	db, err := duckstore.Open(ctx, path)
+	db, err := duckstore.OpenInitialized(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer func() { db.Close() }()
-	migrations, err := duckstore.Migrations()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, m := range migrations[:42] {
-		body, e := duckstore.Read(m.Name)
-		if e != nil {
-			t.Fatal(e)
-		}
-		if _, e = db.ExecContext(ctx, string(body)); e != nil {
-			t.Fatal(e)
-		}
-		if _, e = db.ExecContext(ctx, `INSERT INTO meta.schema_version(version,description) VALUES (?,?) ON CONFLICT DO NOTHING`, m.Version, m.Description); e != nil {
-			t.Fatal(e)
-		}
-	}
 	dir := "../../valuation/research/reviewed-assets-20260917/supor"
 	raw, err := os.ReadFile(filepath.Join(dir, "receipt.json"))
 	if err != nil {
@@ -90,7 +74,7 @@ func TestReviewedMirrorDocument(t *testing.T) {
 	if err = db.Close(); err != nil {
 		t.Fatal(err)
 	}
-	db, err = duckstore.Open(ctx, path)
+	db, err = duckstore.OpenInitialized(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -139,47 +123,6 @@ func TestReviewedMirrorDocument(t *testing.T) {
 	if n, err := duckstore.ImportReviewedSupplements(ctx, db, []duckstore.ReviewedSupplement{supplement}); err != nil || n != 1 {
 		t.Fatalf("supplement import %d %v", n, err)
 	}
-	// 将真实原文审核样本恢复成 schema40 的旧存储形态，再走正式迁移。
-	legacy, err := json.Marshal(review)
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = db.ExecContext(ctx, `INSERT INTO meta.validation_result(source,dataset,rule_code,severity,subject_type,subject_key,passed,details,checked_at)
- SELECT 'document-review','filing_document','reviewed_mirror_binding','info','filing',CAST(filing_id AS VARCHAR),true,?,? FROM fundamental.filing`, string(legacy), review.ReviewedAt)
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = db.ExecContext(ctx, `DROP TABLE fundamental.document_review;
- DROP TABLE fundamental.supplement_review_history;
- ALTER TABLE fundamental.reviewed_supplement DROP COLUMN review_state;
- DELETE FROM meta.schema_version WHERE version IN (41,42);`)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err = db.ExecContext(ctx, `UPDATE meta.validation_result SET details='{}' WHERE rule_code='reviewed_mirror_binding'`); err != nil {
-		t.Fatal(err)
-	}
-	if err = duckstore.Apply(ctx, db); err == nil {
-		t.Fatal("legacy review without archived evidence migrated")
-	}
-	if version, e := duckstore.CurrentSchemaVersion(ctx, db); e != nil || version != 40 {
-		t.Fatalf("failed migration advanced version: %d %v", version, e)
-	}
-	if _, err = db.ExecContext(ctx, `UPDATE meta.validation_result SET details=? WHERE rule_code='reviewed_mirror_binding'`, string(legacy)); err != nil {
-		t.Fatal(err)
-	}
-	if err = duckstore.Apply(ctx, db); err != nil {
-		t.Fatal(err)
-	}
-	if err = duckstore.Apply(ctx, db); err != nil {
-		t.Fatal(err)
-	}
-	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.document_review WHERE recorded_at IS NULL`).Scan(&n); err != nil || n != 1 {
-		t.Fatalf("legacy review time fabricated: %d %v", n, err)
-	}
-	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.supplement_review_history WHERE recorded_at IS NULL AND reviewed_at IS NULL`).Scan(&n); err != nil || n != 1 {
-		t.Fatalf("legacy supplement time fabricated: %d %v", n, err)
-	}
 	end := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
 	asof := time.Date(2026, 9, 18, 0, 0, 0, 0, time.UTC)
 	before, err := duckstore.ExportValuationData(ctx, db, review.Code, end, asof)
@@ -199,7 +142,7 @@ func TestReviewedMirrorDocument(t *testing.T) {
 		t.Fatal("diagnostic cleanup changed export")
 	}
 	if inserted, err := ImportReviewedDocument(ctx, db, root, review, pdf); err != nil || inserted {
-		t.Fatalf("migrated replay: %v %v", inserted, err)
+		t.Fatalf("current replay: %v %v", inserted, err)
 	}
 	if _, err = db.ExecContext(ctx, `UPDATE fundamental.document_review SET pdf_sha256='bad'`); err != nil {
 		t.Fatal(err)

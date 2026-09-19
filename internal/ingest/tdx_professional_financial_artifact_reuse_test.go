@@ -12,7 +12,7 @@ import (
 
 func TestFinancialManifestRollbackReusesOlderRetainedArtifact(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "rollback.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "rollback.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

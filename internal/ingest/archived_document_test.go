@@ -13,7 +13,7 @@ func TestArchivedCNINFODocument(t *testing.T) {
 	ctx := t.Context()
 	root := t.TempDir()
 	path := filepath.Join(root, "test.duckdb")
-	db, err := duck.OpenAndMigrate(ctx, path)
+	db, err := duck.OpenInitialized(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +56,7 @@ func TestArchivedCNINFODocument(t *testing.T) {
 		t.Fatalf("import %v %v", ok, e)
 	}
 	db.Close()
-	db, err = duck.OpenAndMigrate(ctx, path)
+	db, err = duck.OpenInitialized(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}

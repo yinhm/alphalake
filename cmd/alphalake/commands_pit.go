@@ -69,7 +69,7 @@ func runFilingUnresolved(ctx context.Context, args []string) error {
 	if err != nil {
 		return err
 	}
-	db, err := duckstore.OpenAndMigrate(ctx, args[0])
+	db, err := duckstore.OpenInitialized(ctx, args[0])
 	if err != nil {
 		return err
 	}
@@ -136,7 +136,7 @@ func runSyncFilings(ctx context.Context, args []string) error {
 		}
 	}
 
-	db, err := duckstore.OpenAndMigrate(ctx, dbPath)
+	db, err := duckstore.OpenInitialized(ctx, dbPath)
 	if err != nil {
 		return err
 	}
@@ -207,7 +207,7 @@ func runRepairFilings(ctx context.Context, args []string) error {
 	if period.After(end) {
 		return fmt.Errorf("report period is in the future")
 	}
-	db, err := duckstore.OpenAndMigrate(ctx, dbPath)
+	db, err := duckstore.OpenInitialized(ctx, dbPath)
 	if err != nil {
 		return err
 	}
@@ -272,7 +272,7 @@ func runMaterializeFundamentals(ctx context.Context, args []string) error {
 			fields = []string{*field}
 		}
 	})
-	db, err := duckstore.OpenAndMigrate(ctx, args[0])
+	db, err := duckstore.OpenInitialized(ctx, args[0])
 	if err != nil {
 		return err
 	}

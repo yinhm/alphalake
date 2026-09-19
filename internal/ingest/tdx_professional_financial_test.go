@@ -76,7 +76,7 @@ func (f *fakeProfessionalFinancialSource) NormalizeProfessionalFinancialPackage(
 
 func TestSyncTDXProfessionalFinancialPersistsArtifactFactsAndCheckpoint(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "financial.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "financial.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -123,7 +123,7 @@ func TestSyncTDXProfessionalFinancialPersistsArtifactFactsAndCheckpoint(t *testi
 
 func TestUnresolvedFinancialRecordRetriesFromLocalArtifactWithoutRedownload(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "unresolved.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "unresolved.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -175,7 +175,7 @@ func TestUnresolvedFinancialRecordRetriesFromLocalArtifactWithoutRedownload(t *t
 
 func TestCorruptRetainedFinancialPackageRedownloadsAndRepairs(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "corrupt-retained.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "corrupt-retained.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -231,7 +231,7 @@ func TestCorruptRetainedFinancialPackageRedownloadsAndRepairs(t *testing.T) {
 
 func TestAcknowledgedFinancialRecordAllowsPackageCompletion(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "acknowledged.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "acknowledged.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

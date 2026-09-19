@@ -13,7 +13,7 @@ import (
 
 func TestInstrumentSnapshotPreflightRejectsFlatPartitionDriftBeforeWrites(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "preflight.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "preflight.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +33,7 @@ func TestInstrumentSnapshotPreflightRejectsFlatPartitionDriftBeforeWrites(t *tes
 
 func TestInstrumentSnapshotPreflightRejectsUnownedFlatObservationBeforeWrites(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "preflight-reverse.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "preflight-reverse.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func assertNoInstrumentSideEffects(t *testing.T, ctx context.Context, db *sql.DB
 
 func TestInstrumentSnapshotRetainsPartitionTruncationGuard(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "partition-guard.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "partition-guard.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,7 +101,7 @@ func TestInstrumentSnapshotRetainsPartitionTruncationGuard(t *testing.T) {
 
 func TestInstrumentSnapshotRejectsMissingPartitionsBeforeWrites(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "no-partitions.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "no-partitions.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

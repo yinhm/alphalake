@@ -80,7 +80,7 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "quarters.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "quarters.duckdb"))
 	check(err)
 	defer db.Close()
 	keepPreDisposalFieldScope(t, db)

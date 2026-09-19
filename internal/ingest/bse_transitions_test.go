@@ -70,7 +70,7 @@ func TestBSETransitionPublicationRealEvidence(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "bse.duckdb")
 	root := filepath.Join(dir, "raw")
-	db, err := duckstore.OpenAndMigrate(ctx, path)
+	db, err := duckstore.OpenInitialized(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}

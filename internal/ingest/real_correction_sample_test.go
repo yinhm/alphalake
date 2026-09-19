@@ -48,7 +48,7 @@ func TestRealCorrectionWithoutOriginalProviderVersion(t *testing.T) {
 			t.Fatalf("%s PDF evidence changed", doc.ID)
 		}
 	}
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "correction.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "correction.duckdb"))
 	check(err)
 	defer db.Close()
 	keepPreDisposalFieldScope(t, db)

@@ -181,7 +181,7 @@ WACC 不是 company 上的单值属性。茅台财务公司与酒业的估值范
 
 ## 参考入口
 
-- [现有参考身份结构](../../internal/store/duckdb/migrations/002_ref.sql)、[行情结构](../../internal/store/duckdb/migrations/003_market.sql)、[标准事实](../../internal/store/duckdb/migrations/015_canonical_fundamental_fact.sql)。
+- [现有参考身份结构](../../internal/store/duckdb/schema.sql)、[行情结构](../../internal/store/duckdb/schema.sql)、[标准事实](../../internal/store/duckdb/schema.sql)。
 - [达摩达兰数据目录](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datacurrent.html)与[时间、定义及使用说明](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datahistory.html)。
 - [中债曲线](https://yield.chinabond.com.cn/)、[中国货币网汇率](https://www.chinamoney.com.cn/chinese/bkccpr/index.html?tab=2)。正式接入另行核验字段、下载方式和数据使用条件。
 

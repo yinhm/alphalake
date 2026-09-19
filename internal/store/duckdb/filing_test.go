@@ -12,7 +12,7 @@ import (
 
 func TestResolveAndUpsertFilings(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "filing.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "filing.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +94,7 @@ func TestResolveAndUpsertFilings(t *testing.T) {
 
 func TestResolveFilingObservationsDoesNotDiscardUnknownExchangeEvidence(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "unknown-exchange.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "unknown-exchange.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -124,7 +124,7 @@ func TestResolveFilingObservationsDoesNotDiscardUnknownExchangeEvidence(t *testi
 
 func TestCorrectionFilingLinksImmediatePriorAnchor(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "correction.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "correction.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -60,8 +60,8 @@ func TestRealAnkerEarningsHistory(t *testing.T) {
 	check(err)
 	defer func() { _ = db.Close() }()
 	const fields = "('FN86','FN305','FN306','FN83','FN82','FN301')"
-	// 最新自包含夹具仅回退这六个字段；真实schema38副本本来就处于该边界。
-	_, err = db.ExecContext(ctx, "UPDATE fundamental.provider_field SET valid_from=DATE '2025-01-01' WHERE source='tdx' AND provider_field IN "+fields+"; DELETE FROM meta.schema_version WHERE version=39")
+	// 收窄六个字段的审核范围，再恢复当前审核目录。
+	_, err = db.ExecContext(ctx, "UPDATE fundamental.provider_field SET valid_from=DATE '2025-01-01' WHERE source='tdx' AND provider_field IN "+fields+"")
 	check(err)
 	_, err = MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
@@ -73,7 +73,7 @@ func TestRealAnkerEarningsHistory(t *testing.T) {
 	check(err)
 	beforeJSON, err := json.Marshal(before)
 	check(err)
-	check(duckstore.Apply(ctx, db))
+	restoreCurrentMappings(t, db, "provider_field IN ('FN86','FN305','FN306','FN83','FN82','FN301')")
 	added, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
 	if added.Inserted != 18 || added.Updated != 0 || added.Removed != 0 {
@@ -143,7 +143,7 @@ func TestRealAnkerEarningsHistory(t *testing.T) {
 		t.Fatal("current inputs changed")
 	}
 	check(db.Close())
-	db, err = duckstore.OpenAndMigrate(ctx, path)
+	db, err = duckstore.OpenInitialized(ctx, path)
 	check(err)
 	replayed, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
@@ -208,7 +208,7 @@ func TestRealAnkerQ1History(t *testing.T) {
 	if receipt.Database != path || receipt.Base == path || receipt.Scope != "single_company_history_on_copy_not_main_publication" {
 		t.Fatal("not an owned acceptance copy")
 	}
-	db, err := duckstore.OpenAndMigrate(ctx, path)
+	db, err := duckstore.OpenInitialized(ctx, path)
 	check(err)
 	defer func() { _ = db.Close() }()
 	end := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
@@ -240,7 +240,7 @@ func TestRealAnkerQ1History(t *testing.T) {
 		}
 	}
 	check(db.Close())
-	db, err = duckstore.OpenAndMigrate(ctx, path)
+	db, err = duckstore.OpenInitialized(ctx, path)
 	check(err)
 	importAnkerHistoricalEvidence(t, db, "testdata/anker-q1-history-2024", output)
 	replay, err := MaterializeProviderFundamentals(ctx, db, "tdx")

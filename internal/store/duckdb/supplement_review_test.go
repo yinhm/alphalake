@@ -13,7 +13,7 @@ import (
 func TestSupplementReviewRevisionRevocation(t *testing.T) {
 	ctx := t.Context()
 	path := filepath.Join(t.TempDir(), "reviews.duckdb")
-	db, err := OpenAndMigrate(ctx, path)
+	db, err := OpenInitialized(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,7 +109,7 @@ func TestSupplementReviewRevisionRevocation(t *testing.T) {
 	if err = db.Close(); err != nil {
 		t.Fatal(err)
 	}
-	db, err = OpenAndMigrate(ctx, path)
+	db, err = OpenInitialized(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}

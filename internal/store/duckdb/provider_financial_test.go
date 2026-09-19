@@ -12,7 +12,7 @@ import (
 
 func TestInsertProviderFinancialRecordsPreservesRawBitsAndRevisions(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "provider-financial.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "provider-financial.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +94,7 @@ func TestInsertProviderFinancialRecordsPreservesRawBitsAndRevisions(t *testing.T
 
 func TestProviderFactReconcileReassignsSameRevisionWithoutDuplicates(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "provider-fact-reassign.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "provider-fact-reassign.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -169,7 +169,7 @@ func TestProviderFactReconcileReassignsSameRevisionWithoutDuplicates(t *testing.
 
 func TestProviderFactsRejectMissingSourceIdentityWithoutBackfill(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "missing-source.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "missing-source.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

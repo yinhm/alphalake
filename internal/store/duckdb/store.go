@@ -91,13 +91,13 @@ func open(ctx context.Context, path string, readOnly bool) (*sql.DB, error) {
 	return db, nil
 }
 
-// OpenAndMigrate opens a DuckDB database and applies AlphaLake's embedded schema.
-func OpenAndMigrate(ctx context.Context, path string) (*sql.DB, error) {
+// OpenInitialized opens a current database or initializes an empty database.
+func OpenInitialized(ctx context.Context, path string) (*sql.DB, error) {
 	db, err := Open(ctx, path)
 	if err != nil {
 		return nil, err
 	}
-	if err := Apply(ctx, db); err != nil {
+	if err := Initialize(ctx, db); err != nil {
 		_ = db.Close()
 		return nil, err
 	}

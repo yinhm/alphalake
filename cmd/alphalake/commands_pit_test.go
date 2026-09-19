@@ -41,7 +41,7 @@ func (*repairCatalogueSource) FilingDocument(context.Context, string) ([]byte, s
 func TestRepairFilingsContinuesAndCountsCancellation(t *testing.T) {
 	ctx := t.Context()
 	path := filepath.Join(t.TempDir(), "repair.duckdb")
-	db, err := duckstore.OpenAndMigrate(ctx, path)
+	db, err := duckstore.OpenInitialized(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,7 +77,7 @@ func TestRepairFilingsContinuesAndCountsCancellation(t *testing.T) {
 func TestFilingUnresolvedCommand(t *testing.T) {
 	ctx := t.Context()
 	dbPath := filepath.Join(t.TempDir(), "filings.duckdb")
-	db, err := duckstore.OpenAndMigrate(ctx, dbPath)
+	db, err := duckstore.OpenInitialized(ctx, dbPath)
 	if err != nil {
 		t.Fatal(err)
 	}

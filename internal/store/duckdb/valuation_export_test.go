@@ -9,7 +9,7 @@ import (
 
 func TestValuationExportCandidateIdentitiesPreserveVersionSelection(t *testing.T) {
 	ctx := t.Context()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "export.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "export.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -90,7 +90,7 @@ func TestValuationExportCandidateIdentitiesPreserveVersionSelection(t *testing.T
 
 func TestValuationExportMappingVersions(t *testing.T) {
 	ctx := t.Context()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "mapping.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "mapping.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

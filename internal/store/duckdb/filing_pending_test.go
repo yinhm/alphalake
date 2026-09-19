@@ -11,7 +11,7 @@ import (
 
 func TestRefreshPendingFilingResolutionsAfterLifecycleEnrichment(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "pending-filing.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "pending-filing.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

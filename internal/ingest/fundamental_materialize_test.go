@@ -12,7 +12,7 @@ import (
 
 func TestMaterializeProviderFundamentalsTracksCompletedAndPartialRuns(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "materialize-run.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "materialize-run.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

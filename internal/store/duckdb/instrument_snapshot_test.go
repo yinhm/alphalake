@@ -25,7 +25,7 @@ func snapshotObservation(symbol, name string) domain.InstrumentObservation {
 
 func TestApplyInstrumentMasterSnapshotRequiresRepeatedAbsenceBeforeCodeReuse(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "snapshot.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "snapshot.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,7 +104,7 @@ func TestApplyInstrumentMasterSnapshotRequiresRepeatedAbsenceBeforeCodeReuse(t *
 
 func TestApplyInstrumentMasterSnapshotReturnClearsPendingAbsence(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "return.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "return.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -138,7 +138,7 @@ func TestApplyInstrumentMasterSnapshotReturnClearsPendingAbsence(t *testing.T) {
 
 func TestApplyInstrumentMasterSnapshotIncompleteDoesNotCloseMissing(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "partial.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "partial.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -161,7 +161,7 @@ func TestApplyInstrumentMasterSnapshotIncompleteDoesNotCloseMissing(t *testing.T
 
 func TestApplyInstrumentMasterSnapshotScopesAuthorityByPartition(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "partitioned.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "partitioned.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -196,7 +196,7 @@ func TestApplyInstrumentMasterSnapshotScopesAuthorityByPartition(t *testing.T) {
 
 func TestApplyInstrumentMasterSnapshotRejectsLargeTruncationPerPartition(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "truncated.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "truncated.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

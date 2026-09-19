@@ -11,7 +11,7 @@ import (
 
 func TestSyncInstrumentMasterDoesNotFetchDaily(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "master.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "master.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +38,7 @@ func TestSyncInstrumentMasterDoesNotFetchDaily(t *testing.T) {
 func TestSyncInstrumentMasterRetainsPartialFailure(t *testing.T) {
 	ctx := context.Background()
 	path := filepath.Join(t.TempDir(), "failure.duckdb")
-	db, err := duckstore.OpenAndMigrate(ctx, path)
+	db, err := duckstore.OpenInitialized(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -24,7 +24,7 @@ func TestRealCNINFOPartialOverlapCannotComplete(t *testing.T) {
 	const dir = "testdata/cninfo-partial-overlap-2026"
 	ctx := t.Context()
 	dbPath := filepath.Join(t.TempDir(), "overlap.duckdb")
-	db, err := duckstore.OpenAndMigrate(ctx, dbPath)
+	db, err := duckstore.OpenInitialized(ctx, dbPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +118,7 @@ func (f *fakeCNINFOFilingSource) CataloguePage(_ context.Context, request cninfo
 
 func TestCNINFOCodeCheckpointsAndForeignResponse(t *testing.T) {
 	ctx := t.Context()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "scope.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "scope.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -189,7 +189,7 @@ func (f *fakeCNINFOFilingSource) FilingDocument(_ context.Context, locator strin
 
 func TestSyncCNINFOFilingsPersistsEvidenceAndReusesDocument(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "cninfo.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "cninfo.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -257,7 +257,7 @@ func TestSyncCNINFOFilingsPersistsEvidenceAndReusesDocument(t *testing.T) {
 
 func TestSyncCNINFOFilingsKeepsUnresolvedEvidenceWithoutFailingWindow(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "cninfo-pending.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "cninfo-pending.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -304,7 +304,7 @@ func TestSyncCNINFOFilingsKeepsUnresolvedEvidenceWithoutFailingWindow(t *testing
 
 func TestSyncCNINFOFilingsRejectsHTMLDocumentAndWithholdsCheckpoint(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "cninfo-html.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "cninfo-html.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -373,7 +373,7 @@ func TestValidateCNINFOFilingDocument(t *testing.T) {
 
 func TestCNINFOCheckpointRequiresRequestedEvidence(t *testing.T) {
 	ctx := t.Context()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "checkpoint.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "checkpoint.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -419,7 +419,7 @@ func TestCNINFOCheckpointRequiresRequestedEvidence(t *testing.T) {
 
 func TestCNINFOPaginationRejectsContradictoryPages(t *testing.T) {
 	ctx := t.Context()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "pagination.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "pagination.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -445,7 +445,7 @@ func TestCNINFOPaginationRejectsContradictoryPages(t *testing.T) {
 func TestRealCNINFORepeatedPagesInvalidateOldCompletion(t *testing.T) {
 	ctx := t.Context()
 	path := filepath.Join(t.TempDir(), "repeat.duckdb")
-	db, err := duckstore.OpenAndMigrate(ctx, path)
+	db, err := duckstore.OpenInitialized(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -559,7 +559,7 @@ func (f *splittingCNINFOFilingSource) CataloguePage(_ context.Context, request c
 func TestCNINFOAutomaticallySplitsStalledWindow(t *testing.T) {
 	ctx := t.Context()
 	path := filepath.Join(t.TempDir(), "split.duckdb")
-	db, err := duckstore.OpenAndMigrate(ctx, path)
+	db, err := duckstore.OpenInitialized(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}

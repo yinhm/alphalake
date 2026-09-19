@@ -32,7 +32,7 @@ func TestTDXExhaustedNodesPersistFailure(t *testing.T) {
 	defer c.Close()
 	ctx := context.Background()
 	path := filepath.Join(t.TempDir(), "failed.duckdb")
-	db, e := store.OpenAndMigrate(ctx, path)
+	db, e := store.OpenInitialized(ctx, path)
 	if e != nil {
 		t.Fatal(e)
 	}

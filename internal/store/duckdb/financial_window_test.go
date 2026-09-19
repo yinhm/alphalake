@@ -9,7 +9,7 @@ import (
 
 func TestFinancialWindows(t *testing.T) {
 	ctx := t.Context()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "windows.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "windows.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

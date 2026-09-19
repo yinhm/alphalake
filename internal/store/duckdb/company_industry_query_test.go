@@ -20,7 +20,7 @@ func TestCompanyIndustryProjectionRealSourceAndIdentityBoundaries(t *testing.T) 
 	}
 	ctx := context.Background()
 	dir := t.TempDir()
-	db, err := OpenAndMigrate(ctx, filepath.Join(dir, "companies.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(dir, "companies.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

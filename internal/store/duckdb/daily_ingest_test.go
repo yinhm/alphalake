@@ -15,7 +15,7 @@ import (
 
 func TestApplyDailyIngestBatchForRunCommitsBarsValidationAndCheckpointTogether(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "atomic-daily.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "atomic-daily.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +68,7 @@ func TestApplyDailyIngestBatchForRunCommitsBarsValidationAndCheckpointTogether(t
 
 func TestDailyWriteTransactionRollsBackAllEffectsOnLateFailure(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "rollback-daily.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "rollback-daily.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

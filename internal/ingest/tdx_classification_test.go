@@ -50,9 +50,9 @@ func fakeClassificationSnapshot(code, typ, nodeCode string, members ...string) d
 
 func TestSyncTDXClassificationsKeepsSuccessfulFamiliesOnPartialFailure(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "classification.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "classification.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 

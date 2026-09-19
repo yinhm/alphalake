@@ -174,8 +174,8 @@ func requireStandardFinancialSchema(ctx context.Context, db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	if version < 46 {
-		return errors.New("standard financial contract v2 requires schema46; upgrade a backed-up database first")
+	if version != SchemaVersion {
+		return errors.New("standard financial contract v2 requires schema46; use a current database; older versions require explicit rebuild")
 	}
 	return nil
 }

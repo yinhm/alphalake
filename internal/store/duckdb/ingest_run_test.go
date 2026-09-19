@@ -9,9 +9,9 @@ import (
 
 func TestIngestRunLifecyclePersistsTerminalState(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "run.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "run.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 
@@ -48,9 +48,9 @@ func TestIngestRunLifecyclePersistsTerminalState(t *testing.T) {
 
 func TestFinishIngestRunRejectsRunningStatus(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "run.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "run.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 

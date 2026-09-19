@@ -19,7 +19,7 @@ import (
 func TestWACCReferenceExport(t *testing.T) {
 	ctx := t.Context()
 	dir := t.TempDir()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(dir, "wacc.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(dir, "wacc.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

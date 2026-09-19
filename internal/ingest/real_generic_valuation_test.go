@@ -42,7 +42,7 @@ func verifyGenericValuationSample(t *testing.T, dir, instrumentsJSON string, rep
 		t.Helper()
 		check(json.Unmarshal(readFinancialSample(t, dir, name), value))
 	}
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "generic.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "generic.duckdb"))
 	check(err)
 	defer db.Close()
 	var instruments []domain.InstrumentObservation

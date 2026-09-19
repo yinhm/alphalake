@@ -14,9 +14,9 @@ import (
 
 func TestCalculateTDXAdjustmentsBuildsSegmentsAndSkipsCleanInputs(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "calc.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "calc.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 	seedRunID, err := duckstore.StartIngestRun(ctx, db, "tdx", "daily_ohlcv", nil)
@@ -118,9 +118,9 @@ func TestCalculateTDXAdjustmentsBuildsSegmentsAndSkipsCleanInputs(t *testing.T) 
 
 func TestCalculateTDXAdjustmentsContinuesAfterInvalidInstrument(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "partial.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "partial.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 	seedRunID, err := duckstore.StartIngestRun(ctx, db, "tdx", "daily_ohlcv", nil)

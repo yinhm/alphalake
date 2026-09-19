@@ -13,7 +13,7 @@ import (
 
 func TestCorporateActionForceReplaceCanClearLastGoodSnapshot(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "force-actions.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "force-actions.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

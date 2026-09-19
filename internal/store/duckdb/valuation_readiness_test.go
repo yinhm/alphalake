@@ -13,7 +13,7 @@ func TestReadinessBatchesKeepFieldsAndLargeIDs(t *testing.T) {
 	t.Setenv("ALPHALAKE_DUCKDB_MEMORY_LIMIT", "128MiB")
 	t.Setenv("ALPHALAKE_DUCKDB_THREADS", "1")
 	ctx := t.Context()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "batches.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "batches.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func TestReadinessBatchesKeepFieldsAndLargeIDs(t *testing.T) {
 
 func TestValuationReadinessKeepsMissingCompanies(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "scan.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "scan.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,7 +104,7 @@ func TestValuationReadinessKeepsMissingCompanies(t *testing.T) {
 
 func TestReadinessIndustryRequiresPublishedObservation(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "industry.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "industry.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -136,7 +136,7 @@ func TestReadinessIndustryRequiresPublishedObservation(t *testing.T) {
 
 func TestCompanyReadinessPreservesCodeAmbiguity(t *testing.T) {
 	ctx := t.Context()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "company.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "company.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

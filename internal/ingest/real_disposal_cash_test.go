@@ -34,9 +34,7 @@ func TestRealAssetDisposalCash(t *testing.T) {
 			t.Fatal(e)
 		}
 	}
-	_, err = db.ExecContext(ctx, `DELETE FROM meta.schema_version WHERE version=45`)
-	check(err)
-	check(duck.Apply(ctx, db))
+	restoreCurrentMappings(t, db, "provider_field='FN110'")
 	var unchanged string
 	otherFacts := `SELECT CAST(count(*) AS VARCHAR)||':'||CAST(bit_xor(hash(f)) AS VARCHAR)||':'||CAST(sum(CAST(hash(f) AS HUGEINT)) AS VARCHAR) FROM fundamental.fact f WHERE source_provider_field<>'FN110'`
 	check(db.QueryRowContext(ctx, otherFacts).Scan(&unchanged))
@@ -117,7 +115,7 @@ func TestRealAssetDisposalCash(t *testing.T) {
 	check(err)
 	check(os.WriteFile(filepath.Join(out, "disposal-export.json"), raw, 0644))
 	check(db.Close())
-	db, err = duck.OpenAndMigrate(ctx, path)
+	db, err = duck.OpenInitialized(ctx, path)
 	check(err)
 	manifest, err := os.ReadFile("../../valuation/research/disposal-cash-20260918/zero-supplements.json")
 	check(err)
@@ -135,7 +133,7 @@ func TestRealAssetDisposalCash(t *testing.T) {
 	}
 	exportReview := func(name string) {
 		check(db.Close())
-		db, err = duck.OpenAndMigrate(ctx, path)
+		db, err = duck.OpenInitialized(ctx, path)
 		check(err)
 		snapshot, e := duck.ExportValuationData(ctx, db, "300866", time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC), time.Date(2026, 9, 18, 13, 30, 43, 0, time.UTC))
 		check(e)

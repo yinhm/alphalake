@@ -26,7 +26,7 @@ type OperationalStatus struct {
 }
 
 // ReadOperationalStatus inspects an existing AlphaLake database without
-// applying migrations. This lets the CLI report pending schema upgrades instead
+// changing schemas. This lets the CLI report unsupported schema versions instead
 // of silently mutating the database as a side effect of a status command.
 func ReadOperationalStatus(ctx context.Context, db *sql.DB, recentLimit int) (OperationalStatus, error) {
 	var out OperationalStatus
@@ -36,16 +36,13 @@ func ReadOperationalStatus(ctx context.Context, db *sql.DB, recentLimit int) (Op
 	if recentLimit < 0 {
 		return out, errors.New("recent run limit must be non-negative")
 	}
-	migrations, err := Migrations()
-	if err != nil {
-		return out, err
-	}
-	out.LatestSchemaVersion = len(migrations)
+	out.LatestSchemaVersion = SchemaVersion
+	var err error
 	out.SchemaVersion, err = CurrentSchemaVersion(ctx, db)
 	if err != nil {
 		return out, err
 	}
-	if out.SchemaVersion == 0 {
+	if out.SchemaVersion != SchemaVersion {
 		return out, nil
 	}
 

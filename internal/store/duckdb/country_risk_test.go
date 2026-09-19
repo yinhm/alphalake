@@ -15,7 +15,7 @@ import (
 func TestCountryRiskPublication(t *testing.T) {
 	ctx := t.Context()
 	dir := t.TempDir()
-	db, err := OpenAndMigrate(ctx, filepath.Join(dir, "risk.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(dir, "risk.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

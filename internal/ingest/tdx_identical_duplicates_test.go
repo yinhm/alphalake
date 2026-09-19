@@ -23,7 +23,7 @@ func (f *realDuplicateFinancialSource) NormalizeProfessionalFinancialPackage(ent
 
 func TestRealIdenticalFinancialDuplicatesPreserveRawAndReplay(t *testing.T) {
 	ctx := context.Background()
-	db, err := store.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "duplicates.duckdb"))
+	db, err := store.OpenInitialized(ctx, filepath.Join(t.TempDir(), "duplicates.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

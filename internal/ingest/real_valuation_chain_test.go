@@ -3,6 +3,7 @@ package ingest
 import (
 	"bytes"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -33,7 +34,7 @@ func TestRealValuationStandardChain(t *testing.T) {
 		}
 	}
 	dbPath := filepath.Join(t.TempDir(), "valuation.duckdb")
-	db, err := duckstore.OpenAndMigrate(ctx, dbPath)
+	db, err := duckstore.OpenInitialized(ctx, dbPath)
 	check(err)
 	defer db.Close()
 	// 冻结 CSV 是 UTC 渲染；TIMESTAMPTZ 的 VARCHAR 转换随会话时区变化。
@@ -46,11 +47,11 @@ func TestRealValuationStandardChain(t *testing.T) {
 		check(err)
 	}
 	pinUTC()
-	// 保留本历史验收的字段分母；045由独立真实处置现金测试验收。
+	// 保留冻结样本的字段分母；资产处置现金由独立真实测试验收。
 	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field='FN110'`)
 	check(err)
-	// 025 只新增映射；构造 v24 状态后实际导入全部真实源记录。
-	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field IN ('FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579'); DELETE FROM meta.schema_version WHERE version=25`)
+	// 显式暂扣部分审核映射，再从当前目录恢复，验证新增事实及规则失效重建。
+	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field IN ('FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579')`)
 	check(err)
 	root := filepath.Join(t.TempDir(), "raw")
 	var instruments []domain.InstrumentObservation
@@ -146,19 +147,19 @@ func TestRealValuationStandardChain(t *testing.T) {
 		t.Fatalf("links: %+v", result)
 	}
 	if result.Inserted != 699 {
-		t.Fatalf("v24 baseline %+v", result)
+		t.Fatalf("restricted catalog baseline %+v", result)
 	}
 	// 构造旧物化元数据，确认升级会重标已有事实，而非只插入新字段。
 	_, err = db.ExecContext(ctx, `UPDATE fundamental.fact SET materializer_version='pit-fundamental-v4', normalization_rule='tdx-float32-decimal-v2'`)
 	check(err)
-	check(duckstore.Apply(ctx, db))
+	restoreCurrentMappings(t, db, "provider_field IN ('FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579')")
 	upgraded, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
 	if upgraded.Inserted != 111 || upgraded.Updated != 699 || upgraded.Removed != 0 {
-		t.Fatalf("v24 to v25 replay %+v", upgraded)
+		t.Fatalf("approved catalog replay %+v", upgraded)
 	}
 	check(db.Close())
-	db, err = duckstore.OpenAndMigrate(ctx, dbPath)
+	db, err = duckstore.OpenInitialized(ctx, dbPath)
 	check(err)
 	defer db.Close()
 	pinUTC()
@@ -438,4 +439,25 @@ func TestRealValuationStandardChain(t *testing.T) {
 		check(os.WriteFile(filepath.Join(output, "acceptance.duckdb"), rawDB, 0644))
 	}
 	t.Logf("production chain: %+v", result)
+}
+
+// 从独立初始化的当前目录恢复测试主动暂扣的映射，不依赖历史迁移。
+func restoreCurrentMappings(t *testing.T, db *sql.DB, predicate string) {
+	t.Helper()
+	ctx := t.Context()
+	path := filepath.Join(t.TempDir(), "approved.duckdb")
+	current, err := duckstore.OpenInitialized(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = current.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = db.ExecContext(ctx, "ATTACH '"+strings.ReplaceAll(path, "'", "''")+"' AS approved (READ_ONLY)"); err != nil {
+		t.Fatal(err)
+	}
+	defer db.ExecContext(ctx, "DETACH approved")
+	if _, err = db.ExecContext(ctx, "DELETE FROM fundamental.provider_field WHERE source='tdx' AND "+predicate+"; INSERT INTO fundamental.provider_field SELECT * FROM approved.fundamental.provider_field WHERE source='tdx' AND "+predicate); err != nil {
+		t.Fatal(err)
+	}
 }

@@ -49,9 +49,9 @@ func actionObservation(symbol string, day time.Time, category int, actionType st
 
 func TestSyncTDXCorporateActionsPersistsRunLineage(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "actions.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "actions.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 
@@ -87,9 +87,9 @@ func TestSyncTDXCorporateActionsPersistsRunLineage(t *testing.T) {
 
 func TestSyncTDXCorporateActionsKeepsFailedSymbolSnapshot(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "partial.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "partial.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 
@@ -142,7 +142,7 @@ func TestSyncTDXCorporateActionsKeepsFailedSymbolSnapshot(t *testing.T) {
 
 func TestSyncTDXCorporateActionsRejectsEmptyResponseWhenHistoryExists(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "empty-guard.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "empty-guard.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -33,7 +33,7 @@ func (f *partitionFailureDailySource) StockDailyBarsSince(ctx context.Context, i
 
 func TestDailySyncSurfacesMasterPartitionFailureWithoutBlockingHealthyPartition(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "master-visible.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "master-visible.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

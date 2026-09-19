@@ -11,7 +11,7 @@ import (
 
 func TestResolveProviderCodesAtUsesTemporalIdentifiersNotCurrentCodeRanges(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "provider-code.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "provider-code.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +50,7 @@ func TestResolveProviderCodesAtUsesTemporalIdentifiersNotCurrentCodeRanges(t *te
 
 func TestResolveProviderCodesAtExcludesIndexCollision(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "provider-code-index-collision.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "provider-code-index-collision.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +87,7 @@ func TestResolveProviderCodesAtExcludesIndexCollision(t *testing.T) {
 
 func TestResolveProviderCodesAtLeavesCrossMarketEquityAmbiguityUnresolved(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "provider-code-ambiguous.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "provider-code-ambiguous.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

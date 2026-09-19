@@ -27,9 +27,9 @@ func classificationSnapshot(members ...string) domain.ClassificationSnapshot {
 
 func TestApplyClassificationSnapshotTracksTemporalMembership(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "classification.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "classification.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 
@@ -136,9 +136,9 @@ func TestApplyClassificationSnapshotTracksTemporalMembership(t *testing.T) {
 
 func TestApplyClassificationSnapshotQuarantinesUnknownMemberWithoutClosingHistory(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "rollback.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "rollback.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 
@@ -180,7 +180,7 @@ func TestClassificationMarketSnapshotWithUnknownMemberAndBoundedMemory(t *testin
 	t.Setenv("ALPHALAKE_DUCKDB_MEMORY_LIMIT", "128MiB")
 	t.Setenv("ALPHALAKE_DUCKDB_THREADS", "1")
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "market-industry.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "market-industry.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -11,9 +11,9 @@ import (
 
 func TestUpsertInstrumentIsIdempotentByOpenProviderIdentifier(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "instrument.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "instrument.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 
@@ -64,7 +64,7 @@ func TestUpsertInstrumentIsIdempotentByOpenProviderIdentifier(t *testing.T) {
 
 func TestClosedProviderCodeReuseCreatesNewInstrument(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "reuse.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "reuse.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +115,7 @@ func TestClosedProviderCodeReuseCreatesNewInstrument(t *testing.T) {
 
 func TestExplicitIdentifierValidityResolvesHalfOpenInterval(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "interval.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "interval.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -149,9 +149,9 @@ func TestExplicitIdentifierValidityResolvesHalfOpenInterval(t *testing.T) {
 
 func TestUpsertInstrumentRejectsInvalidIdentifierInterval(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "instrument.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "instrument.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 
@@ -168,9 +168,9 @@ func TestUpsertInstrumentRejectsInvalidIdentifierInterval(t *testing.T) {
 
 func TestUpsertInstrumentRejectsIncompleteIdentifier(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "instrument.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "instrument.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 

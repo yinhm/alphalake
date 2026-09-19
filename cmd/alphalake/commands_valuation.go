@@ -118,7 +118,7 @@ func runSupplementImport(ctx context.Context, args []string) error {
 	if len(records) == 0 {
 		return errors.New("empty supplement import")
 	}
-	db, err := duckstore.OpenAndMigrate(ctx, args[0])
+	db, err := duckstore.OpenInitialized(ctx, args[0])
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func runDocumentImport(ctx context.Context, args []string, canonical bool) error
 	if err != nil {
 		return err
 	}
-	db, err := duckstore.OpenAndMigrate(ctx, args[0])
+	db, err := duckstore.OpenInitialized(ctx, args[0])
 	if err != nil {
 		return err
 	}

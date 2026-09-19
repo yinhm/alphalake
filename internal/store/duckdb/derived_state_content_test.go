@@ -11,7 +11,7 @@ import (
 
 func TestAdjustmentInputSignatureTracksContentNotIngestLineage(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "signature.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "signature.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

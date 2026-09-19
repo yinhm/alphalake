@@ -14,7 +14,7 @@ import (
 
 func TestMaterializeCanonicalFundamentalsNoLookAheadAndCorrection(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "pit-fundamental.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "pit-fundamental.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -144,7 +144,7 @@ func TestMaterializeCanonicalFundamentalsNoLookAheadAndCorrection(t *testing.T) 
 
 func TestMaterializeCanonicalFundamentalsRejectsInvalidAndRemovesStale(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "pit-reject.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "pit-reject.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -241,7 +241,7 @@ func insertMappedProviderFact(t *testing.T, ctx context.Context, db *sql.DB, art
 // quarter ends and repair facts previously labeled using the filing type.
 func TestMaterializeSingleQuarterFlowsAndRepairLegacyPeriods(t *testing.T) {
 	ctx := t.Context()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "quarters.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "quarters.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

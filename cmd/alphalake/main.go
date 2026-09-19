@@ -83,13 +83,7 @@ func main() {
 		fmt.Println(version)
 
 	case "schema":
-		names, err := duckstore.Names()
-		if err != nil {
-			fatal(err)
-		}
-		for _, name := range names {
-			fmt.Println(name)
-		}
+		fmt.Printf("schema %d (current baseline)\n", duckstore.SchemaVersion)
 
 	case "init":
 		if len(os.Args) != 3 {
@@ -97,7 +91,7 @@ func main() {
 			os.Exit(2)
 		}
 		path := os.Args[2]
-		db, err := duckstore.OpenAndMigrate(ctx, path)
+		db, err := duckstore.OpenInitialized(ctx, path)
 		if err != nil {
 			fatal(err)
 		}
@@ -111,7 +105,7 @@ func main() {
 			usage()
 			os.Exit(2)
 		}
-		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		db, err := duckstore.OpenInitialized(ctx, os.Args[2])
 		if err != nil {
 			fatal(err)
 		}
@@ -132,7 +126,7 @@ func main() {
 			usage()
 			os.Exit(2)
 		}
-		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		db, err := duckstore.OpenInitialized(ctx, os.Args[2])
 		if err != nil {
 			fatal(err)
 		}
@@ -156,7 +150,7 @@ func main() {
 			usage()
 			os.Exit(2)
 		}
-		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		db, err := duckstore.OpenInitialized(ctx, os.Args[2])
 		if err != nil {
 			fatal(err)
 		}
@@ -199,7 +193,7 @@ func main() {
 			}
 			force = true
 		}
-		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		db, err := duckstore.OpenInitialized(ctx, os.Args[2])
 		if err != nil {
 			fatal(err)
 		}
@@ -235,7 +229,7 @@ func main() {
 			usage()
 			os.Exit(2)
 		}
-		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		db, err := duckstore.OpenInitialized(ctx, os.Args[2])
 		if err != nil {
 			fatal(err)
 		}
@@ -262,7 +256,7 @@ func main() {
 			usage()
 			os.Exit(2)
 		}
-		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		db, err := duckstore.OpenInitialized(ctx, os.Args[2])
 		if err != nil {
 			fatal(err)
 		}
@@ -294,7 +288,7 @@ func main() {
 			usage()
 			os.Exit(2)
 		}
-		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		db, err := duckstore.OpenInitialized(ctx, os.Args[2])
 		if err != nil {
 			fatal(err)
 		}
@@ -332,7 +326,7 @@ func main() {
 		}
 		all := maxPackages == 0
 		dbPath := os.Args[2]
-		db, err := duckstore.OpenAndMigrate(ctx, dbPath)
+		db, err := duckstore.OpenInitialized(ctx, dbPath)
 		if err != nil {
 			fatal(err)
 		}
@@ -384,7 +378,7 @@ func main() {
 		if err != nil {
 			fatal(err)
 		}
-		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		db, err := duckstore.OpenInitialized(ctx, os.Args[2])
 		if err != nil {
 			fatal(err)
 		}
@@ -416,7 +410,7 @@ func main() {
 		if reason == "" {
 			fatal(fmt.Errorf("acknowledgement reason is required"))
 		}
-		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		db, err := duckstore.OpenInitialized(ctx, os.Args[2])
 		if err != nil {
 			fatal(err)
 		}
@@ -441,7 +435,7 @@ func main() {
 		if err != nil || artifactID <= 0 {
 			fatal(fmt.Errorf("invalid artifact ID %q", os.Args[3]))
 		}
-		db, err := duckstore.OpenAndMigrate(ctx, os.Args[2])
+		db, err := duckstore.OpenInitialized(ctx, os.Args[2])
 		if err != nil {
 			fatal(err)
 		}

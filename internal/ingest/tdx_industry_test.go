@@ -45,7 +45,7 @@ func resultForSnapshot(snapshot domain.ClassificationSnapshot) domain.Classifica
 
 func TestSyncTDXIndustriesPersistsBothTaxonomies(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "industry.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "industry.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +94,7 @@ func TestSyncTDXIndustriesPersistsBothTaxonomies(t *testing.T) {
 
 func TestSyncTDXIndustriesKeepsSuccessfulTaxonomyWhenOtherBuildFails(t *testing.T) {
 	ctx := context.Background()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "industry-partial.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "industry-partial.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -142,7 +142,7 @@ func TestSyncTDXIndustriesKeepsSuccessfulTaxonomyWhenOtherBuildFails(t *testing.
 
 func TestRealIndustryUnknownMemberKeepsPublishedKnownMembers(t *testing.T) {
 	ctx := t.Context()
-	db, err := duckstore.OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "real-partial.duckdb"))
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "real-partial.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -68,9 +68,9 @@ func TestRealAnkerCashHistory(t *testing.T) {
 	db, err := duckstore.Open(ctx, path)
 	check(err)
 	defer func() { _ = db.Close() }()
-	// 保留其他迁移的当前状态，只回退FN114审核边界验证038；不伪称完整schema37。
-	check(duckstore.Apply(ctx, db))
-	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET valid_from=DATE '2025-01-01' WHERE source='tdx' AND provider_field='FN114'; DELETE FROM meta.schema_version WHERE version=38`)
+	// 显式收窄审核范围，验证未审核历史被拒绝及恢复后的物化。
+	check(duckstore.Initialize(ctx, db))
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET valid_from=DATE '2025-01-01' WHERE source='tdx' AND provider_field='FN114'`)
 	check(err)
 	var schema int
 	check(db.QueryRowContext(ctx, `SELECT max(version) FROM meta.schema_version`).Scan(&schema))
@@ -95,7 +95,7 @@ func TestRealAnkerCashHistory(t *testing.T) {
 	if countCapex() != 0 {
 		t.Fatal("unreviewed history was materialized")
 	}
-	check(duckstore.Apply(ctx, db))
+	restoreCurrentMappings(t, db, "provider_field='FN114'")
 	upgraded, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
 	if upgraded.Inserted != 3 || upgraded.Updated != 0 || upgraded.Removed != 0 || countCapex() != 3 {
@@ -175,7 +175,7 @@ func TestRealAnkerCashHistory(t *testing.T) {
 		t.Fatal("current valuation inputs changed")
 	}
 	check(db.Close())
-	db, err = duckstore.OpenAndMigrate(ctx, path)
+	db, err = duckstore.OpenInitialized(ctx, path)
 	check(err)
 	replay, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)

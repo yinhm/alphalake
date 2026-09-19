@@ -11,9 +11,9 @@ import (
 
 func TestApplyClassificationSnapshotTreatsSameDayRemovalAsCorrection(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "same-day.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "same-day.duckdb"))
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 

@@ -13,7 +13,7 @@ import (
 
 func TestFilingRepairQueueUsesLatestRevisionAndPeriod(t *testing.T) {
 	ctx := t.Context()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "repair.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "repair.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestFilingRepairQueueUsesLatestRevisionAndPeriod(t *testing.T) {
 
 func TestRefreshProviderFilingLinksUsesObservationTimeAndCorrections(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "provider-filing.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "provider-filing.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -114,7 +114,7 @@ func TestRefreshProviderFilingLinksUsesObservationTimeAndCorrections(t *testing.
 
 func TestRefreshProviderFilingLinksKeepsFutureAndTiedCandidatesUnlinked(t *testing.T) {
 	ctx := context.Background()
-	db, err := OpenAndMigrate(ctx, filepath.Join(t.TempDir(), "provider-filing-ambiguous.duckdb"))
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "provider-filing-ambiguous.duckdb"))
 	if err != nil {
 		t.Fatal(err)
 	}

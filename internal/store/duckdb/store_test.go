@@ -39,11 +39,11 @@ func TestOpenRejectsEmptyPath(t *testing.T) {
 	}
 }
 
-func TestOpenAndMigrate(t *testing.T) {
+func TestOpenInitialized(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "alphalake.duckdb")
-	db, err := OpenAndMigrate(context.Background(), path)
+	db, err := OpenInitialized(context.Background(), path)
 	if err != nil {
-		t.Fatalf("OpenAndMigrate() error = %v", err)
+		t.Fatalf("OpenInitialized() error = %v", err)
 	}
 	defer db.Close()
 
