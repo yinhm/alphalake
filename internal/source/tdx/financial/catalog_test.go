@@ -33,7 +33,7 @@ func TestCompleteCatalogAndFrozenOfficialDefinitions(t *testing.T) {
 			named++
 		}
 	}
-	if named != 462 || counts["official"] != 437 || counts["reference"] != 25 || counts["unpublished"] != 122 {
+	if named != 462 || counts["official"] != 461 || counts["reference"] != 1 || counts["unpublished"] != 122 {
 		t.Fatal(named, counts)
 	}
 	raw, err := os.ReadFile("testdata/official-financial-fields.html.gz")
@@ -228,5 +228,89 @@ func TestCatalogUnitsAndFrozenSupportingEvidence(t *testing.T) {
 		if len(raw) != want.Bytes || fmt.Sprintf("%x", sha256.Sum256(raw)) != want.SHA {
 			t.Fatal("supporting evidence changed", name)
 		}
+	}
+}
+
+// The formula-system page complements the quant page; neither supersedes the
+// other. Keep its repeated rows and shorter descriptions visible as evidence.
+func TestOfficialProfinanceDirectory(t *testing.T) {
+	fields, err := FieldCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile("testdata/official-profinance-fields.html.gz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	z, err := gzip.NewReader(bytes.NewReader(raw))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer z.Close()
+	page, err := io.ReadAll(z)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var receipt struct {
+		SHA      string `json:"sha256"`
+		Variants map[string]struct {
+			Page    string `json:"page"`
+			Catalog string `json:"catalog"`
+		} `json:"label_variants"`
+	}
+	raw, err = os.ReadFile("testdata/official-profinance-fields.receipt.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(raw, &receipt); err != nil {
+		t.Fatal(err)
+	}
+	if fmt.Sprintf("%x", sha256.Sum256(page)) != receipt.SHA {
+		t.Fatal("official page changed")
+	}
+	normalize := func(s string) string {
+		return strings.Join(strings.Fields(strings.NewReplacer("：", ":", "（", "(", "）", ")").Replace(s)), "")
+	}
+	tags := regexp.MustCompile(`<[^>]+>`)
+	cellsRE := regexp.MustCompile(`(?s)<td[^>]*>(.*?)</td>`)
+	seen := map[int]int{}
+	total := 0
+	variants := 0
+	for _, row := range regexp.MustCompile(`(?s)<tr[^>]*>(.*?)</tr>`).FindAllSubmatch(page, -1) {
+		cells := cellsRE.FindAllSubmatch(row[1], -1)
+		if len(cells) != 3 {
+			continue
+		}
+		code := strings.TrimSpace(string(tags.ReplaceAll(cells[0][1], nil)))
+		n, err := strconv.Atoi(code)
+		if err != nil || n < 1 || n > len(fields) {
+			t.Fatal("invalid source position", code)
+		}
+		label := strings.TrimSpace(string(tags.ReplaceAll(cells[2][1], nil)))
+		f := fields[n-1]
+		seen[n]++
+		total++
+		if v, ok := receipt.Variants[code]; ok {
+			if label != v.Page || f.Label != v.Catalog {
+				t.Fatal("description variant changed", code)
+			}
+			variants++
+		} else if normalize(label) != normalize(f.Label) {
+			t.Fatal("official definition conflicts", code, label, f.Label)
+		}
+		if n != 192 && (f.DefinitionStatus != "official" || !strings.Contains(f.Reference, "tdx_formula_fields_20260919")) {
+			t.Fatal("official provenance missing", n)
+		}
+	}
+	if total != 424 || len(seen) != 422 || seen[401] != 2 || seen[402] != 2 || variants != len(receipt.Variants) {
+		t.Fatal(total, len(seen), variants)
+	}
+	for n, count := range seen {
+		if n != 401 && n != 402 && count != 1 {
+			t.Fatal("unexpected repeated position", n)
+		}
+	}
+	if fields[164].DefinitionStatus != "reference" || fields[191].DefinitionStatus != "unpublished" || fields[583].DefinitionStatus != "official" {
+		t.Fatal("missing page rows overwrote other evidence")
 	}
 }

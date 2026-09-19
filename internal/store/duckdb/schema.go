@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-const SchemaVersion = 48
+const SchemaVersion = 49
 
 //go:embed schema.sql
 var schemaSQL string

@@ -249,7 +249,7 @@ INSERT INTO fundamental.provider_field ("source","provider_field","canonical_fie
 ('tdx','FN96','net_income_parent_ytd','归属于母公司所有者的净利润（累计）','CNY','monetary','2025-01-01',NULL,'Parent income YTD; distinct from FN232 single quarter; balance-profit-2026','ytd','1'),
 ('tdx','FN97','net_income_minority_ytd','少数股东损益（累计）','CNY','monetary','2025-01-01',NULL,'Minority profit/loss YTD; not minority book equity or segment allocation; balance-profit-2026','ytd','1'),
 ('tdx','FN99','tax_refunds_received','收到的税费返还','CNY','monetary','2025-01-01',NULL,'Cashflow statement; not income tax benefit; cash-rd-2026','ytd','1');
-INSERT INTO meta.schema_version(version,description) VALUES (48,'Current schema baseline');
+INSERT INTO meta.schema_version(version,description) VALUES (49,'Current schema baseline');
 
 CREATE TABLE fundamental.source_field (
  source VARCHAR NOT NULL, provider_field VARCHAR NOT NULL, source_index INTEGER NOT NULL,
@@ -395,3 +395,31 @@ INSERT INTO fundamental.provider_field (source,provider_field,canonical_field,di
 ('tdx','FN519','total_operating_cost','营业总成本(万元)','CNY','monetary','2025-01-01','statement-expansion-20260919; original consolidated current column; nonzero only','ytd','10000','reject'),
 ('tdx','FN502','total_operating_revenue','营业总收入(万元)','CNY','monetary','2025-01-01','statement-expansion-20260919; original consolidated current column; nonzero only','ytd','10000','reject'),
 ('tdx','FN42','trading_financial_liabilities','交易性金融负债','CNY','monetary','2025-01-01','statement-expansion-20260919; original consolidated current column; nonzero only','instant','1','reject');
+
+-- Cashflow reconciliation observations remain distinct from income statement items.
+INSERT INTO fundamental.field VALUES
+('cashflow_reconciliation_net_income','CNY','monetary','ytd'),
+('cashflow_asset_impairment_provisions','CNY','monetary','ytd'),
+('cashflow_long_lived_asset_disposal_loss','CNY','monetary','ytd'),
+('fixed_asset_retirement_loss','CNY','monetary','ytd'),
+('cashflow_fair_value_loss','CNY','monetary','ytd'),
+('cashflow_finance_costs','CNY','monetary','ytd'),
+('cashflow_investment_loss','CNY','monetary','ytd'),
+('deferred_tax_asset_decrease_cashflow','CNY','monetary','ytd'),
+('deferred_tax_liability_increase_cashflow','CNY','monetary','ytd'),
+('operating_cash_flow_indirect','CNY','monetary','ytd'),
+('net_cash_increase_reconciliation','CNY','monetary','ytd'),
+('credit_impairment_cashflow_adjustment','CNY','monetary','ytd');
+INSERT INTO fundamental.provider_field (source,provider_field,canonical_field,display_name,unit,value_kind,valid_from,notes,period_basis,value_multiplier,zero_policy) VALUES
+('tdx','FN134','cashflow_reconciliation_net_income','净利润','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',1,'reject'),
+('tdx','FN135','cashflow_asset_impairment_provisions','加：资产减值准备','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',1,'reject'),
+('tdx','FN139','cashflow_long_lived_asset_disposal_loss','处置固定资产、无形资产和其他长期资产的损失','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',1,'reject'),
+('tdx','FN140','fixed_asset_retirement_loss','固定资产报废损失','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',1,'reject'),
+('tdx','FN141','cashflow_fair_value_loss','公允价值变动损失','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',1,'reject'),
+('tdx','FN142','cashflow_finance_costs','财务费用','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',1,'reject'),
+('tdx','FN143','cashflow_investment_loss','投资损失','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',1,'reject'),
+('tdx','FN144','deferred_tax_asset_decrease_cashflow','递延所得税资产减少','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',1,'reject'),
+('tdx','FN145','deferred_tax_liability_increase_cashflow','递延所得税负债增加','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',1,'reject'),
+('tdx','FN150','operating_cash_flow_indirect','经营活动产生的现金流量净额2','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',1,'reject'),
+('tdx','FN158','net_cash_increase_reconciliation','现金及现金等价物净增加额','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',1,'reject'),
+('tdx','FN580','credit_impairment_cashflow_adjustment','信用减值损失(万元)','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',10000,'reject');

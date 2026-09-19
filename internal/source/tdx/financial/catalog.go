@@ -14,7 +14,7 @@ import (
 
 // CatalogVersion identifies the complete frozen source dictionary, not a claim
 // that all metrics are reviewed standard facts or suitable for valuation.
-const CatalogVersion = "tdx-financial-20260919-v2"
+const CatalogVersion = "tdx-financial-20260919-v3"
 
 //go:embed catalog.csv
 var catalogCSV []byte

@@ -185,7 +185,7 @@ func TestRealAssetDisposalCash(t *testing.T) {
 // 冻结样本保留原字段分母；处置现金及整批三表字段分别由独立真实链验收。
 func keepFrozenFinancialFieldScope(t *testing.T, db *sql.DB) {
 	t.Helper()
-	if _, err := db.ExecContext(t.Context(), `DELETE FROM fundamental.provider_field WHERE source='tdx' AND (provider_field='FN110' OR notes LIKE 'statement-expansion-20260919;%')`); err != nil {
+	if _, err := db.ExecContext(t.Context(), `DELETE FROM fundamental.provider_field WHERE source='tdx' AND (provider_field='FN110' OR notes LIKE 'statement-expansion-20260919;%' OR notes LIKE 'cashflow-reconciliation-20260919;%')`); err != nil {
 		t.Fatal(err)
 	}
 }

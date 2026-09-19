@@ -4,6 +4,8 @@
 
 - `official-financial-fields.html.gz`：通达信官方专业财务字段说明，438行含一项“暂无”；Go测试独立读取HTML并逐项核对目录原描述。
 - `official-financial-unit-rules.html.gz`：官方未标明金额/股数单位及缺失展示规则；不以缺失展示零推断真实会计零。
-- `portfolio-types.py.txt.gz`：本地portfolio参考词典，原作者 **Copyright 2021 yinhm**，提交`a16e6fc`；原版权声明随文件保留。仅补官方本页遗漏的25项说明，不执行其代码，不引入numpy，不把它当独立财报审核。
+- `portfolio-types.py.txt.gz`：本地portfolio参考词典，原作者 **Copyright 2021 yinhm**，提交`a16e6fc`；原版权声明随文件保留。首发时补量化页面遗漏的25项说明；本轮公式页面已为其中24项补足官方依据，现仅165仍为reference，不执行其代码，不引入numpy，不把它当独立财报审核。
 
 完整解析目录不等于标准事实批准。真实584位置回归复用`internal/ingest/testdata/valuation-chain-2026`裁剪包；后续未定义位置继续保留float32位。实现及接入范围见[全量目录说明](../../../../../docs/tdx-financial-catalog-20260919.md)。
+
+- `official-profinance-fields.html.gz`及同名receipt：用户提供的官方公式页面，424行/422位置（401、402重复，192暂无），补24项官方名称依据。13处描述差异与另一官方目录的40个本页缺行分别记录；不覆盖较详细注释。当前官方定义461、参考1。

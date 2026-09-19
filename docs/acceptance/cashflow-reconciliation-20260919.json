@@ -1,0 +1,267 @@
+{
+  "catalog_version": "tdx-financial-20260919-v3",
+  "databases": [
+    {
+      "backup": "workspace/auto-valuation-20260909/market.duckdb.pre-cashflow-reconciliation-20260919",
+      "backup_sha256": "4dd61b88d164ec46437b5104ecd6145a426949344cd15ea065325eeae2f6d30e",
+      "materialization_runs": [
+        {
+          "Candidates": 195414,
+          "FilingResolutionAttempted": 0,
+          "FilingResolutionPending": 0,
+          "FilingResolutionRecovered": 0,
+          "Inserted": 83974,
+          "LinkAmbiguous": 0,
+          "LinkPending": 0,
+          "LinkRecords": 0,
+          "Linked": 0,
+          "LinksRemoved": 0,
+          "Materialized": 83974,
+          "Rejected": 111440,
+          "Removed": 0,
+          "RunID": 5388,
+          "Updated": 0
+        },
+        {
+          "Candidates": 195414,
+          "FilingResolutionAttempted": 0,
+          "FilingResolutionPending": 0,
+          "FilingResolutionRecovered": 0,
+          "Inserted": 86499,
+          "LinkAmbiguous": 0,
+          "LinkPending": 0,
+          "LinkRecords": 0,
+          "Linked": 0,
+          "LinksRemoved": 0,
+          "Materialized": 86499,
+          "Rejected": 108915,
+          "Removed": 0,
+          "RunID": 5389,
+          "Updated": 0
+        }
+      ],
+      "new_fact_periods": [
+        {
+          "period": "2025-03-31",
+          "facts": 8,
+          "securities": 1
+        },
+        {
+          "period": "2025-06-30",
+          "facts": 54592,
+          "securities": 5358
+        },
+        {
+          "period": "2025-12-31",
+          "facts": 59023,
+          "securities": 5453
+        },
+        {
+          "period": "2026-06-30",
+          "facts": 56850,
+          "securities": 5523
+        }
+      ],
+      "old_145_field_exports_equal": {
+        "002032": true,
+        "300866": true
+      },
+      "old_facts_changed": 0,
+      "path": "workspace/auto-valuation-20260909/market.duckdb",
+      "published_sha256": "1ea80c008995780c9985f76615d7f8f52383b70887bd386fe54c1ee9683dc718",
+      "rejection_reasons_first_materialization": [
+        {
+          "rule_code": "provider_zero_ambiguous",
+          "diagnostics": 220355
+        }
+      ],
+      "reopen_replay_runs": [
+        {
+          "Candidates": 195414,
+          "FilingResolutionAttempted": 0,
+          "FilingResolutionPending": 0,
+          "FilingResolutionRecovered": 0,
+          "Inserted": 0,
+          "LinkAmbiguous": 0,
+          "LinkPending": 0,
+          "LinkRecords": 0,
+          "Linked": 0,
+          "LinksRemoved": 0,
+          "Materialized": 83974,
+          "Rejected": 111440,
+          "Removed": 0,
+          "RunID": 5390,
+          "Updated": 0
+        },
+        {
+          "Candidates": 195414,
+          "FilingResolutionAttempted": 0,
+          "FilingResolutionPending": 0,
+          "FilingResolutionRecovered": 0,
+          "Inserted": 0,
+          "LinkAmbiguous": 0,
+          "LinkPending": 0,
+          "LinkRecords": 0,
+          "Linked": 0,
+          "LinksRemoved": 0,
+          "Materialized": 86499,
+          "Rejected": 108915,
+          "Removed": 0,
+          "RunID": 5391,
+          "Updated": 0
+        }
+      ],
+      "run_statuses": [
+        {
+          "ingest_run_id": 5388,
+          "status": "partial"
+        },
+        {
+          "ingest_run_id": 5389,
+          "status": "partial"
+        },
+        {
+          "ingest_run_id": 5390,
+          "status": "partial"
+        },
+        {
+          "ingest_run_id": 5391,
+          "status": "partial"
+        }
+      ],
+      "schema_after": 49,
+      "schema_before": 48,
+      "source_facts": 19310544,
+      "standard_facts_after": 3876699,
+      "standard_facts_before": 3706226,
+      "unrelated_facts_added": 0,
+      "unrelated_tables_compared_equal": [
+        "classification.membership",
+        "classification.node",
+        "classification.taxonomy",
+        "core.company",
+        "core.exchange",
+        "core.instrument",
+        "core.instrument_identifier",
+        "core.listing",
+        "core.listing_identifier",
+        "fundamental.document_review",
+        "fundamental.filing",
+        "fundamental.filing_document",
+        "fundamental.provider_filing_link",
+        "fundamental.provider_record_resolution",
+        "fundamental.reviewed_supplement",
+        "fundamental.supplement_review_history",
+        "market.adjustment_segment",
+        "market.corporate_action",
+        "market.daily_observation",
+        "market.equity_proceeds_observation",
+        "market.fx_rate",
+        "market.listing_close_observation",
+        "market.ohlcv_daily",
+        "market.share_capital",
+        "market.share_count_observation",
+        "market.trading_calendar",
+        "market.yield_curve_point",
+        "meta.artifact",
+        "meta.checkpoint",
+        "meta.dataset_release",
+        "meta.dataset_release_artifact",
+        "meta.derived_state",
+        "reference.country_risk",
+        "reference.credit_spread_band",
+        "reference.equity_risk_premium",
+        "reference.industry_stat",
+        "reference.security_code_transition",
+        "reference.security_industry"
+      ]
+    },
+    {
+      "backup": "workspace/auto-valuation-20260909/references-refresh-live.duckdb.pre-cashflow-reconciliation-20260919",
+      "backup_sha256": "0e599effe42a59e9623017bfdea9daf251684c6c600479ebe7fcc6aff5b59a67",
+      "materialization_runs": [],
+      "new_fact_periods": [],
+      "old_145_field_exports_equal": {},
+      "old_facts_changed": 0,
+      "path": "workspace/auto-valuation-20260909/references-refresh-live.duckdb",
+      "published_sha256": "35cba33db68c8caec98f3003cf256e76965f711137667c22138757c3406ef2eb",
+      "rejection_reasons_first_materialization": [],
+      "reopen_replay_runs": [],
+      "run_statuses": [],
+      "schema_after": 49,
+      "schema_before": 48,
+      "source_facts": 0,
+      "standard_facts_after": 0,
+      "standard_facts_before": 0,
+      "unrelated_facts_added": 0,
+      "unrelated_tables_compared_equal": [
+        "classification.membership",
+        "classification.node",
+        "classification.taxonomy",
+        "core.company",
+        "core.exchange",
+        "core.instrument",
+        "core.instrument_identifier",
+        "core.listing",
+        "core.listing_identifier",
+        "fundamental.document_review",
+        "fundamental.filing",
+        "fundamental.filing_document",
+        "fundamental.provider_filing_link",
+        "fundamental.provider_record_resolution",
+        "fundamental.reviewed_supplement",
+        "fundamental.supplement_review_history",
+        "market.adjustment_segment",
+        "market.corporate_action",
+        "market.daily_observation",
+        "market.equity_proceeds_observation",
+        "market.fx_rate",
+        "market.listing_close_observation",
+        "market.ohlcv_daily",
+        "market.share_capital",
+        "market.share_count_observation",
+        "market.trading_calendar",
+        "market.yield_curve_point",
+        "meta.artifact",
+        "meta.checkpoint",
+        "meta.dataset_release",
+        "meta.dataset_release_artifact",
+        "meta.derived_state",
+        "reference.country_risk",
+        "reference.credit_spread_band",
+        "reference.equity_risk_premium",
+        "reference.industry_stat",
+        "reference.security_code_transition",
+        "reference.security_industry"
+      ]
+    }
+  ],
+  "date": "2026-09-19",
+  "evidence_scope": "Anker 2025H1/2025FY/2026H1; 12 fields, 36 current nonzero cells and 36 comparative cells",
+  "financial_period_for_export_comparison": "2026-06-30",
+  "information_cutoff_for_export_comparison": "2026-09-19T00:00:00Z",
+  "schema": 49,
+  "standard_fields_after": 157,
+  "standard_fields_before": 145,
+  "rotated_backups": [
+    {
+      "path": "workspace/auto-valuation-20260909/market.duckdb.pre-statement-expansion-20260919",
+      "sha256": "fc0593ff75e5156bfd1ef31784af9734a02719de5360f63ea24e1dd9f5a70d1c",
+      "reason": "schema49 reopened; exact old facts/source and unrelated tables verified; retained latest schema48 backup"
+    },
+    {
+      "path": "workspace/auto-valuation-20260909/references-refresh-live.duckdb.pre-statement-expansion-20260919",
+      "sha256": "759bf26310597d816908499d05e08c64e8a04058d5268212697e71e8ac7238e9",
+      "reason": "schema49 reopened; exact old facts/source and unrelated tables verified; retained latest schema48 backup"
+    }
+  ],
+  "validation": {
+    "go_test_all": "passed",
+    "go_build_cli": "passed",
+    "go_vet_all": "passed",
+    "python_evidence_tests": "14 evidence tests + 1 shared catalog test passed; no skips; Python3.12.3/pypdf6.17.0; both evidence batches explicit in CI",
+    "real_chain": "TestRealCashflowReconciliation and TestRealStatementExpansion passed",
+    "engine_scope": "old 145-field exports compared for Anker and Supor; no DCF rerun in this batch",
+    "publication_helper_recovery": "JSON RawMessage type error before fact materialization; restored verified schema48 backup together with removal of failed metadata WAL; no production checks relaxed"
+  }
+}

@@ -14,6 +14,14 @@ import (
 )
 
 func TestRealStatementExpansion(t *testing.T) {
+	testRealStatementBatch(t, "statement-expansion-2026", "statement-expansion-20260919", 64, 188, 4, 61, 3, "retained_earnings")
+}
+
+func TestRealCashflowReconciliation(t *testing.T) {
+	testRealStatementBatch(t, "cashflow-reconciliation-2026", "cashflow-reconciliation-20260919", 12, 36, 0, 12, 0, "cashflow_reconciliation_net_income")
+}
+
+func testRealStatementBatch(t *testing.T, directory, review string, fieldCount, matchedCount, missingCount, completeCount, blockedCount int, boundaryField string) {
 	ctx := t.Context()
 	out := t.TempDir()
 	t.Setenv("ALPHALAKE_VALUATION_EXPORT_DIR", out)
@@ -42,12 +50,12 @@ func TestRealStatementExpansion(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	check(json.Unmarshal(readFinancialSample(t, "testdata/statement-expansion-2026", "evidence.json"), &evidence))
-	if len(evidence.Approved) != 64 || len(evidence.Observations) != 192 {
+	check(json.Unmarshal(readFinancialSample(t, "testdata/"+directory, "evidence.json"), &evidence))
+	if len(evidence.Approved) != fieldCount || len(evidence.Observations) != fieldCount*3 {
 		t.Fatal("review denominator")
 	}
 	for _, r := range evidence.Reports {
-		raw := readFinancialSample(t, "testdata/statement-expansion-2026", r.PDF)
+		raw := readFinancialSample(t, "testdata/"+directory, r.PDF)
 		if fmt.Sprintf("%x", sha256.Sum256(raw)) != r.SHA {
 			t.Fatal("original PDF changed")
 		}
@@ -60,7 +68,7 @@ func TestRealStatementExpansion(t *testing.T) {
 	// fact IDs, values and lineage must remain byte-for-byte equivalent as rows.
 	_, err = db.ExecContext(ctx, `CREATE TEMP TABLE previous_facts AS SELECT * FROM fundamental.fact`)
 	check(err)
-	restoreCurrentMappings(t, db, "notes LIKE 'statement-expansion-20260919;%'")
+	restoreCurrentMappings(t, db, "notes LIKE '"+review+";%'")
 	var fields []string
 	seen := map[string]bool{}
 	for _, r := range evidence.Observations {
@@ -113,14 +121,14 @@ func TestRealStatementExpansion(t *testing.T) {
 		}
 		matched++
 	}
-	if matched != 188 || missing != 4 {
+	if matched != matchedCount || missing != missingCount {
 		t.Fatal(matched, missing)
 	}
 	// CNINFO date precision remains unavailable until next China midnight.
 	at := time.Date(2026, 8, 31, 16, 0, 0, 0, time.UTC)
 	for _, delta := range []time.Duration{-time.Nanosecond, 0} {
 		var count int
-		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact_asof(?) WHERE provider_code='300866' AND canonical_field='retained_earnings' AND report_period=DATE '2026-06-30'`, at.Add(delta)).Scan(&count))
+		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact_asof(?) WHERE provider_code='300866' AND canonical_field=? AND report_period=DATE '2026-06-30'`, at.Add(delta), boundaryField).Scan(&count))
 		if (count == 1) != (delta == 0) {
 			t.Fatal("PIT boundary", count)
 		}
@@ -182,11 +190,11 @@ func TestRealStatementExpansion(t *testing.T) {
 			t.Fatal("standard field absent from valuation export", name)
 		}
 	}
-	if complete != 61 || blocked != 3 {
+	if complete != completeCount || blocked != blockedCount {
 		t.Fatal("window coverage", complete, blocked)
 	}
 	// Batch invalidation must not remove unrelated facts.
-	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE notes LIKE 'statement-expansion-20260919;%'`)
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE notes LIKE ?`, review+";%")
 	check(err)
 	rejected, err := MaterializeProviderFundamentals(ctx, db, "tdx", fields...)
 	check(err)
@@ -197,7 +205,7 @@ func TestRealStatementExpansion(t *testing.T) {
 	if changed != 0 {
 		t.Fatal("unrelated facts removed")
 	}
-	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=(SELECT value_multiplier FROM fundamental.source_field s WHERE s.source=provider_field.source AND s.provider_field=provider_field.provider_field) WHERE notes LIKE 'statement-expansion-20260919;%'`)
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=(SELECT value_multiplier FROM fundamental.source_field s WHERE s.source=provider_field.source AND s.provider_field=provider_field.provider_field) WHERE notes LIKE ?`, review+";%")
 	check(err)
 	restored, err := MaterializeProviderFundamentals(ctx, db, "tdx", fields...)
 	check(err)

@@ -1,0 +1,726 @@
+{
+  "review_id": "cashflow-reconciliation-20260919",
+  "scope": "consolidated_cashflow_reconciliation_current_columns_three_reports_one_company",
+  "valid_from": "2025-01-01",
+  "approved_fields": [
+    "cashflow_asset_impairment_provisions",
+    "cashflow_fair_value_loss",
+    "cashflow_finance_costs",
+    "cashflow_investment_loss",
+    "cashflow_long_lived_asset_disposal_loss",
+    "cashflow_reconciliation_net_income",
+    "credit_impairment_cashflow_adjustment",
+    "deferred_tax_asset_decrease_cashflow",
+    "deferred_tax_liability_increase_cashflow",
+    "fixed_asset_retirement_loss",
+    "net_cash_increase_reconciliation",
+    "operating_cash_flow_indirect"
+  ],
+  "reports": [
+    {
+      "code": "300866",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "pdf_path": "../anker-valuation-2026/1224614835.pdf",
+      "pdf_sha256": "e1aff2dcb92aea9bcc8b3b69b66051b2e27c68026dbbff77d56ef27373dee674",
+      "package_path": "../valuation-chain-2026/gpcw20250630.zip",
+      "package_sha256": "d234e4f6cc3233fa9dc38e27269f15d6cd0f106f704a89ed9f798a2c335d39fb",
+      "tables": {
+        "cashflow_statement": {
+          "pages": [
+            148
+          ],
+          "section": "59、现金流量表补充资料",
+          "header": "补充资料2025年半年度2024年半年度"
+        }
+      }
+    },
+    {
+      "code": "300866",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "pdf_path": "../anker-valuation-2026/1225090973.pdf",
+      "pdf_sha256": "8dadc4bfd7282738697a5ee82d9b25faa657e053e3f480e71dd6ae9987703202",
+      "package_path": "../valuation-chain-2026/gpcw20251231.zip",
+      "package_sha256": "39cdb919483b892674c9624cb03946ddb03f10faf83d3368384505c356fb336f",
+      "tables": {
+        "cashflow_statement": {
+          "pages": [
+            184,
+            185
+          ],
+          "section": "59、现金流量表补充资料",
+          "header": "补充资料2025年度2024年度"
+        }
+      }
+    },
+    {
+      "code": "300866",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "pdf_path": "../anker-valuation-2026/1225533054.pdf",
+      "pdf_sha256": "ff81b9e7c2e8eb04bd450fce3c084b28f5b4be4c1e2638250160b7bb813ebac1",
+      "package_path": "../valuation-chain-2026/gpcw20260630.zip",
+      "package_sha256": "6366c4224e1a08de7bdb8e45ec6af624a20205f70a305eaf66a33d78aaa6578c",
+      "tables": {
+        "cashflow_statement": {
+          "pages": [
+            138
+          ],
+          "section": "59、现金流量表补充资料",
+          "header": "补充资料2026年半年度2025年半年度"
+        }
+      }
+    }
+  ],
+  "observations": [
+    {
+      "field": "cashflow_reconciliation_net_income",
+      "provider_field": "FN134",
+      "period": "2025-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 148,
+      "label": "净利润",
+      "printed": [
+        "1,166,287,534.15",
+        "904,890,986.26"
+      ],
+      "pdf_value": "1166287534.15",
+      "multiplier": 1,
+      "source_bits": 1317734469,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_asset_impairment_provisions",
+      "provider_field": "FN135",
+      "period": "2025-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 148,
+      "label": "加：资产减值损失",
+      "printed": [
+        "237,522,795.77",
+        "178,358,526.77"
+      ],
+      "pdf_value": "237522795.77",
+      "multiplier": 1,
+      "source_bits": 1298302199,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_long_lived_asset_disposal_loss",
+      "provider_field": "FN139",
+      "period": "2025-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 148,
+      "label": "处置固定资产的损失（收益以“-”号填列）",
+      "printed": [
+        "-296,433.79",
+        "-10,710.00"
+      ],
+      "pdf_value": "-296433.79",
+      "multiplier": 1,
+      "source_bits": 3364929081,
+      "status": "matched"
+    },
+    {
+      "field": "fixed_asset_retirement_loss",
+      "provider_field": "FN140",
+      "period": "2025-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 148,
+      "label": "固定资产报废损失（收益以“-”号填列）",
+      "printed": [
+        "744,079.30",
+        "-"
+      ],
+      "pdf_value": "744079.30",
+      "multiplier": 1,
+      "source_bits": 1228253429,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_fair_value_loss",
+      "provider_field": "FN141",
+      "period": "2025-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 148,
+      "label": "公允价值变动收益（收益以“-”号填列）",
+      "printed": [
+        "-74,006,252.42",
+        "-97,401,230.58"
+      ],
+      "pdf_value": "-74006252.42",
+      "multiplier": 1,
+      "source_bits": 3431802846,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_finance_costs",
+      "provider_field": "FN142",
+      "period": "2025-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 148,
+      "label": "财务费用（收益以“-”号填列）",
+      "printed": [
+        "20,461,699.05",
+        "13,383,808.06"
+      ],
+      "pdf_value": "20461699.05",
+      "multiplier": 1,
+      "source_bits": 1268522050,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_investment_loss",
+      "provider_field": "FN143",
+      "period": "2025-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 148,
+      "label": "投资收益（收益以“-”号填列）",
+      "printed": [
+        "-154,801,474.62",
+        "-38,072,235.28"
+      ],
+      "pdf_value": "-154801474.62",
+      "multiplier": 1,
+      "source_bits": 3440615764,
+      "status": "matched"
+    },
+    {
+      "field": "deferred_tax_asset_decrease_cashflow",
+      "provider_field": "FN144",
+      "period": "2025-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 148,
+      "label": "递延所得税资产减少（增加以“-”号填列）",
+      "printed": [
+        "-113,458,706.73",
+        "-66,731,023.16"
+      ],
+      "pdf_value": "-113458706.73",
+      "multiplier": 1,
+      "source_bits": 3436734402,
+      "status": "matched"
+    },
+    {
+      "field": "deferred_tax_liability_increase_cashflow",
+      "provider_field": "FN145",
+      "period": "2025-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 148,
+      "label": "递延所得税负债增加（减少以“-”号填列）",
+      "printed": [
+        "-133,226,771.07",
+        "34,018,097.09"
+      ],
+      "pdf_value": "-133226771.07",
+      "multiplier": 1,
+      "source_bits": 3439205410,
+      "status": "matched"
+    },
+    {
+      "field": "operating_cash_flow_indirect",
+      "provider_field": "FN150",
+      "period": "2025-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 148,
+      "label": "经营活动产生的现金流量净额",
+      "printed": [
+        "-1,132,220,950.62",
+        "841,301,280.92"
+      ],
+      "pdf_value": "-1132220950.62",
+      "multiplier": 1,
+      "source_bits": 3464951972,
+      "status": "matched"
+    },
+    {
+      "field": "net_cash_increase_reconciliation",
+      "provider_field": "FN158",
+      "period": "2025-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 148,
+      "label": "现金及现金等价物净增加额（减少以“-”号填列）",
+      "printed": [
+        "399,665,632.23",
+        "-68,009,063.34"
+      ],
+      "pdf_value": "399665632.23",
+      "multiplier": 1,
+      "source_bits": 1304335183,
+      "status": "matched"
+    },
+    {
+      "field": "credit_impairment_cashflow_adjustment",
+      "provider_field": "FN580",
+      "period": "2025-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 148,
+      "label": "信用减值损失",
+      "printed": [
+        "40,541,084.49",
+        "13,364,580.09"
+      ],
+      "pdf_value": "40541084.49",
+      "multiplier": 10000,
+      "source_bits": 1165844931,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_reconciliation_net_income",
+      "provider_field": "FN134",
+      "period": "2025-12-31",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 184,
+      "label": "净利润",
+      "printed": [
+        "2,617,193,921.23",
+        "2,211,123,968.32"
+      ],
+      "pdf_value": "2617193921.23",
+      "multiplier": 1,
+      "source_bits": 1327234870,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_asset_impairment_provisions",
+      "provider_field": "FN135",
+      "period": "2025-12-31",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 184,
+      "label": "加：资产减值损失",
+      "printed": [
+        "364,996,905.04",
+        "148,412,846.86"
+      ],
+      "pdf_value": "364996905.04",
+      "multiplier": 1,
+      "source_bits": 1303251785,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_long_lived_asset_disposal_loss",
+      "provider_field": "FN139",
+      "period": "2025-12-31",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 185,
+      "label": "处置固定资产的损失(收益以“-”号填列)",
+      "printed": [
+        "-530,824.98",
+        "-76,365.29"
+      ],
+      "pdf_value": "-530824.98",
+      "multiplier": 1,
+      "source_bits": 3372325008,
+      "status": "matched"
+    },
+    {
+      "field": "fixed_asset_retirement_loss",
+      "provider_field": "FN140",
+      "period": "2025-12-31",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 185,
+      "label": "固定资产报废损失(收益以“-”号填列)",
+      "printed": [
+        "1,073,250.02",
+        "229,384.07"
+      ],
+      "pdf_value": "1073250.02",
+      "multiplier": 1,
+      "source_bits": 1233322768,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_fair_value_loss",
+      "provider_field": "FN141",
+      "period": "2025-12-31",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 185,
+      "label": "公允价值变动收益(收益以“-”号填列)",
+      "printed": [
+        "-139,596,732.28",
+        "-128,719,504.90"
+      ],
+      "pdf_value": "-139596732.28",
+      "multiplier": 1,
+      "source_bits": 3439665468,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_finance_costs",
+      "provider_field": "FN142",
+      "period": "2025-12-31",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 185,
+      "label": "财务费用(收益以“-”号填列)",
+      "printed": [
+        "52,051,103.68",
+        "27,760,034.51"
+      ],
+      "pdf_value": "52051103.68",
+      "multiplier": 1,
+      "source_bits": 1279692584,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_investment_loss",
+      "provider_field": "FN143",
+      "period": "2025-12-31",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 185,
+      "label": "投资收益(收益以“-”号填列)",
+      "printed": [
+        "-275,717,386.48",
+        "-154,658,578.53"
+      ],
+      "pdf_value": "-275717386.48",
+      "multiplier": 1,
+      "source_bits": 3447945448,
+      "status": "matched"
+    },
+    {
+      "field": "deferred_tax_asset_decrease_cashflow",
+      "provider_field": "FN144",
+      "period": "2025-12-31",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 185,
+      "label": "递延所得税资产减少(增加以“-”号填列)",
+      "printed": [
+        "103,750,598.08",
+        "-175,914,620.17"
+      ],
+      "pdf_value": "103750598.08",
+      "multiplier": 1,
+      "source_bits": 1288037241,
+      "status": "matched"
+    },
+    {
+      "field": "deferred_tax_liability_increase_cashflow",
+      "provider_field": "FN145",
+      "period": "2025-12-31",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 185,
+      "label": "递延所得税负债增加(减少以“-”号填列)",
+      "printed": [
+        "-130,231,404.32",
+        "35,959,149.42"
+      ],
+      "pdf_value": "-130231404.32",
+      "multiplier": 1,
+      "source_bits": 3438830990,
+      "status": "matched"
+    },
+    {
+      "field": "operating_cash_flow_indirect",
+      "provider_field": "FN150",
+      "period": "2025-12-31",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 185,
+      "label": "经营活动产生的现金流量净额",
+      "printed": [
+        "480,806,645.21",
+        "2,745,458,716.91"
+      ],
+      "pdf_value": "480806645.21",
+      "multiplier": 1,
+      "source_bits": 1306870840,
+      "status": "matched"
+    },
+    {
+      "field": "net_cash_increase_reconciliation",
+      "provider_field": "FN158",
+      "period": "2025-12-31",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 185,
+      "label": "现金及现金等价物净增加额(减少以“-”号填列)",
+      "printed": [
+        "739,038,215.05",
+        "539,603,125.57"
+      ],
+      "pdf_value": "739038215.05",
+      "multiplier": 1,
+      "source_bits": 1311781712,
+      "status": "matched"
+    },
+    {
+      "field": "credit_impairment_cashflow_adjustment",
+      "provider_field": "FN580",
+      "period": "2025-12-31",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 184,
+      "label": "信用减值损失",
+      "printed": [
+        "46,017,003.23",
+        "6,909,057.93"
+      ],
+      "pdf_value": "46017003.23",
+      "multiplier": 10000,
+      "source_bits": 1167052186,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_reconciliation_net_income",
+      "provider_field": "FN134",
+      "period": "2026-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 138,
+      "label": "净利润",
+      "printed": [
+        "1,744,822,270.00",
+        "1,166,287,534.15"
+      ],
+      "pdf_value": "1744822270.00",
+      "multiplier": 1,
+      "source_bits": 1322254272,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_asset_impairment_provisions",
+      "provider_field": "FN135",
+      "period": "2026-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 138,
+      "label": "加：资产减值损失",
+      "printed": [
+        "443,702,968.63",
+        "237,522,795.77"
+      ],
+      "pdf_value": "443702968.63",
+      "multiplier": 1,
+      "source_bits": 1305711350,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_long_lived_asset_disposal_loss",
+      "provider_field": "FN139",
+      "period": "2026-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 138,
+      "label": "处置固定资产的损失(收益以“-”号填列)",
+      "printed": [
+        "-29,519.17",
+        "-296,433.79"
+      ],
+      "pdf_value": "-29519.17",
+      "multiplier": 1,
+      "source_bits": 3337002583,
+      "status": "matched"
+    },
+    {
+      "field": "fixed_asset_retirement_loss",
+      "provider_field": "FN140",
+      "period": "2026-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 138,
+      "label": "固定资产报废损失(收益以“-”号填列)",
+      "printed": [
+        "164,414.24",
+        "744,079.30"
+      ],
+      "pdf_value": "164414.24",
+      "multiplier": 1,
+      "source_bits": 1210093455,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_fair_value_loss",
+      "provider_field": "FN141",
+      "period": "2026-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 138,
+      "label": "公允价值变动收益(收益以“-”号填列)",
+      "printed": [
+        "-271,472,471.32",
+        "-74,006,252.42"
+      ],
+      "pdf_value": "-271472471.32",
+      "multiplier": 1,
+      "source_bits": 3447812795,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_finance_costs",
+      "provider_field": "FN142",
+      "period": "2026-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 138,
+      "label": "财务费用(收益以“-”号填列)",
+      "printed": [
+        "32,364,349.61",
+        "20,461,699.05"
+      ],
+      "pdf_value": "32364349.61",
+      "multiplier": 1,
+      "source_bits": 1274473375,
+      "status": "matched"
+    },
+    {
+      "field": "cashflow_investment_loss",
+      "provider_field": "FN143",
+      "period": "2026-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 138,
+      "label": "投资收益(收益以“-”号填列)",
+      "printed": [
+        "-26,592,133.02",
+        "-154,801,474.62"
+      ],
+      "pdf_value": "-26592133.02",
+      "multiplier": 1,
+      "source_bits": 3419070915,
+      "status": "matched"
+    },
+    {
+      "field": "deferred_tax_asset_decrease_cashflow",
+      "provider_field": "FN144",
+      "period": "2026-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 138,
+      "label": "递延所得税资产减少(增加以“-”号填列)",
+      "printed": [
+        "-205,820,040.83",
+        "-113,458,706.73"
+      ],
+      "pdf_value": "-205820040.83",
+      "multiplier": 1,
+      "source_bits": 3443804425,
+      "status": "matched"
+    },
+    {
+      "field": "deferred_tax_liability_increase_cashflow",
+      "provider_field": "FN145",
+      "period": "2026-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 138,
+      "label": "递延所得税负债增加(减少以“-”号填列)",
+      "printed": [
+        "21,243,719.88",
+        "-133,226,771.07"
+      ],
+      "pdf_value": "21243719.88",
+      "multiplier": 1,
+      "source_bits": 1268913060,
+      "status": "matched"
+    },
+    {
+      "field": "operating_cash_flow_indirect",
+      "provider_field": "FN150",
+      "period": "2026-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 138,
+      "label": "经营活动产生的现金流量净额",
+      "printed": [
+        "722,529,395.01",
+        "-1,132,220,950.62"
+      ],
+      "pdf_value": "722529395.01",
+      "multiplier": 1,
+      "source_bits": 1311523762,
+      "status": "matched"
+    },
+    {
+      "field": "net_cash_increase_reconciliation",
+      "provider_field": "FN158",
+      "period": "2026-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 138,
+      "label": "现金及现金等价物净增加额(减少以“-”号填列)",
+      "printed": [
+        "-75,485,452.62",
+        "399,665,632.23"
+      ],
+      "pdf_value": "-75485452.62",
+      "multiplier": 1,
+      "source_bits": 3431987746,
+      "status": "matched"
+    },
+    {
+      "field": "credit_impairment_cashflow_adjustment",
+      "provider_field": "FN580",
+      "period": "2026-06-30",
+      "period_basis": "ytd",
+      "category": "cashflow_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 138,
+      "label": "信用减值损失",
+      "printed": [
+        "52,076,770.08",
+        "40,541,084.49"
+      ],
+      "pdf_value": "52076770.08",
+      "multiplier": 10000,
+      "source_bits": 1168293233,
+      "status": "matched"
+    }
+  ]
+}

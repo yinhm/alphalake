@@ -24,9 +24,12 @@ def compact(text):
 def verify(directory=DEFAULT, evidence=None):
     data = evidence if evidence is not None else json.loads((directory / 'evidence.json').read_text())
     catalog = {r['name']: r for r in csv.DictReader((ROOT / 'internal/source/tdx/financial/catalog.csv').open()) if r['name']}
-    if data['valid_from'] != '2025-01-01' or len(data['approved_fields']) != 64 or len(set(data['approved_fields'])) != 64:
+    scopes = {'statement-expansion-20260919': (64, 188, 4), 'cashflow-reconciliation-20260919': (12, 36, 0)}
+    fields, expected_matched, expected_missing = scopes[data['review_id']]
+    positions = fields * 3
+    if data['valid_from'] != '2025-01-01' or len(data['approved_fields']) != fields or len(set(data['approved_fields'])) != fields:
         raise ValueError('reviewed field scope changed')
-    if len(data['reports']) != 3 or len(data['observations']) != 192:
+    if len(data['reports']) != 3 or len(data['observations']) != positions:
         raise ValueError('report/observation denominator changed')
     seen = set(); matched = missing = 0
     for report in data['reports']:
@@ -45,8 +48,8 @@ def verify(directory=DEFAULT, evidence=None):
                 raise ValueError('parent-only statement mixed into consolidated scope')
         with zipfile.ZipFile(package) as z:
             raw = z.read(z.namelist()[0])
-        positions = [20+n*11 for n in range(struct.unpack_from('<H', raw, 6)[0])]
-        record, = [p for p in positions if raw[p:p+6].decode() == report['code']]
+        record_positions = [20+n*11 for n in range(struct.unpack_from('<H', raw, 6)[0])]
+        record, = [p for p in record_positions if raw[p:p+6].decode() == report['code']]
         offset = struct.unpack_from('<I', raw, record+7)[0]
         for row in [r for r in data['observations'] if r['period'] == report['period']]:
             field = row['field']; definition = catalog[field]
@@ -78,9 +81,9 @@ def verify(directory=DEFAULT, evidence=None):
             if row['status'] != 'matched' or amount != Decimal(row['pdf_value']) or bits == 0 or struct.pack('<f', float(encoded)) != struct.pack('<I', bits):
                 raise ValueError('nonzero original amount does not match source encoding: '+field)
             matched += 1
-    if len(seen) != 192 or matched != 188 or missing != 4:
+    if len(seen) != positions or matched != expected_matched or missing != expected_missing:
         raise ValueError('verification coverage changed')
-    return {'fields': 64, 'company_count': 1, 'reports': 3, 'positions': 192, 'matched_nonzero': matched, 'printed_missing_source_zero': missing, 'pdf_cells': 384}
+    return {'fields': fields, 'company_count': 1, 'reports': 3, 'positions': positions, 'matched_nonzero': matched, 'printed_missing_source_zero': missing, 'pdf_cells': positions * 2}
 
 
 def main():
