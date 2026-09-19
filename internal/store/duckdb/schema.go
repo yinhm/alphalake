@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-const SchemaVersion = 46
+const SchemaVersion = 47
 
 //go:embed schema.sql
 var schemaSQL string
@@ -42,6 +42,9 @@ func Initialize(ctx context.Context, db *sql.DB) error {
 	defer tx.Rollback()
 	if _, err := tx.ExecContext(ctx, schemaSQL); err != nil {
 		return fmt.Errorf("initialize current schema: %w", err)
+	}
+	if err := insertSourceFieldCatalog(ctx, tx); err != nil {
+		return err
 	}
 	return tx.Commit()
 }

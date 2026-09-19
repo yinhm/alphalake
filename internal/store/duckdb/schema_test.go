@@ -57,7 +57,7 @@ func TestInitializeCurrentSchemaIsAtomicAndIdempotent(t *testing.T) {
 }
 
 func TestInitializeRejectsUnsupportedAndUnversionedDatabases(t *testing.T) {
-	for _, version := range []int{44, 45, 47} {
+	for _, version := range []int{46, 48} {
 		t.Run(strconv.Itoa(version), func(t *testing.T) {
 			db, err := Open(t.Context(), filepath.Join(t.TempDir(), "old.duckdb"))
 			if err != nil {

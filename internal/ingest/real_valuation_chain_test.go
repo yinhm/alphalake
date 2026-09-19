@@ -163,6 +163,18 @@ func TestRealValuationStandardChain(t *testing.T) {
 	check(err)
 	defer db.Close()
 	pinUTC()
+	// Complete named source export is independent of this frozen 80-field
+	// standard-fact acceptance scope; no position is dropped or auto-approved.
+	sourceExport, err := duckstore.ExportSourceFinancialData(ctx, db, "300866", time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC))
+	check(err)
+	if len(sourceExport.Observations) != 584 {
+		t.Fatalf("complete source export: %d", len(sourceExport.Observations))
+	}
+	for _, observation := range sourceExport.Observations {
+		if strings.HasPrefix(observation.Field, "FN") || observation.State == "source_bits_mismatch" {
+			t.Fatalf("source naming/encoding: %+v", observation)
+		}
+	}
 	evidence, err := csv.NewReader(bytes.NewReader(readFinancialSample(t, "testdata/earnings-working-capital-2026", "values.csv"))).ReadAll()
 	check(err)
 	if len(evidence) != 39 {

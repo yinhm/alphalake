@@ -22,6 +22,8 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return false, nil
 	}
 	switch args[0] {
+	case "tdx-financial-fields", "export-financial-source":
+		return true, runSourceFinancial(ctx, args)
 	case "export-valuation-quote":
 		return true, runValuationQuote(ctx, args[1:])
 	case "export-industry-capital":

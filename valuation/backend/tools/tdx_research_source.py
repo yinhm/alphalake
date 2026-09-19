@@ -4,60 +4,23 @@ from decimal import Decimal
 import math
 import struct
 
-# 语义对应已审核的生产映射；历史研究外推边界保持原协议。
-FIELDS = {
-    'lease_liabilities': ('FN439', 'instant'),
-    'current_portion_noncurrent_liabilities': ('FN52', 'instant'),
-    'bonds_payable': ('FN56', 'instant'),
-    'long_term_borrowings': ('FN55', 'instant'),
-    'short_term_borrowings': ('FN41', 'instant'),
-    'long_term_equity_investments': ('FN25', 'instant'),
-    'cash_and_cash_equivalents': ('FN133', 'instant'),
-    'monetary_funds': ('FN8', 'instant'),
-    'total_equity': ('FN72', 'instant'),
-    'taxes_paid': ('FN104', 'ytd'),
-    'income_tax_expense': ('FN93', 'ytd'),
-    'profit_before_tax': ('FN92', 'ytd'),
-    'operating_payables_increase_cashflow': ('FN148', 'ytd'),
-    'operating_receivables_decrease_cashflow': ('FN147', 'ytd'),
-    'inventory_decrease_cashflow': ('FN146', 'ytd'),
-    'right_of_use_depreciation': ('FN581', 'ytd'),
-    'investment_property_depreciation_amortization': ('FN579', 'ytd'),
-    'deferred_expense_amortization': ('FN138', 'ytd'),
-    'intangible_amortization': ('FN137', 'ytd'),
-    'depreciation_depletion': ('FN136', 'ytd'),
-    'taxes_payable': ('FN47', 'instant'),
-    'payroll_payable': ('FN46', 'instant'),
-    'accounts_payable': ('FN44', 'instant'),
-    'inventories': ('FN17', 'instant'),
-    'other_receivables': ('FN13', 'instant'),
-    'prepayments': ('FN12', 'instant'),
-    'accounts_receivable': ('FN11', 'instant'),
-    'revenue': ('FN230', 'quarter'),
-    'operating_cash_flow': ('FN234', 'quarter'),
-    'operating_profit_cumulative': ('FN86', 'ytd'),
-    'interest_expense': ('FN305', 'ytd'),
-    'interest_income': ('FN306', 'ytd'),
-    'investment_income': ('FN83', 'ytd'),
-    'fair_value_change_income': ('FN82', 'ytd'),
-    'asset_disposal_income': ('FN301', 'ytd'),
-    'financial_business_interest_income': ('FN506', 'ytd'),
-    'financial_business_interest_expense': ('FN509', 'ytd'),
-    'financial_business_fee_expense': ('FN510', 'ytd'),
-    'deposits_and_interbank_placements': ('FN413', 'instant'),
-    'capital_expenditure_cash': ('FN114', 'ytd'),
-    'construction_in_progress': ('FN28', 'instant'),
-    'research_and_development_expense': ('FN304', 'ytd'),
-}
-VALUE_MULTIPLIERS = {
-    'lease_liabilities': 10000,
-    'investment_property_depreciation_amortization': 10000,
-    'right_of_use_depreciation': 10000,
-    'financial_business_interest_income': 10000,
-    'financial_business_interest_expense': 10000,
-    'financial_business_fee_expense': 10000,
-    'deposits_and_interbank_placements': 10000,
-}
+# 与Go解析/数据库共用完整目录；此接口始终是源研究层，不批准标准事实。
+# 日期、预告、供应商TTM/比例和未明确期间的量不能自动进入经营窗口。
+import csv
+from collections import Counter
+from pathlib import Path
+
+CATALOG_PATH = Path(__file__).resolve().parents[3] / 'internal/source/tdx/financial/catalog.csv'
+with CATALOG_PATH.open() as _file:
+    _catalog = list(csv.DictReader(_file))
+_names = Counter(row['name'] for row in _catalog if row['name'])
+_rows = [row for row in _catalog if row['name'] and _names[row['name']] == 1
+         and row['value_kind'] in ('monetary', 'shares')
+         and row['unit'] in ('CNY', 'share') and row['multiplier']
+         and row['period_basis'] in ('instant', 'ytd', 'quarter')
+         and row['category'] not in ('forecast', 'preliminary', 'provider_ratio')]
+FIELDS = {row['name']: ('FN' + row['index'], row['period_basis']) for row in _rows}
+VALUE_MULTIPLIERS = {row['name']: int(row['multiplier']) for row in _rows}
 TIME_BOUNDARY = '简化TDX历史回溯，FN314日期精度，无CNINFO逐公司核验；可能包含后续修订，不是严格PIT或前瞻检验'
 
 
@@ -87,7 +50,7 @@ def available(row,artifact):
 
 
 def financial_value(row, field):
-    """只接收通用字段并归一化为元；源值、源位另行保留，未知名称拒绝。"""
+    """只接收目录通用字段并换算为目录单位；源观察不冒充标准事实。"""
     value = source_value(row, FIELDS[field][0])
     multiplier = VALUE_MULTIPLIERS.get(field, 1)
     return value if multiplier == 1 else value * multiplier

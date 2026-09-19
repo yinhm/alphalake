@@ -1,0 +1,20 @@
+{
+  "url": "https://help.tdx.com.cn/quant/docs/markdown/TdxQuant.md/mindoc-1h10m001ic888.html",
+  "fetched_date": "2026-09-19",
+  "published_at": null,
+  "sha256": "ae58c7fdd25aa94181f59e9613c365570eefd809c9212b19cf6d9d97ad9c7dbb",
+  "bytes": 101191,
+  "official_rows": 438,
+  "portfolio_commit": "a16e6fc",
+  "portfolio_sha256": "6d9b0e176f887d9580fb8be244992d83a1e5195e3a2104f52593dfe5a0524bc9",
+  "official-financial-unit-rules.html": {
+    "url": "https://help.tdx.com.cn/gspt/docs/markdown/redword/Profinance",
+    "sha256": "f2103d05da4cce2124015462d9997b04aee756dced3379e1f2fc1d3efb9c05e7",
+    "bytes": 24796
+  },
+  "portfolio-types.py.txt": {
+    "url": "local:portfolio/datafeed/types.py@a16e6fc",
+    "sha256": "6d9b0e176f887d9580fb8be244992d83a1e5195e3a2104f52593dfe5a0524bc9",
+    "bytes": 41423
+  }
+}
