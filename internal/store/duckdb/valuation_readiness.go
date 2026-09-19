@@ -127,7 +127,8 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 	}
 	// 单个全市场 TTM 分组在真实库超过1 GiB；同一事务中分批限制聚合规模。
 	// 证券范围直接传入共享事实CTE，避免每批重新排序全市场版本。
-	const batchSize = 128
+	// 扩至281个标准字段后，64证券批次继续满足128MiB回归内存上限。
+	const batchSize = 64
 	for start := 0; start < len(ids); start += batchSize {
 		if err := func() error {
 			windowRows, err := tx.QueryContext(ctx, `SELECT instrument_id,CAST(to_json(list(struct_pack(

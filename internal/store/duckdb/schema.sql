@@ -39,7 +39,7 @@ CREATE TABLE core.instrument(instrument_id BIGINT DEFAULT(nextval('core.instrume
 CREATE TABLE core.instrument_identifier(instrument_identifier_id BIGINT DEFAULT(nextval('core.instrument_identifier_id_seq')) PRIMARY KEY, instrument_id BIGINT NOT NULL, provider VARCHAR NOT NULL, identifier_type VARCHAR NOT NULL, identifier_value VARCHAR NOT NULL, valid_from DATE, valid_to DATE, is_primary BOOLEAN DEFAULT(CAST('f' AS BOOLEAN)) NOT NULL, UNIQUE(provider, identifier_type, identifier_value, valid_from));
 CREATE TABLE fundamental.document_review(filing_id BIGINT, document_artifact_id BIGINT, review_artifact_id BIGINT NOT NULL, pdf_sha256 VARCHAR NOT NULL, reviewed_at TIMESTAMP WITH TIME ZONE NOT NULL, recorded_at TIMESTAMP WITH TIME ZONE, reviewed_record VARCHAR NOT NULL, CHECK(json_valid(reviewed_record)), PRIMARY KEY(filing_id, document_artifact_id));
 CREATE TABLE fundamental.fact(fact_id BIGINT DEFAULT(nextval('fundamental.fact_id_seq')) PRIMARY KEY, instrument_id BIGINT NOT NULL, canonical_field VARCHAR NOT NULL, report_period DATE NOT NULL, announcement_time TIMESTAMP WITH TIME ZONE NOT NULL, period_type VARCHAR NOT NULL, statement_scope VARCHAR NOT NULL, currency VARCHAR, unit VARCHAR NOT NULL, "value" DECIMAL(38,10) NOT NULL, primary_source VARCHAR NOT NULL, source_provider_field VARCHAR NOT NULL, provider_code VARCHAR, provider_fact_id BIGINT, source_filing_id BIGINT NOT NULL, revision_key VARCHAR NOT NULL, normalization_rule VARCHAR NOT NULL, materializer_version VARCHAR NOT NULL, ingest_run_id BIGINT, ingested_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL, UNIQUE(primary_source, revision_key, provider_code, source_provider_field));
-CREATE TABLE fundamental.field(canonical_field VARCHAR PRIMARY KEY, unit VARCHAR NOT NULL, value_kind VARCHAR NOT NULL, period_basis VARCHAR NOT NULL, CHECK((period_basis IN ('instant', 'quarter', 'ytd'))));
+CREATE TABLE fundamental.field(canonical_field VARCHAR PRIMARY KEY, unit VARCHAR NOT NULL, value_kind VARCHAR NOT NULL, period_basis VARCHAR NOT NULL, CHECK((period_basis IN ('instant', 'quarter', 'ytd', 'opening_instant'))));
 CREATE TABLE fundamental.filing(filing_id BIGINT DEFAULT(nextval('fundamental.filing_id_seq')) PRIMARY KEY, instrument_id BIGINT, "source" VARCHAR NOT NULL, source_filing_id VARCHAR NOT NULL, provider_code VARCHAR DEFAULT('') NOT NULL, exchange_mic VARCHAR, security_name VARCHAR, filing_type VARCHAR, filing_variant VARCHAR DEFAULT('other') NOT NULL, report_period DATE, announcement_time TIMESTAMP WITH TIME ZONE, title VARCHAR, source_url VARCHAR, raw_category VARCHAR, classifier_version VARCHAR DEFAULT('legacy') NOT NULL, is_correction BOOLEAN DEFAULT(CAST('f' AS BOOLEAN)) NOT NULL, corrects_filing_id BIGINT, resolution_status VARCHAR DEFAULT('resolved') NOT NULL, resolution_reason VARCHAR, catalogue_artifact_id BIGINT, artifact_id BIGINT, sha256 VARCHAR, provider_org_id VARCHAR, provider_column_id VARCHAR, provider_page_column VARCHAR, raw_announcement_time_ms BIGINT, ingest_run_id BIGINT, first_seen_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL, last_seen_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL, ingested_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL, announcement_date DATE, announcement_time_precision VARCHAR DEFAULT('timestamp'), UNIQUE("source", source_filing_id), CHECK((resolution_status IN ('resolved', 'pending', 'acknowledged'))));
 CREATE TABLE fundamental.filing_document(filing_id BIGINT, artifact_id BIGINT, source_url VARCHAR NOT NULL, sha256 VARCHAR NOT NULL, fetched_at TIMESTAMP WITH TIME ZONE NOT NULL, ingest_run_id BIGINT, PRIMARY KEY(filing_id, artifact_id));
 CREATE TABLE fundamental.provider_fact(provider_fact_id BIGINT DEFAULT(nextval('fundamental.provider_fact_id_seq')) PRIMARY KEY, instrument_id BIGINT NOT NULL, "source" VARCHAR NOT NULL, report_period DATE NOT NULL, announcement_time TIMESTAMP WITH TIME ZONE, provider_code VARCHAR, market_marker USMALLINT, provider_field VARCHAR NOT NULL, "value" DOUBLE, value_float32_bits UBIGINT, source_file VARCHAR, source_file_hash VARCHAR, artifact_id BIGINT, ingest_run_id BIGINT, revision_key VARCHAR DEFAULT('') NOT NULL, ingested_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL, UNIQUE("source", revision_key, provider_code, provider_field));
@@ -77,7 +77,7 @@ CREATE TABLE meta.dataset_release(release_id BIGINT DEFAULT(nextval('meta.datase
 CREATE TABLE meta.dataset_release_artifact(release_id BIGINT, artifact_id BIGINT, "role" VARCHAR, FOREIGN KEY (release_id) REFERENCES meta.dataset_release(release_id), FOREIGN KEY (artifact_id) REFERENCES meta.artifact(artifact_id), CHECK(("role" IN ('data', 'publication', 'timing'))), PRIMARY KEY(release_id, artifact_id, "role"));
 CREATE MACRO fundamental.fact_asof (as_of_time) AS TABLE (SELECT * EXCLUDE (fact_rank) FROM (SELECT f.*, row_number() OVER (PARTITION BY instrument_id, canonical_field, report_period ORDER BY announcement_time DESC, fact_id DESC) AS fact_rank FROM fundamental.fact AS f WHERE (announcement_time <= as_of_time)) WHERE (fact_rank = 1));
 CREATE MACRO fundamental.provider_conflicts_asof (as_of_time) AS TABLE (SELECT * EXCLUDE (observation_rank) FROM (SELECT r.*, a.sha256 AS artifact_sha256, a.fetched_at AS observed_at, row_number() OVER (PARTITION BY r."source", r.provider_code, r.report_period ORDER BY a.fetched_at DESC, r.artifact_id DESC) AS observation_rank FROM fundamental.provider_record_resolution AS r INNER JOIN meta.artifact AS a USING (artifact_id) WHERE (a.fetched_at <= CAST(as_of_time AS "TIMESTAMP WITH TIME ZONE"))) WHERE ((observation_rank = 1) AND starts_with(reason, 'conflicting duplicate provider records:')));
-CREATE MACRO fundamental.ttm_asof (as_of_time, end_period, min_instrument_id := NULL, max_instrument_id := NULL) AS TABLE (WITH facts AS (SELECT * FROM fundamental.fact_asof(CAST(as_of_time AS "TIMESTAMP WITH TIME ZONE")) WHERE (((min_instrument_id IS NULL) OR (instrument_id >= min_instrument_id)) AND ((max_instrument_id IS NULL) OR (instrument_id <= max_instrument_id)) AND (report_period <= CAST(end_period AS "DATE")) AND (materializer_version != 'legacy'))), instruments AS (SELECT DISTINCT instrument_id, primary_source, provider_code, statement_scope FROM facts), series AS (SELECT i.*, m.canonical_field, m.unit, CASE  WHEN ((m.value_kind = 'monetary')) THEN ('CNY') ELSE NULL END AS currency, m.period_basis AS basis FROM instruments AS i CROSS JOIN fundamental.field AS m WHERE ((CAST(end_period AS "DATE") = last_day(CAST(end_period AS "DATE"))) AND ("month"(CAST(end_period AS "DATE")) IN (3, 6, 9, 12)))), requirements AS ((SELECT s.*, 0 AS ordinal, CAST(end_period AS "DATE") AS required_period, 1 AS coefficient FROM series AS s WHERE (basis IS NOT NULL)) UNION ALL (SELECT s.*, CAST(n AS INTEGER), last_day((CAST(end_period AS "DATE") - (n * CAST('3 months' AS INTERVAL)))), 1 FROM series AS s CROSS JOIN "range"(1, 4) AS r(n) WHERE (basis = 'quarter'))UNION ALL (SELECT s.*, 1, make_date(("year"(CAST(end_period AS "DATE")) - 1), 12, 31), 1 FROM series AS s WHERE ((basis = 'ytd') AND ("month"(CAST(end_period AS "DATE")) != 12)))UNION ALL (SELECT s.*, 2, last_day((CAST(end_period AS "DATE") - CAST('1 year' AS INTERVAL))), -1 FROM series AS s WHERE ((basis = 'ytd') AND ("month"(CAST(end_period AS "DATE")) != 12)))), inputs AS (SELECT r.*, f.fact_id, f.source_filing_id, f.announcement_time, f."value", f.source_provider_field FROM requirements AS r LEFT JOIN facts AS f ON (((f.instrument_id = r.instrument_id) AND (f.primary_source = r.primary_source) AND (f.provider_code = r.provider_code) AND (f.statement_scope = r.statement_scope) AND (f.canonical_field = r.canonical_field) AND (f.unit = r.unit) AND (f.currency IS NOT DISTINCT FROM r.currency) AND (f.report_period = r.required_period) AND (f.period_type = CASE  WHEN ((r.basis = 'instant')) THEN ('instant') WHEN ((r.basis = 'quarter')) THEN (('Q' || CAST("quarter"(r.required_period) AS VARCHAR))) WHEN (("month"(r.required_period) = 3)) THEN ('Q1') WHEN (("month"(r.required_period) = 6)) THEN ('H1') WHEN ((("month"(r.required_period) = 9) AND (r.basis = 'ytd'))) THEN ('9M') WHEN (("month"(r.required_period) = 9)) THEN ('Q3') ELSE 'FY' END))))SELECT instrument_id, primary_source, provider_code, statement_scope, canonical_field, min(source_provider_field) AS source_provider_field, unit, currency, min(CAST(end_period AS "DATE")) AS report_period, CASE  WHEN ((basis = 'instant')) THEN ('instant') ELSE 'TTM' END AS period_type, basis AS calculation_basis, CASE  WHEN ((count(fact_id) = count_star())) THEN (sum(("value" * coefficient))) ELSE NULL END AS "value", CASE  WHEN ((count(fact_id) = count_star())) THEN ('complete') ELSE 'missing_inputs' END AS coverage_status, count_star() AS required_inputs, count(fact_id) AS available_inputs, max(announcement_time) AS latest_input_announcement_time, list(required_period ORDER BY ordinal) AS input_periods, list(coefficient ORDER BY ordinal) AS input_coefficients, list(fact_id ORDER BY ordinal) AS source_fact_ids, list(source_filing_id ORDER BY ordinal) AS source_filing_ids, list(required_period ORDER BY ordinal) FILTER (WHERE (fact_id IS NULL)) AS missing_periods FROM inputs GROUP BY instrument_id, primary_source, provider_code, statement_scope, canonical_field, unit, currency, basis);
+CREATE MACRO fundamental.ttm_asof (as_of_time, end_period, min_instrument_id := NULL, max_instrument_id := NULL) AS TABLE (WITH facts AS (SELECT * FROM fundamental.fact_asof(CAST(as_of_time AS "TIMESTAMP WITH TIME ZONE")) WHERE (((min_instrument_id IS NULL) OR (instrument_id >= min_instrument_id)) AND ((max_instrument_id IS NULL) OR (instrument_id <= max_instrument_id)) AND (report_period <= CAST(end_period AS "DATE")) AND (materializer_version != 'legacy'))), instruments AS (SELECT DISTINCT instrument_id, primary_source, provider_code, statement_scope FROM facts), series AS (SELECT i.*, m.canonical_field, m.unit, CASE  WHEN ((m.value_kind = 'monetary')) THEN ('CNY') ELSE NULL END AS currency, m.period_basis AS basis FROM instruments AS i CROSS JOIN fundamental.field AS m WHERE m.value_kind IN ('monetary','shares') AND m.period_basis IN ('instant','quarter','ytd') AND ((CAST(end_period AS "DATE") = last_day(CAST(end_period AS "DATE"))) AND ("month"(CAST(end_period AS "DATE")) IN (3, 6, 9, 12)))), requirements AS ((SELECT s.*, 0 AS ordinal, CAST(end_period AS "DATE") AS required_period, 1 AS coefficient FROM series AS s WHERE (basis IS NOT NULL)) UNION ALL (SELECT s.*, CAST(n AS INTEGER), last_day((CAST(end_period AS "DATE") - (n * CAST('3 months' AS INTERVAL)))), 1 FROM series AS s CROSS JOIN "range"(1, 4) AS r(n) WHERE (basis = 'quarter'))UNION ALL (SELECT s.*, 1, make_date(("year"(CAST(end_period AS "DATE")) - 1), 12, 31), 1 FROM series AS s WHERE ((basis = 'ytd') AND ("month"(CAST(end_period AS "DATE")) != 12)))UNION ALL (SELECT s.*, 2, last_day((CAST(end_period AS "DATE") - CAST('1 year' AS INTERVAL))), -1 FROM series AS s WHERE ((basis = 'ytd') AND ("month"(CAST(end_period AS "DATE")) != 12)))), inputs AS (SELECT r.*, f.fact_id, f.source_filing_id, f.announcement_time, f."value", f.source_provider_field FROM requirements AS r LEFT JOIN facts AS f ON (((f.instrument_id = r.instrument_id) AND (f.primary_source = r.primary_source) AND (f.provider_code = r.provider_code) AND (f.statement_scope = r.statement_scope) AND (f.canonical_field = r.canonical_field) AND (f.unit = r.unit) AND (f.currency IS NOT DISTINCT FROM r.currency) AND (f.report_period = r.required_period) AND (f.period_type = CASE  WHEN ((r.basis = 'instant')) THEN ('instant') WHEN ((r.basis = 'quarter')) THEN (('Q' || CAST("quarter"(r.required_period) AS VARCHAR))) WHEN (("month"(r.required_period) = 3)) THEN ('Q1') WHEN (("month"(r.required_period) = 6)) THEN ('H1') WHEN ((("month"(r.required_period) = 9) AND (r.basis = 'ytd'))) THEN ('9M') WHEN (("month"(r.required_period) = 9)) THEN ('Q3') ELSE 'FY' END))))SELECT instrument_id, primary_source, provider_code, statement_scope, canonical_field, min(source_provider_field) AS source_provider_field, unit, currency, min(CAST(end_period AS "DATE")) AS report_period, CASE  WHEN ((basis = 'instant')) THEN ('instant') ELSE 'TTM' END AS period_type, basis AS calculation_basis, CASE  WHEN ((count(fact_id) = count_star())) THEN (sum(("value" * coefficient))) ELSE NULL END AS "value", CASE  WHEN ((count(fact_id) = count_star())) THEN ('complete') ELSE 'missing_inputs' END AS coverage_status, count_star() AS required_inputs, count(fact_id) AS available_inputs, max(announcement_time) AS latest_input_announcement_time, list(required_period ORDER BY ordinal) AS input_periods, list(coefficient ORDER BY ordinal) AS input_coefficients, list(fact_id ORDER BY ordinal) AS source_fact_ids, list(source_filing_id ORDER BY ordinal) AS source_filing_ids, list(required_period ORDER BY ordinal) FILTER (WHERE (fact_id IS NULL)) AS missing_periods FROM inputs GROUP BY instrument_id, primary_source, provider_code, statement_scope, canonical_field, unit, currency, basis);
 CREATE MACRO fundamental.annual_asof (as_of_time, report_year) AS TABLE (SELECT * REPLACE (CASE  WHEN ((period_type = 'instant')) THEN ('instant') ELSE 'FY' END AS period_type) FROM fundamental.ttm_asof(as_of_time, make_date(CAST(report_year AS INTEGER), 12, 31)));
 CREATE VIEW fundamental.fact_latest AS SELECT * EXCLUDE (fact_rank) FROM (SELECT f.*, row_number() OVER (PARTITION BY instrument_id, canonical_field, report_period ORDER BY announcement_time DESC, fact_id DESC) AS fact_rank FROM fundamental.fact AS f) WHERE (fact_rank = 1);
 CREATE VIEW reference.risk_observation AS (SELECT * FROM reference.country_risk) UNION ALL (SELECT * FROM reference.equity_risk_premium);
@@ -249,17 +249,21 @@ INSERT INTO fundamental.provider_field ("source","provider_field","canonical_fie
 ('tdx','FN96','net_income_parent_ytd','归属于母公司所有者的净利润（累计）','CNY','monetary','2025-01-01',NULL,'Parent income YTD; distinct from FN232 single quarter; balance-profit-2026','ytd','1'),
 ('tdx','FN97','net_income_minority_ytd','少数股东损益（累计）','CNY','monetary','2025-01-01',NULL,'Minority profit/loss YTD; not minority book equity or segment allocation; balance-profit-2026','ytd','1'),
 ('tdx','FN99','tax_refunds_received','收到的税费返还','CNY','monetary','2025-01-01',NULL,'Cashflow statement; not income tax benefit; cash-rd-2026','ytd','1');
-INSERT INTO meta.schema_version(version,description) VALUES (49,'Current schema baseline');
+INSERT INTO meta.schema_version(version,description) VALUES (50,'Current schema baseline');
 
 CREATE TABLE fundamental.source_field (
  source VARCHAR NOT NULL, provider_field VARCHAR NOT NULL, source_index INTEGER NOT NULL,
  name VARCHAR, display_name VARCHAR NOT NULL, category VARCHAR NOT NULL,
  value_kind VARCHAR NOT NULL, unit VARCHAR NOT NULL, value_multiplier DOUBLE,
  period_basis VARCHAR NOT NULL, definition_status VARCHAR NOT NULL,
- definition_reference VARCHAR, catalog_version VARCHAR NOT NULL,
+ definition_reference VARCHAR, catalog_version VARCHAR NOT NULL, statement VARCHAR NOT NULL, section VARCHAR NOT NULL, mapping_status VARCHAR NOT NULL, review_reason VARCHAR NOT NULL,
  PRIMARY KEY(source,provider_field), UNIQUE(source,source_index),
  CHECK(source_index>0), CHECK(value_multiplier IS NULL OR value_multiplier IN (1,10000)),
- CHECK(definition_status IN ('official','reference','unpublished'))
+ CHECK(definition_status IN ('official','reference','unpublished')),
+ CHECK(statement IN ('','balance_sheet','income_statement','cash_flow_statement')),
+ CHECK(section IN ('','main','supplement')),
+ CHECK((statement='' AND section='') OR (statement<>'' AND section<>'')),
+ CHECK(mapping_status IN ('not_reviewed','reviewed_mapping','official_mapping'))
 );
 
 UPDATE fundamental.provider_field SET zero_policy='allow' WHERE source='tdx' AND provider_field IN ('FN8','FN11','FN12','FN13','FN17','FN21','FN25','FN40','FN41','FN44','FN46','FN47','FN52','FN54','FN55','FN56','FN63','FN69','FN72','FN80','FN82','FN83','FN86','FN92','FN93','FN114','FN133','FN230','FN231','FN232','FN233','FN234','FN235','FN236','FN237','FN238','FN271','FN301','FN305','FN306','FN439');
@@ -423,3 +427,341 @@ INSERT INTO fundamental.provider_field (source,provider_field,canonical_field,di
 ('tdx','FN150','operating_cash_flow_indirect','经营活动产生的现金流量净额2','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',1,'reject'),
 ('tdx','FN158','net_cash_increase_reconciliation','现金及现金等价物净增加额','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',1,'reject'),
 ('tdx','FN580','credit_impairment_cashflow_adjustment','信用减值损失(万元)','CNY','monetary','2025-01-01','cashflow-reconciliation-20260919; original consolidated supplementary current column; nonzero only','ytd',10000,'reject');
+
+-- Official documented statement definitions; zero remains ambiguous, individual values are not PDF certified.
+INSERT INTO fundamental.field VALUES
+('basic_earnings_per_share','CNY/share','per_share','ytd'),
+('notes_receivable','CNY','monetary','instant'),
+('related_party_receivables','CNY','monetary','instant'),
+('interest_receivable','CNY','monetary','instant'),
+('consumable_biological_assets','CNY','monetary','instant'),
+('available_for_sale_financial_assets','CNY','monetary','instant'),
+('held_to_maturity_investments','CNY','monetary','instant'),
+('long_term_receivables','CNY','monetary','instant'),
+('construction_materials','CNY','monetary','instant'),
+('fixed_assets_pending_disposal','CNY','monetary','instant'),
+('productive_biological_assets','CNY','monetary','instant'),
+('oil_and_gas_assets','CNY','monetary','instant'),
+('development_costs','CNY','monetary','instant'),
+('goodwill','CNY','monetary','instant'),
+('advance_receipts','CNY','monetary','instant'),
+('interest_payable','CNY','monetary','instant'),
+('dividends_payable','CNY','monetary','instant'),
+('related_party_payables','CNY','monetary','instant'),
+('long_term_payables','CNY','monetary','instant'),
+('special_payables','CNY','monetary','instant'),
+('other_noncurrent_liabilities','CNY','monetary','instant'),
+('treasury_stock','CNY','monetary','instant'),
+('foreign_currency_translation_difference','CNY','monetary','instant'),
+('exploration_expenses','CNY','monetary','ytd'),
+('asset_impairment_loss','CNY','monetary','ytd'),
+('other_operating_profit_adjustments','CNY','monetary','ytd'),
+('subsidy_income','CNY','monetary','ytd'),
+('noncurrent_asset_disposal_loss','CNY','monetary','ytd'),
+('other_pretax_profit_adjustments','CNY','monetary','ytd'),
+('other_net_income_adjustments','CNY','monetary','ytd'),
+('subsidiary_disposal_cash','CNY','monetary','ytd'),
+('subsidiary_acquisition_cash','CNY','monetary','ytd'),
+('other_financing_cash_received','CNY','monetary','ytd'),
+('other_effects_on_cash','CNY','monetary','ytd'),
+('opening_cash_and_cash_equivalents','CNY','monetary','opening_instant'),
+('other_operating_cashflow_adjustments','CNY','monetary','ytd'),
+('debt_converted_to_equity','CNY','monetary','ytd'),
+('convertible_bonds_due_within_one_year','CNY','monetary','instant'),
+('finance_leased_fixed_assets','CNY','monetary','ytd'),
+('closing_cash','CNY','monetary','instant'),
+('opening_cash','CNY','monetary','opening_instant'),
+('closing_cash_equivalents','CNY','monetary','instant'),
+('opening_cash_equivalents','CNY','monetary','opening_instant'),
+('general_risk_reserve','CNY','monetary','instant'),
+('notes_and_accounts_payable','CNY','monetary','instant'),
+('notes_and_accounts_receivable','CNY','monetary','instant'),
+('discontinued_operations_net_income','CNY','monetary','ytd'),
+('basic_earnings_per_share_quarter','CNY/share','per_share','quarter'),
+('total_operating_revenue_quarter','CNY','monetary','quarter'),
+('net_income_quarter','CNY','monetary','quarter'),
+('cost_of_revenue_quarter','CNY','monetary','quarter'),
+('domestic_main_business_revenue','CNY','monetary','ytd'),
+('overseas_main_business_revenue','CNY','monetary','ytd'),
+('special_reserve','CNY','monetary','instant'),
+('settlement_reserve','CNY','monetary','instant'),
+('loans_and_advances_current','CNY','monetary','instant'),
+('premiums_receivable','CNY','monetary','instant'),
+('reinsurance_receivables','CNY','monetary','instant'),
+('reinsurance_contract_reserves_receivable','CNY','monetary','instant'),
+('assets_held_for_sale','CNY','monetary','instant'),
+('central_bank_borrowings','CNY','monetary','instant'),
+('interbank_borrowings','CNY','monetary','instant'),
+('financial_assets_sold_under_repurchase_agreements','CNY','monetary','instant'),
+('fees_and_commissions_payable','CNY','monetary','instant'),
+('reinsurance_payables','CNY','monetary','instant'),
+('insurance_contract_reserves','CNY','monetary','instant'),
+('brokerage_client_payables','CNY','monetary','instant'),
+('underwriting_client_payables','CNY','monetary','instant'),
+('liabilities_held_for_sale','CNY','monetary','instant'),
+('provisions_current','CNY','monetary','instant'),
+('deferred_income_current','CNY','monetary','instant'),
+('preferred_stock_liabilities','CNY','monetary','instant'),
+('perpetual_bond_liabilities','CNY','monetary','instant'),
+('preferred_stock_equity','CNY','monetary','instant'),
+('perpetual_bond_equity','CNY','monetary','instant'),
+('other_equity_instrument_investments','CNY','monetary','instant'),
+('contract_assets','CNY','monetary','instant'),
+('other_assets','CNY','monetary','instant'),
+('securities_business_receivables','CNY','monetary','instant'),
+('deposits_paid','CNY','monetary','instant'),
+('financial_cash_and_central_bank_balances','CNY','monetary','instant'),
+('precious_metals','CNY','monetary','instant'),
+('financial_assets_at_fair_value_through_profit_or_loss','CNY','monetary','instant'),
+('agency_business_assets','CNY','monetary','instant'),
+('receivable_investments','CNY','monetary','instant'),
+('interbank_and_financial_institution_deposits','CNY','monetary','instant'),
+('financial_liabilities_at_fair_value_through_profit_or_loss','CNY','monetary','instant'),
+('customer_deposits','CNY','monetary','instant'),
+('agency_business_liabilities','CNY','monetary','instant'),
+('other_liabilities','CNY','monetary','instant'),
+('diluted_earnings_per_share','CNY/share','per_share','ytd'),
+('exchange_income','CNY','monetary','ytd'),
+('earned_premiums','CNY','monetary','ytd'),
+('fee_and_commission_income','CNY','monetary','ytd'),
+('surrendered_premiums','CNY','monetary','ytd'),
+('net_claims_paid','CNY','monetary','ytd'),
+('insurance_contract_reserve_expense','CNY','monetary','ytd'),
+('policyholder_dividend_expense','CNY','monetary','ytd'),
+('reinsurance_expenses','CNY','monetary','ytd'),
+('noncurrent_asset_disposal_gain','CNY','monetary','ytd'),
+('credit_impairment_loss','CNY','monetary','ytd'),
+('net_exposure_hedging_income','CNY','monetary','ytd'),
+('financial_other_operating_income','CNY','monetary','ytd'),
+('financial_business_and_administrative_expense','CNY','monetary','ytd'),
+('financial_other_operating_cost','CNY','monetary','ytd'),
+('other_cash_balance_effects','CNY','monetary','ytd'),
+('customer_and_interbank_deposits_net_increase','CNY','monetary','ytd'),
+('central_bank_borrowings_net_increase','CNY','monetary','ytd'),
+('other_financial_institution_borrowings_net_increase','CNY','monetary','ytd'),
+('insurance_premiums_cash_received','CNY','monetary','ytd'),
+('reinsurance_cash_received_net','CNY','monetary','ytd'),
+('policyholder_deposits_and_investments_net_increase','CNY','monetary','ytd'),
+('fair_value_financial_asset_disposal_cash_net','CNY','monetary','ytd'),
+('financial_interest_and_fee_cash_received','CNY','monetary','ytd'),
+('interbank_borrowing_cash_net_increase','CNY','monetary','ytd'),
+('repurchase_agreement_cash_net_increase','CNY','monetary','ytd'),
+('customer_loans_and_advances_net_increase','CNY','monetary','ytd'),
+('central_bank_and_interbank_placements_net_increase','CNY','monetary','ytd'),
+('insurance_claims_cash_paid','CNY','monetary','ytd'),
+('financial_interest_and_fee_cash_paid','CNY','monetary','ytd'),
+('policyholder_dividends_cash_paid','CNY','monetary','ytd'),
+('financial_interest_and_fee_receipts_net_increase','CNY','monetary','ytd'),
+('financial_fee_cash_paid','CNY','monetary','ytd'),
+('bond_issuance_cash_paid','CNY','monetary','ytd');
+INSERT INTO fundamental.provider_field (source,provider_field,canonical_field,display_name,unit,value_kind,valid_from,notes,period_basis,value_multiplier,zero_policy) VALUES
+('tdx','FN1','basic_earnings_per_share','基本每股收益','CNY/share','per_share','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN10','notes_receivable','应收票据','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN14','related_party_receivables','应收关联公司款','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN15','interest_receivable','应收利息','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN18','consumable_biological_assets','其中：消耗性生物资产','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN22','available_for_sale_financial_assets','可供出售金融资产','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN23','held_to_maturity_investments','持有至到期投资','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN24','long_term_receivables','长期应收款','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN29','construction_materials','工程物资','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN30','fixed_assets_pending_disposal','固定资产清理','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN31','productive_biological_assets','生产性生物资产','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN32','oil_and_gas_assets','油气资产','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN34','development_costs','开发支出','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN35','goodwill','商誉','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN45','advance_receipts','预收款项','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN48','interest_payable','应付利息','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN49','dividends_payable','应付股利','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN51','related_party_payables','应付关联公司款','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN57','long_term_payables','长期应付款','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN58','special_payables','专项应付款','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN61','other_noncurrent_liabilities','其他非流动负债','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN67','treasury_stock','减：库存股','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN70','foreign_currency_translation_difference','外币报表折算价差','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN79','exploration_expenses','勘探费用','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN81','asset_impairment_loss','资产减值损失','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN85','other_operating_profit_adjustments','影响营业利润的其他科目','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN87','subsidy_income','加：补贴收入','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN90','noncurrent_asset_disposal_loss','其中：非流动资产处置净损失','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN91','other_pretax_profit_adjustments','加：影响利润总额的其他科目','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN94','other_net_income_adjustments','加：影响净利润的其他科目','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN111','subsidiary_disposal_cash','处置子公司及其他营业单位收到的现金净额','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN116','subsidiary_acquisition_cash','取得子公司及其他营业单位支付的现金净额','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN122','other_financing_cash_received','收到其他与筹资活动有关的现金','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN130','other_effects_on_cash','四(2)、其他原因对现金的影响','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN132','opening_cash_and_cash_equivalents','期初现金及现金等价物余额','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','opening_instant',1,'reject'),
+('tdx','FN149','other_operating_cashflow_adjustments','其他','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN151','debt_converted_to_equity','债务转为资本','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN152','convertible_bonds_due_within_one_year','一年内到期的可转换公司债券','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN153','finance_leased_fixed_assets','融资租入固定资产','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN154','closing_cash','现金的期末余额','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN155','opening_cash','减：现金的期初余额','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','opening_instant',1,'reject'),
+('tdx','FN156','closing_cash_equivalents','加：现金等价物的期末余额','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN157','opening_cash_equivalents','减：现金等价物的期初余额','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','opening_instant',1,'reject'),
+('tdx','FN268','general_risk_reserve','一般风险准备(金融类)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN295','notes_and_accounts_payable','应付票据及应付账款(资产负债表)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN296','notes_and_accounts_receivable','应收票据及应收账款(资产负债表)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',1,'reject'),
+('tdx','FN303','discontinued_operations_net_income','终止经营净利润(利润表)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN311','basic_earnings_per_share_quarter','基本每股收益（单季度）','CNY/share','per_share','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','quarter',1,'reject'),
+('tdx','FN312','total_operating_revenue_quarter','营业总收入(单季度)(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','quarter',10000,'reject'),
+('tdx','FN324','net_income_quarter','净利润（单季度）(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','quarter',10000,'reject'),
+('tdx','FN328','cost_of_revenue_quarter','营业成本（单季度）(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','quarter',10000,'reject'),
+('tdx','FN358','domestic_main_business_revenue','主营业务收入(内销)(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN359','overseas_main_business_revenue','主营业务收入(外销)(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN401','special_reserve','专项储备(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN402','settlement_reserve','结算备付金(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN404','loans_and_advances_current','发放贷款及垫款(万元)(流动资产科目)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN406','premiums_receivable','应收保费(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN407','reinsurance_receivables','应收分保账款(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN408','reinsurance_contract_reserves_receivable','应收分保合同准备金(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN410','assets_held_for_sale','划分为持有待售的资产(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN412','central_bank_borrowings','向中央银行借款(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN414','interbank_borrowings','拆入资金(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN416','financial_assets_sold_under_repurchase_agreements','卖出回购金融资产款(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN417','fees_and_commissions_payable','应付手续费及佣金(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN418','reinsurance_payables','应付分保账款(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN419','insurance_contract_reserves','保险合同准备金(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN420','brokerage_client_payables','代理买卖证券款(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN421','underwriting_client_payables','代理承销证券款(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN422','liabilities_held_for_sale','划分为持有待售的负债(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN423','provisions_current','预计负债(万元) （流动负债）','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN424','deferred_income_current','递延收益(万元)（流动负债科目，公告此科目的股票较少，大部分公司没有此数据）','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN425','preferred_stock_liabilities','其中:优先股(万元)(非流动负债科目)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN426','perpetual_bond_liabilities','永续债(万元)(非流动负债科目)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN428','preferred_stock_equity','其中:优先股(万元)(所有者权益科目)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN429','perpetual_bond_equity','永续债(万元)(所有者权益科目)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN432','other_equity_instrument_investments','其他权益工具投资(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN435','contract_assets','合同资产(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN436','other_assets','其他资产(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN441','securities_business_receivables','应收款项(万元)  [注：证券类指标]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN442','deposits_paid','存出保证金(万元)  [注：证券类指标]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN443','financial_cash_and_central_bank_balances','现金及存放中央银行款项(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN444','precious_metals','贵金属(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN445','financial_assets_at_fair_value_through_profit_or_loss','以公允价值计量且其变动计入当期损益的金融资产(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN446','agency_business_assets','代理业务资产(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN447','receivable_investments','应收款项类投资(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN448','interbank_and_financial_institution_deposits','同业及其它金融机构存放款项(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN449','financial_liabilities_at_fair_value_through_profit_or_loss','以公允价值计量且其变动计入当期损益的金融负债(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN450','customer_deposits','吸收存款(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN451','agency_business_liabilities','代理业务负债(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN452','other_liabilities','其他负债(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','instant',10000,'reject'),
+('tdx','FN501','diluted_earnings_per_share','稀释每股收益(元)','CNY/share','per_share','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',1,'reject'),
+('tdx','FN503','exchange_income','汇兑收益(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN507','earned_premiums','已赚保费(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN508','fee_and_commission_income','手续费及佣金收入(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN511','surrendered_premiums','退保金(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN512','net_claims_paid','赔付支出净额(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN513','insurance_contract_reserve_expense','提取保险合同准备金净额(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN514','policyholder_dividend_expense','保单红利支出(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN515','reinsurance_expenses','分保费用(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN516','noncurrent_asset_disposal_gain','其中:非流动资产处置利得(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN517','credit_impairment_loss','信用减值损失(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN518','net_exposure_hedging_income','净敞口套期收益(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN522','financial_other_operating_income','其他业务收入(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN523','financial_business_and_administrative_expense','业务及管理费(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN524','financial_other_operating_cost','其他业务成本(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN561','other_cash_balance_effects','加:其他原因对现金的影响2(万元)(现金的期末余额科目)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN562','customer_and_interbank_deposits_net_increase','客户存款和同业存放款项净增加额(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN563','central_bank_borrowings_net_increase','向中央银行借款净增加额(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN564','other_financial_institution_borrowings_net_increase','向其他金融机构拆入资金净增加额(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN565','insurance_premiums_cash_received','收到原保险合同保费取得的现金(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN566','reinsurance_cash_received_net','收到再保险业务现金净额(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN567','policyholder_deposits_and_investments_net_increase','保户储金及投资款净增加额(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN568','fair_value_financial_asset_disposal_cash_net','处置以公允价值计量且其变动计入当期损益的金融资产净增加额(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN569','financial_interest_and_fee_cash_received','收取利息、手续费及佣金的现金(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN570','interbank_borrowing_cash_net_increase','拆入资金净增加额(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN571','repurchase_agreement_cash_net_increase','回购业务资金净增加额(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN572','customer_loans_and_advances_net_increase','客户贷款及垫款净增加额(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN573','central_bank_and_interbank_placements_net_increase','存放中央银行和同业款项净增加额(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN574','insurance_claims_cash_paid','支付原保险合同赔付款项的现金(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN575','financial_interest_and_fee_cash_paid','支付利息、手续费及佣金的现金(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN576','policyholder_dividends_cash_paid','支付保单红利的现金(万元)','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN582','financial_interest_and_fee_receipts_net_increase','收取利息和手续费净增加额(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN583','financial_fee_cash_paid','支付手续费的现金(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
+('tdx','FN584','bond_issuance_cash_paid','发行债券支付的现金(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject');
+
+-- Standard report snapshot: values only from approved, materialized facts.
+-- Unreviewed/missing rows remain in the statement denominator; no source zero
+-- becomes a reported zero. Evidence is opt-in for ordinary business queries.
+CREATE MACRO fundamental.statements_asof(as_of_time, report_end, security_code, include_evidence := false) AS TABLE (
+ WITH identity_candidates AS (
+  SELECT DISTINCT x.instrument_id,x.identifier_value
+  FROM core.instrument_identifier x JOIN core.instrument i USING(instrument_id)
+  WHERE x.provider='tdx' AND x.identifier_type='symbol' AND i.instrument_type<>'index'
+    AND right(x.identifier_value,6)=security_code
+    AND (x.valid_from IS NULL OR x.valid_from<=CAST(report_end AS DATE))
+    AND (x.valid_to IS NULL OR x.valid_to>CAST(report_end AS DATE))
+ ), identity AS (
+  SELECT CASE WHEN count(*)=1 THEN min(instrument_id) END AS instrument_id,
+   CASE WHEN count(*)=1 THEN 'resolved' WHEN count(*)=0 THEN 'unresolved_identity' ELSE 'ambiguous_identity' END AS identity_status
+  FROM identity_candidates
+ ), catalog AS (
+  SELECT name AS field,min(display_name) AS label,statement,section,unit,value_kind,period_basis,
+   mapping_status,review_reason,count(*) AS source_variants
+  FROM fundamental.source_field WHERE source='tdx' AND statement<>'' AND name IS NOT NULL
+  GROUP BY name,statement,section,unit,value_kind,period_basis,mapping_status,review_reason
+ ), visible_source AS (
+  SELECT s.name,p.provider_fact_id,p.provider_field,p.value,p.value_float32_bits,p.artifact_id,
+   p.revision_key,p.source_file_hash,l.filing_id,f.announcement_time,
+   row_number() OVER (PARTITION BY s.name ORDER BY f.announcement_time DESC,p.provider_fact_id DESC) AS rank
+  FROM fundamental.provider_fact p
+  JOIN fundamental.source_field s ON s.source=p.source AND s.provider_field=p.provider_field
+  JOIN fundamental.provider_filing_link l ON l.provider_source=p.source AND l.provider_revision_key=p.revision_key AND l.provider_code=p.provider_code AND l.status='linked'
+  JOIN fundamental.filing f ON f.filing_id=l.filing_id AND f.resolution_status='resolved' AND f.instrument_id=p.instrument_id AND f.report_period=p.report_period
+  CROSS JOIN identity i
+  WHERE p.source='tdx' AND p.provider_code=security_code AND p.report_period=CAST(report_end AS DATE)
+    AND p.instrument_id=i.instrument_id AND f.announcement_time<=CAST(as_of_time AS TIMESTAMPTZ)
+ ), mappings AS (
+  SELECT DISTINCT m.canonical_field,m.provider_field,m.valid_from,m.valid_to
+  FROM fundamental.provider_field m
+  JOIN fundamental.field f ON f.canonical_field=m.canonical_field AND f.unit=m.unit AND f.value_kind=m.value_kind AND f.period_basis=m.period_basis
+  JOIN fundamental.source_field s ON s.source=m.source AND s.provider_field=m.provider_field AND s.name=m.canonical_field AND s.unit=m.unit AND s.value_multiplier=m.value_multiplier AND s.period_basis=m.period_basis
+  WHERE m.source='tdx' AND m.value_multiplier IN (1,10000)
+    AND m.valid_from<=CAST(report_end AS DATE) AND (m.valid_to IS NULL OR CAST(report_end AS DATE)<m.valid_to)
+ ), facts AS (
+  SELECT f.* FROM fundamental.fact_asof(CAST(as_of_time AS TIMESTAMPTZ)) f CROSS JOIN identity i
+  WHERE f.instrument_id=i.instrument_id AND f.report_period=CAST(report_end AS DATE) AND f.materializer_version<>'legacy'
+ ), evaluated AS (
+  SELECT i.instrument_id,i.identity_status,c.*,f.fact_id,f.value,f.period_type,f.currency,f.statement_scope,f.announcement_time,
+   f.source_filing_id,f.provider_fact_id,f.source_provider_field,f.revision_key,
+   v.provider_fact_id AS diagnostic_provider_fact_id,v.filing_id AS diagnostic_filing_id,
+   CASE
+    WHEN i.identity_status<>'resolved' THEN i.identity_status
+    WHEN EXISTS(SELECT 1 FROM fundamental.provider_conflicts_asof(as_of_time) conflict WHERE conflict.source='tdx' AND conflict.provider_code=security_code AND conflict.report_period=CAST(report_end AS DATE)) THEN 'source_conflict'
+    WHEN c.mapping_status NOT IN ('reviewed_mapping','official_mapping') THEN c.review_reason
+    WHEN c.source_variants<>1 THEN 'ambiguous_source_variant'
+    WHEN NOT EXISTS(SELECT 1 FROM mappings m WHERE m.canonical_field=c.field) THEN 'mapping_unavailable_for_period'
+    WHEN f.fact_id IS NOT NULL AND f.unit=c.unit AND f.statement_scope='provider_default'
+      AND f.currency IS NOT DISTINCT FROM CASE WHEN c.value_kind IN ('monetary','per_share') THEN 'CNY' END
+      AND f.period_type=CASE WHEN c.period_basis IN ('instant','opening_instant') THEN c.period_basis
+        WHEN c.period_basis='quarter' THEN 'Q'||CAST(quarter(CAST(report_end AS DATE)) AS VARCHAR)
+        WHEN month(CAST(report_end AS DATE))=3 THEN 'Q1' WHEN month(CAST(report_end AS DATE))=6 THEN 'H1'
+        WHEN month(CAST(report_end AS DATE))=9 THEN '9M' ELSE 'FY' END
+      AND EXISTS(SELECT 1 FROM mappings m WHERE m.canonical_field=c.field AND m.provider_field=f.source_provider_field)
+      THEN 'available'
+    WHEN f.fact_id IS NOT NULL THEN 'standard_fact_semantics_mismatch'
+    WHEN v.provider_fact_id IS NULL THEN 'no_linked_source_at_asof'
+    WHEN v.value IS NULL OR NOT isfinite(v.value) THEN 'invalid_source_value'
+    WHEN v.value=0 THEN 'source_zero_ambiguous'
+    ELSE 'not_materialized'
+   END AS status
+  FROM catalog c CROSS JOIN identity i
+  LEFT JOIN facts f ON f.canonical_field=c.field AND f.provider_code=security_code AND f.primary_source='tdx'
+  LEFT JOIN visible_source v ON v.name=c.field AND v.rank=1
+ )
+ SELECT instrument_id,identity_status,security_code AS code,CAST(report_end AS DATE) AS report_period,
+  CAST(as_of_time AS TIMESTAMPTZ) AS information_as_of,statement,section,field,label,unit,
+  CASE WHEN value_kind IN ('monetary','per_share') THEN 'CNY' END AS currency,
+  period_basis,CASE WHEN period_basis='opening_instant' THEN make_date(year(CAST(report_end AS DATE))-1,12,31)
+    WHEN period_basis='instant' THEN CAST(report_end AS DATE) END AS balance_date,
+  mapping_status AS mapping_review,review_reason,status,
+  CASE WHEN status='available' THEN value END AS value,
+  CASE WHEN status='available' THEN announcement_time END AS announcement_time,
+  CASE WHEN include_evidence THEN to_json(struct_pack(
+    fact_id:=CASE WHEN status='available' THEN fact_id END,
+    provider_fact_id:=coalesce(provider_fact_id,diagnostic_provider_fact_id),
+    filing_id:=coalesce(source_filing_id,diagnostic_filing_id),
+    provider_field:=source_provider_field,source_revision:=revision_key)) END AS source_evidence
+ FROM evaluated
+ WHERE CAST(report_end AS DATE)=last_day(CAST(report_end AS DATE)) AND month(CAST(report_end AS DATE)) IN (3,6,9,12)
+);

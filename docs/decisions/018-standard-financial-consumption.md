@@ -8,14 +8,14 @@ FN是TDX的数据源标识，不是应用财务字段。标准事实已有`canon
 | --- | --- |
 | 原始归档、`provider_fact` | 原件、源字段编号、float32位、下载版本与身份；保留未审核和歧义数据 |
 | `provider_field`与物化 | 来源特有映射、倍率、有效期、零值判定；核对单位、期间及标准定义，不匹配拒绝并撤除失效标准事实 |
-| `fundamental.field` | 独立通用字段目录：字段名、单位、数值类型、`instant/quarter/ytd`期间语义；新增语义须审核后迁移 |
+| `fundamental.field` | 独立通用字段目录：字段名、单位、数值类型、`instant/opening_instant/quarter/ytd`期间语义（每股值独立类型，不按流量加总）；新增语义须审核后迁移 |
 | `fundamental.fact` | 通用字段、数值、期间、范围及证据血缘；`source_provider_field`仅追溯，不作业务取数键 |
 | 年度／TTM | 读取标准目录与标准事实，按通用期间语义计算；不读取源映射目录决定算法，不按FN分支；缺期保留NULL |
 | 查询导出、准入、估值及政策 | `field`使用通用名称，例如`long_lived_asset_disposal_cash`；FN仅允许出现在来源证据中 |
 
 业务查询、计算、政策及对外API/CLI参数、输出、文档和说明必须使用标准目录名称，禁止以源编号代替或另设编号别名。源编号仅在必要的源处理、校验、独立来源证据和明确标注的源维护操作中出现；不默认向业务使用者暴露，也不要求其理解编号。原始证据、历史迁移及冻结归档不改写。
 
-本决策初次发布81项；当前已由[ADR019](019-complete-statement-field-review.md)扩至145项。`revenue`等原单季度标准字段名称不改，目录明确`quarter`；累计营业利润仍为`operating_profit_cumulative`，不与单季度营业利润或留存收益混淆。来源编码及报表组合范围核验继续保留，独立目录不意味着所有字段都适用于每家公司。
+本决策初次发布81项；当前已由[ADR020](020-official-statements-and-snapshots.md)扩至281项，增加期初余额期间语义及非加总每股观察。`revenue`等原单季度标准字段名称不改，目录明确`quarter`；累计营业利润仍为`operating_profit_cumulative`，不与单季度营业利润或留存收益混淆。来源编码及报表组合范围核验继续保留，独立目录不意味着所有字段都适用于每家公司。
 
 ## 数据与契约迁移
 

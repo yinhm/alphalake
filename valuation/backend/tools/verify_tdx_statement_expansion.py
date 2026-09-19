@@ -24,10 +24,10 @@ def compact(text):
 def verify(directory=DEFAULT, evidence=None):
     data = evidence if evidence is not None else json.loads((directory / 'evidence.json').read_text())
     catalog = {r['name']: r for r in csv.DictReader((ROOT / 'internal/source/tdx/financial/catalog.csv').open()) if r['name']}
-    scopes = {'statement-expansion-20260919': (64, 188, 4), 'cashflow-reconciliation-20260919': (12, 36, 0)}
-    fields, expected_matched, expected_missing = scopes[data['review_id']]
+    scopes = {'statement-expansion-20260919': (64, 188, 4, '2025-01-01'), 'cashflow-reconciliation-20260919': (12, 36, 0, '2025-01-01'), 'official-statement-units-20260919': (3, 9, 0, '1900-01-01')}
+    fields, expected_matched, expected_missing, valid_from = scopes[data['review_id']]
     positions = fields * 3
-    if data['valid_from'] != '2025-01-01' or len(data['approved_fields']) != fields or len(set(data['approved_fields'])) != fields:
+    if data['valid_from'] != valid_from or len(data['approved_fields']) != fields or len(set(data['approved_fields'])) != fields:
         raise ValueError('reviewed field scope changed')
     if len(data['reports']) != 3 or len(data['observations']) != positions:
         raise ValueError('report/observation denominator changed')
@@ -62,7 +62,9 @@ def verify(directory=DEFAULT, evidence=None):
             if (row['provider_field'], str(row['multiplier']), row['period_basis']) != ('FN'+definition['index'], definition['multiplier'], definition['period_basis']):
                 raise ValueError('catalog mapping/scale/period differs')
             text = pages[row['pdf_page']]
-            pattern = re.escape(row['label'])+r'(-?[\d,]+\.\d{2}|-)(-?[\d,]+\.\d{2}|-)'
+            decimals = row.get('pdf_decimals', 2)
+            number = r'(-?[\d,]+\.\d{' + str(decimals) + r'}|-)'
+            pattern = re.escape(row['label']) + number * 2
             hits = re.findall(pattern, text)
             if hits != [tuple(row['printed'])]:
                 raise ValueError('PDF current/comparative cells differ: '+field)
@@ -77,7 +79,10 @@ def verify(directory=DEFAULT, evidence=None):
             if row['printed'][0] == '-':
                 raise ValueError('missing amount was promoted to a reported value')
             amount = Decimal(row['printed'][0].replace(',', ''))
-            encoded = (amount/Decimal(row['multiplier'])).quantize(Decimal('.01'), rounding=ROUND_HALF_UP)
+            if row.get('unit', definition['unit']) != definition['unit']:
+                raise ValueError('normalized unit differs')
+            precision = Decimal(1).scaleb(-row.get('encoding_decimals', 2))
+            encoded = (amount/Decimal(row['multiplier'])).quantize(precision, rounding=ROUND_HALF_UP)
             if row['status'] != 'matched' or amount != Decimal(row['pdf_value']) or bits == 0 or struct.pack('<f', float(encoded)) != struct.pack('<I', bits):
                 raise ValueError('nonzero original amount does not match source encoding: '+field)
             matched += 1

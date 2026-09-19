@@ -14,12 +14,15 @@ import (
 
 // CatalogVersion identifies the complete frozen source dictionary, not a claim
 // that all metrics are reviewed standard facts or suitable for valuation.
-const CatalogVersion = "tdx-financial-20260919-v3"
+const CatalogVersion = "tdx-financial-20260919-v4"
 
 //go:embed catalog.csv
 var catalogCSV []byte
 
 type FieldDefinition struct {
+	Statement              string   `json:"statement,omitempty"`
+	Section                string   `json:"section,omitempty"`
+	ReviewReason           string   `json:"review_reason"`
 	RequiresDisambiguation bool     `json:"requires_source_disambiguation,omitempty"`
 	Index                  int      `json:"source_index"`
 	Name                   string   `json:"name,omitempty"`
@@ -43,14 +46,14 @@ func FieldCatalog() ([]FieldDefinition, error) {
 	}
 	out := make([]FieldDefinition, 0, len(rows)-1)
 	for i, r := range rows[1:] {
-		if len(r) != 11 {
+		if len(r) != 14 {
 			return nil, fmt.Errorf("financial catalog row %d: invalid columns", i+2)
 		}
 		index, err := strconv.Atoi(r[0])
 		if err != nil || index != i+1 {
 			return nil, fmt.Errorf("financial catalog row %d: invalid index", i+2)
 		}
-		f := FieldDefinition{Index: index, Name: r[1], Label: r[2], Category: r[3], ValueKind: r[4], Unit: r[5], PeriodBasis: r[7], DefinitionStatus: r[8], MappingStatus: r[9], Reference: r[10]}
+		f := FieldDefinition{Index: index, Name: r[1], Label: r[2], Category: r[3], ValueKind: r[4], Unit: r[5], PeriodBasis: r[7], DefinitionStatus: r[8], MappingStatus: r[9], Reference: r[10], Statement: r[11], Section: r[12], ReviewReason: r[13]}
 		if r[6] != "" {
 			n, e := strconv.ParseFloat(r[6], 64)
 			if e != nil || (n != 1 && n != 10000) {

@@ -1,6 +1,6 @@
 # ADR 019：按报表成批审核标准财务字段
 
-> 本文保留64项批次的历史验收。当前157项/schema49及最新备份见[后续12项审核](../cashflow-reconciliation-review-20260919.md)。
+> 本文保留64项批次的历史验收。后续12项样本审核见[现金流补充资料](../cashflow-reconciliation-review-20260919.md)；当前281项/schema50及三表查询见[ADR020](020-official-statements-and-snapshots.md)。
 
 ## 决策
 

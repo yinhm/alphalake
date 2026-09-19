@@ -172,8 +172,8 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 				WHEN value IS NULL OR NOT isfinite(value) THEN 'provider_value_not_finite'
 				-- TDX 部分源零无法区分未披露与真实零；已识别现金流缺口及新批次字段统一保守拒绝。
 				WHEN zero_policy='reject' AND value=0 THEN 'provider_zero_ambiguous'
-				WHEN period_basis NOT IN ('report','instant','ytd','quarter') OR period_basis IS NULL THEN 'canonical_period_unknown'
-				WHEN value_kind NOT IN ('monetary','shares') OR unit IS NULL OR trim(unit)='' THEN 'canonical_unit_unknown'
+				WHEN period_basis NOT IN ('report','instant','ytd','quarter','opening_instant') OR period_basis IS NULL THEN 'canonical_period_unknown'
+				WHEN NOT ((value_kind='monetary' AND unit='CNY') OR (value_kind='shares' AND unit='share') OR (value_kind='per_share' AND unit='CNY/share')) OR unit IS NULL OR value_kind IS NULL THEN 'canonical_unit_unknown'
 				WHEN NOT standard_semantics_valid THEN 'canonical_definition_mismatch'
 				WHEN try_cast(cast(value AS VARCHAR) AS DECIMAL(38,10)) IS NULL THEN 'canonical_decimal_overflow'
 				ELSE NULL
@@ -200,7 +200,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 			report_period,
 			announcement_time,
 			CASE
-				WHEN period_basis='instant' THEN 'instant'
+				WHEN period_basis IN ('instant','opening_instant') THEN period_basis
 				WHEN period_basis='ytd' AND month(report_period)=9 THEN '9M'
 				WHEN period_basis='quarter' THEN 'Q' || cast(quarter(report_period) AS VARCHAR)
 				WHEN month(report_period)=3 AND day(report_period)=31 THEN 'Q1'
@@ -210,7 +210,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 				ELSE 'unknown'
 			END AS period_type,
 			'provider_default' AS statement_scope,
-			CASE WHEN value_kind='monetary' THEN 'CNY' ELSE NULL END AS currency,
+			CASE WHEN value_kind IN ('monetary','per_share') THEN 'CNY' ELSE NULL END AS currency,
 			unit,
 			-- 先用浮点往返字符串转换，避免 DOUBLE→宽 DECIMAL 的缩放引入大额尾数。
 			cast(cast(value AS VARCHAR) AS DECIMAL(38,10)) AS value,

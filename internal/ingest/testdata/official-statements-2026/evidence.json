@@ -1,0 +1,284 @@
+{
+  "review_id": "official-statement-units-20260919",
+  "scope": "representative_units_and_source_precision_not_full_company_audit",
+  "valid_from": "1900-01-01",
+  "approved_fields": [
+    "basic_earnings_per_share",
+    "diluted_earnings_per_share",
+    "opening_cash_and_cash_equivalents"
+  ],
+  "reports": [
+    {
+      "code": "300866",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "pdf_path": "../anker-valuation-2026/1224614835.pdf",
+      "pdf_sha256": "e1aff2dcb92aea9bcc8b3b69b66051b2e27c68026dbbff77d56ef27373dee674",
+      "package_path": "../valuation-chain-2026/gpcw20250630.zip",
+      "package_sha256": "d234e4f6cc3233fa9dc38e27269f15d6cd0f106f704a89ed9f798a2c335d39fb",
+      "tables": {
+        "income_statement": {
+          "pages": [
+            71,
+            72
+          ],
+          "section": "3、合并利润表",
+          "header": "项目附注2025年半年度2024年半年度"
+        },
+        "cashflow_statement": {
+          "pages": [
+            74,
+            75
+          ],
+          "section": "5、合并现金流量表",
+          "header": "项目附注2025年半年度2024年半年度"
+        }
+      }
+    },
+    {
+      "code": "300866",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "pdf_path": "../anker-valuation-2026/1225090973.pdf",
+      "pdf_sha256": "8dadc4bfd7282738697a5ee82d9b25faa657e053e3f480e71dd6ae9987703202",
+      "package_path": "../valuation-chain-2026/gpcw20251231.zip",
+      "package_sha256": "39cdb919483b892674c9624cb03946ddb03f10faf83d3368384505c356fb336f",
+      "tables": {
+        "income_statement": {
+          "pages": [
+            112,
+            113
+          ],
+          "section": "3、合并利润表",
+          "header": "项目附注2025年度2024年度"
+        },
+        "cashflow_statement": {
+          "pages": [
+            115,
+            116
+          ],
+          "section": "5、合并现金流量表",
+          "header": "项目附注2025年度2024年度"
+        }
+      }
+    },
+    {
+      "code": "300866",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "pdf_path": "../anker-valuation-2026/1225533054.pdf",
+      "pdf_sha256": "ff81b9e7c2e8eb04bd450fce3c084b28f5b4be4c1e2638250160b7bb813ebac1",
+      "package_path": "../valuation-chain-2026/gpcw20260630.zip",
+      "package_sha256": "6366c4224e1a08de7bdb8e45ec6af624a20205f70a305eaf66a33d78aaa6578c",
+      "tables": {
+        "income_statement": {
+          "pages": [
+            61,
+            62
+          ],
+          "section": "3、合并利润表",
+          "header": "项目附注2026年半年度2025年半年度"
+        },
+        "cashflow_statement": {
+          "pages": [
+            64,
+            65
+          ],
+          "section": "5、合并现金流量表",
+          "header": "项目附注2026年半年度2025年半年度"
+        }
+      }
+    }
+  ],
+  "observations": [
+    {
+      "field": "basic_earnings_per_share",
+      "provider_field": "FN1",
+      "period": "2025-06-30",
+      "period_basis": "ytd",
+      "category": "income_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 72,
+      "label": "基本每股收益",
+      "printed": [
+        "2.1958",
+        "1.6505"
+      ],
+      "pdf_value": "2.1958",
+      "multiplier": 1,
+      "unit": "CNY/share",
+      "pdf_decimals": 4,
+      "encoding_decimals": 4,
+      "source_bits": 1074563069,
+      "status": "matched"
+    },
+    {
+      "field": "diluted_earnings_per_share",
+      "provider_field": "FN501",
+      "period": "2025-06-30",
+      "period_basis": "ytd",
+      "category": "income_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 72,
+      "label": "稀释每股收益",
+      "printed": [
+        "2.1771",
+        "1.6397"
+      ],
+      "pdf_value": "2.1771",
+      "multiplier": 1,
+      "unit": "CNY/share",
+      "pdf_decimals": 4,
+      "encoding_decimals": 2,
+      "source_bits": 1074496799,
+      "status": "matched"
+    },
+    {
+      "field": "opening_cash_and_cash_equivalents",
+      "provider_field": "FN132",
+      "period": "2025-06-30",
+      "period_basis": "opening_instant",
+      "category": "cashflow_statement",
+      "pdf_id": "1224614835",
+      "pdf_page": 75,
+      "label": "加：期初现金及现金等价物余额",
+      "printed": [
+        "2,328,704,260.13",
+        "1,789,101,134.56"
+      ],
+      "pdf_value": "2328704260.13",
+      "multiplier": 1,
+      "unit": "CNY",
+      "pdf_decimals": 2,
+      "encoding_decimals": 2,
+      "source_bits": 1326107957,
+      "status": "matched"
+    },
+    {
+      "field": "basic_earnings_per_share",
+      "provider_field": "FN1",
+      "period": "2025-12-31",
+      "period_basis": "ytd",
+      "category": "income_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 113,
+      "label": "基本每股收益",
+      "printed": [
+        "4.7715",
+        "3.9939"
+      ],
+      "pdf_value": "4.7715",
+      "multiplier": 1,
+      "unit": "CNY/share",
+      "pdf_decimals": 4,
+      "encoding_decimals": 4,
+      "source_bits": 1083748385,
+      "status": "matched"
+    },
+    {
+      "field": "diluted_earnings_per_share",
+      "provider_field": "FN501",
+      "period": "2025-12-31",
+      "period_basis": "ytd",
+      "category": "income_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 113,
+      "label": "稀释每股收益",
+      "printed": [
+        "4.7174",
+        "3.9712"
+      ],
+      "pdf_value": "4.7174",
+      "multiplier": 1,
+      "unit": "CNY/share",
+      "pdf_decimals": 4,
+      "encoding_decimals": 2,
+      "source_bits": 1083640381,
+      "status": "matched"
+    },
+    {
+      "field": "opening_cash_and_cash_equivalents",
+      "provider_field": "FN132",
+      "period": "2025-12-31",
+      "period_basis": "opening_instant",
+      "category": "cashflow_statement",
+      "pdf_id": "1225090973",
+      "pdf_page": 116,
+      "label": "加：年初现金及现金等价物余额",
+      "printed": [
+        "2,328,704,260.13",
+        "1,789,101,134.56"
+      ],
+      "pdf_value": "2328704260.13",
+      "multiplier": 1,
+      "unit": "CNY",
+      "pdf_decimals": 2,
+      "encoding_decimals": 2,
+      "source_bits": 1326107957,
+      "status": "matched"
+    },
+    {
+      "field": "basic_earnings_per_share",
+      "provider_field": "FN1",
+      "period": "2026-06-30",
+      "period_basis": "ytd",
+      "category": "income_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 62,
+      "label": "基本每股收益",
+      "printed": [
+        "3.1743",
+        "2.1958"
+      ],
+      "pdf_value": "3.1743",
+      "multiplier": 1,
+      "unit": "CNY/share",
+      "pdf_decimals": 4,
+      "encoding_decimals": 4,
+      "source_bits": 1078667195,
+      "status": "matched"
+    },
+    {
+      "field": "diluted_earnings_per_share",
+      "provider_field": "FN501",
+      "period": "2026-06-30",
+      "period_basis": "ytd",
+      "category": "income_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 62,
+      "label": "稀释每股收益",
+      "printed": [
+        "3.1270",
+        "2.1771"
+      ],
+      "pdf_value": "3.1270",
+      "multiplier": 1,
+      "unit": "CNY/share",
+      "pdf_decimals": 4,
+      "encoding_decimals": 2,
+      "source_bits": 1078481388,
+      "status": "matched"
+    },
+    {
+      "field": "opening_cash_and_cash_equivalents",
+      "provider_field": "FN132",
+      "period": "2026-06-30",
+      "period_basis": "opening_instant",
+      "category": "cashflow_statement",
+      "pdf_id": "1225533054",
+      "pdf_page": 65,
+      "label": "加：期初现金及现金等价物余额",
+      "printed": [
+        "3,067,742,475.18",
+        "2,328,704,260.13"
+      ],
+      "pdf_value": "3067742475.18",
+      "multiplier": 1,
+      "unit": "CNY",
+      "pdf_decimals": 2,
+      "encoding_decimals": 2,
+      "source_bits": 1328994825,
+      "status": "matched"
+    }
+  ]
+}

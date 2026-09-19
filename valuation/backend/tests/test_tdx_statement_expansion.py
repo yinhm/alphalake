@@ -45,3 +45,23 @@ def test_cashflow_reconciliation_rejects_tampering(mutation):
     else: row.update(source_bits=0, pdf_value=None, status='printed_missing')
     with pytest.raises(ValueError):
         verify(RECONCILIATION, evidence=evidence)
+
+OFFICIAL_UNITS = DEFAULT.parent / 'official-statements-2026'
+
+
+def test_official_statement_unit_examples():
+    assert verify(OFFICIAL_UNITS)['matched_nonzero'] == 9
+
+
+@pytest.mark.parametrize('mutation', ['diluted_precision', 'basic_precision', 'unit', 'opening_period'])
+def test_official_statement_units_reject_tampering(mutation):
+    evidence = json.loads((OFFICIAL_UNITS / 'evidence.json').read_text())
+    if mutation == 'diluted_precision':
+        next(r for r in evidence['observations'] if r['field'] == 'diluted_earnings_per_share')['encoding_decimals'] = 4
+    elif mutation == 'basic_precision':
+        next(r for r in evidence['observations'] if r['field'] == 'basic_earnings_per_share')['encoding_decimals'] = 2
+    elif mutation == 'unit': evidence['observations'][0]['unit'] = 'CNY'
+    else:
+        next(r for r in evidence['observations'] if r['field'] == 'opening_cash_and_cash_equivalents')['period_basis'] = 'instant'
+    with pytest.raises(ValueError):
+        verify(OFFICIAL_UNITS, evidence=evidence)

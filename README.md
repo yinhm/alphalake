@@ -1,6 +1,6 @@
 # AlphaLake
 
-当前无实际生产部署，已[清理本轮识别的旧版本兼容路径](docs/compatibility-cleanup-20260919.md)：仅维护当前契约与schema49，原始证据及冻结历史保留；新建库到标准输入及估值的回归验收通过。
+当前无实际生产部署，已[清理本轮识别的旧版本兼容路径](docs/compatibility-cleanup-20260919.md)：仅维护当前契约与schema50，原始证据及冻结历史保留；新建库到标准输入及估值的回归验收通过。
 
 AlphaLake 是面向投资研究、本地优先且可复现的金融市场数据基础设施。
 
@@ -57,7 +57,7 @@ TDX 协议请求支持[自动换节点重试](docs/tdx-failover.md)：每个独�
 - 分别统计尝试、插入、重新归属和删除的数据源事实数；
 - 财务身份治理支持分页查看待解析记录、显式确认及撤销确认；
 - [TDX全量源目录](docs/tdx-financial-catalog-20260919.md)覆盖584位置、462项有名称依据、422项有明确数值单位；未知语义、比例尺度、日期与同名歧义分别保留。源维护命令`tdx-financial-fields`及`export-financial-source`已提供，标准审核与源解析分开；
-- 标准目录及正式主库已接入157个TDX字段映射；最新增加[12项现金流调节字段](docs/cashflow-reconciliation-review-20260919.md)，此前增加[64项合并三表字段](docs/decisions/019-complete-statement-field-review.md)，原81项包括：新增[长期资产处置现金（`long_lived_asset_disposal_cash`）](valuation/research/disposal-cash-20260918/README.md)已[备份发布正式库](docs/disposal-main-publication-20260918.md)，零值歧义保留；其余映射含单季度利润/现金流、股本，以及现金、借款、债券、租赁、税项、利息、权益和再投资明细；新增字段区分期末存量与年初累计，见[核心财务字段](docs/decisions/009-core-financial-fields.md)、[损益/营运资本增补](docs/decisions/012-earnings-working-capital-fields.md)、[现金流/研发字段](docs/decisions/013-cashflow-research-fields.md)、[开源目录与余额/利润增补](docs/decisions/014-open-source-fn-balance-profit.md)及[金融工具与补充供给](docs/decisions/015-financial-instruments-and-supplement-supply.md)；
+- [规范三表查询](docs/decisions/020-official-statements-and-snapshots.md)按报告期及信息截止返回资产负债表、利润表和现金流量表；标准目录共281项，三表源位置280/283已映射，3处歧义明确保留。单位统一元、股、元/股，期初余额和每股指标不进入普通TTM加总；原文样本审核与官方定义映射分别记录；
 - CNINFO 公告目录与原文归档、保守的披露日期精度，以及待解析公告的本地重试；
 - [北交所2025年代码切换](docs/bse-code-transitions.md)四原文发布与公告日身份核验；保留原代码，缺少唯一时点锚点时仍待解析；
 - 显式的数据源事实—公告关联、标准时点基本面物化，以及原始/更正版本的 ASOF 查询；
@@ -119,7 +119,7 @@ CI 还会检查 `go mod tidy` 是否产生文件改动，并以 Python 3.12 / [�
 
 ## 命令行
 
-初始化当前 DuckDB 数据库（已有schema49直接打开，旧版本明确拒绝）：
+初始化当前 DuckDB 数据库（已有schema50直接打开，旧版本明确拒绝）：
 
 ```bash
 alphalake init ./alphalake.duckdb
@@ -250,7 +250,7 @@ alphalake schema
 
 审核补充支持显式修订、撤销与历史查询，镜像原文审核独立于诊断保存；迁移及时间边界见[审核证据说明](docs/reviewed-evidence-history.md)。
 
-当前仅维护schema49，定义见 [schema.sql](internal/store/duckdb/schema.sql)。财务主库和实际参考库已接入[全量TDX源目录](docs/tdx-financial-catalog-20260919.md)，原有财务与参考内容不变，新增标准映射及本地事实的最新范围见[接入验收](docs/cashflow-reconciliation-review-20260919.md)。旧迁移链及专项发布工具退出当前代码，严格历史复验使用原提交；处置记录见[兼容清理](docs/compatibility-cleanup-20260919.md)。
+当前仅维护schema50，定义见 [schema.sql](internal/store/duckdb/schema.sql)。财务主库和实际参考库已接入[全量TDX源目录](docs/tdx-financial-catalog-20260919.md)，原有财务与参考内容不变，新增标准映射及本地事实的最新范围见[接入验收](docs/decisions/020-official-statements-and-snapshots.md)。旧迁移链及专项发布工具退出当前代码，严格历史复验使用原提交；处置记录见[兼容清理](docs/compatibility-cleanup-20260919.md)。
 
 ## 数据布局
 

@@ -50,7 +50,7 @@ func open(ctx context.Context, path string, readOnly bool) (*sql.DB, error) {
 
 	var connector *duckdbgo.Connector
 	var err error
-	// 使用驱动原生配置，让大市场导入可按部署内存限制溢写，而不是被操作系统杀死。
+	// 驱动内存配置允许查询溢写，但不是进程RSS硬上限；大任务仍需外部资源隔离。
 	options := url.Values{}
 	for option, variable := range map[string]string{"memory_limit": "ALPHALAKE_DUCKDB_MEMORY_LIMIT", "threads": "ALPHALAKE_DUCKDB_THREADS"} {
 		if value := strings.TrimSpace(os.Getenv(variable)); value != "" {

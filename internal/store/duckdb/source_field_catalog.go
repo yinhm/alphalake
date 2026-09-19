@@ -17,13 +17,13 @@ func insertSourceFieldCatalog(ctx context.Context, tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	stmt, err := tx.PrepareContext(ctx, `INSERT INTO fundamental.source_field VALUES ('tdx',?,?,?,?,?,?,?,?,?,?,?,?)`)
+	stmt, err := tx.PrepareContext(ctx, `INSERT INTO fundamental.source_field VALUES ('tdx',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 	for _, f := range fields {
-		if _, err = stmt.ExecContext(ctx, fmt.Sprintf("FN%d", f.Index), f.Index, sql.NullString{String: f.Name, Valid: f.Name != ""}, f.Label, f.Category, f.ValueKind, f.Unit, f.Multiplier, f.PeriodBasis, f.DefinitionStatus, f.Reference, financial.CatalogVersion); err != nil {
+		if _, err = stmt.ExecContext(ctx, fmt.Sprintf("FN%d", f.Index), f.Index, sql.NullString{String: f.Name, Valid: f.Name != ""}, f.Label, f.Category, f.ValueKind, f.Unit, f.Multiplier, f.PeriodBasis, f.DefinitionStatus, f.Reference, financial.CatalogVersion, f.Statement, f.Section, f.MappingStatus, f.ReviewReason); err != nil {
 			return err
 		}
 	}

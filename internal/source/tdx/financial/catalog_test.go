@@ -314,3 +314,53 @@ func TestOfficialProfinanceDirectory(t *testing.T) {
 		t.Fatal("missing page rows overwrote other evidence")
 	}
 }
+
+func TestOfficialStatementCoverageAndUnits(t *testing.T) {
+	fields, err := FieldCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+	positions, approved, documented := 0, 0, 0
+	for _, f := range fields {
+		if f.ReviewReason == "" {
+			t.Fatal("missing review disposition", f.Index)
+		}
+		if f.Statement == "" {
+			continue
+		}
+		positions++
+		if f.MappingStatus != "official_mapping" && f.MappingStatus != "reviewed_mapping" {
+			continue
+		}
+		approved++
+		if f.MappingStatus == "official_mapping" {
+			documented++
+		}
+		if f.DefinitionStatus != "official" || f.Multiplier == nil || f.RequiresDisambiguation {
+			t.Fatal("unsupported official mapping", f)
+		}
+		// The frozen official descriptions specify exceptional ten-thousand-yuan
+		// encoding. The archived unit rules specify yuan for other amounts.
+		scale := float64(1)
+		if strings.Contains(f.Label, "万元") {
+			scale = 10000
+		}
+		if *f.Multiplier != scale {
+			t.Fatal("official source unit differs", f)
+		}
+		if (f.ValueKind == "monetary" && f.Unit != "CNY") || (f.ValueKind == "per_share" && f.Unit != "CNY/share") {
+			t.Fatal("nonstandard statement unit", f)
+		}
+	}
+	if positions != 283 || approved != 280 || documented != 124 {
+		t.Fatal(positions, approved, documented)
+	}
+	for _, index := range []int{132, 155, 157} {
+		if fields[index-1].PeriodBasis != "opening_instant" {
+			t.Fatal("opening balance at closing date", index)
+		}
+	}
+	if fields[70].ReviewReason != "period_requires_review" || fields[439].ReviewReason != "ambiguous_source_variant" || fields[452].ReviewReason != "ambiguous_source_variant" {
+		t.Fatal("unreviewed statement positions lost")
+	}
+}
