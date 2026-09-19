@@ -38,38 +38,6 @@ logger = logging.getLogger(__name__)
 # They're retained because `ctryprem` country ERPs aggregate to region-level
 # ERPs for the "Operating Regions" ERP branch in module_2_risk.py.
 #
-# This function is kept for backward-compat with a few UI-only callers that
-# display which region a company is "classified into" — but it no longer drives
-# industry-data selection.
-def _country_to_region_display(country: str) -> str:
-    """Display-only region hint for a country. Does NOT drive industry lookup."""
-    if not country:
-        return "US"
-    c = country.lower()
-    if any(k in c for k in ("china", "hong kong", "macau", "taiwan")):
-        return "China"
-    if "india" in c:
-        return "India"
-    if "japan" in c:
-        return "Japan"
-    if any(k in c for k in ("kingdom", "germany", "france", "italy", "spain",
-                            "netherlands", "switzerland", "sweden", "norway",
-                            "denmark", "finland", "belgium", "austria", "ireland",
-                            "portugal", "greece")):
-        return "Europe"
-    if any(k in c for k in ("united states", "america", "canada")):
-        return "US"
-    return "Global"
-
-
-# Alias for callers that still reference the old name. Kept to avoid churn;
-# always returns "US" so industry-data lookups default to Ginzu's convention.
-def _country_to_region(country: str) -> str:
-    """Always returns 'US' — industry-data region is decided by the analyst's
-    methodology_choices.beta_approach selector, not by the company's country.
-    This matches Ginzu's default behavior (Single Business(US))."""
-    return "US"
-
 router = APIRouter(prefix="/api")
 
 # Pre-load Damodaran data and industry mapper at startup
@@ -337,7 +305,7 @@ def search_companies(q: str, max_results: int = 20):
                 "industry": r.industry_group,
                 "exchange": r.exchange_ticker.split(":")[0] if ":" in r.exchange_ticker else "",
                 "symbol": r.exchange_ticker.split(":")[-1] if ":" in r.exchange_ticker else r.exchange_ticker,
-                "region": _country_to_region(r.country),
+                "region": "US",  # 默认行业表；实际选择由估值方法参数决定。
             }
             for r in results
         ],

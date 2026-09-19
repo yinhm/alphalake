@@ -138,7 +138,7 @@ func ReconcileProviderFinancialRecordsForArtifact(
 	stalePredicate := `
 		p.source=? AND p.revision_key=? AND (
 			p.provider_code IS NULL OR NOT EXISTS (
-				SELECT 1 FROM temp.main.`+providerFactStageTable+` s
+				SELECT 1 FROM temp.main.` + providerFactStageTable + ` s
 				WHERE s.source=p.source
 				  AND s.revision_key=p.revision_key
 				  AND s.provider_code=p.provider_code
@@ -221,23 +221,6 @@ func ReconcileProviderFinancialRecordsForArtifact(
 	}
 	committed = true
 	return result, nil
-}
-
-// InsertProviderFinancialRecordsForArtifact is retained as a compatibility
-// wrapper for callers that only append resolved rows. New ingestion code should
-// use ReconcileProviderFinancialRecordsForArtifact so a revision can also remove
-// facts that became unresolved after an identity correction.
-func InsertProviderFinancialRecordsForArtifact(
-	ctx context.Context,
-	db *sql.DB,
-	ingestRunID int64,
-	artifactSHA string,
-	records []domain.ProviderFinancialRecord,
-) (ProviderFactWriteResult, error) {
-	if len(records) == 0 {
-		return ProviderFactWriteResult{}, nil
-	}
-	return ReconcileProviderFinancialRecordsForArtifact(ctx, db, ingestRunID, records[0].Provider, artifactSHA, records)
 }
 
 func appendProviderFacts(ctx context.Context, conn *sql.Conn, ingestRunID int64, artifactSHA string, records []domain.ProviderFinancialRecord) error {

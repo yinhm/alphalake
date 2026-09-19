@@ -3,7 +3,7 @@ import pytest
 from pydantic import ValidationError
 from engine.data_dictionary import (RawFinancials, PreparedTTM, CompanyValuationInput,
     MacroInputs, IndustryData, MethodologyChoices, ValuationAssumptions)
-from engine.ltm_calculator import compute_ltm_financials, compute_ltm
+from engine.ltm_calculator import compute_ltm_financials
 from engine.orchestrator import run_full_valuation
 
 
@@ -53,13 +53,12 @@ def test_prepared_metadata(changes):
         PreparedTTM.model_validate(payload().prepared_ttm.model_dump() | changes)
 
 
-def test_quarterly_missing_and_legacy_entry():
+def test_quarterly_missing():
     annual = RawFinancials(fiscal_year=2025, revenues=100, ebit=20, capex=8, bv_debt=10)
     quarter = RawFinancials(fiscal_year=2026, revenues=30, ebit=6)
     qs = [quarter] * 6
     assert compute_ltm_financials(annual, qs, 2).capex is None
     assert compute_ltm_financials(annual, qs, 2).bv_debt is None
-    assert compute_ltm(annual.model_dump(), [q.model_dump() for q in qs], 6)['capex'] is None
     with pytest.raises(ValueError, match='insufficient'):
         compute_ltm_financials(annual, qs[:2], 2)
     complete = [quarter.model_copy(update={'capex': 0}) for _ in range(6)]

@@ -51,7 +51,7 @@ func ApplyDailyIngestBatchForRun(
 	}
 
 	return withDailyWriteTransaction(ctx, db, func(conn *sql.Conn) error {
-		if err := mergeDailyBarsOnConn(ctx, conn, validBars, &ingestRunID); err != nil {
+		if err := mergeDailyBarsOnConn(ctx, conn, validBars, ingestRunID); err != nil {
 			return err
 		}
 		if err := insertValidationViolationsOnConn(

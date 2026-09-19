@@ -71,15 +71,3 @@ def compute_ltm_financials(
             data[field] = qv
 
     return RawFinancials(**data)
-
-
-# Back-compat shim — some older test modules may reference this.
-def compute_ltm(annual_fy0, quarterly_data, months_since_fy_end: int = 0):
-    """DEPRECATED. Use compute_ltm_financials(RawFinancials, ...) instead."""
-    if months_since_fy_end not in (0, 3, 6, 9, 12):
-        raise ValueError("months_since_fy_end must identify a complete quarter")
-    result = compute_ltm_financials(
-        RawFinancials(**annual_fy0), [RawFinancials(**q) for q in quarterly_data],
-        months_since_fy_end // 3,
-    )
-    return {key: getattr(result, key) for key in annual_fy0}

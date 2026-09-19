@@ -90,7 +90,7 @@ The P/V ratio requires `stock_price_reporting / value_per_share` (both in report
 `fx_rate` = listing-ccy → reporting-ccy multiplier. Defined at top of the raw_financials loop in routes.py; must be computed before entering the loop.
 
 ### WACC geographic mix
-Industry β lookups default to US (Ginzu convention: `beta_approach = "single_business_us"`). The user's methodology selector in the frontend can override to Global, multi-business, or direct-input. Regional tables (China, India, Europe, etc.) are retained only for `ctryprem` ERP calculations, not for β lookups. `_country_to_region()` always returns "US" for this reason.
+Industry β lookups default to US (Ginzu convention: `beta_approach = "single_business_us"`). The user's methodology selector in the frontend can override to Global, multi-business, or direct-input. Regional tables (China, India, Europe, etc.) are retained only for `ctryprem` ERP calculations, not for β lookups. Search results expose "US" as the default industry-table region; the valuation methodology selector determines the actual lookup.
 
 ---
 

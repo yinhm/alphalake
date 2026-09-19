@@ -96,23 +96,6 @@ func fetchIndustrySnapshotResults(ctx context.Context, c industrySnapshotClient)
 	return out, nil
 }
 
-// IndustrySnapshots remains as a compatibility helper for callers that require
-// all taxonomies. It fails when any independently-built taxonomy fails.
-func (c *Client) IndustrySnapshots(ctx context.Context) ([]domain.ClassificationSnapshot, error) {
-	results, err := c.IndustrySnapshotResults(ctx)
-	if err != nil {
-		return nil, err
-	}
-	out := make([]domain.ClassificationSnapshot, 0, len(results))
-	for _, result := range results {
-		if result.Error != "" || result.Snapshot == nil {
-			return nil, fmt.Errorf("build %s snapshot: %s", result.Code, result.Error)
-		}
-		out = append(out, *result.Snapshot)
-	}
-	return out, nil
-}
-
 // parseInconNames parses incon.dat (GBK text). Lines beginning with # are
 // section metadata; data lines are `code|name`.
 func parseInconNames(data []byte) map[string]string {

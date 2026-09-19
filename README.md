@@ -1,12 +1,14 @@
 # AlphaLake
 
+当前无实际生产部署，正在[清理旧版本兼容路径](docs/compatibility-cleanup-20260919.md)：仅维护当前契约，原始证据及冻结历史保留；清理与新建库到估值的验收尚未全部完成。
+
 AlphaLake 是面向投资研究、本地优先且可复现的金融市场数据基础设施。
 
 估值引擎与应用已纳入 [`valuation/`](valuation/README.md)，源自 [chrisuzy/Investment_Valuation_Agent](https://github.com/chrisuzy/Investment_Valuation_Agent)。感谢原作者 Chirs Yu Zhang 及上游贡献者；原 MIT 许可证、导入版本与 Credits 见 [来源记录](valuation/UPSTREAM.md)。已接通实际数据库到估值 CLI/API 与原生股权桥接，使用方法和适用边界见[融合说明](valuation/docs/alphalake-integration.md)。
 
 它通过多个数据源适配器采集数据，将记录归一化为标准模型，在 DuckDB 中存储分析数据，并保留重建、校验和派生数据集所需的血缘信息。数据源提供稳定文件时，系统将其保存为不可变的原始证据。
 
-标准查询与估值消费现使用通用财务字段，FN仅保留在源映射与血缘；财务输入契约v2及schema46已[正式发布](docs/standard-fields-publication-20260918.md)，旧请求须显式迁移。简化回溯与文档复验也已[完成分层核查](docs/standard-fields-consumption-audit-20260918.md)。
+标准查询与估值消费现使用通用财务字段，源编号仅在必要的源处理、校验与证据追溯中保留；财务输入契约v2及schema46已[正式发布](docs/standard-fields-publication-20260918.md)，旧请求须显式迁移。简化回溯与文档复验也已[完成分层核查](docs/standard-fields-consumption-audit-20260918.md)。
 
 当前已完成[普通非金融企业估值闭环验收](valuation/research/method-closure-20260912/README.md)：复用标准数据和共享引擎，逐项对齐经营收益、再投资、WACC、终值及股权桥接；修正缺资本仍生成隐含ROIC的诊断，统一入口新增方法范围与缺口披露。该轮安克、苏泊尔基线保持不变；后续已审核资产的影响见下文。计算和输入衔接可复验，公司预测依据、完整经营资本及市场股权桥接仍有明确缺口；不称完整公允价值或预测准确性认证。[历史预测研究](docs/valuation-accuracy.md)单独保留，失败候选不推广，未来评分等待数据不阻塞当前方法验收。
 
@@ -54,7 +56,7 @@ TDX 协议请求支持[自动换节点重试](docs/tdx-failover.md)：每个独�
 - 按不可变数据源证据批量协调 `fundamental.provider_fact`，身份修正时重新归属或删除失效事实，不跨证券重复生成同一版本；
 - 分别统计尝试、插入、重新归属和删除的数据源事实数；
 - 财务身份治理支持分页查看待解析记录、显式确认及撤销确认；
-- 代码及正式主库已接入81个TDX字段映射：新增[FN110处置现金](valuation/research/disposal-cash-20260918/README.md)已[备份发布正式库](docs/disposal-main-publication-20260918.md)，零值歧义保留；其余映射含单季度利润/现金流、股本，以及现金、借款、债券、租赁、税项、利息、权益和再投资明细；新增字段区分期末存量与年初累计，见[核心财务字段](docs/decisions/009-core-financial-fields.md)、[损益/营运资本增补](docs/decisions/012-earnings-working-capital-fields.md)、[现金流/研发字段](docs/decisions/013-cashflow-research-fields.md)、[开源目录与余额/利润增补](docs/decisions/014-open-source-fn-balance-profit.md)及[金融工具与补充供给](docs/decisions/015-financial-instruments-and-supplement-supply.md)；
+- 代码及正式主库已接入81个TDX字段映射：新增[长期资产处置现金（`long_lived_asset_disposal_cash`）](valuation/research/disposal-cash-20260918/README.md)已[备份发布正式库](docs/disposal-main-publication-20260918.md)，零值歧义保留；其余映射含单季度利润/现金流、股本，以及现金、借款、债券、租赁、税项、利息、权益和再投资明细；新增字段区分期末存量与年初累计，见[核心财务字段](docs/decisions/009-core-financial-fields.md)、[损益/营运资本增补](docs/decisions/012-earnings-working-capital-fields.md)、[现金流/研发字段](docs/decisions/013-cashflow-research-fields.md)、[开源目录与余额/利润增补](docs/decisions/014-open-source-fn-balance-profit.md)及[金融工具与补充供给](docs/decisions/015-financial-instruments-and-supplement-supply.md)；
 - CNINFO 公告目录与原文归档、保守的披露日期精度，以及待解析公告的本地重试；
 - [北交所2025年代码切换](docs/bse-code-transitions.md)四原文发布与公告日身份核验；保留原代码，缺少唯一时点锚点时仍待解析；
 - 显式的数据源事实—公告关联、标准时点基本面物化，以及原始/更正版本的 ASOF 查询；

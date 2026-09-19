@@ -16,6 +16,10 @@ func TestLatestDailyDateTracksNewestSourceObservation(t *testing.T) {
 		t.Fatalf("OpenAndMigrate() error = %v", err)
 	}
 	defer db.Close()
+	seedRunID, err := StartIngestRun(ctx, db, "tdx", "daily_ohlcv", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	instrumentID, err := UpsertInstrument(ctx, db,
 		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "贵州茅台"},
@@ -35,8 +39,8 @@ func TestLatestDailyDateTracksNewestSourceObservation(t *testing.T) {
 		{InstrumentID: instrumentID, TradeDate: last, Open: 10, High: 11, Low: 9, Close: 10, Source: "tdx"},
 		{InstrumentID: instrumentID, TradeDate: first, Open: 9, High: 10, Low: 8, Close: 9, Source: "tdx"},
 	}
-	if err := UpsertDailyBars(ctx, db, bars); err != nil {
-		t.Fatalf("UpsertDailyBars() error = %v", err)
+	if err := UpsertDailyBarsForRun(ctx, db, seedRunID, bars); err != nil {
+		t.Fatalf("UpsertDailyBarsForRun() error = %v", err)
 	}
 
 	got, ok, err := LatestDailyDate(ctx, db, instrumentID, "tdx")

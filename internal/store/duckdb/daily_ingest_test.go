@@ -87,14 +87,14 @@ func TestDailyWriteTransactionRollsBackAllEffectsOnLateFailure(t *testing.T) {
 	}
 	bar := domain.DailyBar{
 		InstrumentID: instrumentID,
-		TradeDate: time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC),
-		Open: 10, High: 11, Low: 9, Close: 10.5,
+		TradeDate:    time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC),
+		Open:         10, High: 11, Low: 9, Close: 10.5,
 		Volume: 1000, Amount: 10500, Source: "tdx",
 	}
 	violations := []validate.Violation{{RuleCode: "test.rule", Severity: "error", SubjectKey: "test", Details: "test"}}
 	sentinel := errors.New("forced late failure")
 	err = withDailyWriteTransaction(ctx, db, func(conn *sql.Conn) error {
-		if err := mergeDailyBarsOnConn(ctx, conn, []domain.DailyBar{bar}, &runID); err != nil {
+		if err := mergeDailyBarsOnConn(ctx, conn, []domain.DailyBar{bar}, runID); err != nil {
 			return err
 		}
 		if err := insertValidationViolationsOnConn(ctx, conn, runID, "tdx", "daily_ohlcv", "daily_bar", violations); err != nil {
@@ -113,7 +113,7 @@ func TestDailyWriteTransactionRollsBackAllEffectsOnLateFailure(t *testing.T) {
 	}
 
 	for name, query := range map[string]string{
-		"bars": `SELECT count(*) FROM market.ohlcv_daily WHERE instrument_id=` + fmt.Sprint(instrumentID),
+		"bars":       `SELECT count(*) FROM market.ohlcv_daily WHERE instrument_id=` + fmt.Sprint(instrumentID),
 		"validation": `SELECT count(*) FROM meta.validation_result WHERE ingest_run_id=` + fmt.Sprint(runID),
 		"checkpoint": `SELECT count(*) FROM meta.checkpoint WHERE checkpoint_key='rollback-test'`,
 	} {

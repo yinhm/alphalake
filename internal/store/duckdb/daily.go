@@ -42,22 +42,12 @@ func LatestDailyDate(ctx context.Context, db *sql.DB, instrumentID int64, source
 	return latest.Time, true, nil
 }
 
-// UpsertDailyBars writes canonical unadjusted daily bars without changing their
-// existing ingest-run lineage when refreshing a row outside a tracked run.
-func UpsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar) error {
-	return upsertDailyBars(ctx, db, bars, nil)
-}
-
 // UpsertDailyBarsForRun writes canonical bars and records which ingest run most
 // recently inserted/refreshed each observation.
 func UpsertDailyBarsForRun(ctx context.Context, db *sql.DB, ingestRunID int64, bars []domain.DailyBar) error {
 	if ingestRunID <= 0 {
 		return errors.New("ingest run ID must be positive")
 	}
-	return upsertDailyBars(ctx, db, bars, &ingestRunID)
-}
-
-func upsertDailyBars(ctx context.Context, db *sql.DB, bars []domain.DailyBar, ingestRunID *int64) error {
 	if db == nil {
 		return errors.New("duckdb is nil")
 	}
@@ -126,7 +116,10 @@ func withDailyWriteTransaction(ctx context.Context, db *sql.DB, fn func(*sql.Con
 
 // mergeDailyBarsOnConn requires an active transaction on conn. It bulk-appends
 // into a connection-local temporary table and performs one set-based upsert.
-func mergeDailyBarsOnConn(ctx context.Context, conn *sql.Conn, bars []domain.DailyBar, ingestRunID *int64) error {
+func mergeDailyBarsOnConn(ctx context.Context, conn *sql.Conn, bars []domain.DailyBar, ingestRunID int64) error {
+	if ingestRunID <= 0 {
+		return errors.New("ingest run ID must be positive")
+	}
 	if len(bars) == 0 {
 		return nil
 	}
@@ -159,31 +152,6 @@ func mergeDailyBarsOnConn(ctx context.Context, conn *sql.Conn, bars []domain.Dai
 	}
 
 	mergeSQL := `
-		INSERT INTO market.ohlcv_daily (
-			instrument_id, trade_date,
-			open, high, low, close,
-			volume, amount, up_count, down_count,
-			source, ingest_run_id
-		)
-		SELECT
-			instrument_id, trade_date,
-			open, high, low, close,
-			volume, amount, up_count, down_count,
-			source, ingest_run_id
-		FROM temp.main.` + dailyStageTable + `
-		ON CONFLICT (instrument_id, trade_date, source) DO UPDATE SET
-			open = excluded.open,
-			high = excluded.high,
-			low = excluded.low,
-			close = excluded.close,
-			volume = excluded.volume,
-			amount = excluded.amount,
-			up_count = excluded.up_count,
-			down_count = excluded.down_count,
-			ingested_at = now()
-	`
-	if ingestRunID != nil {
-		mergeSQL = `
 			INSERT INTO market.ohlcv_daily (
 				instrument_id, trade_date,
 				open, high, low, close,
@@ -208,15 +176,12 @@ func mergeDailyBarsOnConn(ctx context.Context, conn *sql.Conn, bars []domain.Dai
 				ingest_run_id = excluded.ingest_run_id,
 				ingested_at = now()
 		`
-	}
 	if _, err := conn.ExecContext(ctx, mergeSQL); err != nil {
 		return fmt.Errorf("merge daily staging rows: %w", err)
 	}
 	// Archive the canonical row in the SAME transaction as projection/checkpoints.
 	// Each tracked acquisition is evidence of another observation, even unchanged.
-	// Calls without a tracked run remain legacy writes, never valuation evidence.
-	if ingestRunID != nil {
-		_, err := conn.ExecContext(ctx, `INSERT INTO market.daily_observation
+	_, err := conn.ExecContext(ctx, `INSERT INTO market.daily_observation
 		(instrument_id,trade_date,open,high,low,close,volume,amount,up_count,down_count,source,ingest_run_id)
 		SELECT DISTINCT d.instrument_id,d.trade_date,d.open,d.high,d.low,d.close,d.volume,d.amount,d.up_count,d.down_count,d.source,d.ingest_run_id
 		FROM market.ohlcv_daily d JOIN temp.main.`+dailyStageTable+` s
@@ -228,9 +193,8 @@ func mergeDailyBarsOnConn(ctx context.Context, conn *sql.Conn, bars []domain.Dai
 		 AND o.low IS NOT DISTINCT FROM d.low AND o.close IS NOT DISTINCT FROM d.close
 		 AND o.volume IS NOT DISTINCT FROM d.volume AND o.amount IS NOT DISTINCT FROM d.amount
 		 AND o.up_count IS NOT DISTINCT FROM d.up_count AND o.down_count IS NOT DISTINCT FROM d.down_count)`)
-		if err != nil {
-			return fmt.Errorf("archive daily observation: %w", err)
-		}
+	if err != nil {
+		return fmt.Errorf("archive daily observation: %w", err)
 	}
 	if _, err := conn.ExecContext(ctx, `DROP TABLE temp.main.`+dailyStageTable); err != nil {
 		return fmt.Errorf("drop daily staging table: %w", err)
@@ -238,7 +202,7 @@ func mergeDailyBarsOnConn(ctx context.Context, conn *sql.Conn, bars []domain.Dai
 	return nil
 }
 
-func appendDailyStage(ctx context.Context, conn *sql.Conn, bars []domain.DailyBar, ingestRunID *int64) error {
+func appendDailyStage(ctx context.Context, conn *sql.Conn, bars []domain.DailyBar, ingestRunID int64) error {
 	return conn.Raw(func(raw any) error {
 		driverConn, ok := raw.(driver.Conn)
 		if !ok {
@@ -249,10 +213,6 @@ func appendDailyStage(ctx context.Context, conn *sql.Conn, bars []domain.DailyBa
 			return fmt.Errorf("create daily staging appender: %w", err)
 		}
 		for _, bar := range bars {
-			var runValue driver.Value
-			if ingestRunID != nil {
-				runValue = *ingestRunID
-			}
 			if err := appender.AppendRow(
 				bar.InstrumentID,
 				bar.TradeDate,
@@ -265,7 +225,7 @@ func appendDailyStage(ctx context.Context, conn *sql.Conn, bars []domain.DailyBa
 				bar.UpCount,
 				bar.DownCount,
 				bar.Source,
-				runValue,
+				ingestRunID,
 			); err != nil {
 				_ = appender.Clear()
 				_ = appender.Close()

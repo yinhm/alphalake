@@ -19,6 +19,10 @@ func TestCalculateTDXAdjustmentsBuildsSegmentsAndSkipsCleanInputs(t *testing.T) 
 		t.Fatalf("OpenAndMigrate() error = %v", err)
 	}
 	defer db.Close()
+	seedRunID, err := duckstore.StartIngestRun(ctx, db, "tdx", "daily_ohlcv", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	instrumentID, err := duckstore.UpsertInstrument(ctx, db,
 		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Test"},
@@ -33,8 +37,8 @@ func TestCalculateTDXAdjustmentsBuildsSegmentsAndSkipsCleanInputs(t *testing.T) 
 		{InstrumentID: instrumentID, TradeDate: day1, Open: 10, High: 11, Low: 9, Close: 10, Volume: 1000, Amount: 10000, Source: "tdx"},
 		{InstrumentID: instrumentID, TradeDate: day2, Open: 9, High: 10, Low: 8, Close: 9, Volume: 1000, Amount: 9000, Source: "tdx"},
 	}
-	if err := duckstore.UpsertDailyBars(ctx, db, bars); err != nil {
-		t.Fatalf("UpsertDailyBars() error = %v", err)
+	if err := duckstore.UpsertDailyBarsForRun(ctx, db, seedRunID, bars); err != nil {
+		t.Fatalf("UpsertDailyBarsForRun() error = %v", err)
 	}
 	actionRun, err := duckstore.StartIngestRun(ctx, db, "tdx", "corporate_action", nil)
 	if err != nil {
@@ -91,8 +95,8 @@ func TestCalculateTDXAdjustmentsBuildsSegmentsAndSkipsCleanInputs(t *testing.T) 
 	// ingested_at, which must change the input signature and dirty the instrument.
 	bars[0].Close = 10.5
 	bars[0].High = 11.5
-	if err := duckstore.UpsertDailyBars(ctx, db, []domain.DailyBar{bars[0]}); err != nil {
-		t.Fatalf("historical UpsertDailyBars() error = %v", err)
+	if err := duckstore.UpsertDailyBarsForRun(ctx, db, seedRunID, []domain.DailyBar{bars[0]}); err != nil {
+		t.Fatalf("historical UpsertDailyBarsForRun() error = %v", err)
 	}
 	third, err := CalculateTDXAdjustments(ctx, db)
 	if err != nil {
@@ -119,6 +123,10 @@ func TestCalculateTDXAdjustmentsContinuesAfterInvalidInstrument(t *testing.T) {
 		t.Fatalf("OpenAndMigrate() error = %v", err)
 	}
 	defer db.Close()
+	seedRunID, err := duckstore.StartIngestRun(ctx, db, "tdx", "daily_ohlcv", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	goodID, err := duckstore.UpsertInstrument(ctx, db,
 		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Good"},
@@ -137,11 +145,11 @@ func TestCalculateTDXAdjustmentsContinuesAfterInvalidInstrument(t *testing.T) {
 	day1 := time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC)
 	day2 := time.Date(2026, 6, 2, 0, 0, 0, 0, time.UTC)
 	for _, id := range []int64{goodID, badID} {
-		if err := duckstore.UpsertDailyBars(ctx, db, []domain.DailyBar{
+		if err := duckstore.UpsertDailyBarsForRun(ctx, db, seedRunID, []domain.DailyBar{
 			{InstrumentID: id, TradeDate: day1, Open: 10, High: 11, Low: 9, Close: 10, Volume: 1000, Amount: 10000, Source: "tdx"},
 			{InstrumentID: id, TradeDate: day2, Open: 10, High: 11, Low: 9, Close: 10, Volume: 1000, Amount: 10000, Source: "tdx"},
 		}); err != nil {
-			t.Fatalf("UpsertDailyBars(%d) error = %v", id, err)
+			t.Fatalf("UpsertDailyBarsForRun(%d) error = %v", id, err)
 		}
 	}
 	actionRun, err := duckstore.StartIngestRun(ctx, db, "tdx", "corporate_action", nil)

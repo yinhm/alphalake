@@ -16,6 +16,10 @@ func TestAdjustmentStoreRoundTripAndReplace(t *testing.T) {
 		t.Fatalf("OpenAndMigrate() error = %v", err)
 	}
 	defer db.Close()
+	seedRunID, err := StartIngestRun(ctx, db, "tdx", "daily_ohlcv", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	instrumentID, err := UpsertInstrument(ctx, db,
 		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Test"},
@@ -27,11 +31,11 @@ func TestAdjustmentStoreRoundTripAndReplace(t *testing.T) {
 
 	day1 := time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC)
 	day2 := time.Date(2026, 6, 2, 0, 0, 0, 0, time.UTC)
-	if err := UpsertDailyBars(ctx, db, []domain.DailyBar{
+	if err := UpsertDailyBarsForRun(ctx, db, seedRunID, []domain.DailyBar{
 		{InstrumentID: instrumentID, TradeDate: day1, Open: 10, High: 11, Low: 9, Close: 10, Volume: 1000, Amount: 10000, Source: "tdx"},
 		{InstrumentID: instrumentID, TradeDate: day2, Open: 9, High: 10, Low: 8, Close: 9, Volume: 1200, Amount: 10800, Source: "tdx"},
 	}); err != nil {
-		t.Fatalf("UpsertDailyBars() error = %v", err)
+		t.Fatalf("UpsertDailyBarsForRun() error = %v", err)
 	}
 
 	runID, err := StartIngestRun(ctx, db, "tdx", "corporate_action", nil)

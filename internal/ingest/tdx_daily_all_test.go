@@ -57,7 +57,7 @@ func observation(t domain.InstrumentType, mic, name, symbol string) domain.Instr
 func validBar(day time.Time, close float64) domain.DailyBar {
 	return domain.DailyBar{
 		TradeDate: day,
-		Open: close - 0.1, High: close + 0.2, Low: close - 0.2, Close: close,
+		Open:      close - 0.1, High: close + 0.2, Low: close - 0.2, Close: close,
 		Volume: 10000, Amount: close * 10000, Source: "tdx",
 	}
 }
@@ -69,6 +69,10 @@ func TestSyncAllTDXDailyUsesPerInstrumentBoundary(t *testing.T) {
 		t.Fatalf("OpenAndMigrate() error = %v", err)
 	}
 	defer db.Close()
+	seedRunID, err := duckstore.StartIngestRun(ctx, db, "tdx", "daily_ohlcv", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	equity := observation(domain.InstrumentEquity, "XSHG", "贵州茅台", "sh600519")
 	etf := observation(domain.InstrumentETF, "XSHG", "沪深300ETF", "sh510300")
@@ -79,7 +83,7 @@ func TestSyncAllTDXDailyUsesPerInstrumentBoundary(t *testing.T) {
 		t.Fatalf("preload instrument: %v", err)
 	}
 	boundary := time.Date(2026, 9, 2, 0, 0, 0, 0, time.UTC)
-	if err := duckstore.UpsertDailyBars(ctx, db, []domain.DailyBar{barsWithInstrumentID([]domain.DailyBar{validBar(boundary, 1500)}, instrumentID)[0]}); err != nil {
+	if err := duckstore.UpsertDailyBarsForRun(ctx, db, seedRunID, []domain.DailyBar{barsWithInstrumentID([]domain.DailyBar{validBar(boundary, 1500)}, instrumentID)[0]}); err != nil {
 		t.Fatalf("preload daily bar: %v", err)
 	}
 

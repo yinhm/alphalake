@@ -16,6 +16,10 @@ func TestUpsertDailyBarsRefreshesExistingObservation(t *testing.T) {
 		t.Fatalf("OpenAndMigrate() error = %v", err)
 	}
 	defer db.Close()
+	seedRunID, err := StartIngestRun(ctx, db, "tdx", "daily_ohlcv", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	instrumentID, err := UpsertInstrument(ctx, db,
 		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "贵州茅台"},
@@ -37,14 +41,14 @@ func TestUpsertDailyBarsRefreshesExistingObservation(t *testing.T) {
 		Amount:       1.86e9,
 		Source:       "tdx",
 	}
-	if err := UpsertDailyBars(ctx, db, []domain.DailyBar{bar}); err != nil {
-		t.Fatalf("first UpsertDailyBars() error = %v", err)
+	if err := UpsertDailyBarsForRun(ctx, db, seedRunID, []domain.DailyBar{bar}); err != nil {
+		t.Fatalf("first UpsertDailyBarsForRun() error = %v", err)
 	}
 
 	bar.Close = 1512.34
 	bar.Volume = 1234600
-	if err := UpsertDailyBars(ctx, db, []domain.DailyBar{bar}); err != nil {
-		t.Fatalf("second UpsertDailyBars() error = %v", err)
+	if err := UpsertDailyBarsForRun(ctx, db, seedRunID, []domain.DailyBar{bar}); err != nil {
+		t.Fatalf("second UpsertDailyBarsForRun() error = %v", err)
 	}
 
 	var count int
@@ -72,9 +76,13 @@ func TestUpsertDailyBarsValidatesCanonicalKey(t *testing.T) {
 		t.Fatalf("OpenAndMigrate() error = %v", err)
 	}
 	defer db.Close()
+	seedRunID, err := StartIngestRun(ctx, db, "tdx", "daily_ohlcv", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	err = UpsertDailyBars(ctx, db, []domain.DailyBar{{Source: "tdx", TradeDate: time.Now()}})
+	err = UpsertDailyBarsForRun(ctx, db, seedRunID, []domain.DailyBar{{Source: "tdx", TradeDate: time.Now()}})
 	if err == nil {
-		t.Fatal("UpsertDailyBars() expected validation error")
+		t.Fatal("UpsertDailyBarsForRun() expected validation error")
 	}
 }

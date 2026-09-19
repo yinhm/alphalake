@@ -23,9 +23,9 @@ func TestValuationQuoteObservations(t *testing.T) {
 	}
 	day := time.Date(2026, 9, 3, 0, 0, 0, 0, time.UTC)
 	bar := domain.DailyBar{InstrumentID: id, TradeDate: day, Open: 10, High: 12, Low: 9, Close: 10, Volume: 100, Amount: 1000, Source: "tdx"}
-	// Legacy/untracked writes are not backfilled into auditable quote evidence.
-	if err = UpsertDailyBars(ctx, db, []domain.DailyBar{bar}); err != nil {
-		t.Fatal(err)
+	// 无运行血缘的写入必须拒绝，也不能生成估值证据。
+	if err = UpsertDailyBarsForRun(ctx, db, 0, []domain.DailyBar{bar}); err == nil {
+		t.Fatal("untracked write accepted")
 	}
 	if _, err = ExportValuationQuote(ctx, db, "sh600519", day, time.Now()); err == nil {
 		t.Fatal("untracked quote accepted")
@@ -86,7 +86,7 @@ func TestValuationQuoteObservations(t *testing.T) {
 	before := count
 	err = withDailyWriteTransaction(ctx, db, func(conn *sql.Conn) error {
 		bar.Close = 12
-		if err := mergeDailyBarsOnConn(ctx, conn, []domain.DailyBar{bar}, &run); err != nil {
+		if err := mergeDailyBarsOnConn(ctx, conn, []domain.DailyBar{bar}, run); err != nil {
 			return err
 		}
 		return errors.New("force rollback")

@@ -107,9 +107,9 @@ func TestSyncTDXDailyRejectsUnsupportedInstrumentType(t *testing.T) {
 		Identifier: domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh000001"},
 	}}}
 
-	_, err = SyncTDXDaily(ctx, db, source, "sh000001")
+	_, err = SyncTDXDailyWithSummary(ctx, db, source, "sh000001")
 	if err == nil || !strings.Contains(err.Error(), "not supported") {
-		t.Fatalf("SyncTDXDaily() error = %v, want unsupported type error", err)
+		t.Fatalf("SyncTDXDailyWithSummary() error = %v, want unsupported type error", err)
 	}
 
 	var count int

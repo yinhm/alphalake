@@ -24,13 +24,6 @@ type TDXSingleDailySummary struct {
 	MasterFailures []InstrumentMasterFailure
 }
 
-// SyncTDXDaily remains as a compatibility wrapper. New callers that need run
-// lineage/status should use SyncTDXDailyWithSummary.
-func SyncTDXDaily(ctx context.Context, db *sql.DB, source TDXIncrementalDailySource, symbol string) (int, error) {
-	summary, err := SyncTDXDailyWithSummary(ctx, db, source, symbol)
-	return summary.Written, err
-}
-
 // SyncTDXDailyWithSummary resolves one TDX symbol into the canonical instrument
 // master and performs the same resumable, quarantining, lineage-aware ingestion
 // used by the all-market path.
