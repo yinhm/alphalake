@@ -308,6 +308,40 @@ func TestMaterializeSingleQuarterFlowsAndRepairLegacyPeriods(t *testing.T) {
 	if replay.Updated != 0 || replay.Inserted != 0 || replay.Removed != 0 {
 		t.Fatalf("replay=%+v", replay)
 	}
+	// A late batch must roll back earlier changed facts and rejection diagnostics.
+	if _, err := db.ExecContext(ctx, `CREATE TEMP TABLE original_facts AS SELECT * FROM fundamental.fact;
+ CREATE TEMP TABLE original_diagnostics AS SELECT * FROM meta.validation_result;
+ UPDATE fundamental.provider_fact SET value=200 WHERE provider_field='FN230';
+ UPDATE fundamental.provider_field SET unit='USD' WHERE provider_field='FN231';
+ INSERT INTO fundamental.provider_field SELECT * REPLACE(DATE '2025-02-01' AS valid_from) FROM fundamental.provider_field WHERE source='tdx' AND provider_field='FN238'`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := MaterializeCanonicalFundamentals(ctx, db, 6, "tdx"); err == nil {
+		t.Fatal("late overlapping mapping accepted")
+	}
+	for _, pair := range [][2]string{{"fundamental.fact", "original_facts"}, {"meta.validation_result", "original_diagnostics"}} {
+		var changed int
+		q := fmt.Sprintf("SELECT count(*) FROM ((SELECT * FROM %s EXCEPT SELECT * FROM %s) UNION ALL (SELECT * FROM %s EXCEPT SELECT * FROM %s))", pair[0], pair[1], pair[1], pair[0])
+		if err := db.QueryRowContext(ctx, q).Scan(&changed); err != nil {
+			t.Fatal(err)
+		}
+		if changed != 0 {
+			t.Fatalf("partial batch leaked into %s: %d", pair[0], changed)
+		}
+	}
+
+	// The batch inventory must include existing facts after their mapping is removed.
+	if _, err := db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field='FN238';UPDATE fundamental.provider_field SET unit='CNY' WHERE provider_field='FN231'`); err != nil {
+		t.Fatal(err)
+	}
+	cleared, err := MaterializeCanonicalFundamentals(ctx, db, 7, "tdx")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cleared.Removed != 4 {
+		t.Fatalf("unmapped stored field was omitted: %+v", cleared)
+	}
+
 }
 
 func TestMaterializationRequiresCurrentStandardCatalogue(t *testing.T) {

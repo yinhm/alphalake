@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 )
 
@@ -53,7 +54,6 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 			return result, errors.New("explicit source field identifiers required")
 		}
 	}
-	field := strings.Join(fields, ",")
 	if db == nil {
 		return result, errors.New("duckdb is nil")
 	}
@@ -87,6 +87,65 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 			_, _ = conn.ExecContext(context.Background(), `DROP TABLE IF EXISTS temp.main.`+table)
 		}
 	}()
+
+	var standardFields int
+	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.field`).Scan(&standardFields); err != nil {
+		return result, fmt.Errorf("read standard catalogue: %w", err)
+	}
+	// Bound query working sets while retaining one transaction across all fields.
+	// Include stored fields whose mapping was removed so stale facts are still deleted.
+	if len(fields) == 0 {
+		rows, err := conn.QueryContext(ctx, `SELECT DISTINCT pf.provider_field FROM fundamental.provider_fact pf
+   WHERE pf.source=? AND EXISTS (SELECT 1 FROM fundamental.provider_field m WHERE m.source=pf.source AND m.provider_field=pf.provider_field AND m.canonical_field IS NOT NULL)
+   UNION SELECT source_provider_field FROM fundamental.fact WHERE primary_source=? AND provider_code IS NOT NULL`, providerSource, providerSource)
+		if err != nil {
+			return result, fmt.Errorf("list materialization fields: %w", err)
+		}
+		for rows.Next() {
+			var field string
+			if err := rows.Scan(&field); err != nil {
+				rows.Close()
+				return result, err
+			}
+			fields = append(fields, field)
+		}
+		err = rows.Err()
+		rows.Close()
+		if err != nil {
+			return result, err
+		}
+	}
+	fields = slices.Clone(fields)
+	slices.Sort(fields)
+	fields = slices.Compact(fields)
+	for start := 0; start < len(fields); start += 6 {
+		batch, err := materializeFundamentalBatch(ctx, conn, ingestRunID, providerSource, strings.Join(fields[start:min(start+6, len(fields))], ","))
+		if err != nil {
+			return CanonicalFundamentalResult{}, err
+		}
+		result.Candidates += batch.Candidates
+		result.Materialized += batch.Materialized
+		result.Inserted += batch.Inserted
+		result.Updated += batch.Updated
+		result.Removed += batch.Removed
+		result.Rejected += batch.Rejected
+		for _, table := range []string{fundamentalFactStage, fundamentalRejectStage} {
+			if _, err := conn.ExecContext(ctx, `DROP TABLE temp.main.`+table); err != nil {
+				return CanonicalFundamentalResult{}, err
+			}
+		}
+	}
+
+	if _, err := conn.ExecContext(ctx, `COMMIT`); err != nil {
+		return result, fmt.Errorf("commit canonical fundamental materialization: %w", err)
+	}
+	committed = true
+	return result, nil
+}
+
+// The caller owns the transaction; a later batch failure rolls back earlier writes.
+func materializeFundamentalBatch(ctx context.Context, conn *sql.Conn, ingestRunID int64, providerSource, field string) (CanonicalFundamentalResult, error) {
+	var result CanonicalFundamentalResult
 
 	// Multiple simultaneously-active mappings for the same provider field would
 	// make canonical semantics depend on arbitrary join order. Reject that as
@@ -356,14 +415,5 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 		return result, fmt.Errorf("record canonical fundamental rejections: %w", err)
 	}
 
-	for _, table := range []string{fundamentalFactStage, fundamentalRejectStage} {
-		if _, err := conn.ExecContext(ctx, `DROP TABLE temp.main.`+table); err != nil {
-			return result, fmt.Errorf("drop fundamental stage %s: %w", table, err)
-		}
-	}
-	if _, err := conn.ExecContext(ctx, `COMMIT`); err != nil {
-		return result, fmt.Errorf("commit canonical fundamental materialization: %w", err)
-	}
-	committed = true
 	return result, nil
 }

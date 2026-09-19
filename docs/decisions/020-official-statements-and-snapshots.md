@@ -79,6 +79,6 @@ SQL宏直接消费标准公告时点事实；CLI返回`alphalake-financial-state
 
 2026-09-19 11:37:36及11:50:02 UTC，两次默认全字段重放触发系统OOM，内核记录匿名RSS分别1,982,288与2,643,528 KiB；机器总内存3.8GiB。第二次设置的DuckDB `memory_limit=1536MiB`并非进程RSS硬上限。systemd随后停止同一tmux scope，11:51:33超时强杀bash、重启后的Codex及其工具进程。没有第三次新OOM，第三次退出是延迟清理。不得将这两次算作成功重放；上述21批验收仍是分批结果。
 
-后续大任务必须在独立systemd服务中串行执行并核验`MemoryMax`，不能只调整DuckDB参数。当前验收采用1GiB硬上限、768MiB软阈值、零swap和单线程，DuckDB限256MiB；安克、茅台、苏泊尔实际三表CLI均已在此约束下通过复验。禁止删除WAL或未完成记录冒充恢复。全量默认路径的低资源验收尚未完成。
+后续大任务必须在独立systemd服务中串行执行并核验`MemoryMax`，不能只调整DuckDB参数。当前验收采用1GiB硬上限、768MiB软阈值、零swap和单线程，DuckDB限256MiB；安克、茅台、苏泊尔实际三表CLI均已在此约束下通过复验。禁止删除WAL或未完成记录冒充恢复。上述为原失败记录；后续[工作集分批修复](../fundamental-memory-20260919.md)已在1GiB硬限额下完成两次默认全字段运行，第二次零增改删，原子事务保留。
 
 本轮Go全套、构建、vet、相关Python20项、工作流YAML解析及本地文档链接校验通过；Python依赖pypdf 6.17.0，通过uv临时环境执行，新增原文精度校验已加入CI。

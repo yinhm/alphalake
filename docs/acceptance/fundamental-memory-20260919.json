@@ -1,0 +1,237 @@
+{
+  "date": "2026-09-19",
+  "change": "six source fields per working set, one transaction across all batches",
+  "limits": {
+    "systemd_memory_max_bytes": 1073741824,
+    "systemd_memory_high_bytes": 939524096,
+    "systemd_memory_swap_max_bytes": 0,
+    "duckdb_memory_limit": "256MiB",
+    "duckdb_threads": 1
+  },
+  "baseline": {
+    "run": 5436,
+    "status": "canceled_by_SIGTERM",
+    "stage": "build fundamental rejection stage",
+    "seconds_approx": 101,
+    "service_memory_peak_mib": 640.5,
+    "oom": false
+  },
+  "first_complete_run": {
+    "run": 5437,
+    "seconds": 256,
+    "service_memory_peak_mib": 896.5,
+    "swap_peak_bytes": 0,
+    "candidates": 9152443,
+    "materialized": 4403786,
+    "inserted": 1,
+    "updated": 0,
+    "removed": 0,
+    "rejected": 4748657
+  },
+  "post_first_run": {
+    "added": [
+      {
+        "fact_id": 16302241,
+        "instrument_id": 45156,
+        "canonical_field": "other_receivables",
+        "report_period": "2024-12-31",
+        "announcement_time": "2025-04-29 16:00:00+00",
+        "period_type": "instant",
+        "statement_scope": "provider_default",
+        "currency": "CNY",
+        "unit": "CNY",
+        "value": 126612168.0,
+        "primary_source": "tdx",
+        "source_provider_field": "FN13",
+        "provider_code": "300866",
+        "provider_fact_id": 19309389,
+        "source_filing_id": 48695,
+        "revision_key": "42d7db3a4f63bb21e7c34069e6140888b8a615a0794b2749540fc5709cdfef08",
+        "normalization_rule": "tdx-float32-decimal-v3",
+        "materializer_version": "pit-fundamental-v5",
+        "ingest_run_id": 5437,
+        "ingested_at": "2026-09-19 12:05:51.452479+00",
+        "source_value": 126612168.0,
+        "mapping_valid_from": "2024-12-31",
+        "mapping_notes": "Net carrying amount, raw yuan, instant; Anker 2024 FY original p155 verified in company-inputs-20260917/anker-opening-2024; prior audited scope retained"
+      }
+    ],
+    "counts": [
+      {
+        "facts": 4403786
+      }
+    ],
+    "runs": [
+      {
+        "ingest_run_id": 5434,
+        "source": "alphalake",
+        "dataset": "fundamental_fact",
+        "started_at": "2026-09-19 11:33:24.244285+00",
+        "finished_at": "2026-09-19 11:37:36+00",
+        "status": "failed",
+        "checkpoint_before": null,
+        "checkpoint_after": null,
+        "error_message": "Recovered 2026-09-19: kernel OOM terminated full replay; kernel/systemd evidence recorded in ADR020; not a successful replay"
+      },
+      {
+        "ingest_run_id": 5435,
+        "source": "alphalake",
+        "dataset": "fundamental_fact",
+        "started_at": "2026-09-19 11:43:31.0908+00",
+        "finished_at": "2026-09-19 11:50:02+00",
+        "status": "failed",
+        "checkpoint_before": null,
+        "checkpoint_after": null,
+        "error_message": "Recovered 2026-09-19: kernel OOM terminated full replay; kernel/systemd evidence recorded in ADR020; not a successful replay"
+      },
+      {
+        "ingest_run_id": 5436,
+        "source": "alphalake",
+        "dataset": "fundamental_fact",
+        "started_at": "2026-09-19 12:01:27.092902+00",
+        "finished_at": "2026-09-19 12:03:07.328126+00",
+        "status": "canceled",
+        "checkpoint_before": null,
+        "checkpoint_after": null,
+        "error_message": "materialize canonical fundamentals: build fundamental rejection stage: context canceled\nINTERRUPT Error: Interrupted!"
+      },
+      {
+        "ingest_run_id": 5437,
+        "source": "alphalake",
+        "dataset": "fundamental_fact",
+        "started_at": "2026-09-19 12:05:30.043788+00",
+        "finished_at": "2026-09-19 12:09:46.066161+00",
+        "status": "partial",
+        "checkpoint_before": null,
+        "checkpoint_after": null,
+        "error_message": null
+      }
+    ]
+  },
+  "idempotent_replay": {
+    "run": 5438,
+    "seconds_approx": 253,
+    "service_memory_peak_mib": 896.4,
+    "swap_peak_bytes": 0,
+    "candidates": 9152443,
+    "materialized": 4403786,
+    "inserted": 0,
+    "updated": 0,
+    "removed": 0,
+    "rejected": 4748657,
+    "service_result": "success"
+  },
+  "full_regression": {
+    "go_test": "go test -p 1 ./... passed",
+    "go_build": "go build -p 1 ./cmd/alphalake passed",
+    "go_vet": "go vet -p 1 ./... passed",
+    "service_result": "success",
+    "service_memory_peak_mib": 857.1,
+    "swap_peak_bytes": 0,
+    "three_statement_outputs_equal": [
+      "300866",
+      "600519",
+      "002032"
+    ]
+  },
+  "post_replay": {
+    "added": [
+      {
+        "fact_id": 16302241,
+        "instrument_id": 45156,
+        "canonical_field": "other_receivables",
+        "report_period": "2024-12-31",
+        "announcement_time": "2025-04-29 16:00:00+00",
+        "period_type": "instant",
+        "statement_scope": "provider_default",
+        "currency": "CNY",
+        "unit": "CNY",
+        "value": 126612168.0,
+        "primary_source": "tdx",
+        "source_provider_field": "FN13",
+        "provider_code": "300866",
+        "provider_fact_id": 19309389,
+        "source_filing_id": 48695,
+        "revision_key": "42d7db3a4f63bb21e7c34069e6140888b8a615a0794b2749540fc5709cdfef08",
+        "normalization_rule": "tdx-float32-decimal-v3",
+        "materializer_version": "pit-fundamental-v5",
+        "ingest_run_id": 5437,
+        "ingested_at": "2026-09-19 12:05:51.452479+00",
+        "source_value": 126612168.0,
+        "mapping_valid_from": "2024-12-31",
+        "mapping_notes": "Net carrying amount, raw yuan, instant; Anker 2024 FY original p155 verified in company-inputs-20260917/anker-opening-2024; prior audited scope retained"
+      }
+    ],
+    "counts": [
+      {
+        "facts": 4403786
+      }
+    ],
+    "runs": [
+      {
+        "ingest_run_id": 5434,
+        "source": "alphalake",
+        "dataset": "fundamental_fact",
+        "started_at": "2026-09-19 11:33:24.244285+00",
+        "finished_at": "2026-09-19 11:37:36+00",
+        "status": "failed",
+        "checkpoint_before": null,
+        "checkpoint_after": null,
+        "error_message": "Recovered 2026-09-19: kernel OOM terminated full replay; kernel/systemd evidence recorded in ADR020; not a successful replay"
+      },
+      {
+        "ingest_run_id": 5435,
+        "source": "alphalake",
+        "dataset": "fundamental_fact",
+        "started_at": "2026-09-19 11:43:31.0908+00",
+        "finished_at": "2026-09-19 11:50:02+00",
+        "status": "failed",
+        "checkpoint_before": null,
+        "checkpoint_after": null,
+        "error_message": "Recovered 2026-09-19: kernel OOM terminated full replay; kernel/systemd evidence recorded in ADR020; not a successful replay"
+      },
+      {
+        "ingest_run_id": 5436,
+        "source": "alphalake",
+        "dataset": "fundamental_fact",
+        "started_at": "2026-09-19 12:01:27.092902+00",
+        "finished_at": "2026-09-19 12:03:07.328126+00",
+        "status": "canceled",
+        "checkpoint_before": null,
+        "checkpoint_after": null,
+        "error_message": "materialize canonical fundamentals: build fundamental rejection stage: context canceled\nINTERRUPT Error: Interrupted!"
+      },
+      {
+        "ingest_run_id": 5437,
+        "source": "alphalake",
+        "dataset": "fundamental_fact",
+        "started_at": "2026-09-19 12:05:30.043788+00",
+        "finished_at": "2026-09-19 12:09:46.066161+00",
+        "status": "partial",
+        "checkpoint_before": null,
+        "checkpoint_after": null,
+        "error_message": null
+      },
+      {
+        "ingest_run_id": 5438,
+        "source": "alphalake",
+        "dataset": "fundamental_fact",
+        "started_at": "2026-09-19 12:11:16.87902+00",
+        "finished_at": "2026-09-19 12:15:29.754717+00",
+        "status": "partial",
+        "checkpoint_before": null,
+        "checkpoint_after": null,
+        "error_message": null
+      }
+    ]
+  },
+  "evidence_sha256": {
+    "internal/store/duckdb/fundamental_materialize.go": "0da1eea619d9e636bfeed80012bd08f853a3d3d412015128b6c3319b1f1eb3fb",
+    "internal/store/duckdb/fundamental_materialize_test.go": "a4afdf2f928b32a73672d9991f640be3bc87de4a63720653c5fe55cb1f5af95e",
+    "/tmp/alphalake-memory-full-tests.log": "55acba700be50dc50c98a0342bd564cc20f150d36880d4272fc48acb9f908366",
+    "/tmp/alphalake-replay-batched.log": "264f949eb2e212253c25abc8630da73040bc6ed4b01fb75c883edc544b80cfff",
+    "/tmp/alphalake-replay-batched-idempotent.log": "f34038e549ee2fd104fe1402be628cab68857fda7434ead4b63622b0b0cc9150"
+  },
+  "published_database_sha256": "0bcf34fc3e773c8629ee91fe4c0a73cfef32ed5f98a9319d38f1144a385a46bf",
+  "published_database": "workspace/auto-valuation-20260909/market.duckdb"
+}
