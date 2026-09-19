@@ -1,0 +1,1110 @@
+{
+  "date": "2026-09-19",
+  "schema": 48,
+  "catalog_version": "tdx-financial-20260919-v2",
+  "standard_fields_before": 81,
+  "standard_fields_after": 145,
+  "new_standard_fields": 64,
+  "evidence_scope": {
+    "companies": [
+      "300866"
+    ],
+    "periods": [
+      "2025-06-30",
+      "2025-12-31",
+      "2026-06-30"
+    ],
+    "current_positions": 192,
+    "matched_nonzero": 188,
+    "printed_missing_source_zero": 4,
+    "current_and_comparative_pdf_cells": 384
+  },
+  "databases": [
+    {
+      "after": {
+        "\"classification\".\"membership\"": {
+          "rows": 5569,
+          "row_hash_xor": "11004092952460191249"
+        },
+        "\"classification\".\"node\"": {
+          "rows": 565,
+          "row_hash_xor": "9666758488244939875"
+        },
+        "\"classification\".\"taxonomy\"": {
+          "rows": 2,
+          "row_hash_xor": "17989002896887176182"
+        },
+        "\"core\".\"company\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"exchange\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"instrument\"": {
+          "rows": 52480,
+          "row_hash_xor": "8685906575029160277"
+        },
+        "\"core\".\"instrument_identifier\"": {
+          "rows": 52480,
+          "row_hash_xor": "2420925213515989547"
+        },
+        "\"core\".\"listing\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"listing_identifier\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"document_review\"": {
+          "rows": 1,
+          "row_hash_xor": "6735598683593780186"
+        },
+        "\"fundamental\".\"fact\"": {
+          "rows": 3706226,
+          "row_hash_xor": "3898669557641385979"
+        },
+        "\"fundamental\".\"field\"": {
+          "rows": 145,
+          "row_hash_xor": "1171295848107839885"
+        },
+        "\"fundamental\".\"filing\"": {
+          "rows": 57577,
+          "row_hash_xor": "7340701358750552802"
+        },
+        "\"fundamental\".\"filing_document\"": {
+          "rows": 8,
+          "row_hash_xor": "1766622475442734357"
+        },
+        "\"fundamental\".\"provider_fact\"": {
+          "rows": 19310544,
+          "row_hash_xor": "3650320858908970506"
+        },
+        "\"fundamental\".\"provider_field\"": {
+          "rows": 145,
+          "row_hash_xor": "6994704095396355463"
+        },
+        "\"fundamental\".\"provider_filing_link\"": {
+          "rows": 33066,
+          "row_hash_xor": "8362475348428964074"
+        },
+        "\"fundamental\".\"provider_record_resolution\"": {
+          "rows": 38621,
+          "row_hash_xor": "14856300634075814589"
+        },
+        "\"fundamental\".\"reviewed_supplement\"": {
+          "rows": 7,
+          "row_hash_xor": "7894848601334030444"
+        },
+        "\"fundamental\".\"source_field\"": {
+          "rows": 584,
+          "row_hash_xor": "10682250176706682483"
+        },
+        "\"fundamental\".\"supplement_review_history\"": {
+          "rows": 7,
+          "row_hash_xor": "11415866220804137763"
+        },
+        "\"market\".\"adjustment_segment\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"corporate_action\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"daily_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"equity_proceeds_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"fx_rate\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"listing_close_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"ohlcv_daily\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"share_capital\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"share_count_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"trading_calendar\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"yield_curve_point\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"meta\".\"artifact\"": {
+          "rows": 13125,
+          "row_hash_xor": "14041258673113950431"
+        },
+        "\"meta\".\"checkpoint\"": {
+          "rows": 8006,
+          "row_hash_xor": "12768012129625419485"
+        },
+        "\"meta\".\"dataset_release\"": {
+          "rows": 2,
+          "row_hash_xor": "9228904581292195172"
+        },
+        "\"meta\".\"dataset_release_artifact\"": {
+          "rows": 5,
+          "row_hash_xor": "12355445103132381459"
+        },
+        "\"meta\".\"derived_state\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"meta\".\"ingest_run\"": {
+          "rows": 5387,
+          "row_hash_xor": "14740908230642953325"
+        },
+        "\"meta\".\"schema_version\"": {
+          "rows": 48,
+          "row_hash_xor": "5464467499516535159"
+        },
+        "\"meta\".\"validation_result\"": {
+          "rows": 12697451,
+          "row_hash_xor": "10349633625053166042"
+        },
+        "\"reference\".\"country_risk\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"reference\".\"credit_spread_band\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"reference\".\"equity_risk_premium\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"reference\".\"industry_stat\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"reference\".\"security_code_transition\"": {
+          "rows": 248,
+          "row_hash_xor": "10862615036713072177"
+        },
+        "\"reference\".\"security_industry\"": {
+          "rows": 5100,
+          "row_hash_xor": "7698492548356232321"
+        }
+      },
+      "after_version": 48,
+      "batches": [
+        {
+          "RunID": 5380,
+          "FilingResolutionAttempted": 0,
+          "FilingResolutionRecovered": 0,
+          "FilingResolutionPending": 0,
+          "LinkRecords": 0,
+          "Linked": 0,
+          "LinkPending": 0,
+          "LinkAmbiguous": 0,
+          "LinksRemoved": 0,
+          "Candidates": 260552,
+          "Materialized": 248721,
+          "Inserted": 248721,
+          "Updated": 0,
+          "Removed": 0,
+          "Rejected": 11831
+        },
+        {
+          "RunID": 5381,
+          "FilingResolutionAttempted": 0,
+          "FilingResolutionRecovered": 0,
+          "FilingResolutionPending": 0,
+          "LinkRecords": 0,
+          "Linked": 0,
+          "LinkPending": 0,
+          "LinkAmbiguous": 0,
+          "LinksRemoved": 0,
+          "Candidates": 260552,
+          "Materialized": 175684,
+          "Inserted": 175684,
+          "Updated": 0,
+          "Removed": 0,
+          "Rejected": 84868
+        },
+        {
+          "RunID": 5382,
+          "FilingResolutionAttempted": 0,
+          "FilingResolutionRecovered": 0,
+          "FilingResolutionPending": 0,
+          "LinkRecords": 0,
+          "Linked": 0,
+          "LinkPending": 0,
+          "LinkAmbiguous": 0,
+          "LinksRemoved": 0,
+          "Candidates": 260552,
+          "Materialized": 226814,
+          "Inserted": 226814,
+          "Updated": 0,
+          "Removed": 0,
+          "Rejected": 33738
+        },
+        {
+          "RunID": 5383,
+          "FilingResolutionAttempted": 0,
+          "FilingResolutionRecovered": 0,
+          "FilingResolutionPending": 0,
+          "LinkRecords": 0,
+          "Linked": 0,
+          "LinkPending": 0,
+          "LinkAmbiguous": 0,
+          "LinksRemoved": 0,
+          "Candidates": 260552,
+          "Materialized": 189159,
+          "Inserted": 189159,
+          "Updated": 0,
+          "Removed": 0,
+          "Rejected": 71393
+        },
+        {
+          "RunID": 5384,
+          "FilingResolutionAttempted": 0,
+          "FilingResolutionRecovered": 0,
+          "FilingResolutionPending": 0,
+          "LinkRecords": 0,
+          "Linked": 0,
+          "LinkPending": 0,
+          "LinkAmbiguous": 0,
+          "LinksRemoved": 0,
+          "Candidates": 260552,
+          "Materialized": 133532,
+          "Inserted": 133532,
+          "Updated": 0,
+          "Removed": 0,
+          "Rejected": 127020
+        },
+        {
+          "RunID": 5385,
+          "FilingResolutionAttempted": 0,
+          "FilingResolutionRecovered": 0,
+          "FilingResolutionPending": 0,
+          "LinkRecords": 0,
+          "Linked": 0,
+          "LinkPending": 0,
+          "LinkAmbiguous": 0,
+          "LinksRemoved": 0,
+          "Candidates": 260552,
+          "Materialized": 207745,
+          "Inserted": 207745,
+          "Updated": 0,
+          "Removed": 0,
+          "Rejected": 52807
+        },
+        {
+          "RunID": 5386,
+          "FilingResolutionAttempted": 0,
+          "FilingResolutionRecovered": 0,
+          "FilingResolutionPending": 0,
+          "LinkRecords": 0,
+          "Linked": 0,
+          "LinkPending": 0,
+          "LinkAmbiguous": 0,
+          "LinksRemoved": 0,
+          "Candidates": 260552,
+          "Materialized": 232526,
+          "Inserted": 232526,
+          "Updated": 0,
+          "Removed": 0,
+          "Rejected": 28026
+        },
+        {
+          "RunID": 5387,
+          "FilingResolutionAttempted": 0,
+          "FilingResolutionRecovered": 0,
+          "FilingResolutionPending": 0,
+          "LinkRecords": 0,
+          "Linked": 0,
+          "LinkPending": 0,
+          "LinkAmbiguous": 0,
+          "LinksRemoved": 0,
+          "Candidates": 260552,
+          "Materialized": 243772,
+          "Inserted": 243772,
+          "Updated": 0,
+          "Removed": 0,
+          "Rejected": 16780
+        }
+      ],
+      "before": {
+        "\"classification\".\"membership\"": {
+          "rows": 5569,
+          "row_hash_xor": "11004092952460191249"
+        },
+        "\"classification\".\"node\"": {
+          "rows": 565,
+          "row_hash_xor": "9666758488244939875"
+        },
+        "\"classification\".\"taxonomy\"": {
+          "rows": 2,
+          "row_hash_xor": "17989002896887176182"
+        },
+        "\"core\".\"company\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"exchange\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"instrument\"": {
+          "rows": 52480,
+          "row_hash_xor": "8685906575029160277"
+        },
+        "\"core\".\"instrument_identifier\"": {
+          "rows": 52480,
+          "row_hash_xor": "2420925213515989547"
+        },
+        "\"core\".\"listing\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"listing_identifier\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"document_review\"": {
+          "rows": 1,
+          "row_hash_xor": "6735598683593780186"
+        },
+        "\"fundamental\".\"fact\"": {
+          "rows": 2048273,
+          "row_hash_xor": "10779561525931206258"
+        },
+        "\"fundamental\".\"field\"": {
+          "rows": 81,
+          "row_hash_xor": "13955987850949516084"
+        },
+        "\"fundamental\".\"filing\"": {
+          "rows": 57577,
+          "row_hash_xor": "7340701358750552802"
+        },
+        "\"fundamental\".\"filing_document\"": {
+          "rows": 8,
+          "row_hash_xor": "1766622475442734357"
+        },
+        "\"fundamental\".\"provider_fact\"": {
+          "rows": 19310544,
+          "row_hash_xor": "3650320858908970506"
+        },
+        "\"fundamental\".\"provider_field\"": {
+          "rows": 81,
+          "row_hash_xor": "10771205308824063330"
+        },
+        "\"fundamental\".\"provider_filing_link\"": {
+          "rows": 33066,
+          "row_hash_xor": "8362475348428964074"
+        },
+        "\"fundamental\".\"provider_record_resolution\"": {
+          "rows": 38621,
+          "row_hash_xor": "14856300634075814589"
+        },
+        "\"fundamental\".\"reviewed_supplement\"": {
+          "rows": 7,
+          "row_hash_xor": "7894848601334030444"
+        },
+        "\"fundamental\".\"source_field\"": {
+          "rows": 584,
+          "row_hash_xor": "15931000218052105396"
+        },
+        "\"fundamental\".\"supplement_review_history\"": {
+          "rows": 7,
+          "row_hash_xor": "11415866220804137763"
+        },
+        "\"market\".\"adjustment_segment\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"corporate_action\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"daily_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"equity_proceeds_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"fx_rate\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"listing_close_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"ohlcv_daily\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"share_capital\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"share_count_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"trading_calendar\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"yield_curve_point\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"meta\".\"artifact\"": {
+          "rows": 13125,
+          "row_hash_xor": "14041258673113950431"
+        },
+        "\"meta\".\"checkpoint\"": {
+          "rows": 8006,
+          "row_hash_xor": "12768012129625419485"
+        },
+        "\"meta\".\"dataset_release\"": {
+          "rows": 2,
+          "row_hash_xor": "9228904581292195172"
+        },
+        "\"meta\".\"dataset_release_artifact\"": {
+          "rows": 5,
+          "row_hash_xor": "12355445103132381459"
+        },
+        "\"meta\".\"derived_state\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"meta\".\"ingest_run\"": {
+          "rows": 5378,
+          "row_hash_xor": "10487992354299968916"
+        },
+        "\"meta\".\"schema_version\"": {
+          "rows": 47,
+          "row_hash_xor": "14741239952463765113"
+        },
+        "\"meta\".\"validation_result\"": {
+          "rows": 12270988,
+          "row_hash_xor": "5323268833072509225"
+        },
+        "\"reference\".\"country_risk\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"reference\".\"credit_spread_band\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"reference\".\"equity_risk_premium\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"reference\".\"industry_stat\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"reference\".\"security_code_transition\"": {
+          "rows": 248,
+          "row_hash_xor": "10862615036713072177"
+        },
+        "\"reference\".\"security_industry\"": {
+          "rows": 5100,
+          "row_hash_xor": "7698492548356232321"
+        }
+      },
+      "before_version": 47,
+      "database": "workspace/auto-valuation-20260909/market.duckdb",
+      "materialization": {
+        "FilingResolutionAttempted": 0,
+        "FilingResolutionRecovered": 0,
+        "FilingResolutionPending": 0,
+        "LinkRecords": 0,
+        "Linked": 0,
+        "LinkPending": 0,
+        "LinkAmbiguous": 0,
+        "LinksRemoved": 0,
+        "Candidates": 2084416,
+        "Materialized": 1657953,
+        "Inserted": 1657953,
+        "Updated": 0,
+        "Removed": 0,
+        "Rejected": 426463,
+        "run_id_scope": "aggregate_of_eight_batches_listed_below"
+      },
+      "old_facts_unchanged": true,
+      "reopened": true,
+      "unrelated_tables_unchanged": true,
+      "sha256": "4dd61b88d164ec46437b5104ecd6145a426949344cd15ea065325eeae2f6d30e",
+      "backup": {
+        "path": "workspace/auto-valuation-20260909/market.duckdb.pre-statement-expansion-20260919",
+        "sha256": "fc0593ff75e5156bfd1ef31784af9734a02719de5360f63ea24e1dd9f5a70d1c"
+      }
+    },
+    {
+      "after": {
+        "\"classification\".\"membership\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"classification\".\"node\"": {
+          "rows": 94,
+          "row_hash_xor": "12056044301053856675"
+        },
+        "\"classification\".\"taxonomy\"": {
+          "rows": 1,
+          "row_hash_xor": "18411927985952582423"
+        },
+        "\"core\".\"company\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"exchange\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"instrument\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"instrument_identifier\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"listing\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"listing_identifier\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"document_review\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"fact\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"field\"": {
+          "rows": 145,
+          "row_hash_xor": "1171295848107839885"
+        },
+        "\"fundamental\".\"filing\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"filing_document\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"provider_fact\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"provider_field\"": {
+          "rows": 145,
+          "row_hash_xor": "6994704095396355463"
+        },
+        "\"fundamental\".\"provider_filing_link\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"provider_record_resolution\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"reviewed_supplement\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"source_field\"": {
+          "rows": 584,
+          "row_hash_xor": "10682250176706682483"
+        },
+        "\"fundamental\".\"supplement_review_history\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"adjustment_segment\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"corporate_action\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"daily_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"equity_proceeds_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"fx_rate\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"listing_close_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"ohlcv_daily\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"share_capital\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"share_count_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"trading_calendar\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"yield_curve_point\"": {
+          "rows": 8,
+          "row_hash_xor": "5231221990869622112"
+        },
+        "\"meta\".\"artifact\"": {
+          "rows": 4,
+          "row_hash_xor": "3333862572659256214"
+        },
+        "\"meta\".\"checkpoint\"": {
+          "rows": 4,
+          "row_hash_xor": "14456115135122520416"
+        },
+        "\"meta\".\"dataset_release\"": {
+          "rows": 4,
+          "row_hash_xor": "15132828770795075180"
+        },
+        "\"meta\".\"dataset_release_artifact\"": {
+          "rows": 4,
+          "row_hash_xor": "1888488798999013794"
+        },
+        "\"meta\".\"derived_state\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"meta\".\"ingest_run\"": {
+          "rows": 11,
+          "row_hash_xor": "4757433519969609989"
+        },
+        "\"meta\".\"schema_version\"": {
+          "rows": 48,
+          "row_hash_xor": "16471118281061953799"
+        },
+        "\"meta\".\"validation_result\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"reference\".\"country_risk\"": {
+          "rows": 6,
+          "row_hash_xor": "34644208558355798"
+        },
+        "\"reference\".\"credit_spread_band\"": {
+          "rows": 15,
+          "row_hash_xor": "17148460364828619863"
+        },
+        "\"reference\".\"equity_risk_premium\"": {
+          "rows": 4,
+          "row_hash_xor": "5972294174476572115"
+        },
+        "\"reference\".\"industry_stat\"": {
+          "rows": 376,
+          "row_hash_xor": "560997398024129550"
+        },
+        "\"reference\".\"security_code_transition\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"reference\".\"security_industry\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        }
+      },
+      "after_version": 48,
+      "batches": null,
+      "before": {
+        "\"classification\".\"membership\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"classification\".\"node\"": {
+          "rows": 94,
+          "row_hash_xor": "12056044301053856675"
+        },
+        "\"classification\".\"taxonomy\"": {
+          "rows": 1,
+          "row_hash_xor": "18411927985952582423"
+        },
+        "\"core\".\"company\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"exchange\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"instrument\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"instrument_identifier\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"listing\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"core\".\"listing_identifier\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"document_review\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"fact\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"field\"": {
+          "rows": 81,
+          "row_hash_xor": "13955987850949516084"
+        },
+        "\"fundamental\".\"filing\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"filing_document\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"provider_fact\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"provider_field\"": {
+          "rows": 81,
+          "row_hash_xor": "10771205308824063330"
+        },
+        "\"fundamental\".\"provider_filing_link\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"provider_record_resolution\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"reviewed_supplement\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"fundamental\".\"source_field\"": {
+          "rows": 584,
+          "row_hash_xor": "15931000218052105396"
+        },
+        "\"fundamental\".\"supplement_review_history\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"adjustment_segment\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"corporate_action\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"daily_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"equity_proceeds_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"fx_rate\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"listing_close_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"ohlcv_daily\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"share_capital\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"share_count_observation\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"trading_calendar\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"market\".\"yield_curve_point\"": {
+          "rows": 8,
+          "row_hash_xor": "5231221990869622112"
+        },
+        "\"meta\".\"artifact\"": {
+          "rows": 4,
+          "row_hash_xor": "3333862572659256214"
+        },
+        "\"meta\".\"checkpoint\"": {
+          "rows": 4,
+          "row_hash_xor": "14456115135122520416"
+        },
+        "\"meta\".\"dataset_release\"": {
+          "rows": 4,
+          "row_hash_xor": "15132828770795075180"
+        },
+        "\"meta\".\"dataset_release_artifact\"": {
+          "rows": 4,
+          "row_hash_xor": "1888488798999013794"
+        },
+        "\"meta\".\"derived_state\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"meta\".\"ingest_run\"": {
+          "rows": 11,
+          "row_hash_xor": "4757433519969609989"
+        },
+        "\"meta\".\"schema_version\"": {
+          "rows": 47,
+          "row_hash_xor": "5590014133290465747"
+        },
+        "\"meta\".\"validation_result\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"reference\".\"country_risk\"": {
+          "rows": 6,
+          "row_hash_xor": "34644208558355798"
+        },
+        "\"reference\".\"credit_spread_band\"": {
+          "rows": 15,
+          "row_hash_xor": "17148460364828619863"
+        },
+        "\"reference\".\"equity_risk_premium\"": {
+          "rows": 4,
+          "row_hash_xor": "5972294174476572115"
+        },
+        "\"reference\".\"industry_stat\"": {
+          "rows": 376,
+          "row_hash_xor": "560997398024129550"
+        },
+        "\"reference\".\"security_code_transition\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        },
+        "\"reference\".\"security_industry\"": {
+          "rows": 0,
+          "row_hash_xor": ""
+        }
+      },
+      "before_version": 47,
+      "database": "workspace/auto-valuation-20260909/references-refresh-live.duckdb",
+      "materialization": null,
+      "old_facts_unchanged": true,
+      "reopened": true,
+      "unrelated_tables_unchanged": true,
+      "sha256": "0e599effe42a59e9623017bfdea9daf251684c6c600479ebe7fcc6aff5b59a67",
+      "backup": {
+        "path": "workspace/auto-valuation-20260909/references-refresh-live.duckdb.pre-statement-expansion-20260919",
+        "sha256": "759bf26310597d816908499d05e08c64e8a04058d5268212697e71e8ac7238e9"
+      }
+    }
+  ],
+  "old_export_comparison": [
+    {
+      "code": "300866",
+      "report_period": "2026-06-30",
+      "information_as_of": "2026-09-19T00:00:00Z",
+      "previous_fields_unchanged": true,
+      "after_export_sha256": "d6aa6ba63551c77d717240e649fd6dc137346018e1c4c4f223ff15cef3a253df",
+      "old_fact_count": 388,
+      "new_fact_count": 371,
+      "new_complete_windows": 61
+    },
+    {
+      "code": "002032",
+      "report_period": "2026-06-30",
+      "information_as_of": "2026-09-19T00:00:00Z",
+      "previous_fields_unchanged": true,
+      "after_export_sha256": "4d0029dfc8feb90b83646163166f73d91f624fe6f42b3fecca1fd3da4774a713",
+      "old_fact_count": 386,
+      "new_fact_count": 302,
+      "new_complete_windows": 51
+    }
+  ],
+  "engine_comparison": [
+    {
+      "code": "300866",
+      "information_as_of": "2026-09-19T00:00:00Z",
+      "complete_engine_report_unchanged": true,
+      "policy_fixture": "valuation/research/current-contract-20260919/reviewed-assets-20260917/after-request.json.gz",
+      "scope": "same_reviewed_policy_bound_once_to_baseline_actual_evidence_not_new_valuation"
+    },
+    {
+      "code": "002032",
+      "information_as_of": "2026-09-19T00:00:00Z",
+      "complete_engine_report_unchanged": true,
+      "policy_fixture": "valuation/research/current-contract-20260919/reviewed-assets-20260917/supor/after-request.json.gz",
+      "scope": "same_reviewed_policy_bound_once_to_baseline_actual_evidence_not_new_valuation"
+    }
+  ],
+  "main_run_audit": {
+    "diagnostics": [
+      {
+        "rule_code": "provider_zero_ambiguous",
+        "rows": 426463
+      }
+    ],
+    "period_coverage": [
+      {
+        "report_period": "2025-03-31",
+        "facts": 264279,
+        "companies": 5355
+      },
+      {
+        "report_period": "2025-06-30",
+        "facts": 273438,
+        "companies": 5363
+      },
+      {
+        "report_period": "2025-09-30",
+        "facts": 278031,
+        "companies": 5391
+      },
+      {
+        "report_period": "2025-12-31",
+        "facts": 286297,
+        "companies": 5453
+      },
+      {
+        "report_period": "2026-03-31",
+        "facts": 272393,
+        "companies": 5480
+      },
+      {
+        "report_period": "2026-06-30",
+        "facts": 283515,
+        "companies": 5527
+      }
+    ],
+    "runs": [
+      {
+        "ingest_run_id": 5379,
+        "status": "failed",
+        "error_message": "materialize canonical fundamentals: merge canonical fundamental facts: Out of Memory Error: could not allocate block of size 256.0 KiB (953.4 MiB/953.6 MiB used)\n\nPossible solutions:\n* Reducing the number of threads (SET threads=X)\n* Disabling insertion-order preservation (SET preserve_insertion_order=false)\n* Increasing the memory limit (SET memory_limit='...GB')\n\nSee also https://duckdb.org/docs/stable/guides/performance/how_to_tune_workloads"
+      },
+      {
+        "ingest_run_id": 5380,
+        "status": "partial",
+        "error_message": null
+      },
+      {
+        "ingest_run_id": 5381,
+        "status": "partial",
+        "error_message": null
+      },
+      {
+        "ingest_run_id": 5382,
+        "status": "partial",
+        "error_message": null
+      },
+      {
+        "ingest_run_id": 5383,
+        "status": "partial",
+        "error_message": null
+      },
+      {
+        "ingest_run_id": 5384,
+        "status": "partial",
+        "error_message": null
+      },
+      {
+        "ingest_run_id": 5385,
+        "status": "partial",
+        "error_message": null
+      },
+      {
+        "ingest_run_id": 5386,
+        "status": "partial",
+        "error_message": null
+      },
+      {
+        "ingest_run_id": 5387,
+        "status": "partial",
+        "error_message": null
+      }
+    ]
+  },
+  "backup_rotation": [
+    {
+      "path": "workspace/auto-valuation-20260909/market.duckdb.pre-financial-catalog-20260919",
+      "sha256": "d7c027df3ec5a14d2d05f423472f954f19a83d2b3969c35de39bd6b65b3ac507",
+      "bytes": 2128359424,
+      "reason": "superseded_after_schema48_reopen_and_verified_old_facts_exports_and_engine_reports"
+    },
+    {
+      "path": "workspace/auto-valuation-20260909/references-refresh-live.duckdb.pre-financial-catalog-20260919",
+      "sha256": "a48631f73eaa83a3f8c9cbe07ae137de381cc56b7da021d22e50dc80e8deaaf6",
+      "bytes": 17838080,
+      "reason": "superseded_after_schema48_reopen_and_verified_old_facts_exports_and_engine_reports"
+    }
+  ],
+  "validation": {
+    "go_test_all": "passed",
+    "go_build_cli": "passed",
+    "go_vet_all": "passed",
+    "final_real_standard_window_regression": "passed",
+    "python_relevant": "7 passed, no skips; Python3.12 with existing pypdf; explicit CI step",
+    "dependencies_changed": false,
+    "isolated_batch": {
+      "inserted": 670,
+      "rejected": 98,
+      "old_facts": 810,
+      "old_facts_unchanged": true,
+      "wrong_multiplier_removes_batch": true,
+      "restore_rebuilds_batch": true,
+      "reopen_replay_no_fact_changes": true,
+      "new_valuation_windows_complete": 61,
+      "new_valuation_windows_missing": 3
+    },
+    "main_memory_recovery": "1GB all-64 transaction rolled back; failed run retained; eight batches of eight fields completed with 1GB and one thread; unrelated tables and original facts unchanged"
+  }
+}

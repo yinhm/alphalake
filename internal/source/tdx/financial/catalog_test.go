@@ -190,6 +190,9 @@ func TestCatalogUnitsAndFrozenSupportingEvidence(t *testing.T) {
 			t.Fatal("share unit differs from standard catalog", f)
 		}
 	}
+	if fields[131].PeriodBasis != "opening_instant" {
+		t.Fatal("opening balance treated as flow")
+	}
 	if fields[280].Unit != "unspecified" || fields[189].Unit != "percent" || fields[243].Unit != "share" {
 		t.Fatal("ambiguous labels misclassified")
 	}

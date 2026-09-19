@@ -37,7 +37,7 @@ func TestRealFinancialWorkflow(t *testing.T) {
 	db, err := duckstore.OpenInitialized(ctx, dbPath)
 	check(err)
 	defer func() { db.Close() }()
-	keepPreDisposalFieldScope(t, db)
+	keepFrozenFinancialFieldScope(t, db)
 	root := filepath.Join(t.TempDir(), "raw")
 	count := func(query string, want int) {
 		t.Helper()

@@ -22,6 +22,6 @@ def test_new_statement_fields_need_no_parser_branches():
     # 保留所有来源变体，不为同名但未区分的两项贷款任选一个。
     for name in ('financial_loans_and_advances', 'reported_ttm_revenue',
                  'forecast_revenue_lower', 'financial_report_announcement_date',
-                 'reported_current_ratio', 'FN435'):
+                 'reported_current_ratio', 'opening_cash_and_cash_equivalents', 'FN435'):
         with pytest.raises(KeyError):
             source.source_field(name)

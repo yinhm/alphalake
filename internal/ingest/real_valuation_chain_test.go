@@ -48,7 +48,7 @@ func TestRealValuationStandardChain(t *testing.T) {
 	}
 	pinUTC()
 	// 保留冻结样本的字段分母；资产处置现金由独立真实测试验收。
-	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field='FN110'`)
+	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND (provider_field='FN110' OR notes LIKE 'statement-expansion-20260919;%')`)
 	check(err)
 	// 显式暂扣部分审核映射，再从当前目录恢复，验证新增事实及规则失效重建。
 	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field IN ('FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579')`)

@@ -47,13 +47,13 @@ type CanonicalFundamentalResult struct {
 // identity, or removed if their source record is no longer safely materializable.
 func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRunID int64, providerSource string, fields ...string) (CanonicalFundamentalResult, error) {
 	var result CanonicalFundamentalResult
-	field := ""
-	if len(fields) > 1 || (len(fields) == 1 && !regexp.MustCompile(`^FN[1-9][0-9]*$`).MatchString(fields[0])) {
-		return result, errors.New("one explicit FN field required")
+	fieldPattern := regexp.MustCompile(`^FN[1-9][0-9]*$`)
+	for _, field := range fields {
+		if !fieldPattern.MatchString(field) {
+			return result, errors.New("explicit source field identifiers required")
+		}
 	}
-	if len(fields) == 1 {
-		field = fields[0]
-	}
+	field := strings.Join(fields, ",")
 	if db == nil {
 		return result, errors.New("duckdb is nil")
 	}
@@ -102,7 +102,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 			 AND m.provider_field=pf.provider_field
 			 AND (m.valid_from IS NULL OR m.valid_from <= pf.report_period)
 			 AND (m.valid_to IS NULL OR m.valid_to > pf.report_period)
-			WHERE pf.source=? AND (?='' OR pf.provider_field=?)
+			WHERE pf.source=? AND (?='' OR list_contains(string_split(?,','),pf.provider_field))
 			  AND m.canonical_field IS NOT NULL
 			GROUP BY pf.provider_fact_id
 			HAVING count(*) > 1
@@ -152,7 +152,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 			 AND m.provider_field=pf.provider_field
 			 AND (m.valid_from IS NULL OR m.valid_from <= pf.report_period)
 			 AND (m.valid_to IS NULL OR m.valid_to > pf.report_period)
-			WHERE pf.source=? AND (?='' OR pf.provider_field=?)
+			WHERE pf.source=? AND (?='' OR list_contains(string_split(?,','),pf.provider_field))
 			  AND m.canonical_field IS NOT NULL
 		)
 		SELECT
@@ -307,7 +307,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 	if err := conn.QueryRowContext(ctx, `
 		SELECT count(*)
 		FROM fundamental.fact f
-		WHERE f.primary_source=? AND (?='' OR f.source_provider_field=?)
+		WHERE f.primary_source=? AND (?='' OR list_contains(string_split(?,','),f.source_provider_field))
 		  AND f.provider_code IS NOT NULL
 		  AND NOT EXISTS (
 			SELECT 1 FROM temp.main.`+fundamentalFactStage+` s
@@ -321,7 +321,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 	}
 	if _, err := conn.ExecContext(ctx, `
 		DELETE FROM fundamental.fact f
-		WHERE f.primary_source=? AND (?='' OR f.source_provider_field=?)
+		WHERE f.primary_source=? AND (?='' OR list_contains(string_split(?,','),f.source_provider_field))
 		  AND f.provider_code IS NOT NULL
 		  AND NOT EXISTS (
 			SELECT 1 FROM temp.main.`+fundamentalFactStage+` s

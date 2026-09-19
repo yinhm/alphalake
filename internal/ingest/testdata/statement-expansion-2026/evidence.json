@@ -1,0 +1,3828 @@
+{
+  "review_id": "statement-expansion-20260919",
+  "scope": "consolidated_statement_current_columns_three_reports_one_company",
+  "approved_fields": [
+    "accumulated_other_comprehensive_income",
+    "administrative_expenses",
+    "asset_impairment_income",
+    "associates_and_joint_ventures_investment_income",
+    "borrowing_proceeds",
+    "capital_reserve",
+    "cash_paid_to_employees",
+    "cash_paid_to_suppliers",
+    "cash_received_from_customers",
+    "comprehensive_income",
+    "comprehensive_income_minority",
+    "comprehensive_income_parent",
+    "continuing_operations_net_income",
+    "cost_of_revenue",
+    "debt_repayment_cash",
+    "deferred_income_noncurrent",
+    "derivative_financial_assets",
+    "derivative_financial_liabilities",
+    "dividends_and_interest_paid",
+    "dividends_receivable",
+    "equity_financing_cash",
+    "exchange_rate_effect_on_cash",
+    "financing_cash_flow_cumulative",
+    "financing_cash_inflows",
+    "financing_cash_outflows",
+    "investing_cash_flow_cumulative",
+    "investing_cash_inflows",
+    "investing_cash_outflows",
+    "investment_income_cash",
+    "investment_property",
+    "investment_purchase_cash",
+    "investment_recovery_cash",
+    "liabilities_and_equity",
+    "long_term_employee_benefits_payable",
+    "long_term_prepaid_expenses",
+    "net_cash_increase_cumulative",
+    "noncurrent_assets",
+    "noncurrent_liabilities",
+    "nonoperating_expenses",
+    "nonoperating_income",
+    "notes_payable",
+    "operating_cash_flow_cumulative",
+    "operating_cash_inflows",
+    "operating_cash_outflows",
+    "other_comprehensive_income_profit_statement",
+    "other_financing_cash_paid",
+    "other_income",
+    "other_investing_cash_paid",
+    "other_investing_cash_received",
+    "other_noncurrent_assets",
+    "other_operating_cash_paid",
+    "other_operating_cash_received",
+    "paid_in_capital",
+    "retained_earnings",
+    "revenue_cumulative",
+    "right_of_use_assets",
+    "selling_expenses",
+    "subsidiary_minority_dividends_cash_paid",
+    "subsidiary_minority_equity_cash_received",
+    "surplus_reserve",
+    "taxes_and_surcharges",
+    "total_operating_cost",
+    "total_operating_revenue",
+    "trading_financial_liabilities"
+  ],
+  "valid_from": "2025-01-01",
+  "reports": [
+    {
+      "code": "300866",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "pdf_path": "../anker-valuation-2026/1224614835.pdf",
+      "pdf_sha256": "e1aff2dcb92aea9bcc8b3b69b66051b2e27c68026dbbff77d56ef27373dee674",
+      "package_path": "../valuation-chain-2026/gpcw20250630.zip",
+      "package_sha256": "d234e4f6cc3233fa9dc38e27269f15d6cd0f106f704a89ed9f798a2c335d39fb",
+      "tables": {
+        "balance_sheet": {
+          "pages": [
+            67,
+            68
+          ],
+          "section": "1、合并资产负债表",
+          "header": "项目附注2025年06月30日2024年12月31日"
+        },
+        "income_statement": {
+          "pages": [
+            71,
+            72
+          ],
+          "section": "3、合并利润表",
+          "header": "项目附注2025年半年度2024年半年度"
+        },
+        "cashflow_statement": {
+          "pages": [
+            74,
+            75
+          ],
+          "section": "5、合并现金流量表",
+          "header": "项目附注2025年半年度2024年半年度"
+        }
+      }
+    },
+    {
+      "code": "300866",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "pdf_path": "../anker-valuation-2026/1225090973.pdf",
+      "pdf_sha256": "8dadc4bfd7282738697a5ee82d9b25faa657e053e3f480e71dd6ae9987703202",
+      "package_path": "../valuation-chain-2026/gpcw20251231.zip",
+      "package_sha256": "39cdb919483b892674c9624cb03946ddb03f10faf83d3368384505c356fb336f",
+      "tables": {
+        "balance_sheet": {
+          "pages": [
+            108,
+            109
+          ],
+          "section": "1、合并资产负债表",
+          "header": "项目附注2025年12月31日2024年12月31日"
+        },
+        "income_statement": {
+          "pages": [
+            112,
+            113
+          ],
+          "section": "3、合并利润表",
+          "header": "项目附注2025年度2024年度"
+        },
+        "cashflow_statement": {
+          "pages": [
+            115,
+            116
+          ],
+          "section": "5、合并现金流量表",
+          "header": "项目附注2025年度2024年度"
+        }
+      }
+    },
+    {
+      "code": "300866",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "pdf_path": "../anker-valuation-2026/1225533054.pdf",
+      "pdf_sha256": "ff81b9e7c2e8eb04bd450fce3c084b28f5b4be4c1e2638250160b7bb813ebac1",
+      "package_path": "../valuation-chain-2026/gpcw20260630.zip",
+      "package_sha256": "6366c4224e1a08de7bdb8e45ec6af624a20205f70a305eaf66a33d78aaa6578c",
+      "tables": {
+        "balance_sheet": {
+          "pages": [
+            57,
+            58
+          ],
+          "section": "1、合并资产负债表",
+          "header": "项目附注2026年06月30日2025年12月31日"
+        },
+        "income_statement": {
+          "pages": [
+            61,
+            62
+          ],
+          "section": "3、合并利润表",
+          "header": "项目附注2026年半年度2025年半年度"
+        },
+        "cashflow_statement": {
+          "pages": [
+            64,
+            65
+          ],
+          "section": "5、合并现金流量表",
+          "header": "项目附注2026年半年度2025年半年度"
+        }
+      }
+    }
+  ],
+  "observations": [
+    {
+      "field": "dividends_receivable",
+      "provider_field": "FN16",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1248253952,
+      "source_value": 3782144.0,
+      "pdf_page": 67,
+      "label": "应收股利",
+      "printed": [
+        "3,782,144.00",
+        "-"
+      ],
+      "pdf_value": "3782144.00",
+      "status": "matched"
+    },
+    {
+      "field": "investment_property",
+      "provider_field": "FN26",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1261040218,
+      "source_value": 11137626.0,
+      "pdf_page": 67,
+      "label": "投资性房地产",
+      "printed": [
+        "11,137,626.38",
+        "11,586,121.46"
+      ],
+      "pdf_value": "11137626.38",
+      "status": "matched"
+    },
+    {
+      "field": "long_term_prepaid_expenses",
+      "provider_field": "FN36",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1272214671,
+      "source_value": 27846942.0,
+      "pdf_page": 67,
+      "label": "长期待摊费用",
+      "printed": [
+        "27,846,942.32",
+        "28,914,162.21"
+      ],
+      "pdf_value": "27846942.32",
+      "status": "matched"
+    },
+    {
+      "field": "other_noncurrent_assets",
+      "provider_field": "FN38",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1290207818,
+      "source_value": 121115216.0,
+      "pdf_page": 67,
+      "label": "其他非流动资产",
+      "printed": [
+        "121,115,214.89",
+        "82,460,685.01"
+      ],
+      "pdf_value": "121115214.89",
+      "status": "matched"
+    },
+    {
+      "field": "noncurrent_assets",
+      "provider_field": "FN39",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1334446467,
+      "source_value": 4631758336.0,
+      "pdf_page": 67,
+      "label": "非流动资产合计",
+      "printed": [
+        "4,631,758,334.58",
+        "4,236,157,933.96"
+      ],
+      "pdf_value": "4631758334.58",
+      "status": "matched"
+    },
+    {
+      "field": "trading_financial_liabilities",
+      "provider_field": "FN42",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1254906528,
+      "source_value": 6696272.0,
+      "pdf_page": 68,
+      "label": "交易性金融负债",
+      "printed": [
+        "6,696,271.99",
+        "41,903,775.02"
+      ],
+      "pdf_value": "6696271.99",
+      "status": "matched"
+    },
+    {
+      "field": "notes_payable",
+      "provider_field": "FN43",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1309167851,
+      "source_value": 571751104.0,
+      "pdf_page": 68,
+      "label": "应付票据",
+      "printed": [
+        "571,751,116.81",
+        "467,541,712.91"
+      ],
+      "pdf_value": "571751116.81",
+      "status": "matched"
+    },
+    {
+      "field": "noncurrent_liabilities",
+      "provider_field": "FN62",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1327060423,
+      "source_value": 2572535552.0,
+      "pdf_page": 68,
+      "label": "非流动负债合计",
+      "printed": [
+        "2,572,535,569.89",
+        "1,557,676,104.50"
+      ],
+      "pdf_value": "2572535569.89",
+      "status": "matched"
+    },
+    {
+      "field": "paid_in_capital",
+      "provider_field": "FN64",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1308456201,
+      "source_value": 531538208.0,
+      "pdf_page": 68,
+      "label": "股本",
+      "printed": [
+        "531,538,199.00",
+        "531,410,776.00"
+      ],
+      "pdf_value": "531538199.00",
+      "status": "matched"
+    },
+    {
+      "field": "capital_reserve",
+      "provider_field": "FN65",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1328901456,
+      "source_value": 3043840000.0,
+      "pdf_page": 68,
+      "label": "资本公积",
+      "printed": [
+        "3,043,839,970.49",
+        "2,977,550,840.52"
+      ],
+      "pdf_value": "3043839970.49",
+      "status": "matched"
+    },
+    {
+      "field": "surplus_reserve",
+      "provider_field": "FN66",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1300063611,
+      "source_value": 265705392.0,
+      "pdf_page": 68,
+      "label": "盈余公积",
+      "printed": [
+        "265,705,388.00",
+        "265,705,388.00"
+      ],
+      "pdf_value": "265705388.00",
+      "status": "matched"
+    },
+    {
+      "field": "retained_earnings",
+      "provider_field": "FN68",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1336380170,
+      "source_value": 5621814272.0,
+      "pdf_page": 68,
+      "label": "未分配利润",
+      "printed": [
+        "5,621,814,180.22",
+        "5,252,204,605.92"
+      ],
+      "pdf_value": "5621814180.22",
+      "status": "matched"
+    },
+    {
+      "field": "liabilities_and_equity",
+      "provider_field": "FN73",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1351294569,
+      "source_value": 18672207872.0,
+      "pdf_page": 68,
+      "label": "负债和所有者权益总计",
+      "printed": [
+        "18,672,207,971.30",
+        "16,603,707,262.71"
+      ],
+      "pdf_value": "18672207971.30",
+      "status": "matched"
+    },
+    {
+      "field": "revenue_cumulative",
+      "provider_field": "FN74",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1346353870,
+      "source_value": 12866762752.0,
+      "pdf_page": 71,
+      "label": "其中：营业收入",
+      "printed": [
+        "12,866,762,779.48",
+        "9,648,327,221.81"
+      ],
+      "pdf_value": "12866762779.48",
+      "status": "matched"
+    },
+    {
+      "field": "cost_of_revenue",
+      "provider_field": "FN75",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1339289586,
+      "source_value": 7111435264.0,
+      "pdf_page": 71,
+      "label": "其中：营业成本",
+      "printed": [
+        "7,111,435,099.23",
+        "5,289,297,067.56"
+      ],
+      "pdf_value": "7111435099.23",
+      "status": "matched"
+    },
+    {
+      "field": "taxes_and_surcharges",
+      "provider_field": "FN76",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1259771242,
+      "source_value": 9868650.0,
+      "pdf_page": 71,
+      "label": "税金及附加",
+      "printed": [
+        "9,868,650.06",
+        "8,236,279.94"
+      ],
+      "pdf_value": "9868650.06",
+      "status": "matched"
+    },
+    {
+      "field": "selling_expenses",
+      "provider_field": "FN77",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1328054576,
+      "source_value": 2827038720.0,
+      "pdf_page": 71,
+      "label": "销售费用",
+      "printed": [
+        "2,827,038,772.04",
+        "2,114,665,439.96"
+      ],
+      "pdf_value": "2827038772.04",
+      "status": "matched"
+    },
+    {
+      "field": "administrative_expenses",
+      "provider_field": "FN78",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1306414103,
+      "source_value": 466191072.0,
+      "pdf_page": 71,
+      "label": "管理费用",
+      "printed": [
+        "466,191,086.44",
+        "399,341,782.58"
+      ],
+      "pdf_value": "466191086.44",
+      "status": "matched"
+    },
+    {
+      "field": "associates_and_joint_ventures_investment_income",
+      "provider_field": "FN84",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1260617754,
+      "source_value": 10715162.0,
+      "pdf_page": 71,
+      "label": "其中：对联营企业和合营企业的投资收益",
+      "printed": [
+        "10,715,161.96",
+        "15,185,942.25"
+      ],
+      "pdf_value": "10715161.96",
+      "status": "matched"
+    },
+    {
+      "field": "nonoperating_income",
+      "provider_field": "FN88",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1247576768,
+      "source_value": 3612848.0,
+      "pdf_page": 71,
+      "label": "加：营业外收入",
+      "printed": [
+        "3,612,848.10",
+        "2,666,178.02"
+      ],
+      "pdf_value": "3612848.10",
+      "status": "matched"
+    },
+    {
+      "field": "nonoperating_expenses",
+      "provider_field": "FN89",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1249014009,
+      "source_value": 3972158.25,
+      "pdf_page": 71,
+      "label": "减：营业外支出",
+      "printed": [
+        "3,972,158.27",
+        "21,471,791.98"
+      ],
+      "pdf_value": "3972158.27",
+      "status": "matched"
+    },
+    {
+      "field": "cash_received_from_customers",
+      "provider_field": "FN98",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1344417345,
+      "source_value": 10883761152.0,
+      "pdf_page": 74,
+      "label": "销售商品、提供劳务收到的现金",
+      "printed": [
+        "10,883,761,184.11",
+        "8,383,950,492.12"
+      ],
+      "pdf_value": "10883761184.11",
+      "status": "matched"
+    },
+    {
+      "field": "other_operating_cash_received",
+      "provider_field": "FN100",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1282444016,
+      "source_value": 63056832.0,
+      "pdf_page": 74,
+      "label": "收到其他与经营活动有关的现金",
+      "printed": [
+        "63,056,830.73",
+        "84,799,097.52"
+      ],
+      "pdf_value": "63056830.73",
+      "status": "matched"
+    },
+    {
+      "field": "operating_cash_inflows",
+      "provider_field": "FN101",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1345219353,
+      "source_value": 11705017344.0,
+      "pdf_page": 74,
+      "label": "经营活动现金流入小计",
+      "printed": [
+        "11,705,017,648.51",
+        "8,864,951,101.54"
+      ],
+      "pdf_value": "11705017648.51",
+      "status": "matched"
+    },
+    {
+      "field": "cash_paid_to_suppliers",
+      "provider_field": "FN102",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1341573552,
+      "source_value": 8280825856.0,
+      "pdf_page": 74,
+      "label": "购买商品、接受劳务支付的现金",
+      "printed": [
+        "8,280,825,830.05",
+        "5,422,471,579.14"
+      ],
+      "pdf_value": "8280825830.05",
+      "status": "matched"
+    },
+    {
+      "field": "cash_paid_to_employees",
+      "provider_field": "FN103",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1325593081,
+      "source_value": 2196896000.0,
+      "pdf_page": 74,
+      "label": "支付给职工以及为职工支付的现金",
+      "printed": [
+        "2,196,895,921.57",
+        "1,018,988,161.85"
+      ],
+      "pdf_value": "2196895921.57",
+      "status": "matched"
+    },
+    {
+      "field": "other_operating_cash_paid",
+      "provider_field": "FN105",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1320179480,
+      "source_value": 1479248896.0,
+      "pdf_page": 74,
+      "label": "支付其他与经营活动有关的现金",
+      "printed": [
+        "1,479,248,917.29",
+        "1,076,999,490.48"
+      ],
+      "pdf_value": "1479248917.29",
+      "status": "matched"
+    },
+    {
+      "field": "operating_cash_outflows",
+      "provider_field": "FN106",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1346325038,
+      "source_value": 12837238784.0,
+      "pdf_page": 74,
+      "label": "经营活动现金流出小计",
+      "printed": [
+        "12,837,238,599.13",
+        "8,023,649,820.62"
+      ],
+      "pdf_value": "12837238599.13",
+      "status": "matched"
+    },
+    {
+      "field": "operating_cash_flow_cumulative",
+      "provider_field": "FN107",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 3464951972,
+      "source_value": -1132220928.0,
+      "pdf_page": 74,
+      "label": "经营活动（使用）/产生的现金流量净额",
+      "printed": [
+        "-1,132,220,950.62",
+        "841,301,280.92"
+      ],
+      "pdf_value": "-1132220950.62",
+      "status": "matched"
+    },
+    {
+      "field": "investment_recovery_cash",
+      "provider_field": "FN108",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1278775795,
+      "source_value": 48383948.0,
+      "pdf_page": 74,
+      "label": "收回投资收到的现金",
+      "printed": [
+        "48,383,948.00",
+        "40,000.00"
+      ],
+      "pdf_value": "48383948.00",
+      "status": "matched"
+    },
+    {
+      "field": "investment_income_cash",
+      "provider_field": "FN109",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1294134123,
+      "source_value": 170833584.0,
+      "pdf_page": 74,
+      "label": "取得投资收益收到的现金",
+      "printed": [
+        "170,833,586.70",
+        "2,011,429.92"
+      ],
+      "pdf_value": "170833586.70",
+      "status": "matched"
+    },
+    {
+      "field": "other_investing_cash_received",
+      "provider_field": "FN112",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1326170162,
+      "source_value": 2344628736.0,
+      "pdf_page": 74,
+      "label": "收到其他与投资活动有关的现金",
+      "printed": [
+        "2,344,628,850.08",
+        "1,275,304,078.21"
+      ],
+      "pdf_value": "2344628850.08",
+      "status": "matched"
+    },
+    {
+      "field": "investing_cash_inflows",
+      "provider_field": "FN113",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1327026481,
+      "source_value": 2563846400.0,
+      "pdf_page": 74,
+      "label": "投资活动现金流入小计",
+      "printed": [
+        "2,563,846,384.78",
+        "1,277,355,508.13"
+      ],
+      "pdf_value": "2563846384.78",
+      "status": "matched"
+    },
+    {
+      "field": "investment_purchase_cash",
+      "provider_field": "FN115",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1280708042,
+      "source_value": 56112936.0,
+      "pdf_page": 74,
+      "label": "投资支付的现金",
+      "printed": [
+        "56,112,935.27",
+        "-"
+      ],
+      "pdf_value": "56112935.27",
+      "status": "matched"
+    },
+    {
+      "field": "other_investing_cash_paid",
+      "provider_field": "FN117",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1318298784,
+      "source_value": 1238519808.0,
+      "pdf_page": 74,
+      "label": "支付其他与投资活动有关的现金",
+      "printed": [
+        "1,238,519,769.09",
+        "1,592,809,687.93"
+      ],
+      "pdf_value": "1238519769.09",
+      "status": "matched"
+    },
+    {
+      "field": "investing_cash_outflows",
+      "provider_field": "FN118",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1320010371,
+      "source_value": 1457602944.0,
+      "pdf_page": 74,
+      "label": "投资活动现金流出小计",
+      "printed": [
+        "1,457,602,989.53",
+        "1,630,710,279.07"
+      ],
+      "pdf_value": "1457602989.53",
+      "status": "matched"
+    },
+    {
+      "field": "investing_cash_flow_cumulative",
+      "provider_field": "FN119",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1317265375,
+      "source_value": 1106243456.0,
+      "pdf_page": 74,
+      "label": "投资活动产生/（使用）的现金流量净额",
+      "printed": [
+        "1,106,243,395.25",
+        "-353,354,770.94"
+      ],
+      "pdf_value": "1106243395.25",
+      "status": "matched"
+    },
+    {
+      "field": "equity_financing_cash",
+      "provider_field": "FN120",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1247448941,
+      "source_value": 3580891.25,
+      "pdf_page": 75,
+      "label": "吸收投资收到的现金",
+      "printed": [
+        "3,580,891.33",
+        "3,807,178.64"
+      ],
+      "pdf_value": "3580891.33",
+      "status": "matched"
+    },
+    {
+      "field": "borrowing_proceeds",
+      "provider_field": "FN121",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1308049014,
+      "source_value": 518508224.0,
+      "pdf_page": 75,
+      "label": "取得借款收到的现金",
+      "printed": [
+        "518,508,230.60",
+        "528,539,459.53"
+      ],
+      "pdf_value": "518508230.60",
+      "status": "matched"
+    },
+    {
+      "field": "financing_cash_inflows",
+      "provider_field": "FN123",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1321271357,
+      "source_value": 1619009152.0,
+      "pdf_page": 75,
+      "label": "筹资活动现金流入小计",
+      "printed": [
+        "1,619,009,121.93",
+        "532,346,638.17"
+      ],
+      "pdf_value": "1619009121.93",
+      "status": "matched"
+    },
+    {
+      "field": "debt_repayment_cash",
+      "provider_field": "FN124",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1301887480,
+      "source_value": 321339136.0,
+      "pdf_page": 75,
+      "label": "偿还债务支付的现金",
+      "printed": [
+        "321,339,124.96",
+        "214,750,397.13"
+      ],
+      "pdf_value": "321339124.96",
+      "status": "matched"
+    },
+    {
+      "field": "dividends_and_interest_paid",
+      "provider_field": "FN125",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1312926793,
+      "source_value": 812323392.0,
+      "pdf_page": 75,
+      "label": "分配股利、利润或偿付利息支付的现金",
+      "printed": [
+        "812,323,396.25",
+        "824,445,914.26"
+      ],
+      "pdf_value": "812323396.25",
+      "status": "matched"
+    },
+    {
+      "field": "other_financing_cash_paid",
+      "provider_field": "FN126",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1279003117,
+      "source_value": 49293236.0,
+      "pdf_page": 75,
+      "label": "支付其他与筹资活动有关的现金",
+      "printed": [
+        "49,293,234.69",
+        "90,320,401.32"
+      ],
+      "pdf_value": "49293234.69",
+      "status": "matched"
+    },
+    {
+      "field": "financing_cash_outflows",
+      "provider_field": "FN127",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1317864690,
+      "source_value": 1182955776.0,
+      "pdf_page": 75,
+      "label": "筹资活动现金流出小计",
+      "printed": [
+        "1,182,955,755.90",
+        "1,129,516,712.71"
+      ],
+      "pdf_value": "1182955755.90",
+      "status": "matched"
+    },
+    {
+      "field": "financing_cash_flow_cumulative",
+      "provider_field": "FN128",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1305472300,
+      "source_value": 436053376.0,
+      "pdf_page": 75,
+      "label": "筹资活动产生/（使用）的现金流量净额",
+      "printed": [
+        "436,053,366.03",
+        "-597,170,074.54"
+      ],
+      "pdf_value": "436053366.03",
+      "status": "matched"
+    },
+    {
+      "field": "exchange_rate_effect_on_cash",
+      "provider_field": "FN129",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 3407796418,
+      "source_value": -10410178.0,
+      "pdf_page": 75,
+      "label": "四、汇率变动对现金及现金等价物的影响",
+      "printed": [
+        "-10,410,178.43",
+        "41,214,501.22"
+      ],
+      "pdf_value": "-10410178.43",
+      "status": "matched"
+    },
+    {
+      "field": "net_cash_increase_cumulative",
+      "provider_field": "FN131",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1304335183,
+      "source_value": 399665632.0,
+      "pdf_page": 75,
+      "label": "现金及现金等价物净增加额（减少以“-”号填列）",
+      "printed": [
+        "399,665,632.23",
+        "-68,009,063.34"
+      ],
+      "pdf_value": "399665632.23",
+      "status": "matched"
+    },
+    {
+      "field": "other_comprehensive_income_profit_statement",
+      "provider_field": "FN269",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 3447287968,
+      "source_value": -261556736.0,
+      "pdf_page": 72,
+      "label": "六、其他综合收益的税后净额",
+      "printed": [
+        "-261,556,736.50",
+        "63,552,133.36"
+      ],
+      "pdf_value": "-261556736.50",
+      "status": "matched"
+    },
+    {
+      "field": "comprehensive_income",
+      "provider_field": "FN270",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1314370659,
+      "source_value": 904730816.0,
+      "pdf_page": 72,
+      "label": "七、综合收益总额",
+      "printed": [
+        "904,730,797.65",
+        "968,443,119.62"
+      ],
+      "pdf_value": "904730797.65",
+      "status": "matched"
+    },
+    {
+      "field": "deferred_income_noncurrent",
+      "provider_field": "FN297",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1269836160,
+      "source_value": 23089920.0,
+      "pdf_page": 68,
+      "label": "递延收益",
+      "printed": [
+        "23,089,919.42",
+        "24,069,423.86"
+      ],
+      "pdf_value": "23089919.42",
+      "status": "matched"
+    },
+    {
+      "field": "accumulated_other_comprehensive_income",
+      "provider_field": "FN298",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 3449653851,
+      "source_value": -330386272.0,
+      "pdf_page": 68,
+      "label": "其他综合收益",
+      "printed": [
+        "-330,386,257.62",
+        "-68,828,239.81"
+      ],
+      "pdf_value": "-330386257.62",
+      "status": "matched"
+    },
+    {
+      "field": "other_income",
+      "provider_field": "FN300",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1269247425,
+      "source_value": 21912450.0,
+      "pdf_page": 71,
+      "label": "其他收益",
+      "printed": [
+        "21,912,450.16",
+        "24,999,229.10"
+      ],
+      "pdf_value": "21912450.16",
+      "status": "matched"
+    },
+    {
+      "field": "continuing_operations_net_income",
+      "provider_field": "FN302",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1317734469,
+      "source_value": 1166287488.0,
+      "pdf_page": 72,
+      "label": "持续经营净利润（净亏损以“－”号填列）",
+      "printed": [
+        "1,166,287,534.15",
+        "904,890,986.26"
+      ],
+      "pdf_value": "1166287534.15",
+      "status": "matched"
+    },
+    {
+      "field": "derivative_financial_assets",
+      "provider_field": "FN405",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 10000,
+      "source_bits": 1158761103,
+      "source_value": 2324.659912109375,
+      "pdf_page": 67,
+      "label": "衍生金融资产",
+      "printed": [
+        "23,246,561.81",
+        "-"
+      ],
+      "pdf_value": "23246561.81",
+      "status": "matched"
+    },
+    {
+      "field": "derivative_financial_liabilities",
+      "provider_field": "FN415",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 10000,
+      "source_bits": 1188849178,
+      "source_value": 28211.05078125,
+      "pdf_page": 68,
+      "label": "衍生金融负债",
+      "printed": [
+        "282,110,483.21",
+        "11,059,751.57"
+      ],
+      "pdf_value": "282110483.21",
+      "status": "matched"
+    },
+    {
+      "field": "long_term_employee_benefits_payable",
+      "provider_field": "FN427",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 10000,
+      "source_bits": 1183944909,
+      "source_value": 18632.400390625,
+      "pdf_page": 68,
+      "label": "长期应付职工薪酬",
+      "printed": [
+        "186,323,966.53",
+        "198,880,555.26"
+      ],
+      "pdf_value": "186323966.53",
+      "status": "matched"
+    },
+    {
+      "field": "right_of_use_assets",
+      "provider_field": "FN438",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 10000,
+      "source_bits": 1184933873,
+      "source_value": 20563.970703125,
+      "pdf_page": 67,
+      "label": "使用权资产",
+      "printed": [
+        "205,639,712.03",
+        "116,274,821.76"
+      ],
+      "pdf_value": "205639712.03",
+      "status": "matched"
+    },
+    {
+      "field": "total_operating_revenue",
+      "provider_field": "FN502",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1235030178,
+      "source_value": 1286676.25,
+      "pdf_page": 71,
+      "label": "一、营业总收入",
+      "printed": [
+        "12,866,762,779.48",
+        "9,648,327,221.81"
+      ],
+      "pdf_value": "12866762779.48",
+      "status": "matched"
+    },
+    {
+      "field": "comprehensive_income_parent",
+      "provider_field": "FN504",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1202770930,
+      "source_value": 90535.890625,
+      "pdf_page": 72,
+      "label": "归属于母公司所有者的综合收益总额",
+      "printed": [
+        "905,358,854.99",
+        "935,678,667.38"
+      ],
+      "pdf_value": "905358854.99",
+      "status": "matched"
+    },
+    {
+      "field": "comprehensive_income_minority",
+      "provider_field": "FN505",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 3262856561,
+      "source_value": -62.810001373291016,
+      "pdf_page": 72,
+      "label": "归属于少数股东的综合收益总额",
+      "printed": [
+        "-628,057.34",
+        "32,764,452.24"
+      ],
+      "pdf_value": "-628057.34",
+      "status": "matched"
+    },
+    {
+      "field": "total_operating_cost",
+      "provider_field": "FN519",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1233994979,
+      "source_value": 1157276.375,
+      "pdf_page": 71,
+      "label": "二、营业总成本",
+      "printed": [
+        "11,572,764,120.32",
+        "8,599,518,597.12"
+      ],
+      "pdf_value": "11572764120.32",
+      "status": "matched"
+    },
+    {
+      "field": "asset_impairment_income",
+      "provider_field": "FN521",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 3334049935,
+      "source_value": -23752.279296875,
+      "pdf_page": 71,
+      "label": "资产减值损失（损失以“－”号填列）",
+      "printed": [
+        "-237,522,795.77",
+        "-178,358,526.77"
+      ],
+      "pdf_value": "-237522795.77",
+      "status": "matched"
+    },
+    {
+      "field": "subsidiary_minority_equity_cash_received",
+      "provider_field": "FN577",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1084227584,
+      "source_value": 5.0,
+      "pdf_page": 75,
+      "label": "其中：子公司吸收少数股东投资收到的现金",
+      "printed": [
+        "50,000.00",
+        "4,200.00"
+      ],
+      "pdf_value": "50000.00",
+      "status": "matched"
+    },
+    {
+      "field": "subsidiary_minority_dividends_cash_paid",
+      "provider_field": "FN578",
+      "period": "2025-06-30",
+      "pdf_id": "1224614835",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 0,
+      "source_value": 0.0,
+      "pdf_page": 75,
+      "label": "其中：子公司支付给少数股东的股利、利润",
+      "printed": [
+        "-",
+        "-"
+      ],
+      "pdf_value": null,
+      "status": "printed_missing"
+    },
+    {
+      "field": "dividends_receivable",
+      "provider_field": "FN16",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 0,
+      "source_value": 0.0,
+      "pdf_page": 108,
+      "label": "应收股利",
+      "printed": [
+        "-",
+        "-"
+      ],
+      "pdf_value": null,
+      "status": "printed_missing"
+    },
+    {
+      "field": "investment_property",
+      "provider_field": "FN26",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1260591724,
+      "source_value": 10689132.0,
+      "pdf_page": 108,
+      "label": "投资性房地产",
+      "printed": [
+        "10,689,131.88",
+        "11,586,121.46"
+      ],
+      "pdf_value": "10689131.88",
+      "status": "matched"
+    },
+    {
+      "field": "long_term_prepaid_expenses",
+      "provider_field": "FN36",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1283857329,
+      "source_value": 70311304.0,
+      "pdf_page": 108,
+      "label": "长期待摊费用",
+      "printed": [
+        "70,311,305.27",
+        "28,914,162.21"
+      ],
+      "pdf_value": "70311305.27",
+      "status": "matched"
+    },
+    {
+      "field": "other_noncurrent_assets",
+      "provider_field": "FN38",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1289843985,
+      "source_value": 118204552.0,
+      "pdf_page": 108,
+      "label": "其他非流动资产",
+      "printed": [
+        "118,204,550.90",
+        "82,460,685.01"
+      ],
+      "pdf_value": "118204550.90",
+      "status": "matched"
+    },
+    {
+      "field": "noncurrent_assets",
+      "provider_field": "FN39",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1332559760,
+      "source_value": 3980365824.0,
+      "pdf_page": 108,
+      "label": "非流动资产合计",
+      "printed": [
+        "3,980,365,811.37",
+        "4,236,157,933.96"
+      ],
+      "pdf_value": "3980365811.37",
+      "status": "matched"
+    },
+    {
+      "field": "trading_financial_liabilities",
+      "provider_field": "FN42",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1267770472,
+      "source_value": 18958544.0,
+      "pdf_page": 109,
+      "label": "交易性金融负债",
+      "printed": [
+        "18,958,544.41",
+        "41,903,775.02"
+      ],
+      "pdf_value": "18958544.41",
+      "status": "matched"
+    },
+    {
+      "field": "notes_payable",
+      "provider_field": "FN43",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1305684857,
+      "source_value": 442855200.0,
+      "pdf_page": 109,
+      "label": "应付票据",
+      "printed": [
+        "442,855,185.81",
+        "467,541,712.91"
+      ],
+      "pdf_value": "442855185.81",
+      "status": "matched"
+    },
+    {
+      "field": "noncurrent_liabilities",
+      "provider_field": "FN62",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1327115796,
+      "source_value": 2586711040.0,
+      "pdf_page": 109,
+      "label": "非流动负债合计",
+      "printed": [
+        "2,586,710,914.49",
+        "1,557,676,104.50"
+      ],
+      "pdf_value": "2586710914.49",
+      "status": "matched"
+    },
+    {
+      "field": "paid_in_capital",
+      "provider_field": "FN64",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1308600597,
+      "source_value": 536158880.0,
+      "pdf_page": 109,
+      "label": "股本",
+      "printed": [
+        "536,158,873.00",
+        "531,410,776.00"
+      ],
+      "pdf_value": "536158873.00",
+      "status": "matched"
+    },
+    {
+      "field": "capital_reserve",
+      "provider_field": "FN65",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1329016164,
+      "source_value": 3073205248.0,
+      "pdf_page": 109,
+      "label": "资本公积",
+      "printed": [
+        "3,073,205,202.38",
+        "2,977,550,840.52"
+      ],
+      "pdf_value": "3073205202.38",
+      "status": "matched"
+    },
+    {
+      "field": "surplus_reserve",
+      "provider_field": "FN66",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1300211989,
+      "source_value": 268079440.0,
+      "pdf_page": 109,
+      "label": "盈余公积",
+      "printed": [
+        "268,079,436.50",
+        "265,705,388.00"
+      ],
+      "pdf_value": "268079436.50",
+      "status": "matched"
+    },
+    {
+      "field": "retained_earnings",
+      "provider_field": "FN68",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1338334331,
+      "source_value": 6622344704.0,
+      "pdf_page": 109,
+      "label": "未分配利润",
+      "printed": [
+        "6,622,344,815.82",
+        "5,252,204,605.92"
+      ],
+      "pdf_value": "6622344815.82",
+      "status": "matched"
+    },
+    {
+      "field": "liabilities_and_equity",
+      "provider_field": "FN73",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1351975567,
+      "source_value": 20066891776.0,
+      "pdf_page": 109,
+      "label": "负债和所有者权益总计",
+      "printed": [
+        "20,066,892,453.86",
+        "16,603,707,262.71"
+      ],
+      "pdf_value": "20066892453.86",
+      "status": "matched"
+    },
+    {
+      "field": "revenue_cumulative",
+      "provider_field": "FN74",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1357076891,
+      "source_value": 30514403328.0,
+      "pdf_page": 112,
+      "label": "其中：营业收入",
+      "printed": [
+        "30,514,403,376.92",
+        "24,710,080,329.34"
+      ],
+      "pdf_value": "30514403376.92",
+      "status": "matched"
+    },
+    {
+      "field": "cost_of_revenue",
+      "provider_field": "FN75",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1350158765,
+      "source_value": 16762975232.0,
+      "pdf_page": 112,
+      "label": "其中：营业成本",
+      "printed": [
+        "16,762,975,546.47",
+        "13,918,403,694.15"
+      ],
+      "pdf_value": "16762975546.47",
+      "status": "matched"
+    },
+    {
+      "field": "taxes_and_surcharges",
+      "provider_field": "FN76",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1268461999,
+      "source_value": 20341598.0,
+      "pdf_page": 112,
+      "label": "税金及附加",
+      "printed": [
+        "20,341,597.09",
+        "18,037,859.33"
+      ],
+      "pdf_value": "20341597.09",
+      "status": "matched"
+    },
+    {
+      "field": "selling_expenses",
+      "provider_field": "FN77",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1338733663,
+      "source_value": 6826802688.0,
+      "pdf_page": 112,
+      "label": "销售费用",
+      "printed": [
+        "6,826,802,834.83",
+        "5,569,790,884.12"
+      ],
+      "pdf_value": "6826802834.83",
+      "status": "matched"
+    },
+    {
+      "field": "administrative_expenses",
+      "provider_field": "FN78",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1317162367,
+      "source_value": 1093058432.0,
+      "pdf_page": 112,
+      "label": "管理费用",
+      "printed": [
+        "1,093,058,494.68",
+        "868,731,901.96"
+      ],
+      "pdf_value": "1093058494.68",
+      "status": "matched"
+    },
+    {
+      "field": "associates_and_joint_ventures_investment_income",
+      "provider_field": "FN84",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1270828815,
+      "source_value": 25075230.0,
+      "pdf_page": 112,
+      "label": "其中：对联营企业和合营企业的投资收益",
+      "printed": [
+        "25,075,229.91",
+        "35,621,338.51"
+      ],
+      "pdf_value": "25075229.91",
+      "status": "matched"
+    },
+    {
+      "field": "nonoperating_income",
+      "provider_field": "FN88",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1250823980,
+      "source_value": 4654998.0,
+      "pdf_page": 112,
+      "label": "加：营业外收入",
+      "printed": [
+        "4,654,997.91",
+        "2,921,058.29"
+      ],
+      "pdf_value": "4654997.91",
+      "status": "matched"
+    },
+    {
+      "field": "nonoperating_expenses",
+      "provider_field": "FN89",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1258062345,
+      "source_value": 8274180.5,
+      "pdf_page": 112,
+      "label": "减：营业外支出",
+      "printed": [
+        "8,274,180.63",
+        "31,488,416.58"
+      ],
+      "pdf_value": "8274180.63",
+      "status": "matched"
+    },
+    {
+      "field": "cash_received_from_customers",
+      "provider_field": "FN98",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1355349321,
+      "source_value": 26976339968.0,
+      "pdf_page": 115,
+      "label": "销售商品、提供劳务收到的现金",
+      "printed": [
+        "26,976,339,349.16",
+        "21,373,434,769.94"
+      ],
+      "pdf_value": "26976339349.16",
+      "status": "matched"
+    },
+    {
+      "field": "other_operating_cash_received",
+      "provider_field": "FN100",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1290422957,
+      "source_value": 122836328.0,
+      "pdf_page": 115,
+      "label": "收到其他与经营活动有关的现金",
+      "printed": [
+        "122,836,325.04",
+        "166,014,152.36"
+      ],
+      "pdf_value": "122836325.04",
+      "status": "matched"
+    },
+    {
+      "field": "operating_cash_inflows",
+      "provider_field": "FN101",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1356077267,
+      "source_value": 28467173376.0,
+      "pdf_page": 115,
+      "label": "经营活动现金流入小计",
+      "printed": [
+        "28,467,173,663.22",
+        "22,625,367,203.57"
+      ],
+      "pdf_value": "28467173663.22",
+      "status": "matched"
+    },
+    {
+      "field": "cash_paid_to_suppliers",
+      "provider_field": "FN102",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1351170747,
+      "source_value": 18418620416.0,
+      "pdf_page": 115,
+      "label": "购买商品、接受劳务支付的现金",
+      "printed": [
+        "18,418,621,385.61",
+        "13,852,780,068.82"
+      ],
+      "pdf_value": "18418621385.61",
+      "status": "matched"
+    },
+    {
+      "field": "cash_paid_to_employees",
+      "provider_field": "FN103",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1331688914,
+      "source_value": 3757429248.0,
+      "pdf_page": 115,
+      "label": "支付给职工以及为职工支付的现金",
+      "printed": [
+        "3,757,429,280.45",
+        "2,212,818,119.04"
+      ],
+      "pdf_value": "3757429280.45",
+      "status": "matched"
+    },
+    {
+      "field": "other_operating_cash_paid",
+      "provider_field": "FN105",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1332763616,
+      "source_value": 4032552960.0,
+      "pdf_page": 115,
+      "label": "支付其他与经营活动有关的现金",
+      "printed": [
+        "4,032,553,058.36",
+        "2,621,055,336.37"
+      ],
+      "pdf_value": "4032553058.36",
+      "status": "matched"
+    },
+    {
+      "field": "operating_cash_outflows",
+      "provider_field": "FN106",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1355842498,
+      "source_value": 27986366464.0,
+      "pdf_page": 115,
+      "label": "经营活动现金流出小计",
+      "printed": [
+        "27,986,367,018.01",
+        "19,879,908,486.66"
+      ],
+      "pdf_value": "27986367018.01",
+      "status": "matched"
+    },
+    {
+      "field": "operating_cash_flow_cumulative",
+      "provider_field": "FN107",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1306870840,
+      "source_value": 480806656.0,
+      "pdf_page": 115,
+      "label": "经营活动产生的现金流量净额",
+      "printed": [
+        "480,806,645.21",
+        "2,745,458,716.91"
+      ],
+      "pdf_value": "480806645.21",
+      "status": "matched"
+    },
+    {
+      "field": "investment_recovery_cash",
+      "provider_field": "FN108",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1287522725,
+      "source_value": 99634472.0,
+      "pdf_page": 115,
+      "label": "收回投资收到的现金",
+      "printed": [
+        "99,634,469.25",
+        "50,275,720.09"
+      ],
+      "pdf_value": "99634469.25",
+      "status": "matched"
+    },
+    {
+      "field": "investment_income_cash",
+      "provider_field": "FN109",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1306185039,
+      "source_value": 458861024.0,
+      "pdf_page": 115,
+      "label": "取得投资收益收到的现金",
+      "printed": [
+        "458,861,011.38",
+        "33,622,327.64"
+      ],
+      "pdf_value": "458861011.38",
+      "status": "matched"
+    },
+    {
+      "field": "other_investing_cash_received",
+      "provider_field": "FN112",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1334144914,
+      "source_value": 4477363200.0,
+      "pdf_page": 115,
+      "label": "收到其他与投资活动有关的现金",
+      "printed": [
+        "4,477,363,122.76",
+        "3,669,513,022.44"
+      ],
+      "pdf_value": "4477363122.76",
+      "status": "matched"
+    },
+    {
+      "field": "investing_cash_inflows",
+      "provider_field": "FN113",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1335235725,
+      "source_value": 5035858432.0,
+      "pdf_page": 115,
+      "label": "投资活动现金流入小计",
+      "printed": [
+        "5,035,858,603.39",
+        "3,753,411,070.17"
+      ],
+      "pdf_value": "5035858603.39",
+      "status": "matched"
+    },
+    {
+      "field": "investment_purchase_cash",
+      "provider_field": "FN115",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1286568061,
+      "source_value": 91997160.0,
+      "pdf_page": 115,
+      "label": "投资支付的现金",
+      "printed": [
+        "91,997,161.66",
+        "72,547,000.95"
+      ],
+      "pdf_value": "91997161.66",
+      "status": "matched"
+    },
+    {
+      "field": "other_investing_cash_paid",
+      "provider_field": "FN117",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1333701824,
+      "source_value": 4272734208.0,
+      "pdf_page": 115,
+      "label": "支付其他与投资活动有关的现金",
+      "printed": [
+        "4,272,734,236.32",
+        "4,755,460,652.34"
+      ],
+      "pdf_value": "4272734236.32",
+      "status": "matched"
+    },
+    {
+      "field": "investing_cash_outflows",
+      "provider_field": "FN118",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1334638055,
+      "source_value": 4729851392.0,
+      "pdf_page": 115,
+      "label": "投资活动现金流出小计",
+      "printed": [
+        "4,729,851,558.03",
+        "5,256,889,626.10"
+      ],
+      "pdf_value": "4729851558.03",
+      "status": "matched"
+    },
+    {
+      "field": "investing_cash_flow_cumulative",
+      "provider_field": "FN119",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1301408352,
+      "source_value": 306007040.0,
+      "pdf_page": 115,
+      "label": "投资活动产生/(使用)的现金流量净额",
+      "printed": [
+        "306,007,045.36",
+        "-1,503,478,555.93"
+      ],
+      "pdf_value": "306007045.36",
+      "status": "matched"
+    },
+    {
+      "field": "equity_financing_cash",
+      "provider_field": "FN120",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1293730036,
+      "source_value": 164368192.0,
+      "pdf_page": 116,
+      "label": "吸收投资收到的现金",
+      "printed": [
+        "164,368,196.90",
+        "103,662,716.45"
+      ],
+      "pdf_value": "164368196.90",
+      "status": "matched"
+    },
+    {
+      "field": "borrowing_proceeds",
+      "provider_field": "FN121",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1317030953,
+      "source_value": 1076237440.0,
+      "pdf_page": 116,
+      "label": "取得借款收到的现金",
+      "printed": [
+        "1,076,237,429.67",
+        "1,372,407,896.83"
+      ],
+      "pdf_value": "1076237429.67",
+      "status": "matched"
+    },
+    {
+      "field": "financing_cash_inflows",
+      "provider_field": "FN123",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1326142415,
+      "source_value": 2337525504.0,
+      "pdf_page": 116,
+      "label": "筹资活动现金流入小计",
+      "printed": [
+        "2,337,525,626.57",
+        "1,476,070,613.28"
+      ],
+      "pdf_value": "2337525626.57",
+      "status": "matched"
+    },
+    {
+      "field": "debt_repayment_cash",
+      "provider_field": "FN124",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1316660080,
+      "source_value": 1051253760.0,
+      "pdf_page": 116,
+      "label": "偿还债务支付的现金",
+      "printed": [
+        "1,051,253,751.12",
+        "710,481,763.06"
+      ],
+      "pdf_value": "1051253751.12",
+      "status": "matched"
+    },
+    {
+      "field": "dividends_and_interest_paid",
+      "provider_field": "FN125",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1318092074,
+      "source_value": 1212060928.0,
+      "pdf_page": 116,
+      "label": "分配股利、利润或偿付利息支付的现金",
+      "printed": [
+        "1,212,060,981.47",
+        "1,168,111,992.54"
+      ],
+      "pdf_value": "1212060981.47",
+      "status": "matched"
+    },
+    {
+      "field": "other_financing_cash_paid",
+      "provider_field": "FN126",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1296187441,
+      "source_value": 203686672.0,
+      "pdf_page": 116,
+      "label": "支付其他与筹资活动有关的现金",
+      "printed": [
+        "203,686,672.84",
+        "407,310,715.24"
+      ],
+      "pdf_value": "203686672.84",
+      "status": "matched"
+    },
+    {
+      "field": "financing_cash_outflows",
+      "provider_field": "FN127",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1326648180,
+      "source_value": 2467001344.0,
+      "pdf_page": 116,
+      "label": "筹资活动现金流出小计",
+      "printed": [
+        "2,467,001,405.43",
+        "2,285,904,470.84"
+      ],
+      "pdf_value": "2467001405.43",
+      "status": "matched"
+    },
+    {
+      "field": "financing_cash_flow_cumulative",
+      "provider_field": "FN128",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 3438736536,
+      "source_value": -129475776.0,
+      "pdf_page": 116,
+      "label": "筹资活动使用的现金流量净额",
+      "printed": [
+        "-129,475,778.86",
+        "-809,833,857.56"
+      ],
+      "pdf_value": "-129475778.86",
+      "status": "matched"
+    },
+    {
+      "field": "exchange_rate_effect_on_cash",
+      "provider_field": "FN129",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1285280954,
+      "source_value": 81700304.0,
+      "pdf_page": 116,
+      "label": "四、汇率变动对现金及现金等价物的影响",
+      "printed": [
+        "81,700,303.34",
+        "107,456,822.15"
+      ],
+      "pdf_value": "81700303.34",
+      "status": "matched"
+    },
+    {
+      "field": "net_cash_increase_cumulative",
+      "provider_field": "FN131",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1311781712,
+      "source_value": 739038208.0,
+      "pdf_page": 116,
+      "label": "现金及现金等价物净增加额(减少以“-”号填列)",
+      "printed": [
+        "739,038,215.05",
+        "539,603,125.57"
+      ],
+      "pdf_value": "739038215.05",
+      "status": "matched"
+    },
+    {
+      "field": "other_comprehensive_income_profit_statement",
+      "provider_field": "FN269",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1286592052,
+      "source_value": 92189088.0,
+      "pdf_page": 113,
+      "label": "六、其他综合收益的税后净额",
+      "printed": [
+        "92,189,092.00",
+        "1,455,181.70"
+      ],
+      "pdf_value": "92189092.00",
+      "status": "matched"
+    },
+    {
+      "field": "comprehensive_income",
+      "provider_field": "FN270",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1327594983,
+      "source_value": 2709382912.0,
+      "pdf_page": 113,
+      "label": "七、综合收益总额",
+      "printed": [
+        "2,709,383,013.23",
+        "2,212,579,150.02"
+      ],
+      "pdf_value": "2709383013.23",
+      "status": "matched"
+    },
+    {
+      "field": "deferred_income_noncurrent",
+      "provider_field": "FN297",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1269346407,
+      "source_value": 22110414.0,
+      "pdf_page": 109,
+      "label": "递延收益",
+      "printed": [
+        "22,110,414.98",
+        "24,069,423.86"
+      ],
+      "pdf_value": "22110414.98",
+      "status": "matched"
+    },
+    {
+      "field": "accumulated_other_comprehensive_income",
+      "provider_field": "FN298",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1269951233,
+      "source_value": 23320066.0,
+      "pdf_page": 109,
+      "label": "其他综合收益",
+      "printed": [
+        "23,320,065.67",
+        "-68,828,239.81"
+      ],
+      "pdf_value": "23320065.67",
+      "status": "matched"
+    },
+    {
+      "field": "other_income",
+      "provider_field": "FN300",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1280540011,
+      "source_value": 55440812.0,
+      "pdf_page": 112,
+      "label": "其他收益",
+      "printed": [
+        "55,440,811.79",
+        "47,065,886.45"
+      ],
+      "pdf_value": "55440811.79",
+      "status": "matched"
+    },
+    {
+      "field": "continuing_operations_net_income",
+      "provider_field": "FN302",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1327234870,
+      "source_value": 2617193984.0,
+      "pdf_page": 113,
+      "label": "持续经营净利润(净亏损以“－”号填列)",
+      "printed": [
+        "2,617,193,921.23",
+        "2,211,123,968.32"
+      ],
+      "pdf_value": "2617193921.23",
+      "status": "matched"
+    },
+    {
+      "field": "derivative_financial_assets",
+      "provider_field": "FN405",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 10000,
+      "source_bits": 1179501148,
+      "source_value": 13168.58984375,
+      "pdf_page": 108,
+      "label": "衍生金融资产",
+      "printed": [
+        "131,685,919.86",
+        "-"
+      ],
+      "pdf_value": "131685919.86",
+      "status": "matched"
+    },
+    {
+      "field": "derivative_financial_liabilities",
+      "provider_field": "FN415",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 10000,
+      "source_bits": 1166314353,
+      "source_value": 4241.43017578125,
+      "pdf_page": 109,
+      "label": "衍生金融负债",
+      "printed": [
+        "42,414,321.45",
+        "11,059,751.57"
+      ],
+      "pdf_value": "42414321.45",
+      "status": "matched"
+    },
+    {
+      "field": "long_term_employee_benefits_payable",
+      "provider_field": "FN427",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 10000,
+      "source_bits": 1183746975,
+      "source_value": 18245.810546875,
+      "pdf_page": 109,
+      "label": "长期应付职工薪酬",
+      "printed": [
+        "182,458,086.70",
+        "198,880,555.26"
+      ],
+      "pdf_value": "182458086.70",
+      "status": "matched"
+    },
+    {
+      "field": "right_of_use_assets",
+      "provider_field": "FN438",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 10000,
+      "source_bits": 1190804593,
+      "source_value": 32030.220703125,
+      "pdf_page": 108,
+      "label": "使用权资产",
+      "printed": [
+        "320,302,161.73",
+        "116,274,821.76"
+      ],
+      "pdf_value": "320302161.73",
+      "status": "matched"
+    },
+    {
+      "field": "total_operating_revenue",
+      "provider_field": "FN502",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1245331137,
+      "source_value": 3051440.25,
+      "pdf_page": 112,
+      "label": "一、营业总收入",
+      "printed": [
+        "30,514,403,376.92",
+        "24,710,080,329.34"
+      ],
+      "pdf_value": "30514403376.92",
+      "status": "matched"
+    },
+    {
+      "field": "comprehensive_income_parent",
+      "provider_field": "FN504",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1216398849,
+      "source_value": 263728.03125,
+      "pdf_page": 113,
+      "label": "归属于母公司所有者的综合收益总额",
+      "printed": [
+        "2,637,280,185.88",
+        "2,115,885,226.75"
+      ],
+      "pdf_value": "2637280185.88",
+      "status": "matched"
+    },
+    {
+      "field": "comprehensive_income_minority",
+      "provider_field": "FN505",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1172394557,
+      "source_value": 7210.27978515625,
+      "pdf_page": 113,
+      "label": "归属于少数股东的综合收益总额",
+      "printed": [
+        "72,102,827.35",
+        "96,693,923.27"
+      ],
+      "pdf_value": "72102827.35",
+      "status": "matched"
+    },
+    {
+      "field": "total_operating_cost",
+      "provider_field": "FN519",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1244184809,
+      "source_value": 2764858.25,
+      "pdf_page": 112,
+      "label": "二、营业总成本",
+      "printed": [
+        "27,648,582,451.49",
+        "22,508,362,922.69"
+      ],
+      "pdf_value": "27648582451.49",
+      "status": "matched"
+    },
+    {
+      "field": "asset_impairment_income",
+      "provider_field": "FN521",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 3339621297,
+      "source_value": -36499.69140625,
+      "pdf_page": 112,
+      "label": "资产减值损失(损失以“－”号填列)",
+      "printed": [
+        "-364,996,905.04",
+        "-148,412,846.86"
+      ],
+      "pdf_value": "-364996905.04",
+      "status": "matched"
+    },
+    {
+      "field": "subsidiary_minority_equity_cash_received",
+      "provider_field": "FN577",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1084227584,
+      "source_value": 5.0,
+      "pdf_page": 116,
+      "label": "其中：子公司吸收少数股东投资收到的现金",
+      "printed": [
+        "50,000.00",
+        "144,700.00"
+      ],
+      "pdf_value": "50000.00",
+      "status": "matched"
+    },
+    {
+      "field": "subsidiary_minority_dividends_cash_paid",
+      "provider_field": "FN578",
+      "period": "2025-12-31",
+      "pdf_id": "1225090973",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1154252718,
+      "source_value": 1635.989990234375,
+      "pdf_page": 116,
+      "label": "其中：子公司支付给少数股东的股利、利润",
+      "printed": [
+        "16,359,850.55",
+        "13,634,273.42"
+      ],
+      "pdf_value": "16359850.55",
+      "status": "matched"
+    },
+    {
+      "field": "dividends_receivable",
+      "provider_field": "FN16",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 0,
+      "source_value": 0.0,
+      "pdf_page": 57,
+      "label": "应收股利",
+      "printed": [
+        "-",
+        "-"
+      ],
+      "pdf_value": null,
+      "status": "printed_missing"
+    },
+    {
+      "field": "investment_property",
+      "provider_field": "FN26",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1260143229,
+      "source_value": 10240637.0,
+      "pdf_page": 57,
+      "label": "投资性房地产",
+      "printed": [
+        "10,240,636.80",
+        "10,689,131.88"
+      ],
+      "pdf_value": "10240636.80",
+      "status": "matched"
+    },
+    {
+      "field": "long_term_prepaid_expenses",
+      "provider_field": "FN36",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1287599912,
+      "source_value": 100251968.0,
+      "pdf_page": 57,
+      "label": "长期待摊费用",
+      "printed": [
+        "100,251,969.90",
+        "70,311,305.27"
+      ],
+      "pdf_value": "100251969.90",
+      "status": "matched"
+    },
+    {
+      "field": "other_noncurrent_assets",
+      "provider_field": "FN38",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1293903514,
+      "source_value": 167143840.0,
+      "pdf_page": 57,
+      "label": "其他非流动资产",
+      "printed": [
+        "167,143,845.74",
+        "118,204,550.90"
+      ],
+      "pdf_value": "167143845.74",
+      "status": "matched"
+    },
+    {
+      "field": "noncurrent_assets",
+      "provider_field": "FN39",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1333829117,
+      "source_value": 4315675136.0,
+      "pdf_page": 57,
+      "label": "非流动资产合计",
+      "printed": [
+        "4,315,674,971.83",
+        "3,980,365,811.37"
+      ],
+      "pdf_value": "4315674971.83",
+      "status": "matched"
+    },
+    {
+      "field": "trading_financial_liabilities",
+      "provider_field": "FN42",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1218830048,
+      "source_value": 339703.0,
+      "pdf_page": 58,
+      "label": "交易性金融负债",
+      "printed": [
+        "339,703.00",
+        "18,958,544.41"
+      ],
+      "pdf_value": "339703.00",
+      "status": "matched"
+    },
+    {
+      "field": "notes_payable",
+      "provider_field": "FN43",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1310410888,
+      "source_value": 651305472.0,
+      "pdf_page": 58,
+      "label": "应付票据",
+      "printed": [
+        "651,305,459.69",
+        "442,855,185.81"
+      ],
+      "pdf_value": "651305459.69",
+      "status": "matched"
+    },
+    {
+      "field": "noncurrent_liabilities",
+      "provider_field": "FN62",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1327068223,
+      "source_value": 2574532352.0,
+      "pdf_page": 58,
+      "label": "非流动负债合计",
+      "printed": [
+        "2,574,532,323.44",
+        "2,586,710,914.49"
+      ],
+      "pdf_value": "2574532323.44",
+      "status": "matched"
+    },
+    {
+      "field": "paid_in_capital",
+      "provider_field": "FN64",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1308604269,
+      "source_value": 536276384.0,
+      "pdf_page": 58,
+      "label": "股本",
+      "printed": [
+        "536,276,371.00",
+        "536,158,873.00"
+      ],
+      "pdf_value": "536276371.00",
+      "status": "matched"
+    },
+    {
+      "field": "capital_reserve",
+      "provider_field": "FN65",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1329200032,
+      "source_value": 3120275456.0,
+      "pdf_page": 58,
+      "label": "资本公积",
+      "printed": [
+        "3,120,275,484.09",
+        "3,073,205,202.38"
+      ],
+      "pdf_value": "3120275484.09",
+      "status": "matched"
+    },
+    {
+      "field": "surplus_reserve",
+      "provider_field": "FN66",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1300211989,
+      "source_value": 268079440.0,
+      "pdf_page": 58,
+      "label": "盈余公积",
+      "printed": [
+        "268,079,436.50",
+        "268,079,436.50"
+      ],
+      "pdf_value": "268079436.50",
+      "status": "matched"
+    },
+    {
+      "field": "retained_earnings",
+      "provider_field": "FN68",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1339878018,
+      "source_value": 7412712448.0,
+      "pdf_page": 58,
+      "label": "未分配利润",
+      "printed": [
+        "7,412,712,215.81",
+        "6,622,344,815.82"
+      ],
+      "pdf_value": "7412712215.81",
+      "status": "matched"
+    },
+    {
+      "field": "liabilities_and_equity",
+      "provider_field": "FN73",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1353124622,
+      "source_value": 22420156416.0,
+      "pdf_page": 58,
+      "label": "负债和所有者权益总计",
+      "printed": [
+        "22,420,155,727.09",
+        "20,066,892,453.86"
+      ],
+      "pdf_value": "22420155727.09",
+      "status": "matched"
+    },
+    {
+      "field": "revenue_cumulative",
+      "provider_field": "FN74",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1350004501,
+      "source_value": 16605008896.0,
+      "pdf_page": 61,
+      "label": "其中：营业收入",
+      "printed": [
+        "16,605,008,753.42",
+        "12,866,762,779.48"
+      ],
+      "pdf_value": "16605008753.42",
+      "status": "matched"
+    },
+    {
+      "field": "cost_of_revenue",
+      "provider_field": "FN75",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1341673385,
+      "source_value": 8331940352.0,
+      "pdf_page": 61,
+      "label": "其中：营业成本",
+      "printed": [
+        "8,331,940,197.78",
+        "7,111,435,099.23"
+      ],
+      "pdf_value": "8331940197.78",
+      "status": "matched"
+    },
+    {
+      "field": "taxes_and_surcharges",
+      "provider_field": "FN76",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1262209269,
+      "source_value": 12306677.0,
+      "pdf_page": 61,
+      "label": "税金及附加",
+      "printed": [
+        "12,306,676.64",
+        "9,868,650.06"
+      ],
+      "pdf_value": "12306676.64",
+      "status": "matched"
+    },
+    {
+      "field": "selling_expenses",
+      "provider_field": "FN77",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1330386860,
+      "source_value": 3424103424.0,
+      "pdf_page": 61,
+      "label": "销售费用",
+      "printed": [
+        "3,424,103,491.52",
+        "2,827,038,772.04"
+      ],
+      "pdf_value": "3424103491.52",
+      "status": "matched"
+    },
+    {
+      "field": "administrative_expenses",
+      "provider_field": "FN78",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1308859027,
+      "source_value": 551986368.0,
+      "pdf_page": 61,
+      "label": "管理费用",
+      "printed": [
+        "551,986,395.21",
+        "466,191,086.44"
+      ],
+      "pdf_value": "551986395.21",
+      "status": "matched"
+    },
+    {
+      "field": "associates_and_joint_ventures_investment_income",
+      "provider_field": "FN84",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1260850992,
+      "source_value": 10948400.0,
+      "pdf_page": 61,
+      "label": "其中：对联营企业和合营企业的投资收益",
+      "printed": [
+        "10,948,400.32",
+        "10,715,161.96"
+      ],
+      "pdf_value": "10948400.32",
+      "status": "matched"
+    },
+    {
+      "field": "nonoperating_income",
+      "provider_field": "FN88",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1245076221,
+      "source_value": 2987711.25,
+      "pdf_page": 61,
+      "label": "加：营业外收入",
+      "printed": [
+        "2,987,711.13",
+        "3,612,848.10"
+      ],
+      "pdf_value": "2987711.13",
+      "status": "matched"
+    },
+    {
+      "field": "nonoperating_expenses",
+      "provider_field": "FN89",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1267016562,
+      "source_value": 17450724.0,
+      "pdf_page": 61,
+      "label": "减：营业外支出",
+      "printed": [
+        "17,450,723.91",
+        "3,972,158.27"
+      ],
+      "pdf_value": "17450723.91",
+      "status": "matched"
+    },
+    {
+      "field": "cash_received_from_customers",
+      "provider_field": "FN98",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1347688801,
+      "source_value": 14233732096.0,
+      "pdf_page": 64,
+      "label": "销售商品、提供劳务收到的现金",
+      "printed": [
+        "14,233,732,079.01",
+        "10,883,761,184.11"
+      ],
+      "pdf_value": "14233732079.01",
+      "status": "matched"
+    },
+    {
+      "field": "other_operating_cash_received",
+      "provider_field": "FN100",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1303922172,
+      "source_value": 386449280.0,
+      "pdf_page": 64,
+      "label": "收到其他与经营活动有关的现金",
+      "printed": [
+        "386,449,272.55",
+        "63,056,830.73"
+      ],
+      "pdf_value": "386449272.55",
+      "status": "matched"
+    },
+    {
+      "field": "operating_cash_inflows",
+      "provider_field": "FN101",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1349479198,
+      "source_value": 16067098624.0,
+      "pdf_page": 64,
+      "label": "经营活动现金流入小计",
+      "printed": [
+        "16,067,098,688.49",
+        "11,705,017,648.51"
+      ],
+      "pdf_value": "16067098688.49",
+      "status": "matched"
+    },
+    {
+      "field": "cash_paid_to_suppliers",
+      "provider_field": "FN102",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1343249435,
+      "source_value": 9687821312.0,
+      "pdf_page": 64,
+      "label": "购买商品、接受劳务支付的现金",
+      "printed": [
+        "9,687,820,944.46",
+        "8,280,825,830.05"
+      ],
+      "pdf_value": "9687820944.46",
+      "status": "matched"
+    },
+    {
+      "field": "cash_paid_to_employees",
+      "provider_field": "FN103",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1326170290,
+      "source_value": 2344661504.0,
+      "pdf_page": 64,
+      "label": "支付给职工以及为职工支付的现金",
+      "printed": [
+        "2,344,661,621.34",
+        "2,196,895,921.57"
+      ],
+      "pdf_value": "2344661621.34",
+      "status": "matched"
+    },
+    {
+      "field": "other_operating_cash_paid",
+      "provider_field": "FN105",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1324722343,
+      "source_value": 2060735360.0,
+      "pdf_page": 64,
+      "label": "支付其他与经营活动有关的现金",
+      "printed": [
+        "2,060,735,396.46",
+        "1,479,248,917.29"
+      ],
+      "pdf_value": "2060735396.46",
+      "status": "matched"
+    },
+    {
+      "field": "operating_cash_outflows",
+      "provider_field": "FN106",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1348773603,
+      "source_value": 15344569344.0,
+      "pdf_page": 64,
+      "label": "经营活动现金流出小计",
+      "printed": [
+        "15,344,569,293.48",
+        "12,837,238,599.13"
+      ],
+      "pdf_value": "15344569293.48",
+      "status": "matched"
+    },
+    {
+      "field": "operating_cash_flow_cumulative",
+      "provider_field": "FN107",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1311523762,
+      "source_value": 722529408.0,
+      "pdf_page": 64,
+      "label": "经营活动产生/(使用)的现金流量净额",
+      "printed": [
+        "722,529,395.01",
+        "-1,132,220,950.62"
+      ],
+      "pdf_value": "722529395.01",
+      "status": "matched"
+    },
+    {
+      "field": "investment_recovery_cash",
+      "provider_field": "FN108",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1233197577,
+      "source_value": 1057601.125,
+      "pdf_page": 64,
+      "label": "收回投资收到的现金",
+      "printed": [
+        "1,057,601.17",
+        "48,383,948.00"
+      ],
+      "pdf_value": "1057601.17",
+      "status": "matched"
+    },
+    {
+      "field": "investment_income_cash",
+      "provider_field": "FN109",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1292052462,
+      "source_value": 137527008.0,
+      "pdf_page": 64,
+      "label": "取得投资收益收到的现金",
+      "printed": [
+        "137,527,005.28",
+        "170,833,586.70"
+      ],
+      "pdf_value": "137527005.28",
+      "status": "matched"
+    },
+    {
+      "field": "other_investing_cash_received",
+      "provider_field": "FN112",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1330615061,
+      "source_value": 3482522880.0,
+      "pdf_page": 64,
+      "label": "收到其他与投资活动有关的现金",
+      "printed": [
+        "3,482,522,803.78",
+        "2,344,628,850.08"
+      ],
+      "pdf_value": "3482522803.78",
+      "status": "matched"
+    },
+    {
+      "field": "investing_cash_inflows",
+      "provider_field": "FN113",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1331156475,
+      "source_value": 3621124864.0,
+      "pdf_page": 64,
+      "label": "投资活动现金流入小计",
+      "printed": [
+        "3,621,124,760.23",
+        "2,563,846,384.78"
+      ],
+      "pdf_value": "3621124760.23",
+      "status": "matched"
+    },
+    {
+      "field": "investment_purchase_cash",
+      "provider_field": "FN115",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1257575544,
+      "source_value": 8030780.0,
+      "pdf_page": 64,
+      "label": "投资支付的现金",
+      "printed": [
+        "8,030,779.92",
+        "56,112,935.27"
+      ],
+      "pdf_value": "8030779.92",
+      "status": "matched"
+    },
+    {
+      "field": "other_investing_cash_paid",
+      "provider_field": "FN117",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1329250413,
+      "source_value": 3133172992.0,
+      "pdf_page": 64,
+      "label": "支付其他与投资活动有关的现金",
+      "printed": [
+        "3,133,173,054.74",
+        "1,238,519,769.09"
+      ],
+      "pdf_value": "3133173054.74",
+      "status": "matched"
+    },
+    {
+      "field": "investing_cash_outflows",
+      "provider_field": "FN118",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1329740707,
+      "source_value": 3258688256.0,
+      "pdf_page": 64,
+      "label": "投资活动现金流出小计",
+      "printed": [
+        "3,258,688,246.11",
+        "1,457,602,989.53"
+      ],
+      "pdf_value": "3258688246.11",
+      "status": "matched"
+    },
+    {
+      "field": "investing_cash_flow_cumulative",
+      "provider_field": "FN119",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1303171773,
+      "source_value": 362436512.0,
+      "pdf_page": 64,
+      "label": "投资活动产生的现金流量净额",
+      "printed": [
+        "362,436,514.12",
+        "1,106,243,395.25"
+      ],
+      "pdf_value": "362436514.12",
+      "status": "matched"
+    },
+    {
+      "field": "equity_financing_cash",
+      "provider_field": "FN120",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1246665474,
+      "source_value": 3385024.5,
+      "pdf_page": 65,
+      "label": "吸收投资收到的现金",
+      "printed": [
+        "3,385,024.39",
+        "3,580,891.33"
+      ],
+      "pdf_value": "3385024.39",
+      "status": "matched"
+    },
+    {
+      "field": "borrowing_proceeds",
+      "provider_field": "FN121",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1309357759,
+      "source_value": 583905216.0,
+      "pdf_page": 65,
+      "label": "取得借款收到的现金",
+      "printed": [
+        "583,905,214.97",
+        "518,508,230.60"
+      ],
+      "pdf_value": "583905214.97",
+      "status": "matched"
+    },
+    {
+      "field": "financing_cash_inflows",
+      "provider_field": "FN123",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1309410650,
+      "source_value": 587290240.0,
+      "pdf_page": 65,
+      "label": "筹资活动现金流入小计",
+      "printed": [
+        "587,290,239.36",
+        "1,619,009,121.93"
+      ],
+      "pdf_value": "587290239.36",
+      "status": "matched"
+    },
+    {
+      "field": "debt_repayment_cash",
+      "provider_field": "FN124",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1307280315,
+      "source_value": 493909856.0,
+      "pdf_page": 65,
+      "label": "偿还债务支付的现金",
+      "printed": [
+        "493,909,852.74",
+        "321,339,124.96"
+      ],
+      "pdf_value": "493909852.74",
+      "status": "matched"
+    },
+    {
+      "field": "dividends_and_interest_paid",
+      "provider_field": "FN125",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1315820601,
+      "source_value": 997527104.0,
+      "pdf_page": 65,
+      "label": "分配股利、利润或偿付利息支付的现金",
+      "printed": [
+        "997,527,127.21",
+        "812,323,396.25"
+      ],
+      "pdf_value": "997527127.21",
+      "status": "matched"
+    },
+    {
+      "field": "other_financing_cash_paid",
+      "provider_field": "FN126",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1292791116,
+      "source_value": 149345472.0,
+      "pdf_page": 65,
+      "label": "支付其他与筹资活动有关的现金",
+      "printed": [
+        "149,345,476.33",
+        "49,293,234.69"
+      ],
+      "pdf_value": "149345476.33",
+      "status": "matched"
+    },
+    {
+      "field": "financing_cash_outflows",
+      "provider_field": "FN127",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1321441461,
+      "source_value": 1640782464.0,
+      "pdf_page": 65,
+      "label": "筹资活动现金流出小计",
+      "printed": [
+        "1,640,782,456.28",
+        "1,182,955,755.90"
+      ],
+      "pdf_value": "1640782456.28",
+      "status": "matched"
+    },
+    {
+      "field": "financing_cash_flow_cumulative",
+      "provider_field": "FN128",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 3464178704,
+      "source_value": -1053492224.0,
+      "pdf_page": 65,
+      "label": "筹资活动产生/(使用)的现金流量净额",
+      "printed": [
+        "-1,053,492,216.92",
+        "436,053,366.03"
+      ],
+      "pdf_value": "-1053492216.92",
+      "status": "matched"
+    },
+    {
+      "field": "exchange_rate_effect_on_cash",
+      "provider_field": "FN129",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 3435921957,
+      "source_value": -106959144.0,
+      "pdf_page": 65,
+      "label": "四、汇率变动对现金及现金等价物的影响",
+      "printed": [
+        "-106,959,144.83",
+        "-10,410,178.43"
+      ],
+      "pdf_value": "-106959144.83",
+      "status": "matched"
+    },
+    {
+      "field": "net_cash_increase_cumulative",
+      "provider_field": "FN131",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 3431987746,
+      "source_value": -75485456.0,
+      "pdf_page": 65,
+      "label": "现金及现金等价物净增加额(减少以“-”号填列)",
+      "printed": [
+        "-75,485,452.62",
+        "399,665,632.23"
+      ],
+      "pdf_value": "-75485452.62",
+      "status": "matched"
+    },
+    {
+      "field": "other_comprehensive_income_profit_statement",
+      "provider_field": "FN269",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1297618109,
+      "source_value": 226577360.0,
+      "pdf_page": 62,
+      "label": "六、其他综合收益的税后净额",
+      "printed": [
+        "226,577,361.86",
+        "-261,556,736.50"
+      ],
+      "pdf_value": "226577361.86",
+      "status": "matched"
+    },
+    {
+      "field": "comprehensive_income",
+      "provider_field": "FN270",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1324024408,
+      "source_value": 1971399680.0,
+      "pdf_page": 62,
+      "label": "七、综合收益总额",
+      "printed": [
+        "1,971,399,631.86",
+        "904,730,797.65"
+      ],
+      "pdf_value": "1971399631.86",
+      "status": "matched"
+    },
+    {
+      "field": "deferred_income_noncurrent",
+      "provider_field": "FN297",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1268856655,
+      "source_value": 21130910.0,
+      "pdf_page": 58,
+      "label": "递延收益",
+      "printed": [
+        "21,130,910.54",
+        "22,110,414.98"
+      ],
+      "pdf_value": "21130910.54",
+      "status": "matched"
+    },
+    {
+      "field": "accumulated_other_comprehensive_income",
+      "provider_field": "FN298",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 1,
+      "source_bits": 1299074906,
+      "source_value": 249886112.0,
+      "pdf_page": 58,
+      "label": "其他综合收益",
+      "printed": [
+        "249,886,108.19",
+        "23,320,065.67"
+      ],
+      "pdf_value": "249886108.19",
+      "status": "matched"
+    },
+    {
+      "field": "other_income",
+      "provider_field": "FN300",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1266649862,
+      "source_value": 16747270.0,
+      "pdf_page": 61,
+      "label": "其他收益",
+      "printed": [
+        "16,747,270.15",
+        "21,912,450.16"
+      ],
+      "pdf_value": "16747270.15",
+      "status": "matched"
+    },
+    {
+      "field": "continuing_operations_net_income",
+      "provider_field": "FN302",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 1,
+      "source_bits": 1322254272,
+      "source_value": 1744822272.0,
+      "pdf_page": 62,
+      "label": "持续经营净利润(净亏损以“－”号填列)",
+      "printed": [
+        "1,744,822,270.00",
+        "1,166,287,534.15"
+      ],
+      "pdf_value": "1744822270.00",
+      "status": "matched"
+    },
+    {
+      "field": "derivative_financial_assets",
+      "provider_field": "FN405",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 10000,
+      "source_bits": 1187169347,
+      "source_value": 24930.130859375,
+      "pdf_page": 57,
+      "label": "衍生金融资产",
+      "printed": [
+        "249,301,303.93",
+        "131,685,919.86"
+      ],
+      "pdf_value": "249301303.93",
+      "status": "matched"
+    },
+    {
+      "field": "derivative_financial_liabilities",
+      "provider_field": "FN415",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 10000,
+      "source_bits": 1135950561,
+      "source_value": 362.4599914550781,
+      "pdf_page": 58,
+      "label": "衍生金融负债",
+      "printed": [
+        "3,624,567.81",
+        "42,414,321.45"
+      ],
+      "pdf_value": "3624567.81",
+      "status": "matched"
+    },
+    {
+      "field": "long_term_employee_benefits_payable",
+      "provider_field": "FN427",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 10000,
+      "source_bits": 1183559864,
+      "source_value": 17880.359375,
+      "pdf_page": 58,
+      "label": "长期应付职工薪酬",
+      "printed": [
+        "178,803,611.27",
+        "182,458,086.70"
+      ],
+      "pdf_value": "178803611.27",
+      "status": "matched"
+    },
+    {
+      "field": "right_of_use_assets",
+      "provider_field": "FN438",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "balance_sheet",
+      "period_basis": "instant",
+      "multiplier": 10000,
+      "source_bits": 1191880315,
+      "source_value": 35494.48046875,
+      "pdf_page": 57,
+      "label": "使用权资产",
+      "printed": [
+        "354,944,836.77",
+        "320,302,161.73"
+      ],
+      "pdf_value": "354944836.77",
+      "status": "matched"
+    },
+    {
+      "field": "total_operating_revenue",
+      "provider_field": "FN502",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1238020775,
+      "source_value": 1660500.875,
+      "pdf_page": 61,
+      "label": "一、营业总收入",
+      "printed": [
+        "16,605,008,753.42",
+        "12,866,762,779.48"
+      ],
+      "pdf_value": "16605008753.42",
+      "status": "matched"
+    },
+    {
+      "field": "comprehensive_income_parent",
+      "provider_field": "FN504",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1211914005,
+      "source_value": 192860.328125,
+      "pdf_page": 62,
+      "label": "归属于母公司所有者的综合收益总额",
+      "printed": [
+        "1,928,603,257.91",
+        "905,358,854.99"
+      ],
+      "pdf_value": "1928603257.91",
+      "status": "matched"
+    },
+    {
+      "field": "comprehensive_income_minority",
+      "provider_field": "FN505",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1166392607,
+      "source_value": 4279.64013671875,
+      "pdf_page": 62,
+      "label": "归属于少数股东的综合收益总额",
+      "printed": [
+        "42,796,373.95",
+        "-628,057.34"
+      ],
+      "pdf_value": "42796373.95",
+      "status": "matched"
+    },
+    {
+      "field": "total_operating_cost",
+      "provider_field": "FN519",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1236204353,
+      "source_value": 1433448.125,
+      "pdf_page": 61,
+      "label": "二、营业总成本",
+      "printed": [
+        "14,334,481,086.95",
+        "11,572,764,120.32"
+      ],
+      "pdf_value": "14334481086.95",
+      "status": "matched"
+    },
+    {
+      "field": "asset_impairment_income",
+      "provider_field": "FN521",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "income_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 3341636173,
+      "source_value": -44370.30078125,
+      "pdf_page": 61,
+      "label": "资产减值损失(损失以“－”号填列)",
+      "printed": [
+        "-443,702,968.63",
+        "-237,522,795.77"
+      ],
+      "pdf_value": "-443702968.63",
+      "status": "matched"
+    },
+    {
+      "field": "subsidiary_minority_equity_cash_received",
+      "provider_field": "FN577",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 0,
+      "source_value": 0.0,
+      "pdf_page": 65,
+      "label": "其中：子公司吸收少数股东投资收到的现金",
+      "printed": [
+        "-",
+        "50,000.00"
+      ],
+      "pdf_value": null,
+      "status": "printed_missing"
+    },
+    {
+      "field": "subsidiary_minority_dividends_cash_paid",
+      "provider_field": "FN578",
+      "period": "2026-06-30",
+      "pdf_id": "1225533054",
+      "category": "cashflow_statement",
+      "period_basis": "ytd",
+      "multiplier": 10000,
+      "source_bits": 1172146196,
+      "source_value": 7089.009765625,
+      "pdf_page": 65,
+      "label": "其中：子公司支付给少数股东的股利、利润",
+      "printed": [
+        "70,890,116.31",
+        "-"
+      ],
+      "pdf_value": "70890116.31",
+      "status": "matched"
+    }
+  ]
+}

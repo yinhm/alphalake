@@ -21,7 +21,7 @@ func TestInitializeCurrentSchemaIsAtomicAndIdempotent(t *testing.T) {
 	if err = db.QueryRowContext(ctx, `SELECT (SELECT max(version) FROM meta.schema_version),(SELECT count(*) FROM meta.schema_version),(SELECT count(*) FROM fundamental.field),(SELECT count(*) FROM fundamental.provider_field)`).Scan(&version, &versions, &fields, &mappings); err != nil {
 		t.Fatal(err)
 	}
-	if version != SchemaVersion || versions != 1 || fields != 81 || mappings != 81 {
+	if version != SchemaVersion || versions != 1 || fields != 145 || mappings != 145 {
 		t.Fatal(version, versions, fields, mappings)
 	}
 	// 初始化不得修复或覆盖已存在的当前业务内容。
@@ -57,7 +57,7 @@ func TestInitializeCurrentSchemaIsAtomicAndIdempotent(t *testing.T) {
 }
 
 func TestInitializeRejectsUnsupportedAndUnversionedDatabases(t *testing.T) {
-	for _, version := range []int{46, 48} {
+	for _, version := range []int{47, 49} {
 		t.Run(strconv.Itoa(version), func(t *testing.T) {
 			db, err := Open(t.Context(), filepath.Join(t.TempDir(), "old.duckdb"))
 			if err != nil {

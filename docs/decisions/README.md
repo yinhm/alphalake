@@ -32,3 +32,5 @@
 - [017：数据库领域与版本边界整理](017-database-design-review.md)——确认 core 命名和风险参考分层，列明映射关联、审核修订、报告主体及迁移验收要求；迁移未执行。
 
 - [018 标准财务消费与源编号分离](018-standard-financial-consumption.md)
+
+- [019：按报表成批审核标准财务字段](019-complete-statement-field-review.md)
