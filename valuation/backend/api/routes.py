@@ -58,20 +58,10 @@ def _get_damodaran_store() -> DamodaranStore:
     return _damodaran_store
 
 
-def _build_lookups(store: DamodaranStore):
-    """Build the industry_lookup + country_erp_lookup callables that enable
-    multi-business β and operating-countries ERP branches in M2."""
-
-    def _industry_lookup(industry_name: str, region: str):
+def _build_industry_lookup(store: DamodaranStore):
+    def lookup(industry_name: str, region: str):
         return store.lookup_industry(industry_name, region=region)
-
-    def _country_erp_lookup(country_name: str):
-        m = store.lookup_country(country_name)
-        if m is None:
-            return None
-        return (m.equity_risk_premium or 0.0) + (m.country_risk_premium or 0.0)
-
-    return _industry_lookup, _country_erp_lookup
+    return lookup
 
 
 # ISO 4217 currency codes (common subset) — used as options in manual-entry
@@ -434,8 +424,8 @@ def fetch_and_run(req: FetchRequest):
 
     # 6. Run pipeline if we have financials
     if inputs.raw_financials:
-        ind_lookup, cerp_lookup = _build_lookups(store)
-        report = run_full_valuation(inputs, industry_lookup=ind_lookup, country_erp_lookup=cerp_lookup)
+        ind_lookup = _build_industry_lookup(store)
+        report = run_full_valuation(inputs, industry_lookup=ind_lookup)
     else:
         from engine.orchestrator import ValuationReport
         report = ValuationReport(
@@ -921,8 +911,8 @@ async def fetch_from_file(
     )
 
     if inputs.raw_financials:
-        ind_lookup, cerp_lookup = _build_lookups(store)
-        report = run_full_valuation(inputs, industry_lookup=ind_lookup, country_erp_lookup=cerp_lookup)
+        ind_lookup = _build_industry_lookup(store)
+        report = run_full_valuation(inputs, industry_lookup=ind_lookup)
     else:
         from engine.orchestrator import ValuationReport
         report = ValuationReport(ticker=ticker, warnings=["No financial data in uploaded file."])
@@ -1094,8 +1084,8 @@ def list_erp_catalog():
 def create_valuation(req: ValuationRequest):
     """Run full valuation pipeline and return results."""
     store = _get_damodaran_store()
-    ind_lookup, cerp_lookup = _build_lookups(store)
-    report = run_full_valuation(req.inputs, industry_lookup=ind_lookup, country_erp_lookup=cerp_lookup)
+    ind_lookup = _build_industry_lookup(store)
+    report = run_full_valuation(req.inputs, industry_lookup=ind_lookup)
     session = create_session(req.inputs, report)
     return _report_to_dict(session)
 
@@ -1124,8 +1114,8 @@ def patch_valuation(session_id: str, req: OverrideRequest):
     # Rebuild inputs and recompute
     new_inputs = CompanyValuationInput(**inputs_dict)
     store = _get_damodaran_store()
-    ind_lookup, cerp_lookup = _build_lookups(store)
-    new_report = run_full_valuation(new_inputs, industry_lookup=ind_lookup, country_erp_lookup=cerp_lookup)
+    ind_lookup = _build_industry_lookup(store)
+    new_report = run_full_valuation(new_inputs, industry_lookup=ind_lookup)
     session.inputs = new_inputs
     session.report = new_report
     return _report_to_dict(session)
@@ -1147,7 +1137,7 @@ def sensitivity(session_id: str):
         raise HTTPException(status_code=404, detail="Session not found")
 
     store = _get_damodaran_store()
-    ind_lookup, cerp_lookup = _build_lookups(store)
+    ind_lookup = _build_industry_lookup(store)
 
     baseline_vps = (
         session.report.final.value_per_share
@@ -1168,7 +1158,7 @@ def sensitivity(session_id: str):
             try:
                 trial_inputs = CompanyValuationInput(**trial_dict)
                 trial_report = run_full_valuation(
-                    trial_inputs, industry_lookup=ind_lookup, country_erp_lookup=cerp_lookup
+                    trial_inputs, industry_lookup=ind_lookup
                 )
                 vps = trial_report.final.value_per_share if trial_report.final else None
             except Exception:

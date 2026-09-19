@@ -1,0 +1,413 @@
+{
+  "comparison_base_commit": "b69f0bd",
+  "scope": "two_frozen_current_contract_requests_not_current_market_valuation",
+  "full_reports_equal": true,
+  "reports_sha256": "f1886b89188d88743b8445d15f0c5c31c8d8001806dc9a37a78c5d9a6cf36802",
+  "companies": [
+    {
+      "code": "002032",
+      "request": "valuation/research/current-contract-20260919/method-closure-20260912/002032-request.json.gz",
+      "request_sha256": "58e462f672c4b8848f692670332f1db2248a7e046e9dda72366a0f40e9fd8218",
+      "value_per_share": 43.252612680123605
+    },
+    {
+      "code": "300866",
+      "request": "valuation/research/current-contract-20260919/method-closure-20260912/300866-request.json.gz",
+      "request_sha256": "2068eca34bbd52b6ef7fa002b0a64c1147f394b5ff688ecde0250f149d00844f",
+      "value_per_share": 126.13784833230838
+    }
+  ],
+  "reference_before": {
+    "schema_version": 44,
+    "tables": {
+      "\"classification\".\"membership\"": [
+        0,
+        ""
+      ],
+      "\"classification\".\"node\"": [
+        94,
+        "12056044301053856675"
+      ],
+      "\"classification\".\"taxonomy\"": [
+        1,
+        "18411927985952582423"
+      ],
+      "\"core\".\"company\"": [
+        0,
+        ""
+      ],
+      "\"core\".\"exchange\"": [
+        0,
+        ""
+      ],
+      "\"core\".\"instrument\"": [
+        0,
+        ""
+      ],
+      "\"core\".\"instrument_identifier\"": [
+        0,
+        ""
+      ],
+      "\"core\".\"listing\"": [
+        0,
+        ""
+      ],
+      "\"core\".\"listing_identifier\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"document_review\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"fact\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"filing\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"filing_document\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"provider_fact\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"provider_field\"": [
+        80,
+        "15688192455398276250"
+      ],
+      "\"fundamental\".\"provider_filing_link\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"provider_record_resolution\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"reviewed_supplement\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"supplement_review_history\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"adjustment_segment\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"corporate_action\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"daily_observation\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"equity_proceeds_observation\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"fx_rate\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"listing_close_observation\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"ohlcv_daily\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"share_capital\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"share_count_observation\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"trading_calendar\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"yield_curve_point\"": [
+        8,
+        "5231221990869622112"
+      ],
+      "\"meta\".\"artifact\"": [
+        4,
+        "3333862572659256214"
+      ],
+      "\"meta\".\"checkpoint\"": [
+        4,
+        "14456115135122520416"
+      ],
+      "\"meta\".\"dataset_release\"": [
+        4,
+        "15132828770795075180"
+      ],
+      "\"meta\".\"dataset_release_artifact\"": [
+        4,
+        "1888488798999013794"
+      ],
+      "\"meta\".\"derived_state\"": [
+        0,
+        ""
+      ],
+      "\"meta\".\"ingest_run\"": [
+        11,
+        "4757433519969609989"
+      ],
+      "\"meta\".\"schema_version\"": [
+        44,
+        "7819095987597738166"
+      ],
+      "\"meta\".\"validation_result\"": [
+        0,
+        ""
+      ],
+      "\"reference\".\"country_risk\"": [
+        6,
+        "34644208558355798"
+      ],
+      "\"reference\".\"credit_spread_band\"": [
+        15,
+        "17148460364828619863"
+      ],
+      "\"reference\".\"equity_risk_premium\"": [
+        4,
+        "5972294174476572115"
+      ],
+      "\"reference\".\"industry_stat\"": [
+        376,
+        "560997398024129550"
+      ],
+      "\"reference\".\"security_code_transition\"": [
+        0,
+        ""
+      ],
+      "\"reference\".\"security_industry\"": [
+        0,
+        ""
+      ]
+    }
+  },
+  "reference_after": {
+    "schema_version": 46,
+    "tables": {
+      "\"classification\".\"membership\"": [
+        0,
+        ""
+      ],
+      "\"classification\".\"node\"": [
+        94,
+        "12056044301053856675"
+      ],
+      "\"classification\".\"taxonomy\"": [
+        1,
+        "18411927985952582423"
+      ],
+      "\"core\".\"company\"": [
+        0,
+        ""
+      ],
+      "\"core\".\"exchange\"": [
+        0,
+        ""
+      ],
+      "\"core\".\"instrument\"": [
+        0,
+        ""
+      ],
+      "\"core\".\"instrument_identifier\"": [
+        0,
+        ""
+      ],
+      "\"core\".\"listing\"": [
+        0,
+        ""
+      ],
+      "\"core\".\"listing_identifier\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"document_review\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"fact\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"field\"": [
+        81,
+        "13955987850949516084"
+      ],
+      "\"fundamental\".\"filing\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"filing_document\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"provider_fact\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"provider_field\"": [
+        81,
+        "13654659095905654455"
+      ],
+      "\"fundamental\".\"provider_filing_link\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"provider_record_resolution\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"reviewed_supplement\"": [
+        0,
+        ""
+      ],
+      "\"fundamental\".\"supplement_review_history\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"adjustment_segment\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"corporate_action\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"daily_observation\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"equity_proceeds_observation\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"fx_rate\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"listing_close_observation\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"ohlcv_daily\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"share_capital\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"share_count_observation\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"trading_calendar\"": [
+        0,
+        ""
+      ],
+      "\"market\".\"yield_curve_point\"": [
+        8,
+        "5231221990869622112"
+      ],
+      "\"meta\".\"artifact\"": [
+        4,
+        "3333862572659256214"
+      ],
+      "\"meta\".\"checkpoint\"": [
+        4,
+        "14456115135122520416"
+      ],
+      "\"meta\".\"dataset_release\"": [
+        4,
+        "15132828770795075180"
+      ],
+      "\"meta\".\"dataset_release_artifact\"": [
+        4,
+        "1888488798999013794"
+      ],
+      "\"meta\".\"derived_state\"": [
+        0,
+        ""
+      ],
+      "\"meta\".\"ingest_run\"": [
+        11,
+        "4757433519969609989"
+      ],
+      "\"meta\".\"schema_version\"": [
+        46,
+        "5934693180128585436"
+      ],
+      "\"meta\".\"validation_result\"": [
+        0,
+        ""
+      ],
+      "\"reference\".\"country_risk\"": [
+        6,
+        "34644208558355798"
+      ],
+      "\"reference\".\"credit_spread_band\"": [
+        15,
+        "17148460364828619863"
+      ],
+      "\"reference\".\"equity_risk_premium\"": [
+        4,
+        "5972294174476572115"
+      ],
+      "\"reference\".\"industry_stat\"": [
+        376,
+        "560997398024129550"
+      ],
+      "\"reference\".\"security_code_transition\"": [
+        0,
+        ""
+      ],
+      "\"reference\".\"security_industry\"": [
+        0,
+        ""
+      ]
+    }
+  },
+  "financial_database": {
+    "path": "workspace/auto-valuation-20260909/market.duckdb",
+    "schema": 46,
+    "unchanged_sha256": "d7c027df3ec5a14d2d05f423472f954f19a83d2b3969c35de39bd6b65b3ac507"
+  },
+  "schema_catalogue_comparison": {
+    "equal": true,
+    "tables": 45,
+    "macros": 4,
+    "views": 2,
+    "indexes": 1,
+    "columns": 523,
+    "sequences": 26,
+    "constraints": 521,
+    "canonical_fields": 81,
+    "provider_mappings": 81
+  },
+  "validation": {
+    "go_test_all": "passed",
+    "go_build_cli": "passed",
+    "python_passed": 447,
+    "python_skipped": 4,
+    "skip_reason": "upstream external TEST_DATA absent",
+    "python_warnings": 7,
+    "python_duration_seconds": 586.97,
+    "diff_check": "passed"
+  }
+}

@@ -360,13 +360,13 @@ def from_database(req: FromDatabaseRequest) -> dict:
         raise HTTPException(status_code=404, detail=f"Ticker not in database: {req.ticker}")
 
     from engine.orchestrator import run_full_valuation
-    from api.routes import _build_lookups, _get_damodaran_store, _report_to_dict
+    from api.routes import _build_industry_lookup, _get_damodaran_store, _report_to_dict
     from api.session_store import create_session
 
     inputs = _db_record_to_company_input(record, req.risk_free_rate, req.industry_override)
     store = _get_damodaran_store()
-    ind_lookup, cerp_lookup = _build_lookups(store)
-    report = run_full_valuation(inputs, industry_lookup=ind_lookup, country_erp_lookup=cerp_lookup)
+    ind_lookup = _build_industry_lookup(store)
+    report = run_full_valuation(inputs, industry_lookup=ind_lookup)
 
     # Use the same session layout + serializer the template path uses so the
     # response shape is byte-identical.

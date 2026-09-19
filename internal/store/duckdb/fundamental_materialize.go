@@ -114,15 +114,6 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 		return result, fmt.Errorf("%d provider facts have overlapping canonical field mappings", ambiguousMappings)
 	}
 
-	// 046起，源映射必须符合独立标准目录；旧版本仅供历史迁移验收。
-	var hasStandardCatalogue bool
-	if err := conn.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema='fundamental' AND table_name='field')`).Scan(&hasStandardCatalogue); err != nil {
-		return result, err
-	}
-	standardMatch := "TRUE"
-	if hasStandardCatalogue {
-		standardMatch = `EXISTS(SELECT 1 FROM fundamental.field c WHERE c.canonical_field=m.canonical_field AND c.unit=m.unit AND c.value_kind=m.value_kind AND c.period_basis=m.period_basis)`
-	}
 	if _, err := conn.ExecContext(ctx, `
 		CREATE TEMP TABLE `+fundamentalRejectStage+` AS
 		WITH candidates AS (
@@ -140,7 +131,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 				m.unit,
 				m.value_kind,
 				m.period_basis,
-                `+standardMatch+` AS standard_semantics_valid,
+                EXISTS(SELECT 1 FROM fundamental.field c WHERE c.canonical_field=m.canonical_field AND c.unit=m.unit AND c.value_kind=m.value_kind AND c.period_basis=m.period_basis) AS standard_semantics_valid,
 				l.filing_id,
 				f.instrument_id AS filing_instrument_id,
 				f.report_period AS filing_report_period,
@@ -316,7 +307,6 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 		FROM fundamental.fact f
 		WHERE f.primary_source=? AND (?='' OR f.source_provider_field=?)
 		  AND f.provider_code IS NOT NULL
-		  AND f.materializer_version <> 'legacy'
 		  AND NOT EXISTS (
 			SELECT 1 FROM temp.main.`+fundamentalFactStage+` s
 			WHERE s.primary_source=f.primary_source
@@ -331,7 +321,6 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 		DELETE FROM fundamental.fact f
 		WHERE f.primary_source=? AND (?='' OR f.source_provider_field=?)
 		  AND f.provider_code IS NOT NULL
-		  AND f.materializer_version <> 'legacy'
 		  AND NOT EXISTS (
 			SELECT 1 FROM temp.main.`+fundamentalFactStage+` s
 			WHERE s.primary_source=f.primary_source

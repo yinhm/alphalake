@@ -192,7 +192,7 @@ def test_invalid_terminal_api_preserves_existing_session(sample_inputs,monkeypat
     from api.main import app
     from api import routes,session_store
     monkeypatch.setattr(routes,'_get_damodaran_store',lambda:None)
-    monkeypatch.setattr(routes,'_build_lookups',lambda store:(None,None))
+    monkeypatch.setattr(routes,'_build_industry_lookup',lambda store:None)
     monkeypatch.setattr(session_store,'_sessions',{})
     client=TestClient(app)
     valid=sample_inputs.model_dump(mode='json')

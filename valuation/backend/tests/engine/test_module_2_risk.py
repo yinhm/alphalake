@@ -48,7 +48,7 @@ class TestCostOfCapital:
             adjusted_mv_debt=0.0,
         )
 
-        result = compute_cost_of_capital(adjusted, us_macro, tech_industry, mv_equity=1000.0)
+        result = compute_cost_of_capital(adjusted, us_macro, tech_industry, mv_equity=1000.0, book_debt=adjusted.adjusted_mv_debt)
 
         assert result.d_e_ratio == pytest.approx(0.0)
         assert result.beta_l == pytest.approx(1.20)
@@ -71,7 +71,7 @@ class TestCostOfCapital:
             adjusted_mv_debt=400.0,
         )
 
-        result = compute_cost_of_capital(adjusted, us_macro, tech_industry, mv_equity=1000.0)
+        result = compute_cost_of_capital(adjusted, us_macro, tech_industry, mv_equity=1000.0, book_debt=adjusted.adjusted_mv_debt)
 
         assert result.d_e_ratio == pytest.approx(0.4)
         assert result.beta_l == pytest.approx(1.20 * (1 + 0.79 * 0.4), rel=1e-4)
@@ -93,7 +93,7 @@ class TestCostOfCapital:
         )
         adjusted = AdjustedFinancials(adjusted_ebit=100.0, adjusted_mv_debt=0.0)
 
-        result = compute_cost_of_capital(adjusted, macro, tech_industry, mv_equity=1000.0)
+        result = compute_cost_of_capital(adjusted, macro, tech_industry, mv_equity=1000.0, book_debt=adjusted.adjusted_mv_debt)
 
         # Ke = 0.04 + 1.20 * (0.05 + 0.03) = 0.04 + 0.096 = 0.136
         assert result.cost_of_equity == pytest.approx(0.136)
@@ -114,7 +114,7 @@ class TestCostOfCapital:
         )
         adjusted = AdjustedFinancials(adjusted_ebit=100.0, adjusted_mv_debt=500.0)
 
-        result = compute_cost_of_capital(adjusted, macro, industry, mv_equity=1000.0)
+        result = compute_cost_of_capital(adjusted, macro, industry, mv_equity=1000.0, book_debt=adjusted.adjusted_mv_debt)
 
         # Cost of debt = 0.04 + 0.02 = 0.06
         assert result.cost_of_debt_pretax == pytest.approx(0.06)
@@ -130,7 +130,7 @@ class TestCostOfCapital:
         )
         adjusted = AdjustedFinancials(adjusted_ebit=100.0, adjusted_mv_debt=0.0)
 
-        result = compute_cost_of_capital(adjusted, us_macro, industry, mv_equity=1000.0)
+        result = compute_cost_of_capital(adjusted, us_macro, industry, mv_equity=1000.0, book_debt=adjusted.adjusted_mv_debt)
 
         # Should use 1.10, not 0.80
         assert result.beta_l == pytest.approx(1.10)
@@ -138,14 +138,14 @@ class TestCostOfCapital:
     def test_weights_sum_to_one(self, us_macro, tech_industry):
         """Equity + debt weights should sum to 1.0."""
         adjusted = AdjustedFinancials(adjusted_ebit=100.0, adjusted_mv_debt=600.0)
-        result = compute_cost_of_capital(adjusted, us_macro, tech_industry, mv_equity=400.0)
+        result = compute_cost_of_capital(adjusted, us_macro, tech_industry, mv_equity=400.0, book_debt=adjusted.adjusted_mv_debt)
         assert result.weight_equity + result.weight_debt == pytest.approx(1.0)
 
     def test_wacc_between_ke_and_kd(self, us_macro, tech_industry):
         """WACC should always be between cost_of_debt_aftertax and cost_of_equity."""
         for debt in [100, 500, 1000, 2000]:
             adjusted = AdjustedFinancials(adjusted_ebit=100.0, adjusted_mv_debt=float(debt))
-            result = compute_cost_of_capital(adjusted, us_macro, tech_industry, mv_equity=1000.0)
+            result = compute_cost_of_capital(adjusted, us_macro, tech_industry, mv_equity=1000.0, book_debt=adjusted.adjusted_mv_debt)
             assert result.cost_of_debt_aftertax <= result.wacc <= result.cost_of_equity
 
 
@@ -157,11 +157,32 @@ def test_wacc_proxy_does_not_claim_market_weights(approach,us_macro,tech_industr
     industry=tech_industry.model_copy(update={'wacc':0.08})
     method=MethodologyChoices(cost_of_capital_approach=approach,wacc_direct_input=0.1)
     adjusted=AdjustedFinancials(adjusted_ebit=100,adjusted_mv_debt=300)
-    outputs=[compute_cost_of_capital(adjusted,us_macro,industry,equity,method) for equity in (100,1000)]
+    outputs=[compute_cost_of_capital(adjusted,us_macro,industry,equity,method,book_debt=300) for equity in (100,1000)]
     for result in outputs:
         assert result.approach_used==approach and result.capital_structure_basis=='not_used'
     assert outputs[0].wacc==outputs[1].wacc
     if approach=='direct':assert outputs[0].wacc==0.1
     if approach=='decile':assert outputs[0].wacc==0.08
-    detailed=compute_cost_of_capital(adjusted,us_macro,industry,1000)
+    detailed=compute_cost_of_capital(adjusted,us_macro,industry,1000,book_debt=300)
     assert detailed.capital_structure_basis=='market_values' and detailed.weight_debt>0
+
+
+def test_explicit_zero_debt_does_not_select_adjusted_debt(us_macro, tech_industry):
+    adjusted = AdjustedFinancials(adjusted_ebit=100, adjusted_mv_debt=400)
+    result = compute_cost_of_capital(adjusted, us_macro, tech_industry, 1000, book_debt=0)
+    assert result.mv_straight_debt == 0
+    assert result.weight_debt == 0
+    with pytest.raises(TypeError, match='book_debt'):
+        compute_cost_of_capital(adjusted, us_macro, tech_industry, 1000)
+
+
+def test_geographic_erp_uses_resolved_evidence_without_lookup(us_macro, tech_industry):
+    from engine.data_dictionary import GeographicSegment, SegmentResolution, MethodologyChoices
+    from engine.module_2_risk import _multi_location_weighted_erp
+    segments = [GeographicSegment(name='company label', revenue=100,
+        resolution=SegmentResolution(raw_name='company label', mapped_to='China', mapped_kind='country', erp=.07))]
+    result = compute_cost_of_capital(AdjustedFinancials(adjusted_ebit=100), us_macro, tech_industry,
+        1000, MethodologyChoices(erp_approach='operating_countries', geographic_segments=segments), book_debt=0)
+    assert result.equity_risk_premium == pytest.approx(.07)
+    erp, warnings = _multi_location_weighted_erp([GeographicSegment(name='China', revenue=100)])
+    assert erp == 0 and warnings

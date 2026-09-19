@@ -2,7 +2,7 @@
 import pytest
 
 from engine.company_metrics import compute_company_metrics
-from engine.data_dictionary import RawFinancials, AdjustmentInputs, CostOfCapital, MacroInputs, ValuationAssumptions
+from engine.data_dictionary import RawFinancials, AdjustedFinancials, AdjustmentInputs, CostOfCapital, MacroInputs, ValuationAssumptions
 from engine.module_1_adjustments import compute_adjustments
 from engine.module_3_cashflow import compute_cashflow_and_growth
 from engine.module_5_multiples import compute_multiples
@@ -73,3 +73,11 @@ def test_anker_reported_rd_matches_frozen_tax_unchanged_scenarios():
         assert after_tax_operating_income(adjusted, raw, tax_rate) == pytest.approx(
             float(row['adjusted_nopat']), abs=.00001, rel=0)
         assert row['fcff'] == ''  # This real sample still lacks full operating reinvestment.
+
+
+def test_zero_adjusted_capital_has_no_book_capital_ratio_fallback():
+    raw = RawFinancials(fiscal_year=2025, revenues=1000, ebit=100,
+        bv_equity=100, bv_debt=0, cash_and_marketable_securities=0, cross_holdings=100)
+    metrics = compute_company_metrics([raw], adjusted=AdjustedFinancials(adjusted_ebit=100), tax_rate=.2)
+    assert metrics.sales_to_capital is None
+    assert metrics.roic is None

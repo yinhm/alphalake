@@ -110,15 +110,10 @@ def compute_company_metrics(
         # Remove the current R&D net addition to recover opening research capital.
         # Prior lease PV remains the existing current-PV proxy.
         ic1 -= adjusted.adjusted_ebit - fin0.ebit - adjusted.lease_adjustment_to_ebit
-    # Fallbacks for comparability with legacy consumers
-    ic0_book = _unadjusted_ic(fin0)
-
     # 3. Sales-to-capital ratio
     sales_to_cap = None
     if ic0 and ic0 != 0:
         sales_to_cap = fin0.revenues / ic0
-    elif ic0_book and ic0_book != 0:
-        sales_to_cap = fin0.revenues / ic0_book
 
     # 4. Marginal sales-to-capital — ΔRev / ΔIC over the latest year
     marginal_stc = None

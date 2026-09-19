@@ -50,7 +50,7 @@ func TestReadOperationalStatusReportsDatabaseState(t *testing.T) {
 	}
 }
 
-func TestReadOperationalStatusDoesNotRequireMigration(t *testing.T) {
+func TestReadOperationalStatusDoesNotInitializeDatabase(t *testing.T) {
 	ctx := context.Background()
 	db, err := Open(ctx, filepath.Join(t.TempDir(), "empty.duckdb"))
 	if err != nil {

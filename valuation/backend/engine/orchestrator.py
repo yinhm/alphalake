@@ -48,7 +48,6 @@ class ValuationReport:
 def run_full_valuation(
     inputs: CompanyValuationInput,
     industry_lookup=None,
-    country_erp_lookup=None,
 ) -> ValuationReport:
     """
     Run the full M1 → M6 valuation pipeline.
@@ -57,8 +56,6 @@ def run_full_valuation(
         inputs: Complete input data bundle from Module 0.
         industry_lookup: optional callable(industry_name, region) -> IndustryData | None.
             Enables multi-business β. Typically wired to DamodaranStore.lookup_industry.
-        country_erp_lookup: optional callable(country_name) -> total ERP | None.
-            Enables operating-countries revenue-weighted ERP.
 
     Returns:
         ValuationReport with all intermediate and final results.
@@ -142,7 +139,6 @@ def run_full_valuation(
         mv_equity,
         methodology=inputs.methodology_choices,
         industry_lookup=industry_lookup,
-        country_erp_lookup=country_erp_lookup,
         book_debt=book_debt,
         interest_expense=interest_expense,
         industry_global=inputs.industry_data_global,

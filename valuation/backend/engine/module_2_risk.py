@@ -86,11 +86,6 @@ def _decile_lookup(region: str, risk_group: str) -> float | None:
     return table.get(region, {}).get(risk_group)
 
 
-def _regional_erp(region: str) -> float | None:
-    """Total ERP for a Damodaran-defined region."""
-    return _REF.get("regional_erp", {}).get(region, {}).get("total_erp")
-
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -141,28 +136,16 @@ def _multi_business_ev_weighted_beta(
 
 
 def _multi_location_weighted_erp(
-    segments: list[GeographicSegment], lookup
+    segments: list[GeographicSegment]
 ) -> tuple[float, list[str]]:
-    """Revenue-weighted ERP across countries or regions.
-
-    Preferred path: each GeographicSegment carries a `resolution` with a
-    pre-computed ERP (handles composites like "EMEA" by expanding to member
-    weights). Backend routes.py populates this automatically from the
-    segment_resolver; frontend user overrides propagate through the same
-    resolution object.
-
-    Fallback path: if `resolution` is absent (pre-resolver data), fall back
-    to calling `lookup(seg.name)` — the legacy behavior.
-
-    lookup(name) → ERP | None.
-    """
+    """Revenue-weighted ERP from explicitly resolved segment evidence."""
     warnings: list[str] = []
     weighted: list[tuple[float, float]] = []
     total_rev = 0.0
     for seg in segments:
         # Prefer the resolved ERP if available
         resolved_erp = None
-        if getattr(seg, "resolution", None) is not None:
+        if seg.resolution is not None:
             resolved_erp = seg.resolution.erp
             if seg.resolution.mapped_kind == "unresolved":
                 warnings.append(
@@ -170,9 +153,6 @@ def _multi_location_weighted_erp(
                     f"please map manually via the Geographic Segments panel."
                 )
                 continue
-        if resolved_erp is None:
-            # Legacy path — caller-supplied lookup by raw name
-            resolved_erp = lookup(seg.name)
         if resolved_erp is None:
             warnings.append(f"Location '{seg.name}': ERP not found; skipped.")
             continue
@@ -217,8 +197,8 @@ def compute_cost_of_capital(
     methodology: MethodologyChoices | None = None,
     # Optional auxiliary data — if passed, enables the advanced variants.
     industry_lookup=None,           # callable: (industry_name, region) -> IndustryData | None
-    country_erp_lookup=None,         # callable: country_name -> ERP | None
-    book_debt: float = 0.0,
+    *,
+    book_debt: float,
     interest_expense: float = 0.0,
     industry_global: IndustryData | None = None,
 ) -> CostOfCapital:
@@ -392,12 +372,12 @@ def compute_cost_of_capital(
         else:
             erp = m.erp_direct_input
     elif m.erp_approach == "operating_countries":
-        if not m.geographic_segments or country_erp_lookup is None:
-            warnings.append("operating_countries: geographic_segments empty or lookup not available; falling back to country of incorporation.")
+        if not m.geographic_segments:
+            warnings.append("operating_countries: geographic_segments empty; falling back to country of incorporation.")
             erp = macro.equity_risk_premium + (macro.country_risk_premium or 0.0)
             erp_branch = "country_of_incorporation (fallback)"
         else:
-            erp, geo_warns = _multi_location_weighted_erp(m.geographic_segments, country_erp_lookup)
+            erp, geo_warns = _multi_location_weighted_erp(m.geographic_segments)
             warnings.extend(geo_warns)
             if erp == 0.0:
                 erp = macro.equity_risk_premium + (macro.country_risk_premium or 0.0)
@@ -408,7 +388,7 @@ def compute_cost_of_capital(
             erp = macro.equity_risk_premium + (macro.country_risk_premium or 0.0)
             erp_branch = "country_of_incorporation (fallback)"
         else:
-            erp, reg_warns = _multi_location_weighted_erp(m.geographic_segments, _regional_erp)
+            erp, reg_warns = _multi_location_weighted_erp(m.geographic_segments)
             warnings.extend(reg_warns)
             if erp == 0.0:
                 erp = macro.equity_risk_premium + (macro.country_risk_premium or 0.0)
@@ -483,20 +463,17 @@ def compute_cost_of_capital(
         kd_branch = "industry_fallback (fallback)"
 
     # --- MV of debt ---
-    # Primary source: `book_debt` kwarg (from orchestrator: raw.bv_debt).
-    # Backwards-compat fallback: `adjusted.adjusted_mv_debt` (Module 1 output,
-    # already handles mv_debt→bv_debt fallback). Leases are added separately
-    # via mv_leases so we do NOT include them here even if adjusted_mv_debt
-    # has been extended to include them.
+    # Explicit book debt; an actual zero must not select a different debt basis.
+    # Lease debt is added separately below.
     mv_straight = 0.0
     mv_conv_straight = 0.0
     equity_in_conv = 0.0
-    debt_for_pricing = book_debt if book_debt > 0 else float(adjusted.adjusted_mv_debt or 0.0)
+    debt_for_pricing = book_debt
     if debt_for_pricing > 0:
         if m.use_bond_pricing_for_debt and interest_expense > 0 and m.debt_maturity_years > 0:
             mv_straight = _bond_price_of_debt(debt_for_pricing, interest_expense, kd_pretax, m.debt_maturity_years)
         else:
-            mv_straight = debt_for_pricing  # use book value (or Module 1's MV-debt passthrough) as MV proxy
+            mv_straight = debt_for_pricing  # explicit book-value proxy
 
     if m.has_convertible and m.convertible_debt.book_value > 0:
         cd = m.convertible_debt

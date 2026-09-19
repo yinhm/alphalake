@@ -175,6 +175,10 @@ func TestMaterializeCanonicalFundamentalsRejectsInvalidAndRemovesStale(t *testin
 		t.Fatal(err)
 	}
 
+	// Obsolete version labels do not exempt unsupported facts from invalidation.
+	if _, err := db.ExecContext(ctx, `UPDATE fundamental.fact SET materializer_version='legacy'`); err != nil {
+		t.Fatal(err)
+	}
 	// Provider records are immutable in normal operation; this mutation simulates
 	// parser/catalogue correction turning a formerly materializable raw value into
 	// unavailable evidence. Reconciliation must remove the stale canonical row.
@@ -303,5 +307,19 @@ func TestMaterializeSingleQuarterFlowsAndRepairLegacyPeriods(t *testing.T) {
 	}
 	if replay.Updated != 0 || replay.Inserted != 0 || replay.Removed != 0 {
 		t.Fatalf("replay=%+v", replay)
+	}
+}
+
+func TestMaterializationRequiresCurrentStandardCatalogue(t *testing.T) {
+	db, err := OpenInitialized(t.Context(), filepath.Join(t.TempDir(), "catalogue.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err = db.ExecContext(t.Context(), "DROP TABLE fundamental.field"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = MaterializeCanonicalFundamentals(t.Context(), db, 1, "tdx"); err == nil {
+		t.Fatal("missing standard catalogue silently accepted")
 	}
 }

@@ -471,8 +471,9 @@ func main() {
 		fmt.Printf("AlphaLake %s\n", version)
 		fmt.Printf("database: %s\n", os.Args[2])
 		fmt.Printf("schema: %d/%d", status.SchemaVersion, status.LatestSchemaVersion)
-		if pending := status.LatestSchemaVersion - status.SchemaVersion; pending > 0 {
-			fmt.Printf(" (%d pending)", pending)
+		if status.SchemaVersion != status.LatestSchemaVersion {
+			fmt.Println(" (unsupported; preserve evidence and rebuild)")
+			break
 		}
 		fmt.Println()
 		fmt.Printf("validation failures: %d\n", status.ValidationFailures)
