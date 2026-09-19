@@ -13,7 +13,6 @@ import pytest
 from fastapi.testclient import TestClient
 from fastapi.encoders import jsonable_encoder
 from api.main import app
-from tools.migrate_standard_contract import upgrade_legacy
 from data_sources.alphalake import build_inputs, AlphaLakeRequest
 from engine.orchestrator import run_full_valuation
 
@@ -1393,7 +1392,7 @@ def test_reviewed_asset_standard_chain(exports, tmp_path, monkeypatch):
     from tools.verify_nonfinancial_dcf import verify
     from pypdf import PdfReader
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
-    original = upgrade_legacy(json.loads(gzip.decompress((REPO/'valuation/research/method-closure-20260912/300866-request.json.gz').read_bytes())))
+    original = json.loads(gzip.decompress((REPO/'valuation/research/current-contract-20260919/method-closure-20260912/300866-request.json.gz').read_bytes()))
     frozen = evaluate(AlphaLakeRequest.model_validate(original))
     original['policy']['wacc'] = frozen['report']['cost_of_capital']['wacc']
     original['wacc_binding'] = None

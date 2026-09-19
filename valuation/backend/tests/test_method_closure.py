@@ -1,6 +1,5 @@
 """两份真实主库标准请求的离线方法回归；数据库实时查询另记验收。"""
 from copy import deepcopy
-from tools.migrate_standard_contract import upgrade_legacy
 import gzip
 import hashlib
 import json
@@ -11,17 +10,18 @@ from api.alphalake import evaluate
 from data_sources.alphalake import AlphaLakeRequest
 from tools.verify_nonfinancial_dcf import verify
 
-ROOT = Path(__file__).resolve().parents[3]/'valuation/research/method-closure-20260912'
+ARCHIVES = Path(__file__).resolve().parents[3]/'valuation/research'
+ROOT = ARCHIVES/'current-contract-20260919/method-closure-20260912'
 
 
 @pytest.mark.parametrize('code', ['300866','002032'])
 def test_real_standard_method_closure(code,tmp_path,monkeypatch):
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
     raw = (ROOT/f'{code}-request.json.gz').read_bytes()
-    receipt = upgrade_legacy(json.loads((ROOT.parents[2]/'docs/acceptance/method-closure-20260912.json').read_text()))
+    receipt = json.loads((ARCHIVES.parents[1]/'docs/acceptance/method-closure-20260912.json').read_text())
     expected = next(r for r in receipt['companies'] if r['code'] == code)
-    assert hashlib.sha256(raw).hexdigest() == expected['request_snapshot']['sha256']
-    request = upgrade_legacy(json.loads(gzip.decompress(raw)))
+    assert hashlib.sha256((ARCHIVES/'method-closure-20260912'/f'{code}-request.json.gz').read_bytes()).hexdigest() == expected['request_snapshot']['sha256']
+    request = json.loads(gzip.decompress(raw))
     baseline = evaluate(AlphaLakeRequest.model_validate(request))
     checked = verify(baseline)
     assert evaluate(AlphaLakeRequest.model_validate(request)) == baseline
@@ -62,7 +62,7 @@ def test_growth_capital_economic_diagnostics(tmp_path, monkeypatch):
     from engine.orchestrator import run_full_valuation
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
     for code in ('300866', '002032'):
-        req = AlphaLakeRequest.model_validate(upgrade_legacy(json.loads(gzip.decompress((ROOT/f'{code}-request.json.gz').read_bytes()))))
+        req = AlphaLakeRequest.model_validate(json.loads(gzip.decompress((ROOT/f'{code}-request.json.gz').read_bytes())))
         inputs, audit = build_inputs(req)
         report = run_full_valuation(inputs)
         review = growth_capital_consistency(inputs, report, audit)
@@ -111,9 +111,9 @@ def test_partial_asset_policy_with_explicit_synthetic_archive(tmp_path, monkeypa
     """标准请求+人工归档关联夹具；不冒称镜像已入生产库。"""
     from data_sources.alphalake import content_hash
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
-    request = upgrade_legacy(json.loads(gzip.decompress((ROOT/'002032-request.json.gz').read_bytes())))
+    request = json.loads(gzip.decompress((ROOT/'002032-request.json.gz').read_bytes()))
     baseline = evaluate(AlphaLakeRequest.model_validate(request))
-    receipt = upgrade_legacy(json.loads((ROOT.parent/'reviewed-assets-20260917/supor/receipt.json').read_bytes()))
+    receipt = json.loads((ARCHIVES/'reviewed-assets-20260917/supor/receipt.json').read_bytes())
     request['policy'].update(policy_id='nonfinancial-reviewed-history-fcff-v1',
         financial_asset_policy='reviewed_standard_asset_addbacks', code='002032',
         reviewed_at=request['data']['information_as_of'], valid_until='2026-10-17T00:00:00Z',
@@ -170,11 +170,11 @@ def test_partial_asset_policy_with_explicit_synthetic_archive(tmp_path, monkeypa
 def test_supor_real_mirror_export_replay(tmp_path, monkeypatch):
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
     directory = ROOT.parent/'reviewed-assets-20260917/supor'
-    requests = [upgrade_legacy(json.loads(gzip.decompress((directory/(name+'-request.json.gz')).read_bytes()))) for name in ('before','after')]
+    requests = [json.loads(gzip.decompress((directory/(name+'-request.json.gz')).read_bytes())) for name in ('before','after')]
     before, after = [evaluate(AlphaLakeRequest.model_validate(r)) for r in requests]
     verify(before)
     verify(after)
-    receipt = upgrade_legacy(json.loads((directory/'acceptance.json').read_bytes()))
+    receipt = json.loads((ARCHIVES/'reviewed-assets-20260917/supor/acceptance.json').read_bytes())
     assert before['report']['final']['value_per_share'] == pytest.approx(receipt['before_value'])
     assert after['report']['final']['value_per_share'] == pytest.approx(receipt['after_value'])
     for key in ('revenue_projections','ebit_projections','reinvestment_projections','fcff_projections','value_of_operating_assets'):
@@ -196,11 +196,11 @@ def test_supor_real_mirror_export_replay(tmp_path, monkeypatch):
 
 def test_standard_contract_rejects_source_keys_and_preserves_economics(tmp_path, monkeypatch):
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
-    legacy = json.loads(gzip.decompress((ROOT/'300866-request.json.gz').read_bytes()))
+    legacy = json.loads(gzip.decompress((ARCHIVES/'method-closure-20260912/300866-request.json.gz').read_bytes()))
     original = deepcopy(legacy)
     with pytest.raises(ValueError):
         AlphaLakeRequest.model_validate(legacy)
-    current = upgrade_legacy(legacy)
+    current = json.loads(gzip.decompress((ROOT/'300866-request.json.gz').read_bytes()))
     assert legacy == original
     baseline = evaluate(AlphaLakeRequest.model_validate(current))
     changed = deepcopy(current)

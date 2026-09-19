@@ -8,7 +8,6 @@ from copy import deepcopy
 import pytest
 
 from api.alphalake import evaluate
-from tools.migrate_standard_contract import upgrade_legacy
 from data_sources.alphalake import AlphaLakeRequest
 from tools.compare_valuations import replay
 from tools.review_valuation_forecast import review
@@ -61,20 +60,23 @@ def test_archived_real_main_copy_review(tmp_path,monkeypatch):
     with pytest.raises(ValueError,match='alphalake-valuation-v2'):
         replay(old)  # 生产的历史报告严格核对不因本轮放宽。
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path/'current'))
-    run = evaluate(AlphaLakeRequest.model_validate(upgrade_legacy(old['request']))); replay(run)
+    current = root.parent/'current-contract-20260919/standard-history-2025H1'
+    request = json.loads(gzip.decompress((current/'request.json.gz').read_bytes()))
+    actuals = json.loads(gzip.decompress((current/'actuals.json.gz').read_bytes()))
+    run = evaluate(AlphaLakeRequest.model_validate(request)); replay(run)
     expected_report = deepcopy(old['report'])
     expected_report['dcf']['implied_roic_projections'] = [None]*10
     expected_report['dcf']['implied_roic_terminal'] = None
     assert run['report'] == expected_report
     from data_sources.alphalake import content_hash
-    assert run['request'] == AlphaLakeRequest.model_validate(upgrade_legacy(old['request'])).model_dump(mode='json')
+    assert run['request'] == AlphaLakeRequest.model_validate(request).model_dump(mode='json')
     old_inputs = deepcopy(old['inputs'])
     old_inputs['prepared_ttm']['provenance']['alphalake_snapshot'] = content_hash(run['request']['data'])
     assert run['inputs'] == old_inputs
     saved = contents['review.json.gz']; calls = []
     def export(period):
         calls.append(period)
-        return upgrade_legacy(saved['results'][0]['actual_snapshot'])
+        return actuals[0]
     from api.alphalake import ENGINE_REVISION
     from data_sources.alphalake import content_hash
     # 新契约改变证据哈希/运行标识；原预测与全部实际误差保持不变。
@@ -84,7 +86,7 @@ def test_archived_real_main_copy_review(tmp_path,monkeypatch):
         for key in ('status','horizon','target_period','metrics','predictions_million_cny','actual_fcff'):
             assert old_row.get(key)==new_row.get(key)
         if 'actual_snapshot' in old_row:
-            assert new_row['actual_snapshot']==upgrade_legacy(old_row['actual_snapshot'])
+            assert new_row['actual_snapshot'] in actuals
             assert new_row['actual_snapshot_sha256']==content_hash(new_row['actual_snapshot'])
     assert result['review_id']==content_hash({k:v for k,v in result.items() if k!='review_id'})
     assert calls == ['2026-06-30']

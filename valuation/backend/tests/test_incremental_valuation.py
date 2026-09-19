@@ -1,6 +1,5 @@
 """真实冻结请求上的增量重估；标准库刷新/导出另由集成测试覆盖。"""
 from copy import deepcopy
-from tools.migrate_standard_contract import upgrade_legacy
 import gzip
 import json
 from pathlib import Path
@@ -8,7 +7,7 @@ from pathlib import Path
 from tools.batch_valuate_alphalake import BatchPolicy
 from tools.incremental_valuation import run_incremental_batch
 
-ROOT = Path(__file__).resolve().parents[2]/'research/method-closure-20260912'
+ROOT = Path(__file__).resolve().parents[2]/'research/current-contract-20260919/method-closure-20260912'
 
 
 def test_revaluation_changes_failures_and_recovery(tmp_path, monkeypatch):
@@ -20,7 +19,7 @@ def test_revaluation_changes_failures_and_recovery(tmp_path, monkeypatch):
         calls.append(request.data.code)
         return evaluate(request)
     monkeypatch.setattr(incremental, 'evaluate', counted)
-    request = upgrade_legacy(json.loads(gzip.decompress((ROOT/'300866-request.json.gz').read_bytes())))
+    request = json.loads(gzip.decompress((ROOT/'300866-request.json.gz').read_bytes()))
     data = request.pop('data')
     company = dict(instrument_id=data['facts'][0]['instrument_id'], name='安克创新', symbols=['sz300866'],
                    financial_status='financial_core_complete_requires_policy', missing_core_fields=[])
@@ -63,7 +62,7 @@ def test_revaluation_changes_failures_and_recovery(tmp_path, monkeypatch):
     assert rejected['companies'][0]['status'] == 'rejected_input_or_policy'
     # 已保存报告损坏时显式拒绝，不覆盖；也不当作普通输入变化吞掉。
     target = tmp_path/(original_id+'.json')
-    stored = upgrade_legacy(json.loads(target.read_text()));stored['report']['final']['value_per_share'] += 1
+    stored = json.loads(target.read_text());stored['report']['final']['value_per_share'] += 1
     target.write_text(json.dumps(stored))
     rejected = run_incremental_batch(readiness, policy, lambda _:data, first, tmp_path)
     assert rejected['companies'][0]['status'] == 'rejected_input_or_policy'
@@ -72,7 +71,7 @@ def test_revaluation_changes_failures_and_recovery(tmp_path, monkeypatch):
 def test_cutoff_only_reuse_rechecks_asset_review_expiry(tmp_path, monkeypatch):
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
     p = ROOT.parent/'reviewed-assets-20260917/after-request.json.gz'
-    request = upgrade_legacy(json.loads(gzip.decompress(p.read_bytes())))
+    request = json.loads(gzip.decompress(p.read_bytes()))
     data = request.pop('data')
     policy = BatchPolicy(policy_version='reviewed', review_note='real reviewed archive', assignments={'300866':request})
     company = dict(instrument_id=data['facts'][0]['instrument_id'], name='安克创新', symbols=['sz300866'],
@@ -98,7 +97,7 @@ def test_financial_and_reference_changes_trigger_revaluation(tmp_path, monkeypat
     import struct
     from decimal import Decimal
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
-    request = upgrade_legacy(json.loads(gzip.decompress((ROOT/'300866-request.json.gz').read_bytes())))
+    request = json.loads(gzip.decompress((ROOT/'300866-request.json.gz').read_bytes()))
     data = request.pop('data')
     policy = BatchPolicy(policy_version='changes', review_note='controlled mutations of real packet', assignments={'300866':request})
     company = dict(instrument_id=data['facts'][0]['instrument_id'], name='安克创新', symbols=['sz300866'],

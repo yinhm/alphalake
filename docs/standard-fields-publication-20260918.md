@@ -38,7 +38,7 @@ workspace/anker-agent-adapter-20260906/venv/bin/python -m tools.company_valuatio
  --policy valuation/examples/batch-disposal-main-20260918.json --alphalake ./alphalake
 ```
 
-苏泊尔将代码换为002032。旧请求转换命令见ADR 018；旧运行索引不能直接作为v2重放成功证据，应保留并另建新索引。
+苏泊尔将代码换为002032。本次发布曾使用显式转换工具；当前已删除工具，转换记录和历史复验方式见ADR 018；旧运行索引不能直接作为v2重放成功证据，应保留并另建新索引。
 
 ## 研究链补充验收
 

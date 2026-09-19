@@ -12,7 +12,7 @@ from tools.verify_reviewed_main import bind, ROOT
 
 
 def request_for(data):
-    original = json.loads(gzip.decompress((ROOT/'valuation/research/reviewed-assets-20260917/after-request.json.gz').read_bytes()))
+    original = json.loads(gzip.decompress((ROOT/'valuation/research/current-contract-20260919/reviewed-assets-20260917/after-request.json.gz').read_bytes()))
     request = bind(original, data)
     request['policy']['reviewed_at'] = '2026-09-18T13:30:43Z'
     return request

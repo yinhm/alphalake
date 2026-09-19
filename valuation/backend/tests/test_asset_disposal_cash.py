@@ -1,6 +1,5 @@
 """真实原文与新标准导出；缺期不得变零，诊断不修改DCF。"""
 from copy import deepcopy
-from tools.migrate_standard_contract import upgrade_legacy
 from dataclasses import asdict
 import gzip
 import hashlib
@@ -23,9 +22,9 @@ def test_disposal_evidence_and_missing_ttm(monkeypatch):
             verify({row['period']:str(float(row['pdf_value_cny'])+.01)})
     directory = ROOT/'valuation/research/disposal-cash-20260918'
     raw = gzip.decompress((directory/'standard-export.json.gz').read_bytes())
-    assert hashlib.sha256(raw).hexdigest() == upgrade_legacy(json.loads((directory/'receipt.json').read_text()))['export_sha256']
-    request = upgrade_legacy(json.loads(gzip.decompress((ROOT/'valuation/research/reviewed-assets-20260917/before-request.json.gz').read_bytes())))
-    request['data'] = upgrade_legacy(json.loads(raw))
+    assert hashlib.sha256(raw).hexdigest() == json.loads((directory/'receipt.json').read_text())['export_sha256']
+    request = json.loads(gzip.decompress((ROOT/'valuation/research/current-contract-20260919/reviewed-assets-20260917/before-request.json.gz').read_bytes()))
+    request['data'] = json.loads(gzip.decompress((ROOT/'valuation/research/current-contract-20260919/disposal-cash-20260918/standard-export.json.gz').read_bytes()))
     parsed = AlphaLakeRequest.model_validate(request)
     inputs, audit = build_inputs(parsed)
     cap = audit['company_capital_evidence']
@@ -72,9 +71,9 @@ def test_reviewed_zero_real_lifecycle(tmp_path, monkeypatch):
     receipt, _ = verify_chain(directory,tmp_path/'runs')
     assert receipt['reviewed_cash_capex_after_disposals_cny']=='319616930'
     assert receipt['dcf_report_unchanged'] and receipt['historical_fcff'] is None
-    data = upgrade_legacy(json.loads((directory/'disposal-reviewed-export.json').read_text()))
+    data = json.loads((directory/'disposal-reviewed-export.json').read_text())
     request = approve_zeros(request_for(data))
-    notes = upgrade_legacy(json.loads((ROOT/'valuation/research/disposal-cash-20260918/zero-supplements.json').read_text()))
+    notes = json.loads((ROOT/'valuation/research/disposal-cash-20260918/zero-supplements.json').read_text())
     evidence = {r['period']:r for r in verify()}
     for note in notes:
         assert note['pdf_sha256']==evidence[note['period']]['pdf_sha256']

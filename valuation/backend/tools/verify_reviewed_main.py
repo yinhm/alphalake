@@ -12,7 +12,6 @@ from datetime import datetime, timezone
 
 from data_sources.alphalake import AlphaLakeRequest, content_hash
 from tools.incremental_valuation import evaluate_changed
-from tools.migrate_standard_contract import upgrade_legacy
 from tools.verify_nonfinancial_dcf import verify
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -22,7 +21,7 @@ SOURCES = {'300866': ROOT/'valuation/research/reviewed-assets-20260917',
 
 
 def bind(request, data):
-    request = upgrade_legacy(request)
+    request = deepcopy(request)
     request['data'] = data
     notes = {r['item']: r for r in data['supplements']}
     for rule in request['policy']['asset_addbacks']:
@@ -117,9 +116,10 @@ def main():
         before, after = (export(binary, db, code) for db in (args.baseline, args.candidate))
         check_pair(before, after)
         assert len(after['supplements']) - len(before['supplements']) == (1 if code == '300866' else 4)
-        original = json.loads(gzip.decompress((directory/'before-request.json.gz').read_bytes()))
+        current = ROOT/'valuation/research/current-contract-20260919'/directory.relative_to(ROOT/'valuation/research')
+        original = json.loads(gzip.decompress((current/'before-request.json.gz').read_bytes()))
         original['data'] = before
-        reviewed = bind(json.loads(gzip.decompress((directory/'after-request.json.gz').read_bytes())), after)
+        reviewed = bind(json.loads(gzip.decompress((current/'after-request.json.gz').read_bytes())), after)
         baseline = evaluate_changed(AlphaLakeRequest.model_validate(original), None, runs)
         result = evaluate_changed(AlphaLakeRequest.model_validate(reviewed), baseline['refresh']['last_success'], runs)
         assert result['refresh']['action'] == 'recalculated'

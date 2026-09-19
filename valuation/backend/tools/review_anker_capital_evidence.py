@@ -3,7 +3,6 @@ import csv
 import hashlib
 import json
 from pathlib import Path
-from tools.migrate_standard_contract import upgrade_legacy
 from tools.tdx_research_source import canonical_components
 from decimal import Decimal
 
@@ -129,7 +128,7 @@ def verify_opening_2024():
     assert '其他59,852,820.3959,382,099.92' in pages[174]
     raw = gzip.decompress((directory/'export.json.gz').read_bytes())
     assert hashlib.sha256(raw).hexdigest() == receipt['export_sha256']
-    exported = upgrade_legacy(json.loads(raw))
+    exported = json.loads(raw)
     assert exported['code'] == '300866' and exported['report_period'] == '2024-12-31'
     expected = json.loads((directory/'supplements.json').read_bytes())
     values = {}
@@ -147,7 +146,7 @@ def verify_opening_2024():
         values[note['item']] = Decimal(note['value'])
     net = values['opening_related_party_loan_gross']-values['opening_related_party_loan_allowance']
     assert str(net) == receipt['net_loan_cny']
-    assert all(w['coverage_status'] != 'complete' for w in exported['windows'] if w['field'] == 'other_receivables')
+    assert all(w['coverage_status'] != 'complete' for w in exported['windows'] if w['canonical_field'] == 'other_receivables')
     # 保留升级前导出，再核对schema40的真实标准链，不能仅改审核结论。
     source = json.loads((ROOT/'valuation/research/continuing-operations-five/capital-snapshot.json').read_bytes())
     row, = [r for r in source['records'] if r['code']=='300866' and r['period']=='2024-12-31']
@@ -156,7 +155,7 @@ def verify_opening_2024():
     after_raw = gzip.decompress((directory/'schema40-export.json.gz').read_bytes())
     after_receipt = json.loads((directory/'schema40-acceptance.json').read_bytes())
     assert hashlib.sha256(after_raw).hexdigest() == after_receipt['export_sha256']
-    after = upgrade_legacy(json.loads(after_raw))
+    after = json.loads(gzip.decompress((ROOT/'valuation/research/current-contract-20260919/company-inputs-20260917/anker-opening-2024/schema40-export.json.gz').read_bytes()))
     from data_sources.alphalake import Snapshot, standard_window_reader
     window, _ = standard_window_reader(Snapshot.model_validate(after))
     assert Decimal(str(window('other_receivables')))*1000000 == Decimal('126612168')
@@ -177,7 +176,7 @@ def verify_identified_capital():
     from data_sources.alphalake import Snapshot, standard_window_reader
     directory = ROOT/'valuation/research/company-inputs-20260917'
     raw = gzip.decompress((directory/'anker-capital-standard.json.gz').read_bytes())
-    data = upgrade_legacy(json.loads(raw))
+    data = json.loads(gzip.decompress((ROOT/'valuation/research/current-contract-20260919/company-inputs-20260917/anker-capital-standard.json.gz').read_bytes()))
     assert data['code'] == '300866' and data['report_period'] == '2026-06-30'
     window, _ = standard_window_reader(Snapshot.model_validate(data))
     notes = json.loads((directory/'anker-lease-supplements.json').read_bytes())

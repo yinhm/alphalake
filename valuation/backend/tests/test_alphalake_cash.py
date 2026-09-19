@@ -17,29 +17,26 @@ ROOT=Path(__file__).resolve().parents[3]
 def fixture():
     source=json.loads((ROOT/'valuation/research/tdx-operating-cash-forecast/snapshot.json').read_text())
     records=[r for r in source['records'] if r['code']=='002613']
+    names={'FN230':'revenue','FN234':'operating_cash_flow','FN114':'capital_expenditure_cash'}
     facts=[]
     for row in records:
         for field in ('FN230','FN234','FN114'):
             quarter=int(row['period'][5:7])//3
-            facts.append(dict(code='002613',instrument_id=1,period=row['period'],field=field,value=str(value(row,field)),unit='CNY',
+            facts.append(dict(code='002613',instrument_id=1,period=row['period'],field=names[field],canonical_field=names[field],source='tdx',source_provider_field=field,value=str(value(row,field)),unit='CNY',
                 period_type=({1:'Q1',2:'H1',3:'9M',4:'FY'}[quarter] if field=='FN114' else f'Q{quarter}'),statement_scope='provider_default',
                 fact_id=len(facts)+1,artifact_sha256='synthetic_standard_provenance',announcement_id='synthetic_filing',available_at='2026-09-01T00:00:00+08:00',
                 bits=row['bits'][field],multiplier=1))
-    names={'FN230':'revenue','FN234':'operating_cash_flow','FN114':'capital_expenditure_cash'}
     def snapshot(year):
         end=date(year,6,30);windows=[]
         included=[f for f in facts if f'{year-1}-01-01'<=f['period']<=end.isoformat()]
         index={(f['period'],f['field']):f for f in included}
-        for field in ('FN230','FN234','FN114'):
-            periods=([(end.isoformat(),1),(f'{year-1}-12-31',1),(f'{year-1}-06-30',-1)] if field=='FN114' else [(p,1) for p in quarter_periods(end)])
+        for field in ('revenue','operating_cash_flow','capital_expenditure_cash'):
+            periods=([(end.isoformat(),1),(f'{year-1}-12-31',1),(f'{year-1}-06-30',-1)] if field=='capital_expenditure_cash' else [(p,1) for p in quarter_periods(end)])
             used=[index[(p,field)] for p,c in periods]
-            windows.append(dict(code='002613',instrument_id=1,field=field,coverage_status='complete',unit='CNY',statement_scope='provider_default',period_type='TTM',
-                calculation_basis='ytd' if field=='FN114' else 'quarter',value=str(sum(Decimal(f['value'])*c for f,(p,c) in zip(used,periods))),
+            windows.append(dict(code='002613',instrument_id=1,field=field,canonical_field=field,coverage_status='complete',unit='CNY',statement_scope='provider_default',period_type='TTM',
+                calculation_basis='ytd' if field=='capital_expenditure_cash' else 'quarter',value=str(sum(Decimal(f['value'])*c for f,(p,c) in zip(used,periods))),
                 required_inputs=len(used),available_inputs=len(used),source_fact_ids=[f['fact_id'] for f in used],input_periods=[p for p,c in periods],input_coefficients=[c for p,c in periods]))
-        for row in included+windows:
-            row['canonical_field']=names.get(row['field'],row['field'])
-        from tools.migrate_standard_contract import upgrade_legacy
-        return upgrade_legacy(dict(contract_version='alphalake-valuation-v1',code='002613',report_period=end.isoformat(),information_as_of='2026-09-10T00:00:00+08:00',facts=included,windows=windows,supplements=[]))
+        return dict(contract_version='alphalake-valuation-v2',code='002613',report_period=end.isoformat(),information_as_of='2026-09-10T00:00:00+08:00',facts=included,windows=windows,supplements=[])
     policy=json.loads((ROOT/'valuation/examples/nonfinancial-history-template.json').read_text())
     return AlphaLakeRequest(data=snapshot(2026),policy=policy),snapshot(2025),source
 

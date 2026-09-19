@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 
 from tools.audit_standard_history_five import audit
-from tools.migrate_standard_contract import upgrade_legacy
 from data_sources.alphalake import AlphaLakeRequest
 from api.alphalake import ENGINE_REVISION, runtime_versions
 from data_sources.alphalake import content_hash
@@ -18,34 +17,33 @@ def test_archived_standard_history_five(tmp_path,monkeypatch):
     plan=json.loads((source/'plan.json').read_bytes())
     expected=json.loads(gzip.decompress((source/'result.json.gz').read_bytes()))
     policy=json.loads((root/'valuation/research/standard-history-2025H1/policy.json').read_bytes())
+    current=json.loads(gzip.decompress((root/'valuation/research/current-contract-20260919/standard-history-five/inputs.json.gz').read_bytes()))
     snapshots={}
     def key(data):
         return data['code'],data['report_period'],datetime.fromisoformat(data['information_as_of'])
-    for row in expected['rows']:
+    for row in current:
         snapshots[key(row['snapshot'])]=row['snapshot']
-        for actual in row.get('review',{}).get('results',[]):
-            if 'actual_snapshot' in actual:
-                data=actual['actual_snapshot'];snapshots[key(data)]=data
+        for data in row['actual_snapshots']:
+            snapshots[key(data)]=data
     calls=[]
     def export(code,period,cutoff):
         k=code,period,datetime.fromisoformat(cutoff);calls.append(k)
-        return upgrade_legacy(snapshots[k])
+        return snapshots[k]
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path/'runs'))
     actual = audit(plan,policy,export)
     # 契约/字段名称与哈希允许变化；分母、财务快照、全部经济输入和报告不得变化。
     assert {k:v for k,v in actual.items() if k!='rows'} == {k:v for k,v in expected.items() if k!='rows'}
-    mapping={w['field']:w['canonical_field'] for row in expected['rows'] for w in row['snapshot']['windows']}
-    for before,after in zip(expected['rows'],actual['rows'],strict=True):
+    for before,after,inputs in zip(expected['rows'],actual['rows'],current,strict=True):
         assert (before['code'],before['period'],before['status']) == (after['code'],after['period'],after['status'])
-        assert after['snapshot'] == upgrade_legacy(before['snapshot'])
+        assert after['snapshot'] == inputs['snapshot']
         if 'run' not in before:
-            assert after['missing'] == [item.replace(item.split('/')[-1],mapping.get(item.split('/')[-1],item.split('/')[-1])) for item in before['missing']]
+            assert after['missing'] == inputs['missing']
             continue
         old,new=deepcopy(before['run']),after['run']
         old['report']['dcf']['implied_roic_projections']=[None]*10
         old['report']['dcf']['implied_roic_terminal']=None
         assert new['report']==old['report']
-        assert new['request']==AlphaLakeRequest.model_validate(upgrade_legacy(old['request'])).model_dump(mode='json')
+        assert new['request']==AlphaLakeRequest.model_validate(inputs['request']).model_dump(mode='json')
         old['inputs']['prepared_ttm']['provenance']['alphalake_snapshot']=content_hash(new['request']['data'])
         assert new['inputs']==old['inputs']
         assert new['method_assessment']['reinvestment']['implied_roic_status']=='missing_opening_capital'
@@ -54,11 +52,11 @@ def test_archived_standard_history_five(tmp_path,monkeypatch):
             for metric_key in ('status','horizon','target_period','metrics','predictions_million_cny','actual_fcff'):
                 assert x.get(metric_key)==y.get(metric_key)
             if 'actual_snapshot' in x:
-                assert y['actual_snapshot']==upgrade_legacy(x['actual_snapshot'])
+                assert y['actual_snapshot'] in inputs['actual_snapshots']
                 assert y['actual_snapshot_sha256']==content_hash(y['actual_snapshot'])
     assert len(calls)==16  # 15个预测起点，仅一个获准运行查询一个到期实际。
     assert sum(not r['snapshot']['facts'] for r in expected['rows'])==9
-    valid=next(r for r in expected['rows'] if 'run' in r)
+    valid=next(r for r in current if 'request' in r)
     snapshots[key(valid['snapshot'])]=deepcopy(valid['snapshot'])
     snapshots[key(valid['snapshot'])]['facts'][0]['available_at']='2099-01-01T00:00:00+00:00'
     calls.clear()

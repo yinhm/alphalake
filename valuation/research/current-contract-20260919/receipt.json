@@ -1,0 +1,79 @@
+{
+  "source_implementation": "abe245a",
+  "conversion_implementation": "abe245a:valuation/backend/tools/migrate_standard_contract.py",
+  "purpose": "current_contract_inputs_not_saved_valuation_runs",
+  "records": [
+    {
+      "source": "valuation/research/method-closure-20260912/300866-request.json.gz",
+      "source_sha256": "c2652f748dd559aece6ddd7817fa0b0ad1493dc40ed8607489b9528b8b1dce0a",
+      "file": "method-closure-20260912/300866-request.json.gz",
+      "sha256": "2068eca34bbd52b6ef7fa002b0a64c1147f394b5ff688ecde0250f149d00844f"
+    },
+    {
+      "source": "valuation/research/method-closure-20260912/002032-request.json.gz",
+      "source_sha256": "08efcb32de33336a835737581c0a7071e5d5e0a5406f1301cb876d89a2f1625b",
+      "file": "method-closure-20260912/002032-request.json.gz",
+      "sha256": "58e462f672c4b8848f692670332f1db2248a7e046e9dda72366a0f40e9fd8218"
+    },
+    {
+      "source": "valuation/research/reviewed-assets-20260917/before-request.json.gz",
+      "source_sha256": "0be351587eed06d7a7db56f8c412d330aeaeb13012654695024da67a666d0edb",
+      "file": "reviewed-assets-20260917/before-request.json.gz",
+      "sha256": "96bd5098f5e49831b181a07f113aefc91c4657f1b4838fc6a249149797c066df"
+    },
+    {
+      "source": "valuation/research/reviewed-assets-20260917/after-request.json.gz",
+      "source_sha256": "ebb89afb58080901dad602de55da7444609045af5f48c9324e07908b5712dc90",
+      "file": "reviewed-assets-20260917/after-request.json.gz",
+      "sha256": "2015825375b6ad74abddc92b17b6167e20014c7a9c46523e539996e4409c750a"
+    },
+    {
+      "source": "valuation/research/reviewed-assets-20260917/supor/before-request.json.gz",
+      "source_sha256": "26b87f11fddc29f04debd70d136517504de0a24f2b35ddaf7df5d1bcfc570f20",
+      "file": "reviewed-assets-20260917/supor/before-request.json.gz",
+      "sha256": "ed9a131d6345aeec3c32a2b1024d20bb15433fad002977c7bcdfdafbe4011f87"
+    },
+    {
+      "source": "valuation/research/reviewed-assets-20260917/supor/after-request.json.gz",
+      "source_sha256": "a9e3ffdcea5db30b7d2dd994d6966006c442fe94a5206673988ebfdb4fc8013f",
+      "file": "reviewed-assets-20260917/supor/after-request.json.gz",
+      "sha256": "65da607553025f7cc4532d2e7d1d075f306efd62dc90ddbf843c2681d70c0c39"
+    },
+    {
+      "source": "valuation/research/disposal-cash-20260918/standard-export.json.gz",
+      "source_sha256": "ab77067d5fc89c6017a67ab793239198bbe5126e98bb1cc53d4bcda1e0946825",
+      "file": "disposal-cash-20260918/standard-export.json.gz",
+      "sha256": "34b19a4e377afca15841a6e83397d4c69e9a7fbb1482ae6d6135bbb8ba560eb2"
+    },
+    {
+      "source": "valuation/research/company-inputs-20260917/anker-opening-2024/schema40-export.json.gz",
+      "source_sha256": "cb784c15ac9cc648168c0d7b9771cf9c2f24789a7c3af7ecd8374509ffbf6b65",
+      "file": "company-inputs-20260917/anker-opening-2024/schema40-export.json.gz",
+      "sha256": "8c080e3fac26c653e3e475c511fff6c02d8ab5fa8fea56b4037a298a121f7a9b"
+    },
+    {
+      "source": "valuation/research/company-inputs-20260917/anker-capital-standard.json.gz",
+      "source_sha256": "90a5b7f6f99db3220eef577a5ac61c8e7677ce03fd1cdda52001d7b1421fd396",
+      "file": "company-inputs-20260917/anker-capital-standard.json.gz",
+      "sha256": "83bacffa5a3504b8be6ddc4d5f7fe65befef4ac9155767f4da3fa35aea2475bd"
+    },
+    {
+      "source": "valuation/research/standard-history-five/result.json.gz",
+      "source_sha256": "74a05be76abfb6f568d68fc9b886544c4f6ff4bd119058601f6acb398e9b09a4",
+      "file": "standard-history-five/inputs.json.gz",
+      "sha256": "10475969498d16b1e579393716972eb2b8e6ea88f74d253bd6f9c85f8a7876b1"
+    },
+    {
+      "source": "valuation/research/standard-history-2025H1/run.json.gz",
+      "source_sha256": "51f9befaae1ccae142f282ab426cd02bcffe8e2af4d0c1ed0560122ad9d01fd1",
+      "file": "standard-history-2025H1/request.json.gz",
+      "sha256": "9f8a88ece8d6142e25d102aa8d794565a6d7632c3988e002c31048cd4bb98ba1"
+    },
+    {
+      "source": "valuation/research/standard-history-2025H1/review.json.gz",
+      "source_sha256": "da208a1785636bba51fe98256df347216a1a7fe04ab91915946299a1befb6d44",
+      "file": "standard-history-2025H1/actuals.json.gz",
+      "sha256": "9ec943d05919628d1e171f848cb8be4f97a0c17e72f61ed9c7de834fe98b4202"
+    }
+  ]
+}

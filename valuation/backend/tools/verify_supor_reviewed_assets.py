@@ -1,6 +1,5 @@
 """核验苏泊尔2026H1镜像原文与已冻结标准事实；不批准或写入估值。"""
 from copy import deepcopy
-from tools.migrate_standard_contract import upgrade_legacy
 from decimal import Decimal
 import gzip
 import hashlib
@@ -35,13 +34,13 @@ def verify(receipt):
     assert Decimal(a['combined_total']) - Decimal(a['current_total']) == Decimal(a['noncurrent_total'])
     raw_request = (ROOT / receipt['request_snapshot']).read_bytes()
     assert hashlib.sha256(raw_request).hexdigest() == receipt['request_sha256']
-    data = upgrade_legacy(json.loads(gzip.decompress(raw_request)))['data']
+    data = json.loads(gzip.decompress(raw_request))['data']
     assert data['code'] == receipt['code'] == '002032'
     assert data['report_period'] == receipt['period'] == '2026-06-30'
     results = []
     for field, total, restricted in (('noncurrent_assets_due_within_one_year', 'current_total', 'current_restricted'),
                                       ('other_debt_investments', 'noncurrent_total', 'noncurrent_restricted')):
-        facts = [f for f in data['facts'] if f['field'] == field and f['period'] == receipt['period']]
+        facts = [f for f in data['facts'] if f['canonical_field'] == field and f['period'] == receipt['period']]
         assert len(facts) == 1
         fact = facts[0]
         assert fact['announcement_id'] == receipt['canonical_announcement_id']
@@ -56,7 +55,7 @@ def verify(receipt):
 
 
 if __name__ == '__main__':
-    receipt = upgrade_legacy(json.loads((DIRECTORY / 'receipt.json').read_bytes()))
+    receipt = json.loads((DIRECTORY / 'receipt.json').read_bytes())
     result = verify(receipt)
     # 锁定本期受限额，不能误用比较列或把受限额归零。
     for key in receipt['amounts_cny']:
