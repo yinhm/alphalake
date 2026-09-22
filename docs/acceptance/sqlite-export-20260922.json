@@ -1,0 +1,63 @@
+{
+  "scope": "three_company_standard_facts_to_compatible_sqlite; not valuation admission or whole market acceptance",
+  "output": "workspace/sqlite-export-20260922/valuation.sqlite",
+  "output_sha256": "c0d38313ce7803968f76e427a1b4406973bfff98240b24d54519de52fe58abc2",
+  "metadata": {
+    "contract": "alphalake-compatible-sqlite-v1",
+    "source_database_sha256": "0bcf34fc3e773c8629ee91fe4c0a73cfef32ed5f98a9319d38f1144a385a46bf",
+    "exporter_sha256": "2ba0741c546d7e41e634fa98365611e5d89d4e6ae7c1355621fcd053b0805942",
+    "alphalake_binary_sha256": "1835e78c3aa9ea1ebe0b306dbf8287caeac80cc82195422bbb99019e234ca68c",
+    "report_period": "2026-06-30",
+    "information_as_of": "2026-09-22T00:00:00+00:00",
+    "exported_at": "2026-09-22T06:01:28.636005+00:00",
+    "money_unit": "million_CNY",
+    "shares_unit": "million_shares",
+    "annual_net_income": "parent_attributable",
+    "annual_bv_equity": "parent_attributable",
+    "quarterly_flows": "difference_of_standard_YTD_same_year; Q1 unchanged",
+    "missing": "NULL; see export_cells; source-zero/unreviewed not inferred from absence",
+    "boundary": "compatible_snapshot_not_valuation_admission; no market, WACC or note defaults; consumer fallbacks remain unaudited",
+    "candidates": "3",
+    "companies": "3"
+  },
+  "companies": [
+    [
+      "SHSE:600519",
+      "贵州茅台"
+    ],
+    [
+      "SZSE:002032",
+      "苏 泊 尔"
+    ],
+    [
+      "SZSE:300866",
+      "安克创新"
+    ]
+  ],
+  "annual_rows": 30,
+  "quarterly_rows": 24,
+  "cell_status_counts": {
+    "available": 219,
+    "missing_standard_fact": 321,
+    "requires_separate_valuation_definition": 378
+  },
+  "available_cells_decimal_recomputed": 219,
+  "null_cells_checked": 699,
+  "integrity_check": "ok",
+  "source_unchanged": "full SHA256 and file fingerprint verified before publication",
+  "systemd_unit": "alphalake-sqlite-export-0922",
+  "exit_status": 0,
+  "memory_peak": "896.5MiB",
+  "swap_peak": 0,
+  "limitations": [
+    "No PDF re-verification",
+    "Missing facts do not distinguish source zero from unreviewed fields",
+    "Consumer fallback behavior unchanged"
+  ],
+  "validation": {
+    "python": "python3 -m unittest tests.test_alphalake_sqlite_export: 2 passed; system Python has no pytest, existing CI pytest discovers unittest cases",
+    "go": "go test -p 1 ./...: passed (cache reused); current CLI go build: passed",
+    "negative": "unit, historical identity, future availability, failure cleanup and overwrite refusal",
+    "documentation": "local links and git diff --check passed"
+  }
+}

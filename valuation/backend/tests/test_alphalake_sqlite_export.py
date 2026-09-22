@@ -1,0 +1,91 @@
+"""兼容快照：单位、累计差分、缺项与污染拒绝。"""
+from datetime import date, datetime
+import json
+import sqlite3
+import unittest
+from pathlib import Path
+import tempfile
+from unittest.mock import patch
+
+from tools import export_alphalake_sqlite as exporter
+
+
+class SQLiteExportTest(unittest.TestCase):
+    def test_snapshot_and_rejections(self):
+        period = date(2026, 6, 30)
+        asof = datetime.fromisoformat('2026-09-22T00:00:00+00:00')
+        company = dict(symbols=['sz300866'], symbol_count=1, identifier_count=1,
+                       exchange_mic='XSHE', instrument_id=7, name='测试公司')
+        facts = []
+        for end, value in [('2025-09-30', '7000000'), ('2025-12-31', '10000000'),
+                           ('2026-03-31', '0'), ('2026-06-30', '4000000')]:
+            facts.append(dict(code='300866', instrument_id=7, period=end,
+                              field='revenue_cumulative', canonical_field='revenue_cumulative',
+                              value=value, unit='CNY', period_type={3:'Q1', 6:'H1', 9:'9M', 12:'FY'}[int(end[5:7])],
+                              statement_scope='provider_default', fact_id=end,
+                              available_at='2026-08-31T00:00:00Z', artifact_sha256='evidence'))
+        facts.append(dict(facts[-1], field='total_shares', canonical_field='total_shares',
+                          value='500000000', unit='share', period_type='instant'))
+
+        def fetch(code, end):
+            return dict(contract_version='alphalake-valuation-v2', code=code,
+                        report_period=end.isoformat(), information_as_of=asof.isoformat(),
+                        facts=[r for r in facts if end.year-1 <= int(r['period'][:4]) and r['period'] <= end.isoformat()],
+                        source_conflicts=[])
+
+        with sqlite3.connect(':memory:') as db:
+            db.row_factory = sqlite3.Row
+            self.assertEqual(exporter.export_snapshot(db, [company], fetch, period, asof), 1)
+            data = exporter.target.fetch_company(db, 'SZSE:300866')
+            self.assertEqual(len(data['financials_annual']), 10)
+            self.assertEqual(len(data['financials_quarterly']), 8)
+            self.assertEqual(data['financials_annual'][0]['revenues'], 10)
+            self.assertEqual([r['revenues'] for r in data['financials_quarterly'][:4]], [4, 0, 3, None])
+            self.assertEqual(data['financials_quarterly'][0]['shares_outstanding'], 500)
+            self.assertIsNone(data['financials_quarterly'][0]['ebit'])
+            self.assertIsNone(data['financials_annual'][1]['revenues'])
+            evidence = json.loads(db.execute("SELECT evidence_json FROM export_cells WHERE series='quarterly' AND period_offset=0 AND field='revenues'").fetchone()[0])
+            self.assertEqual([r['coefficient'] for r in evidence], [1, -1])
+        indexed = {(r['period'], r['field']): r for r in facts}
+        self.assertEqual(exporter.cell(indexed, {'2026-03-31'}, 7, period, 'revenues', False)[1], 'source_record_conflict')
+        facts[0]['unit'] = 'USD'
+        with self.assertRaisesRegex(ValueError, 'unit'):
+            exporter.cell(indexed, set(), 7, date(2025, 12, 31), 'revenues', False)
+        facts[0]['unit'] = 'CNY'
+        for key, bad, message in [('instrument_id', 8, 'identity'),
+                                  ('available_at', '2027-01-01T00:00:00Z', 'future')]:
+            original = facts[-1][key]
+            facts[-1][key] = bad
+            with sqlite3.connect(':memory:') as db, self.assertRaisesRegex(ValueError, message):
+                exporter.export_snapshot(db, [company], fetch, period, asof)
+            facts[-1][key] = original
+        with sqlite3.connect(':memory:') as db:
+            self.assertEqual(exporter.export_snapshot(db, [dict(company, symbols=[])], fetch, period, asof), 0)
+            self.assertEqual(db.execute('SELECT status FROM export_universe').fetchone()[0], 'blocked_security_identity')
+
+    def test_failed_publication_and_no_overwrite(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, binary, output = (root/name for name in ('source', 'binary', 'snapshot.sqlite'))
+            source.write_bytes(b'unchanged-source')
+            binary.write_bytes(b'fixture-binary')
+            argv = ['export', '--database', str(source), '--alphalake', str(binary),
+                    '--output', str(output), '--period', '2026-06-30',
+                    '--as-of', '2026-09-22T00:00:00Z', '--all']
+            readiness = json.dumps(dict(contract_version='alphalake-readiness-v2', companies=[]))
+            with patch('sys.argv', argv), patch.object(exporter.subprocess, 'check_output', return_value=readiness), patch.object(exporter, 'export_snapshot', side_effect=ValueError('invalid unit')):
+                with self.assertRaisesRegex(ValueError, 'invalid unit'):
+                    exporter.main()
+            self.assertFalse(output.exists())
+            self.assertEqual(list(root.glob('*.tmp')), [])
+            self.assertEqual(source.read_bytes(), b'unchanged-source')
+            output.write_bytes(b'keep-existing')
+            with patch('sys.argv', argv), patch.object(exporter.subprocess, 'check_output') as command, patch('sys.stderr'):
+                with self.assertRaises(SystemExit):
+                    exporter.main()
+                command.assert_not_called()
+            self.assertEqual(output.read_bytes(), b'keep-existing')
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -4,6 +4,8 @@
 
 全字段财务物化已[限制中间工作集并保持事务原子性](docs/fundamental-memory-20260919.md)，实际主库在1GiB硬限额下完成全量及幂等重放；大任务须与交互终端隔离运行。
 
+已提供[标准财务事实导出兼容SQLite的命令](docs/valuation-sqlite-export.md)，显式生成独立快照，网页默认来源不变；数据层长期方案待定。
+
 AlphaLake 是面向投资研究、本地优先且可复现的金融市场数据基础设施。
 
 估值引擎与应用已纳入 [`valuation/`](valuation/README.md)，源自 [chrisuzy/Investment_Valuation_Agent](https://github.com/chrisuzy/Investment_Valuation_Agent)。感谢原作者 Chirs Yu Zhang 及上游贡献者；原 MIT 许可证、导入版本与 Credits 见 [来源记录](valuation/UPSTREAM.md)。已接通实际数据库到估值 CLI/API 与原生股权桥接，使用方法和适用边界见[融合说明](valuation/docs/alphalake-integration.md)。
