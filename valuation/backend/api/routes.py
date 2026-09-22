@@ -248,10 +248,11 @@ def _report_to_dict(session) -> dict:
     # Attach industry statistical distributions (Q1/Median/Q3 benchmarks) if available
     industry_stats = None
     try:
-        store = _get_damodaran_store()
-        ind_name = session.inputs.industry_data.industry_name if session.inputs.industry_data else None
-        if ind_name:
-            industry_stats = store.lookup_industry_stats(ind_name)
+        if session.valuation_run is None:
+            store = _get_damodaran_store()
+            ind_name = session.inputs.industry_data.industry_name if session.inputs.industry_data else None
+            if ind_name:
+                industry_stats = store.lookup_industry_stats(ind_name)
     except Exception:
         industry_stats = None
 
@@ -271,6 +272,7 @@ def _report_to_dict(session) -> dict:
         "source_metadata": session.source_tracker.to_dict() if session.source_tracker else {},
         "industry_stats": industry_stats,
         "unresolved_fields": getattr(session, "unresolved_fields", []) or [],
+        "alphalake": session.valuation_run,
     }
     return result
 
@@ -282,6 +284,17 @@ def _report_to_dict(session) -> dict:
 @router.get("/search")
 def search_companies(q: str, max_results: int = 20):
     """Search companies by ticker, name, or exchange code. Returns candidates for confirmation."""
+    from data_sources import us_cn_hk_db as db
+    try:
+        with db.get_connection() as conn:
+            if db.snapshot_metadata(conn) is not None:
+                rows = db.search_companies(conn, q, limit=max(1, min(max_results, 100)))
+                results = [dict(exchange_ticker=r['ticker'], company_name=r['company_name'],
+                    country='China', industry='需显式审核经营范围', exchange=r['exchange_code'],
+                    symbol=r['ticker'].split(':')[-1], region='CN') for r in rows]
+                return dict(query=q, count=len(results), results=results)
+    except Exception as error:
+        raise HTTPException(status_code=503, detail=f'Database unavailable: {error}') from error
     mapper = _get_industry_mapper()
     results = mapper.search(q, max_results=max_results)
     return {
@@ -1105,6 +1118,9 @@ def patch_valuation(session_id: str, req: OverrideRequest):
     session = get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
+
+    if session.valuation_run is not None:
+        raise HTTPException(status_code=409, detail='TDX快照估值须修改显式政策后重新提交，不能覆盖事实或保留旧运行标识。')
 
     # Apply overrides to inputs via dot-path
     inputs_dict = session.inputs.model_dump()

@@ -29,7 +29,7 @@ FIELDS = {
     'minority_interests': ('noncontrolling_interests', 'instant', 'CNY'),
 }
 EXCHANGES = {'XSHG': 'SHSE', 'XSHE': 'SZSE', 'XBSE': 'BJSE'}
-CONTRACT = 'alphalake-compatible-sqlite-v1'
+CONTRACT = 'alphalake-sqlite-v2'
 
 
 def digest(path):
@@ -81,12 +81,16 @@ def cell(facts, conflicts, instrument, end, column, annual):
     return result, 'available', evidence
 
 
-def export_snapshot(connection, companies, fetch, period, asof, years=10, quarters=8):
+def export_snapshot(connection, companies, fetch, period, asof, years=10, quarters=8, *, fetch_statements):
     target.init_schema(connection)
     connection.executescript('''CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+ CREATE TABLE standard_facts(ticker TEXT,period TEXT,field TEXT,value TEXT,unit TEXT,period_type TEXT,statement_scope TEXT,evidence_json TEXT,PRIMARY KEY(ticker,period,field));
+ CREATE TABLE valuation_inputs(ticker TEXT PRIMARY KEY,payload_json TEXT NOT NULL,sha256 TEXT NOT NULL);
+ CREATE TABLE financial_statements(ticker TEXT PRIMARY KEY,payload_json TEXT NOT NULL);
  CREATE TABLE export_universe(candidate INTEGER PRIMARY KEY,code TEXT,instrument_id INTEGER,status TEXT,details TEXT);
  CREATE TABLE export_cells(ticker TEXT,series TEXT,period TEXT,period_offset INTEGER,field TEXT,status TEXT,evidence_json TEXT,
  PRIMARY KEY(ticker,series,period_offset,field));''')
+    connection.execute('INSERT INTO metadata VALUES(?,?)', ('contract', CONTRACT))
     base = date(period.year if period.month == 12 else period.year - 1, 12, 31)
     annual_ends = [date(base.year-i, 12, 31) for i in range(years)]
     quarter_ends = [quarter(period, i) for i in range(quarters)]
@@ -115,6 +119,8 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                 raise ValueError('unexpected standard export identity')
             if datetime.fromisoformat(payload['information_as_of']) != asof:
                 raise ValueError('information cutoff differs')
+            if any(row.get('source') != 'tdx' for row in payload['facts']):
+                raise ValueError('only TDX financial facts may enter SQLite')
             conflicts.update(row['period'] for row in payload.get('source_conflicts', []))
             seen = set()
             for row in payload['facts']:
@@ -129,7 +135,17 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                 if key in seen or key in facts and facts[key] != row:
                     raise ValueError('duplicate or changed standard fact')
                 seen.add(key)
+                if key not in facts:
+                    connection.execute('INSERT INTO standard_facts VALUES(?,?,?,?,?,?,?,?)',
+                        (ticker, row['period'], row['field'], row['value'], row['unit'], row['period_type'],
+                         row['statement_scope'], json.dumps(row, ensure_ascii=False, sort_keys=True)))
                 facts[key] = row
+            if end == period:
+                # 附注数值不进入纯TDX快照；政策在网页请求中另行提供。
+                payload = dict(payload, supplements=[])
+                raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, allow_nan=False)
+                connection.execute('INSERT INTO valuation_inputs VALUES(?,?,?)',
+                    (ticker, raw, hashlib.sha256(raw.encode()).hexdigest()))
             for year in (end.year-1, end.year):
                 for month in (3, 6, 9, 12):
                     candidate = date(year, month, calendar.monthrange(year, month)[1])
@@ -141,6 +157,12 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                    fx_rate_source='same currency', period_date_annual=base.isoformat(),
                    period_date_quarterly=period.isoformat(), data_as_of=asof.date().isoformat())
         target.insert_companies(connection, [row])
+        load(period)
+        statements = fetch_statements(code, period)
+        if (statements.get('contract_version'), statements.get('code'), statements.get('report_period')) != ('alphalake-financial-statements-v1', code, period.isoformat()) or datetime.fromisoformat(statements['information_as_of']) != asof:
+            raise ValueError('unexpected financial statements identity/cutoff')
+        connection.execute('INSERT INTO financial_statements VALUES(?,?)',
+                           (ticker, json.dumps(statements, ensure_ascii=False, sort_keys=True)))
         for series, ends in [('annual', annual_ends), ('quarterly', quarter_ends)]:
             for offset, end in enumerate(ends):
                 load(end)
@@ -202,17 +224,19 @@ def main():
         connection = sqlite3.connect(temporary)
         try:
             count = export_snapshot(connection, companies, lambda code, end: command('export-valuation', code, end=end),
-                                    args.period, args.as_of, args.years, args.quarters)
+                                    args.period, args.as_of, args.years, args.quarters,
+                                    fetch_statements=lambda code, end: command('financial-statements', code, end=end))
             metadata = dict(contract=CONTRACT, source_database_sha256=source_hash, exporter_sha256=digest(__file__),
                             alphalake_binary_sha256=digest(binary), report_period=args.period.isoformat(),
                             information_as_of=args.as_of.isoformat(), exported_at=datetime.now(timezone.utc).isoformat(),
-                            money_unit='million_CNY', shares_unit='million_shares',
+                            wide_money_unit='million_CNY', wide_shares_unit='million_shares',
+                            standard_values='decimal_strings_in_each_rows_unit',
                             annual_net_income='parent_attributable', annual_bv_equity='parent_attributable',
                             quarterly_flows='difference_of_standard_YTD_same_year; Q1 unchanged',
                             missing='NULL; see export_cells; source-zero/unreviewed not inferred from absence',
-                            boundary='compatible_snapshot_not_valuation_admission; no market, WACC or note defaults; consumer fallbacks remain unaudited',
+                            boundary='TDX_only_financial_snapshot; explicit_separate_policy_required; no_supplement_values_or_market_defaults',
                             candidates=str(len(companies)), companies=str(count))
-            connection.executemany('INSERT INTO metadata VALUES(?,?)', metadata.items())
+            connection.executemany('INSERT OR REPLACE INTO metadata VALUES(?,?)', metadata.items())
             connection.commit()
             if connection.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
                 raise ValueError('SQLite integrity check failed')

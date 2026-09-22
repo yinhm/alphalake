@@ -19,6 +19,8 @@ Public surface:
 from __future__ import annotations
 
 import json
+import hashlib
+from datetime import datetime
 import os
 import sqlite3
 from contextlib import contextmanager
@@ -69,8 +71,11 @@ def get_connection() -> Iterator[sqlite3.Connection]:
     conn = sqlite3.connect(str(path))
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
-    conn.execute("PRAGMA journal_mode = WAL")  # readers never block writers
     try:
+        if snapshot_metadata(conn) is not None:
+            conn.execute("PRAGMA query_only = ON")
+        else:
+            conn.execute("PRAGMA journal_mode = WAL")  # vendor datasets remain writable
         yield conn
         conn.commit()
     except Exception:
@@ -292,10 +297,37 @@ def search_companies(conn: sqlite3.Connection, query: str, limit: int = 20) -> l
                END AS match_rank
         FROM companies
         WHERE ticker LIKE ? COLLATE NOCASE OR company_name LIKE ? COLLATE NOCASE
+           OR REPLACE(company_name, ' ', '') LIKE ? COLLATE NOCASE
         ORDER BY match_rank, company_name COLLATE NOCASE
         LIMIT ?
-    """, (q, f"{q}%", f"{q}%", f"%{q}%", f"%{q}%", limit)).fetchall()
+    """, (q, f"{q}%", f"{q}%", f"%{q}%", f"%{q}%", "%"+q.replace(" ", "")+"%", limit)).fetchall()
     return [dict(r) for r in rows]
+
+
+def snapshot_metadata(conn: sqlite3.Connection) -> dict | None:
+    """按数据产品契约识别来源；不把损坏或旧版TDX快照降级为外部数据。"""
+    tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    if not tables.intersection({'metadata', 'valuation_inputs', 'standard_facts', 'export_cells'}):
+        return None
+    metadata = dict(conn.execute('SELECT key,value FROM metadata')) if 'metadata' in tables else {}
+    if metadata.get('contract') != 'alphalake-sqlite-v2':
+        raise ValueError('Unsupported AlphaLake SQLite contract; rebuild the snapshot with the current exporter')
+    if not {'valuation_inputs', 'standard_facts', 'financial_statements'} <= tables:
+        raise ValueError('Incomplete AlphaLake SQLite snapshot')
+    return metadata
+
+
+def fetch_tdx_valuation(conn: sqlite3.Connection, ticker: str) -> dict:
+    row = conn.execute('SELECT payload_json,sha256 FROM valuation_inputs WHERE ticker=?', (ticker,)).fetchone()
+    if row is None or hashlib.sha256(row[0].encode()).hexdigest() != row[1]:
+        raise ValueError('Missing or changed TDX valuation snapshot')
+    payload = json.loads(row[0])
+    metadata = snapshot_metadata(conn)
+    if (payload['code'] != ticker.split(':')[-1] or payload['report_period'] != metadata['report_period']
+            or datetime.fromisoformat(payload['information_as_of']) != datetime.fromisoformat(metadata['information_as_of'])
+            or payload['supplements'] or any(r.get('source') != 'tdx' for r in payload['facts'])):
+        raise ValueError('TDX snapshot identity, cutoff or source differs')
+    return payload
 
 
 def fetch_company(conn: sqlite3.Connection, ticker: str) -> dict | None:
@@ -321,11 +353,22 @@ def fetch_company(conn: sqlite3.Connection, ticker: str) -> dict | None:
         (ticker,),
     ).fetchall()
 
-    return {
+    result = {
         "company": co_dict,
         "financials_annual": [dict(r) for r in annual],
         "financials_quarterly": [dict(r) for r in quarterly],
     }
+
+    metadata = snapshot_metadata(conn)
+    if metadata is not None:
+        result['data_source'] = metadata
+        result['standard_financials'] = [dict(r) for r in conn.execute(
+            'SELECT period,field,value,unit,period_type,statement_scope FROM standard_facts WHERE ticker=? ORDER BY period,field', (ticker,))]
+        row = conn.execute('SELECT payload_json FROM financial_statements WHERE ticker=?', (ticker,)).fetchone()
+        if row is None:
+            raise ValueError('Missing standard financial statements')
+        result['financial_statements'] = json.loads(row[0])
+    return result
 
 
 def latest_ingest_summary(conn: sqlite3.Connection) -> dict | None:

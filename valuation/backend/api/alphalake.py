@@ -187,7 +187,7 @@ def method_assessment(inputs, audit, report):
         boundary='条件模型可以复算；以上缺口没有被归零或认定无影响。未提供当前目标价、预测准确性认证或完整公司估值认证。')
 
 
-def evaluate(request: AlphaLakeRequest):
+def _evaluate(request: AlphaLakeRequest):
     inputs, audit = build_inputs(request)
     revision = ENGINE_REVISION
     request_data = request.model_dump(mode='json')
@@ -224,7 +224,11 @@ def evaluate(request: AlphaLakeRequest):
                         raise ValueError('concurrent valuation differs')
             finally:
                 temporary.unlink(missing_ok=True)
-    return result
+    return result, inputs, report
+
+
+def evaluate(request: AlphaLakeRequest):
+    return _evaluate(request)[0]
 
 
 @router.post('/from-alphalake')

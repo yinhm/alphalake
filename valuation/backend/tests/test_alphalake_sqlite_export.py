@@ -19,7 +19,7 @@ class SQLiteExportTest(unittest.TestCase):
         facts = []
         for end, value in [('2025-09-30', '7000000'), ('2025-12-31', '10000000'),
                            ('2026-03-31', '0'), ('2026-06-30', '4000000')]:
-            facts.append(dict(code='300866', instrument_id=7, period=end,
+            facts.append(dict(source='tdx', code='300866', instrument_id=7, period=end,
                               field='revenue_cumulative', canonical_field='revenue_cumulative',
                               value=value, unit='CNY', period_type={3:'Q1', 6:'H1', 9:'9M', 12:'FY'}[int(end[5:7])],
                               statement_scope='provider_default', fact_id=end,
@@ -30,12 +30,18 @@ class SQLiteExportTest(unittest.TestCase):
         def fetch(code, end):
             return dict(contract_version='alphalake-valuation-v2', code=code,
                         report_period=end.isoformat(), information_as_of=asof.isoformat(),
-                        facts=[r for r in facts if end.year-1 <= int(r['period'][:4]) and r['period'] <= end.isoformat()],
+                        windows=[], supplements=[{'item': 'not_exported'}], facts=[r for r in facts if end.year-1 <= int(r['period'][:4]) and r['period'] <= end.isoformat()],
                         source_conflicts=[])
+
+        def statements(code, end):
+            return dict(contract_version='alphalake-financial-statements-v1', code=code,
+                        report_period=end.isoformat(), information_as_of=asof.isoformat(), statements={})
 
         with sqlite3.connect(':memory:') as db:
             db.row_factory = sqlite3.Row
-            self.assertEqual(exporter.export_snapshot(db, [company], fetch, period, asof), 1)
+            self.assertEqual(exporter.export_snapshot(db, [company], fetch, period, asof, fetch_statements=statements), 1)
+            self.assertEqual(db.execute('SELECT count(*) FROM standard_facts').fetchone()[0], len(facts))
+            self.assertEqual(json.loads(db.execute('SELECT payload_json FROM valuation_inputs').fetchone()[0])['supplements'], [])
             data = exporter.target.fetch_company(db, 'SZSE:300866')
             self.assertEqual(len(data['financials_annual']), 10)
             self.assertEqual(len(data['financials_quarterly']), 8)
@@ -57,10 +63,10 @@ class SQLiteExportTest(unittest.TestCase):
             original = facts[-1][key]
             facts[-1][key] = bad
             with sqlite3.connect(':memory:') as db, self.assertRaisesRegex(ValueError, message):
-                exporter.export_snapshot(db, [company], fetch, period, asof)
+                exporter.export_snapshot(db, [company], fetch, period, asof, fetch_statements=statements)
             facts[-1][key] = original
         with sqlite3.connect(':memory:') as db:
-            self.assertEqual(exporter.export_snapshot(db, [dict(company, symbols=[])], fetch, period, asof), 0)
+            self.assertEqual(exporter.export_snapshot(db, [dict(company, symbols=[])], fetch, period, asof, fetch_statements=statements), 0)
             self.assertEqual(db.execute('SELECT status FROM export_universe').fetchone()[0], 'blocked_security_identity')
 
     def test_failed_publication_and_no_overwrite(self):
