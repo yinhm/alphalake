@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import type { ValuationResponse, GeographicSegment } from '../types/valuation';
+import type { ValuationResponse } from '../types/valuation';
 import type { PatchValue } from '../api/client';
 import axios from 'axios';
 

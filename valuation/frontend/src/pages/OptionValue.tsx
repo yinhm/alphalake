@@ -19,7 +19,7 @@ function pct(v: number | null | undefined): string {
 
 // ---------- component ----------
 
-export default function OptionValue({ data, sessionId }: { data: ValuationResponse; sessionId?: string | null }) {
+export default function OptionValue({ data }: { data: ValuationResponse; sessionId?: string | null }) {
   const opt = data.inputs.option_inputs;
   const fin0 = baseYear(data);              // LTM-rotated base year
   const macro = data.inputs.macro_inputs;

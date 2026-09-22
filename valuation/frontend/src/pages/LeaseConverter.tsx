@@ -4,7 +4,7 @@ import SpreadsheetGrid from '../components/SpreadsheetGrid';
 import ColorLegend from '../components/ColorLegend';
 import { ciq, formula, damodaran, backendField } from '../lib/sources';
 
-export default function LeaseConverter({ data, sessionId }: { data: ValuationResponse; sessionId?: string | null }) {
+export default function LeaseConverter({ data }: { data: ValuationResponse; sessionId?: string | null }) {
   const adj = data.inputs.adjustment_inputs;
   const industry = data.inputs.industry_data;
   const adjusted = data.adjusted;

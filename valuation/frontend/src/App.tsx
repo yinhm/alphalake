@@ -1,6 +1,7 @@
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { useState, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
+import TDXValuation from './pages/TDXValuation';
 import ErrorBoundary from './components/ErrorBoundary';
 import OnboardingWizard from './components/OnboardingWizard';
 import InputSheet from './pages/InputSheet';
@@ -32,6 +33,7 @@ export default function App() {
 
   const handleCellUpdate = useCallback(async (dotPath: string, value: PatchValue) => {
     if (!sessionId || !data) return;
+    if (data.alphalake?.read_only) { setError('请重新加载修改后的估值政策；TDX事实和已保存运行不可覆盖。'); return; }
     try {
       const resp = await patchValuation(sessionId, { [dotPath]: value });
       setData(resp);
@@ -42,6 +44,7 @@ export default function App() {
 
   const handlePatchMany = useCallback(async (overrides: Record<string, PatchValue>) => {
     if (!sessionId || !data) return;
+    if (data.alphalake?.read_only) { setError('请重新加载修改后的估值政策；TDX事实和已保存运行不可覆盖。'); return; }
     try {
       const resp = await patchValuation(sessionId, overrides);
       setData(resp);
@@ -81,7 +84,7 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <Sidebar />
+      {!data?.alphalake && <Sidebar />}
       <main className="flex-1 p-6 overflow-auto">
         {isAdminRoute ? (
           <Routes>
@@ -125,15 +128,24 @@ export default function App() {
                 <p className="text-red-700 text-sm">{error}</p>
               </div>
             )}
+            {data.alphalake && <div className="mb-4 bg-amber-50 border border-amber-300 rounded-lg p-3 text-sm">
+              <p>TDX财务＋显式政策的条件估值，不是当前目标价。财务时点：{data.alphalake.report_period}；信息截止：{data.alphalake.information_as_of}</p>
+              <p>运行：<code className="break-all">{data.alphalake.run_id}</code></p>
+              <p>本结果只读；修改政策后通过“New Valuation”重新估值。</p>
+              <details><summary>查看模型适用边界与政策</summary>
+                <ul className="list-disc pl-5">{data.alphalake.audit.boundaries.map((text, i) => <li key={i}>{text}</li>)}</ul>
+                <pre className="whitespace-pre-wrap text-xs">{JSON.stringify(data.alphalake.policy, null, 2)}</pre>
+              </details>
+            </div>}
             <CurrencyBanner data={data} />
             <UnresolvedFieldsPanel data={data} onPatch={handleCellUpdate} />
-            <RoutedPages
+            {data.alphalake ? <TDXValuation data={data} /> : <RoutedPages
               data={data}
               sessionId={sessionId}
               setData={setData}
               handleCellUpdate={handleCellUpdate}
               handlePatchMany={handlePatchMany}
-            />
+            />}
           </>
         )}
       </main>

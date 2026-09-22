@@ -1,73 +1,15 @@
-# React + TypeScript + Vite
+# AlphaLake 网页
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+TDX SQLite快照的使用、数据边界及重建命令见[导出与网页估值](../../docs/valuation-sqlite-export.md)。网页消费标准事实/TTM及独立显式政策，展示条件结果与三表状态；原外部数据页面保留独立来源。
 
-Currently, two official plugins are available:
+构建：`npm ci`后执行`npm run build`，CI执行同样检查。当前前端无新增依赖。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+浏览器验收脚本为`tests/tdx-sqlite.smoke.cjs`。它启动临时本地后端并在结束后关闭；先构建前端，准备含安克与茅台的v2 SQLite，再在独立内存受限服务中运行`node valuation/frontend/tests/tdx-sqlite.smoke.cjs`（从仓库根目录）。需要：
 
-## React Compiler
+- `US_CN_HK_DB_PATH`：待验收SQLite绝对路径。
+- `ALPHALAKE_TEST_PYTHON`：已安装后端依赖的Python解释器。
+- `ALPHALAKE_PLAYWRIGHT_MODULE`：已有`playwright-core`模块的绝对路径；未设置则按Node正常模块查找。
+- `ALPHALAKE_CHROMIUM_PATH`：已安装Chromium程序路径；未设置则使用Playwright已安装浏览器。
+- 可选`ALPHALAKE_SCREENSHOT`：截图保存路径。
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+检查搜索、政策必填、结果及三表展示、错公司政策拒绝、金融兼营拒绝和浏览器运行异常。浏览器依赖不属于应用运行依赖；本地已运行此检查，CI当前覆盖Python链路与前端构建，不声称CI已运行浏览器。

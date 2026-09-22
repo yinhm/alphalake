@@ -559,7 +559,7 @@ export default function CostOfCapital({ data, onPatch }: Props) {
             <KV label="Equity in convertibles"      value={fmtCur(coc?.equity_in_convertible)}
                                                     tooltip={m.has_convertible ? "= Convertible MV − straight-debt bond value" : "N/A"} />
             <KV label="MV leases (as debt)"         value={fmtCur(coc?.mv_leases)}
-                                                    tooltip={m.has_operating_leases ? "PV of lease commitments discounted at Kd" : "Leases not capitalized (post-ASC 842 they are in bv_debt)"} />
+                                                    tooltip={data.inputs.adjustment_inputs.has_operating_leases ? "PV of lease commitments discounted at Kd" : "Leases not capitalized (post-ASC 842 they are in bv_debt)"} />
             <KV label="MV debt total"               value={fmtCur(coc?.mv_debt_total)}
                                                     tooltip={tip("cost_of_capital.mv_debt_total")} />
             <KV label="MV preferred"                value={fmtCur(coc?.mv_preferred)}

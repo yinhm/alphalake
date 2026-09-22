@@ -4,7 +4,7 @@ import SpreadsheetGrid from '../components/SpreadsheetGrid';
 import ColorLegend from '../components/ColorLegend';
 import { ciq, formula, backendField, user } from '../lib/sources';
 
-export default function RDConverter({ data, sessionId }: { data: ValuationResponse; sessionId?: string | null }) {
+export default function RDConverter({ data }: { data: ValuationResponse; sessionId?: string | null }) {
   const adj = data.inputs.adjustment_inputs;
   const adjusted = data.adjusted;
   const ticker = data.inputs.ticker;

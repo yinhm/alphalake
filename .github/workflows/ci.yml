@@ -71,6 +71,16 @@ jobs:
         run: ALPHALAKE_TEST_PYTHON=python go test ./internal/ingest -run TestBSETransitionPublicationRealEvidence -count=1
       - name: Verify company industry identity projection
         run: ALPHALAKE_TEST_PYTHON=python go test ./internal/store/duckdb -run TestCompanyIndustryProjectionRealSourceAndIdentityBoundaries -count=1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: valuation/frontend/package-lock.json
+      - name: Build valuation frontend
+        working-directory: valuation/frontend
+        run: |
+          npm ci
+          npm run build
       - name: Test valuation backend
         working-directory: valuation/backend
         run: python -m pytest -q

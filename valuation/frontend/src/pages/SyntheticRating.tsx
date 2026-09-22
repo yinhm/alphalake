@@ -23,7 +23,7 @@ const RATING_TABLE = [
   { minCoverage: 12.5, maxCoverage: 100, rating: 'Aaa/AAA', spread: 0.0063 },
 ];
 
-export default function SyntheticRating({ data, sessionId }: { data: ValuationResponse; sessionId?: string | null }) {
+export default function SyntheticRating({ data }: { data: ValuationResponse; sessionId?: string | null }) {
   const fin = baseYear(data);                // LTM-rotated base year
   const ebit = data.adjusted?.adjusted_ebit ?? fin?.ebit ?? 0;
   const interest = fin?.interest_expense ?? 1;

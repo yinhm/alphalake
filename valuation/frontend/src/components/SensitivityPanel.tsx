@@ -35,10 +35,6 @@ interface Props {
   onPatchMany?: (overrides: Record<string, PatchValue>) => void | Promise<void>;
 }
 
-function fmtPct(v: number | null | undefined, digits = 2): string {
-  if (v == null) return '—';
-  return (v * 100).toFixed(digits) + '%';
-}
 function fmtMoney(v: number | null | undefined, ccy: string | null | undefined): string {
   if (v == null) return '—';
   const prefix = ccy ? `${ccy} ` : '';
@@ -47,8 +43,6 @@ function fmtMoney(v: number | null | undefined, ccy: string | null | undefined):
 
 export default function SensitivityPanel({ data, onPatch, onPatchMany }: Props) {
   const sessionId = data.id;
-  const va = data.inputs.valuation_assumptions;
-  const mc = data.inputs.methodology_choices;
   const fin0 = data.inputs.raw_financials[0];
   const industry = data.inputs.industry_data;
   const ccy = data.inputs.reporting_currency ?? '';
@@ -112,7 +106,7 @@ export default function SensitivityPanel({ data, onPatch, onPatchMany }: Props) 
   const fxRate = data.inputs.fx_rate;                                // listing → reporting
   const sameCcy = listingCcy && reportingCcy && listingCcy === reportingCcy;
   const mktPriceInReporting =
-    mktPriceListing != null && (sameCcy ? mktPriceListing : fxRate != null ? mktPriceListing * fxRate : null);
+    mktPriceListing == null ? null : (sameCcy ? mktPriceListing : fxRate != null ? mktPriceListing * fxRate : null);
   const ratio = (vps != null && mktPriceInReporting != null && vps !== 0)
     ? mktPriceInReporting / vps : null;
   const ratioUnavailable =

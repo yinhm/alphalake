@@ -4,7 +4,7 @@ import SpreadsheetGrid from '../components/SpreadsheetGrid';
 import ColorLegend from '../components/ColorLegend';
 import { baseYear, priorYear, baseYearMargin } from '../lib/baseYear';
 
-export default function Diagnostics({ data, sessionId }: { data: ValuationResponse; sessionId?: string | null }) {
+export default function Diagnostics({ data }: { data: ValuationResponse; sessionId?: string | null }) {
   const by = baseYear(data);
   const py = priorYear(data);
   const assumptions = data.inputs.valuation_assumptions;
@@ -50,7 +50,7 @@ export default function Diagnostics({ data, sessionId }: { data: ValuationRespon
   const fxRate = data.inputs.fx_rate;
   const sameCcy = listingCcy && reportingCcy && listingCcy === reportingCcy;
   const stockPriceInReporting =
-    stockPriceListing != null && (sameCcy ? stockPriceListing : fxRate != null ? stockPriceListing * fxRate : null);
+    stockPriceListing == null ? null : (sameCcy ? stockPriceListing : fxRate != null ? stockPriceListing * fxRate : null);
   const priceAsPctOfValue =
     valuePerShare && valuePerShare !== 0 && stockPriceInReporting != null
       ? stockPriceInReporting / valuePerShare

@@ -4,7 +4,7 @@ import SpreadsheetGrid from '../components/SpreadsheetGrid';
 import ColorLegend from '../components/ColorLegend';
 import { baseYear } from '../lib/baseYear';
 
-export default function AnswerKeys({ data, sessionId }: { data: ValuationResponse; sessionId?: string | null }) {
+export default function AnswerKeys({ data }: { data: ValuationResponse; sessionId?: string | null }) {
   const fin = baseYear(data);    // LTM-rotated base year
   const assumptions = data.inputs.valuation_assumptions;
   const industry = data.inputs.industry_data;

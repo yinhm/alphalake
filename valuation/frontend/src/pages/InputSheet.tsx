@@ -1,3 +1,4 @@
+import type { PatchValue } from '../api/client';
 import type { ValuationResponse, RawFinancials } from '../types/valuation';
 import SpreadsheetCell from '../components/SpreadsheetCell';
 import SpreadsheetGrid from '../components/SpreadsheetGrid';
@@ -142,18 +143,17 @@ function ciqLtmTooltip(key: string, ticker: string, n: number): string {
 interface InputSheetProps {
   data: ValuationResponse;
   sessionId?: string | null;
-  onUpdate?: (dotPath: string, value: number | string | boolean | null) => void;
+  onUpdate?: (dotPath: string, value: PatchValue) => void;
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export default function InputSheet({ data, sessionId, onUpdate }: InputSheetProps) {
+export default function InputSheet({ data, onUpdate }: InputSheetProps) {
   const inp = data.inputs;
   const fins = inp.raw_financials; // all years, most recent first
   const fin0 = fins[0];
-  const fin1 = fins.length > 1 ? fins[1] : null;
   const adj = inp.adjustment_inputs;
   const macro = inp.macro_inputs;
   const ind = inp.industry_data;
@@ -162,7 +162,6 @@ export default function InputSheet({ data, sessionId, onUpdate }: InputSheetProp
   const va = inp.valuation_assumptions;
   const opt = inp.option_inputs;
   const coc = data.cost_of_capital;
-  const src = data.source_metadata ?? {};
 
   const qFins = inp.quarterly_financials ?? [];
 
@@ -315,7 +314,7 @@ export default function InputSheet({ data, sessionId, onUpdate }: InputSheetProp
               {
                 label: '  Reinvestment Rate',
                 type: 'calc',
-                calc: (f, prev) => {
+                calc: (f) => {
                   if (f.ebit == null || f.earnings_before_tax == null || f.earnings_before_tax <= 0 || f.total_tax_expense == null) return null;
                   const taxRate = f.total_tax_expense / f.earnings_before_tax;
                   const nopat = f.ebit * (1 - taxRate);
@@ -630,10 +629,7 @@ export default function InputSheet({ data, sessionId, onUpdate }: InputSheetProp
           if (!f || !f.revenues) return null;
           return f.ebit / f.revenues;
         }
-        function yearlyEffTax(f: RawFinancials | undefined): number | null {
-          if (!f || !f.earnings_before_tax || f.earnings_before_tax <= 0 || f.total_tax_expense == null) return null;
-          return f.total_tax_expense / f.earnings_before_tax;
-        }
+
 
         // Revenue stats
         const rev_now = fins[0]?.revenues;

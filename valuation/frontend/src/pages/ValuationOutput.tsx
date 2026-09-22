@@ -228,14 +228,7 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
   const sharesOutstanding = (sharesVintage.value ?? fin0.shares_outstanding) as number | undefined;
   const valuePerShare = data.final?.value_per_share;
   const currentPrice = (priceVintage.value ?? fin0.stock_price) as number | undefined;
-  const priceAsPctOfValue =
-    currentPrice !== null &&
-    currentPrice !== undefined &&
-    valuePerShare !== undefined &&
-    valuePerShare !== null &&
-    valuePerShare !== 0
-      ? currentPrice / valuePerShare
-      : undefined;
+
 
   // ---------- render helpers ----------
 

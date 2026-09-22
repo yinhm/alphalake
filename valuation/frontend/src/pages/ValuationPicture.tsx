@@ -4,7 +4,7 @@ import SpreadsheetGrid from '../components/SpreadsheetGrid';
 import ColorLegend from '../components/ColorLegend';
 import { baseYear, baseYearMargin } from '../lib/baseYear';
 
-export default function ValuationPicture({ data, sessionId }: { data: ValuationResponse; sessionId?: string | null }) {
+export default function ValuationPicture({ data }: { data: ValuationResponse; sessionId?: string | null }) {
   const fin = baseYear(data);                   // LTM-rotated base year
   const assumptions = data.inputs.valuation_assumptions;
   const dcf = data.dcf;

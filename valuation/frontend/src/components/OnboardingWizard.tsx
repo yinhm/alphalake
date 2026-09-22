@@ -3,7 +3,7 @@ import {
   searchCompanies, fetchFromFile,
   companyExists, valueFromDatabase,
 } from '../api/client';
-import type { SearchResult } from '../api/client';
+import type { SearchResult, TDXPolicyDocument } from '../api/client';
 import type { ValuationResponse } from '../types/valuation';
 
 /**
@@ -19,6 +19,7 @@ import type { ValuationResponse } from '../types/valuation';
  */
 
 type Step = 1 | 2;
+type DatabaseStatus = { inDb: boolean; dataAsOf: string | null; requiresPolicy: boolean; reportPeriod: string | null };
 
 interface Props {
   onComplete: (response: ValuationResponse) => void;
@@ -34,15 +35,18 @@ export default function OnboardingWizard({ onComplete, onDemo }: Props) {
 
   // DB-backed path: when the selected company is in the ingested markets DB,
   // offer an instant valuation with no file round-trip.
-  const [dbStatus, setDbStatus] = useState<{ inDb: boolean; dataAsOf: string | null } | null>(null);
+  const [dbStatus, setDbStatus] = useState<DatabaseStatus | null>(null);
+  const [tdxPolicy, setTdxPolicy] = useState<TDXPolicyDocument | undefined>();
   const [loadingFromDb, setLoadingFromDb] = useState(false);
 
   useEffect(() => {
+    setTdxPolicy(undefined);
+    setDbStatus(null);
     if (!selectedCompany) { setDbStatus(null); return; }
     let cancelled = false;
     companyExists(selectedCompany.exchange_ticker)
-      .then((r) => { if (!cancelled) setDbStatus({ inDb: r.in_database, dataAsOf: r.data_as_of }); })
-      .catch(() => { if (!cancelled) setDbStatus({ inDb: false, dataAsOf: null }); });
+      .then((r) => { if (!cancelled) setDbStatus({ inDb: r.in_database, dataAsOf: r.data_as_of, requiresPolicy: r.requires_tdx_policy, reportPeriod: r.report_period }); })
+      .catch(() => { if (!cancelled) setError('无法读取所选数据库，请检查快照版本与服务状态。'); });
     return () => { cancelled = true; };
   }, [selectedCompany]);
 
@@ -51,10 +55,11 @@ export default function OnboardingWizard({ onComplete, onDemo }: Props) {
     setLoadingFromDb(true);
     setError(null);
     try {
-      const resp = await valueFromDatabase(selectedCompany.exchange_ticker);
+      const resp = await valueFromDatabase(selectedCompany.exchange_ticker, tdxPolicy);
       onComplete(resp);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Database valuation failed');
+      const detail = (e as { response?: { data?: { detail?: string | { status?: string; reason?: string; missing?: string[] } } } }).response?.data?.detail;
+      setError(typeof detail === 'string' ? detail : Array.isArray(detail) ? detail.map(item => String(item.msg ?? item)).join('；') : detail ? [detail.status, detail.reason, detail.missing?.join('、')].filter(Boolean).join('：') : e instanceof Error ? e.message : 'Database valuation failed');
     } finally {
       setLoadingFromDb(false);
     }
@@ -171,7 +176,7 @@ export default function OnboardingWizard({ onComplete, onDemo }: Props) {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+        <div role="alert" className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
           <p className="text-red-700 text-sm">{error}</p>
         </div>
       )}
@@ -193,6 +198,8 @@ export default function OnboardingWizard({ onComplete, onDemo }: Props) {
           <StepTwo
             company={selectedCompany}
             dbStatus={dbStatus}
+            tdxPolicy={tdxPolicy}
+            onPolicy={setTdxPolicy}
             loadingFromDb={loadingFromDb}
             onValueFromDb={triggerValueFromDb}
             uploading={uploading}
@@ -324,19 +331,32 @@ function StepOne({
 // Step 2 — Value from DB (if available) or upload a data file
 // ──────────────────────────────────────────────────────────────────────
 function StepTwo({
-  company, dbStatus, loadingFromDb, onValueFromDb,
+  company, dbStatus, tdxPolicy, onPolicy, loadingFromDb, onValueFromDb,
   uploading, fileInputRef, onUploadChange, onDropFile, onBack,
 }: {
   company: SearchResult;
-  dbStatus: { inDb: boolean; dataAsOf: string | null } | null;
+  dbStatus: DatabaseStatus | null;
+  tdxPolicy: TDXPolicyDocument | undefined;
+  onPolicy: (policy: TDXPolicyDocument | undefined) => void;
   loadingFromDb: boolean;
   onValueFromDb: () => void;
   uploading: boolean;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   onUploadChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onDropFile: (file: File) => void;
   onBack: () => void;
 }) {
+  const [policyError, setPolicyError] = useState('');
+  async function loadPolicy(file?: File) {
+    onPolicy(undefined);
+    setPolicyError('');
+    if (!file) return;
+    try {
+      const value = JSON.parse(await file.text()) as TDXPolicyDocument;
+      if (value.code !== company.symbol || value.policy?.approved_report_period !== dbStatus?.reportPeriod) throw new Error('政策公司或报告期与所选快照不符。');
+      onPolicy(value);
+    } catch (error) { setPolicyError(error instanceof Error ? error.message : '政策文件无效'); }
+  }
   const [dragging, setDragging] = useState(false);
 
   const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
@@ -387,7 +407,7 @@ function StepTwo({
                 Option A — Instant from database
               </div>
               <div className="text-sm text-emerald-900">
-                This company is already in the built-in dataset. Run the valuation in one click.
+                {dbStatus.requiresPolicy ? 'TDX财务快照：请加载并确认独立估值政策。缺项与金融兼营不适用将明确拒绝。' : 'This company is already in the built-in dataset. Run the valuation in one click.'}
               </div>
               {dbStatus.dataAsOf && (
                 <div className="text-[11px] text-emerald-700 mt-1">
@@ -397,12 +417,24 @@ function StepTwo({
             </div>
             <button
               onClick={onValueFromDb}
-              disabled={loadingFromDb}
+              disabled={loadingFromDb || (dbStatus.requiresPolicy && !tdxPolicy)}
               className="shrink-0 px-5 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 disabled:bg-gray-300"
             >
               {loadingFromDb ? 'Running valuation…' : '→ Value from Database'}
             </button>
           </div>
+          {dbStatus.requiresPolicy && <div className="mt-3 space-y-2 text-sm">
+            <label className="block">估值政策文件（预测与风险假设，不属于TDX财报）
+              <input aria-label="估值政策文件" type="file" accept=".json" className="block mt-2" onChange={e => void loadPolicy(e.target.files?.[0])} />
+            </label>
+            {policyError && <p role="alert" className="text-red-700">{policyError}</p>}
+            {tdxPolicy && <div>
+              <p>情景：{String(tdxPolicy.policy.scenario)}；报告期：{dbStatus.reportPeriod}</p>
+              <p>WACC：{Number(tdxPolicy.policy.wacc) * 100}%；税率：{Number(tdxPolicy.policy.tax_rate) * 100}%；收入／资本：{String(tdxPolicy.policy.sales_to_capital)}</p>
+              <p>{String(tdxPolicy.policy.review_note)}</p>
+              <details><summary>核对全部政策参数</summary><pre className="whitespace-pre-wrap text-xs">{JSON.stringify(tdxPolicy.policy, null, 2)}</pre></details>
+            </div>}
+          </div>}
         </div>
       )}
 
