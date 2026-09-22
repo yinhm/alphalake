@@ -1,6 +1,6 @@
 > 本目录已于 2026-09-07 纳入 AlphaLake，源自 [chrisuzy/Investment_Valuation_Agent](https://github.com/chrisuzy/Investment_Valuation_Agent)。感谢原作者 Chirs Yu Zhang 及贡献者；原 MIT 许可证保留。来源版本、本地修正和合并验证范围见 [UPSTREAM.md — Credits](UPSTREAM.md)。以下保留上游项目介绍，不等同于 AlphaLake 当前集成验收结论。
 
-AlphaLake 当前入口：[全市场条件估值与运行命令](../docs/a-share-automation-acceptance-20260910.md)、[实现状态与下一步](../docs/implementation-status.md)、[标准数据桥接](docs/alphalake-integration.md)。上游CIQ/SQLite功能与AlphaLake标准事实链分开验收。
+AlphaLake 当前入口：[全市场条件估值与运行命令](../docs/a-share-automation-acceptance-20260910.md)、[实现状态与下一步](../docs/implementation-status.md)、[标准数据桥接](docs/alphalake-integration.md)。当前可通过[纯TDX SQLite快照及显式政策在网页估值](../docs/valuation-sqlite-export.md)；上游CIQ功能仍独立，不能作为TDX缺项后备。
 
 <div align="center">
 

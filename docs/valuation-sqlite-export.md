@@ -1,6 +1,6 @@
 # 标准财务事实导出 SQLite
 
-按用户要求提供显式兼容快照，长期采用API还是SQLite的数据层决策延后。工具不修改源DuckDB、网页默认seed或环境配置，不为旧版AlphaLake契约保留兼容路径。
+按用户要求提供纯TDX来源的SQLite财务快照，并已接通网页估值。长期采用API还是SQLite的数据层决策延后。工具不修改源DuckDB、网页默认seed或环境配置。当前契约为`alphalake-sqlite-v2`；前一版快照须用当前命令显式重建，不保留旧版读取降级。
 
 依赖Python 3.11+标准库和当前版本`alphalake`程序，无新增包。先构建当前程序；本机的大库任务、构建和测试须串行放在独立systemd系统服务中，参见[内存隔离约束](fundamental-memory-20260919.md)。例如：
 
@@ -42,7 +42,11 @@ journalctl -u alphalake-sqlite-export --no-pager
 
 ## 数据范围与语义
 
-链路：DuckDB标准事实→已有`export-valuation`只读契约→SQLite。复用当前`companies`、`financials_annual`、`financials_quarterly`结构和写入函数。金额为**百万元人民币**、股数为**百万股**；保留源精度，不补小数。日期锚点来自指定报告期，年表以最近完整自然年为FY0，季表以指定季末为FQ0。固定时点取数不是逐季度当时留存的数据版本认证。
+链路：TDX原始包→已有标准语义/校验→DuckDB标准事实及TTM→SQLite→网页→共享估值引擎。CNINFO关联只提供身份、时点与核验血缘；PDF附注金额、参考市场数据和模型假设不进入快照。
+
+SQLite增加`standard_facts`保存所有查询所得的标准字段、原标准单位及独立证据，`financial_statements`保存指定期间的完整三表与缺项状态，`valuation_inputs`保存当前标准事实/TTM及源位核验血缘（附注列表明确为空）。不再按网页17列限制标准数据供给。
+
+仍提供`companies`、`financials_annual`、`financials_quarterly`供通用数据读取；这些宽表金额为**百万元人民币**、股数为**百万股**，标准长表与三表金额仍为元、股数为股，按各行单位解释。网页估值消费标准载荷，不用这17列填空重建估值。保留源精度，不补小数。日期锚点来自指定报告期，年表以最近完整自然年为FY0，季表以指定季末为FQ0。固定时点取数不是逐季度当时留存的数据版本认证。
 
 | SQLite列 | 标准字段 | 转换 |
 |---|---|---|
@@ -63,7 +67,7 @@ EBIT、EBITDA、总折旧摊销、租赁费用、现金及证券合计、交叉�
 
 `export_cells`逐单元格记录`available`、`missing_standard_fact`、`source_record_conflict`或`requires_separate_valuation_definition`，保留标准值、系数、事实ID、可用时间和归档哈希。标准事实缺失不进一步推断为源零、未披露或未审核；更细状态需查`financial-statements`。`metadata`记录源库/程序/导出器哈希、报告期、信息截止及取得时间；公司`data_as_of`为信息截止日期，不冒充实际下载日。
 
-## 消费与边界
+## 网页消费与估值
 
 如需手动让网页读取该快照，在启动网页后端的环境中显式设置：
 
@@ -71,8 +75,48 @@ EBIT、EBITDA、总折旧摊销、租赁费用、现金及证券合计、交叉�
 export US_CN_HK_DB_PATH=/root/alphalake/workspace/sqlite-export-new/valuation.sqlite
 ```
 
-仅改变该进程选库，不是合并到seed。数据库读取格式兼容**不等于完整DCF输入或网页估值准入**；网页既有行业/国家默认参数和季度年份等问题没有在导出器中修复，见[审计](valuation-data-path-audit-20260919.md)。不要将缺项下网页自行补值的结果作为AlphaLake已验收估值。
+仅改变该进程选库，不是合并到seed。启动当前后端后，网页搜索直接查该SQLite；选中公司、加载绑定证券与报告期的政策文件、核对全部参数后计算。示例：[安克固定10%WACC的既有基线政策](../valuation/examples/sqlite-anker-2026H1.json)，不是最新市场WACC或推荐参数。完整政策保存在独立JSON及估值运行中，SQLite中没有预测、WACC、税率假设或PDF补充值。
 
-回归（从仓库根目录，在受控服务中执行）：`PYTHONPATH=valuation/backend python3 -m unittest tests.test_alphalake_sqlite_export`。现有CI的Python pytest发现该测试，无新增解释器依赖包。
+在已安装后端依赖的Python环境中，从仓库根目录运行下面命令（前端须先完成`npm run build`），即可从`http://127.0.0.1:8000`访问页面：
 
-本轮真实验收：安克、茅台、苏泊尔，2026H1报告期／2026-09-22信息截止，30行年度和24行季度；918个单元格中219个有值、321个缺标准事实、378个需要独立估值定义。有值项从保留的十进制证据逐一复算，空值项逐一检查；源库哈希不变，独立服务峰值896.5MiB、swap为0。不是全市场验收，也未重新核对PDF。结果保存在`workspace/sqlite-export-20260922/valuation.sqlite`，见[验收收据](acceptance/sqlite-export-20260922.json)。
+```bash
+PYTHONPATH=valuation/backend python -m uvicorn api.main:app --host 127.0.0.1 --port 8000
+```
+
+此网页进程只读SQLite，不打开大DuckDB。若本机仍运行大库任务，请沿用独立systemd服务和1GiB硬限额，串行执行导出/验收。
+
+程序化调用仍使用网页同一路由：
+
+```python
+import json
+from urllib.request import Request, urlopen
+policy = json.load(open('valuation/examples/sqlite-anker-2026H1.json'))
+request = Request('http://127.0.0.1:8000/api/valuation/from-database',
+    data=json.dumps({'ticker': 'SZSE:300866', 'tdx_policy': policy}).encode(),
+    headers={'Content-Type': 'application/json'})
+result = json.load(urlopen(request))
+print(result['final']['value_per_share'], result['alphalake']['run_id'])
+```
+
+当前允许显式普通非金融账面FCFF或历史驱动FCFF政策，直接提供WACC与资本倍率。消费现有`build_inputs`及同一引擎，不另写EBIT/债务组合算法；每股值、DCF、政策和run ID与同一TDX载荷的统一入口一致。附注依赖的专项政策、参考绑定和金融兼营模型不在纯TDX入口的适用范围内。茅台存在财务公司业务，仍拒绝普通非金融政策；不得为生成每股值删除金融分量。
+
+TDX快照按只读连接消费，源位/金额不符、政策公司/期间不符、缺项及源冲突均拒绝，不调用旧网页的行业/国家默认值。成功页面单独展示条件每股值、股权桥接、预测现金流、全部三表状态与历史标准事实；缺项不补零，不显示CIQ式拆分或冒充当日目标价。结果不可原地覆盖，更换显式政策后重新估值并产生对应运行。原外部数据入口仍独立存在，不作为TDX失败的后备来源。
+
+更细的当前三表状态可通过`GET /api/database/company/{ticker}`查看；同一快照的历史标准事实在`standard_financials`，当前三表在`financial_statements`。财务完整度、模型适用、条件产出和逐公司原文核验分别统计。
+
+回归（从仓库根目录，在受控服务中执行）：`PYTHONPATH=valuation/backend python3 -m unittest tests.test_alphalake_sqlite_export`。网页链路回归为`tests/test_tdx_sqlite_web.py`，使用已有后端依赖与真实Go标准链夹具；现有CI pytest自动发现，新增前端`npm ci && npm run build`。导出器本身仍只依赖Python标准库，无新增运行依赖。
+
+前版历史验收（v1，只验证财务快照格式，不代表网页已接通）：安克、茅台、苏泊尔，2026H1报告期／2026-09-22信息截止，30行年度和24行季度；918个单元格中219个有值、321个缺标准事实、378个需要独立估值定义。有值项从保留的十进制证据逐一复算，空值项逐一检查；源库哈希不变，独立服务峰值896.5MiB、swap为0。不是全市场验收，也未重新核对PDF。结果保存在`workspace/sqlite-export-20260922/valuation.sqlite`，见[验收收据](acceptance/sqlite-export-20260922.json)。
+
+
+## v2真实网页验收（2026-09-22）
+
+固定2026H1报告期、2026-09-22零点信息截止，主库只读重导出三家公司：标准事实2,656条、实际出现183个标准字段，每家三表状态282项（共846项）。183是该样本实际有值字段的并集，不是目录覆盖率或全市场完成率；标准目录及三表供给计数仍见ADR020。原17列宽表仍为219项有值、321项缺标准事实、378项需要估值定义；网页已从完整标准载荷消费，不把宽表空列自动填满。
+
+安克与苏泊尔在显式固定10%WACC、收入／资本3倍等基线参数下分别得到92.1504与20.9713元／股，Go原导出显式清空附注列表后，其余载荷与SQLite逐项一致；以这份同一TDX载荷及同一政策调用统一入口，DCF、最终值、WACC输出及run ID与网页一致。原先包含附注或不同政策的CLI运行具有不同run ID，不冒称是同一请求。这些数值只证明桥接一致，不替代之前采用不同预测/WACC/资产政策的估值，也不是推荐价格。茅台保留金融兼营拒绝，无普通模型每股值。安克3项、苏泊尔4项PDF补充输入全部排除；TDX快照消费前后SHA256不变。
+
+结果：`workspace/sqlite-web-20260922/valuation.sqlite`；[收据含实际政策、源库哈希及运行ID](acceptance/sqlite-web-20260922.json)。浏览器实测搜索、选公司、政策必填、条件结果和三表展示、错公司政策拒绝及茅台金融兼营拒绝，零浏览器运行异常。[浏览器复验说明](../valuation/frontend/README.md)。没有执行全市场导出或重做逐公司PDF核验。
+
+首次构建还在原提交`f9c667b`独立复现已有TypeScript错误。本轮删除未用变量、修正nullable ref、缺值产生boolean的表达式、租赁开关来源及创建请求类型；未改估值公式，不通过关闭类型检查掩盖错误。前端构建仍提示既有主包超过500kB，未为了本次数据桥接做额外拆包。
+
+验证收口：Python全套471通过、4项既有外部工作簿样本缺失跳过；最后单位元数据与名称搜索小修后，针对性4项回归通过。Go全套测试、当前CLI构建、前端构建、CI YAML解析及文档链接检查通过。最终快照重建后所有非元数据表逐项一致，重开API和Chromium复验通过；中间快照删除路径、哈希和原因已写入收据，临时测试库及编译程序已清理。源码和依赖锁文件中的估值公式/依赖未变。

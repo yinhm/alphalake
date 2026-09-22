@@ -1,0 +1,208 @@
+{
+  "snapshot": "workspace/sqlite-web-20260922/valuation.sqlite",
+  "snapshot_sha256": "456dc3277e810067f7d3d03d1d4cb17cf72bb6468a9dc772688702479a0aa297",
+  "companies": [
+    {
+      "code": "600519",
+      "name": "贵州茅台",
+      "http_status": 422,
+      "statement_rows": 282,
+      "historical_facts": 889,
+      "native_export_equal_after_excluding_supplements": true,
+      "excluded_supplements": 0,
+      "policy": {
+        "code": "600519",
+        "policy": {
+          "policy_id": "nonfinancial-history-fcff-v1",
+          "approved_report_period": "2026-06-30",
+          "scenario": "mechanical_starting_scenario",
+          "review_note": "SQLite网页一致性验收沿用固定10%WACC基线参数；非公司预测建议，不代表实际市场WACC。",
+          "nonfinancial_scope_review": "贵州茅台普通非金融政策适配诊断；仍以模型金融业务检查为门槛，拒绝不得绕过。",
+          "wacc": 0.1,
+          "tax_rate": 0.25,
+          "growth_floor": -0.1,
+          "growth_ceiling": 0.2,
+          "growth_shift": 0,
+          "margin_shift": 0,
+          "sales_to_capital": 3,
+          "terminal_growth": 0.02,
+          "terminal_roic": 0.1,
+          "cash_recovery": 0.8,
+          "operating_cash_ratio": 0.03,
+          "minority_book_multiple": 1,
+          "debt_book_multiple": 1,
+          "extra_dilution_rate": 0.02,
+          "additional_claims_million_cny": 0,
+          "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+          "financial_asset_policy": "no_credit_pending_classification",
+          "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+        }
+      },
+      "rejection": {
+        "status": "rejected_input_or_policy",
+        "reason": "financial operations require separate model: financial_business_interest_income"
+      }
+    },
+    {
+      "code": "002032",
+      "name": "苏 泊 尔",
+      "http_status": 200,
+      "statement_rows": 282,
+      "historical_facts": 802,
+      "native_export_equal_after_excluding_supplements": true,
+      "excluded_supplements": 4,
+      "policy": {
+        "code": "002032",
+        "policy": {
+          "policy_id": "nonfinancial-history-fcff-v1",
+          "approved_report_period": "2026-06-30",
+          "scenario": "mechanical_starting_scenario",
+          "review_note": "SQLite网页一致性验收沿用固定10%WACC基线参数；非公司预测建议，不代表实际市场WACC。",
+          "nonfinancial_scope_review": "苏 泊 尔普通非金融政策适配诊断；仍以模型金融业务检查为门槛，拒绝不得绕过。",
+          "wacc": 0.1,
+          "tax_rate": 0.25,
+          "growth_floor": -0.1,
+          "growth_ceiling": 0.2,
+          "growth_shift": 0,
+          "margin_shift": 0,
+          "sales_to_capital": 3,
+          "terminal_growth": 0.02,
+          "terminal_roic": 0.1,
+          "cash_recovery": 0.8,
+          "operating_cash_ratio": 0.03,
+          "minority_book_multiple": 1,
+          "debt_book_multiple": 1,
+          "extra_dilution_rate": 0.02,
+          "additional_claims_million_cny": 0,
+          "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+          "financial_asset_policy": "no_credit_pending_classification",
+          "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+        }
+      },
+      "run_id": "edc9883cbe33d9b1fa8aa7ad3e6865281a9dd142de5e82751045f2816daf6530",
+      "value_per_share": 20.971295276252082,
+      "native_engine_equal": true
+    },
+    {
+      "code": "300866",
+      "name": "安克创新",
+      "http_status": 200,
+      "statement_rows": 282,
+      "historical_facts": 965,
+      "native_export_equal_after_excluding_supplements": true,
+      "excluded_supplements": 3,
+      "policy": {
+        "code": "300866",
+        "policy": {
+          "policy_id": "nonfinancial-history-fcff-v1",
+          "approved_report_period": "2026-06-30",
+          "scenario": "mechanical_starting_scenario",
+          "review_note": "固定10%WACC的统一普通模型对照，用于检验一年期利润校准的单因素影响；不是当前目标价。",
+          "nonfinancial_scope_review": "安克合并普通经营模型；标准链及已审核原文见valuation-chain-2026，仍执行金融业务字段拒绝，不替代专项研发/套保估值。",
+          "wacc": 0.1,
+          "tax_rate": 0.25,
+          "growth_floor": -0.1,
+          "growth_ceiling": 0.2,
+          "growth_shift": 0,
+          "margin_shift": 0,
+          "sales_to_capital": 3,
+          "terminal_growth": 0.02,
+          "terminal_roic": 0.1,
+          "cash_recovery": 0.8,
+          "operating_cash_ratio": 0.03,
+          "minority_book_multiple": 1,
+          "debt_book_multiple": 1,
+          "extra_dilution_rate": 0.02,
+          "additional_claims_million_cny": 0,
+          "bridge_basis": "report_date_book_debt_no_conversion_scenario",
+          "financial_asset_policy": "no_credit_pending_classification",
+          "bridge_review": "财报日股本/账面债务、不转股及2%额外稀释情景；附加索偿设0是假设，不证明无未披露义务。未分类金融资产不计入。"
+        }
+      },
+      "run_id": "92e269c29198ec3482bca695f6f0dc2129189efde6a8098f7442494ac07927d4",
+      "value_per_share": 92.15042148953913,
+      "native_engine_equal": true
+    }
+  ],
+  "metadata": {
+    "contract": "alphalake-sqlite-v2",
+    "source_database_sha256": "0bcf34fc3e773c8629ee91fe4c0a73cfef32ed5f98a9319d38f1144a385a46bf",
+    "exporter_sha256": "772e5480d50af5cfcfa5f34f05a498cd4797116b0fd21c121289fc706aa58d33",
+    "alphalake_binary_sha256": "86fc22ce57c7dff447fc485e42930faec682c322c8a925ff6bc9849d892ac436",
+    "report_period": "2026-06-30",
+    "information_as_of": "2026-09-22T00:00:00+00:00",
+    "exported_at": "2026-09-22T16:30:08.737867+00:00",
+    "wide_money_unit": "million_CNY",
+    "wide_shares_unit": "million_shares",
+    "standard_values": "decimal_strings_in_each_rows_unit",
+    "annual_net_income": "parent_attributable",
+    "annual_bv_equity": "parent_attributable",
+    "quarterly_flows": "difference_of_standard_YTD_same_year; Q1 unchanged",
+    "missing": "NULL; see export_cells; source-zero/unreviewed not inferred from absence",
+    "boundary": "TDX_only_financial_snapshot; explicit_separate_policy_required; no_supplement_values_or_market_defaults",
+    "candidates": "3",
+    "companies": "3"
+  },
+  "standard_fact_rows": 2656,
+  "distinct_standard_fields": 183,
+  "wide_cell_status_counts": {
+    "available": 219,
+    "missing_standard_fact": 321,
+    "requires_separate_valuation_definition": 378
+  },
+  "snapshot_unchanged_after_web": true,
+  "scope": "TDX-only SQLite and Web integration; illustrative explicit policies, not company valuation accuracy certification",
+  "cleanup": [
+    {
+      "backup_path": "workspace/sqlite-web-20260922/valuation-before-unit-metadata.sqlite",
+      "sha256": "01e9dd9ad439c8fa04708d77274f9a29e08a9e0967aaa0f084c8c0f916b05675",
+      "reason": "Rebuilt current snapshot has identical non-metadata tables; reopened API and browser acceptance passed. Rebuildable intermediate SQLite removed; source evidence and original archives retained."
+    }
+  ],
+  "v1_wide_tables_equal": true,
+  "validation": {
+    "python_full": {
+      "passed": 471,
+      "skipped": 4,
+      "skip_reason": "existing TEST_DATA vendor workbook fixtures absent",
+      "duration_seconds": 615.77
+    },
+    "python_final_targeted": {
+      "passed": 4
+    },
+    "go_test_all": "passed",
+    "go_build_current_cli": "passed",
+    "frontend_build": "passed; existing bundle size advisory remains; CI build added",
+    "browser": {
+      "search": true,
+      "explicit_policy": true,
+      "valuation": true,
+      "statements": true,
+      "mismatched_policy_rejected": true,
+      "financial_scope_rejected": true,
+      "page_errors": [],
+      "ci_browser_run": false
+    },
+    "negative_cases": [
+      "changed standard value even with recomputed payload hash",
+      "missing interest",
+      "wrong security",
+      "wrong period",
+      "missing WACC",
+      "external default parameters",
+      "old snapshot contract",
+      "read-only snapshot/session",
+      "failed export cleanup",
+      "existing output overwrite"
+    ],
+    "resource_isolation": {
+      "cgroup": "/system.slice/alphalake-sqlite-web-final.service",
+      "memory_max_bytes": 1073741824,
+      "swap_max_bytes": 0,
+      "final_pipeline_peak": "860.3MiB",
+      "python_full_peak": "896.5MiB"
+    },
+    "workflow_yaml": "parsed with installed js-yaml",
+    "dependencies_changed": false
+  }
+}
