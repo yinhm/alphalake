@@ -1,0 +1,1537 @@
+{
+  "snapshot": "workspace/sqlite-web-20260922/valuation.sqlite",
+  "sha256": "456dc3277e810067f7d3d03d1d4cb17cf72bb6468a9dc772688702479a0aa297",
+  "baseline": "0b29f42",
+  "audit_date": "2026-09-24",
+  "native_valuation_ready": 0,
+  "company_denominator": 3,
+  "companies": [
+    {
+      "ticker": "SHSE:600519",
+      "status": "blocked_native_contract",
+      "report_period": "2026-06-30",
+      "information_as_of": "2026-09-22T00:00:00+00:00",
+      "blockers": [
+        "原模型必需收入/EBIT有29个期间单元格缺失",
+        "当前TDX快照尚未完成原SQL的EBIT、租赁、现金、投资、债务及特殊项剔除口径审核"
+      ],
+      "required_missing": [
+        {
+          "series": "annual",
+          "offset": 0,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 1,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 1,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 2,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 2,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 3,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 3,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 4,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 4,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 5,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 5,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 6,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 6,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 7,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 7,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 8,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 8,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 9,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 9,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 0,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 1,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 2,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 3,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 4,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 5,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 6,
+          "field": "revenues"
+        },
+        {
+          "series": "quarterly",
+          "offset": 6,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 7,
+          "field": "revenues"
+        },
+        {
+          "series": "quarterly",
+          "offset": 7,
+          "field": "ebit"
+        }
+      ],
+      "financial_fields": [
+        {
+          "series": "annual",
+          "field": "revenues",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "ebit",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "ebitda",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "net_income",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "interest_expense",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "capex",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "d_a",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "earnings_before_tax",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "total_tax_expense",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "operating_lease_expense",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "r_and_d_expense",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "cash_and_marketable_securities",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "cross_holdings",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "bv_debt",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "bv_equity",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "shares_outstanding",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "minority_interests",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "quarterly",
+          "field": "revenues",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "ebit",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "ebitda",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "net_income",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "interest_expense",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "capex",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "d_a",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "earnings_before_tax",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "total_tax_expense",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "operating_lease_expense",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "r_and_d_expense",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "cash_and_marketable_securities",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "cross_holdings",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "bv_debt",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "bv_equity",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "shares_outstanding",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "minority_interests",
+          "present": 6,
+          "total": 8
+        }
+      ],
+      "company_fields": [
+        {
+          "field": "ticker",
+          "present": true
+        },
+        {
+          "field": "company_name",
+          "present": true
+        },
+        {
+          "field": "company_type",
+          "present": true
+        },
+        {
+          "field": "exchange_code",
+          "present": true
+        },
+        {
+          "field": "primary_exchange",
+          "present": true
+        },
+        {
+          "field": "secondary_exchanges",
+          "present": false
+        },
+        {
+          "field": "region",
+          "present": true
+        },
+        {
+          "field": "filing_currency",
+          "present": true
+        },
+        {
+          "field": "listing_currency",
+          "present": true
+        },
+        {
+          "field": "fx_listing_to_reporting",
+          "present": true
+        },
+        {
+          "field": "fx_rate_source",
+          "present": true
+        },
+        {
+          "field": "effective_tax_rate",
+          "present": false
+        },
+        {
+          "field": "stock_price_listing",
+          "present": false
+        },
+        {
+          "field": "mv_equity_listing",
+          "present": false
+        },
+        {
+          "field": "actual_rating_fc",
+          "present": false
+        },
+        {
+          "field": "actual_rating_lc",
+          "present": false
+        },
+        {
+          "field": "options_outstanding",
+          "present": false
+        },
+        {
+          "field": "options_avg_strike",
+          "present": false
+        },
+        {
+          "field": "period_date_annual",
+          "present": true
+        },
+        {
+          "field": "period_date_quarterly",
+          "present": true
+        },
+        {
+          "field": "lease_commitment_yr1",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_yr2",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_yr3",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_yr4",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_yr5",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_beyond",
+          "present": false
+        },
+        {
+          "field": "geographic_segments_json",
+          "present": false
+        },
+        {
+          "field": "data_as_of",
+          "present": true
+        }
+      ],
+      "scope": "SQL非空覆盖及已知阻断；不证明字段语义、全窗口可用或公司估值完整"
+    },
+    {
+      "ticker": "SZSE:002032",
+      "status": "blocked_native_contract",
+      "report_period": "2026-06-30",
+      "information_as_of": "2026-09-22T00:00:00+00:00",
+      "blockers": [
+        "原模型必需收入/EBIT有29个期间单元格缺失",
+        "当前TDX快照尚未完成原SQL的EBIT、租赁、现金、投资、债务及特殊项剔除口径审核"
+      ],
+      "required_missing": [
+        {
+          "series": "annual",
+          "offset": 0,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 1,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 1,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 2,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 2,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 3,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 3,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 4,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 4,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 5,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 5,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 6,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 6,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 7,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 7,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 8,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 8,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 9,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 9,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 0,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 1,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 2,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 3,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 4,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 5,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 6,
+          "field": "revenues"
+        },
+        {
+          "series": "quarterly",
+          "offset": 6,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 7,
+          "field": "revenues"
+        },
+        {
+          "series": "quarterly",
+          "offset": 7,
+          "field": "ebit"
+        }
+      ],
+      "financial_fields": [
+        {
+          "series": "annual",
+          "field": "revenues",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "ebit",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "ebitda",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "net_income",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "interest_expense",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "capex",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "d_a",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "earnings_before_tax",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "total_tax_expense",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "operating_lease_expense",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "r_and_d_expense",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "cash_and_marketable_securities",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "cross_holdings",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "bv_debt",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "bv_equity",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "shares_outstanding",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "minority_interests",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "quarterly",
+          "field": "revenues",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "ebit",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "ebitda",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "net_income",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "interest_expense",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "capex",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "d_a",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "earnings_before_tax",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "total_tax_expense",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "operating_lease_expense",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "r_and_d_expense",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "cash_and_marketable_securities",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "cross_holdings",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "bv_debt",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "bv_equity",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "shares_outstanding",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "minority_interests",
+          "present": 6,
+          "total": 8
+        }
+      ],
+      "company_fields": [
+        {
+          "field": "ticker",
+          "present": true
+        },
+        {
+          "field": "company_name",
+          "present": true
+        },
+        {
+          "field": "company_type",
+          "present": true
+        },
+        {
+          "field": "exchange_code",
+          "present": true
+        },
+        {
+          "field": "primary_exchange",
+          "present": true
+        },
+        {
+          "field": "secondary_exchanges",
+          "present": false
+        },
+        {
+          "field": "region",
+          "present": true
+        },
+        {
+          "field": "filing_currency",
+          "present": true
+        },
+        {
+          "field": "listing_currency",
+          "present": true
+        },
+        {
+          "field": "fx_listing_to_reporting",
+          "present": true
+        },
+        {
+          "field": "fx_rate_source",
+          "present": true
+        },
+        {
+          "field": "effective_tax_rate",
+          "present": false
+        },
+        {
+          "field": "stock_price_listing",
+          "present": false
+        },
+        {
+          "field": "mv_equity_listing",
+          "present": false
+        },
+        {
+          "field": "actual_rating_fc",
+          "present": false
+        },
+        {
+          "field": "actual_rating_lc",
+          "present": false
+        },
+        {
+          "field": "options_outstanding",
+          "present": false
+        },
+        {
+          "field": "options_avg_strike",
+          "present": false
+        },
+        {
+          "field": "period_date_annual",
+          "present": true
+        },
+        {
+          "field": "period_date_quarterly",
+          "present": true
+        },
+        {
+          "field": "lease_commitment_yr1",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_yr2",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_yr3",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_yr4",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_yr5",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_beyond",
+          "present": false
+        },
+        {
+          "field": "geographic_segments_json",
+          "present": false
+        },
+        {
+          "field": "data_as_of",
+          "present": true
+        }
+      ],
+      "scope": "SQL非空覆盖及已知阻断；不证明字段语义、全窗口可用或公司估值完整"
+    },
+    {
+      "ticker": "SZSE:300866",
+      "status": "blocked_native_contract",
+      "report_period": "2026-06-30",
+      "information_as_of": "2026-09-22T00:00:00+00:00",
+      "blockers": [
+        "原模型必需收入/EBIT有29个期间单元格缺失",
+        "当前TDX快照尚未完成原SQL的EBIT、租赁、现金、投资、债务及特殊项剔除口径审核"
+      ],
+      "required_missing": [
+        {
+          "series": "annual",
+          "offset": 0,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 1,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 1,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 2,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 2,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 3,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 3,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 4,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 4,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 5,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 5,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 6,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 6,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 7,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 7,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 8,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 8,
+          "field": "ebit"
+        },
+        {
+          "series": "annual",
+          "offset": 9,
+          "field": "revenues"
+        },
+        {
+          "series": "annual",
+          "offset": 9,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 0,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 1,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 2,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 3,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 4,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 5,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 6,
+          "field": "revenues"
+        },
+        {
+          "series": "quarterly",
+          "offset": 6,
+          "field": "ebit"
+        },
+        {
+          "series": "quarterly",
+          "offset": 7,
+          "field": "revenues"
+        },
+        {
+          "series": "quarterly",
+          "offset": 7,
+          "field": "ebit"
+        }
+      ],
+      "financial_fields": [
+        {
+          "series": "annual",
+          "field": "revenues",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "ebit",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "ebitda",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "net_income",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "interest_expense",
+          "present": 2,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "capex",
+          "present": 2,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "d_a",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "earnings_before_tax",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "total_tax_expense",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "operating_lease_expense",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "r_and_d_expense",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "cash_and_marketable_securities",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "cross_holdings",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "bv_debt",
+          "present": 0,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "bv_equity",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "shares_outstanding",
+          "present": 2,
+          "total": 10
+        },
+        {
+          "series": "annual",
+          "field": "minority_interests",
+          "present": 1,
+          "total": 10
+        },
+        {
+          "series": "quarterly",
+          "field": "revenues",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "ebit",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "ebitda",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "net_income",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "interest_expense",
+          "present": 8,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "capex",
+          "present": 8,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "d_a",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "earnings_before_tax",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "total_tax_expense",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "operating_lease_expense",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "r_and_d_expense",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "cash_and_marketable_securities",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "cross_holdings",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "bv_debt",
+          "present": 0,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "bv_equity",
+          "present": 6,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "shares_outstanding",
+          "present": 8,
+          "total": 8
+        },
+        {
+          "series": "quarterly",
+          "field": "minority_interests",
+          "present": 6,
+          "total": 8
+        }
+      ],
+      "company_fields": [
+        {
+          "field": "ticker",
+          "present": true
+        },
+        {
+          "field": "company_name",
+          "present": true
+        },
+        {
+          "field": "company_type",
+          "present": true
+        },
+        {
+          "field": "exchange_code",
+          "present": true
+        },
+        {
+          "field": "primary_exchange",
+          "present": true
+        },
+        {
+          "field": "secondary_exchanges",
+          "present": false
+        },
+        {
+          "field": "region",
+          "present": true
+        },
+        {
+          "field": "filing_currency",
+          "present": true
+        },
+        {
+          "field": "listing_currency",
+          "present": true
+        },
+        {
+          "field": "fx_listing_to_reporting",
+          "present": true
+        },
+        {
+          "field": "fx_rate_source",
+          "present": true
+        },
+        {
+          "field": "effective_tax_rate",
+          "present": false
+        },
+        {
+          "field": "stock_price_listing",
+          "present": false
+        },
+        {
+          "field": "mv_equity_listing",
+          "present": false
+        },
+        {
+          "field": "actual_rating_fc",
+          "present": false
+        },
+        {
+          "field": "actual_rating_lc",
+          "present": false
+        },
+        {
+          "field": "options_outstanding",
+          "present": false
+        },
+        {
+          "field": "options_avg_strike",
+          "present": false
+        },
+        {
+          "field": "period_date_annual",
+          "present": true
+        },
+        {
+          "field": "period_date_quarterly",
+          "present": true
+        },
+        {
+          "field": "lease_commitment_yr1",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_yr2",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_yr3",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_yr4",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_yr5",
+          "present": false
+        },
+        {
+          "field": "lease_commitment_beyond",
+          "present": false
+        },
+        {
+          "field": "geographic_segments_json",
+          "present": false
+        },
+        {
+          "field": "data_as_of",
+          "present": true
+        }
+      ],
+      "scope": "SQL非空覆盖及已知阻断；不证明字段语义、全窗口可用或公司估值完整"
+    }
+  ],
+  "earnings_before_tax_prior_available_cells": 21,
+  "boundary": "Existing SQLite unchanged. Current exporter stops mapping reported PBT to EBT excluding unusual items; these 21 old cells are not certified native inputs.",
+  "frontend_changes_from_import": [
+    {
+      "path": "valuation/frontend/src/App.tsx",
+      "baseline_sha256": "3a58078f4e9575c7bcefdee66a843f4da8d2cb0b3a3bb1629ccfca7d6af9ebe5",
+      "current_sha256": "1fab5ea3229b7904999baf4ecf6594434534dc13c1956b3a8e53a04a292a7502"
+    },
+    {
+      "path": "valuation/frontend/src/api/client.ts",
+      "baseline_sha256": "038ab2598e485086460608ef06f2893b2e5e791e82a15790f13ecd6e865b1be6",
+      "current_sha256": "a11fec6afb1fabb8486ec8c71f0f79a0e948f5ad7f38732a0c392196f8d7d9cd"
+    },
+    {
+      "path": "valuation/frontend/src/components/GeographicSegmentsPanel.tsx",
+      "baseline_sha256": "adeab2217dc7c8e9f7b04f889b79f721157325b3f32464269400588376b54d9c",
+      "current_sha256": "a4a450e74055a340c7b41401f5d150747f5f0264b8d05c63df0fa9ab4453d21b"
+    },
+    {
+      "path": "valuation/frontend/src/components/OnboardingWizard.tsx",
+      "baseline_sha256": "cab5c7f3d4cc9aa1f2961a8a98fdaf12262d167ac878ce0935b399c7ef5556be",
+      "current_sha256": "4837db2e09bf0a2dbebcd518b4f40449fa1b0618f577f178edeb0124687002dc"
+    },
+    {
+      "path": "valuation/frontend/src/components/SensitivityPanel.tsx",
+      "baseline_sha256": "0d4e586418a0ffe31f31eb4d0aebc2b522895d01ffcde3f17af198ff8be2ff2a",
+      "current_sha256": "d337552b9f24c44381979f6df7b13b0bd9f5ce8e6e39401090c9d4eb15502f7a"
+    },
+    {
+      "path": "valuation/frontend/src/pages/AnswerKeys.tsx",
+      "baseline_sha256": "ad9e8f1b440df37cd24711216b291b0f395c77bb4f7ba9fa61f55b6a46f32260",
+      "current_sha256": "2d305c7556b0657ea549b6b1d066afec6f39e0ffa202bf88fbde737414663d7b"
+    },
+    {
+      "path": "valuation/frontend/src/pages/CostOfCapital.tsx",
+      "baseline_sha256": "34ff2e663f13ba7d0b84b47b568e44a68b57f8a7d298fc3d89296619a84912a7",
+      "current_sha256": "14b5c8932b28e64e0d31b940f46a2a1c60d9a091687ba5da8e279e5e354bf41b"
+    },
+    {
+      "path": "valuation/frontend/src/pages/Diagnostics.tsx",
+      "baseline_sha256": "c5509070bd930812af83b4d919b34034e204252c39081050125462f02096cc18",
+      "current_sha256": "dd33c7705b3624ad934b2056d29edad50e05776a77c64910ab9336a238fc4b85"
+    },
+    {
+      "path": "valuation/frontend/src/pages/InputSheet.tsx",
+      "baseline_sha256": "8c368cd0bd2e61ce467534c05b878d12e96ee0f705d046371495417388eb523a",
+      "current_sha256": "85c4eff6662bd534910bb80eb138665e45ff152ca06ab81c61825752ddaf8701"
+    },
+    {
+      "path": "valuation/frontend/src/pages/LeaseConverter.tsx",
+      "baseline_sha256": "e7841c83f482c8f86337a71a0935b00b844dd61d24a86b5fbbd74d23049608e9",
+      "current_sha256": "778be86667837c252b43a074364f3ea6d725542c88bb27c099c7de9b385c4856"
+    },
+    {
+      "path": "valuation/frontend/src/pages/OptionValue.tsx",
+      "baseline_sha256": "14f3b75b7de5a7908386f02dd01119c8d2067171e5ff203e9f130a94c58a703c",
+      "current_sha256": "5790311d832347871a7f1ff775fd1d5c12da60bdea8c3e8885f56305d333f4e0"
+    },
+    {
+      "path": "valuation/frontend/src/pages/RDConverter.tsx",
+      "baseline_sha256": "d2eb5444cb1cedb343ffe9a8a392af3ccba386a8cf10cfedfa0909a1e99a9cf5",
+      "current_sha256": "561ebb0f5a02ca6ec66aabec0e9181ab4210aad682063ef4d37d1a925fec47f4"
+    },
+    {
+      "path": "valuation/frontend/src/pages/SyntheticRating.tsx",
+      "baseline_sha256": "d3240fa9cec91584b5ec59badcc40c8bf2cdc68c9756f3da2617b66f2a14f3d9",
+      "current_sha256": "f0c9f1bb9a9039d86b85fdd237198dd7f274aaf33af65645c10d3ddaa425fab2"
+    },
+    {
+      "path": "valuation/frontend/src/pages/ValuationOutput.tsx",
+      "baseline_sha256": "dfdde74cc153a271b30222961614ac50fc6ef59ee02d18a659fa62c856988206",
+      "current_sha256": "66d2741e59007bd976a6ddf588adc514416484606a9faff995661eaf49e232c2"
+    },
+    {
+      "path": "valuation/frontend/src/pages/ValuationPicture.tsx",
+      "baseline_sha256": "7b7cd2d3b799bcc536c489747c5062527cbf490449e69596c4980fda85acc06e",
+      "current_sha256": "772378bd8fa0ef94102af0c902b7750444b431f019f36b7395396146417b8fe5"
+    },
+    {
+      "path": "valuation/frontend/src/types/valuation.ts",
+      "baseline_sha256": "307d5df67e3e787b01b1018c4d1075d553a1a20d0190390b64576236beb089af",
+      "current_sha256": "f198ad7ff8174a6326058ea254a8b22d97633cbcdfb76425e40f9076782c3911"
+    }
+  ],
+  "validation": {
+    "python_related": "149 passed (before final source-label fix; final browser checks source-label fix)",
+    "go_test": "passed",
+    "go_build": "passed",
+    "frontend_build": "passed",
+    "browser": "3 real TDX companies blocked; original annual demo, PATCH and source labels, sensitivity, workbook passed",
+    "live_port": 8080,
+    "snapshot_unchanged": true
+  }
+}

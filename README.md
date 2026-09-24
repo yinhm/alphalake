@@ -4,7 +4,7 @@
 
 全字段财务物化已[限制中间工作集并保持事务原子性](docs/fundamental-memory-20260919.md)，实际主库在1GiB硬限额下完成全量及幂等重放；大任务须与交互终端隔离运行。
 
-已提供[纯TDX标准财务导出SQLite与定制网页桥接](docs/valuation-sqlite-export.md)，但[原生接入审计](docs/valuation-native-integration-spec-20260924.md)确认它尚不满足原 Investment_Valuation_Agent 的数据源兼容目标：原财务宽表仍有7类未映射列，网页改走专用页面和政策输入。接下来冻结前端扩展，以原页面及API不变为约束完善数据契约、派生与SQL导出；恢复方案已写入规格，尚未实施。当前v2快照和既有条件估值仅代表原验收范围。
+已提供[纯TDX标准财务导出SQLite](docs/valuation-sqlite-export.md)。原生接入纠偏已恢复原网页/请求并撤除专用界面，但原生估值数据仍未达标：当前8类目标定义需补，三家历史窗口也不完整；[字段契约与解决方案](docs/valuation-native-data-contract-20260924.md)已列明，待审批补充范围。当前返回明确缺项，不用原定制桥接的成功冒称兼容完成。
 
 AlphaLake 是面向投资研究、本地优先且可复现的金融市场数据基础设施。
 
