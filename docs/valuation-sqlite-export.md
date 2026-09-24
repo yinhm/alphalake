@@ -1,6 +1,6 @@
 # 标准财务事实导出 SQLite
 
-按用户要求提供纯TDX来源的SQLite财务快照，并已接通网页估值。长期采用API还是SQLite的数据层决策延后。工具不修改源DuckDB、网页默认seed或环境配置。当前契约为`alphalake-sqlite-v2`；前一版快照须用当前命令显式重建，不保留旧版读取降级。
+当前提供纯TDX来源的SQLite财务快照及定制网页桥接，**尚未达到原 Investment_Valuation_Agent SQL/API兼容目标**。原宽表7类字段尚未映射，网页通过额外载荷和专用页面运行；修正范围见[原生接入规格](valuation-native-integration-spec-20260924.md)，恢复尚未实施。下文描述当前实现与历史验收，不代表本阶段目标已完成。工具不修改源DuckDB、网页默认seed或环境配置。当前契约为`alphalake-sqlite-v2`；前一版快照须用当前命令显式重建，不保留旧版读取降级。
 
 依赖Python 3.11+标准库和当前版本`alphalake`程序，无新增包。先构建当前程序；本机的大库任务、构建和测试须串行放在独立systemd系统服务中，参见[内存隔离约束](fundamental-memory-20260919.md)。例如：
 
