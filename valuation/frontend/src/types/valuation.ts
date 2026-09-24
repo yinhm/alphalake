@@ -418,19 +418,7 @@ export interface UnresolvedField {
   suggestion?: unknown;
 }
 
-export interface StandardFinancialRow {
-  field: string; label?: string; value: string | null; unit: string; period?: string;
-  period_type?: string; period_basis?: string; balance_date?: string | null; status?: string;
-}
-
 export interface ValuationResponse {
-  alphalake?: {
-    run_id: string; status: string; report_period: string; information_as_of: string; read_only: boolean;
-    policy: Record<string, unknown>; audit: { boundaries: string[] };
-    standard_financials: StandardFinancialRow[];
-    financial_statements: { statements: Record<string, StandardFinancialRow[]> };
-    equity_bridge: { components: Record<string, number>; shares: number };
-  } | null;
   id: string;
   ticker: string;
   inputs: CompanyValuationInput;

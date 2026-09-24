@@ -66,7 +66,6 @@ export async function fetchByTicker(
   return data;
 }
 
-// 创建请求允许省略后端有默认值的嵌套项；完整响应仍由CompanyValuationInput描述。
 export async function createValuation(inputs: { ticker: string } & Record<string, unknown>): Promise<ValuationResponse> {
   const { data } = await api.post('/valuation', { inputs });
   return data;
@@ -169,17 +168,15 @@ export async function searchDatabase(query: string, limit = 20): Promise<Databas
   return data.results;
 }
 
-export async function companyExists(ticker: string): Promise<{ ticker: string; in_database: boolean; data_as_of: string | null; requires_tdx_policy: boolean; report_period: string | null }> {
+export async function companyExists(ticker: string): Promise<{ ticker: string; in_database: boolean; data_as_of: string | null }> {
   const { data } = await api.get(`/database/company-exists/${encodeURIComponent(ticker)}`);
   return data;
 }
 
-export interface TDXPolicyDocument { code: string; policy: Record<string, unknown> }
-
-export async function valueFromDatabase(ticker: string, policy?: TDXPolicyDocument): Promise<ValuationResponse> {
+export async function valueFromDatabase(ticker: string, riskFreeRate = 0.0425): Promise<ValuationResponse> {
   const { data } = await api.post('/valuation/from-database', {
     ticker,
-    ...(policy ? { tdx_policy: policy } : {}),
+    risk_free_rate: riskFreeRate,
   });
   return data;
 }

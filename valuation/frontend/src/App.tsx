@@ -1,7 +1,6 @@
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { useState, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
-import TDXValuation from './pages/TDXValuation';
 import ErrorBoundary from './components/ErrorBoundary';
 import OnboardingWizard from './components/OnboardingWizard';
 import InputSheet from './pages/InputSheet';
@@ -33,7 +32,6 @@ export default function App() {
 
   const handleCellUpdate = useCallback(async (dotPath: string, value: PatchValue) => {
     if (!sessionId || !data) return;
-    if (data.alphalake?.read_only) { setError('请重新加载修改后的估值政策；TDX事实和已保存运行不可覆盖。'); return; }
     try {
       const resp = await patchValuation(sessionId, { [dotPath]: value });
       setData(resp);
@@ -44,7 +42,6 @@ export default function App() {
 
   const handlePatchMany = useCallback(async (overrides: Record<string, PatchValue>) => {
     if (!sessionId || !data) return;
-    if (data.alphalake?.read_only) { setError('请重新加载修改后的估值政策；TDX事实和已保存运行不可覆盖。'); return; }
     try {
       const resp = await patchValuation(sessionId, overrides);
       setData(resp);
@@ -84,7 +81,7 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {!data?.alphalake && <Sidebar />}
+      <Sidebar />
       <main className="flex-1 p-6 overflow-auto">
         {isAdminRoute ? (
           <Routes>
@@ -128,24 +125,15 @@ export default function App() {
                 <p className="text-red-700 text-sm">{error}</p>
               </div>
             )}
-            {data.alphalake && <div className="mb-4 bg-amber-50 border border-amber-300 rounded-lg p-3 text-sm">
-              <p>TDX财务＋显式政策的条件估值，不是当前目标价。财务时点：{data.alphalake.report_period}；信息截止：{data.alphalake.information_as_of}</p>
-              <p>运行：<code className="break-all">{data.alphalake.run_id}</code></p>
-              <p>本结果只读；修改政策后通过“New Valuation”重新估值。</p>
-              <details><summary>查看模型适用边界与政策</summary>
-                <ul className="list-disc pl-5">{data.alphalake.audit.boundaries.map((text, i) => <li key={i}>{text}</li>)}</ul>
-                <pre className="whitespace-pre-wrap text-xs">{JSON.stringify(data.alphalake.policy, null, 2)}</pre>
-              </details>
-            </div>}
             <CurrencyBanner data={data} />
             <UnresolvedFieldsPanel data={data} onPatch={handleCellUpdate} />
-            {data.alphalake ? <TDXValuation data={data} /> : <RoutedPages
+            <RoutedPages
               data={data}
               sessionId={sessionId}
               setData={setData}
               handleCellUpdate={handleCellUpdate}
               handlePatchMany={handlePatchMany}
-            />}
+            />
           </>
         )}
       </main>
@@ -319,99 +307,11 @@ const DEMO_INPUT = {
       minority_interests: null,
     },
   ],
-  quarterly_financials: [
-    {
-      fiscal_year: 0,
-      revenues: 98200,
-      ebit: 29500,
-      ebitda: 32400,
-      net_income: 25100,
-      interest_expense: 1000,
-      capex: 2800,
-      d_a: 2900,
-      noncash_wc: null,
-      change_in_noncash_wc: null,
-      net_debt_issued: null,
-      cash_and_marketable_securities: null,
-      bv_equity: null,
-      bv_debt: null,
-      mv_equity: null,
-      mv_debt: null,
-      shares_outstanding: null,
-      stock_price: null,
-      cross_holdings: null,
-      minority_interests: null,
-    },
-    {
-      fiscal_year: 1,
-      revenues: 95800,
-      ebit: 28200,
-      ebitda: 31000,
-      net_income: 24000,
-      interest_expense: 980,
-      capex: 2750,
-      d_a: 2880,
-      noncash_wc: null,
-      change_in_noncash_wc: null,
-      net_debt_issued: null,
-      cash_and_marketable_securities: null,
-      bv_equity: null,
-      bv_debt: null,
-      mv_equity: null,
-      mv_debt: null,
-      shares_outstanding: null,
-      stock_price: null,
-      cross_holdings: null,
-      minority_interests: null,
-    },
-    {
-      fiscal_year: 2,
-      revenues: 96500,
-      ebit: 28800,
-      ebitda: 31600,
-      net_income: 24500,
-      interest_expense: 990,
-      capex: 2780,
-      d_a: 2890,
-      noncash_wc: null,
-      change_in_noncash_wc: null,
-      net_debt_issued: null,
-      cash_and_marketable_securities: null,
-      bv_equity: null,
-      bv_debt: null,
-      mv_equity: null,
-      mv_debt: null,
-      shares_outstanding: null,
-      stock_price: null,
-      cross_holdings: null,
-      minority_interests: null,
-    },
-    {
-      fiscal_year: 3,
-      revenues: 92785,
-      ebit: 27801,
-      ebitda: 30820,
-      net_income: 23395,
-      interest_expense: 963,
-      capex: 2631,
-      d_a: 2849,
-      noncash_wc: null,
-      change_in_noncash_wc: null,
-      net_debt_issued: null,
-      cash_and_marketable_securities: null,
-      bv_equity: null,
-      bv_debt: null,
-      mv_equity: null,
-      mv_debt: null,
-      shares_outstanding: null,
-      stock_price: null,
-      cross_holdings: null,
-      minority_interests: null,
-    },
-  ],
-  quarters_since_10k: 2,
+  // 演示只有四个季度，不足以旋转H1 TTM；明确使用完整年度示例。
+  quarterly_financials: [],
+  quarters_since_10k: 0,
   period_date_10k: '2025-09-30',
-  period_date_10q: '2026-03-31',
+  period_date_10q: null,
   adjustment_inputs: {
     amortization_period_n: 5,
     r_and_d_expense_current: 29915,

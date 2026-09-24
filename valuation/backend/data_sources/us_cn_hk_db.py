@@ -19,8 +19,6 @@ Public surface:
 from __future__ import annotations
 
 import json
-import hashlib
-from datetime import datetime
 import os
 import sqlite3
 from contextlib import contextmanager
@@ -317,19 +315,6 @@ def snapshot_metadata(conn: sqlite3.Connection) -> dict | None:
     return metadata
 
 
-def fetch_tdx_valuation(conn: sqlite3.Connection, ticker: str) -> dict:
-    row = conn.execute('SELECT payload_json,sha256 FROM valuation_inputs WHERE ticker=?', (ticker,)).fetchone()
-    if row is None or hashlib.sha256(row[0].encode()).hexdigest() != row[1]:
-        raise ValueError('Missing or changed TDX valuation snapshot')
-    payload = json.loads(row[0])
-    metadata = snapshot_metadata(conn)
-    if (payload['code'] != ticker.split(':')[-1] or payload['report_period'] != metadata['report_period']
-            or datetime.fromisoformat(payload['information_as_of']) != datetime.fromisoformat(metadata['information_as_of'])
-            or payload['supplements'] or any(r.get('source') != 'tdx' for r in payload['facts'])):
-        raise ValueError('TDX snapshot identity, cutoff or source differs')
-    return payload
-
-
 def fetch_company(conn: sqlite3.Connection, ticker: str) -> dict | None:
     """Return the full company snapshot — identifiers + snapshot fields +
     list of annual + list of quarterly financials. Returns None if not found."""
@@ -369,6 +354,39 @@ def fetch_company(conn: sqlite3.Connection, ticker: str) -> dict | None:
             raise ValueError('Missing standard financial statements')
         result['financial_statements'] = json.loads(row[0])
     return result
+
+
+def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
+    """只审计原生宽表供给；非空数值不等于目标会计定义已核验。"""
+    record = fetch_company(conn, ticker)
+    if record is None:
+        return None
+    fields = []
+    required_missing = []
+    for series, offset in [('annual', 'fy_offset'), ('quarterly', 'fq_offset')]:
+        rows = record['financials_' + series]
+        for name in _ANNUAL_COLS[2:]:
+            present = sum(row[name] is not None for row in rows)
+            fields.append(dict(series=series, field=name, present=present, total=len(rows)))
+        for row in rows:
+            for name in ('revenues', 'ebit'):
+                if row[name] is None:
+                    required_missing.append(dict(series=series, offset=row[offset], field=name))
+    source = record.get('data_source')
+    blockers = []
+    if required_missing:
+        blockers.append(f"原模型必需收入/EBIT有{len(required_missing)}个期间单元格缺失")
+    if source is not None:
+        # v2只验证AlphaLake标准事实，未认证CIQ定义；即使手填非空也不能冒充已完成审核。
+        blockers.append('当前TDX快照尚未完成原SQL的EBIT、租赁、现金、投资、债务及特殊项剔除口径审核')
+    return dict(ticker=ticker,
+        status='blocked_native_contract' if blockers else 'not_audited',
+        report_period=source.get('report_period') if source else record['company']['period_date_quarterly'],
+        information_as_of=source.get('information_as_of') if source else record['company']['data_as_of'],
+        blockers=blockers, required_missing=required_missing, financial_fields=fields,
+        company_fields=[dict(field=name, present=record['company'].get(name) is not None)
+                        for name in _COMPANIES_COLS],
+        scope='SQL非空覆盖及已知阻断；不证明字段语义、全窗口可用或公司估值完整')
 
 
 def latest_ingest_summary(conn: sqlite3.Connection) -> dict | None:

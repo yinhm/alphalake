@@ -20,7 +20,6 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
-from data_sources.alphalake import AlphaLakeRequest, BookDCFPolicy, HistoricalDCFPolicy, MissingInputs, validated_source_value
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -60,8 +59,6 @@ def company_exists(ticker: str) -> dict:
         "ticker": ticker,
         "in_database": row is not None,
         "data_as_of": row["company"].get("data_as_of") if row else None,
-        "requires_tdx_policy": bool(row and row.get("data_source")),
-        "report_period": row["data_source"]["report_period"] if row and row.get("data_source") else None,
     }
 
 
@@ -79,6 +76,19 @@ def company(ticker: str) -> dict:
     return row
 
 
+@router.get("/compatibility/{ticker:path}")
+def compatibility(ticker: str) -> dict:
+    """原生SQL契约诊断；不以专项载荷替代宽表缺项。"""
+    try:
+        with db.get_connection() as conn:
+            result = db.native_compatibility(conn, ticker)
+    except Exception as error:
+        raise HTTPException(status_code=503, detail=f'Database unavailable: {error}') from error
+    if result is None:
+        raise HTTPException(status_code=404, detail=f'Ticker not in database: {ticker}')
+    return result
+
+
 # ---------------------------------------------------------------------------
 # Valuation from database — builds CompanyValuationInput from the DB record
 # and runs through the existing orchestrator.
@@ -86,18 +96,11 @@ def company(ticker: str) -> dict:
 
 # Imports pulled in at request time to avoid circular imports with routes.py.
 
-class TDXSQLitePolicy(BaseModel):
-    model_config = ConfigDict(extra='forbid')
-    code: str = Field(pattern=r'^\d{6}$')
-    policy: BookDCFPolicy | HistoricalDCFPolicy
-
-
 class FromDatabaseRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     ticker: str
-    risk_free_rate: float | None = None
+    risk_free_rate: float = Field(default=0.0425, ge=0, lt=1)
     industry_override: str | None = None
-    tdx_policy: TDXSQLitePolicy | None = None
 
 
 # Mount this endpoint on a SEPARATE router with /valuation prefix so it lives
@@ -364,49 +367,20 @@ def from_database(req: FromDatabaseRequest) -> dict:
     try:
         with db.get_connection() as conn:
             record = db.fetch_company(conn, req.ticker)
-            snapshot = db.fetch_tdx_valuation(conn, req.ticker) if record and record.get("data_source") else None
+            compatibility = db.native_compatibility(conn, req.ticker) if record and record.get("data_source") else None
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Database unavailable: {e}")
     if record is None:
         raise HTTPException(status_code=404, detail=f"Ticker not in database: {req.ticker}")
 
-    if snapshot is not None:
-        if req.tdx_policy is None:
-            raise HTTPException(status_code=422, detail=dict(status='explicit_policy_required',
-                reason='TDX财务数据不含预测与WACC；请提供绑定公司的显式估值政策。'))
-        if req.risk_free_rate is not None or req.industry_override is not None or req.tdx_policy.code != snapshot['code']:
-            raise HTTPException(status_code=422, detail=dict(status='rejected_policy', reason='政策证券不符或混入外部数据入口参数。'))
-        from api.alphalake import _evaluate
-        from api.routes import _report_to_dict
-        from api.session_store import create_session
-        try:
-            request = AlphaLakeRequest(data=snapshot, policy=req.tdx_policy.policy)
-            for fact in request.data.facts:
-                validated_source_value(fact)
-            result, inputs, report = _evaluate(request)
-        except MissingInputs as error:
-            raise HTTPException(status_code=422, detail=dict(status='blocked_missing_inputs', missing=error.items,
-                financial_statements=record['financial_statements'])) from error
-        except (ValueError, KeyError, TypeError, ArithmeticError) as error:
-            raise HTTPException(status_code=422, detail=dict(status='rejected_input_or_policy', reason=str(error))) from error
-        # 只供展示的公司名不改变已经保存的财务/政策运行。
-        inputs = inputs.model_copy(update={'company_name': record['company']['company_name']})
-        context = dict(run_id=result['run_id'], engine_revision=result['engine_revision'],
-            status=result['status'], report_period=snapshot['report_period'], information_as_of=snapshot['information_as_of'],
-            policy=request.policy.model_dump(mode='json'), audit=result['audit'], method_assessment=result['method_assessment'],
-            source_database_sha256=record['data_source']['source_database_sha256'], read_only=True,
-            financial_statements=record['financial_statements'], standard_financials=record['standard_financials'],
-            equity_bridge=inputs.equity_bridge.model_dump(mode='json'))
-        session = create_session(inputs, report, valuation_run=context)
-        return _report_to_dict(session)
-    if req.tdx_policy is not None:
-        raise HTTPException(status_code=422, detail='TDX政策仅可用于当前AlphaLake SQLite快照。')
+    if compatibility is not None and compatibility['status'] != 'ready':
+        raise HTTPException(status_code=422, detail='原生估值数据尚未达标：' + '；'.join(compatibility['blockers']) + '。详细字段见 /api/database/compatibility/' + req.ticker)
 
     from engine.orchestrator import run_full_valuation
     from api.routes import _build_industry_lookup, _get_damodaran_store, _report_to_dict
     from api.session_store import create_session
 
-    inputs = _db_record_to_company_input(record, req.risk_free_rate if req.risk_free_rate is not None else 0.0425, req.industry_override)
+    inputs = _db_record_to_company_input(record, req.risk_free_rate, req.industry_override)
     store = _get_damodaran_store()
     ind_lookup = _build_industry_lookup(store)
     report = run_full_valuation(inputs, industry_lookup=ind_lookup)

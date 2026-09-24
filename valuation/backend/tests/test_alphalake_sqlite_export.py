@@ -24,6 +24,7 @@ class SQLiteExportTest(unittest.TestCase):
                               value=value, unit='CNY', period_type={3:'Q1', 6:'H1', 9:'9M', 12:'FY'}[int(end[5:7])],
                               statement_scope='provider_default', fact_id=end,
                               available_at='2026-08-31T00:00:00Z', artifact_sha256='evidence'))
+        facts.append(dict(facts[-1], field='profit_before_tax', canonical_field='profit_before_tax', value='2000000'))
         facts.append(dict(facts[-1], field='total_shares', canonical_field='total_shares',
                           value='500000000', unit='share', period_type='instant'))
 
@@ -49,6 +50,8 @@ class SQLiteExportTest(unittest.TestCase):
             self.assertEqual([r['revenues'] for r in data['financials_quarterly'][:4]], [4, 0, 3, None])
             self.assertEqual(data['financials_quarterly'][0]['shares_outstanding'], 500)
             self.assertIsNone(data['financials_quarterly'][0]['ebit'])
+            self.assertIsNone(data['financials_quarterly'][0]['earnings_before_tax'])
+            self.assertEqual(db.execute("SELECT status FROM export_cells WHERE field='earnings_before_tax' LIMIT 1").fetchone()[0], 'requires_separate_valuation_definition')
             self.assertIsNone(data['financials_annual'][1]['revenues'])
             evidence = json.loads(db.execute("SELECT evidence_json FROM export_cells WHERE series='quarterly' AND period_offset=0 AND field='revenues'").fetchone()[0])
             self.assertEqual([r['coefficient'] for r in evidence], [1, -1])

@@ -21,7 +21,6 @@ FIELDS = {
     'net_income': ('net_income_parent_ytd', 'ytd', 'CNY'),
     'interest_expense': ('interest_expense', 'ytd', 'CNY'),
     'capex': ('capital_expenditure_cash', 'ytd', 'CNY'),
-    'earnings_before_tax': ('profit_before_tax', 'ytd', 'CNY'),
     'total_tax_expense': ('income_tax_expense', 'ytd', 'CNY'),
     'r_and_d_expense': ('research_and_development_expense', 'ytd', 'CNY'),
     'bv_equity': ('equity_parent', 'instant', 'CNY'),

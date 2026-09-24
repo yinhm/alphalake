@@ -33,44 +33,40 @@ const root = path.resolve(__dirname, '../../..');
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     await page.goto(`http://127.0.0.1:${port}`);
-    async function select(code) {
+    for (const code of ['300866', '600519', '002032']) {
       await page.getByPlaceholder('Ticker or company name…').fill(code);
       await page.getByRole('button', { name: 'Search', exact: true }).click();
       await page.getByRole('button', { name: 'Continue →' }).click();
-      await page.getByLabel('WACC（%）', { exact: true }).waitFor();
+      const run = page.getByRole('button', { name: '→ Value from Database' });
+      await run.waitFor();
+      assert.equal(await page.getByLabel('估值政策文件').count(), 0);
+      const sent = page.waitForRequest(r => r.url().endsWith('/api/valuation/from-database') && r.method() === 'POST');
+      await run.click();
+      assert.deepEqual(Object.keys((await sent).postDataJSON()).sort(), ['risk_free_rate', 'ticker']);
+      await page.getByText(/原生估值数据尚未达标/).waitFor();
+      await page.goto(`http://127.0.0.1:${port}`);
     }
-    await select('300866');
-    const run = page.getByRole('button', { name: '→ Value from Database' });
-    assert(await run.isEnabled());
-    assert.equal(await page.getByLabel('WACC（%）', { exact: true }).inputValue(), '10');
-    assert.equal(await page.getByLabel('估值政策文件').count(), 0);
-    await run.click();
-    const heading = page.getByRole('heading', { name: /条件估值：/ });
-    await heading.waitFor();
-    const baseline = await heading.innerText();
-    assert(baseline.includes('92.1504'));
-    await page.getByRole('button', { name: 'New Valuation' }).click();
-    await select('300866');
-    await page.getByLabel('WACC（%）', { exact: true }).fill('1');
-    await run.click();
-    await page.getByText(/terminal growth must be below WACC/).waitFor();
-    await page.getByLabel('WACC（%）', { exact: true }).fill('11');
-    const submitted = page.waitForRequest(r => r.url().endsWith('/api/valuation/from-database') && r.method() === 'POST');
-    await run.click();
-    assert.equal((await submitted).postDataJSON().tdx_policy.policy.wacc, 0.11);
-    await page.getByRole('heading', { name: /条件估值：/ }).waitFor();
-    assert.equal(await heading.count(), 1);
-    assert.notEqual(await heading.innerText(), baseline);
-    await page.getByText('资产负债表（', { exact: false }).waitFor();
-    assert((await page.locator('body').innerText()).includes('预测现金流（非报表事实）'));
-    if (process.env.ALPHALAKE_SCREENSHOT) await page.screenshot({ path: process.env.ALPHALAKE_SCREENSHOT });
-    await page.getByRole('button', { name: 'New Valuation' }).click();
-    await select('600519');
-    await page.getByRole('button', { name: '→ Value from Database' }).click();
-    await page.getByText(/financial operations require separate model/).waitFor();
+    // 原内置示例验证原界面仍能工作，不冒充TDX公司验收。
+    const demoResponse = page.waitForResponse(r => r.url().endsWith('/api/valuation') && r.request().method() === 'POST');
+    await page.getByRole('button', { name: 'Or try the demo data' }).click();
+    const demo = await demoResponse;
+    assert.equal(demo.status(), 200, (await demo.text()) + logs);
+    const baseline = await demo.json();
+    const updated = await page.request.patch(`http://127.0.0.1:${port}/api/valuation/${baseline.id}`, {
+      data: { overrides: { 'valuation_assumptions.revenue_growth_next_year': 0.09 } },
+    });
+    assert.equal(updated.status(), 200, await updated.text());
+    const changed = await updated.json();
+    assert.notEqual(changed.final.value_per_share, baseline.final.value_per_share);
+    assert.match(changed.source_metadata['valuation_assumptions.revenue_growth_next_year'], /User override/);
+    assert.equal((await page.request.post(`http://127.0.0.1:${port}/api/valuation/${baseline.id}/sensitivity`)).status(), 200);
+    assert.equal((await page.request.get(`http://127.0.0.1:${port}/api/valuation/${baseline.id}/export/full-workbook`)).status(), 200);
+    await page.getByRole('button', { name: 'New Valuation' }).waitFor();
+    assert(await page.locator('a[href="/wacc"]').count() > 0);
+    assert(await page.locator('a[href="/stories"]').count() > 0);
     assert.equal(await page.getByRole('heading', { name: /条件估值：/ }).count(), 0);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ search: true, default_parameters: true, manual_parameters: true, invalid_parameters_rejected: true, valuation: true, statements: true, financial_scope_rejected: true, browser_errors: errors }));
+    console.log(JSON.stringify({ original_request: true, no_policy_ui: true, real_tdx_blocked: 3, original_demo_navigation: true, original_patch: true, sensitivity: true, workbook_export: true, browser_errors: errors }));
   } finally {
     if (browser) await browser.close();
     server.kill();
