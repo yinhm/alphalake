@@ -21,6 +21,31 @@ import type { ValuationResponse } from '../types/valuation';
 type Step = 1 | 2;
 type DatabaseStatus = { inDb: boolean; dataAsOf: string | null; requiresPolicy: boolean; reportPeriod: string | null };
 
+// 页面初始情景，不是公司审核结论或市场参数；提交后由后端校验并留痕。
+const scenarioFields: [string, string, number][] = [
+  ['wacc', 'WACC（%）', 10], ['tax_rate', '所得税率（%）', 25],
+  ['growth_floor', '增长下限（%）', -10], ['growth_ceiling', '增长上限（%）', 20],
+  ['growth_shift', '历史增长调整（百分点）', 0], ['margin_shift', '目标利润率调整（百分点）', 0],
+  ['sales_to_capital', '收入／资本倍率', 3], ['terminal_growth', '永续增长率（%）', 2],
+  ['terminal_roic', '终值 ROIC（%）', 10], ['cash_recovery', '现金回收比例（%）', 80],
+  ['operating_cash_ratio', '经营现金／收入（%）', 3], ['minority_book_multiple', '少数股权账面倍率', 1],
+  ['debt_book_multiple', '债务账面倍率', 1], ['extra_dilution_rate', '额外股本稀释（%）', 2],
+  ['additional_claims_million_cny', '附加索偿（百万元）', 0],
+];
+const scale = (label: string) => label.includes('%') || label.includes('百分点') ? 100 : 1;
+function defaultPolicy(code: string, period: string): TDXPolicyDocument {
+  return { code, policy: {
+    ...Object.fromEntries(scenarioFields.map(([key, label, value]) => [key, value / scale(label)])),
+    policy_id: 'nonfinancial-history-fcff-v1', approved_report_period: period,
+    scenario: 'web_manual_scenario_v1',
+    review_note: '网页默认或用户手工调整的条件情景；参数未经公司专项审核，不是市场估计或目标价。',
+    nonfinancial_scope_review: '用户选择普通非金融模型作为条件情景；仍执行标准金融业务字段检查，不声称完成公司范围审核。',
+    bridge_basis: 'report_date_book_debt_no_conversion_scenario',
+    financial_asset_policy: 'no_credit_pending_classification',
+    bridge_review: '财报日股本与账面债务、不转股；未分类金融资产暂不计价。附加索偿默认0仅为假设，不证明没有义务。',
+  } };
+}
+
 interface Props {
   onComplete: (response: ValuationResponse) => void;
   onDemo: () => void;
@@ -45,7 +70,10 @@ export default function OnboardingWizard({ onComplete, onDemo }: Props) {
     if (!selectedCompany) { setDbStatus(null); return; }
     let cancelled = false;
     companyExists(selectedCompany.exchange_ticker)
-      .then((r) => { if (!cancelled) setDbStatus({ inDb: r.in_database, dataAsOf: r.data_as_of, requiresPolicy: r.requires_tdx_policy, reportPeriod: r.report_period }); })
+      .then((r) => { if (!cancelled) {
+        setDbStatus({ inDb: r.in_database, dataAsOf: r.data_as_of, requiresPolicy: r.requires_tdx_policy, reportPeriod: r.report_period });
+        if (r.requires_tdx_policy && r.report_period) setTdxPolicy(defaultPolicy(selectedCompany.symbol, r.report_period));
+      } })
       .catch(() => { if (!cancelled) setError('无法读取所选数据库，请检查快照版本与服务状态。'); });
     return () => { cancelled = true; };
   }, [selectedCompany]);
@@ -346,17 +374,6 @@ function StepTwo({
   onDropFile: (file: File) => void;
   onBack: () => void;
 }) {
-  const [policyError, setPolicyError] = useState('');
-  async function loadPolicy(file?: File) {
-    onPolicy(undefined);
-    setPolicyError('');
-    if (!file) return;
-    try {
-      const value = JSON.parse(await file.text()) as TDXPolicyDocument;
-      if (value.code !== company.symbol || value.policy?.approved_report_period !== dbStatus?.reportPeriod) throw new Error('政策公司或报告期与所选快照不符。');
-      onPolicy(value);
-    } catch (error) { setPolicyError(error instanceof Error ? error.message : '政策文件无效'); }
-  }
   const [dragging, setDragging] = useState(false);
 
   const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
@@ -407,7 +424,7 @@ function StepTwo({
                 Option A — Instant from database
               </div>
               <div className="text-sm text-emerald-900">
-                {dbStatus.requiresPolicy ? 'TDX财务快照：请加载并确认独立估值政策。缺项与金融兼营不适用将明确拒绝。' : 'This company is already in the built-in dataset. Run the valuation in one click.'}
+                {dbStatus.requiresPolicy ? '已填入默认情景，可直接计算或先修改下方参数。财务缺项与金融兼营不适用仍将明确拒绝。' : 'This company is already in the built-in dataset. Run the valuation in one click.'}
               </div>
               {dbStatus.dataAsOf && (
                 <div className="text-[11px] text-emerald-700 mt-1">
@@ -423,17 +440,16 @@ function StepTwo({
               {loadingFromDb ? 'Running valuation…' : '→ Value from Database'}
             </button>
           </div>
-          {dbStatus.requiresPolicy && <div className="mt-3 space-y-2 text-sm">
-            <label className="block">估值政策文件（预测与风险假设，不属于TDX财报）
-              <input aria-label="估值政策文件" type="file" accept=".json" className="block mt-2" onChange={e => void loadPolicy(e.target.files?.[0])} />
-            </label>
-            {policyError && <p role="alert" className="text-red-700">{policyError}</p>}
-            {tdxPolicy && <div>
-              <p>情景：{String(tdxPolicy.policy.scenario)}；报告期：{dbStatus.reportPeriod}</p>
-              <p>WACC：{Number(tdxPolicy.policy.wacc) * 100}%；税率：{Number(tdxPolicy.policy.tax_rate) * 100}%；收入／资本：{String(tdxPolicy.policy.sales_to_capital)}</p>
-              <p>{String(tdxPolicy.policy.review_note)}</p>
-              <details><summary>核对全部政策参数</summary><pre className="whitespace-pre-wrap text-xs">{JSON.stringify(tdxPolicy.policy, null, 2)}</pre></details>
-            </div>}
+          {dbStatus.requiresPolicy && tdxPolicy && <div className="mt-3 space-y-3 text-sm">
+            <p>默认值仅用于条件估值，并非公司事实或自动市场估计。报告期：{dbStatus.reportPeriod}。</p>
+            <p>前五年增长取历史季度同比中位数加调整值，并受上下限约束；设置相同上下限可指定固定增长。利润率从当前水平过渡至调整后水平。</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {scenarioFields.map(([key, label]) => <label key={key} className="block">{label}
+                <input type="number" step="any" className="block border rounded p-2 w-full" value={tdxPolicy.policy[key] == null ? '' : Number((Number(tdxPolicy.policy[key]) * scale(label)).toPrecision(12))}
+                  onChange={event => onPolicy({ ...tdxPolicy, policy: { ...tdxPolicy.policy, [key]: event.target.value === '' ? null : Number(event.target.value) / scale(label) } })} />
+              </label>)}
+            </div>
+            <p>采用财报日股本、账面债务及不转股情景；未分类金融投资暂不计价。附加索偿为0是情景假设，不代表确认不存在。</p>
           </div>}
         </div>
       )}
