@@ -9,9 +9,9 @@
 ```bash
 # 仓库根目录；实际使用时填写已有run ID和本次实际值信息截止。
 PYTHONPATH=valuation/backend python -m tools.review_valuation_forecast \
-  workspace/auto-valuation-20260909/market.duckdb RUN_ID \
+  workspace/alphalake.duckdb RUN_ID \
   --as-of 2026-09-11T00:00:00+08:00 \
-  --run-directory valuation/backend/data/alphalake_runs > forecast-review.json
+  --run-directory workspace/derived/valuation-runs > forecast-review.json
 ```
 
 目标期按原财务期逐年递增并保持季度末，例如2026H1的第一年目标为2027H1，不是2026年报。仅对已经结束的目标期调用现有`export-valuation`，所有实际值固定到用户提供的`--as-of`。报告期虽结束但尚无公告/标准数据时仍阻断，不借未来数据补齐；未到期位置始终保留且不查库。专项、显式逐年手工模型暂不套用这一比较口径。
@@ -144,7 +144,7 @@ python -m tools.company_valuation /absolute/market.duckdb 300866 \
 
 退出码：`0`选中条件估值成功；`2`身份/数据/政策等业务阻断；`1`运行或请求失败。即使退出非零也先读JSON状态，不把业务拒绝当网络故障自动重试。`--policy`的版本名必须唯一；相同名称的不同内容不能混为候选。
 
-完整请求、输入、政策、参考和计算结果仍按原机制保存到`ALPHALAKE_VALUATION_RUN_DIR`，默认`valuation/backend/data/alphalake_runs`。入口核对保存运行的请求/引擎内容标识及返回值，再输出摘要；这些完整文件不是新建的一套估值事实库。
+完整请求、输入、政策、参考和计算结果仍按原机制保存到`ALPHALAKE_VALUATION_RUN_DIR`，默认`workspace/derived/valuation-runs`。入口核对保存运行的请求/引擎内容标识及返回值，再输出摘要；这些完整文件不是新建的一套估值事实库。
 
 已支持[显式一年期利润校准政策](forecast-calibration.md)：沿用同一入口及运行记录，只按批准的公司、报告期和可用时间生效；没有新增自动政策选择规则。
 

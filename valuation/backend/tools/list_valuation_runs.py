@@ -1,4 +1,6 @@
 """只读发现已保存估值；最新按信息截止判断，同一模型同一截止保留并列。"""
+from data_sources.paths import workspace_path
+
 import argparse
 from datetime import date, datetime
 import json
@@ -108,14 +110,14 @@ def list_runs(directories,code,models=(),period=None,as_of=None,latest_per_model
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('code')
-    parser.add_argument('--run-dir',action='append',help='可重复提供；默认ALPHALAKE_VALUATION_RUN_DIR或后端data/alphalake_runs')
+    parser.add_argument('--run-dir',action='append',help='可重复提供；默认ALPHALAKE_VALUATION_RUN_DIR或workspace/derived/valuation-runs')
     parser.add_argument('--model',action='append',default=[],help='精确policy_id，可重复')
     parser.add_argument('--period');parser.add_argument('--as-of')
     parser.add_argument('--latest-per-model',action='store_true')
     parser.add_argument('--limit',type=int,default=50);parser.add_argument('--offset',type=int,default=0)
     args=parser.parse_args()
     try:
-        dirs=args.run_dir or [os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(Path(__file__).resolve().parents[1]/'data/alphalake_runs'))]
+        dirs=args.run_dir or [os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(workspace_path('derived', 'valuation-runs')))]
         result=list_runs(dirs,args.code,args.model,args.period,args.as_of,args.latest_per_model,args.limit,args.offset)
         code=2 if result['status']=='partial' else 0
         payload=json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False)

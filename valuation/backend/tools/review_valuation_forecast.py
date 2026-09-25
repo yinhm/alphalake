@@ -1,4 +1,6 @@
 """只读核验已保存的历史规则预测；实际值来自标准TTM，不评价股价或FCFF。"""
+from data_sources.paths import workspace_path
+
 import argparse
 from collections import Counter
 from datetime import date, datetime, timedelta, timezone
@@ -95,7 +97,7 @@ def main():
     parser.add_argument('database')
     parser.add_argument('run_id')
     parser.add_argument('--as-of', required=True)
-    parser.add_argument('--run-directory', default=os.environ.get('ALPHALAKE_VALUATION_RUN_DIR', str(Path(__file__).resolve().parents[1]/'data/alphalake_runs')))
+    parser.add_argument('--run-directory', default=os.environ.get('ALPHALAKE_VALUATION_RUN_DIR', str(workspace_path('derived', 'valuation-runs'))))
     parser.add_argument('--alphalake', default=str(Path(__file__).resolve().parents[3]/'alphalake'))
     args = parser.parse_args()
     try:

@@ -1,4 +1,6 @@
 """只读比较两个估值run ID；当前引擎重算核验，不覆盖历史运行。"""
+from data_sources.paths import workspace_path
+
 import argparse
 from copy import deepcopy
 from dataclasses import asdict
@@ -135,7 +137,7 @@ def compare_runs(before,after,max_changes=100):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('before_run_id');parser.add_argument('after_run_id')
-    default=os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(Path(__file__).resolve().parents[1]/'data/alphalake_runs'))
+    default=os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(workspace_path('derived', 'valuation-runs')))
     parser.add_argument('--run-dir',default=default)
     parser.add_argument('--after-run-dir',help='另一独立运行目录；默认与run-dir相同')
     parser.add_argument('--max-changes',type=int,default=100,help='每组最多列出的差异数，保留总数及截断计数')

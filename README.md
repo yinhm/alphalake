@@ -258,24 +258,26 @@ alphalake schema
 
 审核补充支持显式修订、撤销与历史查询，镜像原文审核独立于诊断保存；迁移及时间边界见[审核证据说明](docs/reviewed-evidence-history.md)。
 
-当前仅维护schema51，定义见 [schema.sql](internal/store/duckdb/schema.sql)。财务主库和实际参考库已接入[全量TDX源目录](docs/tdx-financial-catalog-20260919.md)，原有财务与参考内容不变，新增标准映射及本地事实的最新范围见[接入验收](docs/decisions/020-official-statements-and-snapshots.md)。旧迁移链及专项发布工具退出当前代码，严格历史复验使用原提交；处置记录见[兼容清理](docs/compatibility-cleanup-20260919.md)。
+当前仅维护schema51，定义见 [schema.sql](internal/store/duckdb/schema.sql)。财务与参考数据已归并主库并接入[全量TDX源目录](docs/tdx-financial-catalog-20260919.md)，原有财务与参考内容不变，新增标准映射及本地事实的最新范围见[接入验收](docs/decisions/020-official-statements-and-snapshots.md)。旧迁移链及专项发布工具退出当前代码，严格历史复验使用原提交；处置记录见[兼容清理](docs/compatibility-cleanup-20260919.md)。
 
 ## 数据布局
 
-数据库位于 `./data/market.duckdb` 时，专业财务原始归档默认布局如下：
+动态数据统一放在 `workspace`，唯一权威库同时保存财务及已接入的达摩达兰等参考数据：
 
 ```text
-data/
-  market.duckdb
-  raw/
-    tdx/
-      professional_financial/
-        <sha-prefix>/
-          <sha256>.txt
-          <sha256>.zip
+workspace/
+  alphalake.duckdb
+  tdx-cache/             # gpcw.txt及直接落盘的gpcw*.zip
+  cninfo/                # 公告目录与财报原文
+  damodaran/             # 官方工作簿、来源记录及估值参考文件
+  <其他来源>/objects/
+  derived/
+    valuation.sqlite     # 网页派生快照
+    valuation-runs/      # 不可变估值运行
+    cleanup-audit/       # 清理、ID及归档路径迁移记录
 ```
 
-`meta.artifact` 中的路径相对于配置的原始数据根目录。
+`meta.artifact.local_path` 相对于数据库所在目录；不再附加 `raw/`。TDX命名缓存直接落盘，已引用的不可变原始证据保存在 `tdx/`；上游未变时复用，本地回退会记录诊断及partial状态，不声称最新。详见[工作目录与缓存约定](docs/workspace-layout.md)。Python动态数据根目录可由 `ALPHALAKE_WORKSPACE` 显式指定，默认使用项目workspace；运行环境位于 `.venv`。上游原有冻结模板、测试资料不作为可写缓存。
 
 ## 原则
 

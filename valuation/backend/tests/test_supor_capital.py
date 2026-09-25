@@ -1,3 +1,4 @@
+from data_sources.paths import workspace_path
 from copy import deepcopy
 import json
 from pathlib import Path
@@ -10,7 +11,7 @@ def test_supor_capital_actual_source_and_tamper(monkeypatch):
     root=Path(__file__).resolve().parents[3]
     monkeypatch.chdir(root)
     ledger=json.loads((DIRECTORY/'supor-capital-evidence.json').read_bytes())
-    pdfs=root/'workspace/management-targets-five-20260911'
+    pdfs=workspace_path('cninfo','views','management-targets-five')
     if not all((pdfs/r['document']['file']).exists() for r in ledger['reports']):
         pytest.skip('restore three original Supor annual PDFs from evidence URLs and hashes')
     result=verify(ledger,pdfs)

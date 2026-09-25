@@ -25,39 +25,15 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
 
-DB_PATH = Path(__file__).resolve().parent / "us_cn_hk.sqlite"
-# Seed database shipped with the repo — clone-and-run users get a working
-# company dataset without needing to upload raw screener files. Built from
-# tools/build_seed_database.py; scrubbed of vendor-identifying metadata.
-SEED_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "valuation_seed.sqlite"
+from data_sources.paths import workspace_path
 
+DB_PATH = workspace_path('derived', 'valuation.sqlite')
 
-# ---------------------------------------------------------------------------
-# Connection helpers
-# ---------------------------------------------------------------------------
 
 def get_db_path() -> Path:
-    """Resolve which SQLite file to use, in priority order:
-
-      1. US_CN_HK_DB_PATH env var (explicit override, mainly for tests)
-      2. The admin-built DB at backend/data_sources/us_cn_hk.sqlite — this
-         is what the operator's `refresh-database` admin action produces.
-         Private, gitignored.
-      3. The committed seed at backend/data/valuation_seed.sqlite — shipped
-         with the repo so fresh clones get a working company dataset.
-
-    Returns the first path that exists; if none exist, returns the admin-
-    built path (get_connection() will create an empty file there)."""
-    env = os.environ.get("US_CN_HK_DB_PATH")
-    if env:
-        return Path(env)
-    if DB_PATH.exists():
-        return DB_PATH
-    if SEED_DB_PATH.exists():
-        return SEED_DB_PATH
-    # Neither exists yet — fall back to the admin path so the first
-    # connection creates a blank file in the expected location.
-    return DB_PATH
+    """使用显式配置或唯一动态快照；不回退到仓库内的示例数据库。"""
+    env = os.environ.get('US_CN_HK_DB_PATH')
+    return Path(env) if env else workspace_path('derived', 'valuation.sqlite')
 
 
 @contextmanager

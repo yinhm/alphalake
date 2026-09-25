@@ -1,5 +1,7 @@
 # AlphaLake 实现状态
 
+当前动态数据采用[统一workspace布局](workspace-layout.md)：唯一主库 `workspace/alphalake.duckdb` 同时包含财务事实、达摩达兰五类已接入数据及国债收益率。下文日期命名的workspace路径属于历史验收记录，其原内容去向见 `workspace/derived/cleanup-audit/file-plan.jsonl`，不再作为当前运行路径。网页派生库位于 `workspace/derived/valuation.sqlite`，估值运行位于 `workspace/derived/valuation-runs`。
+
 默认范围为沪深市场；北交所不进入默认同步及批量估值分母。显式追加 `--include-bse` 才纳入北交所；已有北交所历史与混合市场原始归档保留。按代码/证券指定的查询和单证券操作视为显式范围，历史验收数字不改写。
 
 原生接入纠偏已恢复原页面导航、原`{ticker,risk_free_rate}`请求及普通可编辑会话，撤除政策表单、专用结果页及专项估值旁路；保留明确BUG修复。2026-09-25新导出三家公司共3,549条标准事实，年度来源报告EBIT/EBITDA已有值；十年/八季窗口的必需收入/EBIT缺项为安克19、茅台22、苏泊尔22格，仍0/3原生准入。历史窗口、经营调整与其他目标定义仍需核验，见[新快照验收](acceptance/tdx-supplementary-sqlite-20260925.json)。已修复利润总额误作剔除特殊项EBT的导出映射。详见[字段契约及待审批解决方案](valuation-native-data-contract-20260924.md)，不声明数据达标；原始SQLite未重写，旧估值留档。

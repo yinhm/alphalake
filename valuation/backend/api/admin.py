@@ -21,6 +21,8 @@ structural.
 """
 from __future__ import annotations
 
+from data_sources.paths import workspace_path
+
 import os
 import re
 import shutil
@@ -39,9 +41,9 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 
 # Folder locations (hardcoded per the plan §6e).
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-MARKETS_DATASET_DIR = REPO_ROOT / "US_CN_HK_dataset"
-DAMODARAN_DIR = REPO_ROOT / "knowledge_base" / "damodaran"
-INDUSTRY_LOOKUP_DIR = REPO_ROOT / "knowledge_base" / "industry_lookup"
+MARKETS_DATASET_DIR = workspace_path("capital_iq", "uploads")
+DAMODARAN_DIR = workspace_path("damodaran")
+INDUSTRY_LOOKUP_DIR = workspace_path("damodaran", "industry_lookup")
 
 # Upload safety rules
 # Accept both the legacy layout (ginzu_cc_<N>_<M>.xls) and the current

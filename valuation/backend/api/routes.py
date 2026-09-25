@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from data_sources.paths import workspace_path
+
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -41,7 +43,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api")
 
 # Pre-load Damodaran data and industry mapper at startup
-_DATA_DIR = Path(__file__).resolve().parent.parent.parent / "knowledge_base"
 _damodaran_store: DamodaranStore | None = None
 _industry_mapper: IndustryMapper | None = None
 
@@ -49,7 +50,7 @@ _industry_mapper: IndustryMapper | None = None
 def _get_damodaran_store() -> DamodaranStore:
     global _damodaran_store
     if _damodaran_store is None:
-        dam_dir = _DATA_DIR / "damodaran"
+        dam_dir = workspace_path("damodaran")
         if dam_dir.exists():
             _damodaran_store = DamodaranStore.from_directory(str(dam_dir))
             logger.info(f"Loaded Damodaran store: {_damodaran_store.industries_loaded}")
@@ -209,7 +210,7 @@ def _build_unresolved_fields(
 def _get_industry_mapper() -> IndustryMapper:
     global _industry_mapper
     if _industry_mapper is None:
-        lookup_file = _DATA_DIR / "industry_lookup" / "indname.xlsx"
+        lookup_file = workspace_path("damodaran", "industry_lookup", "indname.xlsx")
         if lookup_file.exists():
             _industry_mapper = IndustryMapper.from_file(str(lookup_file))
             logger.info(f"Loaded industry mapper: {_industry_mapper.total_companies} companies")
@@ -402,7 +403,7 @@ def fetch_and_run(req: FetchRequest):
     try:
         import openpyxl as _oxl
 
-        ciq_dir = _DATA_DIR / "ciq_fetches"
+        ciq_dir = workspace_path("capital_iq", "fetches")
         template_file = ciq_dir / "CIQ_Fetch_Template.xlsx"
 
         if template_file.exists():

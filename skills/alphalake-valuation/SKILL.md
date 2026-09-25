@@ -27,7 +27,7 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
   > "$ALPHALAKE_RESULT"
 ```
 
-需要时添加重复的`--policy /absolute/other-policy.json`及`--reference-database /absolute/references.duckdb`。内嵌参考包与参考库参数互斥，按实际配置选择；不要静默删除绑定。`--select`接受传入配置的`policy_version`，仅在用户已明确指定或已确认的选择规则适用时使用，不按候选价格高低选择。
+需要时添加重复的`--policy /absolute/other-policy.json`及`--reference-database "$ALPHALAKE_DB"`。内嵌参考包与参考库参数互斥，按实际配置选择；不要静默删除绑定。`--select`接受传入配置的`policy_version`，仅在用户已明确指定或已确认的选择规则适用时使用，不按候选价格高低选择。
 
 保留退出码，并在非零退出后仍读取输出JSON及stderr。大库仍需全分母扫描，依据真实进度和入口超时排查，不并发反复重跑同一查询。解释器/二进制/依赖缺失应报告具体环境缺项，不能改用样本脚本算一个数。
 
@@ -82,3 +82,5 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 若仅解释一个已有运行，直接读取其已保存证据并注明原时点，不必启动一次新计算，也不能声称旧运行代表最新数据。
 
 默认批量范围仅沪深市场；北交所须用户明确指定。批次与覆盖率分母不得默认纳入北交所；显式公司查询保留既有历史证据。
+
+当前默认主库为项目workspace/alphalake.duckdb，财务和达摩达兰参考数据共用此库；动态输出仅写workspace/derived，默认运行目录为workspace/derived/valuation-runs。历史日期目录只作迁移记录，不作为运行配置。

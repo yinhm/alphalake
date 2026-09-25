@@ -10,3 +10,6 @@ __pycache__/
 
 # DuckDB 临时溢写文件
 /.tmp/
+
+# Local Python runtime; dynamic financial data belongs under workspace.
+/.venv/

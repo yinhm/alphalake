@@ -6,6 +6,8 @@ Also categorizes by dataset and region.
 Usage:
     python backend/tools/analyze_damodaran.py
 """
+from data_sources.paths import workspace_path
+
 import json
 import re
 from pathlib import Path
@@ -13,7 +15,7 @@ from pathlib import Path
 import openpyxl
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-DAM_DIR = BASE_DIR / "knowledge_base" / "damodaran"
+DAM_DIR = workspace_path("damodaran")
 
 # Known regions and their suffixes
 REGION_SUFFIXES = {

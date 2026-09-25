@@ -1,3 +1,4 @@
+from data_sources.paths import workspace_path
 import json
 from pathlib import Path
 import shutil
@@ -8,7 +9,7 @@ from tools.verify_management_targets import verify, coverage
 
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE = ROOT/'valuation/research/management-targets-five'
-PDFS = ROOT/'workspace/management-targets-five-20260911'
+PDFS = workspace_path('cninfo','views','management-targets-five')
 
 
 def test_management_targets_preserve_denominator_and_reject_tamper(tmp_path,monkeypatch):

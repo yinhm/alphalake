@@ -29,8 +29,8 @@ systemd-run --unit=alphalake-sqlite-export \
   --setenv=ALPHALAKE_DUCKDB_THREADS=1 \
   --setenv=GOMEMLIMIT=128MiB --setenv=GOMAXPROCS=1 \
   /usr/bin/python3 -m tools.export_alphalake_sqlite \
-  --database workspace/auto-valuation-20260909/market.duckdb \
-  --output workspace/sqlite-export-new/valuation.sqlite \
+  --database workspace/alphalake.duckdb \
+  --output workspace/derived/valuation.sqlite \
   --period 2026-06-30 --as-of 2026-09-22T00:00:00Z \
   --code 300866 --code 600519 --code 002032 \
   --alphalake /tmp/alphalake-sqlite-export
@@ -73,7 +73,7 @@ SQLite增加`standard_facts`保存所有查询所得的标准字段、原标准�
 如需手动让网页读取该快照，在启动网页后端的环境中显式设置：
 
 ```bash
-export US_CN_HK_DB_PATH=/root/alphalake/workspace/sqlite-export-new/valuation.sqlite
+export US_CN_HK_DB_PATH=/root/alphalake/workspace/derived/valuation.sqlite
 ```
 
 仅改变该进程选库，不合并到seed。原页面搜索与选择公司后，原客户端提交`{ticker, risk_free_rate}`；不上传政策文件、不新增参数表单。需要修改参数时沿用原页面。当前三家TDX快照必需字段与目标口径未闭合，因此返回422并显示原因，不产生价格。

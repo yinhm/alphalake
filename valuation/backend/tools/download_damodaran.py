@@ -3,9 +3,11 @@
 Usage:
     python backend/tools/download_damodaran.py [--force]
 
-Downloads to knowledge_base/damodaran/, skipping files that already exist
+Downloads to workspace/damodaran/, skipping files that already exist
 unless --force is passed.
 """
+from data_sources.paths import workspace_path
+
 import os
 import sys
 import time
@@ -14,7 +16,7 @@ import urllib.error
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-DEST_DIR = BASE_DIR / "knowledge_base" / "damodaran"
+DEST_DIR = workspace_path("damodaran")
 
 # All 244 URLs extracted from https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datacurrent.html
 URLS = [

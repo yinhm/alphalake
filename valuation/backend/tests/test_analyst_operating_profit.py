@@ -1,3 +1,4 @@
+from data_sources.paths import workspace_path
 import json
 from pathlib import Path
 import shutil
@@ -9,7 +10,7 @@ from tools.verify_analyst_operating_profit import build
 
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE = ROOT/'valuation/research/analyst-revenue-latest'
-PDFS = ROOT/'workspace/analyst-revenue-latest-20260911'
+PDFS = workspace_path('eastmoney','views','analyst-revenue-latest')
 
 
 def test_real_reports_profit_pair_and_tamper(tmp_path, monkeypatch):

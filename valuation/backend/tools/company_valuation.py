@@ -1,4 +1,6 @@
 """统一公司估值入口：显式配置候选政策，复用批次校验与引擎，输出紧凑JSON。"""
+from data_sources.paths import workspace_path
+
 import argparse
 from datetime import datetime
 from functools import cache
@@ -137,7 +139,7 @@ def main():
             return json.loads(subprocess.check_output([args.alphalake,name,args.database,*extra,
                 '--period',period or args.period,'--as-of',args.as_of],text=True,stderr=subprocess.PIPE,timeout=300))
         readiness=command('valuation-readiness','--code',args.code)
-        runs=os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(Path(__file__).resolve().parents[1]/'data/alphalake_runs'))
+        runs=os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(workspace_path('derived', 'valuation-runs')))
         result=company_valuation(readiness,args.code,policies,lambda code:command('export-valuation',code),runs,args.select)
         if args.cash_check:
             result['cash_check']=dict(status='blocked_no_selected_valuation')

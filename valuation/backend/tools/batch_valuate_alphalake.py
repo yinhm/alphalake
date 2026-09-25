@@ -1,4 +1,6 @@
 """从本地主数据扫描、逐公司导出并调用既有估值入口；缺政策不猜、失败不中断其他公司。"""
+from data_sources.paths import workspace_path
+
 import argparse
 from collections import Counter
 from datetime import datetime, timedelta
@@ -241,7 +243,7 @@ def main():
     previous=json.loads(Path(args.previous_report).read_text()) if args.previous_report else None
     if previous and previous.get('source_database') != str(Path(args.database).resolve()):
         raise ValueError('previous report belongs to a different database')
-    runs=os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(Path(__file__).resolve().parents[1]/'data/alphalake_runs'))
+    runs=os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(workspace_path('derived', 'valuation-runs')))
     result=run_incremental_batch(readiness,policy,lambda code:command('export-valuation',code),previous,runs)
     result['source_database']=str(Path(args.database).resolve())
     # 每次尝试独立留档（包括失败）；成功单公司结果仍用既有内容寻址存储。

@@ -24,7 +24,9 @@ from pathlib import Path
 
 import openpyxl
 
-TEMPLATE_DIR = Path(__file__).resolve().parent.parent.parent / "knowledge_base" / "ciq_fetches"
+from data_sources.paths import workspace_path
+
+TEMPLATE_DIR = workspace_path("capital_iq", "fetches")
 TEMPLATE_FILE = TEMPLATE_DIR / "CIQ_Fetch_Template.xlsx"
 
 

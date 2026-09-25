@@ -1,3 +1,4 @@
+from data_sources.paths import workspace_path
 """真实财务公司与合并表的口径隔离，不能因部分取证解除准入。"""
 import json
 from pathlib import Path
@@ -9,7 +10,7 @@ from tools.verify_gree_finance_scope import verify
 
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE = ROOT/'valuation/research/continuing-operations-five'
-PDFS = ROOT/'workspace/gree-finance-scope-20260911'
+PDFS = workspace_path('cninfo','views','gree-finance-scope')
 
 
 def test_real_finance_scope_and_tamper(tmp_path):

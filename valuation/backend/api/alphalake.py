@@ -1,5 +1,7 @@
 """AlphaLake 导出包的正式估值入口，原生返回桥接结果并保留可重放输入。"""
 from dataclasses import asdict
+from data_sources.paths import workspace_path
+
 import hashlib
 from importlib.metadata import version
 import sys
@@ -204,7 +206,7 @@ def _evaluate(request: AlphaLakeRequest):
         growth_sensitivity=(growth_path_sensitivity(inputs,report)
                             if request.policy.policy_id in ('nonfinancial-history-fcff-v1', 'nonfinancial-history-fcff-calibrated-v1', 'nonfinancial-reviewed-history-fcff-v1') else None))
     # 保存输入/政策/引擎版本与输出。同内容重放不覆盖；失败不产生成功记录。
-    root = Path(os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(Path(__file__).resolve().parents[1]/'data/alphalake_runs')))
+    root = Path(os.environ.get('ALPHALAKE_VALUATION_RUN_DIR',str(workspace_path('derived', 'valuation-runs'))))
     root.mkdir(parents=True,exist_ok=True)
     target = root/(run_id+'.json')
     payload = json.dumps(result,ensure_ascii=False,sort_keys=True,indent=2,allow_nan=False)+'\n'
