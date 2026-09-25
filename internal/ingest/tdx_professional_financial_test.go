@@ -52,7 +52,8 @@ func (f *fakeProfessionalFinancialSource) ProfessionalFinancialFileList(context.
 	manifest := []byte(fmt.Sprintf("%s,%s,%d\n", entry.Filename, entry.MD5, entry.Size))
 	entries := []tdxfinancial.FileEntry{entry}
 	if f.futurePlaceholder {
-		entries = append(entries, tdxfinancial.FileEntry{Filename: "gpcw20260930.zip", Size: 164})
+		entries = append(entries, tdxfinancial.FileEntry{Filename: "gpcw20260930.zip", MD5: "00000000000000000000000000000000", Size: 164})
+		manifest = append(manifest, []byte("gpcw20260930.zip,00000000000000000000000000000000,164\n")...)
 	}
 	return entries, manifest, nil
 }
@@ -173,7 +174,7 @@ func TestUnresolvedFinancialRecordRetriesFromLocalArtifactWithoutRedownload(t *t
 	}
 }
 
-func TestCorruptRetainedFinancialPackageRedownloadsAndRepairs(t *testing.T) {
+func TestCorruptRetainedFinancialPackageUsesCacheThenRedownloads(t *testing.T) {
 	ctx := context.Background()
 	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "corrupt-retained.duckdb"))
 	if err != nil {
@@ -217,8 +218,8 @@ func TestCorruptRetainedFinancialPackageRedownloadsAndRepairs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("second sync after corruption: %v", err)
 	}
-	if second.Unresolved != 1 || source.packageCalls != 2 {
-		t.Fatalf("second=%#v calls=%d, want provider redownload", second, source.packageCalls)
+	if second.Unresolved != 1 || source.packageCalls != 1 {
+		t.Fatalf("second=%#v calls=%d, want verified local cache repair", second, source.packageCalls)
 	}
 	got, err := os.ReadFile(fullPath)
 	if err != nil {
@@ -227,6 +228,22 @@ func TestCorruptRetainedFinancialPackageRedownloadsAndRepairs(t *testing.T) {
 	if string(got) != string(source.packageBytes) {
 		t.Fatalf("repaired retained bytes=%q, want %q", got, source.packageBytes)
 	}
+	for _, path := range []string{fullPath, filepath.Join(root, "tdx-cache", "gpcw20260630.zip")} {
+		if err := os.WriteFile(path, []byte("bad!"), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	third, err := SyncTDXProfessionalFinancialWithOptions(ctx, db, source, root, options)
+	if err != nil || third.Unresolved != 1 || source.packageCalls != 2 {
+		t.Fatalf("third=%#v calls=%d err=%v, want provider repair", third, source.packageCalls, err)
+	}
+	for _, path := range []string{fullPath, filepath.Join(root, "tdx-cache", "gpcw20260630.zip")} {
+		got, err := os.ReadFile(path)
+		if err != nil || string(got) != string(source.packageBytes) {
+			t.Fatal("repair failed", path, err)
+		}
+	}
+
 }
 
 func TestAcknowledgedFinancialRecordAllowsPackageCompletion(t *testing.T) {

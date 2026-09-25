@@ -167,3 +167,30 @@ func TestSafeSegmentCannotTraverseDirectories(t *testing.T) {
 		}
 	}
 }
+
+func TestDamodaranFilesAreFlatAndVersionsRemainDistinct(t *testing.T) {
+	ctx := context.Background()
+	root := t.TempDir()
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(root, "main.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	input := Input{Source: "damodaran", Dataset: "industry_beta", SourceLocator: "https://pages.stern.nyu.edu/~adamodar/pc/datasets/betaGlobal.xls", FetchedAt: time.Now(), Content: []byte("first")}
+	first, err := Persist(ctx, db, root, input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	input.Content = []byte("second")
+	second, err := Persist(ctx, db, root, input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if filepath.Dir(first.LocalPath) != "damodaran" || first.LocalPath == second.LocalPath {
+		t.Fatal(first, second)
+	}
+	b, err := os.ReadFile(Resolve(root, first))
+	if err != nil || string(b) != "first" {
+		t.Fatal(string(b), err)
+	}
+}

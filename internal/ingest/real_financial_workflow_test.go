@@ -67,7 +67,7 @@ func TestRealFinancialWorkflow(t *testing.T) {
 		}
 		check(json.Unmarshal(readAnnualSample(t, "documents.json"), &inventory))
 		for _, doc := range inventory {
-			raw, err := os.ReadFile(filepath.Join(archive, doc.Path))
+			raw, err := os.ReadFile(filepath.Join(archive, "cninfo", "objects", doc.SHA256[:2], doc.SHA256+filepath.Ext(doc.Path)))
 			check(err)
 			if len(raw) != doc.Size || fmt.Sprintf("%x", sha256.Sum256(raw)) != doc.SHA256 {
 				t.Fatalf("PDF archive integrity mismatch: %s", doc.Path)

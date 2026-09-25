@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,7 +61,16 @@ func Persist(ctx context.Context, db *sql.DB, root string, input Input) (Stored,
 	out.SHA256 = hex.EncodeToString(sum[:])
 	out.ContentLength = int64(len(input.Content))
 	ext := safeExtension(input.SourceLocator)
-	rel := filepath.Join(safeSegment(input.Source), safeSegment(input.Dataset), out.SHA256[:2], out.SHA256+ext)
+	sourceDir := safeSegment(input.Source)
+	rel := filepath.Join(sourceDir, "objects", out.SHA256[:2], out.SHA256+ext)
+	if input.Source == "damodaran" {
+		locator, err := url.Parse(input.SourceLocator)
+		if err != nil {
+			return Stored{}, fmt.Errorf("invalid source locator: %w", err)
+		}
+		name := safeSegment(strings.TrimSuffix(filepath.Base(locator.Path), ext))
+		rel = filepath.Join(sourceDir, name+"-"+out.SHA256[:12]+ext)
+	}
 	out.LocalPath = filepath.ToSlash(rel)
 	full := filepath.Join(root, rel)
 	if err := persistBytes(full, input.Content, out.SHA256); err != nil {

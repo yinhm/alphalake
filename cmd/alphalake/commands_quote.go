@@ -75,7 +75,7 @@ func runMarketSource(ctx context.Context, command string, args []string) error {
 	if command == "sync-equity-proceeds" {
 		sync = ingest.SyncEquityProceeds
 	}
-	out, e := sync(ctx, db, filepath.Join(filepath.Dir(args[0]), "raw"), args[1], ingest.ReferenceOptions{Python: *python, Offline: *offline})
+	out, e := sync(ctx, db, filepath.Dir(args[0]), args[1], ingest.ReferenceOptions{Python: *python, Offline: *offline})
 	return errors.Join(e, json.NewEncoder(os.Stdout).Encode(out))
 }
 

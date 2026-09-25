@@ -159,7 +159,7 @@ func runSyncFilings(ctx context.Context, args []string) error {
 	if err != nil {
 		return err
 	}
-	artifactRoot := filepath.Join(filepath.Dir(dbPath), "raw")
+	artifactRoot := filepath.Dir(dbPath)
 	lastPages := -1
 	lastFailures := -1
 	options := ingest.CNINFOFilingOptions{
@@ -238,7 +238,7 @@ func runRepairFilings(ctx context.Context, args []string) error {
 	if err != nil {
 		return err
 	}
-	attempted, failed, err := repairFilingQueries(ctx, db, client, filepath.Join(filepath.Dir(dbPath), "raw"), queries, end)
+	attempted, failed, err := repairFilingQueries(ctx, db, client, filepath.Dir(dbPath), queries, end)
 	fmt.Printf("CNINFO filing repair: pending_codes=%d attempted=%d failed=%d unattempted=%d; rematerialize to verify remaining links\n", total, attempted, failed, total-attempted)
 	if err != nil {
 		return err

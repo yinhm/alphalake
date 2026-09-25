@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
@@ -59,6 +60,7 @@ type TDXProfessionalFinancialFailure struct {
 }
 
 type TDXProfessionalFinancialSummary struct {
+	CacheFallbacks  int
 	RunID           int64
 	Listed          int
 	Selected        int
@@ -126,16 +128,32 @@ func SyncTDXProfessionalFinancialWithOptions(
 		finalizeTrackedRun(ctx, db, runID, professionalFinancialRunStatus(summary, retErr), &retErr)
 	}()
 
-	master, err := refreshInstrumentMaster(ctx, db, runID, source)
-	if err != nil {
-		return summary, fmt.Errorf("refresh TDX instrument master: %w", err)
+	entries, manifestRaw, fallback, err := financialManifest(ctx, source, artifactRoot)
+	if err != nil && !fallback {
+		return summary, err
+	}
+	if fallback {
+		summary.CacheFallbacks++
+		if e := financialCacheDiagnostic(ctx, db, runID, "gpcw.txt", err); e != nil {
+			return summary, e
+		}
+	}
+	master, masterErr := refreshInstrumentMaster(ctx, db, runID, source)
+	if masterErr != nil {
+		var known int
+		if e := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx'`).Scan(&known); e != nil {
+			return summary, e
+		}
+		if known == 0 || ctx.Err() != nil {
+			return summary, fmt.Errorf("refresh TDX instrument master: %w", masterErr)
+		}
+		summary.CacheFallbacks++
+		if e := financialCacheDiagnostic(ctx, db, runID, "retained_instrument_master", masterErr); e != nil {
+			return summary, e
+		}
 	}
 	summary.MasterFailures = master.Failures
 
-	entries, manifestRaw, err := source.ProfessionalFinancialFileList(ctx)
-	if err != nil {
-		return summary, err
-	}
 	summary.Listed = len(entries)
 	if _, err := artifact.Persist(ctx, db, artifactRoot, artifact.Input{
 		Source: "tdx", Dataset: tdxProfessionalFinancialDataset,
@@ -144,6 +162,12 @@ func SyncTDXProfessionalFinancialWithOptions(
 		IngestRunID: &runID, Content: manifestRaw,
 	}); err != nil {
 		return summary, fmt.Errorf("persist gpcw file-list artifact: %w", err)
+	}
+
+	if !fallback {
+		if err := atomicCacheWrite(filepath.Join(artifactRoot, "tdx-cache", "gpcw.txt"), manifestRaw); err != nil {
+			return summary, err
+		}
 	}
 
 	sort.Slice(entries, func(i, j int) bool { return entries[i].Filename > entries[j].Filename })
@@ -168,11 +192,6 @@ func SyncTDXProfessionalFinancialWithOptions(
 			reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
 			continue
 		}
-		if done && strings.EqualFold(checkpoint, entry.MD5) {
-			summary.Skipped++
-			reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
-			continue
-		}
 
 		stored, raw, found, err := loadRetainedFinancialPackage(ctx, db, artifactRoot, entry)
 		if err != nil {
@@ -181,7 +200,26 @@ func SyncTDXProfessionalFinancialWithOptions(
 			continue
 		}
 		if !found {
-			raw, err = source.ProfessionalFinancialPackage(ctx, entry)
+			cachedEntry, cachedRaw, cacheErr := readFinancialCache(ctx, db, artifactRoot, entry)
+			if cacheErr == nil && (sameFinancialEntry(cachedEntry, entry) || fallback) {
+				raw = cachedRaw
+				entry = cachedEntry
+				err = nil
+			} else {
+				raw, err = source.ProfessionalFinancialPackage(ctx, entry)
+				if err == nil && (int64(len(raw)) != entry.Size || !md5Matches(raw, entry.MD5)) {
+					err = fmt.Errorf("download checksum/size mismatch: %s", entry.Filename)
+				}
+				if err != nil && ctx.Err() == nil && cacheErr == nil {
+					if e := financialCacheDiagnostic(ctx, db, runID, entry.Filename, err); e != nil {
+						return summary, e
+					}
+					summary.CacheFallbacks++
+					entry = cachedEntry
+					raw = cachedRaw
+					err = nil
+				}
+			}
 			if err != nil {
 				summary.Failures = append(summary.Failures, TDXProfessionalFinancialFailure{Package: entry.Filename, Err: err})
 				reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
@@ -198,6 +236,15 @@ func SyncTDXProfessionalFinancialWithOptions(
 				reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
 				continue
 			}
+		}
+
+		if err := publishFinancialCache(artifactRoot, entry, stored); err != nil {
+			return summary, err
+		}
+		if done && strings.EqualFold(checkpoint, entry.MD5) {
+			summary.Skipped++
+			reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
+			continue
 		}
 
 		records, err := source.NormalizeProfessionalFinancialPackage(entry, raw, stored.ArtifactID)
@@ -386,10 +433,10 @@ func professionalFinancialRunStatus(summary TDXProfessionalFinancialSummary, run
 	if errors.Is(runErr, context.Canceled) || errors.Is(runErr, context.DeadlineExceeded) {
 		return duckstore.IngestRunCanceled
 	}
-	if runErr == nil && summary.Unresolved == 0 && len(summary.MasterFailures) == 0 {
+	if runErr == nil && summary.CacheFallbacks == 0 && summary.Unresolved == 0 && len(summary.MasterFailures) == 0 {
 		return duckstore.IngestRunCompleted
 	}
-	if summary.Packages > 0 || summary.Unresolved > 0 || len(summary.MasterFailures) > 0 {
+	if summary.Packages > 0 || summary.Unresolved > 0 || summary.CacheFallbacks > 0 || len(summary.MasterFailures) > 0 {
 		return duckstore.IngestRunPartial
 	}
 	return duckstore.IngestRunFailed

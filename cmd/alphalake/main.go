@@ -357,7 +357,7 @@ func main() {
 		}
 		defer source.Close()
 
-		artifactRoot := filepath.Join(filepath.Dir(dbPath), "raw")
+		artifactRoot := filepath.Dir(dbPath)
 		lastFailures := 0
 		lastUnresolved := 0
 		options := ingest.TDXProfessionalFinancialOptions{
@@ -376,10 +376,10 @@ func main() {
 			},
 		}
 		summary, syncErr := ingest.SyncTDXProfessionalFinancialWithOptions(ctx, db, source, artifactRoot, options)
-		fmt.Printf("TDX financial sync: run=%d listed=%d selected=%d packages=%d skipped=%d facts_attempted=%d facts_inserted=%d facts_reassigned=%d facts_removed=%d unresolved=%d acknowledged=%d failures=%d master_failures=%d all=%v raw=%s\n",
+		fmt.Printf("TDX financial sync: run=%d listed=%d selected=%d packages=%d skipped=%d facts_attempted=%d facts_inserted=%d facts_reassigned=%d facts_removed=%d unresolved=%d acknowledged=%d failures=%d master_failures=%d cache_fallbacks=%d all=%v root=%s\n",
 			summary.RunID, summary.Listed, summary.Selected, summary.Packages, summary.Skipped,
 			summary.FactsAttempted, summary.FactsInserted, summary.FactsReassigned, summary.FactsRemoved,
-			summary.Unresolved, summary.Acknowledged, len(summary.Failures), len(summary.MasterFailures), all, artifactRoot)
+			summary.Unresolved, summary.Acknowledged, len(summary.Failures), len(summary.MasterFailures), summary.CacheFallbacks, all, artifactRoot)
 		if syncErr != nil {
 			fatal(syncErr)
 		}
