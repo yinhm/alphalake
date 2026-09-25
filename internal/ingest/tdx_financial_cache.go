@@ -108,3 +108,34 @@ func financialManifest(ctx context.Context, source TDXProfessionalFinancialSourc
 func sameFinancialEntry(a, b financial.FileEntry) bool {
 	return a.Filename == b.Filename && a.Size == b.Size && strings.EqualFold(a.MD5, b.MD5)
 }
+
+// Explicit offline ingestion selects only files actually present locally. MD5
+// describes those bytes, not an assertion that they match the latest upstream
+// revision. The normal package parser still validates ZIP structure and CRC.
+func localFinancialManifest(root string) ([]financial.FileEntry, []byte, error) {
+	raw, err := os.ReadFile(filepath.Join(root, "tdx-cache", "gpcw.txt"))
+	if err != nil {
+		return nil, nil, err
+	}
+	entries, err := financial.ParseFileList(raw)
+	if err != nil {
+		return nil, nil, err
+	}
+	local := make([]financial.FileEntry, 0, len(entries))
+	for _, entry := range entries {
+		b, err := os.ReadFile(filepath.Join(root, "tdx-cache", entry.Filename))
+		if os.IsNotExist(err) {
+			continue
+		}
+		if err != nil {
+			return nil, nil, err
+		}
+		entry.Size = int64(len(b))
+		entry.MD5 = fmt.Sprintf("%x", md5.Sum(b))
+		local = append(local, entry)
+	}
+	if len(local) == 0 {
+		return nil, nil, fmt.Errorf("no local financial packages")
+	}
+	return local, raw, nil
+}

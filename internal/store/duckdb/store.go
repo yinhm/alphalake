@@ -107,3 +107,29 @@ func OpenInitialized(ctx context.Context, path string) (*sql.DB, error) {
 func duckdbStringLiteral(value string) string {
 	return "'" + strings.ReplaceAll(value, "'", "''") + "'"
 }
+
+// ReloadPersistentCatalog releases resident index memory between serialized
+// write batches. Call only outside transactions with no concurrent DB users.
+// DuckDB indexes are not evicted by the buffer manager; re-attachment makes them
+// lazy again: https://duckdb.org/docs/lts/guides/performance/indexing
+func ReloadPersistentCatalog(ctx context.Context, db *sql.DB) error {
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	var path string
+	err = conn.QueryRowContext(ctx, "SELECT path FROM duckdb_databases() WHERE database_name=?", PersistentCatalog).Scan(&path)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	} // Pure in-memory test databases.
+	if err != nil {
+		return err
+	}
+	for _, statement := range []string{"CHECKPOINT " + PersistentCatalog, "USE memory.main", "DETACH " + PersistentCatalog, "ATTACH " + duckdbStringLiteral(path) + " AS " + PersistentCatalog, "USE " + PersistentCatalog + ".main"} {
+		if _, err := conn.ExecContext(context.WithoutCancel(ctx), statement); err != nil {
+			return fmt.Errorf("reload persistent catalog: %w", err)
+		}
+	}
+	return nil
+}

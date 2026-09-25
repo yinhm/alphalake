@@ -2,6 +2,7 @@ package duckdb
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"path/filepath"
 	"testing"
@@ -191,5 +192,54 @@ func TestProviderFactsRejectMissingSourceIdentityWithoutBackfill(t *testing.T) {
 		if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_fact WHERE provider_code IS NULL AND value=10`).Scan(&count); err != nil || count != 1 {
 			t.Fatalf("incomplete evidence changed: %d %v", count, err)
 		}
+	}
+}
+
+func TestProviderFactBatchesRollbackAndRemoveAbsentCodes(t *testing.T) {
+	ctx := context.Background()
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "batch.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	run, err := StartIngestRun(ctx, db, "tdx", "professional_financial", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// An extra constraint injects a database failure after the first batch wrote.
+	if _, err = db.ExecContext(ctx, "CREATE UNIQUE INDEX test_value_unique ON fundamental.provider_fact(value)"); err != nil {
+		t.Fatal(err)
+	}
+	records := make([]domain.ProviderFinancialRecord, 129)
+	for i := range records {
+		v := float32(i + 1)
+		records[i] = domain.ProviderFinancialRecord{InstrumentID: 1, Provider: "tdx", ProviderCode: fmt.Sprintf("%06d", i+1), ReportPeriod: time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC), SourceFile: "gpcw20260630.zip", ArtifactID: 1, ProviderFields: []domain.ProviderFloat32{{Value: float64(v), Bits: math.Float32bits(v)}}}
+	}
+	records[128].ProviderFields = records[0].ProviderFields
+	if _, err = ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", "batch", records); err == nil {
+		t.Fatal("late constraint failure accepted")
+	}
+	var n int
+	if err = db.QueryRowContext(ctx, "SELECT count(*) FROM fundamental.provider_fact").Scan(&n); err != nil || n != 0 {
+		t.Fatal("partial transaction retained", n, err)
+	}
+	if _, err := db.ExecContext(ctx, "DROP INDEX fundamental.test_value_unique"); err != nil {
+		t.Fatal(err)
+	}
+	records[128].ProviderFields = []domain.ProviderFloat32{{Value: 129, Bits: math.Float32bits(129)}}
+	first, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", "batch", records)
+	if err != nil || first.Inserted != 129 {
+		t.Fatal(first, err)
+	}
+	if err := ReloadPersistentCatalog(ctx, db); err != nil {
+		t.Fatal(err)
+	}
+	replay, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", "batch", records)
+	if err != nil || replay.Inserted != 0 || replay.Removed != 0 {
+		t.Fatal(replay, err)
+	}
+	trimmed, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", "batch", records[:1])
+	if err != nil || trimmed.Removed != 128 {
+		t.Fatal(trimmed, err)
 	}
 }

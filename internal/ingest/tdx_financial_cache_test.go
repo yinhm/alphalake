@@ -103,3 +103,39 @@ func TestFinancialCacheOfflineStaleAndTamper(t *testing.T) {
 		t.Fatal("corrupt local cache accepted")
 	}
 }
+
+type noNetworkFinancialSource struct {
+	*fakeProfessionalFinancialSource
+}
+
+func (s *noNetworkFinancialSource) ProfessionalFinancialFileList(context.Context) ([]financial.FileEntry, []byte, error) {
+	panic("offline called manifest network")
+}
+func (s *noNetworkFinancialSource) ProfessionalFinancialPackage(context.Context, financial.FileEntry) ([]byte, error) {
+	panic("offline called package network")
+}
+func (s *noNetworkFinancialSource) InstrumentSnapshot(context.Context) (domain.InstrumentMasterSnapshot, error) {
+	panic("offline called identities network")
+}
+func TestFinancialOfflineNeverCallsNetwork(t *testing.T) {
+	ctx := context.Background()
+	root := t.TempDir()
+	db, err := store.OpenInitialized(ctx, filepath.Join(root, "main.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	seed := &fakeProfessionalFinancialSource{instruments: []domain.InstrumentObservation{{Instrument: domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "sample"}, Identifier: domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh600001"}}}, packageBytes: []byte("original"), recordCode: "600001"}
+	if _, err := SyncTDXProfessionalFinancial(ctx, db, seed, root); err != nil {
+		t.Fatal(err)
+	}
+	// A local revision can differ from the saved upstream manifest: record actual
+	// bytes, parse them, but never advance a checkpoint to the remote MD5.
+	if err := os.WriteFile(filepath.Join(root, "tdx-cache", "gpcw20260630.zip"), []byte("offline revision"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	result, err := SyncTDXProfessionalFinancialWithOptions(ctx, db, &noNetworkFinancialSource{seed}, root, TDXProfessionalFinancialOptions{Offline: true})
+	if err != nil || result.FactsInserted != 2 || result.CacheFallbacks != 2 {
+		t.Fatal(result, err)
+	}
+}

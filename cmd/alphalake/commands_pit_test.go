@@ -134,14 +134,21 @@ func TestFinancialPackageLimit(t *testing.T) {
 		args []string
 		want int
 	}{{nil, 1}, {[]string{"--all"}, 0}, {[]string{"--latest", "6"}, 6}} {
-		got, err := parseFinancialLimit(c.args)
+		got, _, err := parseFinancialLimit(c.args)
 		if err != nil || got != c.want {
 			t.Fatalf("%v: %d %v", c.args, got, err)
 		}
 	}
 	for _, args := range [][]string{{"--latest", "0"}, {"--latest", "-1"}, {"--all", "--latest", "1"}, {"oops"}} {
-		if _, err := parseFinancialLimit(args); err == nil {
+		if _, _, err := parseFinancialLimit(args); err == nil {
 			t.Fatalf("accepted %v", args)
 		}
+	}
+}
+
+func TestFinancialOfflineFlag(t *testing.T) {
+	limit, offline, err := parseFinancialLimit([]string{"--all", "--offline"})
+	if err != nil || limit != 0 || !offline {
+		t.Fatal(limit, offline, err)
 	}
 }

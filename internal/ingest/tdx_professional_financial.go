@@ -32,7 +32,8 @@ type TDXProfessionalFinancialSource interface {
 }
 
 type TDXProfessionalFinancialOptions struct {
-	MaxPackages int // zero means every listed package; positive processes newest N
+	Offline     bool // only existing local packages and identities; no network calls
+	MaxPackages int  // zero means every listed package; positive processes newest N
 	Now         func() time.Time
 	OnProgress  func(TDXProfessionalFinancialProgress)
 }
@@ -128,17 +129,34 @@ func SyncTDXProfessionalFinancialWithOptions(
 		finalizeTrackedRun(ctx, db, runID, professionalFinancialRunStatus(summary, retErr), &retErr)
 	}()
 
-	entries, manifestRaw, fallback, err := financialManifest(ctx, source, artifactRoot)
+	var entries []tdxfinancial.FileEntry
+	var manifestRaw []byte
+	var fallback bool
+	if options.Offline {
+		entries, manifestRaw, err = localFinancialManifest(artifactRoot)
+		fallback = err == nil
+	} else {
+		entries, manifestRaw, fallback, err = financialManifest(ctx, source, artifactRoot)
+	}
 	if err != nil && !fallback {
 		return summary, err
 	}
 	if fallback {
+		if options.Offline {
+			err = errors.New("explicit offline snapshot; upstream version not checked")
+		}
 		summary.CacheFallbacks++
 		if e := financialCacheDiagnostic(ctx, db, runID, "gpcw.txt", err); e != nil {
 			return summary, e
 		}
 	}
-	master, masterErr := refreshInstrumentMaster(ctx, db, runID, source)
+	var master InstrumentMasterRefreshResult
+	var masterErr error
+	if options.Offline {
+		masterErr = errors.New("explicit offline sync uses retained identities")
+	} else {
+		master, masterErr = refreshInstrumentMaster(ctx, db, runID, source)
+	}
 	if masterErr != nil {
 		var known int
 		if e := db.QueryRowContext(ctx, `SELECT count(*) FROM core.instrument_identifier WHERE provider='tdx'`).Scan(&known); e != nil {
@@ -182,6 +200,11 @@ func SyncTDXProfessionalFinancialWithOptions(
 	summary.Selected = len(entries)
 
 	for i, entry := range entries {
+		if i > 0 {
+			if err := duckstore.ReloadPersistentCatalog(ctx, db); err != nil {
+				return summary, err
+			}
+		}
 		if err := ctx.Err(); err != nil {
 			return summary, err
 		}
@@ -206,7 +229,11 @@ func SyncTDXProfessionalFinancialWithOptions(
 				entry = cachedEntry
 				err = nil
 			} else {
-				raw, err = source.ProfessionalFinancialPackage(ctx, entry)
+				if options.Offline {
+					err = fmt.Errorf("offline package unavailable: %s: %v", entry.Filename, cacheErr)
+				} else {
+					raw, err = source.ProfessionalFinancialPackage(ctx, entry)
+				}
 				if err == nil && (int64(len(raw)) != entry.Size || !md5Matches(raw, entry.MD5)) {
 					err = fmt.Errorf("download checksum/size mismatch: %s", entry.Filename)
 				}

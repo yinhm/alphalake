@@ -6,6 +6,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 
 	duckdbgo "github.com/duckdb/duckdb-go/v2"
@@ -81,6 +82,49 @@ func ReconcileProviderFinancialRecordsForArtifact(
 		_, _ = conn.ExecContext(context.Background(), `DROP TABLE IF EXISTS temp.main.`+providerFactStageTable)
 	}()
 
+	// Bound staging and merges by source code while retaining package atomicity.
+	// Codes absent from the new resolution remain covered by the open-ended ranges.
+	records = append([]domain.ProviderFinancialRecord(nil), records...)
+	sort.SliceStable(records, func(i, j int) bool { return records[i].ProviderCode < records[j].ProviderCode })
+	result = ProviderFactWriteResult{}
+	lower := ""
+	for start := 0; ; {
+		end := start + 128
+		if end > len(records) {
+			end = len(records)
+		}
+		for end < len(records) && records[end-1].ProviderCode == records[end].ProviderCode {
+			end++
+		}
+		upper := ""
+		if end < len(records) {
+			upper = records[end].ProviderCode
+		}
+		batch, err := reconcileProviderFinancialBatch(ctx, conn, ingestRunID, source, artifactSHA, records[start:end], lower, upper)
+		if err != nil {
+			return result, err
+		}
+		result.Attempted += batch.Attempted
+		result.Inserted += batch.Inserted
+		result.Reassigned += batch.Reassigned
+		result.Removed += batch.Removed
+		if end == len(records) {
+			break
+		}
+		start = end
+		lower = upper
+	}
+
+	if _, err := conn.ExecContext(ctx, `COMMIT`); err != nil {
+		return result, fmt.Errorf("commit provider-fact reconcile: %w", err)
+	}
+	committed = true
+	return result, nil
+}
+
+func reconcileProviderFinancialBatch(ctx context.Context, conn *sql.Conn, ingestRunID int64, source, artifactSHA string, records []domain.ProviderFinancialRecord, lower, upper string) (ProviderFactWriteResult, error) {
+	var result ProviderFactWriteResult
+
 	if _, err := conn.ExecContext(ctx, `
 		CREATE TEMP TABLE `+providerFactStageTable+` (
 			instrument_id BIGINT NOT NULL,
@@ -122,7 +166,7 @@ func ReconcileProviderFinancialRecordsForArtifact(
 
 	// Remove facts no longer resolved for this immutable artifact revision.
 	stalePredicate := `
-		p.source=? AND p.revision_key=? AND NOT EXISTS (
+		p.source=? AND p.revision_key=? AND p.provider_code>=? AND (?='' OR p.provider_code<?) AND NOT EXISTS (
 				SELECT 1 FROM temp.main.` + providerFactStageTable + ` s
 				WHERE s.source=p.source
 				  AND s.revision_key=p.revision_key
@@ -139,10 +183,10 @@ func ReconcileProviderFinancialRecordsForArtifact(
 	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM temp.main.`+providerFactStageTable).Scan(&result.Attempted); err != nil {
 		return result, err
 	}
-	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_fact p WHERE `+stalePredicate, source, artifactSHA).Scan(&result.Removed); err != nil {
+	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_fact p WHERE `+stalePredicate, source, artifactSHA, lower, upper, upper).Scan(&result.Removed); err != nil {
 		return result, fmt.Errorf("count stale provider financial facts: %w", err)
 	}
-	if _, err := conn.ExecContext(ctx, `DELETE FROM fundamental.provider_fact p WHERE `+stalePredicate, source, artifactSHA); err != nil {
+	if _, err := conn.ExecContext(ctx, `DELETE FROM fundamental.provider_fact p WHERE `+stalePredicate, source, artifactSHA, lower, upper, upper); err != nil {
 		return result, fmt.Errorf("remove stale provider financial facts: %w", err)
 	}
 
@@ -152,13 +196,13 @@ func ReconcileProviderFinancialRecordsForArtifact(
 			SELECT DISTINCT source, revision_key, provider_code, provider_field, instrument_id
 			FROM temp.main.`+providerFactStageTable+`
 		) s
-		JOIN fundamental.provider_fact p
+		JOIN (SELECT * FROM fundamental.provider_fact WHERE source=? AND revision_key=? AND provider_code>=? AND (?='' OR provider_code<?)) p
 		  ON p.source=s.source
 		 AND p.revision_key=s.revision_key
 		 AND p.provider_code=s.provider_code
 		 AND p.provider_field=s.provider_field
 		WHERE p.instrument_id<>s.instrument_id
-	`).Scan(&result.Reassigned); err != nil {
+	`, source, artifactSHA, lower, upper, upper).Scan(&result.Reassigned); err != nil {
 		return result, fmt.Errorf("count reassigned provider financial facts: %w", err)
 	}
 
@@ -170,12 +214,12 @@ func ReconcileProviderFinancialRecordsForArtifact(
 		) s
 		WHERE NOT EXISTS (
 			SELECT 1 FROM fundamental.provider_fact p
-			WHERE p.source=s.source
+			WHERE p.source=? AND p.revision_key=? AND p.provider_code>=? AND (?='' OR p.provider_code<?) AND p.source=s.source
 			  AND p.revision_key=s.revision_key
 			  AND p.provider_code=s.provider_code
 			  AND p.provider_field=s.provider_field
 		)
-	`).Scan(&result.Inserted); err != nil {
+	`, source, artifactSHA, lower, upper, upper).Scan(&result.Inserted); err != nil {
 		return result, fmt.Errorf("count new provider financial facts: %w", err)
 	}
 
@@ -210,10 +254,6 @@ func ReconcileProviderFinancialRecordsForArtifact(
 	if _, err := conn.ExecContext(ctx, `DROP TABLE temp.main.`+providerFactStageTable); err != nil {
 		return result, fmt.Errorf("drop provider-fact staging table: %w", err)
 	}
-	if _, err := conn.ExecContext(ctx, `COMMIT`); err != nil {
-		return result, fmt.Errorf("commit provider-fact reconcile: %w", err)
-	}
-	committed = true
 	return result, nil
 }
 

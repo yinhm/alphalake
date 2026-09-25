@@ -50,7 +50,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  calc-adjustments <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-classifications <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-industries <db-path>")
-	fmt.Fprintln(os.Stderr, "  sync-financial <db-path> [--all | --latest N]")
+	fmt.Fprintln(os.Stderr, "  sync-financial <db-path> [--all | --latest N] [--offline]")
 	fmt.Fprintln(os.Stderr, "  sync-filings <db-path> [--all] [--start YYYY-MM-DD] [--end YYYY-MM-DD] [--metadata-only] [--rescan] [--code 600519]")
 	fmt.Fprintln(os.Stderr, "  repair-filings <db-path> --period YYYY-MM-DD [--limit N]")
 	fmt.Fprintln(os.Stderr, "  materialize-fundamentals <db-path> [--field FN110]")
@@ -339,7 +339,7 @@ func main() {
 			usage()
 			os.Exit(2)
 		}
-		maxPackages, err := parseFinancialLimit(os.Args[3:])
+		maxPackages, offline, err := parseFinancialLimit(os.Args[3:])
 		if err != nil {
 			fatal(err)
 		}
@@ -362,6 +362,7 @@ func main() {
 		lastUnresolved := 0
 		options := ingest.TDXProfessionalFinancialOptions{
 			MaxPackages: maxPackages,
+			Offline:     offline,
 			OnProgress: func(p ingest.TDXProfessionalFinancialProgress) {
 				if p.Error != "" {
 					fmt.Fprintf(os.Stderr, "TDX financial package failed: run=%d package=%s error=%q\n", p.RunID, p.Package, p.Error)
