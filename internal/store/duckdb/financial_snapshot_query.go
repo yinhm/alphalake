@@ -1,0 +1,62 @@
+package duckdb
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"strings"
+)
+
+// InstallSnapshotQueries expands only the requested securities/report window.
+// Wide numeric columns remain the only persisted financial values.
+func InstallSnapshotQueries(ctx context.Context, db *sql.DB, fields []SnapshotField) error {
+	columns := make([]string, len(fields))
+	for i, f := range fields {
+		if !standardSnapshotName.MatchString(f.Name) {
+			return fmt.Errorf("invalid standard field name")
+		}
+		columns[i] = `"` + f.Name + `"`
+	}
+	_, err := db.ExecContext(ctx, `
+ CREATE TABLE fundamental.statement_field AS
+ SELECT m.* FROM fundamental.provider_field m JOIN fundamental.field f
+ ON f.canonical_field=m.canonical_field AND f.unit=m.unit AND f.value_kind=m.value_kind AND f.period_basis=m.period_basis;
+ CREATE MACRO fundamental.financial_observations(security_code,from_period,to_period,as_of_time) AS TABLE (
+ WITH selected AS (
+ SELECT s.*,r.provider_code,r.artifact_id,r.source_row,a.source AS primary_source,a.sha256 AS revision_key
+ FROM fundamental.statement_snapshot s JOIN fundamental.source_record r USING(source_record_id)
+ JOIN meta.artifact a USING(artifact_id)
+ WHERE (security_code IS NULL OR r.provider_code=security_code)
+ AND (from_period IS NULL OR s.report_period>=CAST(from_period AS DATE))
+ AND (to_period IS NULL OR s.report_period<=CAST(to_period AS DATE))
+ AND (as_of_time IS NULL OR s.announcement_time<=CAST(as_of_time AS TIMESTAMPTZ))
+ ), numeric_cells AS (
+ UNPIVOT selected ON `+strings.Join(columns, ",")+` INTO NAME canonical_field VALUE value
+ ), observations AS (
+ SELECT c.*,m.unit,m.period_basis,m.value_kind,m.provider_field AS source_provider_field,m.value_multiplier,
+ c.source_record_id*8192+CAST(substr(m.provider_field,3) AS BIGINT) AS fact_id,
+ CASE WHEN m.period_basis IN ('instant','opening_instant') THEN m.period_basis
+ WHEN m.period_basis='ttm' THEN 'TTM' WHEN m.period_basis='quarter' THEN 'Q'||CAST(quarter(c.report_period) AS VARCHAR)
+ WHEN m.period_basis='ytd' AND month(c.report_period)=9 THEN '9M'
+ WHEN month(c.report_period)=3 AND day(c.report_period)=31 THEN 'Q1'
+ WHEN month(c.report_period)=6 AND day(c.report_period)=30 THEN 'H1'
+ WHEN month(c.report_period)=9 AND day(c.report_period)=30 THEN 'Q3'
+ WHEN month(c.report_period)=12 AND day(c.report_period)=31 THEN 'FY' ELSE 'unknown' END AS period_type,
+ 'provider_default' AS statement_scope,
+ CASE WHEN m.value_kind IN ('monetary','per_share') THEN 'CNY' END AS currency,
+ 'tdx-float32-decimal-v4' AS normalization_rule,'pit-fundamental-v6' AS materializer_version
+ FROM numeric_cells c JOIN fundamental.statement_field m ON m.source=c.primary_source AND m.canonical_field=c.canonical_field
+ AND (m.valid_from IS NULL OR m.valid_from<=c.report_period) AND (m.valid_to IS NULL OR c.report_period<m.valid_to)
+ ) SELECT * FROM observations
+ );
+ CREATE MACRO fundamental.financial_observations_asof(security_code,from_period,to_period,as_of_time) AS TABLE (
+ SELECT * EXCLUDE(rank) FROM (
+ SELECT *,row_number() OVER(PARTITION BY instrument_id,canonical_field,report_period ORDER BY announcement_time DESC,fact_id DESC) AS rank
+ FROM fundamental.financial_observations(NULL,from_period,to_period,as_of_time)
+ WHERE security_code IS NULL OR instrument_id IN (
+ SELECT s.instrument_id FROM fundamental.statement_snapshot s
+ JOIN fundamental.source_record r USING(source_record_id) WHERE r.provider_code=security_code)
+ ) WHERE rank=1 AND (security_code IS NULL OR provider_code=security_code)
+ );`)
+	return err
+}
