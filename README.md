@@ -4,7 +4,7 @@
 
 当前无实际生产部署，已[清理本轮识别的旧版本兼容路径](docs/compatibility-cleanup-20260919.md)：仅维护当前契约与schema51，原始证据及冻结历史保留；新建库到标准输入及估值的回归验收通过。
 
-全字段财务物化已[限制中间工作集并保持事务原子性](docs/fundamental-memory-20260919.md)，实际主库在1GiB硬限额下完成全量及幂等重放；大任务须与交互终端隔离运行。
+历史验收曾在1GiB硬限额下完成[全字段物化及幂等重放](docs/fundamental-memory-20260919.md)，但后续历史扩量暴露了字段长表、索引与重复诊断的结构性成本。当前已暂停扩量，完成[存储实测与重设计规格](docs/financial-storage-redesign-20260925.md)：拟改为紧凑源记录、标准快照宽表及单进程批量导出；尚未实施，不能把限制内存等同于性能达标。大任务仍须与交互终端隔离运行。
 
 已提供[纯TDX标准财务导出SQLite](docs/valuation-sqlite-export.md)。原生接入纠偏已恢复原网页/请求并撤除专用界面，但原生估值数据仍未达标：当前6类目标定义待补，已补入来源报告EBIT/EBITDA（经营调整适用性另核），三家历史窗口也不完整；[字段契约与解决方案](docs/valuation-native-data-contract-20260924.md)已列明；先完成已授权的TDX接入，额外来源另议。当前返回明确缺项，不用原定制桥接的成功冒称兼容完成。
 
@@ -31,6 +31,8 @@ AlphaLake 是面向投资研究、本地优先且可复现的金融市场数据�
 - 以 TDX 专业财务数据作为主要结构化基本面来源
 - 以 CNINFO 公告作为权威校验与血缘来源
 - 以 DuckDB 作为标准分析存储
+
+本地已有缓存时可[直接离线同步财务](docs/tdx-offline-sync.md)：`./alphalake sync-financial workspace/alphalake.duckdb --offline --all`；标准物化及网页SQLite导出仍需分别执行。
 
 TDX 协议请求支持[自动换节点重试](docs/tdx-failover.md)：每个独立请求最多三台不同服务器，失败详情进入既有日志／采集记录。
 
