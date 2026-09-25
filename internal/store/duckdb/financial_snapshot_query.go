@@ -13,6 +13,10 @@ import (
 // Materialize only narrow headers before fetching numeric columns by the existing
 // record primary key; otherwise filtering can still decode every wide column.
 func InstallSnapshotQueries(ctx context.Context, db *sql.DB, fields []SnapshotField) error {
+	return installSnapshotQueries(ctx, db, fields)
+}
+
+func installSnapshotQueries(ctx context.Context, db snapshotDB, fields []SnapshotField) error {
 	columns := make([]string, len(fields))
 	wideColumns := make([]string, len(fields))
 	for i, f := range fields {
@@ -23,15 +27,16 @@ func InstallSnapshotQueries(ctx context.Context, db *sql.DB, fields []SnapshotFi
 		wideColumns[i] = "w." + columns[i]
 	}
 	_, err := db.ExecContext(ctx, `
- CREATE TABLE fundamental.statement_field AS
+ CREATE OR REPLACE TABLE fundamental.statement_field AS
  SELECT m.* FROM fundamental.provider_field m JOIN fundamental.field f
  ON f.canonical_field=m.canonical_field AND f.unit=m.unit AND f.value_kind=m.value_kind AND f.period_basis=m.period_basis;
- CREATE MACRO fundamental.financial_observations(security_code,from_period,to_period,as_of_time) AS TABLE (
+ CREATE OR REPLACE MACRO fundamental.financial_observations(security_code,from_period,to_period,as_of_time,min_instrument_id := NULL,max_instrument_id := NULL) AS TABLE (
  WITH headers AS MATERIALIZED (
  SELECT s.source_record_id,s.instrument_id,s.source_filing_id,s.report_period,s.announcement_time,s.ingest_run_id,r.provider_code,r.artifact_id,r.source_row,a.source AS primary_source,a.sha256 AS revision_key
  FROM fundamental.statement_snapshot s JOIN fundamental.source_record r USING(source_record_id)
  JOIN meta.artifact a USING(artifact_id)
- WHERE (security_code IS NULL OR s.instrument_id IN (
+ WHERE (min_instrument_id IS NULL OR s.instrument_id>=min_instrument_id) AND (max_instrument_id IS NULL OR s.instrument_id<=max_instrument_id)
+ AND (security_code IS NULL OR s.instrument_id IN (
  SELECT candidate.instrument_id FROM fundamental.statement_snapshot candidate
  JOIN fundamental.source_record locator USING(source_record_id) WHERE locator.provider_code=security_code))
  AND (from_period IS NULL OR s.report_period>=CAST(from_period AS DATE))
@@ -43,7 +48,7 @@ func InstallSnapshotQueries(ctx context.Context, db *sql.DB, fields []SnapshotFi
  ), numeric_cells AS (
  UNPIVOT selected ON `+strings.Join(columns, ",")+` INTO NAME canonical_field VALUE value
  ), observations AS (
- SELECT c.*,m.unit,m.period_basis,m.value_kind,m.provider_field AS source_provider_field,m.value_multiplier,
+ SELECT c.* EXCLUDE(ingest_run_id),coalesce(l.ingest_run_id,c.ingest_run_id) AS ingest_run_id,m.unit,m.period_basis,m.value_kind,m.provider_field AS source_provider_field,m.value_multiplier,
  c.source_record_id*8192+CAST(substr(m.provider_field,3) AS BIGINT) AS fact_id,
  CASE WHEN m.period_basis IN ('instant','opening_instant') THEN m.period_basis
  WHEN m.period_basis='ttm' THEN 'TTM' WHEN m.period_basis='quarter' THEN 'Q'||CAST(quarter(c.report_period) AS VARCHAR)
@@ -55,15 +60,20 @@ func InstallSnapshotQueries(ctx context.Context, db *sql.DB, fields []SnapshotFi
  'provider_default' AS statement_scope,
  CASE WHEN m.value_kind IN ('monetary','per_share') THEN 'CNY' END AS currency,
  'tdx-float32-decimal-v4' AS normalization_rule,'pit-fundamental-v6' AS materializer_version
- FROM numeric_cells c JOIN fundamental.statement_field m ON m.source=c.primary_source AND m.canonical_field=c.canonical_field
+ FROM numeric_cells c LEFT JOIN fundamental.statement_field_run l ON l.source_record_id=c.source_record_id AND l.canonical_field=c.canonical_field
+ JOIN fundamental.statement_field m ON m.source=c.primary_source AND m.canonical_field=c.canonical_field
  AND (m.valid_from IS NULL OR m.valid_from<=c.report_period) AND (m.valid_to IS NULL OR c.report_period<m.valid_to)
  ) SELECT * FROM observations
  );
- CREATE MACRO fundamental.financial_observations_asof(security_code,from_period,to_period,as_of_time) AS TABLE (
+ CREATE OR REPLACE MACRO fundamental.financial_observations_asof(security_code,from_period,to_period,as_of_time,min_instrument_id := NULL,max_instrument_id := NULL) AS TABLE (
  SELECT * EXCLUDE(rank) FROM (
  SELECT *,row_number() OVER(PARTITION BY instrument_id,canonical_field,report_period ORDER BY announcement_time DESC,fact_id DESC) AS rank
- FROM fundamental.financial_observations(security_code,from_period,to_period,as_of_time)
+ FROM fundamental.financial_observations(security_code,from_period,to_period,as_of_time,min_instrument_id := min_instrument_id,max_instrument_id := max_instrument_id)
  ) WHERE rank=1 AND (security_code IS NULL OR provider_code=security_code)
  );`)
+	if err != nil {
+		return err
+	}
+	_, err = db.ExecContext(ctx, financialQueriesSQL)
 	return err
 }

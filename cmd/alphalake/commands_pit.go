@@ -22,16 +22,6 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return false, nil
 	}
 	switch args[0] {
-	case "upgrade-financial-catalog":
-		if len(args) != 2 {
-			return true, fmt.Errorf("usage: alphalake upgrade-financial-catalog <backed-up-schema50-db>")
-		}
-		db, err := duckstore.Open(ctx, args[1])
-		if err != nil {
-			return true, err
-		}
-		defer db.Close()
-		return true, duckstore.UpgradeFinancialCatalog(ctx, db)
 	case "financial-statements":
 		return true, runFinancialStatements(ctx, args)
 	case "tdx-financial-fields", "export-financial-source":

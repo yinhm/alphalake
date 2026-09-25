@@ -44,14 +44,14 @@ func TestRealAnkerReceivablesHistory(t *testing.T) {
 	var value float64
 	var bits uint32
 	var basis, unit string
-	check(db.QueryRowContext(ctx, `SELECT f.value,p.value_float32_bits,f.period_type,f.unit FROM fundamental.fact f JOIN fundamental.provider_fact p ON p.provider_fact_id=f.provider_fact_id WHERE f.provider_code='300866' AND f.report_period=DATE '2024-12-31' AND f.source_provider_field='FN13'`).Scan(&value, &bits, &basis, &unit))
+	check(sourceEvidenceDB(t, ctx, db).QueryRowContext(ctx, `SELECT f.value,p.value_float32_bits,f.period_type,f.unit FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) f JOIN _source_evidence p ON p.provider_fact_id=f.fact_id WHERE f.provider_code='300866' AND f.report_period=DATE '2024-12-31' AND f.source_provider_field='FN13'`).Scan(&value, &bits, &basis, &unit))
 	if bits != math.Float32bits(float32(126612165.92)) || value != 126612168 || basis != "instant" || unit != "CNY" {
 		t.Fatalf("wrong net amount %v %v %s %s", value, bits, basis, unit)
 	}
 	at := time.Date(2025, 4, 29, 16, 0, 0, 0, time.UTC)
 	for _, delta := range []time.Duration{-time.Nanosecond, 0} {
 		var n int
-		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact_asof(?) WHERE provider_code='300866' AND source_provider_field='FN13' AND report_period=DATE '2024-12-31'`, at.Add(delta)).Scan(&n))
+		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,?) WHERE provider_code='300866' AND source_provider_field='FN13' AND report_period=DATE '2024-12-31'`, at.Add(delta)).Scan(&n))
 		want := 1
 		if delta < 0 {
 			want = 0

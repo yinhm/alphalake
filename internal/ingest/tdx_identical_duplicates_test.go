@@ -40,13 +40,14 @@ func TestRealIdenticalFinancialDuplicatesPreserveRawAndReplay(t *testing.T) {
 		t.Fatalf("raw records=%d %v", len(rows), err)
 	}
 	root := filepath.Join(t.TempDir(), "raw")
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	options := TDXProfessionalFinancialOptions{MaxPackages: 1, Now: func() time.Time { return time.Date(2026, 9, 9, 0, 0, 0, 0, time.UTC) }}
 	result, err := SyncTDXProfessionalFinancialWithOptions(ctx, db, source, root, options)
-	if err != nil || result.FactsInserted != 3*584 || result.Unresolved != 0 {
+	if err != nil || result.RecordsInserted != 3 || result.Unresolved != 0 {
 		t.Fatalf("%+v %v", result, err)
 	}
 	result, err = SyncTDXProfessionalFinancialWithOptions(ctx, db, source, root, options)
-	if err != nil || result.FactsInserted != 0 || source.packageCalls != 1 {
+	if err != nil || result.RecordsInserted != 0 || source.packageCalls != 1 {
 		t.Fatalf("replay %+v calls=%d %v", result, source.packageCalls, err)
 	}
 	for _, marker := range []bool{false, true} {

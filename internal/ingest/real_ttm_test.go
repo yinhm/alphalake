@@ -35,6 +35,7 @@ func TestRealSixQuarterWindows(t *testing.T) {
 	defer db.Close()
 	keepFrozenFinancialFieldScope(t, db)
 	root := filepath.Join(t.TempDir(), "raw")
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	var instruments []domain.InstrumentObservation
 	check(json.Unmarshal(readAnnualSample(t, "instruments.json"), &instruments))
 	_, err = duckstore.UpsertInstruments(ctx, db, instruments)
@@ -105,7 +106,7 @@ func TestRealSixQuarterWindows(t *testing.T) {
 		if len(resolved) != 2 {
 			t.Fatal("unresolved sample identities")
 		}
-		_, err = duckstore.ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", stored.SHA256, resolved)
+		_, err = duckstore.ReconcileFinancialSourceRecords(ctx, db, run, "tdx", stored.SHA256, resolved)
 		check(err)
 	}
 	check(duckstore.FinishIngestRun(ctx, db, run, duckstore.IngestRunCompleted, nil, nil))

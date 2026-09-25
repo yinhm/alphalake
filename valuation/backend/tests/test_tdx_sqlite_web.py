@@ -29,12 +29,8 @@ def snapshot(path, payload):
         data['report_period'] = end.isoformat()
         data['facts'] = [r for r in data['facts'] if end.year-1 <= int(r['period'][:4]) and r['period'] <= end.isoformat()]
         return data
-    def statements(code, end):
-        # 三表JSON只作为本测试展示夹具；真实主库验收另行查询Go financial-statements。
-        return dict(contract_version='alphalake-financial-statements-v1', code=code,
-                    report_period=end.isoformat(), information_as_of=asof.isoformat(), statements={})
     with sqlite3.connect(path) as conn:
-        export_snapshot(conn, [company], fetch, period, asof, years=1, quarters=1, fetch_statements=statements)
+        export_snapshot(conn, [company], fetch, period, asof, years=1, quarters=1)
         conn.executemany('INSERT INTO metadata VALUES(?,?)', [('report_period', period.isoformat()),
             ('information_as_of', asof.isoformat()), ('source_database_sha256', 'fixture')])
 

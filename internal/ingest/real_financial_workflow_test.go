@@ -39,6 +39,7 @@ func TestRealFinancialWorkflow(t *testing.T) {
 	defer func() { db.Close() }()
 	keepFrozenFinancialFieldScope(t, db)
 	root := filepath.Join(t.TempDir(), "raw")
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	count := func(query string, want int) {
 		t.Helper()
 		var got int
@@ -179,19 +180,19 @@ func TestRealFinancialWorkflow(t *testing.T) {
 	if len(resolved) != 6 || resolution.Pending != 0 {
 		t.Fatalf("financial identity resolution: %+v", resolution)
 	}
-	first, err := duckstore.ReconcileProviderFinancialRecordsForArtifact(ctx, db, runID, "tdx", stored.SHA256, resolved)
+	first, err := duckstore.ReconcileFinancialSourceRecords(ctx, db, runID, "tdx", stored.SHA256, resolved)
 	check(err)
-	if first.Inserted != 3504 {
+	if first.Inserted != 6 {
 		t.Fatalf("provider facts: %+v", first)
 	}
-	second, err := duckstore.ReconcileProviderFinancialRecordsForArtifact(ctx, db, runID, "tdx", stored.SHA256, resolved)
+	second, err := duckstore.ReconcileFinancialSourceRecords(ctx, db, runID, "tdx", stored.SHA256, resolved)
 	check(err)
 	if second.Inserted != 0 || second.Reassigned != 0 || second.Removed != 0 {
 		t.Fatalf("non-idempotent provider replay: %+v", second)
 	}
 	check(duckstore.FinishIngestRun(ctx, db, runID, duckstore.IngestRunCompleted, nil, nil))
 	count("SELECT count(*) FROM meta.checkpoint WHERE source='tdx'", 0)
-	count("SELECT count(*) FROM fundamental.provider_fact WHERE announcement_time IS NULL", 3504)
+	count("SELECT sum(field_count) FROM fundamental.source_record", 3504)
 	materialized, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
 	if materialized.Inserted != 397 || materialized.Linked != 6 || materialized.Rejected != 83 || materialized.LinkPending != 0 || materialized.LinkAmbiguous != 0 {
@@ -201,7 +202,7 @@ func TestRealFinancialWorkflow(t *testing.T) {
 		var value float64
 		var period, unit, filingID string
 		check(db.QueryRowContext(ctx, `SELECT cast(f.value AS DOUBLE), f.period_type, f.unit, a.source_filing_id
-			FROM fundamental.fact f JOIN fundamental.filing a ON a.filing_id=f.source_filing_id
+			FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) f JOIN fundamental.filing a ON a.filing_id=f.source_filing_id
 			WHERE f.provider_code=? AND f.source_provider_field=? AND f.report_period=cast(? AS DATE)`, row[0], row[1], row[2]).Scan(&value, &period, &unit, &filingID))
 		want, err := strconv.ParseFloat(row[5], 32)
 		check(err)
@@ -209,18 +210,18 @@ func TestRealFinancialWorkflow(t *testing.T) {
 			t.Fatalf("%s/%s: value=%v period=%s unit=%s filing=%s", row[0], row[1], value, period, unit, filingID)
 		}
 	}
-	count("SELECT count(*) FROM fundamental.fact WHERE source_provider_field<>'FN238' AND period_type='Q4' AND unit='CNY'", 48)
-	count("SELECT count(*) FROM fundamental.fact WHERE source_provider_field='FN238' AND period_type='instant' AND unit='share'", 6)
-	count("SELECT count(*) FROM fundamental.fact WHERE period_type='instant' AND unit='CNY'", 201)
-	count("SELECT count(*) FROM fundamental.fact WHERE period_type='FY' AND unit='CNY'", 142)
-	count("SELECT count(*) FROM fundamental.fact WHERE provider_code='603659' AND canonical_field='bonds_payable' AND period_type='instant' AND value=199443184 AND unit='CNY'", 1)
-	count("SELECT count(*) FROM fundamental.fact_asof(TIMESTAMPTZ '2026-03-06 15:59:59+00')", 0)
-	count("SELECT count(*) FROM fundamental.fact_asof(TIMESTAMPTZ '2026-03-06 16:00:00+00')", 397)
+	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE source_provider_field<>'FN238' AND period_type='Q4' AND unit='CNY'", 48)
+	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE source_provider_field='FN238' AND period_type='instant' AND unit='share'", 6)
+	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE period_type='instant' AND unit='CNY'", 201)
+	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE period_type='FY' AND unit='CNY'", 142)
+	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='603659' AND canonical_field='bonds_payable' AND period_type='instant' AND value=199443184 AND unit='CNY'", 1)
+	count("SELECT count(*) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,TIMESTAMPTZ '2026-03-06 15:59:59+00')", 0)
+	count("SELECT count(*) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,TIMESTAMPTZ '2026-03-06 16:00:00+00')", 397)
 	again, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
 	if again.Inserted != 0 || again.Updated != 0 || again.Removed != 0 || again.Rejected != 83 {
 		t.Fatalf("non-idempotent materialization: %+v", again)
 	}
-	count("SELECT count(*) FROM fundamental.fact", 397)
+	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL)", 397)
 	t.Logf("真实样本验收通过：公告=12，目录页=3，正文=%d，源事实=3504，标准事实=305，独立金额=16；失败恢复、幂等及 PIT 边界通过", len(documents))
 }

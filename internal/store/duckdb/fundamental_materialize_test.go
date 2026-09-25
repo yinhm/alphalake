@@ -3,357 +3,209 @@ package duckdb
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"math"
+	"github.com/yinhm/alphalake/internal/domain"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
-
-	"github.com/yinhm/alphalake/internal/domain"
 )
 
-func TestMaterializeCanonicalFundamentalsNoLookAheadAndCorrection(t *testing.T) {
-	ctx := context.Background()
-	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "pit-fundamental.duckdb"))
-	if err != nil {
-		t.Fatal(err)
+func linkedFinancialFixture(t *testing.T) (*sql.DB, domain.ProviderFinancialRecord, string, string) {
+	t.Helper()
+	ctx := t.Context()
+	db, e := OpenInitialized(ctx, filepath.Join(t.TempDir(), "financial.duckdb"))
+	if e != nil {
+		t.Fatal(e)
 	}
-	defer db.Close()
-
-	instrumentID, err := UpsertInstrument(ctx, db,
-		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHE", Currency: "CNY", Name: "平安银行"},
-		domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sz000001"},
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Cleanup(func() { db.Close() })
 	period := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
-	originalTime := time.Date(2026, 3, 28, 10, 0, 0, 0, time.UTC)
-	correctionTime := time.Date(2026, 5, 10, 9, 0, 0, 0, time.UTC)
-	filings := []domain.FilingObservation{
-		{
-			InstrumentID: instrumentID, Source: "cninfo", SourceFilingID: "original", ProviderCode: "000001", ExchangeMIC: "XSHE",
-			Title: "2025年年度报告", FilingType: domain.FilingTypeAnnual, FilingVariant: domain.FilingVariantFull,
-			ReportPeriod: &period, AnnouncementTime: originalTime, ClassifierVersion: "test", ResolutionStatus: domain.FilingResolutionResolved,
-		},
-		{
-			InstrumentID: instrumentID, Source: "cninfo", SourceFilingID: "correction", ProviderCode: "000001", ExchangeMIC: "XSHE",
-			Title: "2025年年度报告（更正后）", FilingType: domain.FilingTypeAnnual, FilingVariant: domain.FilingVariantCorrectedReport,
-			ReportPeriod: &period, AnnouncementTime: correctionTime, ClassifierVersion: "test", ResolutionStatus: domain.FilingResolutionResolved, IsCorrection: true,
-		},
+	if _, e = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE provider_field NOT IN('FN230','FN439','FN581')`); e != nil {
+		t.Fatal(e)
 	}
-	if _, err := UpsertFilings(ctx, db, 1, filings); err != nil {
-		t.Fatal(err)
+	r, sha, path := archiveFinancialFixture(t, ctx, db, "300866", 1, period, map[int]float32{230: 100, 439: 309.8})
+	if _, e = ReconcileFinancialSourceRecords(ctx, db, 1, "tdx", sha, []domain.ProviderFinancialRecord{r}); e != nil {
+		t.Fatal(e)
 	}
+	_, e = db.ExecContext(ctx, `INSERT INTO fundamental.filing(filing_id,instrument_id,source,source_filing_id,provider_code,report_period,announcement_time,filing_type,filing_variant,resolution_status) VALUES(1,1,'cninfo','annual','300866','2025-12-31','2026-03-01','annual','full','resolved')`)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = RefreshProviderFilingLinks(ctx, db, 1, "tdx"); e != nil {
+		t.Fatal(e)
+	}
+	return db, r, sha, path
+}
 
-	artifactA := insertTestArtifact(t, ctx, db, "annual-rev-a", time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC))
-	artifactB := insertTestArtifact(t, ctx, db, "annual-rev-b", time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC))
-	insertMappedProviderFact(t, ctx, db, artifactA, instrumentID, "annual-rev-a", "000001", "FN230", period, 100)
-	insertMappedProviderFact(t, ctx, db, artifactB, instrumentID, "annual-rev-b", "000001", "FN230", period, 110)
-	// Unreviewed provider fields remain provider evidence but never silently enter
-	// the canonical fact layer.
-	insertMappedProviderFact(t, ctx, db, artifactB, instrumentID, "annual-rev-b", "000001", "FN999", period, 999)
-
-	links, err := RefreshProviderFilingLinks(ctx, db, 7, "tdx")
-	if err != nil {
-		t.Fatal(err)
+func TestMaterializeCanonicalFundamentalsNoLookAheadAndCorrection(t *testing.T) {
+	db, _, _, _ := linkedFinancialFixture(t)
+	ctx := t.Context()
+	first, e := MaterializeCanonicalFundamentals(ctx, db, 2, "tdx")
+	if e != nil || first.Materialized != 2 || first.Inserted != 2 || first.Rejected == 0 {
+		t.Fatal(first, e)
 	}
-	if links.Records != 2 || links.Linked != 2 {
-		t.Fatalf("links=%#v", links)
+	for _, tc := range []struct {
+		at string
+		n  int
+	}{{"2026-02-28T23:59:59Z", 0}, {"2026-03-01T00:00:00Z", 2}} {
+		var n int
+		e = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations_asof('300866',NULL,NULL,?)`, tc.at).Scan(&n)
+		if e != nil || n != tc.n {
+			t.Fatal(n, e)
+		}
 	}
-	result, err := MaterializeCanonicalFundamentals(ctx, db, 8, "tdx")
-	if err != nil {
-		t.Fatal(err)
+	replay, e := MaterializeCanonicalFundamentals(ctx, db, 3, "tdx")
+	if e != nil || (replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 || replay.Materialized != 2) {
+		t.Fatal(replay, e)
 	}
-	if result.Candidates != 2 || result.Materialized != 2 || result.Inserted != 2 || result.Updated != 0 || result.Removed != 0 || result.Rejected != 0 {
-		t.Fatalf("materialize=%#v", result)
+	var run int
+	if e = db.QueryRowContext(ctx, `SELECT ingest_run_id FROM fundamental.statement_snapshot`).Scan(&run); e != nil || run != 2 {
+		t.Fatal(run, e)
 	}
-
-	assertAsOfRevenue(t, ctx, db, instrumentID, period, time.Date(2026, 3, 28, 9, 59, 59, 0, time.UTC), false, 0)
-	assertAsOfRevenue(t, ctx, db, instrumentID, period, time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC), true, 100)
-	assertAsOfRevenue(t, ctx, db, instrumentID, period, time.Date(2026, 5, 10, 8, 59, 59, 0, time.UTC), true, 100)
-	assertAsOfRevenue(t, ctx, db, instrumentID, period, time.Date(2026, 5, 10, 9, 0, 0, 0, time.UTC), true, 110)
-
-	var latest float64
-	var filingID int64
-	if err := db.QueryRowContext(ctx, `
-		SELECT cast(value AS DOUBLE), source_filing_id
-		FROM fundamental.fact_latest
-		WHERE instrument_id=? AND canonical_field='revenue' AND report_period=?
-	`, instrumentID, period).Scan(&latest, &filingID); err != nil {
-		t.Fatal(err)
+	if _, e = db.ExecContext(ctx, `UPDATE fundamental.filing SET announcement_time='2026-03-02'`); e != nil {
+		t.Fatal(e)
 	}
-	if latest != 110 || filingID <= 0 {
-		t.Fatalf("latest value/filing=%v/%d", latest, filingID)
+	changed, e := MaterializeCanonicalFundamentals(ctx, db, 4, "tdx")
+	if e != nil || changed.Updated != 2 {
+		t.Fatal(changed, e)
 	}
-
-	replay, err := MaterializeCanonicalFundamentals(ctx, db, 9, "tdx")
-	if err != nil {
-		t.Fatal(err)
+	var n int
+	e = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations_asof('300866',NULL,NULL,'2026-03-01')`).Scan(&n)
+	if e != nil || n != 0 {
+		t.Fatal(n, e)
 	}
-	if replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 || replay.Materialized != 2 {
-		t.Fatalf("replay=%#v", replay)
-	}
-	var replayWrites int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE ingest_run_id <> 8`).Scan(&replayWrites); err != nil {
-		t.Fatal(err)
-	}
-	if replayWrites != 0 {
-		t.Fatalf("unchanged replay rewrote %d facts", replayWrites)
-	}
-	var canonicalRows, unreviewedRows int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact`).Scan(&canonicalRows); err != nil {
-		t.Fatal(err)
-	}
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE source_provider_field='FN999'`).Scan(&unreviewedRows); err != nil {
-		t.Fatal(err)
-	}
-	if canonicalRows != 2 || unreviewedRows != 0 {
-		t.Fatalf("canonical/unreviewed rows=%d/%d", canonicalRows, unreviewedRows)
-	}
-	if _, err := db.ExecContext(ctx, `CREATE TEMP TABLE incremental_before AS SELECT * FROM fundamental.fact`); err != nil {
-		t.Fatal(err)
-	}
-	insertMappedProviderFact(t, ctx, db, artifactB, instrumentID, "annual-rev-b", "000001", "FN234", period, 220)
-	added, err := MaterializeCanonicalFundamentals(ctx, db, 10, "tdx")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if added.Inserted != 1 || added.Updated != 0 || added.Removed != 0 {
-		t.Fatalf("incremental insert %+v", added)
-	}
-	if _, err := db.ExecContext(ctx, `UPDATE fundamental.fact SET value=1 WHERE source_provider_field='FN234'`); err != nil {
-		t.Fatal(err)
-	}
-	repaired, err := MaterializeCanonicalFundamentals(ctx, db, 11, "tdx")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if repaired.Inserted != 0 || repaired.Updated != 1 || repaired.Removed != 0 {
-		t.Fatalf("incremental repair %+v", repaired)
-	}
-	var changed int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM incremental_before EXCEPT SELECT * FROM fundamental.fact)`).Scan(&changed); err != nil {
-		t.Fatal(err)
-	}
-	if changed != 0 {
-		t.Fatalf("incremental insert/repair rewrote %d unchanged facts including run provenance", changed)
-	}
-
 }
 
 func TestMaterializeCanonicalFundamentalsRejectsInvalidAndRemovesStale(t *testing.T) {
-	ctx := context.Background()
-	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "pit-reject.duckdb"))
-	if err != nil {
-		t.Fatal(err)
+	db, _, _, path := linkedFinancialFixture(t)
+	ctx := t.Context()
+	if _, e := MaterializeCanonicalFundamentals(ctx, db, 2, "tdx"); e != nil {
+		t.Fatal(e)
 	}
-	defer db.Close()
-	instrumentID, err := UpsertInstrument(ctx, db,
-		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Test"},
-		domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh600001"},
-	)
-	if err != nil {
-		t.Fatal(err)
+	for _, tc := range []struct {
+		mult              int
+		removed, inserted int
+	}{{-1, 1, 0}, {10000, 0, 1}} {
+		if _, e := db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=? WHERE canonical_field='lease_liabilities'`, tc.mult); e != nil {
+			t.Fatal(e)
+		}
+		out, e := MaterializeCanonicalFundamentals(ctx, db, 3, "tdx")
+		if e != nil || out.Removed != tc.removed || out.Inserted != tc.inserted {
+			t.Fatal(out, e)
+		}
 	}
-	period := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
-	announcement := time.Date(2026, 3, 28, 10, 0, 0, 0, time.UTC)
-	filing := domain.FilingObservation{
-		InstrumentID: instrumentID, Source: "cninfo", SourceFilingID: "annual", ProviderCode: "600001", ExchangeMIC: "XSHG",
-		Title: "2025年年度报告", FilingType: domain.FilingTypeAnnual, FilingVariant: domain.FilingVariantFull,
-		ReportPeriod: &period, AnnouncementTime: announcement, ClassifierVersion: "test", ResolutionStatus: domain.FilingResolutionResolved,
+	if _, e := db.ExecContext(ctx, `UPDATE fundamental.provider_filing_link SET status='pending',filing_id=NULL`); e != nil {
+		t.Fatal(e)
 	}
-	if _, err := UpsertFilings(ctx, db, 1, []domain.FilingObservation{filing}); err != nil {
-		t.Fatal(err)
+	out, e := MaterializeCanonicalFundamentals(ctx, db, 4, "tdx")
+	if e != nil || out.Removed != 2 {
+		t.Fatal(out, e)
 	}
-	artifactID := insertTestArtifact(t, ctx, db, "reject-rev", time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC))
-	insertMappedProviderFact(t, ctx, db, artifactID, instrumentID, "reject-rev", "600001", "FN230", period, 100)
-	if _, err := RefreshProviderFilingLinks(ctx, db, 2, "tdx"); err != nil {
-		t.Fatal(err)
+	if _, e = RefreshProviderFilingLinks(ctx, db, 5, "tdx"); e != nil {
+		t.Fatal(e)
 	}
-	if _, err := MaterializeCanonicalFundamentals(ctx, db, 3, "tdx"); err != nil {
-		t.Fatal(err)
+	if e = os.WriteFile(path, []byte("tampered"), 0600); e != nil {
+		t.Fatal(e)
 	}
+	if _, e = MaterializeCanonicalFundamentals(ctx, db, 6, "tdx"); e == nil {
+		t.Fatal("tampered source accepted")
+	}
+}
 
-	// Obsolete version labels do not exempt unsupported facts from invalidation.
-	if _, err := db.ExecContext(ctx, `UPDATE fundamental.fact SET materializer_version='legacy'`); err != nil {
-		t.Fatal(err)
+func TestMaterializeSingleQuarterFlowsAndRepairLegacyPeriods(t *testing.T) {
+	db, _, _, _ := linkedFinancialFixture(t)
+	ctx := t.Context()
+	if _, e := MaterializeCanonicalFundamentals(ctx, db, 2, "tdx"); e != nil {
+		t.Fatal(e)
 	}
-	// Provider records are immutable in normal operation; this mutation simulates
-	// parser/catalogue correction turning a formerly materializable raw value into
-	// unavailable evidence. Reconciliation must remove the stale canonical row.
-	if _, err := db.ExecContext(ctx, `UPDATE fundamental.provider_fact SET value=? WHERE revision_key='reject-rev' AND provider_field='FN230'`, math.NaN()); err != nil {
-		t.Fatal(err)
+	var period string
+	var value string
+	e := db.QueryRowContext(ctx, `SELECT period_type,CAST(value AS VARCHAR) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE canonical_field='revenue'`).Scan(&period, &value)
+	if e != nil || period != "Q4" || value != "100.0000000000" {
+		t.Fatal(period, value, e)
 	}
-	result, err := MaterializeCanonicalFundamentals(ctx, db, 4, "tdx")
-	if err != nil {
-		t.Fatal(err)
+	e = db.QueryRowContext(ctx, `SELECT CAST(value AS VARCHAR) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE canonical_field='lease_liabilities'`).Scan(&value)
+	if e != nil || value != "3097999.8779296875" {
+		t.Fatal(value, e)
 	}
-	if result.Candidates != 1 || result.Rejected != 1 || result.Materialized != 0 || result.Removed != 1 {
-		t.Fatalf("reject result=%#v", result)
+}
+
+func TestMaterializationRequiresCurrentStandardCatalogue(t *testing.T) {
+	db, _, _, _ := linkedFinancialFixture(t)
+	ctx := t.Context()
+	if _, e := MaterializeCanonicalFundamentals(ctx, db, 2, "tdx"); e != nil {
+		t.Fatal(e)
 	}
-	var facts, diagnostics int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact`).Scan(&facts); err != nil {
-		t.Fatal(err)
+	if _, e := db.ExecContext(ctx, `UPDATE fundamental.field SET unit='USD' WHERE canonical_field='revenue'`); e != nil {
+		t.Fatal(e)
 	}
-	if err := db.QueryRowContext(ctx, `
-		SELECT count(*) FROM meta.validation_result
-		WHERE ingest_run_id=4 AND rule_code='provider_value_not_finite' AND passed=false
-	`).Scan(&diagnostics); err != nil {
-		t.Fatal(err)
+	out, e := MaterializeCanonicalFundamentals(ctx, db, 3, "tdx")
+	if e != nil || out.Removed != 1 {
+		t.Fatal(out, e)
 	}
-	if facts != 0 || diagnostics != 1 {
-		t.Fatalf("facts/diagnostics=%d/%d", facts, diagnostics)
+	if _, e = db.ExecContext(ctx, `INSERT INTO fundamental.provider_field SELECT * REPLACE(DATE '2025-01-01' AS valid_from) FROM fundamental.provider_field WHERE canonical_field='revenue'`); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = MaterializeCanonicalFundamentals(ctx, db, 4, "tdx"); e == nil {
+		t.Fatal("overlapping source mappings accepted")
 	}
 }
 
 func assertAsOfRevenue(t *testing.T, ctx context.Context, db *sql.DB, instrumentID int64, period, asOf time.Time, want bool, wantValue float64) {
 	t.Helper()
 	var value float64
-	err := db.QueryRowContext(ctx, `
-		SELECT cast(value AS DOUBLE)
-		FROM fundamental.fact_asof(?)
-		WHERE instrument_id=? AND canonical_field='revenue' AND report_period=?
-	`, asOf, instrumentID, period).Scan(&value)
+	e := db.QueryRowContext(ctx, `SELECT CAST(value AS DOUBLE) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,?) WHERE instrument_id=? AND canonical_field='revenue' AND report_period=?`, asOf, instrumentID, period).Scan(&value)
 	if !want {
-		if err != sql.ErrNoRows {
-			t.Fatalf("asof %s error=%v, want no rows", asOf, err)
+		if e != sql.ErrNoRows {
+			t.Fatal(e)
 		}
 		return
 	}
-	if err != nil {
-		t.Fatalf("asof %s: %v", asOf, err)
-	}
-	if value != wantValue {
-		t.Fatalf("asof %s value=%v, want %v", asOf, value, wantValue)
+	if e != nil || value != wantValue {
+		t.Fatal(value, e)
 	}
 }
 
-func insertMappedProviderFact(t *testing.T, ctx context.Context, db *sql.DB, artifactID, instrumentID int64, revision, code, field string, period time.Time, value float64) {
-	t.Helper()
-	if _, err := db.ExecContext(ctx, `
-		INSERT INTO fundamental.provider_fact (
-			instrument_id, source, report_period, provider_code, provider_field,
-			value, value_float32_bits, artifact_id, revision_key
-		) VALUES (?, 'tdx', ?, ?, ?, ?, ?, ?, ?)
-	`, instrumentID, period, code, field, value, uint64(math.Float32bits(float32(value))), artifactID, revision); err != nil {
-		t.Fatal(err)
-	}
-}
-
-// Annual-package FN230 is Q4 revenue, not full-year revenue. Exercise all
-// quarter ends and repair facts previously labeled using the filing type.
-func TestMaterializeSingleQuarterFlowsAndRepairLegacyPeriods(t *testing.T) {
+func TestMaterializationRollsBackAllPackagesAndCatalogue(t *testing.T) {
+	db, first, _, _ := linkedFinancialFixture(t)
 	ctx := t.Context()
-	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "quarters.duckdb"))
-	if err != nil {
+	second, hash, path := archiveFinancialFixture(t, ctx, db, "002032", 2, first.ReportPeriod, map[int]float32{230: 200, 439: 400})
+	if _, err := ReconcileFinancialSourceRecords(ctx, db, 1, "tdx", hash, []domain.ProviderFinancialRecord{second}); err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
-	id, err := UpsertInstrument(ctx, db,
-		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHE", Currency: "CNY", Name: "Test"},
-		domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sz002920"})
-	if err != nil {
+	if _, err := db.ExecContext(ctx, `INSERT INTO fundamental.filing(filing_id,instrument_id,source,source_filing_id,provider_code,report_period,announcement_time,filing_type,filing_variant,resolution_status) VALUES(2,2,'cninfo','second','002032','2025-12-31','2026-03-01','annual','full','resolved')`); err != nil {
 		t.Fatal(err)
 	}
-	for q, typ := range []domain.FilingType{domain.FilingTypeQ1, domain.FilingTypeH1, domain.FilingTypeQ3, domain.FilingTypeAnnual} {
-		period := time.Date(2025, time.Month((q+1)*3+1), 0, 0, 0, 0, 0, time.UTC)
-		revision := fmt.Sprintf("quarter-%d", q+1)
-		announcement := period.AddDate(0, 1, 0)
-		_, err := UpsertFilings(ctx, db, 1, []domain.FilingObservation{{
-			InstrumentID: id, Source: "cninfo", SourceFilingID: revision, ProviderCode: "002920", ExchangeMIC: "XSHE",
-			FilingType: typ, FilingVariant: domain.FilingVariantFull, ReportPeriod: &period,
-			AnnouncementTime: announcement, ClassifierVersion: "test", ResolutionStatus: domain.FilingResolutionResolved,
-		}})
-		if err != nil {
-			t.Fatal(err)
-		}
-		artifactID := insertTestArtifact(t, ctx, db, revision, announcement.AddDate(0, 0, 1))
-		for field := 230; field <= 238; field++ {
-			insertMappedProviderFact(t, ctx, db, artifactID, id, revision, "002920", fmt.Sprintf("FN%d", field), period, 100)
-		}
-	}
-	if _, err := RefreshProviderFilingLinks(ctx, db, 2, "tdx"); err != nil {
+	if _, err := RefreshProviderFilingLinks(ctx, db, 1, "tdx"); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := MaterializeCanonicalFundamentals(ctx, db, 3, "tdx"); err != nil {
+	if _, err := MaterializeCanonicalFundamentals(ctx, db, 2, "tdx"); err != nil {
 		t.Fatal(err)
 	}
-	for q, stockPeriod := range []string{"instant", "instant", "instant", "instant"} {
-		var flows, stocks int
-		err := db.QueryRowContext(ctx, `SELECT count(*) FILTER (WHERE source_provider_field <> 'FN238' AND period_type=?),
-   count(*) FILTER (WHERE source_provider_field='FN238' AND period_type=?)
-   FROM fundamental.fact WHERE revision_key=?`, fmt.Sprintf("Q%d", q+1), stockPeriod, fmt.Sprintf("quarter-%d", q+1)).Scan(&flows, &stocks)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if flows != 8 || stocks != 1 {
-			t.Fatalf("quarter %d flows/stocks=%d/%d", q+1, flows, stocks)
-		}
-	}
-	if _, err := db.ExecContext(ctx, `UPDATE fundamental.fact SET period_type='FY', materializer_version='pit-fundamental-v1' WHERE revision_key='quarter-4' AND source_provider_field <> 'FN238'`); err != nil {
+	var before string
+	if err := db.QueryRowContext(ctx, `SELECT CAST(to_json(list(s ORDER BY artifact_id)) AS VARCHAR) FROM fundamental.materialization_state s`).Scan(&before); err != nil {
 		t.Fatal(err)
 	}
-	repaired, err := MaterializeCanonicalFundamentals(ctx, db, 4, "tdx")
-	if err != nil {
+	if _, err := db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE canonical_field='lease_liabilities'`); err != nil {
 		t.Fatal(err)
 	}
-	if repaired.Updated != 8 || repaired.Inserted != 0 {
-		t.Fatalf("repair=%+v", repaired)
-	}
-	replay, err := MaterializeCanonicalFundamentals(ctx, db, 5, "tdx")
-	if err != nil {
+	if err := os.WriteFile(path, []byte("tampered second package"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	if replay.Updated != 0 || replay.Inserted != 0 || replay.Removed != 0 {
-		t.Fatalf("replay=%+v", replay)
+	if _, err := MaterializeCanonicalFundamentals(ctx, db, 3, "tdx"); err == nil {
+		t.Fatal("tampered second package accepted")
 	}
-	// A late batch must roll back earlier changed facts and rejection diagnostics.
-	if _, err := db.ExecContext(ctx, `CREATE TEMP TABLE original_facts AS SELECT * FROM fundamental.fact;
- CREATE TEMP TABLE original_diagnostics AS SELECT * FROM meta.validation_result;
- UPDATE fundamental.provider_fact SET value=200 WHERE provider_field='FN230';
- UPDATE fundamental.provider_field SET unit='USD' WHERE provider_field='FN231';
- INSERT INTO fundamental.provider_field SELECT * REPLACE(DATE '2025-02-01' AS valid_from) FROM fundamental.provider_field WHERE source='tdx' AND provider_field='FN238'`); err != nil {
+	var after string
+	var count, mult int
+	if err := db.QueryRowContext(ctx, `SELECT CAST(to_json(list(s ORDER BY artifact_id)) AS VARCHAR) FROM fundamental.materialization_state s`).Scan(&after); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := MaterializeCanonicalFundamentals(ctx, db, 6, "tdx"); err == nil {
-		t.Fatal("late overlapping mapping accepted")
-	}
-	for _, pair := range [][2]string{{"fundamental.fact", "original_facts"}, {"meta.validation_result", "original_diagnostics"}} {
-		var changed int
-		q := fmt.Sprintf("SELECT count(*) FROM ((SELECT * FROM %s EXCEPT SELECT * FROM %s) UNION ALL (SELECT * FROM %s EXCEPT SELECT * FROM %s))", pair[0], pair[1], pair[1], pair[0])
-		if err := db.QueryRowContext(ctx, q).Scan(&changed); err != nil {
-			t.Fatal(err)
-		}
-		if changed != 0 {
-			t.Fatalf("partial batch leaked into %s: %d", pair[0], changed)
-		}
-	}
-
-	// The batch inventory must include existing facts after their mapping is removed.
-	if _, err := db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field='FN238';UPDATE fundamental.provider_field SET unit='CNY' WHERE provider_field='FN231'`); err != nil {
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL)`).Scan(&count); err != nil {
 		t.Fatal(err)
 	}
-	cleared, err := MaterializeCanonicalFundamentals(ctx, db, 7, "tdx")
-	if err != nil {
+	if err := db.QueryRowContext(ctx, `SELECT value_multiplier FROM fundamental.statement_field WHERE canonical_field='lease_liabilities'`).Scan(&mult); err != nil {
 		t.Fatal(err)
 	}
-	if cleared.Removed != 4 {
-		t.Fatalf("unmapped stored field was omitted: %+v", cleared)
-	}
-
-}
-
-func TestMaterializationRequiresCurrentStandardCatalogue(t *testing.T) {
-	db, err := OpenInitialized(t.Context(), filepath.Join(t.TempDir(), "catalogue.duckdb"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
-	if _, err = db.ExecContext(t.Context(), "DROP TABLE fundamental.field"); err != nil {
-		t.Fatal(err)
-	}
-	if _, err = MaterializeCanonicalFundamentals(t.Context(), db, 1, "tdx"); err == nil {
-		t.Fatal("missing standard catalogue silently accepted")
+	if before != after || count != 4 || mult != 10000 {
+		t.Fatalf("partial publication: signatures equal=%v cells=%d multiplier=%d", before == after, count, mult)
 	}
 }

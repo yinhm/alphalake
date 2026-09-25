@@ -48,15 +48,11 @@ class SQLiteExportTest(unittest.TestCase):
                         windows=[], supplements=[{'item': 'not_exported'}], facts=[r for r in facts if end.year-1 <= int(r['period'][:4]) and r['period'] <= end.isoformat()],
                         source_conflicts=[])
 
-        def statements(code, end):
-            return dict(contract_version='alphalake-financial-statements-v1', code=code,
-                        report_period=end.isoformat(), information_as_of=asof.isoformat(), statements={})
-
         with sqlite3.connect(':memory:') as db:
             db.row_factory = sqlite3.Row
-            self.assertEqual(exporter.export_snapshot(db, [company], fetch, period, asof, fetch_statements=statements), 1)
+            self.assertEqual(exporter.export_snapshot(db, [company], fetch, period, asof), 1)
             self.assertEqual(db.execute('SELECT count(*) FROM standard_facts').fetchone()[0], len(facts))
-            self.assertEqual(json.loads(db.execute('SELECT payload_json FROM valuation_inputs').fetchone()[0])['supplements'], [])
+            self.assertEqual(db.execute("SELECT count(*) FROM sqlite_master WHERE name='valuation_inputs'").fetchone()[0], 0)
             data = exporter.target.fetch_company(db, 'SZSE:300866')
             self.assertEqual(len(data['financials_annual']), 10)
             self.assertEqual(len(data['financials_quarterly']), 8)
@@ -80,10 +76,10 @@ class SQLiteExportTest(unittest.TestCase):
             original = facts[-1][key]
             facts[-1][key] = bad
             with sqlite3.connect(':memory:') as db, self.assertRaisesRegex(ValueError, message):
-                exporter.export_snapshot(db, [company], fetch, period, asof, fetch_statements=statements)
+                exporter.export_snapshot(db, [company], fetch, period, asof)
             facts[-1][key] = original
         with sqlite3.connect(':memory:') as db:
-            self.assertEqual(exporter.export_snapshot(db, [dict(company, symbols=[])], fetch, period, asof, fetch_statements=statements), 0)
+            self.assertEqual(exporter.export_snapshot(db, [dict(company, symbols=[])], fetch, period, asof), 0)
             self.assertEqual(db.execute('SELECT status FROM export_universe').fetchone()[0], 'blocked_security_identity')
 
     def test_failed_publication_and_no_overwrite(self):
@@ -95,15 +91,19 @@ class SQLiteExportTest(unittest.TestCase):
             argv = ['export', '--database', str(source), '--alphalake', str(binary),
                     '--output', str(output), '--period', '2026-06-30',
                     '--as-of', '2026-09-22T00:00:00Z', '--all']
-            readiness = json.dumps(dict(contract_version='alphalake-readiness-v2', companies=[]))
-            with patch('sys.argv', argv), patch.object(exporter.subprocess, 'check_output', return_value=readiness), patch.object(exporter, 'export_snapshot', side_effect=ValueError('invalid unit')):
+            def snapshot_command(argv, **kwargs):
+                rows = Path(argv[argv.index('--output')+1])
+                rows.mkdir()
+                for name in ('companies.jsonl', 'facts.jsonl', 'conflicts.jsonl'):
+                    (rows/name).write_text('')
+            with patch('sys.argv', argv), patch.object(exporter.subprocess, 'run', side_effect=snapshot_command), patch.object(exporter, 'export_snapshot', side_effect=ValueError('invalid unit')):
                 with self.assertRaisesRegex(ValueError, 'invalid unit'):
                     exporter.main()
             self.assertFalse(output.exists())
             self.assertEqual(list(root.glob('*.tmp')), [])
             self.assertEqual(source.read_bytes(), b'unchanged-source')
             output.write_bytes(b'keep-existing')
-            with patch('sys.argv', argv), patch.object(exporter.subprocess, 'check_output') as command, patch('sys.stderr'):
+            with patch('sys.argv', argv), patch.object(exporter.subprocess, 'run') as command, patch('sys.stderr'):
                 with self.assertRaises(SystemExit):
                     exporter.main()
                 command.assert_not_called()

@@ -36,13 +36,13 @@ func TestRealAssetDisposalCash(t *testing.T) {
 	}
 	restoreCurrentMappings(t, db, "provider_field='FN110'")
 	var unchanged string
-	otherFacts := `SELECT CAST(count(*) AS VARCHAR)||':'||CAST(bit_xor(hash(f)) AS VARCHAR)||':'||CAST(sum(CAST(hash(f) AS HUGEINT)) AS VARCHAR) FROM fundamental.fact f WHERE source_provider_field<>'FN110'`
+	otherFacts := `SELECT CAST(count(*) AS VARCHAR)||':'||CAST(bit_xor(hash(f)) AS VARCHAR)||':'||CAST(sum(CAST(hash(f) AS HUGEINT)) AS VARCHAR) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) f WHERE source_provider_field<>'FN110'`
 	check(db.QueryRowContext(ctx, otherFacts).Scan(&unchanged))
 	_, err = MaterializeProviderFundamentals(ctx, db, "tdx", "FN110")
 	check(err)
 	for _, p := range []string{"2025-06-30", "2025-12-31", "2026-06-30"} {
 		var bits uint32
-		check(db.QueryRowContext(ctx, `SELECT value_float32_bits FROM fundamental.provider_fact WHERE provider_code='300866' AND report_period=CAST(? AS DATE) AND provider_field='FN110'`, p).Scan(&bits))
+		check(sourceEvidenceDB(t, ctx, db).QueryRowContext(ctx, `SELECT value_float32_bits FROM _source_evidence WHERE provider_code='300866' AND report_period=CAST(? AS DATE) AND provider_field='FN110'`, p).Scan(&bits))
 		want := float32(0)
 		if p == "2026-06-30" {
 			want = 17350
@@ -51,7 +51,7 @@ func TestRealAssetDisposalCash(t *testing.T) {
 			t.Fatalf("%s source bits %d", p, bits)
 		}
 		var n int
-		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE provider_code='300866' AND report_period=CAST(? AS DATE) AND source_provider_field='FN110'`, p).Scan(&n))
+		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='300866' AND report_period=CAST(? AS DATE) AND source_provider_field='FN110'`, p).Scan(&n))
 		expected := 0
 		if want != 0 {
 			expected = 1
@@ -62,14 +62,14 @@ func TestRealAssetDisposalCash(t *testing.T) {
 	}
 	var value float64
 	var basis, unit string
-	check(db.QueryRowContext(ctx, `SELECT value,period_type,unit FROM fundamental.fact WHERE provider_code='300866' AND source_provider_field='FN110' AND report_period=DATE '2026-06-30'`).Scan(&value, &basis, &unit))
+	check(db.QueryRowContext(ctx, `SELECT value,period_type,unit FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='300866' AND source_provider_field='FN110' AND report_period=DATE '2026-06-30'`).Scan(&value, &basis, &unit))
 	if value != 17350 || basis != "H1" || unit != "CNY" {
 		t.Fatalf("wrong semantics %v %s %s", value, basis, unit)
 	}
 	at := time.Date(2026, 8, 31, 16, 0, 0, 0, time.UTC)
 	for _, delta := range []time.Duration{-time.Nanosecond, 0} {
 		var n int
-		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact_asof(?) WHERE provider_code='300866' AND source_provider_field='FN110' AND report_period=DATE '2026-06-30'`, at.Add(delta)).Scan(&n))
+		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,?) WHERE provider_code='300866' AND source_provider_field='FN110' AND report_period=DATE '2026-06-30'`, at.Add(delta)).Scan(&n))
 		if (n == 1) != (delta == 0) {
 			t.Fatal("PIT boundary", n)
 		}
@@ -79,7 +79,7 @@ func TestRealAssetDisposalCash(t *testing.T) {
 	_, err = MaterializeProviderFundamentals(ctx, db, "tdx", "FN110")
 	check(err)
 	var n int
-	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE source_provider_field='FN110'`).Scan(&n))
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE source_provider_field='FN110'`).Scan(&n))
 	if n != 0 {
 		t.Fatal("invalid multiplier retained facts")
 	}
@@ -93,7 +93,7 @@ func TestRealAssetDisposalCash(t *testing.T) {
 	check(err)
 	_, err = MaterializeProviderFundamentals(ctx, db, "tdx", "FN110")
 	check(err)
-	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE source_provider_field='FN110'`).Scan(&n))
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE source_provider_field='FN110'`).Scan(&n))
 	if n != 0 {
 		t.Fatal("source mapping bypassed standard catalogue")
 	}
@@ -141,7 +141,7 @@ func TestRealAssetDisposalCash(t *testing.T) {
 		check(e)
 		check(os.WriteFile(filepath.Join(out, name+".json"), b, 0644))
 		var count int
-		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE provider_code='300866' AND source_provider_field='FN110' AND report_period IN (DATE '2025-06-30',DATE '2025-12-31')`).Scan(&count))
+		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='300866' AND source_provider_field='FN110' AND report_period IN (DATE '2025-06-30',DATE '2025-12-31')`).Scan(&count))
 		if count != 0 {
 			t.Fatal("reviewed zeros leaked into standard facts")
 		}

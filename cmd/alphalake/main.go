@@ -24,7 +24,6 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "commands:")
 	fmt.Fprintln(os.Stderr, "  financial-statements <db-path> <code> --period YYYY-MM-DD --as-of RFC3339 [--include-evidence]")
 	fmt.Fprintln(os.Stderr, "  tdx-financial-fields (source dictionary, not valuation eligibility)")
-	fmt.Fprintln(os.Stderr, "  upgrade-financial-catalog <backed-up-schema50-db>")
 	fmt.Fprintln(os.Stderr, "  export-financial-source <db-path> <six-digit-code> --period YYYY-MM-DD")
 	fmt.Fprintln(os.Stderr, "  export-valuation-quote <db-path> <tdx-symbol> --date YYYY-MM-DD --as-of RFC3339")
 	fmt.Fprintln(os.Stderr, "  export-wacc-references <db-path> --as-of RFC3339 [--latest | --country-release N --beta-release N --yield-release N [--credit-release N]] [--recorded-cutoff RFC3339]")
@@ -42,6 +41,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-country-risk <db-path> [--offline] [--python executable] [--parser path]")
 	fmt.Fprintln(os.Stderr, "  version")
 	fmt.Fprintln(os.Stderr, "  schema")
+	fmt.Fprintln(os.Stderr, "  export-financial-snapshot <db-path> --output <new-directory> --fields <standard-names> --from YYYY-MM-DD --period YYYY-MM-DD --as-of RFC3339 [--codes 300866,600519]")
 	fmt.Fprintln(os.Stderr, "  init <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-daily <db-path> <tdx-symbol>")
 	fmt.Fprintln(os.Stderr, "  sync-instruments <db-path>")
@@ -103,6 +103,11 @@ func main() {
 
 	case "schema":
 		fmt.Printf("schema %d (current baseline)\n", duckstore.SchemaVersion)
+
+	case "export-financial-snapshot":
+		if err := runFinancialSnapshotExport(ctx, os.Args[2:]); err != nil {
+			fatal(err)
+		}
 
 	case "init":
 		if len(os.Args) != 3 {
@@ -368,18 +373,18 @@ func main() {
 					fmt.Fprintf(os.Stderr, "TDX financial package failed: run=%d package=%s error=%q\n", p.RunID, p.Package, p.Error)
 				}
 				if p.Processed == p.Total || p.Failures > lastFailures || p.Unresolved > lastUnresolved {
-					fmt.Printf("TDX financial progress: run=%d %d/%d packages=%d skipped=%d facts_attempted=%d facts_inserted=%d facts_reassigned=%d facts_removed=%d unresolved=%d acknowledged=%d failed=%d current=%s\n",
-						p.RunID, p.Processed, p.Total, p.Packages, p.Skipped, p.FactsAttempted, p.FactsInserted,
-						p.FactsReassigned, p.FactsRemoved, p.Unresolved, p.Acknowledged, p.Failures, p.Package)
+					fmt.Printf("TDX financial progress: run=%d %d/%d packages=%d skipped=%d records_attempted=%d records_inserted=%d records_reassigned=%d records_unresolved=%d unresolved=%d acknowledged=%d failed=%d current=%s\n",
+						p.RunID, p.Processed, p.Total, p.Packages, p.Skipped, p.RecordsAttempted, p.RecordsInserted,
+						p.RecordsReassigned, p.RecordsUnresolved, p.Unresolved, p.Acknowledged, p.Failures, p.Package)
 				}
 				lastFailures = p.Failures
 				lastUnresolved = p.Unresolved
 			},
 		}
 		summary, syncErr := ingest.SyncTDXProfessionalFinancialWithOptions(ctx, db, source, artifactRoot, options)
-		fmt.Printf("TDX financial sync: run=%d listed=%d selected=%d packages=%d skipped=%d facts_attempted=%d facts_inserted=%d facts_reassigned=%d facts_removed=%d unresolved=%d acknowledged=%d failures=%d master_failures=%d cache_fallbacks=%d all=%v root=%s\n",
+		fmt.Printf("TDX financial sync: run=%d listed=%d selected=%d packages=%d skipped=%d records_attempted=%d records_inserted=%d records_reassigned=%d records_unresolved=%d unresolved=%d acknowledged=%d failures=%d master_failures=%d cache_fallbacks=%d all=%v root=%s\n",
 			summary.RunID, summary.Listed, summary.Selected, summary.Packages, summary.Skipped,
-			summary.FactsAttempted, summary.FactsInserted, summary.FactsReassigned, summary.FactsRemoved,
+			summary.RecordsAttempted, summary.RecordsInserted, summary.RecordsReassigned, summary.RecordsUnresolved,
 			summary.Unresolved, summary.Acknowledged, len(summary.Failures), len(summary.MasterFailures), summary.CacheFallbacks, all, artifactRoot)
 		if syncErr != nil {
 			fatal(syncErr)

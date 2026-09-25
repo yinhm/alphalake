@@ -31,12 +31,26 @@ func TestRefreshPendingFilingResolutionsAfterLifecycleEnrichment(t *testing.T) {
 	if _, err := UpsertFilings(ctx, db, 1, []domain.FilingObservation{pending}); err != nil {
 		t.Fatal(err)
 	}
+	excluded, err := RefreshPendingFilingResolutions(ctx, db, 2, 10)
+	if err != nil || excluded.Attempted != 0 {
+		t.Fatalf("default scope refreshed BSE history: %+v %v", excluded, err)
+	}
+	ctx = domain.WithBSE(ctx)
 	first, err := RefreshPendingFilingResolutions(ctx, db, 2, 10)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if first.Attempted != 1 || first.Resolved != 0 || first.Recovered != 0 || first.StillPending != 1 {
 		t.Fatalf("first=%#v", first)
+	}
+
+	replay, err := RefreshPendingFilingResolutions(ctx, db, 9, 10)
+	if err != nil || replay.StillPending != 1 {
+		t.Fatal(replay, err)
+	}
+	var evidenceRun int64
+	if err := db.QueryRowContext(ctx, `SELECT ingest_run_id FROM fundamental.filing WHERE source_filing_id='historical'`).Scan(&evidenceRun); err != nil || evidenceRun != 2 {
+		t.Fatalf("unchanged evidence rewritten: %d %v", evidenceRun, err)
 	}
 
 	assertTiming := func() {

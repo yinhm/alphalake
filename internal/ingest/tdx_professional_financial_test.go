@@ -71,7 +71,7 @@ func (f *fakeProfessionalFinancialSource) NormalizeProfessionalFinancialPackage(
 		Provider: "tdx", ProviderCode: f.recordCode, MarketMarker: f.marketMarker,
 		ReportPeriod:   time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC),
 		ProviderFields: []domain.ProviderFloat32{{Bits: 0x3f800000, Value: 1}, {Bits: 0x40000000, Value: 2}},
-		SourceFile:     entry.Filename, ArtifactID: artifactID,
+		SourceFile:     entry.Filename, ArtifactID: artifactID, SourceRow: 1,
 	}}, nil
 }
 
@@ -83,6 +83,7 @@ func TestSyncTDXProfessionalFinancialPersistsArtifactFactsAndCheckpoint(t *testi
 	}
 	defer db.Close()
 	root := filepath.Join(t.TempDir(), "raw")
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	source := &fakeProfessionalFinancialSource{
 		instruments: []domain.InstrumentObservation{{
 			Instrument: domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Test"},
@@ -96,11 +97,11 @@ func TestSyncTDXProfessionalFinancialPersistsArtifactFactsAndCheckpoint(t *testi
 	if err != nil {
 		t.Fatal(err)
 	}
-	if first.Listed != 2 || first.Selected != 1 || first.Packages != 1 || first.FactsAttempted != 2 || first.FactsInserted != 2 || first.Unresolved != 0 || source.packageCalls != 1 {
+	if first.Listed != 2 || first.Selected != 1 || first.Packages != 1 || first.RecordsAttempted != 1 || first.RecordsInserted != 1 || first.Unresolved != 0 || source.packageCalls != 1 {
 		t.Fatalf("first=%#v calls=%d", first, source.packageCalls)
 	}
 	var facts, artifacts, resolved int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_fact`).Scan(&facts); err != nil {
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.source_record`).Scan(&facts); err != nil {
 		t.Fatal(err)
 	}
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM meta.artifact WHERE dataset='professional_financial'`).Scan(&artifacts); err != nil {
@@ -109,7 +110,7 @@ func TestSyncTDXProfessionalFinancialPersistsArtifactFactsAndCheckpoint(t *testi
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_record_resolution WHERE status='resolved'`).Scan(&resolved); err != nil {
 		t.Fatal(err)
 	}
-	if facts != 2 || artifacts != 2 || resolved != 1 { // manifest + package
+	if facts != 1 || artifacts != 2 || resolved != 1 { // manifest + package
 		t.Fatalf("facts/artifacts/resolved=%d/%d/%d", facts, artifacts, resolved)
 	}
 
@@ -130,6 +131,7 @@ func TestUnresolvedFinancialRecordRetriesFromLocalArtifactWithoutRedownload(t *t
 	}
 	defer db.Close()
 	root := filepath.Join(t.TempDir(), "raw")
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	source := &fakeProfessionalFinancialSource{
 		instruments: []domain.InstrumentObservation{{
 			Instrument: domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Current"},
@@ -144,7 +146,7 @@ func TestUnresolvedFinancialRecordRetriesFromLocalArtifactWithoutRedownload(t *t
 	if err != nil {
 		t.Fatal(err)
 	}
-	if first.Unresolved != 1 || first.FactsAttempted != 0 || source.packageCalls != 1 {
+	if first.Unresolved != 1 || first.RecordsAttempted != 0 || source.packageCalls != 1 {
 		t.Fatalf("first=%#v calls=%d", first, source.packageCalls)
 	}
 	second, err := SyncTDXProfessionalFinancialWithOptions(ctx, db, source, root, options)
@@ -182,6 +184,7 @@ func TestCorruptRetainedFinancialPackageUsesCacheThenRedownloads(t *testing.T) {
 	}
 	defer db.Close()
 	root := filepath.Join(t.TempDir(), "raw")
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	source := &fakeProfessionalFinancialSource{
 		instruments: []domain.InstrumentObservation{{
 			Instrument: domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Current"},
@@ -254,6 +257,7 @@ func TestAcknowledgedFinancialRecordAllowsPackageCompletion(t *testing.T) {
 	}
 	defer db.Close()
 	root := filepath.Join(t.TempDir(), "raw")
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	source := &fakeProfessionalFinancialSource{
 		instruments: []domain.InstrumentObservation{{
 			Instrument: domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Current"},
@@ -319,16 +323,17 @@ func TestFinancialDefaultScopeAndExplicitReplay(t *testing.T) {
 	}
 	source := &fakeProfessionalFinancialSource{instruments: []domain.InstrumentObservation{{Instrument: domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Shanghai"}, Identifier: domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh600001"}}}, packageBytes: []byte("scope zip"), recordCode: "920001"}
 	root := filepath.Join(t.TempDir(), "raw")
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	first, err := SyncTDXProfessionalFinancial(ctx, db, source, root)
-	if err != nil || first.FactsInserted != 0 || first.Unresolved != 0 {
+	if err != nil || first.RecordsInserted != 0 || first.Unresolved != 0 {
 		t.Fatal(first, err)
 	}
 	included, err := SyncTDXProfessionalFinancial(domain.WithBSE(ctx), db, source, root)
-	if err != nil || included.FactsInserted != 2 || included.Skipped != 0 || source.packageCalls != 1 {
+	if err != nil || included.RecordsInserted != 1 || included.Skipped != 0 || source.packageCalls != 1 {
 		t.Fatal(included, err, source.packageCalls)
 	}
 	replay, err := SyncTDXProfessionalFinancial(ctx, db, source, root)
-	if err != nil || replay.Skipped != 1 || replay.FactsRemoved != 0 {
+	if err != nil || replay.Skipped != 1 || replay.RecordsUnresolved != 0 {
 		t.Fatal(replay, err)
 	}
 }

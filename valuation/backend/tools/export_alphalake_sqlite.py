@@ -4,6 +4,7 @@ import calendar
 from datetime import date, datetime, timezone
 from decimal import Decimal
 import hashlib
+import itertools
 import json
 import math
 import os
@@ -30,7 +31,7 @@ FIELDS = {
     'minority_interests': ('noncontrolling_interests', 'instant', 'CNY'),
 }
 EXCHANGES = {'XSHG': 'SHSE', 'XSHE': 'SZSE', 'XBSE': 'BJSE'}
-CONTRACT = 'alphalake-sqlite-v2'
+CONTRACT = 'alphalake-sqlite-v3'
 
 
 def digest(path):
@@ -82,12 +83,10 @@ def cell(facts, conflicts, instrument, end, column, annual):
     return result, 'available', evidence
 
 
-def export_snapshot(connection, companies, fetch, period, asof, years=10, quarters=8, *, fetch_statements):
+def export_snapshot(connection, companies, fetch, period, asof, years=10, quarters=8):
     target.init_schema(connection)
     connection.executescript('''CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);
  CREATE TABLE standard_facts(ticker TEXT,period TEXT,field TEXT,value TEXT,unit TEXT,period_type TEXT,statement_scope TEXT,evidence_json TEXT,PRIMARY KEY(ticker,period,field));
- CREATE TABLE valuation_inputs(ticker TEXT PRIMARY KEY,payload_json TEXT NOT NULL,sha256 TEXT NOT NULL);
- CREATE TABLE financial_statements(ticker TEXT PRIMARY KEY,payload_json TEXT NOT NULL);
  CREATE TABLE export_universe(candidate INTEGER PRIMARY KEY,code TEXT,instrument_id INTEGER,status TEXT,details TEXT);
  CREATE TABLE export_cells(ticker TEXT,series TEXT,period TEXT,period_offset INTEGER,field TEXT,status TEXT,evidence_json TEXT,
  PRIMARY KEY(ticker,series,period_offset,field));''')
@@ -110,11 +109,9 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
         if not valid:
             continue
         ticker = EXCHANGES[mic] + ':' + code
-        facts, conflicts, loaded = {}, set(), set()
+        facts, conflicts = {}, set()
         # 每个现有导出覆盖当年及上年；按需缓存一家公司，不累积全市场历史。
         def load(end):
-            if end in loaded:
-                return
             payload = fetch(code, end)
             if (payload.get('contract_version'), payload.get('code'), payload.get('report_period')) != ('alphalake-valuation-v2', code, end.isoformat()):
                 raise ValueError('unexpected standard export identity')
@@ -141,17 +138,6 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                         (ticker, row['period'], row['field'], row['value'], row['unit'], row['period_type'],
                          row['statement_scope'], json.dumps(row, ensure_ascii=False, sort_keys=True)))
                 facts[key] = row
-            if end == period:
-                # 附注数值不进入纯TDX快照；估值参数不在财务事实层提供。
-                payload = dict(payload, supplements=[])
-                raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, allow_nan=False)
-                connection.execute('INSERT INTO valuation_inputs VALUES(?,?,?)',
-                    (ticker, raw, hashlib.sha256(raw.encode()).hexdigest()))
-            for year in (end.year-1, end.year):
-                for month in (3, 6, 9, 12):
-                    candidate = date(year, month, calendar.monthrange(year, month)[1])
-                    if candidate <= end:
-                        loaded.add(candidate)
         row = dict(ticker=ticker, company_name=company['name'], company_type='Public Company',
                    exchange_code=EXCHANGES[mic], primary_exchange=EXCHANGES[mic], region='CN',
                    filing_currency='CNY', listing_currency='CNY', fx_listing_to_reporting=1,
@@ -159,16 +145,8 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                    period_date_quarterly=period.isoformat(), data_as_of=asof.date().isoformat())
         target.insert_companies(connection, [row])
         load(period)
-        statements = fetch_statements(code, period)
-        if (statements.get('contract_version'), statements.get('code'), statements.get('report_period')) != ('alphalake-financial-statements-v1', code, period.isoformat()) or datetime.fromisoformat(statements['information_as_of']) != asof:
-            raise ValueError('unexpected financial statements identity/cutoff')
-        connection.execute('INSERT INTO financial_statements VALUES(?,?)',
-                           (ticker, json.dumps(statements, ensure_ascii=False, sort_keys=True)))
         for series, ends in [('annual', annual_ends), ('quarterly', quarter_ends)]:
             for offset, end in enumerate(ends):
-                load(end)
-                if series == 'quarterly' and end.month != 3:
-                    load(quarter(end, 1))
                 values = {'ticker': ticker, 'fy_offset' if series == 'annual' else 'fq_offset': offset}
                 for column in target._ANNUAL_COLS[2:]:
                     value, status, evidence = cell(facts, conflicts, company['instrument_id'], end, column, series == 'annual')
@@ -205,28 +183,50 @@ def main():
         stat = source.stat()
         return stat.st_size, stat.st_mtime_ns, stat.st_ino
     version, source_hash = fingerprint(), digest(source)
-    def command(name, *extra, end=args.period):
-        if fingerprint() != version:
-            raise ValueError('source changed during export')
-        return json.loads(subprocess.check_output([str(binary), name, str(source), *extra,
-                          '--period', end.isoformat(), '--as-of', args.as_of.isoformat()], text=True, timeout=300))
-    companies = []
-    for code in sorted(set(args.code or [''])):
-        readiness = command('valuation-readiness', *(['--code', code] if code else []))
-        if readiness.get('contract_version') != 'alphalake-readiness-v2':
-            raise ValueError('current readiness contract required')
-        if code and not readiness['companies']:
-            raise ValueError('security not found: '+code)
-        companies.extend(readiness['companies'])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     fd, temporary = tempfile.mkstemp(prefix=args.output.name+'.', suffix='.tmp', dir=args.output.parent)
     os.close(fd)
     try:
         connection = sqlite3.connect(temporary)
         try:
-            count = export_snapshot(connection, companies, lambda code, end: command('export-valuation', code, end=end),
-                                    args.period, args.as_of, args.years, args.quarters,
-                                    fetch_statements=lambda code, end: command('financial-statements', code, end=end))
+            with tempfile.TemporaryDirectory(prefix='alphalake-export-') as spool:
+                data = Path(spool)/'rows'
+                base = args.period.year if args.period.month == 12 else args.period.year-1
+                first = min(date(base-args.years+1, 1, 1), quarter(args.period, args.quarters))
+                subprocess.run([str(binary), 'export-financial-snapshot', str(source),
+                    '--output', str(data), '--fields', ','.join(sorted({f[0] for f in FIELDS.values()})),
+                    '--codes', ','.join(sorted(set(args.code or []))), '--from', first.isoformat(),
+                    '--period', args.period.isoformat(), '--as-of', args.as_of.isoformat()], check=True, timeout=600)
+                companies = [json.loads(line) for line in (data/'companies.jsonl').read_text().splitlines()]
+                companies.sort(key=lambda c: ((c.get('symbols') or [''])[0][2:], c['instrument_id']))
+                if args.code:
+                    found = {s[2:] for c in companies for s in c.get('symbols') or []}
+                    if set(args.code)-found:
+                        raise ValueError('security not found: '+','.join(sorted(set(args.code)-found)))
+                owners = {}
+                for company in companies:
+                    for symbol in company.get('symbols') or []:
+                        owners[symbol[2:]] = owners.get(symbol[2:], 0)+1
+                for company in companies:
+                    if any(owners[symbol[2:]] > 1 for symbol in company.get('symbols') or []):
+                        company['financial_status'] = 'blocked_security_identity'
+                conflicts = {}
+                with (data/'conflicts.jsonl').open() as stream:
+                    for line in stream:
+                        row = json.loads(line)
+                        conflicts.setdefault(row['code'], []).append(row)
+                with (data/'facts.jsonl').open() as stream:
+                    groups = iter(itertools.groupby((json.loads(line) for line in stream), key=lambda r: r['code']))
+                    current = next(groups, None)
+                    def fetch(code, end):
+                        nonlocal current
+                        while current and current[0] < code:
+                            current = next(groups, None)
+                        facts = list(current[1]) if current and current[0] == code else []
+                        return dict(contract_version='alphalake-valuation-v2', code=code,
+                            report_period=end.isoformat(), information_as_of=args.as_of.isoformat(),
+                            facts=facts, source_conflicts=conflicts.get(code, []))
+                    count = export_snapshot(connection, companies, fetch, args.period, args.as_of, args.years, args.quarters)
             metadata = dict(contract=CONTRACT, source_database_sha256=source_hash, exporter_sha256=digest(__file__),
                             alphalake_binary_sha256=digest(binary), report_period=args.period.isoformat(),
                             information_as_of=args.as_of.isoformat(), exported_at=datetime.now(timezone.utc).isoformat(),
@@ -235,7 +235,8 @@ def main():
                             annual_net_income='parent_attributable', annual_bv_equity='parent_attributable',
                             quarterly_flows='difference_of_standard_YTD_same_year; Q1 unchanged',
                             missing='NULL; see export_cells; source-zero/unreviewed not inferred from absence',
-                            boundary='TDX_only_financial_snapshot; explicit_separate_policy_required; no_supplement_values_or_market_defaults',
+                            boundary='TDX_standard_fields_for_native_SQL; no_supplement_values_or_market_defaults',
+                            standard_field_scope=','.join(sorted({f[0] for f in FIELDS.values()})),
                             candidates=str(len(companies)), companies=str(count))
             connection.executemany('INSERT OR REPLACE INTO metadata VALUES(?,?)', metadata.items())
             connection.commit()

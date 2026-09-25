@@ -4,14 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"math"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
 	"testing"
 	"time"
 
-	"github.com/yinhm/alphalake/internal/artifact"
 	"github.com/yinhm/alphalake/internal/domain"
 	"github.com/yinhm/alphalake/internal/source/cninfo"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
@@ -123,7 +121,7 @@ func TestCNINFOToPointInTimeFundamentalEndToEnd(t *testing.T) {
 		SELECT f.source_filing_id
 		FROM fundamental.provider_filing_link l
 		JOIN fundamental.filing f ON f.filing_id=l.filing_id
-		WHERE l.provider_revision_key='provider-original'
+		JOIN meta.artifact a ON a.artifact_id=l.provider_artifact_id WHERE a.fetched_at=TIMESTAMPTZ '2026-04-01T00:00:00Z'
 	`).Scan(&originalLink); err != nil {
 		t.Fatal(err)
 	}
@@ -131,7 +129,7 @@ func TestCNINFOToPointInTimeFundamentalEndToEnd(t *testing.T) {
 		SELECT f.source_filing_id
 		FROM fundamental.provider_filing_link l
 		JOIN fundamental.filing f ON f.filing_id=l.filing_id
-		WHERE l.provider_revision_key='provider-correction'
+		JOIN meta.artifact a ON a.artifact_id=l.provider_artifact_id WHERE a.fetched_at=TIMESTAMPTZ '2026-06-01T00:00:00Z'
 	`).Scan(&correctionLink); err != nil {
 		t.Fatal(err)
 	}
@@ -146,7 +144,7 @@ func TestCNINFOToPointInTimeFundamentalEndToEnd(t *testing.T) {
 	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM meta.artifact WHERE source='cninfo' AND dataset='filing_document'`).Scan(&documentArtifacts); err != nil {
 		t.Fatal(err)
 	}
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE canonical_field='revenue'`).Scan(&canonicalFacts); err != nil {
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE canonical_field='revenue'`).Scan(&canonicalFacts); err != nil {
 		t.Fatal(err)
 	}
 	if catalogueArtifacts != 2 || documentArtifacts != 2 || canonicalFacts != 2 {
@@ -160,28 +158,14 @@ func persistProviderRevision(t *testing.T, ctx context.Context, db *sql.DB, arti
 	if err != nil {
 		t.Fatal(err)
 	}
-	stored, err := artifact.Persist(ctx, db, artifactRoot, artifact.Input{
-		Source: "tdx", Dataset: "professional_financial",
-		SourceLocator: "tdxfin/" + revision + ".zip", FetchedAt: fetchedAt,
-		MediaType: "application/zip", ParserVersion: "test", IngestRunID: &runID,
-		Content: []byte(revision),
-	})
-	if err != nil {
+	t.Setenv("ALPHALAKE_WORKSPACE", artifactRoot)
+	record, sha, _ := seedFinancialArchive(t, ctx, db, "000001", instrumentID, period, map[int]float32{230: float32(value)})
+	if _, err = db.ExecContext(ctx, `UPDATE meta.artifact SET fetched_at=? WHERE sha256=?`, fetchedAt, sha); err != nil {
 		t.Fatal(err)
 	}
-	record := domain.ProviderFinancialRecord{
-		InstrumentID: instrumentID, Provider: "tdx", ProviderCode: "000001",
-		ReportPeriod: period, SourceFile: revision + ".zip", ArtifactID: stored.ArtifactID,
-		ProviderFields: make([]domain.ProviderFloat32, 230),
-	}
-	bits := math.Float32bits(float32(value))
-	record.ProviderFields[229] = domain.ProviderFloat32{Bits: bits, Value: float64(math.Float32frombits(bits))}
-	result, err := duckstore.ReconcileProviderFinancialRecordsForArtifact(ctx, db, runID, "tdx", revision, []domain.ProviderFinancialRecord{record})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result.Inserted != 230 {
-		t.Fatalf("provider revision %s write=%#v", revision, result)
+	result, err := duckstore.ReconcileFinancialSourceRecords(ctx, db, runID, "tdx", sha, []domain.ProviderFinancialRecord{record})
+	if err != nil || result.Inserted != 1 {
+		t.Fatal(result, err)
 	}
 	if err := duckstore.FinishIngestRun(ctx, db, runID, duckstore.IngestRunCompleted, nil, nil); err != nil {
 		t.Fatal(err)
@@ -193,7 +177,7 @@ func assertPITRevenue(t *testing.T, ctx context.Context, db *sql.DB, instrumentI
 	var value float64
 	err := db.QueryRowContext(ctx, `
 		SELECT cast(value AS DOUBLE)
-		FROM fundamental.fact_asof(?)
+		FROM fundamental.financial_observations_asof(NULL,NULL,NULL,?)
 		WHERE instrument_id=? AND canonical_field='revenue' AND report_period=?
 	`, asOf, instrumentID, period).Scan(&value)
 	if !want {

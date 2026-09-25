@@ -36,7 +36,7 @@ func TestWideSnapshotSemanticGateAndRollback(t *testing.T) {
 	check(err)
 	tx, err := db.BeginTx(ctx, nil)
 	check(err)
-	check(CreateFinancialSnapshotTables(ctx, tx, fields))
+
 	check(tx.Commit())
 	period := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
 	ann := period.AddDate(0, 3, 1)
@@ -156,27 +156,10 @@ func TestSnapshotAsOfRanksIssuerBeforeCode(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	fields, err := LoadSnapshotFields(ctx, db)
-	if err != nil {
-		t.Fatal(err)
-	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = CreateFinancialSnapshotTables(ctx, tx, fields); err != nil {
-		t.Fatal(err)
-	}
-	if err = tx.Commit(); err != nil {
-		t.Fatal(err)
-	}
-	if err = InstallSnapshotQueries(ctx, db, fields); err != nil {
-		t.Fatal(err)
-	}
 	_, err = db.ExecContext(ctx, `
  INSERT INTO meta.artifact(artifact_id,source,dataset,source_locator,fetched_at,sha256,content_length) VALUES
  (1,'tdx','professional_financial','old','2026-01-01','a',1),(2,'tdx','professional_financial','new','2026-04-01','b',1);
- INSERT INTO fundamental.source_record VALUES (1,1,1,'000001',0,584),(2,2,1,'000002',0,584);
+ INSERT INTO fundamental.source_record VALUES (1,1,1,'000001',0,584,'2025-12-31',1),(2,2,1,'000002',0,584,'2025-12-31',1);
  INSERT INTO fundamental.statement_snapshot(source_record_id,instrument_id,source_filing_id,report_period,announcement_time,ingest_run_id,revenue)
  VALUES (1,1,1,'2025-12-31','2026-03-01',1,10),(2,1,2,'2025-12-31','2026-04-01',2,20);`)
 	if err != nil {
@@ -316,7 +299,7 @@ func TestFinancialRebuildRejectsCorruptArchive(t *testing.T) {
 	if err = os.WriteFile(filepath.Join(root, "gpcw20251231.zip"), []byte("corrupt"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	_, err = db.ExecContext(ctx, `
+	_, err = db.ExecContext(ctx, `DELETE FROM meta.schema_version; INSERT INTO meta.schema_version(version,description) VALUES(51,'test legacy source'); CREATE TABLE fundamental.fact(primary_source VARCHAR);
  INSERT INTO meta.artifact(artifact_id,source,dataset,source_locator,fetched_at,sha256,content_length,local_path) VALUES (1,'tdx','professional_financial','gpcw20251231.zip',now(),'incorrect',7,'gpcw20251231.zip');
  INSERT INTO fundamental.provider_record_resolution(artifact_id,source,source_file,report_period,provider_code,market_marker,status,instrument_id) VALUES (1,'tdx','gpcw20251231.zip','2025-12-31','300866',0,'resolved',1);`)
 	if err != nil {

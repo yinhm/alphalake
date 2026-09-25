@@ -4,300 +4,143 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
-	"errors"
 	"fmt"
-	"sort"
-	"strings"
+	"math"
 
 	duckdbgo "github.com/duckdb/duckdb-go/v2"
 	"github.com/yinhm/alphalake/internal/domain"
 )
 
-const providerFactStageTable = "_alphalake_provider_fact_stage"
+type FinancialSourceWriteResult struct{ Attempted, Inserted, Reassigned, Removed int }
 
-type ProviderFactWriteResult struct {
-	Attempted  int
-	Inserted   int
-	Reassigned int
-	Removed    int
+func nullableInstrument(id int64) any {
+	if id == 0 {
+		return nil
+	}
+	return id
 }
 
-// ReconcileProviderFinancialRecordsForArtifact publishes the currently-resolved
-// provider facts for one immutable artifact revision. Raw provider identity is
-// (source, revision_key, provider_code, provider_field); canonical instrument_id
-// is an enrichable link and may change when historical lifecycle evidence is
-// corrected. The transaction therefore:
-//   - removes facts that are no longer resolved for this artifact revision;
-//   - updates an existing raw fact in place when its canonical instrument changes;
-//   - inserts only genuinely new raw facts.
-//
-// This prevents one immutable provider revision from accumulating duplicate facts
-// under old and corrected canonical instruments.
-func ReconcileProviderFinancialRecordsForArtifact(
-	ctx context.Context,
-	db *sql.DB,
-	ingestRunID int64,
-	source string,
-	artifactSHA string,
-	records []domain.ProviderFinancialRecord,
-) (ProviderFactWriteResult, error) {
-	var result ProviderFactWriteResult
-	if db == nil {
-		return result, errors.New("duckdb is nil")
-	}
-	if ingestRunID <= 0 {
-		return result, errors.New("ingest run ID must be positive")
-	}
-	source = strings.TrimSpace(source)
-	artifactSHA = strings.TrimSpace(artifactSHA)
-	if source == "" || artifactSHA == "" {
-		return result, errors.New("source and artifact sha256 are required")
-	}
-	for i, record := range records {
-		if record.InstrumentID <= 0 || record.ReportPeriod.IsZero() || record.ArtifactID <= 0 {
-			return result, fmt.Errorf("provider financial record %d has incomplete canonical identity/lineage", i)
-		}
-		if strings.TrimSpace(record.Provider) != source || strings.TrimSpace(record.ProviderCode) == "" || strings.TrimSpace(record.SourceFile) == "" {
-			return result, fmt.Errorf("provider financial record %d has incomplete/mismatched source identity", i)
-		}
-		result.Attempted += len(record.ProviderFields)
-	}
+// ReconcileFinancialSourceRecords stores locators and resolved
+// identities only. Immutable numeric evidence lives exclusively in the ZIP.
+func ReconcileFinancialSourceRecords(ctx context.Context, db *sql.DB, runID int64, source, sha string, records []domain.ProviderFinancialRecord) (out FinancialSourceWriteResult, err error) {
 
 	conn, err := db.Conn(ctx)
 	if err != nil {
-		return result, fmt.Errorf("acquire provider-fact connection: %w", err)
+		return out, err
 	}
 	defer conn.Close()
-	if _, err := conn.ExecContext(ctx, `DROP TABLE IF EXISTS temp.main.`+providerFactStageTable); err != nil {
-		return result, fmt.Errorf("cleanup provider-fact staging table: %w", err)
+	if _, err = conn.ExecContext(ctx, "BEGIN"); err != nil {
+		return out, err
 	}
-	if _, err := conn.ExecContext(ctx, `BEGIN TRANSACTION`); err != nil {
-		return result, fmt.Errorf("begin provider-fact reconcile: %w", err)
+	defer conn.ExecContext(context.WithoutCancel(ctx), "ROLLBACK")
+	out, err = reconcileFinancialRecords(ctx, conn, runID, source, sha, records)
+	if err != nil {
+		return out, err
 	}
-	committed := false
-	defer func() {
-		if !committed {
-			_, _ = conn.ExecContext(context.Background(), `ROLLBACK`)
-		}
-		_, _ = conn.ExecContext(context.Background(), `DROP TABLE IF EXISTS temp.main.`+providerFactStageTable)
-	}()
-
-	// Bound staging and merges by source code while retaining package atomicity.
-	// Codes absent from the new resolution remain covered by the open-ended ranges.
-	records = append([]domain.ProviderFinancialRecord(nil), records...)
-	sort.SliceStable(records, func(i, j int) bool { return records[i].ProviderCode < records[j].ProviderCode })
-	result = ProviderFactWriteResult{}
-	lower := ""
-	for start := 0; ; {
-		end := start + 128
-		if end > len(records) {
-			end = len(records)
-		}
-		for end < len(records) && records[end-1].ProviderCode == records[end].ProviderCode {
-			end++
-		}
-		upper := ""
-		if end < len(records) {
-			upper = records[end].ProviderCode
-		}
-		batch, err := reconcileProviderFinancialBatch(ctx, conn, ingestRunID, source, artifactSHA, records[start:end], lower, upper)
-		if err != nil {
-			return result, err
-		}
-		result.Attempted += batch.Attempted
-		result.Inserted += batch.Inserted
-		result.Reassigned += batch.Reassigned
-		result.Removed += batch.Removed
-		if end == len(records) {
-			break
-		}
-		start = end
-		lower = upper
-	}
-
-	if _, err := conn.ExecContext(ctx, `COMMIT`); err != nil {
-		return result, fmt.Errorf("commit provider-fact reconcile: %w", err)
-	}
-	committed = true
-	return result, nil
+	_, err = conn.ExecContext(ctx, "COMMIT")
+	return out, err
 }
 
-func reconcileProviderFinancialBatch(ctx context.Context, conn *sql.Conn, ingestRunID int64, source, artifactSHA string, records []domain.ProviderFinancialRecord, lower, upper string) (ProviderFactWriteResult, error) {
-	var result ProviderFactWriteResult
-
-	if _, err := conn.ExecContext(ctx, `
-		CREATE TEMP TABLE `+providerFactStageTable+` (
-			instrument_id BIGINT NOT NULL,
-			source VARCHAR NOT NULL,
-			report_period DATE NOT NULL,
-			announcement_time TIMESTAMPTZ,
-			provider_code VARCHAR NOT NULL,
-			market_marker USMALLINT NOT NULL,
-			provider_field VARCHAR NOT NULL,
-			value DOUBLE,
-			value_float32_bits UBIGINT,
-			source_file VARCHAR,
-			source_file_hash VARCHAR,
-			artifact_id BIGINT,
-			ingest_run_id BIGINT,
-			revision_key VARCHAR NOT NULL
-		)
-	`); err != nil {
-		return result, fmt.Errorf("create provider-fact staging table: %w", err)
+func reconcileFinancialRecords(ctx context.Context, conn *sql.Conn, runID int64, source, sha string, records []domain.ProviderFinancialRecord) (out FinancialSourceWriteResult, err error) {
+	if source != "tdx" || sha == "" || runID <= 0 {
+		return out, fmt.Errorf("TDX revision and run required")
 	}
-	if len(records) > 0 {
-		if err := appendProviderFacts(ctx, conn, ingestRunID, artifactSHA, records); err != nil {
-			return result, err
+	var artifactID int64
+	if err = conn.QueryRowContext(ctx, `SELECT artifact_id FROM meta.artifact WHERE source=? AND sha256=?`, source, sha).Scan(&artifactID); err != nil {
+		return out, err
+	}
+	if artifactID <= 0 || artifactID > (math.MaxInt64-8191)/8192/65536-1 {
+		return out, fmt.Errorf("invalid source artifact ID")
+	}
+	if _, err = conn.ExecContext(ctx, `CREATE TEMP TABLE _source_headers AS SELECT * FROM fundamental.source_record WHERE false`); err != nil {
+		return out, err
+	}
+	defer conn.ExecContext(context.WithoutCancel(ctx), `DROP TABLE IF EXISTS temp.main._source_headers`)
+	err = conn.Raw(func(raw any) error {
+		app, e := duckdbgo.NewAppender(raw.(driver.Conn), "temp", "main", "_source_headers")
+		if e != nil {
+			return e
 		}
-	}
-
-	// Source identity is mandatory; old incomplete rows require explicit rebuild.
-	// Do not infer a source code from a canonical instrument during ingestion.
-	var incomplete bool
-	if err := conn.QueryRowContext(ctx, `SELECT EXISTS (
-		SELECT 1 FROM fundamental.provider_fact
-		WHERE source=? AND revision_key=? AND (provider_code IS NULL OR trim(provider_code)='')
-	)`, source, artifactSHA).Scan(&incomplete); err != nil {
-		return result, fmt.Errorf("validate stored provider identity: %w", err)
-	}
-	if incomplete {
-		return result, errors.New("stored provider facts lack source identity; rebuild from retained artifacts before ingestion")
-	}
-
-	// Remove facts no longer resolved for this immutable artifact revision.
-	stalePredicate := `
-		p.source=? AND p.revision_key=? AND p.provider_code>=? AND (?='' OR p.provider_code<?) AND NOT EXISTS (
-				SELECT 1 FROM temp.main.` + providerFactStageTable + ` s
-				WHERE s.source=p.source
-				  AND s.revision_key=p.revision_key
-				  AND s.provider_code=p.provider_code
-				  AND s.provider_field=p.provider_field
-		)`
-	if !domain.IncludesBSE(ctx) {
-		// Excluded markets are not absent records: preserve their existing evidence.
-		stalePredicate += ` AND p.instrument_id NOT IN (SELECT instrument_id FROM core.instrument WHERE exchange_mic='XBSE')`
-		if _, err := conn.ExecContext(ctx, `DELETE FROM temp.main.`+providerFactStageTable+` WHERE instrument_id IN (SELECT instrument_id FROM core.instrument WHERE exchange_mic='XBSE')`); err != nil {
-			return result, err
-		}
-	}
-	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM temp.main.`+providerFactStageTable).Scan(&result.Attempted); err != nil {
-		return result, err
-	}
-	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_fact p WHERE `+stalePredicate, source, artifactSHA, lower, upper, upper).Scan(&result.Removed); err != nil {
-		return result, fmt.Errorf("count stale provider financial facts: %w", err)
-	}
-	if _, err := conn.ExecContext(ctx, `DELETE FROM fundamental.provider_fact p WHERE `+stalePredicate, source, artifactSHA, lower, upper, upper); err != nil {
-		return result, fmt.Errorf("remove stale provider financial facts: %w", err)
-	}
-
-	if err := conn.QueryRowContext(ctx, `
-		SELECT count(*)
-		FROM (
-			SELECT DISTINCT source, revision_key, provider_code, provider_field, instrument_id
-			FROM temp.main.`+providerFactStageTable+`
-		) s
-		JOIN (SELECT * FROM fundamental.provider_fact WHERE source=? AND revision_key=? AND provider_code>=? AND (?='' OR provider_code<?)) p
-		  ON p.source=s.source
-		 AND p.revision_key=s.revision_key
-		 AND p.provider_code=s.provider_code
-		 AND p.provider_field=s.provider_field
-		WHERE p.instrument_id<>s.instrument_id
-	`, source, artifactSHA, lower, upper, upper).Scan(&result.Reassigned); err != nil {
-		return result, fmt.Errorf("count reassigned provider financial facts: %w", err)
-	}
-
-	if err := conn.QueryRowContext(ctx, `
-		SELECT count(*)
-		FROM (
-			SELECT DISTINCT source, revision_key, provider_code, provider_field
-			FROM temp.main.`+providerFactStageTable+`
-		) s
-		WHERE NOT EXISTS (
-			SELECT 1 FROM fundamental.provider_fact p
-			WHERE p.source=? AND p.revision_key=? AND p.provider_code>=? AND (?='' OR p.provider_code<?) AND p.source=s.source
-			  AND p.revision_key=s.revision_key
-			  AND p.provider_code=s.provider_code
-			  AND p.provider_field=s.provider_field
-		)
-	`, source, artifactSHA, lower, upper, upper).Scan(&result.Inserted); err != nil {
-		return result, fmt.Errorf("count new provider financial facts: %w", err)
-	}
-
-	if _, err := conn.ExecContext(ctx, `
-		INSERT INTO fundamental.provider_fact (
-			instrument_id, source, report_period, announcement_time,
-			provider_code, market_marker, provider_field, value,
-			source_file, source_file_hash, artifact_id, ingest_run_id,
-			revision_key, value_float32_bits
-		)
-		SELECT
-			instrument_id, source, report_period, announcement_time,
-			provider_code, market_marker, provider_field, value,
-			source_file, source_file_hash, artifact_id, ingest_run_id,
-			revision_key, value_float32_bits
-		FROM temp.main.`+providerFactStageTable+`
-		ON CONFLICT (source, revision_key, provider_code, provider_field) DO UPDATE SET
-			instrument_id=excluded.instrument_id,
-			report_period=excluded.report_period,
-			announcement_time=excluded.announcement_time,
-			market_marker=excluded.market_marker,
-			value=excluded.value,
-			value_float32_bits=excluded.value_float32_bits,
-			source_file=excluded.source_file,
-			source_file_hash=excluded.source_file_hash,
-			artifact_id=excluded.artifact_id,
-			ingest_run_id=excluded.ingest_run_id,
-			ingested_at=now()
-	`); err != nil {
-		return result, fmt.Errorf("merge provider financial facts: %w", err)
-	}
-	if _, err := conn.ExecContext(ctx, `DROP TABLE temp.main.`+providerFactStageTable); err != nil {
-		return result, fmt.Errorf("drop provider-fact staging table: %w", err)
-	}
-	return result, nil
-}
-
-func appendProviderFacts(ctx context.Context, conn *sql.Conn, ingestRunID int64, artifactSHA string, records []domain.ProviderFinancialRecord) error {
-	return conn.Raw(func(raw any) error {
-		driverConn, ok := raw.(driver.Conn)
-		if !ok {
-			return errors.New("duckdb raw connection does not implement driver.Conn")
-		}
-		appender, err := duckdbgo.NewAppender(driverConn, "temp", "main", providerFactStageTable)
-		if err != nil {
-			return fmt.Errorf("create provider-fact appender: %w", err)
-		}
-		for _, record := range records {
-			var announcement driver.Value
-			if record.AnnouncementTime != nil {
-				announcement = *record.AnnouncementTime
+		defer app.Close()
+		seen := map[uint32]bool{}
+		for _, r := range records {
+			if r.Provider != source || r.ArtifactID != artifactID || r.SourceRow == 0 || r.SourceRow > 65535 || r.InstrumentID <= 0 || r.ReportPeriod.IsZero() || !sixDigitCode.MatchString(r.ProviderCode) || len(r.ProviderFields) == 0 || len(r.ProviderFields) > 4096 || seen[r.SourceRow] {
+				_ = app.Clear()
+				return fmt.Errorf("invalid or duplicate source row locator")
 			}
-			for i, field := range record.ProviderFields {
-				if err := appender.AppendRow(
-					record.InstrumentID,
-					record.Provider,
-					record.ReportPeriod,
-					announcement,
-					record.ProviderCode,
-					uint16(record.MarketMarker),
-					fmt.Sprintf("FN%d", i+1),
-					field.Value,
-					int64(field.Bits),
-					record.SourceFile,
-					artifactSHA,
-					record.ArtifactID,
-					ingestRunID,
-					artifactSHA,
-				); err != nil {
-					_ = appender.Clear()
-					_ = appender.Close()
-					return fmt.Errorf("append provider fact instrument=%d code=%s field=FN%d: %w", record.InstrumentID, record.ProviderCode, i+1, err)
-				}
+			seen[r.SourceRow] = true
+			if e = app.AppendRow(artifactID*65536+int64(r.SourceRow), artifactID, r.SourceRow, r.ProviderCode, r.MarketMarker, uint16(len(r.ProviderFields)), r.ReportPeriod, r.InstrumentID); e != nil {
+				_ = app.Clear()
+				return e
 			}
 		}
-		if err := appender.CloseWithCancel(ctx); err != nil {
-			return fmt.Errorf("flush provider-fact appender: %w", err)
-		}
-		return nil
+		return app.Flush()
 	})
+	if err != nil {
+		return out, err
+	}
+	if !domain.IncludesBSE(ctx) {
+		if _, err = conn.ExecContext(ctx, `DELETE FROM _source_headers WHERE instrument_id IN (SELECT instrument_id FROM core.instrument WHERE exchange_mic='XBSE')`); err != nil {
+			return out, err
+		}
+	}
+
+	var changedEvidence bool
+	if err = conn.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM _source_headers s JOIN fundamental.source_record old USING(source_record_id) WHERE s.artifact_id IS DISTINCT FROM old.artifact_id OR s.source_row IS DISTINCT FROM old.source_row OR s.provider_code IS DISTINCT FROM old.provider_code OR s.market_marker IS DISTINCT FROM old.market_marker OR s.field_count IS DISTINCT FROM old.field_count OR s.report_period IS DISTINCT FROM old.report_period)`).Scan(&changedEvidence); err != nil {
+		return out, err
+	}
+	if changedEvidence {
+		return out, fmt.Errorf("immutable financial locator changed")
+	}
+	if err = conn.QueryRowContext(ctx, `SELECT count(*),count(*) FILTER(WHERE old.source_record_id IS NULL),count(*) FILTER(WHERE old.source_record_id IS NOT NULL AND old.instrument_id IS DISTINCT FROM s.instrument_id) FROM _source_headers s LEFT JOIN fundamental.source_record old USING(source_record_id)`).Scan(&out.Attempted, &out.Inserted, &out.Reassigned); err != nil {
+		return out, err
+	}
+	stale := `artifact_id=? AND instrument_id IS NOT NULL AND source_record_id NOT IN(SELECT source_record_id FROM _source_headers)`
+	if !domain.IncludesBSE(ctx) {
+		stale += ` AND instrument_id NOT IN(SELECT instrument_id FROM core.instrument WHERE exchange_mic='XBSE')`
+	}
+	if err = conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.source_record WHERE `+stale, artifactID).Scan(&out.Removed); err != nil {
+		return out, err
+	}
+	if _, err = conn.ExecContext(ctx, `UPDATE fundamental.source_record SET instrument_id=NULL WHERE `+stale, artifactID); err != nil {
+		return out, err
+	}
+	if _, err = conn.ExecContext(ctx, `INSERT INTO fundamental.source_record SELECT * FROM _source_headers ON CONFLICT(source_record_id) DO UPDATE SET instrument_id=excluded.instrument_id WHERE source_record.instrument_id IS DISTINCT FROM excluded.instrument_id`); err != nil {
+		return out, err
+	}
+	// Withdraw unsupported standard rows in the same transaction as identity repair.
+	if _, err = conn.ExecContext(ctx, `DELETE FROM fundamental.statement_snapshot s USING fundamental.source_record r WHERE s.source_record_id=r.source_record_id AND r.artifact_id=? AND s.instrument_id IS DISTINCT FROM r.instrument_id`, artifactID); err != nil {
+		return out, err
+	}
+	_, err = conn.ExecContext(ctx, `DROP TABLE _source_headers`)
+	return out, err
+}
+
+// PublishFinancialPackage commits identity governance, source locators and the
+// matching completeness checkpoint atomically. Failed packages remain retryable.
+func PublishFinancialPackage(ctx context.Context, db *sql.DB, runID int64, sha string, records []domain.ProviderFinancialRecord, inputs []ProviderFinancialResolutionInput, checkpointKey, checkpointValue string) (state ProviderFinancialResolutionApplyResult, written FinancialSourceWriteResult, err error) {
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		return state, written, err
+	}
+	defer conn.Close()
+	if _, err = conn.ExecContext(ctx, "BEGIN"); err != nil {
+		return state, written, err
+	}
+	defer conn.ExecContext(context.WithoutCancel(ctx), "ROLLBACK")
+	state, err = applyProviderFinancialResolutions(ctx, conn, runID, inputs)
+	if err != nil {
+		return state, written, err
+	}
+	written, err = reconcileFinancialRecords(ctx, conn, runID, "tdx", sha, records)
+	if err != nil {
+		return state, written, err
+	}
+	if state.Pending == 0 {
+		if _, err = conn.ExecContext(ctx, `INSERT INTO meta.checkpoint(source,dataset,checkpoint_key,checkpoint_value) VALUES('tdx','professional_financial',?,?) ON CONFLICT(source,dataset,checkpoint_key) DO UPDATE SET checkpoint_value=excluded.checkpoint_value,updated_at=now()`, checkpointKey, checkpointValue); err != nil {
+			return state, written, err
+		}
+	}
+	_, err = conn.ExecContext(ctx, "COMMIT")
+	return state, written, err
 }

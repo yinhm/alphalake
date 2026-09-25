@@ -44,7 +44,15 @@ func RefreshPendingFilingResolutions(ctx context.Context, db *sql.DB, ingestRunI
 		if err != nil {
 			return result, err
 		}
-		if _, err := UpsertFilings(ctx, db, ingestRunID, resolved); err != nil {
+		changed := make([]domain.FilingObservation, 0, len(resolved))
+		for i, filing := range resolved {
+			// A local retry is not a new source observation. Retain unchanged
+			// evidence timestamps/runs; resolved corrections still refresh links.
+			if filing != filings[i] || (filing.IsCorrection && filing.InstrumentID > 0) {
+				changed = append(changed, filing)
+			}
+		}
+		if _, err := UpsertFilings(ctx, db, ingestRunID, changed); err != nil {
 			return result, err
 		}
 		result.Attempted += len(resolved)
@@ -77,10 +85,10 @@ func listPendingFilingsAfter(ctx context.Context, db *sql.DB, afterID int64, lim
 			COALESCE(resolution_reason,''), resolution_status
 		FROM fundamental.filing
 		WHERE (resolution_status='pending' OR (source='cninfo' AND exchange_mic='XBSE' AND
-          (starts_with(coalesce(resolution_reason,''),'bse-transition-v1:') OR EXISTS (SELECT 1 FROM meta.dataset_release WHERE source='bse' AND dataset='stock-code-transitions-2025-v1')))) AND filing_id>?
+          (starts_with(coalesce(resolution_reason,''),'bse-transition-v1:') OR EXISTS (SELECT 1 FROM meta.dataset_release WHERE source='bse' AND dataset='stock-code-transitions-2025-v1')))) AND filing_id>? AND (? OR coalesce(exchange_mic,'')<>'XBSE')
 		ORDER BY filing_id
 		LIMIT ?
-	`, afterID, limit)
+	`, afterID, domain.IncludesBSE(ctx), limit)
 	if err != nil {
 		return nil, afterID, fmt.Errorf("query pending filings: %w", err)
 	}

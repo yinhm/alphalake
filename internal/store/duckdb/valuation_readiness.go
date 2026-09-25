@@ -54,8 +54,8 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
  GROUP BY i.instrument_id,i.name,i.exchange_mic
  HAVING (?='' OR bool_or(substr(d.identifier_value,3)=?))
  ), latest AS (
- SELECT instrument_id,max(report_period) AS latest_report_period FROM fundamental.fact_asof(CAST(? AS TIMESTAMPTZ))
- WHERE primary_source='tdx' AND report_period<=CAST(? AS DATE) GROUP BY instrument_id
+ SELECT instrument_id,max(report_period) AS latest_report_period FROM fundamental.statement_snapshot
+ WHERE announcement_time<=CAST(? AS TIMESTAMPTZ) AND report_period<=CAST(? AS DATE) GROUP BY instrument_id
  ), industries AS (
  SELECT m.instrument_id,list(struct_pack(source:=t.source,taxonomy_code:=t.taxonomy_code,
  node_code:=n.source_node_code,node_name:=n.name,node_id:=n.node_id,

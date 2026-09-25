@@ -29,7 +29,7 @@ func TestRealOfficialStatements(t *testing.T) {
 	db, e := duck.OpenInitialized(ctx, dbPath)
 	check(e)
 	defer func() { db.Close() }()
-	_, e = db.ExecContext(ctx, `CREATE TEMP TABLE previous_facts AS SELECT * FROM fundamental.fact`)
+	_, e = db.ExecContext(ctx, `CREATE TEMP TABLE previous_facts AS SELECT * FROM fundamental.financial_observations(NULL,NULL,NULL,NULL)`)
 	check(e)
 	restoreCurrentMappings(t, db, "notes LIKE 'official-statements-20260919;%'")
 	rows, e := db.QueryContext(ctx, `SELECT provider_field FROM fundamental.provider_field WHERE notes LIKE 'official-statements-20260919;%' ORDER BY provider_field`)
@@ -51,15 +51,15 @@ func TestRealOfficialStatements(t *testing.T) {
 		t.Fatal(result)
 	}
 	var changed int
-	check(db.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM previous_facts EXCEPT SELECT * FROM fundamental.fact)`).Scan(&changed))
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM previous_facts EXCEPT SELECT * FROM fundamental.financial_observations(NULL,NULL,NULL,NULL))`).Scan(&changed))
 	if changed != 0 {
 		t.Fatal("old facts changed")
 	}
 	// Every new real source cell must either materialize with its declared scale
 	// and report basis or remain an explicit zero/nonfinite rejection.
-	rows, e = db.QueryContext(ctx, `SELECT p.value_float32_bits,m.value_multiplier,m.unit,m.period_basis,m.value_kind,CAST(p.report_period AS VARCHAR),f.value,f.unit,f.period_type,f.currency
- FROM fundamental.provider_fact p JOIN fundamental.provider_field m ON p.source=m.source AND p.provider_field=m.provider_field
- LEFT JOIN fundamental.fact f ON f.provider_fact_id=p.provider_fact_id
+	rows, e = sourceEvidenceDB(t, ctx, db).QueryContext(ctx, `SELECT p.value_float32_bits,m.value_multiplier,m.unit,m.period_basis,m.value_kind,CAST(p.report_period AS VARCHAR),f.value,f.unit,f.period_type,f.currency
+ FROM _source_evidence p JOIN fundamental.provider_field m ON p.source=m.source AND p.provider_field=m.provider_field
+ LEFT JOIN fundamental.financial_observations(NULL,NULL,NULL,NULL) f ON f.fact_id=p.provider_fact_id
  WHERE m.notes LIKE 'official-statements-20260919;%'`)
 	check(e)
 	checked, zero := 0, 0

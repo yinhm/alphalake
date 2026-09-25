@@ -112,7 +112,7 @@ func RefreshProviderFilingLinks(ctx context.Context, db *sql.DB, ingestRunID int
 					WHEN month(pf.report_period)=12 AND day(pf.report_period)=31 THEN 'annual'
 					ELSE 'unknown'
 				END AS required_filing_type
-			FROM fundamental.provider_fact pf
+			FROM (SELECT r.*,a.source,a.sha256 AS revision_key FROM fundamental.source_record r JOIN meta.artifact a USING(artifact_id) WHERE r.instrument_id IS NOT NULL) pf
 			JOIN meta.artifact a ON a.artifact_id=pf.artifact_id
 			WHERE pf.source=?
 			  AND pf.provider_code IS NOT NULL
@@ -250,6 +250,8 @@ func RefreshProviderFilingLinks(ctx context.Context, db *sql.DB, ingestRunID int
 			linked_at=excluded.linked_at,
 			ingest_run_id=excluded.ingest_run_id,
 			updated_at=now()
+ WHERE (provider_filing_link.provider_artifact_id,provider_filing_link.report_period,provider_filing_link.instrument_id,provider_filing_link.filing_id,provider_filing_link.status,provider_filing_link.candidate_count,provider_filing_link.link_method,provider_filing_link.reason,provider_filing_link.linker_version)
+ IS DISTINCT FROM (excluded.provider_artifact_id,excluded.report_period,excluded.instrument_id,excluded.filing_id,excluded.status,excluded.candidate_count,excluded.link_method,excluded.reason,excluded.linker_version)
 	`); err != nil {
 		return result, fmt.Errorf("merge provider-filing links: %w", err)
 	}
@@ -259,7 +261,7 @@ func RefreshProviderFilingLinks(ctx context.Context, db *sql.DB, ingestRunID int
 		FROM fundamental.provider_filing_link l
 		WHERE l.provider_source=?
 		  AND NOT EXISTS (
-			SELECT 1 FROM fundamental.provider_fact pf
+			SELECT 1 FROM (SELECT r.*,a.source,a.sha256 AS revision_key FROM fundamental.source_record r JOIN meta.artifact a USING(artifact_id) WHERE r.instrument_id IS NOT NULL) pf
 			WHERE pf.source=l.provider_source
 			  AND pf.revision_key=l.provider_revision_key
 			  AND pf.provider_code=l.provider_code
@@ -271,7 +273,7 @@ func RefreshProviderFilingLinks(ctx context.Context, db *sql.DB, ingestRunID int
 		DELETE FROM fundamental.provider_filing_link l
 		WHERE l.provider_source=?
 		  AND NOT EXISTS (
-			SELECT 1 FROM fundamental.provider_fact pf
+			SELECT 1 FROM (SELECT r.*,a.source,a.sha256 AS revision_key FROM fundamental.source_record r JOIN meta.artifact a USING(artifact_id) WHERE r.instrument_id IS NOT NULL) pf
 			WHERE pf.source=l.provider_source
 			  AND pf.revision_key=l.provider_revision_key
 			  AND pf.provider_code=l.provider_code

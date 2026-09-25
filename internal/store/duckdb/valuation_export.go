@@ -191,6 +191,10 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
 	if end.AddDate(0, 0, 1).Day() != 1 || int(end.Month())%3 != 0 {
 		return nil, errors.New("report period must be quarter end")
 	}
+	root, err := FinancialArchiveRoot(ctx, db)
+	if err != nil {
+		return nil, err
+	}
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -213,7 +217,7 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
 	// 以窗口分区键限定候选证券，避免逐公司重排全市场事实。不能提前按代码
 	// 筛选版本：同一证券的其他代码/来源可能已取代旧事实；代码复用须保留全部身份。
 	var first, last sql.NullInt64
-	if err := tx.QueryRowContext(ctx, `SELECT min(instrument_id),max(instrument_id) FROM fundamental.fact WHERE provider_code=?`, code).Scan(&first, &last); err != nil {
+	if err := tx.QueryRowContext(ctx, `SELECT min(statement_snapshot.instrument_id),max(statement_snapshot.instrument_id) FROM fundamental.statement_snapshot JOIN fundamental.source_record USING(source_record_id) WHERE provider_code=?`, code).Scan(&first, &last); err != nil {
 		return nil, fmt.Errorf("export candidate instruments: %w", err)
 	}
 	if !first.Valid {
@@ -235,23 +239,22 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
       f.canonical_field,CAST(f.value AS VARCHAR) AS value,f.unit,f.period_type,f.statement_scope,
       f.fact_id,f.revision_key,f.normalization_rule,f.materializer_version,
       CAST(f.announcement_time AS VARCHAR) AS available_at,a.sha256 AS artifact_sha256,
-      p.value_float32_bits AS bits,m.value_multiplier AS multiplier,
+      f.source_row,a.local_path,a.source_locator,a.content_length,m.value_multiplier AS multiplier,
       d.source_filing_id AS announcement_id,d.sha256 AS pdf_sha256,d.source_url AS pdf_url
-    FROM fundamental.fact_asof(CAST(? AS TIMESTAMPTZ)) f
-    JOIN fundamental.provider_fact p ON p.provider_fact_id=f.provider_fact_id
-    JOIN meta.artifact a ON a.artifact_id=p.artifact_id
+    FROM fundamental.financial_observations_asof(?,make_date(year(CAST(? AS DATE))-1,1,1),?,CAST(? AS TIMESTAMPTZ)) f
+    JOIN meta.artifact a ON a.artifact_id=f.artifact_id
     JOIN fundamental.filing d ON d.filing_id=f.source_filing_id
     JOIN fundamental.provider_field m ON m.source=f.primary_source AND m.provider_field=f.source_provider_field
       AND m.canonical_field=f.canonical_field
       AND m.valid_from<=f.report_period AND (m.valid_to IS NULL OR f.report_period<m.valid_to)
     WHERE f.instrument_id BETWEEN ? AND ? AND f.provider_code=? AND f.primary_source='tdx' AND f.report_period<=CAST(? AS DATE)
       AND f.report_period>=make_date(year(CAST(? AS DATE))-1,1,1)
-    ORDER BY f.report_period,f.canonical_field,f.fact_id) x`, []any{asof, first.Int64, last.Int64, code, end, end}},
+    ORDER BY f.report_period,f.canonical_field,f.fact_id) x`, []any{code, end, end, asof, first.Int64, last.Int64, code, end, end}},
 		{"windows", `SELECT CAST(to_json(list(x)) AS VARCHAR) FROM (
     SELECT instrument_id,provider_code AS code,canonical_field AS field,canonical_field,CAST(value AS VARCHAR) AS value,
       unit,statement_scope,period_type,calculation_basis,coverage_status,required_inputs,available_inputs,
       CAST(latest_input_announcement_time AS VARCHAR) AS available_at,input_periods,input_coefficients,source_fact_ids,source_filing_ids,missing_periods
-    FROM fundamental.ttm_asof(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE), min_instrument_id := ?, max_instrument_id := ?) WHERE provider_code=? ORDER BY canonical_field,instrument_id) x`, []any{asof, end, first.Int64, last.Int64, code}},
+    FROM fundamental.ttm_asof(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE), min_instrument_id := ?, max_instrument_id := ?, security_code := ?) WHERE provider_code=? ORDER BY canonical_field,instrument_id) x`, []any{asof, end, first.Int64, last.Int64, code, code}},
 		{"supplements", `SELECT CAST(to_json(list(x)) AS VARCHAR) FROM (
  SELECT * EXCLUDE(review_state) FROM (
     SELECT s.provider_code AS code,CAST(s.report_period AS VARCHAR) AS period,s.item,CAST(s.value AS VARCHAR) AS value,
@@ -262,10 +265,10 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
       AND f.announcement_time<=CAST(? AS TIMESTAMPTZ) AND f.sha256=s.pdf_sha256 AND f.resolution_status='resolved'
       AND f.provider_code=s.provider_code AND f.instrument_id IS NOT NULL
       AND (s.statement_scope='finance_subsidiary' OR EXISTS (
-        SELECT 1 FROM fundamental.fact_asof(CAST(? AS TIMESTAMPTZ)) current
+        SELECT 1 FROM fundamental.financial_observations_asof(?,NULL,?,CAST(? AS TIMESTAMPTZ)) current
         WHERE current.source_filing_id=f.filing_id AND current.provider_code=s.provider_code AND current.report_period=s.report_period))
     QUALIFY row_number() OVER(PARTITION BY s.provider_code,s.report_period,s.item ORDER BY f.announcement_time DESC,f.filing_id DESC)=1
-     ) selected WHERE review_state='active' ORDER BY period,item) x`, []any{code, end, end, asof, asof}},
+     ) selected WHERE review_state='active' ORDER BY period,item) x`, []any{code, end, end, asof, code, end, asof}},
 	}
 	// Mirror metadata is added only for independently reviewed documents, so
 	// existing CNINFO-only exported evidence remains byte-compatible.
@@ -311,6 +314,12 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
 		}
 		if !raw.Valid {
 			raw.String = "[]"
+		}
+		if q.name == "facts" {
+			raw.String, err = enrichFinancialSourceBits(root, raw.String)
+			if err != nil {
+				return nil, err
+			}
 		}
 		if len(mirrors) > 0 && (q.name == "facts" || q.name == "supplements") {
 			var records []map[string]json.RawMessage

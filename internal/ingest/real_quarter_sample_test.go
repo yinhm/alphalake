@@ -85,6 +85,7 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 	defer db.Close()
 	keepFrozenFinancialFieldScope(t, db)
 	root := filepath.Join(t.TempDir(), "raw")
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	var instruments []domain.InstrumentObservation
 	check(json.Unmarshal(readAnnualSample(t, "instruments.json"), &instruments))
 	_, err = duckstore.UpsertInstruments(ctx, db, instruments)
@@ -136,9 +137,9 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 		if len(resolved) != 2 || state.Pending != 0 {
 			t.Fatalf("unresolved quarter identities: %+v", state)
 		}
-		written, err := duckstore.ReconcileProviderFinancialRecordsForArtifact(ctx, db, runID, "tdx", stored.SHA256, resolved)
+		written, err := duckstore.ReconcileFinancialSourceRecords(ctx, db, runID, "tdx", stored.SHA256, resolved)
 		check(err)
-		if written.Inserted != 2*584 {
+		if written.Inserted != 2 {
 			t.Fatalf("quarter provider facts: %+v", written)
 		}
 	}
@@ -169,7 +170,7 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 		var period, unit, filingID string
 		var announcement time.Time
 		check(db.QueryRowContext(ctx, `SELECT cast(f.value AS DOUBLE), f.period_type, f.unit, a.source_filing_id, f.announcement_time
-			FROM fundamental.fact f JOIN fundamental.filing a ON a.filing_id=f.source_filing_id
+			FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) f JOIN fundamental.filing a ON a.filing_id=f.source_filing_id
 			WHERE f.provider_code=? AND f.source_provider_field=? AND f.report_period=cast(? AS DATE)`, row[0], row[1], row[2]).Scan(&value, &period, &unit, &filingID, &announcement))
 		want, err := strconv.ParseFloat(row[5], 32)
 		check(err)
@@ -184,21 +185,21 @@ func TestRealQuarterFinancialWorkflow(t *testing.T) {
 			t.Fatalf("%s/%s/%s: value=%v period=%s unit=%s filing=%s announcement=%s", row[0], row[1], row[2], value, period, unit, filingID, announcement)
 		}
 		var before int
-		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact_asof(?)
+		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,?)
 			WHERE provider_code=? AND source_provider_field=? AND report_period=cast(? AS DATE)`, available.Add(-time.Second), row[0], row[1], row[2]).Scan(&before))
 		if before != 0 {
 			t.Fatalf("quarter fact visible before disclosure: %v", row[:3])
 		}
-		check(db.QueryRowContext(ctx, `SELECT cast(value AS DOUBLE) FROM fundamental.fact_asof(?)
+		check(db.QueryRowContext(ctx, `SELECT cast(value AS DOUBLE) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,?)
 			WHERE provider_code=? AND source_provider_field=? AND report_period=cast(? AS DATE)`, available, row[0], row[1], row[2]).Scan(&value))
 		if value != want {
 			t.Fatalf("quarter ASOF value=%v, want %v", value, want)
 		}
 	}
 	var missingDepreciation, zeroDiagnostics int
-	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL)
 		WHERE source_provider_field IN ('FN136','FN137','FN138','FN581') AND report_period=DATE '2025-09-30'`).Scan(&missingDepreciation))
-	check(db.QueryRowContext(ctx, `SELECT count(*) FROM meta.validation_result WHERE rule_code='provider_zero_ambiguous'`).Scan(&zeroDiagnostics))
+	check(db.QueryRowContext(ctx, `SELECT coalesce(sum(len(fields)),0) FROM fundamental.statement_rejection WHERE rule_code='provider_zero_ambiguous'`).Scan(&zeroDiagnostics))
 	if missingDepreciation != 0 || zeroDiagnostics != 108 {
 		t.Fatalf("missing depreciation materialized=%d all zero diagnostics=%d", missingDepreciation, zeroDiagnostics)
 	}

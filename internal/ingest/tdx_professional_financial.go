@@ -39,20 +39,20 @@ type TDXProfessionalFinancialOptions struct {
 }
 
 type TDXProfessionalFinancialProgress struct {
-	RunID           int64
-	Processed       int
-	Total           int
-	Package         string
-	Packages        int
-	Skipped         int
-	FactsAttempted  int
-	FactsInserted   int
-	FactsReassigned int
-	FactsRemoved    int
-	Unresolved      int
-	Acknowledged    int
-	Failures        int
-	Error           string // 当前包失败原因，采集期间立即记录，避免仅在最终摘要保留首个错误。
+	RunID             int64
+	Processed         int
+	Total             int
+	Package           string
+	Packages          int
+	Skipped           int
+	RecordsAttempted  int
+	RecordsInserted   int
+	RecordsReassigned int
+	RecordsUnresolved int
+	Unresolved        int
+	Acknowledged      int
+	Failures          int
+	Error             string // 当前包失败原因，采集期间立即记录，避免仅在最终摘要保留首个错误。
 }
 
 type TDXProfessionalFinancialFailure struct {
@@ -61,20 +61,20 @@ type TDXProfessionalFinancialFailure struct {
 }
 
 type TDXProfessionalFinancialSummary struct {
-	CacheFallbacks  int
-	RunID           int64
-	Listed          int
-	Selected        int
-	Packages        int
-	Skipped         int
-	FactsAttempted  int
-	FactsInserted   int
-	FactsReassigned int
-	FactsRemoved    int
-	Unresolved      int // pending unresolved records only; acknowledged records are separate
-	Acknowledged    int
-	Failures        []TDXProfessionalFinancialFailure
-	MasterFailures  []InstrumentMasterFailure
+	CacheFallbacks    int
+	RunID             int64
+	Listed            int
+	Selected          int
+	Packages          int
+	Skipped           int
+	RecordsAttempted  int
+	RecordsInserted   int
+	RecordsReassigned int
+	RecordsUnresolved int
+	Unresolved        int // pending unresolved records only; acknowledged records are separate
+	Acknowledged      int
+	Failures          []TDXProfessionalFinancialFailure
+	MasterFailures    []InstrumentMasterFailure
 }
 
 type TDXProfessionalFinancialBatchError struct {
@@ -200,11 +200,6 @@ func SyncTDXProfessionalFinancialWithOptions(
 	summary.Selected = len(entries)
 
 	for i, entry := range entries {
-		if i > 0 {
-			if err := duckstore.ReloadPersistentCatalog(ctx, db); err != nil {
-				return summary, err
-			}
-		}
 		if err := ctx.Err(); err != nil {
 			return summary, err
 		}
@@ -305,30 +300,19 @@ func SyncTDXProfessionalFinancialWithOptions(
 			}
 			resolved = keptRecords
 		}
-		resolutionState, err := duckstore.ApplyProviderFinancialResolutions(ctx, db, runID, resolutionInputs)
-		if err != nil {
-			summary.Failures = append(summary.Failures, TDXProfessionalFinancialFailure{Package: entry.Filename, Err: err})
-			reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
-			continue
-		}
-		factWrite, err := duckstore.ReconcileProviderFinancialRecordsForArtifact(ctx, db, runID, "tdx", stored.SHA256, resolved)
+		resolutionState, factWrite, err := duckstore.PublishFinancialPackage(ctx, db, runID, stored.SHA256, resolved, resolutionInputs, checkpointKey, entry.MD5)
 		if err != nil {
 			summary.Failures = append(summary.Failures, TDXProfessionalFinancialFailure{Package: entry.Filename, Err: err})
 			reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
 			continue
 		}
 		summary.Packages++
-		summary.FactsAttempted += factWrite.Attempted
-		summary.FactsInserted += factWrite.Inserted
-		summary.FactsReassigned += factWrite.Reassigned
-		summary.FactsRemoved += factWrite.Removed
+		summary.RecordsAttempted += factWrite.Attempted
+		summary.RecordsInserted += factWrite.Inserted
+		summary.RecordsReassigned += factWrite.Reassigned
+		summary.RecordsUnresolved += factWrite.Removed
 		summary.Unresolved += resolutionState.Pending
 		summary.Acknowledged += resolutionState.Acknowledged
-		if resolutionState.Pending == 0 {
-			if err := duckstore.SetCheckpoint(ctx, db, "tdx", tdxProfessionalFinancialDataset, checkpointKey, entry.MD5); err != nil {
-				summary.Failures = append(summary.Failures, TDXProfessionalFinancialFailure{Package: entry.Filename, Err: err})
-			}
-		}
 		reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
 	}
 
@@ -379,7 +363,9 @@ func resolveProviderFinancialRecords(ctx context.Context, db *sql.DB, records []
 		}
 		code := strings.TrimSpace(record.ProviderCode)
 		if previous, exists := seenCodes[code]; exists {
-			if reflect.DeepEqual(previous, record) {
+			comparison := record
+			comparison.SourceRow = previous.SourceRow
+			if reflect.DeepEqual(previous, comparison) {
 				continue
 			}
 			differences := []string{}
@@ -448,8 +434,8 @@ func reportProfessionalFinancialProgress(options TDXProfessionalFinancialOptions
 	options.OnProgress(TDXProfessionalFinancialProgress{
 		RunID: summary.RunID, Processed: processed, Total: summary.Selected,
 		Package: name, Packages: summary.Packages, Skipped: summary.Skipped,
-		FactsAttempted: summary.FactsAttempted, FactsInserted: summary.FactsInserted,
-		FactsReassigned: summary.FactsReassigned, FactsRemoved: summary.FactsRemoved,
+		RecordsAttempted: summary.RecordsAttempted, RecordsInserted: summary.RecordsInserted,
+		RecordsReassigned: summary.RecordsReassigned, RecordsUnresolved: summary.RecordsUnresolved,
 		Unresolved: summary.Unresolved, Acknowledged: summary.Acknowledged,
 		Failures: len(summary.Failures) + len(summary.MasterFailures),
 		Error:    failure,

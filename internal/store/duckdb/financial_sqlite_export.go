@@ -1,0 +1,102 @@
+package duckdb
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+)
+
+// ExportFinancialSQLiteRows exports one read transaction, never one process per
+// company or period. Only the requested standard columns are decoded from wide
+// storage; the receiving native model defines its own target columns.
+func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, codes, fields []string, from, end, asof time.Time) error {
+	if err := requireStandardFinancialSchema(ctx, db); err != nil {
+		return err
+	}
+	if len(fields) == 0 || from.IsZero() || end.IsZero() || from.After(end) || asof.Before(end) {
+		return fmt.Errorf("fields, history window and information cutoff required")
+	}
+	known, err := LoadSnapshotFields(ctx, db)
+	if err != nil {
+		return err
+	}
+	catalog := map[string]SnapshotField{}
+	for _, f := range known {
+		catalog[f.Name] = f
+	}
+	names := []string{}
+	seen := map[string]bool{}
+	for _, name := range fields {
+		if _, ok := catalog[name]; !ok || seen[name] {
+			return fmt.Errorf("unknown/duplicate standard field %q", name)
+		}
+		seen[name] = true
+		names = append(names, `"`+name+`"`)
+	}
+	quotedCodes := []string{}
+	for _, code := range codes {
+		if !sixDigitCode.MatchString(code) {
+			return fmt.Errorf("invalid security code")
+		}
+		quotedCodes = append(quotedCodes, duckdbStringLiteral(code))
+	}
+	if err = os.Mkdir(dir, 0700); err != nil {
+		return err
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	cutoff := duckdbStringLiteral(asof.UTC().Format(time.RFC3339Nano)) + `::TIMESTAMPTZ`
+	start := duckdbStringLiteral(from.Format("2006-01-02")) + `::DATE`
+	finish := duckdbStringLiteral(end.Format("2006-01-02")) + `::DATE`
+	day := duckdbStringLiteral(asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02")) + `::DATE`
+	codeFilter := ""
+	market := `i.exchange_mic IN ('XSHG','XSHE')`
+	if len(codes) > 0 {
+		codeFilter = ` HAVING bool_or(right(d.identifier_value,6) IN (` + strings.Join(quotedCodes, ",") + `))`
+		market = `i.exchange_mic IN ('XSHG','XSHE','XBSE')`
+	}
+	universe := `SELECT i.instrument_id,i.name,i.exchange_mic,list(DISTINCT d.identifier_value ORDER BY d.identifier_value) FILTER(WHERE d.identifier_value IS NOT NULL) AS symbols,count(DISTINCT d.identifier_value) AS symbol_count,count(d.identifier_value) AS identifier_count
+ FROM core.instrument i LEFT JOIN core.instrument_identifier d ON d.instrument_id=i.instrument_id AND d.provider='tdx' AND d.identifier_type='symbol' AND (d.valid_from IS NULL OR d.valid_from<=` + day + `) AND (d.valid_to IS NULL OR d.valid_to>` + day + `)
+ WHERE i.instrument_type='equity' AND i.currency='CNY' AND ` + market + ` AND (i.list_date IS NULL OR i.list_date<=` + day + `) AND (i.delist_date IS NULL OR i.delist_date>` + day + `) AND (i.status='active' OR i.delist_date IS NOT NULL)
+ GROUP BY i.instrument_id,i.name,i.exchange_mic` + codeFilter
+	if _, err = tx.ExecContext(ctx, `CREATE TEMP TABLE _sqlite_universe AS `+universe); err != nil {
+		return err
+	}
+	copyQuery := func(name, query string) error {
+		_, e := tx.ExecContext(ctx, `COPY (`+query+`) TO `+duckdbStringLiteral(filepath.Join(dir, name))+` (FORMAT JSON,ARRAY false)`)
+		return e
+	}
+	if err = copyQuery("companies.jsonl", `SELECT * FROM _sqlite_universe ORDER BY instrument_id`); err != nil {
+		return err
+	}
+	// Filter issuer identities before wide reads; rank versions before code checks.
+	values := `WITH headers AS MATERIALIZED (
+ SELECT s.source_record_id,s.instrument_id,s.source_filing_id,s.report_period,s.announcement_time,r.provider_code,a.sha256 AS artifact_sha256
+ FROM fundamental.statement_snapshot s JOIN fundamental.source_record r USING(source_record_id) JOIN meta.artifact a USING(artifact_id)
+ WHERE s.instrument_id IN(SELECT instrument_id FROM _sqlite_universe) AND s.report_period BETWEEN ` + start + ` AND ` + finish + ` AND s.announcement_time<=` + cutoff + `
+ ), selected AS (SELECT h.*,` + "w." + strings.Join(names, ",w.") + ` FROM headers h JOIN fundamental.statement_snapshot w USING(source_record_id)),cells AS (
+ UNPIVOT selected ON ` + strings.Join(names, ",") + ` INTO NAME field VALUE value
+ ), ranked AS (SELECT *,row_number() OVER(PARTITION BY instrument_id,report_period,field ORDER BY announcement_time DESC,source_record_id DESC) AS rank FROM cells)
+ SELECT c.instrument_id,c.provider_code AS code,CAST(c.report_period AS VARCHAR) AS period,c.field,c.field AS canonical_field,CAST(c.value AS VARCHAR) AS value,m.unit,'tdx' AS source,'provider_default' AS statement_scope,
+ CASE WHEN m.period_basis IN('instant','opening_instant') THEN m.period_basis WHEN m.period_basis='quarter' THEN 'Q'||CAST(quarter(c.report_period) AS VARCHAR) WHEN m.period_basis='ttm' THEN 'TTM' WHEN month(c.report_period)=3 THEN 'Q1' WHEN month(c.report_period)=6 THEN 'H1' WHEN month(c.report_period)=9 THEN '9M' ELSE 'FY' END AS period_type,
+ c.source_record_id*8192+CAST(substr(m.provider_field,3) AS BIGINT) AS fact_id,c.source_record_id,c.source_filing_id,CAST(c.announcement_time AS VARCHAR) AS available_at,c.artifact_sha256
+ FROM ranked c JOIN fundamental.statement_field m ON m.source='tdx' AND m.canonical_field=c.field AND (m.valid_from IS NULL OR m.valid_from<=c.report_period) AND (m.valid_to IS NULL OR c.report_period<m.valid_to)
+ WHERE c.rank=1 ORDER BY c.provider_code,c.instrument_id,c.report_period,c.field`
+	if err = copyQuery("facts.jsonl", values); err != nil {
+		return err
+	}
+	if err = copyQuery("conflicts.jsonl", `SELECT provider_code AS code,CAST(report_period AS VARCHAR) AS period,reason,artifact_sha256 FROM fundamental.provider_conflicts_asof(`+cutoff+`) WHERE report_period BETWEEN `+start+` AND `+finish); err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, `DROP TABLE _sqlite_universe`); err != nil {
+		return err
+	}
+	return tx.Commit()
+}

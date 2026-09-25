@@ -66,7 +66,7 @@ func testRealStatementBatch(t *testing.T, directory, review string, fieldCount, 
 	defer func() { db.Close() }()
 	// Restore the reviewed batch into a real archived/linked baseline. All older
 	// fact IDs, values and lineage must remain byte-for-byte equivalent as rows.
-	_, err = db.ExecContext(ctx, `CREATE TEMP TABLE previous_facts AS SELECT * FROM fundamental.fact`)
+	_, err = db.ExecContext(ctx, `CREATE TEMP TABLE previous_facts AS SELECT * FROM fundamental.financial_observations(NULL,NULL,NULL,NULL)`)
 	check(err)
 	restoreCurrentMappings(t, db, "notes LIKE '"+review+";%'")
 	var fields []string
@@ -83,19 +83,19 @@ func testRealStatementBatch(t *testing.T, directory, review string, fieldCount, 
 		t.Fatal(result)
 	}
 	var changed int
-	check(db.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM previous_facts EXCEPT SELECT * FROM fundamental.fact)`).Scan(&changed))
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM previous_facts EXCEPT SELECT * FROM fundamental.financial_observations(NULL,NULL,NULL,NULL))`).Scan(&changed))
 	if changed != 0 {
 		t.Fatal("old facts changed", changed)
 	}
 	matched, missing := 0, 0
 	for _, r := range evidence.Observations {
 		var bits uint32
-		check(db.QueryRowContext(ctx, `SELECT value_float32_bits FROM fundamental.provider_fact WHERE provider_code='300866' AND provider_field=? AND report_period=CAST(? AS DATE)`, r.Provider, r.Period).Scan(&bits))
+		check(sourceEvidenceDB(t, ctx, db).QueryRowContext(ctx, `SELECT value_float32_bits FROM _source_evidence WHERE provider_code='300866' AND provider_field=? AND report_period=CAST(? AS DATE)`, r.Provider, r.Period).Scan(&bits))
 		if bits != r.Bits {
 			t.Fatal("source evidence differs", r)
 		}
 		var count int
-		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE provider_code='300866' AND canonical_field=? AND report_period=CAST(? AS DATE)`, r.Field, r.Period).Scan(&count))
+		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='300866' AND canonical_field=? AND report_period=CAST(? AS DATE)`, r.Field, r.Period).Scan(&count))
 		if r.Status == "printed_missing" {
 			if count != 0 {
 				t.Fatal("source zero promoted", r)
@@ -108,7 +108,7 @@ func testRealStatementBatch(t *testing.T, directory, review string, fieldCount, 
 		}
 		var value float64
 		var unit, basis string
-		check(db.QueryRowContext(ctx, `SELECT value,unit,period_type FROM fundamental.fact WHERE provider_code='300866' AND canonical_field=? AND report_period=CAST(? AS DATE)`, r.Field, r.Period).Scan(&value, &unit, &basis))
+		check(db.QueryRowContext(ctx, `SELECT value,unit,period_type FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='300866' AND canonical_field=? AND report_period=CAST(? AS DATE)`, r.Field, r.Period).Scan(&value, &unit, &basis))
 		wantBasis := "H1"
 		if r.Period == "2025-12-31" {
 			wantBasis = "FY"
@@ -128,7 +128,7 @@ func testRealStatementBatch(t *testing.T, directory, review string, fieldCount, 
 	at := time.Date(2026, 8, 31, 16, 0, 0, 0, time.UTC)
 	for _, delta := range []time.Duration{-time.Nanosecond, 0} {
 		var count int
-		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact_asof(?) WHERE provider_code='300866' AND canonical_field=? AND report_period=DATE '2026-06-30'`, at.Add(delta), boundaryField).Scan(&count))
+		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,?) WHERE provider_code='300866' AND canonical_field=? AND report_period=DATE '2026-06-30'`, at.Add(delta), boundaryField).Scan(&count))
 		if (count == 1) != (delta == 0) {
 			t.Fatal("PIT boundary", count)
 		}
@@ -201,7 +201,7 @@ func testRealStatementBatch(t *testing.T, directory, review string, fieldCount, 
 	if rejected.Removed != result.Inserted {
 		t.Fatal("invalidated batch not removed", result, rejected)
 	}
-	check(db.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM previous_facts EXCEPT SELECT * FROM fundamental.fact)`).Scan(&changed))
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM previous_facts EXCEPT SELECT * FROM fundamental.financial_observations(NULL,NULL,NULL,NULL))`).Scan(&changed))
 	if changed != 0 {
 		t.Fatal("unrelated facts removed")
 	}

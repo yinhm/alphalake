@@ -18,6 +18,7 @@ func TestFinancialManifestRollbackReusesOlderRetainedArtifact(t *testing.T) {
 	}
 	defer db.Close()
 	root := filepath.Join(t.TempDir(), "raw")
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	source := &fakeProfessionalFinancialSource{
 		instruments: []domain.InstrumentObservation{{
 			Instrument: domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Test"},
@@ -32,7 +33,7 @@ func TestFinancialManifestRollbackReusesOlderRetainedArtifact(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if first.FactsInserted != 2 || source.packageCalls != 1 {
+	if first.RecordsInserted != 1 || source.packageCalls != 1 {
 		t.Fatalf("first=%#v calls=%d", first, source.packageCalls)
 	}
 
@@ -41,7 +42,7 @@ func TestFinancialManifestRollbackReusesOlderRetainedArtifact(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if second.FactsInserted != 2 || source.packageCalls != 2 {
+	if second.RecordsInserted != 1 || source.packageCalls != 2 {
 		t.Fatalf("second=%#v calls=%d, corrected package should download once", second, source.packageCalls)
 	}
 
@@ -56,7 +57,7 @@ func TestFinancialManifestRollbackReusesOlderRetainedArtifact(t *testing.T) {
 	if source.packageCalls != 2 {
 		t.Fatalf("package calls=%d, want historical artifact reuse without redownload", source.packageCalls)
 	}
-	if third.FactsAttempted != 2 || third.FactsInserted != 0 {
+	if third.RecordsAttempted != 1 || third.RecordsInserted != 0 {
 		t.Fatalf("third=%#v, want attempted replay with zero new facts", third)
 	}
 }

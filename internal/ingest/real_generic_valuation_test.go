@@ -58,6 +58,7 @@ func verifyGenericValuationSample(t *testing.T, dir, instrumentsJSON string, rep
 	// 样本固定观察时钟；不是生产采集时间或历史主数据验收。
 	at := time.Date(2026, 9, 10, 0, 0, 0, 0, time.UTC)
 	rawRoot := filepath.Join(t.TempDir(), "raw")
+	t.Setenv("ALPHALAKE_WORKSPACE", rawRoot)
 	persist := func(source, dataset, name, mime string, raw []byte) int64 {
 		t.Helper()
 		stored, err := artifact.Persist(ctx, db, rawRoot, artifact.Input{Source: source, Dataset: dataset, SourceLocator: name, FetchedAt: at, MediaType: mime, ParserVersion: "acceptance-v1", Content: raw})
@@ -129,7 +130,7 @@ func verifyGenericValuationSample(t *testing.T, dir, instrumentsJSON string, rep
 		if len(resolved) != len(instruments) {
 			t.Fatal("unresolved sample")
 		}
-		_, err = duckstore.ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", p.SHA256, resolved)
+		_, err = duckstore.ReconcileFinancialSourceRecords(ctx, db, run, "tdx", p.SHA256, resolved)
 		check(err)
 	}
 	var ledger []struct {

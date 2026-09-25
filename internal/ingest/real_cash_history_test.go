@@ -31,8 +31,8 @@ func TestRealAnkerCashHistory(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	t.Setenv("ALPHALAKE_DUCKDB_MEMORY_LIMIT", "1GB")
-	t.Setenv("ALPHALAKE_DUCKDB_THREADS", "2")
+	t.Setenv("ALPHALAKE_DUCKDB_MEMORY_LIMIT", "512MiB")
+	t.Setenv("ALPHALAKE_DUCKDB_THREADS", "1")
 	base := os.Getenv("ALPHALAKE_CASH_HISTORY_BASE_DB")
 	supplied := base != ""
 	if !supplied {
@@ -68,13 +68,15 @@ func TestRealAnkerCashHistory(t *testing.T) {
 	db, err := duckstore.Open(ctx, path)
 	check(err)
 	defer func() { _ = db.Close() }()
+	copyFinancialTestArchives(t, db, filepath.Dir(base), output)
+	t.Setenv("ALPHALAKE_WORKSPACE", output)
 	// 显式收窄审核范围，验证未审核历史被拒绝及恢复后的物化。
 	check(duckstore.Initialize(ctx, db))
 	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET valid_from=DATE '2025-01-01' WHERE source='tdx' AND provider_field='FN114'`)
 	check(err)
 	var schema int
 	check(db.QueryRowContext(ctx, `SELECT max(version) FROM meta.schema_version`).Scan(&schema))
-	_, err = db.ExecContext(ctx, `CREATE TEMP TABLE cash_before AS SELECT * FROM fundamental.fact; CREATE TEMP TABLE cash_catalog_before AS SELECT * FROM fundamental.provider_field WHERE provider_field<>'FN114'`)
+	_, err = db.ExecContext(ctx, `CREATE TEMP TABLE cash_before AS SELECT * FROM fundamental.financial_observations(NULL,NULL,NULL,NULL); CREATE TEMP TABLE cash_catalog_before AS SELECT * FROM fundamental.provider_field WHERE provider_field<>'FN114'`)
 	check(err)
 	asof, err := time.Parse(time.RFC3339Nano, "2026-09-10T22:18:56.906406Z")
 	check(err)
@@ -89,7 +91,7 @@ func TestRealAnkerCashHistory(t *testing.T) {
 	check(err)
 	countCapex := func() int {
 		var n int
-		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE provider_code='300866' AND source_provider_field='FN114' AND report_period BETWEEN DATE '2024-06-30' AND DATE '2024-12-31'`).Scan(&n))
+		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='300866' AND source_provider_field='FN114' AND report_period BETWEEN DATE '2024-06-30' AND DATE '2024-12-31'`).Scan(&n))
 		return n
 	}
 	if countCapex() != 0 {
@@ -123,7 +125,7 @@ func TestRealAnkerCashHistory(t *testing.T) {
 	for _, r := range evidence.Values {
 		var value float64
 		var periodType, unit string
-		check(db.QueryRowContext(ctx, `SELECT CAST(value AS DOUBLE),period_type,unit FROM fundamental.fact WHERE provider_code='300866' AND source_provider_field=? AND report_period=CAST(? AS DATE)`, r.Field, r.Period).Scan(&value, &periodType, &unit))
+		check(db.QueryRowContext(ctx, `SELECT CAST(value AS DOUBLE),period_type,unit FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='300866' AND source_provider_field=? AND report_period=CAST(? AS DATE)`, r.Field, r.Period).Scan(&value, &periodType, &unit))
 		want := map[string]string{"2024-06-30": "H1", "2024-09-30": "9M", "2024-12-31": "FY"}[r.Period]
 		if r.Field != "FN114" {
 			want = map[string]string{"2024-09-30": "Q3", "2024-12-31": "Q4"}[r.Period]
@@ -137,7 +139,7 @@ func TestRealAnkerCashHistory(t *testing.T) {
 		check(err)
 		for _, offset := range []time.Duration{-time.Nanosecond, 0} {
 			var n int
-			check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact_asof(CAST(? AS TIMESTAMPTZ)) WHERE provider_code='300866' AND source_provider_field='FN114' AND report_period=CAST(? AS DATE)`, at.Add(offset), r.Period).Scan(&n))
+			check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,CAST(? AS TIMESTAMPTZ)) WHERE provider_code='300866' AND source_provider_field='FN114' AND report_period=CAST(? AS DATE)`, at.Add(offset), r.Period).Scan(&n))
 			want := 0
 			if offset == 0 {
 				want = 1
@@ -161,12 +163,12 @@ func TestRealAnkerCashHistory(t *testing.T) {
 	if restored.Inserted != 3 || countCapex() != 3 {
 		t.Fatal("restoration failed", restored)
 	}
-	check(db.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM cash_before EXCEPT SELECT * FROM fundamental.fact)`).Scan(&changed))
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM cash_before EXCEPT SELECT * FROM fundamental.financial_observations(NULL,NULL,NULL,NULL))`).Scan(&changed))
 	if changed != 0 {
 		t.Fatalf("%d preexisting fact contents changed", changed)
 	}
 	var refreshed int
-	check(db.QueryRowContext(ctx, `SELECT count(*) FROM cash_before b JOIN fundamental.fact f USING(fact_id) WHERE b.ingest_run_id IS DISTINCT FROM f.ingest_run_id OR b.ingested_at IS DISTINCT FROM f.ingested_at`).Scan(&refreshed))
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM cash_before b JOIN fundamental.financial_observations(NULL,NULL,NULL,NULL) f USING(fact_id) WHERE b.ingest_run_id IS DISTINCT FROM f.ingest_run_id`).Scan(&refreshed))
 	after, err := duckstore.ExportValuationData(ctx, db, "300866", end, asof)
 	check(err)
 	afterJSON, err := json.Marshal(after)
@@ -218,7 +220,7 @@ func importAnkerHistoricalEvidence(t *testing.T, db *sql.DB, dir, output string)
 	}
 	run, err := duckstore.StartIngestRun(ctx, db, "tdx", "reviewed_cash_history_2024", nil)
 	check(err)
-	root := filepath.Join(output, "raw")
+	root := output
 	raw := readFinancialSample(t, dir, "catalogue.json")
 	var request struct {
 		AcquiredAt time.Time `json:"acquired_at"`
@@ -287,7 +289,7 @@ func importAnkerHistoricalEvidence(t *testing.T, db *sql.DB, dir, output string)
 		if len(resolved) != 1 {
 			t.Fatal("historical identity unresolved")
 		}
-		_, err = duckstore.ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", a.SHA256, resolved)
+		_, err = duckstore.ReconcileFinancialSourceRecords(ctx, db, run, "tdx", a.SHA256, resolved)
 		check(err)
 	}
 	check(duckstore.FinishIngestRun(ctx, db, run, duckstore.IngestRunCompleted, nil, nil))

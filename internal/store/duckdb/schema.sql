@@ -11,9 +11,7 @@ CREATE SEQUENCE core.instrument_identifier_id_seq INCREMENT BY 1 MINVALUE 1 MAXV
 CREATE SEQUENCE core.instrument_id_seq INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 NO CYCLE;
 CREATE SEQUENCE core.listing_identifier_id_seq INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 NO CYCLE;
 CREATE SEQUENCE core.listing_id_seq INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 NO CYCLE;
-CREATE SEQUENCE fundamental.fact_id_seq INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 NO CYCLE;
 CREATE SEQUENCE fundamental.filing_id_seq INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 NO CYCLE;
-CREATE SEQUENCE fundamental.provider_fact_id_seq INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 NO CYCLE;
 CREATE SEQUENCE market.corporate_action_id_seq INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 NO CYCLE;
 CREATE SEQUENCE market.daily_observation_id_seq INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 NO CYCLE;
 CREATE SEQUENCE market.equity_proceeds_id_seq INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 NO CYCLE;
@@ -38,11 +36,9 @@ CREATE TABLE core.exchange(mic VARCHAR PRIMARY KEY, "name" VARCHAR NOT NULL, cou
 CREATE TABLE core.instrument(instrument_id BIGINT DEFAULT(nextval('core.instrument_id_seq')) PRIMARY KEY, instrument_type VARCHAR NOT NULL, exchange_mic VARCHAR, currency VARCHAR, company_id BIGINT, "name" VARCHAR, list_date DATE, delist_date DATE, status VARCHAR DEFAULT('active') NOT NULL, created_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL, updated_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL);
 CREATE TABLE core.instrument_identifier(instrument_identifier_id BIGINT DEFAULT(nextval('core.instrument_identifier_id_seq')) PRIMARY KEY, instrument_id BIGINT NOT NULL, provider VARCHAR NOT NULL, identifier_type VARCHAR NOT NULL, identifier_value VARCHAR NOT NULL, valid_from DATE, valid_to DATE, is_primary BOOLEAN DEFAULT(CAST('f' AS BOOLEAN)) NOT NULL, UNIQUE(provider, identifier_type, identifier_value, valid_from));
 CREATE TABLE fundamental.document_review(filing_id BIGINT, document_artifact_id BIGINT, review_artifact_id BIGINT NOT NULL, pdf_sha256 VARCHAR NOT NULL, reviewed_at TIMESTAMP WITH TIME ZONE NOT NULL, recorded_at TIMESTAMP WITH TIME ZONE, reviewed_record VARCHAR NOT NULL, CHECK(json_valid(reviewed_record)), PRIMARY KEY(filing_id, document_artifact_id));
-CREATE TABLE fundamental.fact(fact_id BIGINT DEFAULT(nextval('fundamental.fact_id_seq')) PRIMARY KEY, instrument_id BIGINT NOT NULL, canonical_field VARCHAR NOT NULL, report_period DATE NOT NULL, announcement_time TIMESTAMP WITH TIME ZONE NOT NULL, period_type VARCHAR NOT NULL, statement_scope VARCHAR NOT NULL, currency VARCHAR, unit VARCHAR NOT NULL, "value" DECIMAL(38,10) NOT NULL, primary_source VARCHAR NOT NULL, source_provider_field VARCHAR NOT NULL, provider_code VARCHAR, provider_fact_id BIGINT, source_filing_id BIGINT NOT NULL, revision_key VARCHAR NOT NULL, normalization_rule VARCHAR NOT NULL, materializer_version VARCHAR NOT NULL, ingest_run_id BIGINT, ingested_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL, UNIQUE(primary_source, revision_key, provider_code, source_provider_field));
 CREATE TABLE fundamental.field(canonical_field VARCHAR PRIMARY KEY, unit VARCHAR NOT NULL, value_kind VARCHAR NOT NULL, period_basis VARCHAR NOT NULL, CHECK((period_basis IN ('instant', 'quarter', 'ytd', 'opening_instant', 'ttm'))));
 CREATE TABLE fundamental.filing(filing_id BIGINT DEFAULT(nextval('fundamental.filing_id_seq')) PRIMARY KEY, instrument_id BIGINT, "source" VARCHAR NOT NULL, source_filing_id VARCHAR NOT NULL, provider_code VARCHAR DEFAULT('') NOT NULL, exchange_mic VARCHAR, security_name VARCHAR, filing_type VARCHAR, filing_variant VARCHAR DEFAULT('other') NOT NULL, report_period DATE, announcement_time TIMESTAMP WITH TIME ZONE, title VARCHAR, source_url VARCHAR, raw_category VARCHAR, classifier_version VARCHAR DEFAULT('legacy') NOT NULL, is_correction BOOLEAN DEFAULT(CAST('f' AS BOOLEAN)) NOT NULL, corrects_filing_id BIGINT, resolution_status VARCHAR DEFAULT('resolved') NOT NULL, resolution_reason VARCHAR, catalogue_artifact_id BIGINT, artifact_id BIGINT, sha256 VARCHAR, provider_org_id VARCHAR, provider_column_id VARCHAR, provider_page_column VARCHAR, raw_announcement_time_ms BIGINT, ingest_run_id BIGINT, first_seen_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL, last_seen_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL, ingested_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL, announcement_date DATE, announcement_time_precision VARCHAR DEFAULT('timestamp'), UNIQUE("source", source_filing_id), CHECK((resolution_status IN ('resolved', 'pending', 'acknowledged'))));
 CREATE TABLE fundamental.filing_document(filing_id BIGINT, artifact_id BIGINT, source_url VARCHAR NOT NULL, sha256 VARCHAR NOT NULL, fetched_at TIMESTAMP WITH TIME ZONE NOT NULL, ingest_run_id BIGINT, PRIMARY KEY(filing_id, artifact_id));
-CREATE TABLE fundamental.provider_fact(provider_fact_id BIGINT DEFAULT(nextval('fundamental.provider_fact_id_seq')) PRIMARY KEY, instrument_id BIGINT NOT NULL, "source" VARCHAR NOT NULL, report_period DATE NOT NULL, announcement_time TIMESTAMP WITH TIME ZONE, provider_code VARCHAR, market_marker USMALLINT, provider_field VARCHAR NOT NULL, "value" DOUBLE, value_float32_bits UBIGINT, source_file VARCHAR, source_file_hash VARCHAR, artifact_id BIGINT, ingest_run_id BIGINT, revision_key VARCHAR DEFAULT('') NOT NULL, ingested_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL, UNIQUE("source", revision_key, provider_code, provider_field));
 CREATE TABLE fundamental.provider_field("source" VARCHAR, provider_field VARCHAR, canonical_field VARCHAR, display_name VARCHAR, unit VARCHAR, value_kind VARCHAR, valid_from DATE DEFAULT(CAST('1900-01-01' AS "DATE")), valid_to DATE, notes VARCHAR, period_basis VARCHAR DEFAULT('report'), value_multiplier INTEGER DEFAULT(1), zero_policy VARCHAR DEFAULT('reject') NOT NULL CHECK(zero_policy IN ('allow','reject')), PRIMARY KEY("source", provider_field, valid_from));
 CREATE TABLE fundamental.provider_filing_link(provider_source VARCHAR, provider_revision_key VARCHAR, provider_artifact_id BIGINT NOT NULL, provider_code VARCHAR, report_period DATE NOT NULL, instrument_id BIGINT, filing_id BIGINT, status VARCHAR NOT NULL, candidate_count INTEGER DEFAULT(0) NOT NULL, link_method VARCHAR, reason VARCHAR, linker_version VARCHAR NOT NULL, linked_at TIMESTAMP WITH TIME ZONE, updated_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL, ingest_run_id BIGINT, PRIMARY KEY(provider_source, provider_revision_key, provider_code));
 CREATE TABLE fundamental.provider_record_resolution(artifact_id BIGINT, "source" VARCHAR NOT NULL, source_file VARCHAR NOT NULL, report_period DATE NOT NULL, provider_code VARCHAR, market_marker USMALLINT NOT NULL, status VARCHAR NOT NULL, instrument_id BIGINT, identifier_value VARCHAR, reason VARCHAR, acknowledged_reason VARCHAR, acknowledged_at TIMESTAMP WITH TIME ZONE, last_ingest_run_id BIGINT, updated_at TIMESTAMP WITH TIME ZONE DEFAULT(now()) NOT NULL, PRIMARY KEY(artifact_id, provider_code), CHECK((status IN ('resolved', 'pending', 'acknowledged'))));
@@ -75,11 +71,7 @@ CREATE TABLE core.listing(listing_id BIGINT DEFAULT(nextval('core.listing_id_seq
 CREATE TABLE core.listing_identifier(listing_identifier_id BIGINT DEFAULT(nextval('core.listing_identifier_id_seq')) PRIMARY KEY, listing_id BIGINT NOT NULL, provider VARCHAR NOT NULL, identifier_type VARCHAR NOT NULL, identifier_value VARCHAR NOT NULL, market_namespace VARCHAR NOT NULL, valid_from DATE NOT NULL, valid_to DATE, artifact_id BIGINT NOT NULL, recorded_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL, FOREIGN KEY (listing_id) REFERENCES core.listing(listing_id), CHECK(((valid_to IS NULL) OR (valid_to > valid_from))), UNIQUE(provider, identifier_type, market_namespace, identifier_value, valid_from));
 CREATE TABLE meta.dataset_release(release_id BIGINT DEFAULT(nextval('meta.dataset_release_id_seq')) PRIMARY KEY, "source" VARCHAR NOT NULL, dataset VARCHAR NOT NULL, source_version VARCHAR, content_key VARCHAR NOT NULL, source_published_at TIMESTAMP WITH TIME ZONE, publication_precision VARCHAR NOT NULL, available_at TIMESTAMP WITH TIME ZONE NOT NULL, availability_basis VARCHAR NOT NULL, first_seen_at TIMESTAMP WITH TIME ZONE NOT NULL, recorded_at TIMESTAMP WITH TIME ZONE DEFAULT(current_timestamp) NOT NULL, parser_version VARCHAR NOT NULL, normalization_version VARCHAR NOT NULL, ingest_run_id BIGINT NOT NULL, supersedes_release_id BIGINT, CHECK((length(main."trim"("source")) > 0)), CHECK((length(main."trim"(dataset)) > 0)), CHECK(regexp_full_match(content_key, '[0-9a-f]{64}')), CHECK((publication_precision IN ('timestamp', 'date', 'unknown'))), CHECK((availability_basis IN ('published_timestamp', 'published_date_boundary', 'first_seen'))), CHECK((length(main."trim"(parser_version)) > 0)), CHECK((length(main."trim"(normalization_version)) > 0)), FOREIGN KEY (ingest_run_id) REFERENCES meta.ingest_run(ingest_run_id), FOREIGN KEY (supersedes_release_id) REFERENCES meta.dataset_release(release_id), UNIQUE("source", dataset, content_key), CHECK(((supersedes_release_id IS NULL) OR (supersedes_release_id != release_id))), CHECK((recorded_at >= first_seen_at)), CHECK((((availability_basis = 'first_seen') AND (available_at = first_seen_at)) OR ((availability_basis = 'published_timestamp') AND (publication_precision = 'timestamp') AND (source_published_at IS NOT NULL) AND (available_at = source_published_at)) OR ((availability_basis = 'published_date_boundary') AND (publication_precision = 'date') AND (source_published_at IS NOT NULL) AND (available_at > source_published_at)))), CHECK((((publication_precision = 'unknown') AND (source_published_at IS NULL)) OR ((publication_precision != 'unknown') AND (source_published_at IS NOT NULL)))));
 CREATE TABLE meta.dataset_release_artifact(release_id BIGINT, artifact_id BIGINT, "role" VARCHAR, FOREIGN KEY (release_id) REFERENCES meta.dataset_release(release_id), FOREIGN KEY (artifact_id) REFERENCES meta.artifact(artifact_id), CHECK(("role" IN ('data', 'publication', 'timing'))), PRIMARY KEY(release_id, artifact_id, "role"));
-CREATE MACRO fundamental.fact_asof (as_of_time) AS TABLE (SELECT * EXCLUDE (fact_rank) FROM (SELECT f.*, row_number() OVER (PARTITION BY instrument_id, canonical_field, report_period ORDER BY announcement_time DESC, fact_id DESC) AS fact_rank FROM fundamental.fact AS f WHERE (announcement_time <= as_of_time)) WHERE (fact_rank = 1));
 CREATE MACRO fundamental.provider_conflicts_asof (as_of_time) AS TABLE (SELECT * EXCLUDE (observation_rank) FROM (SELECT r.*, a.sha256 AS artifact_sha256, a.fetched_at AS observed_at, row_number() OVER (PARTITION BY r."source", r.provider_code, r.report_period ORDER BY a.fetched_at DESC, r.artifact_id DESC) AS observation_rank FROM fundamental.provider_record_resolution AS r INNER JOIN meta.artifact AS a USING (artifact_id) WHERE (a.fetched_at <= CAST(as_of_time AS "TIMESTAMP WITH TIME ZONE"))) WHERE ((observation_rank = 1) AND starts_with(reason, 'conflicting duplicate provider records:')));
-CREATE MACRO fundamental.ttm_asof (as_of_time, end_period, min_instrument_id := NULL, max_instrument_id := NULL) AS TABLE (WITH facts AS (SELECT * FROM fundamental.fact_asof(CAST(as_of_time AS "TIMESTAMP WITH TIME ZONE")) WHERE (((min_instrument_id IS NULL) OR (instrument_id >= min_instrument_id)) AND ((max_instrument_id IS NULL) OR (instrument_id <= max_instrument_id)) AND (report_period <= CAST(end_period AS "DATE")) AND (materializer_version != 'legacy'))), instruments AS (SELECT DISTINCT instrument_id, primary_source, provider_code, statement_scope FROM facts), series AS (SELECT i.*, m.canonical_field, m.unit, CASE  WHEN ((m.value_kind = 'monetary')) THEN ('CNY') ELSE NULL END AS currency, m.period_basis AS basis FROM instruments AS i CROSS JOIN fundamental.field AS m WHERE m.value_kind IN ('monetary','shares') AND m.period_basis IN ('instant','quarter','ytd') AND ((CAST(end_period AS "DATE") = last_day(CAST(end_period AS "DATE"))) AND ("month"(CAST(end_period AS "DATE")) IN (3, 6, 9, 12)))), requirements AS ((SELECT s.*, 0 AS ordinal, CAST(end_period AS "DATE") AS required_period, 1 AS coefficient FROM series AS s WHERE (basis IS NOT NULL)) UNION ALL (SELECT s.*, CAST(n AS INTEGER), last_day((CAST(end_period AS "DATE") - (n * CAST('3 months' AS INTERVAL)))), 1 FROM series AS s CROSS JOIN "range"(1, 4) AS r(n) WHERE (basis = 'quarter'))UNION ALL (SELECT s.*, 1, make_date(("year"(CAST(end_period AS "DATE")) - 1), 12, 31), 1 FROM series AS s WHERE ((basis = 'ytd') AND ("month"(CAST(end_period AS "DATE")) != 12)))UNION ALL (SELECT s.*, 2, last_day((CAST(end_period AS "DATE") - CAST('1 year' AS INTERVAL))), -1 FROM series AS s WHERE ((basis = 'ytd') AND ("month"(CAST(end_period AS "DATE")) != 12)))), inputs AS (SELECT r.*, f.fact_id, f.source_filing_id, f.announcement_time, f."value", f.source_provider_field FROM requirements AS r LEFT JOIN facts AS f ON (((f.instrument_id = r.instrument_id) AND (f.primary_source = r.primary_source) AND (f.provider_code = r.provider_code) AND (f.statement_scope = r.statement_scope) AND (f.canonical_field = r.canonical_field) AND (f.unit = r.unit) AND (f.currency IS NOT DISTINCT FROM r.currency) AND (f.report_period = r.required_period) AND (f.period_type = CASE  WHEN ((r.basis = 'instant')) THEN ('instant') WHEN ((r.basis = 'quarter')) THEN (('Q' || CAST("quarter"(r.required_period) AS VARCHAR))) WHEN (("month"(r.required_period) = 3)) THEN ('Q1') WHEN (("month"(r.required_period) = 6)) THEN ('H1') WHEN ((("month"(r.required_period) = 9) AND (r.basis = 'ytd'))) THEN ('9M') WHEN (("month"(r.required_period) = 9)) THEN ('Q3') ELSE 'FY' END))))SELECT instrument_id, primary_source, provider_code, statement_scope, canonical_field, min(source_provider_field) AS source_provider_field, unit, currency, min(CAST(end_period AS "DATE")) AS report_period, CASE  WHEN ((basis = 'instant')) THEN ('instant') ELSE 'TTM' END AS period_type, basis AS calculation_basis, CASE  WHEN ((count(fact_id) = count_star())) THEN (sum(("value" * coefficient))) ELSE NULL END AS "value", CASE  WHEN ((count(fact_id) = count_star())) THEN ('complete') ELSE 'missing_inputs' END AS coverage_status, count_star() AS required_inputs, count(fact_id) AS available_inputs, max(announcement_time) AS latest_input_announcement_time, list(required_period ORDER BY ordinal) AS input_periods, list(coefficient ORDER BY ordinal) AS input_coefficients, list(fact_id ORDER BY ordinal) AS source_fact_ids, list(source_filing_id ORDER BY ordinal) AS source_filing_ids, list(required_period ORDER BY ordinal) FILTER (WHERE (fact_id IS NULL)) AS missing_periods FROM inputs GROUP BY instrument_id, primary_source, provider_code, statement_scope, canonical_field, unit, currency, basis);
-CREATE MACRO fundamental.annual_asof (as_of_time, report_year) AS TABLE (SELECT * REPLACE (CASE  WHEN ((period_type = 'instant')) THEN ('instant') ELSE 'FY' END AS period_type) FROM fundamental.ttm_asof(as_of_time, make_date(CAST(report_year AS INTEGER), 12, 31)));
-CREATE VIEW fundamental.fact_latest AS SELECT * EXCLUDE (fact_rank) FROM (SELECT f.*, row_number() OVER (PARTITION BY instrument_id, canonical_field, report_period ORDER BY announcement_time DESC, fact_id DESC) AS fact_rank FROM fundamental.fact AS f) WHERE (fact_rank = 1);
 CREATE VIEW reference.risk_observation AS (SELECT * FROM reference.country_risk) UNION ALL (SELECT * FROM reference.equity_risk_premium);
 CREATE INDEX daily_observation_lookup ON market.daily_observation(instrument_id, trade_date, "source");
 
@@ -249,7 +241,7 @@ INSERT INTO fundamental.provider_field ("source","provider_field","canonical_fie
 ('tdx','FN96','net_income_parent_ytd','归属于母公司所有者的净利润（累计）','CNY','monetary','2025-01-01',NULL,'Parent income YTD; distinct from FN232 single quarter; balance-profit-2026','ytd','1'),
 ('tdx','FN97','net_income_minority_ytd','少数股东损益（累计）','CNY','monetary','2025-01-01',NULL,'Minority profit/loss YTD; not minority book equity or segment allocation; balance-profit-2026','ytd','1'),
 ('tdx','FN99','tax_refunds_received','收到的税费返还','CNY','monetary','2025-01-01',NULL,'Cashflow statement; not income tax benefit; cash-rd-2026','ytd','1');
-INSERT INTO meta.schema_version(version,description) VALUES (51,'Current schema baseline');
+INSERT INTO meta.schema_version(version,description) VALUES (52,'Financial standard wide rows; immutable ZIP source');
 
 CREATE TABLE fundamental.source_field (
  source VARCHAR NOT NULL, provider_field VARCHAR NOT NULL, source_index INTEGER NOT NULL,
@@ -679,89 +671,3 @@ INSERT INTO fundamental.provider_field (source,provider_field,canonical_field,di
 ('tdx','FN582','financial_interest_and_fee_receipts_net_increase','收取利息和手续费净增加额(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
 ('tdx','FN583','financial_fee_cash_paid','支付手续费的现金(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject'),
 ('tdx','FN584','bond_issuance_cash_paid','发行债券支付的现金(万元)  [注：金融类科目]','CNY','monetary','1900-01-01','official-statements-20260919; documented source semantics; no individual company PDF certification','ytd',10000,'reject');
-
--- Standard report snapshot: values only from approved, materialized facts.
--- Unreviewed/missing rows remain in the statement denominator; no source zero
--- becomes a reported zero. Evidence is opt-in for ordinary business queries.
-CREATE MACRO fundamental.statements_asof(as_of_time, report_end, security_code, include_evidence := false) AS TABLE (
- WITH identity_candidates AS (
-  SELECT DISTINCT x.instrument_id,x.identifier_value
-  FROM core.instrument_identifier x JOIN core.instrument i USING(instrument_id)
-  WHERE x.provider='tdx' AND x.identifier_type='symbol' AND i.instrument_type<>'index'
-    AND right(x.identifier_value,6)=security_code
-    AND (x.valid_from IS NULL OR x.valid_from<=CAST(report_end AS DATE))
-    AND (x.valid_to IS NULL OR x.valid_to>CAST(report_end AS DATE))
- ), identity AS (
-  SELECT CASE WHEN count(*)=1 THEN min(instrument_id) END AS instrument_id,
-   CASE WHEN count(*)=1 THEN 'resolved' WHEN count(*)=0 THEN 'unresolved_identity' ELSE 'ambiguous_identity' END AS identity_status
-  FROM identity_candidates
- ), catalog AS (
-  SELECT name AS field,min(display_name) AS label,statement,section,unit,value_kind,period_basis,
-   mapping_status,review_reason,count(*) AS source_variants
-  FROM fundamental.source_field WHERE source='tdx' AND statement<>'' AND name IS NOT NULL
-  GROUP BY name,statement,section,unit,value_kind,period_basis,mapping_status,review_reason
- ), visible_source AS (
-  SELECT s.name,p.provider_fact_id,p.provider_field,p.value,p.value_float32_bits,p.artifact_id,
-   p.revision_key,p.source_file_hash,l.filing_id,f.announcement_time,
-   row_number() OVER (PARTITION BY s.name ORDER BY f.announcement_time DESC,p.provider_fact_id DESC) AS rank
-  FROM fundamental.provider_fact p
-  JOIN fundamental.source_field s ON s.source=p.source AND s.provider_field=p.provider_field
-  JOIN fundamental.provider_filing_link l ON l.provider_source=p.source AND l.provider_revision_key=p.revision_key AND l.provider_code=p.provider_code AND l.status='linked'
-  JOIN fundamental.filing f ON f.filing_id=l.filing_id AND f.resolution_status='resolved' AND f.instrument_id=p.instrument_id AND f.report_period=p.report_period
-  CROSS JOIN identity i
-  WHERE p.source='tdx' AND p.provider_code=security_code AND p.report_period=CAST(report_end AS DATE)
-    AND p.instrument_id=i.instrument_id AND f.announcement_time<=CAST(as_of_time AS TIMESTAMPTZ)
- ), mappings AS (
-  SELECT DISTINCT m.canonical_field,m.provider_field,m.valid_from,m.valid_to
-  FROM fundamental.provider_field m
-  JOIN fundamental.field f ON f.canonical_field=m.canonical_field AND f.unit=m.unit AND f.value_kind=m.value_kind AND f.period_basis=m.period_basis
-  JOIN fundamental.source_field s ON s.source=m.source AND s.provider_field=m.provider_field AND s.name=m.canonical_field AND s.unit=m.unit AND s.value_multiplier=m.value_multiplier AND s.period_basis=m.period_basis
-  WHERE m.source='tdx' AND m.value_multiplier IN (1,10000)
-    AND m.valid_from<=CAST(report_end AS DATE) AND (m.valid_to IS NULL OR CAST(report_end AS DATE)<m.valid_to)
- ), facts AS (
-  SELECT f.* FROM fundamental.fact_asof(CAST(as_of_time AS TIMESTAMPTZ)) f CROSS JOIN identity i
-  WHERE f.instrument_id=i.instrument_id AND f.report_period=CAST(report_end AS DATE) AND f.materializer_version<>'legacy'
- ), evaluated AS (
-  SELECT i.instrument_id,i.identity_status,c.*,f.fact_id,f.value,f.period_type,f.currency,f.statement_scope,f.announcement_time,
-   f.source_filing_id,f.provider_fact_id,f.source_provider_field,f.revision_key,
-   v.provider_fact_id AS diagnostic_provider_fact_id,v.filing_id AS diagnostic_filing_id,
-   CASE
-    WHEN i.identity_status<>'resolved' THEN i.identity_status
-    WHEN EXISTS(SELECT 1 FROM fundamental.provider_conflicts_asof(as_of_time) conflict WHERE conflict.source='tdx' AND conflict.provider_code=security_code AND conflict.report_period=CAST(report_end AS DATE)) THEN 'source_conflict'
-    WHEN c.mapping_status NOT IN ('reviewed_mapping','official_mapping') THEN c.review_reason
-    WHEN c.source_variants<>1 THEN 'ambiguous_source_variant'
-    WHEN NOT EXISTS(SELECT 1 FROM mappings m WHERE m.canonical_field=c.field) THEN 'mapping_unavailable_for_period'
-    WHEN f.fact_id IS NOT NULL AND f.unit=c.unit AND f.statement_scope='provider_default'
-      AND f.currency IS NOT DISTINCT FROM CASE WHEN c.value_kind IN ('monetary','per_share') THEN 'CNY' END
-      AND f.period_type=CASE WHEN c.period_basis IN ('instant','opening_instant') THEN c.period_basis
-        WHEN c.period_basis='quarter' THEN 'Q'||CAST(quarter(CAST(report_end AS DATE)) AS VARCHAR)
-        WHEN month(CAST(report_end AS DATE))=3 THEN 'Q1' WHEN month(CAST(report_end AS DATE))=6 THEN 'H1'
-        WHEN month(CAST(report_end AS DATE))=9 THEN '9M' ELSE 'FY' END
-      AND EXISTS(SELECT 1 FROM mappings m WHERE m.canonical_field=c.field AND m.provider_field=f.source_provider_field)
-      THEN 'available'
-    WHEN f.fact_id IS NOT NULL THEN 'standard_fact_semantics_mismatch'
-    WHEN v.provider_fact_id IS NULL THEN 'no_linked_source_at_asof'
-    WHEN v.value IS NULL OR NOT isfinite(v.value) THEN 'invalid_source_value'
-    WHEN v.value=0 THEN 'source_zero_ambiguous'
-    ELSE 'not_materialized'
-   END AS status
-  FROM catalog c CROSS JOIN identity i
-  LEFT JOIN facts f ON f.canonical_field=c.field AND f.provider_code=security_code AND f.primary_source='tdx'
-  LEFT JOIN visible_source v ON v.name=c.field AND v.rank=1
- )
- SELECT instrument_id,identity_status,security_code AS code,CAST(report_end AS DATE) AS report_period,
-  CAST(as_of_time AS TIMESTAMPTZ) AS information_as_of,statement,section,field,label,unit,
-  CASE WHEN value_kind IN ('monetary','per_share') THEN 'CNY' END AS currency,
-  period_basis,CASE WHEN period_basis='opening_instant' THEN make_date(year(CAST(report_end AS DATE))-1,12,31)
-    WHEN period_basis='instant' THEN CAST(report_end AS DATE) END AS balance_date,
-  mapping_status AS mapping_review,review_reason,status,
-  CASE WHEN status='available' THEN value END AS value,
-  CASE WHEN status='available' THEN announcement_time END AS announcement_time,
-  CASE WHEN include_evidence THEN to_json(struct_pack(
-    fact_id:=CASE WHEN status='available' THEN fact_id END,
-    provider_fact_id:=coalesce(provider_fact_id,diagnostic_provider_fact_id),
-    filing_id:=coalesce(source_filing_id,diagnostic_filing_id),
-    provider_field:=source_provider_field,source_revision:=revision_key)) END AS source_evidence
- FROM evaluated
- WHERE CAST(report_end AS DATE)=last_day(CAST(report_end AS DATE)) AND month(CAST(report_end AS DATE)) IN (3,6,9,12)
-);

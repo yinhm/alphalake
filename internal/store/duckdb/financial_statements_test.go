@@ -3,6 +3,7 @@ package duckdb
 import (
 	"encoding/json"
 	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -22,9 +23,10 @@ func TestStatementSnapshotBoundaries(t *testing.T) {
 	}
 	_, e = db.ExecContext(ctx, `INSERT INTO core.instrument(instrument_id,instrument_type) VALUES(9007199254740993,'equity');
  INSERT INTO core.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_from) VALUES(9007199254740993,'tdx','symbol','sz000001','2020-01-01');
- INSERT INTO fundamental.fact(fact_id,instrument_id,canonical_field,report_period,announcement_time,period_type,statement_scope,currency,unit,value,primary_source,source_provider_field,provider_code,source_filing_id,revision_key,normalization_rule,materializer_version)
- VALUES(9007199254741001,9007199254740993,'notes_receivable','2026-06-30','2026-08-01','instant','provider_default','CNY','CNY',100,'tdx','FN10','000001',1,'original','test','test'),
- (9007199254741002,9007199254740993,'notes_receivable','2026-06-30','2026-09-01','instant','provider_default','CNY','CNY',200,'tdx','FN10','000001',2,'corrected','test','test')`)
+ `)
+	check(e)
+	first := seedStandardSnapshot(t, db, 9007199254740993, "000001", "tdx", "notes_receivable", "2026-06-30", "2026-08-01", 100)
+	second := seedStandardSnapshot(t, db, 9007199254740993, "000001", "tdx", "notes_receivable", "2026-06-30", "2026-09-01", 200)
 	check(e)
 	period := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
 	for _, tc := range []struct {
@@ -45,7 +47,7 @@ func TestStatementSnapshotBoundaries(t *testing.T) {
 			if row["status"] != tc.status || row["value"] != tc.want || row["instrument_id"] != json.Number("9007199254740993") {
 				t.Fatal(row)
 			}
-			if tc.want != nil && row["source_evidence"].(map[string]any)["fact_id"] != map[string]json.Number{"100.0000000000": "9007199254741001", "200.0000000000": "9007199254741002"}[tc.want.(string)] {
+			if tc.want != nil && row["source_evidence"].(map[string]any)["fact_id"] != map[string]json.Number{"100.0000000000": json.Number(strconv.FormatInt(first, 10)), "200.0000000000": json.Number(strconv.FormatInt(second, 10))}[tc.want.(string)] {
 				t.Fatal("lineage rounded", row)
 			}
 		}
@@ -55,7 +57,7 @@ func TestStatementSnapshotBoundaries(t *testing.T) {
 	}
 	at := time.Date(2026, 9, 19, 0, 0, 0, 0, time.UTC)
 	// A latest corrupted standard observation is diagnosed, not replaced by an older value.
-	_, e = db.ExecContext(ctx, `UPDATE fundamental.fact SET unit='USD' WHERE revision_key='corrected'`)
+	_, e = db.ExecContext(ctx, `UPDATE fundamental.statement_field SET unit='USD' WHERE canonical_field='notes_receivable'`)
 	check(e)
 	var status string
 	var value *string

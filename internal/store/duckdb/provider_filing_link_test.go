@@ -196,12 +196,7 @@ func insertTestProviderRecord(t *testing.T, ctx context.Context, db interface {
 	ExecContext(context.Context, string, ...any) (sql.Result, error)
 }, artifactID, instrumentID int64, revision, code string, period time.Time) {
 	t.Helper()
-	if _, err := db.ExecContext(ctx, `
-		INSERT INTO fundamental.provider_fact (
-			instrument_id, source, report_period, provider_code, provider_field,
-			value, artifact_id, revision_key
-		) VALUES (?, 'tdx', ?, ?, 'FN230', 100, ?, ?)
-	`, instrumentID, period, code, artifactID, revision); err != nil {
+	if _, err := db.ExecContext(ctx, `INSERT INTO fundamental.source_record VALUES(?,?,1,?,0,584,?,?)`, artifactID*65536+1, artifactID, code, period, instrumentID); err != nil {
 		t.Fatal(err)
 	}
 }

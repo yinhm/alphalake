@@ -53,6 +53,7 @@ func TestRealCorrectionWithoutOriginalProviderVersion(t *testing.T) {
 	defer db.Close()
 	keepFrozenFinancialFieldScope(t, db)
 	root := filepath.Join(t.TempDir(), "raw")
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	id, err := duckstore.UpsertInstrument(ctx, db,
 		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "浙江东日"},
 		domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh600113"})
@@ -99,7 +100,7 @@ func TestRealCorrectionWithoutOriginalProviderVersion(t *testing.T) {
 	if len(resolved) != 1 {
 		t.Fatal("unresolved correction sample")
 	}
-	_, err = duckstore.ReconcileProviderFinancialRecordsForArtifact(ctx, db, runID, "tdx", stored.SHA256, resolved)
+	_, err = duckstore.ReconcileFinancialSourceRecords(ctx, db, runID, "tdx", stored.SHA256, resolved)
 	check(err)
 	check(duckstore.FinishIngestRun(ctx, db, runID, duckstore.IngestRunCompleted, nil, nil))
 	result, err := MaterializeProviderFundamentals(ctx, db, "tdx")
@@ -127,7 +128,7 @@ func TestRealCorrectionWithoutOriginalProviderVersion(t *testing.T) {
 			t.Fatalf("%s does not match corrected PDF", row[1])
 		}
 		var value float64
-		check(db.QueryRowContext(ctx, `SELECT CAST(value AS DOUBLE) FROM fundamental.fact
+		check(db.QueryRowContext(ctx, `SELECT CAST(value AS DOUBLE) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL)
 			WHERE source_provider_field=? AND period_type='Q3' AND unit='CNY'`, row[1]).Scan(&value))
 		if value != corrected {
 			t.Fatalf("%s canonical value=%v, want %v", row[1], value, corrected)
@@ -135,7 +136,7 @@ func TestRealCorrectionWithoutOriginalProviderVersion(t *testing.T) {
 	}
 	var filingID, variant, period string
 	check(db.QueryRowContext(ctx, `SELECT a.source_filing_id, a.filing_variant, f.period_type
-		FROM fundamental.fact f JOIN fundamental.filing a ON a.filing_id=f.source_filing_id
+		FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) f JOIN fundamental.filing a ON a.filing_id=f.source_filing_id
 		WHERE f.canonical_field='revenue'`).Scan(&filingID, &variant, &period))
 	if filingID != evidence.Corrected.ID || variant != "corrected_report" || period != "Q3" {
 		t.Fatalf("linked filing=%s variant=%s period=%s", filingID, variant, period)

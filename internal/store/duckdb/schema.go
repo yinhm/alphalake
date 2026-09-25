@@ -7,10 +7,13 @@ import (
 	"fmt"
 )
 
-const SchemaVersion = 51
+const SchemaVersion = 52
 
 //go:embed schema.sql
 var schemaSQL string
+
+//go:embed financial_queries.sql
+var financialQueriesSQL string
 
 // Initialize creates the current schema atomically in an empty database.
 // Existing current databases are left unchanged; older/newer versions are rejected.
@@ -44,6 +47,16 @@ func Initialize(ctx context.Context, db *sql.DB) error {
 		return fmt.Errorf("initialize current schema: %w", err)
 	}
 	if err := insertSourceFieldCatalog(ctx, tx); err != nil {
+		return err
+	}
+	fields, err := loadSnapshotFields(ctx, tx)
+	if err != nil {
+		return err
+	}
+	if err = CreateFinancialSnapshotTables(ctx, tx, fields); err != nil {
+		return err
+	}
+	if err = installSnapshotQueries(ctx, tx, fields); err != nil {
 		return err
 	}
 	return tx.Commit()

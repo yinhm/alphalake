@@ -284,9 +284,9 @@ def snapshot_metadata(conn: sqlite3.Connection) -> dict | None:
     if not tables.intersection({'metadata', 'valuation_inputs', 'standard_facts', 'export_cells'}):
         return None
     metadata = dict(conn.execute('SELECT key,value FROM metadata')) if 'metadata' in tables else {}
-    if metadata.get('contract') != 'alphalake-sqlite-v2':
+    if metadata.get('contract') != 'alphalake-sqlite-v3':
         raise ValueError('Unsupported AlphaLake SQLite contract; rebuild the snapshot with the current exporter')
-    if not {'valuation_inputs', 'standard_facts', 'financial_statements'} <= tables:
+    if not {'standard_facts', 'export_cells', 'export_universe'} <= tables:
         raise ValueError('Incomplete AlphaLake SQLite snapshot')
     return metadata
 
@@ -325,10 +325,6 @@ def fetch_company(conn: sqlite3.Connection, ticker: str) -> dict | None:
         result['data_source'] = metadata
         result['standard_financials'] = [dict(r) for r in conn.execute(
             'SELECT period,field,value,unit,period_type,statement_scope FROM standard_facts WHERE ticker=? ORDER BY period,field', (ticker,))]
-        row = conn.execute('SELECT payload_json FROM financial_statements WHERE ticker=?', (ticker,)).fetchone()
-        if row is None:
-            raise ValueError('Missing standard financial statements')
-        result['financial_statements'] = json.loads(row[0])
     return result
 
 

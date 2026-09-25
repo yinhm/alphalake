@@ -23,15 +23,7 @@ func TestFinancialWindows(t *testing.T) {
 	// 合成标准事实仅用于组合规则；真实源链路在 ingest 的六季度样本中验收。
 	seed := func(field, name, period, kind, announced string, value int) int64 {
 		t.Helper()
-		var id int64
-		check(db.QueryRowContext(ctx, `INSERT INTO fundamental.fact
-			(instrument_id, canonical_field, report_period, announcement_time, period_type,
-			statement_scope, currency, unit, value, primary_source, source_provider_field,
-			provider_code, source_filing_id, revision_key, normalization_rule, materializer_version)
-			VALUES (1, ?, CAST(? AS DATE), CAST(? AS TIMESTAMPTZ), ?, 'provider_default', 'CNY', 'CNY', ?,
-			'tdx', ?, '002920', 1, ?, 'test', 'test') RETURNING fact_id`, name, period, announced, kind, value,
-			field, field+period+announced).Scan(&id))
-		return id
+		return seedStandardSnapshot(t, db, 1, "002920", "tdx", name, period, announced, value)
 	}
 	for i, period := range []string{"2025-03-31", "2025-06-30", "2025-09-30", "2025-12-31"} {
 		seed("FN230", "revenue", period, fmt.Sprintf("Q%d", i+1), "2026-03-01T00:00:00Z", 10*(i+1))
@@ -81,12 +73,12 @@ func TestFinancialWindows(t *testing.T) {
 	if !linked {
 		t.Fatal("missing corrected source lineage")
 	}
-	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.fact WHERE report_period=DATE '2025-06-30'`)
+	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.statement_snapshot WHERE report_period=DATE '2025-06-30'`)
 	check(err)
 	assert("2026-05-11", "2026-03-31", "revenue", sql.NullFloat64{}, 3, 4)
-	_, err = db.ExecContext(ctx, `UPDATE fundamental.fact SET unit='USD' WHERE canonical_field='income_tax_expense' AND report_period=DATE '2025-12-31'`)
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.statement_field SET unit='USD' WHERE canonical_field='income_tax_expense'`)
 	check(err)
-	assert(after, "2026-03-31", "income_tax_expense", sql.NullFloat64{}, 2, 3)
+	assert(after, "2026-03-31", "income_tax_expense", sql.NullFloat64{}, 0, 3)
 	var invalidEnd int
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.ttm_asof(?, DATE '2026-03-30')`, after).Scan(&invalidEnd))
 	if invalidEnd != 0 {
@@ -101,9 +93,9 @@ func TestFinancialWindows(t *testing.T) {
 	}
 	// 标准派生不读源目录、不以供应商或字段编号决定语义。
 	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field;
-        UPDATE fundamental.fact SET primary_source='another_vendor', source_provider_field='opaque_source_key'`)
+        UPDATE meta.artifact SET source='another_vendor'; UPDATE fundamental.statement_field SET source='another_vendor'`)
 	check(err)
 	assert(after, "2026-03-31", "monetary_funds", sql.NullFloat64{Float64: 500, Valid: true}, 1, 1)
-	assert(after, "2026-03-31", "income_tax_expense", sql.NullFloat64{}, 2, 3)
+	assert(after, "2026-03-31", "income_tax_expense", sql.NullFloat64{}, 0, 3)
 
 }

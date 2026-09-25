@@ -2,436 +2,191 @@ package duckdb
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
-	"errors"
 	"fmt"
-	"regexp"
-	"slices"
+	"os"
+	"path/filepath"
 	"strings"
+
+	"github.com/yinhm/alphalake/internal/domain"
+	"github.com/yinhm/alphalake/internal/source/tdx/financial"
 )
 
-const (
-	fundamentalMaterializerV5  = "pit-fundamental-v5"
-	fundamentalNormalizationV3 = "tdx-float32-decimal-v3"
-	fundamentalFactStage       = "_alphalake_fundamental_fact_stage"
-	fundamentalRejectStage     = "_alphalake_fundamental_reject_stage"
-)
+type CanonicalFundamentalResult struct{ Candidates, Materialized, Inserted, Updated, Removed, Rejected int }
 
-// 计数与实际写入复用同一内容比较，避免新增一行时重写全部既有事实。
-const fundamentalFactChanged = `f.instrument_id IS DISTINCT FROM s.instrument_id
-		   OR f.canonical_field IS DISTINCT FROM s.canonical_field
-		   OR f.report_period IS DISTINCT FROM s.report_period
-		   OR f.announcement_time IS DISTINCT FROM s.announcement_time
-		   OR f.period_type IS DISTINCT FROM s.period_type
-		   OR f.statement_scope IS DISTINCT FROM s.statement_scope
-		   OR f.currency IS DISTINCT FROM s.currency
-		   OR f.unit IS DISTINCT FROM s.unit
-		   OR f.value IS DISTINCT FROM s.value
-		   OR f.provider_fact_id IS DISTINCT FROM s.provider_fact_id
-		   OR f.source_filing_id IS DISTINCT FROM s.filing_id
-		   OR f.normalization_rule IS DISTINCT FROM s.normalization_rule
-		   OR f.materializer_version IS DISTINCT FROM s.materializer_version`
-
-type CanonicalFundamentalResult struct {
-	Candidates   int
-	Materialized int
-	Inserted     int
-	Updated      int
-	Removed      int
-	Rejected     int
+// FinancialArchiveRoot uses the caller's explicit workspace or the database's
+// directory. A moved database must be accompanied by its immutable evidence.
+func FinancialArchiveRoot(ctx context.Context, db *sql.DB) (string, error) {
+	if root := os.Getenv("ALPHALAKE_WORKSPACE"); root != "" {
+		return filepath.Abs(root)
+	}
+	var path string
+	if err := db.QueryRowContext(ctx, `SELECT path FROM duckdb_databases() WHERE database_name=?`, PersistentCatalog).Scan(&path); err != nil {
+		return "", fmt.Errorf("financial archive workspace required: %w", err)
+	}
+	return filepath.Dir(path), nil
 }
 
-// MaterializeCanonicalFundamentals reconciles canonical PIT facts from linked
-// provider facts plus authoritative filing evidence. Only explicitly reviewed
-// field mappings with known units are eligible. The operation is deterministic
-// and set-based: canonical rows are inserted, corrected in place by immutable raw
-// identity, or removed if their source record is no longer safely materializable.
-func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRunID int64, providerSource string, fields ...string) (CanonicalFundamentalResult, error) {
-	var result CanonicalFundamentalResult
-	fieldPattern := regexp.MustCompile(`^FN[1-9][0-9]*$`)
-	for _, field := range fields {
-		if !fieldPattern.MatchString(field) {
-			return result, errors.New("explicit source field identifiers required")
+func readFinancialArchive(root, path, name, hash string, size int64) (financial.Package, error) {
+	if filepath.IsAbs(path) || strings.HasPrefix(filepath.Clean(path), "..") {
+		return financial.Package{}, fmt.Errorf("invalid archive locator")
+	}
+	raw, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(path)))
+	if err != nil {
+		return financial.Package{}, err
+	}
+	if int64(len(raw)) != size || fmt.Sprintf("%x", sha256.Sum256(raw)) != hash {
+		return financial.Package{}, fmt.Errorf("financial archive integrity failure: %s", path)
+	}
+	return financial.ParsePackage(filepath.Base(name), raw)
+}
+
+// MaterializeCanonicalFundamentals decodes each changed archive once. A package
+// values, content signatures and published semantics commit together.
+func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, runID int64, source string, requested ...string) (out CanonicalFundamentalResult, err error) {
+	if source != "tdx" || runID <= 0 {
+		return out, fmt.Errorf("TDX source and run required")
+	}
+	// Source-maintenance requests invalidate the whole package: one physical row
+	// has one semantic catalogue version. No separate per-field writer remains.
+	for _, field := range requested {
+		if !sourcePositionName.MatchString(field) {
+			return out, fmt.Errorf("invalid source maintenance field")
 		}
 	}
-	if db == nil {
-		return result, errors.New("duckdb is nil")
+	fields, err := LoadSnapshotFields(ctx, db)
+	if err != nil {
+		return out, err
 	}
-	if ingestRunID <= 0 {
-		return result, errors.New("ingest run ID must be positive")
+	root, err := FinancialArchiveRoot(ctx, db)
+	if err != nil {
+		return out, err
 	}
-	providerSource = strings.TrimSpace(providerSource)
-	if providerSource == "" {
-		return result, errors.New("provider source is required")
+	var catalog string
+	if err = db.QueryRowContext(ctx, `SELECT sha256(CAST(to_json(list(m ORDER BY source,provider_field,valid_from)) AS VARCHAR)) FROM (SELECT p.*,f.unit AS definition_unit,f.value_kind AS definition_kind,f.period_basis AS definition_basis FROM fundamental.provider_field p LEFT JOIN fundamental.field f USING(canonical_field)) m`).Scan(&catalog); err != nil {
+		return out, err
 	}
-
+	type input struct {
+		id                          int64
+		path, name, hash, signature string
+		size                        int64
+	}
+	rows, err := db.QueryContext(ctx, `SELECT a.artifact_id,a.local_path,a.source_locator,a.sha256,a.content_length,
+ sha256(? || CAST(to_json(list(struct_pack(record_id:=r.source_record_id,instrument:=r.instrument_id,filing:=l.filing_id,status:=l.status,filing_instrument:=f.instrument_id,period:=f.report_period,announcement:=f.announcement_time,kind:=f.filing_type,resolution:=f.resolution_status) ORDER BY r.source_record_id)) AS VARCHAR)) AS signature
+ FROM meta.artifact a JOIN fundamental.source_record r USING(artifact_id)
+ LEFT JOIN fundamental.provider_filing_link l ON l.provider_artifact_id=r.artifact_id AND l.provider_code=r.provider_code
+ LEFT JOIN fundamental.filing f USING(filing_id)
+ WHERE a.source='tdx' GROUP BY a.artifact_id,a.local_path,a.source_locator,a.sha256,a.content_length
+ HAVING signature IS DISTINCT FROM (SELECT input_signature FROM fundamental.materialization_state st WHERE st.artifact_id=a.artifact_id)
+ ORDER BY a.artifact_id`, catalog)
+	if err != nil {
+		return out, err
+	}
+	var inputs []input
+	for rows.Next() {
+		var p input
+		if err = rows.Scan(&p.id, &p.path, &p.name, &p.hash, &p.size, &p.signature); err != nil {
+			rows.Close()
+			return out, err
+		}
+		inputs = append(inputs, p)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return out, err
+	}
+	var catalogChanged bool
+	if err = db.QueryRowContext(ctx, `WITH candidate AS (
+ SELECT m.* FROM fundamental.provider_field m JOIN fundamental.field f ON f.canonical_field=m.canonical_field AND f.unit=m.unit AND f.value_kind=m.value_kind AND f.period_basis=m.period_basis)
+ SELECT EXISTS((SELECT * FROM candidate EXCEPT SELECT * FROM fundamental.statement_field)
+ UNION ALL (SELECT * FROM fundamental.statement_field EXCEPT SELECT * FROM candidate))`).Scan(&catalogChanged); err != nil {
+		return out, err
+	}
 	conn, err := db.Conn(ctx)
 	if err != nil {
-		return result, fmt.Errorf("acquire fundamental materialization connection: %w", err)
+		return out, err
 	}
 	defer conn.Close()
-	for _, table := range []string{fundamentalFactStage, fundamentalRejectStage} {
-		if _, err := conn.ExecContext(ctx, `DROP TABLE IF EXISTS temp.main.`+table); err != nil {
-			return result, fmt.Errorf("cleanup fundamental stage %s: %w", table, err)
+	if catalogChanged {
+		if _, err = conn.ExecContext(ctx, `BEGIN`); err != nil {
+			return out, err
 		}
 	}
-	if _, err := conn.ExecContext(ctx, `BEGIN TRANSACTION`); err != nil {
-		return result, fmt.Errorf("begin fundamental materialization: %w", err)
-	}
-	committed := false
-	defer func() {
-		if !committed {
-			_, _ = conn.ExecContext(context.Background(), `ROLLBACK`)
+	defer conn.ExecContext(context.WithoutCancel(ctx), `ROLLBACK`)
+	for _, p := range inputs {
+		before := out
+		pkg, e := readFinancialArchive(root, p.path, p.name, p.hash, p.size)
+		if e != nil {
+			return out, e
 		}
-		for _, table := range []string{fundamentalFactStage, fundamentalRejectStage} {
-			_, _ = conn.ExecContext(context.Background(), `DROP TABLE IF EXISTS temp.main.`+table)
+		rows, e = conn.QueryContext(ctx, `SELECT source_record_id,source_row,provider_code,instrument_id FROM fundamental.source_record WHERE artifact_id=? AND instrument_id IS NOT NULL ORDER BY source_row`, p.id)
+		if e != nil {
+			return out, e
 		}
-	}()
-
-	var standardFields int
-	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.field`).Scan(&standardFields); err != nil {
-		return result, fmt.Errorf("read standard catalogue: %w", err)
-	}
-	// Bound query working sets while retaining one transaction across all fields.
-	// Include stored fields whose mapping was removed so stale facts are still deleted.
-	if len(fields) == 0 {
-		rows, err := conn.QueryContext(ctx, `SELECT DISTINCT pf.provider_field FROM fundamental.provider_fact pf
-   WHERE pf.source=? AND EXISTS (SELECT 1 FROM fundamental.provider_field m WHERE m.source=pf.source AND m.provider_field=pf.provider_field AND m.canonical_field IS NOT NULL)
-   UNION SELECT source_provider_field FROM fundamental.fact WHERE primary_source=? AND provider_code IS NOT NULL`, providerSource, providerSource)
-		if err != nil {
-			return result, fmt.Errorf("list materialization fields: %w", err)
-		}
+		var records []IndexedFinancialRecord
 		for rows.Next() {
-			var field string
-			if err := rows.Scan(&field); err != nil {
+			var id, instrument int64
+			var ordinal int
+			var code string
+			if e = rows.Scan(&id, &ordinal, &code, &instrument); e != nil {
 				rows.Close()
-				return result, err
+				return out, e
 			}
-			fields = append(fields, field)
+			if ordinal < 1 || ordinal > len(pkg.Records) || pkg.Records[ordinal-1].Code != code {
+				rows.Close()
+				return out, fmt.Errorf("archive row identity mismatch")
+			}
+			r := pkg.Records[ordinal-1]
+			records = append(records, IndexedFinancialRecord{ID: id, Revision: p.hash, Record: domain.ProviderFinancialRecord{InstrumentID: instrument, Provider: "tdx", ProviderCode: code, ReportPeriod: r.ReportPeriod, ProviderFields: r.Fields, ArtifactID: p.id, SourceRow: uint32(ordinal)}})
 		}
-		err = rows.Err()
+		e = rows.Err()
 		rows.Close()
-		if err != nil {
-			return result, err
+		if e != nil {
+			return out, e
 		}
-	}
-	fields = slices.Clone(fields)
-	slices.Sort(fields)
-	fields = slices.Compact(fields)
-	for start := 0; start < len(fields); start += 3 {
-		batch, err := materializeFundamentalBatch(ctx, conn, ingestRunID, providerSource, strings.Join(fields[start:min(start+3, len(fields))], ","))
-		if err != nil {
-			return CanonicalFundamentalResult{}, err
+		if !catalogChanged {
+			if _, err = conn.ExecContext(ctx, `BEGIN`); err != nil {
+				return out, err
+			}
 		}
-		result.Candidates += batch.Candidates
-		result.Materialized += batch.Materialized
-		result.Inserted += batch.Inserted
-		result.Updated += batch.Updated
-		result.Removed += batch.Removed
-		result.Rejected += batch.Rejected
-		for _, table := range []string{fundamentalFactStage, fundamentalRejectStage} {
-			if _, err := conn.ExecContext(ctx, `DROP TABLE temp.main.`+table); err != nil {
-				return CanonicalFundamentalResult{}, err
+		for start := 0; start < len(records); start += 4096 {
+			end := min(start+4096, len(records))
+			r, e := MaterializeFinancialSnapshotBatch(ctx, conn, runID, fields, records[start:end])
+			if e != nil {
+				return out, fmt.Errorf("%s rows %d..%d: %w", p.name, start, end, e)
+			}
+			out.Candidates += r.Candidates
+			out.Materialized += r.Materialized
+			out.Inserted += r.Inserted
+			out.Updated += r.Updated
+			out.Removed += r.Removed
+			out.Rejected += r.Rejected
+		}
+		if _, e := conn.ExecContext(ctx, `DELETE FROM fundamental.statement_snapshot s USING fundamental.source_record r WHERE s.source_record_id=r.source_record_id AND r.artifact_id=? AND r.instrument_id IS NULL`, p.id); e != nil {
+			return out, e
+		}
+		if _, e := conn.ExecContext(ctx, `INSERT INTO fundamental.materialization_state VALUES (?,?,?,?,?) ON CONFLICT(artifact_id) DO UPDATE SET input_signature=excluded.input_signature,candidates=excluded.candidates,materialized=excluded.materialized,rejected=excluded.rejected`, p.id, p.signature, out.Candidates-before.Candidates, out.Materialized-before.Materialized, out.Rejected-before.Rejected); e != nil {
+			return out, e
+		}
+		if !catalogChanged {
+			if _, err = conn.ExecContext(ctx, `COMMIT`); err != nil {
+				return out, err
 			}
 		}
 	}
-
-	if _, err := conn.ExecContext(ctx, `COMMIT`); err != nil {
-		return result, fmt.Errorf("commit canonical fundamental materialization: %w", err)
+	// Stable semantics permit package commits; a catalogue change commits all
+	// affected packages and its meaning together, or leaves the old publication.
+	if catalogChanged {
+		_, err = conn.ExecContext(ctx, `DELETE FROM fundamental.statement_field; INSERT INTO fundamental.statement_field SELECT m.* FROM fundamental.provider_field m JOIN fundamental.field f ON f.canonical_field=m.canonical_field AND f.unit=m.unit AND f.value_kind=m.value_kind AND f.period_basis=m.period_basis`)
 	}
-	committed = true
-	return result, nil
-}
-
-// The caller owns the transaction; a later batch failure rolls back earlier writes.
-func materializeFundamentalBatch(ctx context.Context, conn *sql.Conn, ingestRunID int64, providerSource, field string) (CanonicalFundamentalResult, error) {
-
-	result, err := stageCanonicalFundamentals(ctx, conn, ingestRunID, providerSource, field, "fundamental.provider_fact")
 	if err != nil {
-		return result, err
+		return out, err
 	}
-
-	if err := conn.QueryRowContext(ctx, `
-		SELECT count(*)
-		FROM temp.main.`+fundamentalFactStage+` s
-		WHERE NOT EXISTS (
-			SELECT 1 FROM fundamental.fact f
-			WHERE f.primary_source=s.primary_source
-			  AND f.revision_key=s.revision_key
-			  AND f.provider_code=s.provider_code
-			  AND f.source_provider_field=s.source_provider_field
-			  AND f.primary_source=? AND list_contains(string_split(?,','),f.source_provider_field)
-		)
-	`, providerSource, field).Scan(&result.Inserted); err != nil {
-		return result, fmt.Errorf("count inserted canonical fundamentals: %w", err)
+	err = conn.QueryRowContext(ctx, `SELECT coalesce(sum(candidates),0),coalesce(sum(materialized),0),coalesce(sum(rejected),0) FROM fundamental.materialization_state`).Scan(&out.Candidates, &out.Materialized, &out.Rejected)
+	if err == nil && catalogChanged {
+		_, err = conn.ExecContext(ctx, `COMMIT`)
 	}
-	if err := conn.QueryRowContext(ctx, `
-		SELECT count(*)
-		FROM temp.main.`+fundamentalFactStage+` s
-		JOIN fundamental.fact f
-		  ON f.primary_source=s.primary_source
-		 AND f.revision_key=s.revision_key
-		 AND f.provider_code=s.provider_code
-		 AND f.source_provider_field=s.source_provider_field
-		WHERE f.primary_source=? AND list_contains(string_split(?,','),f.source_provider_field)
-		  AND (`+fundamentalFactChanged+`)
-	`, providerSource, field).Scan(&result.Updated); err != nil {
-		return result, fmt.Errorf("count updated canonical fundamentals: %w", err)
-	}
-
-	// 内容未变化时不重写整张事实表，也不刷新事实的入库血缘。删除和诊断仍继续执行。
-	if result.Inserted > 0 || result.Updated > 0 {
-		if _, err := conn.ExecContext(ctx, `
-			INSERT INTO fundamental.fact (
-				instrument_id, canonical_field, report_period, announcement_time,
-				period_type, statement_scope, currency, unit, value,
-				primary_source, source_provider_field, provider_code,
-				provider_fact_id, source_filing_id, revision_key,
-				normalization_rule, materializer_version, ingest_run_id
-			)
-			SELECT
-				instrument_id, canonical_field, report_period, announcement_time,
-				period_type, statement_scope, currency, unit, value,
-				primary_source, source_provider_field, provider_code,
-				provider_fact_id, filing_id, revision_key,
-				normalization_rule, materializer_version, ingest_run_id
-			FROM temp.main.`+fundamentalFactStage+` s
-			WHERE NOT EXISTS (
-				SELECT 1 FROM fundamental.fact f
-				WHERE f.primary_source=s.primary_source
-				  AND f.revision_key=s.revision_key
-				  AND f.provider_code=s.provider_code
-				  AND f.source_provider_field=s.source_provider_field
-				  AND f.primary_source=? AND list_contains(string_split(?,','),f.source_provider_field)
-				  AND NOT (`+fundamentalFactChanged+`)
-			)
-			ON CONFLICT(primary_source, revision_key, provider_code, source_provider_field) DO UPDATE SET
-				instrument_id=excluded.instrument_id,
-				canonical_field=excluded.canonical_field,
-				report_period=excluded.report_period,
-				announcement_time=excluded.announcement_time,
-				period_type=excluded.period_type,
-				statement_scope=excluded.statement_scope,
-				currency=excluded.currency,
-				unit=excluded.unit,
-				value=excluded.value,
-				provider_fact_id=excluded.provider_fact_id,
-				source_filing_id=excluded.source_filing_id,
-				normalization_rule=excluded.normalization_rule,
-				materializer_version=excluded.materializer_version,
-				ingest_run_id=excluded.ingest_run_id,
-				ingested_at=now()
-		`, providerSource, field); err != nil {
-			return result, fmt.Errorf("merge canonical fundamental facts (%s): %w", field, err)
-		}
-	}
-
-	if err := conn.QueryRowContext(ctx, `
-		SELECT count(*)
-		FROM fundamental.fact f
-		WHERE f.primary_source=? AND (?='' OR list_contains(string_split(?,','),f.source_provider_field))
-		  AND f.provider_code IS NOT NULL
-		  AND NOT EXISTS (
-			SELECT 1 FROM temp.main.`+fundamentalFactStage+` s
-			WHERE s.primary_source=f.primary_source
-			  AND s.revision_key=f.revision_key
-			  AND s.provider_code=f.provider_code
-			  AND s.source_provider_field=f.source_provider_field
-		  )
-	`, providerSource, field, field).Scan(&result.Removed); err != nil {
-		return result, fmt.Errorf("count stale canonical fundamental facts: %w", err)
-	}
-	if _, err := conn.ExecContext(ctx, `
-		DELETE FROM fundamental.fact f
-		WHERE f.primary_source=? AND (?='' OR list_contains(string_split(?,','),f.source_provider_field))
-		  AND f.provider_code IS NOT NULL
-		  AND NOT EXISTS (
-			SELECT 1 FROM temp.main.`+fundamentalFactStage+` s
-			WHERE s.primary_source=f.primary_source
-			  AND s.revision_key=f.revision_key
-			  AND s.provider_code=f.provider_code
-			  AND s.source_provider_field=f.source_provider_field
-		  )
-	`, providerSource, field, field); err != nil {
-		return result, fmt.Errorf("remove stale canonical fundamental facts: %w", err)
-	}
-
-	if _, err := conn.ExecContext(ctx, `
-		INSERT INTO meta.validation_result (
-			ingest_run_id, source, dataset, rule_code, severity,
-			subject_type, subject_key, observed_value, expected_value,
-			passed, details
-		)
-		SELECT
-			?, 'alphalake', 'fundamental_fact', rejection_rule, 'error',
-			'provider_fact', cast(provider_fact_id AS VARCHAR),
-			cast(value AS VARCHAR), canonical_field,
-			false,
-			concat('source=', primary_source,
-			       ' revision=', revision_key,
-			       ' code=', coalesce(provider_code,''),
-			       ' field=', provider_field,
-			       ' filing=', cast(filing_id AS VARCHAR))
-		FROM temp.main.`+fundamentalRejectStage+`
-		WHERE rejection_rule IS NOT NULL
-	`, ingestRunID); err != nil {
-		return result, fmt.Errorf("record canonical fundamental rejections: %w", err)
-	}
-
-	return result, nil
-}
-
-// stageCanonicalFundamentals is the current schema51 SQL gate for immutable source
-// records. Temporary row expansion is bounded; no source numbers are persisted.
-func stageCanonicalFundamentals(ctx context.Context, conn *sql.Conn, ingestRunID int64, providerSource, field, sourceTable string) (CanonicalFundamentalResult, error) {
-	var result CanonicalFundamentalResult
-	if sourceTable != "fundamental.provider_fact" && sourceTable != "temp.main._provider_fields" {
-		return result, errors.New("invalid financial staging relation")
-	}
-	// Multiple simultaneously-active mappings for the same provider field would
-	// make canonical semantics depend on arbitrary join order. Reject that as
-	// catalogue corruption before changing any canonical row.
-	var ambiguousMappings int
-	if err := conn.QueryRowContext(ctx, `
-		SELECT count(*)
-		FROM (
-			SELECT pf.provider_fact_id
-			FROM `+sourceTable+` pf
-			JOIN fundamental.provider_field m
-			  ON m.source=pf.source
-			 AND m.provider_field=pf.provider_field
-			 AND (m.valid_from IS NULL OR m.valid_from <= pf.report_period)
-			 AND (m.valid_to IS NULL OR m.valid_to > pf.report_period)
-			WHERE pf.source=? AND (?='' OR list_contains(string_split(?,','),pf.provider_field))
-			  AND m.canonical_field IS NOT NULL
-			GROUP BY pf.provider_fact_id
-			HAVING count(*) > 1
-		)
-	`, providerSource, field, field).Scan(&ambiguousMappings); err != nil {
-		return result, fmt.Errorf("validate provider field mapping intervals: %w", err)
-	}
-	if ambiguousMappings != 0 {
-		return result, fmt.Errorf("%d provider facts have overlapping canonical field mappings", ambiguousMappings)
-	}
-
-	if _, err := conn.ExecContext(ctx, `
-		CREATE TEMP TABLE `+fundamentalRejectStage+` AS
-		WITH candidates AS (
-			SELECT
-				pf.provider_fact_id,
-				pf.instrument_id,
-				pf.source AS primary_source,
-				pf.revision_key,
-				pf.provider_code,
-				pf.provider_field,
-				pf.report_period,
-				pf.value * m.value_multiplier AS value,
-				m.value_multiplier,
-				m.zero_policy,
-				m.canonical_field,
-				m.unit,
-				m.value_kind,
-				m.period_basis,
-                EXISTS(SELECT 1 FROM fundamental.field c WHERE c.canonical_field=m.canonical_field AND c.unit=m.unit AND c.value_kind=m.value_kind AND c.period_basis=m.period_basis) AS standard_semantics_valid,
-				l.filing_id,
-				f.instrument_id AS filing_instrument_id,
-				f.report_period AS filing_report_period,
-				f.announcement_time,
-				f.filing_type
-			FROM `+sourceTable+` pf
-			JOIN fundamental.provider_filing_link l
-			  ON l.provider_source=pf.source
-			 AND l.provider_revision_key=pf.revision_key
-			 AND l.provider_code=pf.provider_code
-			 AND l.status='linked'
-			JOIN fundamental.filing f
-			  ON f.filing_id=l.filing_id
-			 AND f.resolution_status='resolved'
-			JOIN fundamental.provider_field m
-			  ON m.source=pf.source
-			 AND m.provider_field=pf.provider_field
-			 AND (m.valid_from IS NULL OR m.valid_from <= pf.report_period)
-			 AND (m.valid_to IS NULL OR m.valid_to > pf.report_period)
-			WHERE pf.source=? AND (?='' OR list_contains(string_split(?,','),pf.provider_field))
-			  AND m.canonical_field IS NOT NULL
-		)
-		SELECT
-			*,
-			CASE
-				WHEN instrument_id <> filing_instrument_id THEN 'filing_instrument_mismatch'
-				WHEN report_period <> filing_report_period THEN 'filing_report_period_mismatch'
-				WHEN announcement_time < report_period THEN 'announcement_before_report_period'
-				WHEN filing_type <> CASE
-					WHEN month(report_period)=3 AND day(report_period)=31 THEN 'quarterly_q1'
-					WHEN month(report_period)=6 AND day(report_period)=30 THEN 'semiannual'
-					WHEN month(report_period)=9 AND day(report_period)=30 THEN 'quarterly_q3'
-					WHEN month(report_period)=12 AND day(report_period)=31 THEN 'annual'
-					ELSE 'unknown' END THEN 'filing_type_mismatch'
-				WHEN zero_policy NOT IN ('allow','reject') OR zero_policy IS NULL THEN 'canonical_zero_policy_unknown'
-				WHEN value_multiplier IS NULL OR value_multiplier NOT IN (1,10000) THEN 'canonical_scale_unknown'
-				WHEN value IS NULL OR NOT isfinite(value) THEN 'provider_value_not_finite'
-				-- TDX 部分源零无法区分未披露与真实零；已识别现金流缺口及新批次字段统一保守拒绝。
-				WHEN zero_policy='reject' AND value=0 THEN 'provider_zero_ambiguous'
-				WHEN period_basis NOT IN ('report','instant','ytd','quarter','opening_instant','ttm') OR period_basis IS NULL THEN 'canonical_period_unknown'
-				WHEN NOT ((value_kind='monetary' AND unit='CNY') OR (value_kind='shares' AND unit='share') OR (value_kind='per_share' AND unit='CNY/share') OR (value_kind='count' AND unit='count')) OR unit IS NULL OR value_kind IS NULL THEN 'canonical_unit_unknown'
-				WHEN NOT standard_semantics_valid THEN 'canonical_definition_mismatch'
-				WHEN try_cast(cast(value AS VARCHAR) AS DECIMAL(38,10)) IS NULL THEN 'canonical_decimal_overflow'
-				ELSE NULL
-			END AS rejection_rule
-		FROM candidates
-	`, providerSource, field, field); err != nil {
-		return result, fmt.Errorf("build fundamental rejection stage: %w", err)
-	}
-
-	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM temp.main.`+fundamentalRejectStage).Scan(&result.Candidates); err != nil {
-		return result, fmt.Errorf("count canonical fundamental candidates: %w", err)
-	}
-	if err := conn.QueryRowContext(ctx, `
-		SELECT count(*) FROM temp.main.`+fundamentalRejectStage+` WHERE rejection_rule IS NOT NULL
-	`).Scan(&result.Rejected); err != nil {
-		return result, fmt.Errorf("count rejected canonical fundamentals: %w", err)
-	}
-
-	if _, err := conn.ExecContext(ctx, `
-		CREATE TEMP TABLE `+fundamentalFactStage+` AS
-		SELECT
-			instrument_id,
-			canonical_field,
-			report_period,
-			announcement_time,
-			CASE
-				WHEN period_basis IN ('instant','opening_instant') THEN period_basis
-				WHEN period_basis='ttm' THEN 'TTM'
-				WHEN period_basis='ytd' AND month(report_period)=9 THEN '9M'
-				WHEN period_basis='quarter' THEN 'Q' || cast(quarter(report_period) AS VARCHAR)
-				WHEN month(report_period)=3 AND day(report_period)=31 THEN 'Q1'
-				WHEN month(report_period)=6 AND day(report_period)=30 THEN 'H1'
-				WHEN month(report_period)=9 AND day(report_period)=30 THEN 'Q3'
-				WHEN month(report_period)=12 AND day(report_period)=31 THEN 'FY'
-				ELSE 'unknown'
-			END AS period_type,
-			'provider_default' AS statement_scope,
-			CASE WHEN value_kind IN ('monetary','per_share') THEN 'CNY' ELSE NULL END AS currency,
-			unit,
-			-- 先用浮点往返字符串转换，避免 DOUBLE→宽 DECIMAL 的缩放引入大额尾数。
-			cast(cast(value AS VARCHAR) AS DECIMAL(38,10)) AS value,
-			primary_source,
-			provider_field AS source_provider_field,
-			provider_code,
-			provider_fact_id,
-			filing_id,
-			revision_key,
-			? AS normalization_rule,
-			? AS materializer_version,
-			?::BIGINT AS ingest_run_id
-		FROM temp.main.`+fundamentalRejectStage+`
-		WHERE rejection_rule IS NULL
-	`, fundamentalNormalizationV3, fundamentalMaterializerV5, ingestRunID); err != nil {
-		return result, fmt.Errorf("build canonical fundamental stage: %w", err)
-	}
-	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM temp.main.`+fundamentalFactStage).Scan(&result.Materialized); err != nil {
-		return result, fmt.Errorf("count materializable canonical fundamentals: %w", err)
-	}
-
-	return result, nil
+	return out, err
 }

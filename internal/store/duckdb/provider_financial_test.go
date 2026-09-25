@@ -1,245 +1,103 @@
 package duckdb
 
 import (
-	"context"
-	"fmt"
-	"math"
+	"github.com/yinhm/alphalake/internal/domain"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
-
-	"github.com/yinhm/alphalake/internal/domain"
 )
 
 func TestInsertProviderFinancialRecordsPreservesRawBitsAndRevisions(t *testing.T) {
-	ctx := context.Background()
-	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "provider-financial.duckdb"))
-	if err != nil {
-		t.Fatal(err)
+	ctx := t.Context()
+	db, e := OpenInitialized(ctx, filepath.Join(t.TempDir(), "source.duckdb"))
+	if e != nil {
+		t.Fatal(e)
 	}
 	defer db.Close()
-
-	instrumentID, err := UpsertInstrument(ctx, db,
-		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Test"},
-		domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh600001"},
-	)
-	if err != nil {
-		t.Fatal(err)
+	period := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+	r, sha, path := archiveFinancialFixture(t, ctx, db, "300866", 1, period, map[int]float32{1: 123.5})
+	first, e := ReconcileFinancialSourceRecords(ctx, db, 1, "tdx", sha, []domain.ProviderFinancialRecord{r})
+	if e != nil || first.Inserted != 1 {
+		t.Fatal(first, e)
 	}
-	runID, err := StartIngestRun(ctx, db, "tdx", "professional_financial", nil)
-	if err != nil {
-		t.Fatal(err)
+	replay, e := ReconcileFinancialSourceRecords(ctx, db, 2, "tdx", sha, []domain.ProviderFinancialRecord{r})
+	if e != nil || replay.Inserted != 0 || replay.Reassigned != 0 {
+		t.Fatal(replay, e)
 	}
-	period := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
-	bits1 := math.Float32bits(123.5)
-	bits2 := uint32(0x80000000)
-	record := domain.ProviderFinancialRecord{
-		InstrumentID: instrumentID,
-		Provider:     "tdx", ProviderCode: "600001", MarketMarker: 7,
-		ReportPeriod: period,
-		ProviderFields: []domain.ProviderFloat32{
-			{Bits: bits1, Value: float64(math.Float32frombits(bits1))},
-			{Bits: bits2, Value: float64(math.Float32frombits(bits2))},
-		},
-		SourceFile: "gpcw20260630.zip", ArtifactID: 101,
+	source, e := ExportSourceFinancialData(ctx, db, "300866", period)
+	if e != nil || len(source.Observations) != 584 {
+		t.Fatal(len(source.Observations), e)
 	}
-	first, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, runID, "tdx", "sha-a", []domain.ProviderFinancialRecord{record})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if first.Attempted != 2 || first.Inserted != 2 || first.Reassigned != 0 || first.Removed != 0 {
-		t.Fatalf("first write=%#v", first)
-	}
-	// Idempotent replay of the same immutable artifact must not look like new data.
-	replay, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, runID, "tdx", "sha-a", []domain.ProviderFinancialRecord{record})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if replay.Attempted != 2 || replay.Inserted != 0 || replay.Reassigned != 0 || replay.Removed != 0 {
-		t.Fatalf("replay=%#v, want attempted=2 and no changes", replay)
-	}
-
-	var rows int
-	var storedBits uint64
-	if err := db.QueryRowContext(ctx, `
-		SELECT count(*), max(value_float32_bits)
-		FROM fundamental.provider_fact
-		WHERE instrument_id=? AND revision_key='sha-a'
-	`, instrumentID).Scan(&rows, &storedBits); err != nil {
-		t.Fatal(err)
-	}
-	if rows != 2 || storedBits != uint64(bits2) {
-		t.Fatalf("rows/bits=%d/%08x", rows, storedBits)
-	}
-
-	// Same report period from a corrected artifact is a separate revision.
-	record.ArtifactID = 102
-	record.ProviderFields[0] = domain.ProviderFloat32{Bits: math.Float32bits(124), Value: 124}
-	corrected, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, runID, "tdx", "sha-b", []domain.ProviderFinancialRecord{record})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if corrected.Inserted != 2 {
-		t.Fatalf("corrected write=%#v, want two new revision rows", corrected)
-	}
-	if err := db.QueryRowContext(ctx, `
-		SELECT count(*) FROM fundamental.provider_fact
-		WHERE instrument_id=? AND report_period=? AND provider_field='FN1'
-	`, instrumentID, period).Scan(&rows); err != nil {
-		t.Fatal(err)
-	}
-	if rows != 2 {
-		t.Fatalf("FN1 revisions=%d, want 2", rows)
-	}
-}
-
-func TestProviderFactReconcileReassignsSameRevisionWithoutDuplicates(t *testing.T) {
-	ctx := context.Background()
-	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "provider-fact-reassign.duckdb"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
-
-	oldID, err := UpsertInstrument(ctx, db,
-		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Old"},
-		domain.Identifier{Provider: "test", Type: "symbol", Value: "old600001"},
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	newID, err := UpsertInstrument(ctx, db,
-		domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHE", Currency: "CNY", Name: "Correct"},
-		domain.Identifier{Provider: "test", Type: "symbol", Value: "new600001"},
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	runID, err := StartIngestRun(ctx, db, "tdx", "professional_financial", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	record := domain.ProviderFinancialRecord{
-		InstrumentID: oldID, Provider: "tdx", ProviderCode: "600001", MarketMarker: 1,
-		ReportPeriod:   time.Date(2020, 12, 31, 0, 0, 0, 0, time.UTC),
-		ProviderFields: []domain.ProviderFloat32{{Bits: math.Float32bits(10), Value: 10}, {Bits: math.Float32bits(20), Value: 20}},
-		SourceFile:     "gpcw20201231.zip", ArtifactID: 201,
-	}
-	if _, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, runID, "tdx", "same-sha", []domain.ProviderFinancialRecord{record}); err != nil {
-		t.Fatal(err)
-	}
-
-	record.InstrumentID = newID
-	corrected, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, runID, "tdx", "same-sha", []domain.ProviderFinancialRecord{record})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if corrected.Inserted != 0 || corrected.Reassigned != 2 || corrected.Removed != 0 {
-		t.Fatalf("identity correction=%#v, want two reassignments only", corrected)
-	}
-	var oldRows, newRows, total int
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_fact WHERE revision_key='same-sha' AND instrument_id=?`, oldID).Scan(&oldRows); err != nil {
-		t.Fatal(err)
-	}
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_fact WHERE revision_key='same-sha' AND instrument_id=?`, newID).Scan(&newRows); err != nil {
-		t.Fatal(err)
-	}
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_fact WHERE revision_key='same-sha'`).Scan(&total); err != nil {
-		t.Fatal(err)
-	}
-	if oldRows != 0 || newRows != 2 || total != 2 {
-		t.Fatalf("rows old/new/total=%d/%d/%d, want 0/2/2", oldRows, newRows, total)
-	}
-
-	// If later lifecycle evidence makes the raw record unresolved, no stale facts
-	// for that immutable revision may remain attached to the previous instrument.
-	unresolved, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, runID, "tdx", "same-sha", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if unresolved.Removed != 2 {
-		t.Fatalf("unresolved reconcile=%#v, want two removed facts", unresolved)
-	}
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_fact WHERE revision_key='same-sha'`).Scan(&total); err != nil {
-		t.Fatal(err)
-	}
-	if total != 0 {
-		t.Fatalf("stale facts after unresolved transition=%d, want 0", total)
-	}
-}
-
-func TestProviderFactsRejectMissingSourceIdentityWithoutBackfill(t *testing.T) {
-	ctx := context.Background()
-	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "missing-source.duckdb"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
-	run, err := StartIngestRun(ctx, db, "tdx", "professional_financial", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = db.ExecContext(ctx, `INSERT INTO fundamental.provider_fact(instrument_id,source,report_period,provider_field,value,revision_key) VALUES (1,'tdx',DATE '2025-12-31','FN1',10,'same-sha')`)
-	if err != nil {
-		t.Fatal(err)
-	}
-	record := domain.ProviderFinancialRecord{InstrumentID: 1, Provider: "tdx", ProviderCode: "600001", MarketMarker: 1, ReportPeriod: time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC), ProviderFields: []domain.ProviderFloat32{{Bits: math.Float32bits(10), Value: 10}}, SourceFile: "gpcw20251231.zip", ArtifactID: 1}
-	for _, records := range [][]domain.ProviderFinancialRecord{{record}, nil} {
-		if _, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", "same-sha", records); err == nil {
-			t.Fatal("missing identity accepted")
-		}
-		var count int
-		if err := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_fact WHERE provider_code IS NULL AND value=10`).Scan(&count); err != nil || count != 1 {
-			t.Fatalf("incomplete evidence changed: %d %v", count, err)
-		}
-	}
-}
-
-func TestProviderFactBatchesRollbackAndRemoveAbsentCodes(t *testing.T) {
-	ctx := context.Background()
-	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "batch.duckdb"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
-	run, err := StartIngestRun(ctx, db, "tdx", "professional_financial", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// An extra constraint injects a database failure after the first batch wrote.
-	if _, err = db.ExecContext(ctx, "CREATE UNIQUE INDEX test_value_unique ON fundamental.provider_fact(value)"); err != nil {
-		t.Fatal(err)
-	}
-	records := make([]domain.ProviderFinancialRecord, 129)
-	for i := range records {
-		v := float32(i + 1)
-		records[i] = domain.ProviderFinancialRecord{InstrumentID: 1, Provider: "tdx", ProviderCode: fmt.Sprintf("%06d", i+1), ReportPeriod: time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC), SourceFile: "gpcw20260630.zip", ArtifactID: 1, ProviderFields: []domain.ProviderFloat32{{Value: float64(v), Bits: math.Float32bits(v)}}}
-	}
-	records[128].ProviderFields = records[0].ProviderFields
-	if _, err = ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", "batch", records); err == nil {
-		t.Fatal("late constraint failure accepted")
+	if source.Observations[0].Evidence.Bits == nil || *source.Observations[0].Evidence.Bits != r.ProviderFields[0].Bits {
+		t.Fatal(source.Observations[0])
 	}
 	var n int
-	if err = db.QueryRowContext(ctx, "SELECT count(*) FROM fundamental.provider_fact").Scan(&n); err != nil || n != 0 {
-		t.Fatal("partial transaction retained", n, err)
+	e = db.QueryRowContext(ctx, `SELECT count(*) FROM information_schema.tables WHERE table_schema='fundamental' AND table_name IN('provider_fact','fact')`).Scan(&n)
+	if e != nil || n != 0 {
+		t.Fatal("redundant numeric layer", n, e)
 	}
-	if _, err := db.ExecContext(ctx, "DROP INDEX fundamental.test_value_unique"); err != nil {
-		t.Fatal(err)
+	if e = os.WriteFile(path, []byte("corrupt"), 0600); e != nil {
+		t.Fatal(e)
 	}
-	records[128].ProviderFields = []domain.ProviderFloat32{{Value: 129, Bits: math.Float32bits(129)}}
-	first, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", "batch", records)
-	if err != nil || first.Inserted != 129 {
-		t.Fatal(first, err)
+	if _, e = ExportSourceFinancialData(ctx, db, "300866", period); e == nil {
+		t.Fatal("unverified source export")
 	}
-	if err := ReloadPersistentCatalog(ctx, db); err != nil {
-		t.Fatal(err)
+}
+func TestProviderFactReconcileReassignsSameRevisionWithoutDuplicates(t *testing.T) {
+	db, r, sha, _ := linkedFinancialFixture(t)
+	ctx := t.Context()
+	if _, e := MaterializeCanonicalFundamentals(ctx, db, 2, "tdx"); e != nil {
+		t.Fatal(e)
 	}
-	replay, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", "batch", records)
-	if err != nil || replay.Inserted != 0 || replay.Removed != 0 {
-		t.Fatal(replay, err)
+	r.InstrumentID = 2
+	out, e := ReconcileFinancialSourceRecords(ctx, db, 3, "tdx", sha, []domain.ProviderFinancialRecord{r})
+	if e != nil || out.Reassigned != 1 || out.Inserted != 0 {
+		t.Fatal(out, e)
 	}
-	trimmed, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", "batch", records[:1])
-	if err != nil || trimmed.Removed != 128 {
-		t.Fatal(trimmed, err)
+	var n int
+	e = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_snapshot`).Scan(&n)
+	if e != nil || n != 0 {
+		t.Fatal("stale standard row retained", n, e)
+	}
+	out, e = ReconcileFinancialSourceRecords(ctx, db, 4, "tdx", sha, nil)
+	if e != nil || out.Removed != 1 {
+		t.Fatal(out, e)
+	}
+	e = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.source_record WHERE instrument_id IS NULL`).Scan(&n)
+	if e != nil || n != 1 {
+		t.Fatal("source locator lost", n, e)
+	}
+}
+func TestProviderFactsRejectMissingSourceIdentityWithoutBackfill(t *testing.T) {
+	db, r, sha, _ := linkedFinancialFixture(t)
+	ctx := t.Context()
+	r.SourceRow = 0
+	if _, e := ReconcileFinancialSourceRecords(ctx, db, 2, "tdx", sha, []domain.ProviderFinancialRecord{r}); e == nil {
+		t.Fatal("missing original row guessed")
+	}
+}
+func TestProviderFactBatchesRollbackAndRemoveAbsentCodes(t *testing.T) {
+	db, r, sha, _ := linkedFinancialFixture(t)
+	ctx := t.Context()
+	inputs := []ProviderFinancialResolutionInput{{ArtifactID: r.ArtifactID, Source: "tdx", SourceFile: r.SourceFile, ProviderCode: r.ProviderCode, ReportPeriod: r.ReportPeriod, InstrumentID: 2, IdentifierValue: "sz300866"}}
+	invalid := r
+	invalid.SourceRow = 0
+	if _, _, e := PublishFinancialPackage(ctx, db, 2, sha, []domain.ProviderFinancialRecord{invalid}, inputs, "package", "md5"); e == nil {
+		t.Fatal("invalid locator accepted")
+	}
+	var n int
+	if e := db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_record_resolution`).Scan(&n); e != nil || n != 0 {
+		t.Fatal("governance published without locators", n, e)
+	}
+	if _, found, e := GetCheckpoint(ctx, db, "tdx", "professional_financial", "package"); e != nil || found {
+		t.Fatal("checkpoint advanced", found, e)
+	}
+	r.InstrumentID = 2
+	if _, _, e := PublishFinancialPackage(ctx, db, 3, sha, []domain.ProviderFinancialRecord{r}, inputs, "package", "md5"); e != nil {
+		t.Fatal(e)
+	}
+	if value, found, e := GetCheckpoint(ctx, db, "tdx", "professional_financial", "package"); e != nil || !found || value != "md5" {
+		t.Fatal(value, found, e)
 	}
 }

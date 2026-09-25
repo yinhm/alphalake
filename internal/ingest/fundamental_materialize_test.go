@@ -34,21 +34,11 @@ func TestMaterializeProviderFundamentalsTracksCompletedAndPartialRuns(t *testing
 	if _, err := duckstore.UpsertFilings(ctx, db, 1, []domain.FilingObservation{filing}); err != nil {
 		t.Fatal(err)
 	}
-	var artifactID int64
-	if err := db.QueryRowContext(ctx, `
-		INSERT INTO meta.artifact (
-			source, dataset, source_locator, fetched_at, sha256, content_length
-		) VALUES ('tdx','professional_financial','tdxfin/test.zip',TIMESTAMPTZ '2026-04-01 00:00:00+00','revision',1)
-		RETURNING artifact_id
-	`).Scan(&artifactID); err != nil {
+	if _, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE canonical_field<>'revenue'`); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := db.ExecContext(ctx, `
-		INSERT INTO fundamental.provider_fact (
-			instrument_id, source, report_period, provider_code, provider_field,
-			value, artifact_id, revision_key
-		) VALUES (?, 'tdx', ?, '600001', 'FN230', 100, ?, 'revision')
-	`, instrumentID, period, artifactID); err != nil {
+	r, sha, _ := seedFinancialArchive(t, ctx, db, "600001", instrumentID, period, map[int]float32{230: 100})
+	if _, err = duckstore.ReconcileFinancialSourceRecords(ctx, db, 1, "tdx", sha, []domain.ProviderFinancialRecord{r}); err != nil {
 		t.Fatal(err)
 	}
 
@@ -69,21 +59,8 @@ func TestMaterializeProviderFundamentalsTracksCompletedAndPartialRuns(t *testing
 
 	// A second provider record without filing evidence makes the next run partial,
 	// while the already linked canonical fact remains available.
-	var pendingArtifact int64
-	if err := db.QueryRowContext(ctx, `
-		INSERT INTO meta.artifact (
-			source, dataset, source_locator, fetched_at, sha256, content_length
-		) VALUES ('tdx','professional_financial','tdxfin/pending.zip',TIMESTAMPTZ '2026-04-01 00:00:00+00','pending-revision',1)
-		RETURNING artifact_id
-	`).Scan(&pendingArtifact); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := db.ExecContext(ctx, `
-		INSERT INTO fundamental.provider_fact (
-			instrument_id, source, report_period, provider_code, provider_field,
-			value, artifact_id, revision_key
-		) VALUES (?, 'tdx', DATE '2024-12-31', '600001', 'FN230', 90, ?, 'pending-revision')
-	`, instrumentID, pendingArtifact); err != nil {
+	r, sha, _ = seedFinancialArchive(t, ctx, db, "600001", instrumentID, time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC), map[int]float32{230: 90})
+	if _, err = duckstore.ReconcileFinancialSourceRecords(ctx, db, 1, "tdx", sha, []domain.ProviderFinancialRecord{r}); err != nil {
 		t.Fatal(err)
 	}
 	partial, err := MaterializeProviderFundamentals(ctx, db, "tdx")

@@ -38,6 +38,7 @@ func (s *failingCachedFinancialSource) InstrumentSnapshot(ctx context.Context) (
 func TestFinancialCacheOfflineStaleAndTamper(t *testing.T) {
 	ctx := context.Background()
 	root := t.TempDir()
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	db, e := store.OpenInitialized(ctx, filepath.Join(root, "main.duckdb"))
 	if e != nil {
 		t.Fatal(e)
@@ -45,7 +46,7 @@ func TestFinancialCacheOfflineStaleAndTamper(t *testing.T) {
 	defer db.Close()
 	s := &failingCachedFinancialSource{fakeProfessionalFinancialSource: &fakeProfessionalFinancialSource{instruments: []domain.InstrumentObservation{{Instrument: domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "sample"}, Identifier: domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh600001"}}}, packageBytes: []byte("original verified bytes"), recordCode: "600001"}}
 	first, e := SyncTDXProfessionalFinancial(ctx, db, s, root)
-	if e != nil || first.FactsInserted != 2 {
+	if e != nil || first.RecordsInserted != 1 {
 		t.Fatal(first, e)
 	}
 	files, err := os.ReadDir(filepath.Join(root, "tdx-cache"))
@@ -85,7 +86,7 @@ func TestFinancialCacheOfflineStaleAndTamper(t *testing.T) {
 	s.masterDown = false
 	s.packageBytes = []byte("new unavailable upstream version")
 	stale, e := SyncTDXProfessionalFinancial(ctx, db, s, root)
-	if e != nil || stale.CacheFallbacks != 1 || stale.FactsInserted != 0 {
+	if e != nil || stale.CacheFallbacks != 1 || stale.RecordsInserted != 0 {
 		t.Fatal(stale, e)
 	}
 	checkpoint, found, e := store.GetCheckpoint(ctx, db, "tdx", tdxProfessionalFinancialDataset, "package:include-bse=false:gpcw20260630.zip")
@@ -120,6 +121,7 @@ func (s *noNetworkFinancialSource) InstrumentSnapshot(context.Context) (domain.I
 func TestFinancialOfflineNeverCallsNetwork(t *testing.T) {
 	ctx := context.Background()
 	root := t.TempDir()
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	db, err := store.OpenInitialized(ctx, filepath.Join(root, "main.duckdb"))
 	if err != nil {
 		t.Fatal(err)
@@ -135,7 +137,7 @@ func TestFinancialOfflineNeverCallsNetwork(t *testing.T) {
 		t.Fatal(err)
 	}
 	result, err := SyncTDXProfessionalFinancialWithOptions(ctx, db, &noNetworkFinancialSource{seed}, root, TDXProfessionalFinancialOptions{Offline: true})
-	if err != nil || result.FactsInserted != 2 || result.CacheFallbacks != 2 {
+	if err != nil || result.RecordsInserted != 1 || result.CacheFallbacks != 2 {
 		t.Fatal(result, err)
 	}
 }

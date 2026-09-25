@@ -2,6 +2,7 @@ package duckdb
 
 import (
 	"encoding/json"
+	"github.com/yinhm/alphalake/internal/domain"
 	"path/filepath"
 	"testing"
 	"time"
@@ -16,21 +17,21 @@ func TestValuationExportCandidateIdentitiesPreserveVersionSelection(t *testing.T
 	defer db.Close()
 	// 无当前主数据的合成身份：同码多身份、超出 float64 精度、仅远期历史、
 	// 后续改码/改来源和未来公告。验证查询边界，不代替真实来源验收。
-	_, err = db.ExecContext(ctx, `INSERT INTO fundamental.fact(fact_id,instrument_id,canonical_field,report_period,announcement_time,period_type,
- statement_scope,currency,unit,value,primary_source,source_provider_field,provider_code,source_filing_id,revision_key,normalization_rule,materializer_version)
- SELECT n,id,'monetary_funds',CAST(period AS DATE),CAST(announced AS TIMESTAMPTZ),'instant','provider_default','CNY','CNY',n,source,'FN8',code,1,CAST(n AS VARCHAR),'test','test'
- FROM (VALUES
- (1,1,'2026-06-30','2026-07-01','tdx','000001'),
- (2,9007199254740993,'2026-06-30','2026-07-01','tdx','000001'),
- (3,3,'2010-12-31','2011-01-01','tdx','000001'),
- (4,4,'2026-06-30','2026-07-01','tdx','000001'),
- (5,4,'2026-06-30','2026-08-01','tdx','000002'),
- (6,5,'2026-06-30','2026-07-01','tdx','000001'),
- (7,5,'2026-06-30','2026-08-01','other','000001'),
- (8,6,'2026-06-30','2026-10-01','tdx','000001'),
- (9,7,'2026-06-30','2026-07-01','tdx','000003')) t(n,id,period,announced,source,code)`)
-	if err != nil {
-		t.Fatal(err)
+	for i, r := range []struct {
+		id                              int64
+		period, announced, source, code string
+	}{
+		{1, "2026-06-30", "2026-07-01", "tdx", "000001"},
+		{9007199254740993, "2026-06-30", "2026-07-01", "tdx", "000001"},
+		{3, "2025-03-31", "2025-04-01", "tdx", "000001"},
+		{4, "2026-06-30", "2026-07-01", "tdx", "000001"},
+		{4, "2026-06-30", "2026-08-01", "tdx", "000002"},
+		{5, "2026-06-30", "2026-07-01", "tdx", "000001"},
+		{5, "2026-06-30", "2026-08-01", "other", "000001"},
+		{6, "2026-06-30", "2026-10-01", "tdx", "000001"},
+		{7, "2026-06-30", "2026-07-01", "tdx", "000003"},
+	} {
+		seedStandardSnapshot(t, db, r.id, r.code, r.source, "monetary_funds", r.period, r.announced, i+1)
 	}
 	end := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
 	for _, month := range []time.Month{7, 9} {
@@ -95,17 +96,30 @@ func TestValuationExportMappingVersions(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	// 合成数据专门验证映射版本，不宣称新增真实字段语义验收。
-	_, err = db.ExecContext(ctx, `
- INSERT INTO meta.artifact(artifact_id,source,dataset,source_locator,fetched_at,sha256,content_length)
- VALUES(1,'tdx','test','test',now(),'test',1);
- INSERT INTO fundamental.filing(filing_id,source,source_filing_id,provider_code) VALUES(1,'cninfo','test','000001');
- INSERT INTO fundamental.provider_fact(provider_fact_id,instrument_id,source,report_period,provider_code,provider_field,value,value_float32_bits,artifact_id,revision_key)
- SELECT n,1,'tdx',CAST(period AS DATE),'000001','FN8',10,1092616192,1,CAST(n AS VARCHAR)
- FROM (VALUES (1,'2025-12-31'),(2,'2026-06-30')) t(n,period);
- INSERT INTO fundamental.fact(instrument_id,canonical_field,report_period,announcement_time,period_type,statement_scope,currency,unit,value,primary_source,source_provider_field,provider_code,provider_fact_id,source_filing_id,revision_key,normalization_rule,materializer_version)
- SELECT 1,'monetary_funds',report_period,'2026-07-01','instant','provider_default','CNY','CNY',10,'tdx','FN8','000001',provider_fact_id,1,revision_key,'test','test' FROM fundamental.provider_fact;`)
-	if err != nil {
+	if _, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE canonical_field<>'monetary_funds'`); err != nil {
+		t.Fatal(err)
+	}
+	for i, p := range []string{"2025-12-31", "2026-06-30"} {
+		period, e := time.Parse("2006-01-02", p)
+		if e != nil {
+			t.Fatal(e)
+		}
+		r, sha, _ := archiveFinancialFixture(t, ctx, db, "000001", 1, period, map[int]float32{8: 10})
+		if _, e = ReconcileFinancialSourceRecords(ctx, db, 1, "tdx", sha, []domain.ProviderFinancialRecord{r}); e != nil {
+			t.Fatal(e)
+		}
+		kind := "annual"
+		if i == 1 {
+			kind = "semiannual"
+		}
+		if _, e = db.ExecContext(ctx, `INSERT INTO fundamental.filing(filing_id,instrument_id,source,source_filing_id,provider_code,report_period,announcement_time,filing_type,filing_variant) VALUES(?,1,'cninfo',?,'000001',?,'2026-07-01',?,'full')`, i+1, p, period, kind); e != nil {
+			t.Fatal(e)
+		}
+	}
+	if _, err = RefreshProviderFilingLinks(ctx, db, 1, "tdx"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = MaterializeCanonicalFundamentals(ctx, db, 1, "tdx"); err != nil {
 		t.Fatal(err)
 	}
 	end := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
@@ -128,9 +142,11 @@ func TestValuationExportMappingVersions(t *testing.T) {
 	if string(before) != string(after) {
 		t.Fatal("same-semantic split changed export", string(after))
 	}
-	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=10000 WHERE source='tdx' AND provider_field='FN8' AND valid_from='2026-06-30';
- UPDATE fundamental.fact SET value=100000 WHERE report_period='2026-06-30';`)
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=10000 WHERE source='tdx' AND provider_field='FN8' AND valid_from='2026-06-30';`)
 	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = MaterializeCanonicalFundamentals(ctx, db, 2, "tdx"); err != nil {
 		t.Fatal(err)
 	}
 	changed, err := ExportValuationData(ctx, db, "000001", end, asof)

@@ -1,0 +1,168 @@
+package duckdb
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+)
+
+const (
+	fundamentalFactStage       = "_alphalake_fundamental_fact_stage"
+	fundamentalRejectStage     = "_alphalake_fundamental_reject_stage"
+	fundamentalMaterializerV5  = "pit-fundamental-v5"
+	fundamentalNormalizationV3 = "tdx-float32-decimal-v3"
+)
+
+func stageCanonicalFundamentals(ctx context.Context, conn *sql.Conn, ingestRunID int64, providerSource, field, sourceTable string) (CanonicalFundamentalResult, error) {
+	var result CanonicalFundamentalResult
+	if sourceTable != "fundamental.provider_fact" && sourceTable != "temp.main._provider_fields" {
+		return result, errors.New("invalid financial staging relation")
+	}
+	// Multiple simultaneously-active mappings for the same provider field would
+	// make canonical semantics depend on arbitrary join order. Reject that as
+	// catalogue corruption before changing any canonical row.
+	var ambiguousMappings int
+	if err := conn.QueryRowContext(ctx, `
+		SELECT count(*)
+		FROM (
+			SELECT pf.provider_fact_id
+			FROM `+sourceTable+` pf
+			JOIN fundamental.provider_field m
+			  ON m.source=pf.source
+			 AND m.provider_field=pf.provider_field
+			 AND (m.valid_from IS NULL OR m.valid_from <= pf.report_period)
+			 AND (m.valid_to IS NULL OR m.valid_to > pf.report_period)
+			WHERE pf.source=? AND (?='' OR list_contains(string_split(?,','),pf.provider_field))
+			  AND m.canonical_field IS NOT NULL
+			GROUP BY pf.provider_fact_id
+			HAVING count(*) > 1
+		)
+	`, providerSource, field, field).Scan(&ambiguousMappings); err != nil {
+		return result, fmt.Errorf("validate provider field mapping intervals: %w", err)
+	}
+	if ambiguousMappings != 0 {
+		return result, fmt.Errorf("%d provider facts have overlapping canonical field mappings", ambiguousMappings)
+	}
+
+	if _, err := conn.ExecContext(ctx, `
+		CREATE TEMP TABLE `+fundamentalRejectStage+` AS
+		WITH candidates AS (
+			SELECT
+				pf.provider_fact_id,
+				pf.instrument_id,
+				pf.source AS primary_source,
+				pf.revision_key,
+				pf.provider_code,
+				pf.provider_field,
+				pf.report_period,
+				pf.value * m.value_multiplier AS value,
+				m.value_multiplier,
+				m.zero_policy,
+				m.canonical_field,
+				m.unit,
+				m.value_kind,
+				m.period_basis,
+                EXISTS(SELECT 1 FROM fundamental.field c WHERE c.canonical_field=m.canonical_field AND c.unit=m.unit AND c.value_kind=m.value_kind AND c.period_basis=m.period_basis) AS standard_semantics_valid,
+				l.filing_id,
+				f.instrument_id AS filing_instrument_id,
+				f.report_period AS filing_report_period,
+				f.announcement_time,
+				f.filing_type
+			FROM `+sourceTable+` pf
+			JOIN fundamental.provider_filing_link l
+			  ON l.provider_source=pf.source
+			 AND l.provider_revision_key=pf.revision_key
+			 AND l.provider_code=pf.provider_code
+			 AND l.status='linked'
+			JOIN fundamental.filing f
+			  ON f.filing_id=l.filing_id
+			 AND f.resolution_status='resolved'
+			JOIN fundamental.provider_field m
+			  ON m.source=pf.source
+			 AND m.provider_field=pf.provider_field
+			 AND (m.valid_from IS NULL OR m.valid_from <= pf.report_period)
+			 AND (m.valid_to IS NULL OR m.valid_to > pf.report_period)
+			WHERE pf.source=? AND (?='' OR list_contains(string_split(?,','),pf.provider_field))
+			  AND m.canonical_field IS NOT NULL
+		)
+		SELECT
+			*,
+			CASE
+				WHEN instrument_id <> filing_instrument_id THEN 'filing_instrument_mismatch'
+				WHEN report_period <> filing_report_period THEN 'filing_report_period_mismatch'
+				WHEN announcement_time < report_period THEN 'announcement_before_report_period'
+				WHEN filing_type <> CASE
+					WHEN month(report_period)=3 AND day(report_period)=31 THEN 'quarterly_q1'
+					WHEN month(report_period)=6 AND day(report_period)=30 THEN 'semiannual'
+					WHEN month(report_period)=9 AND day(report_period)=30 THEN 'quarterly_q3'
+					WHEN month(report_period)=12 AND day(report_period)=31 THEN 'annual'
+					ELSE 'unknown' END THEN 'filing_type_mismatch'
+				WHEN zero_policy NOT IN ('allow','reject') OR zero_policy IS NULL THEN 'canonical_zero_policy_unknown'
+				WHEN value_multiplier IS NULL OR value_multiplier NOT IN (1,10000) THEN 'canonical_scale_unknown'
+				WHEN value IS NULL OR NOT isfinite(value) THEN 'provider_value_not_finite'
+				-- TDX 部分源零无法区分未披露与真实零；已识别现金流缺口及新批次字段统一保守拒绝。
+				WHEN zero_policy='reject' AND value=0 THEN 'provider_zero_ambiguous'
+				WHEN period_basis NOT IN ('report','instant','ytd','quarter','opening_instant','ttm') OR period_basis IS NULL THEN 'canonical_period_unknown'
+				WHEN NOT ((value_kind='monetary' AND unit='CNY') OR (value_kind='shares' AND unit='share') OR (value_kind='per_share' AND unit='CNY/share') OR (value_kind='count' AND unit='count')) OR unit IS NULL OR value_kind IS NULL THEN 'canonical_unit_unknown'
+				WHEN NOT standard_semantics_valid THEN 'canonical_definition_mismatch'
+				WHEN try_cast(cast(value AS VARCHAR) AS DECIMAL(38,10)) IS NULL THEN 'canonical_decimal_overflow'
+				ELSE NULL
+			END AS rejection_rule
+		FROM candidates
+	`, providerSource, field, field); err != nil {
+		return result, fmt.Errorf("build fundamental rejection stage: %w", err)
+	}
+
+	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM temp.main.`+fundamentalRejectStage).Scan(&result.Candidates); err != nil {
+		return result, fmt.Errorf("count canonical fundamental candidates: %w", err)
+	}
+	if err := conn.QueryRowContext(ctx, `
+		SELECT count(*) FROM temp.main.`+fundamentalRejectStage+` WHERE rejection_rule IS NOT NULL
+	`).Scan(&result.Rejected); err != nil {
+		return result, fmt.Errorf("count rejected canonical fundamentals: %w", err)
+	}
+
+	if _, err := conn.ExecContext(ctx, `
+		CREATE TEMP TABLE `+fundamentalFactStage+` AS
+		SELECT
+			instrument_id,
+			canonical_field,
+			report_period,
+			announcement_time,
+			CASE
+				WHEN period_basis IN ('instant','opening_instant') THEN period_basis
+				WHEN period_basis='ttm' THEN 'TTM'
+				WHEN period_basis='ytd' AND month(report_period)=9 THEN '9M'
+				WHEN period_basis='quarter' THEN 'Q' || cast(quarter(report_period) AS VARCHAR)
+				WHEN month(report_period)=3 AND day(report_period)=31 THEN 'Q1'
+				WHEN month(report_period)=6 AND day(report_period)=30 THEN 'H1'
+				WHEN month(report_period)=9 AND day(report_period)=30 THEN 'Q3'
+				WHEN month(report_period)=12 AND day(report_period)=31 THEN 'FY'
+				ELSE 'unknown'
+			END AS period_type,
+			'provider_default' AS statement_scope,
+			CASE WHEN value_kind IN ('monetary','per_share') THEN 'CNY' ELSE NULL END AS currency,
+			unit,
+			-- 先用浮点往返字符串转换，避免 DOUBLE→宽 DECIMAL 的缩放引入大额尾数。
+			cast(cast(value AS VARCHAR) AS DECIMAL(38,10)) AS value,
+			primary_source,
+			provider_field AS source_provider_field,
+			provider_code,
+			provider_fact_id,
+			filing_id,
+			revision_key,
+			? AS normalization_rule,
+			? AS materializer_version,
+			?::BIGINT AS ingest_run_id
+		FROM temp.main.`+fundamentalRejectStage+`
+		WHERE rejection_rule IS NULL
+	`, fundamentalNormalizationV3, fundamentalMaterializerV5, ingestRunID); err != nil {
+		return result, fmt.Errorf("build canonical fundamental stage: %w", err)
+	}
+	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM temp.main.`+fundamentalFactStage).Scan(&result.Materialized); err != nil {
+		return result, fmt.Errorf("count materializable canonical fundamentals: %w", err)
+	}
+
+	return result, nil
+}

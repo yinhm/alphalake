@@ -23,10 +23,10 @@ func TestReadinessBatchesKeepFieldsAndLargeIDs(t *testing.T) {
  SELECT CASE WHEN i=129 THEN 9007199254740993 ELSE i END,'equity','XSHG','CNY','test-'||i FROM range(1,130) r(i);
  INSERT INTO core.instrument_identifier(instrument_id,provider,identifier_type,identifier_value)
  SELECT instrument_id,'tdx','symbol','sh'||CAST(600000+CAST(substr(name,6) AS INTEGER) AS VARCHAR) FROM core.instrument;
- INSERT INTO fundamental.fact(fact_id,instrument_id,canonical_field,report_period,announcement_time,period_type,
- statement_scope,currency,unit,value,primary_source,source_provider_field,provider_code,source_filing_id,revision_key,normalization_rule,materializer_version)
- SELECT 9007199254741100+CAST(substr(name,6) AS INTEGER),instrument_id,'monetary_funds','2026-06-30','2026-07-01','instant',
- 'provider_default','CNY','CNY',CAST(substr(name,6) AS INTEGER),'tdx','FN8',CAST(600000+CAST(substr(name,6) AS INTEGER) AS VARCHAR),1,name,'test','test' FROM core.instrument`)
+ INSERT INTO meta.artifact(artifact_id,source,dataset,source_locator,fetched_at,sha256,content_length) SELECT CAST(substr(name,6) AS BIGINT),'tdx','test',name,now(),name,1 FROM core.instrument;
+ INSERT INTO fundamental.source_record SELECT 1099511627776+CAST(substr(name,6) AS BIGINT),CAST(substr(name,6) AS BIGINT),1,CAST(600000+CAST(substr(name,6) AS INTEGER) AS VARCHAR),0,584,DATE '2026-06-30',instrument_id FROM core.instrument;
+ INSERT INTO fundamental.statement_snapshot(source_record_id,instrument_id,source_filing_id,report_period,announcement_time,ingest_run_id,monetary_funds)
+ SELECT 1099511627776+CAST(substr(name,6) AS BIGINT),instrument_id,1,'2026-06-30','2026-07-01',1,CAST(substr(name,6) AS INTEGER) FROM core.instrument`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +53,7 @@ func TestReadinessBatchesKeepFieldsAndLargeIDs(t *testing.T) {
 				continue
 			}
 			found = true
-			if field["status"] != "complete" || field["value"] != fmt.Sprintf("%d.0000000000", i+1) || field["source_fact_ids"].([]any)[0] != json.Number(fmt.Sprint(int64(9007199254741101)+int64(i))) {
+			if field["status"] != "complete" || field["value"] != fmt.Sprintf("%d.0000000000", i+1) || field["source_fact_ids"].([]any)[0] != json.Number(fmt.Sprint((int64(1099511627777)+int64(i))*8192+8)) {
 				t.Fatal("field or lineage crossed company/batch", row)
 			}
 		}

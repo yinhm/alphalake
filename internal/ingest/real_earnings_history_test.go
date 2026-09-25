@@ -23,8 +23,8 @@ func TestRealAnkerEarningsHistory(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	t.Setenv("ALPHALAKE_DUCKDB_MEMORY_LIMIT", "1GB")
-	t.Setenv("ALPHALAKE_DUCKDB_THREADS", "2")
+	t.Setenv("ALPHALAKE_DUCKDB_MEMORY_LIMIT", "512MiB")
+	t.Setenv("ALPHALAKE_DUCKDB_THREADS", "1")
 	base := os.Getenv("ALPHALAKE_EARNINGS_HISTORY_BASE_DB")
 	output := os.Getenv("ALPHALAKE_EARNINGS_HISTORY_EXPORT_DIR")
 	if output == "" {
@@ -59,13 +59,15 @@ func TestRealAnkerEarningsHistory(t *testing.T) {
 	db, err := duckstore.Open(ctx, path)
 	check(err)
 	defer func() { _ = db.Close() }()
+	copyFinancialTestArchives(t, db, filepath.Dir(base), output)
+	t.Setenv("ALPHALAKE_WORKSPACE", output)
 	const fields = "('FN86','FN305','FN306','FN83','FN82','FN301')"
 	// 收窄六个字段的审核范围，再恢复当前审核目录。
 	_, err = db.ExecContext(ctx, "UPDATE fundamental.provider_field SET valid_from=DATE '2025-01-01' WHERE source='tdx' AND provider_field IN "+fields+"")
 	check(err)
 	_, err = MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	_, err = db.ExecContext(ctx, "CREATE TEMP TABLE earnings_before AS SELECT * FROM fundamental.fact; CREATE TEMP TABLE earnings_catalog_before AS SELECT * FROM fundamental.provider_field WHERE provider_field NOT IN "+fields)
+	_, err = db.ExecContext(ctx, "CREATE TEMP TABLE earnings_before AS SELECT * FROM fundamental.financial_observations(NULL,NULL,NULL,NULL); CREATE TEMP TABLE earnings_catalog_before AS SELECT * FROM fundamental.provider_field WHERE provider_field NOT IN "+fields)
 	check(err)
 	currentEnd := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
 	asof := time.Date(2026, 9, 10, 0, 0, 0, 0, time.UTC)
@@ -92,7 +94,7 @@ func TestRealAnkerEarningsHistory(t *testing.T) {
 	for _, r := range evidence.Values {
 		var v float64
 		var basis, unit string
-		check(db.QueryRowContext(ctx, `SELECT CAST(value AS DOUBLE),period_type,unit FROM fundamental.fact WHERE provider_code='300866' AND source_provider_field=? AND report_period=CAST(? AS DATE)`, r.Field, r.Period).Scan(&v, &basis, &unit))
+		check(db.QueryRowContext(ctx, `SELECT CAST(value AS DOUBLE),period_type,unit FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='300866' AND source_provider_field=? AND report_period=CAST(? AS DATE)`, r.Field, r.Period).Scan(&v, &basis, &unit))
 		if v != float64(math.Float32frombits(r.Bits)) || unit != "CNY" || basis != map[string]string{"2024-06-30": "H1", "2024-09-30": "9M", "2024-12-31": "FY"}[r.Period] {
 			t.Fatal("standard source differs", r, v, basis, unit)
 		}
@@ -102,7 +104,7 @@ func TestRealAnkerEarningsHistory(t *testing.T) {
 		check(err)
 		for _, offset := range []time.Duration{-time.Nanosecond, 0} {
 			var n int
-			check(db.QueryRowContext(ctx, "SELECT count(*) FROM fundamental.fact_asof(CAST(? AS TIMESTAMPTZ)) WHERE provider_code='300866' AND report_period=CAST(? AS DATE) AND source_provider_field IN "+fields, at.Add(offset), period).Scan(&n))
+			check(db.QueryRowContext(ctx, "SELECT count(*) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,CAST(? AS TIMESTAMPTZ)) WHERE provider_code='300866' AND report_period=CAST(? AS DATE) AND source_provider_field IN "+fields, at.Add(offset), period).Scan(&n))
 			want := 0
 			if offset == 0 {
 				want = 6
@@ -131,7 +133,7 @@ func TestRealAnkerEarningsHistory(t *testing.T) {
 	if changed != 0 {
 		t.Fatal("unrelated mappings changed")
 	}
-	check(db.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM earnings_before EXCEPT SELECT * FROM fundamental.fact)`).Scan(&changed))
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM earnings_before EXCEPT SELECT * FROM fundamental.financial_observations(NULL,NULL,NULL,NULL))`).Scan(&changed))
 	if changed != 0 {
 		t.Fatal("existing facts changed", changed)
 	}
@@ -185,8 +187,8 @@ func TestRealAnkerQ1History(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	t.Setenv("ALPHALAKE_DUCKDB_MEMORY_LIMIT", "1GB")
-	t.Setenv("ALPHALAKE_DUCKDB_THREADS", "2")
+	t.Setenv("ALPHALAKE_DUCKDB_MEMORY_LIMIT", "512MiB")
+	t.Setenv("ALPHALAKE_DUCKDB_THREADS", "1")
 	output := os.Getenv("ALPHALAKE_Q1_HISTORY_REVIEW_DIR")
 	if output == "" {
 		output = filepath.Join(t.TempDir(), "earnings")
@@ -222,7 +224,7 @@ func TestRealAnkerQ1History(t *testing.T) {
 	check(err)
 	var value float64
 	var basis, unit string
-	check(db.QueryRowContext(ctx, `SELECT CAST(value AS DOUBLE),period_type,unit FROM fundamental.fact WHERE provider_code='300866' AND report_period=DATE '2024-03-31' AND source_provider_field='FN230'`).Scan(&value, &basis, &unit))
+	check(db.QueryRowContext(ctx, `SELECT CAST(value AS DOUBLE),period_type,unit FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='300866' AND report_period=DATE '2024-03-31' AND source_provider_field='FN230'`).Scan(&value, &basis, &unit))
 	if value != float64(math.Float32frombits(1333950316)) || basis != "Q1" || unit != "CNY" {
 		t.Fatal(value, basis, unit)
 	}
@@ -230,7 +232,7 @@ func TestRealAnkerQ1History(t *testing.T) {
 	check(err)
 	for _, offset := range []time.Duration{-time.Nanosecond, 0} {
 		var n int
-		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact_asof(CAST(? AS TIMESTAMPTZ)) WHERE provider_code='300866' AND report_period=DATE '2024-03-31' AND source_provider_field='FN230'`, at.Add(offset)).Scan(&n))
+		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,CAST(? AS TIMESTAMPTZ)) WHERE provider_code='300866' AND report_period=DATE '2024-03-31' AND source_provider_field='FN230'`, at.Add(offset)).Scan(&n))
 		want := 0
 		if offset == 0 {
 			want = 1

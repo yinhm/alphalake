@@ -54,6 +54,7 @@ func TestRealValuationStandardChain(t *testing.T) {
 	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE source='tdx' AND provider_field IN ('FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579')`)
 	check(err)
 	root := filepath.Join(t.TempDir(), "raw")
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	var instruments []domain.InstrumentObservation
 	check(json.Unmarshal(readFinancialSample(t, dir, "instruments.json"), &instruments))
 	_, err = duckstore.UpsertInstruments(ctx, db, instruments)
@@ -129,7 +130,7 @@ func TestRealValuationStandardChain(t *testing.T) {
 		if len(resolved) != 2 {
 			t.Fatal("sample identities")
 		}
-		_, err = duckstore.ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", stored.SHA256, resolved)
+		_, err = duckstore.ReconcileFinancialSourceRecords(ctx, db, run, "tdx", stored.SHA256, resolved)
 		check(err)
 	}
 	check(duckstore.FinishIngestRun(ctx, db, run, duckstore.IngestRunCompleted, nil, nil))
@@ -149,13 +150,11 @@ func TestRealValuationStandardChain(t *testing.T) {
 	if result.Inserted != 699 {
 		t.Fatalf("restricted catalog baseline %+v", result)
 	}
-	// 构造旧物化元数据，确认升级会重标已有事实，而非只插入新字段。
-	_, err = db.ExecContext(ctx, `UPDATE fundamental.fact SET materializer_version='pit-fundamental-v4', normalization_rule='tdx-float32-decimal-v2'`)
-	check(err)
+	// 新目录只新增字段，既有数值和字段血缘不重写。
 	restoreCurrentMappings(t, db, "provider_field IN ('FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579')")
 	upgraded, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if upgraded.Inserted != 111 || upgraded.Updated != 699 || upgraded.Removed != 0 {
+	if upgraded.Inserted != 111 || upgraded.Updated != 0 || upgraded.Removed != 0 {
 		t.Fatalf("approved catalog replay %+v", upgraded)
 	}
 	check(db.Close())
@@ -210,7 +209,7 @@ func TestRealValuationStandardChain(t *testing.T) {
 		want *= multiplier
 		var value float64
 		var unit, periodType string
-		check(db.QueryRowContext(ctx, `SELECT cast(value AS DOUBLE),unit,period_type FROM fundamental.fact_asof('2026-09-06') WHERE provider_code=? AND source_provider_field=? AND report_period=cast(? AS DATE)`, row[0], row[1], row[2]).Scan(&value, &unit, &periodType))
+		check(db.QueryRowContext(ctx, `SELECT cast(value AS DOUBLE),unit,period_type FROM fundamental.financial_observations_asof(NULL,NULL,NULL,'2026-09-06') WHERE provider_code=? AND source_provider_field=? AND report_period=cast(? AS DATE)`, row[0], row[1], row[2]).Scan(&value, &unit, &periodType))
 		period := "instant"
 		if row[4] == "ytd" {
 			period = "H1"
@@ -253,13 +252,14 @@ func TestRealValuationStandardChain(t *testing.T) {
 		}
 	}
 	var exactMoney string
-	check(db.QueryRowContext(ctx, `SELECT cast(value AS VARCHAR) FROM fundamental.fact WHERE provider_code='600519' AND source_provider_field='FN403' AND report_period=DATE '2025-06-30'`).Scan(&exactMoney))
+	check(db.QueryRowContext(ctx, `SELECT cast(value AS VARCHAR) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='600519' AND source_provider_field='FN403' AND report_period=DATE '2025-06-30'`).Scan(&exactMoney))
 	if exactMoney != "126350830000.0000000000" {
 		t.Fatal("wide decimal conversion", exactMoney)
 	}
 	export("filings", `SELECT provider_code AS code,source_filing_id AS announcement_id,cast(announcement_time AS VARCHAR) AS available_at,announcement_time_precision,coalesce(cast(report_period AS VARCHAR),'') AS report_period,title,coalesce(source_url,'') AS document_locator,coalesce(sha256,'') AS pdf_sha256 FROM fundamental.filing WHERE source='cninfo' AND provider_code IN ('300866','600519') ORDER BY provider_code,source_filing_id`)
+	sourceEvidenceDB(t, ctx, db)
 	export("facts", `SELECT f.provider_code AS code, cast(f.report_period AS VARCHAR) AS period, f.source_provider_field AS field, f.canonical_field, CASE WHEN f.canonical_field='total_shares' THEN CASE month(f.report_period) WHEN 3 THEN 'Q1' WHEN 6 THEN 'H1' WHEN 9 THEN 'Q3' ELSE 'FY' END ELSE f.period_type END AS period_type, f.statement_scope, f.unit, cast(f.value AS VARCHAR) AS value, cast(p.value_float32_bits AS VARCHAR) AS bits, cast(m.value_multiplier AS VARCHAR) AS multiplier, f.revision_key AS artifact_sha256, fi.source_filing_id AS announcement_id, cast(f.announcement_time AS VARCHAR) AS available_at
- FROM fundamental.fact_asof('2026-09-06') f JOIN fundamental.provider_fact p ON p.provider_fact_id=f.provider_fact_id JOIN fundamental.provider_field m ON m.source=f.primary_source AND m.provider_field=f.source_provider_field JOIN fundamental.filing fi ON fi.filing_id=f.source_filing_id ORDER BY code,period,field`)
+ FROM fundamental.financial_observations_asof(NULL,NULL,NULL,'2026-09-06') f JOIN _source_evidence p ON p.provider_fact_id=f.fact_id JOIN fundamental.provider_field m ON m.source=f.primary_source AND m.provider_field=f.source_provider_field JOIN fundamental.filing fi ON fi.filing_id=f.source_filing_id ORDER BY code,period,field`)
 	// 原冻结CSV保留源字段标识；仅测试投影回旧格式，不作为应用消费契约。
 	export("windows", `SELECT w.provider_code AS code, cast(w.report_period AS VARCHAR) AS period, m.provider_field AS field, w.canonical_field, calculation_basis, coverage_status, coalesce(cast(value AS VARCHAR),'') AS value, cast(required_inputs AS VARCHAR) AS required_inputs,cast(available_inputs AS VARCHAR) AS available_inputs, cast(input_periods AS VARCHAR) AS input_periods, cast(input_coefficients AS VARCHAR) AS coefficients FROM fundamental.ttm_asof('2026-09-06', DATE '2026-06-30') w JOIN fundamental.provider_field m ON m.source=w.primary_source AND m.canonical_field=w.canonical_field AND m.valid_from<=w.report_period AND (m.valid_to IS NULL OR m.valid_to>w.report_period) ORDER BY code,field`)
 	replay, err := MaterializeProviderFundamentals(ctx, db, "tdx")
@@ -269,19 +269,19 @@ func TestRealValuationStandardChain(t *testing.T) {
 	}
 	for _, code := range []string{"600519", "300866"} {
 		var available time.Time
-		check(db.QueryRowContext(ctx, `SELECT min(announcement_time) FROM fundamental.fact WHERE provider_code=? AND report_period=DATE '2026-06-30'`, code).Scan(&available))
+		check(db.QueryRowContext(ctx, `SELECT min(announcement_time) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code=? AND report_period=DATE '2026-06-30'`, code).Scan(&available))
 		var n int
-		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact_asof(?) WHERE provider_code=? AND report_period=DATE '2026-06-30'`, available.Add(-time.Second), code).Scan(&n))
+		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,?) WHERE provider_code=? AND report_period=DATE '2026-06-30'`, available.Add(-time.Second), code).Scan(&n))
 		if n != 0 {
 			t.Fatal("future H1 visible")
 		}
-		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact_asof(?) WHERE provider_code=? AND report_period=DATE '2026-06-30'`, available, code).Scan(&n))
+		check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,?) WHERE provider_code=? AND report_period=DATE '2026-06-30'`, available, code).Scan(&n))
 		if n == 0 {
 			t.Fatal("H1 missing at disclosure")
 		}
 	}
 	var missingZeros int
-	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE (source_provider_field IN ('FN146','FN147','FN148') AND month(report_period) IN (3,9)) OR (provider_code='600519' AND source_provider_field='FN99')`).Scan(&missingZeros))
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE (source_provider_field IN ('FN146','FN147','FN148') AND month(report_period) IN (3,9)) OR (provider_code='600519' AND source_provider_field='FN99')`).Scan(&missingZeros))
 	if missingZeros != 0 {
 		t.Fatal("ambiguous zeros became facts")
 	}
@@ -300,7 +300,7 @@ func TestRealValuationStandardChain(t *testing.T) {
 		t.Fatalf("cash/RD recovery %+v", restoredCash)
 	}
 	// 新批次缺失余额不得补零；累计利润与单季度字段分别保留。
-	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.fact WHERE provider_code='300866' AND (source_provider_field='FN19' OR (source_provider_field='FN28' AND report_period IN (DATE '2025-09-30',DATE '2026-03-31',DATE '2026-06-30')))`).Scan(&missingZeros))
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='300866' AND (source_provider_field='FN19' OR (source_provider_field='FN28' AND report_period IN (DATE '2025-09-30',DATE '2026-03-31',DATE '2026-06-30')))`).Scan(&missingZeros))
 	if missingZeros != 0 {
 		t.Fatal("ambiguous balance zeros became facts")
 	}
@@ -445,6 +445,7 @@ func TestRealValuationStandardChain(t *testing.T) {
 		}
 	}
 	if output := os.Getenv("ALPHALAKE_VALUATION_EXPORT_DIR"); output != "" {
+		copyFinancialTestArchives(t, db, root, output)
 		check(db.Close())
 		rawDB, err := os.ReadFile(dbPath)
 		check(err)

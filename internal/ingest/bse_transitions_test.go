@@ -132,7 +132,7 @@ func TestBSETransitionPublicationRealEvidence(t *testing.T) {
 	}
 	refresh := func(wantResolved int) {
 		t.Helper()
-		r, e := duckstore.RefreshPendingFilingResolutions(ctx, db, first.RunID, 7)
+		r, e := duckstore.RefreshPendingFilingResolutions(domain.WithBSE(ctx), db, first.RunID, 7)
 		if e != nil || r.Attempted != 27 || r.Resolved != wantResolved || r.StillPending != 27-wantResolved {
 			t.Fatal("persisted identity refresh", r, e)
 		}
@@ -149,7 +149,7 @@ func TestBSETransitionPublicationRealEvidence(t *testing.T) {
 		}
 	}
 	refresh(27)
-	rechecked, e := duckstore.RefreshPendingFilingResolutions(ctx, db, first.RunID, 7)
+	rechecked, e := duckstore.RefreshPendingFilingResolutions(domain.WithBSE(ctx), db, first.RunID, 7)
 	if e != nil || rechecked.Resolved != 27 || rechecked.Recovered != 0 {
 		t.Fatal("revalidation counted as newly recovered", rechecked, e)
 	}
@@ -193,21 +193,21 @@ func TestBSETransitionPublicationRealEvidence(t *testing.T) {
 		}
 	}
 	// 合成金额仅验证身份失效向标准事实传播；不冒充该公司的财务原文验收。
-	var financialArtifact int64
-	if err = db.QueryRowContext(ctx, `INSERT INTO meta.artifact(source,dataset,source_locator,fetched_at,sha256,content_length) VALUES ('tdx','professional_financial','test/bse-identity.zip',now(),'bse-test-revision',1) RETURNING artifact_id`).Scan(&financialArtifact); err != nil {
+	if _, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE canonical_field<>'revenue'`); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = db.ExecContext(ctx, `INSERT INTO fundamental.provider_fact(instrument_id,source,report_period,provider_code,provider_field,value,artifact_id,revision_key) VALUES (9007199254740993,'tdx','2025-03-31','920819','FN230',100,?,'bse-test-revision')`, financialArtifact); err != nil {
+	record, sha, _ := seedFinancialArchive(t, ctx, db, "920819", 9007199254740993, time.Date(2025, 3, 31, 0, 0, 0, 0, time.UTC), map[int]float32{230: 100})
+	if _, err = duckstore.ReconcileFinancialSourceRecords(domain.WithBSE(ctx), db, 1, "tdx", sha, []domain.ProviderFinancialRecord{record}); err != nil {
 		t.Fatal(err)
 	}
 	materialize := func(want, inserted, removed int) {
 		t.Helper()
-		r, e := MaterializeProviderFundamentals(ctx, db, "tdx")
-		if e != nil || r.Materialized != want || r.Inserted != inserted || r.Removed != removed {
+		r, e := MaterializeProviderFundamentals(domain.WithBSE(ctx), db, "tdx")
+		if e != nil || r.Inserted != inserted || r.Removed != removed {
 			t.Fatal("identity-dependent fact lifecycle", r, e)
 		}
 		var facts, source int
-		if e = db.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM fundamental.fact),(SELECT count(*) FROM fundamental.provider_fact WHERE value=100)`).Scan(&facts, &source); e != nil || facts != want || source != 1 {
+		if e = db.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL)),(SELECT count(*) FROM fundamental.source_record WHERE source_row=1)`).Scan(&facts, &source); e != nil || facts != want || source != 1 {
 			t.Fatal("canonical removal/source retention", facts, source, e)
 		}
 	}

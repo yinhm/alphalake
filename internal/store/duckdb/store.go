@@ -52,6 +52,10 @@ func open(ctx context.Context, path string, readOnly bool) (*sql.DB, error) {
 	var err error
 	// 驱动内存配置允许查询溢写，但不是进程RSS硬上限；大任务仍需外部资源隔离。
 	options := url.Values{}
+	// Release native task/bulk allocation arenas instead of retaining their
+	// high-water mark across financial packages in the same connection.
+	options.Set("allocator_flush_threshold", "16MiB")
+	options.Set("allocator_bulk_deallocation_flush_threshold", "16MiB")
 	for option, variable := range map[string]string{"memory_limit": "ALPHALAKE_DUCKDB_MEMORY_LIMIT", "threads": "ALPHALAKE_DUCKDB_THREADS"} {
 		if value := strings.TrimSpace(os.Getenv(variable)); value != "" {
 			options.Set(option, value)
@@ -106,30 +110,4 @@ func OpenInitialized(ctx context.Context, path string) (*sql.DB, error) {
 
 func duckdbStringLiteral(value string) string {
 	return "'" + strings.ReplaceAll(value, "'", "''") + "'"
-}
-
-// ReloadPersistentCatalog releases resident index memory between serialized
-// write batches. Call only outside transactions with no concurrent DB users.
-// DuckDB indexes are not evicted by the buffer manager; re-attachment makes them
-// lazy again: https://duckdb.org/docs/lts/guides/performance/indexing
-func ReloadPersistentCatalog(ctx context.Context, db *sql.DB) error {
-	conn, err := db.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-	var path string
-	err = conn.QueryRowContext(ctx, "SELECT path FROM duckdb_databases() WHERE database_name=?", PersistentCatalog).Scan(&path)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil
-	} // Pure in-memory test databases.
-	if err != nil {
-		return err
-	}
-	for _, statement := range []string{"CHECKPOINT " + PersistentCatalog, "USE memory.main", "DETACH " + PersistentCatalog, "ATTACH " + duckdbStringLiteral(path) + " AS " + PersistentCatalog, "USE " + PersistentCatalog + ".main"} {
-		if _, err := conn.ExecContext(context.WithoutCancel(ctx), statement); err != nil {
-			return fmt.Errorf("reload persistent catalog: %w", err)
-		}
-	}
-	return nil
 }

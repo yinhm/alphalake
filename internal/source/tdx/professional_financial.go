@@ -50,9 +50,10 @@ func (c *Client) NormalizeProfessionalFinancialPackage(entry tdxfinancial.FileEn
 
 func normalizeProfessionalFinancialRecords(entry tdxfinancial.FileEntry, pkg tdxfinancial.Package, artifactID int64) []domain.ProviderFinancialRecord {
 	out := make([]domain.ProviderFinancialRecord, 0, len(pkg.Records))
-	for _, record := range pkg.Records {
+	for i, record := range pkg.Records {
 		out = append(out, domain.ProviderFinancialRecord{
 			Provider:       Provider,
+			SourceRow:      uint32(i + 1),
 			ProviderCode:   record.Code,
 			MarketMarker:   record.MarketMarker,
 			ReportPeriod:   record.ReportPeriod,

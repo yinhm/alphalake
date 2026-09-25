@@ -26,21 +26,24 @@ func TestDefaultMarketScopePreservesExcludedEvidence(t *testing.T) {
 		t.Fatal(err)
 	}
 	end := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
-	record := domain.ProviderFinancialRecord{InstrumentID: id, Provider: "tdx", ProviderCode: "920001", ReportPeriod: end, ArtifactID: 201, SourceFile: "gpcw20260630.zip", ProviderFields: []domain.ProviderFloat32{{Bits: math.Float32bits(10), Value: 10}}}
-	write, err := ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", "scope-sha", []domain.ProviderFinancialRecord{record})
+	record := domain.ProviderFinancialRecord{InstrumentID: id, Provider: "tdx", ProviderCode: "920001", ReportPeriod: end, ArtifactID: 201, SourceRow: 1, SourceFile: "gpcw20260630.zip", ProviderFields: []domain.ProviderFloat32{{Bits: math.Float32bits(10), Value: 10}}}
+	if _, err = db.ExecContext(ctx, `INSERT INTO meta.artifact(artifact_id,source,dataset,source_locator,fetched_at,sha256,content_length) VALUES(201,'tdx','professional_financial','gpcw20260630.zip',now(),'scope-sha',1)`); err != nil {
+		t.Fatal(err)
+	}
+	write, err := ReconcileFinancialSourceRecords(ctx, db, run, "tdx", "scope-sha", []domain.ProviderFinancialRecord{record})
 	if err != nil || write.Inserted != 0 || write.Attempted != 0 {
 		t.Fatal(write, err)
 	}
-	write, err = ReconcileProviderFinancialRecordsForArtifact(explicit, db, run, "tdx", "scope-sha", []domain.ProviderFinancialRecord{record})
+	write, err = ReconcileFinancialSourceRecords(explicit, db, run, "tdx", "scope-sha", []domain.ProviderFinancialRecord{record})
 	if err != nil || write.Inserted != 1 {
 		t.Fatal(write, err)
 	}
-	write, err = ReconcileProviderFinancialRecordsForArtifact(ctx, db, run, "tdx", "scope-sha", nil)
+	write, err = ReconcileFinancialSourceRecords(ctx, db, run, "tdx", "scope-sha", nil)
 	if err != nil || write.Removed != 0 {
 		t.Fatal(write, err)
 	}
 	var count int
-	if err := db.QueryRowContext(ctx, "SELECT count(*) FROM fundamental.provider_fact").Scan(&count); err != nil || count != 1 {
+	if err := db.QueryRowContext(ctx, "SELECT count(*) FROM fundamental.source_record").Scan(&count); err != nil || count != 1 {
 		t.Fatal(count, err)
 	}
 	snapshot := classificationSnapshot("bj920001")

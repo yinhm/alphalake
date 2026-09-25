@@ -4,11 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"math"
 	"strings"
 	"time"
 
-	"github.com/yinhm/alphalake/internal/domain"
 	"github.com/yinhm/alphalake/internal/source/tdx/financial"
 )
 
@@ -44,41 +42,6 @@ func insertSourceFieldCatalog(ctx context.Context, tx *sql.Tx) error {
 	return err
 }
 
-// UpgradeFinancialCatalog is an explicit one-time conversion, never invoked by
-// Initialize. The caller must preserve a backup before modifying its database.
-func UpgradeFinancialCatalog(ctx context.Context, db *sql.DB) error {
-	v, err := CurrentSchemaVersion(ctx, db)
-	if err != nil {
-		return err
-	}
-	if v != 50 {
-		return fmt.Errorf("financial catalog conversion requires schema 50, got %d", v)
-	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-	if _, err = tx.ExecContext(ctx, `
- CREATE TEMP TABLE saved_financial_fields AS SELECT * FROM fundamental.field;
- DROP TABLE fundamental.field;
- CREATE TABLE fundamental.field(canonical_field VARCHAR PRIMARY KEY,unit VARCHAR NOT NULL,value_kind VARCHAR NOT NULL,period_basis VARCHAR NOT NULL,
- CHECK(period_basis IN ('instant','quarter','ytd','opening_instant','ttm')));
- INSERT INTO fundamental.field SELECT * FROM saved_financial_fields;
- DROP TABLE saved_financial_fields;
- DELETE FROM fundamental.source_field`); err != nil {
-		return err
-	}
-	if err = insertSourceFieldCatalog(ctx, tx); err != nil {
-		return err
-	}
-	if _, err = tx.ExecContext(ctx, `DELETE FROM meta.schema_version;
- INSERT INTO meta.schema_version(version,description) VALUES (51,'Complete official supplementary financial catalog')`); err != nil {
-		return err
-	}
-	return tx.Commit()
-}
-
 type SourceFinancialObservation struct {
 	financial.NamedSourceValue
 	ProviderFactID int64  `json:"provider_fact_id"`
@@ -110,49 +73,55 @@ func ExportSourceFinancialData(ctx context.Context, db *sql.DB, code string, per
 	if version != SchemaVersion {
 		return out, fmt.Errorf("unsupported schema %d; expected %d", version, SchemaVersion)
 	}
-	rows, err := db.QueryContext(ctx, `SELECT p.provider_fact_id,p.provider_field,p.revision_key,p.artifact_id,p.value,p.value_float32_bits,
- c.source_index,coalesce(c.name,''),coalesce(c.display_name,''),coalesce(c.category,''),coalesce(c.value_kind,''),coalesce(c.unit,'unspecified'),c.value_multiplier,coalesce(c.period_basis,'unspecified'),coalesce(c.definition_status,'unpublished'),coalesce(c.definition_reference,''),coalesce(c.name IN (SELECT name FROM fundamental.source_field WHERE source='tdx' AND name IS NOT NULL GROUP BY name HAVING count(*)>1),false)
- FROM fundamental.provider_fact p LEFT JOIN fundamental.source_field c ON c.source=p.source AND c.provider_field=p.provider_field
- WHERE p.source='tdx' AND p.provider_code=? AND p.report_period=? ORDER BY p.revision_key,try_cast(substr(p.provider_field,3) AS INTEGER),p.provider_fact_id`, code, period)
+
+	root, err := FinancialArchiveRoot(ctx, db)
 	if err != nil {
 		return out, err
 	}
-	defer rows.Close()
+	fields, err := financial.FieldCatalog()
+	if err != nil {
+		return out, err
+	}
+	rows, err := db.QueryContext(ctx, `SELECT r.source_record_id,r.source_row,r.artifact_id,a.local_path,a.source_locator,a.sha256,a.content_length FROM fundamental.source_record r JOIN meta.artifact a USING(artifact_id) WHERE r.provider_code=? AND r.report_period=? ORDER BY a.sha256,r.source_row`, code, period)
+	if err != nil {
+		return out, err
+	}
+	type locator struct {
+		id, artifact, size int64
+		row                int
+		path, name, hash   string
+	}
+	var records []locator
 	for rows.Next() {
-		var o SourceFinancialObservation
-		var f financial.FieldDefinition
-		var provider string
-		var raw, mult sql.NullFloat64
-		var bits, index, artifact sql.NullInt64
-		if err = rows.Scan(&o.ProviderFactID, &provider, &o.Revision, &artifact, &raw, &bits, &index, &f.Name, &f.Label, &f.Category, &f.ValueKind, &f.Unit, &mult, &f.PeriodBasis, &f.DefinitionStatus, &f.Reference, &f.RequiresDisambiguation); err != nil {
+		var r locator
+		if err = rows.Scan(&r.id, &r.row, &r.artifact, &r.path, &r.name, &r.hash, &r.size); err != nil {
+			rows.Close()
 			return out, err
 		}
-		if index.Valid {
-			f.Index = int(index.Int64)
-		}
-		if mult.Valid {
-			f.Multiplier = &mult.Float64
-		}
-		if artifact.Valid {
-			n := artifact.Int64
-			o.ArtifactID = &n
-		}
-		if raw.Valid && bits.Valid && bits.Int64 >= 0 && bits.Int64 <= math.MaxUint32 {
-			o.NamedSourceValue = financial.DecodeSourceValue(f, domain.ProviderFloat32{Bits: uint32(bits.Int64), Value: raw.Float64})
-		} else {
-			o.NamedSourceValue = financial.NamedSourceValue{Field: f.Name, Unit: f.Unit, PeriodBasis: f.PeriodBasis, DefinitionStatus: f.DefinitionStatus, State: "missing_source_encoding"}
-		}
-		if o.Evidence.Bits == nil && bits.Valid && bits.Int64 >= 0 && bits.Int64 <= math.MaxUint32 {
-			n := uint32(bits.Int64)
-			o.Evidence.Bits = &n
-		}
-		if o.Evidence.RawValue == nil && raw.Valid && !math.IsNaN(raw.Float64) && !math.IsInf(raw.Float64, 0) {
-			n := raw.Float64
-			o.Evidence.RawValue = &n
-		}
-		o.Evidence.Field = provider
-		out.States[o.State]++
-		out.Observations = append(out.Observations, o)
+		records = append(records, r)
 	}
-	return out, rows.Err()
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return out, err
+	}
+	for _, r := range records {
+		pkg, e := readFinancialArchive(root, r.path, r.name, r.hash, r.size)
+		if e != nil {
+			return out, e
+		}
+		if r.row < 1 || r.row > len(pkg.Records) || pkg.Records[r.row-1].Code != code {
+			return out, fmt.Errorf("source row identity mismatch")
+		}
+		for i, v := range pkg.Records[r.row-1].Fields {
+			f := financial.FieldDefinition{Index: i + 1, Unit: "unspecified", PeriodBasis: "unspecified", DefinitionStatus: "unpublished"}
+			if i < len(fields) {
+				f = fields[i]
+			}
+			o := SourceFinancialObservation{NamedSourceValue: financial.DecodeSourceValue(f, v), ProviderFactID: r.id*8192 + int64(i+1), Revision: r.hash, ArtifactID: &r.artifact}
+			out.States[o.State]++
+			out.Observations = append(out.Observations, o)
+		}
+	}
+	return out, nil
 }

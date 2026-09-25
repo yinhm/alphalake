@@ -58,13 +58,28 @@ type ProviderFinancialResolutionRow struct {
 // reason that was reviewed is also preserved; a later resolution wins and
 // clears obsolete acknowledgement metadata.
 func ApplyProviderFinancialResolutions(ctx context.Context, db *sql.DB, ingestRunID int64, inputs []ProviderFinancialResolutionInput) (ProviderFinancialResolutionApplyResult, error) {
-	var result ProviderFinancialResolutionApplyResult
+
 	if db == nil {
-		return result, errors.New("duckdb is nil")
+		return ProviderFinancialResolutionApplyResult{}, errors.New("duckdb is nil")
 	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return ProviderFinancialResolutionApplyResult{}, err
+	}
+	defer tx.Rollback()
+	result, err := applyProviderFinancialResolutions(ctx, tx, ingestRunID, inputs)
+	if err != nil {
+		return result, err
+	}
+	return result, tx.Commit()
+}
+
+func applyProviderFinancialResolutions(ctx context.Context, tx snapshotDB, ingestRunID int64, inputs []ProviderFinancialResolutionInput) (ProviderFinancialResolutionApplyResult, error) {
+	var result ProviderFinancialResolutionApplyResult
 	if ingestRunID <= 0 {
 		return result, errors.New("ingest run ID must be positive")
 	}
+
 	if len(inputs) == 0 {
 		return result, nil
 	}
@@ -114,11 +129,6 @@ func ApplyProviderFinancialResolutions(ctx context.Context, db *sql.DB, ingestRu
 	if err != nil {
 		return result, fmt.Errorf("encode provider resolutions: %w", err)
 	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return result, fmt.Errorf("begin provider resolution update: %w", err)
-	}
-	defer tx.Rollback()
 	_, err = tx.ExecContext(ctx, `
 		INSERT INTO fundamental.provider_record_resolution (
 			artifact_id, source, source_file, report_period, provider_code,
@@ -196,9 +206,6 @@ func ApplyProviderFinancialResolutions(ctx context.Context, db *sql.DB, ingestRu
 		return result, fmt.Errorf("iterate provider resolution summary: %w", err)
 	}
 	rows.Close()
-	if err := tx.Commit(); err != nil {
-		return result, fmt.Errorf("commit provider resolutions: %w", err)
-	}
 	return result, nil
 }
 

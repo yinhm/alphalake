@@ -47,21 +47,22 @@ func TestRealConflictingSecurityIsolatedAndValuationBlocked(t *testing.T) {
 		}
 	}
 	root := filepath.Join(t.TempDir(), "raw")
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	day := time.Date(2026, 9, 9, 0, 0, 0, 0, time.UTC)
 	options := TDXProfessionalFinancialOptions{MaxPackages: 1, Now: func() time.Time { return day }}
 	result, err := SyncTDXProfessionalFinancialWithOptions(ctx, db, source, root, options)
-	if err != nil || result.Packages != 1 || result.FactsInserted != 2*584 || result.Unresolved != 1 {
+	if err != nil || result.Packages != 1 || result.RecordsInserted != 2 || result.Unresolved != 1 {
 		t.Fatalf("%+v %v", result, err)
 	}
 	var badFacts int
-	if err = db.QueryRow(`SELECT count(*) FROM fundamental.provider_fact WHERE provider_code='300750'`).Scan(&badFacts); err != nil || badFacts != 0 {
+	if err = db.QueryRow(`SELECT count(*) FROM fundamental.source_record WHERE provider_code='300750' AND instrument_id IS NOT NULL`).Scan(&badFacts); err != nil || badFacts != 0 {
 		t.Fatalf("conflicting values published: %d %v", badFacts, err)
 	}
 	if _, found, err := store.GetCheckpoint(ctx, db, "tdx", "professional_financial", "package:include-bse=false:gpcw20251231.zip"); err != nil || found {
 		t.Fatalf("conflict checkpointed: %v %v", found, err)
 	}
 	result, err = SyncTDXProfessionalFinancialWithOptions(ctx, db, source, root, options)
-	if err != nil || result.FactsInserted != 0 || result.Unresolved != 1 || source.packageCalls != 1 {
+	if err != nil || result.RecordsInserted != 0 || result.Unresolved != 1 || source.packageCalls != 1 {
 		t.Fatalf("replay %+v calls=%d %v", result, source.packageCalls, err)
 	}
 	if err = db.Close(); err != nil {

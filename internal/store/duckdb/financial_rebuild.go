@@ -98,7 +98,7 @@ func RebuildFinancialStorage(ctx context.Context, previous, output, root, audit 
 		tx.Rollback()
 		return result, err
 	}
-	if _, err = tx.ExecContext(ctx, `DELETE FROM meta.schema_version; INSERT INTO meta.schema_version(version,description) VALUES(52,'Isolated financial rebuild candidate; not runtime-ready')`); err != nil {
+	if _, err = tx.ExecContext(ctx, `DELETE FROM meta.schema_version; INSERT INTO meta.schema_version(version,description) VALUES(-52,'Incomplete financial rebuild; not runtime-ready')`); err != nil {
 		tx.Rollback()
 		return result, err
 	}
@@ -257,9 +257,15 @@ func RebuildFinancialStorage(ctx context.Context, previous, output, root, audit 
 						_ = app.Close()
 					}
 				}()
+				indexed := map[string]bool{}
 				for i, r := range pkg.Records {
+					resolved := identities[r.Code]
+					if indexed[r.Code] {
+						resolved = 0
+					}
+					indexed[r.Code] = true
 					id := p.id*65536 + int64(i+1)
-					if e = app.AppendRow(id, p.id, uint32(i+1), r.Code, r.MarketMarker, uint16(len(r.Fields))); e != nil {
+					if e = app.AppendRow(id, p.id, uint32(i+1), r.Code, r.MarketMarker, uint16(len(r.Fields)), r.ReportPeriod, nullableInstrument(resolved)); e != nil {
 						return e
 					}
 				}
@@ -338,12 +344,7 @@ func RebuildFinancialStorage(ctx context.Context, previous, output, root, audit 
 	if err != nil {
 		return result, err
 	}
-	if _, err = tx.ExecContext(ctx, `DROP VIEW fundamental.fact_latest;
- DROP MACRO fundamental.statements_asof;
- DROP MACRO fundamental.annual_asof;
- DROP MACRO fundamental.ttm_asof;
- DROP MACRO fundamental.fact_asof;
- DROP TABLE fundamental.provider_fact; DROP TABLE fundamental.fact; DELETE FROM meta.schema_version; INSERT INTO meta.schema_version(version,description) VALUES(52,'Financial wide-table candidate; publication requires acceptance')`); err != nil {
+	if _, err = tx.ExecContext(ctx, `DELETE FROM meta.schema_version; INSERT INTO meta.schema_version(version,description) VALUES(52,'Financial wide-table rebuild')`); err != nil {
 		tx.Rollback()
 		return result, err
 	}
