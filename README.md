@@ -2,9 +2,9 @@
 
 默认范围为沪深市场；北交所不进入默认同步及批量估值分母。显式追加 `--include-bse` 才纳入北交所；已有北交所历史与混合市场原始归档保留。按代码/证券指定的查询和单证券操作视为显式范围，历史验收数字不改写。
 
-当前无实际生产部署，已[清理本轮识别的旧版本兼容路径](docs/compatibility-cleanup-20260919.md)：仅维护当前契约与schema51，原始证据及冻结历史保留；新建库到标准输入及估值的回归验收通过。
+当前无实际生产部署，已[清理本轮识别的旧版本兼容路径](docs/compatibility-cleanup-20260919.md)：仅维护当前契约与schema52，原始证据及冻结历史保留；新建库到标准输入及估值的回归验收通过。
 
-历史验收曾在1GiB硬限额下完成[全字段物化及幂等重放](docs/fundamental-memory-20260919.md)，但后续历史扩量暴露了字段长表、索引与重复诊断的结构性成本。当前已暂停扩量，完成[存储实测与重设计规格](docs/financial-storage-redesign-20260925.md)：已实现无源BLOB/数值副本的隔离宽表重建，562万标准值全量比对无差异，财务阶段单次约28秒；正式同步、查询和批量导出尚未切换，主库仍为schema51，不能把候选结果当作完整系统验收。大任务仍须与交互终端隔离运行。
+已完成[无源数值/BLOB副本的标准宽表切换](docs/financial-storage-cutover-20260925.md)：主库schema52约269MiB，原5,627,307个标准值全量比对无差异，本地历史同步后达到7,949,683个。同步、三表/TTM、估值JSON及批量SQLite导出已使用新结构，网页8080已切换5,227家公司快照；17项源记录冲突与原生估值缺项仍明确保留。旧主库和过时整库备份已删除，审核证据与历史诊断另行压缩保留。大任务仍须在1GiB硬限额下与交互终端隔离运行。
 
 已提供[纯TDX标准财务导出SQLite](docs/valuation-sqlite-export.md)。原生接入纠偏已恢复原网页/请求并撤除专用界面，但原生估值数据仍未达标：当前6类目标定义待补，已补入来源报告EBIT/EBITDA（经营调整适用性另核），三家历史窗口也不完整；[字段契约与解决方案](docs/valuation-native-data-contract-20260924.md)已列明；先完成已授权的TDX接入，额外来源另议。当前返回明确缺项，不用原定制桥接的成功冒称兼容完成。
 
@@ -63,8 +63,8 @@ TDX 协议请求支持[自动换节点重试](docs/tdx-failover.md)：每个独�
 - 动态、无损解析 gpcw：字段数取自 `report_size/4`，保留原始 float32 位模式及市场标记字节，不猜测其交易所语义；
 - 财务归一化保留六位原始代码，不套用当前 SDK 的代码区间规则；
 - 在报告期解析时态财务身份，根据数据集语义排除指数，并保存 `resolved` / `pending` / `acknowledged` 记录证据；
-- 按不可变数据源证据批量协调 `fundamental.provider_fact`，身份修正时重新归属或删除失效事实，不跨证券重复生成同一版本；
-- 分别统计尝试、插入、重新归属和删除的数据源事实数；
+- 按不可变归档批量协调 `fundamental.source_record` 轻量定位，身份修正时撤销失效标准行；源数值仅保留于原始ZIP，不重复入库；
+- 分别统计尝试、插入、重新归属及转为待解析的源记录数；
 - 财务身份治理支持分页查看待解析记录、显式确认及撤销确认；
 - [TDX全量源目录](docs/tdx-financial-catalog-20260919.md)覆盖584位置、462项有名称依据、422项有明确数值单位；未知语义、比例尺度、日期与同名歧义分别保留。源维护命令`tdx-financial-fields`及`export-financial-source`已提供，标准审核与源解析分开；
 - [规范三表查询](docs/decisions/020-official-statements-and-snapshots.md)按报告期及信息截止返回资产负债表、利润表和现金流量表；标准目录共346项，三表源位置280/283已映射，3处歧义明确保留。单位统一元、股、元/股，期初余额和每股指标不进入普通TTM加总；原文样本审核与官方定义映射分别记录；
@@ -75,7 +75,7 @@ TDX 协议请求支持[自动换节点重试](docs/tdx-failover.md)：每个独�
 - 持久化采集/计算运行状态：`completed`、`partial`、`failed`、`canceled`；
 - 基于数据库的运行状态查询和当前结构的一次性初始化。
 
-专业财务数据源事实的 `announcement_time` 有意允许为空。原始 gpcw 包没有逐记录的权威公告时间，AlphaLake **不会**从抓取时间、文件名或报告期推断。标准时点 `fundamental.fact` 通过独立的 CNINFO 公告证据关联后，由 `materialize-fundamentals` 在本地生成。
+原始 gpcw 包没有逐记录的权威公告时间，AlphaLake **不会**从抓取时间、文件名或报告期推断。标准宽表 `fundamental.statement_snapshot` 通过独立的 CNINFO 公告证据关联后，由 `materialize-fundamentals` 从本地ZIP批量生成；查询通过标准财务接口读取，源位证据按需从归档重提取。
 
 证券主数据会发现指数和可转债，但初始股票/ETF 日线与复权流程暂不处理它们；需要先以专门测试验证请求和单位语义。
 
@@ -129,7 +129,7 @@ CI 还会检查 `go mod tidy` 是否产生文件改动，并以 Python 3.12 / [�
 
 ## 命令行
 
-初始化当前 DuckDB 数据库（已有schema51直接打开；schema50备份后显式转换，其他旧版本明确拒绝）：
+初始化当前 DuckDB 数据库（已有schema52直接打开；schema51须使用独立重建工具转换，其他旧版本明确拒绝）：
 
 ```bash
 alphalake init ./alphalake.duckdb
@@ -260,7 +260,7 @@ alphalake schema
 
 审核补充支持显式修订、撤销与历史查询，镜像原文审核独立于诊断保存；迁移及时间边界见[审核证据说明](docs/reviewed-evidence-history.md)。
 
-当前仅维护schema51，定义见 [schema.sql](internal/store/duckdb/schema.sql)。财务与参考数据已归并主库并接入[全量TDX源目录](docs/tdx-financial-catalog-20260919.md)，原有财务与参考内容不变，新增标准映射及本地事实的最新范围见[接入验收](docs/decisions/020-official-statements-and-snapshots.md)。旧迁移链及专项发布工具退出当前代码，严格历史复验使用原提交；处置记录见[兼容清理](docs/compatibility-cleanup-20260919.md)。
+当前仅维护schema52，基本定义见 [schema.sql](internal/store/duckdb/schema.sql)，财务宽表及查询见 [financial_snapshot.go](internal/store/duckdb/financial_snapshot.go) 和 [financial_queries.sql](internal/store/duckdb/financial_queries.sql)。财务与参考数据已归并主库并接入[全量TDX源目录](docs/tdx-financial-catalog-20260919.md)，原有财务与参考内容不变，新增标准映射及本地事实的最新范围见[接入验收](docs/decisions/020-official-statements-and-snapshots.md)。旧迁移链及专项发布工具退出当前代码，严格历史复验使用原提交；处置记录见[兼容清理](docs/compatibility-cleanup-20260919.md)。
 
 ## 数据布局
 

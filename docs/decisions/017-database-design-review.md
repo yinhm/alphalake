@@ -21,7 +21,7 @@
 
 ## 2. 存储与分层
 
-保留 DuckDB 和文件系统组合：不可变源文件由 SHA-256 寻址，`meta.artifact` 保存定位；TDX `provider_fact` 保留源 float32 位模式，`fundamental.fact` 保存审核映射后的标准值；`reviewed_supplement` 独立保存原文补充。DECIMAL 不恢复源精度。事实依据失效时重建或撤除标准投影，原始证据保留。
+保留 DuckDB 和文件系统组合：不可变源文件由 SHA-256 寻址，`meta.artifact` 保存定位；TDX ZIP保留源float32位模式，`source_record`保存原行定位，`statement_snapshot`以通用宽列保存审核映射后的标准值（schema52，见[切换记录](../financial-storage-cutover-20260925.md)）；`reviewed_supplement` 独立保存原文补充。DECIMAL 不恢复源精度。事实依据失效时重建或撤除标准投影，原始证据保留。
 
 年度和 TTM 由标准查询派生，不另存一套手工维护宽表。政策、预测、经济分类假设及估值运行 JSON 与公司历史事实分开；保留既有 run ID、查询、比较和增量重估机制，不为“全部入库”增加结果数据库。
 

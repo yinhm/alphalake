@@ -1,6 +1,6 @@
 # 标准财务事实导出 SQLite
 
-当前提供纯TDX来源的SQLite财务快照，**尚未达到原 Investment_Valuation_Agent SQL/API兼容目标**。专用前端和估值旁路已撤除；原页面和请求契约已恢复，当前快照在后端明确拒绝原生估值，详见[字段契约及待审批缺口](valuation-native-data-contract-20260924.md)。工具不修改源DuckDB或默认seed。当前证据快照契约仍为`alphalake-sqlite-v2`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
+当前提供纯TDX来源的SQLite财务快照，**尚未达到原 Investment_Valuation_Agent SQL/API兼容目标**。专用前端和估值旁路已撤除；原页面和请求契约已恢复，当前快照在后端明确拒绝原生估值，详见[字段契约及待审批缺口](valuation-native-data-contract-20260924.md)。工具不修改源DuckDB或默认seed。当前证据快照契约为`alphalake-sqlite-v3`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
 
 依赖Python 3.11+标准库和当前版本`alphalake`程序，无新增包。先构建当前程序；本机的大库任务、构建和测试须串行放在独立systemd系统服务中，参见[内存隔离约束](fundamental-memory-20260919.md)。例如：
 
@@ -30,23 +30,23 @@ systemd-run --unit=alphalake-sqlite-export \
   --setenv=GOMEMLIMIT=128MiB --setenv=GOMAXPROCS=1 \
   /usr/bin/python3 -m tools.export_alphalake_sqlite \
   --database workspace/alphalake.duckdb \
-  --output workspace/derived/valuation.sqlite \
-  --period 2026-06-30 --as-of 2026-09-22T00:00:00Z \
+  --output workspace/derived/valuation.next.sqlite \
+  --period 2026-06-30 --as-of 2026-09-25T00:00:00Z \
   --code 300866 --code 600519 --code 002032 \
   --alphalake /tmp/alphalake-sqlite-export
 systemctl show alphalake-sqlite-export -p ControlGroup -p MemoryMax -p ActiveState -p ExecMainStatus
 journalctl -u alphalake-sqlite-export --no-pager
 ```
 
-`--code`可重复，或显式换成`--all`选择准入查询的全部A股证券分母；身份拒绝保存在`export_universe`。默认10个年度、8个季度，可用`--years 1..10`和`--quarters 1..8`缩短。不存在的指定证券拒绝；不根据缺数据静默缩短历史。源库须关闭写入并完成checkpoint，无WAL；逐次检查文件状态，发布前复核完整SHA256，源发生变化则不发布。结果在同目录临时文件完整写入并检查后原子创建；运行失败不留下最终SQLite。
+`--code`可重复，或显式换成`--all`选择本地全部沪深A股证券分母；身份拒绝保存在`export_universe`。默认10个年度、8个季度，可用`--years 1..10`和`--quarters 1..8`缩短。不存在的指定证券拒绝；不根据缺数据静默缩短历史。源库须关闭写入并完成checkpoint，无WAL；逐次检查文件状态，发布前复核完整SHA256，源发生变化则不发布。结果在同目录临时文件完整写入并检查后原子创建；运行失败不留下最终SQLite。
 
 ## 数据范围与语义
 
-链路：TDX原始包→已有标准语义/校验→DuckDB标准事实及TTM→SQLite→网页→共享估值引擎。CNINFO关联只提供身份、时点与核验血缘；PDF附注金额、参考市场数据和模型假设不进入快照。
+链路：TDX原始包→已有标准语义/校验→DuckDB标准宽表→SQLite→网页→共享估值引擎。CNINFO关联只提供身份、时点与核验血缘；PDF附注金额、参考市场数据和模型假设不进入快照。
 
-SQLite增加`standard_facts`保存所有查询所得的标准字段、原标准单位及独立证据，`financial_statements`保存指定期间的完整三表与缺项状态，`valuation_inputs`保存当前标准事实/TTM及源位核验血缘（附注列表明确为空）。不再按网页17列限制标准数据供给。
+SQLite的`standard_facts`保存原生模型11个已映射目标列所需的标准事实、单位及独立证据，`export_cells`逐单元格保存缺项和差分血缘。全部346字段由主库标准查询提供；不再复制整份三表、TTM和估值JSON。导出通过`export-financial-snapshot`在一次只读事务内批量投影目标列，Python逐证券写入SQLite，不逐公司/期间启动进程。
 
-仍提供`companies`、`financials_annual`、`financials_quarterly`供通用数据读取；这些宽表金额为**百万元人民币**、股数为**百万股**，标准长表与三表金额仍为元、股数为股，按各行单位解释。这些额外载荷仅保留证据；原生估值必须使用宽表，不再绕过宽表读取专项载荷。保留源精度，不补小数。日期锚点来自指定报告期，年表以最近完整自然年为FY0，季表以指定季末为FQ0。固定时点取数不是逐季度当时留存的数据版本认证。
+仍提供`companies`、`financials_annual`、`financials_quarterly`供通用数据读取；这些宽表金额为**百万元人民币**、股数为**百万股**，`standard_facts`金额仍为元、股数为股，按各行单位解释。原生估值使用宽表。保留源精度，不补小数。日期锚点来自指定报告期，年表以最近完整自然年为FY0，季表以指定季末为FQ0。固定时点取数不是逐季度当时留存的数据版本认证。
 
 | SQLite列 | 标准字段 | 转换 |
 |---|---|---|

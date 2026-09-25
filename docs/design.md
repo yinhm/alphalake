@@ -272,19 +272,9 @@ TDX 数值与 CNINFO 公告证据不互相覆盖来源信息。
 
 只有经过审核且单位明确的源字段映射才能生成标准事实。
 
-初始标准字段如下。FN230–FN237 均为单季度金额，`period_type` 标为 Q1/Q2/Q3/Q4，不因来源是半年报或年报就标为 H1/FY；FN238 为报告期末股本，保留对应报告类型标记。
+标准目录目前346项，单位、期间与有效期分别审核。`revenue`、`operating_profit`、`net_income_parent`、`adjusted_net_income`、`operating_cash_flow`、`investing_cash_flow`、`financing_cash_flow`及`net_cash_increase`为单季度金额，不因来源是年报就按全年累计取数；`total_shares`为期末股数。累计收入等另有明确标准名称，不混用。
 
-- FN230 营业收入——人民币元；
-- FN231 营业利润——人民币元；
-- FN232 归母净利润——人民币元；
-- FN233 扣非净利润——人民币元；
-- FN234 经营活动现金流——人民币元；
-- FN235 投资活动现金流——人民币元；
-- FN236 筹资活动现金流——人民币元；
-- FN237 现金净增加额——人民币元；
-- FN238 总股本——股。
-
-`fundamental.provider_fact` 无损保留源精度。标准值使用 `DECIMAL(38,10)` 确定性表示源 float32 值，并不恢复源编码未包含的精度。
+原始ZIP无损保留源float32位模式；`fundamental.source_record`只保存归档及原行定位。`fundamental.statement_snapshot`每条来源记录一行，使用通用标准列及`DECIMAL(38,10)`，不恢复源编码未包含的精度；不存在源数值长表或BLOB副本。拒绝字段按记录/规则归并，运行血缘与内容签名分别保存，详见[存储切换](financial-storage-cutover-20260925.md)。
 
 在数据源记录提供经过审核的报表范围维度之前，范围保持 `provider_default`，不虚构合并/母公司口径。
 
@@ -300,9 +290,7 @@ TDX 数值与 CNINFO 公告证据不互相覆盖来源信息。
 
 ## 14. 时点查询约定
 
-`fundamental.fact_latest` 按证券、标准字段和报告期返回有证据支持的最新版本。
-
-`fundamental.fact_asof(as_of_time)` 返回标准披露可用时间不晚于 `as_of_time` 的最新版本。
+`fundamental.financial_observations(code,from_period,to_period,as_of_time)`读取所选范围的全部保留标准版本；`fundamental.financial_observations_asof(code,from_period,to_period,as_of_time)`按证券、标准字段和报告期选择可用时间不晚于截止的最新版本。传NULL可省略对应过滤；全字段查询先筛选窄元数据，再按记录主键读取宽列。
 
 必须满足：
 

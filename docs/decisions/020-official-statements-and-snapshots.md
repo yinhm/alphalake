@@ -26,7 +26,7 @@
 
 ## 数据层与单位
 
-原始包及`provider_fact`保留完整float32位、原始数值、版本和身份。`source_field`增加三表归属、主表/补充资料分区、映射审核状态及原因；`provider_field`承载来源倍率与审核映射；`field`继续保存通用单位、类型及期间；金额仍从标准`fact`查询。
+原始ZIP保留完整float32位和原始数值，`source_record`仅保存定位与解析身份。`source_field`保存三表归属、分区及审核状态；`provider_field`承载审核映射，`field`保存通用定义。schema52按[宽表切换](../financial-storage-cutover-20260925.md)从`statement_snapshot`查询标准金额，源位核验回读ZIP，不再复制源数值或持久化标准长表。
 
 - 金额规范为人民币元（`CNY`）：万元编码在物化时乘10000，普通金额乘1。
 - 股数规范为股（`share`），每股收益为元/股（`CNY/share`），每股值不得再乘万元或当成金额求和。
