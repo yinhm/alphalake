@@ -8,7 +8,8 @@ import (
 )
 
 // InstallSnapshotQueries expands only the requested securities/report window.
-// Wide numeric columns remain the only persisted financial values.
+// Raw observations retain all codes of candidate issuers so as-of ranking can
+// precede the final code filter. Wide columns are the sole stored numeric data.
 func InstallSnapshotQueries(ctx context.Context, db *sql.DB, fields []SnapshotField) error {
 	columns := make([]string, len(fields))
 	for i, f := range fields {
@@ -26,7 +27,9 @@ func InstallSnapshotQueries(ctx context.Context, db *sql.DB, fields []SnapshotFi
  SELECT s.*,r.provider_code,r.artifact_id,r.source_row,a.source AS primary_source,a.sha256 AS revision_key
  FROM fundamental.statement_snapshot s JOIN fundamental.source_record r USING(source_record_id)
  JOIN meta.artifact a USING(artifact_id)
- WHERE (security_code IS NULL OR r.provider_code=security_code)
+ WHERE (security_code IS NULL OR s.instrument_id IN (
+ SELECT candidate.instrument_id FROM fundamental.statement_snapshot candidate
+ JOIN fundamental.source_record locator USING(source_record_id) WHERE locator.provider_code=security_code))
  AND (from_period IS NULL OR s.report_period>=CAST(from_period AS DATE))
  AND (to_period IS NULL OR s.report_period<=CAST(to_period AS DATE))
  AND (as_of_time IS NULL OR s.announcement_time<=CAST(as_of_time AS TIMESTAMPTZ))
@@ -52,10 +55,7 @@ func InstallSnapshotQueries(ctx context.Context, db *sql.DB, fields []SnapshotFi
  CREATE MACRO fundamental.financial_observations_asof(security_code,from_period,to_period,as_of_time) AS TABLE (
  SELECT * EXCLUDE(rank) FROM (
  SELECT *,row_number() OVER(PARTITION BY instrument_id,canonical_field,report_period ORDER BY announcement_time DESC,fact_id DESC) AS rank
- FROM fundamental.financial_observations(NULL,from_period,to_period,as_of_time)
- WHERE security_code IS NULL OR instrument_id IN (
- SELECT s.instrument_id FROM fundamental.statement_snapshot s
- JOIN fundamental.source_record r USING(source_record_id) WHERE r.provider_code=security_code)
+ FROM fundamental.financial_observations(security_code,from_period,to_period,as_of_time)
  ) WHERE rank=1 AND (security_code IS NULL OR provider_code=security_code)
  );`)
 	return err
