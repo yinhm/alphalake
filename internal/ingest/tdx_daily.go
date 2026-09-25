@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/yinhm/alphalake/internal/domain"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
@@ -33,6 +34,10 @@ func SyncTDXDailyWithSummary(ctx context.Context, db *sql.DB, source TDXIncremen
 	}
 	if source == nil {
 		return summary, fmt.Errorf("TDX source is nil")
+	}
+
+	if strings.HasPrefix(symbol, "bj") {
+		ctx = domain.WithBSE(ctx)
 	}
 
 	runID, err := duckstore.StartIngestRun(ctx, db, "tdx", tdxDailyDataset, nil)

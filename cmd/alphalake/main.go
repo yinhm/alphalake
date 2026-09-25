@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/yinhm/alphalake/internal/domain"
 	"github.com/yinhm/alphalake/internal/ingest"
 	tdxsource "github.com/yinhm/alphalake/internal/source/tdx"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
@@ -19,7 +20,7 @@ import (
 const version = "0.0.0-dev"
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: alphalake <command> [args]")
+	fmt.Fprintln(os.Stderr, "usage: alphalake <command> [args] [--include-bse] (default: Shanghai/Shenzhen)")
 	fmt.Fprintln(os.Stderr, "commands:")
 	fmt.Fprintln(os.Stderr, "  financial-statements <db-path> <code> --period YYYY-MM-DD --as-of RFC3339 [--include-evidence]")
 	fmt.Fprintln(os.Stderr, "  tdx-financial-fields (source dictionary, not valuation eligibility)")
@@ -74,6 +75,20 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	// Explicit opt-in applies to the entire command, including nested syncs.
+	args := os.Args[:1]
+	for _, arg := range os.Args[1:] {
+		if arg == "--include-bse" {
+			ctx = domain.WithBSE(ctx)
+		} else {
+			args = append(args, arg)
+		}
+	}
+	os.Args = args
+	if len(os.Args) < 2 {
+		usage()
+		os.Exit(2)
+	}
 
 	if handled, err := runExtendedCommand(ctx, os.Args[1:]); handled {
 		if err != nil {

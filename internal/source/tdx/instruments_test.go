@@ -124,3 +124,9 @@ func TestInstrumentSnapshotFailsOnlyWhenNoPartitionUsable(t *testing.T) {
 		t.Fatal("expected error when no security-master partition is usable")
 	}
 }
+
+func TestDefaultDiscoveryExcludesBeijing(t *testing.T) {
+	if len(aShareExchanges) != 2 || aShareExchanges[0] != protocol.ExchangeSH || aShareExchanges[1] != protocol.ExchangeSZ {
+		t.Fatal(aShareExchanges)
+	}
+}

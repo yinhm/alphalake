@@ -288,3 +288,30 @@ func TestAcknowledgedFinancialRecordAllowsPackageCompletion(t *testing.T) {
 		t.Fatalf("third=%#v, want completed package checkpoint skip", third)
 	}
 }
+
+func TestFinancialDefaultScopeAndExplicitReplay(t *testing.T) {
+	ctx := context.Background()
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "scope.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	_, err = duckstore.UpsertInstrument(ctx, db, domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XBSE", Currency: "CNY", Name: "Beijing"}, domain.Identifier{Provider: "tdx", Type: "symbol", Value: "bj920001"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := &fakeProfessionalFinancialSource{instruments: []domain.InstrumentObservation{{Instrument: domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY", Name: "Shanghai"}, Identifier: domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh600001"}}}, packageBytes: []byte("scope zip"), recordCode: "920001"}
+	root := filepath.Join(t.TempDir(), "raw")
+	first, err := SyncTDXProfessionalFinancial(ctx, db, source, root)
+	if err != nil || first.FactsInserted != 0 || first.Unresolved != 0 {
+		t.Fatal(first, err)
+	}
+	included, err := SyncTDXProfessionalFinancial(domain.WithBSE(ctx), db, source, root)
+	if err != nil || included.FactsInserted != 2 || included.Skipped != 0 || source.packageCalls != 1 {
+		t.Fatal(included, err, source.packageCalls)
+	}
+	replay, err := SyncTDXProfessionalFinancial(ctx, db, source, root)
+	if err != nil || replay.Skipped != 1 || replay.FactsRemoved != 0 {
+		t.Fatal(replay, err)
+	}
+}

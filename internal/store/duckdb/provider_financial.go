@@ -129,6 +129,16 @@ func ReconcileProviderFinancialRecordsForArtifact(
 				  AND s.provider_code=p.provider_code
 				  AND s.provider_field=p.provider_field
 		)`
+	if !domain.IncludesBSE(ctx) {
+		// Excluded markets are not absent records: preserve their existing evidence.
+		stalePredicate += ` AND p.instrument_id NOT IN (SELECT instrument_id FROM core.instrument WHERE exchange_mic='XBSE')`
+		if _, err := conn.ExecContext(ctx, `DELETE FROM temp.main.`+providerFactStageTable+` WHERE instrument_id IN (SELECT instrument_id FROM core.instrument WHERE exchange_mic='XBSE')`); err != nil {
+			return result, err
+		}
+	}
+	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM temp.main.`+providerFactStageTable).Scan(&result.Attempted); err != nil {
+		return result, err
+	}
 	if err := conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_fact p WHERE `+stalePredicate, source, artifactSHA).Scan(&result.Removed); err != nil {
 		return result, fmt.Errorf("count stale provider financial facts: %w", err)
 	}

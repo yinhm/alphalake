@@ -7,6 +7,8 @@ import (
 	"errors"
 	"strings"
 	"time"
+
+	"github.com/yinhm/alphalake/internal/domain"
 )
 
 // ExportValuationReadiness 从本地证券主数据出发；无事实、无唯一代码也保留在分母。
@@ -45,7 +47,7 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
  AND d.provider='tdx' AND d.identifier_type='symbol'
  AND (d.valid_from IS NULL OR d.valid_from<=CAST(? AS DATE))
  AND (d.valid_to IS NULL OR d.valid_to>CAST(? AS DATE))
- WHERE i.instrument_type='equity' AND i.currency='CNY' AND i.exchange_mic IN ('XSHG','XSHE','XBSE')
+ WHERE i.instrument_type='equity' AND i.currency='CNY' AND (i.exchange_mic IN ('XSHG','XSHE') OR ((? OR ?<>'') AND i.exchange_mic='XBSE'))
  AND (i.list_date IS NULL OR i.list_date<=CAST(? AS DATE))
  AND (i.delist_date IS NULL OR i.delist_date>CAST(? AS DATE))
  AND (i.status='active' OR i.delist_date IS NOT NULL)
@@ -78,6 +80,7 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
  SELECT u.*,CAST(l.latest_report_period AS VARCHAR) AS latest_report_period,NULL AS fields,c.industry_memberships,q.source_conflicts
  FROM universe u LEFT JOIN latest l USING(instrument_id) LEFT JOIN industries c USING(instrument_id) LEFT JOIN conflicts q ON q.provider_code=substr(u.symbols[1],3)) r ORDER BY instrument_id`,
 		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"),
+		domain.IncludesBSE(ctx), code,
 		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), code, code, asof, end, asof, asof, asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof, end, end)
 	if err != nil {
 		return nil, err
@@ -220,7 +223,10 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
-	scope := "local_known_mainland_CNY_equities_not_verified_exchange_census_or_historical_master_snapshot"
+	scope := "local_known_shanghai_shenzhen_CNY_equities_not_verified_exchange_census_or_historical_master_snapshot"
+	if domain.IncludesBSE(ctx) {
+		scope = "local_known_mainland_CNY_equities_not_verified_exchange_census_or_historical_master_snapshot"
+	}
 	if code != "" {
 		scope = "local_security_code_candidates:" + code
 	}

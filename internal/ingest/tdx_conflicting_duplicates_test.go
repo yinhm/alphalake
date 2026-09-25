@@ -57,7 +57,7 @@ func TestRealConflictingSecurityIsolatedAndValuationBlocked(t *testing.T) {
 	if err = db.QueryRow(`SELECT count(*) FROM fundamental.provider_fact WHERE provider_code='300750'`).Scan(&badFacts); err != nil || badFacts != 0 {
 		t.Fatalf("conflicting values published: %d %v", badFacts, err)
 	}
-	if _, found, err := store.GetCheckpoint(ctx, db, "tdx", "professional_financial", "package:gpcw20251231.zip"); err != nil || found {
+	if _, found, err := store.GetCheckpoint(ctx, db, "tdx", "professional_financial", "package:include-bse=false:gpcw20251231.zip"); err != nil || found {
 		t.Fatalf("conflict checkpointed: %v %v", found, err)
 	}
 	result, err = SyncTDXProfessionalFinancialWithOptions(ctx, db, source, root, options)

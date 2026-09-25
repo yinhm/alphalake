@@ -13,7 +13,6 @@ import (
 var aShareExchanges = []protocol.Exchange{
 	protocol.ExchangeSH,
 	protocol.ExchangeSZ,
-	protocol.ExchangeBJ,
 }
 
 var tdxMarketZone = time.FixedZone("Asia/Shanghai", 8*60*60)
@@ -30,7 +29,11 @@ func (c *Client) InstrumentSnapshot(ctx context.Context) (domain.InstrumentMaste
 	if c == nil {
 		return domain.InstrumentMasterSnapshot{}, fmt.Errorf("TDX client is not initialized")
 	}
-	return loadInstrumentSnapshot(ctx, c.requests(ctx), aShareExchanges, time.Now())
+	exchanges := aShareExchanges
+	if domain.IncludesBSE(ctx) {
+		exchanges = append(append([]protocol.Exchange{}, exchanges...), protocol.ExchangeBJ)
+	}
+	return loadInstrumentSnapshot(ctx, c.requests(ctx), exchanges, time.Now())
 }
 
 func loadInstrumentSnapshot(ctx context.Context, c codeListClient, exchanges []protocol.Exchange, observedAt time.Time) (domain.InstrumentMasterSnapshot, error) {

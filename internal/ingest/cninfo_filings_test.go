@@ -81,7 +81,7 @@ func TestRealCNINFOPartialOverlapCannotComplete(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	if _, found, err := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, strings.Replace(key, ":v4:", ":v5:", 1)); err != nil || found {
+	if _, found, err := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, strings.Replace(key, ":v4:", ":v6:include-bse=false:", 1)); err != nil || found {
 		t.Fatalf("false completion after reopen: %t %v", found, err)
 	}
 	// 数量缺口也不能因上游提前宣称末页而得到完成键。
@@ -137,7 +137,7 @@ func TestCNINFOCodeCheckpointsAndForeignResponse(t *testing.T) {
 			t.Fatalf("scope failed: %+v %v", result, err)
 		}
 	}
-	key := "catalogue-window:v5:metadata-only=true:" + filingWindowName(day, day)
+	key := "catalogue-window:v6:include-bse=false:metadata-only=true:" + filingWindowName(day, day)
 	if _, found, err := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, key); err != nil || found {
 		t.Fatalf("company query completed whole market: %t %v", found, err)
 	}
@@ -256,7 +256,7 @@ func TestSyncCNINFOFilingsPersistsEvidenceAndReusesDocument(t *testing.T) {
 }
 
 func TestSyncCNINFOFilingsKeepsUnresolvedEvidenceWithoutFailingWindow(t *testing.T) {
-	ctx := context.Background()
+	ctx := domain.WithBSE(context.Background())
 	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "cninfo-pending.duckdb"))
 	if err != nil {
 		t.Fatal(err)
@@ -524,7 +524,7 @@ func TestRealCNINFORepeatedPagesInvalidateOldCompletion(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, strings.Replace(oldKey, ":v3:", ":v5:", 1)); e != nil || found {
+	if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, strings.Replace(oldKey, ":v3:", ":v6:include-bse=false:", 1)); e != nil || found {
 		t.Fatalf("false completion: %t %v", found, e)
 	}
 	var n int
@@ -590,11 +590,11 @@ func TestCNINFOAutomaticallySplitsStalledWindow(t *testing.T) {
 		t.Fatalf("%+v calls=%d err=%v", result, source.catalogueCalls, err)
 	}
 	for _, day := range []time.Time{start, end} {
-		if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, "catalogue-window:v5:metadata-only=true:"+filingWindowName(day, day)); e != nil || !found {
+		if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, "catalogue-window:v6:include-bse=false:metadata-only=true:"+filingWindowName(day, day)); e != nil || !found {
 			t.Fatalf("missing child completion %v %v", day, e)
 		}
 	}
-	if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, "catalogue-window:v5:metadata-only=true:"+filingWindowName(start, end)); e != nil || found {
+	if _, found, e := duckstore.GetCheckpoint(ctx, db, cninfo.Source, cninfoFilingDataset, "catalogue-window:v6:include-bse=false:metadata-only=true:"+filingWindowName(start, end)); e != nil || found {
 		t.Fatalf("unexpected parent completion %v %v", found, e)
 	}
 	var n int
@@ -604,5 +604,29 @@ func TestCNINFOAutomaticallySplitsStalledWindow(t *testing.T) {
 	result, err = SyncCNINFOFilingsWithOptions(ctx, db, source, filepath.Join(t.TempDir(), "raw"), options)
 	if err != nil || result.SkippedWindows != 2 || result.Inserted != 0 {
 		t.Fatalf("replay %+v %v", result, err)
+	}
+}
+
+func TestCNINFODefaultExcludesBSEDocuments(t *testing.T) {
+	ctx := context.Background()
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "bse-scope.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	day := time.Date(2026, 3, 28, 0, 0, 0, 0, time.UTC)
+	period := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+	filing := domain.FilingObservation{Source: cninfo.Source, SourceFilingID: "bse", ProviderCode: "920001", ExchangeMIC: "XBSE", Title: "2025年年度报告", FilingType: domain.FilingTypeAnnual, FilingVariant: domain.FilingVariantFull, ReportPeriod: &period, AnnouncementTime: day.Add(time.Hour), DocumentLocator: "bse.pdf", ClassifierVersion: cninfo.FilingClassifierVersion}
+	source := &fakeCNINFOFilingSource{pages: map[int]cninfo.CataloguePage{1: {Page: 1, PageSize: 50, TotalPages: 1, TotalRecords: 1, Filings: []domain.FilingObservation{filing}}}, raw: map[int][]byte{1: []byte(`{"announcements":[]}`)}}
+	root := filepath.Join(t.TempDir(), "raw")
+	opts := CNINFOFilingOptions{StartDate: day, EndDate: day, Now: func() time.Time { return day.AddDate(0, 2, 0) }}
+	first, err := SyncCNINFOFilingsWithOptions(ctx, db, source, root, opts)
+	if err != nil || first.Filings != 0 || first.Documents != 0 {
+		t.Fatal(first, err)
+	}
+	// Explicit scope must not reuse the default scope checkpoint; missing PDF is a real failure.
+	included, err := SyncCNINFOFilingsWithOptions(domain.WithBSE(ctx), db, source, root, opts)
+	if err == nil || included.SkippedWindows != 0 {
+		t.Fatal(included, err)
 	}
 }

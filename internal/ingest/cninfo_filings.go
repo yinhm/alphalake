@@ -152,7 +152,7 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 		summary.Windows++
 		windowName := filingWindowName(window.start, window.end)
 		// Older checkpoints may omit documents, final pages, or accept repeated pages.
-		checkpointKey := fmt.Sprintf("catalogue-window:v5:metadata-only=%t:%s", options.MetadataOnly, windowName)
+		checkpointKey := fmt.Sprintf("catalogue-window:v6:include-bse=%t:metadata-only=%t:%s", domain.IncludesBSE(ctx), options.MetadataOnly, windowName)
 		if options.Code != "" {
 			checkpointKey += ":code=" + options.Code + ":org=" + options.organizationID
 		}
@@ -192,6 +192,15 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 			summary.Failures = append(summary.Failures, CNINFOFilingFailure{Window: windowName, Err: err})
 		}
 
+		if !domain.IncludesBSE(ctx) && options.Code == "" {
+			kept := windowFilings[:0]
+			for _, filing := range windowFilings {
+				if filing.ExchangeMIC != "XBSE" {
+					kept = append(kept, filing)
+				}
+			}
+			windowFilings = kept
+		}
 		sort.SliceStable(windowFilings, func(i, j int) bool {
 			if windowFilings[i].AnnouncementTime.Equal(windowFilings[j].AnnouncementTime) {
 				return windowFilings[i].SourceFilingID < windowFilings[j].SourceFilingID

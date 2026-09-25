@@ -284,8 +284,8 @@ func UnacknowledgeProviderFinancialResolution(ctx context.Context, db *sql.DB, a
 	}
 	if _, err := tx.ExecContext(ctx, `
 		DELETE FROM meta.checkpoint
-		WHERE source=? AND dataset='professional_financial' AND checkpoint_key=?
-	`, source, "package:"+sourceFile); err != nil {
+		WHERE source=? AND dataset='professional_financial' AND checkpoint_key IN (?,?)
+	`, source, "package:include-bse=false:"+sourceFile, "package:include-bse=true:"+sourceFile); err != nil {
 		return false, fmt.Errorf("invalidate financial package checkpoint: %w", err)
 	}
 	if err := tx.Commit(); err != nil {

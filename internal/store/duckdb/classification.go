@@ -112,6 +112,19 @@ func ApplyClassificationSnapshotForRun(
 		}
 	}
 
+	if !domain.IncludesBSE(ctx) {
+		snapshot.Nodes = append([]domain.ClassificationNodeObservation(nil), snapshot.Nodes...)
+		for i := range snapshot.Nodes {
+			members := make([]domain.Identifier, 0, len(snapshot.Nodes[i].Members))
+			for _, member := range snapshot.Nodes[i].Members {
+				if member.Provider == "tdx" && member.Type == "symbol" && strings.HasPrefix(member.Value, "bj") {
+					continue
+				}
+				members = append(members, member)
+			}
+			snapshot.Nodes[i].Members = members
+		}
+	}
 	var memberIdentifiers []domain.Identifier
 	for _, node := range snapshot.Nodes {
 		memberIdentifiers = append(memberIdentifiers, node.Members...)
@@ -159,7 +172,8 @@ func ApplyClassificationSnapshotForRun(
 		FROM classification.membership m
 		JOIN classification.node n ON n.node_id=m.node_id
 		WHERE n.taxonomy_id=? AND m.source=? AND m.effective_to IS NULL
-	`, taxonomyID, snapshot.Taxonomy.Source)
+ AND (? OR m.instrument_id NOT IN (SELECT instrument_id FROM core.instrument WHERE exchange_mic='XBSE'))
+	`, taxonomyID, snapshot.Taxonomy.Source, domain.IncludesBSE(ctx))
 	if err != nil {
 		return result, fmt.Errorf("query open classification memberships: %w", err)
 	}

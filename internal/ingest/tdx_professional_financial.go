@@ -161,7 +161,7 @@ func SyncTDXProfessionalFinancialWithOptions(
 		if err := ctx.Err(); err != nil {
 			return summary, err
 		}
-		checkpointKey := "package:" + entry.Filename
+		checkpointKey := fmt.Sprintf("package:include-bse=%t:%s", domain.IncludesBSE(ctx), entry.Filename)
 		checkpoint, done, err := duckstore.GetCheckpoint(ctx, db, "tdx", tdxProfessionalFinancialDataset, checkpointKey)
 		if err != nil {
 			summary.Failures = append(summary.Failures, TDXProfessionalFinancialFailure{Package: entry.Filename, Err: err})
@@ -211,6 +211,25 @@ func SyncTDXProfessionalFinancialWithOptions(
 			summary.Failures = append(summary.Failures, TDXProfessionalFinancialFailure{Package: entry.Filename, Err: err})
 			reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)
 			continue
+		}
+		if !domain.IncludesBSE(ctx) {
+			excluded := map[int64]bool{}
+			kept := resolutionInputs[:0]
+			for _, input := range resolutionInputs {
+				if strings.HasPrefix(input.IdentifierValue, "bj") {
+					excluded[input.InstrumentID] = true
+					continue
+				}
+				kept = append(kept, input)
+			}
+			resolutionInputs = kept
+			keptRecords := resolved[:0]
+			for _, record := range resolved {
+				if !excluded[record.InstrumentID] {
+					keptRecords = append(keptRecords, record)
+				}
+			}
+			resolved = keptRecords
 		}
 		resolutionState, err := duckstore.ApplyProviderFinancialResolutions(ctx, db, runID, resolutionInputs)
 		if err != nil {

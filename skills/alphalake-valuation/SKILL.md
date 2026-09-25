@@ -80,3 +80,5 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 检查`alphalake-valuation-comparison-v1`及`attribution.status`。只有`verified_wacc_only`可引用其WACC贡献；`not_attributed`只说明变化因素与总差额，不能全部归于WACC。同时列明双方模型、财务/截止/股本口径、标准ID差异和规范化变化；差异被截断时按JSON Pointer到原文件查明，不把差异条数当作金额变化条数。
 
 若仅解释一个已有运行，直接读取其已保存证据并注明原时点，不必启动一次新计算，也不能声称旧运行代表最新数据。
+
+默认批量范围仅沪深市场；北交所须用户明确指定。批次与覆盖率分母不得默认纳入北交所；显式公司查询保留既有历史证据。
