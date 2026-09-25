@@ -10,21 +10,25 @@ import (
 // InstallSnapshotQueries expands only the requested securities/report window.
 // Raw observations retain all codes of candidate issuers so as-of ranking can
 // precede the final code filter. Wide columns are the sole stored numeric data.
+// Materialize only narrow headers before fetching numeric columns by the existing
+// record primary key; otherwise filtering can still decode every wide column.
 func InstallSnapshotQueries(ctx context.Context, db *sql.DB, fields []SnapshotField) error {
 	columns := make([]string, len(fields))
+	wideColumns := make([]string, len(fields))
 	for i, f := range fields {
 		if !standardSnapshotName.MatchString(f.Name) {
 			return fmt.Errorf("invalid standard field name")
 		}
 		columns[i] = `"` + f.Name + `"`
+		wideColumns[i] = "w." + columns[i]
 	}
 	_, err := db.ExecContext(ctx, `
  CREATE TABLE fundamental.statement_field AS
  SELECT m.* FROM fundamental.provider_field m JOIN fundamental.field f
  ON f.canonical_field=m.canonical_field AND f.unit=m.unit AND f.value_kind=m.value_kind AND f.period_basis=m.period_basis;
  CREATE MACRO fundamental.financial_observations(security_code,from_period,to_period,as_of_time) AS TABLE (
- WITH selected AS (
- SELECT s.*,r.provider_code,r.artifact_id,r.source_row,a.source AS primary_source,a.sha256 AS revision_key
+ WITH headers AS MATERIALIZED (
+ SELECT s.source_record_id,s.instrument_id,s.source_filing_id,s.report_period,s.announcement_time,s.ingest_run_id,r.provider_code,r.artifact_id,r.source_row,a.source AS primary_source,a.sha256 AS revision_key
  FROM fundamental.statement_snapshot s JOIN fundamental.source_record r USING(source_record_id)
  JOIN meta.artifact a USING(artifact_id)
  WHERE (security_code IS NULL OR s.instrument_id IN (
@@ -33,6 +37,9 @@ func InstallSnapshotQueries(ctx context.Context, db *sql.DB, fields []SnapshotFi
  AND (from_period IS NULL OR s.report_period>=CAST(from_period AS DATE))
  AND (to_period IS NULL OR s.report_period<=CAST(to_period AS DATE))
  AND (as_of_time IS NULL OR s.announcement_time<=CAST(as_of_time AS TIMESTAMPTZ))
+ ), selected AS (
+ SELECT h.*,`+strings.Join(wideColumns, ",")+`
+ FROM headers h JOIN fundamental.statement_snapshot w USING(source_record_id)
  ), numeric_cells AS (
  UNPIVOT selected ON `+strings.Join(columns, ",")+` INTO NAME canonical_field VALUE value
  ), observations AS (

@@ -95,6 +95,15 @@ func TestWideSnapshotSemanticGateAndRollback(t *testing.T) {
 	}
 	_, err = conn.ExecContext(ctx, "COMMIT")
 	check(err)
+	// A malformed source label must not be interpreted merely by its numeric tail.
+	_, err = conn.ExecContext(ctx, `UPDATE fundamental.provider_field SET provider_field='ZZ439',value_multiplier=10000 WHERE canonical_field='lease_liabilities'; BEGIN`)
+	check(err)
+	_, err = MaterializeFinancialSnapshotBatch(ctx, conn, 3, fields, []IndexedFinancialRecord{{ID: 2, Revision: "revision", Record: r}})
+	if err == nil || !strings.Contains(err.Error(), "invalid source position") {
+		t.Fatalf("malformed source label accepted: %v", err)
+	}
+	_, err = conn.ExecContext(ctx, "ROLLBACK")
+	check(err)
 }
 
 // Compare fixed-point SQL text: DuckDB scientific-text casts can incorrectly

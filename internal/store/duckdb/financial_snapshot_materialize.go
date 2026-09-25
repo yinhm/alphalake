@@ -99,7 +99,7 @@ func MaterializeFinancialSnapshotBatch(ctx context.Context, conn *sql.Conn, runI
 		types[i] = names[i] + ` DECIMAL(38,10)`
 		casts[i] = names[i]
 	}
-	rows, err := conn.QueryContext(ctx, `SELECT try_cast(substr(m.provider_field,3) AS INTEGER),m.canonical_field,coalesce(m.unit,''),coalesce(m.value_kind,''),coalesce(m.period_basis,''),coalesce(m.zero_policy,''),m.value_multiplier,
+	rows, err := conn.QueryContext(ctx, `SELECT CASE WHEN regexp_full_match(m.provider_field,'FN[1-9][0-9]*') THEN try_cast(substr(m.provider_field,3) AS INTEGER) END,m.canonical_field,coalesce(m.unit,''),coalesce(m.value_kind,''),coalesce(m.period_basis,''),coalesce(m.zero_policy,''),m.value_multiplier,
  EXISTS(SELECT 1 FROM fundamental.field f WHERE f.canonical_field=m.canonical_field AND f.unit=m.unit AND f.value_kind=m.value_kind AND f.period_basis=m.period_basis)
  FROM fundamental.provider_field m WHERE m.source='tdx' AND m.canonical_field IS NOT NULL AND (m.valid_from IS NULL OR m.valid_from<=?) AND (m.valid_to IS NULL OR m.valid_to>?)`, period, period)
 	if err != nil {
