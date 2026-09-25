@@ -90,7 +90,7 @@ PYTHONPATH=valuation/backend python -m uvicorn api.main:app --host 127.0.0.1 --p
 curl http://127.0.0.1:8000/api/database/compatibility/SZSE:300866
 ```
 
-返回公司/期间、年度季度34项列覆盖、28个公司快照字段存在性、必需缺项及已知语义阻断。覆盖不等于语义已审核。原普通`POST /api/valuation`和PATCH保留，不再绑定专用只读会话；当前未完成TDX到成功原生输入的认证。
+返回公司/期间、年度季度34项列覆盖、28个公司快照字段存在性，以及`required_missing`、`conditional_missing`、`optional_history_missing`和警告。[准入仅检查当前实际消费的输入](valuation-input-gates-20260925.md)，不以默认十年/八季窗口作为门槛；状态为`ready`或`blocked_required_inputs`。覆盖不等于语义已审核。原普通`POST /api/valuation`和PATCH保留，不再绑定专用只读会话；当前未完成TDX到成功原生输入的认证。
 
 此网页进程只读SQLite，不打开大DuckDB。大库任务继续使用独立systemd服务和1GiB限额。接口恢复不代表认可原默认无风险利率、行业回退等参数适用于A股；参数自动化尚未实施，具体范围见[规格](valuation-native-integration-spec-20260924.md)。
 

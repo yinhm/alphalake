@@ -1,6 +1,6 @@
 # 原生估值字段契约与数据阻断
 
-当前更新：安克必需收入/EBIT缺项已19→8，现有源值及定期公告补链已发布，剩余上市前历史和六类定义见[逐格追踪](valuation-export-gaps-20260925.md)。以下三公司数字为纠偏阶段历史收据。
+当前更新：[实际输入门槛](valuation-input-gates-20260925.md)已纠正。安克FY0/TTM收入与EBIT无缺项；仍有4项必需、5项研发条件输入待补。历史窗口缺项19→8只是覆盖统计，余8格不再阻断。六类目标定义见[逐格追踪](valuation-export-gaps-20260925.md)，并非全部无条件必需。以下三公司数字为纠偏阶段历史收据。
 
 范围：三家公司（300866、002032、600519），2026H1、截止2026-09-22；现有SQLite只读检查，非全市场。原消费者依据导入提交`0b29f42`的`us_cn_hk_mapping.py`、`api/database.py`及`RawFinancials`。逐公司覆盖见[机器收据](acceptance/native-sqlite-20260924.json)。
 
@@ -28,7 +28,7 @@
 | shares_outstanding | Total Shares Out. on Filing Date | total_shares | 已映射财报日股数；不冒充当前流通股或稀释股数 |
 | minority_interests | Minority Interest | noncontrolling_interests | 已映射账面数；不冒充市场价值 |
 
-2026-09-25三家公司新快照已实际导出；十年/八季窗口下，必需收入/EBIT缺项安克19格、茅台和苏泊尔各22格，均继续明确阻断原生估值。详见[收据](acceptance/tdx-supplementary-sqlite-20260925.json)。
+2026-09-25三家公司新快照已实际导出；当时十年/八季窗口收入/EBIT空格为安克19格、茅台和苏泊尔各22格，旧门槛将其全部视为必需并阻断；这一门槛现已纠正，收据仅保留历史行为。详见[收据](acceptance/tdx-supplementary-sqlite-20260925.json)。
 
 2026-09-25导出器已增至11项直接映射、6项目标定义待补；EBIT/EBITDA已有来源报告值，不能再称TDX没有。这两项的估值调整适用性仍须与来源映射分开审核。旧快照未重写：原219个available中有21个`earnings_before_tax`单元格现在不能继续视为目标语义合格；不得拿旧收据宣称当前目标字段已审核。该修复以“即使有利润总额也不填剔除特殊项目EBT”的负向测试锁定。
 
