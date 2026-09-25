@@ -58,6 +58,12 @@ class RawFinancials(BaseModel):
     total_tax_expense: float | None = Field(default=None, description="Income tax expense")
 
 
+class QuarterlyFinancials(RawFinancials):
+    """保留季度位置中的空值；只有TTM实际读取的季度必须具有收入/EBIT。"""
+    revenues: float | None = None
+    ebit: float | None = None
+
+
 # ---------------------------------------------------------------------------
 # C. Adjustment Inputs (R&D and Operating Leases)
 # ---------------------------------------------------------------------------
@@ -625,7 +631,7 @@ class CompanyValuationInput(BaseModel):
     prepared_ttm: PreparedTTM | None = None
     equity_bridge: EquityBridgeInputs | None = None
     raw_financials: list[RawFinancials] = Field(default_factory=list, description="Multi-year, most recent first")
-    quarterly_financials: list[RawFinancials] = Field(default_factory=list, description="Quarterly data for LTM (FQ-0..FQ-3)")
+    quarterly_financials: list[RawFinancials | QuarterlyFinancials] = Field(default_factory=list, description="Quarterly positions for LTM; unused positions may contain null fields")
     quarters_since_10k: int = Field(default=0, description="Quarters since last annual filing (1-4)")
     period_date_10k: str | None = Field(default=None, description="Most recent 10-K period end date")
     period_date_10q: str | None = Field(default=None, description="Most recent 10-Q period end date")

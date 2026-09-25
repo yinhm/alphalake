@@ -114,7 +114,7 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
     ERP lookup, macro setup) as the /fetch-from-file path so the valuation
     math is identical."""
     from engine.data_dictionary import (
-        CompanyValuationInput, RawFinancials, MacroInputs, AdjustmentInputs,
+        CompanyValuationInput, RawFinancials, QuarterlyFinancials, MacroInputs, AdjustmentInputs,
         OptionInputs, ValuationAssumptions, MethodologyChoices, TaxHistory,
         GeographicSegment, SegmentResolution, SegmentMember,
     )
@@ -122,6 +122,7 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
     from api.routes import _get_damodaran_store, _get_industry_mapper, _clean_rating
 
     co = record["company"]
+    window = db.native_input_window(record)
     annual_rows = record["financials_annual"]
     quarterly_rows = record["financials_quarterly"]
 
@@ -157,7 +158,14 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
     if co.get("effective_tax_rate") is not None:
         macro.tax_rate_effective = co["effective_tax_rate"]
 
-    # Build per-year RawFinancials. The DB has 10 annual + 8 quarterly rows.
+    # FX defaults: 1.0 if currencies match; None otherwise (user supplies manually)
+    fx_rate = co.get("fx_listing_to_reporting")
+    fx_source = co.get("fx_rate_source") or "unset"
+    if fx_rate is None and co.get("filing_currency") == co.get("listing_currency"):
+        fx_rate = 1.0
+        fx_source = "same currency"
+
+    # Build only complete annual rows, preserving their actual fiscal years.
     # Base fiscal year: infer from period_date_annual (YYYY-MM-DD).
     base_fy_year = datetime.now().year
     pda = co.get("period_date_annual")
@@ -170,8 +178,14 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
     raw_financials: list[RawFinancials] = []
     # Map fy_offset → fiscal_year (offset 0 → base, offset 1 → base-1, etc.)
     annual_by_offset = {r["fy_offset"]: r for r in annual_rows}
+    if not annual_by_offset.get(0):
+        raise ValueError("FY0 required; cannot promote an older year")
     for offset in sorted(annual_by_offset.keys()):
         r = annual_by_offset[offset]
+        if r.get("revenues") is None or r.get("ebit") is None:
+            if offset == 0:
+                raise ValueError("FY0 revenues/EBIT required; cannot promote an older year")
+            continue
         is_current = (offset == 0)
         rf = RawFinancials(
             fiscal_year=base_fy_year - offset,
@@ -199,11 +213,11 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
         raw_financials.append(rf)
 
     # Quarterly
-    quarterly_financials: list[RawFinancials] = []
+    quarterly_financials: list[QuarterlyFinancials] = []
     q_by_offset = {r["fq_offset"]: r for r in quarterly_rows}
-    for offset in sorted(q_by_offset.keys()):
-        r = q_by_offset[offset]
-        quarterly_financials.append(RawFinancials(
+    for offset in range(max(window["quarterly_slots"], max(q_by_offset, default=-1)+1)):
+        r = q_by_offset.get(offset, {})
+        quarterly_financials.append(QuarterlyFinancials(
             fiscal_year=base_fy_year,  # CIQ quarterly is current-year slice; precise FY offsets aren't critical here
             revenues=r.get("revenues"),
             ebit=r.get("ebit"),
@@ -222,6 +236,8 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
             cross_holdings=r.get("cross_holdings"),
             minority_interests=r.get("minority_interests"),
             shares_outstanding=r.get("shares_outstanding"),
+            stock_price=co.get("stock_price_listing") if offset == 0 else None,
+            mv_equity_listing=co.get("mv_equity_listing") if offset == 0 else None,
         ))
 
     # Option inputs — disable BSM when data is incomplete. Lenovo is the
@@ -245,14 +261,15 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
     adj_inputs = AdjustmentInputs()
     # Pull past R&D values from older annual rows for the R&D capitalization
     past_rd: list[float] = []
-    for offset in range(1, 11):
-        r = annual_by_offset.get(offset)
-        if r and r.get("r_and_d_expense") is not None:
-            past_rd.append(float(r["r_and_d_expense"]))
-    adj_inputs.r_and_d_expense_past = past_rd
-    if annual_by_offset.get(0) and annual_by_offset[0].get("r_and_d_expense"):
+    adj_inputs.has_r_and_d = (annual_by_offset.get(0,{}).get("r_and_d_expense") or 0) > 0
+    if adj_inputs.has_r_and_d:
+        for offset in range(1, adj_inputs.amortization_period_n+1):
+            value = annual_by_offset.get(offset,{}).get("r_and_d_expense")
+            if value is None:
+                raise ValueError(f"R&D capitalization requires consecutive year offset {offset}")
+            past_rd.append(float(value))
         adj_inputs.r_and_d_expense_current = float(annual_by_offset[0]["r_and_d_expense"])
-        adj_inputs.has_r_and_d = True
+    adj_inputs.r_and_d_expense_past = past_rd
     # Lease commitments from snapshot fields — schema uses
     # operating_lease_commitments: list[float] + separate has_leases flag.
     # Append the beyond-5-yr bucket as an optional 6th entry (matches the
@@ -274,27 +291,10 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
     # leaves leases disabled (the commitments are discounted elsewhere).
     adj_inputs.has_operating_leases = adj_inputs.operating_lease_expense_current > 0
 
-    # FX defaults: 1.0 if currencies match; None otherwise (user supplies manually)
-    fx_rate = co.get("fx_listing_to_reporting")
-    fx_source = co.get("fx_rate_source") or "unset"
-    if fx_rate is None and co.get("filing_currency") == co.get("listing_currency"):
-        fx_rate = 1.0
-        fx_source = "same currency"
-
     # Compute quarters_since_10k from period dates so the LTM rotation
     # pulls the correct number of quarters forward. E.g. Lenovo's
     # FY-0 ends Mar 31, 2025 and FQ-0 ends Dec 31, 2025 → 3 quarters.
-    quarters_since = 0
-    pda = co.get("period_date_annual")
-    pdq = co.get("period_date_quarterly")
-    if pda and pdq:
-        try:
-            d_a = datetime.fromisoformat(pda[:10])
-            d_q = datetime.fromisoformat(pdq[:10])
-            months = (d_q.year - d_a.year) * 12 + (d_q.month - d_a.month)
-            quarters_since = max(0, min(4, round(months / 3)))
-        except ValueError:
-            quarters_since = 0
+    quarters_since = window["quarters_since_10k"]
 
     # Build methodology choices. If CIQ-sourced S&P issuer rating is
     # available, wire it to actual_rating + kd_approach='actual_rating'
@@ -384,6 +384,10 @@ def from_database(req: FromDatabaseRequest) -> dict:
     store = _get_damodaran_store()
     ind_lookup = _build_industry_lookup(store)
     report = run_full_valuation(inputs, industry_lookup=ind_lookup)
+    if compatibility is not None:
+        report.warnings.extend(compatibility["warnings"])
+        if compatibility["optional_history_missing"]:
+            report.warnings.append("可选历史不完整；历史统计仅使用完整且期间对齐的数据，不影响当前输入准入")
 
     # Use the same session layout + serializer the template path uses so the
     # response shape is byte-identical.

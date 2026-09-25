@@ -49,13 +49,14 @@ def test_original_request_reports_real_blockers(exports, tmp_path, monkeypatch):
         existence = client.get('/api/database/company-exists/SZSE:300866').json()
         assert existence['in_database'] and 'requires_tdx_policy' not in existence
         diagnostic = client.get('/api/database/compatibility/SZSE:300866').json()
-        assert diagnostic['status']=='blocked_native_contract'
+        assert diagnostic['status']=='blocked_required_inputs'
         assert any(r['field']=='ebit' for r in diagnostic['required_missing'])
-        assert all(r['period'] and r['status']=='missing_standard_fact' for r in diagnostic['required_missing'])
+        assert any(r['status']=='missing_standard_fact' for r in diagnostic['required_missing'])
+        assert any(r['field']=='bv_debt' for r in diagnostic['required_missing'])
         assert len(diagnostic['financial_fields'])==34
         request = {'ticker':'SZSE:300866', 'risk_free_rate':.0425}
         response = client.post('/api/valuation/from-database', json=request)
-        assert response.status_code==422 and 'EBIT' in response.json()['detail']
+        assert response.status_code==422 and '必需输入' in response.json()['detail']
         assert '政策' not in response.json()['detail']
         assert client.post('/api/valuation/from-database', json=dict(request, tdx_policy=policy())).status_code==422
         assert client.get('/api/database/compatibility/absent').status_code==404
@@ -66,8 +67,8 @@ def test_original_request_reports_real_blockers(exports, tmp_path, monkeypatch):
             conn.execute('UPDATE '+table+' SET revenues=1, ebit=1')
     with TestClient(app) as client:
         diagnostic = client.get('/api/database/compatibility/SZSE:300866').json()
-        assert diagnostic['required_missing']==[]
-        assert diagnostic['status']=='blocked_native_contract'
+        assert any(r['field']=='ebit' for r in diagnostic['required_missing'])
+        assert diagnostic['status']=='blocked_required_inputs'
         assert client.post('/api/valuation/from-database', json=request).status_code==422
 
 

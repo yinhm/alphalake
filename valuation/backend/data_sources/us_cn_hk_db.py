@@ -19,6 +19,8 @@ Public surface:
 from __future__ import annotations
 
 import json
+import math
+from datetime import date
 import os
 import sqlite3
 from contextlib import contextmanager
@@ -328,41 +330,102 @@ def fetch_company(conn: sqlite3.Connection, ticker: str) -> dict | None:
     return result
 
 
+def native_input_window(record: dict) -> dict:
+    """原引擎实际使用的FY0及同年/上年YTD季度位置；不按可用行压缩偏移。"""
+    co = record['company']
+    annual = date.fromisoformat(co['period_date_annual'][:10])
+    quarterly = date.fromisoformat((co.get('period_date_quarterly') or co['period_date_annual'])[:10])
+    months = (quarterly.year-annual.year)*12 + quarterly.month-annual.month
+    if months < 0 or months > 12 or months % 3:
+        raise ValueError('财年末与季度末必须相隔0至4个完整季度')
+    k = months // 3
+    return dict(quarters_since_10k=k, annual_offsets=[0],
+                quarterly_offsets=list(range(k))+list(range(4, 4+k)),
+                quarterly_slots=k+4 if k else 0)
+
+
 def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
-    """只审计原生宽表供给；非空数值不等于目标会计定义已核验。"""
+    """按当前原生入口默认选择评估；覆盖率、核心输入和条件输入分别计数。"""
     record = fetch_company(conn, ticker)
     if record is None:
         return None
-    cells = {(row['series'], row['period_offset'], row['field']):
-             dict(period=row['period'], status=row['status'])
-             for row in conn.execute('SELECT series,period_offset,field,period,status FROM export_cells WHERE ticker=?', (ticker,))} if record.get('data_source') else {}
-    fields = []
-    required_missing = []
-    for series, offset in [('annual', 'fy_offset'), ('quarterly', 'fq_offset')]:
-        rows = record['financials_' + series]
-        for name in _ANNUAL_COLS[2:]:
-            present = sum(row[name] is not None for row in rows)
-            fields.append(dict(series=series, field=name, present=present, total=len(rows)))
-        for row in rows:
-            for name in ('revenues', 'ebit'):
-                if row[name] is None:
-                    required_missing.append(dict(series=series, offset=row[offset], field=name,
-                                                 **cells.get((series, row[offset], name), {})))
+    co = record['company']
     source = record.get('data_source')
-    blockers = []
-    if required_missing:
-        blockers.append(f"原模型必需收入/EBIT有{len(required_missing)}个期间单元格缺失")
-    if source is not None:
-        # 快照只验证AlphaLake标准事实，未认证CIQ定义；即使手填非空也不能冒充已完成审核。
-        blockers.append('当前TDX快照尚未完成原SQL的EBIT、租赁、现金、投资、债务及特殊项剔除口径审核')
-    return dict(ticker=ticker,
-        status='blocked_native_contract' if blockers else 'not_audited',
-        report_period=source.get('report_period') if source else record['company']['period_date_quarterly'],
-        information_as_of=source.get('information_as_of') if source else record['company']['data_as_of'],
-        blockers=blockers, required_missing=required_missing, financial_fields=fields,
-        company_fields=[dict(field=name, present=record['company'].get(name) is not None)
-                        for name in _COMPANIES_COLS],
-        scope='SQL非空覆盖及已知阻断；不证明字段语义、全窗口可用或公司估值完整')
+    cells = {(r['series'], r['period_offset'], r['field']):
+             dict(period=r['period'], status=r['status'])
+             for r in conn.execute('SELECT series,period_offset,field,period,status FROM export_cells WHERE ticker=?', (ticker,))} if source else {}
+    rows = {series: {r[key]: r for r in record['financials_'+series]}
+            for series, key in [('annual','fy_offset'),('quarterly','fq_offset')]}
+    required, conditional, history, warnings, blockers = [], [], [], [], []
+    def missing(series, offset, field, purpose, dest, positive=False):
+        row = co if series == 'company' else rows[series].get(offset, {})
+        v = row.get(field)
+        evidence = cells.get((series,offset,field))
+        invalid_evidence = source and series != 'company' and (evidence is None or evidence['status'] != 'available')
+        if invalid_evidence or v is None or not isinstance(v, (int,float)) or not math.isfinite(v) or (positive and v <= 0):
+            dest.append(dict(series=series, offset=offset, field=field, purpose=purpose,
+                             **cells.get((series,offset,field), {'status':'missing_or_invalid_value'})))
+    try:
+        window = native_input_window(record)
+    except (TypeError, KeyError, ValueError) as e:
+        window = dict(quarters_since_10k=0, annual_offsets=[0], quarterly_offsets=[], quarterly_slots=0)
+        blockers.append('期间身份无效：'+str(e))
+    for series, offsets in [('annual',[0]), ('quarterly',window['quarterly_offsets'])]:
+        for offset in offsets:
+            for field in ('revenues','ebit'):
+                missing(series,offset,field,'base_year_or_TTM',required)
+    current = 'quarterly' if window['quarters_since_10k'] else 'annual'
+    for field in ('cash_and_marketable_securities','bv_debt','cross_holdings','minority_interests','shares_outstanding'):
+        missing(current,0,field,'per_share_equity_bridge',required,positive=field=='shares_outstanding')
+    # 默认入口使用详细WACC和行业beta，市场股权权重不能把未知市值当零。
+    missing('company',0,'mv_equity_listing','default_market_capital_weights',required,positive=True)
+    if co.get('fx_listing_to_reporting') is not None or co.get('filing_currency') != co.get('listing_currency'):
+        missing('company',0,'fx_listing_to_reporting','listing_to_reporting_currency',required,positive=True)
+    fy0 = rows['annual'].get(0,{})
+    rd_enabled = (fy0.get('r_and_d_expense') or 0) > 0
+    lease_enabled = (fy0.get('operating_lease_expense') or 0) > 0
+    if rd_enabled:
+        from engine.data_dictionary import AdjustmentInputs
+        n = AdjustmentInputs().amortization_period_n
+        for offset in range(1,n+1):
+            missing('annual',offset,'r_and_d_expense','selected_RD_capitalization',conditional)
+        for offset in window['quarterly_offsets']:
+            missing('quarterly',offset,'r_and_d_expense','selected_RD_TTM',conditional)
+    if lease_enabled:
+        for name in [*(f'lease_commitment_yr{i}' for i in range(1,6)), 'lease_commitment_beyond']:
+            missing('company',0,name,'selected_lease_capitalization',conditional)
+    if fy0.get('r_and_d_expense') is None:
+        warnings.append('研发费用未知；默认未启用研发资本化，不代表无研发')
+    if fy0.get('operating_lease_expense') is None:
+        warnings.append('租赁支付未知；默认未启用租赁资本化，不代表无租赁或已完成租赁调整')
+    if co.get('options_outstanding') is None:
+        warnings.append('期权数量未知；默认未启用期权扣减，不代表无稀释')
+    if (co.get('options_outstanding') or 0)>0 and not (co.get('options_avg_strike') or 0)>0:
+        missing('company',0,'options_avg_strike','known_employee_options',conditional,positive=True)
+    coverage = []
+    for series in ('annual','quarterly'):
+        for name in _ANNUAL_COLS[2:]:
+            coverage.append(dict(series=series,field=name,present=sum(r.get(name) is not None for r in rows[series].values()),total=len(rows[series])))
+        needed = {0} if series=='annual' else set(window['quarterly_offsets'])
+        for offset in rows[series]:
+            if offset not in needed:
+                for name in ('revenues','ebit'):
+                    missing(series,offset,name,'optional_history',history)
+    if required:
+        blockers.append(f'当前估值缺少{len(required)}个必需输入')
+    if conditional:
+        blockers.append(f'当前启用的调整缺少{len(conditional)}个条件输入')
+    if source:
+        warnings.append('使用TDX来源报告EBIT；不代表已完成非经营/特殊项目调整或CIQ逐项口径认证')
+    return dict(ticker=ticker,status='blocked_required_inputs' if blockers else 'ready',
+        report_period=source.get('report_period') if source else co['period_date_quarterly'],
+        information_as_of=source.get('information_as_of') if source else co['data_as_of'],
+        blockers=blockers,required_missing=required,conditional_missing=conditional,
+        optional_history_missing=history,warnings=warnings,input_window=window,
+        adjustment_selection=dict(rd=rd_enabled,leases=lease_enabled,basis='native_database_defaults'),
+        financial_fields=coverage,
+        company_fields=[dict(field=name,present=co.get(name) is not None) for name in _COMPANIES_COLS],
+        scope='当前原生入口默认选择的数据准入；不认证预测假设、市场参数或调整后经营口径；政策改变须重新检查')
 
 
 def latest_ingest_summary(conn: sqlite3.Connection) -> dict | None:

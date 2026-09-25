@@ -83,7 +83,7 @@ def run_full_valuation(
     # typically None but we cover them for consistency).
     if inputs.fx_rate is not None:
         fx = inputs.fx_rate
-        for fin in financials + ([inputs.prepared_ttm.financials] if inputs.prepared_ttm else []):
+        for fin in financials + list(inputs.quarterly_financials or []) + ([inputs.prepared_ttm.financials] if inputs.prepared_ttm else []):
             if fin.stock_price is not None:
                 fin.stock_price_reporting = fin.stock_price * fx
             if fin.mv_equity_listing is not None:
