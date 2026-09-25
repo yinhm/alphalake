@@ -11,6 +11,20 @@ from tools import export_alphalake_sqlite as exporter
 
 
 class SQLiteExportTest(unittest.TestCase):
+    def test_reported_earnings_use_standard_cumulative_facts(self):
+        for column, field in [('ebit', 'reported_ebit'), ('ebitda', 'reported_ebitda')]:
+            facts = {}
+            for period, basis, value in [('2026-03-31', 'Q1', '1000000'), ('2026-06-30', 'H1', '3000000')]:
+                facts[(period, field)] = dict(instrument_id=7, unit='CNY', period_type=basis,
+                    statement_scope='provider_default', value=value, fact_id=period,
+                    available_at='2026-08-31T00:00:00Z', artifact_sha256='source-evidence')
+            value, status, evidence = exporter.cell(facts, set(), 7, date(2026, 6, 30), column, False)
+            self.assertEqual((value, status), (2.0, 'available'))
+            self.assertEqual([row['coefficient'] for row in evidence], [1, -1])
+            del facts[('2026-03-31', field)]
+            self.assertEqual(exporter.cell(facts, set(), 7, date(2026, 6, 30), column, False)[:2],
+                             (None, 'missing_standard_fact'))
+
     def test_snapshot_and_rejections(self):
         period = date(2026, 6, 30)
         asof = datetime.fromisoformat('2026-09-22T00:00:00+00:00')

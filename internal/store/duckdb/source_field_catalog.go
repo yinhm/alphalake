@@ -27,7 +27,56 @@ func insertSourceFieldCatalog(ctx context.Context, tx *sql.Tx) error {
 			return err
 		}
 	}
-	return nil
+	// Existing reviewed mappings retain their dates and zero policies. New
+	// official mappings are generated from the same complete source catalog.
+	_, err = tx.ExecContext(ctx, `
+ INSERT INTO fundamental.field
+ SELECT name,unit,value_kind,period_basis FROM fundamental.source_field s
+ WHERE mapping_status='official_mapping'
+ AND NOT EXISTS (SELECT 1 FROM fundamental.field f WHERE f.canonical_field=s.name);
+ INSERT INTO fundamental.provider_field
+ (source,provider_field,canonical_field,display_name,unit,value_kind,valid_from,notes,period_basis,value_multiplier,zero_policy)
+ SELECT source,provider_field,name,display_name,unit,value_kind,
+ CASE WHEN name='top_ten_tradable_a_shares' THEN DATE '2019-06-30' ELSE DATE '1900-01-01' END,
+ 'supplementary-metrics-20260925;'||definition_reference,period_basis,CAST(value_multiplier AS INTEGER),'reject'
+ FROM fundamental.source_field s WHERE mapping_status='official_mapping'
+ AND NOT EXISTS (SELECT 1 FROM fundamental.provider_field p WHERE p.source=s.source AND p.provider_field=s.provider_field)`)
+	return err
+}
+
+// UpgradeFinancialCatalog is an explicit one-time conversion, never invoked by
+// Initialize. The caller must preserve a backup before modifying its database.
+func UpgradeFinancialCatalog(ctx context.Context, db *sql.DB) error {
+	v, err := CurrentSchemaVersion(ctx, db)
+	if err != nil {
+		return err
+	}
+	if v != 50 {
+		return fmt.Errorf("financial catalog conversion requires schema 50, got %d", v)
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err = tx.ExecContext(ctx, `
+ CREATE TEMP TABLE saved_financial_fields AS SELECT * FROM fundamental.field;
+ DROP TABLE fundamental.field;
+ CREATE TABLE fundamental.field(canonical_field VARCHAR PRIMARY KEY,unit VARCHAR NOT NULL,value_kind VARCHAR NOT NULL,period_basis VARCHAR NOT NULL,
+ CHECK(period_basis IN ('instant','quarter','ytd','opening_instant','ttm')));
+ INSERT INTO fundamental.field SELECT * FROM saved_financial_fields;
+ DROP TABLE saved_financial_fields;
+ DELETE FROM fundamental.source_field`); err != nil {
+		return err
+	}
+	if err = insertSourceFieldCatalog(ctx, tx); err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, `DELETE FROM meta.schema_version;
+ INSERT INTO meta.schema_version(version,description) VALUES (51,'Complete official supplementary financial catalog')`); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 type SourceFinancialObservation struct {

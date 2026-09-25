@@ -7,6 +7,47 @@ import (
 	"time"
 )
 
+func TestExplicitFinancialCatalogConversion(t *testing.T) {
+	ctx := t.Context()
+	path := filepath.Join(t.TempDir(), "convert.duckdb")
+	db, err := OpenInitialized(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	// Simulate the preceding catalog without touching any source evidence.
+	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE notes LIKE 'supplementary-metrics-20260925;%';
+ DELETE FROM fundamental.field WHERE canonical_field NOT IN (SELECT canonical_field FROM fundamental.provider_field);
+ UPDATE meta.schema_version SET version=50;
+ INSERT INTO fundamental.provider_fact(instrument_id,source,provider_code,provider_field,report_period,value,value_float32_bits,revision_key)
+ VALUES (1,'tdx','300866','FN207','2025-12-31',7,1088421888,'immutable')`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = Initialize(ctx, db); err == nil {
+		t.Fatal("implicit conversion accepted")
+	}
+	if err = UpgradeFinancialCatalog(ctx, db); err != nil {
+		t.Fatal(err)
+	}
+	db.Close()
+	db, err = OpenInitialized(ctx, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	var n int
+	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_field`).Scan(&n); err != nil || n != 346 {
+		t.Fatal(n, err)
+	}
+	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_fact WHERE revision_key='immutable' AND value=7 AND value_float32_bits=1088421888`).Scan(&n); err != nil || n != 1 {
+		t.Fatal(n, err)
+	}
+	if err = UpgradeFinancialCatalog(ctx, db); err == nil {
+		t.Fatal("repeated conversion accepted")
+	}
+}
+
 func TestSourceFieldCatalogMatchesReviewedDefinitionsAndKeepsUnknownValues(t *testing.T) {
 	ctx := t.Context()
 	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "source.duckdb"))
@@ -18,8 +59,12 @@ func TestSourceFieldCatalogMatchesReviewedDefinitionsAndKeepsUnknownValues(t *te
 	err = db.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM fundamental.source_field),(SELECT count(*) FROM fundamental.source_field WHERE name IS NOT NULL),(SELECT count(*) FROM fundamental.provider_field),
  (SELECT count(*) FROM fundamental.provider_field p LEFT JOIN fundamental.source_field s USING(source,provider_field)
  WHERE s.name IS DISTINCT FROM p.canonical_field OR s.unit IS DISTINCT FROM p.unit OR s.value_multiplier IS DISTINCT FROM p.value_multiplier OR s.period_basis IS DISTINCT FROM p.period_basis)`).Scan(&rows, &defined, &reviewed, &mismatch)
-	if err != nil || rows != 584 || defined != 462 || reviewed != 281 || mismatch != 0 {
+	if err != nil || rows != 584 || defined != 462 || reviewed != 346 || mismatch != 0 {
 		t.Fatal(rows, defined, reviewed, mismatch, err)
+	}
+	var date string
+	if err = db.QueryRowContext(ctx, `SELECT CAST(valid_from AS VARCHAR) FROM fundamental.provider_field WHERE canonical_field='top_ten_tradable_a_shares'`).Scan(&date); err != nil || date != "2019-06-30" {
+		t.Fatal("historical A/B/H share ambiguity lost", date, err)
 	}
 	// All revisions are retained; no implicit latest selection or standard fact.
 	for _, r := range []struct {

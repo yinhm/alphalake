@@ -23,6 +23,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "commands:")
 	fmt.Fprintln(os.Stderr, "  financial-statements <db-path> <code> --period YYYY-MM-DD --as-of RFC3339 [--include-evidence]")
 	fmt.Fprintln(os.Stderr, "  tdx-financial-fields (source dictionary, not valuation eligibility)")
+	fmt.Fprintln(os.Stderr, "  upgrade-financial-catalog <backed-up-schema50-db>")
 	fmt.Fprintln(os.Stderr, "  export-financial-source <db-path> <six-digit-code> --period YYYY-MM-DD")
 	fmt.Fprintln(os.Stderr, "  export-valuation-quote <db-path> <tdx-symbol> --date YYYY-MM-DD --as-of RFC3339")
 	fmt.Fprintln(os.Stderr, "  export-wacc-references <db-path> --as-of RFC3339 [--latest | --country-release N --beta-release N --yield-release N [--credit-release N]] [--recorded-cutoff RFC3339]")

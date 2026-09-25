@@ -9,6 +9,7 @@ import (
 	"io"
 	"math"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -16,6 +17,88 @@ import (
 
 	"github.com/yinhm/alphalake/internal/domain"
 )
+
+func TestRealReportedEarningsPeriodAndComposition(t *testing.T) {
+	fields, err := FieldCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if f := fields[265]; f.ValueKind != "shares" || f.Unit != "share" || f.MappingStatus != "official_mapping" {
+		t.Fatal("official free-float shares mislabeled as percentage", f)
+	}
+	// Source-maintenance check, not an independent PDF audit or a universal
+	// provider formula: these three frozen company reports constrain the mapping.
+	for _, date := range []string{"20250630", "20251231", "20260630"} {
+		name := "gpcw" + date + ".zip"
+		raw, err := os.ReadFile(filepath.Join("../../../ingest/testdata/anker-valuation-2026", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		p, err := ParsePackage(name, raw)
+		if err != nil {
+			t.Fatal(err)
+		}
+		found := false
+		for _, r := range p.Records {
+			if r.Code != "300866" {
+				continue
+			}
+			found = true
+			v := func(n int) float64 { return r.Fields[n-1].Value }
+			ulp := func(n int) float64 {
+				f := float32(v(n))
+				return math.Abs(float64(math.Nextafter32(f, float32(math.Inf(1))) - f))
+			}
+			if math.Abs(v(207)-(v(92)-v(306))) > ulp(207)+ulp(92)+ulp(306) {
+				t.Fatal(date, "reported EBIT no longer matches frozen cumulative components")
+			}
+			if math.Abs(v(208)-v(207)-v(136)-v(137)-v(138)) > ulp(208)+ulp(207)+ulp(136)+ulp(137)+ulp(138) {
+				t.Fatal(date, "reported EBITDA composition changed")
+			}
+			if math.Abs(v(207)-(v(92)+v(305)-v(306))) < v(305)/2 {
+				t.Fatal("source earnings silently treated as interest-adjusted operating earnings")
+			}
+		}
+		if !found {
+			t.Fatal("company absent", date)
+		}
+	}
+}
+
+func TestRealReportedAdjustedIncomeIsCumulative(t *testing.T) {
+	var sum, tolerance float64
+	for _, date := range []string{"20250331", "20250630", "20250930", "20251231", "20260331", "20260630"} {
+		name := "gpcw" + date + ".zip"
+		raw, err := os.ReadFile(filepath.Join("../../../ingest/testdata/valuation-chain-2026", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		pkg, err := ParsePackage(name, raw)
+		if err != nil {
+			t.Fatal(err)
+		}
+		found := false
+		for _, r := range pkg.Records {
+			if r.Code != "300866" {
+				continue
+			}
+			found = true
+			if date[4:] == "0331" {
+				sum, tolerance = 0, 0
+			}
+			quarter := float32(r.Fields[232].Value)
+			ytd := float32(r.Fields[205].Value)
+			sum += float64(quarter)
+			tolerance += float64(math.Nextafter32(quarter, float32(math.Inf(1))) - quarter)
+			if math.Abs(sum-float64(ytd)) > tolerance+float64(math.Nextafter32(ytd, float32(math.Inf(1)))-ytd) {
+				t.Fatal(date, "cumulative and single-quarter adjusted income differ")
+			}
+		}
+		if !found {
+			t.Fatal("company absent", date)
+		}
+	}
+}
 
 func TestCompleteCatalogAndFrozenOfficialDefinitions(t *testing.T) {
 	fields, err := FieldCatalog()
@@ -36,58 +119,60 @@ func TestCompleteCatalogAndFrozenOfficialDefinitions(t *testing.T) {
 	if named != 462 || counts["official"] != 461 || counts["reference"] != 1 || counts["unpublished"] != 122 {
 		t.Fatal(named, counts)
 	}
-	raw, err := os.ReadFile("testdata/official-financial-fields.html.gz")
-	if err != nil {
-		t.Fatal(err)
-	}
-	zr, err := gzip.NewReader(bytes.NewReader(raw))
-	if err != nil {
-		t.Fatal(err)
-	}
-	page, err := io.ReadAll(zr)
-	if err != nil {
-		t.Fatal(err)
-	}
-	zr.Close()
-	var receipt struct {
-		SHA string `json:"sha256"`
-	}
-	r, err := os.ReadFile("testdata/official-financial-fields.receipt.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(r, &receipt); err != nil {
-		t.Fatal(err)
-	}
-	if fmt.Sprintf("%x", sha256.Sum256(page)) != receipt.SHA {
-		t.Fatal("official evidence hash mismatch")
-	}
-	// Independently read the official HTML rows: every published slot must occur
-	// in the complete dictionary, with its exact provider description retained.
-	rows := regexp.MustCompile(`(?s)<tr[^>]*>(.*?)</tr>`).FindAllSubmatch(page, -1)
-	tags := regexp.MustCompile(`<[^>]+>`)
-	seen := 0
-	for _, row := range rows {
-		cells := regexp.MustCompile(`(?s)<td[^>]*>(.*?)</td>`).FindAllSubmatch(row[1], -1)
-		if len(cells) != 4 {
-			continue
+	for _, archive := range []string{"official-financial-fields", "official-financial-fields-20260925"} {
+		raw, err := os.ReadFile("testdata/" + archive + ".html.gz")
+		if err != nil {
+			t.Fatal(err)
 		}
-		code := string(tags.ReplaceAll(cells[0][1], nil))
-		if !strings.HasPrefix(code, "FN") {
-			continue
+		zr, err := gzip.NewReader(bytes.NewReader(raw))
+		if err != nil {
+			t.Fatal(err)
 		}
-		n, e := strconv.Atoi(code[2:])
-		if e != nil {
-			continue
+		page, err := io.ReadAll(zr)
+		if err != nil {
+			t.Fatal(err)
 		}
-		seen++
-		label := strings.TrimSpace(string(tags.ReplaceAll(cells[3][1], nil)))
-		if fields[n-1].Label != label {
-			t.Fatalf("source index %d label differs: %q / %q", n, fields[n-1].Label, label)
+		zr.Close()
+		var receipt struct {
+			SHA string `json:"sha256"`
 		}
-	}
-	if seen != 438 {
-		t.Fatal(seen)
+		r, err := os.ReadFile("testdata/" + archive + ".receipt.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = json.Unmarshal(r, &receipt); err != nil {
+			t.Fatal(err)
+		}
+		if fmt.Sprintf("%x", sha256.Sum256(page)) != receipt.SHA {
+			t.Fatal("official evidence hash mismatch")
+		}
+		// Independently read the official HTML rows: every published slot must occur
+		// in the complete dictionary, with its exact provider description retained.
+		rows := regexp.MustCompile(`(?s)<tr[^>]*>(.*?)</tr>`).FindAllSubmatch(page, -1)
+		tags := regexp.MustCompile(`<[^>]+>`)
+		seen := 0
+		for _, row := range rows {
+			cells := regexp.MustCompile(`(?s)<td[^>]*>(.*?)</td>`).FindAllSubmatch(row[1], -1)
+			if len(cells) != 4 {
+				continue
+			}
+			code := string(tags.ReplaceAll(cells[0][1], nil))
+			if !strings.HasPrefix(code, "FN") {
+				continue
+			}
+			n, e := strconv.Atoi(code[2:])
+			if e != nil {
+				continue
+			}
+			seen++
+			label := strings.TrimSpace(string(tags.ReplaceAll(cells[3][1], nil)))
+			if fields[n-1].Label != label {
+				t.Fatalf("source index %d label differs: %q / %q", n, fields[n-1].Label, label)
+			}
+		}
+		if seen != 438 {
+			t.Fatal(seen)
+		}
 	}
 	if fields[438].Name != "lease_liabilities" || *fields[438].Multiplier != 10000 || fields[580].Name != "right_of_use_depreciation" || fields[583].Name != "bond_issuance_cash_paid" {
 		t.Fatal("late fields lost")
@@ -177,7 +262,8 @@ func TestCatalogUnitsAndFrozenSupportingEvidence(t *testing.T) {
 		if f.DefinitionStatus == "unpublished" && (f.Name != "" || f.Multiplier != nil || f.Unit != "unspecified") {
 			t.Fatal("invented unpublished semantics", f)
 		}
-		if strings.Contains(f.Label, "%") && (f.Unit != "percent" || f.ValueKind != "ratio") {
+		// A percentage in an explanatory ownership threshold is not the unit.
+		if (strings.Contains(f.Label, "(%)") || strings.Contains(f.Label, "（%）")) && (f.Unit != "percent" || f.ValueKind != "ratio") {
 			t.Fatal("percentage misclassified", f)
 		}
 		if strings.Contains(f.Label, "万元") && (f.Unit != "CNY" || f.Multiplier == nil || *f.Multiplier != 10000) {

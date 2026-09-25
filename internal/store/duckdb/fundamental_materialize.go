@@ -118,8 +118,8 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, ingestRun
 	fields = slices.Clone(fields)
 	slices.Sort(fields)
 	fields = slices.Compact(fields)
-	for start := 0; start < len(fields); start += 6 {
-		batch, err := materializeFundamentalBatch(ctx, conn, ingestRunID, providerSource, strings.Join(fields[start:min(start+6, len(fields))], ","))
+	for start := 0; start < len(fields); start += 3 {
+		batch, err := materializeFundamentalBatch(ctx, conn, ingestRunID, providerSource, strings.Join(fields[start:min(start+3, len(fields))], ","))
 		if err != nil {
 			return CanonicalFundamentalResult{}, err
 		}
@@ -231,8 +231,8 @@ func materializeFundamentalBatch(ctx context.Context, conn *sql.Conn, ingestRunI
 				WHEN value IS NULL OR NOT isfinite(value) THEN 'provider_value_not_finite'
 				-- TDX 部分源零无法区分未披露与真实零；已识别现金流缺口及新批次字段统一保守拒绝。
 				WHEN zero_policy='reject' AND value=0 THEN 'provider_zero_ambiguous'
-				WHEN period_basis NOT IN ('report','instant','ytd','quarter','opening_instant') OR period_basis IS NULL THEN 'canonical_period_unknown'
-				WHEN NOT ((value_kind='monetary' AND unit='CNY') OR (value_kind='shares' AND unit='share') OR (value_kind='per_share' AND unit='CNY/share')) OR unit IS NULL OR value_kind IS NULL THEN 'canonical_unit_unknown'
+				WHEN period_basis NOT IN ('report','instant','ytd','quarter','opening_instant','ttm') OR period_basis IS NULL THEN 'canonical_period_unknown'
+				WHEN NOT ((value_kind='monetary' AND unit='CNY') OR (value_kind='shares' AND unit='share') OR (value_kind='per_share' AND unit='CNY/share') OR (value_kind='count' AND unit='count')) OR unit IS NULL OR value_kind IS NULL THEN 'canonical_unit_unknown'
 				WHEN NOT standard_semantics_valid THEN 'canonical_definition_mismatch'
 				WHEN try_cast(cast(value AS VARCHAR) AS DECIMAL(38,10)) IS NULL THEN 'canonical_decimal_overflow'
 				ELSE NULL
@@ -260,6 +260,7 @@ func materializeFundamentalBatch(ctx context.Context, conn *sql.Conn, ingestRunI
 			announcement_time,
 			CASE
 				WHEN period_basis IN ('instant','opening_instant') THEN period_basis
+				WHEN period_basis='ttm' THEN 'TTM'
 				WHEN period_basis='ytd' AND month(report_period)=9 THEN '9M'
 				WHEN period_basis='quarter' THEN 'Q' || cast(quarter(report_period) AS VARCHAR)
 				WHEN month(report_period)=3 AND day(report_period)=31 THEN 'Q1'
@@ -300,8 +301,9 @@ func materializeFundamentalBatch(ctx context.Context, conn *sql.Conn, ingestRunI
 			  AND f.revision_key=s.revision_key
 			  AND f.provider_code=s.provider_code
 			  AND f.source_provider_field=s.source_provider_field
+			  AND f.primary_source=? AND list_contains(string_split(?,','),f.source_provider_field)
 		)
-	`).Scan(&result.Inserted); err != nil {
+	`, providerSource, field).Scan(&result.Inserted); err != nil {
 		return result, fmt.Errorf("count inserted canonical fundamentals: %w", err)
 	}
 	if err := conn.QueryRowContext(ctx, `
@@ -312,8 +314,9 @@ func materializeFundamentalBatch(ctx context.Context, conn *sql.Conn, ingestRunI
 		 AND f.revision_key=s.revision_key
 		 AND f.provider_code=s.provider_code
 		 AND f.source_provider_field=s.source_provider_field
-		WHERE `+fundamentalFactChanged+`
-	`).Scan(&result.Updated); err != nil {
+		WHERE f.primary_source=? AND list_contains(string_split(?,','),f.source_provider_field)
+		  AND (`+fundamentalFactChanged+`)
+	`, providerSource, field).Scan(&result.Updated); err != nil {
 		return result, fmt.Errorf("count updated canonical fundamentals: %w", err)
 	}
 
@@ -340,6 +343,7 @@ func materializeFundamentalBatch(ctx context.Context, conn *sql.Conn, ingestRunI
 				  AND f.revision_key=s.revision_key
 				  AND f.provider_code=s.provider_code
 				  AND f.source_provider_field=s.source_provider_field
+				  AND f.primary_source=? AND list_contains(string_split(?,','),f.source_provider_field)
 				  AND NOT (`+fundamentalFactChanged+`)
 			)
 			ON CONFLICT(primary_source, revision_key, provider_code, source_provider_field) DO UPDATE SET
@@ -358,8 +362,8 @@ func materializeFundamentalBatch(ctx context.Context, conn *sql.Conn, ingestRunI
 				materializer_version=excluded.materializer_version,
 				ingest_run_id=excluded.ingest_run_id,
 				ingested_at=now()
-		`); err != nil {
-			return result, fmt.Errorf("merge canonical fundamental facts: %w", err)
+		`, providerSource, field); err != nil {
+			return result, fmt.Errorf("merge canonical fundamental facts (%s): %w", field, err)
 		}
 	}
 

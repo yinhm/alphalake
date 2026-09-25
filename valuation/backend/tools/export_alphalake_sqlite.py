@@ -18,6 +18,8 @@ from data_sources import us_cn_hk_db as target
 # 名称映射只描述目标格式，不建立TDX源编号词典。金额/股数统一除以百万。
 FIELDS = {
     'revenues': ('revenue_cumulative', 'ytd', 'CNY'),
+    'ebit': ('reported_ebit', 'ytd', 'CNY'),
+    'ebitda': ('reported_ebitda', 'ytd', 'CNY'),
     'net_income': ('net_income_parent_ytd', 'ytd', 'CNY'),
     'interest_expense': ('interest_expense', 'ytd', 'CNY'),
     'capex': ('capital_expenditure_cash', 'ytd', 'CNY'),
@@ -140,7 +142,7 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                          row['statement_scope'], json.dumps(row, ensure_ascii=False, sort_keys=True)))
                 facts[key] = row
             if end == period:
-                # 附注数值不进入纯TDX快照；政策在网页请求中另行提供。
+                # 附注数值不进入纯TDX快照；估值参数不在财务事实层提供。
                 payload = dict(payload, supplements=[])
                 raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, allow_nan=False)
                 connection.execute('INSERT INTO valuation_inputs VALUES(?,?,?)',
