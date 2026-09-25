@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	tdxlib "github.com/injoyai/tdx"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -73,5 +74,34 @@ func TestNodeCancellationClosesAndStops(t *testing.T) {
 	_, e = withNode(context.Background(), c, "closed", func(*tdxlib.Client) (int, error) { t.Fatal("closed client called"); return 0, nil })
 	if e == nil {
 		t.Fatal("closed client accepted")
+	}
+}
+
+func TestDefaultHostsFollowUpstreamAndContinueAfterFailure(t *testing.T) {
+	c, err := DialDefault()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	want, err := DialHosts(tdxlib.Hosts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer want.Close()
+	if !slices.Equal(c.hosts, want.hosts) {
+		t.Fatal("default pool differs from upstream order")
+	}
+	var attempted []string
+	c.dial = func(_ context.Context, host string) (*nodeSession, error) {
+		attempted = append(attempted, host)
+		return nil, errors.New("unavailable")
+	}
+	for batch := 1; batch <= 2; batch++ {
+		if _, _, err = c.ProfessionalFinancialFileList(t.Context()); err == nil {
+			t.Fatal("failed financial request accepted")
+		}
+		if !slices.Equal(attempted, c.hosts[:batch*maxServerAttempts]) {
+			t.Fatal("did not continue rotating through upstream pool", attempted)
+		}
 	}
 }

@@ -1,0 +1,159 @@
+{
+  "checkpoint_exists": true,
+  "facts": 5627307,
+  "package_checkpoint": "db8710cf7a230582279d9694f870f0b5",
+  "recovered_failed_run": 5449,
+  "requests": [
+    {
+      "bytes": 0,
+      "entries": 0,
+      "error": "fetch TDX professional financial file list: TDX report/tdxfin/gpcw.txt failed after 3 distinct servers: server=124.71.187.122:7709 phase=request: empty report file\nserver=122.51.120.217:7709 phase=connect: dial tcp 122.51.120.217:7709: i/o timeout\nserver=111.229.247.189:7709 phase=request: empty report file",
+      "request": 1,
+      "seconds": 9.842589154
+    },
+    {
+      "bytes": 0,
+      "entries": 0,
+      "error": "fetch TDX professional financial file list: TDX report/tdxfin/gpcw.txt failed after 3 distinct servers: server=122.51.232.182:7709 phase=request: empty report file\nserver=118.25.98.114:7709 phase=request: empty report file\nserver=124.70.199.56:7709 phase=request: empty report file",
+      "request": 2,
+      "seconds": 1.358648055
+    },
+    {
+      "bytes": 0,
+      "entries": 0,
+      "error": "fetch TDX professional financial file list: TDX report/tdxfin/gpcw.txt failed after 3 distinct servers: server=121.36.225.169:7709 phase=request: empty report file\nserver=123.60.70.228:7709 phase=request: empty report file\nserver=123.60.73.44:7709 phase=request: empty report file",
+      "request": 3,
+      "seconds": 3.709144565
+    },
+    {
+      "bytes": 0,
+      "entries": 0,
+      "error": "fetch TDX professional financial file list: TDX report/tdxfin/gpcw.txt failed after 3 distinct servers: server=124.70.133.119:7709 phase=request: empty report file\nserver=124.71.187.72:7709 phase=request: empty report file\nserver=123.60.84.66:7709 phase=request: empty report file",
+      "request": 4,
+      "seconds": 2.391592974
+    },
+    {
+      "bytes": 0,
+      "entries": 0,
+      "error": "fetch TDX professional financial file list: TDX report/tdxfin/gpcw.txt failed after 3 distinct servers: server=124.223.163.242:7709 phase=request: empty report file\nserver=150.158.160.2:7709 phase=request: empty report file\nserver=101.35.121.35:7709 phase=request: empty report file",
+      "request": 5,
+      "seconds": 2.362870702
+    },
+    {
+      "bytes": 0,
+      "entries": 0,
+      "error": "fetch TDX professional financial file list: TDX report/tdxfin/gpcw.txt failed after 3 distinct servers: server=111.231.113.208:7709 phase=request: empty report file\nserver=62.234.50.143:7709 phase=request: empty report file\nserver=81.70.151.186:7709 phase=request: empty report file",
+      "request": 6,
+      "seconds": 1.456153451
+    },
+    {
+      "bytes": 0,
+      "entries": 0,
+      "error": "fetch TDX professional financial file list: TDX report/tdxfin/gpcw.txt failed after 3 distinct servers: server=101.42.240.54:7709 phase=request: empty report file\nserver=101.43.159.194:7709 phase=request: empty report file\nserver=120.53.8.251:7709 phase=request: empty report file",
+      "request": 7,
+      "seconds": 5.098969099
+    },
+    {
+      "bytes": 0,
+      "entries": 0,
+      "error": "fetch TDX professional financial file list: TDX report/tdxfin/gpcw.txt failed after 3 distinct servers: server=152.136.191.169:7709 phase=request: empty report file\nserver=49.232.15.141:7709 phase=request: empty report file\nserver=82.156.174.84:7709 phase=request: empty report file",
+      "request": 8,
+      "seconds": 1.322127818
+    },
+    {
+      "bytes": 0,
+      "entries": 0,
+      "error": "fetch TDX professional financial file list: TDX report/tdxfin/gpcw.txt failed after 3 distinct servers: server=101.42.164.241:7709 phase=request: empty report file\nserver=124.71.9.153:7709 phase=request: empty report file\nserver=116.205.163.254:7709 phase=request: empty report file",
+      "request": 9,
+      "seconds": 6.503928481
+    },
+    {
+      "bytes": 0,
+      "entries": 0,
+      "error": "fetch TDX professional financial file list: TDX report/tdxfin/gpcw.txt failed after 3 distinct servers: server=116.205.171.132:7709 phase=request: empty report file\nserver=116.205.183.150:7709 phase=request: empty report file\nserver=111.230.186.52:7709 phase=request: empty report file",
+      "request": 10,
+      "seconds": 3.591042205
+    },
+    {
+      "bytes": 0,
+      "entries": 0,
+      "error": "fetch TDX professional financial file list: TDX report/tdxfin/gpcw.txt failed after 3 distinct servers: server=110.41.2.72:7709 phase=request: empty report file\nserver=110.41.147.114:7709 phase=request: empty report file\nserver=101.33.225.16:7709 phase=request: empty report file",
+      "request": 11,
+      "seconds": 2.1379449839999998
+    },
+    {
+      "bytes": 0,
+      "entries": 0,
+      "error": "fetch TDX professional financial file list: TDX report/tdxfin/gpcw.txt failed after 3 distinct servers: server=175.178.112.197:7709 phase=request: empty report file\nserver=175.178.128.227:7709 phase=request: empty report file\nserver=43.139.95.83:7709 phase=connect: dial tcp 43.139.95.83:7709: i/o timeout",
+      "request": 12,
+      "seconds": 13.301849931
+    },
+    {
+      "bytes": 0,
+      "entries": 0,
+      "error": "fetch TDX professional financial file list: TDX report/tdxfin/gpcw.txt failed after 3 distinct servers: server=159.75.29.111:7709 phase=request: empty report file\nserver=43.139.18.171:7709 phase=request: empty report file\nserver=81.71.32.47:7709 phase=request: empty report file",
+      "request": 13,
+      "seconds": 4.395010459
+    },
+    {
+      "bytes": 0,
+      "entries": 0,
+      "error": "fetch TDX professional financial file list: TDX report/tdxfin/gpcw.txt failed after 3 distinct servers: server=129.204.230.128:7709 phase=request: empty report file\nserver=119.97.185.59:7709 phase=request: empty report file\nserver=124.71.187.122:7709 phase=request: empty report file",
+      "request": 14,
+      "seconds": 6.29452161
+    }
+  ],
+  "scope": "diagnostic repeated requests over one client; each request keeps the three-node cap; no database synchronization",
+  "sdk_hosts": [
+    "124.71.187.122",
+    "122.51.120.217",
+    "111.229.247.189",
+    "122.51.232.182",
+    "118.25.98.114",
+    "124.70.199.56",
+    "121.36.225.169",
+    "123.60.70.228",
+    "123.60.73.44",
+    "124.70.133.119",
+    "124.71.187.72",
+    "123.60.84.66",
+    "124.223.163.242",
+    "150.158.160.2",
+    "101.35.121.35",
+    "111.231.113.208",
+    "62.234.50.143",
+    "81.70.151.186",
+    "101.42.240.54",
+    "101.43.159.194",
+    "120.53.8.251",
+    "152.136.191.169",
+    "49.232.15.141",
+    "82.156.174.84",
+    "101.42.164.241",
+    "124.71.9.153",
+    "116.205.163.254",
+    "116.205.171.132",
+    "116.205.183.150",
+    "111.230.186.52",
+    "110.41.2.72",
+    "110.41.147.114",
+    "101.33.225.16",
+    "175.178.112.197",
+    "175.178.128.227",
+    "43.139.95.83",
+    "159.75.29.111",
+    "43.139.18.171",
+    "81.71.32.47",
+    "129.204.230.128",
+    "119.97.185.59"
+  ],
+  "source_rows": 19310544,
+  "unique_hosts_attempted": 41,
+  "node_attempts": 42,
+  "manifest_successes": 0,
+  "sdk_version": "github.com/injoyai/tdx v0.0.87",
+  "observed_on": "2026-09-25",
+  "note": "14 diagnostic requests traverse 41 unique upstream nodes; the 42nd attempt wraps to the first. 40 attempts returned empty report file; 2 timed out while connecting.",
+  "empty_report_attempts": 40,
+  "connection_timeout_attempts": 2
+}

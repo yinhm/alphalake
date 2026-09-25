@@ -4,20 +4,14 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
-	"errors"
 	"fmt"
-	"io"
-	"net/http"
 	"strings"
-	"time"
 
 	"github.com/yinhm/alphalake/internal/domain"
 	tdxfinancial "github.com/yinhm/alphalake/internal/source/tdx/financial"
 )
 
 const ProfessionalFinancialListLocator = "tdxfin/gpcw.txt"
-
-const professionalFinancialBaseURL = "http://down.tdx.com.cn:8001/"
 
 type reportFileClient interface {
 	GetReportFile(string) ([]byte, error)
@@ -27,71 +21,14 @@ func (c *Client) ProfessionalFinancialFileList(ctx context.Context) ([]tdxfinanc
 	if c == nil {
 		return nil, nil, fmt.Errorf("TDX client is not initialized")
 	}
-	return fetchProfessionalFinancialFileList(ctx, financialReportFiles{ctx, c.requests(ctx), professionalFinancialBaseURL})
+	return fetchProfessionalFinancialFileList(ctx, c.requests(ctx))
 }
 
 func (c *Client) ProfessionalFinancialPackage(ctx context.Context, entry tdxfinancial.FileEntry) ([]byte, error) {
 	if c == nil {
 		return nil, fmt.Errorf("TDX client is not initialized")
 	}
-	return fetchProfessionalFinancialPackage(ctx, financialReportFiles{ctx, c.requests(ctx), professionalFinancialBaseURL}, entry)
-}
-
-// Some live quotation servers return an empty report-file response for gpcw.
-// Use TDX's official download service in that case; size/MD5 checks still run.
-type financialReportFiles struct {
-	ctx      context.Context
-	protocol reportFileClient
-	baseURL  string
-}
-
-func (f financialReportFiles) GetReportFile(locator string) (body []byte, retErr error) {
-	if !strings.HasPrefix(locator, "tdxfin/") || strings.ContainsAny(strings.TrimPrefix(locator, "tdxfin/"), "/\\?#") {
-		return nil, fmt.Errorf("invalid financial file locator %q", locator)
-	}
-	raw, protocolErr := f.protocol.GetReportFile(locator)
-	if protocolErr == nil && len(raw) > 0 {
-		return raw, nil
-	}
-	if protocolErr == nil {
-		protocolErr = fmt.Errorf("empty protocol report file %s", locator)
-	}
-	defer func() {
-		if retErr != nil {
-			retErr = errors.Join(protocolErr, retErr)
-		}
-	}()
-	timeout := 45 * time.Second
-	if locator != ProfessionalFinancialListLocator {
-		timeout = 10 * time.Minute
-	}
-	// 全市场 ZIP 数 MB，实测官方 HTTP 慢速传输可超过行情请求期限；仍受父上下文和大小/MD5校验约束。
-	ctx, cancel := context.WithTimeout(f.ctx, timeout)
-	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, f.baseURL+locator, nil)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("download TDX financial file: %w", err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("download TDX financial file %s: %s", locator, resp.Status)
-	}
-	limit := int64(128 << 20)
-	if locator == ProfessionalFinancialListLocator {
-		limit = 1 << 20
-	}
-	raw, err = io.ReadAll(io.LimitReader(resp.Body, limit+1))
-	if err != nil {
-		return nil, fmt.Errorf("read TDX financial file: %w", err)
-	}
-	if len(raw) == 0 || int64(len(raw)) > limit {
-		return nil, fmt.Errorf("TDX financial file %s has invalid size %d (limit %d)", locator, len(raw), limit)
-	}
-	return raw, nil
+	return fetchProfessionalFinancialPackage(ctx, c.requests(ctx), entry)
 }
 
 // NormalizeProfessionalFinancialPackage parses one verified raw package into
@@ -149,7 +86,11 @@ func fetchProfessionalFinancialPackage(ctx context.Context, c reportFileClient, 
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	locator := "tdxfin/" + strings.TrimSpace(entry.Filename)
+	filename := strings.TrimSpace(entry.Filename)
+	if filename == "" || strings.ContainsAny(filename, "/\\?#") {
+		return nil, fmt.Errorf("invalid financial filename %q", entry.Filename)
+	}
+	locator := "tdxfin/" + filename
 	raw, err := c.GetReportFile(locator)
 	if err != nil {
 		return nil, fmt.Errorf("fetch TDX professional financial package %s: %w", entry.Filename, err)

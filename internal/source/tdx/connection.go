@@ -43,23 +43,7 @@ type Client struct {
 // DialDefault prepares a lazy connection: dial failures belong to the first
 // tracked operation and share its three-server budget, not a separate budget.
 func DialDefault() (*Client, error) {
-	// Spread first choices across SDK endpoint groups rather than three adjacent
-	// addresses. These are server regions, not exchange capability guarantees.
-	var hosts []string
-	groups := [][]string{tdxlib.SHHosts, tdxlib.BJHosts, tdxlib.GZHosts, tdxlib.WHHosts}
-	for i := 0; ; i++ {
-		added := false
-		for _, group := range groups {
-			if i < len(group) {
-				hosts = append(hosts, group[i])
-				added = true
-			}
-		}
-		if !added {
-			break
-		}
-	}
-	return DialHosts(hosts)
+	return DialHosts(tdxlib.Hosts)
 }
 
 // DialHosts retains explicit order, normalizes ports and removes duplicates.

@@ -4,9 +4,6 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
-	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
@@ -93,37 +90,9 @@ func md5Sum(v []byte) []byte {
 	return sum[:]
 }
 
-func TestFinancialFilesUseVerifiedHTTPFallback(t *testing.T) {
-	content := []byte("verified zip bytes")
-	sum := md5.Sum(content)
-	entry := tdxfinancial.FileEntry{Filename: "gpcw20251231.zip", MD5: hex.EncodeToString(sum[:]), Size: int64(len(content))}
-	status := http.StatusOK
-	calls := 0
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		calls++
-		w.WriteHeader(status)
-		_, _ = w.Write(content)
-	}))
-	defer server.Close()
-	files := financialReportFiles{t.Context(), fakeReportFiles{}, server.URL + "/"}
-	got, err := fetchProfessionalFinancialPackage(t.Context(), files, entry)
-	if err != nil || string(got) != string(content) {
-		t.Fatalf("fallback=%q, err=%v", got, err)
-	}
-	entry.MD5 = strings.Repeat("0", 32)
-	if _, err := fetchProfessionalFinancialPackage(t.Context(), files, entry); err == nil {
-		t.Fatal("HTTP fallback bypassed MD5 verification")
-	}
-	status = http.StatusNotFound
-	if _, err := files.GetReportFile(ProfessionalFinancialListLocator); err == nil || !strings.Contains(err.Error(), "empty protocol report file") || !strings.Contains(err.Error(), "404") {
-		t.Fatal("protocol/HTTP failure detail lost", err)
-	}
-	files.protocol = fakeReportFiles{ProfessionalFinancialListLocator: []byte("protocol bytes")}
-	before := calls
-	if got, err := files.GetReportFile(ProfessionalFinancialListLocator); err != nil || string(got) != "protocol bytes" || calls != before {
-		t.Fatalf("healthy protocol should avoid HTTP: %q, %v, calls=%d", got, err, calls)
-	}
-	if _, err := files.GetReportFile("tdxfin/../../escape"); err == nil {
-		t.Fatal("accepted financial locator escape")
+func TestFinancialPackageRejectsLocatorEscape(t *testing.T) {
+	entry := tdxfinancial.FileEntry{Filename: "../../escape"}
+	if _, err := fetchProfessionalFinancialPackage(t.Context(), fakeReportFiles{}, entry); err == nil {
+		t.Fatal("accepted invalid financial filename")
 	}
 }
