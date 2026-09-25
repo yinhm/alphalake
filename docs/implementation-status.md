@@ -1,6 +1,6 @@
 # AlphaLake 实现状态
 
-当前优先事项是[财务存储与导出重设计](financial-storage-redesign-20260925.md)。历史源同步已取消且未全量完成；主库约7.08GiB，源字段8,617万行、诊断3,620万行。源存储原型已逐位回读验证，生产仍为schema51字段长表；标准物化、批量SQLite导出和新模型发布尚未完成。网页继续使用既有SQLite，本轮没有解除原生估值缺项阻断。
+当前优先事项是[财务存储与导出重设计](financial-storage-redesign-20260925.md)。历史源同步已取消且未全量完成；主库约7.08GiB，源字段8,617万行、诊断3,620万行。无源数值/BLOB副本的隔离宽表重建已完成562万标准值全量比对，单次财务阶段约28秒；正式运行时仍为schema51字段长表，源同步/业务查询切换、批量SQLite导出和新模型发布尚未完成。网页继续使用既有SQLite，本轮没有解除原生估值缺项阻断。
 
 当前动态数据采用[统一workspace布局](workspace-layout.md)：唯一主库 `workspace/alphalake.duckdb` 同时包含财务事实、达摩达兰五类已接入数据及国债收益率。下文日期命名的workspace路径属于历史验收记录，其原内容去向见 `workspace/derived/cleanup-audit/file-plan.jsonl`，不再作为当前运行路径。网页派生库位于 `workspace/derived/valuation.sqlite`，估值运行位于 `workspace/derived/valuation-runs`。
 
