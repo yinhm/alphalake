@@ -381,7 +381,7 @@ INSERT INTO fundamental.provider_field (source,provider_field,canonical_field,di
 ('tdx','FN100','other_operating_cash_received','收到其他与经营活动有关的现金','CNY','monetary','2025-01-01','statement-expansion-20260919; original consolidated current column; nonzero only','ytd','1','reject'),
 ('tdx','FN64','paid_in_capital','实收资本（或股本）','CNY','monetary','2025-01-01','statement-expansion-20260919; original consolidated current column; nonzero only','instant','1','reject'),
 ('tdx','FN68','retained_earnings','未分配利润','CNY','monetary','2025-01-01','statement-expansion-20260919; original consolidated current column; nonzero only','instant','1','reject'),
-('tdx','FN74','revenue_cumulative','其中：营业收入','CNY','monetary','2025-01-01','statement-expansion-20260919; original consolidated current column; nonzero only','ytd','1','reject'),
+('tdx','FN74','revenue_cumulative','其中：营业收入','CNY','monetary','1900-01-01','statement-expansion-20260919; TDX official cumulative revenue definition; sample review date is not semantic validity; historical source/PDF crosscheck 20260925; nonzero only','ytd','1','reject'),
 ('tdx','FN438','right_of_use_assets','使用权资产(万元)','CNY','monetary','2025-01-01','statement-expansion-20260919; original consolidated current column; nonzero only','instant','10000','reject'),
 ('tdx','FN77','selling_expenses','销售费用','CNY','monetary','2025-01-01','statement-expansion-20260919; original consolidated current column; nonzero only','ytd','1','reject'),
 ('tdx','FN578','subsidiary_minority_dividends_cash_paid','其中:子公司支付给少数股东的股利、利润(万元)','CNY','monetary','2025-01-01','statement-expansion-20260919; original consolidated current column; nonzero only','ytd','10000','reject'),

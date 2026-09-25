@@ -333,6 +333,9 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
     record = fetch_company(conn, ticker)
     if record is None:
         return None
+    cells = {(row['series'], row['period_offset'], row['field']):
+             dict(period=row['period'], status=row['status'])
+             for row in conn.execute('SELECT series,period_offset,field,period,status FROM export_cells WHERE ticker=?', (ticker,))} if record.get('data_source') else {}
     fields = []
     required_missing = []
     for series, offset in [('annual', 'fy_offset'), ('quarterly', 'fq_offset')]:
@@ -343,13 +346,14 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
         for row in rows:
             for name in ('revenues', 'ebit'):
                 if row[name] is None:
-                    required_missing.append(dict(series=series, offset=row[offset], field=name))
+                    required_missing.append(dict(series=series, offset=row[offset], field=name,
+                                                 **cells.get((series, row[offset], name), {})))
     source = record.get('data_source')
     blockers = []
     if required_missing:
         blockers.append(f"原模型必需收入/EBIT有{len(required_missing)}个期间单元格缺失")
     if source is not None:
-        # v2只验证AlphaLake标准事实，未认证CIQ定义；即使手填非空也不能冒充已完成审核。
+        # 快照只验证AlphaLake标准事实，未认证CIQ定义；即使手填非空也不能冒充已完成审核。
         blockers.append('当前TDX快照尚未完成原SQL的EBIT、租赁、现金、投资、债务及特殊项剔除口径审核')
     return dict(ticker=ticker,
         status='blocked_native_contract' if blockers else 'not_audited',

@@ -294,3 +294,42 @@ func importAnkerHistoricalEvidence(t *testing.T, db *sql.DB, dir, output string)
 	}
 	check(duckstore.FinishIngestRun(ctx, db, run, duckstore.IngestRunCompleted, nil, nil))
 }
+
+// 官方收入定义与样本首次审核日期分开；真实旧包经过标准物化后可导出。
+func TestRealHistoricalRevenue(t *testing.T) {
+	root := filepath.Join(t.TempDir(), "cash")
+	t.Setenv("ALPHALAKE_CASH_HISTORY_BASE_DB", "")
+	t.Setenv("ALPHALAKE_CASH_HISTORY_EXPORT_DIR", root)
+	if !t.Run("fixture", TestRealAnkerCashHistory) {
+		t.Fatal("fixture failed")
+	}
+	t.Setenv("ALPHALAKE_WORKSPACE", root)
+	db, err := duckstore.Open(t.Context(), filepath.Join(root, "acceptance.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	restoreCurrentMappings(t, db, "canonical_field='revenue_cumulative'")
+	if _, err = MaterializeProviderFundamentals(t.Context(), db, "tdx"); err != nil {
+		t.Fatal(err)
+	}
+	var revenue float64
+	var unit, period string
+	err = db.QueryRowContext(t.Context(), `SELECT CAST(value AS DOUBLE),unit,period_type FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='300866' AND canonical_field='revenue_cumulative' AND report_period=DATE '2024-12-31'`).Scan(&revenue, &unit, &period)
+	// 已归档年报比较列24,710,080,329.34元；保留TDX float32精度。
+	if err != nil || revenue != float64(float32(24710080329.34)) || unit != "CNY" || period != "FY" {
+		t.Fatal(revenue, unit, period, err)
+	}
+	_, err = db.ExecContext(t.Context(), `UPDATE fundamental.provider_field SET valid_from=DATE '2025-01-01' WHERE canonical_field='revenue_cumulative'`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = MaterializeProviderFundamentals(t.Context(), db, "tdx"); err != nil {
+		t.Fatal(err)
+	}
+	var n int
+	err = db.QueryRowContext(t.Context(), `SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='300866' AND canonical_field='revenue_cumulative' AND report_period<DATE '2025-01-01'`).Scan(&n)
+	if err != nil || n != 0 {
+		t.Fatal("invalidated historical scope survived", n, err)
+	}
+}
