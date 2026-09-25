@@ -1,0 +1,111 @@
+{
+  "backup": "workspace/auto-valuation-20260909/market.duckdb.pre-supplementary-20260925",
+  "changed_old_facts": 0,
+  "current_facts": 5627307,
+  "database": "workspace/auto-valuation-20260909/market.duckdb",
+  "new_fact_securities": 5540,
+  "new_facts": 1223521,
+  "old_facts": 4403786,
+  "periods": [
+    {
+      "facts": 37,
+      "period": "2024-03-31",
+      "securities": 1
+    },
+    {
+      "facts": 40,
+      "period": "2024-06-30",
+      "securities": 1
+    },
+    {
+      "facts": 39,
+      "period": "2024-09-30",
+      "securities": 1
+    },
+    {
+      "facts": 41,
+      "period": "2024-12-31",
+      "securities": 1
+    },
+    {
+      "facts": 192961,
+      "period": "2025-03-31",
+      "securities": 5355
+    },
+    {
+      "facts": 204060,
+      "period": "2025-06-30",
+      "securities": 5363
+    },
+    {
+      "facts": 197121,
+      "period": "2025-09-30",
+      "securities": 5391
+    },
+    {
+      "facts": 213811,
+      "period": "2025-12-31",
+      "securities": 5453
+    },
+    {
+      "facts": 202044,
+      "period": "2026-03-31",
+      "securities": 5480
+    },
+    {
+      "facts": 213367,
+      "period": "2026-06-30",
+      "securities": 5527
+    }
+  ],
+  "schema": 51,
+  "source_changes": 0,
+  "source_rows": 19310544,
+  "standard_fields": 346,
+  "scope": "main database catalog publication before subsequent live sync; all locally linked source revisions",
+  "source_positions": 584,
+  "official_definitions": 461,
+  "reference_definitions": 1,
+  "unpublished_positions": 122,
+  "unmapped_named_fields": 116,
+  "added_standard_fields": 65,
+  "backup_sha256": "0bcf34fc3e773c8629ee91fe4c0a73cfef32ed5f98a9319d38f1144a385a46bf",
+  "failed_materialization_runs": [
+    5439,
+    5440,
+    5442,
+    5443
+  ],
+  "single_field_run": 5441,
+  "supplementary_run": 5444,
+  "default_replay": {
+    "run_id": 5445,
+    "candidates": 11269688,
+    "materialized": 5627307,
+    "inserted": 0,
+    "updated": 0,
+    "removed": 0,
+    "rejected": 5642381,
+    "linked_report_records": 32573,
+    "pending_links": 419,
+    "ambiguous_links": 74
+  },
+  "resource_limits": {
+    "service_memory_max_bytes": 1073741824,
+    "duckdb_memory_limit": "512MiB",
+    "threads": 1,
+    "swap_bytes": 0
+  },
+  "comparison_methods": {
+    "old_facts": "fact_id joined row hashes",
+    "source_facts": "row count and XOR of whole-row hashes; not independent financial-semantic verification"
+  },
+  "real_regression": {
+    "positions": 65,
+    "candidate_cells": 780,
+    "nonzero_facts": 488,
+    "ambiguous_zeros": 292,
+    "companies": 2,
+    "records": 12
+  }
+}

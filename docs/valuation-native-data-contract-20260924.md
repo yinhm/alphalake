@@ -9,8 +9,8 @@
 | 目标字段 | 原始CIQ列/消费者含义 | TDX标准来源或候选 | 当前结论与需要补充的证据 |
 | --- | --- | --- | --- |
 | revenues | Total Revenue；模型必需 | revenue_cumulative | 已映射累计/单季；三家公司历史窗口均不满10年 |
-| ebit | EBIT；模型必需 | operating_profit_cumulative及利息/非经营收益分量 | 未闭合；中国营业利润、EBT加利息、专项调整EBIT不能互换。须固定通用经营口径及各调整项 |
-| ebitda | EBITDA | EBIT与D&A | 未闭合；依赖两项定义，并核对租赁是否重复调整 |
+| ebit | EBIT；模型必需 | reported_ebit | 已补标准映射与SQLite导出；来源报告值不能冒充达摩达兰调整后经营收益，见[组成核验](tdx-supplementary-fields-20260925.md) |
+| ebitda | EBITDA | reported_ebitda | 已补标准映射与导出；供应商指标保留，租赁及经营调整另核 |
 | net_income | Net Income | 当前使用net_income_parent_ytd | 待核目标归母/合并含义；不得仅凭短名称认证 |
 | interest_expense | Interest Expense；正支出 | interest_expense | 已映射；租赁利息是否包含随报告期留证，不用缺失表示无利息 |
 | capex | Capital Expenditure；原导入转正支出 | capital_expenditure_cash | 已映射购建现金流；不是净再投资或全部资本形成，处置/非现金购建另列缺口 |
@@ -26,7 +26,9 @@
 | shares_outstanding | Total Shares Out. on Filing Date | total_shares | 已映射财报日股数；不冒充当前流通股或稀释股数 |
 | minority_interests | Minority Interest | noncontrolling_interests | 已映射账面数；不冒充市场价值 |
 
-修正后的导出器有9项直接映射、8项需定义。旧快照未重写：原219个available中有21个`earnings_before_tax`单元格现在不能继续视为目标语义合格；不得拿旧收据宣称当前目标字段已审核。该修复以“即使有利润总额也不填剔除特殊项目EBT”的负向测试锁定。
+2026-09-25三家公司新快照已实际导出；十年/八季窗口下，必需收入/EBIT缺项安克19格、茅台和苏泊尔各22格，均继续明确阻断原生估值。详见[收据](acceptance/tdx-supplementary-sqlite-20260925.json)。
+
+2026-09-25导出器已增至11项直接映射、6项目标定义待补；EBIT/EBITDA已有来源报告值，不能再称TDX没有。这两项的估值调整适用性仍须与来源映射分开审核。旧快照未重写：原219个available中有21个`earnings_before_tax`单元格现在不能继续视为目标语义合格；不得拿旧收据宣称当前目标字段已审核。该修复以“即使有利润总额也不填剔除特殊项目EBT”的负向测试锁定。
 
 ## companies：全部28列
 
@@ -87,9 +89,9 @@
 
 调研依据：S&P官方明确区分[standardized与as-reported财务数据](https://www.marketplace.spglobal.com/en/datasets/s-p-capital-iq-financials-%2810%29)，并提供[附注及标准化分量透明度](https://www.support.marketplace.spglobal.com/content/dam/spglobal/mi/en/documents/marketplace/newsletters/2024/marketplace_data__solutions_communique_december_2_2024.pdf)。本轮公开检索未取得足够的逐字段排除项目规则，因此不能声称已经复刻。IFRS官方说明[租赁的资产负债确认](https://www.ifrs.org/issued-standards/list-of-standards/ifrs-16-leases/)及[费用变为折旧和利息的影响](https://www.ifrs.org/-/media/project/leases/ifrs/published-documents/ifrs16-effects-analysis.pdf)；这支持“必须核对组成、防止重复调整”，不直接认证每家A股口径。达摩达兰[租赁影响表](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/leaseeffect.html)分别列示租赁调整前后债务和经营利润，也不能据一个负债余额推造缺失支付。
 
-本轮不修改公式或注入代理值以强行放行；完成界面恢复、接口诊断、已确认错误映射修复与验证后，就上述缺口等待审批。
+当前先完成用户已授权的TDX目录映射与同步；只有确认官方字段及现有分量不能满足的补充来源才需审批。不会修改公式或注入代理值强行放行。
 
-## 已实施与验证范围
+## 界面纠偏阶段的历史验收范围（2026-09-24）
 
 - 恢复原侧栏、`RoutedPages`、原请求`{ticker,risk_free_rate}`、原普通会话PATCH；删除`TDXValuation`、政策上传/表单、前端来源分支及后台专用估值旁路。专项CLI/API历史不删除，但不参与本轮原生兼容验收。
 - 新增只读`GET /api/database/compatibility/{ticker}`，逐列列出覆盖与必需缺项。当前v2证据快照尚无原生语义认证；即使人为把缺列填成数字也不会放行。它是阻断诊断，不是已完成的自动适配器。

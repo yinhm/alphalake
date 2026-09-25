@@ -1,0 +1,51 @@
+{
+  "recorded_at": "2026-09-25T07:05:57.583179+00:00",
+  "preserved": [
+    "market.duckdb.pre-supplementary-20260925",
+    "references-refresh-live.duckdb.pre-supplementary-20260925"
+  ],
+  "files": [
+    {
+      "path": "workspace/auto-valuation-20260909/market.duckdb.pre-official-statements-20260919",
+      "bytes": 2339647488,
+      "sha256": "1ea80c008995780c9985f76615d7f8f52383b70887bd386fe54c1ee9683dc718",
+      "reason": "schema51已重开验收；保留最近pre-supplementary-20260925备份，轮转更早整库副本"
+    },
+    {
+      "path": "workspace/auto-valuation-20260909/references-refresh-live.duckdb.pre-official-statements-20260919",
+      "bytes": 17838080,
+      "sha256": "35cba33db68c8caec98f3003cf256e76965f711137667c22138757c3406ef2eb",
+      "reason": "schema51已重开验收；保留最近pre-supplementary-20260925备份，轮转更早整库副本"
+    },
+    {
+      "path": "workspace/auto-valuation-20260909/references-refresh-live.duckdb.pre-core-risk-20260918",
+      "bytes": 17313792,
+      "sha256": "43774056b809b12ed40d72ab0e667061ed3cfdc11ed41b761b149c1e91b1dc1e",
+      "reason": "schema51已重开验收；保留最近pre-supplementary-20260925备份，轮转更早整库副本"
+    },
+    {
+      "path": "/tmp/alphalake-catalog-cli",
+      "bytes": 87135176,
+      "sha256": "0636f689df92325bb3241510a92adeee6ac90ce14ad43d03b92a9a6e9a5a0590",
+      "reason": "本轮验收结束；删除可重建临时程序或未完成的对照下载，保留原始归档与验收收据"
+    },
+    {
+      "path": "/tmp/alphalake-catalog-audit",
+      "bytes": 75218360,
+      "sha256": "d9b1319f180f8e3200683b3d6addbed900a8a428dfd68db8d30299f5d60995cd",
+      "reason": "本轮验收结束；删除可重建临时程序或未完成的对照下载，保留原始归档与验收收据"
+    },
+    {
+      "path": "/tmp/alphalake-hosts-acceptance",
+      "bytes": 82102376,
+      "sha256": "24abea9de7a862471bc7a3b256a582d36f0a827137b364b2f2a7bfe9fb9c0e33",
+      "reason": "本轮验收结束；删除可重建临时程序或未完成的对照下载，保留原始归档与验收收据"
+    },
+    {
+      "path": "/tmp/alphalake-http-control.zip",
+      "bytes": 730972,
+      "sha256": "ad9df23d9d6891417e1c421c1c2e08752181d53621970e7b2195c73fe0a1776c",
+      "reason": "本轮验收结束；删除可重建临时程序或未完成的对照下载，保留原始归档与验收收据"
+    }
+  ]
+}

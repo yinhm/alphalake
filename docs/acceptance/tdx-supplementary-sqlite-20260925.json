@@ -1,0 +1,383 @@
+{
+  "path": "workspace/sqlite-export-20260925/valuation.sqlite",
+  "sha256": "ff47b77bf8ae1f1c7caeeec61d7fd615021337687fe0c122e831eae401f4638b",
+  "metadata": {
+    "contract": "alphalake-sqlite-v2",
+    "source_database_sha256": "b0fd601b729d9c57da1dbad069a5c6960d7b1950b0f8d6702c1b4edca5587d76",
+    "exporter_sha256": "5cc30c3132e45ebb868f96217e502924d8ef45bb916ac45a3a7667567d253065",
+    "alphalake_binary_sha256": "8b30f18d6d594e20368bc612248b44f4e66e547b0b5ae4cfc4835e2643118a0c",
+    "report_period": "2026-06-30",
+    "information_as_of": "2026-09-25T00:00:00+00:00",
+    "exported_at": "2026-09-25T07:23:49.395661+00:00",
+    "wide_money_unit": "million_CNY",
+    "wide_shares_unit": "million_shares",
+    "standard_values": "decimal_strings_in_each_rows_unit",
+    "annual_net_income": "parent_attributable",
+    "annual_bv_equity": "parent_attributable",
+    "quarterly_flows": "difference_of_standard_YTD_same_year; Q1 unchanged",
+    "missing": "NULL; see export_cells; source-zero/unreviewed not inferred from absence",
+    "boundary": "TDX_only_financial_snapshot; explicit_separate_policy_required; no_supplement_values_or_market_defaults",
+    "candidates": "3",
+    "companies": "3"
+  },
+  "standard_facts": 3549,
+  "companies": [
+    {
+      "ticker": "SHSE:600519",
+      "native_status": "blocked_native_contract",
+      "required_missing_cells": 22,
+      "blockers": [
+        "原模型必需收入/EBIT有22个期间单元格缺失",
+        "当前TDX快照尚未完成原SQL的EBIT、租赁、现金、投资、债务及特殊项剔除口径审核"
+      ],
+      "reported_earnings": {
+        "annual": [
+          {
+            "fy_offset": 0,
+            "ebit": 113941.004288,
+            "ebitda": 116144.594944
+          },
+          {
+            "fy_offset": 1,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 2,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 3,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 4,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 5,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 6,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 7,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 8,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 9,
+            "ebit": null,
+            "ebitda": null
+          }
+        ],
+        "quarterly": [
+          {
+            "fq_offset": 0,
+            "ebit": 23765.434368,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 1,
+            "ebit": 37427.44576,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 2,
+            "ebit": 25172.287488,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 3,
+            "ebit": 26479.919104,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 4,
+            "ebit": 25539.895296,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 5,
+            "ebit": 36748.9024,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 6,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 7,
+            "ebit": null,
+            "ebitda": null
+          }
+        ]
+      },
+      "cell_states": [
+        {
+          "status": "available",
+          "cells": 71
+        },
+        {
+          "status": "missing_standard_fact",
+          "cells": 127
+        },
+        {
+          "status": "requires_separate_valuation_definition",
+          "cells": 108
+        }
+      ]
+    },
+    {
+      "ticker": "SZSE:002032",
+      "native_status": "blocked_native_contract",
+      "required_missing_cells": 22,
+      "blockers": [
+        "原模型必需收入/EBIT有22个期间单元格缺失",
+        "当前TDX快照尚未完成原SQL的EBIT、租赁、现金、投资、债务及特殊项剔除口径审核"
+      ],
+      "reported_earnings": {
+        "annual": [
+          {
+            "fy_offset": 0,
+            "ebit": 2557.727232,
+            "ebitda": 2720.374528
+          },
+          {
+            "fy_offset": 1,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 2,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 3,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 4,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 5,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 6,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 7,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 8,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 9,
+            "ebit": null,
+            "ebitda": null
+          }
+        ],
+        "quarterly": [
+          {
+            "fq_offset": 0,
+            "ebit": 444.78624,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 1,
+            "ebit": 646.661824,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 2,
+            "ebit": 874.883968,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 3,
+            "ebit": 528.727424,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 4,
+            "ebit": 541.292032,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 5,
+            "ebit": 612.823808,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 6,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 7,
+            "ebit": null,
+            "ebitda": null
+          }
+        ]
+      },
+      "cell_states": [
+        {
+          "status": "available",
+          "cells": 71
+        },
+        {
+          "status": "missing_standard_fact",
+          "cells": 127
+        },
+        {
+          "status": "requires_separate_valuation_definition",
+          "cells": 108
+        }
+      ]
+    },
+    {
+      "ticker": "SZSE:300866",
+      "native_status": "blocked_native_contract",
+      "required_missing_cells": 19,
+      "blockers": [
+        "原模型必需收入/EBIT有19个期间单元格缺失",
+        "当前TDX快照尚未完成原SQL的EBIT、租赁、现金、投资、债务及特殊项剔除口径审核"
+      ],
+      "reported_earnings": {
+        "annual": [
+          {
+            "fy_offset": 0,
+            "ebit": 2880.846592,
+            "ebitda": 2984.731648
+          },
+          {
+            "fy_offset": 1,
+            "ebit": 2303.53024,
+            "ebitda": 2361.89184
+          },
+          {
+            "fy_offset": 2,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 3,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 4,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 5,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 6,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 7,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 8,
+            "ebit": null,
+            "ebitda": null
+          },
+          {
+            "fy_offset": 9,
+            "ebit": null,
+            "ebitda": null
+          }
+        ],
+        "quarterly": [
+          {
+            "fq_offset": 0,
+            "ebit": 1384.620288,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 1,
+            "ebit": 636.596608,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 2,
+            "ebit": 666.422784,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 3,
+            "ebit": 965.677696,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 4,
+            "ebit": 690.823168,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 5,
+            "ebit": 557.922944,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 6,
+            "ebit": 624.114432,
+            "ebitda": null
+          },
+          {
+            "fq_offset": 7,
+            "ebit": 708.842304,
+            "ebitda": null
+          }
+        ]
+      },
+      "cell_states": [
+        {
+          "status": "available",
+          "cells": 84
+        },
+        {
+          "status": "missing_standard_fact",
+          "cells": 114
+        },
+        {
+          "status": "requires_separate_valuation_definition",
+          "cells": 108
+        }
+      ]
+    }
+  ]
+}

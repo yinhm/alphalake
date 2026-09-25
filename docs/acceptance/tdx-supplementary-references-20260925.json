@@ -1,0 +1,16 @@
+{
+  "backup": "workspace/auto-valuation-20260909/references-refresh-live.duckdb.pre-supplementary-20260925",
+  "changed_old_facts": 0,
+  "current_facts": 0,
+  "database": "workspace/auto-valuation-20260909/references-refresh-live.duckdb",
+  "new_fact_securities": 0,
+  "new_facts": 0,
+  "old_facts": 0,
+  "periods": null,
+  "schema": 51,
+  "source_changes": 0,
+  "source_rows": 0,
+  "standard_fields": 346,
+  "backup_sha256": "4d7ceddc0fdca9f34eb91b99502b2b2d5453417baf197f527e0e36c0bf50c8fb",
+  "scope": "schema/catalog and financial/source tables; not an independent full-table audit of reference datasets"
+}
