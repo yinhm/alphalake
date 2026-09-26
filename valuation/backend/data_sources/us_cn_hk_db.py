@@ -425,6 +425,11 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
     if conditional:
         blockers.append(f'当前启用的调整缺少{len(conditional)}个条件输入')
     if source:
+        tax = cells.get(('company',0,'effective_tax_rate'))
+        if tax and tax['status'] == 'available':
+            warnings.append('有效税率来自最近完整年度所得税费用/利润总额；不是现金税率、边际税率或正常化预测')
+        else:
+            warnings.append('公司年度有效税率未供给或须审核；原模型税率默认值仍是估值假设')
         warnings.append('债务为短长借款、债券、一年内到期非流动负债及租赁负债的账面合计；到期项范围与租赁重复资本化须另核')
         market = cells.get(('company',0,'mv_equity_listing'))
         if market and market['status'] == 'reported_share_price_proxy':

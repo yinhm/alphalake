@@ -40,7 +40,7 @@ DEBT_COMPONENTS = ('short_term_borrowings', 'long_term_borrowings', 'bonds_payab
 ASSET_COMPONENTS = ('monetary_funds', 'cash_and_cash_equivalents', 'trading_financial_assets',
     'noncurrent_assets_due_within_one_year', 'long_term_equity_investments', 'debt_investments',
     'other_debt_investments', 'other_equity_instrument_investments', 'other_noncurrent_financial_assets')
-SOURCE_FIELDS = sorted({f[0] for f in FIELDS.values()} | set(DEBT_COMPONENTS) | set(ASSET_COMPONENTS) | {'listed_b_shares','listed_h_shares'})
+SOURCE_FIELDS = sorted({f[0] for f in FIELDS.values()} | set(DEBT_COMPONENTS) | set(ASSET_COMPONENTS) | {'listed_b_shares','listed_h_shares','profit_before_tax'})
 PARTIAL_SCOPES = {
     'cash_and_marketable_securities': 'cash_equivalents_only; short_term_investment_scope_and_overlap_unresolved',
     'cross_holdings': 'known_long_term_investment_components; missing_components_and_valuation_scope_unresolved',
@@ -114,6 +114,33 @@ def cell(facts, conflicts, instrument, end, column, annual):
             'component_arithmetic_complete': not missing if column == 'cross_holdings' else False})
         return None, 'partial_target_scope', evidence
     return result, 'available', evidence
+
+
+
+def annual_effective_tax_rate(facts, conflicts, instrument, end):
+    """最近完整年度的会计有效税率；不冒充现金税率、边际税率或正常化预测。"""
+    evidence = {'basis': 'annual_income_tax_expense_divided_by_profit_before_tax', 'period': end.isoformat(), 'components': []}
+    if end.isoformat() in conflicts:
+        return None, 'source_record_conflict', evidence
+    amounts = []
+    for field in ('income_tax_expense', 'profit_before_tax'):
+        row = facts.get((end.isoformat(), field))
+        if row is None:
+            return None, 'missing_standard_fact', evidence
+        if (row['instrument_id'], row['unit'], row['period_type'], row['statement_scope']) != (instrument, 'CNY', 'FY', 'provider_default'):
+            raise ValueError('invalid annual tax component identity/unit/period/scope')
+        amount = Decimal(row['value'])
+        if not amount.is_finite():
+            raise ValueError('nonfinite annual tax component')
+        amounts.append(amount)
+        evidence['components'].append(row)
+    if amounts[1] <= 0:
+        return None, 'nonpositive_pretax_income', evidence
+    rate = amounts[0] / amounts[1]
+    evidence['reported_ratio'] = str(rate)
+    if not 0 <= rate <= 1:
+        return None, 'requires_tax_rate_review', evidence
+    return float(rate), 'available', evidence
 
 
 def export_snapshot(connection, companies, fetch, period, asof, years=10, quarters=8):
@@ -208,7 +235,11 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                 raise ValueError('market cap overflow')
             market_evidence['shares'] = shares
             market_status = 'reported_share_price_proxy'
+        tax_rate, tax_status, tax_evidence = annual_effective_tax_rate(facts, conflicts, company['instrument_id'], base)
+        row['effective_tax_rate'] = tax_rate
         target.insert_companies(connection, [row])
+        connection.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
+            (ticker, 'company', base.isoformat(), 0, 'effective_tax_rate', tax_status, json.dumps(tax_evidence, ensure_ascii=False)))
         connection.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
             (ticker,'company',period.isoformat(),0,'mv_equity_listing',market_status,json.dumps(market_evidence,ensure_ascii=False)))
         for series, ends in [('annual', annual_ends), ('quarterly', quarter_ends)]:

@@ -42,6 +42,9 @@ class SQLiteExportTest(unittest.TestCase):
         facts.append(dict(facts[-1], field='total_shares', canonical_field='total_shares',
                           value='500000000', unit='share', period_type='instant'))
 
+        for field, value in [('income_tax_expense', '200000'), ('profit_before_tax', '1000000')]:
+            facts.append(dict(facts[1], field=field, canonical_field=field, value=value))
+
         def fetch(code, end):
             return dict(contract_version='alphalake-valuation-v2', code=code,
                         report_period=end.isoformat(), information_as_of=asof.isoformat(),
@@ -57,6 +60,7 @@ class SQLiteExportTest(unittest.TestCase):
             self.assertEqual(len(data['financials_annual']), 10)
             self.assertEqual(len(data['financials_quarterly']), 8)
             self.assertEqual(data['financials_annual'][0]['revenues'], 10)
+            self.assertEqual(data['company']['effective_tax_rate'], 0.2)
             self.assertEqual([r['revenues'] for r in data['financials_quarterly'][:4]], [4, 0, 3, None])
             self.assertEqual(data['financials_quarterly'][0]['shares_outstanding'], 500)
             self.assertIsNone(data['financials_quarterly'][0]['ebit'])
@@ -140,12 +144,12 @@ def test_standard_bridge_components_and_market_proxy():
         exporter.export_snapshot(db,[company],fetch,period,asof,years=1,quarters=1)
         row=db.execute('SELECT * FROM companies').fetchone()
         assert row['stock_price_listing']==10 and row['mv_equity_listing']==10
-        assert db.execute("SELECT status FROM export_cells WHERE series='company'").fetchone()[0]=='reported_share_price_proxy'
+        assert db.execute("SELECT status FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()[0]=='reported_share_price_proxy'
     facts.append(fact('listed_h_shares',1,'share'))
     with sqlite3.connect(':memory:') as db:
         exporter.export_snapshot(db,[company],fetch,period,asof,years=1,quarters=1)
         assert db.execute('SELECT mv_equity_listing FROM companies').fetchone()[0] is None
-        assert db.execute("SELECT status FROM export_cells WHERE series='company'").fetchone()[0]=='requires_share_class_market_values'
+        assert db.execute("SELECT status FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()[0]=='requires_share_class_market_values'
 
 
 def test_long_term_subtotal_requires_valid_same_period_components():
@@ -176,3 +180,23 @@ def test_long_term_subtotal_requires_valid_same_period_components():
             exporter.cell(facts, set(), 7, period, 'cross_holdings', False)
         row[key] = old
     assert exporter.cell(facts, {period.isoformat()}, 7, period, 'cross_holdings', False)[1] == 'source_record_conflict'
+
+
+def test_annual_effective_tax_rate_preserves_bad_denominators_and_evidence():
+    import pytest
+    end = date(2025, 12, 31)
+    def fact(value):
+        return dict(instrument_id=7, unit='CNY', period_type='FY', statement_scope='provider_default', value=value)
+    facts = {(end.isoformat(), 'income_tax_expense'): fact('20'), (end.isoformat(), 'profit_before_tax'): fact('100')}
+    value, status, evidence = exporter.annual_effective_tax_rate(facts, set(), 7, end)
+    assert (value, status) == (.2, 'available') and len(evidence['components']) == 2
+    for value in ('0', '-1'):
+        facts[(end.isoformat(), 'profit_before_tax')]['value'] = value
+        assert exporter.annual_effective_tax_rate(facts, set(), 7, end)[:2] == (None, 'nonpositive_pretax_income')
+    facts[(end.isoformat(), 'profit_before_tax')]['value'] = '10'
+    assert exporter.annual_effective_tax_rate(facts, set(), 7, end)[1] == 'requires_tax_rate_review'
+    assert exporter.annual_effective_tax_rate(facts, {end.isoformat()}, 7, end)[1] == 'source_record_conflict'
+    facts[(end.isoformat(), 'income_tax_expense')]['unit'] = 'USD'
+    with pytest.raises(ValueError, match='unit'):
+        exporter.annual_effective_tax_rate(facts, set(), 7, end)
+    assert exporter.annual_effective_tax_rate({}, set(), 7, end)[1] == 'missing_standard_fact'
