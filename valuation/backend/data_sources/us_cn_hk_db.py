@@ -330,6 +330,11 @@ def fetch_company(conn: sqlite3.Connection, ticker: str) -> dict | None:
     return result
 
 
+def fetch_valuation_company(conn, ticker):
+    from data_sources.tdx_book_proxy import apply
+    return apply(conn, fetch_company(conn, ticker))
+
+
 def native_input_window(record: dict) -> dict:
     """原引擎实际使用的FY0及同年/上年YTD季度位置；不按可用行压缩偏移。"""
     co = record['company']
@@ -346,7 +351,7 @@ def native_input_window(record: dict) -> dict:
 
 def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
     """按当前原生入口默认选择评估；覆盖率、核心输入和条件输入分别计数。"""
-    record = fetch_company(conn, ticker)
+    record = fetch_valuation_company(conn, ticker)
     if record is None:
         return None
     co = record['company']
@@ -356,12 +361,22 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
              for r in conn.execute('SELECT series,period_offset,field,period,status,evidence_json FROM export_cells WHERE ticker=?', (ticker,))} if source else {}
     rows = {series: {r[key]: r for r in record['financials_'+series]}
             for series, key in [('annual','fy_offset'),('quarterly','fq_offset')]}
+    policy = record.get('valuation_proxy', {})
+    estimates = {(e['series'],e['offset'],e['field']):e for e in policy.get('cells', [])}
     required, conditional, history, warnings, blockers = [], [], [], [], []
+    if policy:
+        warnings.extend(policy['limitations'])
+        if policy['status'] != 'estimated':
+            blockers.append('账面代理政策不适用于该报告期')
     def missing(series, offset, field, purpose, dest, positive=False):
         row = co if series == 'company' else rows[series].get(offset, {})
         v = row.get(field)
         evidence = cells.get((series,offset,field))
         invalid_evidence = source and series != 'company' and (evidence is None or evidence['status'] != 'available')
+        estimate = estimates.get((series,offset,field))
+        if estimate:
+            invalid_evidence = estimate['status'] != 'estimated'
+            evidence = dict(status=estimate['status'], evidence=[estimate])
         if source and series == 'company' and field == 'mv_equity_listing':
             invalid_evidence = evidence is None or evidence['status'] not in ('available','reported_share_price_proxy')
         if invalid_evidence or v is None or not isinstance(v, (int,float)) or not math.isfinite(v) or (positive and v <= 0):
@@ -370,7 +385,7 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
             dest.append(dict(series=series, offset=offset, field=field, purpose=purpose,
                              available_value=v if isinstance(v,(int,float)) and math.isfinite(v) else None,
                              available_component_value=partial.get('available_component_million_cny'),
-                             **cells.get((series,offset,field), {'status':'missing_or_invalid_value'})))
+                             **(dict(status=estimate['status'], evidence=[estimate]) if estimate else cells.get((series,offset,field), {'status':'missing_or_invalid_value'}))))
     try:
         window = native_input_window(record)
     except (TypeError, KeyError, ValueError) as e:
@@ -411,7 +426,8 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
     coverage = []
     for series in ('annual','quarterly'):
         for name in _ANNUAL_COLS[2:]:
-            coverage.append(dict(series=series,field=name,present=sum(r.get(name) is not None for r in rows[series].values()),total=len(rows[series])))
+            coverage.append(dict(series=series,field=name,present=sum(r.get(name) is not None for r in rows[series].values()),total=len(rows[series]),
+                estimated=sum(e['status']=='estimated' for (s,o,f),e in estimates.items() if s==series and f==name)))
         needed = {0} if series=='annual' else set(window['quarterly_offsets'])
         for offset in rows[series]:
             if offset not in needed:
@@ -434,13 +450,15 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
         market = cells.get(('company',0,'mv_equity_listing'))
         if market and market['status'] == 'reported_share_price_proxy':
             warnings.append('市值为报告期附近未复权价格×报告期总股本的代理；不是当前市值，也未认证未知的多股类范围')
-        warnings.append('使用TDX来源报告EBIT；不代表已完成非经营/特殊项目调整或CIQ逐项口径认证')
+        if not policy:
+            warnings.append('使用TDX来源报告EBIT；不代表已完成非经营/特殊项目调整或CIQ逐项口径认证')
     return dict(ticker=ticker,status='blocked_required_inputs' if blockers else 'ready',
         report_period=source.get('report_period') if source else co['period_date_quarterly'],
         information_as_of=source.get('information_as_of') if source else co['data_as_of'],
         blockers=blockers,required_missing=required,conditional_missing=conditional,
         optional_history_missing=history,warnings=warnings,input_window=window,
         adjustment_selection=dict(rd=rd_enabled,leases=lease_enabled,basis='native_database_defaults'),
+        valuation_proxy=policy or None,
         financial_fields=coverage,
         company_fields=[dict(field=name,present=co.get(name) is not None) for name in _COMPANIES_COLS],
         scope='当前原生入口默认选择的数据准入；不认证预测假设、市场参数或调整后经营口径；政策改变须重新检查')

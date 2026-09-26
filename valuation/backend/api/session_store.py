@@ -17,6 +17,7 @@ class Session:
     report: ValuationReport
     source_tracker: SourceTracker | None = None
     unresolved_fields: list[dict] = field(default_factory=list)
+    valuation_proxy: dict | None = None
 
 
 _sessions: dict[str, Session] = {}

@@ -366,7 +366,7 @@ def from_database(req: FromDatabaseRequest) -> dict:
     Returns the same shape as /valuation/fetch-from-file."""
     try:
         with db.get_connection() as conn:
-            record = db.fetch_company(conn, req.ticker)
+            record = db.fetch_valuation_company(conn, req.ticker)
             compatibility = db.native_compatibility(conn, req.ticker) if record and record.get("data_source") else None
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Database unavailable: {e}")
@@ -392,6 +392,7 @@ def from_database(req: FromDatabaseRequest) -> dict:
     # Use the same session layout + serializer the template path uses so the
     # response shape is byte-identical.
     session = create_session(inputs, report)
+    session.valuation_proxy = record.get("valuation_proxy")
     result = _report_to_dict(session)
     # Mirror the template-path's root-level context fields (company_name,
     # country, industry_name). Template path sets these after

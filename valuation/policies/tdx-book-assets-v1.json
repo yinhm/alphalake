@@ -1,0 +1,17 @@
+{
+  "version": "tdx-book-assets-v1",
+  "approved_on": "2026-09-26",
+  "report_period": "2026-06-30",
+  "tickers": ["SZSE:300866", "SZSE:002032"],
+  "scope": "explicit_nonfinancial_sample_estimates",
+  "cash_fields": ["monetary_funds", "trading_financial_assets"],
+  "investment_fields": ["long_term_equity_investments", "debt_investments", "other_debt_investments", "other_equity_instrument_investments", "other_noncurrent_financial_assets"],
+  "ebit_terms": {"operating_profit_cumulative": 1, "interest_expense": 1, "interest_income": -1, "investment_income": -1, "fair_value_change_income": -1},
+  "limitations": [
+    "现金代理可能漏计其他科目内存单，亦可能包含受限资金和套期资产；不是精确总额或价值下界。",
+    "长期投资按已知账面组成计价；缺项属于政策未计入，不代表源事实为零，账面价值不等于市场价值。",
+    "全部投资收益和公允价值变动收益按非经营项剔除，可能同时剔除经营性套期损益；经营收益是政策代理。",
+    "仅适用于本次明确审核的两个非金融样本及报告期，不推广到金融或兼营金融企业。",
+    "所得税、资本效率、增长、无风险利率和行业参数仍沿用原页面可编辑假设；结果是条件估值，不是当前目标价。"
+  ]
+}

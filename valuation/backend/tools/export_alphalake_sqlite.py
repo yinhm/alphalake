@@ -40,7 +40,7 @@ DEBT_COMPONENTS = ('short_term_borrowings', 'long_term_borrowings', 'bonds_payab
 ASSET_COMPONENTS = ('monetary_funds', 'cash_and_cash_equivalents', 'trading_financial_assets',
     'noncurrent_assets_due_within_one_year', 'long_term_equity_investments', 'debt_investments',
     'other_debt_investments', 'other_equity_instrument_investments', 'other_noncurrent_financial_assets')
-SOURCE_FIELDS = sorted({f[0] for f in FIELDS.values()} | set(DEBT_COMPONENTS) | set(ASSET_COMPONENTS) | {'listed_b_shares','listed_h_shares','profit_before_tax'})
+SOURCE_FIELDS = sorted({f[0] for f in FIELDS.values()} | set(DEBT_COMPONENTS) | set(ASSET_COMPONENTS) | {'listed_b_shares','listed_h_shares','profit_before_tax','operating_profit_cumulative','interest_income','investment_income','fair_value_change_income'})
 PARTIAL_SCOPES = {
     'cash_and_marketable_securities': 'cash_equivalents_only; short_term_investment_scope_and_overlap_unresolved',
     'cross_holdings': 'known_long_term_investment_components; missing_components_and_valuation_scope_unresolved',

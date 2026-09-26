@@ -209,3 +209,23 @@ def test_invalid_terminal_api_preserves_existing_session(sample_inputs,monkeypat
     rejected=client.post('/api/valuation',json={'inputs':valid})
     assert rejected.status_code==422
     assert session_store.list_sessions()==[sid]
+
+
+def test_initial_proxy_evidence_survives_user_recalculation(sample_inputs, monkeypatch):
+    from fastapi.testclient import TestClient
+    from api.main import app
+    from api import routes, session_store
+    monkeypatch.setattr(routes, '_get_damodaran_store', lambda: None)
+    monkeypatch.setattr(routes, '_build_industry_lookup', lambda _: None)
+    monkeypatch.setattr(session_store, '_sessions', {})
+    client = TestClient(app)
+    created = client.post('/api/valuation', json={'inputs': sample_inputs.model_dump(mode='json')})
+    assert created.status_code == 200
+    sid = created.json()['id']
+    evidence = dict(version='test-policy', basis='initial_database_estimates', limitations=['代理不是报表事实'], cells=[])
+    session_store.get_session(sid).valuation_proxy = evidence
+    response = client.patch('/api/valuation/'+sid, json={'overrides': {'macro_inputs.risk_free_rate': .041}})
+    assert response.status_code == 200
+    data = response.json()
+    assert data['valuation_proxy'] == evidence and '代理不是报表事实' in data['warnings']
+    assert data['source_metadata']['macro_inputs.risk_free_rate'].startswith('User override')
