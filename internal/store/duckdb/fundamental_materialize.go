@@ -72,30 +72,42 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, runID int
 		path, name, hash, signature string
 		size                        int64
 	}
-	rows, err := db.QueryContext(ctx, `SELECT a.artifact_id,a.local_path,a.source_locator,a.sha256,a.content_length,
- sha256(? || CAST(to_json(list(struct_pack(record_id:=r.source_record_id,instrument:=r.instrument_id,filing:=l.filing_id,status:=l.status,filing_instrument:=f.instrument_id,period:=f.report_period,announcement:=f.announcement_time,kind:=f.filing_type,resolution:=f.resolution_status) ORDER BY r.source_record_id)) AS VARCHAR)) AS signature
- FROM meta.artifact a JOIN fundamental.source_record r USING(artifact_id)
- LEFT JOIN fundamental.provider_filing_link l ON l.provider_artifact_id=r.artifact_id AND l.provider_code=r.provider_code
- LEFT JOIN fundamental.filing f USING(filing_id)
- WHERE a.source='tdx' GROUP BY a.artifact_id,a.local_path,a.source_locator,a.sha256,a.content_length
- HAVING signature IS DISTINCT FROM (SELECT input_signature FROM fundamental.materialization_state st WHERE st.artifact_id=a.artifact_id)
- ORDER BY a.artifact_id`, catalog)
+	// Hash one archive at a time on the same connection. The previous global
+	// list aggregation retained every archive's identity graph in memory.
+	rows, err := db.QueryContext(ctx, `SELECT artifact_id,local_path,source_locator,sha256,content_length
+ FROM meta.artifact a WHERE source='tdx' AND EXISTS(SELECT 1 FROM fundamental.source_record r WHERE r.artifact_id=a.artifact_id) ORDER BY artifact_id`)
 	if err != nil {
 		return out, err
 	}
-	var inputs []input
+	var archives []input
 	for rows.Next() {
 		var p input
-		if err = rows.Scan(&p.id, &p.path, &p.name, &p.hash, &p.size, &p.signature); err != nil {
+		if err = rows.Scan(&p.id, &p.path, &p.name, &p.hash, &p.size); err != nil {
 			rows.Close()
 			return out, err
 		}
-		inputs = append(inputs, p)
+		archives = append(archives, p)
 	}
 	err = rows.Err()
 	rows.Close()
 	if err != nil {
 		return out, err
+	}
+	var inputs []input
+	for _, p := range archives {
+		var signature, previous sql.NullString
+		err = db.QueryRowContext(ctx, `SELECT
+ sha256(? || CAST(to_json(list(struct_pack(record_id:=r.source_record_id,instrument:=r.instrument_id,filing:=l.filing_id,status:=l.status,filing_instrument:=f.instrument_id,period:=f.report_period,announcement:=f.announcement_time,kind:=f.filing_type,resolution:=f.resolution_status) ORDER BY r.source_record_id)) AS VARCHAR)),
+ (SELECT input_signature FROM fundamental.materialization_state WHERE artifact_id=?)
+ FROM fundamental.source_record r LEFT JOIN fundamental.provider_filing_link l ON l.provider_artifact_id=r.artifact_id AND l.provider_code=r.provider_code
+ LEFT JOIN fundamental.filing f USING(filing_id) WHERE r.artifact_id=?`, catalog, p.id, p.id).Scan(&signature, &previous)
+		if err != nil {
+			return out, err
+		}
+		if signature.Valid && signature != previous {
+			p.signature = signature.String
+			inputs = append(inputs, p)
+		}
 	}
 	var catalogChanged bool
 	if err = db.QueryRowContext(ctx, `WITH candidate AS (

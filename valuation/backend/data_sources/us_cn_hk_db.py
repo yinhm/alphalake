@@ -286,7 +286,7 @@ def snapshot_metadata(conn: sqlite3.Connection) -> dict | None:
     if not tables.intersection({'metadata', 'valuation_inputs', 'standard_facts', 'export_cells'}):
         return None
     metadata = dict(conn.execute('SELECT key,value FROM metadata')) if 'metadata' in tables else {}
-    if metadata.get('contract') != 'alphalake-sqlite-v3':
+    if metadata.get('contract') != 'alphalake-sqlite-v4':
         raise ValueError('Unsupported AlphaLake SQLite contract; rebuild the snapshot with the current exporter')
     if not {'standard_facts', 'export_cells', 'export_universe'} <= tables:
         raise ValueError('Incomplete AlphaLake SQLite snapshot')
@@ -352,8 +352,8 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
     co = record['company']
     source = record.get('data_source')
     cells = {(r['series'], r['period_offset'], r['field']):
-             dict(period=r['period'], status=r['status'])
-             for r in conn.execute('SELECT series,period_offset,field,period,status FROM export_cells WHERE ticker=?', (ticker,))} if source else {}
+             dict(period=r['period'], status=r['status'], evidence=json.loads(r['evidence_json']))
+             for r in conn.execute('SELECT series,period_offset,field,period,status,evidence_json FROM export_cells WHERE ticker=?', (ticker,))} if source else {}
     rows = {series: {r[key]: r for r in record['financials_'+series]}
             for series, key in [('annual','fy_offset'),('quarterly','fq_offset')]}
     required, conditional, history, warnings, blockers = [], [], [], [], []
@@ -362,8 +362,14 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
         v = row.get(field)
         evidence = cells.get((series,offset,field))
         invalid_evidence = source and series != 'company' and (evidence is None or evidence['status'] != 'available')
+        if source and series == 'company' and field == 'mv_equity_listing':
+            invalid_evidence = evidence is None or evidence['status'] not in ('available','reported_share_price_proxy')
         if invalid_evidence or v is None or not isinstance(v, (int,float)) or not math.isfinite(v) or (positive and v <= 0):
+            partial = next((e for e in (evidence or {}).get('evidence', [])
+                            if isinstance(e, dict) and e.get('not_complete_target')), {})
             dest.append(dict(series=series, offset=offset, field=field, purpose=purpose,
+                             available_value=v if isinstance(v,(int,float)) and math.isfinite(v) else None,
+                             available_component_value=partial.get('available_component_million_cny'),
                              **cells.get((series,offset,field), {'status':'missing_or_invalid_value'})))
     try:
         window = native_input_window(record)
@@ -411,11 +417,18 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
             if offset not in needed:
                 for name in ('revenues','ebit'):
                     missing(series,offset,name,'optional_history',history)
-    if required:
-        blockers.append(f'当前估值缺少{len(required)}个必需输入')
+    partial_count = sum(r['status'] == 'partial_target_scope' for r in required)
+    if len(required) > partial_count:
+        blockers.append(f'当前估值有{len(required)-partial_count}个必需输入未供给或无效')
+    if partial_count:
+        blockers.append(f'已接入{partial_count}项必需输入的部分组成，但目标总额范围尚未闭合')
     if conditional:
         blockers.append(f'当前启用的调整缺少{len(conditional)}个条件输入')
     if source:
+        warnings.append('债务为短长借款、债券、一年内到期非流动负债及租赁负债的账面合计；到期项范围与租赁重复资本化须另核')
+        market = cells.get(('company',0,'mv_equity_listing'))
+        if market and market['status'] == 'reported_share_price_proxy':
+            warnings.append('市值为报告期附近未复权价格×报告期总股本的代理；不是当前市值，也未认证未知的多股类范围')
         warnings.append('使用TDX来源报告EBIT；不代表已完成非经营/特殊项目调整或CIQ逐项口径认证')
     return dict(ticker=ticker,status='blocked_required_inputs' if blockers else 'ready',
         report_period=source.get('report_period') if source else co['period_date_quarterly'],

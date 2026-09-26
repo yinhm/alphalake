@@ -109,9 +109,11 @@ def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypat
     record['financials_annual'].append(dict(fy_offset=1,revenues=None,ebit=None))
     conn = sqlite3.connect(':memory:', check_same_thread=False)
     conn.row_factory = sqlite3.Row
-    conn.execute('CREATE TABLE export_cells(ticker,series,period_offset,field,period,status)')
-    conn.executemany('INSERT INTO export_cells VALUES(?,?,?,?,?,?)',
-        [('TEST','annual',0,f,'2025-12-31','available') for f in record['financials_annual'][0] if f != 'fy_offset'])
+    conn.execute('CREATE TABLE export_cells(ticker,series,period_offset,field,period,status,evidence_json)')
+    conn.executemany('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
+        [('TEST','annual',0,f,'2025-12-31','available','[]') for f in record['financials_annual'][0] if f != 'fy_offset'])
+    conn.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
+        ('TEST','company',0,'mv_equity_listing','2025-12-31','available','{}'))
     @contextmanager
     def connection():
         yield conn
@@ -124,6 +126,12 @@ def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypat
             assert '可选历史不完整' in response.text and '报告EBIT' in response.text
             # 即使填了数值，映射未获批准仍拒绝；不是取消全局阻断就任意放行。
             conn.execute("UPDATE export_cells SET status='requires_separate_valuation_definition' WHERE field='bv_debt'")
+            assert client.post('/api/valuation/from-database',json=dict(ticker='TEST',risk_free_rate=.04)).status_code==422
+            conn.execute("UPDATE export_cells SET status='available' WHERE field='bv_debt'")
+            conn.execute("UPDATE export_cells SET status='partial_target_scope' WHERE field='cash_and_marketable_securities'")
+            gap = client.get('/api/database/compatibility/TEST').json()['required_missing']
+            assert len(gap)==1 and gap[0]['available_value']==50
+            assert '部分组成' in client.get('/api/database/compatibility/TEST').json()['blockers'][0]
             assert client.post('/api/valuation/from-database',json=dict(ticker='TEST',risk_free_rate=.04)).status_code==422
     finally:
         conn.close()

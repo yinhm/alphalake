@@ -52,7 +52,7 @@ def test_original_request_reports_real_blockers(exports, tmp_path, monkeypatch):
         assert diagnostic['status']=='blocked_required_inputs'
         assert any(r['field']=='ebit' for r in diagnostic['required_missing'])
         assert any(r['status']=='missing_standard_fact' for r in diagnostic['required_missing'])
-        assert any(r['field']=='bv_debt' for r in diagnostic['required_missing'])
+        assert not any(r['field']=='bv_debt' for r in diagnostic['required_missing'])
         assert len(diagnostic['financial_fields'])==34
         request = {'ticker':'SZSE:300866', 'risk_free_rate':.0425}
         response = client.post('/api/valuation/from-database', json=request)

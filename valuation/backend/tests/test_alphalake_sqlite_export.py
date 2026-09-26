@@ -112,3 +112,37 @@ class SQLiteExportTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+def test_standard_bridge_components_and_market_proxy():
+    period = date(2026,6,30)
+    asof = datetime.fromisoformat('2026-09-26T00:00:00+00:00')
+    company = dict(symbols=['sz300866'],symbol_count=1,identifier_count=1,
+        exchange_mic='XSHE',instrument_id=7,name='Synthetic',
+        quote=dict(close='10',trade_date='2026-06-30',recorded_at='2026-09-25T00:00:00+00:00'))
+    def fact(field,value,unit='CNY'):
+        return dict(source='tdx',code='300866',instrument_id=7,period=period.isoformat(),field=field,
+            canonical_field=field,value=str(value),unit=unit,period_type='instant',statement_scope='provider_default',
+            fact_id=field,available_at='2026-08-31T00:00:00+00:00',artifact_sha256='synthetic')
+    facts=[fact(f,1000000) for f in exporter.DEBT_COMPONENTS]+[
+        fact('cash_and_cash_equivalents',2000000),fact('long_term_equity_investments',3000000),fact('total_shares',1000000,'share')]
+    def fetch(code,end):
+        return dict(contract_version='alphalake-valuation-v2',code=code,report_period=end.isoformat(),information_as_of=asof.isoformat(),facts=facts,source_conflicts=[])
+    indexed={(r['period'],r['field']):r for r in facts}
+    assert exporter.cell(indexed,set(),7,period,'bv_debt',False)[:2]==(5,'available')
+    assert exporter.cell(indexed,set(),7,period,'cash_and_marketable_securities',False)[:2]==(None,'partial_target_scope')
+    assert exporter.cell(indexed,set(),7,period,'cross_holdings',False)[:2]==(None,'partial_target_scope')
+    assert exporter.cell(indexed,set(),7,period,'cash_and_marketable_securities',False)[2][-1]['available_component_million_cny']==2
+    del indexed[(period.isoformat(),'lease_liabilities')]
+    assert exporter.cell(indexed,set(),7,period,'bv_debt',False)[0] is None
+    with sqlite3.connect(':memory:') as db:
+        db.row_factory=sqlite3.Row
+        exporter.export_snapshot(db,[company],fetch,period,asof,years=1,quarters=1)
+        row=db.execute('SELECT * FROM companies').fetchone()
+        assert row['stock_price_listing']==10 and row['mv_equity_listing']==10
+        assert db.execute("SELECT status FROM export_cells WHERE series='company'").fetchone()[0]=='reported_share_price_proxy'
+    facts.append(fact('listed_h_shares',1,'share'))
+    with sqlite3.connect(':memory:') as db:
+        exporter.export_snapshot(db,[company],fetch,period,asof,years=1,quarters=1)
+        assert db.execute('SELECT mv_equity_listing FROM companies').fetchone()[0] is None
+        assert db.execute("SELECT status FROM export_cells WHERE series='company'").fetchone()[0]=='requires_share_class_market_values'

@@ -29,9 +29,21 @@ FIELDS = {
     'bv_equity': ('equity_parent', 'instant', 'CNY'),
     'shares_outstanding': ('total_shares', 'instant', 'share'),
     'minority_interests': ('noncontrolling_interests', 'instant', 'CNY'),
+    'cash_and_marketable_securities': ('cash_and_cash_equivalents', 'instant', 'CNY'),
+    'cross_holdings': ('long_term_equity_investments', 'instant', 'CNY'),
 }
 EXCHANGES = {'XSHG': 'SHSE', 'XSHE': 'SZSE', 'XBSE': 'BJSE'}
-CONTRACT = 'alphalake-sqlite-v3'
+CONTRACT = 'alphalake-sqlite-v4'
+DEBT_COMPONENTS = ('short_term_borrowings', 'long_term_borrowings', 'bonds_payable',
+                   'current_portion_noncurrent_liabilities', 'lease_liabilities')
+ASSET_COMPONENTS = ('monetary_funds', 'cash_and_cash_equivalents', 'trading_financial_assets',
+    'noncurrent_assets_due_within_one_year', 'long_term_equity_investments', 'debt_investments',
+    'other_debt_investments', 'other_equity_instrument_investments', 'other_noncurrent_financial_assets')
+SOURCE_FIELDS = sorted({f[0] for f in FIELDS.values()} | set(DEBT_COMPONENTS) | set(ASSET_COMPONENTS) | {'listed_b_shares','listed_h_shares'})
+PARTIAL_SCOPES = {
+    'cash_and_marketable_securities': 'cash_equivalents_only; short_term_investment_scope_and_overlap_unresolved',
+    'cross_holdings': 'long_term_equity_investments_only; other_long_term_investments_unresolved',
+}
 
 
 def digest(path):
@@ -54,14 +66,18 @@ def validate_dates(period, asof):
 
 def cell(facts, conflicts, instrument, end, column, annual):
     """只读取标准金额；累计差分不是供应商TTM，也不对每股值求和。"""
-    if column not in FIELDS:
+    if column == 'bv_debt':
+        components, basis, unit = DEBT_COMPONENTS, 'instant', 'CNY'
+    elif column in FIELDS:
+        field, basis, unit = FIELDS[column]
+        components = (field,)
+    else:
         return None, 'requires_separate_valuation_definition', []
-    field, basis, unit = FIELDS[column]
     terms = [(end, 1)]
     if basis == 'ytd' and not annual and end.month != 3:
         terms.append((quarter(end, 1), -1))
     evidence, total = [], Decimal(0)
-    for period, coefficient in terms:
+    for field, (period, coefficient) in itertools.product(components, terms):
         if period.isoformat() in conflicts:
             return None, 'source_record_conflict', evidence
         row = facts.get((period.isoformat(), field))
@@ -80,6 +96,12 @@ def cell(facts, conflicts, instrument, end, column, annual):
     result = float(total / Decimal(1000000))
     if not math.isfinite(result):
         raise ValueError('SQLite REAL overflow')
+    if column in PARTIAL_SCOPES:
+        evidence.append({'scope': PARTIAL_SCOPES[column], 'not_complete_target': True,
+            'available_component_million_cny': result,
+            'component_fact_ids': {f: facts[(end.isoformat(), f)]['fact_id'] for f in ASSET_COMPONENTS if (end.isoformat(), f) in facts},
+            'missing_components': [f for f in ASSET_COMPONENTS if (end.isoformat(), f) not in facts]})
+        return None, 'partial_target_scope', evidence
     return result, 'available', evidence
 
 
@@ -143,8 +165,41 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                    filing_currency='CNY', listing_currency='CNY', fx_listing_to_reporting=1,
                    fx_rate_source='same currency', period_date_annual=base.isoformat(),
                    period_date_quarterly=period.isoformat(), data_as_of=asof.date().isoformat())
-        target.insert_companies(connection, [row])
         load(period)
+        quote = company.get('quote')
+        market_evidence = {'quote': quote, 'share_period': period.isoformat(),
+                           'basis': 'unadjusted_close_times_reported_total_shares'}
+        shares = facts.get((period.isoformat(), 'total_shares'))
+        foreign = [f for f in ('listed_b_shares', 'listed_h_shares')
+                   if (period.isoformat(),f) in facts and Decimal(facts[(period.isoformat(),f)]['value']) > 0]
+        if quote:
+            quote_day = date.fromisoformat(quote['trade_date'])
+            if not 0 <= (period-quote_day).days <= 14 or datetime.fromisoformat(quote['recorded_at']) > asof:
+                raise ValueError('market observation outside date/cutoff')
+            price = Decimal(quote['close'])
+            if not price.is_finite() or price <= 0:
+                raise ValueError('invalid market price')
+            row['stock_price_listing'] = float(price)
+        if foreign:
+            market_status = 'requires_share_class_market_values'
+        elif not quote:
+            market_status = 'missing_eligible_close'
+        elif shares is None or period.isoformat() in conflicts:
+            market_status = 'missing_or_conflicting_reported_shares'
+        else:
+            share_value = Decimal(shares['value'])
+            if not price.is_finite() or price <= 0 or not share_value.is_finite() or share_value <= 0:
+                raise ValueError('invalid market price/shares')
+            if (shares['unit'], shares['period_type'], shares['instrument_id']) != ('share', 'instant', company['instrument_id']):
+                raise ValueError('invalid market share unit/identity/period')
+            row['mv_equity_listing'] = float(price*share_value/Decimal(1000000))
+            if not math.isfinite(row['mv_equity_listing']):
+                raise ValueError('market cap overflow')
+            market_evidence['shares'] = shares
+            market_status = 'reported_share_price_proxy'
+        target.insert_companies(connection, [row])
+        connection.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
+            (ticker,'company',period.isoformat(),0,'mv_equity_listing',market_status,json.dumps(market_evidence,ensure_ascii=False)))
         for series, ends in [('annual', annual_ends), ('quarterly', quarter_ends)]:
             for offset, end in enumerate(ends):
                 values = {'ticker': ticker, 'fy_offset' if series == 'annual' else 'fq_offset': offset}
@@ -194,7 +249,7 @@ def main():
                 base = args.period.year if args.period.month == 12 else args.period.year-1
                 first = min(date(base-args.years+1, 1, 1), quarter(args.period, args.quarters))
                 subprocess.run([str(binary), 'export-financial-snapshot', str(source),
-                    '--output', str(data), '--fields', ','.join(sorted({f[0] for f in FIELDS.values()})),
+                    '--output', str(data), '--fields', ','.join(SOURCE_FIELDS),
                     '--codes', ','.join(sorted(set(args.code or []))), '--from', first.isoformat(),
                     '--period', args.period.isoformat(), '--as-of', args.as_of.isoformat()], check=True, timeout=600)
                 companies = [json.loads(line) for line in (data/'companies.jsonl').read_text().splitlines()]
@@ -233,10 +288,12 @@ def main():
                             wide_money_unit='million_CNY', wide_shares_unit='million_shares',
                             standard_values='decimal_strings_in_each_rows_unit',
                             annual_net_income='parent_attributable', annual_bv_equity='parent_attributable',
+                            market_price_window='latest_completed_unadjusted_close_at_or_before_report_period_within_14_days',
+                            market_cap_basis='close_times_reported_total_shares_proxy; known_foreign_share_classes_rejected',
                             quarterly_flows='difference_of_standard_YTD_same_year; Q1 unchanged',
                             missing='NULL; see export_cells; source-zero/unreviewed not inferred from absence',
-                            boundary='TDX_standard_fields_for_native_SQL; no_supplement_values_or_market_defaults',
-                            standard_field_scope=','.join(sorted({f[0] for f in FIELDS.values()})),
+                            boundary='TDX_standard_components; partial_target_scope_values_are_not_complete_totals; market_value_is_reported_share_price_proxy',
+                            standard_field_scope=','.join(SOURCE_FIELDS),
                             candidates=str(len(companies)), companies=str(count))
             connection.executemany('INSERT OR REPLACE INTO metadata VALUES(?,?)', metadata.items())
             connection.commit()

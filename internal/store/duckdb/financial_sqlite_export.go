@@ -73,7 +73,18 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
 		_, e := tx.ExecContext(ctx, `COPY (`+query+`) TO `+duckdbStringLiteral(filepath.Join(dir, name))+` (FORMAT JSON,ARRAY false)`)
 		return e
 	}
-	if err = copyQuery("companies.jsonl", `SELECT * FROM _sqlite_universe ORDER BY instrument_id`); err != nil {
+	if err = copyQuery("companies.jsonl", `SELECT u.*,q.quote FROM _sqlite_universe u LEFT JOIN (
+ SELECT o.instrument_id,struct_pack(close:=CAST(o.close AS VARCHAR),trade_date:=CAST(o.trade_date AS VARCHAR),
+ observation_id:=o.observation_id,ingest_run_id:=o.ingest_run_id,recorded_at:=CAST(o.recorded_at AS VARCHAR),
+ adjustment:='unadjusted',source:='tdx') AS quote
+ FROM market.daily_observation o JOIN meta.ingest_run r USING(ingest_run_id)
+ WHERE o.instrument_id IN(SELECT instrument_id FROM _sqlite_universe) AND o.source='tdx' AND r.source='tdx'
+ AND r.dataset='daily_ohlcv' AND r.status IN ('completed','partial') AND o.close>0
+ AND o.trade_date BETWEEN `+finish+`-INTERVAL 14 DAY AND `+finish+`
+ AND r.started_at>=((o.trade_date+1)::TIMESTAMP AT TIME ZONE 'Asia/Shanghai')
+ AND o.recorded_at<=`+cutoff+` AND r.finished_at<=`+cutoff+`
+ QUALIFY row_number() OVER(PARTITION BY o.instrument_id ORDER BY o.trade_date DESC,o.recorded_at DESC,o.observation_id DESC)=1
+ ) q USING(instrument_id) ORDER BY u.instrument_id`); err != nil {
 		return err
 	}
 	// Filter issuer identities before wide reads; rank versions before code checks.
