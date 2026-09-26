@@ -63,12 +63,14 @@ SQLite的`standard_facts`保存原生模型已映射目标及现金、投资、�
 | minority_interests | noncontrolling_interests | 期末少数股东权益 |
 | bv_debt | 五项标准债务组成 | 五项齐全才合计，范围警告见重新接入记录 |
 | cash_and_marketable_securities | cash_and_cash_equivalents及资产组成 | 已知分量写证据，总额未闭合时列保持NULL |
-| cross_holdings | long_term_equity_investments及资产组成 | 已知分量写证据，总额未闭合时列保持NULL |
+| cross_holdings | 长期股权、债权、其他债权、其他权益工具及其他非流动金融资产 | 可用分量逐项校验后求小计；缺项不补零，总额未获准时保持NULL |
 | companies.mv_equity | 合格收盘价×total_shares | 报告期市值代理；已知B/H股时拒绝单价推算 |
 
 年度流量取全年累计；单季流量为当年累计减前一季度累计，Q1直接使用。不跨年度差分、不加总期末余额；前期缺失则差分结果为空。追溯调整可能影响跨期可比性，本工具未独立审核比较口径。来源冲突期间留空；字段单位、期间、身份或范围不符合预期则拒绝整份导出。
 
 总折旧摊销、租赁费用以及剔除特殊项目税前利润仍无已审核目标映射，保留NULL。现金及证券合计、长期投资已接入部分组成，目标范围未闭合时总额列仍为NULL；债务采用五项账面组成合计，具体边界见[重新接入记录](valuation-reconnect-20260926.md)。EBIT/EBITDA现从来源报告标准指标导出，[组成边界](tdx-supplementary-fields-20260925.md)明确保留，不因填列而批准原生估值。行情读取本地合格TDX日线，缺失时不编造；信用评级、税率假设、地理分部、期权、租赁承诺、行业与WACC政策不编造。补充证据不自动合并进标准事实。
+
+长期投资诊断现复用三表推导的五项标准组成，`available_component_million_cny`为全部已知组成小计，`missing_components`只列该组合缺项；即使算术组成齐全，也不自动认证可全额加回的估值范围。详见[接入及真实验收](tdx-asset-derivation-20260926.md#长期投资组成接入正式导出)。
 
 `export_cells`逐单元格记录`available`、`missing_standard_fact`、`source_record_conflict`、`partial_target_scope`或`requires_separate_valuation_definition`等状态，保留标准值、系数、事实ID、可用时间和归档哈希。标准事实缺失不进一步推断为源零、未披露或未审核；更细状态需查`financial-statements`。`metadata`记录源库/程序/导出器哈希、报告期、信息截止及取得时间；公司`data_as_of`为信息截止日期，不冒充实际下载日。
 

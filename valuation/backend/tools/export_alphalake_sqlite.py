@@ -15,6 +15,7 @@ import subprocess
 import tempfile
 
 from data_sources import us_cn_hk_db as target
+from tools.derive_tdx_assets import LONG_TERM
 
 # 名称映射只描述目标格式，不建立TDX源编号词典。金额/股数统一除以百万。
 FIELDS = {
@@ -42,7 +43,7 @@ ASSET_COMPONENTS = ('monetary_funds', 'cash_and_cash_equivalents', 'trading_fina
 SOURCE_FIELDS = sorted({f[0] for f in FIELDS.values()} | set(DEBT_COMPONENTS) | set(ASSET_COMPONENTS) | {'listed_b_shares','listed_h_shares'})
 PARTIAL_SCOPES = {
     'cash_and_marketable_securities': 'cash_equivalents_only; short_term_investment_scope_and_overlap_unresolved',
-    'cross_holdings': 'long_term_equity_investments_only; other_long_term_investments_unresolved',
+    'cross_holdings': 'known_long_term_investment_components; missing_components_and_valuation_scope_unresolved',
 }
 
 
@@ -68,6 +69,8 @@ def cell(facts, conflicts, instrument, end, column, annual):
     """只读取标准金额；累计差分不是供应商TTM，也不对每股值求和。"""
     if column == 'bv_debt':
         components, basis, unit = DEBT_COMPONENTS, 'instant', 'CNY'
+    elif column == 'cross_holdings':
+        components, basis, unit = LONG_TERM, 'instant', 'CNY'
     elif column in FIELDS:
         field, basis, unit = FIELDS[column]
         components = (field,)
@@ -76,12 +79,15 @@ def cell(facts, conflicts, instrument, end, column, annual):
     terms = [(end, 1)]
     if basis == 'ytd' and not annual and end.month != 3:
         terms.append((quarter(end, 1), -1))
-    evidence, total = [], Decimal(0)
+    evidence, total, missing = [], Decimal(0), []
     for field, (period, coefficient) in itertools.product(components, terms):
         if period.isoformat() in conflicts:
             return None, 'source_record_conflict', evidence
         row = facts.get((period.isoformat(), field))
         if row is None:
+            if column == 'cross_holdings':
+                missing.append(field)
+                continue
             return None, 'missing_standard_fact', evidence
         expected = 'instant' if basis == 'instant' else {3: 'Q1', 6: 'H1', 9: '9M', 12: 'FY'}[period.month]
         if (row.get('instrument_id'), row.get('unit'), row.get('period_type'), row.get('statement_scope')) != (instrument, unit, expected, 'provider_default'):
@@ -89,10 +95,14 @@ def cell(facts, conflicts, instrument, end, column, annual):
         value = Decimal(row['value'])
         if not value.is_finite():
             raise ValueError('nonfinite standard value')
+        if column == 'cross_holdings' and value < 0:
+            raise ValueError('negative investment component requires review')
         total += value * coefficient
         evidence.append({'field': field, 'period': period.isoformat(), 'coefficient': coefficient,
                          'value': str(value), 'unit': unit, 'fact_id': row['fact_id'],
                          'available_at': row['available_at'], 'artifact_sha256': row['artifact_sha256']})
+    if not evidence:
+        return None, 'missing_standard_fact', []
     result = float(total / Decimal(1000000))
     if not math.isfinite(result):
         raise ValueError('SQLite REAL overflow')
@@ -100,7 +110,8 @@ def cell(facts, conflicts, instrument, end, column, annual):
         evidence.append({'scope': PARTIAL_SCOPES[column], 'not_complete_target': True,
             'available_component_million_cny': result,
             'component_fact_ids': {f: facts[(end.isoformat(), f)]['fact_id'] for f in ASSET_COMPONENTS if (end.isoformat(), f) in facts},
-            'missing_components': [f for f in ASSET_COMPONENTS if (end.isoformat(), f) not in facts]})
+            'missing_components': missing if column == 'cross_holdings' else [f for f in ASSET_COMPONENTS if (end.isoformat(), f) not in facts],
+            'component_arithmetic_complete': not missing if column == 'cross_holdings' else False})
         return None, 'partial_target_scope', evidence
     return result, 'available', evidence
 

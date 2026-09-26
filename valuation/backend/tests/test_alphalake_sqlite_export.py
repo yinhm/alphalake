@@ -146,3 +146,33 @@ def test_standard_bridge_components_and_market_proxy():
         exporter.export_snapshot(db,[company],fetch,period,asof,years=1,quarters=1)
         assert db.execute('SELECT mv_equity_listing FROM companies').fetchone()[0] is None
         assert db.execute("SELECT status FROM export_cells WHERE series='company'").fetchone()[0]=='requires_share_class_market_values'
+
+
+def test_long_term_subtotal_requires_valid_same_period_components():
+    period = date(2026, 6, 30)
+    def fact(field, value):
+        return dict(instrument_id=7, unit='CNY', period_type='instant', statement_scope='provider_default',
+                    value=value, fact_id=field, available_at='2026-08-31T16:00:00Z', artifact_sha256='fixture')
+    facts = {(period.isoformat(), f): fact(f, v) for f, v in [
+        ('long_term_equity_investments', '556090432'),
+        ('other_noncurrent_financial_assets', '665509531.25')]}
+    value, status, evidence = exporter.cell(facts, set(), 7, period, 'cross_holdings', False)
+    assert value is None and status == 'partial_target_scope'
+    assert evidence[-1]['available_component_million_cny'] == 1221.59996325
+    assert len(evidence[:-1]) == 2
+    assert set(evidence[-1]['missing_components']) == {
+        'debt_investments', 'other_debt_investments', 'other_equity_instrument_investments'}
+    assert not evidence[-1]['component_arithmetic_complete']
+    # 缺主要科目仍展示已有其他组成；不将全缺失变成0。
+    del facts[(period.isoformat(), 'long_term_equity_investments')]
+    assert exporter.cell(facts, set(), 7, period, 'cross_holdings', False)[2][-1]['available_component_million_cny'] == 665.50953125
+    assert exporter.cell({}, set(), 7, period, 'cross_holdings', False)[:2] == (None, 'missing_standard_fact')
+    row = facts[(period.isoformat(), 'other_noncurrent_financial_assets')]
+    import pytest
+    for key, bad in [('unit', 'USD'), ('instrument_id', 8), ('period_type', 'H1'), ('value', '-1')]:
+        old = row[key]
+        row[key] = bad
+        with pytest.raises(ValueError):
+            exporter.cell(facts, set(), 7, period, 'cross_holdings', False)
+        row[key] = old
+    assert exporter.cell(facts, {period.isoformat()}, 7, period, 'cross_holdings', False)[1] == 'source_record_conflict'
