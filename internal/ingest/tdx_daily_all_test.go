@@ -204,3 +204,23 @@ func TestSyncAllTDXDailyQuarantinesBadRowAndRetriesUntilCorrected(t *testing.T) 
 		t.Fatalf("bad symbol rows after repair=%d, want 2", badRows)
 	}
 }
+
+func TestDailyBatchSelectedSymbolsPreservesMissingRequests(t *testing.T) {
+	ctx := context.Background()
+	db, err := duckstore.OpenInitialized(ctx, filepath.Join(t.TempDir(), "selected.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	source := &fakeIncrementalTDXSource{observations: []domain.InstrumentObservation{
+		observation(domain.InstrumentEquity, "XSHG", "贵州茅台", "sh600519"),
+		observation(domain.InstrumentEquity, "XSHE", "苏泊尔", "sz002032"),
+	}, full: map[string][]domain.DailyBar{"sz002032": {validBar(time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC), 45)}}}
+	summary, err := SyncAllTDXDailyWithOptions(ctx, db, source, TDXDailySyncOptions{Symbols: []string{"sz002032", "sz002032", "sz999999"}})
+	if err == nil || summary.Attempted != 1 || summary.Synced != 1 || len(summary.Failures) != 1 || summary.Failures[0].Symbol != "sz999999" {
+		t.Fatalf("summary=%+v err=%v", summary, err)
+	}
+	if source.fullCalls["sz002032"] != 1 || source.fullCalls["sh600519"] != 0 {
+		t.Fatalf("unexpected fetches: %v", source.fullCalls)
+	}
+}

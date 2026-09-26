@@ -45,7 +45,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  init <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-daily <db-path> <tdx-symbol>")
 	fmt.Fprintln(os.Stderr, "  sync-instruments <db-path>")
-	fmt.Fprintln(os.Stderr, "  sync-daily-all <db-path>")
+	fmt.Fprintln(os.Stderr, "  sync-daily-all <db-path> [--symbols sh600519,sz002032,...]")
 	fmt.Fprintln(os.Stderr, "  sync-actions <db-path> [--force]")
 	fmt.Fprintln(os.Stderr, "  calc-adjustments <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-classifications <db-path>")
@@ -170,9 +170,19 @@ func main() {
 		}
 
 	case "sync-daily-all":
-		if len(os.Args) != 3 {
+		if len(os.Args) != 3 && (len(os.Args) != 5 || os.Args[3] != "--symbols") {
 			usage()
 			os.Exit(2)
+		}
+		var symbols []string
+		if len(os.Args) == 5 {
+			symbols = strings.Split(os.Args[4], ",")
+			for _, symbol := range symbols {
+				key, err := tdxsource.NormalizeSymbol(symbol)
+				if err != nil || key.ProviderSymbol != symbol {
+					fatal(fmt.Errorf("invalid TDX symbol %q", symbol))
+				}
+			}
 		}
 		db, err := duckstore.OpenInitialized(ctx, os.Args[2])
 		if err != nil {
@@ -188,7 +198,7 @@ func main() {
 
 		lastFailures := 0
 		lastQuarantined := 0
-		options := ingest.TDXDailySyncOptions{OnProgress: func(p ingest.TDXDailyProgress) {
+		options := ingest.TDXDailySyncOptions{Symbols: symbols, OnProgress: func(p ingest.TDXDailyProgress) {
 			if p.Processed%100 == 0 || p.Processed == p.Total || p.Failed > lastFailures || p.Quarantined > lastQuarantined {
 				fmt.Printf("TDX daily progress: run=%d %d/%d synced=%d failed=%d quarantined=%d current=%s\n",
 					p.RunID, p.Processed, p.Total, p.Synced, p.Failed, p.Quarantined, p.Symbol)

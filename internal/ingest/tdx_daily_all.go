@@ -49,6 +49,7 @@ type TDXDailyProgress struct {
 
 type TDXDailySyncOptions struct {
 	OnProgress func(TDXDailyProgress)
+	Symbols    []string
 }
 
 type TDXDailyBatchError struct {
@@ -97,12 +98,34 @@ func SyncAllTDXDailyWithOptions(ctx context.Context, db *sql.DB, source TDXIncre
 	summary.MasterFailures = master.Failures
 	summary.Instruments = len(observations)
 	eligibleTotal := countDailyEligible(observations)
+	selected := make(map[string]bool, len(options.Symbols))
+	for _, symbol := range options.Symbols {
+		selected[symbol] = false
+	}
+	if len(selected) > 0 {
+		eligibleTotal = 0
+		for _, observation := range observations {
+			if _, ok := selected[observation.Identifier.Value]; ok && equityOrETF(observation.Instrument.Type) {
+				selected[observation.Identifier.Value] = true
+				eligibleTotal++
+			}
+		}
+		for symbol, found := range selected {
+			if !found {
+				summary.Failures = append(summary.Failures, TDXDailySyncFailure{Symbol: symbol, Err: fmt.Errorf("requested symbol not found in eligible instrument master")})
+			}
+		}
+	}
 
 	for i, observation := range observations {
 		if err := ctx.Err(); err != nil {
 			return summary, err
 		}
 		if !equityOrETF(observation.Instrument.Type) {
+			summary.Skipped++
+			continue
+		}
+		if len(selected) > 0 && !selected[observation.Identifier.Value] {
 			summary.Skipped++
 			continue
 		}
