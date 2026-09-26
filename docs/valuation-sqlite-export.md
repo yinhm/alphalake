@@ -1,6 +1,6 @@
 # 标准财务事实导出 SQLite
 
-当前提供纯TDX来源的SQLite财务快照，**尚未达到原 Investment_Valuation_Agent SQL/API兼容目标**。专用前端和估值旁路已撤除；原页面和请求契约已恢复，当前快照在后端明确拒绝原生估值，详见[字段契约及待审批缺口](valuation-native-data-contract-20260924.md)。工具不修改源DuckDB或默认seed。[本轮重新接入](valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列存在`partial_target_scope`时只表示已知分量，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v4`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
+当前提供纯TDX来源的SQLite财务快照，完整报表目标仍有缺口；经用户批准，限定样本已通过[估值输入代理](valuation-book-proxies.md)接通原生API。专用前端和估值旁路已撤除；原页面和请求契约已恢复，未获准或不适用代理的缺项仍在后端拒绝，详见[字段契约及待审批缺口](valuation-native-data-contract-20260924.md)。工具不修改源DuckDB或默认seed。[本轮重新接入](valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列存在`partial_target_scope`时只表示已知分量，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v4`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
 
 依赖Python 3.11+标准库和当前版本`alphalake`程序，无新增包。先构建当前程序；本机的大库任务、构建和测试须串行放在独立systemd系统服务中，参见[内存隔离约束](fundamental-memory-20260919.md)。例如：
 
@@ -87,7 +87,7 @@ SQLite的`standard_facts`保存原生模型已映射目标及现金、投资、�
 export US_CN_HK_DB_PATH=/root/alphalake/workspace/derived/valuation.sqlite
 ```
 
-仅改变该进程选库，不合并到seed。原页面搜索与选择公司后，原客户端提交`{ticker, risk_free_rate}`；不上传政策文件、不新增参数表单。需要修改参数时沿用原页面。当前已复验的安克快照仍有两项资产总额范围未闭合，因此返回422并显示已知分量及原因，不产生价格；不将单公司验收扩称全市场准入。
+仅改变该进程选库，不合并到seed。原页面搜索与选择公司后，原客户端提交`{ticker, risk_free_rate}`；不上传政策文件、不新增参数表单。需要修改参数时沿用原页面。安克原始财务列仍有两项资产范围缺口；后端使用获准代理及配套经营收益后，原请求返回200。苏泊尔仍缺合格市值，茅台不启用代理；不将单公司成功扩称全市场准入。
 
 构建前端后启动后端：
 
@@ -101,7 +101,7 @@ PYTHONPATH=valuation/backend python -m uvicorn api.main:app --host 127.0.0.1 --p
 curl http://127.0.0.1:8000/api/database/compatibility/SZSE:300866
 ```
 
-返回公司/期间、年度季度34项列覆盖、28个公司快照字段存在性，以及`required_missing`、`conditional_missing`、`optional_history_missing`和警告。[准入仅检查当前实际消费的输入](valuation-input-gates-20260925.md)，不以默认十年/八季窗口作为门槛；状态为`ready`或`blocked_required_inputs`。覆盖不等于语义已审核。原普通`POST /api/valuation`和PATCH保留，不再绑定专用只读会话；当前未完成TDX到成功原生输入的认证。
+返回公司/期间、年度季度34项列覆盖、28个公司快照字段存在性，以及`required_missing`、`conditional_missing`、`optional_history_missing`和警告。[准入仅检查当前实际消费的输入](valuation-input-gates-20260925.md)，不以默认十年/八季窗口作为门槛；状态为`ready`或`blocked_required_inputs`。覆盖不等于语义已审核。原普通`POST /api/valuation`和PATCH保留，不再绑定专用只读会话；安克已通过获准政策下的原生计算验收；不代表纯披露事实已完整。
 
 此网页进程只读SQLite，不打开大DuckDB。大库任务继续使用独立systemd服务和1GiB限额。接口恢复不代表认可原默认无风险利率、行业回退等参数适用于A股；参数自动化尚未实施，具体范围见[规格](valuation-native-integration-spec-20260924.md)。
 
