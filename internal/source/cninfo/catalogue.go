@@ -17,7 +17,7 @@ import (
 const (
 	Source                   = "cninfo"
 	CatalogueParserVersion   = "cninfo-catalogue-v1"
-	FilingClassifierVersion  = "cninfo-periodic-title-v3"
+	FilingClassifierVersion  = "cninfo-periodic-title-v4"
 	PeriodicReportCategories = "category_ndbg_szsh;category_bndbg_szsh;category_yjdbg_szsh;category_sjdbg_szsh;" +
 		"category_ndbg_bj;category_bndbg_bj;category_yjdbg_bj;category_sjdbg_bj"
 )
@@ -242,11 +242,14 @@ func ClassifyPeriodicTitle(title string) (domain.FilingType, domain.FilingVarian
 	switch {
 	case strings.Contains(title, "第一季度报告") || strings.Contains(title, "一季度报告"):
 		filingType, month, day = domain.FilingTypeQ1, time.March, 31
-	case strings.Contains(title, "半年度报告") || strings.Contains(title, "中期报告"):
+	// 「半年报」须在「年报」之前判定：前者包含后者子串。简写形式均以 CNINFO
+	// 定期报告分类下的真实采集行为佐证（如 688048「2024年年报」、603365
+	// 「2026年度半年报」）；无年份的「年报/半年报」仍由上方年份检查拒绝。
+	case strings.Contains(title, "半年度报告") || strings.Contains(title, "中期报告") || strings.Contains(title, "半年报"):
 		filingType, month, day = domain.FilingTypeH1, time.June, 30
 	case strings.Contains(title, "第三季度报告") || strings.Contains(title, "三季度报告"):
 		filingType, month, day = domain.FilingTypeQ3, time.September, 30
-	case strings.Contains(title, "年度报告"):
+	case strings.Contains(title, "年度报告") || strings.Contains(title, "年报"):
 		filingType, month, day = domain.FilingTypeAnnual, time.December, 31
 	default:
 		return domain.FilingTypeUnknown, domain.FilingVariantOther, nil, false

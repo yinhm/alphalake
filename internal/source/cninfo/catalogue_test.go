@@ -199,6 +199,19 @@ func TestClassifyPeriodicTitle(t *testing.T) {
 		{"关于延期披露2025年年度报告的公告", domain.FilingTypeUnknown, domain.FilingVariantOther, "", false},
 		{"关于召开2025年年度报告说明会的公告", domain.FilingTypeUnknown, domain.FilingVariantOther, "", false},
 		{"2025年度业绩快报", domain.FilingTypeUnknown, domain.FilingVariantOther, "", false},
+		// v4：定期报告分类下真实采集的合规简写标题（688048、603803、603365、600722、688339）。
+		{"2024年年报", domain.FilingTypeAnnual, domain.FilingVariantFull, "2024-12-31", true},
+		{"2024年年报摘要", domain.FilingTypeAnnual, domain.FilingVariantSummary, "2024-12-31", false},
+		{"公司2025年年报", domain.FilingTypeAnnual, domain.FilingVariantFull, "2025-12-31", true},
+		{"亿华通H股公告-2025年年报", domain.FilingTypeAnnual, domain.FilingVariantFull, "2025-12-31", true},
+		{"2026年度半年报", domain.FilingTypeH1, domain.FilingVariantFull, "2026-06-30", true},
+		{"金牛化工2023年半年报", domain.FilingTypeH1, domain.FilingVariantFull, "2023-06-30", true},
+		{"金牛化工2023年半年报摘要", domain.FilingTypeH1, domain.FilingVariantSummary, "2023-06-30", false},
+		{"2024年年报摘要（阿拉伯文）", domain.FilingTypeAnnual, domain.FilingVariantSummary, "2024-12-31", false},
+		// 无年份的简写不猜报告期，保持落空。
+		{"年报全文", domain.FilingTypeUnknown, domain.FilingVariantOther, "", false},
+		{"锦江酒店年报", domain.FilingTypeUnknown, domain.FilingVariantOther, "", false},
+		{"半年报全文", domain.FilingTypeUnknown, domain.FilingVariantOther, "", false},
 	}
 	for _, tc := range tests {
 		t.Run(tc.title, func(t *testing.T) {
