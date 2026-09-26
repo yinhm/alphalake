@@ -1,6 +1,6 @@
 # 获准的TDX账面代理：估值输入，不是报表事实
 
-2026-09-26用户明确批准“先允许，但文档明确记录代理条目”。政策版本为`tdx-book-assets-v1`，配置见[`valuation/policies/tdx-book-assets-v1.json`](../valuation/policies/tdx-book-assets-v1.json)。目前只启用安克、苏泊尔，财务报告期固定2026H1；不同公司或报告期不自动延用，茅台不在适用范围内。
+2026-09-26用户明确批准“先允许，但文档明确记录代理条目”。政策版本为`tdx-book-assets-v1`，配置见[`valuation/policies/tdx-book-assets-v1.json`](../valuation/policies/tdx-book-assets-v1.json)。目前只启用安克、苏泊尔，财务报告期固定2026H1；不同公司或报告期不自动延用，茅台不在适用范围内；其金融资产、存款和收益已完成[专项配套诊断](moutai-financial-scope-20260926.md)，剩余受限资金与归母范围不能由合并总额唯一确定。
 
 原TDX标准事实、源零/缺项和SQLite报表列保持原样。后端进入估值时才生成下表的输入；原始查询仍显示现金/投资总额NULL，不能据估值输入反称TDX已经完整披露。本功能依赖AlphaLake后端适配层；单独把SQLite交给未经适配的上游程序，不会自动获得这些代理值。
 

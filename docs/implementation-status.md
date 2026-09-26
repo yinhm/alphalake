@@ -2,7 +2,7 @@
 
 已完成[财务宽表主库切换与全市场SQLite导出](financial-storage-cutover-20260925.md)。主库schema52约282MiB，不保留源数值或BLOB副本；7,960,220个标准值覆盖5,540个既有证券，报告期范围2017年末至2026H1，各公司覆盖不齐。原5,627,307个标准值全部保留且数值/语义比对无差异；42张治理表在纯迁移阶段比对无差异。源同步仍有17项重复记录冲突，不推进这些包的完整检查点。网页8080已读取新版5,227家本地沪深公司SQLite，原生估值缺项没有因存储改造被掩盖。
 
-已完成[三个样本的字段补齐验收](valuation-field-completion-20260926.md)：接入年度会计有效税率，补齐茅台4年、苏泊尔5年的研发费用历史；金额仍来自TDX。三个样本的研发条件缺项均为0，现金及长期投资的完整披露范围仍未闭合。随后已按用户批准接入[显式账面代理](valuation-book-proxies.md)：安克原生API可计算条件估值，苏泊尔资产代理通过但仍缺行情，茅台不启用；没有全市场估值。
+已完成[三个样本的字段补齐验收](valuation-field-completion-20260926.md)：接入年度会计有效税率，补齐茅台4年、苏泊尔5年的研发费用历史；金额仍来自TDX。三个样本的研发条件缺项均为0，现金及长期投资的完整披露范围仍未闭合。随后已按用户批准接入[显式账面代理](valuation-book-proxies.md)：安克原生API可计算条件估值，苏泊尔资产代理通过但仍缺行情，茅台不启用；没有全市场估值。随后完成[茅台金融兼营口径诊断](moutai-financial-scope-20260926.md)：金融资产池、对应存款及配套收益可从TDX计算，52项原文/源精度核对通过；现金重复计数原因已明确，受限资金、分部归属及投入资本仍未闭合，不直接填原模型现金列。
 
 
 当前动态数据采用[统一workspace布局](workspace-layout.md)：唯一主库 `workspace/alphalake.duckdb` 同时包含财务事实、达摩达兰五类已接入数据及国债收益率。下文日期命名的workspace路径属于历史验收记录，其原内容去向见 `workspace/derived/cleanup-audit/file-plan.jsonl`，不再作为当前运行路径。网页派生库位于 `workspace/derived/valuation.sqlite`，估值运行位于 `workspace/derived/valuation-runs`。
