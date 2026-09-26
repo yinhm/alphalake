@@ -1,12 +1,14 @@
 # 全字段财务物化的内存修复
 
+当前schema52预算（2026-09-26用户明确授权）：大库任务的DuckDB查询限额允许1GiB，独立服务RSS硬上限1.5GiB、软限1408MiB、禁止swap、单线程，Go软限128MiB；任务仍串行运行。DuckDB预算不等于进程总预算，不能取消cgroup隔离。两公司历史公告补链在256MiB下失败，1GiB下完成且重放零变化，见[字段补齐验收](valuation-field-completion-20260926.md)。下文schema51及更早的批次、预算和耗时是历史记录，不是当前宽表实现。
+
 此前默认重放一次性生成全部字段的候选/拒绝表、事实表，并按每条源事实检查映射重叠。主库19,310,544条源事实、281个标准字段下曾两次触发全机OOM。DuckDB的内存参数不是进程RSS硬上限；事故与恢复见[ADR020](decisions/020-official-statements-and-snapshots.md)。
 
 原修复复用SQL和事务，按每批六个来源字段限制工作集。2026-09-25补充目录接入后，六字段合并触及DuckDB 256MiB查询上限（独立服务内失败，没有系统OOM）；当前缩至每批三个字段，并显式限定合并/计数的既有事实范围；股东数据批次仍超过256MiB，256MiB和384MiB均未完成整批接入；schema51最终采用512MiB查询预算、维持1GiB服务硬限额，65字段发布与全字段零变更重放均通过，后续验收见[补充目录记录](tdx-supplementary-fields-20260925.md)。字段清单从有映射的源事实及既有标准事实动态取得，不增加业务白名单；已经删除映射的旧事实仍参与清理。全部批次共用一次事务、一个运行，任何后续批次失败均回滚前批事实及诊断，不按批提前提交。原单位、期间、拒绝规则与源精度不变。
 
 回归覆盖跨批末端映射冲突导致整体回滚，以及删映射后旧事实仍撤除。仅限制中间工作集，不去掉诊断、不放宽映射审核、不将拒绝改成零。
 
-资源保护采用独立systemd服务，硬内存上限1GiB、禁用swap、单线程，旧281字段验收时DuckDB限256MiB，当前346字段使用512MiB；大库命令、构建和测试串行执行。旧实现受控基线运行约101秒，内存峰值640.5MiB并持续触发软阈值，在生成候选/拒绝表阶段主动取消；该次没有OOM，也不是完成时间基准。
+该轮资源保护采用独立systemd服务，硬内存上限1GiB、禁用swap、单线程，旧281字段验收时DuckDB限256MiB，当前346字段使用512MiB；大库命令、构建和测试串行执行。旧实现受控基线运行约101秒，内存峰值640.5MiB并持续触发软阈值，在生成候选/拒绝表阶段主动取消；该次没有OOM，也不是完成时间基准。
 
 修复后默认全字段命令首次完整结束（运行5437），耗时256秒，systemd峰值896.5MiB（包含文件缓存）、swap峰值0；9,152,443候选、4,403,786可物化、4,748,657拒绝，新增1、更新0、删除0。状态partial表示保留歧义和缺项，不是执行失败。
 
@@ -19,11 +21,11 @@
 ```bash
 systemd-run --unit=alphalake-materialize \
   --property=WorkingDirectory=/root/alphalake \
-  --property=MemoryMax=1G --property=MemoryHigh=896M \
+  --property=MemoryMax=1536M --property=MemoryHigh=1408M \
   --property=MemorySwapMax=0 --property=OOMPolicy=stop \
-  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=512MiB \
+  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=1GiB \
   --setenv=ALPHALAKE_DUCKDB_THREADS=1 --setenv=GOMEMLIMIT=128MiB \
-  /tmp/alphalake materialize-fundamentals workspace/auto-valuation-20260909/market.duckdb
+  ./alphalake materialize-fundamentals workspace/alphalake.duckdb
 systemctl show alphalake-materialize -p ControlGroup -p MemoryMax -p ActiveState -p Result
 journalctl -u alphalake-materialize --no-pager
 ```

@@ -49,7 +49,7 @@
 | listing_currency | ISO交易币种 | 当前A股CNY |
 | fx_listing_to_reporting | 报表币/交易币 | 同币种1；跨币种另接参考来源 |
 | fx_rate_source | 汇率依据 | 当前same currency |
-| effective_tax_rate | 小数比率，最近年度 | 未填；报表所得税/税前利润的分母口径先审核，负分母不硬算 |
+| effective_tax_rate | 小数比率，最近完整年度 | 已接所得税费用/利润总额；缺项、分母≤0或比例不在[0,1]时留空并诊断，不冒充未来正常化税率 |
 | stock_price_listing | 元/股，价格时点 | 已有合格行情时供给报告期附近未复权收盘价；安克已接入，价格日单独留证 |
 | mv_equity_listing | 百万元，价格/股本配对时点 | 已有价格及股数时计算报告期市值代理；已知多股类拒绝，不冒称当前公司市值 |
 | actual_rating_fc | 长期外币发行人评级 | 未供给，TDX财务非该评级来源 |
