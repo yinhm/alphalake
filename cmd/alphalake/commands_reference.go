@@ -23,7 +23,7 @@ func runCountryRiskSync(ctx context.Context, args []string) error {
 }
 func runReferenceSync(ctx context.Context, command string, args []string) error {
 	if len(args) < 1 {
-		return errors.New("usage: " + command + " <db-path> [--offline] [--python executable] [--parser path]")
+		return usageError("usage: %s <db-path> [--offline] [--python executable] [--parser path]", command)
 	}
 	fs := flag.NewFlagSet(command, flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
@@ -48,10 +48,10 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 	script := fs.String("parser", defaultScript, "reviewed parser script")
 	offline := fs.Bool("offline", false, "replay latest verified local archive without HTTP")
 	if err := fs.Parse(args[1:]); err != nil {
-		return err
+		return parseError(err)
 	}
 	if fs.NArg() != 0 {
-		return errors.New("unexpected reference arguments")
+		return usageError("unexpected reference arguments")
 	}
 	db, err := duckstore.OpenInitialized(ctx, args[0])
 	if err != nil {
@@ -84,7 +84,7 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 
 func runWACCReferenceExport(ctx context.Context, args []string) error {
 	if len(args) < 1 {
-		return errors.New("usage: export-wacc-references <db-path> --as-of RFC3339 [--latest | --country-release N --beta-release N --yield-release N [--credit-release N]] [--recorded-cutoff RFC3339]")
+		return usageError("usage: export-wacc-references <db-path> --as-of RFC3339 [--latest | --country-release N --beta-release N --yield-release N [--credit-release N]] [--recorded-cutoff RFC3339]")
 	}
 	fs := flag.NewFlagSet("export-wacc-references", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
@@ -96,23 +96,23 @@ func runWACCReferenceExport(ctx context.Context, args []string) error {
 	yield := fs.Int64("yield-release", 0, "explicit yield release")
 	latest := fs.Bool("latest", false, "select four available releases by observation date and revision time")
 	if err := fs.Parse(args[1:]); err != nil {
-		return err
+		return parseError(err)
 	}
 	if fs.NArg() != 0 {
-		return errors.New("unexpected reference export arguments")
+		return usageError("unexpected reference export arguments")
 	}
 	if *latest && (*country != 0 || *beta != 0 || *yield != 0 || *credit != 0) {
-		return errors.New("latest and explicit WACC release IDs are mutually exclusive")
+		return usageError("latest and explicit WACC release IDs are mutually exclusive")
 	}
 	asof, err := time.Parse(time.RFC3339Nano, *at)
 	if err != nil {
-		return err
+		return parseError(err)
 	}
 	var cutoff *time.Time
 	if *recorded != "" {
 		r, err := time.Parse(time.RFC3339Nano, *recorded)
 		if err != nil {
-			return err
+			return parseError(err)
 		}
 		cutoff = &r
 	}
@@ -142,7 +142,7 @@ func runWACCReferenceExport(ctx context.Context, args []string) error {
 
 func runIndustryCapitalExport(ctx context.Context, args []string) error {
 	if len(args) < 1 {
-		return errors.New("usage: export-industry-capital <db-path> --as-of RFC3339 [--release N] [--recorded-cutoff RFC3339]; omitted release selects latest")
+		return usageError("usage: export-industry-capital <db-path> --as-of RFC3339 [--release N] [--recorded-cutoff RFC3339]; omitted release selects latest")
 	}
 	fs := flag.NewFlagSet("export-industry-capital", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
@@ -150,20 +150,20 @@ func runIndustryCapitalExport(ctx context.Context, args []string) error {
 	known := fs.String("recorded-cutoff", "", "system knowledge cutoff")
 	id := fs.Int64("release", 0, "fixed release; zero selects latest")
 	if err := fs.Parse(args[1:]); err != nil {
-		return err
+		return parseError(err)
 	}
 	if fs.NArg() != 0 {
-		return errors.New("unexpected capital export arguments")
+		return usageError("unexpected capital export arguments")
 	}
 	asof, err := time.Parse(time.RFC3339Nano, *at)
 	if err != nil {
-		return err
+		return parseError(err)
 	}
 	var recorded *time.Time
 	if *known != "" {
 		v, e := time.Parse(time.RFC3339Nano, *known)
 		if e != nil {
-			return e
+			return parseError(e)
 		}
 		recorded = &v
 	}

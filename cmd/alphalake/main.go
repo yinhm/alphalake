@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -18,6 +20,46 @@ import (
 )
 
 const version = "0.0.0-dev"
+
+// 帮助请求以退出码 0 打印 usage；参数解析/用法错误以退出码 2 打印 usage。
+// 两者都必须在打开数据库或触网之前被拒绝。
+var (
+	errHelp  = errors.New("alphalake: help requested")
+	errUsage = errors.New("alphalake: invalid arguments")
+)
+
+func isHelpFlag(arg string) bool {
+	switch arg {
+	case "-h", "--help", "help":
+		return true
+	}
+	return false
+}
+
+// 每个命令的第一个位置参数都是 db-path，帮助标志落在命令名或该位置必是误用
+// （alphalake --help / alphalake sync-filings --help）。
+func helpRequested(args []string) bool {
+	if len(args) == 0 {
+		return false
+	}
+	return isHelpFlag(args[0]) || (len(args) > 1 && isHelpFlag(args[1]))
+}
+
+// parseError 归类命令行解析失败：flag 包对未定义 -h/--help 返回 ErrHelp，
+// 其余（非法标志、意外参数、畸形标志值）为用法错误。
+func parseError(err error) error {
+	if err == nil {
+		return nil
+	}
+	if errors.Is(err, flag.ErrHelp) {
+		return errHelp
+	}
+	return fmt.Errorf("%w: %v", errUsage, err)
+}
+
+func usageError(format string, args ...any) error {
+	return fmt.Errorf("%w: %s", errUsage, fmt.Sprintf(format, args...))
+}
 
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: alphalake <command> [args] [--include-bse] (default: Shanghai/Shenzhen)")
@@ -88,6 +130,10 @@ func main() {
 	if len(os.Args) < 2 {
 		usage()
 		os.Exit(2)
+	}
+	if helpRequested(os.Args[1:]) {
+		usage()
+		os.Exit(0)
 	}
 
 	if handled, err := runExtendedCommand(ctx, os.Args[1:]); handled {
@@ -563,6 +609,16 @@ func parseResolutionPageArgs(args []string) (int, int, error) {
 }
 
 func fatal(err error) {
-	fmt.Fprintln(os.Stderr, "error:", err)
-	os.Exit(1)
+	switch {
+	case errors.Is(err, errHelp):
+		usage()
+		os.Exit(0)
+	case errors.Is(err, errUsage):
+		fmt.Fprintln(os.Stderr, "error:", err)
+		usage()
+		os.Exit(2)
+	default:
+		fmt.Fprintln(os.Stderr, "error:", err)
+		os.Exit(1)
+	}
 }

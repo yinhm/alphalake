@@ -15,25 +15,25 @@ import (
 
 func runValuationQuote(ctx context.Context, args []string) error {
 	if len(args) < 2 {
-		return errors.New("usage: export-valuation-quote <db> <tdx-symbol> --date YYYY-MM-DD --as-of RFC3339")
+		return usageError("usage: export-valuation-quote <db> <tdx-symbol> --date YYYY-MM-DD --as-of RFC3339")
 	}
 	fs := flag.NewFlagSet("export-valuation-quote", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	dateText := fs.String("date", "", "exact market date")
 	atText := fs.String("as-of", "", "information cutoff")
 	if err := fs.Parse(args[2:]); err != nil {
-		return err
+		return parseError(err)
 	}
 	if fs.NArg() != 0 {
-		return errors.New("unexpected arguments")
+		return usageError("unexpected arguments")
 	}
 	day, err := time.Parse("2006-01-02", *dateText)
 	if err != nil {
-		return err
+		return parseError(err)
 	}
 	at, err := time.Parse(time.RFC3339Nano, *atText)
 	if err != nil {
-		return err
+		return parseError(err)
 	}
 	if _, err = os.Stat(args[0]); err != nil {
 		return err
@@ -52,16 +52,16 @@ func runValuationQuote(ctx context.Context, args []string) error {
 
 func runMarketSource(ctx context.Context, command string, args []string) error {
 	if len(args) < 2 {
-		return errors.New("usage: " + command + " <db> <code-or-date> [--python path] [--offline]")
+		return usageError("usage: %s <db> <code-or-date> [--python path] [--offline]", command)
 	}
 	fs := flag.NewFlagSet(command, flag.ContinueOnError)
 	python := fs.String("python", "python3", "parser Python")
 	offline := fs.Bool("offline", false, "verified archive replay")
 	if e := fs.Parse(args[2:]); e != nil {
-		return e
+		return parseError(e)
 	}
 	if fs.NArg() != 0 {
-		return errors.New("unexpected arguments")
+		return usageError("unexpected arguments")
 	}
 	db, e := duckstore.OpenInitialized(ctx, args[0])
 	if e != nil {
@@ -81,7 +81,7 @@ func runMarketSource(ctx context.Context, command string, args []string) error {
 
 func runMarketCapitalExport(ctx context.Context, args []string) error {
 	if len(args) < 2 {
-		return errors.New("usage: export-market-capital <db> <code> --date YYYY-MM-DD --as-of RFC3339 --share-release N [--hk-release N --fx-release N]")
+		return usageError("usage: export-market-capital <db> <code> --date YYYY-MM-DD --as-of RFC3339 --share-release N [--hk-release N --fx-release N]")
 	}
 	fs := flag.NewFlagSet("export-market-capital", flag.ContinueOnError)
 	dayText := fs.String("date", "", "market date")
@@ -92,18 +92,18 @@ func runMarketCapitalExport(ctx context.Context, args []string) error {
 	ipo := fs.Int64("ipo-release", 0, "initial H offering proceeds release")
 	greenshoe := fs.Int64("greenshoe-release", 0, "over-allotment proceeds release")
 	if e := fs.Parse(args[2:]); e != nil {
-		return e
+		return parseError(e)
 	}
 	if fs.NArg() != 0 {
-		return errors.New("unexpected arguments")
+		return usageError("unexpected arguments")
 	}
 	day, e := time.Parse("2006-01-02", *dayText)
 	if e != nil {
-		return e
+		return parseError(e)
 	}
 	at, e := time.Parse(time.RFC3339Nano, *atText)
 	if e != nil {
-		return e
+		return parseError(e)
 	}
 	if _, e = os.Stat(args[0]); e != nil {
 		return e

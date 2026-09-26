@@ -16,25 +16,25 @@ import (
 
 func runValuationExport(ctx context.Context, args []string) error {
 	if len(args) < 2 {
-		return errors.New("usage: export-valuation <db-path> <six-digit-code> --period YYYY-MM-DD --as-of RFC3339")
+		return usageError("usage: export-valuation <db-path> <six-digit-code> --period YYYY-MM-DD --as-of RFC3339")
 	}
 	fs := flag.NewFlagSet("export-valuation", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	period := fs.String("period", "", "report period")
 	asof := fs.String("as-of", "", "information cutoff")
 	if err := fs.Parse(args[2:]); err != nil {
-		return err
+		return parseError(err)
 	}
 	if fs.NArg() != 0 {
-		return errors.New("unexpected export arguments")
+		return usageError("unexpected export arguments")
 	}
 	end, err := time.Parse("2006-01-02", *period)
 	if err != nil {
-		return err
+		return parseError(err)
 	}
 	at, err := time.Parse(time.RFC3339, *asof)
 	if err != nil {
-		return err
+		return parseError(err)
 	}
 	if _, err := os.Stat(args[0]); err != nil {
 		return err
@@ -55,25 +55,25 @@ func runValuationExport(ctx context.Context, args []string) error {
 
 func runValuationReadiness(ctx context.Context, args []string) error {
 	if len(args) < 1 {
-		return errors.New("usage: valuation-readiness <db-path> --period YYYY-MM-DD --as-of RFC3339")
+		return usageError("usage: valuation-readiness <db-path> --period YYYY-MM-DD --as-of RFC3339")
 	}
 	fs := flag.NewFlagSet("valuation-readiness", flag.ContinueOnError)
 	code := fs.String("code", "", "optional six-digit security code; preserve ambiguous candidates")
 	period := fs.String("period", "", "required quarter end")
 	asof := fs.String("as-of", "", "information cutoff")
 	if err := fs.Parse(args[1:]); err != nil {
-		return err
+		return parseError(err)
 	}
 	if fs.NArg() != 0 {
-		return errors.New("unexpected readiness arguments")
+		return usageError("unexpected readiness arguments")
 	}
 	end, err := time.Parse("2006-01-02", *period)
 	if err != nil {
-		return err
+		return parseError(err)
 	}
 	at, err := time.Parse(time.RFC3339, *asof)
 	if err != nil {
-		return err
+		return parseError(err)
 	}
 	if _, err = os.Stat(args[0]); err != nil {
 		return err
@@ -99,7 +99,7 @@ func runValuationReadiness(ctx context.Context, args []string) error {
 
 func runSupplementImport(ctx context.Context, args []string) error {
 	if len(args) != 2 {
-		return errors.New("usage: import-supplements <db-path> <reviewed-json-file>")
+		return usageError("usage: import-supplements <db-path> <reviewed-json-file>")
 	}
 	file, err := os.Open(args[1])
 	if err != nil {
@@ -139,7 +139,7 @@ func runReviewedDocumentImport(ctx context.Context, args []string) error {
 
 func runDocumentImport(ctx context.Context, args []string, canonical bool) error {
 	if len(args) != 4 {
-		return errors.New("usage: import-reviewed-document|import-cninfo-document <db-path> <artifact-root> <receipt-json> <pdf-file>")
+		return usageError("usage: import-reviewed-document|import-cninfo-document <db-path> <artifact-root> <receipt-json> <pdf-file>")
 	}
 	raw, err := os.Open(args[2])
 	if err != nil {
@@ -184,7 +184,7 @@ func runDocumentImport(ctx context.Context, args []string, canonical bool) error
 
 func runSupplementHistory(ctx context.Context, args []string) error {
 	if len(args) != 2 {
-		return errors.New("usage: supplement-history <db-path> <six-digit-code>")
+		return usageError("usage: supplement-history <db-path> <six-digit-code>")
 	}
 	db, err := duckstore.OpenReadOnly(ctx, args[0])
 	if err != nil {

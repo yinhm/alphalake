@@ -21,6 +21,9 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 	if len(args) == 0 {
 		return false, nil
 	}
+	if helpRequested(args) {
+		return true, errHelp
+	}
 	switch args[0] {
 	case "financial-statements":
 		return true, runFinancialStatements(ctx, args)
@@ -67,11 +70,11 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 
 func runFilingUnresolved(ctx context.Context, args []string) error {
 	if len(args) == 0 || strings.TrimSpace(args[0]) == "" {
-		return fmt.Errorf("usage: alphalake filing-unresolved <db-path> [--limit N] [--offset N]")
+		return usageError("usage: alphalake filing-unresolved <db-path> [--limit N] [--offset N]")
 	}
 	limit, offset, err := parseResolutionPageArgs(args[1:])
 	if err != nil {
-		return err
+		return parseError(err)
 	}
 	db, err := duckstore.OpenInitialized(ctx, args[0])
 	if err != nil {
@@ -97,11 +100,11 @@ func runFilingUnresolved(ctx context.Context, args []string) error {
 
 func runSyncFilings(ctx context.Context, args []string) error {
 	if len(args) < 1 {
-		return fmt.Errorf("usage: alphalake sync-filings <db-path> [--all] [--start YYYY-MM-DD] [--end YYYY-MM-DD] [--metadata-only] [--rescan] [--code 600519]")
+		return usageError("usage: alphalake sync-filings <db-path> [--all] [--start YYYY-MM-DD] [--end YYYY-MM-DD] [--metadata-only] [--rescan] [--code 600519]")
 	}
 	dbPath := strings.TrimSpace(args[0])
 	if dbPath == "" {
-		return fmt.Errorf("database path is required")
+		return usageError("database path is required")
 	}
 	fs := flag.NewFlagSet("sync-filings", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
@@ -114,13 +117,13 @@ func runSyncFilings(ctx context.Context, args []string) error {
 	pageSize := fs.Int("page-size", 30, "CNINFO page size in [1,100]")
 	windowDays := fs.Int("window-days", 90, "catalogue window size in [1,366]")
 	if err := fs.Parse(args[1:]); err != nil {
-		return err
+		return parseError(err)
 	}
 	if len(fs.Args()) != 0 {
-		return fmt.Errorf("unexpected sync-filings arguments: %s", strings.Join(fs.Args(), " "))
+		return usageError("unexpected sync-filings arguments: %s", strings.Join(fs.Args(), " "))
 	}
 	if *all && strings.TrimSpace(*startText) != "" {
-		return fmt.Errorf("--all and --start are mutually exclusive")
+		return usageError("--all and --start are mutually exclusive")
 	}
 	var startDate time.Time
 	var err error
@@ -129,14 +132,14 @@ func runSyncFilings(ctx context.Context, args []string) error {
 	} else if strings.TrimSpace(*startText) != "" {
 		startDate, err = parseCLIDate(*startText)
 		if err != nil {
-			return fmt.Errorf("parse --start: %w", err)
+			return usageError("parse --start: %v", err)
 		}
 	}
 	var endDate time.Time
 	if strings.TrimSpace(*endText) != "" {
 		endDate, err = parseCLIDate(*endText)
 		if err != nil {
-			return fmt.Errorf("parse --end: %w", err)
+			return usageError("parse --end: %v", err)
 		}
 	}
 
@@ -186,25 +189,25 @@ func runSyncFilings(ctx context.Context, args []string) error {
 
 func runRepairFilings(ctx context.Context, args []string) error {
 	if len(args) < 1 {
-		return fmt.Errorf("usage: alphalake repair-filings <db-path> --period YYYY-MM-DD [--limit N]")
+		return usageError("usage: alphalake repair-filings <db-path> --period YYYY-MM-DD [--limit N]")
 	}
 	dbPath := strings.TrimSpace(args[0])
 	if dbPath == "" {
-		return fmt.Errorf("database path is required")
+		return usageError("database path is required")
 	}
 	fs := flag.NewFlagSet("repair-filings", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	periodText := fs.String("period", "", "quarter-end report period")
 	limit := fs.Int("limit", 0, "maximum securities to attempt; zero attempts all pending codes")
 	if err := fs.Parse(args[1:]); err != nil {
-		return err
+		return parseError(err)
 	}
 	if len(fs.Args()) != 0 || *limit < 0 {
-		return fmt.Errorf("invalid repair-filings arguments")
+		return usageError("invalid repair-filings arguments")
 	}
 	period, err := parseCLIDate(*periodText)
 	if err != nil {
-		return err
+		return usageError("parse --period: %v", err)
 	}
 	local := time.Now().In(domain.ChinaDisclosureLocation)
 	end := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, time.UTC)
@@ -260,15 +263,15 @@ func repairFilingQueries(ctx context.Context, db *sql.DB, source ingest.CNINFOFi
 
 func runMaterializeFundamentals(ctx context.Context, args []string) error {
 	if len(args) < 1 {
-		return fmt.Errorf("usage: alphalake materialize-fundamentals <db-path> [--field FN110]")
+		return usageError("usage: alphalake materialize-fundamentals <db-path> [--field FN110]")
 	}
 	fs := flag.NewFlagSet("materialize-fundamentals", flag.ContinueOnError)
 	field := fs.String("field", "", "only rebuild this field using existing filing links")
 	if err := fs.Parse(args[1:]); err != nil {
-		return err
+		return parseError(err)
 	}
 	if fs.NArg() != 0 {
-		return fmt.Errorf("unexpected arguments")
+		return usageError("unexpected arguments")
 	}
 	var fields []string
 	fs.Visit(func(f *flag.Flag) {
@@ -305,7 +308,7 @@ func parseFinancialLimit(args []string) (int, bool, error) {
 	all := fs.Bool("all", false, "all past packages")
 	latest := fs.Int("latest", 1, "newest N past packages")
 	if err := fs.Parse(args); err != nil {
-		return 0, false, err
+		return 0, false, parseError(err)
 	}
 	suppliedLatest := false
 	fs.Visit(func(f *flag.Flag) {
@@ -314,7 +317,7 @@ func parseFinancialLimit(args []string) (int, bool, error) {
 		}
 	})
 	if fs.NArg() != 0 || *latest < 1 || (*all && suppliedLatest) {
-		return 0, false, fmt.Errorf("use either --all or --latest positive-N")
+		return 0, false, usageError("use either --all or --latest positive-N")
 	}
 	if *all {
 		return 0, *offline, nil

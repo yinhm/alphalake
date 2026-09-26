@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	store "github.com/yinhm/alphalake/internal/store/duckdb"
 	"strings"
 	"time"
@@ -11,7 +10,7 @@ import (
 
 func runFinancialSnapshotExport(ctx context.Context, args []string) error {
 	if len(args) < 1 {
-		return fmt.Errorf("database path required")
+		return usageError("usage: export-financial-snapshot <db-path> --output <new-directory> --fields <standard-names> --from YYYY-MM-DD --period YYYY-MM-DD --as-of RFC3339 [--codes 300866,600519]")
 	}
 	fs := flag.NewFlagSet("export-financial-snapshot", flag.ContinueOnError)
 	output := fs.String("output", "", "new temporary export directory")
@@ -21,19 +20,19 @@ func runFinancialSnapshotExport(ctx context.Context, args []string) error {
 	period := fs.String("period", "", "last report period")
 	asof := fs.String("as-of", "", "information cutoff")
 	if e := fs.Parse(args[1:]); e != nil {
-		return e
+		return parseError(e)
 	}
 	start, e := time.Parse("2006-01-02", *from)
 	if e != nil {
-		return e
+		return parseError(e)
 	}
 	end, e := time.Parse("2006-01-02", *period)
 	if e != nil {
-		return e
+		return parseError(e)
 	}
 	at, e := time.Parse(time.RFC3339Nano, *asof)
 	if e != nil {
-		return e
+		return parseError(e)
 	}
 	db, e := store.OpenReadOnly(ctx, args[0])
 	if e != nil {
