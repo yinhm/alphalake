@@ -393,6 +393,15 @@ def from_database(req: FromDatabaseRequest) -> dict:
     # response shape is byte-identical.
     session = create_session(inputs, report)
     session.valuation_proxy = record.get("valuation_proxy")
+    if compatibility and compatibility['exported_asset_proxies']:
+        proxy = dict(session.valuation_proxy or dict(version=record['data_source']['contract'],
+            status='estimated', source_snapshot=record['data_source'],
+            basis='initial_database_estimates; subsequent_user_overrides_are_separate', limitations=[]))
+        proxy['exported_asset_proxies'] = compatibility['exported_asset_proxies']
+        proxy['limitations'] = list(dict.fromkeys(proxy['limitations'] + [
+            '现金和长期投资使用已知组成的账面代理；范围、受限及经营属性未闭合，遗漏不等于零。',
+            '资产加回与非经营收益剔除尚未逐公司配套审核；条件估值可能重复计价或遗漏，不能视为完整公允价值。']))
+        session.valuation_proxy = proxy
     result = _report_to_dict(session)
     # Mirror the template-path's root-level context fields (company_name,
     # country, industry_name). Template path sets these after

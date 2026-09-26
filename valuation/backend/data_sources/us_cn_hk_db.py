@@ -286,7 +286,7 @@ def snapshot_metadata(conn: sqlite3.Connection) -> dict | None:
     if not tables.intersection({'metadata', 'valuation_inputs', 'standard_facts', 'export_cells'}):
         return None
     metadata = dict(conn.execute('SELECT key,value FROM metadata')) if 'metadata' in tables else {}
-    if metadata.get('contract') != 'alphalake-sqlite-v4':
+    if metadata.get('contract') != 'alphalake-sqlite-v5':
         raise ValueError('Unsupported AlphaLake SQLite contract; rebuild the snapshot with the current exporter')
     if not {'standard_facts', 'export_cells', 'export_universe'} <= tables:
         raise ValueError('Incomplete AlphaLake SQLite snapshot')
@@ -373,6 +373,10 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
         v = row.get(field)
         evidence = cells.get((series,offset,field))
         invalid_evidence = source and series != 'company' and (evidence is None or evidence['status'] != 'available')
+        if (evidence and evidence['status'] == 'estimated_partial_scope'
+                and field in ('cash_and_marketable_securities', 'cross_holdings')):
+            invalid_evidence = False
+            warnings.append(f'{field}使用已知组成的账面代理；范围、受限及经营属性未闭合，遗漏组成不等于零，可能影响股权价值')
         estimate = estimates.get((series,offset,field))
         if estimate:
             invalid_evidence = estimate['status'] != 'estimated'
@@ -427,7 +431,7 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
     for series in ('annual','quarterly'):
         for name in _ANNUAL_COLS[2:]:
             coverage.append(dict(series=series,field=name,present=sum(r.get(name) is not None for r in rows[series].values()),total=len(rows[series]),
-                estimated=sum(e['status']=='estimated' for (s,o,f),e in estimates.items() if s==series and f==name)))
+                estimated=sum((estimates.get((series,o,name)) or cells.get((series,o,name), {})).get('status') in ('estimated','estimated_partial_scope') for o in rows[series])))
         needed = {0} if series=='annual' else set(window['quarterly_offsets'])
         for offset in rows[series]:
             if offset not in needed:
@@ -459,6 +463,10 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
         optional_history_missing=history,warnings=warnings,input_window=window,
         adjustment_selection=dict(rd=rd_enabled,leases=lease_enabled,basis='native_database_defaults'),
         valuation_proxy=policy or None,
+        exported_asset_proxies=[dict(series=s, offset=o, field=f, value=next((part['available_component_million_cny'] for part in e['evidence']
+                if isinstance(part, dict) and 'available_component_million_cny' in part), None), **e)
+            for (s,o,f),e in cells.items() if e['status']=='estimated_partial_scope'
+            and f in ('cash_and_marketable_securities','cross_holdings')],
         financial_fields=coverage,
         company_fields=[dict(field=name,present=co.get(name) is not None) for name in _COMPANIES_COLS],
         scope='当前原生入口默认选择的数据准入；不认证预测假设、市场参数或调整后经营口径；政策改变须重新检查')

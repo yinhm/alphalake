@@ -134,8 +134,8 @@ def test_standard_bridge_components_and_market_proxy():
         return dict(contract_version='alphalake-valuation-v2',code=code,report_period=end.isoformat(),information_as_of=asof.isoformat(),facts=facts,source_conflicts=[])
     indexed={(r['period'],r['field']):r for r in facts}
     assert exporter.cell(indexed,set(),7,period,'bv_debt',False)[:2]==(5,'available')
-    assert exporter.cell(indexed,set(),7,period,'cash_and_marketable_securities',False)[:2]==(None,'partial_target_scope')
-    assert exporter.cell(indexed,set(),7,period,'cross_holdings',False)[:2]==(None,'partial_target_scope')
+    assert exporter.cell(indexed,set(),7,period,'cash_and_marketable_securities',False)[:2]==(2,'estimated_partial_scope')
+    assert exporter.cell(indexed,set(),7,period,'cross_holdings',False)[:2]==(3,'estimated_partial_scope')
     assert exporter.cell(indexed,set(),7,period,'cash_and_marketable_securities',False)[2][-1]['available_component_million_cny']==2
     del indexed[(period.isoformat(),'lease_liabilities')]
     assert exporter.cell(indexed,set(),7,period,'bv_debt',False)[0] is None
@@ -161,7 +161,7 @@ def test_long_term_subtotal_requires_valid_same_period_components():
         ('long_term_equity_investments', '556090432'),
         ('other_noncurrent_financial_assets', '665509531.25')]}
     value, status, evidence = exporter.cell(facts, set(), 7, period, 'cross_holdings', False)
-    assert value is None and status == 'partial_target_scope'
+    assert value == 1221.59996325 and status == 'estimated_partial_scope'
     assert evidence[-1]['available_component_million_cny'] == 1221.59996325
     assert len(evidence[:-1]) == 2
     assert set(evidence[-1]['missing_components']) == {

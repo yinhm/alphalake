@@ -34,7 +34,7 @@ FIELDS = {
     'cross_holdings': ('long_term_equity_investments', 'instant', 'CNY'),
 }
 EXCHANGES = {'XSHG': 'SHSE', 'XSHE': 'SZSE', 'XBSE': 'BJSE'}
-CONTRACT = 'alphalake-sqlite-v4'
+CONTRACT = 'alphalake-sqlite-v5'
 DEBT_COMPONENTS = ('short_term_borrowings', 'long_term_borrowings', 'bonds_payable',
                    'current_portion_noncurrent_liabilities', 'lease_liabilities')
 ASSET_COMPONENTS = ('monetary_funds', 'cash_and_cash_equivalents', 'trading_financial_assets',
@@ -112,7 +112,7 @@ def cell(facts, conflicts, instrument, end, column, annual):
             'component_fact_ids': {f: facts[(end.isoformat(), f)]['fact_id'] for f in ASSET_COMPONENTS if (end.isoformat(), f) in facts},
             'missing_components': missing if column == 'cross_holdings' else [f for f in ASSET_COMPONENTS if (end.isoformat(), f) not in facts],
             'component_arithmetic_complete': not missing if column == 'cross_holdings' else False})
-        return None, 'partial_target_scope', evidence
+        return result, 'estimated_partial_scope', evidence
     return result, 'available', evidence
 
 
