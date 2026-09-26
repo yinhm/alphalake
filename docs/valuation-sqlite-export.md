@@ -1,6 +1,6 @@
 # 标准财务事实导出 SQLite
 
-当前提供纯TDX来源的SQLite财务快照，**尚未达到原 Investment_Valuation_Agent SQL/API兼容目标**。专用前端和估值旁路已撤除；原页面和请求契约已恢复，当前快照在后端明确拒绝原生估值，详见[字段契约及待审批缺口](valuation-native-data-contract-20260924.md)。工具不修改源DuckDB或默认seed。当前证据快照契约为`alphalake-sqlite-v3`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
+当前提供纯TDX来源的SQLite财务快照，**尚未达到原 Investment_Valuation_Agent SQL/API兼容目标**。专用前端和估值旁路已撤除；原页面和请求契约已恢复，当前快照在后端明确拒绝原生估值，详见[字段契约及待审批缺口](valuation-native-data-contract-20260924.md)。工具不修改源DuckDB或默认seed。[本轮重新接入](valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列存在`partial_target_scope`时只表示已知分量，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v4`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
 
 依赖Python 3.11+标准库和当前版本`alphalake`程序，无新增包。先构建当前程序；本机的大库任务、构建和测试须串行放在独立systemd系统服务中，参见[内存隔离约束](fundamental-memory-20260919.md)。例如：
 
@@ -44,7 +44,7 @@ journalctl -u alphalake-sqlite-export --no-pager
 
 链路：TDX原始包→已有标准语义/校验→DuckDB标准宽表→SQLite→网页→共享估值引擎。CNINFO关联只提供身份、时点与核验血缘；PDF附注金额、参考市场数据和模型假设不进入快照。
 
-SQLite的`standard_facts`保存原生模型11个已映射目标列所需的标准事实、单位及独立证据，`export_cells`逐单元格保存缺项和差分血缘。全部346字段由主库标准查询提供；不再复制整份三表、TTM和估值JSON。导出通过`export-financial-snapshot`在一次只读事务内批量投影目标列，Python逐证券写入SQLite，不逐公司/期间启动进程。
+SQLite的`standard_facts`保存原生模型已映射目标及现金、投资、债务组成所需的标准事实、单位及独立证据，`export_cells`逐单元格保存缺项和差分血缘。全部346字段由主库标准查询提供；不再复制整份三表、TTM和估值JSON。导出通过`export-financial-snapshot`在一次只读事务内批量投影目标列，Python逐证券写入SQLite，不逐公司/期间启动进程。
 
 仍提供`companies`、`financials_annual`、`financials_quarterly`供通用数据读取；这些宽表金额为**百万元人民币**、股数为**百万股**，`standard_facts`金额仍为元、股数为股，按各行单位解释。原生估值使用宽表。保留源精度，不补小数。日期锚点来自指定报告期，年表以最近完整自然年为FY0，季表以指定季末为FQ0。固定时点取数不是逐季度当时留存的数据版本认证。
 
@@ -61,12 +61,16 @@ SQLite的`standard_facts`保存原生模型11个已映射目标列所需的标�
 | bv_equity | equity_parent | 期末归母权益 |
 | shares_outstanding | total_shares | 期末股本 |
 | minority_interests | noncontrolling_interests | 期末少数股东权益 |
+| bv_debt | 五项标准债务组成 | 五项齐全才合计，范围警告见重新接入记录 |
+| cash_and_marketable_securities | cash_and_cash_equivalents及资产组成 | 已知分量写证据，总额未闭合时列保持NULL |
+| cross_holdings | long_term_equity_investments及资产组成 | 已知分量写证据，总额未闭合时列保持NULL |
+| companies.mv_equity | 合格收盘价×total_shares | 报告期市值代理；已知B/H股时拒绝单价推算 |
 
 年度流量取全年累计；单季流量为当年累计减前一季度累计，Q1直接使用。不跨年度差分、不加总期末余额；前期缺失则差分结果为空。追溯调整可能影响跨期可比性，本工具未独立审核比较口径。来源冲突期间留空；字段单位、期间、身份或范围不符合预期则拒绝整份导出。
 
-总折旧摊销、租赁费用、现金及证券合计、交叉持股、总有息债务以及剔除特殊项目税前利润仍无已审核目标映射，保留NULL。EBIT/EBITDA现从来源报告标准指标导出，[组成边界](tdx-supplementary-fields-20260925.md)明确保留，不因填列而批准原生估值。行情、信用评级、税率假设、地理分部、期权、租赁承诺、行业与WACC政策也不编造。补充证据不自动合并进标准事实。
+总折旧摊销、租赁费用以及剔除特殊项目税前利润仍无已审核目标映射，保留NULL。现金及证券合计、长期投资已接入部分组成，目标范围未闭合时总额列仍为NULL；债务采用五项账面组成合计，具体边界见[重新接入记录](valuation-reconnect-20260926.md)。EBIT/EBITDA现从来源报告标准指标导出，[组成边界](tdx-supplementary-fields-20260925.md)明确保留，不因填列而批准原生估值。行情读取本地合格TDX日线，缺失时不编造；信用评级、税率假设、地理分部、期权、租赁承诺、行业与WACC政策不编造。补充证据不自动合并进标准事实。
 
-`export_cells`逐单元格记录`available`、`missing_standard_fact`、`source_record_conflict`或`requires_separate_valuation_definition`，保留标准值、系数、事实ID、可用时间和归档哈希。标准事实缺失不进一步推断为源零、未披露或未审核；更细状态需查`financial-statements`。`metadata`记录源库/程序/导出器哈希、报告期、信息截止及取得时间；公司`data_as_of`为信息截止日期，不冒充实际下载日。
+`export_cells`逐单元格记录`available`、`missing_standard_fact`、`source_record_conflict`、`partial_target_scope`或`requires_separate_valuation_definition`等状态，保留标准值、系数、事实ID、可用时间和归档哈希。标准事实缺失不进一步推断为源零、未披露或未审核；更细状态需查`financial-statements`。`metadata`记录源库/程序/导出器哈希、报告期、信息截止及取得时间；公司`data_as_of`为信息截止日期，不冒充实际下载日。
 
 ## 网页消费与估值
 
@@ -76,7 +80,7 @@ SQLite的`standard_facts`保存原生模型11个已映射目标列所需的标�
 export US_CN_HK_DB_PATH=/root/alphalake/workspace/derived/valuation.sqlite
 ```
 
-仅改变该进程选库，不合并到seed。原页面搜索与选择公司后，原客户端提交`{ticker, risk_free_rate}`；不上传政策文件、不新增参数表单。需要修改参数时沿用原页面。当前三家TDX快照必需字段与目标口径未闭合，因此返回422并显示原因，不产生价格。
+仅改变该进程选库，不合并到seed。原页面搜索与选择公司后，原客户端提交`{ticker, risk_free_rate}`；不上传政策文件、不新增参数表单。需要修改参数时沿用原页面。当前已复验的安克快照仍有两项资产总额范围未闭合，因此返回422并显示已知分量及原因，不产生价格；不将单公司验收扩称全市场准入。
 
 构建前端后启动后端：
 
