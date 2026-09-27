@@ -171,10 +171,9 @@ class WACCBinding(Strict):
     market_capital: MarketSnapshot | None = None
 
 
-def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_of: datetime, *, ebit: float | None = None, interest: float | None = None, debt: float | None = None, bridge=None, note=None):
+def resolve_wacc(binding: WACCBinding, code: str, period: date, information_as_of: datetime, *, scope: str, ebit: float | None = None, interest: float | None = None, debt: float | None = None, bridge=None, note=None):
     s, p = binding.references, binding.policy
-    expected_scope = 'liquor_proxy' if code == '600519' else 'consolidated'
-    if p.code != code or p.report_period != period or p.scope != expected_scope or s.information_as_of != information_as_of:
+    if p.code != code or p.report_period != period or p.scope != scope or s.information_as_of != information_as_of:
         raise ValueError('WACC/company/scope/period/cutoff mismatch')
     information_as_of = information_as_of.astimezone(timezone.utc)
     used = []

@@ -371,7 +371,7 @@ def build_inputs(request: AlphaLakeRequest):
         if request.wacc_binding is not None:
             window,_ = standard_window_reader(d)
             ebit = window('operating_profit_cumulative')+window('interest_expense')-window('interest_income')-window('investment_income')-window('fair_value_change_income')-window('asset_disposal_income')
-            reference_components,reference_audit = resolve_wacc(request.wacc_binding,d.code,d.report_period,d.information_as_of,ebit=ebit,interest=window('interest_expense'))
+            reference_components,reference_audit = resolve_wacc(request.wacc_binding,d.code,d.report_period,d.information_as_of,scope="consolidated",ebit=ebit,interest=window('interest_expense'))
             policy = type(policy).model_validate(policy.model_dump() | {'wacc':reference_audit['result']['wacc']})
         if isinstance(policy, HistoricalDCFPolicy):
             inputs,audit = build_historical_dcf_inputs(d,policy)
@@ -491,7 +491,7 @@ def build_inputs(request: AlphaLakeRequest):
             shares=shares,conversion_release=0,conversion_shares=0)
         raw = RawFinancials(fiscal_year=d.report_period.year,revenues=revenue,ebit=ebit,shares_outstanding=shares)
     if request.wacc_binding is not None:
-        reference_components, reference_audit = resolve_wacc(request.wacc_binding, d.code, d.report_period, d.information_as_of, ebit=ebit, interest=w['interest_expense'], debt=debt if anker else w['current_portion_noncurrent_liabilities']+w['lease_liabilities'], bridge=bridge, note=note)
+        reference_components, reference_audit = resolve_wacc(request.wacc_binding, d.code, d.report_period, d.information_as_of, scope="consolidated" if anker else "liquor_proxy", ebit=ebit, interest=w['interest_expense'], debt=debt if anker else w['current_portion_noncurrent_liabilities']+w['lease_liabilities'], bridge=bridge, note=note)
         p['wacc'] = reference_audit['result']['wacc']
         if p['wacc'] <= p['terminal_growth']:
             raise ValueError('reference WACC must exceed terminal growth')

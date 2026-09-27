@@ -368,8 +368,8 @@ def test_synthetic_credit_source_boundaries(exports,reference_export):
         applicability_reason='boundary test',sovereign_spread_policy='none',sovereign_spread_reason='test',max_credit_age_days=370)
     binding=WACCBinding.model_validate(req['wacc_binding'])
     for ebit,interest in [(.2,1),(.1999995,1),(100001,1),(1,0),(1,-1)]:
-        with pytest.raises(ValueError):resolve_wacc(binding,'300866',date(2026,6,30),binding.references.information_as_of,ebit=ebit,interest=interest)
-    _,audit=resolve_wacc(binding,'300866',date(2026,6,30),binding.references.information_as_of,ebit=.199999,interest=1)
+        with pytest.raises(ValueError):resolve_wacc(binding,'300866',date(2026,6,30),binding.references.information_as_of,scope="consolidated",ebit=ebit,interest=interest)
+    _,audit=resolve_wacc(binding,'300866',date(2026,6,30),binding.references.information_as_of,scope="consolidated",ebit=.199999,interest=1)
     assert audit['synthetic_debt']['rating']=='D2/D'
 
 
@@ -1451,3 +1451,66 @@ def test_reviewed_asset_standard_chain(exports, tmp_path, monkeypatch):
         elif problem == 'code': bad['policy']['code'] = '002032'
         else: bad['policy']['asset_addbacks'].append(copy.deepcopy(bad['policy']['asset_addbacks'][0]))
         with pytest.raises(ValueError): evaluate(AlphaLakeRequest.model_validate(bad))
+
+
+def test_native_cny_policy_transmission_and_rejections(reference_export):
+    """真实参考出口+合成公司；锁定经济分量和拒绝，不冒充公司事实核验。"""
+    from tools.evaluate_native_policy import prepare
+    from engine.data_dictionary import CompanyValuationInput, RawFinancials, IndustryData, MacroInputs
+    from engine.orchestrator import run_full_valuation
+    source=copy.deepcopy(reference_export)
+    recipe=json.loads((REPO/'valuation/examples/native-cny-candidates.json').read_text())
+    raw=[RawFinancials(fiscal_year=2025-i,revenues=1000/(1.1**i),ebit=150/(1.1**i),
+        r_and_d_expense=0,bv_equity=500,bv_debt=100,cash_and_marketable_securities=50,
+        cross_holdings=0,minority_interests=0,shares_outstanding=10,mv_equity_listing=1000) for i in range(6)]
+    inputs=CompanyValuationInput(ticker='SHSE:600519',reporting_currency='CNY',stock_price_currency='CNY',
+        period_date_10k='2025-12-31',raw_financials=raw,
+        industry_data=IndustryData(industry_name='Beverage (Alcoholic)',beta_u=.7,cost_of_debt_pretax=.05,sales_to_capital=2),
+        macro_inputs=MacroInputs(risk_free_rate=.0425,equity_risk_premium=.042,tax_rate_marginal=.25))
+    report=run_full_valuation(inputs)
+    baseline=dict(inputs=inputs.model_dump(mode='json'),reference_snapshot=dict(id='test'),
+        adjusted=report.adjusted.model_dump(),ltm_financials=report.ltm_financials.model_dump(),dcf=report.dcf.model_dump())
+    metadata=dict(reference_snapshot_id='test',report_period='2025-12-31',information_as_of=source['information_as_of'])
+    revenue_facts=[dict(period=f'{r.fiscal_year}-12-31',value=str(r.revenues*1e6),unit='CNY',period_type='FY',statement_scope='provider_default') for r in raw]
+    payloads,audit=prepare(baseline,source,recipe,metadata,revenue_facts)
+    assert set(payloads)=={'discount_only','joint_candidate'}
+    assert audit['wacc']['policy']['scope']=='consolidated'  # scope由调用链给出，不由代码猜成酒业
+    a=audit['wacc']['result']; c=payloads['discount_only']['inputs']['methodology_choices']['reference_capital_inputs']
+    from decimal import Decimal as D
+    de=D(str(c['debt_weight']))/(1-D(str(c['debt_weight'])))
+    beta=D(str(c['beta_u']))*(1+(1-D(str(c['tax_shield_rate'])))*de)
+    ke=D(str(c['risk_free_rate']))+beta*D(str(c['mature_market_erp']))+D(str(c['country_risk_contribution']))
+    independent=(1-D(str(c['debt_weight'])))*ke+D(str(c['debt_weight']))*D(str(c['debt_cost_pretax']))*(1-D(str(c['tax_shield_rate'])))
+    assert math.isclose(float(independent),a['wacc'],rel_tol=1e-12)
+    discount=run_full_valuation(CompanyValuationInput.model_validate(payloads['discount_only']['inputs']))
+    for field in ('revenue_projections','ebit_projections','fcff_projections','reinvestment_projections'):
+        assert getattr(discount.dcf,field)==getattr(report.dcf,field)
+    joint=run_full_valuation(CompanyValuationInput.model_validate(payloads['joint_candidate']['inputs']))
+    assert math.isclose(audit['forecast']['growth'],.1,abs_tol=1e-12)
+    assert joint.dcf.reinvestment_projections[0]>0
+    g=audit['forecast']['terminal_growth']
+    terminal_nopat=joint.dcf.ebit_projections[-1]*(1+g)*(1-inputs.macro_inputs.tax_rate_marginal)
+    expected_tv=terminal_nopat*(1-g/a['wacc'])/(a['wacc']-g)
+    assert math.isclose(joint.dcf.terminal_value_firm,expected_tv,rel_tol=1e-12)
+    base_terminal=inputs.macro_inputs.risk_free_rate+inputs.macro_inputs.equity_risk_premium
+    assert math.isclose(discount.dcf.terminal_value_firm*(a['wacc']-inputs.macro_inputs.risk_free_rate),
+                        report.dcf.terminal_value_firm*(base_terminal-inputs.macro_inputs.risk_free_rate),rel_tol=1e-12)
+    for mutate in (lambda b,s,m:b['inputs'].update(reporting_currency='USD'),
+                   lambda b,s,m:m.update(reference_snapshot_id='changed'),
+                   lambda b,s,m:m.update(report_period='2026-06-30'),
+                   lambda b,s,m:s.update(information_as_of='2027-01-01T00:00:00Z')):
+        b,s,m=copy.deepcopy((baseline,source,metadata));mutate(b,s,m)
+        with pytest.raises(ValueError):prepare(b,s,recipe,m,revenue_facts)
+    missing=copy.deepcopy(baseline);missing['inputs']['raw_financials']=[r for r in missing['inputs']['raw_financials'] if r['fiscal_year']!=2023]
+    # 缺EBIT历史不应阻断已有标准收入；仅缺收入本身才拒绝增长候选。
+    assert 'joint_candidate' in prepare(missing,source,recipe,metadata,revenue_facts)[0]
+    variants,blocked=prepare(missing,source,recipe,metadata,[r for r in revenue_facts if r['period']!='2023-12-31'])
+    assert set(variants)=={'discount_only'} and blocked['forecast_missing']
+
+
+def test_native_cny_policy_rejects_bad_tickers(tmp_path):
+    from tools.evaluate_native_policy import evaluate
+    for tickers in ([],['SHSE:600519']*2,['../../escape'],['XBSE:920001']):
+        with pytest.raises(ValueError,match='unique SH/SZ'):
+            evaluate(tmp_path/'missing.sqlite',{}, {},tickers,tmp_path/'output')
+    assert not (tmp_path/'output').exists()

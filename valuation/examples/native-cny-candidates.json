@@ -1,0 +1,56 @@
+{
+  "version": "native-cny-candidates-v1",
+  "wacc": {
+    "policy_id": "industry-reference-target-credit-band-v1",
+    "currency": "CNY",
+    "review_note": "人民币条件情景：Global行业Beta/D/E、全中国风险、BBB信用档、国家税盾；非公司市场WACC或推荐折现率。",
+    "countries": [
+      {
+        "country": "CN",
+        "weight": 1,
+        "exposure_scale": 1,
+        "reason": "显式中国风险暴露情景；不声称海外经营地域已经归因。"
+      }
+    ],
+    "weighting_basis": "explicit_analyst_weights",
+    "beta_metric": "beta_unlevered_cash_adjusted",
+    "minimum_sample_count": 30,
+    "government_tenor_months": 120,
+    "risk_free_method": "subtract_cn_default_spread",
+    "risk_free_reason": "示范将人民币国债利率扣除中国主权违约利差的定义；不是强制唯一口径。",
+    "capital_structure_basis": "industry_reference_weights",
+    "target_debt_weight": null,
+    "capital_structure_reason": "同一来源行业D/E自动推导目标权重；公司实际资本结构仍未知，不按公司市值宣称市场权重。",
+    "debt_cost_pretax": null,
+    "debt_cost_reason": "人民币无风险代理加主权利差及所选BBB企业利差；不是公司可成交借款利率。",
+    "tax_shield_rate": 0.25,
+    "tax_shield_reason": "统一25%税盾政策，实际税率及税盾可利用性未逐公司闭合。",
+    "stable_wacc_policy": "hold_current",
+    "max_yield_age_days": 7,
+    "max_beta_age_days": 370,
+    "max_country_age_days": 200,
+    "credit_band_debt": {
+      "rating": "Baa2/BBB",
+      "selection_reason": "统一BBB档仅为跨公司机械敏感性情景，不是来源提供或模型推断的公司评级。",
+      "sovereign_spread_policy": "add_cn_default_spread",
+      "sovereign_spread_reason": "借款成本显式加主权利差，与扣除主权利差的无风险口径配套。",
+      "max_credit_age_days": 370
+    }
+  },
+  "forecast": {
+    "growth": "three_year_revenue_cagr",
+    "margin": "hold_adjusted_ttm",
+    "capital": "us_industry_historical_proxy",
+    "terminal_growth_cap": 0.02,
+    "terminal_roic": "wacc"
+  },
+  "boundaries": [
+    "历史增长外推未经预测有效性批准；保留既有零增长、利润校准和资本开支失败结论，不自动采用。",
+    "Global Beta/D/E为显式WACC政策，US资本倍率为另一个显式同行代理；不声称样本或会计口径一致。",
+    "全中国暴露、BBB档、25%税盾、恒定WACC均是假设；非公司评级或全球业务暴露事实。",
+    "仅折现率对照保留原终值增长和ROIC，用于分解影响，不是可推荐的人民币经济政策。",
+    "联合候选以三年收入CAGR、当前调整后利润率和行业历史资本倍率生成；不证明未来增量资本效率。",
+    "联合候选终值增长取2%与人民币无风险率较低者，终值ROIC=WACC；没有长期超额回报假设。",
+    "现金、投资、债务、市值及报表范围沿用原生代理；金融与兼营边界不因能计算消除。"
+  ]
+}
