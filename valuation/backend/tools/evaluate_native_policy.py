@@ -156,6 +156,8 @@ def evaluate(database, references, recipe, tickers, output, web=None):
                 if result.status_code!=200:
                     row['variants'][name]=dict(status='rejected',http_status=result.status_code,reason=result.text);continue
                 body=result.json();save(key+'-'+name+'-result.json',body)
+                from tools.review_native_policy import review_report
+                save(key+'-'+name+'-review.json',review_report(body))
                 if name=='discount_only':
                     for field in ('revenue_projections','ebit_projections','reinvestment_projections','fcff_projections'):
                         if body['dcf'][field]!=baseline['dcf'][field]:raise ValueError('discount-only changed '+field)

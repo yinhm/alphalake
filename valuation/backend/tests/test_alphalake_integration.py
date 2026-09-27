@@ -1453,7 +1453,7 @@ def test_reviewed_asset_standard_chain(exports, tmp_path, monkeypatch):
         with pytest.raises(ValueError): evaluate(AlphaLakeRequest.model_validate(bad))
 
 
-def test_native_cny_policy_transmission_and_rejections(reference_export):
+def test_native_cny_policy_transmission_and_rejections(reference_export,tmp_path):
     """真实参考出口+合成公司；锁定经济分量和拒绝，不冒充公司事实核验。"""
     from tools.evaluate_native_policy import prepare
     from engine.data_dictionary import CompanyValuationInput, RawFinancials, IndustryData, MacroInputs
@@ -1492,6 +1492,61 @@ def test_native_cny_policy_transmission_and_rejections(reference_export):
     terminal_nopat=joint.dcf.ebit_projections[-1]*(1+g)*(1-inputs.macro_inputs.tax_rate_marginal)
     expected_tv=terminal_nopat*(1-g/a['wacc'])/(a['wacc']-g)
     assert math.isclose(joint.dcf.terminal_value_firm,expected_tv,rel_tol=1e-12)
+    from tools.review_native_policy import review_report, review_directory
+    def reviewed_body(payload):
+        model=CompanyValuationInput.model_validate(payload['inputs'])
+        report=run_full_valuation(model)
+        return dict(inputs=model.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
+            for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+    body=reviewed_body(payloads['joint_candidate'])
+    reviewed=review_report(body)
+    assert reviewed['automatic_adoption'] is False
+    assert reviewed['capital']['marginal_company_capital_efficiency'] is None
+    assert math.isclose(reviewed['forecast'][0]['reinvestment_million_cny'],55,rel_tol=1e-12)
+    assert math.isclose(reviewed['forecast'][4]['revenue_multiple_of_base'],1.1**5,rel_tol=1e-12)
+    assert math.isclose(reviewed['terminal']['reinvestment_rate'],g/a['wacc'],rel_tol=1e-12)
+    assert reviewed['capital']['historical_fcff'] is None
+    assert math.isclose(reviewed['recent_reported_window']['revenue_growth'],.1,rel_tol=1e-12)
+    quarterly=copy.deepcopy(payloads['joint_candidate'])
+    quarterly['inputs'].update(quarters_since_10k=2,period_date_10q='2026-06-30',
+        quarterly_financials=[dict(fiscal_year=2025,revenues=100 if i<4 else 80,ebit=10,r_and_d_expense=0)
+                              for i in range(8)])
+    recent=review_report(reviewed_body(quarterly))['recent_reported_window']
+    assert recent['current']['revenues']==200 and recent['prior']['revenues']==160
+    assert recent['revenue_growth']==.25 and recent['quarters']==2
+    assert 'd_a' in reviewed['capital']['missing_historical_cashflow_inputs']
+    tampered=copy.deepcopy(body);tampered['dcf']['fcff_projections'][0]+=.01
+    with pytest.raises(ValueError,match='does not replay'):review_report(tampered)
+    # 审阅保留负现金流，不以亏损或负再投资自动拒绝/批准政策。
+    intensive=copy.deepcopy(payloads['joint_candidate'])
+    intensive['inputs']['valuation_assumptions'].update(sales_to_capital_high=.1)
+    assert review_report(reviewed_body(intensive))['forecast'][0]['fcff_million_cny']<0
+    zero_base=copy.deepcopy(payloads['joint_candidate'])
+    zero_base['inputs']['raw_financials'][0]['revenues']=0
+    zero_review=review_report(reviewed_body(zero_base))
+    assert zero_review['forecast'][0]['revenue_multiple_of_base'] is None
+    assert zero_review['margin_bridge']['reported_margin'] is None
+    override=copy.deepcopy(payloads['joint_candidate'])
+    override['inputs']['valuation_assumptions'].update(override_growth_perpetuity=True,growth_perpetuity_rate=.005)
+    assert review_report(reviewed_body(override))['terminal']['growth']==.005
+    # 原始5家公司中缺项公司也必须保留；这里用一成功一失败锁定同一分母规则。
+    protocol=dict(tickers=['SHSE:600519','SHSE:600690'],metadata=dict(reference_snapshot_id='test'))
+    summary=dict(companies=2,results=[dict(ticker='SHSE:600519',status='evaluated',variants=dict(
+        joint_candidate=dict(status='calculated',value_per_share=body['final']['value_per_share']))),
+        dict(ticker='SHSE:600690',status='blocked_inputs',reason='missing research history')])
+    body['reference_snapshot']=dict(id='test')
+    for name,content in {'protocol.json':protocol,'summary.json':summary,
+        'SHSE-600519-audit.json':audit,'SHSE-600519-joint_candidate-result.json':body}.items():
+        (tmp_path/name).write_text(json.dumps(content))
+    reviewed_directory=review_directory(tmp_path)
+    assert reviewed_directory['companies']==2 and reviewed_directory['approved_forecasts']==0
+    assert reviewed_directory['results'][1]['source_status']=='blocked_inputs'
+    assert len(reviewed_directory['results'][0]['historical_standard_revenue_growth'])==3
+    bad_audit=copy.deepcopy(audit);bad_audit['forecast']['growth']+=.01
+    (tmp_path/'SHSE-600519-audit.json').write_text(json.dumps(bad_audit))
+    with pytest.raises(ValueError,match='audit/input'):review_directory(tmp_path)
+    summary['results'].pop();(tmp_path/'summary.json').write_text(json.dumps(summary))
+    with pytest.raises(ValueError,match='denominator'):review_directory(tmp_path)
     base_terminal=inputs.macro_inputs.risk_free_rate+inputs.macro_inputs.equity_risk_premium
     assert math.isclose(discount.dcf.terminal_value_firm*(a['wacc']-inputs.macro_inputs.risk_free_rate),
                         report.dcf.terminal_value_firm*(base_terminal-inputs.macro_inputs.risk_free_rate),rel_tol=1e-12)
