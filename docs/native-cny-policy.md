@@ -18,7 +18,7 @@ Global WACC同行与US资本效率同行不是同一个样本口径，两者分�
 
 ## 接口与执行
 
-`tools.evaluate_native_policy`读取SQLite、主库导出的WACC参考及显式配方，先写固定样本和版本协议，再经原生API输出每家公司：默认结果、完整请求、政策/源值/请求及实际输入差异、条件结果和拒绝原因。可选`--web`逐项核对8080的完整输入API；不修改网页快照。完整请求可直接提交`POST /api/valuation`，无需新增API或前端JSON入口。工具输出目录必须是新的派生目录，不覆盖既有验收。
+`tools.evaluate_native_policy`读取SQLite、主库导出的WACC参考及显式配方，先写固定样本和版本协议，再经原生API输出每家公司：默认结果、完整请求、政策/源值/请求及实际输入差异、条件结果和拒绝原因。每份成功候选另存[经济输入审阅](native-policy-economic-review.md)，经输入重放核对后列出经营和资本需求；既有目录可独立补审阅。可选`--web`逐项核对8080的完整输入API；不修改网页快照。完整请求可直接提交`POST /api/valuation`，无需新增API或前端JSON入口。工具输出目录必须是新的派生目录，不覆盖既有验收。
 
 ```bash
 ./alphalake export-wacc-references workspace/alphalake.duckdb \
