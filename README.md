@@ -10,6 +10,7 @@
 |---|---|
 | 理解系统边界与本轮进度 | [系统交付与闭环验收](docs/system-delivery.md) |
 | 从本地缓存同步财务 | [离线同步](docs/tdx-offline-sync.md) |
+| 定位通用数据缺口 | [原生覆盖基线与诊断](docs/native-coverage.md) |
 | 为原网页准备数据 | [SQLite导出、字段与准入](docs/valuation-sqlite-export.md) |
 | 按显式政策估值 | [统一公司CLI](docs/company-valuation-entry.md) |
 | 查询、解释估值变化 | [历史运行](docs/valuation-run-query.md)、[运行比较](docs/valuation-comparison.md) |
