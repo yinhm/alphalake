@@ -286,7 +286,7 @@ def snapshot_metadata(conn: sqlite3.Connection) -> dict | None:
     if not tables.intersection({'metadata', 'valuation_inputs', 'standard_facts', 'export_cells'}):
         return None
     metadata = dict(conn.execute('SELECT key,value FROM metadata')) if 'metadata' in tables else {}
-    if metadata.get('contract') != 'alphalake-sqlite-v6':
+    if metadata.get('contract') != 'alphalake-sqlite-v7':
         raise ValueError('Unsupported AlphaLake SQLite contract; rebuild the snapshot with the current exporter')
     if not {'standard_facts', 'export_cells', 'export_universe'} <= tables:
         raise ValueError('Incomplete AlphaLake SQLite snapshot')

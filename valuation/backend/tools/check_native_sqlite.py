@@ -40,13 +40,13 @@ def check(database, output, risk_free_rate):
                 body = {'unhandled_response':response.text}
             missing = sorted({r['field'] for group in ('required_missing','conditional_missing') for r in d.get(group, [])})
             gaps.update(missing)
-            record = dict(ticker=ticker, admission=d['status'], http_status=response.status_code,
+            record = dict(ticker=ticker, admission=d['status'], financial_admission=d.get('financial_status',d['status']), reference_missing=d.get('reference_missing',[]), http_status=response.status_code,
                           market_status=market.get(ticker, 'missing_market_diagnostic'), missing_fields=missing,
                           final=body.get('final'), diagnostic=d, response=body,
                           diagnostic_sha256=value_digest(d), inputs_sha256=value_digest(body.get('inputs')),
                           unresolved_sha256=value_digest(body.get('unresolved_fields')))
             (output/(ticker.replace(':','-')+'.json')).write_text(json.dumps(record,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
-            results.append({k:record[k] for k in ('ticker','admission','http_status','market_status','missing_fields','final','diagnostic_sha256','inputs_sha256','unresolved_sha256')})
+            results.append({k:record[k] for k in ('ticker','admission','financial_admission','reference_missing','http_status','market_status','missing_fields','final','diagnostic_sha256','inputs_sha256','unresolved_sha256')})
     with database.open('rb') as stream:
         after = hashlib.file_digest(stream,'sha256').hexdigest()
     assert before == after, 'valuation must not mutate source SQLite'
@@ -54,6 +54,7 @@ def check(database, output, risk_free_rate):
                    scope='native_API_with_existing_policies_and_editable_defaults_not_valuation_accuracy',
                    market_status=dict(Counter(r['market_status'] for r in results)),
                    admission=dict(Counter(r['admission'] for r in results)),
+                   financial_admission=dict(Counter(r['financial_admission'] for r in results)),
                    http_status=dict(Counter(r['http_status'] for r in results)),
                    missing_company_counts=dict(gaps), results=results)
     (output/'summary.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2,allow_nan=False)+'\n')

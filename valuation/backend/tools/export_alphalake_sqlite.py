@@ -34,7 +34,7 @@ FIELDS = {
     'cross_holdings': ('long_term_equity_investments', 'instant', 'CNY'),
 }
 EXCHANGES = {'XSHG': 'SHSE', 'XSHE': 'SZSE', 'XBSE': 'BJSE'}
-CONTRACT = 'alphalake-sqlite-v6'
+CONTRACT = 'alphalake-sqlite-v7'
 DEBT_COMPONENTS = ('short_term_borrowings', 'long_term_borrowings', 'bonds_payable',
                    'current_portion_noncurrent_liabilities', 'lease_liabilities')
 ASSET_COMPONENTS = ('monetary_funds', 'cash_and_cash_equivalents', 'trading_financial_assets',
@@ -261,6 +261,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--period', type=date.fromisoformat, required=True)
     parser.add_argument('--as-of', type=datetime.fromisoformat, required=True)
+    parser.add_argument('--reference-as-of', type=datetime.fromisoformat, help='explicit reference cutoff; defaults to financial cutoff')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--code', action='append')
     group.add_argument('--all', action='store_true')
@@ -269,6 +270,8 @@ def main():
     parser.add_argument('--alphalake', type=Path, default=Path(__file__).resolve().parents[3]/'alphalake')
     args = parser.parse_args()
     validate_dates(args.period, args.as_of)
+    reference_asof = args.reference_as_of or args.as_of
+    validate_dates(args.period, reference_asof)
     if args.code and any(not re.fullmatch(r'\d{6}', code) for code in args.code):
         parser.error('six-digit security codes required')
     if args.output.exists():
@@ -324,6 +327,10 @@ def main():
                             report_period=end.isoformat(), information_as_of=args.as_of.isoformat(),
                             facts=facts, source_conflicts=conflicts.get(code, []))
                     count = export_snapshot(connection, companies, fetch, args.period, args.as_of, args.years, args.quarters)
+            from data_sources.native_references import write_snapshot
+            reference_packet = subprocess.run([str(binary), 'export-native-references', str(source),
+                '--as-of', reference_asof.isoformat()], check=True, capture_output=True, text=True, timeout=120)
+            write_snapshot(connection, json.loads(reference_packet.stdout))
             metadata = dict(contract=CONTRACT, source_database_sha256=source_hash, exporter_sha256=digest(__file__),
                             alphalake_binary_sha256=digest(binary), report_period=args.period.isoformat(),
                             information_as_of=args.as_of.isoformat(), exported_at=datetime.now(timezone.utc).isoformat(),

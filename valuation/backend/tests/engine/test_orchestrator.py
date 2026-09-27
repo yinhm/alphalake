@@ -191,7 +191,8 @@ def test_invalid_terminal_api_preserves_existing_session(sample_inputs,monkeypat
     from fastapi.testclient import TestClient
     from api.main import app
     from api import routes,session_store
-    monkeypatch.setattr(routes,'_get_damodaran_store',lambda:None)
+    from data_sources.damodaran_store import DamodaranStore
+    monkeypatch.setattr(routes,'_get_damodaran_store',lambda:DamodaranStore())
     monkeypatch.setattr(routes,'_build_industry_lookup',lambda store:None)
     monkeypatch.setattr(session_store,'_sessions',{})
     client=TestClient(app)
@@ -215,7 +216,8 @@ def test_initial_proxy_evidence_survives_user_recalculation(sample_inputs, monke
     from fastapi.testclient import TestClient
     from api.main import app
     from api import routes, session_store
-    monkeypatch.setattr(routes, '_get_damodaran_store', lambda: None)
+    from data_sources.damodaran_store import DamodaranStore
+    monkeypatch.setattr(routes, '_get_damodaran_store', lambda: DamodaranStore())
     monkeypatch.setattr(routes, '_build_industry_lookup', lambda _: None)
     monkeypatch.setattr(session_store, '_sessions', {})
     client = TestClient(app)

@@ -86,6 +86,8 @@ class DamodaranStore:
     # Metadata
     industries_loaded: dict[str, int] = field(default_factory=dict)
     countries_loaded: int = 0
+    reference_snapshot: dict = field(default_factory=dict)
+    industry_mapper: object | None = None
 
     @classmethod
     def from_directory(cls, dir_path: str | Path) -> DamodaranStore:
@@ -158,6 +160,9 @@ class DamodaranStore:
         key = (region, industry_name)
         raw = self._industry_data.get(key)
 
+        if raw is None and self.reference_snapshot:
+            return None
+
         # Known industry name mappings (CIQ name → Damodaran name)
         _INDUSTRY_ALIASES = {
             "retail (online)": "Retail (General)",
@@ -222,7 +227,7 @@ class DamodaranStore:
             beta_u=raw.get("beta_u", 0.0),
             beta_u_corrected_for_cash=raw.get("beta_u_corrected_for_cash"),
             industry_d_e_ratio=raw.get("d_e_ratio"),
-            industry_effective_tax_rate=raw.get("effective_tax_rate") or raw.get("effective_tax_rate_avg"),
+            industry_effective_tax_rate=(raw["effective_tax_rate"] if raw.get("effective_tax_rate") is not None else raw.get("effective_tax_rate_avg")),
             cost_of_equity=raw.get("cost_of_equity"),
             cost_of_debt_pretax=raw.get("cost_of_debt_pretax"),
             wacc=raw.get("wacc"),
@@ -298,6 +303,8 @@ class DamodaranStore:
         if risk is None and tax is None:
             return None
 
+        if self.reference_snapshot and (risk is None or tax is None or tax.get("corporate_tax_rate") is None):
+            raise ValueError(f"Country ERP/tax reference missing or ambiguous: {country_name}")
         total_erp = risk["total_equity_risk_premium"] if risk else 0.0
         crp = risk.get("country_risk_premium", 0.0) if risk else 0.0
         if total_erp is None or crp is None:

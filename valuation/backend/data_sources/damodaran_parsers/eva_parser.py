@@ -28,6 +28,6 @@ def parse_eva(file_path: str | Path) -> dict[str, dict]:
             "cost_of_capital_eva": safe_float(ws, r, col.get("Cost of Capital")),
             "std_dev_stock": safe_float(ws, r, col.get("Std Dev in Stock")),
             "cost_of_debt_eva": safe_float(ws, r, col.get("Cost of Debt")),
-            "d_e_ratio": safe_float(ws, r, col.get("D/(D+E)")),
+            "debt_capital_ratio": safe_float(ws, r, col.get("D/(D+E)")),
         }
     return result

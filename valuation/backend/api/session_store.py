@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from engine.data_dictionary import CompanyValuationInput
 from engine.orchestrator import ValuationReport
 from engine.source_tracker import SourceTracker
+from data_sources.damodaran_store import DamodaranStore
 
 
 @dataclass
@@ -15,6 +16,7 @@ class Session:
     id: str
     inputs: CompanyValuationInput
     report: ValuationReport
+    reference_store: DamodaranStore
     source_tracker: SourceTracker | None = None
     unresolved_fields: list[dict] = field(default_factory=list)
     valuation_proxy: dict | None = None
@@ -28,12 +30,14 @@ def create_session(
     report: ValuationReport,
     source_tracker: SourceTracker | None = None,
     unresolved_fields: list[dict] | None = None,
+    *, reference_store: DamodaranStore,
 ) -> Session:
     sid = uuid.uuid4().hex[:12]
     session = Session(
         id=sid,
         inputs=inputs,
         report=report,
+        reference_store=reference_store,
         source_tracker=source_tracker or SourceTracker(),
         unresolved_fields=unresolved_fields or [],
     )

@@ -234,7 +234,8 @@ def test_invalid_capital_efficiency_api_keeps_saved_session(raw, macro, monkeypa
     from api.main import app
     from api import routes, session_store
     from engine.data_dictionary import CompanyValuationInput
-    monkeypatch.setattr(routes, '_get_damodaran_store', lambda: None)
+    from data_sources.damodaran_store import DamodaranStore
+    monkeypatch.setattr(routes, '_get_damodaran_store', lambda: DamodaranStore())
     monkeypatch.setattr(routes, '_build_industry_lookup', lambda _: None)
     monkeypatch.setattr(session_store, '_sessions', {})
     client = TestClient(app)

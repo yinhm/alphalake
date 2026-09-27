@@ -86,6 +86,12 @@ def compatibility(ticker: str) -> dict:
         raise HTTPException(status_code=503, detail=f'Database unavailable: {error}') from error
     if result is None:
         raise HTTPException(status_code=404, detail=f'Ticker not in database: {ticker}')
+    if result['status']=='ready':
+        from api.routes import _get_damodaran_store
+        from data_sources.native_references import attach_reference_diagnostic
+        result=attach_reference_diagnostic(result,_get_damodaran_store(),ticker)
+    else:
+        result=dict(result,financial_status=result['status'],reference_missing=[],reference_status='not_evaluated_financial_blocked')
     return result
 
 
@@ -101,6 +107,7 @@ class FromDatabaseRequest(BaseModel):
     ticker: str
     risk_free_rate: float = Field(default=0.0425, ge=0, lt=1)
     industry_override: str | None = None
+    country_override: str | None = None
 
 
 # Mount this endpoint on a SEPARATE router with /valuation prefix so it lives
@@ -108,7 +115,7 @@ class FromDatabaseRequest(BaseModel):
 valuation_router = APIRouter(prefix="/valuation", tags=["valuation"])
 
 
-def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_override: str | None):
+def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_override: str | None, *, reference_store=None, country_override=None):
     """Translate a DB record into the CompanyValuationInput shape that the
     orchestrator expects. Reuses the same helpers (industry lookup, country
     ERP lookup, macro setup) as the /fetch-from-file path so the valuation
@@ -128,23 +135,17 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
 
     # Industry / macro resolution — mirrors routes.py::fetch_from_file lines 542–587
     ticker = co["ticker"]
-    store = _get_damodaran_store()
-    mapper = _get_industry_mapper()
+    store = reference_store if reference_store is not None else _get_damodaran_store()
+    mapper = store.industry_mapper if reference_store is not None else _get_industry_mapper()
     company_info = mapper.lookup(ticker)
-    country = company_info.country if company_info else co.get("region") or "United States"
+    country = country_override or (company_info.country if company_info else None)
     industry_name = industry_override or (company_info.industry_group if company_info else None)
 
     primary_region = "US"
     industry_data = store.lookup_industry(industry_name, region=primary_region) if industry_name else None
-    if industry_data is None and industry_name:
-        industry_data = store.lookup_industry(industry_name, region="Global")
-        if industry_data:
-            primary_region = "Global"
     industry_resolved = industry_data is not None
     if industry_data is None:
-        # Graceful fallback — same as template path
-        available = store.list_industries("US")
-        industry_data = store.lookup_industry(available[0], region="US") if available else None
+        raise ValueError('US industry reference unavailable; select an audited industry explicitly')
     industry_data_global = (
         store.lookup_industry(industry_data.industry_name, region="Global")
         if industry_data and primary_region != "Global" else None
@@ -152,10 +153,8 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
 
     macro = store.lookup_country(country)
     if macro is None:
-        erp = store.get_mature_market_erp() or 0.05
-        macro = MacroInputs(risk_free_rate=risk_free_rate, equity_risk_premium=erp, tax_rate_marginal=0.21)
-    else:
-        macro.risk_free_rate = risk_free_rate
+        raise ValueError('Country ERP/tax reference unavailable')
+    macro.risk_free_rate = risk_free_rate
     if co.get("effective_tax_rate") is not None:
         macro.tax_rate_effective = co["effective_tax_rate"]
 
@@ -381,8 +380,18 @@ def from_database(req: FromDatabaseRequest) -> dict:
     from api.routes import _build_industry_lookup, _get_damodaran_store, _report_to_dict, _build_unresolved_fields
     from api.session_store import create_session
 
-    inputs, industry_resolved = _db_record_to_company_input(record, req.risk_free_rate, req.industry_override)
     store = _get_damodaran_store()
+    source=record.get('data_source') or {}
+    if source and source.get('reference_snapshot_id') != store.reference_snapshot.get('id'):
+        raise HTTPException(status_code=503,detail='Financial/reference snapshot changed; retry against one publication')
+    from data_sources.native_references import reference_gaps
+    gaps=reference_gaps(store,req.ticker,req.industry_override,req.country_override)
+    if gaps:
+        raise HTTPException(status_code=422,detail='；'.join(r['reason'] for r in gaps))
+    try:
+        inputs, industry_resolved = _db_record_to_company_input(record, req.risk_free_rate, req.industry_override, reference_store=store, country_override=req.country_override)
+    except ValueError as e:
+        raise HTTPException(status_code=422,detail=str(e)) from e
     ind_lookup = _build_industry_lookup(store)
     report = run_full_valuation(inputs, industry_lookup=ind_lookup)
     if compatibility is not None:
@@ -395,7 +404,15 @@ def from_database(req: FromDatabaseRequest) -> dict:
     unresolved = _build_unresolved_fields(inputs, store, industry_resolved=industry_resolved)
     if not industry_resolved:
         report.warnings.append('公司行业未匹配；当前行业仅为原模型占位，请使用原页面确认行业，不能视为公司分类事实。')
-    session = create_session(inputs, report, unresolved_fields=unresolved)
+    session = create_session(inputs, report, unresolved_fields=unresolved, reference_store=store)
+    session.source_tracker.record('macro_inputs.risk_free_rate',
+        'User-provided assumption; not an automatically selected market yield' if 'risk_free_rate' in req.model_fields_set
+        else 'Original model default 0.0425; not an observed market yield')
+    session.source_tracker.record('valuation_assumptions','Original model defaults; editable assumptions, not reported company facts')
+    session.source_tracker.record('methodology_choices','Original model defaults; explicit later choices are recorded separately')
+    for field,value in (('industry_data.industry_name',req.industry_override),('country',req.country_override)):
+        if value is not None:
+            session.source_tracker.record(field,'User-selected reference assumption; company classification unchanged')
     session.valuation_proxy = record.get("valuation_proxy")
     if compatibility and (compatibility['exported_asset_proxies'] or compatibility['market_proxy']):
         proxy = dict(session.valuation_proxy or dict(version=record['data_source']['contract'],

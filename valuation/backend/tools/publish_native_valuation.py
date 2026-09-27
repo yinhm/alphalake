@@ -81,7 +81,7 @@ def validate_check(summary, expected):
             value = row['final'].get('value_per_share')
             if not isinstance(value, (int, float)) or not math.isfinite(value):
                 raise ValueError('nonfinite/missing valuation: '+row['ticker'])
-        elif row['admission'] != 'blocked_required_inputs' or row['http_status'] != 422:
+        elif row['admission'] not in ('blocked_required_inputs','blocked_reference_inputs') or row['http_status'] != 422:
             raise ValueError('unexpected native rejection: '+row['ticker'])
 
 
@@ -177,12 +177,10 @@ def publish(candidate, target, journal, verify):
 
 
 def runtime_identity(workspace):
-    """原生计算不仅依赖SQLite，也依赖实际后端、依赖版本及本地参考文件。"""
+    """原生计算绑定SQLite参考快照及后端/冻结模型参考版本。"""
     from api.alphalake import runtime_versions
     backend = Path(__file__).resolve().parents[1]
     files = sorted(backend.rglob('*.py')) + sorted((backend/'data_sources').glob('*.json'))
-    references = workspace/'damodaran'
-    files += sorted(p for p in references.rglob('*') if p.is_file())
     hashes = {str(p):digest(p) for p in files}
     return dict(versions=runtime_versions(), files=hashes)
 
@@ -353,7 +351,7 @@ def main():
     parser.add_argument('--filings-start')
     parser.add_argument('--filings-end', default=datetime.now(timezone(timedelta(hours=8))).date().isoformat())
     parser.add_argument('--latest', type=int, default=6)
-    parser.add_argument('--sync-references', action='store_true', help='将六类已接入参考刷新至同一主库；不冒充原网页已加载新参考')
+    parser.add_argument('--sync-references', action='store_true', help='将已接入参考刷新至同一主库；导出时绑定参考发布')
     parser.add_argument('--risk-free-rate', type=float, required=True)
     parser.add_argument('--web-url', required=True, help='读取output的本地原生服务URL；切换后逐公司复验')
     parser.add_argument('--stage-timeout', type=int, default=3600)

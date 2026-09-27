@@ -19,10 +19,10 @@ def sample(monkeypatch, quarter='2025-12-31'):
             minority_interests=0, shares_outstanding=10)], financials_quarterly=[])
     monkeypatch.setattr(db, 'fetch_company', lambda *_: record)
     industry = IndustryData(industry_name='Synthetic', beta_u=1, cost_of_debt_pretax=.05)
-    store = SimpleNamespace(lookup_industry=lambda *a, **kw: industry,
+    store = SimpleNamespace(reference_snapshot={}, industry_mapper=SimpleNamespace(lookup=lambda _: SimpleNamespace(country='United States',industry_group='Synthetic')), lookup_industry=lambda *a, **kw: industry,
         list_industries=lambda *a: ['Synthetic'], list_countries=lambda: ['United States'], lookup_country=lambda *a: MacroInputs(risk_free_rate=.04,equity_risk_premium=.05,tax_rate_marginal=.25))
     monkeypatch.setattr('api.routes._get_damodaran_store', lambda: store)
-    monkeypatch.setattr('api.routes._get_industry_mapper', lambda: SimpleNamespace(lookup=lambda _: None))
+    monkeypatch.setattr('api.routes._get_industry_mapper', lambda: SimpleNamespace(lookup=lambda _: SimpleNamespace(country='United States',industry_group='Synthetic')))
     return record
 
 
@@ -105,7 +105,7 @@ def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypat
     from api.main import app
 
     record = sample(monkeypatch)
-    record['data_source'] = dict(contract='alphalake-sqlite-v6', report_period='2025-12-31', information_as_of='2026-09-25')
+    record['data_source'] = dict(contract='alphalake-sqlite-v7', report_period='2025-12-31', information_as_of='2026-09-25')
     record['financials_annual'].append(dict(fy_offset=1,revenues=None,ebit=None))
     conn = sqlite3.connect(':memory:', check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -124,8 +124,8 @@ def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypat
             response = client.post('/api/valuation/from-database',json=dict(ticker='TEST',risk_free_rate=.04))
             assert response.status_code==200, response.text
             assert '可选历史不完整' in response.text and '报告EBIT' in response.text
-            assert any(f['path']=='industry_data.industry_name' for f in response.json()['unresolved_fields'])
-            assert any('占位' in w for w in response.json()['warnings'])
+            assert not any(f['path']=='industry_data.industry_name' for f in response.json()['unresolved_fields'])
+            assert not any('占位' in w for w in response.json()['warnings'])
             resolved = client.patch('/api/valuation/'+response.json()['id'], json={'overrides':{'industry_data.industry_name':'Synthetic'}})
             assert resolved.status_code == 200
             assert not any(f['path']=='industry_data.industry_name' for f in resolved.json()['unresolved_fields'])
@@ -163,13 +163,14 @@ def test_original_manual_reference_selection_updates_numbers_and_keeps_failed_se
     record = sample(monkeypatch)
     inputs, _ = _db_record_to_company_input(record, .04, None)
     original = run_full_valuation(inputs)
-    session = create_session(inputs, original, unresolved_fields=[{'path':'industry_data.industry_name'}, {'path':'country'}])
     power = IndustryData(industry_name='Power', beta_u=.7, cost_of_debt_pretax=.045)
-    store = SimpleNamespace(
+    store = SimpleNamespace(reference_snapshot={},
         lookup_industry=lambda name, **kw: power if name == 'Power' else None,
         list_industries=lambda *a: ['Power'], list_countries=lambda: ['China'],
         lookup_country=lambda name: MacroInputs(risk_free_rate=.02, equity_risk_premium=.06, tax_rate_marginal=.25) if name == 'China' else None)
+    session = create_session(inputs, original, unresolved_fields=[{'path':'industry_data.industry_name'}, {'path':'country'}], reference_store=store)
     monkeypatch.setattr('api.routes._get_damodaran_store', lambda: store)
+    monkeypatch.setattr('api.routes._get_damodaran_store', lambda: (_ for _ in ()).throw(AssertionError('old session must not load newly published references')))
     with TestClient(app) as client:
         result = client.patch('/api/valuation/'+session.id, json={'overrides':{
             'industry_data.industry_name':'Power', 'country':'China', 'macro_inputs.risk_free_rate':.032}})

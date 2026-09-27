@@ -43,6 +43,15 @@ def reference_commands(binary, database, offline=False):
                                 ('sync-credit-spreads','internal/source/damodaran/ratings.py'),
                                 ('sync-company-industries','valuation/backend/data_sources/damodaran_parsers/company_industry_parser.py')]:
         yield name, [str(binary), name, str(database), '--python', sys.executable, '--parser', str(repo/script), *(['--offline'] if offline else [])]
+    from data_sources.damodaran_parsers.native_reference_parser import FIELDS
+    for family in FIELDS:
+        stems = [dict(beta='betas',pe='pedata',pbv='pbvdata',ps='psdata').get(family,family)]
+        if family != 'countrytaxrates':
+            stems.append(family+'Global')
+        for stem in stems:
+            yield 'sync-native-reference-'+stem, [str(binary),'sync-native-reference',str(database),
+                '--file',stem,'--python',sys.executable,'--parser',str(repo/'valuation/backend/data_sources/damodaran_parsers/native_reference_parser.py'),*(['--offline'] if offline else [])]
+
 
 
 def run_cycle(args, root):

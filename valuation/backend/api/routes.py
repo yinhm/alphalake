@@ -5,6 +5,7 @@ from __future__ import annotations
 from data_sources.paths import workspace_path
 
 import logging
+import sqlite3
 from datetime import datetime
 from pathlib import Path
 
@@ -42,21 +43,24 @@ logger = logging.getLogger(__name__)
 #
 router = APIRouter(prefix="/api")
 
-# Pre-load Damodaran data and industry mapper at startup
+# Published SQLite supplies both reference values and company classifications.
 _damodaran_store: DamodaranStore | None = None
-_industry_mapper: IndustryMapper | None = None
 
 
 def _get_damodaran_store() -> DamodaranStore:
     global _damodaran_store
-    if _damodaran_store is None:
-        dam_dir = workspace_path("damodaran")
-        if dam_dir.exists():
-            _damodaran_store = DamodaranStore.from_directory(str(dam_dir))
-            logger.info(f"Loaded Damodaran store: {_damodaran_store.industries_loaded}")
-        else:
-            raise HTTPException(status_code=503, detail=f"Damodaran data not found at {dam_dir}")
-    return _damodaran_store
+    from data_sources import us_cn_hk_db as db
+    from data_sources.native_references import load_snapshot
+    try:
+        with db.get_connection() as connection:
+            row=connection.execute("SELECT value FROM metadata WHERE key='reference_snapshot_id'").fetchone()
+            if row is None:
+                raise ValueError('published native references missing; rebuild SQLite')
+            if _damodaran_store is None or _damodaran_store.reference_snapshot.get('id') != row[0]:
+                _damodaran_store=load_snapshot(connection)
+        return _damodaran_store
+    except (ValueError, KeyError, OSError, sqlite3.Error) as e:
+        raise HTTPException(status_code=503, detail=f'Native reference unavailable: {e}') from e
 
 
 def _build_industry_lookup(store: DamodaranStore):
@@ -208,15 +212,7 @@ def _build_unresolved_fields(
 
 
 def _get_industry_mapper() -> IndustryMapper:
-    global _industry_mapper
-    if _industry_mapper is None:
-        lookup_file = workspace_path("damodaran", "industry_lookup", "indname.xlsx")
-        if lookup_file.exists():
-            _industry_mapper = IndustryMapper.from_file(str(lookup_file))
-            logger.info(f"Loaded industry mapper: {_industry_mapper.total_companies} companies")
-        else:
-            raise HTTPException(status_code=503, detail=f"Industry lookup not found at {lookup_file}")
-    return _industry_mapper
+    return _get_damodaran_store().industry_mapper
 
 
 # ---------------------------------------------------------------------------
@@ -249,7 +245,7 @@ def _report_to_dict(session) -> dict:
     # Attach industry statistical distributions (Q1/Median/Q3 benchmarks) if available
     industry_stats = None
     try:
-        store = _get_damodaran_store()
+        store = session.reference_store
         ind_name = session.inputs.industry_data.industry_name if session.inputs.industry_data else None
         if ind_name:
             industry_stats = store.lookup_industry_stats(ind_name)
@@ -270,6 +266,7 @@ def _report_to_dict(session) -> dict:
         "final": r.final.model_dump() if r.final else None,
         "warnings": list(dict.fromkeys(r.warnings + (session.valuation_proxy or {}).get("limitations", []))),
         "valuation_proxy": session.valuation_proxy,
+        "reference_snapshot": session.reference_store.reference_snapshot,
         "source_metadata": session.source_tracker.to_dict() if session.source_tracker else {},
         "industry_stats": industry_stats,
         "unresolved_fields": getattr(session, "unresolved_fields", []) or [],
@@ -351,11 +348,6 @@ def fetch_and_run(req: FetchRequest):
     primary_region = "US"
     industry_data = store.lookup_industry(industry_name, region=primary_region)
     if industry_data is None:
-        # Last-resort fallback: try Global
-        industry_data = store.lookup_industry(industry_name, region="Global")
-        if industry_data:
-            primary_region = "Global"
-    if industry_data is None:
         available = store.list_industries("US")
         raise HTTPException(
             status_code=422,
@@ -363,16 +355,13 @@ def fetch_and_run(req: FetchRequest):
         )
 
     # 3. Look up country macro data
-    macro = store.lookup_country(country)
+    try:
+        macro = store.lookup_country(country)
+    except ValueError as e:
+        raise HTTPException(status_code=422,detail=str(e)) from e
     if macro is None:
-        erp = store.get_mature_market_erp() or 0.05
-        macro = MacroInputs(
-            risk_free_rate=req.risk_free_rate,
-            equity_risk_premium=erp,
-            tax_rate_marginal=0.21,
-        )
-    else:
-        macro.risk_free_rate = req.risk_free_rate
+        raise HTTPException(status_code=422,detail='Country ERP/tax reference unavailable')
+    macro.risk_free_rate = req.risk_free_rate
 
     # 3b. Always show Global as comparison
     industry_data_global = None
@@ -446,7 +435,7 @@ def fetch_and_run(req: FetchRequest):
             warnings=capiq_warnings + ["No financial data — enter manually or upload CapIQ export."],
         )
 
-    session = create_session(inputs, report)
+    session = create_session(inputs, report, reference_store=store)
     result = _report_to_dict(session)
     result["capiq_warnings"] = capiq_warnings
     result["company_name"] = company_name
@@ -556,35 +545,20 @@ async def fetch_from_file(
 
     # Industry lookup — ALWAYS use US region (Ginzu convention: Single Business(US)).
     # Analyst can override via methodology_choices.beta_approach on the frontend.
-    # GRACEFUL DEGRADATION: if industry can't be resolved, use a placeholder and
-    # surface via unresolved_fields so the user can manually select from the
-    # dropdown of 94 Damodaran industries. Don't block the upload.
     primary_region = "US"
     industry_resolved = False
     industry_data = store.lookup_industry(industry_name, region=primary_region) if industry_name else None
-    if industry_data is None and industry_name:
-        industry_data = store.lookup_industry(industry_name, region="Global")
-        if industry_data:
-            primary_region = "Global"
-    if industry_data is not None:
-        industry_resolved = True
-    else:
-        # Last-resort placeholder — use a safe default so the pipeline can run.
-        # The unresolved_fields list will flag this so the user picks an industry.
-        placeholder_name = industry_name or "Semiconductor"
-        industry_data = store.lookup_industry(placeholder_name, region="US")
-        if industry_data is None:
-            available = store.list_industries("US")
-            industry_data = store.lookup_industry(available[0], region="US") if available else None
-        if industry_data is None:
-            raise HTTPException(status_code=422, detail="Damodaran industry store is empty; cannot build valuation.")
+    if industry_data is None:
+        raise HTTPException(status_code=422,detail='US industry reference unavailable; select an audited industry explicitly')
+    industry_resolved = True
 
-    macro = store.lookup_country(country)
+    try:
+        macro = store.lookup_country(country)
+    except ValueError as e:
+        raise HTTPException(status_code=422,detail=str(e)) from e
     if macro is None:
-        erp = store.get_mature_market_erp() or 0.05
-        macro = MacroInputs(risk_free_rate=risk_free_rate, equity_risk_premium=erp, tax_rate_marginal=0.21)
-    else:
-        macro.risk_free_rate = risk_free_rate
+        raise HTTPException(status_code=422,detail='Country ERP/tax reference unavailable')
+    macro.risk_free_rate = risk_free_rate
 
     # Always show Global as comparison (unless primary is already Global)
     # Use the resolved industry name (may differ from original if fallback was applied)
@@ -934,7 +908,7 @@ async def fetch_from_file(
     # the user should manually override. Each entry describes what to show.
     unresolved = _build_unresolved_fields(inputs, store, current, industry_resolved=industry_resolved)
 
-    session = create_session(inputs, report, unresolved_fields=unresolved)
+    session = create_session(inputs, report, unresolved_fields=unresolved, reference_store=store)
     result = _report_to_dict(session)
     result["company_name"] = company_name
     result["country"] = country
@@ -1099,7 +1073,7 @@ def create_valuation(req: ValuationRequest):
     store = _get_damodaran_store()
     ind_lookup = _build_industry_lookup(store)
     report = run_full_valuation(req.inputs, industry_lookup=ind_lookup)
-    session = create_session(req.inputs, report)
+    session = create_session(req.inputs, report, reference_store=store)
     return _report_to_dict(session)
 
 
@@ -1120,7 +1094,7 @@ def patch_valuation(session_id: str, req: OverrideRequest):
         raise HTTPException(status_code=404, detail="Session not found")
 
     # 原页面按名称选择行业/国家时，必须更新对应参考数值，不能只改标签。
-    store = _get_damodaran_store()
+    store = session.reference_store
     inputs_dict = session.inputs.model_dump()
     industry_selected = "industry_data.industry_name" in req.overrides
     if industry_selected:
@@ -1137,7 +1111,10 @@ def patch_valuation(session_id: str, req: OverrideRequest):
     if "country" in req.overrides:
         if not isinstance(req.overrides["country"], str):
             raise HTTPException(status_code=422, detail="Country must be a string")
-        macro = store.lookup_country(req.overrides['country'])
+        try:
+            macro = store.lookup_country(req.overrides['country'])
+        except ValueError as e:
+            raise HTTPException(status_code=422,detail=str(e)) from e
         if macro is None:
             raise HTTPException(status_code=422, detail="Selected country reference is unavailable")
         # 公司税事实/已编辑税假设与用户输入的无风险利率不随国家标签重置。
@@ -1187,7 +1164,7 @@ def sensitivity(session_id: str):
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    store = _get_damodaran_store()
+    store = session.reference_store
     ind_lookup = _build_industry_lookup(store)
 
     baseline_vps = (
