@@ -20,7 +20,7 @@ def sample(monkeypatch, quarter='2025-12-31'):
     monkeypatch.setattr(db, 'fetch_company', lambda *_: record)
     industry = IndustryData(industry_name='Synthetic', beta_u=1, cost_of_debt_pretax=.05)
     store = SimpleNamespace(lookup_industry=lambda *a, **kw: industry,
-        list_industries=lambda *a: ['Synthetic'], lookup_country=lambda *a: MacroInputs(risk_free_rate=.04,equity_risk_premium=.05,tax_rate_marginal=.25))
+        list_industries=lambda *a: ['Synthetic'], list_countries=lambda: ['United States'], lookup_country=lambda *a: MacroInputs(risk_free_rate=.04,equity_risk_premium=.05,tax_rate_marginal=.25))
     monkeypatch.setattr('api.routes._get_damodaran_store', lambda: store)
     monkeypatch.setattr('api.routes._get_industry_mapper', lambda: SimpleNamespace(lookup=lambda _: None))
     return record
@@ -32,7 +32,7 @@ def test_one_annual_year_can_value_without_optional_history(monkeypatch):
                                      dict(fy_offset=3, revenues=800, ebit=100)]
     gate = db.native_compatibility(None, 'TEST')
     assert gate['status'] == 'ready' and len(gate['optional_history_missing']) == 2
-    inputs = _db_record_to_company_input(record, .04, None)
+    inputs, _ = _db_record_to_company_input(record, .04, None)
     assert [r.fiscal_year for r in inputs.raw_financials] == [2025, 2022]
     inputs.raw_financials = inputs.raw_financials[:1]
     report = run_full_valuation(inputs)
@@ -53,11 +53,11 @@ def test_ttm_reads_only_aligned_quarters_and_keeps_holes(monkeypatch):
     record['financials_quarterly'] = [dict(balance, fq_offset=i, revenues=v, ebit=v/10)
         for i,v in [(0,300),(1,280),(4,200),(5,180)]]
     assert db.native_compatibility(None,'TEST')['status']=='ready'
-    inputs = _db_record_to_company_input(record,.04,None)
+    inputs, _ = _db_record_to_company_input(record,.04,None)
     assert len(inputs.quarterly_financials)==6
     assert inputs.quarterly_financials[2].revenues is None
     record["financials_quarterly"].append(dict(fq_offset=7,revenues=None,ebit=None))
-    assert len(_db_record_to_company_input(record,.04,None).quarterly_financials)==8
+    assert len(_db_record_to_company_input(record,.04,None)[0].quarterly_financials)==8
     assert db.native_compatibility(None,"TEST")["status"]=="ready"
     record["financials_quarterly"].pop()
     ltm = compute_ltm_financials(inputs.raw_financials[0],inputs.quarterly_financials,2)
@@ -69,7 +69,7 @@ def test_ttm_reads_only_aligned_quarters_and_keeps_holes(monkeypatch):
     record['financials_quarterly'].pop()  # 实际消费的上年Q1缺失，必须拒绝。
     gate = db.native_compatibility(None,'TEST')
     assert [(r['offset'],r['field']) for r in gate['required_missing']]==[(5,'revenues'),(5,'ebit')]
-    inputs = _db_record_to_company_input(record,.04,None)
+    inputs, _ = _db_record_to_company_input(record,.04,None)
     with pytest.raises(ValueError,match='incomplete LTM field'):
         compute_ltm_financials(inputs.raw_financials[0],inputs.quarterly_financials,2)
 
@@ -85,7 +85,7 @@ def test_adjustments_require_only_their_selected_inputs(monkeypatch):
     record['company'].update({f'lease_commitment_yr{i}':0 for i in range(1,6)})
     record['company']['lease_commitment_beyond'] = 0
     assert db.native_compatibility(None,'TEST')['status']=='ready'
-    inputs = _db_record_to_company_input(record,.04,None)
+    inputs, _ = _db_record_to_company_input(record,.04,None)
     assert inputs.adjustment_inputs.r_and_d_expense_past == [19,18,17,16,15]
     assert len(inputs.raw_financials)==1  # 研发队列不要求旧年收入/EBIT齐全。
     record['financials_annual'][2]['r_and_d_expense']=None
@@ -124,6 +124,11 @@ def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypat
             response = client.post('/api/valuation/from-database',json=dict(ticker='TEST',risk_free_rate=.04))
             assert response.status_code==200, response.text
             assert '可选历史不完整' in response.text and '报告EBIT' in response.text
+            assert any(f['path']=='industry_data.industry_name' for f in response.json()['unresolved_fields'])
+            assert any('占位' in w for w in response.json()['warnings'])
+            resolved = client.patch('/api/valuation/'+response.json()['id'], json={'overrides':{'industry_data.industry_name':'Synthetic'}})
+            assert resolved.status_code == 200
+            assert not any(f['path']=='industry_data.industry_name' for f in resolved.json()['unresolved_fields'])
             # 即使填了数值，映射未获批准仍拒绝；不是取消全局阻断就任意放行。
             conn.execute("UPDATE export_cells SET status='requires_separate_valuation_definition' WHERE field='bv_debt'")
             assert client.post('/api/valuation/from-database',json=dict(ticker='TEST',risk_free_rate=.04)).status_code==422
@@ -148,3 +153,39 @@ def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypat
             assert client.post('/api/valuation/from-database',json=dict(ticker='TEST',risk_free_rate=.04)).status_code == 422
     finally:
         conn.close()
+
+
+def test_original_manual_reference_selection_updates_numbers_and_keeps_failed_session(monkeypatch):
+    from fastapi.testclient import TestClient
+    from api.main import app
+    from api.session_store import create_session
+
+    record = sample(monkeypatch)
+    inputs, _ = _db_record_to_company_input(record, .04, None)
+    original = run_full_valuation(inputs)
+    session = create_session(inputs, original, unresolved_fields=[{'path':'industry_data.industry_name'}, {'path':'country'}])
+    power = IndustryData(industry_name='Power', beta_u=.7, cost_of_debt_pretax=.045)
+    store = SimpleNamespace(
+        lookup_industry=lambda name, **kw: power if name == 'Power' else None,
+        list_industries=lambda *a: ['Power'], list_countries=lambda: ['China'],
+        lookup_country=lambda name: MacroInputs(risk_free_rate=.02, equity_risk_premium=.06, tax_rate_marginal=.25) if name == 'China' else None)
+    monkeypatch.setattr('api.routes._get_damodaran_store', lambda: store)
+    with TestClient(app) as client:
+        result = client.patch('/api/valuation/'+session.id, json={'overrides':{
+            'industry_data.industry_name':'Power', 'country':'China', 'macro_inputs.risk_free_rate':.032}})
+        assert result.status_code == 200, result.text
+        assert session.inputs.industry_data.beta_u == .7
+        assert session.inputs.macro_inputs.equity_risk_premium == .06
+        assert session.inputs.macro_inputs.risk_free_rate == .032
+        assert session.inputs.macro_inputs.tax_rate_effective == inputs.macro_inputs.tax_rate_effective
+        assert not any(f['path'] in ('industry_data.industry_name','country') for f in result.json()['unresolved_fields'])
+        assert session.report.final.value_per_share != original.final.value_per_share
+        tax = client.patch('/api/valuation/'+session.id, json={'overrides':{'effective_tax_rate_ciq':.18}})
+        assert tax.status_code == 200
+        assert session.inputs.macro_inputs.tax_rate_effective == .18
+        assert not any(f['path']=='effective_tax_rate_ciq' for f in tax.json()['unresolved_fields'])
+        saved = session.inputs.model_dump()
+        for path in ('industry_data.industry_name','country'):
+            rejected = client.patch('/api/valuation/'+session.id, json={'overrides':{path:'Unknown'}})
+            assert rejected.status_code == 422
+            assert session.inputs.model_dump() == saved

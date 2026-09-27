@@ -137,7 +137,7 @@ def _build_unresolved_fields(
             "reason": (
                 f"Country '{inputs.country}' not found in Damodaran country-risk dataset."
                 if inputs.country else
-                "CIQ did not return a country for this ticker."
+                "The financial source did not supply a country for this ticker."
             ),
             "options": countries,
             "current_value": inputs.country,
@@ -158,7 +158,7 @@ def _build_unresolved_fields(
         unresolved.append({
             "path": "effective_tax_rate_ciq",
             "kind": "percentage",
-            "reason": "CIQ returned no effective tax rate (often #N/A for firms with negative EBT).",
+            "reason": "The financial source supplied no effective tax rate; confirm the tax assumption.",
             "current_value": None,
             "suggestion": macro.tax_rate_marginal,
             "required": False,
@@ -187,8 +187,8 @@ def _build_unresolved_fields(
             "kind": "number",
             "reason": (
                 f"Currencies differ ({inputs.stock_price_currency} listing vs {inputs.reporting_currency} "
-                "reporting) but CIQ template didn't supply stock_price_reporting. "
-                "Re-run the CIQ template OR enter FX rate manually."
+                "reporting) but the input did not supply stock_price_reporting. "
+                "Refresh the input or enter FX rate manually."
             ),
             "current_value": None,
             "required": True,
@@ -199,7 +199,7 @@ def _build_unresolved_fields(
         unresolved.append({
             "path": "raw_financials.0.shares_outstanding",
             "kind": "number",
-            "reason": "Shares outstanding missing from CIQ (no IQ_BASIC_WEIGHT value).",
+            "reason": "Shares outstanding missing from the financial source.",
             "current_value": None,
             "required": True,
         })
@@ -1119,18 +1119,54 @@ def patch_valuation(session_id: str, req: OverrideRequest):
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    # Apply overrides to inputs via dot-path
+    # 原页面按名称选择行业/国家时，必须更新对应参考数值，不能只改标签。
+    store = _get_damodaran_store()
     inputs_dict = session.inputs.model_dump()
+    industry_selected = "industry_data.industry_name" in req.overrides
+    if industry_selected:
+        name = req.overrides["industry_data.industry_name"]
+        if not isinstance(name, str):
+            raise HTTPException(status_code=422, detail="Industry name must be a string")
+        region = inputs_dict['industry_data']['region']
+        industry = store.lookup_industry(name, region=region)
+        if industry is None:
+            raise HTTPException(status_code=422, detail="Selected industry reference is unavailable")
+        inputs_dict['industry_data'] = industry.model_dump()
+        global_industry = store.lookup_industry(name, region="Global") if region != "Global" else None
+        inputs_dict['industry_data_global'] = global_industry.model_dump() if global_industry else None
+    if "country" in req.overrides:
+        if not isinstance(req.overrides["country"], str):
+            raise HTTPException(status_code=422, detail="Country must be a string")
+        macro = store.lookup_country(req.overrides['country'])
+        if macro is None:
+            raise HTTPException(status_code=422, detail="Selected country reference is unavailable")
+        # 公司税事实/已编辑税假设与用户输入的无风险利率不随国家标签重置。
+        macro = macro.model_copy(deep=True)
+        macro.risk_free_rate = session.inputs.macro_inputs.risk_free_rate
+        macro.tax_rate_effective = session.inputs.macro_inputs.tax_rate_effective
+        inputs_dict['macro_inputs'] = macro.model_dump()
+    if "effective_tax_rate_ciq" in req.overrides:
+        inputs_dict["macro_inputs"]["tax_rate_effective"] = req.overrides["effective_tax_rate_ciq"]
+    # 同一次请求显式提供的数值覆盖所选参考；数据库事实不变。
     for path, value in req.overrides.items():
         _set_nested(inputs_dict, path, value)
 
     # Rebuild inputs and recompute
     new_inputs = CompanyValuationInput(**inputs_dict)
-    store = _get_damodaran_store()
     ind_lookup = _build_industry_lookup(store)
     new_report = run_full_valuation(new_inputs, industry_lookup=ind_lookup)
+    industry_resolved = industry_selected or not any(f['path']=='industry_data.industry_name' for f in session.unresolved_fields)
+    unresolved = (_build_unresolved_fields(new_inputs, store, industry_resolved=industry_resolved)
+                  if session.unresolved_fields or industry_selected or "country" in req.overrides else [])
+    if not industry_resolved:
+        new_report.warnings.append('公司行业未匹配；当前行业仅为原模型占位，请使用原页面确认行业，不能视为公司分类事实。')
+    session.unresolved_fields = unresolved
     session.inputs = new_inputs
     session.report = new_report
+    for path in (['industry_data', 'industry_data_global'] if industry_selected else []) + (['macro_inputs'] if 'country' in req.overrides else []):
+        session.source_tracker.record(path, 'User-selected Damodaran reference (session only; source database unchanged)')
+    if "effective_tax_rate_ciq" in req.overrides:
+        session.source_tracker.record("macro_inputs.tax_rate_effective", "User effective tax input (session only; source database unchanged)")
     for path in req.overrides:
         session.source_tracker.record(path, 'User override (session only; source database unchanged)')
     return _report_to_dict(session)

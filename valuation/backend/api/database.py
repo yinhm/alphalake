@@ -140,6 +140,7 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
         industry_data = store.lookup_industry(industry_name, region="Global")
         if industry_data:
             primary_region = "Global"
+    industry_resolved = industry_data is not None
     if industry_data is None:
         # Graceful fallback — same as template path
         available = store.list_industries("US")
@@ -357,7 +358,7 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
         valuation_assumptions=ValuationAssumptions(),
         methodology_choices=methodology,
     )
-    return inputs
+    return inputs, industry_resolved
 
 
 @valuation_router.post("/from-database")
@@ -377,10 +378,10 @@ def from_database(req: FromDatabaseRequest) -> dict:
         raise HTTPException(status_code=422, detail='原生估值数据尚未达标：' + '；'.join(compatibility['blockers']) + '。详细字段见 /api/database/compatibility/' + req.ticker)
 
     from engine.orchestrator import run_full_valuation
-    from api.routes import _build_industry_lookup, _get_damodaran_store, _report_to_dict
+    from api.routes import _build_industry_lookup, _get_damodaran_store, _report_to_dict, _build_unresolved_fields
     from api.session_store import create_session
 
-    inputs = _db_record_to_company_input(record, req.risk_free_rate, req.industry_override)
+    inputs, industry_resolved = _db_record_to_company_input(record, req.risk_free_rate, req.industry_override)
     store = _get_damodaran_store()
     ind_lookup = _build_industry_lookup(store)
     report = run_full_valuation(inputs, industry_lookup=ind_lookup)
@@ -391,7 +392,10 @@ def from_database(req: FromDatabaseRequest) -> dict:
 
     # Use the same session layout + serializer the template path uses so the
     # response shape is byte-identical.
-    session = create_session(inputs, report)
+    unresolved = _build_unresolved_fields(inputs, store, industry_resolved=industry_resolved)
+    if not industry_resolved:
+        report.warnings.append('公司行业未匹配；当前行业仅为原模型占位，请使用原页面确认行业，不能视为公司分类事实。')
+    session = create_session(inputs, report, unresolved_fields=unresolved)
     session.valuation_proxy = record.get("valuation_proxy")
     if compatibility and (compatibility['exported_asset_proxies'] or compatibility['market_proxy']):
         proxy = dict(session.valuation_proxy or dict(version=record['data_source']['contract'],
