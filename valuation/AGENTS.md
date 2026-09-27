@@ -1,6 +1,7 @@
 # AlphaLake valuation 约定
 
 - 遵循根目录 [AGENTS.md](../AGENTS.md) 的数据分层、证据和结果口径约定；当前能力以 [实现状态](../docs/implementation-status.md) 为准。
+- 当前只推进沪深非金融企业；金融专项与多市场暂停。原生参考输入以主库版本为接入目标，保持原页面和用户显式覆盖，不以默认行业/利率冒充公司市场WACC。
 - 原生网页通过主库导出的SQLite进入`api/database.py`；发布入口为`tools/publish_native_valuation.py`，保留原页面和请求。显式政策CLI/API与原生默认输入不同，不能混称同一政策；具体边界见`../docs/system-delivery.md`。
 - AlphaLake 显式政策入口为 `backend/api/alphalake.py` 及 `backend/tools/*valuate_alphalake.py`，消费 DuckDB 标准导出并复用共享编排器。不得静默改用上游CIQ/SQLite数据补缺，也不得为AlphaLake另建一套DCF引擎。
 - 下列为导入上游时保留的CIQ/前端开发背景；默认美国Beta、SQLite选择顺序、历史测试数和已知问题只描述该路径，不作为AlphaLake已验收能力或参考选择政策。上游来源及credit见 [UPSTREAM.md](UPSTREAM.md)。
