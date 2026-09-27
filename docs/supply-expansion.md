@@ -60,9 +60,9 @@ CNINFO采集2021-01-01至2025-12-31的目录：100页、629条观测，524条公
 | 补采后20家导出 | 1.66秒 | 137,728KiB |
 | 原生准入审计 | 15.86秒 | 411,608KiB |
 
-主库345,780,224→353,644,544字节（330→约337MiB）；新增来源目录证据归CNINFO，TDX财务ZIP未重下载。物化峰值约956MiB，已接近硬上限；不能将这次成功视为可无约束扩大批量的依据。后续已完成[拒绝记录按变化写入的内存优化](materialization-memory.md)，同一受控输入三轮中位峰值859→620MiB；该受控补录不同于本节真实补链，不直接将956MiB与620MiB比较。接下来在原预算和资源监控下继续扩大同类供给。
+主库345,780,224→353,644,544字节（330→约337MiB）；新增来源目录证据归CNINFO，TDX财务ZIP未重下载。物化峰值约956MiB，已接近硬上限；不能将这次成功视为可无约束扩大批量的依据。后续已完成[拒绝记录按变化写入的内存优化](materialization-memory.md)，同一受控输入三轮中位峰值859→620MiB；该受控补录不同于本节真实补链，不直接将956MiB与620MiB比较。后续在原预算下完成[40家扩展](supply-expansion-next.md)，保留新增的资源压力及恢复证据。
 
-运行证据统一在`workspace/derived/supply-expansion/`，包括`selection.json`、`receipt.json`、`before.json`/`current.json`、`source.json`、`residual-quarterly.jsonl`、`verification.json`、API结果及各阶段日志。当前主库SHA256为`f51a307b518450735c39c5eabe9d0661d409a100b454883612bc86f3ac89c1e9`；物化后、重放前的哈希单列在收据，不拿该历史报告冒充当前物理版本。核验后删除临时回滚库及派生SQLite，保留路径、哈希和原因于`cleanup.json`。
+运行证据统一在`workspace/derived/supply-expansion/`，包括`selection.json`、`receipt.json`、`before.json`/`current.json`、`source.json`、`residual-quarterly.jsonl`、`verification.json`、API结果及各阶段日志。该轮重放后的历史主库SHA256为`f51a307b518450735c39c5eabe9d0661d409a100b454883612bc86f3ac89c1e9`；物化后、重放前的哈希单列在收据，不拿该历史报告冒充当前物理版本。核验后删除临时回滚库及派生SQLite，保留路径、哈希和原因于`cleanup.json`。
 
 复验入口沿用原命令（会生成新观测/收据，信息截止和输出路径须显式更新；本机放入隔离服务）：
 
