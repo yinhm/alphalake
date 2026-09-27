@@ -2,7 +2,7 @@
 
 面向沪深普通非金融企业的本地金融数据与条件估值系统。主要链路：**TDX → DuckDB标准事实 → 兼容SQLite → 原生valuation网页/API**。当前不推进金融专项模型或多市场扩展，默认不纳入北交所；估值方法以达摩达兰原始资料为准，事实、代理和预测假设分层。
 
-当前无实际生产部署。最新主库为schema54、约339MiB；当前100家公司样本财务87家准入、13家按缺项拒绝；默认参考齐备86家，另1家须显式选择行业/国家。此比例不是全市场数据完整率或估值准确率。详见[当前实现状态](docs/implementation-status.md)。
+当前无实际生产部署。最新主库为schema54、约341MiB；当前100家公司样本财务87家准入、13家按缺项拒绝；默认参考齐备86家，另1家须显式选择行业/国家。此比例不是全市场数据完整率或估值准确率。详见[当前实现状态](docs/implementation-status.md)。
 
 ## 使用与维护
 
@@ -12,6 +12,7 @@
 | 从本地缓存同步财务 | [离线同步](docs/tdx-offline-sync.md) |
 | 定位通用数据缺口 | [原生覆盖基线与诊断](docs/native-coverage.md) |
 | 原生参考、默认口径与会话版本 | [参考接入](docs/native-reference-bridge.md) |
+| 人民币WACC及经营候选对照 | [显式政策与验收](docs/native-cny-policy.md) |
 | 为原网页准备数据 | [SQLite导出、字段与准入](docs/valuation-sqlite-export.md) |
 | 按显式政策估值 | [统一公司CLI](docs/company-valuation-entry.md) |
 | 查询、解释估值变化 | [历史运行](docs/valuation-run-query.md)、[运行比较](docs/valuation-comparison.md) |
