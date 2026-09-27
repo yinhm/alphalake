@@ -1,0 +1,163 @@
+[
+  {
+    "file": "betas.xls",
+    "sha256": "b2bfe13bcecea6b168be0065e7dccc05e6087083fed48df7873ec64b3600492c",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/betas.xls",
+    "observation_date": "2026-01-05",
+    "observations": 376
+  },
+  {
+    "file": "betaGlobal.xls",
+    "sha256": "10c33f46df2a35fa7e4e8c4386c01f9da636fc2ab3e1e98307a52a947c9ab52b",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/betaGlobal.xls",
+    "observation_date": "2026-01-05",
+    "observations": 376
+  },
+  {
+    "file": "wacc.xls",
+    "sha256": "d38b149c731bba6847d077ef67c9a4bfa0a54f947ba480b2f9ea89f5451d39a6",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/wacc.xls",
+    "observation_date": "2026-01-05",
+    "observations": 376
+  },
+  {
+    "file": "waccGlobal.xls",
+    "sha256": "acccd3e8b449b59088c106956cc22a723e2aebc16300fa7274e6cb5bf135f90e",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/waccGlobal.xls",
+    "observation_date": "2026-01-05",
+    "observations": 376
+  },
+  {
+    "file": "margin.xls",
+    "sha256": "258b56a995832ff8c79167c1cbad2dee3bbae95b9765612a5093ba6942aaaa47",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/margin.xls",
+    "observation_date": "2026-01-05",
+    "observations": 188
+  },
+  {
+    "file": "marginGlobal.xls",
+    "sha256": "89fe631c20f3494bb8afbd6f4407bc2000e3c94e58603da1f2d1f3acd1113e79",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/marginGlobal.xls",
+    "observation_date": "2026-01-05",
+    "observations": 188
+  },
+  {
+    "file": "taxrate.xls",
+    "sha256": "3e1e0e1d79e70eb964996ea04c2994bb4399aa634673f21714bf856ec3bdad29",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/taxrate.xls",
+    "observation_date": "2026-01-05",
+    "observations": 94
+  },
+  {
+    "file": "taxrateGlobal.xls",
+    "sha256": "11e7e185337f9b01b30066a3761bdbdd05ca1ea1517b7f529c5c443429530cae",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/taxrateGlobal.xls",
+    "observation_date": "2026-01-05",
+    "observations": 94
+  },
+  {
+    "file": "capex.xls",
+    "sha256": "97216e369c8c6bd69987ed2ace0933381cc278b7d423a0c7b4944effded4c58e",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/capex.xls",
+    "observation_date": "2026-01-05",
+    "observations": 94
+  },
+  {
+    "file": "capexGlobal.xls",
+    "sha256": "2470cd4d62a330575132c1bf7d9ccc001a56dbd97bd374fa7ceec7930eb30955",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/capexGlobal.xls",
+    "observation_date": "2026-01-05",
+    "observations": 94
+  },
+  {
+    "file": "fundgrEB.xls",
+    "sha256": "d96d24f919d60500340b40d99cdc93dcc655be053013371a6960745589a04cb2",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/fundgrEB.xls",
+    "observation_date": "2026-01-05",
+    "observations": 94
+  },
+  {
+    "file": "fundgrEBGlobal.xls",
+    "sha256": "d180bb311b2b9370f69ce51a5408a588d247e336bbd6078709b0c21093ad72dc",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/fundgrEBGlobal.xls",
+    "observation_date": "2026-01-05",
+    "observations": 94
+  },
+  {
+    "file": "EVA.xls",
+    "sha256": "b5933d549edf1628f6f106d100cb58815ef1f46ddba0c5d5e1302219ccd711fd",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/EVA.xls",
+    "observation_date": "2026-01-05",
+    "observations": 188
+  },
+  {
+    "file": "EVAGlobal.xls",
+    "sha256": "55cc6cfa34a9803b70d892953b08c62f15137ed2d83554004e95af1956df7cc3",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/EVAGlobal.xls",
+    "observation_date": "2025-01-05",
+    "observations": 188
+  },
+  {
+    "file": "vebitda.xls",
+    "sha256": "c75ec898b79d449ec417e53f1063aac93041ae4952dd4325acd5f8079eda711d",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/vebitda.xls",
+    "observation_date": "2026-01-05",
+    "observations": 94
+  },
+  {
+    "file": "vebitdaGlobal.xls",
+    "sha256": "7c54331b5461e0a1df6b0b3e4225bcd7a8d45efd189f74b2bbdfc229f8e00c27",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/vebitdaGlobal.xls",
+    "observation_date": "2026-01-05",
+    "observations": 94
+  },
+  {
+    "file": "pedata.xls",
+    "sha256": "e9b839c046a8ff2786d81faedc603cd91d7c6d8b2bad9f895d821e2d6bd1e04f",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/pedata.xls",
+    "observation_date": "2026-01-05",
+    "observations": 94
+  },
+  {
+    "file": "peGlobal.xls",
+    "sha256": "762439484f797df8571cce9f5d529a6ab60e40d873cd91801aecdca0bd8276b3",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/peGlobal.xls",
+    "observation_date": "2026-01-05",
+    "observations": 94
+  },
+  {
+    "file": "pbvdata.xls",
+    "sha256": "e46e0a6e7fb77c7e9df2cce2a887a032ee6a2977b690fd54365b6068a2eaf4a9",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/pbvdata.xls",
+    "observation_date": "2026-01-05",
+    "observations": 94
+  },
+  {
+    "file": "pbvGlobal.xls",
+    "sha256": "1997ab5e96556f1c974289e5809babd6fe17bab108cf1a6da4083079f110774d",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/pbvGlobal.xls",
+    "observation_date": "2026-01-05",
+    "observations": 94
+  },
+  {
+    "file": "psdata.xls",
+    "sha256": "32b37302ccb78c6154f6bb991759dedbda838c1dca4a32fc87878d121e28c42b",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/psdata.xls",
+    "observation_date": "2026-01-05",
+    "observations": 94
+  },
+  {
+    "file": "psGlobal.xls",
+    "sha256": "07b0af7cf43c88e62cf90dc00e8f28787dce2511d33a78a73e2c54f680c648ff",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/psGlobal.xls",
+    "observation_date": "2026-01-05",
+    "observations": 94
+  },
+  {
+    "file": "countrytaxrates.xls",
+    "sha256": "acaf535aa974c9f77898c26fb0333ee26ad1ef3ce1db0412f817fa7ec60b5582",
+    "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/countrytaxrates.xls",
+    "observation_date": "2026-01-05",
+    "observations": 3
+  }
+]

@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	_ "embed"
 	"fmt"
+	"strings"
 )
 
-const SchemaVersion = 53
+const SchemaVersion = 54
 
 //go:embed schema.sql
 var schemaSQL string
@@ -105,6 +106,37 @@ func UpgradeFilingCoverage(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 	if _, err = tx.ExecContext(ctx, `INSERT INTO meta.schema_version(version,description) VALUES (53,'Reviewed prospectus disclosure coverage')`); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// UpgradeNativeReferences changes reference tables only; financial values and evidence remain unchanged.
+func UpgradeNativeReferences(ctx context.Context, db *sql.DB) error {
+	version, err := CurrentSchemaVersion(ctx, db)
+	if err != nil {
+		return err
+	}
+	if version != 53 {
+		return fmt.Errorf("native reference upgrade requires schema53, found %d", version)
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err = tx.ExecContext(ctx, `ALTER TABLE reference.industry_stat RENAME TO industry_stat_before_upgrade`); err != nil {
+		return err
+	}
+	for _, statement := range strings.Split(schemaSQL, ";") {
+		statement = strings.TrimSpace(statement)
+		if strings.HasPrefix(statement, "CREATE TABLE reference.industry_stat(") || strings.HasPrefix(statement, "CREATE TABLE reference.country_tax(") {
+			if _, err = tx.ExecContext(ctx, statement); err != nil {
+				return err
+			}
+		}
+	}
+	if _, err = tx.ExecContext(ctx, `INSERT INTO reference.industry_stat SELECT * FROM reference.industry_stat_before_upgrade; DROP TABLE reference.industry_stat_before_upgrade; INSERT INTO meta.schema_version(version,description) VALUES (54,'Native valuation industry references and country tax')`); err != nil {
 		return err
 	}
 	return tx.Commit()

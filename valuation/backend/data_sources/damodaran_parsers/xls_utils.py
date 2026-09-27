@@ -48,7 +48,7 @@ def safe_float(ws: xlrd.sheet.Sheet, row: int, col: int | None) -> float | None:
         val = ws.cell_value(row, col)
     except IndexError:
         return None
-    if isinstance(val, (int, float)) and val != "":
+    if ws.cell_type(row, col) == xlrd.XL_CELL_NUMBER and isinstance(val, (int, float)):
         return float(val)
     return None
 
@@ -61,7 +61,7 @@ def safe_int(ws: xlrd.sheet.Sheet, row: int, col: int | None) -> int | None:
         val = ws.cell_value(row, col)
     except IndexError:
         return None
-    if isinstance(val, (int, float)) and val != "":
+    if ws.cell_type(row, col) == xlrd.XL_CELL_NUMBER and isinstance(val, (int, float)):
         return int(val)
     return None
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/yinhm/alphalake/internal/artifact"
@@ -15,10 +16,11 @@ import (
 )
 
 type CountryRiskOptions struct {
-	Python  string
-	Script  string
-	Offline bool
-	Client  *http.Client
+	Python    string
+	Script    string
+	LocalPath string
+	Offline   bool
+	Client    *http.Client
 }
 type CountryRiskSummary struct {
 	RunID        int64 `json:"run_id"`
@@ -74,7 +76,22 @@ func syncReference(ctx context.Context, db *sql.DB, root string, options Country
 		err = errors.Join(err, finishErr)
 	}()
 	var stored artifact.Stored
-	if options.Offline {
+	if options.LocalPath != "" {
+		if options.Offline {
+			return out, errors.New("local import and offline replay are mutually exclusive")
+		}
+		body, readErr := os.ReadFile(options.LocalPath)
+		if readErr != nil {
+			return out, readErr
+		}
+		if len(body) == 0 || len(body) > 16<<20 {
+			return out, errors.New("empty/oversized local reference")
+		}
+		stored, err = artifact.Persist(ctx, db, root, artifact.Input{Source: feed.source, Dataset: feed.dataset, SourceLocator: feed.url, FetchedAt: time.Now().UTC(), MediaType: feed.mediaType, ParserVersion: feed.parserVersion, IngestRunID: &out.RunID, Content: body})
+		if err != nil {
+			return
+		}
+	} else if options.Offline {
 
 		var id int64
 		err = db.QueryRowContext(ctx, `WITH latest AS (
