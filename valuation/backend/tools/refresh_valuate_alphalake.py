@@ -34,6 +34,17 @@ def execute(command, log, timeout):
                 return 124
 
 
+def reference_commands(binary, database, offline=False):
+    repo = Path(__file__).resolve().parents[3]
+    for name, script in [('sync-country-risk','valuation/backend/data_sources/damodaran_parsers/country_risk_parser.py'),
+                                ('sync-industry-beta','valuation/backend/data_sources/damodaran_parsers/beta_parser.py'),
+                                ('sync-industry-capital','valuation/backend/data_sources/damodaran_parsers/capex_parser.py'),
+                                ('sync-cny-yield','internal/source/chinabond/parse.py'),
+                                ('sync-credit-spreads','internal/source/damodaran/ratings.py'),
+                                ('sync-company-industries','valuation/backend/data_sources/damodaran_parsers/company_industry_parser.py')]:
+        yield name, [str(binary), name, str(database), '--python', sys.executable, '--parser', str(repo/script), *(['--offline'] if offline else [])]
+
+
 def run_cycle(args, root):
     ledger = dict(database=args.database, report_period=args.period, started_at=timestamp(),
                   status='running', stages=[], boundary='execution status is not valuation coverage; see batch report')
@@ -61,10 +72,8 @@ def run_cycle(args, root):
             record['finished_at'] = timestamp(); save()
         return code
 
-    repo=Path(__file__).resolve().parents[3]
     try:
         for name, extra in [('sync-financial',['--latest',str(args.latest)]),
-                            ('sync-bse-code-transitions',['--python',sys.executable,'--parser',str(repo/'internal/source/bse/parse.py')]),
                             ('sync-filings',['--start',args.filings_start,'--end',args.filings_end,'--metadata-only']),
                             ('sync-industries',[])]:
             stage(name, [args.alphalake,name,args.database,*extra])
@@ -74,17 +83,11 @@ def run_cycle(args, root):
             stage('repair-filings',[args.alphalake,'repair-filings',args.database,'--period',args.period])
             materialized = stage('materialize-after-filing-repair',[args.alphalake,'materialize-fundamentals',args.database]) == 0
         if materialized and getattr(args,'sync_references',False):
-            for name,script in [('sync-country-risk','valuation/backend/data_sources/damodaran_parsers/country_risk_parser.py'),
-                                ('sync-industry-beta','valuation/backend/data_sources/damodaran_parsers/beta_parser.py'),
-                                ('sync-industry-capital','valuation/backend/data_sources/damodaran_parsers/capex_parser.py'),
-                                ('sync-cny-yield','internal/source/chinabond/parse.py'),
-                                ('sync-credit-spreads','internal/source/damodaran/ratings.py'),
-                                ('sync-company-industries','valuation/backend/data_sources/damodaran_parsers/company_industry_parser.py')]:
-                database = args.database if name == 'sync-company-industries' else args.reference_database
-                stage(name,[args.alphalake,name,database,'--python',sys.executable,'--parser',str(repo/script)])
+            for name, command in reference_commands(args.alphalake, args.database):
+                stage(name, command)
         ledger['information_as_of'] = args.as_of or timestamp()
         if materialized:
-            reference_args = ['--reference-database',args.reference_database] if getattr(args,'reference_database',None) else []
+            reference_args = ['--reference-database',args.database] if getattr(args,'use_references',False) or getattr(args,'sync_references',False) else []
             state = getattr(args, 'incremental_state', None)
             previous_args = ['--previous-report',str(state)] if state and Path(state).exists() else []
             code = stage('batch-valuation',[sys.executable,'-m','tools.batch_valuate_alphalake',args.database,
@@ -137,14 +140,12 @@ def main():
     parser.add_argument('--policy',required=True)
     parser.add_argument('--output-dir',required=True)
     parser.add_argument('--alphalake',default=str(Path(__file__).resolve().parents[3]/'alphalake'))
-    parser.add_argument('--reference-database',help='批次运行时自动选择本地最新WACC参考版本')
-    parser.add_argument('--sync-references',action='store_true',help='批次前刷新WACC四源、行业资本效率及公司行业，需指定参考库')
+    parser.add_argument('--use-references',action='store_true',help='从同一主库选择WACC参考版本')
+    parser.add_argument('--sync-references',action='store_true',help='批次前将WACC四源、行业资本效率及公司行业刷新至同一主库')
     args = parser.parse_args()
     period = date.fromisoformat(args.period)
     if args.latest<1 or args.stage_timeout<1 or period.month%3 or (period+timedelta(days=1)).day!=1:
         parser.error('positive limits and quarter-end period required')
-    if args.sync_references and not args.reference_database:
-        parser.error('sync-references requires reference-database')
     if date.fromisoformat(args.filings_start)>date.fromisoformat(args.filings_end):
         parser.error('filings start exceeds end')
     if args.as_of and (datetime.fromisoformat(args.as_of).utcoffset() is None or datetime.fromisoformat(args.as_of).date()<period):
@@ -156,10 +157,6 @@ def main():
     args.database = str(Path(args.database).resolve())
     args.policy = str(Path(args.policy).resolve())
     args.alphalake = str(Path(args.alphalake).resolve())
-    if args.reference_database:
-        args.reference_database = str(Path(args.reference_database).resolve())
-        if args.sync_references:
-            Path(args.reference_database).parent.mkdir(parents=True,exist_ok=True)
     Path(args.database).parent.mkdir(parents=True,exist_ok=True)
     # ponytail: 本机进程锁；远程分布式调度不在此入口范围。
     with open(args.database+'.valuation.lock','a') as lock:

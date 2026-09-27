@@ -9,6 +9,10 @@ from pathlib import Path
 import sqlite3
 
 
+def value_digest(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False, allow_nan=False).encode()).hexdigest()
+
+
 def check(database, output, risk_free_rate):
     from fastapi.testclient import TestClient
     from api.main import app
@@ -38,9 +42,11 @@ def check(database, output, risk_free_rate):
             gaps.update(missing)
             record = dict(ticker=ticker, admission=d['status'], http_status=response.status_code,
                           market_status=market.get(ticker, 'missing_market_diagnostic'), missing_fields=missing,
-                          final=body.get('final'), diagnostic=d, response=body)
+                          final=body.get('final'), diagnostic=d, response=body,
+                          diagnostic_sha256=value_digest(d), inputs_sha256=value_digest(body.get('inputs')),
+                          unresolved_sha256=value_digest(body.get('unresolved_fields')))
             (output/(ticker.replace(':','-')+'.json')).write_text(json.dumps(record,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
-            results.append({k:record[k] for k in ('ticker','admission','http_status','market_status','missing_fields','final')})
+            results.append({k:record[k] for k in ('ticker','admission','http_status','market_status','missing_fields','final','diagnostic_sha256','inputs_sha256','unresolved_sha256')})
     with database.open('rb') as stream:
         after = hashlib.file_digest(stream,'sha256').hexdigest()
     assert before == after, 'valuation must not mutate source SQLite'
