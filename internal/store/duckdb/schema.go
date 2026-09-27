@@ -56,6 +56,9 @@ func Initialize(ctx context.Context, db *sql.DB) error {
 	if err := insertSourceFieldCatalog(ctx, tx); err != nil {
 		return err
 	}
+	if _, err := insertCapitalHistory(ctx, tx); err != nil {
+		return err
+	}
 	fields, err := loadSnapshotFields(ctx, tx)
 	if err != nil {
 		return err

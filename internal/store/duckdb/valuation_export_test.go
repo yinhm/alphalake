@@ -128,8 +128,8 @@ func TestValuationExportMappingVersions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET valid_to='2026-06-30' WHERE source='tdx' AND provider_field='FN8';
- INSERT INTO fundamental.provider_field SELECT * REPLACE(DATE '2026-06-30' AS valid_from, NULL::DATE AS valid_to) FROM fundamental.provider_field WHERE source='tdx' AND provider_field='FN8';`)
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET valid_to='2026-06-30' WHERE source='tdx' AND provider_field='FN8' AND valid_to IS NULL;
+ INSERT INTO fundamental.provider_field SELECT * REPLACE(DATE '2026-06-30' AS valid_from, NULL::DATE AS valid_to) FROM fundamental.provider_field WHERE source='tdx' AND provider_field='FN8' AND valid_from=DATE '2025-01-01';`)
 	if err != nil {
 		t.Fatal(err)
 	}

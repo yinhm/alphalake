@@ -1,0 +1,80 @@
+package duckdb
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+)
+
+// This review extends source definitions, not company valuation classifications.
+// Existing dated reviews and their zero policies are retained verbatim.
+const capitalHistoryReview = `CREATE TEMP TABLE _capital_history_review AS
+ SELECT p.* REPLACE(DATE '1900-01-01' AS valid_from,p.valid_from AS valid_to,
+ 'official-capital-history-v1;'||s.definition_reference AS notes,'reject' AS zero_policy)
+ FROM fundamental.provider_field p JOIN fundamental.source_field s
+ ON s.source=p.source AND s.provider_field=p.provider_field AND s.name=p.canonical_field
+ AND s.unit=p.unit AND s.value_kind=p.value_kind AND s.period_basis=p.period_basis
+ AND s.value_multiplier=p.value_multiplier AND s.definition_status='official'
+ WHERE p.source='tdx' AND p.valid_from=DATE '2025-01-01' AND p.valid_to IS NULL
+ AND p.canonical_field IN (
+ 'bonds_payable','cash_and_cash_equivalents','current_portion_noncurrent_liabilities',
+ 'deferred_expense_amortization','depreciation_depletion','income_tax_expense','intangible_amortization',
+ 'inventory_decrease_cashflow','investment_property_depreciation_amortization','lease_liabilities',
+ 'long_term_borrowings','long_term_equity_investments','monetary_funds',
+ 'operating_payables_increase_cashflow','operating_receivables_decrease_cashflow',
+ 'profit_before_tax','right_of_use_depreciation','short_term_borrowings','total_equity');`
+
+func insertCapitalHistory(ctx context.Context, tx *sql.Tx) (int64, error) {
+	if _, err := tx.ExecContext(ctx, capitalHistoryReview); err != nil {
+		return 0, err
+	}
+	var count int
+	if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM _capital_history_review`).Scan(&count); err != nil {
+		return 0, err
+	}
+	if count != 19 {
+		return 0, fmt.Errorf("capital history requires 19 unchanged official definitions, found %d", count)
+	}
+	if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM (
+ SELECT p.* FROM fundamental.provider_field p JOIN _capital_history_review h
+ ON p.source=h.source AND p.provider_field=h.provider_field
+ WHERE p.valid_from<h.valid_to AND (p.valid_to IS NULL OR p.valid_to>h.valid_from)
+ EXCEPT SELECT * FROM _capital_history_review)`).Scan(&count); err != nil {
+		return 0, err
+	}
+	if count != 0 {
+		return 0, fmt.Errorf("capital history overlaps a different existing review")
+	}
+	r, err := tx.ExecContext(ctx, `INSERT INTO fundamental.provider_field
+ SELECT * FROM _capital_history_review EXCEPT SELECT * FROM fundamental.provider_field`)
+	if err != nil {
+		return 0, err
+	}
+	n, err := r.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	_, err = tx.ExecContext(ctx, `DROP TABLE _capital_history_review`)
+	return n, err
+}
+
+// ExtendCapitalHistory applies an explicit catalogue review to the current schema.
+// The normal materializer detects the changed catalogue signature and rebuilds
+// supported values from archived source records. No source values are copied here.
+func ExtendCapitalHistory(ctx context.Context, db *sql.DB) (int64, error) {
+	if err := requireStandardFinancialSchema(ctx, db); err != nil {
+		return 0, err
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+	n, err := insertCapitalHistory(ctx, tx)
+	if err != nil {
+		return 0, err
+	}
+	// Keep published statement_field unchanged until the materializer commits
+	// all affected values and their catalogue together.
+	return n, tx.Commit()
+}

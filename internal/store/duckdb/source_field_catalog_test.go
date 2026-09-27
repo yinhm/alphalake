@@ -18,7 +18,7 @@ func TestSourceFieldCatalogMatchesReviewedDefinitionsAndKeepsUnknownValues(t *te
 	err = db.QueryRowContext(ctx, `SELECT (SELECT count(*) FROM fundamental.source_field),(SELECT count(*) FROM fundamental.source_field WHERE name IS NOT NULL),(SELECT count(*) FROM fundamental.provider_field),
  (SELECT count(*) FROM fundamental.provider_field p LEFT JOIN fundamental.source_field s USING(source,provider_field)
  WHERE s.name IS DISTINCT FROM p.canonical_field OR s.unit IS DISTINCT FROM p.unit OR s.value_multiplier IS DISTINCT FROM p.value_multiplier OR s.period_basis IS DISTINCT FROM p.period_basis)`).Scan(&rows, &defined, &reviewed, &mismatch)
-	if err != nil || rows != 584 || defined != 462 || reviewed != 346 || mismatch != 0 {
+	if err != nil || rows != 584 || defined != 462 || reviewed != 365 || mismatch != 0 {
 		t.Fatal(rows, defined, reviewed, mismatch, err)
 	}
 	var date string

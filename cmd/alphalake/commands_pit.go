@@ -26,6 +26,8 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return true, errHelp
 	}
 	switch args[0] {
+	case "extend-capital-history":
+		return true, runCapitalHistory(ctx, args[1:])
 	case "sync-native-reference", "export-native-references", "upgrade-native-references":
 		return true, runNativeReference(ctx, args[0], args[1:])
 	case "financial-statements":

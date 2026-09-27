@@ -81,6 +81,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-company-industries <db-path> [--offline] [--python executable] [--parser path]")
 	fmt.Fprintln(os.Stderr, "  sync-industry-capital <db-path> [--offline] [--python executable] [--parser path]")
 	fmt.Fprintln(os.Stderr, "  upgrade-native-references <schema53-db> (explicit one-time schema54 upgrade)")
+	fmt.Fprintln(os.Stderr, "  extend-capital-history <source-db> <new-candidate-db> (offline copy and historical capital rebuild)")
 	fmt.Fprintln(os.Stderr, "  sync-native-reference <db-path> --file workbook-stem [--local file | --offline] [--python executable] [--parser path]")
 	fmt.Fprintln(os.Stderr, "  export-native-references <db-path> --as-of RFC3339")
 	fmt.Fprintln(os.Stderr, "  sync-country-risk <db-path> [--offline] [--python executable] [--parser path]")

@@ -21,7 +21,7 @@ func TestInitializeCurrentSchemaIsAtomicAndIdempotent(t *testing.T) {
 	if err = db.QueryRowContext(ctx, `SELECT (SELECT max(version) FROM meta.schema_version),(SELECT count(*) FROM meta.schema_version),(SELECT count(*) FROM fundamental.field),(SELECT count(*) FROM fundamental.provider_field)`).Scan(&version, &versions, &fields, &mappings); err != nil {
 		t.Fatal(err)
 	}
-	if version != SchemaVersion || versions != 1 || fields != 346 || mappings != 346 {
+	if version != SchemaVersion || versions != 1 || fields != 346 || mappings != 365 {
 		t.Fatal(version, versions, fields, mappings)
 	}
 	// 初始化不得修复或覆盖已存在的当前业务内容。
