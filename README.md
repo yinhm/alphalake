@@ -56,6 +56,14 @@ alphalake sync-daily ./alphalake.duckdb sh600519
 alphalake sync-daily-all ./alphalake.duckdb
 ```
 
+只补估值报告期所需行情（证券身份须已入库）：
+
+```bash
+alphalake sync-valuation-quotes workspace/alphalake.duckdb --symbols sh600004,sh600006 --period 2026-06-30
+```
+
+仅保存报告日前14个自然日至当日的行情观测，不推进完整日线及其续传检查点；详见[窗口同步](docs/valuation-quote-window.md)。
+
 刷新 TDX GBBQ 公司行动和股本快照：
 
 ```bash
