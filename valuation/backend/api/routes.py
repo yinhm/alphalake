@@ -1063,15 +1063,15 @@ def list_erp_catalog():
     for name, raw in (store._country_risk or {}).items():
         if name.startswith("__") or not isinstance(raw, dict):
             continue
-        base = raw.get("equity_risk_premium")
-        crp = raw.get("country_risk_premium") or 0
-        if base is None:
+        total = raw.get("total_equity_risk_premium")
+        crp = raw.get("country_risk_premium")
+        if total is None or crp is None:
             continue
         countries.append({
             "name": name,
-            "base_erp": base,
+            "base_erp": total - crp,
             "crp": crp,
-            "total_erp": base + crp,
+            "total_erp": total,
         })
     countries.sort(key=lambda c: c["name"])
 

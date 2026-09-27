@@ -298,8 +298,14 @@ class DamodaranStore:
         if risk is None and tax is None:
             return None
 
-        erp = risk.get("equity_risk_premium", 0.0) if risk else 0.0
+        total_erp = risk["total_equity_risk_premium"] if risk else 0.0
         crp = risk.get("country_risk_premium", 0.0) if risk else 0.0
+        if total_erp is None or crp is None:
+            raise ValueError(f"Country ERP components missing: {country_name}")
+        # Source ERP already includes CRP. The engine carries CRP separately.
+        # Subtract the reported component, rather than imposing the mature ERP
+        # on countries whose source definition differs (including the US).
+        erp = total_erp - crp
         tax_rate = tax.get("corporate_tax_rate", 0.0) if tax else 0.0
 
         return MacroInputs(

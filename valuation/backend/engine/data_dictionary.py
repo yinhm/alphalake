@@ -19,7 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 class MacroInputs(BaseModel):
     risk_free_rate: float = Field(description="10/20/30-year treasury yield")
-    equity_risk_premium: float = Field(description="Equity Risk Premium (ERP)")
+    equity_risk_premium: float = Field(description="ERP base excluding the separately supplied country risk premium")
     country_risk_premium: float = Field(default=0.0, description="Country Risk Premium (CRP)")
     tax_rate_marginal: float = Field(description="Marginal/statutory corporate tax rate")
     tax_rate_effective: float | None = Field(default=None, description="Effective tax rate")

@@ -182,9 +182,7 @@ def _get_country_erp(country_name: str, store) -> float | None:
         raw = lower_map.get(country_name.lower())
     if raw is None:
         return None
-    erp = raw.get("equity_risk_premium", 0) or 0
-    crp = raw.get("country_risk_premium", 0) or 0
-    return erp + crp
+    return raw.get("total_equity_risk_premium")
 
 
 def _candidate_keys(raw_name: str) -> list[str]:

@@ -44,7 +44,7 @@ def parse_country_risk(file_path: str | Path) -> dict[str, dict]:
             "region": _cell_str(ws, r, headers.get("Africa")),  # Column B is region, labeled "Africa" in header
             "moodys_rating": _cell_str(ws, r, headers.get("Moody's rating")),
             "default_spread": _cell_float(ws, r, headers.get("Rating-based Default Spread")),
-            "equity_risk_premium": _cell_float(ws, r, headers.get("Total Equity Risk Premium")),
+            "total_equity_risk_premium": _cell_float(ws, r, headers.get("Total Equity Risk Premium")),
             "country_risk_premium": _cell_float(ws, r, headers.get("Country Risk Premium")),
         }
 
@@ -124,7 +124,7 @@ def alphalake_country_snapshot(file_path: str | Path) -> dict:
                 raise ValueError(f"missing/duplicate country: {name}")
             r = rows[0]
             for metric, column, key in (("sovereign_default_spread", "D", "default_spread"),
-                                        ("total_equity_risk_premium", "E", "equity_risk_premium"),
+                                        ("total_equity_risk_premium", "E", "total_equity_risk_premium"),
                                         ("country_risk_premium", "F", "country_risk_premium")):
                 add("country", code, metric, f"{column}{r}", parsed[name][key])
         # 仅验证原文明确成立的 CN/HK 加总，美国行保留源定义，不套同一公式。

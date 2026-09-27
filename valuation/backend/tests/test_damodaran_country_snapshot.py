@@ -49,3 +49,41 @@ def test_country_parser_rejects_unsupported_inputs(tmp_path, cell, value):
     wb.close()
     with pytest.raises((ValueError, KeyError)):
         alphalake_country_snapshot(target)
+
+
+def test_native_country_erp_counts_reported_crp_once(monkeypatch):
+    from data_sources.damodaran_parsers.country_risk_parser import parse_country_risk
+    from data_sources.damodaran_store import DamodaranStore
+    from engine.segment_resolver import _get_country_erp
+    from api import routes
+
+    store = DamodaranStore(_country_risk=parse_country_risk(FIXTURE))
+    monkeypatch.setattr(routes, '_get_damodaran_store', lambda: store)
+    catalog = {r['name']: r for r in routes.list_erp_catalog()['countries']}
+    from engine.data_dictionary import AdjustedFinancials, IndustryData
+    from engine.module_2_risk import compute_cost_of_capital
+    workbook = openpyxl.load_workbook(FIXTURE, data_only=True)
+    try:
+        sheet = workbook['ERPs by country']
+        for country in ('China', 'Hong Kong', 'United States'):
+            row = next(r for r in sheet.iter_rows(min_row=9) if r[0].value == country)
+            total, crp = row[4].value, row[5].value
+            macro = store.lookup_country(country)
+            assert macro.equity_risk_premium + macro.country_risk_premium == pytest.approx(total)
+            assert macro.country_risk_premium == crp
+            assert _get_country_erp(country, store) == total
+            assert catalog[country]['total_erp'] == total
+            assert catalog[country]['base_erp'] + catalog[country]['crp'] == pytest.approx(total)
+            macro.risk_free_rate = .04
+            result = compute_cost_of_capital(
+                AdjustedFinancials(adjusted_ebit=100, adjusted_mv_debt=0), macro,
+                IndustryData(industry_name='test', region='US', beta_u=1.2),
+                mv_equity=1000, book_debt=0)
+            assert result.cost_of_equity == pytest.approx(.04 + 1.2 * total)
+        store._country_risk['China']['total_equity_risk_premium'] = None
+        with pytest.raises(ValueError, match='ERP components missing'):
+            store.lookup_country('China')
+        assert _get_country_erp('China', store) is None
+        assert 'China' not in {r['name'] for r in routes.list_erp_catalog()['countries']}
+    finally:
+        workbook.close()
