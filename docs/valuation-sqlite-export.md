@@ -1,6 +1,6 @@
 # 标准财务事实导出 SQLite
 
-当前提供纯TDX来源的SQLite财务快照，完整报表目标仍有缺口；经用户批准，现金及长期投资的已知组成允许作为显式代理用于估值；安克、苏泊尔另通过[估值输入代理](valuation-book-proxies.md)接通原生API。专用前端和估值旁路已撤除；原页面和请求契约已恢复，未获准或不适用代理的缺项仍在后端拒绝，详见[字段契约及待审批缺口](valuation-native-data-contract-20260924.md)。工具不修改源DuckDB或默认seed。[本轮重新接入](valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v5`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
+当前提供纯TDX来源的SQLite财务快照，完整报表目标仍有缺口；经用户批准，现金及长期投资的已知组成允许作为显式代理用于估值；安克、苏泊尔另通过[估值输入代理](valuation-book-proxies.md)接通原生API。专用前端和估值旁路已撤除；原页面和请求契约已恢复，未获准或不适用代理的缺项仍在后端拒绝，详见[字段契约及待审批缺口](valuation-native-data-contract-20260924.md)。工具不修改源DuckDB或默认seed。[本轮重新接入](valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v6`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
 
 依赖Python 3.11+标准库和当前版本`alphalake`程序，无新增包。先构建当前程序；本机的大库任务、构建和测试须串行放在独立systemd系统服务中，参见[内存隔离约束](fundamental-memory-20260919.md)。例如：
 
@@ -65,7 +65,7 @@ SQLite的`standard_facts`保存原生模型已映射目标及现金、投资、�
 | cash_and_marketable_securities | cash_and_cash_equivalents及资产组成 | 现金等价物金额写入并标记范围未闭合的代理；不假定已覆盖短期投资 |
 | cross_holdings | 长期股权、债权、其他债权、其他权益工具及其他非流动金融资产 | 可用分量逐项校验后求小计；缺项不补零，已知小计作为显式账面代理 |
 | companies.effective_tax_rate | income_tax_expense / profit_before_tax | 最近完整年度会计有效税率，非预测税率；缺项、分母≤0或比例不在[0,1]时留空并诊断 |
-| companies.mv_equity | 合格收盘价×total_shares | 报告期市值代理；已知B/H股时拒绝单价推算 |
+| companies.mv_equity | 合格收盘价×total_shares | 报告期市值代理；已知B/H股时按用户授权采用A股价格×总股本，标记a_share_total_share_proxy，不是分股类真实市值 |
 
 年度流量取全年累计；单季流量为当年累计减前一季度累计，Q1直接使用。不跨年度差分、不加总期末余额；前期缺失则差分结果为空。追溯调整可能影响跨期可比性，本工具未独立审核比较口径。来源冲突期间留空；字段单位、期间、身份或范围不符合预期则拒绝整份导出。
 
@@ -81,7 +81,7 @@ SQLite的`standard_facts`保存原生模型已映射目标及现金、投资、�
 
 ## 网页消费与估值
 
-当前8080使用[100家公司验收快照](valuation-100-market-20260926.md)：100家已导出，94家市值代理齐全，2家原生计算成功，其余拒绝原因单独记录。
+当前8080使用[100家公司验收快照](valuation-100-market-20260926.md)：100家已导出；研发补链和多股类A股市值代理后72家准入、28家保留缺项，结果见[发布记录](valuation-a-share-market-proxy-20260927.md)。
 
 如需手动让网页读取该快照，在启动网页后端的环境中显式设置：
 

@@ -148,8 +148,15 @@ def test_standard_bridge_components_and_market_proxy():
     facts.append(fact('listed_h_shares',1,'share'))
     with sqlite3.connect(':memory:') as db:
         exporter.export_snapshot(db,[company],fetch,period,asof,years=1,quarters=1)
+        assert db.execute('SELECT mv_equity_listing FROM companies').fetchone()[0] == 10
+        assert db.execute("SELECT status FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()[0]=='a_share_total_share_proxy'
+        evidence = json.loads(db.execute("SELECT evidence_json FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()[0])
+        assert evidence['known_foreign_share_classes']['listed_h_shares']['value'] == '1'
+    company['quote'] = None
+    with sqlite3.connect(':memory:') as db:
+        exporter.export_snapshot(db,[company],fetch,period,asof,years=1,quarters=1)
         assert db.execute('SELECT mv_equity_listing FROM companies').fetchone()[0] is None
-        assert db.execute("SELECT status FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()[0]=='requires_share_class_market_values'
+        assert db.execute("SELECT status FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()[0] == 'missing_eligible_close'
 
 
 def test_long_term_subtotal_requires_valid_same_period_components():

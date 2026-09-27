@@ -1,5 +1,7 @@
 # 100家公司市值补齐与原生估值验收
 
+当前已完成研发补链和多股类A股市值代理，固定100家为72成功/28缺项拒绝；详见[当前发布](valuation-a-share-market-proxy-20260927.md)。以下为此前各轮验收记录。
+
 后续已按用户授权开放资产代理，相同100家样本为4家条件计算、96家其他缺项拒绝（详见[资产代理发布](valuation-asset-proxy-20260926.md)）；再经[94家研发断链批量补链](valuation-rnd94-filing-repair-20260926.md)后为69家准入、31家缺项拒绝。下面2/98为资产代理放开前基线。
 
 当前交付：`workspace/derived/valuation.sqlite`为100家公司测试快照，8080网页已读取此文件；主库仍保留完整既有证券与财务范围。财务报告期2026H1，具体信息截止、库哈希和样本列表保存在`workspace/derived/valuation-100/`（本轮快照哈希及发布收据见`workspace/derived/rnd94-filing-repair-20260926/`）。这不是100家公司均可估值的声明。

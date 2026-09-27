@@ -105,7 +105,7 @@ def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypat
     from api.main import app
 
     record = sample(monkeypatch)
-    record['data_source'] = dict(contract='alphalake-sqlite-v5', report_period='2025-12-31', information_as_of='2026-09-25')
+    record['data_source'] = dict(contract='alphalake-sqlite-v6', report_period='2025-12-31', information_as_of='2026-09-25')
     record['financials_annual'].append(dict(fy_offset=1,revenues=None,ebit=None))
     conn = sqlite3.connect(':memory:', check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -135,8 +135,11 @@ def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypat
             assert client.post('/api/valuation/from-database',json=dict(ticker='TEST',risk_free_rate=.04)).status_code==422
             conn.execute("UPDATE export_cells SET status='estimated_partial_scope', evidence_json=? WHERE field='cash_and_marketable_securities'",
                          ('[{"available_component_million_cny":50,"not_complete_target":true}]',))
+            conn.execute("UPDATE export_cells SET status='a_share_total_share_proxy' WHERE field='mv_equity_listing'")
             response = client.post('/api/valuation/from-database',json=dict(ticker='TEST',risk_free_rate=.04))
             assert response.status_code == 200 and '账面代理' in response.text
+            assert response.json()['valuation_proxy']['market_proxy']['status'] == 'a_share_total_share_proxy'
+            assert 'WACC' in response.text
             assert response.json()['valuation_proxy']['exported_asset_proxies'][0]['value'] == 50
             updated = client.patch('/api/valuation/'+response.json()['id'], json={'overrides': {}})
             assert updated.status_code == 200 and '账面代理' in updated.text

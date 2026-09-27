@@ -286,7 +286,7 @@ def snapshot_metadata(conn: sqlite3.Connection) -> dict | None:
     if not tables.intersection({'metadata', 'valuation_inputs', 'standard_facts', 'export_cells'}):
         return None
     metadata = dict(conn.execute('SELECT key,value FROM metadata')) if 'metadata' in tables else {}
-    if metadata.get('contract') != 'alphalake-sqlite-v5':
+    if metadata.get('contract') != 'alphalake-sqlite-v6':
         raise ValueError('Unsupported AlphaLake SQLite contract; rebuild the snapshot with the current exporter')
     if not {'standard_facts', 'export_cells', 'export_universe'} <= tables:
         raise ValueError('Incomplete AlphaLake SQLite snapshot')
@@ -382,7 +382,7 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
             invalid_evidence = estimate['status'] != 'estimated'
             evidence = dict(status=estimate['status'], evidence=[estimate])
         if source and series == 'company' and field == 'mv_equity_listing':
-            invalid_evidence = evidence is None or evidence['status'] not in ('available','reported_share_price_proxy')
+            invalid_evidence = evidence is None or evidence['status'] not in ('available','reported_share_price_proxy','a_share_total_share_proxy')
         if invalid_evidence or v is None or not isinstance(v, (int,float)) or not math.isfinite(v) or (positive and v <= 0):
             partial = next((e for e in (evidence or {}).get('evidence', [])
                             if isinstance(e, dict) and e.get('not_complete_target')), {})
@@ -452,6 +452,8 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
             warnings.append('公司年度有效税率未供给或须审核；原模型税率默认值仍是估值假设')
         warnings.append('债务为短长借款、债券、一年内到期非流动负债及租赁负债的账面合计；到期项范围与租赁重复资本化须另核')
         market = cells.get(('company',0,'mv_equity_listing'))
+        if market and market['status'] == 'a_share_total_share_proxy':
+            warnings.append('多股类市值按A股价格×含B/H股的总股本估计；缺其他股类价格及汇率，不是分股类真实合计市值，影响WACC权重和杠杆调整')
         if market and market['status'] == 'reported_share_price_proxy':
             warnings.append('市值为报告期附近未复权价格×报告期总股本的代理；不是当前市值，也未认证未知的多股类范围')
         if not policy:
@@ -463,6 +465,8 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
         optional_history_missing=history,warnings=warnings,input_window=window,
         adjustment_selection=dict(rd=rd_enabled,leases=lease_enabled,basis='native_database_defaults'),
         valuation_proxy=policy or None,
+        market_proxy=dict(value=co.get('mv_equity_listing'), **cells[('company',0,'mv_equity_listing')])
+            if cells.get(('company',0,'mv_equity_listing'), {}).get('status') == 'a_share_total_share_proxy' else None,
         exported_asset_proxies=[dict(series=s, offset=o, field=f, value=next((part['available_component_million_cny'] for part in e['evidence']
                 if isinstance(part, dict) and 'available_component_million_cny' in part), None), **e)
             for (s,o,f),e in cells.items() if e['status']=='estimated_partial_scope'

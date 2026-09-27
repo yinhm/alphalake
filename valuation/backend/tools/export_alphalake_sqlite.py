@@ -34,7 +34,7 @@ FIELDS = {
     'cross_holdings': ('long_term_equity_investments', 'instant', 'CNY'),
 }
 EXCHANGES = {'XSHG': 'SHSE', 'XSHE': 'SZSE', 'XBSE': 'BJSE'}
-CONTRACT = 'alphalake-sqlite-v5'
+CONTRACT = 'alphalake-sqlite-v6'
 DEBT_COMPONENTS = ('short_term_borrowings', 'long_term_borrowings', 'bonds_payable',
                    'current_portion_noncurrent_liabilities', 'lease_liabilities')
 ASSET_COMPONENTS = ('monetary_funds', 'cash_and_cash_equivalents', 'trading_financial_assets',
@@ -218,9 +218,9 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
             if not price.is_finite() or price <= 0:
                 raise ValueError('invalid market price')
             row['stock_price_listing'] = float(price)
-        if foreign:
-            market_status = 'requires_share_class_market_values'
-        elif not quote:
+        market_evidence['known_foreign_share_classes'] = {f: facts[(period.isoformat(),f)] for f in foreign}
+        market_evidence['share_class_prices_and_fx_complete'] = False
+        if not quote:
             market_status = 'missing_eligible_close'
         elif shares is None or period.isoformat() in conflicts:
             market_status = 'missing_or_conflicting_reported_shares'
@@ -234,7 +234,7 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
             if not math.isfinite(row['mv_equity_listing']):
                 raise ValueError('market cap overflow')
             market_evidence['shares'] = shares
-            market_status = 'reported_share_price_proxy'
+            market_status = 'a_share_total_share_proxy' if foreign else 'reported_share_price_proxy'
         tax_rate, tax_status, tax_evidence = annual_effective_tax_rate(facts, conflicts, company['instrument_id'], base)
         row['effective_tax_rate'] = tax_rate
         target.insert_companies(connection, [row])
@@ -331,10 +331,10 @@ def main():
                             standard_values='decimal_strings_in_each_rows_unit',
                             annual_net_income='parent_attributable', annual_bv_equity='parent_attributable',
                             market_price_window='latest_completed_unadjusted_close_at_or_before_report_period_within_14_days',
-                            market_cap_basis='close_times_reported_total_shares_proxy; known_foreign_share_classes_rejected',
+                            market_cap_basis='close_times_reported_total_shares_proxy; known_foreign_share_classes_use_explicit_a_share_price_proxy',
                             quarterly_flows='difference_of_standard_YTD_same_year; Q1 unchanged',
                             missing='NULL; see export_cells; source-zero/unreviewed not inferred from absence',
-                            boundary='TDX_standard_components; partial_target_scope_values_are_not_complete_totals; market_value_is_reported_share_price_proxy',
+                            boundary='TDX_standard_components; partial_target_scope_values_are_not_complete_totals; market_value_is_explicit_price_times_total_shares_proxy',
                             standard_field_scope=','.join(SOURCE_FIELDS),
                             candidates=str(len(companies)), companies=str(count))
             connection.executemany('INSERT OR REPLACE INTO metadata VALUES(?,?)', metadata.items())
