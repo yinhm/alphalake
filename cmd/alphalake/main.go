@@ -92,7 +92,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  calc-adjustments <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-classifications <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-industries <db-path>")
-	fmt.Fprintln(os.Stderr, "  sync-financial <db-path> [--all | --latest N] [--offline]")
+	fmt.Fprintln(os.Stderr, "  sync-financial <db-path> [--all | --latest N] [--offline] [--report path]")
 	fmt.Fprintln(os.Stderr, "  upgrade-filing-coverage <schema52-db> (explicit one-time schema53 upgrade)")
 	fmt.Fprintln(os.Stderr, "  export-prospectuses <db-path>")
 	fmt.Fprintln(os.Stderr, "  import-filing-coverage <db-path> <reviews.json>")
@@ -403,9 +403,14 @@ func main() {
 			usage()
 			os.Exit(2)
 		}
-		maxPackages, offline, err := parseFinancialLimit(os.Args[3:])
+		maxPackages, offline, reportPath, err := parseFinancialLimit(os.Args[3:])
 		if err != nil {
 			fatal(err)
+		}
+		if reportPath != "" {
+			if _, err := os.Lstat(reportPath); !errors.Is(err, os.ErrNotExist) {
+				fatal(fmt.Errorf("source report must be a new file: %s", reportPath))
+			}
 		}
 		all := maxPackages == 0
 		dbPath := os.Args[2]
@@ -441,6 +446,11 @@ func main() {
 			},
 		}
 		summary, syncErr := ingest.SyncTDXProfessionalFinancialWithOptions(ctx, db, source, artifactRoot, options)
+		if reportPath != "" {
+			if err := writeFinancialSyncReport(ctx, db, reportPath, summary, syncErr, offline); err != nil {
+				fatal(err)
+			}
+		}
 		fmt.Printf("TDX financial sync: run=%d listed=%d selected=%d packages=%d skipped=%d records_attempted=%d records_inserted=%d records_reassigned=%d records_unresolved=%d unresolved=%d acknowledged=%d failures=%d master_failures=%d cache_fallbacks=%d all=%v root=%s\n",
 			summary.RunID, summary.Listed, summary.Selected, summary.Packages, summary.Skipped,
 			summary.RecordsAttempted, summary.RecordsInserted, summary.RecordsReassigned, summary.RecordsUnresolved,

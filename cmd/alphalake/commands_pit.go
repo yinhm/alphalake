@@ -344,14 +344,15 @@ func parseCLIDate(value string) (time.Time, error) {
 	return parsed.UTC(), nil
 }
 
-func parseFinancialLimit(args []string) (int, bool, error) {
+func parseFinancialLimit(args []string) (int, bool, string, error) {
 	fs := flag.NewFlagSet("sync-financial", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
+	report := fs.String("report", "", "write structured source maintenance receipt to a new file")
 	offline := fs.Bool("offline", false, "use local packages and identities without network")
 	all := fs.Bool("all", false, "all past packages")
 	latest := fs.Int("latest", 1, "newest N past packages")
 	if err := fs.Parse(args); err != nil {
-		return 0, false, parseError(err)
+		return 0, false, "", parseError(err)
 	}
 	suppliedLatest := false
 	fs.Visit(func(f *flag.Flag) {
@@ -360,10 +361,10 @@ func parseFinancialLimit(args []string) (int, bool, error) {
 		}
 	})
 	if fs.NArg() != 0 || *latest < 1 || (*all && suppliedLatest) {
-		return 0, false, usageError("use either --all or --latest positive-N")
+		return 0, false, "", usageError("use either --all or --latest positive-N")
 	}
 	if *all {
-		return 0, *offline, nil
+		return 0, *offline, *report, nil
 	}
-	return *latest, *offline, nil
+	return *latest, *offline, *report, nil
 }
