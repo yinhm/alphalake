@@ -57,7 +57,7 @@ func exportValuationQuoteOnTx(ctx context.Context, tx *sql.Tx, symbol string, da
  CAST(o.close AS VARCHAR) AS close,o.source,o.ingest_run_id,CAST(o.recorded_at AS VARCHAR) AS recorded_at,
  CAST(r.started_at AS VARCHAR) AS acquisition_started_at,CAST(r.finished_at AS VARCHAR) AS run_finished_at
  FROM market.daily_observation o JOIN meta.ingest_run r ON r.ingest_run_id=o.ingest_run_id
- WHERE o.instrument_id=? AND o.trade_date=? AND o.source='tdx' AND r.source='tdx' AND r.dataset='daily_ohlcv'
+ WHERE o.instrument_id=? AND o.trade_date=? AND o.source='tdx' AND r.source='tdx' AND r.dataset IN ('daily_ohlcv','valuation_quote_window')
  AND r.status IN ('completed','partial') AND r.started_at>=? AND o.recorded_at<=? AND r.finished_at<=?
  ORDER BY o.recorded_at DESC,o.observation_id DESC LIMIT 1) q`, id, day.Format("2006-01-02"), boundary, asof, asof).Scan(&payload)
 	if errors.Is(err, sql.ErrNoRows) {

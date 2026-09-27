@@ -186,7 +186,7 @@ def test_online_sync_uses_reviewed_symbols_and_bounded_filings(tmp_path, monkeyp
         output=target, code=['600519','300866'], period='2026-06-30', risk_free_rate=.0425,
         source_mode='online', latest=6, stage_timeout=10, filings_start='2026-09-01', filings_end='2026-09-27')
     assert delivery.run(args, tmp_path) == 1
-    assert [c[1] for c in calls] == ['sync-financial','sync-filings','sync-daily-all','materialize-fundamentals']
+    assert [c[1] for c in calls] == ['sync-financial','sync-filings','sync-valuation-quotes','materialize-fundamentals']
     assert calls[1][3:] == ['--start','2026-09-01','--end','2026-09-27','--metadata-only','--codes-file',str(tmp_path/'codes.txt')]
-    assert calls[2][3:] == ['--symbols','sz300866,sh600519']
+    assert calls[2][3:] == ['--symbols','sz300866,sh600519','--period','2026-06-30']
     assert target.read_bytes() == b'reviewed'

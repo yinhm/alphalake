@@ -57,3 +57,19 @@ func TestFetchStockDailyBarsSinceUsesCalendarDateAndKeepsBoundary(t *testing.T) 
 		t.Fatalf("bar dates = %v, %v", bars[0].TradeDate, bars[1].TradeDate)
 	}
 }
+
+func TestDailyWindowDropsBothOutsideDates(t *testing.T) {
+	start := time.Date(2026, 9, 2, 0, 0, 0, 0, time.UTC)
+	f := &fakeDailySinceClient{resp: &protocol.KlineResp{}}
+	for _, offset := range []int{-1, 0, 1, 2} {
+		f.resp.List = append(f.resp.List, &protocol.Kline{Time: start.AddDate(0, 0, offset), Open: 100, High: 100, Low: 100, Close: 100})
+	}
+	f.resp.List[3].Volume = -1 // 窗口外的记录不参与单位解析。
+	bars, e := fetchStockDailyBarsWindow(t.Context(), f, 1, "sh600004", start, start.AddDate(0, 0, 1))
+	if e != nil || len(bars) != 2 || !bars[0].TradeDate.Equal(start) || !bars[1].TradeDate.Equal(start.AddDate(0, 0, 1)) {
+		t.Fatal(bars, e)
+	}
+	if !f.beforeStopped || f.boundaryStopped {
+		t.Fatal("wrong paging boundary")
+	}
+}

@@ -79,7 +79,7 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
  adjustment:='unadjusted',source:='tdx') AS quote
  FROM market.daily_observation o JOIN meta.ingest_run r USING(ingest_run_id)
  WHERE o.instrument_id IN(SELECT instrument_id FROM _sqlite_universe) AND o.source='tdx' AND r.source='tdx'
- AND r.dataset='daily_ohlcv' AND r.status IN ('completed','partial') AND o.close>0
+ AND r.dataset IN ('daily_ohlcv','valuation_quote_window') AND r.status IN ('completed','partial') AND o.close>0
  AND o.trade_date BETWEEN `+finish+`-INTERVAL 14 DAY AND `+finish+`
  AND r.started_at>=((o.trade_date+1)::TIMESTAMP AT TIME ZONE 'Asia/Shanghai')
  AND o.recorded_at<=`+cutoff+` AND r.finished_at<=`+cutoff+`

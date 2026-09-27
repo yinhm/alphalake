@@ -250,7 +250,7 @@ def run(args, root):
                 if any(c not in by_code for c in codes):
                     raise ValueError('quote identities missing from published snapshot')
                 symbols = [('sh' if by_code[c].startswith('SHSE:') else 'sz')+c for c in codes]
-                stage('sync-daily', [str(args.alphalake), 'sync-daily-all', str(args.database), '--symbols', ','.join(symbols)])
+                stage('sync-quotes', [str(args.alphalake), 'sync-valuation-quotes', str(args.database), '--symbols', ','.join(symbols), '--period', str(args.period)])
             stage('materialize', [str(args.alphalake), 'materialize-fundamentals', str(args.database)])
         if args.sync_references:
             if args.source_mode == 'local':

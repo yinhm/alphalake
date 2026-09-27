@@ -6,10 +6,12 @@ import (
 	"errors"
 	"flag"
 	"github.com/yinhm/alphalake/internal/ingest"
+	tdx "github.com/yinhm/alphalake/internal/source/tdx"
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -122,4 +124,36 @@ func runMarketCapitalExport(ctx context.Context, args []string) error {
 		return e
 	}
 	return json.NewEncoder(os.Stdout).Encode(out)
+}
+
+func runSyncQuoteWindow(ctx context.Context, args []string) error {
+	if len(args) < 1 {
+		return usageError("usage: sync-valuation-quotes <db> --symbols sh600004,... --period YYYY-MM-DD")
+	}
+	fs := flag.NewFlagSet("sync-valuation-quotes", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	symbols := fs.String("symbols", "", "explicit resolved SH/SZ symbols")
+	period := fs.String("period", "", "report date; inclusive 14-day lookback")
+	if e := fs.Parse(args[1:]); e != nil {
+		return parseError(e)
+	}
+	end, e := time.Parse("2006-01-02", *period)
+	if e != nil || *symbols == "" || fs.NArg() != 0 {
+		return usageError("valid --period and --symbols required")
+	}
+	db, e := duckstore.OpenInitialized(ctx, args[0])
+	if e != nil {
+		return e
+	}
+	defer db.Close()
+	source, e := tdx.DialDefault()
+	if e != nil {
+		return e
+	}
+	defer source.Close()
+	result, e := ingest.SyncValuationQuoteWindow(ctx, db, source, strings.Split(*symbols, ","), end)
+	if writeErr := json.NewEncoder(os.Stdout).Encode(result); writeErr != nil {
+		return errors.Join(e, writeErr)
+	}
+	return e
 }

@@ -30,6 +30,8 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return true, runFinancialStatements(ctx, args)
 	case "tdx-financial-fields", "export-financial-source":
 		return true, runSourceFinancial(ctx, args)
+	case "sync-valuation-quotes":
+		return true, runSyncQuoteWindow(ctx, args[1:])
 	case "export-valuation-quote":
 		return true, runValuationQuote(ctx, args[1:])
 	case "export-industry-capital":

@@ -126,28 +126,7 @@ func mergeDailyBarsOnConn(ctx context.Context, conn *sql.Conn, bars []domain.Dai
 	if err := validateDailyBarKeys(bars); err != nil {
 		return err
 	}
-	if _, err := conn.ExecContext(ctx, `DROP TABLE IF EXISTS temp.main.`+dailyStageTable); err != nil {
-		return fmt.Errorf("cleanup daily staging table: %w", err)
-	}
-	if _, err := conn.ExecContext(ctx, `
-		CREATE TEMP TABLE `+dailyStageTable+` (
-			instrument_id BIGINT NOT NULL,
-			trade_date DATE NOT NULL,
-			open DOUBLE,
-			high DOUBLE,
-			low DOUBLE,
-			close DOUBLE,
-			volume BIGINT,
-			amount DOUBLE,
-			up_count BIGINT,
-			down_count BIGINT,
-			source VARCHAR NOT NULL,
-			ingest_run_id BIGINT
-		)
-	`); err != nil {
-		return fmt.Errorf("create daily staging table: %w", err)
-	}
-	if err := appendDailyStage(ctx, conn, bars, ingestRunID); err != nil {
+	if err := stageDailyBars(ctx, conn, bars, ingestRunID); err != nil {
 		return err
 	}
 
@@ -236,5 +215,56 @@ func appendDailyStage(ctx context.Context, conn *sql.Conn, bars []domain.DailyBa
 			return fmt.Errorf("flush daily staging appender: %w", err)
 		}
 		return nil
+	})
+}
+
+// stageDailyBars is shared by full-history projection and bounded quote evidence.
+func stageDailyBars(ctx context.Context, conn *sql.Conn, bars []domain.DailyBar, ingestRunID int64) error {
+	if _, err := conn.ExecContext(ctx, `DROP TABLE IF EXISTS temp.main.`+dailyStageTable); err != nil {
+		return fmt.Errorf("cleanup daily staging table: %w", err)
+	}
+	if _, err := conn.ExecContext(ctx, `
+		CREATE TEMP TABLE `+dailyStageTable+` (
+			instrument_id BIGINT NOT NULL,
+			trade_date DATE NOT NULL,
+			open DOUBLE,
+			high DOUBLE,
+			low DOUBLE,
+			close DOUBLE,
+			volume BIGINT,
+			amount DOUBLE,
+			up_count BIGINT,
+			down_count BIGINT,
+			source VARCHAR NOT NULL,
+			ingest_run_id BIGINT
+		)
+	`); err != nil {
+		return fmt.Errorf("create daily staging table: %w", err)
+	}
+	if err := appendDailyStage(ctx, conn, bars, ingestRunID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// AppendQuoteWindow records validated observations without publishing a complete
+// daily series: neither ohlcv_daily nor its retry/resume boundary is modified.
+func AppendQuoteWindow(ctx context.Context, db *sql.DB, runID int64, bars []domain.DailyBar) error {
+	if runID <= 0 {
+		return errors.New("positive run ID required")
+	}
+	if err := validateDailyBarKeys(bars); err != nil {
+		return err
+	}
+	return withDailyWriteTransaction(ctx, db, func(conn *sql.Conn) error {
+		if err := stageDailyBars(ctx, conn, bars, runID); err != nil {
+			return err
+		}
+		_, err := conn.ExecContext(ctx, `INSERT INTO market.daily_observation
+  (instrument_id,trade_date,open,high,low,close,volume,amount,up_count,down_count,source,ingest_run_id)
+  SELECT DISTINCT instrument_id,trade_date,open,high,low,close,volume,amount,up_count,down_count,source,ingest_run_id
+  FROM temp.main.`+dailyStageTable)
+		return err
 	})
 }

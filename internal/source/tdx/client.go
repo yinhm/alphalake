@@ -51,10 +51,13 @@ func fetchStockDailyBars(ctx context.Context, c dailyKlineClient, instrumentID i
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	return dailyBarsFromResponse(instrumentID, key.ProviderSymbol, resp, nil)
+	return dailyBarsFromResponse(instrumentID, key.ProviderSymbol, resp, nil, nil)
 }
 
 func fetchStockDailyBarsSince(ctx context.Context, c dailyKlineSinceClient, instrumentID int64, symbol string, since time.Time) ([]domain.DailyBar, error) {
+	return fetchStockDailyRange(ctx, c, instrumentID, symbol, since, nil)
+}
+func fetchStockDailyRange(ctx context.Context, c dailyKlineSinceClient, instrumentID int64, symbol string, since time.Time, until *time.Time) ([]domain.DailyBar, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -81,10 +84,10 @@ func fetchStockDailyBarsSince(ctx context.Context, c dailyKlineSinceClient, inst
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	return dailyBarsFromResponse(instrumentID, key.ProviderSymbol, resp, &sinceDate)
+	return dailyBarsFromResponse(instrumentID, key.ProviderSymbol, resp, &sinceDate, until)
 }
 
-func dailyBarsFromResponse(instrumentID int64, symbol string, resp *protocol.KlineResp, since *time.Time) ([]domain.DailyBar, error) {
+func dailyBarsFromResponse(instrumentID int64, symbol string, resp *protocol.KlineResp, since, until *time.Time) ([]domain.DailyBar, error) {
 	if resp == nil {
 		return nil, nil
 	}
@@ -94,7 +97,7 @@ func dailyBarsFromResponse(instrumentID int64, symbol string, resp *protocol.Kli
 			continue
 		}
 		tradeDate := canonicalTradeDate(k.Time)
-		if since != nil && tradeDate.Before(*since) {
+		if (since != nil && tradeDate.Before(*since)) || (until != nil && tradeDate.After(*until)) {
 			continue
 		}
 		volume, err := NormalizeStockVolume(k.Volume)
@@ -125,4 +128,20 @@ func dailyBarsFromResponse(instrumentID int64, symbol string, resp *protocol.Kli
 func canonicalTradeDate(t time.Time) time.Time {
 	y, m, d := t.Date()
 	return time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
+}
+
+// StockDailyBarsWindow stops paging at the lower date and discards newer rows
+// outside the requested interval. SDK pages can contain additional transport rows.
+func (c *Client) StockDailyBarsWindow(ctx context.Context, id int64, symbol string, start, end time.Time) ([]domain.DailyBar, error) {
+	if c == nil {
+		return nil, fmt.Errorf("TDX client is not initialized")
+	}
+	return fetchStockDailyBarsWindow(ctx, c.requests(ctx), id, symbol, start, end)
+}
+func fetchStockDailyBarsWindow(ctx context.Context, c dailyKlineSinceClient, id int64, symbol string, start, end time.Time) ([]domain.DailyBar, error) {
+	if start.IsZero() || end.IsZero() || canonicalTradeDate(start).After(canonicalTradeDate(end)) {
+		return nil, fmt.Errorf("valid daily date window required")
+	}
+	end = canonicalTradeDate(end)
+	return fetchStockDailyRange(ctx, c, id, symbol, start, &end)
 }
