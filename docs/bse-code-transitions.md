@@ -7,7 +7,7 @@ alphalake sync-bse-code-transitions ./market.duckdb --python python3
 alphalake sync-bse-code-transitions ./market.duckdb --offline --python python3
 ```
 
-日常 `tools.refresh_valuate_alphalake` 已自动在财务同步后、公告采集前执行本命令，写入财务主库，无需另外启用参考数据刷新选项。
+默认沪深日常刷新不执行本命令。仅在用户明确要求北交所时单独执行，并保留既有北交所证据；历史曾自动调用的行为已移除。
 
 Python解析只需标准库，可用 `--parser` 指定绝对脚本路径。北交所下载显式发送 `User-Agent: AlphaLake/1.0` 和HTML接受类型；真实默认客户端曾得到403，相同公开地址带上述客户端标识可取得匹配已归档SHA的原文。失败运行保留，不将403视为空的完整快照。
 

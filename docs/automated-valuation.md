@@ -144,20 +144,20 @@ ALPHALAKE_DUCKDB_MEMORY_LIMIT=768MiB ALPHALAKE_DUCKDB_THREADS=2 GOMEMLIMIT=256Mi
 
 DuckDB 限制与 Go 的 `GOMEMLIMIT` 各管各的内存，二者都不是整个进程 RSS 的硬上限。中间计算可溢写，但不能溢写的操作仍可能明确报内存不足；需保留磁盘空间并根据实测调整，不能将上述示例视为全量导入容量保证。原始归档和事务回滚仍承担失败恢复，不能通过少导源字段来隐瞒容量问题。
 
-## 一次刷新到估值
+## 显式政策批量刷新（不发布原生网页SQLite）
 
-在 `valuation/backend` 下运行：
+以下是显式政策批次，不负责网页快照发布；网页交付见[系统交付](system-delivery.md)。本机须置于隔离systemd硬限额服务中串行运行。在 `valuation/backend` 下调用：
 
 ```bash
-ALPHALAKE_DUCKDB_MEMORY_LIMIT=1536MiB ALPHALAKE_DUCKDB_THREADS=1 GOMEMLIMIT=192MiB \
+ALPHALAKE_DUCKDB_MEMORY_LIMIT=512MiB ALPHALAKE_DUCKDB_THREADS=1 GOMEMLIMIT=192MiB \
 python -m tools.refresh_valuate_alphalake /absolute/path/alphalake.duckdb \
   --period 2026-06-30 --filings-start 2025-04-01 --latest 6 --stage-timeout 21600 \
-  --policy /absolute/path/batch-policy.json --output-dir ./data/refresh_runs
+  --policy /absolute/path/batch-policy.json --output-dir /absolute/path/workspace/derived/refresh-runs
 ```
 
-顺序是 `sync-financial` → `sync-bse-code-transitions` → `sync-filings --metadata-only` → `sync-industries` → 首次 `materialize-fundamentals` → `repair-filings` → 再次物化 → 可选WACC与资本效率参考源刷新 → 批量估值。证券名单由同步命令刷新；不另建常驻服务。可由本机 cron/systemd 定时调用此命令，尚未替用户安装周期任务。进程锁按数据库绝对路径保护同一入口的重叠运行，其他直接写库命令仍依赖 DuckDB 自身锁；不支持跨主机调度锁。
+顺序是 `sync-financial` → `sync-filings --metadata-only` → `sync-industries` → 首次 `materialize-fundamentals` → `repair-filings` → 再次物化 → 可选WACC与资本效率参考源刷新 → 批量估值。证券名单由同步命令刷新；不另建常驻服务。可由本机 cron/systemd 定时调用此命令，尚未替用户安装周期任务。进程锁按数据库绝对路径保护同一入口的重叠运行，其他直接写库命令仍依赖 DuckDB 自身锁；不支持跨主机调度锁。
 
-`--filings-end` 默认中国当日，`--as-of` 默认取本轮同步/物化结束后的实际时点，避免刚刷新的行业因晚于启动时点被误排除。报告期及对应审核政策仍须显式更新，默认六期回填不能保证任意历史报告期齐全。已嵌入的WACC参考包仍须符合本轮信息截止和陈旧约束；加 `--reference-database /absolute/references.duckdb --sync-references` 可自动刷新并固定六类参考版本（WACC四源、行业资本效率、公司行业）。行情和所有公司市场股债结构尚未纳入该通用周期，行业风险暴露及目标权重仍属显式政策。
+`--filings-end` 默认中国当日，`--as-of` 默认取本轮同步/物化结束后的实际时点，避免刚刷新的行业因晚于启动时点被误排除。报告期及对应审核政策仍须显式更新，默认六期回填不能保证任意历史报告期齐全。已嵌入的WACC参考包仍须符合本轮信息截止和陈旧约束；加 `--sync-references` 可自动刷新并固定六类参考版本（WACC四源、行业资本效率、公司行业）。行情和所有公司市场股债结构尚未纳入该通用周期，行业风险暴露及目标权重仍属显式政策。
 
 每次运行保存独立目录：逐阶段日志、持续原子更新的 `run.json` 和批量报告。采集失败不阻止其他采集及缺项检查，但总任务返回非零；物化失败则跳过批量估值，避免将旧物化结果当作本轮成果。`completed` 仅表示命令执行完成，估值覆盖率仍看批量报告，全部公司被阻断也不能称为估值完成。
 
@@ -252,15 +252,15 @@ python -m tools.refresh_valuate_alphalake /absolute/path/alphalake.duckdb \
 批量政策可嵌入 `wacc_references` 固定包，或者运行时提供参考库（两者互斥）：
 
 ```bash
-python -m tools.batch_valuate_alphalake /absolute/financial.duckdb \
+python -m tools.batch_valuate_alphalake /absolute/alphalake.duckdb \
   --period 2026-06-30 --as-of 2026-09-10T01:24:27Z \
-  --policy industry-policy.json --reference-database /absolute/references.duckdb \
+  --policy industry-policy.json --reference-database /absolute/alphalake.duckdb \
   --output-dir ./data/batches
 ```
 
 后者用本地 `export-wacc-references --latest` 按同一时点选择四类版本，并将完整固定包写入批次政策记录。缺少参考包的规则留 `blocked_missing_wacc_references`，不执行该公司导出；自动参考库导出失败则整个批次命令失败，不使用隐式旧包。每家公司仍执行身份/期间/参考陈旧/金融范围/终值条件检查，显式公司政策和审核隔离优先级不变。
 
-`refresh_valuate_alphalake` 同样支持 `--reference-database` 并传入物化结束后的批次，适合定时调用。它此时只消费本地参考库，不自动对行业进行风险研究，也尚未在该选项下同步外部参考源。普通市场股债结构及类别股本仍未通用化，结果保持条件情景标识。
+`refresh_valuate_alphalake --use-references` 从同一主库选择参考并传入物化结束后的批次，适合定时调用。它此时只消费本地参考库，不自动对行业进行风险研究，也尚未在该选项下同步外部参考源。普通市场股债结构及类别股本仍未通用化，结果保持条件情景标识。
 
 真实 CLI 衔接在隔离库 `generic-reference-live.duckdb` 完成：从既有双公司财务验收库复制，再实际刷新主数据/行业（5,569条已识别归属、7条身份缺口、TDX分类缺名称，运行保持partial）。同一时点2026-09-10T01:47:39Z，自动选出四类参考1/2/3/4，品牌消费电子模板匹配后绑定安克，完成1个条件账面FCFF情景；同行业其余11家缺输入，5,557家无此行业政策。此隔离库用于验证接口组合，不能拿它统计全市场财务完整度。
 
@@ -268,7 +268,7 @@ python -m tools.batch_valuate_alphalake /absolute/financial.duckdb \
 
 ## 参考源也纳入刷新周期
 
-在 `refresh_valuate_alphalake` 增加 `--reference-database /absolute/references.duckdb --sync-references`，财务二次物化成功后顺序刷新国家风险、全球行业Beta、人民币国债曲线及合成信用利差，再取统一信息截止进入批量估值。单独 `--reference-database` 仍只读取本地参考；`--sync-references` 没有参考库会在参数阶段拒绝。
+在 `refresh_valuate_alphalake` 增加 `--sync-references`，财务二次物化成功后顺序刷新国家风险、全球行业Beta、人民币国债曲线及合成信用利差，再取统一信息截止进入批量估值。单独 `--use-references` 只读取本地主库参考；`--sync-references` 刷新并使用同一主库，不再接受独立参考库参数。
 
 子进程使用当前后端 Python 和仓库解析脚本绝对路径，避免在 `valuation/backend` 运行时找不到 Go 默认相对脚本。每个参考阶段独立记日志、退出码和起止时间；失败不改写原发布版本，后续批次仅能选择仍完整且通过陈旧检查的本地数据。只要某阶段失败，整轮保持partial，不把沿用旧数据描述成刷新成功。
 
@@ -378,7 +378,7 @@ alphalake sync-company-industries ./references.duckdb --offline --python /absolu
 
 真实归档身份边界测试进入CI，覆盖大整数ID、首次可用边界、未来区间、跨证券代码复用、交易所冲突及有效JSON篡改；Go全套、构建、vet通过，Python全套224通过/4项既有跳过。现有政策仍需显式选择来源行业和适用模型；首次取得时间不因重复取得相同文件而刷新，也不证明上游名单近期更新。
 
-日常 `refresh_valuate_alphalake --sync-references` 现刷新六类来源：原有WACC四源、行业资本效率、公司行业。公司行业写入财务主库（身份查询所在库），其余写入指定参考库；单来源失败保留阶段失败状态，后续批次仍按已发布版本、时点和政策年龄门槛判断，不声称使用本轮失败的快照。调度测试覆盖目标库、绝对解析器路径、失败隔离和最终时点。
+日常 `refresh_valuate_alphalake --sync-references` 现刷新六类来源：原有WACC四源、行业资本效率、公司行业。六类均写入同一财务主库；单来源失败保留阶段失败状态，后续批次仍按已发布版本、时点和政策年龄门槛判断，不声称使用本轮失败的快照。调度测试覆盖目标库、绝对解析器路径、失败隔离和最终时点。
 
 新增 `valuation/examples/a-share-damodaran-five-2026H1.json`，仅采用来源名单中的Computers/Peripherals、Beverage (Alcoholic)、Food Processing、Furn/Home Furnishings、Machinery五个非金融行业。全球行业资本效率按相同来源目录绑定，固定10% WACC及既有历史经营外推仍为显式机械情景；保留三家公司审核隔离。七天首次取得采用窗口不等于来源名单更新日期。实际批次覆盖结果待验收，不把政策文件的存在计为完成。
 

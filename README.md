@@ -1,134 +1,39 @@
 # AlphaLake
 
-默认范围为沪深市场；北交所不进入默认同步及批量估值分母。显式追加 `--include-bse` 才纳入北交所；已有北交所历史与混合市场原始归档保留。按代码/证券指定的查询和单证券操作视为显式范围，历史验收数字不改写。
+面向沪深普通非金融企业的本地金融数据与条件估值系统。主要链路：**TDX → DuckDB标准事实 → 兼容SQLite → 原生valuation网页/API**。默认不纳入北交所；估值方法以达摩达兰原始资料为准，事实、代理和预测假设分层。
 
-当前无实际生产部署，已[清理本轮识别的旧版本兼容路径](docs/compatibility-cleanup-20260919.md)：仅维护当前契约与schema53，原始证据及冻结历史保留；新建库到标准输入及估值的回归验收通过。
+当前无实际生产部署。最新主库为schema53、约329MiB；当前网页100家公司样本87家准入、13家按缺项拒绝。此比例不是全市场数据完整率或估值准确率。详见[当前实现状态](docs/implementation-status.md)。
 
-已完成[无源数值/BLOB副本的标准宽表切换](docs/financial-storage-cutover-20260925.md)：主库schema53约329MiB，原5,627,307个标准值全量比对无差异；最新[历史收入及公告补链](docs/valuation-export-gaps-20260925.md)及[历史研发补接](docs/valuation-reconnect-20260926.md)及后续研发目录补链、分类器修复后达到8,057,491个；最新[招股披露补链](docs/valuation-prelisting-rd-20260927.md)再新增37个TDX研发费用值，合计8,057,528个，同一100家原生估值准入为87成功/13拒绝，旧72家结果不变。同步、三表/TTM、估值JSON及批量SQLite导出已使用新结构，网页8080现读取[100家公司验收快照](docs/valuation-100-market-20260926.md)；17项源记录冲突与原生估值缺项仍明确保留。旧主库和过时整库备份已删除，审核证据与历史诊断另行压缩保留。大任务仍须与交互终端隔离串行运行；经授权，当前DuckDB预算1GiB、进程硬限1.5GiB，见[内存约束](docs/fundamental-memory-20260919.md)。
+## 使用与维护
 
-已完成[三个样本的字段补齐验收](docs/valuation-field-completion-20260926.md)：接入年度会计有效税率，补齐茅台4年、苏泊尔5年的研发费用历史；金额仍来自TDX。三个样本的研发条件缺项均为0，现金及长期投资的完整披露范围仍未闭合。随后已按用户批准接入[显式账面代理](docs/valuation-book-proxies.md)：安克原生API可计算条件估值，苏泊尔已补齐行情并可原生计算；茅台市值已补齐，现允许通用资产代理。[100家验收](docs/valuation-100-market-20260926.md)已完成研发补链；当前按用户授权为多股类公司采用A股价格×总股本代理，市值不再因缺B/H行情阻挡；招股披露补链后当前87家可计算、13家仍缺研发或EBIT。最新验收及剩余缺项见[招股披露补链](docs/valuation-prelisting-rd-20260927.md)，不是全市场估值。
+| 目的 | 入口 |
+|---|---|
+| 理解系统边界与本轮进度 | [系统交付与闭环验收](docs/system-delivery.md) |
+| 从本地缓存同步财务 | [离线同步](docs/tdx-offline-sync.md) |
+| 为原网页准备数据 | [SQLite导出、字段与准入](docs/valuation-sqlite-export.md) |
+| 按显式政策估值 | [统一公司CLI](docs/company-valuation-entry.md) |
+| 查询、解释估值变化 | [历史运行](docs/valuation-run-query.md)、[运行比较](docs/valuation-comparison.md) |
+| Agent调用 | [alphalake-valuation Skill](skills/alphalake-valuation/SKILL.md) |
+| 数据位置、日常资源约束 | [workspace布局](docs/workspace-layout.md)、[内存隔离](docs/fundamental-memory-20260919.md) |
+| 历史成果及证据 | [历史实现记录](docs/implementation-history-20260927.md) |
 
+唯一权威库是`workspace/alphalake.duckdb`，财务及已接入参考数据合库；网页读取`workspace/derived/valuation.sqlite`。TDX是结构化数值主源，CNINFO提供披露身份、时间及核验。动态数据只写workspace，原始归档保留，SQLite可从主库重建。
 
-已提供[TDX标准财务导出SQLite](docs/valuation-sqlite-export.md)，当前契约v6。[重新接入](docs/valuation-reconnect-20260926.md)已补齐债务组成、历史研发和TDX价格×报告期股本的市值代理；现金等价物及长期股权投资已有数值并标明部分目标范围。安克FY0/TTM收入、EBIT和研发条件项无缺项，完整报表口径仍有两项资产范围缺口；获准样本现由独立估值输入代理接通。后续[纯TDX资产推导](docs/tdx-asset-derivation-20260926.md)已给出三期账面小计，并用已有原文确认混合科目内存款、税项与套期不能由总额唯一拆分；长期投资的已知组成小计已接入正式SQLite证据及网页诊断，安克为12.2160亿元；报表事实仍保留缺项，代理的适用范围及遗漏另行披露。原页面和请求保持不变；不以部分组成或专项桥接成功冒称原SQL完整兼容。
+网页保留原操作流程，用户可以修改预测参数。模型默认值、现金/投资及多股类市值代理均不等于公司已核验事实；当前不能称为全市场完全自动估值。同步主库不会自动更新网页，同步、验收、发布由[原生交付入口](docs/system-delivery.md)串联；已完成100家离线闭环，在线最新性及输入经济合理性仍须分开验证。
 
-已[逐项复核官方目录并补入65项标准指标](docs/tdx-supplementary-fields-20260925.md)：标准字段281→346；来源TTM、每股及计数不作普通流量聚合，未明语义逐项保留。
+## 来源与构建
 
-AlphaLake 是面向投资研究、本地优先且可复现的金融市场数据基础设施。
+估值应用[`valuation/`](valuation/README.md)源自[chrisuzy/Investment_Valuation_Agent](https://github.com/chrisuzy/Investment_Valuation_Agent)。感谢原作者Chirs Yu Zhang及贡献者，导入版本、MIT许可证与Credits见[来源记录](valuation/UPSTREAM.md)。继续复用其共享引擎和原页面，不维护第二套DCF引擎。
 
-估值引擎与应用已纳入 [`valuation/`](valuation/README.md)，源自 [chrisuzy/Investment_Valuation_Agent](https://github.com/chrisuzy/Investment_Valuation_Agent)。感谢原作者 Chirs Yu Zhang 及上游贡献者；原 MIT 许可证、导入版本与 Credits 见 [来源记录](valuation/UPSTREAM.md)。已接通实际数据库到估值 CLI/API 与原生股权桥接，使用方法和适用边界见[融合说明](valuation/docs/alphalake-integration.md)。
-
-它通过多个数据源适配器采集数据，将记录归一化为标准模型，在 DuckDB 中存储分析数据，并保留重建、校验和派生数据集所需的血缘信息。数据源提供稳定文件时，系统将其保存为不可变的原始证据。
-
-标准查询与估值消费现使用通用财务字段，源编号仅在必要的源处理、校验与证据追溯中保留；财务输入契约v2及schema46已[正式发布](docs/standard-fields-publication-20260918.md)，旧请求不再受当前运行时支持，历史复验使用原提交。简化回溯与文档复验也已[完成分层核查](docs/standard-fields-consumption-audit-20260918.md)。
-
-当前已完成[普通非金融企业估值闭环验收](valuation/research/method-closure-20260912/README.md)：复用标准数据和共享引擎，逐项对齐经营收益、再投资、WACC、终值及股权桥接；修正缺资本仍生成隐含ROIC的诊断，统一入口新增方法范围与缺口披露。该轮安克、苏泊尔基线保持不变；后续已审核资产的影响见下文。计算和输入衔接可复验，公司预测依据、完整经营资本及市场股权桥接仍有明确缺口；不称完整公允价值或预测准确性认证。[历史预测研究](docs/valuation-accuracy.md)单独保留，失败候选不推广，未来评分等待数据不阻塞当前方法验收。
-
-[公司输入审阅台账](valuation/research/company-inputs-20260917/README.md)之后，已接通[经审核资产的统一估值链路](valuation/research/reviewed-assets-20260917/README.md)：显式绑定公司、期间及证据版本，缺证或过期拒绝；安克联营投资完成真实隔离库验收。默认行业政策不变；[增长—资本诊断与增量重估](valuation/research/automatic-valuation-20260917/README.md)已接入，保留失败和审核过期，不把旧价格当新结果。苏泊尔[镜像原文及受限分量](valuation/research/reviewed-assets-20260917/supor/README.md)已在主库副本完成归档→补充导入→统一估值验收，固定经营假设43.2526→45.7299元；现已[连同安克资产备份发布主库并重开验收](docs/reviewed-main-publication-20260918.md)，专用政策显式采用；[安克资本证据联合审核](valuation/research/company-inputs-20260917/README.md#安克公司资本效率的审核结论)仍不足以批准公司倍率，保持显式行业代理。
-
-三条主线的交付证据、验证范围及剩余边界汇总于[交付核对](docs/company-input-delivery-20260917.md)。
-
-## 初始范围
-
-- TDX 提供的 A 股日线 OHLCV 和市场参考数据
-- TDX 提供的公司行动、股本变动、分类及指数/板块成员关系
-- 以 TDX 专业财务数据作为主要结构化基本面来源
-- 以 CNINFO 公告作为权威校验与血缘来源
-- 以 DuckDB 作为标准分析存储
-
-本地已有缓存时可[直接离线同步财务](docs/tdx-offline-sync.md)：`./alphalake sync-financial workspace/alphalake.duckdb --offline --all`；标准物化及网页SQLite导出仍需分别执行。
-
-TDX 协议请求支持[自动换节点重试](docs/tdx-failover.md)：每个独立请求最多三台不同服务器，失败详情进入既有日志／采集记录。
-
-## 当前实现
-
-目前已支持：
-
-- 默认按上海、深圳分区发现 TDX 证券主数据（显式启用时包含北京），并隔离各分区故障；
-- 解析标准 `instrument_id`，同时保留带有效期的数据源标识符；
-- 使用半开标识符有效区间，处理观测到的代码复用生命周期；
-- 两次完整观测确认消失，避免一次代码列表遗漏立即割裂证券身份；
-- 严格的时态标识符解析，将身份区间重叠视为数据损坏，不任意选择；
-- 股票与 ETF 的首次全历史导入及逐证券增量日线采集；
-- 不受主机时区影响的标准日期语义；
-- 股票/ETF 成交量使用股/份，而非 TDX 的手；
-- 按行隔离异常 OHLCV，持久化校验结果和重试检查点；
-- 在同一事务中发布有效日线、校验证据和重试检查点；
-- 在逐证券恢复事务中使用 DuckDB Appender、临时暂存表和集合式日线写入；
-- 采集 TDX GBBQ 公司行动，保留原始类别及 C1–C4 血缘；
-- 对可疑的空或截断 GBBQ 快照保留上次可信数据，并提供显式修复选项；
-- 保存语义已验证且带源记录身份的股本观测；
-- 根据原始 OHLC 和公司行动在本地派生前复权/后复权仿射区间；
-- 根据内容签名判断复权输入是否变化；普通采集重放未改变内容时，跳过历史加载与重算；
-- TDX 概念、风格/地域、指数板块的时态成员关系；
-- TDX 和申万行业层级及成员关系，共享采集后按分类体系隔离故障；
-- SHA-256 内容寻址的不可变原始归档、`meta.artifact` 血缘、经过校验的历史版本复用，以及损坏包的重新下载恢复；
-- 采集 TDX 专业财务 `gpcw.txt` / `gpcw*.zip`，校验清单中的 MD5 和大小；
-- 动态、无损解析 gpcw：字段数取自 `report_size/4`，保留原始 float32 位模式及市场标记字节，不猜测其交易所语义；
-- 财务归一化保留六位原始代码，不套用当前 SDK 的代码区间规则；
-- 在报告期解析时态财务身份，根据数据集语义排除指数，并保存 `resolved` / `pending` / `acknowledged` 记录证据；
-- 按不可变归档批量协调 `fundamental.source_record` 轻量定位，身份修正时撤销失效标准行；源数值仅保留于原始ZIP，不重复入库；
-- 分别统计尝试、插入、重新归属及转为待解析的源记录数；
-- 财务身份治理支持分页查看待解析记录、显式确认及撤销确认；
-- [TDX全量源目录](docs/tdx-financial-catalog-20260919.md)覆盖584位置、462项有名称依据、422项有明确数值单位；未知语义、比例尺度、日期与同名歧义分别保留。源维护命令`tdx-financial-fields`及`export-financial-source`已提供，标准审核与源解析分开；
-- [规范三表查询](docs/decisions/020-official-statements-and-snapshots.md)按报告期及信息截止返回资产负债表、利润表和现金流量表；标准目录共346项，三表源位置280/283已映射，3处歧义明确保留。单位统一元、股、元/股，期初余额和每股指标不进入普通TTM加总；原文样本审核与官方定义映射分别记录；
-- CNINFO 公告目录与原文归档、保守的披露日期精度，以及待解析公告的本地重试；
-- [北交所2025年代码切换](docs/bse-code-transitions.md)四原文发布与公告日身份核验；保留原代码，缺少唯一时点锚点时仍待解析；
-- 显式的数据源事实—公告关联、标准时点基本面物化，以及原始/更正版本的 ASOF 查询；
-- 按公告时点查询年度与 TTM，区分单季、累计和存量，缺期返回空值及输入血缘，见[查询规则](docs/decisions/011-annual-and-ttm-windows.md)；
-- 持久化采集/计算运行状态：`completed`、`partial`、`failed`、`canceled`；
-- 基于数据库的运行状态查询和当前结构的一次性初始化。
-
-原始 gpcw 包没有逐记录的权威公告时间，AlphaLake **不会**从抓取时间、文件名或报告期推断。标准宽表 `fundamental.statement_snapshot` 通过独立的 CNINFO 公告证据关联后，由 `materialize-fundamentals` 从本地ZIP批量生成；查询通过标准财务接口读取，源位证据按需从归档重提取。
-
-证券主数据会发现指数和可转债，但初始股票/ETF 日线与复权流程暂不处理它们；需要先以专门测试验证请求和单位语义。
-
-估值所需行情已支持[版本保留与未复权收盘价导出](docs/valuation-quotes.md)；已新增[类别股本、A/H 市值与市场权重 WACC 估计链](docs/market-wacc.md)，首批安克/茅台；新增[合同债务区间及H股融资事件链](docs/wacc-gap-review-20260909.md)，实际现金滚动、费用重叠及经营范围仍有明确缺口。
-
-面向全 A 股自动估值的[财务就绪度扫描与推进状态](docs/automated-valuation.md)已提供独立命令，缺事实公司也进入本地集合分母。已完成[全本地A股条件估值验收](docs/a-share-automation-acceptance-20260910.md)：5,569家公司全部有处理结论，5,304家核心输入齐全、2,461家产出条件估值，成功结果全部独立复算通过；非当前目标价或逐公司原文全量验收。
-
-[统一公司CLI](docs/company-valuation-entry.md)已提供多政策候选、选择依据及结构化JSON；[历史查询](docs/valuation-run-query.md)可发现已有run ID并保留最新时点并列；[运行比较](docs/valuation-comparison.md)已提供结构化差异及限定WACC归因，下一步及实现边界见[当前优先级](docs/implementation-status.md)。安克的[专项与通用模型口径](docs/anker-recalculation-20260909.md)分别记录，不能用不同政策的数值冒充同一模型更新。
-
-## Agent 使用
-
-已提供 [alphalake-valuation Skill](skills/alphalake-valuation/SKILL.md)，指导支持技能的本地agent调用统一公司CLI、解释候选/缺项并追溯run ID。它需要AlphaLake仓库、后端Python环境、数据库和显式政策配置，不自带财务库、默认估值或第二套计算引擎。
-
-从仓库根目录将技能链接到本地Codex技能目录（已有同名目录时先检查，不覆盖）：
-
-```bash
-python3 - <<'PYINSTALL'
-import os
-from pathlib import Path
-source = Path('skills/alphalake-valuation').resolve(strict=True)
-skills = Path(os.environ.get('CODEX_HOME') or Path.home()/'.codex')/'skills'
-skills.mkdir(parents=True, exist_ok=True)
-(skills/source.name).symlink_to(source, target_is_directory=True)
-PYINSTALL
-```
-
-重新加载支持技能的会话后，可使用`$alphalake-valuation`并给出公司及已有配置；也允许客户端按描述自动选择。其他支持Agent Skills的客户端可安装同一技能目录，具体发现方式由客户端决定。移动仓库后需更新软链接。
-
-安装检查通过不等于客户端已在当前会话发现技能；实际使用仍以客户端技能列表为准。Skill不是MCP服务，目前没有新增MCP接口。程序契约与验收范围见[统一公司入口](docs/company-valuation-entry.md)。
-
-## WACC 参考数据
-
-已提供 `sync-country-risk`：归档达摩达兰 2026 年 7 月工作簿，发布 CN/HK/US 评级法与成熟市场 ERP 共 10 项，支持原子发布、幂等重放和离线核验。具体命令与范围见[国家风险同步](docs/country-risk-sync.md)。另已接入[全球行业 Beta 与人民币国债收益率](docs/beta-yield-sync.md)：94 个行业的 376 项指标和 8 个国债期限点。三条同步链均不改动公司财务事实；已有[固定版本到 WACC／估值桥接](docs/wacc-valuation-bridge.md)，须显式提供公司映射与政策；也可使用[市场权益／估计债务权重分支](docs/market-wacc.md)，不可省略代理假设。另支持[合成评级利差同步与借款成本桥接](docs/credit-spread-sync.md)，首批仅开放安克已审核财务口径。
-
-官方公司行业名单现可用 `alphalake sync-company-industries DB --python /absolute/valuation-python` 归档和发布来源观察，支持 `--offline` 重放；就绪度查询已按可用时点校验并关联标准证券身份，估值政策仍须显式指定，范围和边界见[自动估值主线](docs/automated-valuation.md)。
-
-## 构建与测试
-
-当前项目使用 Go 1.25，这是当前 `github.com/injoyai/tdx` 依赖的要求。
+Go版本以`go.mod`为准。构建及测试命令：
 
 ```bash
 go test ./...
 go build ./cmd/alphalake
+PYTHONPATH=valuation/backend .venv/bin/python -m pytest -q valuation/backend/tests
 ```
 
-CI 还会检查 `go mod tidy` 是否产生文件改动，并以 Python 3.12 / [版本与 wheel 哈希锁定的 pypdf](.github/requirements-pdf.txt) 运行[标准事实到估值的双公司验收](internal/ingest/testdata/valuation-chain-2026/README.md)：先执行生产归档、TDX 解析、标准物化及时点查询，再独立核验安克和茅台原始 PDF，最后用标准查询值及明确补充项复算估值。安克六年历史与研发资本化校验另行保留；更正、税项/债务、TTM、核心财务字段四批历史 PDF 校验也在 CI 强制运行。
-
-安克、茅台的原 PDF 模型保留为研究对照；它们通过不等于生产数据链路通过。当前 158 个模型取值中 124 个由标准事实供应，34 个通过独立公告、原文与显式供给契约提供；原 61 个补充项已全部逐项核验，其中 27 个转为 TDX，34 个仍为 CNINFO 补充，不宣称全部 TDX 化。标准链重算后的两位小数每股值不变，源精度差异单列；纯经营现金流等历史缺口仍保留，结果不是当前目标价。见[安克报告](docs/anker-validation-valuation-20260906.md)及[茅台报告](docs/moutai-validation-valuation-20260906.md)。
-
-真实财务样本的离线重放、PDF 归档复核及验证范围见[可重复验收报告](docs/acceptance-20260905.md)。[安克创新财务输入样本](docs/anker-valuation-20260906.md)提供 EBIT 调整、债务和营运资本的原文证据、分析政策与可复算 CSV。
+本机全套测试和大库任务必须在已核验MemoryMax的独立systemd服务内串行运行，不能直接将上面三条同时运行。CI执行Go、Python回归及多组离线PDF证据校验；测试通过不等于全市场逐公司原文审核。
 
 ## 命令行
 
