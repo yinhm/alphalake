@@ -106,7 +106,7 @@ func ExportSourceFinancialData(ctx context.Context, db *sql.DB, code string, per
 		return out, err
 	}
 	for _, r := range records {
-		pkg, e := readFinancialArchive(root, r.path, r.name, r.hash, r.size)
+		pkg, e := ReadFinancialArchive(root, r.path, r.name, r.hash, r.size)
 		if e != nil {
 			return out, e
 		}

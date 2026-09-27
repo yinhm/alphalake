@@ -28,7 +28,8 @@ func FinancialArchiveRoot(ctx context.Context, db *sql.DB) (string, error) {
 	return filepath.Dir(path), nil
 }
 
-func readFinancialArchive(root, path, name, hash string, size int64) (financial.Package, error) {
+// ReadFinancialArchive verifies the immutable package before decoding its records.
+func ReadFinancialArchive(root, path, name, hash string, size int64) (financial.Package, error) {
 	if filepath.IsAbs(path) || strings.HasPrefix(filepath.Clean(path), "..") {
 		return financial.Package{}, fmt.Errorf("invalid archive locator")
 	}
@@ -129,7 +130,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, runID int
 	defer conn.ExecContext(context.WithoutCancel(ctx), `ROLLBACK`)
 	for _, p := range inputs {
 		before := out
-		pkg, e := readFinancialArchive(root, p.path, p.name, p.hash, p.size)
+		pkg, e := ReadFinancialArchive(root, p.path, p.name, p.hash, p.size)
 		if e != nil {
 			return out, e
 		}

@@ -34,7 +34,7 @@ func enrichFinancialSourceBits(root string, raw string) (string, error) {
 		if err = json.Unmarshal(first["content_length"], &size); err != nil {
 			return "", err
 		}
-		pkg, e := readFinancialArchive(root, path, name, hash, size)
+		pkg, e := ReadFinancialArchive(root, path, name, hash, size)
 		if e != nil {
 			return "", e
 		}
