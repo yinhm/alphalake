@@ -17,19 +17,32 @@ func InstallSnapshotQueries(ctx context.Context, db *sql.DB, fields []SnapshotFi
 }
 
 func installSnapshotQueries(ctx context.Context, db snapshotDB, fields []SnapshotField) error {
+	query, err := snapshotObservationQueries(fields)
+	if err != nil {
+		return err
+	}
+	_, err = db.ExecContext(ctx, `CREATE OR REPLACE TABLE fundamental.statement_field AS
+ SELECT m.* FROM fundamental.provider_field m JOIN fundamental.field f
+ ON f.canonical_field=m.canonical_field AND f.unit=m.unit AND f.value_kind=m.value_kind AND f.period_basis=m.period_basis;`+query)
+	if err != nil {
+		return err
+	}
+	_, err = db.ExecContext(ctx, financialQueriesSQL)
+	return err
+}
+
+// snapshotObservationQueries shares ranking and lineage for full and projected reads.
+func snapshotObservationQueries(fields []SnapshotField) (string, error) {
 	columns := make([]string, len(fields))
 	wideColumns := make([]string, len(fields))
 	for i, f := range fields {
 		if !standardSnapshotName.MatchString(f.Name) {
-			return fmt.Errorf("invalid standard field name")
+			return "", fmt.Errorf("invalid standard field name")
 		}
 		columns[i] = `"` + f.Name + `"`
 		wideColumns[i] = "w." + columns[i]
 	}
-	_, err := db.ExecContext(ctx, `
- CREATE OR REPLACE TABLE fundamental.statement_field AS
- SELECT m.* FROM fundamental.provider_field m JOIN fundamental.field f
- ON f.canonical_field=m.canonical_field AND f.unit=m.unit AND f.value_kind=m.value_kind AND f.period_basis=m.period_basis;
+	return `
  CREATE OR REPLACE MACRO fundamental.financial_observations(security_code,from_period,to_period,as_of_time,min_instrument_id := NULL,max_instrument_id := NULL) AS TABLE (
  WITH headers AS MATERIALIZED (
  SELECT s.source_record_id,s.instrument_id,s.source_filing_id,s.report_period,s.announcement_time,s.ingest_run_id,r.provider_code,r.artifact_id,r.source_row,a.source AS primary_source,a.sha256 AS revision_key
@@ -43,10 +56,10 @@ func installSnapshotQueries(ctx context.Context, db snapshotDB, fields []Snapsho
  AND (to_period IS NULL OR s.report_period<=CAST(to_period AS DATE))
  AND (as_of_time IS NULL OR s.announcement_time<=CAST(as_of_time AS TIMESTAMPTZ))
  ), selected AS (
- SELECT h.*,`+strings.Join(wideColumns, ",")+`
+ SELECT h.*,` + strings.Join(wideColumns, ",") + `
  FROM headers h JOIN fundamental.statement_snapshot w USING(source_record_id)
  ), numeric_cells AS (
- UNPIVOT selected ON `+strings.Join(columns, ",")+` INTO NAME canonical_field VALUE value
+ UNPIVOT selected ON ` + strings.Join(columns, ",") + ` INTO NAME canonical_field VALUE value
  ), observations AS (
  SELECT c.* EXCLUDE(ingest_run_id),coalesce(l.ingest_run_id,c.ingest_run_id) AS ingest_run_id,m.unit,m.period_basis,m.value_kind,m.provider_field AS source_provider_field,m.value_multiplier,
  c.source_record_id*8192+CAST(substr(m.provider_field,3) AS BIGINT) AS fact_id,
@@ -70,10 +83,5 @@ func installSnapshotQueries(ctx context.Context, db snapshotDB, fields []Snapsho
  SELECT *,row_number() OVER(PARTITION BY instrument_id,canonical_field,report_period ORDER BY announcement_time DESC,fact_id DESC) AS rank
  FROM fundamental.financial_observations(security_code,from_period,to_period,as_of_time,min_instrument_id := min_instrument_id,max_instrument_id := max_instrument_id)
  ) WHERE rank=1 AND (security_code IS NULL OR provider_code=security_code)
- );`)
-	if err != nil {
-		return err
-	}
-	_, err = db.ExecContext(ctx, financialQueriesSQL)
-	return err
+ );`, nil
 }

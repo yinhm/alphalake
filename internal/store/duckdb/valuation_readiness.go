@@ -128,9 +128,34 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 			}
 		}
 	}
+	required := []string{"revenue", "operating_profit_cumulative", "interest_expense", "interest_income", "investment_income", "fair_value_change_income", "asset_disposal_income", "total_shares", "cash_and_cash_equivalents", "short_term_borrowings", "current_portion_noncurrent_liabilities", "long_term_borrowings", "bonds_payable", "lease_liabilities", "noncontrolling_interests"}
+	quotedFields := make([]string, len(required))
+	for i, name := range required {
+		quotedFields[i] = duckdbStringLiteral(name)
+	}
+	projection := make([]SnapshotField, len(required))
+	for i, name := range required {
+		projection[i] = SnapshotField{Name: name}
+	}
+	query, err := snapshotObservationQueries(projection)
+	if err != nil {
+		return nil, err
+	}
+	// Connection-local macros share the standard query definitions without changing
+	// the read-only source database or decoding unrequested wide columns.
+	renames := strings.NewReplacer(
+		"CREATE OR REPLACE MACRO", "CREATE OR REPLACE TEMP MACRO",
+		"CREATE MACRO", "CREATE TEMP MACRO",
+		"fundamental.financial_observations_asof", "_readiness_observations_asof",
+		"fundamental.financial_observations", "_readiness_observations",
+		"fundamental.ttm_asof", "_readiness_ttm")
+	ttm, _, _ := strings.Cut(financialQueriesSQL, ";")
+	if _, err = tx.ExecContext(ctx, renames.Replace(query+ttm+";")); err != nil {
+		return nil, err
+	}
 	// 单个全市场 TTM 分组在真实库超过1 GiB；同一事务中分批限制聚合规模。
 	// 证券范围直接传入共享事实CTE，避免每批重新排序全市场版本。
-	// 扩展标准字段后，64证券批次继续满足128MiB回归内存上限。
+	// 仅汇总准入实际需要的字段，避免将全目录解码并累积到Go对象中。
 	const batchSize = 64
 	for start := 0; start < len(ids); start += batchSize {
 		if err := func() error {
@@ -138,7 +163,8 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
  field:=canonical_field,canonical_field:=canonical_field,value:=CAST(value AS VARCHAR),unit:=unit,
  scope:=statement_scope,status:=coverage_status,required_inputs:=required_inputs,available_inputs:=available_inputs,
  missing_periods:=missing_periods,source_fact_ids:=source_fact_ids) ORDER BY canonical_field,provider_code,statement_scope)) AS VARCHAR)
- FROM fundamental.ttm_asof(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE), min_instrument_id := ?, max_instrument_id := ?)
+ FROM _readiness_ttm(CAST(? AS TIMESTAMPTZ),CAST(? AS DATE), min_instrument_id := ?, max_instrument_id := ?)
+ WHERE canonical_field IN (`+strings.Join(quotedFields, ",")+`)
  GROUP BY instrument_id`, asof, end, ids[start], ids[min(start+batchSize, len(ids))-1])
 			if err != nil {
 				return err
@@ -165,7 +191,6 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 			return nil, err
 		}
 	}
-	required := []string{"revenue", "operating_profit_cumulative", "interest_expense", "interest_income", "investment_income", "fair_value_change_income", "asset_disposal_income", "total_shares", "cash_and_cash_equivalents", "short_term_borrowings", "current_portion_noncurrent_liabilities", "long_term_borrowings", "bonds_payable", "lease_liabilities", "noncontrolling_interests"}
 	counts := map[string]int{}
 	gaps := map[string]int{}
 	symbolOwners := map[string]int{}
@@ -220,6 +245,9 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 		r["valuation_status"] = "not_assessed_requires_model_policy_and_market_inputs"
 		counts[status]++
 	}
+	if _, err = tx.ExecContext(ctx, `DROP MACRO _readiness_ttm; DROP MACRO _readiness_observations_asof; DROP MACRO _readiness_observations`); err != nil {
+		return nil, err
+	}
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
@@ -230,7 +258,7 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 	if code != "" {
 		scope = "local_security_code_candidates:" + code
 	}
-	return map[string]any{"contract_version": "alphalake-readiness-v2", "report_period": end.Format("2006-01-02"), "information_as_of": asof.UTC().Format(time.RFC3339Nano),
+	return map[string]any{"contract_version": "alphalake-readiness-v3", "report_period": end.Format("2006-01-02"), "information_as_of": asof.UTC().Format(time.RFC3339Nano),
 		"company_industry_reference": companyReference,
 		"universe_scope":             scope,
 		"required_core_fields":       required, "universe_count": len(rows), "financial_status_counts": counts, "missing_core_field_counts": gaps, "companies": rows}, nil

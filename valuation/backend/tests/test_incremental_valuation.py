@@ -23,7 +23,7 @@ def test_revaluation_changes_failures_and_recovery(tmp_path, monkeypatch):
     data = request.pop('data')
     company = dict(instrument_id=data['facts'][0]['instrument_id'], name='安克创新', symbols=['sz300866'],
                    financial_status='financial_core_complete_requires_policy', missing_core_fields=[])
-    readiness = dict(contract_version='alphalake-readiness-v2', universe_scope='frozen standard request',
+    readiness = dict(contract_version='alphalake-readiness-v3', universe_scope='frozen standard request',
                      universe_count=1, companies=[company], report_period=data['report_period'], information_as_of=data['information_as_of'])
     policy = BatchPolicy(policy_version='incremental-test', review_note='frozen real input, routing fixture', assignments={'300866':request})
     first = run_incremental_batch(readiness, policy, lambda _:data, None, tmp_path)
@@ -76,7 +76,7 @@ def test_cutoff_only_reuse_rechecks_asset_review_expiry(tmp_path, monkeypatch):
     policy = BatchPolicy(policy_version='reviewed', review_note='real reviewed archive', assignments={'300866':request})
     company = dict(instrument_id=data['facts'][0]['instrument_id'], name='安克创新', symbols=['sz300866'],
                    financial_status='financial_core_complete_requires_policy', missing_core_fields=[])
-    scan = dict(contract_version='alphalake-readiness-v2', universe_scope='archived reviewed inputs', universe_count=1,
+    scan = dict(contract_version='alphalake-readiness-v3', universe_scope='archived reviewed inputs', universe_count=1,
                 companies=[company], report_period=data['report_period'], information_as_of=data['information_as_of'])
     first = run_incremental_batch(scan, policy, lambda _:data, None, tmp_path)
     assert first['companies'][0]['refresh']['action'] == 'initial_valuation'
@@ -102,7 +102,7 @@ def test_financial_and_reference_changes_trigger_revaluation(tmp_path, monkeypat
     policy = BatchPolicy(policy_version='changes', review_note='controlled mutations of real packet', assignments={'300866':request})
     company = dict(instrument_id=data['facts'][0]['instrument_id'], name='安克创新', symbols=['sz300866'],
                    financial_status='financial_core_complete_requires_policy', missing_core_fields=[])
-    scan = dict(contract_version='alphalake-readiness-v2', universe_scope='controlled update events', universe_count=1,
+    scan = dict(contract_version='alphalake-readiness-v3', universe_scope='controlled update events', universe_count=1,
                 companies=[company], report_period=data['report_period'], information_as_of=data['information_as_of'])
     first = run_incremental_batch(scan, policy, lambda _:data, None, tmp_path)
     # 人工财务更新事件，仅验证触发与归因，不声称是真实新财报。

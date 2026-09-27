@@ -1,5 +1,7 @@
 # ADR 018：源字段编号与标准财务消费分离
 
+当前就绪度出口已升级为 `alphalake-readiness-v3`，只返回15项核心准入字段；本ADR下述v2记录原始决策。当前调用与范围见[统一入口](../company-valuation-entry.md)，性能验收见[系统交付](../system-delivery.md)。
+
 ## 决策
 
 FN是TDX的数据源标识，不是应用财务字段。标准事实已有`canonical_field`，但旧导出将FN放入`field`，TTM与估值又按FN取数，导致语义标准化未贯穿消费链。本次修正业务契约，不只改显示名；不改变达摩达兰公式或公司政策的经济假设。

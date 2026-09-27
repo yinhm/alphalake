@@ -1,6 +1,6 @@
 # 统一公司估值入口
 
-当前财务输入使用`alphalake-valuation-v2`，就绪度使用`alphalake-readiness-v2`，要求财务库schema46。业务字段使用通用报表名称，源编号仅留血缘；旧请求与运行的迁移边界见[ADR 018](decisions/018-standard-financial-consumption.md)。
+当前财务输入使用`alphalake-valuation-v2`，就绪度使用`alphalake-readiness-v3`，要求财务库schema46。业务字段使用通用报表名称，源编号仅留血缘；旧请求与运行的迁移边界见[ADR 018](decisions/018-standard-financial-consumption.md)。
 
 ## 已保存预测的到期核验
 
@@ -63,7 +63,7 @@ PYTHONPATH=valuation/backend python -m tools.review_valuation_forecast \
 python -m tools.company_valuation /absolute/market.duckdb 300866 \
   --period 2026-06-30 --as-of 2026-09-10T04:42:23Z \
   --policy data/combined-policy.json \
-  --reference-database /absolute/references.duckdb > company.json
+  --reference-database /absolute/alphalake.duckdb > company.json
 ```
 
 将已有双公司专项政策装入单独配置，无需复制计算逻辑：
@@ -185,3 +185,5 @@ WACC来源解读：`approach_used`为`direct`、`industry_average`或`decile`时
 ## 增长与资本联合审核及自动重估
 
 统一摘要的`method_assessment.growth_capital_consistency`提供标准TTM研发/购建现金、逐年NOPAT变化分解、净再投资/FCFF及资本释放/资金来源提示。公司资本效率仍为待核验代理，不用计算通过证明输入合理。批次`--previous-report`及刷新入口的`incremental-state.json`负责先验证再复用、变化重算与失败恢复；字段、命令、两公司边界及实际验收见[自动重估说明](../valuation/research/automatic-valuation-20260917/README.md)。单公司输出的`universe_scope=local_security_code_candidates:<code>`和count只表示该代码候选，不能当全市场分母。
+
+就绪度v3的`companies[].fields`只输出`required_core_fields`列出的15个核心字段；全目录窗口仍通过专用标准财务查询取得。该扫描只回答核心财务覆盖，不证明原生网页研发、市场输入及政策均就绪。

@@ -629,7 +629,7 @@ def test_batch_keeps_denominator_and_isolates_missing_inputs(exports,tmp_path,mo
             symbols=[symbol],financial_status='financial_core_complete_requires_policy',missing_core_fields=[]))
     companies.append(dict(instrument_id=999999,name='无事实',symbols=['sz999999'],
         financial_status='blocked_no_standard_facts',missing_core_fields=['revenue']))
-    readiness=dict(contract_version='alphalake-readiness-v2',report_period=requests[0]['data']['report_period'],
+    readiness=dict(contract_version='alphalake-readiness-v3',report_period=requests[0]['data']['report_period'],
         information_as_of=requests[0]['data']['information_as_of'],universe_scope='test_known_universe',universe_count=3,companies=companies)
     result=run_batch(readiness,policy,lambda code:exports[code])
     assert result['status_counts']=={'illustrative_valuation_completed':2,'blocked_policy_not_assigned':1}
@@ -796,7 +796,7 @@ def test_batch_industry_rules_gate_age_conflict_and_override(exports,tmp_path,mo
         observed_at=(at-timedelta(hours=1)).isoformat(),run_finished_at=at.isoformat())
     company=dict(instrument_id=data['facts'][0]['instrument_id'],name='anker',symbols=['sz300866'],
         financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[member])
-    scan=dict(contract_version='alphalake-readiness-v2',report_period=data['report_period'],information_as_of=data['information_as_of'],
+    scan=dict(contract_version='alphalake-readiness-v3',report_period=data['report_period'],information_as_of=data['information_as_of'],
         universe_scope='test',universe_count=1,companies=[company])
     calls=[]
     def export(code):calls.append(code);return exports[code]
@@ -844,7 +844,7 @@ def test_source_conflict_blocks_old_usable_values(exports,tmp_path,monkeypatch):
         response=client.post('/api/valuation/from-alphalake',json=req)
         assert response.status_code==422 and response.json()['detail']['status']=='blocked_missing_inputs'
     policy=BatchPolicy(policy_version='blocked-source-test',review_note='old usable facts remain blocked',assignments={'300866':dict(policy=req['policy'])})
-    readiness=dict(contract_version='alphalake-readiness-v2',report_period=req['data']['report_period'],
+    readiness=dict(contract_version='alphalake-readiness-v3',report_period=req['data']['report_period'],
         information_as_of=req['data']['information_as_of'],universe_scope='test',universe_count=1,
         companies=[dict(instrument_id=req['data']['facts'][0]['instrument_id'],name='Anker',symbols=['sz300866'],
                         financial_status='blocked_source_record_conflict',missing_core_fields=[],source_conflicts=[conflict])])
@@ -898,7 +898,7 @@ def test_new_companies_standard_chain_and_review_hold(tmp_path,monkeypatch):
     policy=BatchPolicy(policy_version='real-comparative-review-v1',review_note='已知原文比较列差异未协调',
                        assignments={code:dict(policy=profile) for code in ('300124','603288')},
                        exclusions={code:'generic-valuation-2026/values.json：旧披露与新比较列不一致，暂停自动历史预测' for code in ('300124','603288')})
-    scan=dict(contract_version='alphalake-readiness-v2',report_period=data['report_period'],information_as_of=data['information_as_of'],
+    scan=dict(contract_version='alphalake-readiness-v3',report_period=data['report_period'],information_as_of=data['information_as_of'],
               universe_scope='real_two_company_sample',universe_count=2,companies=companies)
     result=run_batch(scan,policy,lambda code:pytest.fail('review hold must precede export'))
     assert result['status_counts']=={'blocked_review_exclusion':2}
@@ -984,7 +984,7 @@ def test_industry_wacc_routes_real_reference_and_financial_packets(exports,refer
     policy=BatchPolicy(policy_version='reference-routing-test',review_note='explicit target-weight reference scenario',
         assignments={},industry_rules=[rule],wacc_references=reference_export)
     member=dict(source='tdx',taxonomy_code='test-routing',node_code='TEST',observed_at=d['information_as_of'],run_finished_at=d['information_as_of'])
-    scan=dict(contract_version='alphalake-readiness-v2',report_period=d['report_period'],information_as_of=d['information_as_of'],
+    scan=dict(contract_version='alphalake-readiness-v3',report_period=d['report_period'],information_as_of=d['information_as_of'],
         universe_count=1,universe_scope='test',companies=[dict(instrument_id=d['facts'][0]['instrument_id'],name='anker',symbols=['sz300866'],
         financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[member])])
     result=run_batch(scan,policy,lambda code:d)
@@ -1024,7 +1024,7 @@ def test_bear_standard_chain_preserves_interest_scope_review(tmp_path,monkeypatc
     fact=next(f for f in result['request']['data']['facts'] if f['field']=='interest_expense' and f['period']=='2025-12-31')
     assert fact['bits']==scope['source_bits']
     assert float(fact['value'])!=float(scope['pdf_value'])
-    scan=dict(contract_version='alphalake-readiness-v2',report_period=d['report_period'],information_as_of=d['information_as_of'],universe_scope='test',universe_count=1,
+    scan=dict(contract_version='alphalake-readiness-v3',report_period=d['report_period'],information_as_of=d['information_as_of'],universe_scope='test',universe_count=1,
         companies=[dict(instrument_id=fact['instrument_id'],name='小熊电器',symbols=['sz002959'],financial_status='financial_core_complete_requires_policy',missing_core_fields=[])])
     policy=BatchPolicy(policy_version='bear-scope-review-v1',review_note='不能把主表位匹配当租赁口径统一',assignments={'002959':dict(policy=p)},
         exclusions={'002959':'年度主表利息不含附注另列租赁融资费用，半年报包含；政策尚待审核'})
@@ -1079,7 +1079,7 @@ def test_capital_reference_binding_and_industry_route(exports,tmp_path,monkeypat
     at=datetime.fromisoformat(data['information_as_of'])
     member=dict(source='tdx',taxonomy_code='tdx_shenwan_industry',node_code='X400202',node_id=1,ingest_run_id=1,observed_at=at.isoformat(),run_finished_at=at.isoformat())
     company=dict(instrument_id=data['facts'][0]['instrument_id'],name='anker',symbols=['sz300866'],financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[member])
-    scan=dict(contract_version='alphalake-readiness-v2',report_period=data['report_period'],information_as_of=data['information_as_of'],universe_scope='controlled industry',universe_count=1,companies=[company])
+    scan=dict(contract_version='alphalake-readiness-v3',report_period=data['report_period'],information_as_of=data['information_as_of'],universe_scope='controlled industry',universe_count=1,companies=[company])
     row=run_batch(scan,policy,lambda code:data)['companies'][0]
     assert row['status']=='illustrative_book_equity_scenario' and row['run_id']==result['run_id']
     missing=policy.model_copy(update={'capital_references':None})
@@ -1097,7 +1097,7 @@ def test_company_entry_selection_summary_and_no_fallback(exports,tmp_path,monkey
     company=dict(instrument_id=data['facts'][0]['instrument_id'],name='安克创新',symbols=['sz300866'],exchange_mic='XSHE',
                  financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[dict(
                      source='tdx',taxonomy_code='tdx_industry',node_code='test',observed_at=data['information_as_of'],run_finished_at=data['information_as_of'])])
-    scan=dict(contract_version='alphalake-readiness-v2',report_period=data['report_period'],information_as_of=data['information_as_of'],
+    scan=dict(contract_version='alphalake-readiness-v3',report_period=data['report_period'],information_as_of=data['information_as_of'],
               universe_scope='real financial sample with synthetic classification',universe_count=1,companies=[company])
     profile=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_text())
     generic=BatchPolicy(policy_version='industry-v1',review_note='synthetic industry routing; real financial input',assignments={},industry_rules=[dict(
@@ -1218,7 +1218,7 @@ def test_company_entry_moutai_and_corrupt_saved_result(exports,tmp_path,monkeypa
     data=exports['600519']
     company=dict(instrument_id=data['facts'][0]['instrument_id'],name='贵州茅台',symbols=['sh600519'],exchange_mic='XSHG',
                  financial_status='financial_core_complete_requires_policy',missing_core_fields=[],industry_memberships=[])
-    scan=dict(contract_version='alphalake-readiness-v2',report_period=data['report_period'],information_as_of=data['information_as_of'],
+    scan=dict(contract_version='alphalake-readiness-v3',report_period=data['report_period'],information_as_of=data['information_as_of'],
               universe_scope='real financial sample',universe_count=1,companies=[company])
     policy=BatchPolicy(policy_version='moutai-reviewed-v1',review_note='reviewed company policy',assignments={'600519':dict(
         policy=json.loads((REPO/'valuation/examples/moutai-2026H1-central.json').read_text()))})
@@ -1429,7 +1429,7 @@ def test_reviewed_asset_standard_chain(exports, tmp_path, monkeypatch):
     data = request['data']
     company = dict(instrument_id=data['facts'][0]['instrument_id'], name='安克创新', symbols=['sz300866'],
                    exchange_mic='XSHE', financial_status='financial_core_complete_requires_policy', missing_core_fields=[])
-    scan = dict(contract_version='alphalake-readiness-v2', report_period=data['report_period'],
+    scan = dict(contract_version='alphalake-readiness-v3', report_period=data['report_period'],
                 information_as_of=data['information_as_of'], universe_scope='two-company archive chain, selected Anker',
                 universe_count=1, companies=[company])
     batch = BatchPolicy(policy_version='reviewed-associates-20260917', review_note='整项联营投资账面代理验收',

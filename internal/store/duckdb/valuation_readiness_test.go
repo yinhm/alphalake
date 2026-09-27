@@ -25,7 +25,7 @@ func TestReadinessBatchesKeepFieldsAndLargeIDs(t *testing.T) {
  SELECT instrument_id,'tdx','symbol','sh'||CAST(600000+CAST(substr(name,6) AS INTEGER) AS VARCHAR) FROM core.instrument;
  INSERT INTO meta.artifact(artifact_id,source,dataset,source_locator,fetched_at,sha256,content_length) SELECT CAST(substr(name,6) AS BIGINT),'tdx','test',name,now(),name,1 FROM core.instrument;
  INSERT INTO fundamental.source_record SELECT 1099511627776+CAST(substr(name,6) AS BIGINT),CAST(substr(name,6) AS BIGINT),1,CAST(600000+CAST(substr(name,6) AS INTEGER) AS VARCHAR),0,584,DATE '2026-06-30',instrument_id FROM core.instrument;
- INSERT INTO fundamental.statement_snapshot(source_record_id,instrument_id,source_filing_id,report_period,announcement_time,ingest_run_id,monetary_funds)
+ INSERT INTO fundamental.statement_snapshot(source_record_id,instrument_id,source_filing_id,report_period,announcement_time,ingest_run_id,cash_and_cash_equivalents)
  SELECT 1099511627776+CAST(substr(name,6) AS BIGINT),instrument_id,1,'2026-06-30','2026-07-01',1,CAST(substr(name,6) AS INTEGER) FROM core.instrument`)
 	if err != nil {
 		t.Fatal(err)
@@ -46,14 +46,17 @@ func TestReadinessBatchesKeepFieldsAndLargeIDs(t *testing.T) {
 		if row["instrument_id"] != json.Number(fmt.Sprint(id)) {
 			t.Fatal("identity/order changed", row["instrument_id"])
 		}
+		if len(row["fields"].([]any)) != len(result["required_core_fields"].([]string)) {
+			t.Fatal("readiness must return only required core fields", row)
+		}
 		found := false
 		for _, value := range row["fields"].([]any) {
 			field := value.(map[string]any)
-			if field["field"] != "monetary_funds" {
+			if field["field"] != "cash_and_cash_equivalents" {
 				continue
 			}
 			found = true
-			if field["status"] != "complete" || field["value"] != fmt.Sprintf("%d.0000000000", i+1) || field["source_fact_ids"].([]any)[0] != json.Number(fmt.Sprint((int64(1099511627777)+int64(i))*8192+8)) {
+			if field["status"] != "complete" || field["value"] != fmt.Sprintf("%d.0000000000", i+1) || field["source_fact_ids"].([]any)[0] != json.Number(fmt.Sprint((int64(1099511627777)+int64(i))*8192+133)) {
 				t.Fatal("field or lineage crossed company/batch", row)
 			}
 		}
