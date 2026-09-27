@@ -2,7 +2,7 @@
 
 日常更新、原生API验收与原子发布使用[系统交付入口](system-delivery.md)。本文保留底层独立导出命令和字段契约；单独导出成功不等于网页已切换或估值已验收。
 
-当前提供纯TDX来源的SQLite财务快照，完整报表目标仍有缺口；经用户批准，现金及长期投资的已知组成允许作为显式代理用于估值；安克、苏泊尔另通过[估值输入代理](valuation-book-proxies.md)接通原生API。专用前端和估值旁路已撤除；原页面和请求契约已恢复，未获准或不适用代理的缺项仍在后端拒绝，详见[字段契约及待审批缺口](valuation-native-data-contract-20260924.md)。工具不修改源DuckDB或默认seed。[本轮重新接入](valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v6`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
+当前提供TDX财务及版本化Damodaran参考组成的SQLite快照，完整报表目标仍有缺口；经用户批准，现金及长期投资的已知组成允许作为显式代理用于估值；安克、苏泊尔另通过[估值输入代理](valuation-book-proxies.md)接通原生API。专用前端和估值旁路已撤除；原页面和请求契约已恢复，未获准或不适用代理的缺项仍在后端拒绝，详见[字段契约及待审批缺口](valuation-native-data-contract-20260924.md)。工具不修改源DuckDB或默认seed。[本轮重新接入](valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v7`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
 
 依赖Python 3.11+标准库和当前版本`alphalake`程序，无新增包。先构建当前程序；本机的大库任务、构建和测试须串行放在独立systemd系统服务中，参见[内存隔离约束](fundamental-memory-20260919.md)。例如：
 
@@ -120,3 +120,12 @@ curl http://127.0.0.1:8000/api/database/compatibility/SZSE:300866
 首次构建还在原提交`f9c667b`独立复现已有TypeScript错误。本轮删除未用变量、修正nullable ref、缺值产生boolean的表达式、租赁开关来源及创建请求类型；未改估值公式，不通过关闭类型检查掩盖错误。前端构建仍提示既有主包超过500kB，未为了本次数据桥接做额外拆包。
 
 验证收口：Python全套471通过、4项既有外部工作簿样本缺失跳过；最后单位元数据与名称搜索小修后，针对性4项回归通过。Go全套测试、当前CLI构建、前端构建、CI YAML解析及文档链接检查通过。最终快照重建后所有非元数据表逐项一致，重开API和Chromium复验通过；中间快照删除路径、哈希和原因已写入收据，临时测试库及编译程序已清理。源码和依赖锁文件中的估值公式/依赖未变。
+
+
+## 原生参考发布
+
+v7在财务表之外包含`reference_release`、`reference_value`、`reference_company`；参考来自同一DuckDB的已完成发布，归档哈希须合格。主库须schema54，缺必要发布即拒绝导出，不从workspace散落工作簿回退。默认US行业方法保留，详见[参考接入与边界](native-reference-bridge.md)。
+
+默认参考截止等于`--as-of`；`--reference-as-of <RFC3339>`允许明确使用另一参考截止。例如固定旧财务窗口比较最新参考时，两个截止分别记录，不能称当时可用的历史估值。旧v6须显式重新导出，不能只改metadata契约标签。
+
+`/api/database/compatibility/<ticker>`分别返回财务状态和参考缺项。财务齐备但缺少默认行业/国家参考时为`blocked_reference_inputs`；这不是TDX财务缺失。用户可在既有`from-database` API传`industry_override`及新增的`country_override`明确选择会话参考，选择留痕、不回写公司分类；原前端无改动。
