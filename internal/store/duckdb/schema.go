@@ -7,13 +7,16 @@ import (
 	"fmt"
 )
 
-const SchemaVersion = 52
+const SchemaVersion = 53
 
 //go:embed schema.sql
 var schemaSQL string
 
 //go:embed financial_queries.sql
 var financialQueriesSQL string
+
+//go:embed filing_coverage.sql
+var filingCoverageSQL string
 
 // Initialize creates the current schema atomically in an empty database.
 // Existing current databases are left unchanged; older/newer versions are rejected.
@@ -45,6 +48,9 @@ func Initialize(ctx context.Context, db *sql.DB) error {
 	defer tx.Rollback()
 	if _, err := tx.ExecContext(ctx, schemaSQL); err != nil {
 		return fmt.Errorf("initialize current schema: %w", err)
+	}
+	if _, err := tx.ExecContext(ctx, filingCoverageSQL); err != nil {
+		return err
 	}
 	if err := insertSourceFieldCatalog(ctx, tx); err != nil {
 		return err
@@ -78,4 +84,28 @@ func CurrentSchemaVersion(ctx context.Context, db *sql.DB) (int, error) {
 		return 0, err
 	}
 	return version, nil
+}
+
+// UpgradeFilingCoverage is an explicit, one-time schema52 -> schema53 change.
+// It adds only disclosure review metadata; standard financial values are untouched.
+func UpgradeFilingCoverage(ctx context.Context, db *sql.DB) error {
+	version, err := CurrentSchemaVersion(ctx, db)
+	if err != nil {
+		return err
+	}
+	if version != 52 {
+		return fmt.Errorf("coverage upgrade requires schema52, found %d", version)
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err = tx.ExecContext(ctx, filingCoverageSQL); err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, `INSERT INTO meta.schema_version(version,description) VALUES (53,'Reviewed prospectus disclosure coverage')`); err != nil {
+		return err
+	}
+	return tx.Commit()
 }

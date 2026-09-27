@@ -36,3 +36,5 @@
 - [019：按报表成批审核标准财务字段](019-complete-statement-field-review.md)
 
 - [020：官方定义批量映射与规范三表快照](020-official-statements-and-snapshots.md)
+
+- [021：招股书历史披露范围与TDX数值来源](021-prospectus-disclosure-coverage.md)

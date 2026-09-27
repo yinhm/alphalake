@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
+	"encoding/json"
 	"fmt"
 	"math"
 	"math/big"
@@ -26,6 +27,7 @@ type snapshotFiling struct {
 	id, instrument       int64
 	period, announcement time.Time
 	kind                 string
+	covered              map[string]bool
 }
 
 func snapshotRejection(r snapshotRule, value float64, record IndexedFinancialRecord, f snapshotFiling) string {
@@ -52,6 +54,8 @@ func snapshotRejection(r snapshotRule, value float64, record IndexedFinancialRec
 		}
 	}
 	switch {
+	case f.covered != nil && !f.covered[r.name]:
+		return "field_not_covered_by_disclosure"
 	case f.kind != expected:
 		return "filing_type_mismatch"
 	case r.zero != "allow" && r.zero != "reject":
@@ -140,8 +144,8 @@ func MaterializeFinancialSnapshotBatch(ctx context.Context, conn *sql.Conn, runI
 	if err != nil {
 		return result, err
 	}
-	rows, err = conn.QueryContext(ctx, `SELECT l.provider_code,f.filing_id,f.instrument_id,f.report_period,f.announcement_time,coalesce(f.filing_type,'') FROM fundamental.provider_filing_link l JOIN fundamental.filing f USING(filing_id)
- WHERE l.provider_source='tdx' AND l.provider_revision_key=? AND l.status='linked' AND f.resolution_status='resolved'`, revision)
+	rows, err = conn.QueryContext(ctx, `SELECT l.provider_code,f.filing_id,f.instrument_id,CASE WHEN f.filing_type='prospectus' THEN c.report_period ELSE f.report_period END,f.announcement_time,CASE WHEN f.filing_type='prospectus' AND c.filing_id IS NOT NULL THEN 'annual' ELSE coalesce(f.filing_type,'') END,CAST(to_json(c.fields) AS VARCHAR) FROM fundamental.provider_filing_link l JOIN fundamental.filing f USING(filing_id) LEFT JOIN fundamental.active_filing_coverage c ON c.filing_id=f.filing_id AND c.report_period=l.report_period
+ WHERE l.provider_source='tdx' AND l.provider_revision_key=? AND l.status='linked' AND f.resolution_status='resolved' AND (f.filing_type!='prospectus' OR c.filing_id IS NOT NULL)`, revision)
 	if err != nil {
 		return result, err
 	}
@@ -149,9 +153,21 @@ func MaterializeFinancialSnapshotBatch(ctx context.Context, conn *sql.Conn, runI
 	for rows.Next() {
 		var code string
 		var f snapshotFiling
-		if err = rows.Scan(&code, &f.id, &f.instrument, &f.period, &f.announcement, &f.kind); err != nil {
+		var covered sql.NullString
+		if err = rows.Scan(&code, &f.id, &f.instrument, &f.period, &f.announcement, &f.kind, &covered); err != nil {
 			rows.Close()
 			return result, err
+		}
+		if covered.Valid {
+			var names []string
+			if err = json.Unmarshal([]byte(covered.String), &names); err != nil {
+				rows.Close()
+				return result, err
+			}
+			f.covered = map[string]bool{}
+			for _, name := range names {
+				f.covered[name] = true
+			}
 		}
 		filings[code] = f
 	}
@@ -237,7 +253,7 @@ func MaterializeFinancialSnapshotBatch(ctx context.Context, conn *sql.Conn, runI
 			failures := map[string][]any{}
 			valid := 0
 			for _, rule := range rules {
-				if rule.index >= len(record.Record.ProviderFields) {
+				if rule.index >= len(record.Record.ProviderFields) || (filing.covered != nil && !filing.covered[rule.name]) {
 					continue
 				}
 				result.Candidates++

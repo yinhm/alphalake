@@ -97,10 +97,10 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, runID int
 	for _, p := range archives {
 		var signature, previous sql.NullString
 		err = db.QueryRowContext(ctx, `SELECT
- sha256(? || CAST(to_json(list(struct_pack(record_id:=r.source_record_id,instrument:=r.instrument_id,filing:=l.filing_id,status:=l.status,filing_instrument:=f.instrument_id,period:=f.report_period,announcement:=f.announcement_time,kind:=f.filing_type,resolution:=f.resolution_status) ORDER BY r.source_record_id)) AS VARCHAR)),
+ sha256(? || CAST(to_json(list(struct_pack(record_id:=r.source_record_id,instrument:=r.instrument_id,filing:=l.filing_id,status:=l.status,filing_instrument:=f.instrument_id,period:=f.report_period,announcement:=f.announcement_time,kind:=f.filing_type,resolution:=f.resolution_status) ORDER BY r.source_record_id)) AS VARCHAR) || coalesce(CAST(to_json(list(struct_pack(record_id:=r.source_record_id,coverage:=c.review_sha256,period:=c.report_period,fields:=c.fields) ORDER BY r.source_record_id) FILTER(WHERE c.filing_id IS NOT NULL)) AS VARCHAR),'')),
  (SELECT input_signature FROM fundamental.materialization_state WHERE artifact_id=?)
  FROM fundamental.source_record r LEFT JOIN fundamental.provider_filing_link l ON l.provider_artifact_id=r.artifact_id AND l.provider_code=r.provider_code
- LEFT JOIN fundamental.filing f USING(filing_id) WHERE r.artifact_id=?`, catalog, p.id, p.id).Scan(&signature, &previous)
+ LEFT JOIN fundamental.filing f USING(filing_id) LEFT JOIN fundamental.active_filing_coverage c ON c.filing_id=f.filing_id AND c.report_period=r.report_period WHERE r.artifact_id=?`, catalog, p.id, p.id).Scan(&signature, &previous)
 		if err != nil {
 			return out, err
 		}

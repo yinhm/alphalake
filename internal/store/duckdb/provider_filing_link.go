@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	ProviderFilingLinked    = "linked"
-	ProviderFilingPending   = "pending"
-	ProviderFilingAmbiguous = "ambiguous"
-	providerFilingLinkerV1  = "provider-filing-link-v1"
-	providerFilingStage     = "_alphalake_provider_filing_link_stage"
+	ProviderFilingLinked        = "linked"
+	ProviderFilingPending       = "pending"
+	ProviderFilingAmbiguous     = "ambiguous"
+	providerFilingLinkerVersion = "provider-filing-link-v2"
+	providerFilingStage         = "_alphalake_provider_filing_link_stage"
 )
 
 type ProviderFilingLinkResult struct {
@@ -61,6 +61,7 @@ func PendingFilingRepairQueries(ctx context.Context, db *sql.DB, end time.Time) 
 // RefreshProviderFilingLinks deterministically links each immutable provider
 // financial record revision to authoritative filing metadata. A filing is
 // eligible only when instrument, report period and periodic-report type match,
+// or reviewed prospectus coverage explicitly names the historical period.
 // and when its announcement was already public by the first observation of the
 // provider artifact. This prevents later corrections from leaking backwards.
 func RefreshProviderFilingLinks(ctx context.Context, db *sql.DB, ingestRunID int64, providerSource string) (ProviderFilingLinkResult, error) {
@@ -120,39 +121,33 @@ func RefreshProviderFilingLinks(ctx context.Context, db *sql.DB, ingestRunID int
 			GROUP BY ALL
 		),
 		eligible_filings AS (
-			SELECT
-				f.*,
-				CASE f.filing_variant
-					WHEN 'corrected_report' THEN 4
-					WHEN 'revision' THEN 3
-					WHEN 'correction_notice' THEN 2
-					WHEN 'full' THEN 1
-					ELSE 0
-				END AS variant_priority
-			FROM fundamental.filing f
-			WHERE f.source='cninfo'
-			  AND f.resolution_status='resolved'
-			  AND f.instrument_id IS NOT NULL
-			  AND f.report_period IS NOT NULL
-			  AND f.announcement_time IS NOT NULL
-			  AND f.filing_variant IN ('full','corrected_report','revision','correction_notice')
-		),
+ SELECT f.filing_id,f.instrument_id,f.report_period,f.filing_type,f.announcement_time,
+ CASE f.filing_variant WHEN 'corrected_report' THEN 4 WHEN 'revision' THEN 3 WHEN 'correction_notice' THEN 2 WHEN 'full' THEN 1 ELSE 0 END AS variant_priority,
+ 1 AS periodic_priority,'instrument_report_period_observed_at' AS link_method
+ FROM fundamental.filing f WHERE f.source='cninfo' AND f.resolution_status='resolved'
+ AND f.instrument_id IS NOT NULL AND f.report_period IS NOT NULL AND f.announcement_time IS NOT NULL
+ AND f.filing_variant IN ('full','corrected_report','revision','correction_notice')
+ UNION ALL
+ SELECT f.filing_id,f.instrument_id,c.report_period,'annual',f.announcement_time,1,0,'reviewed_prospectus_period'
+ FROM fundamental.active_filing_coverage c JOIN fundamental.filing f USING(filing_id)
+ WHERE month(c.report_period)=12 AND day(c.report_period)=31 AND f.announcement_time>=c.report_period
+ ),
 		candidate_rows AS (
 			SELECT
 				r.*,
 				f.filing_id,
 				f.announcement_time,
-				f.variant_priority,
+				f.variant_priority, f.link_method,
 				count(f.filing_id) OVER (
 					PARTITION BY r.provider_source, r.provider_revision_key, r.provider_code
 				) AS candidate_count,
 				count(f.filing_id) OVER (
 					PARTITION BY r.provider_source, r.provider_revision_key, r.provider_code,
-					             f.announcement_time, f.variant_priority
+					             f.announcement_time, f.variant_priority, f.periodic_priority
 				) AS tie_count,
 				row_number() OVER (
 					PARTITION BY r.provider_source, r.provider_revision_key, r.provider_code
-					ORDER BY f.announcement_time DESC NULLS LAST,
+					ORDER BY f.periodic_priority DESC NULLS LAST, f.announcement_time DESC NULLS LAST,
 					         f.variant_priority DESC NULLS LAST,
 					         f.filing_id DESC NULLS LAST
 				) AS candidate_rank
@@ -177,7 +172,7 @@ func RefreshProviderFilingLinks(ctx context.Context, db *sql.DB, ingestRunID int
 				ELSE 'linked'
 			END AS status,
 			candidate_count,
-			CASE WHEN candidate_count>0 AND tie_count=1 THEN 'instrument_report_period_observed_at' ELSE NULL END AS link_method,
+			CASE WHEN candidate_count>0 AND tie_count=1 THEN link_method ELSE NULL END AS link_method,
 			CASE
 				WHEN candidate_count=0 THEN 'no eligible filing announced by provider revision observation time'
 				WHEN tie_count>1 THEN 'multiple equally-ranked authoritative filings'
@@ -188,7 +183,7 @@ func RefreshProviderFilingLinks(ctx context.Context, db *sql.DB, ingestRunID int
 			?::BIGINT AS ingest_run_id
 		FROM candidate_rows
 		WHERE candidate_rank=1
-	`, providerSource, providerFilingLinkerV1, ingestRunID); err != nil {
+	`, providerSource, providerFilingLinkerVersion, ingestRunID); err != nil {
 		return result, fmt.Errorf("build provider-filing link stage: %w", err)
 	}
 

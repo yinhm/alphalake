@@ -17,12 +17,13 @@ import (
 const (
 	Source                   = "cninfo"
 	CatalogueParserVersion   = "cninfo-catalogue-v1"
-	FilingClassifierVersion  = "cninfo-periodic-title-v4"
+	FilingClassifierVersion  = "cninfo-title-v5"
 	PeriodicReportCategories = "category_ndbg_szsh;category_bndbg_szsh;category_yjdbg_szsh;category_sjdbg_szsh;" +
 		"category_ndbg_bj;category_bndbg_bj;category_yjdbg_bj;category_sjdbg_bj"
 )
 
 type CatalogueRequest struct {
+	ProspectusOnly bool
 	Code           string
 	OrganizationID string
 	Page           int
@@ -180,6 +181,9 @@ func normalizeAnnouncement(item rawAnnouncement) (domain.FilingObservation, *Cat
 		return issue(fmt.Sprintf("announcement timestamp resolves to implausible year %d", announcementDate.Year()))
 	}
 	filingType, variant, period, isCorrection := ClassifyPeriodicTitle(title)
+	if IsFullProspectus(title) {
+		filingType, variant, period, isCorrection = domain.FilingTypeProspectus, domain.FilingVariantFull, nil, false
+	}
 	return domain.FilingObservation{
 		Source:                    Source,
 		SourceFilingID:            filingID,
@@ -202,6 +206,14 @@ func normalizeAnnouncement(item rawAnnouncement) (domain.FilingObservation, *Cat
 		ProviderPageColumn:        strings.TrimSpace(item.PageColumn),
 		RawAnnouncementTimeMillis: millis,
 	}, nil
+}
+
+// IsFullProspectus excludes summaries, appendices and notices. A prospectus
+// does not imply any historical period until its contents are reviewed.
+func IsFullProspectus(title string) bool {
+	title = cleanTitle(title)
+	return strings.Contains(title, "首次公开发行") && strings.Contains(title, "招股说明书") &&
+		!containsAny(title, "摘要", "附录", "附件", "提示", "公告", "英文", "回复", "反馈", "问询", "核查")
 }
 
 var yearPattern = regexp.MustCompile(`(?:19|20)\d{2}`)

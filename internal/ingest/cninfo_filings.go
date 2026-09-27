@@ -37,6 +37,7 @@ type CNINFOFilingSource interface {
 }
 
 type CNINFOFilingOptions struct {
+	ProspectusOnly bool
 	Code           string
 	organizationID string
 	StartDate      time.Time
@@ -116,6 +117,9 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 	if artifactRoot == "" {
 		return summary, errors.New("artifact root is required")
 	}
+	if options.ProspectusOnly && options.Code == "" {
+		return summary, errors.New("prospectus sync requires one security code")
+	}
 	now := time.Now().UTC()
 	if options.Now != nil {
 		now = options.Now().UTC()
@@ -153,6 +157,9 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 		windowName := filingWindowName(window.start, window.end)
 		// Older checkpoints may omit documents, final pages, or accept repeated pages.
 		checkpointKey := fmt.Sprintf("catalogue-window:v6:include-bse=%t:metadata-only=%t:%s", domain.IncludesBSE(ctx), options.MetadataOnly, windowName)
+		if options.ProspectusOnly {
+			checkpointKey += ":prospectus-search-v2"
+		}
 		if options.Code != "" {
 			checkpointKey += ":code=" + options.Code + ":org=" + options.organizationID
 		}
@@ -364,13 +371,16 @@ func acquireCNINFOFilingWindow(
 	expectedRows := 0
 	for pageNumber := 1; pageNumber <= 10000; pageNumber++ {
 		page, raw, err := source.CataloguePage(ctx, cninfo.CatalogueRequest{
-			Code: options.Code, OrganizationID: options.organizationID, Page: pageNumber, PageSize: pageSize, StartDate: start, EndDate: end,
+			ProspectusOnly: options.ProspectusOnly, Code: options.Code, OrganizationID: options.organizationID, Page: pageNumber, PageSize: pageSize, StartDate: start, EndDate: end,
 		})
 		if err != nil {
 			failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: err})
 			break
 		}
 		locator := fmt.Sprintf("periodic/%s/page-%05d-size-%d.json", windowName, pageNumber, pageSize)
+		if options.ProspectusOnly {
+			locator = "prospectus/" + locator
+		}
 		if options.Code != "" {
 			locator = "security/" + options.Code + "/org/" + options.organizationID + "/" + locator
 		}
@@ -467,7 +477,7 @@ func attachCNINFOFilingDocument(
 		return err
 	}
 	filing.SourceURL = sourceURL
-	if metadataOnly || !filing.EligiblePITAnchor() {
+	if metadataOnly || (!filing.EligiblePITAnchor() && filing.FilingType != domain.FilingTypeProspectus) {
 		return nil
 	}
 

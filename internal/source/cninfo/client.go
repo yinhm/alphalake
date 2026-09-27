@@ -133,6 +133,13 @@ func (c *Client) CataloguePage(ctx context.Context, request CatalogueRequest) (C
 		form.Set("stock", request.Code+","+request.OrganizationID)
 		form.Set("searchkey", "")
 	}
+	if request.ProspectusOnly {
+		if request.OrganizationID == "" {
+			return CataloguePage{}, nil, errors.New("prospectus query requires resolved organization")
+		}
+		form.Set("category", "")
+		form.Set("searchkey", "招股")
+	}
 	endpoint := c.baseURL.ResolveReference(&url.URL{Path: cataloguePath}).String()
 	headers := map[string]string{
 		"Accept":           "application/json, text/javascript, */*; q=0.01",

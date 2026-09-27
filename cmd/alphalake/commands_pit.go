@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -57,6 +58,12 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return true, runSupplementImport(ctx, args[1:])
 	case "filing-unresolved":
 		return true, runFilingUnresolved(ctx, args[1:])
+	case "upgrade-filing-coverage":
+		return true, runCoverageUpgrade(ctx, args[1:])
+	case "import-filing-coverage":
+		return true, runCoverageImport(ctx, args[1:])
+	case "export-prospectuses":
+		return true, runExportProspectuses(ctx, args[1:])
 	case "sync-filings":
 		return true, runSyncFilings(ctx, args[1:])
 	case "repair-filings":
@@ -100,7 +107,7 @@ func runFilingUnresolved(ctx context.Context, args []string) error {
 
 func runSyncFilings(ctx context.Context, args []string) error {
 	if len(args) < 1 {
-		return usageError("usage: alphalake sync-filings <db-path> [--all] [--start YYYY-MM-DD] [--end YYYY-MM-DD] [--metadata-only] [--rescan] [--code 600519]")
+		return usageError("usage: alphalake sync-filings <db-path> [--all] [--start YYYY-MM-DD] [--end YYYY-MM-DD] [--metadata-only] [--rescan] [--prospectus] [--code 600519]")
 	}
 	dbPath := strings.TrimSpace(args[0])
 	if dbPath == "" {
@@ -111,6 +118,8 @@ func runSyncFilings(ctx context.Context, args []string) error {
 	all := fs.Bool("all", false, "backfill from 1990-01-01")
 	startText := fs.String("start", "", "inclusive catalogue start date")
 	endText := fs.String("end", "", "inclusive catalogue end date")
+	codesFile := fs.String("codes-file", "", "one security code per line; serial batch on one database connection")
+	prospectus := fs.Bool("prospectus", false, "collect IPO prospectuses for one security; period coverage requires separate review")
 	metadataOnly := fs.Bool("metadata-only", false, "retain catalogue metadata without downloading filing documents")
 	rescan := fs.Bool("rescan", false, "ignore completed old-window checkpoints")
 	code := fs.String("code", "", "query one six-digit CNINFO security; checkpoint separately from whole-market windows")
@@ -143,6 +152,28 @@ func runSyncFilings(ctx context.Context, args []string) error {
 		}
 	}
 
+	codes := []string{*code}
+	if *codesFile != "" {
+		if *code != "" {
+			return usageError("--code and --codes-file are mutually exclusive")
+		}
+		raw, e := os.ReadFile(*codesFile)
+		if e != nil {
+			return e
+		}
+		codes = strings.Fields(string(raw))
+		if len(codes) == 0 {
+			return usageError("empty codes file")
+		}
+		for _, c := range codes {
+			if len(c) != 6 || strings.Trim(c, "0123456789") != "" {
+				return usageError("invalid security code %q", c)
+			}
+		}
+	}
+	if *prospectus && codes[0] == "" {
+		return usageError("--prospectus requires --code or --codes-file")
+	}
 	db, err := duckstore.OpenInitialized(ctx, dbPath)
 	if err != nil {
 		return err
@@ -152,17 +183,21 @@ func runSyncFilings(ctx context.Context, args []string) error {
 	if err != nil {
 		return err
 	}
-	artifactRoot := filepath.Dir(dbPath)
+	artifactRoot, err := duckstore.FinancialArchiveRoot(ctx, db)
+	if err != nil {
+		return err
+	}
 	lastPages := -1
 	lastFailures := -1
 	options := ingest.CNINFOFilingOptions{
-		Code:         *code,
-		StartDate:    startDate,
-		EndDate:      endDate,
-		PageSize:     *pageSize,
-		WindowDays:   *windowDays,
-		MetadataOnly: *metadataOnly,
-		Rescan:       *rescan,
+		ProspectusOnly: *prospectus,
+		Code:           *code,
+		StartDate:      startDate,
+		EndDate:        endDate,
+		PageSize:       *pageSize,
+		WindowDays:     *windowDays,
+		MetadataOnly:   *metadataOnly,
+		Rescan:         *rescan,
 		OnProgress: func(progress ingest.CNINFOFilingProgress) {
 			if progress.Pages != lastPages || progress.Failures != lastFailures {
 				fmt.Printf("CNINFO filing progress: run=%d window=%s page=%d pages=%d filings=%d inserted=%d updated=%d resolved=%d pending=%d documents=%d reused=%d issues=%d failures=%d\n",
@@ -175,16 +210,24 @@ func runSyncFilings(ctx context.Context, args []string) error {
 			lastFailures = progress.Failures
 		},
 	}
-	summary, syncErr := ingest.SyncCNINFOFilingsWithOptions(ctx, db, source, artifactRoot, options)
-	fmt.Printf("CNINFO filing sync: run=%d windows=%d skipped_windows=%d pages=%d filings=%d inserted=%d updated=%d resolved=%d pending=%d documents=%d reused_documents=%d issues=%d failures=%d metadata_only=%v raw=%s\n",
-		summary.RunID, summary.Windows, summary.SkippedWindows, summary.Pages,
-		summary.Filings, summary.Inserted, summary.Updated, summary.Resolved,
-		summary.Pending, summary.Documents, summary.ReusedDocs, summary.Issues,
-		len(summary.Failures), *metadataOnly, artifactRoot)
-	for _, failure := range summary.Failures {
-		fmt.Fprintf(os.Stderr, "CNINFO filing issue: run=%d code=%s window=%s page=%d filing=%s error=%q\n", summary.RunID, *code, failure.Window, failure.Page, failure.SourceFilingID, failure.Err)
+	var failures []error
+	for _, securityCode := range codes {
+		options.Code = securityCode
+		lastPages, lastFailures = -1, -1
+		summary, syncErr := ingest.SyncCNINFOFilingsWithOptions(ctx, db, source, artifactRoot, options)
+		fmt.Printf("CNINFO filing sync: run=%d windows=%d skipped_windows=%d pages=%d filings=%d inserted=%d updated=%d resolved=%d pending=%d documents=%d reused_documents=%d issues=%d failures=%d metadata_only=%v raw=%s\n",
+			summary.RunID, summary.Windows, summary.SkippedWindows, summary.Pages,
+			summary.Filings, summary.Inserted, summary.Updated, summary.Resolved,
+			summary.Pending, summary.Documents, summary.ReusedDocs, summary.Issues,
+			len(summary.Failures), *metadataOnly, artifactRoot)
+		for _, failure := range summary.Failures {
+			fmt.Fprintf(os.Stderr, "CNINFO filing issue: run=%d code=%s window=%s page=%d filing=%s error=%q\n", summary.RunID, securityCode, failure.Window, failure.Page, failure.SourceFilingID, failure.Err)
+		}
+		if syncErr != nil {
+			failures = append(failures, fmt.Errorf("%s: %w", securityCode, syncErr))
+		}
 	}
-	return syncErr
+	return errors.Join(failures...)
 }
 
 func runRepairFilings(ctx context.Context, args []string) error {

@@ -92,13 +92,16 @@ func RebuildFinancialStorage(ctx context.Context, previous, output, root, audit 
 		return result, err
 	}
 	if _, err = tx.ExecContext(ctx, ddl); err == nil {
+		_, err = tx.ExecContext(ctx, filingCoverageSQL)
+	}
+	if err == nil {
 		err = insertSourceFieldCatalog(ctx, tx)
 	}
 	if err != nil {
 		tx.Rollback()
 		return result, err
 	}
-	if _, err = tx.ExecContext(ctx, `DELETE FROM meta.schema_version; INSERT INTO meta.schema_version(version,description) VALUES(-52,'Incomplete financial rebuild; not runtime-ready')`); err != nil {
+	if _, err = tx.ExecContext(ctx, `DELETE FROM meta.schema_version; INSERT INTO meta.schema_version(version,description) VALUES(-53,'Incomplete financial rebuild; not runtime-ready')`); err != nil {
 		tx.Rollback()
 		return result, err
 	}
@@ -344,7 +347,7 @@ func RebuildFinancialStorage(ctx context.Context, previous, output, root, audit 
 	if err != nil {
 		return result, err
 	}
-	if _, err = tx.ExecContext(ctx, `DELETE FROM meta.schema_version; INSERT INTO meta.schema_version(version,description) VALUES(52,'Financial wide-table rebuild')`); err != nil {
+	if _, err = tx.ExecContext(ctx, `DELETE FROM meta.schema_version; INSERT INTO meta.schema_version(version,description) VALUES(53,'Financial wide-table rebuild with disclosure coverage')`); err != nil {
 		tx.Rollback()
 		return result, err
 	}

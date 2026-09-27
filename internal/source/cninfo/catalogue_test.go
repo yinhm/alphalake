@@ -392,3 +392,94 @@ func TestCatalogueRecoversFinalPartialPage(t *testing.T) {
 		t.Fatalf("last partial page lost: %#v", page)
 	}
 }
+
+func TestProspectusScope(t *testing.T) {
+	for _, title := range []string{"达梦数据首次公开发行股票并在科创板上市招股说明书", "首次公开发行股票招股说明书（申报稿）"} {
+		if !IsFullProspectus(title) {
+			t.Fatal(title)
+		}
+	}
+	for _, title := range []string{"招股说明书", "首次公开发行股票招股说明书摘要", "首次公开发行股票招股说明书提示性公告", "首次公开发行股票招股说明书附录", "首次公开发行股票招股说明书问询回复"} {
+		if IsFullProspectus(title) {
+			t.Fatal(title)
+		}
+	}
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		if err := r.ParseForm(); err != nil {
+			t.Fatal(err)
+		}
+		if r.Form.Get("stock") != "688692,9900048178" || r.Form.Get("searchkey") != "招股" || r.Form.Get("category") != "" {
+			t.Errorf("wrong scope: %v", r.Form)
+		}
+		fmt.Fprint(w, `{"announcements":[{"announcementId":"1220278616","secCode":"688692","secName":"达梦数据","orgId":"9900048178","announcementTitle":"达梦数据首次公开发行股票并在科创板上市招股说明书","announcementTime":1717632000000,"adjunctUrl":"finalpage/2024-06-06/1220278616.PDF"}],"totalRecordNum":1,"totalpages":1}`)
+	}))
+	defer server.Close()
+	client, err := NewClient(server.Client(), ClientOptions{BaseURL: server.URL})
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := CatalogueRequest{Code: "688692", OrganizationID: "9900048178", ProspectusOnly: true, Page: 1, PageSize: 30, StartDate: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), EndDate: time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC)}
+	page, _, err := client.CataloguePage(t.Context(), request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f := page.Filings[0]
+	if f.FilingType != domain.FilingTypeProspectus || f.ReportPeriod != nil || f.EligiblePITAnchor() {
+		t.Fatalf("prospectus must not invent a report period: %+v", f)
+	}
+	if f.AnnouncementTime.Format(time.RFC3339) != "2024-06-06T16:00:00Z" {
+		t.Fatal(f.AnnouncementTime)
+	}
+	request.OrganizationID = ""
+	if _, _, err = client.CataloguePage(t.Context(), request); err == nil || calls != 1 {
+		t.Fatal("unresolved issuer reached upstream")
+	}
+}
+
+func TestRealProspectusCatalogue(t *testing.T) {
+	raw, err := os.ReadFile("testdata/prospectus-catalogue/001378.json.gz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, err := gzip.NewReader(bytes.NewReader(raw))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Close()
+	raw, err = io.ReadAll(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	page, err := ParseCataloguePage(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if page.TotalRecords != 2 || len(page.Filings) != 2 {
+		t.Fatal(page)
+	}
+	count := 0
+	for _, f := range page.Filings {
+		if f.FilingType == domain.FilingTypeProspectus {
+			count++
+			if f.ProviderCode != "001378" || f.ReportPeriod != nil || f.FilingVariant != domain.FilingVariantFull {
+				t.Fatal(f)
+			}
+		}
+	}
+	if count != 1 {
+		t.Fatal(count)
+	}
+	// A misleading appendix title must not turn the same response into a full filing.
+	raw = bytes.ReplaceAll(raw, []byte("招股</em>说明书"), []byte("招股</em>说明书附录"))
+	page, err = ParseCataloguePage(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range page.Filings {
+		if f.FilingType == domain.FilingTypeProspectus {
+			t.Fatal("appendix accepted")
+		}
+	}
+}

@@ -11,11 +11,12 @@ var ChinaDisclosureLocation = time.FixedZone("Asia/Shanghai", 8*60*60)
 type FilingType string
 
 const (
-	FilingTypeUnknown FilingType = "unknown"
-	FilingTypeQ1      FilingType = "quarterly_q1"
-	FilingTypeH1      FilingType = "semiannual"
-	FilingTypeQ3      FilingType = "quarterly_q3"
-	FilingTypeAnnual  FilingType = "annual"
+	FilingTypeProspectus FilingType = "prospectus"
+	FilingTypeUnknown    FilingType = "unknown"
+	FilingTypeQ1         FilingType = "quarterly_q1"
+	FilingTypeH1         FilingType = "semiannual"
+	FilingTypeQ3         FilingType = "quarterly_q3"
+	FilingTypeAnnual     FilingType = "annual"
 )
 
 // FilingVariant distinguishes a full periodic report from related documents.
