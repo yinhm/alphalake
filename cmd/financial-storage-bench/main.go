@@ -28,13 +28,23 @@ func main() {
 	source := flag.String("database", "", "wide candidate database, read-only")
 	root := flag.String("root", "", "immutable archive root")
 	output := flag.String("output", "", "new temporary directory")
+	replay := flag.String("replay-periods", "", "comma-separated report dates; rematerialize a full database copy")
+	restore := flag.String("restore-codes-file", "", "remove selected copied snapshot rows before replay; requires replay-periods")
 	flag.Parse()
 	if *source == "" || *root == "" || *output == "" {
 		flag.Usage()
 		os.Exit(2)
 	}
+	if *restore != "" && *replay == "" {
+		panic("restore-codes-file requires replay-periods")
+	}
 	must(os.Mkdir(*output, 0700))
 	ctx := context.Background()
+	if *replay != "" {
+		must(os.Setenv("ALPHALAKE_WORKSPACE", *root))
+		benchmarkReplay(ctx, *source, *output, *replay, *restore)
+		return
+	}
 	db, e := store.Open(ctx, filepath.Join(*output, "benchmark.duckdb"))
 	must(e)
 	db.SetMaxOpenConns(1)
