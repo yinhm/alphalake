@@ -344,3 +344,82 @@ func TestFinancialRebuildRejectsCorruptArchive(t *testing.T) {
 		t.Fatal("existing output overwritten")
 	}
 }
+
+func TestSnapshotBatchPreservesExactValuesAndLineage(t *testing.T) {
+	db, first, revision, _ := linkedFinancialFixture(t)
+	ctx := t.Context()
+	check := func(err error) {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	_, err := db.Exec(`INSERT INTO fundamental.filing SELECT * REPLACE(2 AS filing_id,2 AS instrument_id,'second' AS source_filing_id,'002032' AS provider_code) FROM fundamental.filing WHERE filing_id=1;
+ INSERT INTO fundamental.provider_filing_link SELECT * REPLACE('002032' AS provider_code,2 AS instrument_id,2 AS filing_id) FROM fundamental.provider_filing_link`)
+	check(err)
+	fields, err := LoadSnapshotFields(ctx, db)
+	check(err)
+	second := first
+	second.InstrumentID, second.ProviderCode = 2, "002032"
+	records := []IndexedFinancialRecord{{ID: 1, Revision: revision, Record: first}, {ID: 2, Revision: revision, Record: second}}
+	conn, err := db.Conn(ctx)
+	check(err)
+	defer conn.Close()
+	_, err = conn.ExecContext(ctx, "BEGIN")
+	check(err)
+	defer conn.ExecContext(ctx, "ROLLBACK")
+	apply := func(run int64, rows []IndexedFinancialRecord, inserted, updated, removed int) {
+		t.Helper()
+		r, err := MaterializeFinancialSnapshotBatch(ctx, conn, run, fields, rows)
+		check(err)
+		if r.Inserted != inserted || r.Updated != updated || r.Removed != removed {
+			t.Fatal(r)
+		}
+	}
+	apply(1, records[:1], 2, 0, 0)
+	var rejectionRow, replayRow int64
+	var rejectionFields, restoredFields string
+	check(conn.QueryRowContext(ctx, `SELECT rowid,CAST(to_json(fields) AS VARCHAR) FROM fundamental.statement_rejection WHERE source_record_id=1`).Scan(&rejectionRow, &rejectionFields))
+	apply(2, records, 2, 0, 0) // Existing unchanged row and a new row in one batch.
+	check(conn.QueryRowContext(ctx, `SELECT rowid FROM fundamental.statement_rejection WHERE source_record_id=1`).Scan(&replayRow))
+	if rejectionRow != replayRow {
+		t.Fatal("unchanged rejection was rewritten", rejectionRow, replayRow)
+	}
+	_, err = conn.ExecContext(ctx, `UPDATE fundamental.statement_rejection SET fields=['tampered'] WHERE source_record_id=1`)
+	check(err)
+	var oldRun, newRun int
+	check(conn.QueryRowContext(ctx, `SELECT min(ingest_run_id),max(ingest_run_id) FROM fundamental.statement_snapshot`).Scan(&oldRun, &newRun))
+	if oldRun != 1 || newRun != 2 {
+		t.Fatal("unchanged row lineage overwritten", oldRun, newRun)
+	}
+	// Change detection must distinguish a change at the last DECIMAL digit,
+	// even when conversion to float64 would lose that difference.
+	_, err = conn.ExecContext(ctx, `UPDATE fundamental.statement_snapshot SET lease_liabilities=lease_liabilities+0.0000000001 WHERE source_record_id=1`)
+	check(err)
+	apply(3, records, 0, 1, 0)
+	check(conn.QueryRowContext(ctx, `SELECT CAST(to_json(fields) AS VARCHAR) FROM fundamental.statement_rejection WHERE source_record_id=1`).Scan(&restoredFields))
+	if restoredFields != rejectionFields {
+		t.Fatal("changed rejection contents not repaired", restoredFields)
+	}
+	var value string
+	check(conn.QueryRowContext(ctx, `SELECT CAST(lease_liabilities AS VARCHAR) FROM fundamental.statement_snapshot WHERE source_record_id=1`).Scan(&value))
+	if value != "3097999.8779296875" {
+		t.Fatal(value)
+	}
+	var n int
+	check(conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_field_run WHERE source_record_id=1 AND canonical_field='lease_liabilities' AND ingest_run_id=3`).Scan(&n))
+	if n != 1 {
+		t.Fatal("changed field lineage missing")
+	}
+	_, err = conn.ExecContext(ctx, `UPDATE fundamental.filing SET announcement_time='2026-03-02' WHERE filing_id=1`)
+	check(err)
+	apply(4, records, 0, 2, 0) // Metadata changes must also be detected.
+	apply(5, records, 0, 0, 0)
+	check(conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_rejection WHERE rule_code='provider_zero_ambiguous'`).Scan(&n))
+	if n != 2 {
+		t.Fatal("unchanged rejection evidence lost", n)
+	}
+	_, err = conn.ExecContext(ctx, `UPDATE fundamental.provider_filing_link SET status='pending',filing_id=NULL WHERE provider_code='300866'`)
+	check(err)
+	apply(6, records, 0, 0, 2) // One disappearing row alongside one unchanged row.
+}

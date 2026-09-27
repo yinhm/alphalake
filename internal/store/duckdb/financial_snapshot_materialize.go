@@ -298,7 +298,7 @@ func MaterializeFinancialSnapshotBatch(ctx context.Context, conn *sql.Conn, runI
 		return result, err
 	}
 	if existing == 0 {
-		_, err = conn.ExecContext(ctx, `DELETE FROM fundamental.statement_rejection WHERE source_record_id IN(SELECT id FROM _snapshot_records); INSERT INTO fundamental.statement_rejection SELECT * FROM _snapshot_rejections; INSERT INTO fundamental.statement_snapshot SELECT * FROM _snapshot_values`)
+		_, err = conn.ExecContext(ctx, snapshotRejectionChangesSQL+`; INSERT INTO fundamental.statement_snapshot SELECT * FROM _snapshot_values`)
 		result.Inserted = result.Materialized
 		return result, err
 	}
@@ -334,8 +334,7 @@ func MaterializeFinancialSnapshotBatch(ctx context.Context, conn *sql.Conn, runI
 		return result, err
 	}
 	if _, err = conn.ExecContext(ctx, `DELETE FROM fundamental.statement_snapshot WHERE source_record_id IN(SELECT source_record_id FROM _snapshot_changes WHERE NOT has_new);
- DELETE FROM fundamental.statement_rejection WHERE source_record_id IN(SELECT id FROM _snapshot_records);
- INSERT INTO fundamental.statement_rejection SELECT * FROM _snapshot_rejections`); err != nil {
+ `+snapshotRejectionChangesSQL); err != nil {
 		return result, err
 	}
 	_, err = conn.ExecContext(ctx, `INSERT INTO fundamental.statement_snapshot SELECT s.* FROM _snapshot_values s JOIN _snapshot_changes c USING(source_record_id)
@@ -344,6 +343,15 @@ func MaterializeFinancialSnapshotBatch(ctx context.Context, conn *sql.Conn, runI
 
 	return result, err
 }
+
+// Rejections are content evidence. Replacing identical lists forces DuckDB to
+// reallocate all their string children for each package despite no new evidence.
+const snapshotRejectionChangesSQL = `
+ DELETE FROM fundamental.statement_rejection r
+ WHERE r.source_record_id IN(SELECT id FROM _snapshot_records)
+ AND NOT EXISTS(SELECT 1 FROM _snapshot_rejections s WHERE s.source_record_id=r.source_record_id AND s.rule_code=r.rule_code AND s.fields IS NOT DISTINCT FROM r.fields);
+ INSERT INTO fundamental.statement_rejection SELECT s.* FROM _snapshot_rejections s
+ WHERE NOT EXISTS(SELECT 1 FROM fundamental.statement_rejection r WHERE r.source_record_id=s.source_record_id AND r.rule_code=s.rule_code)`
 
 // snapshotDecimal preserves the established shortest-decimal-text conversion,
 // rounding half away from zero at scale 10. Converting each value through a SQL
