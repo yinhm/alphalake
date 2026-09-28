@@ -39,6 +39,31 @@ def review_report(body):
             implied_book_roic=dcf.implied_roic_projections[i]))
         previous_revenue = revenue
     history = sorted(inputs.raw_financials, key=lambda f: f.fiscal_year)
+    # 复用引擎逐年研发队列结果；不拿当前研发资产或TTM利润率填历史。
+    counts = Counter(f.fiscal_year for f in inputs.raw_financials)
+    annual_evidence = []
+    for index, f in enumerate(inputs.raw_financials[:10]):
+        cohort = range(f.fiscal_year-inputs.adjustment_inputs.amortization_period_n, f.fiscal_year+1)
+        unavailable = [year for year in cohort if counts[year] != 1 or not any(
+            r.fiscal_year == year and r.r_and_d_expense is not None
+            and math.isfinite(r.r_and_d_expense) and r.r_and_d_expense >= 0
+            for r in inputs.raw_financials)] if inputs.adjustment_inputs.has_r_and_d else []
+        margin = replay.cashflow.historical_margin_by_year[index]
+        ratio = replay.cashflow.historical_s_c_by_year[index]
+        annual_evidence.append(dict(year=f.fiscal_year,
+            research_adjusted_margin=margin, research_adjusted_sales_to_capital=ratio,
+            unavailable_research_cohort_years=unavailable,
+            missing_balance_inputs=[name for name in ('bv_equity','bv_debt','cash_and_marketable_securities')
+                if getattr(f,name) is None],
+            boundary='原生历史诊断仅按逐年研发调整；租赁及现金/投资代理口径未因此闭合'))
+    peers = []
+    for peer in (inputs.industry_data, inputs.industry_data_global):
+        if peer is not None:
+            peers.append(dict(industry=peer.industry_name, region=peer.region,
+                pretax_unadjusted_operating_margin=peer.pretax_operating_margin,
+                historical_sales_to_capital=peer.sales_to_capital,
+                comparable_for_adjusted_target_selection=False,
+                reason='unadjusted_industry_margin_not_company_research_and_lease_adjusted_margin'))
     historical = []
     for i, f in enumerate(history):
         prior = history[i-1] if i and history[i-1].fiscal_year == f.fiscal_year-1 else None
@@ -128,6 +153,15 @@ def review_report(body):
     return dict(status='requires_analyst_judgment', automatic_adoption=False,
         unit='million_CNY', ticker=inputs.ticker,
         historical_reported_rows=historical,
+        sustainability_evidence=dict(status='requires_company_and_accounting_basis',
+            annual_rows=annual_evidence,
+            supplied_annual_years=sorted(counts),
+            absent_annual_years=[y for y in range(min(counts),max(counts)+1) if y not in counts] if counts else [],
+            duplicate_annual_years=[y for y,n in sorted(counts.items()) if n>1],
+            research_adjusted_margin_years=sum(r['research_adjusted_margin'] is not None for r in annual_evidence),
+            research_adjusted_capital_years=sum(r['research_adjusted_sales_to_capital'] is not None for r in annual_evidence),
+            industry_references=peers,
+            boundary='缺项只说明本次估值输入不足，不证明标准库或上游无数据；历史与行业参考均不自动证明未来持续性'),
         recent_reported_window=recent,
         margin_bridge=dict(reported_ebit=raw.ebit, research_expense=raw.r_and_d_expense,
             research_amortization=adjusted.amortization_r_and_d,

@@ -35,6 +35,29 @@ def test_selection_requires_reference_wacc():
         select(baseline,baseline['inputs'],[],'2026-09-27T00:00:00+00:00',POLICY)
 
 
+def test_sustainability_evidence_keeps_accounting_and_history_gaps():
+    from tools.review_native_policy import review_report
+    inputs=CompanyValuationInput.model_validate(sample()['inputs'])
+    inputs.adjustment_inputs.has_r_and_d=True
+    inputs.industry_data.pretax_operating_margin=.2
+    def review():
+        report=run_full_valuation(inputs)
+        return review_report(dict(inputs=inputs.model_dump(mode='json'),
+            **{name:getattr(report,name).model_dump(mode='json') for name in
+               ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')}))['sustainability_evidence']
+    full=review()
+    assert full['research_adjusted_margin_years']==1
+    assert full['annual_rows'][0]['unavailable_research_cohort_years']==[]
+    assert full['annual_rows'][1]['unavailable_research_cohort_years']==[2019]
+    assert full['industry_references'][0]['pretax_unadjusted_operating_margin']==.2
+    assert not full['industry_references'][0]['comparable_for_adjusted_target_selection']
+    inputs.raw_financials.pop(2)
+    short=review()
+    assert short['absent_annual_years']==[2023]
+    assert short['research_adjusted_margin_years']==0
+    assert 2023 in short['annual_rows'][0]['unavailable_research_cohort_years']
+
+
 def reference_inputs(baseline):
     inputs=deepcopy(baseline['inputs'])
     inputs['methodology_choices'].update(cost_of_capital_approach='reference_snapshot',reference_capital_inputs=dict(
