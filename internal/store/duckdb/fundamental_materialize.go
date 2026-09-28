@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/yinhm/alphalake/internal/domain"
 	"github.com/yinhm/alphalake/internal/source/tdx/financial"
@@ -45,7 +46,13 @@ func ReadFinancialArchive(root, path, name, hash string, size int64) (financial.
 
 // MaterializeCanonicalFundamentals decodes each changed archive once. A package
 // values, content signatures and published semantics commit together.
-func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, runID int64, source string, requested ...string) (out CanonicalFundamentalResult, err error) {
+func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, runID int64, source string, requested ...string) (CanonicalFundamentalResult, error) {
+	return materializeCanonicalFundamentals(ctx, db, runID, source, false, requested...)
+}
+
+// unpublished is only used by the explicit capital-history copy rebuild. The
+// caller owns the new private file; it cannot be published before completion.
+func materializeCanonicalFundamentals(ctx context.Context, db *sql.DB, runID int64, source string, unpublished bool, requested ...string) (out CanonicalFundamentalResult, err error) {
 	if source != "tdx" || runID <= 0 {
 		return out, fmt.Errorf("TDX source and run required")
 	}
@@ -68,24 +75,46 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, runID int
 	if err = db.QueryRowContext(ctx, `SELECT sha256(CAST(to_json(list(m ORDER BY source,provider_field,valid_from)) AS VARCHAR)) FROM (SELECT p.*,f.unit AS definition_unit,f.value_kind AS definition_kind,f.period_basis AS definition_basis FROM fundamental.provider_field p LEFT JOIN fundamental.field f USING(canonical_field)) m`).Scan(&catalog); err != nil {
 		return out, err
 	}
+	var catalogChanged bool
+	if err = db.QueryRowContext(ctx, `WITH candidate AS (
+ SELECT m.* FROM fundamental.provider_field m JOIN fundamental.field f ON f.canonical_field=m.canonical_field AND f.unit=m.unit AND f.value_kind=m.value_kind AND f.period_basis=m.period_basis)
+ SELECT EXISTS((SELECT * FROM candidate EXCEPT SELECT * FROM fundamental.statement_field)
+ UNION ALL (SELECT * FROM fundamental.statement_field EXCEPT SELECT * FROM candidate))`).Scan(&catalogChanged); err != nil {
+		return out, err
+	}
+	var publishedCatalog any
+	if catalogChanged {
+		var prior string
+		if err = db.QueryRowContext(ctx, `SELECT sha256(coalesce(CAST(to_json(list(m ORDER BY source,provider_field,valid_from)) AS VARCHAR),'[]')) FROM (SELECT p.*,f.unit AS definition_unit,f.value_kind AS definition_kind,f.period_basis AS definition_basis FROM fundamental.statement_field p LEFT JOIN fundamental.field f USING(canonical_field)) m`).Scan(&prior); err != nil {
+			return out, err
+		}
+		publishedCatalog = prior
+	}
 	type input struct {
 		id                          int64
 		path, name, hash, signature string
 		size                        int64
+		period                      time.Time
+		retag                       bool
 	}
 	// Hash one archive at a time on the same connection. The previous global
 	// list aggregation retained every archive's identity graph in memory.
-	rows, err := db.QueryContext(ctx, `SELECT artifact_id,local_path,source_locator,sha256,content_length
- FROM meta.artifact a WHERE source='tdx' AND EXISTS(SELECT 1 FROM fundamental.source_record r WHERE r.artifact_id=a.artifact_id) ORDER BY artifact_id`)
+	rows, err := db.QueryContext(ctx, `SELECT a.artifact_id,local_path,source_locator,sha256,content_length,min(r.report_period),max(r.report_period)
+ FROM meta.artifact a JOIN fundamental.source_record r USING(artifact_id) WHERE source='tdx' GROUP BY a.artifact_id,local_path,source_locator,sha256,content_length ORDER BY a.artifact_id`)
 	if err != nil {
 		return out, err
 	}
 	var archives []input
 	for rows.Next() {
 		var p input
-		if err = rows.Scan(&p.id, &p.path, &p.name, &p.hash, &p.size); err != nil {
+		var lastPeriod time.Time
+		if err = rows.Scan(&p.id, &p.path, &p.name, &p.hash, &p.size, &p.period, &lastPeriod); err != nil {
 			rows.Close()
 			return out, err
+		}
+		if !p.period.Equal(lastPeriod) {
+			rows.Close()
+			return out, fmt.Errorf("mixed report periods in financial archive %d", p.id)
 		}
 		archives = append(archives, p)
 	}
@@ -94,41 +123,63 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, runID int
 	if err != nil {
 		return out, err
 	}
+	// Reuse one prepared plan; retain the established signature encoding.
+	signatures, err := db.PrepareContext(ctx, `WITH graph AS (
+ SELECT CAST(to_json(list(struct_pack(record_id:=r.source_record_id,instrument:=r.instrument_id,filing:=l.filing_id,status:=l.status,filing_instrument:=f.instrument_id,period:=f.report_period,announcement:=f.announcement_time,kind:=f.filing_type,resolution:=f.resolution_status) ORDER BY r.source_record_id)) AS VARCHAR) || coalesce(CAST(to_json(list(struct_pack(record_id:=r.source_record_id,coverage:=c.review_sha256,period:=c.report_period,fields:=c.fields) ORDER BY r.source_record_id) FILTER(WHERE c.filing_id IS NOT NULL)) AS VARCHAR),'') AS body
+ FROM fundamental.source_record r LEFT JOIN fundamental.provider_filing_link l ON l.provider_artifact_id=r.artifact_id AND l.provider_code=r.provider_code
+ LEFT JOIN fundamental.filing f USING(filing_id) LEFT JOIN fundamental.active_filing_coverage c ON c.filing_id=f.filing_id AND c.report_period=r.report_period WHERE r.artifact_id=?)
+ SELECT sha256(? || body),sha256(? || body),(SELECT input_signature FROM fundamental.materialization_state WHERE artifact_id=?) FROM graph`)
+	if err != nil {
+		return out, err
+	}
+	defer signatures.Close()
+	unchangedPeriods := map[time.Time]bool{}
 	var inputs []input
 	for _, p := range archives {
-		var signature, previous sql.NullString
-		err = db.QueryRowContext(ctx, `SELECT
- sha256(? || CAST(to_json(list(struct_pack(record_id:=r.source_record_id,instrument:=r.instrument_id,filing:=l.filing_id,status:=l.status,filing_instrument:=f.instrument_id,period:=f.report_period,announcement:=f.announcement_time,kind:=f.filing_type,resolution:=f.resolution_status) ORDER BY r.source_record_id)) AS VARCHAR) || coalesce(CAST(to_json(list(struct_pack(record_id:=r.source_record_id,coverage:=c.review_sha256,period:=c.report_period,fields:=c.fields) ORDER BY r.source_record_id) FILTER(WHERE c.filing_id IS NOT NULL)) AS VARCHAR),'')),
- (SELECT input_signature FROM fundamental.materialization_state WHERE artifact_id=?)
- FROM fundamental.source_record r LEFT JOIN fundamental.provider_filing_link l ON l.provider_artifact_id=r.artifact_id AND l.provider_code=r.provider_code
- LEFT JOIN fundamental.filing f USING(filing_id) LEFT JOIN fundamental.active_filing_coverage c ON c.filing_id=f.filing_id AND c.report_period=r.report_period WHERE r.artifact_id=?`, catalog, p.id, p.id).Scan(&signature, &previous)
-		if err != nil {
+		var signature, priorSignature, previous sql.NullString
+		if err = signatures.QueryRowContext(ctx, p.id, catalog, publishedCatalog, p.id).Scan(&signature, &priorSignature, &previous); err != nil {
 			return out, err
 		}
 		if signature.Valid && signature != previous {
 			p.signature = signature.String
+			// Retag only if all non-catalogue inputs still match the published
+			// signature AND this report period has exactly the same rules. A
+			// definition change makes the reconstructed old signature differ.
+			if catalogChanged && previous.Valid && priorSignature == previous {
+				same, seen := unchangedPeriods[p.period]
+				if !seen {
+					err = db.QueryRowContext(ctx, `WITH current_rules AS (SELECT * FROM fundamental.provider_field WHERE source='tdx' AND (valid_from IS NULL OR valid_from<=?) AND (valid_to IS NULL OR valid_to>?)),
+ published_rules AS (SELECT * FROM fundamental.statement_field WHERE source='tdx' AND (valid_from IS NULL OR valid_from<=?) AND (valid_to IS NULL OR valid_to>?))
+ SELECT NOT EXISTS((SELECT * FROM current_rules EXCEPT SELECT * FROM published_rules) UNION ALL (SELECT * FROM published_rules EXCEPT SELECT * FROM current_rules))`, p.period, p.period, p.period, p.period).Scan(&same)
+					if err != nil {
+						return out, err
+					}
+					unchangedPeriods[p.period] = same
+				}
+				p.retag = same
+			}
 			inputs = append(inputs, p)
 		}
-	}
-	var catalogChanged bool
-	if err = db.QueryRowContext(ctx, `WITH candidate AS (
- SELECT m.* FROM fundamental.provider_field m JOIN fundamental.field f ON f.canonical_field=m.canonical_field AND f.unit=m.unit AND f.value_kind=m.value_kind AND f.period_basis=m.period_basis)
- SELECT EXISTS((SELECT * FROM candidate EXCEPT SELECT * FROM fundamental.statement_field)
- UNION ALL (SELECT * FROM fundamental.statement_field EXCEPT SELECT * FROM candidate))`).Scan(&catalogChanged); err != nil {
-		return out, err
 	}
 	conn, err := db.Conn(ctx)
 	if err != nil {
 		return out, err
 	}
 	defer conn.Close()
-	if catalogChanged {
+	atomicCatalog := catalogChanged && !unpublished
+	if atomicCatalog {
 		if _, err = conn.ExecContext(ctx, `BEGIN`); err != nil {
 			return out, err
 		}
 	}
 	defer conn.ExecContext(context.WithoutCancel(ctx), `ROLLBACK`)
 	for _, p := range inputs {
+		if p.retag {
+			if _, err = conn.ExecContext(ctx, `UPDATE fundamental.materialization_state SET input_signature=? WHERE artifact_id=?`, p.signature, p.id); err != nil {
+				return out, err
+			}
+			continue
+		}
 		before := out
 		pkg, e := ReadFinancialArchive(root, p.path, p.name, p.hash, p.size)
 		if e != nil {
@@ -159,7 +210,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, runID int
 		if e != nil {
 			return out, e
 		}
-		if !catalogChanged {
+		if !atomicCatalog {
 			if _, err = conn.ExecContext(ctx, `BEGIN`); err != nil {
 				return out, err
 			}
@@ -183,7 +234,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, runID int
 		if _, e := conn.ExecContext(ctx, `INSERT INTO fundamental.materialization_state VALUES (?,?,?,?,?) ON CONFLICT(artifact_id) DO UPDATE SET input_signature=excluded.input_signature,candidates=excluded.candidates,materialized=excluded.materialized,rejected=excluded.rejected`, p.id, p.signature, out.Candidates-before.Candidates, out.Materialized-before.Materialized, out.Rejected-before.Rejected); e != nil {
 			return out, e
 		}
-		if !catalogChanged {
+		if !atomicCatalog {
 			if _, err = conn.ExecContext(ctx, `COMMIT`); err != nil {
 				return out, err
 			}
@@ -198,7 +249,7 @@ func MaterializeCanonicalFundamentals(ctx context.Context, db *sql.DB, runID int
 		return out, err
 	}
 	err = conn.QueryRowContext(ctx, `SELECT coalesce(sum(candidates),0),coalesce(sum(materialized),0),coalesce(sum(rejected),0) FROM fundamental.materialization_state`).Scan(&out.Candidates, &out.Materialized, &out.Rejected)
-	if err == nil && catalogChanged {
+	if err == nil && atomicCatalog {
 		_, err = conn.ExecContext(ctx, `COMMIT`)
 	}
 	return out, err

@@ -8,13 +8,11 @@ import (
 	"io"
 	"os"
 
-	"github.com/yinhm/alphalake/internal/ingest"
 	store "github.com/yinhm/alphalake/internal/store/duckdb"
 )
 
-// Catalogue-wide transactions retain per-batch state until commit. Rebuild an
-// unpublished copy with the existing package transactions instead; the caller
-// compares and atomically publishes the completed file, never this partial copy.
+// Review and rebuild an unpublished copy using existing filing links. The
+// caller compares the completed file before atomically replacing the source.
 func runCapitalHistory(ctx context.Context, args []string) error {
 	if len(args) != 2 {
 		return usageError("extend-capital-history <source-db> <new-candidate-db>")
@@ -63,25 +61,13 @@ func runCapitalHistory(ctx context.Context, args []string) error {
 		return err
 	}
 	defer candidate.Close()
-	n, err := store.ExtendCapitalHistory(ctx, candidate)
-	if err != nil {
-		return err
-	}
-	// Only this unpublished copy advances its projection before the package
-	// commits. The source publication and normal atomic materializer stay intact.
-	if _, err = candidate.ExecContext(ctx, `DELETE FROM fundamental.statement_field;
- INSERT INTO fundamental.statement_field SELECT p.* FROM fundamental.provider_field p
- JOIN fundamental.field f ON p.canonical_field=f.canonical_field AND p.unit=f.unit
- AND p.value_kind=f.value_kind AND p.period_basis=f.period_basis`); err != nil {
-		return err
-	}
-	result, err := ingest.MaterializeProviderFundamentals(ctx, candidate, "tdx")
+	run, result, err := store.RebuildCapitalHistoryCopy(ctx, candidate)
 	if err != nil {
 		return fmt.Errorf("unpublished candidate %s failed: %w", args[1], err)
 	}
 	if err = candidate.Close(); err != nil {
 		return err
 	}
-	fmt.Printf("unpublished capital history candidate: %s source_sha256=%s run=%d mappings_added=%d inserted=%d updated=%d removed=%d rejected=%d link_pending=%d link_ambiguous=%d; compare before publication\n", args[1], hex.EncodeToString(hash.Sum(nil)), result.RunID, n, result.Inserted, result.Updated, result.Removed, result.Rejected, result.LinkPending, result.LinkAmbiguous)
+	fmt.Printf("unpublished capital history candidate: %s source_sha256=%s run=%d inserted=%d updated=%d removed=%d rejected=%d; existing filing links retained; compare before publication\n", args[1], hex.EncodeToString(hash.Sum(nil)), run, result.Inserted, result.Updated, result.Removed, result.Rejected)
 	return nil
 }

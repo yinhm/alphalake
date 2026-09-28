@@ -2,6 +2,7 @@ package duckdb
 
 import (
 	"context"
+	"database/sql"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -175,5 +176,33 @@ func TestCorrectionFilingLinksImmediatePriorAnchor(t *testing.T) {
 	}
 	if !unlinked {
 		t.Fatal("translation became a correction anchor")
+	}
+}
+
+func TestFilingIdentityBatchKeepsTemporalBoundaries(t *testing.T) {
+	boundary := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+	rows := []filingIdentifier{
+		{id: 1, symbol: "sz000001", to: sql.NullTime{Time: boundary, Valid: true}},
+		{id: 2, symbol: "sz000001", from: sql.NullTime{Time: boundary, Valid: true}},
+		{id: 3, symbol: "sh000001"},
+	}
+	for _, tc := range []struct {
+		date time.Time
+		want int64
+	}{
+		{boundary.AddDate(0, 0, -1), 1}, {boundary, 2},
+	} {
+		got, _, err := resolveFilingInstrument(rows, "000001", "XSHE", tc.date)
+		if err != nil || got != tc.want {
+			t.Fatal(got, err)
+		}
+	}
+	got, candidates, err := resolveFilingInstrument(rows, "000001", "", boundary)
+	if err != nil || got != 0 || len(candidates) != 2 {
+		t.Fatal(got, candidates, err)
+	}
+	rows = append(rows, filingIdentifier{id: 4, symbol: "sz000001"})
+	if _, _, err = resolveFilingInstrument(rows, "000001", "XSHE", boundary); err == nil {
+		t.Fatal("overlap accepted")
 	}
 }

@@ -3,6 +3,7 @@ package duckdb
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -77,4 +78,32 @@ func ExtendCapitalHistory(ctx context.Context, db *sql.DB) (int64, error) {
 	// Keep published statement_field unchanged until the materializer commits
 	// all affected values and their catalogue together.
 	return n, tx.Commit()
+}
+
+// RebuildCapitalHistoryCopy consumes existing identities and filing links in a
+// newly created, unpublished copy. Partial package commits are never a published
+// result: the caller must verify the complete file before atomic replacement.
+func RebuildCapitalHistoryCopy(ctx context.Context, db *sql.DB) (runID int64, result CanonicalFundamentalResult, retErr error) {
+	if _, retErr = ExtendCapitalHistory(ctx, db); retErr != nil {
+		return
+	}
+	runID, retErr = StartIngestRun(ctx, db, "alphalake", "capital_history_rebuild", nil)
+	if retErr != nil {
+		return
+	}
+	defer func() {
+		status := IngestRunCompleted
+		if result.Rejected > 0 {
+			status = IngestRunPartial
+		}
+		if retErr != nil {
+			status = IngestRunFailed
+		}
+		if errors.Is(retErr, context.Canceled) || errors.Is(retErr, context.DeadlineExceeded) {
+			status = IngestRunCanceled
+		}
+		retErr = errors.Join(retErr, FinishIngestRun(context.WithoutCancel(ctx), db, runID, status, nil, retErr))
+	}()
+	result, retErr = materializeCanonicalFundamentals(ctx, db, runID, "tdx", true)
+	return
 }

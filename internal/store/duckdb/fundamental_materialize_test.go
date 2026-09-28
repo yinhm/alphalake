@@ -209,3 +209,67 @@ func TestMaterializationRollsBackAllPackagesAndCatalogue(t *testing.T) {
 		t.Fatalf("partial publication: signatures equal=%v cells=%d multiplier=%d", before == after, count, mult)
 	}
 }
+
+func TestMaterializeRetagsOnlyUnaffectedPeriods(t *testing.T) {
+	db, _, _, path := linkedFinancialFixture(t)
+	ctx := t.Context()
+	first, err := MaterializeCanonicalFundamentals(ctx, db, 2, "tdx")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = os.Rename(path, path+".held"); err != nil {
+		t.Fatal(err)
+	}
+	// Changing only a closed historical interval must not reopen a later archive.
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET notes='historical review' WHERE valid_to=DATE '2025-01-01'`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	replay, err := MaterializeCanonicalFundamentals(ctx, db, 3, "tdx")
+	if err != nil || replay.Inserted != 0 || replay.Updated != 0 || replay.Removed != 0 || replay.Materialized != first.Materialized {
+		t.Fatal(replay, err)
+	}
+	var signature string
+	if err = db.QueryRowContext(ctx, `SELECT input_signature FROM fundamental.materialization_state`).Scan(&signature); err != nil {
+		t.Fatal(err)
+	}
+	var run int
+	if err = db.QueryRowContext(ctx, `SELECT ingest_run_id FROM fundamental.statement_snapshot`).Scan(&run); err != nil || run != 2 {
+		t.Fatal(run, err)
+	}
+	// A simultaneous disclosure correction still requires decoding. Failure must
+	// preserve the last published catalogue and signature, not partially retag.
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET notes='second historical review' WHERE valid_to=DATE '2025-01-01'; UPDATE fundamental.filing SET announcement_time='2026-03-02'`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = MaterializeCanonicalFundamentals(ctx, db, 4, "tdx"); err == nil {
+		t.Fatal("changed filing skipped missing archive")
+	}
+	var after string
+	if err = db.QueryRowContext(ctx, `SELECT input_signature FROM fundamental.materialization_state`).Scan(&after); err != nil || after != signature {
+		t.Fatal("failure advanced signature", err)
+	}
+	var count int
+	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_field WHERE notes='second historical review'`).Scan(&count); err != nil || count != 0 {
+		t.Fatal("failure published catalogue", count, err)
+	}
+	if err = os.Rename(path+".held", path); err != nil {
+		t.Fatal(err)
+	}
+	restored, err := MaterializeCanonicalFundamentals(ctx, db, 5, "tdx")
+	if err != nil || restored.Updated != 2 {
+		t.Fatal(restored, err)
+	}
+	// Definition changes cannot be disguised as an out-of-period mapping edit.
+	if err = os.Rename(path, path+".held"); err != nil {
+		t.Fatal(err)
+	}
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET notes='third historical review' WHERE valid_to=DATE '2025-01-01'; UPDATE fundamental.field SET unit='invalid' WHERE canonical_field='lease_liabilities'`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = MaterializeCanonicalFundamentals(ctx, db, 6, "tdx"); err == nil {
+		t.Fatal("changed definition skipped missing archive")
+	}
+}

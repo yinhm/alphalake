@@ -58,6 +58,7 @@ func ResolveFilingObservations(ctx context.Context, db *sql.DB, filings []domain
 	if db == nil {
 		return nil, errors.New("duckdb is nil")
 	}
+	var identifiers map[string][]filingIdentifier
 	out := make([]domain.FilingObservation, len(filings))
 	copy(out, filings)
 	var bseEvidence *bseIdentityEvidence
@@ -113,7 +114,14 @@ func ResolveFilingObservations(ctx context.Context, db *sql.DB, filings []domain
 				continue
 			}
 		}
-		instrumentID, candidates, err := resolveFilingInstrument(ctx, db, filing.ProviderCode, filing.ExchangeMIC, observationDate)
+		if identifiers == nil {
+			var err error
+			identifiers, err = loadFilingIdentifiers(ctx, db, out)
+			if err != nil {
+				return nil, err
+			}
+		}
+		instrumentID, candidates, err := resolveFilingInstrument(identifiers[filing.ProviderCode], filing.ProviderCode, filing.ExchangeMIC, observationDate)
 		if err != nil {
 			return nil, fmt.Errorf("resolve filing %s: %w", filing.SourceFilingID, err)
 		}
@@ -138,80 +146,57 @@ func ResolveFilingObservations(ctx context.Context, db *sql.DB, filings []domain
 	return out, nil
 }
 
-func resolveFilingInstrument(ctx context.Context, db *sql.DB, code, exchangeMIC string, asOf time.Time) (int64, []string, error) {
+// Identity intervals are read once per batch; no result survives a retry.
+type filingIdentifier struct {
+	id       int64
+	symbol   string
+	from, to sql.NullTime
+}
+
+func loadFilingIdentifiers(ctx context.Context, db *sql.DB, filings []domain.FilingObservation) (map[string][]filingIdentifier, error) {
+	codes := make([]string, 0, len(filings))
+	for _, f := range filings {
+		codes = append(codes, strings.TrimSpace(f.ProviderCode))
+	}
+	rows, err := db.QueryContext(ctx, `SELECT right(x.identifier_value,6),x.instrument_id,x.identifier_value,x.valid_from,x.valid_to
+ FROM core.instrument_identifier x JOIN core.instrument i USING(instrument_id)
+ WHERE x.provider='tdx' AND x.identifier_type='symbol' AND i.instrument_type='equity'
+ AND right(x.identifier_value,6) IN (SELECT unnest(?::VARCHAR[]))`, codes)
+	if err != nil {
+		return nil, fmt.Errorf("query filing identity batch: %w", err)
+	}
+	defer rows.Close()
+	out := map[string][]filingIdentifier{}
+	for rows.Next() {
+		var code string
+		var x filingIdentifier
+		if err = rows.Scan(&code, &x.id, &x.symbol, &x.from, &x.to); err != nil {
+			return nil, err
+		}
+		out[code] = append(out[code], x)
+	}
+	return out, rows.Err()
+}
+
+func resolveFilingInstrument(identifiers []filingIdentifier, code, exchangeMIC string, asOf time.Time) (int64, []string, error) {
 	if !sixDigitProviderCode(code) {
 		return 0, nil, fmt.Errorf("provider code %q is not six digits", code)
 	}
 	asOf = dateUTC(asOf)
-	if prefix, ok := filingExchangePrefix(exchangeMIC); ok {
-		identifier := prefix + code
-		rows, err := db.QueryContext(ctx, `
-			SELECT x.instrument_id
-			FROM core.instrument_identifier x
-			JOIN core.instrument i ON i.instrument_id=x.instrument_id
-			WHERE x.provider='tdx'
-			  AND x.identifier_type='symbol'
-			  AND x.identifier_value=?
-			  AND i.instrument_type='equity'
-			  AND (x.valid_from IS NULL OR x.valid_from <= ?)
-			  AND (x.valid_to IS NULL OR x.valid_to > ?)
-		`, identifier, asOf, asOf)
-		if err != nil {
-			return 0, nil, fmt.Errorf("query exchange-qualified filing identifier: %w", err)
-		}
-		defer rows.Close()
-		var ids []int64
-		for rows.Next() {
-			var id int64
-			if err := rows.Scan(&id); err != nil {
-				return 0, nil, fmt.Errorf("scan exchange-qualified filing identifier: %w", err)
-			}
-			ids = append(ids, id)
-		}
-		if err := rows.Err(); err != nil {
-			return 0, nil, fmt.Errorf("iterate exchange-qualified filing identifier: %w", err)
-		}
-		switch len(ids) {
-		case 0:
-			return 0, nil, nil
-		case 1:
-			return ids[0], []string{identifier}, nil
-		default:
-			return 0, nil, fmt.Errorf("overlapping temporal TDX identifier %s at %s", identifier, asOf.Format("2006-01-02"))
-		}
-	}
-
-	rows, err := db.QueryContext(ctx, `
-		SELECT x.instrument_id, x.identifier_value
-		FROM core.instrument_identifier x
-		JOIN core.instrument i ON i.instrument_id=x.instrument_id
-		WHERE x.provider='tdx'
-		  AND x.identifier_type='symbol'
-		  AND i.instrument_type='equity'
-		  AND right(x.identifier_value, 6)=?
-		  AND (x.valid_from IS NULL OR x.valid_from <= ?)
-		  AND (x.valid_to IS NULL OR x.valid_to > ?)
-		ORDER BY x.identifier_value
-	`, code, asOf, asOf)
-	if err != nil {
-		return 0, nil, fmt.Errorf("query raw-code filing identifiers: %w", err)
-	}
-	defer rows.Close()
+	prefix, qualified := filingExchangePrefix(exchangeMIC)
 	byIdentifier := map[string]int64{}
-	for rows.Next() {
-		var id int64
-		var identifier string
-		if err := rows.Scan(&id, &identifier); err != nil {
-			return 0, nil, fmt.Errorf("scan raw-code filing identifier: %w", err)
+	for _, x := range identifiers {
+		if x.from.Valid && asOf.Before(x.from.Time) || x.to.Valid && !asOf.Before(x.to.Time) {
+			continue
 		}
-		identifier = strings.TrimSpace(identifier)
-		if prior, exists := byIdentifier[identifier]; exists && prior != id {
+		if qualified && x.symbol != prefix+code {
+			continue
+		}
+		identifier := strings.TrimSpace(x.symbol)
+		if prior, exists := byIdentifier[identifier]; exists && (qualified || prior != x.id) {
 			return 0, nil, fmt.Errorf("overlapping temporal TDX identifier %s at %s", identifier, asOf.Format("2006-01-02"))
 		}
-		byIdentifier[identifier] = id
-	}
-	if err := rows.Err(); err != nil {
-		return 0, nil, fmt.Errorf("iterate raw-code filing identifiers: %w", err)
+		byIdentifier[identifier] = x.id
 	}
 	candidates := make([]string, 0, len(byIdentifier))
 	var instrumentID int64

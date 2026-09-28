@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/yinhm/alphalake/internal/domain"
 	"github.com/yinhm/alphalake/internal/source/tdx/financial"
@@ -123,4 +124,37 @@ func TestCapitalHistoryArchivedRecord(t *testing.T) {
 	}
 	_, err = conn.ExecContext(ctx, "ROLLBACK")
 	check(err)
+}
+
+func TestCapitalHistoryCopyFailureIsRecorded(t *testing.T) {
+	ctx := t.Context()
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "copy.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE notes LIKE 'official-capital-history-v1;%'; DELETE FROM fundamental.statement_field WHERE notes LIKE 'official-capital-history-v1;%'`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	period := time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC)
+	record, hash, path := archiveFinancialFixture(t, ctx, db, "300866", 1, period, map[int]float32{439: 310})
+	if _, err = ReconcileFinancialSourceRecords(ctx, db, 1, "tdx", hash, []domain.ProviderFinancialRecord{record}); err != nil {
+		t.Fatal(err)
+	}
+	if err = os.Rename(path, path+".held"); err != nil {
+		t.Fatal(err)
+	}
+	run, _, err := RebuildCapitalHistoryCopy(ctx, db)
+	if err == nil {
+		t.Fatal("missing archive accepted")
+	}
+	var status, message string
+	if err = db.QueryRowContext(ctx, `SELECT status,error_message FROM meta.ingest_run WHERE ingest_run_id=?`, run).Scan(&status, &message); err != nil || status != IngestRunFailed || message == "" {
+		t.Fatal(status, message, err)
+	}
+	var count int
+	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_field WHERE notes LIKE 'official-capital-history-v1;%'`).Scan(&count); err != nil || count != 0 {
+		t.Fatal("failed candidate published catalogue", count, err)
+	}
 }
