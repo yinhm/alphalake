@@ -93,3 +93,5 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 `selected_scenario=null`表示没有自动推荐；3/5/10年持续期及历史利润率目标是条件假设，不按最高、最低或最接近股价挑选。缺少可比连续利润率时，历史目标场景缺席，不能用行业未调整利润率补位。来源类别、全部实际输入、预测规模/再投资/隐含回报随结果保存。用`tools.review_native_policy`重放整个目录；历史预测诊断不是完整DCF准确率，也不是严格PIT或独立留出。
 
 历史研发补充见`docs/native-research-cohort-bridge.md`：`historical_research_expenses`只保留完整利润行以外的年度研发观测；解释缺项时分别检查利润行与研发队列，不把独立研发年份当成完整财务年度，也不从不同政策EBIT口径借值。
+
+当前暂停为回测扩展早年采集。解释条件估值优先读取`economic_checks`及`growth_duration_effects`（`docs/native-current-economic-checks.md`）：核查再投资/回报与终值过渡，不把高增长当利好，不将等价资本倍率自动设为公司参数；历史缺项不是现有条件场景的新增门槛。

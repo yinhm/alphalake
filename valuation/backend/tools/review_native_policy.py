@@ -267,9 +267,48 @@ def review_report(body, annual_evidence=None):
         row['incremental_return_bridge'] = bridge
     terminal_fcff = dcf.terminal_value_firm * (terminal_wacc-g)
     terminal_share = dcf.pv_terminal_value/dcf.value_of_operating_assets if dcf.value_of_operating_assets else None
+    # 对齐共享引擎的终值利润/税口径，显式解释资本规则切换；不依赖更老财务。
+    margin = a.target_operating_margin
+    if margin is None:
+        margin = a.operating_margin_next_year
+    if margin is None:
+        margin = adjusted.adjusted_ebit/raw.revenues if raw.revenues else 0.0
+    effective = a.effective_tax_rate_override_years_1_5
+    if effective is None:
+        effective = macro.tax_rate_effective if macro.tax_rate_effective is not None else macro.tax_rate_marginal
+    terminal_tax = effective if a.override_tax_convergence else macro.tax_rate_marginal
+    if a.annual_forecast is not None:
+        margin, terminal_tax = a.annual_forecast[-1].margin, a.annual_forecast[-1].tax
+    terminal_revenue = rows[-1]['revenue_million_cny']*(1+g)
+    terminal_nopat = terminal_revenue*margin*(1-terminal_tax)
+    terminal_investment = terminal_nopat*g/terminal_roic if g > 0 else 0.0
+    if not math.isclose(terminal_nopat-terminal_investment, terminal_fcff, rel_tol=1e-10, abs_tol=1e-8):
+        raise ValueError('terminal economic bridge differs from engine')
+    # 沿用原投入滞后，把同一个终值年度与继续沿用资本倍率的反事实相比。
+    funded_delta = rows[-1]['revenue_million_cny']*(1+g)**lag*g
+    continued_investment = funded_delta/sc_stable
+    equivalent_ratio = funded_delta/terminal_investment if terminal_investment > 0 and funded_delta > 0 else None
+    spreads = [dict(investment_year=r['year'], funded_year=r['capital_funding']['revenue_year'],
+        constant_margin_return=r['incremental_return_bridge']['constant_nopat_margin_incremental_return'],
+        initial_wacc=replay.cost_of_capital.wacc,
+        spread=r['incremental_return_bridge']['constant_nopat_margin_incremental_return']-replay.cost_of_capital.wacc)
+        for r in rows if r['incremental_return_bridge']['constant_nopat_margin_incremental_return'] is not None]
+    economic_checks = dict(version='native-economic-consistency-v1', automatic_approval=False,
+        marginal_return_screen=dict(years=spreads, below_initial_wacc_years=[r['investment_year'] for r in spreads if r['spread'] < 0],
+            boundary='恒定税后利润率分量相对初始WACC的筛查；不是项目IRR，不认证时间变化风险或投资因果'),
+        terminal_transition=dict(nopat_million_cny=terminal_nopat,
+            reinvestment_million_cny=terminal_investment, continued_capital_ratio_reinvestment_million_cny=continued_investment,
+            reinvestment_rule_change_million_cny=terminal_investment-continued_investment,
+            fcff_rule_change_million_cny=continued_investment-terminal_investment,
+            equivalent_sales_to_capital=equivalent_ratio, forecast_sales_to_capital=sc_stable,
+            nopat_change_from_last_year_million_cny=terminal_nopat-rows[-1]['nopat_million_cny'],
+            reinvestment_change_from_last_year_million_cny=terminal_investment-rows[-1]['reinvestment_million_cny'],
+            fcff_change_from_last_year_million_cny=terminal_fcff-rows[-1]['fcff_million_cny'],
+            requires_capital_transition_basis=not math.isclose(terminal_investment, continued_investment, rel_tol=1e-10, abs_tol=1e-8),
+            boundary='同一终值年度、同一滞后下比较两条再投资规则；等价倍率是代数诊断，不自动替换行业代理或终值ROIC'))
     missing = [name for name in ('capex', 'd_a', 'change_in_noncash_wc') if getattr(raw, name) is None]
     return dict(status='requires_analyst_judgment', automatic_adoption=False,
-        unit='million_CNY', ticker=inputs.ticker,
+        unit='million_CNY', ticker=inputs.ticker, economic_checks=economic_checks,
         model_input_history=historical,
         sustainability_evidence=dict(status='requires_company_and_accounting_basis',
             model_basis='saved_model_inputs_after_any_policy_or_user_override',
@@ -323,6 +362,24 @@ def review_report(body, annual_evidence=None):
             capital='requires_marginal_capital_evidence',
             wacc='sensitivity_only_explicit_reference_policy'),
         boundary='同引擎重放只验证计算一致性，非独立语义证据或预测有效性；亏损和负再投资保留，不以阈值批准。')
+
+
+def growth_duration_effects(variants, reviews):
+    """只对已按统一规则核验的同利润率场景比较，不按价格挑场景。"""
+    results = []
+    for margin in ('hold', 'history'):
+        short, long = f'scenario_fade3_{margin}', f'scenario_fade10_{margin}'
+        if any(variants.get(name, {}).get('status') != 'calculated' for name in (short,long)):
+            continue
+        revenue_delta = reviews[long]['forecast'][-1]['revenue_million_cny']-reviews[short]['forecast'][-1]['revenue_million_cny']
+        value_delta = variants[long]['value_per_share']-variants[short]['value_per_share']
+        results.append(dict(from_scenario=short, to_scenario=long,
+            revenue_year10_change_million_cny=revenue_delta, value_per_share_change=value_delta,
+            first5_reinvestment_change_million_cny=reviews[long]['capital']['first_five_years_reinvestment_million_cny']-reviews[short]['capital']['first_five_years_reinvestment_million_cny'],
+            higher_revenue_lower_value=revenue_delta > 0 and value_delta < 0,
+            selected_scenario=None,
+            boundary='已核验同一利润率/税/WACC/资本代理和股权口径的增长路径比较；更高价值不自动证明路径更合理'))
+    return results
 
 
 def review_directory(directory):
@@ -422,6 +479,7 @@ def review_directory(directory):
                 if any(assumptions[key] != value for key,value in expected.items()):
                     raise ValueError('saved forecast audit/input mismatch')
             item['variants'][variant] = review_report(report, read(key+'-annual-evidence.json'))
+        item['growth_duration_effects'] = growth_duration_effects(row['variants'],item['variants'])
     return dict(contract='native-policy-review-v2', companies=len(results), results=results,
         source_statuses=dict(Counter(r['source_status'] for r in results)),
         approved_forecasts=0, source_protocol=protocol, source_files=files,

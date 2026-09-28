@@ -377,3 +377,37 @@ def test_prediction_diagnostic_never_uses_target_year_to_forecast():
             assert a['predicted_adjusted_ebit'] == b['predicted_adjusted_ebit']
     assert after['results'][-1]['actual_adjusted_margin'] < 0
     assert after['results'][-1]['forecasts'][0]['ebit_absolute_error_scaled_by_revenue'] > prior['results'][-1]['forecasts'][0]['ebit_absolute_error_scaled_by_revenue']
+
+
+def test_economic_checks_reconcile_terminal_cashflow_and_do_not_require_history():
+    from tools.review_native_policy import review_report
+    baseline = sample()
+    check = review_report(baseline)['economic_checks']
+    bridge = check['terminal_transition']
+    assert bridge['nopat_million_cny']-bridge['reinvestment_million_cny'] == pytest.approx(
+        baseline['dcf']['terminal_value_firm']*(baseline['inputs']['macro_inputs']['risk_free_rate']+baseline['inputs']['macro_inputs']['equity_risk_premium']-baseline['inputs']['macro_inputs']['risk_free_rate']))
+    assert bridge['fcff_rule_change_million_cny'] == -bridge['reinvestment_rule_change_million_cny']
+    assert bridge['fcff_change_from_last_year_million_cny'] == pytest.approx(bridge['nopat_change_from_last_year_million_cny']-bridge['reinvestment_change_from_last_year_million_cny'])
+    assert bridge['equivalent_sales_to_capital'] > 0
+    assert not check['automatic_approval']
+    inputs = CompanyValuationInput.model_validate(baseline['inputs'])
+    inputs.raw_financials = inputs.raw_financials[:1]
+    inputs.valuation_assumptions.revenue_growth_next_year = .1
+    inputs.valuation_assumptions.sales_to_capital_high = .01
+    report = run_full_valuation(inputs)
+    body = dict(inputs=inputs.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
+        for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+    assert review_report(body)['economic_checks']['marginal_return_screen']['below_initial_wacc_years']
+
+
+def test_longer_growth_can_reduce_value_without_becoming_rejection():
+    from tools.review_native_policy import growth_duration_effects
+    variants = {name:dict(status='calculated',value_per_share=value) for name,value in
+        [('scenario_fade3_hold',10),('scenario_fade10_hold',8)]}
+    reviews = {name:dict(forecast=[dict(revenue_million_cny=revenue)],
+        capital=dict(first_five_years_reinvestment_million_cny=investment)) for name,revenue,investment in
+        [('scenario_fade3_hold',100,20),('scenario_fade10_hold',200,80)]}
+    result = growth_duration_effects(variants,reviews)[0]
+    assert result['higher_revenue_lower_value'] and result['value_per_share_change'] == -2
+    assert result['first5_reinvestment_change_million_cny'] == 60
+    assert result['selected_scenario'] is None

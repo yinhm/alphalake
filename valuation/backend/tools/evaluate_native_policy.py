@@ -191,6 +191,7 @@ def evaluate(database, references, recipe, tickers, output, web=None, selection_
                     revenue_year5=body['dcf']['revenue_projections'][4], revenue_year10=body['dcf']['revenue_projections'][-1],
                     reinvestment_first5=sum(body['dcf']['reinvestment_projections'][:5]),
                     incremental_returns=[r['incremental_return_bridge'] for r in reviewed['forecast']],
+                    economic_checks=reviewed['economic_checks'],
                     terminal_share=(body['dcf']['pv_terminal_value']/body['dcf']['value_of_operating_assets']
                                     if body['dcf']['value_of_operating_assets'] else None),
                     evaluated_input_changes=list(changes(baseline['inputs'],body['inputs'])),live_verified=bool(web))
