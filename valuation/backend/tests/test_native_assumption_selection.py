@@ -230,3 +230,25 @@ def test_review_keeps_model_and_sqlite_bases_separate():
     assert 'reported_ebit' not in review['margin_bridge']
     assert 'recent_reported_window' not in review
     assert body==original
+
+
+@pytest.mark.parametrize('section,field,value',[
+    ('raw_financials','ebit',101),
+    ('raw_financials','cash_and_marketable_securities',60),
+    ('adjustment_inputs','has_r_and_d',True),
+    ('adjustment_inputs','amortization_period_n',3),
+    ('industry_data','industry_name','Software'),
+    ('root','period_date_10k','2024-12-31'),
+])
+def test_selection_rejects_mixed_financial_and_adjustment_basis(section,field,value):
+    baseline=sample();candidate=reference_inputs(baseline)
+    if section=='root':
+        candidate[field]=value
+    elif section=='raw_financials':
+        candidate[section][0][field]=value
+    else:
+        candidate[section][field]=value
+    original=deepcopy(candidate)
+    with pytest.raises(ValueError,match='basis differs'):
+        select(baseline,candidate,[reference()],'2026-09-27T00:00:00+00:00',POLICY)
+    assert candidate==original

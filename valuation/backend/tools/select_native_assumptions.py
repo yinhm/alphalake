@@ -16,6 +16,16 @@ def select(baseline, discount_inputs, reference_rows, reference_cutoff, policy):
     inputs = CompanyValuationInput.model_validate(discount_inputs).model_copy(deep=True)
     if inputs.ticker != baseline['inputs']['ticker']:
         raise ValueError('selection company mismatch')
+    original = CompanyValuationInput.model_validate(baseline['inputs']).model_dump(mode='json')
+    candidate = inputs.model_dump(mode='json')
+    # 候选允许显式情景变化，但不能从另一套财务/调整范围借用增长与利润率。
+    for value in (original, candidate):
+        for key in ('macro_inputs','valuation_assumptions','company_metrics'):
+            value.pop(key)
+        for key in ('cost_of_capital_approach','reference_capital_inputs'):
+            value['methodology_choices'].pop(key)
+    if original != candidate:
+        raise ValueError('selection financial or adjustment basis differs from baseline')
     reviewed = review_report(baseline)
     cutoff = datetime.fromisoformat(reference_cutoff)
     if cutoff.utcoffset() is None:
