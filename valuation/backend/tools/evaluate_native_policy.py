@@ -114,7 +114,7 @@ def prepare(baseline, references, recipe, metadata, revenue_facts):
         boundaries=recipe['boundaries'],changes={k:list(changes(baseline['inputs'],v['inputs'])) for k,v in payloads.items()})
 
 
-def evaluate(database, references, recipe, tickers, output, web=None):
+def evaluate(database, references, recipe, tickers, output, web=None, selection_policy=None):
     if not tickers or len(set(tickers))!=len(tickers) or any(not re.fullmatch(r"(?:SHSE|SZSE):[0-9]{6}",t) for t in tickers):
         raise ValueError("unique SH/SZ tickers required")
     from fastapi.testclient import TestClient
@@ -128,12 +128,13 @@ def evaluate(database, references, recipe, tickers, output, web=None):
     with sqlite3.connect(database.as_uri()+'?mode=ro',uri=True) as conn:
         metadata=dict(conn.execute('SELECT key,value FROM metadata'))
         conn.row_factory=sqlite3.Row
+        capital_references=[dict(r) for r in conn.execute("SELECT v.*,r.available_at,r.sha256,r.source_locator AS release_locator FROM reference_value v JOIN reference_release r USING(release_id) WHERE metric='sales_to_invested_capital_ltm'")]
         histories={t:[dict(r) for r in conn.execute("SELECT period,value,unit,period_type,statement_scope FROM standard_facts WHERE ticker=? AND field='revenue_cumulative' AND period LIKE '%12-31' ORDER BY period",(t,))] for t in tickers}
     def save(name,value):
         (output/name).write_text(json.dumps(value,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
     from tools.publish_native_valuation import runtime_identity
     # 固定请求/方法后才计算结果；不根据估值输出选择规则或删公司。
-    save('protocol.json',dict(recipe=recipe,tickers=tickers,sqlite_sha256=snapshot_hash,
+    save('protocol.json',dict(recipe=recipe,selection_policy=selection_policy,tickers=tickers,sqlite_sha256=snapshot_hash,
         reference_sha256=value_digest(references),metadata=metadata,runtime=runtime_identity(database.parent),scope='policy_transmission_not_forecast_accuracy'))
     save('references.json',references)
     rows=[]
@@ -142,14 +143,21 @@ def evaluate(database, references, recipe, tickers, output, web=None):
             key=ticker.replace(':','-'); row=dict(ticker=ticker)
             response=client.post('/api/valuation/from-database',json=dict(ticker=ticker))
             if response.status_code!=200:
-                row.update(status='blocked_inputs',http_status=response.status_code,reason=response.text);rows.append(row);continue
+                row.update(status='outside_snapshot_scope' if response.status_code==404 else 'blocked_inputs',http_status=response.status_code,reason=response.text);rows.append(row);continue
             baseline=response.json();save(key+'-baseline.json',baseline)
             try:
                 payloads,audit=prepare(baseline,references,recipe,metadata,histories[ticker])
             except ValueError as error:
                 row.update(status='blocked_policy',reason=str(error));rows.append(row);continue
+            if selection_policy is not None:
+                from tools.select_native_assumptions import select
+                selected,selection=select(baseline,payloads['discount_only']['inputs'],capital_references,
+                    references['information_as_of'],selection_policy)
+                audit['selection']=selection
+                if selected is not None:
+                    payloads['evidence_selected']=selected
             save(key+'-audit.json',audit)
-            row.update(status='evaluated',baseline=baseline['final']['value_per_share'],forecast_missing=audit['forecast_missing'],variants={})
+            row.update(status='evaluated',baseline=baseline['final']['value_per_share'],forecast_missing=audit['forecast_missing'],selection=audit.get('selection'),variants={})
             for name,payload in payloads.items():
                 save(key+'-'+name+'-request.json',payload)
                 result=client.post('/api/valuation',json=payload)
@@ -186,9 +194,10 @@ def main():
     parser.add_argument('--recipe',required=True,type=Path)
     parser.add_argument('--ticker',required=True,action='append')
     parser.add_argument('--output',required=True,type=Path)
+    parser.add_argument('--selection-policy',type=Path,help='explicit automatic conditional assumption selection policy')
     parser.add_argument('--web',help='optional unchanged full-input API verification URL')
     args=parser.parse_args()
-    print(json.dumps(evaluate(args.database,json.loads(args.references.read_text()),json.loads(args.recipe.read_text()),args.ticker,args.output,args.web),ensure_ascii=False))
+    print(json.dumps(evaluate(args.database,json.loads(args.references.read_text()),json.loads(args.recipe.read_text()),args.ticker,args.output,args.web,json.loads(args.selection_policy.read_text()) if args.selection_policy else None),ensure_ascii=False))
 
 
 if __name__=='__main__':main()

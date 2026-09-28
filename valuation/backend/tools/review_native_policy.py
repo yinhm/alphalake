@@ -172,8 +172,9 @@ def review_directory(directory):
             for prior, current in zip(history, history[1:])
             if current['year'] == prior['year']+1 and prior['revenue'] > 0]
         item['forecast_missing'] = audit['forecast_missing']
+        item['assumption_selection'] = audit.get('selection')
         for variant, saved in row['variants'].items():
-            if variant not in ('discount_only', 'joint_candidate'):
+            if variant not in ('discount_only', 'joint_candidate', 'evidence_selected'):
                 raise ValueError('unknown candidate')
             if saved['status'] != 'calculated':
                 item['variants'][variant] = saved
@@ -183,6 +184,22 @@ def review_directory(directory):
                 raise ValueError('saved identity/reference mismatch')
             if report['final']['value_per_share'] != saved['value_per_share']:
                 raise ValueError('saved summary/result mismatch')
+            if variant == 'evidence_selected':
+                from tools.select_native_assumptions import select
+                selection = audit['selection']
+                expected_payload, expected_selection = select(read(key+'-baseline.json'),
+                    read(key+'-discount_only-request.json')['inputs'],
+                    selection['decisions']['capital']['evidence'], audit['reference_cutoff'],
+                    protocol['selection_policy'])
+                if (expected_payload is None or selection != expected_selection
+                        or read(key+'-evidence_selected-request.json') != expected_payload):
+                    raise ValueError('saved selection audit/input mismatch')
+                # The native API refreshes this derived comparison metric after WACC.
+                expected_inputs = expected_payload['inputs']
+                if expected_inputs.get('company_metrics') is not None:
+                    expected_inputs['company_metrics']['cost_of_capital'] = report['cost_of_capital']['wacc']
+                if report['inputs'] != expected_inputs:
+                    raise ValueError('saved selection API/input mismatch')
             if variant == 'joint_candidate':
                 forecast, assumptions = audit['forecast'], report['inputs']['valuation_assumptions']
                 expected = dict(revenue_growth_next_year=forecast['growth'], revenue_growth_years_2_5=forecast['growth'],

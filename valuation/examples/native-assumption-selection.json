@@ -1,0 +1,13 @@
+{
+  "version": "native-assumption-selection-v1",
+  "growth": "latest_comparable_revenue_growth",
+  "high_growth_years": 1,
+  "projection_years": 10,
+  "margin": "hold_positive_adjusted_ttm",
+  "capital_region": "global",
+  "minimum_sample_count": 30,
+  "max_reference_age_days": 370,
+  "terminal_growth_cap": 0.02,
+  "terminal_roic": "wacc",
+  "boundary": "自动选择条件情景，尚未经预测有效性验证；负增长/亏损保留拒绝，不能自动假设复苏；WACC沿用显式情景，不冒充公司市场WACC。"
+}
