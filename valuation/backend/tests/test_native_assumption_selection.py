@@ -284,3 +284,45 @@ def test_legal_rebuild_uses_new_baseline_and_preserves_old_report(tmp_path):
     request['reason']=''
     with pytest.raises(ValueError,match='reason and evidence'):
         rebuild(request)
+
+
+def test_controlled_growth_replays_and_preserves_other_assumptions():
+    from tools.compare_native_growth import compare
+    baseline = sample()
+    prev = baseline['ltm_financials']['revenues']
+    growth = []
+    for revenue in baseline['dcf']['revenue_projections']:
+        growth.append(revenue / prev - 1)
+        prev = revenue
+    scenarios = [dict(name='same', reason='equivalence', growth=growth),
+                 dict(name='contraction', reason='negative growth retained', growth=[-.02]*10)]
+    result = compare(baseline, scenarios)
+    same, lower = result['scenarios']
+    assert same['final']['value_per_share'] == pytest.approx(baseline['final']['value_per_share'])
+    assert lower['dcf']['revenue_projections'][0] < baseline['ltm_financials']['revenues']
+    assert lower['final']['value_per_share'] != same['final']['value_per_share']
+    assert not result['automatic_adoption']
+    for row in result['scenarios']:
+        restored = deepcopy(row['inputs'])
+        restored['valuation_assumptions']['annual_forecast'] = baseline['inputs']['valuation_assumptions']['annual_forecast']
+        assert restored == baseline['inputs']
+    for invalid in ([], scenarios + scenarios, [dict(name='short', reason='bad', growth=[.1])],
+                    [dict(name='nan', reason='bad', growth=[float('nan')]*10)]):
+        with pytest.raises(ValueError):
+            compare(baseline, invalid)
+    bad = deepcopy(baseline)
+    bad['dcf']['revenue_projections'][0] += 1
+    with pytest.raises(ValueError, match='does not replay'):
+        compare(bad, scenarios)
+
+
+def test_growth_comparison_rejects_implicit_terminal_tax_change():
+    from tools.compare_native_growth import compare
+    inputs = CompanyValuationInput.model_validate(sample()['inputs'])
+    inputs.valuation_assumptions.high_growth_years = 10
+    inputs.macro_inputs.tax_rate_effective = .1
+    report = run_full_valuation(inputs)
+    baseline = dict(inputs=inputs.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
+        for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+    with pytest.raises(ValueError, match='annual path changes baseline semantics'):
+        compare(baseline, [dict(name='test', reason='tax mismatch', growth=[.1]*10)])
