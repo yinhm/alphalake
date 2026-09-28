@@ -116,6 +116,145 @@ def select(baseline, discount_inputs, reference_rows, reference_cutoff, policy):
     return payload, audit
 
 
+# 固定方法参数，不根据公司代码、估值输出或价格调参；是条件压力，不是教材指定值。
+SCENARIO_RULES = dict(version='native-evidence-scenarios-v1', fade_years=[3, 5, 10],
+    margin_targets=['hold_adjusted_ttm', 'three_year_revenue_weighted_adjusted'],
+    margin_convergence_year=5, history_years=3, selected_scenario=None,
+    predictive_validation='not_established')
+
+
+def scenario_payloads(baseline, selected):
+    """复用已选参考和同口径财务；统一生成场景，不将历史均值认证为可持续目标。"""
+    from engine.data_dictionary import ForecastYear
+    from engine.module_4_dcf import _tax_path
+    from datetime import date
+    reviewed = review_report(baseline)
+    inputs = CompanyValuationInput.model_validate(selected['inputs'])
+    a = inputs.valuation_assumptions
+    if a.projection_years != 10 or a.high_growth_years != 1 or a.annual_forecast is not None:
+        raise ValueError('scenario generation requires selected ten-year conditional basis')
+    current = reviewed['margin_bridge']['adjusted_margin']
+    targets = {'hold': current}
+    missing = []
+    year = date.fromisoformat(inputs.period_date_10k[:10]).year
+    required = list(range(year-2, year+1))
+    evidence = [r for r in reviewed['sustainability_evidence']['annual_rows'] if r['year'] in required]
+    history = {r.fiscal_year:r for r in inputs.raw_financials}
+    if inputs.adjustment_inputs.has_operating_leases or inputs.prepared_ttm is not None:
+        missing.append('historical_margin_requires_matching_lease_or_prepared_ttm_adjustments')
+    elif (sorted(r['year'] for r in evidence) != required or any(
+            r['research_adjusted_margin'] is None or r['unavailable_research_cohort_years']
+            or history[r['year']].revenues is None or history[r['year']].revenues <= 0 for r in evidence)):
+        missing.append('three_consecutive_adjusted_margin_years_unavailable')
+    else:
+        target = sum(r['research_adjusted_margin']*history[r['year']].revenues for r in evidence) / sum(history[y].revenues for y in required)
+        if not math.isfinite(target) or not 0 < target <= 1:
+            missing.append('historical_margin_requires_explicit_loss_or_extreme_margin_path')
+        else:
+            targets['history'] = target
+    effective = a.effective_tax_rate_override_years_1_5
+    if effective is None:
+        effective = inputs.macro_inputs.tax_rate_effective
+    if effective is None:
+        effective = inputs.macro_inputs.tax_rate_marginal
+    taxes, terminal_tax = _tax_path(effective, inputs.macro_inputs.tax_rate_marginal,
+        a.override_tax_convergence, a.high_growth_years, a.projection_years)
+    if not math.isclose(taxes[-1], terminal_tax, rel_tol=1e-12, abs_tol=1e-14):
+        raise ValueError('annual scenario cannot change terminal tax')
+    taxes[-1] = terminal_tax  # 消除逐步相加舍入，使终值严格采用同一边际税率。
+    payloads = {}
+    for horizon in SCENARIO_RULES['fade_years']:
+        growth = [a.revenue_growth_next_year + (a.stable_growth_rate-a.revenue_growth_next_year)
+                  * min(i/(horizon-1), 1) for i in range(10)]
+        for name, target in targets.items():
+            changed = inputs.model_copy(deep=True)
+            changed.valuation_assumptions.annual_forecast = [ForecastYear(growth=g,
+                margin=current+(target-current)*min(i/4, 1), tax=taxes[i]) for i,g in enumerate(growth)]
+            payloads[f'scenario_fade{horizon}_{name}'] = dict(inputs=changed.model_dump(mode='json'))
+    return payloads, dict(rules=SCENARIO_RULES, margin_targets=targets, required_history_years=required,
+        historical_margin_evidence=evidence, missing=missing, selected_scenario=None,
+        boundary='历史收入加权利润率仅为均值回归情景；3/5/10年为固定压力持续期，不是公司预测或达摩达兰指定值；税、WACC、资本代理及股权桥接保持所选口径',
+        input_classes=dict(company_observations=['comparable_revenue_growth','adjusted_ttm_margin','historical_adjusted_margins'],
+            reference_proxies=['industry_sales_to_capital','reference_wacc'],
+            analyst_rules=['growth_fade_duration','margin_target_and_transition','terminal_growth_and_return']),
+        automatic_adoption=False)
+
+
+def prediction_check(baseline):
+    """最近两个完整年度的固定一步预测诊断；不以评分选择规则或筛公司。"""
+    from datetime import date
+    reviewed = review_report(baseline)
+    inputs = CompanyValuationInput.model_validate(baseline['inputs'])
+    end = date.fromisoformat(inputs.period_date_10k[:10]).year
+    raw = {r.fiscal_year:r for r in inputs.raw_financials}
+    margins = {r['year']:r['research_adjusted_margin'] for r in reviewed['sustainability_evidence']['annual_rows']}
+    margin_comparable = not inputs.adjustment_inputs.has_operating_leases and inputs.prepared_ttm is None
+    duplicate = reviewed['sustainability_evidence']['duplicate_annual_years']
+    def revenue(y):
+        value = raw[y].revenues if y in raw and y not in duplicate else None
+        return value if value is not None and math.isfinite(value) and value > 0 else None
+    results = []
+    for target in (end-1, end):
+        origin = target-1
+        rev = revenue(origin)
+        observed = revenue(target)
+        growth = {}
+        if rev is not None and revenue(origin-1) is not None:
+            growth['latest'] = rev/revenue(origin-1)-1
+        if all(revenue(y) is not None for y in range(origin-3, origin+1)):
+            growth['cagr3'] = (rev/revenue(origin-3))**(1/3)-1
+        targets = {}
+        if margin_comparable and origin not in duplicate and margins.get(origin) is not None:
+            targets['hold'] = margins[origin]
+        years = range(origin-2, origin+1)
+        if margin_comparable and all(revenue(y) is not None and margins.get(y) is not None for y in years):
+            targets['history'] = sum(margins[y]*revenue(y) for y in years)/sum(revenue(y) for y in years)
+        actual_margin = margins.get(target) if margin_comparable and target not in duplicate else None
+        forecasts = []
+        for g in ('latest','cagr3'):
+            for m in ('hold','history'):
+                predicted_revenue = rev*(1+growth[g]) if g in growth else None
+                predicted_ebit = predicted_revenue*targets[m] if predicted_revenue is not None and m in targets else None
+                actual_ebit = observed*actual_margin if observed is not None and actual_margin is not None else None
+                forecasts.append(dict(rule=g+'_'+m, predicted_revenue=predicted_revenue,
+                    predicted_adjusted_ebit=predicted_ebit,
+                    revenue_absolute_error_scaled=(abs(predicted_revenue-observed)/observed
+                        if predicted_revenue is not None and observed is not None else None),
+                    ebit_absolute_error_scaled_by_revenue=(abs(predicted_ebit-actual_ebit)/observed
+                        if predicted_ebit is not None and actual_ebit is not None else None),
+                    missing=([*(['growth_history'] if g not in growth else []),
+                        *(['comparable_margin_history'] if m not in targets else []),
+                        *(['actual_revenue'] if observed is None else []),
+                        *(['actual_adjusted_margin'] if actual_margin is None else [])])))
+        results.append(dict(origin_year=origin, target_year=target, growth_inputs=growth, margin_inputs=targets,
+            actual_revenue=observed, actual_adjusted_margin=actual_margin, forecasts=forecasts))
+    return dict(version='native-one-year-diagnostic-v1', ticker=inputs.ticker, results=results,
+        selected_rule=None, predictive_validation='not_established',
+        boundary='当前版本历史输入的简化回溯，后下载修订可能前视；非独立留出，不校准持续期，不认证完整DCF；同公司多期不是独立样本，缺项保留')
+
+
+def prediction_summary(rows):
+    """所有规则用同一可评分交集，同时公开完整公司/期间分母。"""
+    from statistics import mean
+    metrics = {}
+    for metric in ('revenue_absolute_error_scaled','ebit_absolute_error_scaled_by_revenue'):
+        paired = []
+        for company in rows:
+            for point in company.get('prediction_check', {}).get('results', []):
+                if all(f[metric] is not None for f in point['forecasts']):
+                    paired.append((company['ticker'], point['forecasts']))
+        rules = {}
+        for rule in ('latest_hold','latest_history','cagr3_hold','cagr3_history'):
+            companies = {}
+            for ticker, forecasts in paired:
+                companies.setdefault(ticker, []).append(next(f[metric] for f in forecasts if f['rule'] == rule))
+            rules[rule] = dict(mean_company_error=mean(mean(v) for v in companies.values()) if companies else None,
+                company_errors={k:mean(v) for k,v in companies.items()})
+        metrics[metric] = dict(total_company_periods=2*len(rows), paired_periods=len(paired),
+            missing_periods=2*len(rows)-len(paired), companies=len(set(t for t,_ in paired)), rules=rules)
+    return dict(metrics=metrics, selected_rule=None, boundary='同一指标同一交集，先公司内平均再公司间平均；仅描述，非独立样本显著性或DCF准确率')
+
+
 def rebuild(request):
     """显式新输入重建；旧报告留痕，不借用其利润率或把新结果当成已获批事实。"""
     from pathlib import Path

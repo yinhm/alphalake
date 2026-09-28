@@ -326,3 +326,54 @@ def test_growth_comparison_rejects_implicit_terminal_tax_change():
         for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
     with pytest.raises(ValueError, match='annual path changes baseline semantics'):
         compare(baseline, [dict(name='test', reason='tax mismatch', growth=[.1]*10)])
+
+
+def test_uniform_scenarios_preserve_facts_and_use_consecutive_adjusted_history():
+    from tools.select_native_assumptions import scenario_payloads
+    baseline = sample()
+    selected, _ = select(baseline, reference_inputs(baseline), [reference()], '2026-09-27T00:00:00+00:00', POLICY)
+    before = deepcopy(selected)
+    payloads, audit = scenario_payloads(baseline, selected)
+    assert len(payloads) == 6 and not audit['missing'] and audit['selected_scenario'] is None
+    assert audit['margin_targets']['history'] == pytest.approx(300 / sum(1000/1.1**i for i in range(3)))
+    assert selected == before
+    reports = {}
+    for name, payload in payloads.items():
+        restored = deepcopy(payload['inputs'])
+        restored['valuation_assumptions']['annual_forecast'] = None
+        assert restored == selected['inputs']
+        reports[name] = run_full_valuation(CompanyValuationInput.model_validate(payload['inputs']))
+    same = run_full_valuation(CompanyValuationInput.model_validate(selected['inputs']))
+    assert reports['scenario_fade10_hold'].final.value_per_share == pytest.approx(same.final.value_per_share)
+    assert reports['scenario_fade3_hold'].final.value_per_share != pytest.approx(same.final.value_per_share)
+    assert reports['scenario_fade5_history'].dcf.ebit_projections[4] / reports['scenario_fade5_history'].dcf.revenue_projections[4] == pytest.approx(audit['margin_targets']['history'])
+    # 同口径研发队列不足：不能把未调整利润或更早年度拼成三年目标。
+    inputs = CompanyValuationInput.model_validate(baseline['inputs'])
+    inputs.adjustment_inputs.has_r_and_d = True
+    report = run_full_valuation(inputs)
+    short = dict(inputs=inputs.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
+        for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+    selected, _ = select(short, reference_inputs(short), [reference()], '2026-09-27T00:00:00+00:00', POLICY)
+    payloads, audit = scenario_payloads(short, selected)
+    assert len(payloads) == 3 and audit['missing'] == ['three_consecutive_adjusted_margin_years_unavailable']
+
+
+def test_prediction_diagnostic_never_uses_target_year_to_forecast():
+    from tools.select_native_assumptions import prediction_check
+    baseline = sample()
+    prior = prediction_check(baseline)
+    inputs = CompanyValuationInput.model_validate(baseline['inputs'])
+    inputs.raw_financials[0].revenues *= 2
+    inputs.raw_financials[0].ebit = -300
+    report = run_full_valuation(inputs)
+    changed = dict(inputs=inputs.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
+        for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+    after = prediction_check(changed)
+    for old, new in zip(prior['results'], after['results']):
+        assert old['growth_inputs'] == new['growth_inputs']
+        assert old['margin_inputs'] == new['margin_inputs']
+        for a,b in zip(old['forecasts'],new['forecasts']):
+            assert a['predicted_revenue'] == b['predicted_revenue']
+            assert a['predicted_adjusted_ebit'] == b['predicted_adjusted_ebit']
+    assert after['results'][-1]['actual_adjusted_margin'] < 0
+    assert after['results'][-1]['forecasts'][0]['ebit_absolute_error_scaled_by_revenue'] > prior['results'][-1]['forecasts'][0]['ebit_absolute_error_scaled_by_revenue']

@@ -336,6 +336,9 @@ def review_directory(directory):
             or [r['ticker'] for r in summary['results']] != protocol['tickers']
             or summary['companies'] != len(protocol['tickers'])):
         raise ValueError('fixed company denominator differs')
+    from tools.select_native_assumptions import prediction_summary
+    if summary.get('prediction_summary') != prediction_summary(summary['results']):
+        raise ValueError('saved prediction summary mismatch')
     results = []
     for row in summary['results']:
         ticker = row['ticker']
@@ -348,6 +351,10 @@ def review_directory(directory):
             continue
         key = ticker.replace(':', '-')
         audit = read(key+'-audit.json')
+        from tools.select_native_assumptions import prediction_check
+        expected_check=prediction_check(read(key+'-baseline.json'))
+        if read(key+'-prediction-check.json') != expected_check or row.get('prediction_check') != expected_check:
+            raise ValueError('saved prediction diagnostic mismatch')
         item['historical_standard_revenue'] = audit['forecast'].get('annual_revenue', [])
         history = item['historical_standard_revenue']
         item['historical_standard_revenue_growth'] = [dict(year=current['year'],
@@ -356,8 +363,22 @@ def review_directory(directory):
             if current['year'] == prior['year']+1 and prior['revenue'] > 0]
         item['forecast_missing'] = audit['forecast_missing']
         item['assumption_selection'] = audit.get('selection')
+        expected_scenarios = {}
+        has_selected = audit.get('selection', {}).get('status') == 'selected_conditional'
+        if has_selected and ('evidence_selected' not in row['variants'] or audit.get('scenario_generation') is None):
+            raise ValueError('saved selected scenario family missing')
+        if audit.get('scenario_generation') is not None:
+            from tools.select_native_assumptions import scenario_payloads, SCENARIO_RULES
+            if protocol.get('scenario_rules') != SCENARIO_RULES:
+                raise ValueError('saved scenario rules mismatch')
+            expected_scenarios, expected_audit = scenario_payloads(read(key+'-baseline.json'),
+                read(key+'-evidence_selected-request.json'))
+            if expected_audit != audit['scenario_generation'] or expected_audit != row.get('scenario_generation'):
+                raise ValueError('saved scenario audit mismatch')
+            if set(name for name in row['variants'] if name.startswith('scenario_')) != set(expected_scenarios):
+                raise ValueError('saved scenario set mismatch')
         for variant, saved in row['variants'].items():
-            if variant not in ('discount_only', 'joint_candidate', 'evidence_selected'):
+            if variant not in ('discount_only', 'joint_candidate', 'evidence_selected') and variant not in expected_scenarios:
                 raise ValueError('unknown candidate')
             if saved['status'] != 'calculated':
                 item['variants'][variant] = saved
@@ -383,6 +404,14 @@ def review_directory(directory):
                     expected_inputs['company_metrics']['cost_of_capital'] = report['cost_of_capital']['wacc']
                 if report['inputs'] != expected_inputs:
                     raise ValueError('saved selection API/input mismatch')
+            if variant in expected_scenarios:
+                expected = expected_scenarios[variant]
+                if read(key+'-'+variant+'-request.json') != expected:
+                    raise ValueError('saved scenario request mismatch')
+                if expected['inputs'].get('company_metrics') is not None:
+                    expected['inputs']['company_metrics']['cost_of_capital'] = report['cost_of_capital']['wacc']
+                if report['inputs'] != expected['inputs']:
+                    raise ValueError('saved scenario API/input mismatch')
             if variant == 'joint_candidate':
                 forecast, assumptions = audit['forecast'], report['inputs']['valuation_assumptions']
                 expected = dict(revenue_growth_next_year=forecast['growth'], revenue_growth_years_2_5=forecast['growth'],

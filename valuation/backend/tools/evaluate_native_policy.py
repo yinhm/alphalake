@@ -136,7 +136,8 @@ def evaluate(database, references, recipe, tickers, output, web=None, selection_
         (output/name).write_text(json.dumps(value,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
     from tools.publish_native_valuation import runtime_identity
     # 固定请求/方法后才计算结果；不根据估值输出选择规则或删公司。
-    save('protocol.json',dict(recipe=recipe,selection_policy=selection_policy,tickers=tickers,sqlite_sha256=snapshot_hash,
+    from tools.select_native_assumptions import SCENARIO_RULES
+    save('protocol.json',dict(recipe=recipe,selection_policy=selection_policy,scenario_rules=SCENARIO_RULES if selection_policy else None,tickers=tickers,sqlite_sha256=snapshot_hash,
         reference_sha256=value_digest(references),metadata=metadata,runtime=runtime_identity(database.parent),scope='policy_transmission_not_forecast_accuracy'))
     save('references.json',references)
     rows=[]
@@ -148,6 +149,9 @@ def evaluate(database, references, recipe, tickers, output, web=None, selection_
                 row.update(status='outside_snapshot_scope' if response.status_code==404 else 'blocked_inputs',http_status=response.status_code,reason=response.text);rows.append(row);continue
             baseline=response.json();save(key+'-baseline.json',baseline)
             save(key+'-annual-evidence.json',annual_evidence[ticker])
+            from tools.select_native_assumptions import prediction_check
+            row['prediction_check']=prediction_check(baseline)
+            save(key+'-prediction-check.json',row['prediction_check'])
             try:
                 payloads,audit=prepare(baseline,references,recipe,metadata,histories[ticker])
             except ValueError as error:
@@ -159,8 +163,12 @@ def evaluate(database, references, recipe, tickers, output, web=None, selection_
                 audit['selection']=selection
                 if selected is not None:
                     payloads['evidence_selected']=selected
+                    from tools.select_native_assumptions import scenario_payloads
+                    scenarios,scenario_audit=scenario_payloads(baseline,selected)
+                    payloads.update(scenarios)
+                    audit['scenario_generation']=scenario_audit
             save(key+'-audit.json',audit)
-            row.update(status='evaluated',baseline=baseline['final']['value_per_share'],forecast_missing=audit['forecast_missing'],selection=audit.get('selection'),variants={})
+            row.update(status='evaluated',baseline=baseline['final']['value_per_share'],forecast_missing=audit['forecast_missing'],selection=audit.get('selection'),scenario_generation=audit.get('scenario_generation'),variants={})
             for name,payload in payloads.items():
                 save(key+'-'+name+'-request.json',payload)
                 result=client.post('/api/valuation',json=payload)
@@ -168,24 +176,29 @@ def evaluate(database, references, recipe, tickers, output, web=None, selection_
                     row['variants'][name]=dict(status='rejected',http_status=result.status_code,reason=result.text);continue
                 body=result.json();save(key+'-'+name+'-result.json',body)
                 from tools.review_native_policy import review_report
-                save(key+'-'+name+'-review.json',review_report(body,annual_evidence[ticker]))
+                reviewed=review_report(body,annual_evidence[ticker])
+                save(key+'-'+name+'-review.json',reviewed)
                 if name=='discount_only':
                     for field in ('revenue_projections','ebit_projections','reinvestment_projections','fcff_projections'):
                         if body['dcf'][field]!=baseline['dcf'][field]:raise ValueError('discount-only changed '+field)
                 if web:
                     req=Request(web.rstrip('/')+'/api/valuation',data=json.dumps(payload).encode(),headers={'Content-Type':'application/json'})
                     with urlopen(req,timeout=60) as live: actual=json.load(live)
-                    if actual['inputs']!=body['inputs'] or actual['final']!=body['final'] or actual['reference_snapshot']!=body['reference_snapshot']:
+                    if any(actual[field]!=body[field] for field in ('inputs','final','dcf','reference_snapshot')):
                         raise ValueError('live policy inputs/reference/result mismatch')
                 row['variants'][name]=dict(status='calculated',value_per_share=body['final']['value_per_share'],
                     wacc=body['cost_of_capital']['wacc'],first_fcff=body['dcf']['fcff_projections'][0],
+                    revenue_year5=body['dcf']['revenue_projections'][4], revenue_year10=body['dcf']['revenue_projections'][-1],
+                    reinvestment_first5=sum(body['dcf']['reinvestment_projections'][:5]),
+                    incremental_returns=[r['incremental_return_bridge'] for r in reviewed['forecast']],
                     terminal_share=(body['dcf']['pv_terminal_value']/body['dcf']['value_of_operating_assets']
                                     if body['dcf']['value_of_operating_assets'] else None),
                     evaluated_input_changes=list(changes(baseline['inputs'],body['inputs'])),live_verified=bool(web))
             rows.append(row)
     with database.open('rb') as stream:
         if hashlib.file_digest(stream,'sha256').hexdigest()!=snapshot_hash:raise ValueError('publication changed during evaluation')
-    summary=dict(companies=len(tickers),results=rows,scope='conditional_policy_comparison_not_market_targets')
+    from tools.select_native_assumptions import prediction_summary
+    summary=dict(companies=len(tickers),results=rows,prediction_summary=prediction_summary(rows),scope='conditional_policy_comparison_not_market_targets')
     save('summary.json',summary)
     return summary
 

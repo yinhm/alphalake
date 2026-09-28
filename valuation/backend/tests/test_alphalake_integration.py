@@ -1591,8 +1591,14 @@ def test_native_cny_policy_transmission_and_rejections(reference_export,tmp_path
     summary=dict(companies=2,results=[dict(ticker='SHSE:600519',status='evaluated',variants=dict(
         joint_candidate=dict(status='calculated',value_per_share=body['final']['value_per_share']))),
         dict(ticker='SHSE:600690',status='blocked_inputs',reason='missing research history')])
+    from tools.select_native_assumptions import prediction_check, prediction_summary
+    complete_baseline = reviewed_body(dict(inputs=baseline['inputs']))
+    check = prediction_check(complete_baseline)
+    summary['results'][0]['prediction_check'] = check
+    summary['prediction_summary'] = prediction_summary(summary['results'])
     body['reference_snapshot']=dict(id='test')
     for name,content in {'protocol.json':protocol,'summary.json':summary,
+        'SHSE-600519-baseline.json':complete_baseline,'SHSE-600519-prediction-check.json':check,
         'SHSE-600519-audit.json':audit,'SHSE-600519-annual-evidence.json':dict(rows=[],cells=[]),'SHSE-600519-joint_candidate-result.json':body}.items():
         (tmp_path/name).write_text(json.dumps(content))
     reviewed_directory=review_directory(tmp_path)
