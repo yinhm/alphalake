@@ -56,6 +56,36 @@ def annual_capital_evidence(rows, research_life):
             research_adjusted_margin=margin,research_adjusted_invested_capital_million_cny=capital,
             research_adjusted_sales_to_capital=row['revenues']/capital if capital is not None and capital > 0 and valid(row['revenues']) else None,
             unavailable_research_cohort_years=missing,missing_balance_inputs=absent))
+    annual = {r['year']: r for r in result}
+    for row in result:
+        year = row['year']
+        prior = annual.get(year-1)
+        bridge = dict(from_year=year-1, to_year=year, status='missing_previous_year',
+            components=[], capital_change_million_cny=None, revenue_change_million_cny=None,
+            revenue_change_per_capital_change=None, automatic_adoption=False,
+            boundary='账面资本变动不等于净再投资；归母权益、现金及债务代理范围未闭合，减值、并购、汇兑等影响未分离；同期收入差额比不是项目回报或获批预测倍率')
+        row['capital_change_bridge'] = bridge
+        if prior is None:
+            continue
+        for field, sign in (('bv_equity',1), ('bv_debt',1), ('cash_and_marketable_securities',-1), ('research_asset_million_cny',1)):
+            before, after = ((prior.get(field),row.get(field)) if field == 'research_asset_million_cny'
+                else (history[year-1].get(field),history[year].get(field)))
+            bridge['components'].append(dict(field=field, coefficient=sign, opening=before, closing=after,
+                contribution_million_cny=sign*(after-before) if valid(before) and valid(after) else None))
+        before, after = history[year-1].get('revenues'), history[year].get('revenues')
+        if valid(before) and valid(after):
+            bridge['revenue_change_million_cny'] = after-before
+        bridge['status'] = 'missing_capital_components'
+        if any(p['contribution_million_cny'] is None for p in bridge['components']):
+            continue
+        change = sum(p['contribution_million_cny'] for p in bridge['components'])
+        if not math.isclose(change, row['research_adjusted_invested_capital_million_cny']-prior['research_adjusted_invested_capital_million_cny'], rel_tol=1e-10, abs_tol=1e-8):
+            raise ValueError('historical capital change does not reconcile')
+        bridge['capital_change_million_cny'] = change
+        bridge['status'] = 'nonpositive_capital_change' if change <= 0 else 'missing_revenue'
+        if change > 0 and bridge['revenue_change_million_cny'] is not None:
+            bridge['status'] = 'arithmetic_complete_not_valuation_approved'
+            bridge['revenue_change_per_capital_change'] = bridge['revenue_change_million_cny']/change
     return result
 
 

@@ -155,3 +155,29 @@ def test_independent_history_retains_research_when_ebit_missing():
     rows[0].update(ticker='SZSE:300866',fy_offset=0)
     with pytest.raises(ValueError,match='identity/period'):
         review_report(sample(),dict(rows=[rows[0]],cells=[]))
+
+
+def test_historical_capital_changes_reconcile_and_keep_gaps():
+    from tools.review_native_policy import annual_capital_evidence
+    rows=[dict(fiscal_year=2020+i,r_and_d_expense=10*(i+1),ebit=None,
+        revenues=100+20*i,bv_equity=100+30*i,bv_debt=50+5*i,
+        cash_and_marketable_securities=10+2*i) for i in range(4)]
+    result=annual_capital_evidence(rows,2)
+    bridge=result[0]['capital_change_bridge']
+    assert bridge['capital_change_million_cny']==48  # 30+5-2+15，研发队列独立滚动
+    assert [p['contribution_million_cny'] for p in bridge['components']]==[30,5,-2,15]
+    assert bridge['revenue_change_per_capital_change']==pytest.approx(20/48)
+    assert bridge['automatic_adoption'] is False
+    changed=deepcopy(rows);changed[-1]['revenues']=100
+    assert annual_capital_evidence(changed,2)[0]['capital_change_bridge']['revenue_change_per_capital_change']<0
+    for equity in (142,100):  # 零和负资本增量不伪造正倍率
+        changed=deepcopy(rows);changed[-1]['bv_equity']=equity
+        b=annual_capital_evidence(changed,2)[0]['capital_change_bridge']
+        assert b['status']=='nonpositive_capital_change' and b['revenue_change_per_capital_change'] is None
+    changed=deepcopy(rows);changed[-2]['bv_debt']=None
+    assert annual_capital_evidence(changed,2)[0]['capital_change_bridge']['status']=='missing_capital_components'
+    changed=deepcopy(rows);changed[-1]['revenues']=None
+    assert annual_capital_evidence(changed,2)[0]['capital_change_bridge']['status']=='missing_revenue'
+    changed=deepcopy(rows);changed.pop(-2)
+    assert annual_capital_evidence(changed,2)[0]['capital_change_bridge']['status']=='missing_previous_year'
+    assert result[-1]['capital_change_bridge']['status']=='missing_previous_year'
