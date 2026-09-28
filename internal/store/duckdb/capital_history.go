@@ -19,7 +19,7 @@ const capitalHistoryReview = `CREATE TEMP TABLE _capital_history_review AS
  WHERE p.source='tdx' AND p.valid_from=DATE '2025-01-01' AND p.valid_to IS NULL
  AND p.canonical_field IN (
  'accounts_payable','accounts_receivable','current_assets','current_liabilities','inventories','trading_financial_assets',
- 'bonds_payable','cash_and_cash_equivalents','current_portion_noncurrent_liabilities',
+ 'equity_parent','bonds_payable','cash_and_cash_equivalents','current_portion_noncurrent_liabilities',
  'deferred_expense_amortization','depreciation_depletion','income_tax_expense','intangible_amortization',
  'inventory_decrease_cashflow','investment_property_depreciation_amortization','lease_liabilities',
  'long_term_borrowings','long_term_equity_investments','monetary_funds',
@@ -34,8 +34,8 @@ func insertCapitalHistory(ctx context.Context, tx *sql.Tx) (int64, error) {
 	if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM _capital_history_review`).Scan(&count); err != nil {
 		return 0, err
 	}
-	if count != 25 {
-		return 0, fmt.Errorf("capital history requires 25 unchanged official definitions, found %d", count)
+	if count != 26 {
+		return 0, fmt.Errorf("capital history requires 26 unchanged official definitions, found %d", count)
 	}
 	if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM (
  SELECT p.* FROM fundamental.provider_field p JOIN _capital_history_review h

@@ -26,7 +26,7 @@ func TestCapitalHistoryReview(t *testing.T) {
 	}
 	var count int
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_field WHERE notes LIKE 'official-capital-history-v1;%' AND valid_to=DATE '2025-01-01' AND zero_policy='reject'`).Scan(&count))
-	if count != 25 {
+	if count != 26 {
 		t.Fatal(count)
 	}
 	var before, after string
@@ -36,7 +36,7 @@ func TestCapitalHistoryReview(t *testing.T) {
 	check(err)
 	n, err := ExtendCapitalHistory(ctx, db)
 	check(err)
-	if n != 25 {
+	if n != 26 {
 		t.Fatal(n)
 	}
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_field WHERE notes LIKE 'official-capital-history-v1;%'`).Scan(&count))
@@ -52,7 +52,19 @@ func TestCapitalHistoryReview(t *testing.T) {
 	if before != after {
 		t.Fatal("existing reviews changed")
 	}
-	// Upgrading the previous 19-field review adds only the six balance fields.
+	// The current 25-field historical review lacks parent equity, not total equity.
+	_, err = db.ExecContext(ctx, `CREATE TEMP TABLE previous_equity_review AS SELECT * FROM fundamental.provider_field WHERE (canonical_field='equity_parent' AND valid_to=DATE '2025-01-01') IS NOT TRUE; DELETE FROM fundamental.provider_field WHERE canonical_field='equity_parent' AND valid_to=DATE '2025-01-01'`)
+	check(err)
+	n, err = ExtendCapitalHistory(ctx, db)
+	check(err)
+	if n != 1 {
+		t.Fatal("parent equity incremental review", n)
+	}
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM previous_equity_review EXCEPT SELECT * FROM fundamental.provider_field)`).Scan(&count))
+	if count != 0 {
+		t.Fatal("parent equity review changed previous mappings", count)
+	}
+	// Upgrading the earlier balance-field review adds only the six balance fields.
 	_, err = db.ExecContext(ctx, `CREATE TEMP TABLE previous_review AS SELECT * FROM fundamental.provider_field WHERE valid_to=DATE '2025-01-01' AND canonical_field NOT IN ('accounts_payable','accounts_receivable','current_assets','current_liabilities','inventories','trading_financial_assets'); DELETE FROM fundamental.provider_field WHERE valid_to=DATE '2025-01-01' AND canonical_field IN ('accounts_payable','accounts_receivable','current_assets','current_liabilities','inventories','trading_financial_assets')`)
 	check(err)
 	n, err = ExtendCapitalHistory(ctx, db)
@@ -129,6 +141,21 @@ func TestCapitalHistoryArchivedRecord(t *testing.T) {
 	check(conn.QueryRowContext(ctx, `SELECT current_assets,current_liabilities,accounts_receivable,inventories,accounts_payable,trading_financial_assets FROM fundamental.statement_snapshot`).Scan(&balances[0], &balances[1], &balances[2], &balances[3], &balances[4], &balances[5]))
 	if balances != [6]float64{12367549440, 5901511680, 1654200064, 3233554176, 1778359168, 2330707712} {
 		t.Fatal("historical balances", balances)
+	}
+	var parentEquity, totalEquity float64
+	check(conn.QueryRowContext(ctx, `SELECT equity_parent,total_equity FROM fundamental.statement_snapshot`).Scan(&parentEquity, &totalEquity))
+	if parentEquity != 8958043136 || totalEquity != 9144519680 {
+		t.Fatal("parent equity must not use total equity", parentEquity, totalEquity)
+	}
+	// Withdrawing the historical approval removes only the unsupported field.
+	_, err = conn.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE canonical_field='equity_parent' AND valid_to=DATE '2025-01-01'`)
+	check(err)
+	_, err = MaterializeFinancialSnapshotBatch(ctx, conn, 2, fields, []IndexedFinancialRecord{{ID: 1, Revision: "revision", Record: r}})
+	check(err)
+	var withdrawn sql.NullFloat64
+	check(conn.QueryRowContext(ctx, `SELECT equity_parent,total_equity FROM fundamental.statement_snapshot`).Scan(&withdrawn, &totalEquity))
+	if withdrawn.Valid || totalEquity != 9144519680 {
+		t.Fatal("withdrawal changed total equity or retained unsupported parent equity", withdrawn, totalEquity)
 	}
 	// A corrupted multiplier must withdraw a previously supported value.
 	_, err = conn.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE canonical_field='lease_liabilities' AND valid_to=DATE '2025-01-01'`)
