@@ -2,7 +2,7 @@
 
 面向沪深普通非金融企业的本地金融数据与条件估值系统。主要链路：**TDX → DuckDB标准事实 → 兼容SQLite → 原生valuation网页/API**。当前不推进金融专项模型或多市场扩展，默认不纳入北交所；估值方法以达摩达兰原始资料为准，事实、代理和预测假设分层。
 
-当前无实际生产部署。最新主库为schema54、约341MiB；当前100家公司样本财务87家准入、13家按缺项拒绝；默认参考齐备86家，另1家须显式选择行业/国家。此比例不是全市场数据完整率或估值准确率。历史资本分量扩展后，本轮另补六项余额历史，主库新增38,282标准值且既有值不变；详见[当前实现状态](docs/implementation-status.md)。
+当前无实际生产部署。最新主库为schema55、约341MiB；当前100家公司样本财务87家准入、13家按缺项拒绝；默认参考齐备86家，另1家须显式选择行业/国家。此比例不是全市场数据完整率或估值准确率。历史资本分量扩展后，本轮另补六项余额历史，主库新增38,282标准值且既有值不变；详见[当前实现状态](docs/implementation-status.md)。
 
 ## 使用与维护
 
@@ -42,7 +42,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m pytest -q valuation/backend/tes
 
 ## 命令行
 
-初始化当前 DuckDB 数据库（已有schema54直接打开；schema53先执行`upgrade-native-references`，schema52先执行`upgrade-filing-coverage`再执行该参考升级，schema51须使用独立重建工具转换，其他旧版本明确拒绝）：
+初始化当前 DuckDB 数据库（已有schema55直接打开；schema54先执行`upgrade-native-references`；更早版本按原提交显式转换或可验证重建，先保存不可重建证据和审核记录）：
 
 ```bash
 alphalake init ./alphalake.duckdb
@@ -181,7 +181,7 @@ alphalake schema
 
 审核补充支持显式修订、撤销与历史查询，镜像原文审核独立于诊断保存；迁移及时间边界见[审核证据说明](docs/reviewed-evidence-history.md)。
 
-当前仅维护schema54，基本定义见 [schema.sql](internal/store/duckdb/schema.sql)，财务宽表及查询见 [financial_snapshot.go](internal/store/duckdb/financial_snapshot.go) 和 [financial_queries.sql](internal/store/duckdb/financial_queries.sql)。财务与参考数据已归并主库并接入[全量TDX源目录](docs/tdx-financial-catalog-20260919.md)，原有财务与参考内容不变，新增标准映射及本地事实的最新范围见[接入验收](docs/decisions/020-official-statements-and-snapshots.md)。旧迁移链及专项发布工具退出当前代码，严格历史复验使用原提交；处置记录见[兼容清理](docs/compatibility-cleanup-20260919.md)。
+当前仅维护schema55，基本定义见 [schema.sql](internal/store/duckdb/schema.sql)，财务宽表及查询见 [financial_snapshot.go](internal/store/duckdb/financial_snapshot.go) 和 [financial_queries.sql](internal/store/duckdb/financial_queries.sql)。财务与参考数据已归并主库并接入[全量TDX源目录](docs/tdx-financial-catalog-20260919.md)，原有财务与参考内容不变，新增标准映射及本地事实的最新范围见[接入验收](docs/decisions/020-official-statements-and-snapshots.md)。旧迁移链及专项发布工具退出当前代码，严格历史复验使用原提交；处置记录见[兼容清理](docs/compatibility-cleanup-20260919.md)。
 
 ## 数据布局
 
