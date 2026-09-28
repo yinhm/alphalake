@@ -152,6 +152,7 @@ def run_full_valuation(
         report.adjusted, raw_current, inputs.adjustment_inputs,
         report.cost_of_capital, raw_prior, macro=inputs.macro_inputs,
         raw_financials_history=financials,
+        historical_research_expenses=inputs.historical_research_expenses,
     )
 
     if (inputs.prepared_ttm is None and (len(financials) > 1 or inputs.quarters_since_10k)

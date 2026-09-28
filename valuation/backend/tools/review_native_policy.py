@@ -131,13 +131,13 @@ def review_report(body, annual_evidence=None):
     history = sorted(inputs.raw_financials, key=lambda f: f.fiscal_year)
     # 复用引擎逐年研发队列结果；不拿当前研发资产或TTM利润率填历史。
     counts = Counter(f.fiscal_year for f in inputs.raw_financials)
+    research = dict(inputs.historical_research_expenses)
+    research.update({f.fiscal_year:f.r_and_d_expense for f in inputs.raw_financials if counts[f.fiscal_year] == 1})
     model_annual_evidence = []
     for index, f in enumerate(inputs.raw_financials[:10]):
         cohort = range(f.fiscal_year-inputs.adjustment_inputs.amortization_period_n, f.fiscal_year+1)
-        unavailable = [year for year in cohort if counts[year] != 1 or not any(
-            r.fiscal_year == year and r.r_and_d_expense is not None
-            and math.isfinite(r.r_and_d_expense) and r.r_and_d_expense >= 0
-            for r in inputs.raw_financials)] if inputs.adjustment_inputs.has_r_and_d else []
+        unavailable = [year for year in cohort if research.get(year) is None
+            or not math.isfinite(research[year]) or research[year] < 0] if inputs.adjustment_inputs.has_r_and_d else []
         margin = replay.cashflow.historical_margin_by_year[index]
         ratio = replay.cashflow.historical_s_c_by_year[index]
         model_annual_evidence.append(dict(year=f.fiscal_year,
@@ -280,6 +280,7 @@ def review_report(body, annual_evidence=None):
             independent_annual_rows=annual_evidence_rows,
             independent_source='sqlite_annual_rows_and_export_cells' if annual_evidence_rows is not None else None,
             supplied_annual_years=sorted(counts),
+            supplementary_research_years=sorted(inputs.historical_research_expenses),
             absent_annual_years=[y for y in range(min(counts),max(counts)+1) if y not in counts] if counts else [],
             duplicate_annual_years=[y for y,n in sorted(counts.items()) if n>1],
             research_adjusted_margin_years=sum(r['research_adjusted_margin'] is not None for r in model_annual_evidence),

@@ -633,6 +633,7 @@ class CompanyValuationInput(BaseModel):
     prepared_ttm: PreparedTTM | None = None
     equity_bridge: EquityBridgeInputs | None = None
     raw_financials: list[RawFinancials] = Field(default_factory=list, description="Multi-year, most recent first")
+    historical_research_expenses: dict[int, float] = Field(default_factory=dict, description="Annual R&D observations for years absent from complete financial rows; reporting-currency units")
     quarterly_financials: list[RawFinancials | QuarterlyFinancials] = Field(default_factory=list, description="Quarterly positions for LTM; unused positions may contain null fields")
     quarters_since_10k: int = Field(default=0, description="Quarters since last annual filing (1-4)")
     period_date_10k: str | None = Field(default=None, description="Most recent 10-K period end date")
@@ -650,6 +651,14 @@ class CompanyValuationInput(BaseModel):
     # Historical effective tax rate (last 5 fiscal years) + averages.
     # Used by the Tax Override Panel on Stories to Numbers as reference data.
     tax_history: TaxHistory | None = Field(default=None)
+
+    @model_validator(mode="after")
+    def check_research_history(self):
+        years = {r.fiscal_year for r in self.raw_financials}
+        if any(year in years or not math.isfinite(value) or value < 0
+               for year, value in self.historical_research_expenses.items()):
+            raise ValueError("supplementary research years must be disjoint, finite and nonnegative")
+        return self
 
     @model_validator(mode="after")
     def check_prepared_ttm(self):

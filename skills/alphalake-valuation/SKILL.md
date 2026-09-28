@@ -91,3 +91,5 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 需要自动生成假设而非已有专项政策估值时，先读项目`docs/native-uniform-scenarios.md`。复用`tools.evaluate_native_policy --selection-policy`，输入已确认的SQLite、参考包、统一配方与证券列表；不为单家公司改规则。结果在`summary.json`，以原名单为分母，先区分`blocked_inputs`、`blocked_policy`和`selection.status=rejected`，再读取`scenario_generation`与`scenario_*`结果。
 
 `selected_scenario=null`表示没有自动推荐；3/5/10年持续期及历史利润率目标是条件假设，不按最高、最低或最接近股价挑选。缺少可比连续利润率时，历史目标场景缺席，不能用行业未调整利润率补位。来源类别、全部实际输入、预测规模/再投资/隐含回报随结果保存。用`tools.review_native_policy`重放整个目录；历史预测诊断不是完整DCF准确率，也不是严格PIT或独立留出。
+
+历史研发补充见`docs/native-research-cohort-bridge.md`：`historical_research_expenses`只保留完整利润行以外的年度研发观测；解释缺项时分别检查利润行与研发队列，不把独立研发年份当成完整财务年度，也不从不同政策EBIT口径借值。

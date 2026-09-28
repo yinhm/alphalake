@@ -217,3 +217,31 @@ def test_native_gate_requires_linked_review_for_source_zero(monkeypatch):
     with pytest.raises(ValueError,match='Missing reviewed source zero'):
         db.native_compatibility(conn,'TEST')
     conn.close()
+
+
+def test_incomplete_income_year_keeps_research_cohort_without_inventing_profit(monkeypatch):
+    from copy import deepcopy
+    from engine.data_dictionary import CompanyValuationInput
+    record = sample(monkeypatch)
+    record['financials_annual'][0]['r_and_d_expense'] = 60
+    record['financials_annual'] += [dict(fy_offset=i, revenues=None, ebit=None, r_and_d_expense=60-10*i) for i in range(1,6)]
+    inputs, _ = _db_record_to_company_input(record, .04, None)
+    assert len(inputs.raw_financials) == 1
+    assert inputs.historical_research_expenses == {2024:50,2023:40,2022:30,2021:20,2020:10}
+    report = run_full_valuation(inputs)
+    # 五年摊销=(50+40+30+20+10)/5=30；历史EBIT=150+60-30。
+    assert report.cashflow.historical_margin_by_year == [pytest.approx(.18)]
+    missing = deepcopy(inputs)
+    missing.historical_research_expenses.pop(2020)
+    partial = run_full_valuation(missing)
+    assert partial.cashflow.historical_margin_by_year == [None]
+    assert partial.dcf == report.dcf and partial.final == report.final
+    for year,value in ((2025,60),(2019,-1),(2019,float('nan'))):
+        bad = inputs.model_dump()
+        bad['historical_research_expenses'][year] = value
+        with pytest.raises(ValueError,match='supplementary research'):
+            CompanyValuationInput.model_validate(bad)
+    # 更晚年度不回填旧年的研发队列。
+    future = deepcopy(inputs)
+    future.historical_research_expenses[2026] = 999
+    assert run_full_valuation(future).cashflow.historical_margin_by_year == report.cashflow.historical_margin_by_year

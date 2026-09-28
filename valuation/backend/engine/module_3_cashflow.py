@@ -52,6 +52,7 @@ def _revenue_cagr(history: list[RawFinancials], years: int) -> float | None:
 def _compute_historical_series(
     history: list[RawFinancials],
     r_and_d_life: int | None,
+    historical_research_expenses: dict[int, float] | None = None,
 ) -> dict:
     """Compute 10-year historical diagnostic series for three-story examination.
 
@@ -88,6 +89,10 @@ def _compute_historical_series(
 
     # Per-year research cohorts; never borrow the current adjustment input.
     year_counts = Counter(f.fiscal_year for f in history)
+    research = dict(historical_research_expenses or {})
+    if set(research) & set(year_counts):
+        raise ValueError("supplementary research years overlap full financial rows")
+    research.update({f.fiscal_year:f.r_and_d_expense for f in history if year_counts[f.fiscal_year] == 1})
     research_delta: list[float | None] = []
     ic_current: list[float | None] = []
     for i in range(n_total):
@@ -95,19 +100,15 @@ def _compute_historical_series(
         asset = delta = 0.0
         if r_and_d_life is not None:
             n = r_and_d_life
-            cohort = history[i:i+n+1]
-            valid = [r.r_and_d_expense is not None and math.isfinite(r.r_and_d_expense)
-                     and r.r_and_d_expense >= 0 and r.fiscal_year == f.fiscal_year-j
-                     and year_counts[r.fiscal_year] == 1 for j, r in enumerate(cohort)]
+            cohort = [research.get(y) for y in range(f.fiscal_year, f.fiscal_year-n-1, -1)]
+            valid = [v is not None and math.isfinite(v) and v >= 0 for v in cohort]
             asset = delta = None
-            if len(cohort) >= n and all(valid[:n]):
-                # The nth past year's closing weight is zero; no need to invent it.
-                _, _, asset = capitalize_r_and_d(cohort[0].r_and_d_expense,
-                    [r.r_and_d_expense for r in cohort[1:n]], n)
-            if len(cohort) == n+1 and all(valid):
-                _, amortization, _ = capitalize_r_and_d(cohort[0].r_and_d_expense,
-                    [r.r_and_d_expense for r in cohort[1:]], n)
-                delta = cohort[0].r_and_d_expense - amortization
+            if all(valid[:n]):
+                # Closing capital needs n cohorts; amortization needs n+1.
+                _, _, asset = capitalize_r_and_d(cohort[0], cohort[1:n], n)
+            if all(valid):
+                _, amortization, _ = capitalize_r_and_d(cohort[0], cohort[1:], n)
+                delta = cohort[0] - amortization
         research_delta.append(delta)
         if all(v is not None for v in (f.bv_equity, f.bv_debt, f.cash_and_marketable_securities, asset)):
             ic_current.append(f.bv_equity + asset + f.bv_debt - f.cash_and_marketable_securities)
@@ -196,6 +197,7 @@ def compute_cashflow_and_growth(
     raw_prior_year: RawFinancials | None = None,
     macro: MacroInputs | None = None,
     raw_financials_history: list[RawFinancials] | None = None,
+    historical_research_expenses: dict[int, float] | None = None,
 ) -> CashFlowMetrics:
     """
     Compute reinvestment, free cash flows, return metrics, and growth rates.
@@ -287,6 +289,7 @@ def compute_cashflow_and_growth(
         historical = _compute_historical_series(
             raw_financials_history,
             r_and_d_life=adj_inputs.amortization_period_n if adj_inputs.has_r_and_d else None,
+            historical_research_expenses=historical_research_expenses,
         )
 
     return CashFlowMetrics(

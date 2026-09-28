@@ -176,6 +176,7 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
             pass
 
     raw_financials: list[RawFinancials] = []
+    historical_research_expenses = {}
     # Map fy_offset → fiscal_year (offset 0 → base, offset 1 → base-1, etc.)
     annual_by_offset = {r["fy_offset"]: r for r in annual_rows}
     if not annual_by_offset.get(0):
@@ -185,6 +186,8 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
         if r.get("revenues") is None or r.get("ebit") is None:
             if offset == 0:
                 raise ValueError("FY0 revenues/EBIT required; cannot promote an older year")
+            if r.get("r_and_d_expense") is not None:
+                historical_research_expenses[base_fy_year-offset] = r["r_and_d_expense"]
             continue
         is_current = (offset == 0)
         rf = RawFinancials(
@@ -344,6 +347,7 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
         fx_rate_source=fx_source,
         fx_rate_date=co.get("period_date_annual"),
         raw_financials=raw_financials,
+        historical_research_expenses=historical_research_expenses,
         quarterly_financials=quarterly_financials,
         quarters_since_10k=quarters_since,
         period_date_10k=co.get("period_date_annual"),
