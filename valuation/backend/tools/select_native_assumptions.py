@@ -21,7 +21,7 @@ def select(baseline, discount_inputs, reference_rows, reference_cutoff, policy):
     if cutoff.utcoffset() is None:
         raise ValueError('aware reference cutoff required')
     decisions = {}; issues = []
-    recent = reviewed['recent_reported_window']
+    recent = reviewed['model_input_recent_window']
     growth = recent.get('revenue_growth')
     growth_ok = growth is not None and math.isfinite(growth) and 0 <= growth <= 1
     decisions['growth'] = dict(status='selected_conditional' if growth_ok else 'rejected',

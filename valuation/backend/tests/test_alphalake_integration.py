@@ -1563,12 +1563,12 @@ def test_native_cny_policy_transmission_and_rejections(reference_export,tmp_path
     shrink_review=review_report(reviewed_body(shrinking))
     assert shrink_review['forecast'][0]['reinvestment_million_cny']<0
     assert shrink_review['forecast'][0]['incremental_return_bridge']['status']=='nonpositive_reinvestment'
-    assert math.isclose(reviewed['recent_reported_window']['revenue_growth'],.1,rel_tol=1e-12)
+    assert math.isclose(reviewed['model_input_recent_window']['revenue_growth'],.1,rel_tol=1e-12)
     quarterly=copy.deepcopy(payloads['joint_candidate'])
     quarterly['inputs'].update(quarters_since_10k=2,period_date_10q='2026-06-30',
         quarterly_financials=[dict(fiscal_year=2025,revenues=100 if i<4 else 80,ebit=10,r_and_d_expense=0)
                               for i in range(8)])
-    recent=review_report(reviewed_body(quarterly))['recent_reported_window']
+    recent=review_report(reviewed_body(quarterly))['model_input_recent_window']
     assert recent['current']['revenues']==200 and recent['prior']['revenues']==160
     assert recent['revenue_growth']==.25 and recent['quarters']==2
     assert 'd_a' in reviewed['capital']['missing_historical_cashflow_inputs']
@@ -1582,7 +1582,7 @@ def test_native_cny_policy_transmission_and_rejections(reference_export,tmp_path
     zero_base['inputs']['raw_financials'][0]['revenues']=0
     zero_review=review_report(reviewed_body(zero_base))
     assert zero_review['forecast'][0]['revenue_multiple_of_base'] is None
-    assert zero_review['margin_bridge']['reported_margin'] is None
+    assert zero_review['margin_bridge']['model_input_margin'] is None
     override=copy.deepcopy(payloads['joint_candidate'])
     override['inputs']['valuation_assumptions'].update(override_growth_perpetuity=True,growth_perpetuity_rate=.005)
     assert review_report(reviewed_body(override))['terminal']['growth']==.005

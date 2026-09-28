@@ -206,4 +206,27 @@ def test_capital_scope_distinguishes_consolidation_from_investment_proxy():
     changed=deepcopy(row);changed['minority_interests']=-20
     assert annual_capital_evidence([changed],None)[0]['capital_scope_bridge']['including_minority_capital_million_cny']==530
     scope=annual_capital_evidence([row],5)[0]['capital_scope_bridge']
-    assert 'research_asset' in scope['missing_inputs'] and scope['native_capital_million_cny'] is None
+    assert 'research_asset' in scope['missing_inputs'] and scope['input_capital_million_cny'] is None
+
+
+def test_review_keeps_model_and_sqlite_bases_separate():
+    from tools.review_native_policy import review_report
+    body=sample()
+    rows=[dict(r,ticker=body['inputs']['ticker'],fy_offset=2025-r['fiscal_year'])
+          for r in body['inputs']['raw_financials']]
+    original=deepcopy(body)
+    rows[0]['ebit']=140
+    rows[0]['cash_and_marketable_securities']=None
+    # 独立年度仍完整，模型缺年不得从中静默补齐。
+    rows.append(dict(rows[-1],fiscal_year=2019,fy_offset=6))
+    review=review_report(body,dict(rows=rows,cells=[]))
+    evidence=review['sustainability_evidence']
+    assert evidence['cross_basis_merge_allowed'] is False
+    assert evidence['input_basis_comparison'][0]['differences']==[
+        dict(field='ebit',model_input=100,sqlite_input=140),
+        dict(field='cash_and_marketable_securities',model_input=50,sqlite_input=None)]
+    assert evidence['input_basis_comparison'][-1]['status']=='missing_or_ambiguous_model_year'
+    assert review['margin_bridge']['model_input_ebit']==original['ltm_financials']['ebit']
+    assert 'reported_ebit' not in review['margin_bridge']
+    assert 'recent_reported_window' not in review
+    assert body==original

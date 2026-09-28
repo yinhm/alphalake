@@ -54,3 +54,16 @@
 ## 验证与留痕
 
 证据、标准事实、三个HTTP完整响应、精确差额及日志位于`workspace/derived/ebit-investment-audit/`。当前SQLite前后哈希一致，主库未写入。原文校验与三家API复算串行在MemoryMax=1GiB独立服务执行，峰值约67.3MiB；没有运行全市场DCF。一次性核对脚本保留哈希后清理，未新增生产代码或依赖。本轮为审计及文档变更，未重跑Go全套；文档链接和diff检查通过。
+
+## 审阅口径已显式分开
+
+后续修正已进入现有`review_report`及自动假设选择调用链，没有另建审阅入口：
+
+- `model_input_history`、`model_input_recent_window`及`margin_bridge.model_input_ebit/model_input_margin`明确是保存的模型输入，可能包含专项政策和用户覆盖，不再标为原始报表值。
+- `sustainability_evidence.model_basis`对应保存的模型输入；`independent_basis`对应原生政策/用户覆盖前的SQLite出口。独立历史仍保留更多年度证据，不并入模型队列。
+- `input_basis_comparison`逐年比较收入、EBIT、研发、权益、债务、现金、少数股东权益和长期投资；输出具体双边金额，包括NULL差异。缺年/重复模型年单独标记，不跨年配对。金额相等也只标“数值已比较”，不证明经济口径一致。
+- `cross_basis_merge_allowed=false`明确禁止将两条路径直接混为一条利润率/资本回报序列。资本范围说明中的基数改称`input_capital_million_cny`，不再以“native”暗示一定是API实际资本。
+
+目录审阅输出契约升级为`native-policy-review-v2`，上述旧标签不保留别名；当前调用方及回归同步迁移，冻结历史仍按原提交解释。公式、财务快照、预测数值及准入规则未改。既有独立历史可算年度统计仍只表示SQLite证据的可重建范围，不是模型实际年度覆盖。
+
+审阅v2验收：107项相关Python回归、Go全套及构建通过；最终版本19项选择回归再次通过，Python全套未重跑。三家真实API保存响应通过共享引擎复算，2025年度对照明确检出安克和苏泊尔的EBIT、现金差异；茅台无金额差异仍不标为经济口径通过。安克现金模型输入为61.2351亿元，独立SQLite为30.6774亿元，说明此前范围诊断不能直接当作模型资本。输入和估值未修改，SQLite哈希前后一致。输出、来源哈希、测试及清理记录在`workspace/derived/review-input-basis/`；隔离服务硬限额1GiB，测试峰值约797.3MiB。临时核对脚本已清理，未产生新数据快照。

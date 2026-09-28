@@ -56,7 +56,7 @@ def annual_capital_evidence(rows, research_life):
         consolidated = capital+minority if capital is not None and valid(minority) else None
         operating_proxy = consolidated-investments if consolidated is not None and valid(investments) else None
         scope = dict(status='scope_sensitivity_not_valuation_approved', automatic_adoption=False,
-            native_capital_million_cny=capital,
+            input_capital_million_cny=capital,
             minority_book_equity_million_cny=minority if valid(minority) else None,
             long_term_investment_proxy_million_cny=investments if valid(investments) else None,
             including_minority_capital_million_cny=consolidated,
@@ -155,6 +155,23 @@ def review_report(body, annual_evidence=None):
         annual_evidence_rows = annual_capital_evidence(annual_evidence['rows'], inputs.adjustment_inputs.amortization_period_n if inputs.adjustment_inputs.has_r_and_d else None)
     else:
         annual_evidence_rows = None
+    basis_comparison = []
+    if annual_evidence is not None:
+        independent = {r['fiscal_year']:r for r in annual_evidence['rows']}
+        for year in sorted(set(independent) | set(counts), reverse=True):
+            model_rows = [r for r in inputs.raw_financials if r.fiscal_year == year]
+            row = independent.get(year)
+            differences = []
+            status = 'compared_values_not_semantic_equivalence'
+            if len(model_rows) != 1 or row is None:
+                status = 'missing_or_ambiguous_model_year' if len(model_rows) != 1 else 'missing_independent_year'
+            else:
+                for field in ('revenues','ebit','r_and_d_expense','bv_equity','bv_debt',
+                              'cash_and_marketable_securities','minority_interests','cross_holdings'):
+                    model_value, independent_value = getattr(model_rows[0],field), row.get(field)
+                    if model_value != independent_value:
+                        differences.append(dict(field=field, model_input=model_value, sqlite_input=independent_value))
+            basis_comparison.append(dict(year=year,status=status,differences=differences))
     peers = []
     for peer in (inputs.industry_data, inputs.industry_data_global):
         if peer is not None:
@@ -170,7 +187,7 @@ def review_report(body, annual_evidence=None):
         prior = history[i-1] if i and history[i-1].fiscal_year == f.fiscal_year-1 else None
         historical.append(dict(year=f.fiscal_year, revenue_million_cny=f.revenues,
             growth=f.revenues/prior.revenues-1 if prior and prior.revenues and prior.revenues > 0 else None,
-            reported_ebit_margin=f.ebit/f.revenues if f.revenues else None))
+            model_input_ebit_margin=f.ebit/f.revenues if f.revenues else None))
     k = inputs.quarters_since_10k
     recent = dict(status='missing_comparable_window', current=None, prior=None)
     if k and len(inputs.quarterly_financials) >= k+4:
@@ -192,7 +209,7 @@ def review_report(body, annual_evidence=None):
         recent['revenue_growth'] = (current['revenues']/prior['revenues']-1
             if current['revenues'] is not None and prior['revenues'] is not None and prior['revenues'] > 0 else None)
         for window in (current,prior):
-            window['reported_ebit_margin'] = (window['ebit']/window['revenues']
+            window['model_input_ebit_margin'] = (window['ebit']/window['revenues']
                 if window['ebit'] is not None and window['revenues'] else None)
     macro = inputs.macro_inputs
     terminal_wacc = a.cost_of_capital_stable_override
@@ -253,8 +270,12 @@ def review_report(body, annual_evidence=None):
     missing = [name for name in ('capex', 'd_a', 'change_in_noncash_wc') if getattr(raw, name) is None]
     return dict(status='requires_analyst_judgment', automatic_adoption=False,
         unit='million_CNY', ticker=inputs.ticker,
-        historical_reported_rows=historical,
+        model_input_history=historical,
         sustainability_evidence=dict(status='requires_company_and_accounting_basis',
+            model_basis='saved_model_inputs_after_any_policy_or_user_override',
+            independent_basis='sqlite_export_before_native_policy_or_user_override',
+            cross_basis_merge_allowed=False,
+            input_basis_comparison=basis_comparison,
             annual_rows=model_annual_evidence,
             independent_annual_rows=annual_evidence_rows,
             independent_source='sqlite_annual_rows_and_export_cells' if annual_evidence_rows is not None else None,
@@ -265,12 +286,12 @@ def review_report(body, annual_evidence=None):
             research_adjusted_capital_years=sum(r['research_adjusted_sales_to_capital'] is not None for r in model_annual_evidence),
             industry_references=peers,
             boundary='缺项只说明本次估值输入不足，不证明标准库或上游无数据；历史与行业参考均不自动证明未来持续性'),
-        recent_reported_window=recent,
-        margin_bridge=dict(reported_ebit=raw.ebit, research_expense=raw.r_and_d_expense,
+        model_input_recent_window=recent,
+        margin_bridge=dict(model_input_ebit=raw.ebit, research_expense=raw.r_and_d_expense,
             research_amortization=adjusted.amortization_r_and_d,
             lease_adjustment=adjusted.lease_adjustment_to_ebit,
             adjusted_ebit=adjusted.adjusted_ebit,
-            reported_margin=raw.ebit/raw.revenues if raw.revenues else None,
+            model_input_margin=raw.ebit/raw.revenues if raw.revenues else None,
             adjusted_margin=adjusted.adjusted_ebit/raw.revenues if raw.revenues else None),
         forecast=rows,
         capital=dict(sales_to_capital_high=sc_high,
@@ -371,7 +392,7 @@ def review_directory(directory):
                 if any(assumptions[key] != value for key,value in expected.items()):
                     raise ValueError('saved forecast audit/input mismatch')
             item['variants'][variant] = review_report(report, read(key+'-annual-evidence.json'))
-    return dict(contract='native-policy-review-v1', companies=len(results), results=results,
+    return dict(contract='native-policy-review-v2', companies=len(results), results=results,
         source_statuses=dict(Counter(r['source_status'] for r in results)),
         approved_forecasts=0, source_protocol=protocol, source_files=files,
         review_runtime=runtime_identity(directory),
