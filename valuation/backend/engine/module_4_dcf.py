@@ -177,6 +177,7 @@ def _reinvestment_path(
     lag: int,
     high_growth_years: int,
     total_years: int,
+    annual_sales_to_capital: list[float] | None = None,
 ) -> list[float]:
     """Sales-to-Capital reinvestment with lag ∈ {0, 1, 2, 3}.
 
@@ -185,14 +186,17 @@ def _reinvestment_path(
     lag-shifted ΔRevenue can always be computed.
 
     For year t (1-indexed):
-      S/C_t = sc_high if t ≤ high_growth_years else sc_stable
+      S/C_t = explicit annual path when supplied; otherwise high/stable ratio
       reinvestment_t = (rev[t + lag] − rev[t + lag − 1]) / S/C_t
     """
-    if any(sc is None or not math.isfinite(sc) or sc <= 0 for sc in (sc_high, sc_stable)):
+    ratios = annual_sales_to_capital if annual_sales_to_capital is not None else (sc_high, sc_stable)
+    if annual_sales_to_capital is not None and len(annual_sales_to_capital) != total_years:
+        raise InvalidReinvestment("annual sales-to-capital must cover every year")
+    if any(sc is None or not math.isfinite(sc) or sc <= 0 for sc in ratios):
         raise InvalidReinvestment("sales-to-capital must be finite and positive")
     reinv = []
     for t in range(1, total_years + 1):
-        sc = sc_high if t <= high_growth_years else sc_stable
+        sc = annual_sales_to_capital[t-1] if annual_sales_to_capital is not None else (sc_high if t <= high_growth_years else sc_stable)
         idx_a = t + lag
         idx_b = t + lag - 1
         if idx_a >= len(extended_revenue) or idx_b < 0:
@@ -339,7 +343,7 @@ def compute_dcf(
 
     # --- Reinvestment ---
     reinvestment_projections = _reinvestment_path(
-        extended_rev, sc_high, sc_stable, lag, high_growth_years, n
+        extended_rev, sc_high, sc_stable, lag, high_growth_years, n, assumptions.annual_sales_to_capital
     )
 
     # --- FCFF ---

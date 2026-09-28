@@ -233,7 +233,7 @@ def review_report(body, annual_evidence=None):
     for row in rows:
         year = row['year']
         funded_year = year+lag
-        ratio = sc_high if year <= (a.high_growth_years or 5) else sc_stable
+        ratio = a.annual_sales_to_capital[year-1] if a.annual_sales_to_capital is not None else (sc_high if year <= (a.high_growth_years or 5) else sc_stable)
         delta = extended_revenue[funded_year]-extended_revenue[funded_year-1]
         expected = delta/ratio
         if not math.isclose(expected, row['reinvestment_million_cny'], rel_tol=1e-12, abs_tol=1e-9):
@@ -286,7 +286,8 @@ def review_report(body, annual_evidence=None):
         raise ValueError('terminal economic bridge differs from engine')
     # 沿用原投入滞后，把同一个终值年度与继续沿用资本倍率的反事实相比。
     funded_delta = rows[-1]['revenue_million_cny']*(1+g)**lag*g
-    continued_investment = funded_delta/sc_stable
+    ending_ratio = a.annual_sales_to_capital[-1] if a.annual_sales_to_capital is not None else sc_stable
+    continued_investment = funded_delta/ending_ratio
     equivalent_ratio = funded_delta/terminal_investment if terminal_investment > 0 and funded_delta > 0 else None
     spreads = [dict(investment_year=r['year'], funded_year=r['capital_funding']['revenue_year'],
         constant_margin_return=r['incremental_return_bridge']['constant_nopat_margin_incremental_return'],
@@ -300,7 +301,7 @@ def review_report(body, annual_evidence=None):
             reinvestment_million_cny=terminal_investment, continued_capital_ratio_reinvestment_million_cny=continued_investment,
             reinvestment_rule_change_million_cny=terminal_investment-continued_investment,
             fcff_rule_change_million_cny=continued_investment-terminal_investment,
-            equivalent_sales_to_capital=equivalent_ratio, forecast_sales_to_capital=sc_stable,
+            equivalent_sales_to_capital=equivalent_ratio, forecast_sales_to_capital=ending_ratio,
             nopat_change_from_last_year_million_cny=terminal_nopat-rows[-1]['nopat_million_cny'],
             reinvestment_change_from_last_year_million_cny=terminal_investment-rows[-1]['reinvestment_million_cny'],
             fcff_change_from_last_year_million_cny=terminal_fcff-rows[-1]['fcff_million_cny'],
@@ -334,10 +335,10 @@ def review_report(body, annual_evidence=None):
             model_input_margin=raw.ebit/raw.revenues if raw.revenues else None,
             adjusted_margin=adjusted.adjusted_ebit/raw.revenues if raw.revenues else None),
         forecast=rows,
-        capital=dict(sales_to_capital_high=sc_high,
-            high_ratio_basis='explicit_assumption' if a.sales_to_capital_high is not None else 'model_default',
+        capital=dict(annual_sales_to_capital=a.annual_sales_to_capital, sales_to_capital_high=sc_high,
+            high_ratio_basis='annual_path_overrides_two_stage' if a.annual_sales_to_capital is not None else ('explicit_assumption' if a.sales_to_capital_high is not None else 'model_default'),
             sales_to_capital_stable=sc_stable,
-            stable_ratio_basis='explicit_assumption' if a.sales_to_capital_stable is not None else 'inherits_high_ratio',
+            stable_ratio_basis='annual_path_overrides_two_stage' if a.annual_sales_to_capital is not None else ('explicit_assumption' if a.sales_to_capital_stable is not None else 'inherits_high_ratio'),
             reinvestment_lag_years=lag,
             forecast_method='incremental_revenue_divided_by_sales_to_capital',
             forecast_scope='aggregate_net_reinvestment; do_not_add_working_capital_or_RD_again',

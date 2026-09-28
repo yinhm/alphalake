@@ -1,0 +1,110 @@
+"""对已核验统一情景施加同一资本强度过渡；不改变经营、折现或终值政策。"""
+import argparse
+import hashlib
+import json
+import math
+from pathlib import Path
+from urllib.request import Request, urlopen
+
+from engine.data_dictionary import CompanyValuationInput
+from engine.orchestrator import run_full_valuation
+from tools.check_native_sqlite import value_digest
+from tools.review_native_policy import review_directory, review_report
+
+POLICY = dict(version='native-capital-transition-v1', unchanged_years=5, end_year=10,
+    interpolation='linear_capital_per_revenue', terminal_basis='same_existing_terminal_reinvestment_and_lag',
+    automatic_adoption=False, boundary='五年过渡为固定分析情景，不是公司新增资本效率事实；终值ROIC/WACC及经营假设不变')
+
+
+def compare(baseline):
+    before = review_report(baseline)
+    original = CompanyValuationInput.model_validate(baseline['inputs'])
+    a = original.valuation_assumptions
+    if a.projection_years != 10 or a.annual_sales_to_capital is not None:
+        return dict(status='outside_policy_scope', reason='requires ten-year two-stage capital baseline')
+    target = before['economic_checks']['terminal_transition']['equivalent_sales_to_capital']
+    if target is None or not math.isfinite(target) or target <= 0:
+        return dict(status='outside_policy_scope', reason='positive terminal investment and equivalent capital ratio required')
+    ratios = [row['capital_funding']['sales_to_capital'] for row in before['forecast']]
+    start = ratios[4]
+    ratios[5:] = [1 / ((1-i/5)/start + (i/5)/target) for i in range(1,6)]
+    changed = original.model_copy(deep=True)
+    changed.valuation_assumptions.annual_sales_to_capital = ratios
+    report = run_full_valuation(changed)
+    candidate = dict(inputs=changed.model_dump(mode='json'), **{key:getattr(report,key).model_dump(mode='json')
+        for key in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+    for key in ('ltm_financials','adjusted','cost_of_capital','cashflow'):
+        if candidate[key] != baseline[key]:
+            raise ValueError('capital-only scenario changed '+key)
+    for key in ('revenue_projections','ebit_projections','discount_factors','terminal_value_firm','pv_terminal_value'):
+        if candidate['dcf'][key] != baseline['dcf'][key]:
+            raise ValueError('capital-only scenario changed '+key)
+    restored = changed.model_copy(deep=True)
+    restored.valuation_assumptions.annual_sales_to_capital = None
+    if restored != original:
+        raise ValueError('capital-only scenario changed other inputs')
+    after = review_report(candidate)
+    if after['economic_checks']['terminal_transition']['requires_capital_transition_basis']:
+        raise ValueError('terminal reinvestment rules do not meet')
+    investment_delta = [new-old for new,old in zip(report.dcf.reinvestment_projections,baseline['dcf']['reinvestment_projections'],strict=True)]
+    pv_delta = -sum(delta*df for delta,df in zip(investment_delta,report.dcf.discount_factors,strict=True))
+    operating_delta = report.dcf.value_of_operating_assets-baseline['dcf']['value_of_operating_assets']
+    if not math.isclose(pv_delta,report.dcf.pv_cash_flows_sum-baseline['dcf']['pv_cash_flows_sum'],rel_tol=1e-10,abs_tol=1e-7):
+        raise ValueError('reinvestment PV does not reconcile operating value change')
+    return dict(status='calculated_conditional', policy=POLICY, baseline=baseline, candidate=candidate,
+        annual_sales_to_capital=ratios, annual_reinvestment_change_million_cny=investment_delta,
+        going_concern_value_change_million_cny=pv_delta, operating_value_change_million_cny=operating_delta,
+        value_per_share_change=report.final.value_per_share-baseline['final']['value_per_share'],
+        before_terminal=before['economic_checks']['terminal_transition'],
+        after_terminal=after['economic_checks']['terminal_transition'], automatic_adoption=False)
+
+
+def run(source, output, web=None):
+    from data_sources.paths import workspace_path
+    from api.alphalake import ENGINE_REVISION
+    output = output.resolve()
+    if output.exists() or not output.is_relative_to(workspace_path('derived').resolve()):
+        raise ValueError('new output under workspace/derived required')
+    verified = review_directory(source)
+    results = []
+    for company in verified['results']:
+        row = dict(ticker=company['ticker'], source_status=company['source_status'],
+            reason=company.get('reason'), selection=company.get('assumption_selection'), scenarios={})
+        for name, reviewed in company.get('variants', {}).items():
+            if not name.startswith('scenario_') or reviewed.get('status') != 'requires_analyst_judgment':
+                continue
+            path = source/(company['ticker'].replace(':','-')+'-'+name+'-result.json')
+            raw = path.read_bytes()
+            if hashlib.sha256(raw).hexdigest() != verified['source_files'][path.name]:
+                raise ValueError('source changed after review')
+            result = compare(json.loads(raw))
+            if web and result['status'] == 'calculated_conditional':
+                request = Request(web.rstrip('/')+'/api/valuation', data=json.dumps(dict(inputs=result['candidate']['inputs'])).encode(),headers={'Content-Type':'application/json'})
+                with urlopen(request,timeout=60) as response:
+                    body = json.load(response)
+                if body.get('reference_snapshot') != result['baseline'].get('reference_snapshot'):
+                    raise ValueError('live reference snapshot mismatch')
+                for key in result['candidate']:
+                    if body[key] != result['candidate'][key]:
+                        raise ValueError('live capital scenario mismatch: '+key)
+                result['live_verified'] = True
+            row['scenarios'][name] = result
+        results.append(row)
+    result = dict(contract='native-capital-comparison-v1', policy=POLICY, companies=len(results), results=results,
+        source_protocol=verified['source_protocol'], source_files=verified['source_files'], engine_revision=ENGINE_REVISION,
+        implementation_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
+    result['run_id'] = value_digest(result)
+    output.parent.mkdir(parents=True,exist_ok=True)
+    with output.open('x') as stream:
+        json.dump(result,stream,ensure_ascii=False,indent=2,allow_nan=False)
+        stream.write('\n')
+    return dict(run_id=result['run_id'],companies=len(results),scenarios=sum(len(r['scenarios']) for r in results))
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('source',type=Path)
+    parser.add_argument('output',type=Path)
+    parser.add_argument('--web')
+    args = parser.parse_args()
+    print(json.dumps(run(args.source,args.output,args.web),ensure_ascii=False))

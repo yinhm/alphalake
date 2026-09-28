@@ -104,6 +104,7 @@ def select(baseline, discount_inputs, reference_rows, reference_cutoff, policy):
     inputs.macro_inputs.equity_risk_premium = reference.mature_market_erp
     a = inputs.valuation_assumptions
     a.annual_forecast = None
+    a.annual_sales_to_capital = None
     a.projection_years = policy['projection_years']; a.high_growth_years = policy['high_growth_years']
     a.revenue_growth_next_year = a.revenue_growth_years_2_5 = growth
     a.operating_margin_next_year = a.target_operating_margin = margin

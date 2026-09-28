@@ -411,3 +411,22 @@ def test_longer_growth_can_reduce_value_without_becoming_rejection():
     assert result['higher_revenue_lower_value'] and result['value_per_share_change'] == -2
     assert result['first5_reinvestment_change_million_cny'] == 60
     assert result['selected_scenario'] is None
+
+
+def test_capital_transition_changes_only_reinvestment_and_meets_terminal():
+    from tools.compare_native_capital import compare
+    baseline = sample()
+    result = compare(baseline)
+    assert result['status'] == 'calculated_conditional'
+    assert result['annual_reinvestment_change_million_cny'][:5] == [0]*5
+    assert not result['after_terminal']['requires_capital_transition_basis']
+    assert result['value_per_share_change'] < 0
+    original = CompanyValuationInput.model_validate(baseline['inputs']).model_dump(mode='json')
+    changed = deepcopy(result['candidate']['inputs'])
+    changed['valuation_assumptions']['annual_sales_to_capital'] = None
+    assert changed == original
+    assert result['candidate']['dcf']['terminal_value_firm'] == baseline['dcf']['terminal_value_firm']
+    bad = deepcopy(baseline)
+    bad['dcf']['fcff_projections'][0] += 1
+    with pytest.raises(ValueError,match='does not replay'):
+        compare(bad)

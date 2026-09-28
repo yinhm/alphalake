@@ -447,11 +447,16 @@ class ForecastYear(BaseModel):
 
 class ValuationAssumptions(BaseModel):
     annual_forecast: list[ForecastYear] | None = None
+    annual_sales_to_capital: list[float] | None = Field(default=None, description="Explicit positive sales/capital per forecast investment year; overrides two-stage ratios")
 
     @model_validator(mode='after')
     def forecast_length(self):
         if self.annual_forecast is not None and (self.projection_years < 1 or len(self.annual_forecast) != self.projection_years):
             raise ValueError('explicit forecast must cover every projection year')
+        if self.annual_sales_to_capital is not None and (self.projection_years < 1
+                or len(self.annual_sales_to_capital) != self.projection_years
+                or any(not math.isfinite(v) or v <= 0 for v in self.annual_sales_to_capital)):
+            raise ValueError('annual sales-to-capital must cover every year with finite positive values')
         return self
 
     projection_years: int = Field(default=10, description="Total projection years (high growth + transition)")

@@ -95,3 +95,5 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 历史研发补充见`docs/native-research-cohort-bridge.md`：`historical_research_expenses`只保留完整利润行以外的年度研发观测；解释缺项时分别检查利润行与研发队列，不把独立研发年份当成完整财务年度，也不从不同政策EBIT口径借值。
 
 当前暂停为回测扩展早年采集。解释条件估值优先读取`economic_checks`及`growth_duration_effects`（`docs/native-current-economic-checks.md`）：核查再投资/回报与终值过渡，不把高增长当利好，不将等价资本倍率自动设为公司参数；历史缺项不是现有条件场景的新增门槛。
+
+比较资本效率过渡时读取`docs/native-capital-transition.md`，复用`tools.compare_native_capital`及当前已核验情景目录。该工具只改显式`annual_sales_to_capital`，保留其他假设；终点是原终值政策的代数配套，不是新发现的公司资本效率。报告再投资和条件值变化，并保留原12家缺项/拒绝，不按价格选择过渡情景。

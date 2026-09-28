@@ -14,7 +14,7 @@
 | 原生参考、默认口径与会话版本 | [参考接入](docs/native-reference-bridge.md) |
 | 人民币WACC及经营候选对照 | [显式政策与验收](docs/native-cny-policy.md) |
 | 自动生成跨公司条件情景 | [统一方法、验收与边界](docs/native-uniform-scenarios.md)、[基础选择规则](docs/native-assumption-selection.md) |
-| 审阅增长、利润率与资本需求 | [当前经济一致性](docs/native-current-economic-checks.md)、[经济输入审阅](docs/native-policy-economic-review.md) |
+| 审阅增长、利润率与资本需求 | [资本效率过渡](docs/native-capital-transition.md)、[当前经济一致性](docs/native-current-economic-checks.md)、[经济输入审阅](docs/native-policy-economic-review.md) |
 | 为原网页准备数据 | [SQLite导出、字段与准入](docs/valuation-sqlite-export.md) |
 | 按显式政策估值 | [统一公司CLI](docs/company-valuation-entry.md) |
 | 查询、解释估值变化 | [历史运行](docs/valuation-run-query.md)、[运行比较](docs/valuation-comparison.md) |

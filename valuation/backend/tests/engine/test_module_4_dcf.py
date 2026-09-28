@@ -279,3 +279,14 @@ def test_implied_roic_requires_complete_opening_capital(cf_metrics, cost_of_capi
                        raw.model_copy(update=dict(bv_debt=0., cash_and_marketable_securities=0.)), assumptions, macro)
     assert zero.implied_roic_projections[0] == pytest.approx(
         (zero.fcff_projections[0]+zero.reinvestment_projections[0])/500.)
+
+
+def test_annual_capital_path_respects_investment_year_and_rejects_invalid():
+    from engine.module_4_dcf import _reinvestment_path
+    revenues = [100,120,144,172.8,207.36]
+    assert _reinvestment_path(revenues,2,4,0,1,3,[1,2,4]) == pytest.approx([20,12,7.2])
+    assert _reinvestment_path(revenues,2,4,1,1,3,[1,2,4]) == pytest.approx([24,14.4,8.64])
+    assert _reinvestment_path(revenues,2,4,1,1,3,[2,4,4]) == _reinvestment_path(revenues,2,4,1,1,3)
+    for values in ([], [2]*2, [2,0,2], [2,-1,2], [2,float('nan'),2], [2,float('inf'),2]):
+        with pytest.raises(ValueError):
+            ValuationAssumptions(projection_years=3,annual_sales_to_capital=values)
