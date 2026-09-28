@@ -100,3 +100,34 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 这是共享选择入口的输入一致性修复，不改变达摩达兰方法、获批代理、原页面或默认估值。此前同代码的另一套财务输入可能通过身份检查并混用基线利润率；现在在生成候选前拒绝。改换会计或代理口径时，必须先形成该口径的完整基线，再选择假设。
 
 本轮复用`workspace/derived/automatic-assumptions/complete-five/`冻结五家输入，不重新取行情或调参：安克、茅台仍选出条件候选，苏泊尔选择拒绝，海尔、三一输入阻断；两份获选请求规范化后全部输入与原请求一致。对前三家分别把候选年度EBIT或现金改动0.01，六次全部在选择入口拒绝。113项相关Python回归、Go全套及构建通过；Python全套未重跑，两条既有依赖警告保留。测试及真实重放串行使用MemoryMax=1GiB独立服务，峰值约804MiB。结果、源文件哈希、日志及临时脚本清理记录在`workspace/derived/selection-basis-guard/`，没有修改主库、SQLite、网页默认或现行估值。
+
+## 合法变更：重建基线并重新估值
+
+同口径门槛只阻止混用，不能把旧方法或旧数据固化为准入条件。现已在同一工具提供显式重建入口：
+
+```bash
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.select_native_assumptions \
+  --rebuild workspace/derived/assumption-rebuild/request.json \
+  --output workspace/derived/assumption-rebuild/result.json
+```
+
+实际运行仍须遵守独立systemd硬内存限制。请求JSON包含：
+
+| 键 | 内容 |
+|---|---|
+| `baseline` | 旧完整报告，原样保留作为历史证据 |
+| `inputs` | 当前模型契约的完整新输入；包含显式参考WACC |
+| `reason` | 数据、口径或方法变更理由，不能为空 |
+| `evidence_files` | 可读取的依据文件路径列表，保存路径与SHA256 |
+| `reference_rows`、`reference_cutoff` | 行业资本参考及带时区截止 |
+| `policy` | 当前自动选择政策，仍执行参考有效性、增长/利润率和终值等检查 |
+
+程序首先用新输入和共享引擎重建完整基线，再从新基线读取增长/调整利润率，选择候选并重算DCF。旧利润率不会被借入新口径。结果`native-assumption-rebuild-v1`同时保存旧报告、新基线、候选完整输入/报告、逐项输入变化、重建与选择两阶段的结果差异、引擎版本、实现哈希及内容派生`run_id`；输出只允许新建于workspace/derived，不覆盖旧运行。
+
+旧输入会尝试按当前引擎重放：一致记为`reproduced`；不一致或当前契约/公式无法接受时分别记录未验证状态和原因，不因此否决合法新输入。无法重算旧输入时，前后基线差额留空，旧报告不冒充当前公式下的可比结果；不建立旧运行时兼容层。不能借此隐瞒历史失败或伪造旧报告可信性。
+
+依据文件存在及哈希只保证留痕，不自动认证新经济假设。`economic_approval=not_inferred_from_rebuild_or_evidence_hashes`；新增来源、政策或方法是否适用仍遵守现有约定。改进方法以达摩达兰原始资料为准。选择不通过时也保存已经重建的新基线及明确拒绝原因，不回退旧假设。此入口不更新原网页默认或主库数据。
+
+重建实证采用旧五家验收中的安克报告、当前已发布v8数据对应API输入及原显式参考WACC情景。12项输入变化包含历史权益补齐、调整后行业参考、派生比较指标以及显式WACC/终值参数，未声称单因素实验。旧报告及旧输入当前引擎均为102.7956元/股；重建基线122.6917元/股，再按现有条件选择规则得到287.4941元/股。后者与8080完整输入API的收入、EBIT、再投资、FCFF及最终值完全相同。它是流程验收的条件情景，不是新的合理价格推荐，也没有替换网页默认；差额不能当作准确度改善。
+
+运行`0b3ec3ef72dc49fa13fd8dda5ec18b2504703f504458f0b245a09f7622bba71f`及完整证据在`workspace/derived/assumption-rebuild/`。114项相关Python回归、Go全套及构建通过；最终补充旧输入无法被当前引擎接受的路径后，26项选择/重建回归再次通过。覆盖新输入驱动利润率、旧报告保留、重放不一致/不可执行不阻挡新方案、缺依据拒绝、确定性运行ID；Python全套未重跑。无依赖、主库、SQLite或前端变更。

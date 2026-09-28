@@ -252,3 +252,35 @@ def test_selection_rejects_mixed_financial_and_adjustment_basis(section,field,va
     with pytest.raises(ValueError,match='basis differs'):
         select(baseline,candidate,[reference()],'2026-09-27T00:00:00+00:00',POLICY)
     assert candidate==original
+
+
+def test_legal_rebuild_uses_new_baseline_and_preserves_old_report(tmp_path):
+    from tools.select_native_assumptions import rebuild
+    evidence=tmp_path/'review.txt';evidence.write_text('合成测试：显式更新经营利润，不代表公司事实')
+    baseline=sample();inputs=reference_inputs(baseline)
+    inputs['raw_financials'][0]['ebit']=150
+    request=dict(baseline=baseline,inputs=inputs,reason='合成测试的利润更新',
+        evidence_files=[str(evidence)],reference_rows=[reference()],
+        reference_cutoff='2026-09-27T00:00:00+00:00',policy=POLICY)
+    original=deepcopy(request)
+    result=rebuild(request)
+    assert request==original
+    assert result['status']=='calculated_conditional'
+    expected=result['rebuilt_baseline']['adjusted']['adjusted_ebit']/result['rebuilt_baseline']['ltm_financials']['revenues']
+    assert result['candidate']['inputs']['valuation_assumptions']['target_operating_margin']==expected
+    assert result['prior_report']==baseline and result['input_changes']
+    assert result['prior_replay_status']=='reproduced'
+    assert result['run_id']==rebuild(request)['run_id']
+    request['baseline']['final']['value_per_share']+=1
+    rebuilt=rebuild(request)
+    assert rebuilt['prior_replay_status']=='differs_under_current_engine_not_verified'
+    assert rebuilt['candidate']==result['candidate']
+    assert rebuilt['run_id']!=result['run_id']
+    request['baseline']['inputs']['valuation_assumptions']['roic_stable_override']=0
+    unavailable=rebuild(request)
+    assert unavailable['prior_replay_status']=='unavailable_under_current_engine'
+    assert unavailable['candidate']==result['candidate']
+    assert unavailable['baseline_result_changes'] is None
+    request['reason']=''
+    with pytest.raises(ValueError,match='reason and evidence'):
+        rebuild(request)
