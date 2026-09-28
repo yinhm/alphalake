@@ -181,3 +181,29 @@ def test_historical_capital_changes_reconcile_and_keep_gaps():
     changed=deepcopy(rows);changed.pop(-2)
     assert annual_capital_evidence(changed,2)[0]['capital_change_bridge']['status']=='missing_previous_year'
     assert result[-1]['capital_change_bridge']['status']=='missing_previous_year'
+
+
+def test_capital_scope_distinguishes_consolidation_from_investment_proxy():
+    from tools.review_native_policy import annual_capital_evidence
+    row=dict(fiscal_year=2025,r_and_d_expense=None,ebit=100,revenues=1000,
+        bv_equity=500,bv_debt=100,cash_and_marketable_securities=50,
+        minority_interests=20,cross_holdings=80)
+    original=deepcopy(row)
+    result=annual_capital_evidence([row],None)[0]
+    scope=result['capital_scope_bridge']
+    assert row==original
+    assert result['research_adjusted_invested_capital_million_cny']==550
+    assert scope['including_minority_capital_million_cny']==570
+    assert scope['excluding_investment_proxy_capital_million_cny']==490
+    assert scope['missing_inputs']==[] and not scope['automatic_adoption']
+    for field in ('minority_interests','cross_holdings','bv_debt'):
+        changed=deepcopy(row);changed[field]=None
+        scope=annual_capital_evidence([changed],None)[0]['capital_scope_bridge']
+        assert field in scope['missing_inputs']
+        assert scope['excluding_investment_proxy_capital_million_cny'] is None
+    changed=deepcopy(row);changed['cross_holdings']=1000
+    assert annual_capital_evidence([changed],None)[0]['capital_scope_bridge']['excluding_investment_proxy_capital_million_cny']==-430
+    changed=deepcopy(row);changed['minority_interests']=-20
+    assert annual_capital_evidence([changed],None)[0]['capital_scope_bridge']['including_minority_capital_million_cny']==530
+    scope=annual_capital_evidence([row],5)[0]['capital_scope_bridge']
+    assert 'research_asset' in scope['missing_inputs'] and scope['native_capital_million_cny'] is None

@@ -52,10 +52,22 @@ def annual_capital_evidence(rows, research_life):
         parts = ('bv_equity','bv_debt','cash_and_marketable_securities')
         absent = [key for key in parts if not valid(row[key])]
         capital = None if absent or asset is None else row['bv_equity']+row['bv_debt']-row['cash_and_marketable_securities']+asset
+        minority, investments = row.get('minority_interests'), row.get('cross_holdings')
+        consolidated = capital+minority if capital is not None and valid(minority) else None
+        operating_proxy = consolidated-investments if consolidated is not None and valid(investments) else None
+        scope = dict(status='scope_sensitivity_not_valuation_approved', automatic_adoption=False,
+            native_capital_million_cny=capital,
+            minority_book_equity_million_cny=minority if valid(minority) else None,
+            long_term_investment_proxy_million_cny=investments if valid(investments) else None,
+            including_minority_capital_million_cny=consolidated,
+            excluding_investment_proxy_capital_million_cny=operating_proxy,
+            missing_inputs=([*absent]+(['research_asset'] if asset is None else [])
+                +[key for key,value in (('minority_interests',minority),('cross_holdings',investments)) if not valid(value)]),
+            boundary='合并利润对应资本应含少数股东权益；长期投资代理不等于已核验非经营资产，亦非市值；EBIT投资收益、现金重叠及租赁范围须另审，不能据此批准ROIC或预测倍率')
         result.append(dict(year=year,research_asset_million_cny=asset,research_amortization_million_cny=amortization,
             research_adjusted_margin=margin,research_adjusted_invested_capital_million_cny=capital,
             research_adjusted_sales_to_capital=row['revenues']/capital if capital is not None and capital > 0 and valid(row['revenues']) else None,
-            unavailable_research_cohort_years=missing,missing_balance_inputs=absent))
+            unavailable_research_cohort_years=missing,missing_balance_inputs=absent,capital_scope_bridge=scope))
     annual = {r['year']: r for r in result}
     for row in result:
         year = row['year']
