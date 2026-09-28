@@ -28,7 +28,7 @@ def test_reviewed_native_workbooks_and_source_cells():
             assert rows['HK']['value']=='0.165000000000'
             assert rows['US']['value'] is None and rows['US']['value_status']=='ambiguous'
             assert rows['US']['source_locator']=='Sheet1!B217;Sheet1!B246'
-    assert total==3575
+    assert total==3951
 
 
 def test_region_and_header_tampering_rejected(monkeypatch):
@@ -96,3 +96,24 @@ def test_sqlite_snapshot_roundtrip_hash_and_missing_reference():
         conn.execute("UPDATE reference_value SET value='0.99' WHERE metric='cost_of_debt_pretax' AND region='us'")
         with pytest.raises(ValueError,match='hash mismatch'):
             load_snapshot(conn)
+
+
+def test_adjusted_margin_source_column_and_header_rejection(monkeypatch):
+    real=xlrd.open_workbook
+    path=ROOT/'marginGlobal.xls'
+    packet=snapshot(path)
+    selected=next(r for r in packet['observations'] if r['subject']=='Computers/Peripherals' and r['metric_code']=='pretax_lease_research_adjusted_operating_margin')
+    with real(path) as wb:
+        sheet=wb.sheet_by_name('Industry Averages')
+        row=next(i for i in range(sheet.nrows) if sheet.cell_value(i,0)=='Computers/Peripherals')
+        assert selected['source_locator']==f'Industry Averages!J{row+1}'
+        assert Decimal(selected['value'])==Decimal(str(sheet.cell_value(row,9))).quantize(Decimal('.000000000001'))
+    def broken(*args,**kwargs):
+        wb=real(*args,**kwargs);sheet=wb.sheet_by_name('Industry Averages')
+        for row in sheet._cell_values:
+            for i,value in enumerate(row):
+                if value=='Pre-tax Lease & R&D adj Margin':row[i]='unreviewed margin'
+        return wb
+    monkeypatch.setattr(xlrd,'open_workbook',broken)
+    with pytest.raises(ValueError,match='missing required header'):
+        snapshot(path)

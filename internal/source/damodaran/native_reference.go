@@ -9,7 +9,7 @@ import (
 )
 
 const NativeReferenceScript = "valuation/backend/data_sources/damodaran_parsers/native_reference_parser.py"
-const NativeReferenceVersion = "damodaran-native-reference-v1"
+const NativeReferenceVersion = "damodaran-native-reference-v2"
 
 var NativeReferenceFiles = []string{"betas", "betaGlobal", "wacc", "waccGlobal", "margin", "marginGlobal", "taxrate", "taxrateGlobal", "capex", "capexGlobal", "fundgrEB", "fundgrEBGlobal", "EVA", "EVAGlobal", "vebitda", "vebitdaGlobal", "pedata", "peGlobal", "pbvdata", "pbvGlobal", "psdata", "psGlobal", "countrytaxrates"}
 

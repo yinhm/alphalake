@@ -233,6 +233,8 @@ class DamodaranStore:
             wacc=raw.get("wacc"),
             pretax_operating_margin=raw.get("pretax_operating_margin"),
             after_tax_operating_margin=raw.get("aftertax_operating_margin"),
+            pretax_lease_research_adjusted_operating_margin=raw.get("pretax_lease_rd_adj_margin"),
+            aftertax_lease_research_adjusted_operating_margin=raw.get("aftertax_lease_rd_adj_margin"),
             sales_to_capital=raw.get("sales_to_capital"),
             revenue_growth=raw.get("revenue_growth"),
             expected_ebit_growth=raw.get("expected_ebit_growth"),

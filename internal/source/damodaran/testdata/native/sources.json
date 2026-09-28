@@ -32,14 +32,14 @@
     "sha256": "258b56a995832ff8c79167c1cbad2dee3bbae95b9765612a5093ba6942aaaa47",
     "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/margin.xls",
     "observation_date": "2026-01-05",
-    "observations": 188
+    "observations": 376
   },
   {
     "file": "marginGlobal.xls",
     "sha256": "89fe631c20f3494bb8afbd6f4407bc2000e3c94e58603da1f2d1f3acd1113e79",
     "source": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/marginGlobal.xls",
     "observation_date": "2026-01-05",
-    "observations": 188
+    "observations": 376
   },
   {
     "file": "taxrate.xls",

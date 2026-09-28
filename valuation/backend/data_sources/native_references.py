@@ -9,6 +9,8 @@ from .industry_mapper import IndustryMapper, CompanyInfo
 CONTRACT = 'alphalake-native-references-v1'
 COUNTRIES = {'CN': 'China', 'HK': 'Hong Kong', 'US': 'United States'}
 METRICS = {
+ 'pretax_lease_research_adjusted_operating_margin': 'pretax_lease_rd_adj_margin',
+ 'aftertax_lease_research_adjusted_operating_margin': 'aftertax_lease_rd_adj_margin',
  'beta_unlevered': 'beta_u', 'beta_unlevered_cash_adjusted': 'beta_u_corrected_for_cash',
  'debt_equity_ratio': 'd_e_ratio', 'effective_tax_rate': 'effective_tax_rate',
  'cost_of_equity': 'cost_of_equity', 'cost_of_debt_pretax': 'cost_of_debt_pretax',

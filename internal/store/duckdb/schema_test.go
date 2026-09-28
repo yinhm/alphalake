@@ -91,3 +91,23 @@ func TestInitializeRejectsUnsupportedAndUnversionedDatabases(t *testing.T) {
 		t.Fatal(v, err)
 	}
 }
+
+func TestUpgradeAdjustedMarginReferences(t *testing.T) {
+	db, err := OpenInitialized(t.Context(), filepath.Join(t.TempDir(), "upgrade.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err = db.Exec(`UPDATE meta.schema_version SET version=54`); err != nil {
+		t.Fatal(err)
+	}
+	if err = UpgradeNativeReferences(t.Context(), db); err != nil {
+		t.Fatal(err)
+	}
+	if v, e := CurrentSchemaVersion(t.Context(), db); e != nil || v != 55 {
+		t.Fatal(v, e)
+	}
+	if err = UpgradeNativeReferences(t.Context(), db); err == nil {
+		t.Fatal("repeat upgrade must reject")
+	}
+}

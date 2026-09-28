@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const SchemaVersion = 54
+const SchemaVersion = 55
 
 //go:embed schema.sql
 var schemaSQL string
@@ -120,8 +120,8 @@ func UpgradeNativeReferences(ctx context.Context, db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	if version != 53 {
-		return fmt.Errorf("native reference upgrade requires schema53, found %d", version)
+	if version != 54 {
+		return fmt.Errorf("native reference upgrade requires schema54, found %d", version)
 	}
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -133,13 +133,13 @@ func UpgradeNativeReferences(ctx context.Context, db *sql.DB) error {
 	}
 	for _, statement := range strings.Split(schemaSQL, ";") {
 		statement = strings.TrimSpace(statement)
-		if strings.HasPrefix(statement, "CREATE TABLE reference.industry_stat(") || strings.HasPrefix(statement, "CREATE TABLE reference.country_tax(") {
+		if strings.HasPrefix(statement, "CREATE TABLE reference.industry_stat(") {
 			if _, err = tx.ExecContext(ctx, statement); err != nil {
 				return err
 			}
 		}
 	}
-	if _, err = tx.ExecContext(ctx, `INSERT INTO reference.industry_stat SELECT * FROM reference.industry_stat_before_upgrade; DROP TABLE reference.industry_stat_before_upgrade; INSERT INTO meta.schema_version(version,description) VALUES (54,'Native valuation industry references and country tax')`); err != nil {
+	if _, err = tx.ExecContext(ctx, `INSERT INTO reference.industry_stat SELECT * FROM reference.industry_stat_before_upgrade; DROP TABLE reference.industry_stat_before_upgrade; INSERT INTO meta.schema_version(version,description) VALUES (55,'Separate lease and research adjusted industry margins')`); err != nil {
 		return err
 	}
 	return tx.Commit()

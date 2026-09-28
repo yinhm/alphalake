@@ -15,7 +15,7 @@ else:
 FIELDS = {
     'beta': [('beta_unlevered', 'Unlevered beta', 0), ('beta_unlevered_cash_adjusted', 'Unlevered beta corrected for cash', 0), ('debt_equity_ratio', 'D/E Ratio', 0), ('effective_tax_rate', 'Effective Tax rate', 0)],
     'wacc': [('cost_of_equity', 'Cost of Equity', 0), ('cost_of_debt_pretax', 'Cost of Debt', 0), ('weighted_average_cost_of_capital', 'Cost of Capital', 0), ('equity_return_standard_deviation', 'Std Dev in Stock', 0)],
-    'margin': [('pretax_operating_margin', 'Pre-tax Unadjusted Operating Margin', 0), ('aftertax_operating_margin', 'After-tax Unadjusted Operating Margin', 0)],
+    'margin': [('pretax_operating_margin', 'Pre-tax Unadjusted Operating Margin', 0), ('aftertax_operating_margin', 'After-tax Unadjusted Operating Margin', 0), ('pretax_lease_research_adjusted_operating_margin', 'Pre-tax Lease & R&D adj Margin', 0), ('aftertax_lease_research_adjusted_operating_margin', 'After-tax Lease & R&D adj Margin', 0)],
     'taxrate': [('profitable_firms_effective_tax_rate', 'Average across only money-making companies', 0)],
     'capex': [('sales_to_invested_capital_ltm', 'Sales/ Invested Capital (LTM)', 0)],
     'fundgrEB': [('expected_ebit_growth', 'Expected Growth in EBIT', 0)],
@@ -100,7 +100,7 @@ def snapshot(path):
                     sample_count=None if tax else int(sample), value=value, value_status='reported' if number else 'missing'))
         if len(seen) != (3 if tax else 94):
             raise ValueError(f'incomplete reference scope: {stem}: {len(seen)}')
-        return dict(contract='alphalake-native-reference-source-v1', parser_version='damodaran-native-reference-v1',
+        return dict(contract='alphalake-native-reference-source-v1', parser_version='damodaran-native-reference-v2',
             observation_date=xlrd.xldate_as_datetime(ws.cell_value(0, 1), wb.datemode).date().isoformat(),
             sha256=hashlib.sha256(path.read_bytes()).hexdigest(), runtime=f'python={platform.python_version()};xlrd={xlrd.__version__}',
             unlevering_tax_rate=unlevering_tax_rate, file_stem=stem, sample_region='' if tax else region, observations=observations)

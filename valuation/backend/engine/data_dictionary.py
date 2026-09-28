@@ -113,6 +113,8 @@ class IndustryData(BaseModel):
     wacc: float | None = Field(default=None, description="Industry average WACC")
     pretax_operating_margin: float | None = Field(default=None, description="Industry pre-tax operating margin")
     after_tax_operating_margin: float | None = Field(default=None, description="Industry after-tax operating margin")
+    pretax_lease_research_adjusted_operating_margin: float | None = None
+    aftertax_lease_research_adjusted_operating_margin: float | None = None
     sales_to_capital: float | None = Field(default=None, description="Sales / Invested Capital ratio")
     revenue_growth: float | None = Field(default=None, description="Industry average revenue growth")
     expected_ebit_growth: float | None = Field(default=None, description="Industry fundamental expected EBIT growth; not revenue growth or company forecast")

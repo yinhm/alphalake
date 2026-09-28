@@ -59,7 +59,7 @@ func TestNativeReferenceLocalPublication(t *testing.T) {
 		t.Fatal("changed published values accepted")
 	}
 	// One-time upgrade keeps existing observations; no old-schema runtime path.
-	if _, err = db.Exec(`DROP TABLE reference.country_tax; DELETE FROM meta.schema_version; INSERT INTO meta.schema_version(version,description) VALUES (53,'upgrade fixture')`); err != nil {
+	if _, err = db.Exec(`DELETE FROM meta.schema_version; INSERT INTO meta.schema_version(version,description) VALUES (54,'upgrade fixture')`); err != nil {
 		t.Fatal(err)
 	}
 	var before int
