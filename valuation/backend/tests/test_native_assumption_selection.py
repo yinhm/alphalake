@@ -430,3 +430,35 @@ def test_capital_transition_changes_only_reinvestment_and_meets_terminal():
     bad['dcf']['fcff_projections'][0] += 1
     with pytest.raises(ValueError,match='does not replay'):
         compare(bad)
+
+
+def test_capital_proxy_comparison_keeps_five_year_denominator_and_separate_bases():
+    from tools.review_native_policy import capital_proxy_comparison
+    observed = [dict(year=y, research_adjusted_sales_to_capital=v, missing_balance_inputs=[])
+        for y,v in [(2025,2.0),(2024,None),(2023,-1.0),(2020,100.0)]]
+    independent = [dict(year=2025,research_adjusted_sales_to_capital=4.0,capital_scope_bridge={'status':'unapproved'})]
+    peers = [dict(industry='Test',region='Global',historical_sales_to_capital=4.0)]
+    forecast = [dict(year=1,reinvestment_million_cny=25.0,capital_funding={'incremental_revenue_million_cny':100.0}),
+        dict(year=2,reinvestment_million_cny=-5.0,capital_funding={'incremental_revenue_million_cny':-20.0})]
+    result = capital_proxy_comparison(2025,observed,independent,peers,forecast)
+    assert [r['year'] for r in result['rows']] == [2025,2024,2023,2022,2021]
+    assert result['positive_model_ratio_years'] == 1
+    row = result['rows'][0]
+    assert row['model_sales_to_capital'] == 2 and row['independent_sales_to_capital'] == 4
+    assert row['industry_comparisons'][0]['model_to_industry_ratio'] == .5
+    assert row['forecast_counterfactual']['annual_reinvestment_million_cny'] == [50,-10]
+    assert row['forecast_counterfactual']['reinvestment_change_million_cny'] == 20
+    assert result['rows'][1]['status'] == 'missing_capital_inputs'
+    assert result['rows'][2]['status'] == 'nonpositive_stock_ratio'
+    assert result['rows'][3]['status'] == 'missing_model_year'
+    assert all(r['forecast_counterfactual'] is None for r in result['rows'][1:])
+    assert not result['automatic_adoption'] and not result['cross_basis_merge_allowed']
+
+    duplicate = capital_proxy_comparison(2025,observed+[observed[0]],independent,peers,forecast)
+    assert duplicate['rows'][0]['status'] == 'ambiguous_model_year'
+    assert duplicate['rows'][0]['forecast_counterfactual'] is None
+    from tools.review_native_policy import review_report
+    baseline = sample()
+    review = review_report(baseline)
+    assert len(review['capital']['proxy_comparison']['rows']) == 5
+    assert review['capital']['proxy_comparison']['base_year'] == int(baseline['inputs']['period_date_10k'][:4])

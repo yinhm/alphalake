@@ -58,4 +58,4 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.compare_native_capital \
 
 151项相关Python测试通过（2条既有警告），含年度路径、投入滞后、非法倍率及报告篡改拒绝；完整`go test -p 1 ./...`与`go build ./cmd/alphalake`通过。测试串行运行于MemoryMax=1GiB的独立服务，峰值约885MiB；无依赖或Go代码变更，Python全套未重跑。
 
-下一步应检查行业资本代理与公司现有可比资本分量的经济适用性，再决定是否采用过渡政策。优先复用当前窗口及已有证据；既不按股价挑选情景，也不以平滑衔接批准公司资本效率。API调用方要恢复两阶段倍率时，须显式清除`annual_sales_to_capital`；自动假设重选已清除此覆盖项。
+[公司与行业资本核对](native-capital-proxy-review.md)已接入现有审阅：固定近期五年、分离模型及SQLite口径，量化资本倍率差异对前五年投入的影响。尚不能据此自动采用过渡政策。优先复用当前窗口及已有证据；既不按股价挑选情景，也不以平滑衔接批准公司资本效率。API调用方要恢复两阶段倍率时，须显式清除`annual_sales_to_capital`；自动假设重选已清除此覆盖项。

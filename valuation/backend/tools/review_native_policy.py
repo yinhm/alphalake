@@ -101,6 +101,50 @@ def annual_capital_evidence(rows, research_life):
     return result
 
 
+def capital_proxy_comparison(base_year, model_rows, independent_rows, peers, forecast):
+    """最近五个年度存量倍率的透明对照，不据此选择预测参数。"""
+    def positive(value):
+        return value is not None and math.isfinite(value) and value > 0
+    counts = Counter(r['year'] for r in model_rows)
+    model = {r['year']: r for r in model_rows if counts[r['year']] == 1}
+    independent = {r['year']: r for r in independent_rows or []}
+    rows = []
+    for year in range(base_year, base_year-5, -1):
+        observed = model.get(year)
+        ratio = observed['research_adjusted_sales_to_capital'] if observed else None
+        other = independent.get(year)
+        comparison = dict(year=year, model_sales_to_capital=ratio,
+            status=('ambiguous_model_year' if counts[year] > 1 else 'missing_model_year' if observed is None else
+                'missing_capital_inputs' if ratio is None else
+                'positive_stock_ratio_not_marginal_evidence' if positive(ratio) else 'nonpositive_stock_ratio'),
+            missing_balance_inputs=observed.get('missing_balance_inputs') if observed else None,
+            unavailable_research_cohort_years=observed.get('unavailable_research_cohort_years') if observed else None,
+            independent_sales_to_capital=other['research_adjusted_sales_to_capital'] if other else None,
+            independent_scope_bridge=other.get('capital_scope_bridge') if other else None,
+            industry_comparisons=[], forecast_counterfactual=None)
+        for peer in peers:
+            industry_ratio = peer['historical_sales_to_capital']
+            comparison['industry_comparisons'].append(dict(industry=peer['industry'], region=peer['region'],
+                sales_to_capital=industry_ratio,
+                model_to_industry_ratio=ratio/industry_ratio if positive(ratio) and positive(industry_ratio) else None))
+        if positive(ratio):
+            # 同一批未来收入增量和投入滞后；这里只量化资本选择，终值/股权桥不参与。
+            original = [r['reinvestment_million_cny'] for r in forecast[:5]]
+            alternative = [r['capital_funding']['incremental_revenue_million_cny']/ratio for r in forecast[:5]]
+            comparison['forecast_counterfactual'] = dict(
+                status='stock_ratio_sensitivity_not_selected_forecast',
+                investment_years=[r['year'] for r in forecast[:5]],
+                annual_reinvestment_million_cny=alternative,
+                baseline_reinvestment_million_cny=sum(original),
+                alternative_reinvestment_million_cny=sum(alternative),
+                reinvestment_change_million_cny=sum(alternative)-sum(original))
+        rows.append(comparison)
+    return dict(version='native-capital-proxy-comparison-v1', base_year=base_year, years=5,
+        rows=rows, positive_model_ratio_years=sum(positive(r['model_sales_to_capital']) for r in rows),
+        automatic_adoption=False, cross_basis_merge_allowed=False,
+        boundary='年度收入/期末账面资本是存量比；未来收入增量/再投资是假设。反事实仅量化前五年资本需求，不是公司新增效率、完整DCF或置信区间。行业匹配、研发年限、租赁、现金/投资及少数股权范围仍需核对；缺项不延长窗口。')
+
+
 def review_report(body, annual_evidence=None):
     inputs = CompanyValuationInput.model_validate(body['inputs'])
     if (inputs.reporting_currency != 'CNY' or inputs.stock_price_currency != 'CNY'
@@ -335,7 +379,9 @@ def review_report(body, annual_evidence=None):
             model_input_margin=raw.ebit/raw.revenues if raw.revenues else None,
             adjusted_margin=adjusted.adjusted_ebit/raw.revenues if raw.revenues else None),
         forecast=rows,
-        capital=dict(annual_sales_to_capital=a.annual_sales_to_capital, sales_to_capital_high=sc_high,
+        capital=dict(proxy_comparison=capital_proxy_comparison(date.fromisoformat(inputs.period_date_10k[:10]).year,
+                model_annual_evidence, annual_evidence_rows, peers, rows),
+            annual_sales_to_capital=a.annual_sales_to_capital, sales_to_capital_high=sc_high,
             high_ratio_basis='annual_path_overrides_two_stage' if a.annual_sales_to_capital is not None else ('explicit_assumption' if a.sales_to_capital_high is not None else 'model_default'),
             sales_to_capital_stable=sc_stable,
             stable_ratio_basis='annual_path_overrides_two_stage' if a.annual_sales_to_capital is not None else ('explicit_assumption' if a.sales_to_capital_stable is not None else 'inherits_high_ratio'),
