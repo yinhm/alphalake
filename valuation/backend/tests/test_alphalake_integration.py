@@ -1525,6 +1525,13 @@ def test_native_cny_policy_transmission_and_rejections(reference_export,tmp_path
     assert efficient['final']['value_per_share']!=body['final']['value_per_share']
     for before,after in zip(body['dcf']['reinvestment_projections'],efficient['dcf']['reinvestment_projections']):
         assert math.isclose(after,before/2,rel_tol=1e-12)
+    efficient_review=review_report(efficient)
+    for before,after in zip(reviewed['forecast'][:-1],efficient_review['forecast'][:-1]):
+        old=before['incremental_return_bridge'];new=after['incremental_return_bridge']
+        assert old['status']==new['status']=='computed'
+        assert math.isclose(new['constant_nopat_margin_incremental_return'],
+            2*old['constant_nopat_margin_incremental_return'],rel_tol=1e-12)
+        assert new['incremental_nopat_million_cny']==old['incremental_nopat_million_cny']
     for lag in range(4):
         timing=copy.deepcopy(payloads['joint_candidate'])
         timing['inputs']['valuation_assumptions'].update(override_reinvestment_lag=True,
@@ -1537,6 +1544,25 @@ def test_native_cny_policy_transmission_and_rejections(reference_export,tmp_path
             assert math.isclose(funding['incremental_revenue_million_cny']/funding['sales_to_capital'],
                 row['reinvestment_million_cny'],rel_tol=1e-12)
         assert checked['forecast'][-1]['capital_funding']['revenue_extension']==('forecast' if lag==0 else 'terminal_growth_padding')
+        for row in checked['forecast']:
+            bridge=row['incremental_return_bridge']
+            comparable=2<=row['year']+lag<=10
+            assert bridge['status']==('computed' if comparable else 'outside_comparable_forecast')
+    # 收入不变而利润率改善时有利润增长，但不能由零再投资算出无限资本回报。
+    margin_only=copy.deepcopy(payloads['joint_candidate'])
+    margin_only['inputs']['valuation_assumptions'].update(stable_growth_rate=0,
+        annual_forecast=[dict(growth=0,margin=.1+i*.01,tax=.25) for i in range(10)])
+    margin_review=review_report(reviewed_body(margin_only))
+    bridge=margin_review['forecast'][0]['incremental_return_bridge']
+    assert bridge['status']=='nonpositive_reinvestment'
+    assert bridge['revenue_contribution_million_cny']==0
+    assert bridge['nopat_margin_contribution_million_cny']>0
+    assert bridge['incremental_nopat_per_reinvestment'] is None
+    shrinking=copy.deepcopy(margin_only)
+    shrinking['inputs']['valuation_assumptions']['annual_forecast']=[dict(growth=-.01,margin=.1,tax=.25) for _ in range(10)]
+    shrink_review=review_report(reviewed_body(shrinking))
+    assert shrink_review['forecast'][0]['reinvestment_million_cny']<0
+    assert shrink_review['forecast'][0]['incremental_return_bridge']['status']=='nonpositive_reinvestment'
     assert math.isclose(reviewed['recent_reported_window']['revenue_growth'],.1,rel_tol=1e-12)
     quarterly=copy.deepcopy(payloads['joint_candidate'])
     quarterly['inputs'].update(quarters_since_10k=2,period_date_10q='2026-06-30',

@@ -99,6 +99,29 @@ def review_report(body):
             revenue_extension='terminal_growth_padding' if funded_year > len(rows) else 'forecast',
             incremental_revenue_million_cny=delta, sales_to_capital=ratio,
             recomputed_reinvestment_million_cny=expected)
+        bridge = dict(status='outside_comparable_forecast', funded_year=funded_year,
+            incremental_nopat_million_cny=None, revenue_contribution_million_cny=None,
+            nopat_margin_contribution_million_cny=None,
+            incremental_nopat_per_reinvestment=None, constant_nopat_margin_incremental_return=None)
+        # 不以历史不同税/研发口径补第0年，也不把终值延长收入伪装成已预测利润。
+        if 2 <= funded_year <= len(rows):
+            prior, current = rows[funded_year-2:funded_year]
+            if prior['revenue_million_cny'] > 0 and current['revenue_million_cny'] > 0:
+                prior_margin = prior['nopat_million_cny']/prior['revenue_million_cny']
+                current_margin = current['nopat_million_cny']/current['revenue_million_cny']
+                revenue_part = delta*prior_margin
+                margin_part = current['revenue_million_cny']*(current_margin-prior_margin)
+                nopat_delta = current['nopat_million_cny']-prior['nopat_million_cny']
+                if not math.isclose(revenue_part+margin_part, nopat_delta, rel_tol=1e-10, abs_tol=1e-8):
+                    raise ValueError('incremental NOPAT bridge does not reconcile')
+                investment = row['reinvestment_million_cny']
+                bridge.update(status='computed' if investment > 0 else 'nonpositive_reinvestment',
+                    incremental_nopat_million_cny=nopat_delta,
+                    revenue_contribution_million_cny=revenue_part,
+                    nopat_margin_contribution_million_cny=margin_part,
+                    incremental_nopat_per_reinvestment=nopat_delta/investment if investment > 0 else None,
+                    constant_nopat_margin_incremental_return=revenue_part/investment if investment > 0 else None)
+        row['incremental_return_bridge'] = bridge
     terminal_fcff = dcf.terminal_value_firm * (terminal_wacc-g)
     terminal_share = dcf.pv_terminal_value/dcf.value_of_operating_assets if dcf.value_of_operating_assets else None
     missing = [name for name in ('capex', 'd_a', 'change_in_noncash_wc') if getattr(raw, name) is None]
@@ -126,6 +149,8 @@ def review_report(body):
             historical_fcff=replay.cashflow.fcff, missing_historical_cashflow_inputs=missing,
             historical_adjusted_roic=replay.cashflow.historical_roic_by_year,
             marginal_company_capital_efficiency=None,
+            incremental_return_basis='forecast_diagnostic_not_observed_company_or_project_ROIC',
+            incremental_return_boundary='税后利润率变动含经营利润率、税率及亏损抵扣影响；增量利润不全归因于新增投资，恒定利润率分量亦非因果估计',
             review_required=['资本倍率须区分模型默认、行业存量代理与公司新增资本证据',
                 '研发资本化、租赁及现金/投资代理须按相同范围比较',
                 '历史报表行可能因缺EBIT而省略，不能据此判定标准收入缺失']),
