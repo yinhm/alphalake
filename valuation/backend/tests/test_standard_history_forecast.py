@@ -72,6 +72,10 @@ def test_archived_real_main_copy_review(tmp_path,monkeypatch):
     assert run['request'] == AlphaLakeRequest.model_validate(request).model_dump(mode='json')
     old_inputs = deepcopy(old['inputs'])
     old_inputs['prepared_ttm']['provenance']['alphalake_snapshot'] = content_hash(run['request']['data'])
+    # 冻结档案早于两个可空行业利润率字段；只补空契约，经济输入仍逐项相等。
+    for field in ('pretax_lease_research_adjusted_operating_margin', 'aftertax_lease_research_adjusted_operating_margin'):
+        assert field not in old_inputs['industry_data']
+        old_inputs['industry_data'][field] = None
     assert run['inputs'] == old_inputs
     saved = contents['review.json.gz']; calls = []
     def export(period):

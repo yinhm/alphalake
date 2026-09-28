@@ -45,6 +45,10 @@ def test_archived_standard_history_five(tmp_path,monkeypatch):
         assert new['report']==old['report']
         assert new['request']==AlphaLakeRequest.model_validate(inputs['request']).model_dump(mode='json')
         old['inputs']['prepared_ttm']['provenance']['alphalake_snapshot']=content_hash(new['request']['data'])
+        # 冻结档案早于两个可空行业利润率字段；只补空契约，经济输入仍逐项相等。
+        for field in ('pretax_lease_research_adjusted_operating_margin', 'aftertax_lease_research_adjusted_operating_margin'):
+            assert field not in old['inputs']['industry_data']
+            old['inputs']['industry_data'][field] = None
         assert new['inputs']==old['inputs']
         assert new['method_assessment']['reinvestment']['implied_roic_status']=='missing_opening_capital'
         assert after['review']['statuses']==before['review']['statuses']
