@@ -1506,6 +1506,37 @@ def test_native_cny_policy_transmission_and_rejections(reference_export,tmp_path
     assert math.isclose(reviewed['forecast'][4]['revenue_multiple_of_base'],1.1**5,rel_tol=1e-12)
     assert math.isclose(reviewed['terminal']['reinvestment_rate'],g/a['wacc'],rel_tol=1e-12)
     assert reviewed['capital']['historical_fcff'] is None
+    assert reviewed['capital']['historical_cashflow_is_forecast_prerequisite'] is False
+    assert reviewed['forecast'][0]['capital_funding']['revenue_year'] == 2
+    # Only past cashflow inputs change; forecast cashflows and equity value must not.
+    historical_complete=copy.deepcopy(payloads['joint_candidate'])
+    for row in historical_complete['inputs']['raw_financials']:
+        row.update(capex=100, d_a=30, change_in_noncash_wc=10)
+    filled=reviewed_body(historical_complete)
+    assert filled['cashflow']['fcff'] is not None
+    assert filled['dcf']['fcff_projections']==body['dcf']['fcff_projections']
+    assert filled['final']==body['final']
+    efficiency=copy.deepcopy(payloads['joint_candidate'])
+    for name in ('sales_to_capital_high','sales_to_capital_stable'):
+        efficiency['inputs']['valuation_assumptions'][name]*=2
+    efficient=reviewed_body(efficiency)
+    assert efficient['dcf']['revenue_projections']==body['dcf']['revenue_projections']
+    assert efficient['dcf']['terminal_value_firm']==body['dcf']['terminal_value_firm']
+    assert efficient['final']['value_per_share']!=body['final']['value_per_share']
+    for before,after in zip(body['dcf']['reinvestment_projections'],efficient['dcf']['reinvestment_projections']):
+        assert math.isclose(after,before/2,rel_tol=1e-12)
+    for lag in range(4):
+        timing=copy.deepcopy(payloads['joint_candidate'])
+        timing['inputs']['valuation_assumptions'].update(override_reinvestment_lag=True,
+            reinvestment_lag_years=lag, sales_to_capital_high=2, sales_to_capital_stable=4)
+        checked=review_report(reviewed_body(timing))
+        for row in checked['forecast']:
+            funding=row['capital_funding']
+            assert funding['revenue_year']==row['year']+lag
+            assert funding['sales_to_capital']==(2 if row['year']<=5 else 4)
+            assert math.isclose(funding['incremental_revenue_million_cny']/funding['sales_to_capital'],
+                row['reinvestment_million_cny'],rel_tol=1e-12)
+        assert checked['forecast'][-1]['capital_funding']['revenue_extension']==('forecast' if lag==0 else 'terminal_growth_padding')
     assert math.isclose(reviewed['recent_reported_window']['revenue_growth'],.1,rel_tol=1e-12)
     quarterly=copy.deepcopy(payloads['joint_candidate'])
     quarterly['inputs'].update(quarters_since_10k=2,period_date_10q='2026-06-30',

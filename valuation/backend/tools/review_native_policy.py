@@ -3,6 +3,7 @@ import argparse
 from collections import Counter
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 
@@ -80,6 +81,24 @@ def review_report(body):
         g = a.riskfree_after_yr10
     if not a.override_growth_perpetuity:
         g = min(a.stable_growth_rate if a.stable_growth_rate is not None else g, macro.risk_free_rate)
+    sc_high = a.sales_to_capital_high if a.sales_to_capital_high is not None else 2.5
+    sc_stable = a.sales_to_capital_stable if a.sales_to_capital_stable is not None else sc_high
+    lag = max(0, min(3, a.reinvestment_lag_years)) if a.override_reinvestment_lag else 1
+    extended_revenue = [raw.revenues or 0.0, *dcf.revenue_projections]
+    for _ in range(3):
+        extended_revenue.append(extended_revenue[-1]*(1+g))
+    for row in rows:
+        year = row['year']
+        funded_year = year+lag
+        ratio = sc_high if year <= (a.high_growth_years or 5) else sc_stable
+        delta = extended_revenue[funded_year]-extended_revenue[funded_year-1]
+        expected = delta/ratio
+        if not math.isclose(expected, row['reinvestment_million_cny'], rel_tol=1e-12, abs_tol=1e-9):
+            raise ValueError('forecast reinvestment does not match sales-to-capital funding')
+        row['capital_funding'] = dict(revenue_year=funded_year,
+            revenue_extension='terminal_growth_padding' if funded_year > len(rows) else 'forecast',
+            incremental_revenue_million_cny=delta, sales_to_capital=ratio,
+            recomputed_reinvestment_million_cny=expected)
     terminal_fcff = dcf.terminal_value_firm * (terminal_wacc-g)
     terminal_share = dcf.pv_terminal_value/dcf.value_of_operating_assets if dcf.value_of_operating_assets else None
     missing = [name for name in ('capex', 'd_a', 'change_in_noncash_wc') if getattr(raw, name) is None]
@@ -94,11 +113,15 @@ def review_report(body):
             reported_margin=raw.ebit/raw.revenues if raw.revenues else None,
             adjusted_margin=adjusted.adjusted_ebit/raw.revenues if raw.revenues else None),
         forecast=rows,
-        capital=dict(sales_to_capital_high=a.sales_to_capital_high if a.sales_to_capital_high is not None else 2.5,
+        capital=dict(sales_to_capital_high=sc_high,
             high_ratio_basis='explicit_assumption' if a.sales_to_capital_high is not None else 'model_default',
-            sales_to_capital_stable=a.sales_to_capital_stable if a.sales_to_capital_stable is not None else
-                (a.sales_to_capital_high if a.sales_to_capital_high is not None else 2.5),
-            reinvestment_lag_years=max(0,min(3,a.reinvestment_lag_years)) if a.override_reinvestment_lag else 1,
+            sales_to_capital_stable=sc_stable,
+            stable_ratio_basis='explicit_assumption' if a.sales_to_capital_stable is not None else 'inherits_high_ratio',
+            reinvestment_lag_years=lag,
+            forecast_method='incremental_revenue_divided_by_sales_to_capital',
+            forecast_scope='aggregate_net_reinvestment; do_not_add_working_capital_or_RD_again',
+            historical_cashflow_is_forecast_prerequisite=False,
+            historical_cashflow_role='classification_and_capital_efficiency_validation_not_automatic_forecast',
             first_five_years_reinvestment_million_cny=sum(r['reinvestment_million_cny'] for r in rows[:5]),
             historical_fcff=replay.cashflow.fcff, missing_historical_cashflow_inputs=missing,
             historical_adjusted_roic=replay.cashflow.historical_roic_by_year,
