@@ -26,7 +26,7 @@ func TestCapitalHistoryReview(t *testing.T) {
 	}
 	var count int
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_field WHERE notes LIKE 'official-capital-history-v1;%' AND valid_to=DATE '2025-01-01' AND zero_policy='reject'`).Scan(&count))
-	if count != 19 {
+	if count != 25 {
 		t.Fatal(count)
 	}
 	var before, after string
@@ -36,7 +36,7 @@ func TestCapitalHistoryReview(t *testing.T) {
 	check(err)
 	n, err := ExtendCapitalHistory(ctx, db)
 	check(err)
-	if n != 19 {
+	if n != 25 {
 		t.Fatal(n)
 	}
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_field WHERE notes LIKE 'official-capital-history-v1;%'`).Scan(&count))
@@ -51,6 +51,18 @@ func TestCapitalHistoryReview(t *testing.T) {
 	check(db.QueryRowContext(ctx, original).Scan(&after))
 	if before != after {
 		t.Fatal("existing reviews changed")
+	}
+	// Upgrading the previous 19-field review adds only the six balance fields.
+	_, err = db.ExecContext(ctx, `CREATE TEMP TABLE previous_review AS SELECT * FROM fundamental.provider_field WHERE valid_to=DATE '2025-01-01' AND canonical_field NOT IN ('accounts_payable','accounts_receivable','current_assets','current_liabilities','inventories','trading_financial_assets'); DELETE FROM fundamental.provider_field WHERE valid_to=DATE '2025-01-01' AND canonical_field IN ('accounts_payable','accounts_receivable','current_assets','current_liabilities','inventories','trading_financial_assets')`)
+	check(err)
+	n, err = ExtendCapitalHistory(ctx, db)
+	check(err)
+	if n != 6 {
+		t.Fatal("incremental review", n)
+	}
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM (SELECT * FROM previous_review EXCEPT SELECT * FROM fundamental.provider_field)`).Scan(&count))
+	if count != 0 {
+		t.Fatal("previous historical reviews changed", count)
 	}
 	// An incompatible historical review is never silently overwritten.
 	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET zero_policy='allow' WHERE canonical_field='lease_liabilities' AND valid_to=DATE '2025-01-01'`)
@@ -111,6 +123,12 @@ func TestCapitalHistoryArchivedRecord(t *testing.T) {
 	check(conn.QueryRowContext(ctx, `SELECT lease_liabilities,depreciation_depletion,bonds_payable FROM fundamental.statement_snapshot`).Scan(&lease, &depreciation, &bonds))
 	if lease != 62898500.9765625 || depreciation != 42345596 || bonds.Valid {
 		t.Fatal(lease, depreciation, bonds)
+	}
+	// Independently decoded float32 amounts from the archived 2024 annual ZIP.
+	var balances [6]float64
+	check(conn.QueryRowContext(ctx, `SELECT current_assets,current_liabilities,accounts_receivable,inventories,accounts_payable,trading_financial_assets FROM fundamental.statement_snapshot`).Scan(&balances[0], &balances[1], &balances[2], &balances[3], &balances[4], &balances[5]))
+	if balances != [6]float64{12367549440, 5901511680, 1654200064, 3233554176, 1778359168, 2330707712} {
+		t.Fatal("historical balances", balances)
 	}
 	// A corrupted multiplier must withdraw a previously supported value.
 	_, err = conn.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=-1 WHERE canonical_field='lease_liabilities' AND valid_to=DATE '2025-01-01'`)
