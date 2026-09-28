@@ -271,3 +271,19 @@ def test_anker_explicit_zero_disclosure_is_not_not_applicable():
     assert hashlib.sha256(path.read_bytes()).hexdigest() == report['sha256']
     page = re.sub(r'\s+', '', PdfReader(path).pages[172].extract_text())
     assert '2023年9月子公司提前偿还该债券，截止本年末应付债券余额为0。' in page
+
+
+def test_missing_debt_preserves_all_components_and_validates_later_values():
+    period = date(2024,12,31)
+    facts = {(period.isoformat(),field):dict(instrument_id=7,unit='CNY',period_type='instant',
+        statement_scope='provider_default',value='1000000',fact_id=i,
+        available_at='2025-04-30T16:00:00Z',artifact_sha256='source')
+        for i,field in enumerate(exporter.DEBT_COMPONENTS) if i in (0,3,4)}
+    value,status,evidence = exporter.cell(facts,set(),7,period,'bv_debt',True)
+    assert value is None and status == 'missing_standard_fact'
+    assert [r['field'] for r in evidence] == list(exporter.DEBT_COMPONENTS)
+    assert [r['field'] for r in evidence if r.get('kind') == 'missing_standard_fact'] == ['long_term_borrowings','bonds_payable']
+    assert sum(float(r['value']) for r in evidence if 'value' in r) == 3000000
+    facts[(period.isoformat(),'lease_liabilities')]['unit'] = 'USD'
+    with unittest.TestCase().assertRaisesRegex(ValueError,'unit'):
+        exporter.cell(facts,set(),7,period,'bv_debt',True)

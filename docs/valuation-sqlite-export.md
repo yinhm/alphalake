@@ -129,3 +129,5 @@ v7在财务表之外包含`reference_release`、`reference_value`、`reference_c
 默认参考截止等于`--as-of`；`--reference-as-of <RFC3339>`允许明确使用另一参考截止。例如固定旧财务窗口比较最新参考时，两个截止分别记录，不能称当时可用的历史估值。旧v6须显式重新导出，不能只改metadata契约标签。
 
 `/api/database/compatibility/<ticker>`分别返回财务状态和参考缺项。财务齐备但缺少默认行业/国家参考时为`blocked_reference_inputs`；这不是TDX财务缺失。用户可在既有`from-database` API传`industry_override`及新增的`country_override`明确选择会话参考，选择留痕、不回写公司分类；原前端无改动。
+
+缺项诊断会遍历全部目标分量：`export_cells.evidence_json`对缺标准值记录`kind=missing_standard_fact`及字段/期间/系数，后续已有金额和血缘仍保留。必需分量不齐时金额仍为NULL，不能把已知分量小计当成完整债务；源零原因须另回查来源证据。真实核对见[近期债务缺口](native-capital-proxy-review.md#2024年债务缺口已定位)。

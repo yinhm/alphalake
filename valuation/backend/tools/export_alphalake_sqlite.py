@@ -92,7 +92,10 @@ def cell(facts, conflicts, instrument, end, column, annual, reviewed_zeros=None)
             if column == 'cross_holdings':
                 missing.append(field)
                 continue
-            return None, 'missing_standard_fact', evidence
+            missing.append(field)
+            evidence.append(dict(kind='missing_standard_fact', field=field,
+                                 period=period.isoformat(), coefficient=coefficient))
+            continue
         expected = 'instant' if basis == 'instant' else {3: 'Q1', 6: 'H1', 9: '9M', 12: 'FY'}[period.month]
         if (row.get('instrument_id'), row.get('unit'), row.get('period_type'), row.get('statement_scope')) != (instrument, unit, expected, 'consolidated_statement' if reviewed else 'provider_default'):
             raise ValueError('incompatible standard identity/unit/period/scope: '+field)
@@ -111,6 +114,8 @@ def cell(facts, conflicts, instrument, end, column, annual, reviewed_zeros=None)
         evidence.append({'field': field, 'period': period.isoformat(), 'coefficient': coefficient,
                          'value': str(value), 'unit': unit, 'fact_id': row['fact_id'],
                          'available_at': row['available_at'], 'artifact_sha256': row['artifact_sha256']})
+    if missing and column != 'cross_holdings':
+        return None, 'missing_standard_fact', evidence
     if not evidence:
         return None, 'missing_standard_fact', []
     result = float(total / Decimal(1000000))
