@@ -128,6 +128,8 @@ def evaluate(database, references, recipe, tickers, output, web=None, selection_
     with sqlite3.connect(database.as_uri()+'?mode=ro',uri=True) as conn:
         metadata=dict(conn.execute('SELECT key,value FROM metadata'))
         conn.row_factory=sqlite3.Row
+        from tools.review_native_policy import load_annual_evidence
+        annual_evidence=load_annual_evidence(conn,tickers)
         capital_references=[dict(r) for r in conn.execute("SELECT v.*,r.available_at,r.sha256,r.source_locator AS release_locator FROM reference_value v JOIN reference_release r USING(release_id) WHERE metric='sales_to_invested_capital_ltm'")]
         histories={t:[dict(r) for r in conn.execute("SELECT period,value,unit,period_type,statement_scope FROM standard_facts WHERE ticker=? AND field='revenue_cumulative' AND period LIKE '%12-31' ORDER BY period",(t,))] for t in tickers}
     def save(name,value):
@@ -145,6 +147,7 @@ def evaluate(database, references, recipe, tickers, output, web=None, selection_
             if response.status_code!=200:
                 row.update(status='outside_snapshot_scope' if response.status_code==404 else 'blocked_inputs',http_status=response.status_code,reason=response.text);rows.append(row);continue
             baseline=response.json();save(key+'-baseline.json',baseline)
+            save(key+'-annual-evidence.json',annual_evidence[ticker])
             try:
                 payloads,audit=prepare(baseline,references,recipe,metadata,histories[ticker])
             except ValueError as error:
@@ -165,7 +168,7 @@ def evaluate(database, references, recipe, tickers, output, web=None, selection_
                     row['variants'][name]=dict(status='rejected',http_status=result.status_code,reason=result.text);continue
                 body=result.json();save(key+'-'+name+'-result.json',body)
                 from tools.review_native_policy import review_report
-                save(key+'-'+name+'-review.json',review_report(body))
+                save(key+'-'+name+'-review.json',review_report(body,annual_evidence[ticker]))
                 if name=='discount_only':
                     for field in ('revenue_projections','ebit_projections','reinvestment_projections','fcff_projections'):
                         if body['dcf'][field]!=baseline['dcf'][field]:raise ValueError('discount-only changed '+field)

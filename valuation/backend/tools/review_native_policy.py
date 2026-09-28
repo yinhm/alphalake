@@ -9,9 +9,57 @@ import re
 
 from engine.data_dictionary import CompanyValuationInput
 from engine.orchestrator import run_full_valuation
+from engine.module_1_adjustments import capitalize_r_and_d
+from datetime import date
 
 
-def review_report(body):
+def load_annual_evidence(connection, tickers):
+    """一次批量读取独立年度宽行；缺EBIT不删除研发和余额。"""
+    result = {t:dict(rows=[], cells=[]) for t in tickers}
+    marks = ','.join('?' for _ in tickers)
+    for row in connection.execute(f"SELECT a.*,c.period_date_annual FROM financials_annual a JOIN companies c USING(ticker) WHERE a.ticker IN ({marks}) ORDER BY a.ticker,a.fy_offset", tickers):
+        row = dict(row)
+        base = date.fromisoformat(row.pop('period_date_annual')[:10])
+        if (base.month,base.day) != (12,31) or row['fy_offset'] < 0:
+            raise ValueError('annual evidence period mismatch')
+        row['fiscal_year'] = base.year-row['fy_offset']
+        result[row['ticker']]['rows'].append(row)
+    for row in connection.execute(f"SELECT * FROM export_cells WHERE ticker IN ({marks}) AND series='annual' ORDER BY ticker,period,field", tickers):
+        result[row['ticker']]['cells'].append(dict(row))
+    return result
+
+
+def annual_capital_evidence(rows, research_life):
+    """只读诊断，金额沿用SQLite百万单位；缺队列不补零，租赁代理另审。"""
+    history = {r['fiscal_year']:r for r in rows}
+    if len(history) != len(rows) or (research_life is not None and research_life <= 0):
+        raise ValueError('duplicate year or invalid research life')
+    def valid(value): return value is not None and math.isfinite(value)
+    result = []
+    for year, row in sorted(history.items(), reverse=True):
+        cohort = [history.get(y,{}).get('r_and_d_expense') for y in range(year,year-(research_life or 0)-1,-1)]
+        missing = [year-i for i,v in enumerate(cohort) if not valid(v) or v < 0]
+        asset = amortization = None
+        if research_life is None:
+            missing = []; asset = amortization = 0.0
+        if research_life is not None and not any(y in missing for y in range(year,year-research_life,-1)):
+            _, _, asset = capitalize_r_and_d(cohort[0],cohort[1:research_life],research_life)
+        if research_life is not None and not missing:
+            _, amortization, _ = capitalize_r_and_d(cohort[0],cohort[1:],research_life)
+        margin = None
+        if amortization is not None and valid(row['ebit']) and valid(row['revenues']) and row['revenues'] > 0:
+            margin = (row['ebit']+(cohort[0] if research_life is not None else 0)-amortization)/row['revenues']
+        parts = ('bv_equity','bv_debt','cash_and_marketable_securities')
+        absent = [key for key in parts if not valid(row[key])]
+        capital = None if absent or asset is None else row['bv_equity']+row['bv_debt']-row['cash_and_marketable_securities']+asset
+        result.append(dict(year=year,research_asset_million_cny=asset,research_amortization_million_cny=amortization,
+            research_adjusted_margin=margin,research_adjusted_invested_capital_million_cny=capital,
+            research_adjusted_sales_to_capital=row['revenues']/capital if capital is not None and capital > 0 and valid(row['revenues']) else None,
+            unavailable_research_cohort_years=missing,missing_balance_inputs=absent))
+    return result
+
+
+def review_report(body, annual_evidence=None):
     inputs = CompanyValuationInput.model_validate(body['inputs'])
     if (inputs.reporting_currency != 'CNY' or inputs.stock_price_currency != 'CNY'
             or not re.fullmatch(r'(?:SHSE|SZSE):[0-9]{6}', inputs.ticker)):
@@ -41,7 +89,7 @@ def review_report(body):
     history = sorted(inputs.raw_financials, key=lambda f: f.fiscal_year)
     # 复用引擎逐年研发队列结果；不拿当前研发资产或TTM利润率填历史。
     counts = Counter(f.fiscal_year for f in inputs.raw_financials)
-    annual_evidence = []
+    model_annual_evidence = []
     for index, f in enumerate(inputs.raw_financials[:10]):
         cohort = range(f.fiscal_year-inputs.adjustment_inputs.amortization_period_n, f.fiscal_year+1)
         unavailable = [year for year in cohort if counts[year] != 1 or not any(
@@ -50,20 +98,31 @@ def review_report(body):
             for r in inputs.raw_financials)] if inputs.adjustment_inputs.has_r_and_d else []
         margin = replay.cashflow.historical_margin_by_year[index]
         ratio = replay.cashflow.historical_s_c_by_year[index]
-        annual_evidence.append(dict(year=f.fiscal_year,
+        model_annual_evidence.append(dict(year=f.fiscal_year,
             research_adjusted_margin=margin, research_adjusted_sales_to_capital=ratio,
             unavailable_research_cohort_years=unavailable,
             missing_balance_inputs=[name for name in ('bv_equity','bv_debt','cash_and_marketable_securities')
                 if getattr(f,name) is None],
             boundary='原生历史诊断仅按逐年研发调整；租赁及现金/投资代理口径未因此闭合'))
+    if annual_evidence is not None:
+        base_year = date.fromisoformat(inputs.period_date_10k[:10]).year
+        if (any(r['ticker'] != inputs.ticker or r['fiscal_year'] != base_year-r['fy_offset']
+                or r['fy_offset'] < 0 for r in annual_evidence['rows'])
+                or any(c['ticker'] != inputs.ticker or c['series'] != 'annual' for c in annual_evidence['cells'])):
+            raise ValueError('independent annual evidence identity/period mismatch')
+        annual_evidence_rows = annual_capital_evidence(annual_evidence['rows'], inputs.adjustment_inputs.amortization_period_n if inputs.adjustment_inputs.has_r_and_d else None)
+    else:
+        annual_evidence_rows = None
     peers = []
     for peer in (inputs.industry_data, inputs.industry_data_global):
         if peer is not None:
             peers.append(dict(industry=peer.industry_name, region=peer.region,
                 pretax_unadjusted_operating_margin=peer.pretax_operating_margin,
+                pretax_lease_research_adjusted_operating_margin=peer.pretax_lease_research_adjusted_operating_margin,
+                aftertax_lease_research_adjusted_operating_margin=peer.aftertax_lease_research_adjusted_operating_margin,
                 historical_sales_to_capital=peer.sales_to_capital,
                 comparable_for_adjusted_target_selection=False,
-                reason='unadjusted_industry_margin_not_company_research_and_lease_adjusted_margin'))
+                reason='company_lease_scope_research_life_and_industry_fit_require_review'))
     historical = []
     for i, f in enumerate(history):
         prior = history[i-1] if i and history[i-1].fiscal_year == f.fiscal_year-1 else None
@@ -154,12 +213,14 @@ def review_report(body):
         unit='million_CNY', ticker=inputs.ticker,
         historical_reported_rows=historical,
         sustainability_evidence=dict(status='requires_company_and_accounting_basis',
-            annual_rows=annual_evidence,
+            annual_rows=model_annual_evidence,
+            independent_annual_rows=annual_evidence_rows,
+            independent_source='sqlite_annual_rows_and_export_cells' if annual_evidence_rows is not None else None,
             supplied_annual_years=sorted(counts),
             absent_annual_years=[y for y in range(min(counts),max(counts)+1) if y not in counts] if counts else [],
             duplicate_annual_years=[y for y,n in sorted(counts.items()) if n>1],
-            research_adjusted_margin_years=sum(r['research_adjusted_margin'] is not None for r in annual_evidence),
-            research_adjusted_capital_years=sum(r['research_adjusted_sales_to_capital'] is not None for r in annual_evidence),
+            research_adjusted_margin_years=sum(r['research_adjusted_margin'] is not None for r in model_annual_evidence),
+            research_adjusted_capital_years=sum(r['research_adjusted_sales_to_capital'] is not None for r in model_annual_evidence),
             industry_references=peers,
             boundary='缺项只说明本次估值输入不足，不证明标准库或上游无数据；历史与行业参考均不自动证明未来持续性'),
         recent_reported_window=recent,
@@ -267,7 +328,7 @@ def review_directory(directory):
                     stable_growth_rate=forecast['terminal_growth'], roic_stable_override=forecast['terminal_roic'])
                 if any(assumptions[key] != value for key,value in expected.items()):
                     raise ValueError('saved forecast audit/input mismatch')
-            item['variants'][variant] = review_report(report)
+            item['variants'][variant] = review_report(report, read(key+'-annual-evidence.json'))
     return dict(contract='native-policy-review-v1', companies=len(results), results=results,
         source_statuses=dict(Counter(r['source_status'] for r in results)),
         approved_forecasts=0, source_protocol=protocol, source_files=files,

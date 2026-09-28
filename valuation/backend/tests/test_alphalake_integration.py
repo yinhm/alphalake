@@ -1593,7 +1593,7 @@ def test_native_cny_policy_transmission_and_rejections(reference_export,tmp_path
         dict(ticker='SHSE:600690',status='blocked_inputs',reason='missing research history')])
     body['reference_snapshot']=dict(id='test')
     for name,content in {'protocol.json':protocol,'summary.json':summary,
-        'SHSE-600519-audit.json':audit,'SHSE-600519-joint_candidate-result.json':body}.items():
+        'SHSE-600519-audit.json':audit,'SHSE-600519-annual-evidence.json':dict(rows=[],cells=[]),'SHSE-600519-joint_candidate-result.json':body}.items():
         (tmp_path/name).write_text(json.dumps(content))
     reviewed_directory=review_directory(tmp_path)
     assert reviewed_directory['companies']==2 and reviewed_directory['approved_forecasts']==0

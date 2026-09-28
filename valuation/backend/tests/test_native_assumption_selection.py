@@ -136,3 +136,22 @@ def test_ambiguous_reference_and_unknown_policy_rejected():
     policy=deepcopy(POLICY);policy['growth']='three_year_revenue_cagr'
     with pytest.raises(ValueError,match='unsupported'):
         select(baseline,reference_inputs(baseline),[reference()], '2026-09-27T00:00:00+00:00',policy)
+
+
+def test_independent_history_retains_research_when_ebit_missing():
+    from tools.review_native_policy import annual_capital_evidence
+    rows=[dict(fiscal_year=2025-i,r_and_d_expense=10,ebit=100 if i==0 else None,
+        revenues=1000,bv_equity=500,bv_debt=100,cash_and_marketable_securities=50) for i in range(6)]
+    evidence=annual_capital_evidence(rows,5)
+    assert evidence[0]['research_adjusted_margin']==.1
+    assert evidence[0]['research_asset_million_cny']==30
+    assert evidence[0]['research_adjusted_sales_to_capital']==pytest.approx(1000/580)
+    assert evidence[1]['research_adjusted_margin'] is None
+    assert evidence[1]['research_asset_million_cny']==30
+    rows.pop(2)
+    assert annual_capital_evidence(rows,5)[0]['research_adjusted_margin'] is None
+    assert annual_capital_evidence(rows,None)[0]['research_adjusted_margin']==.1
+    from tools.review_native_policy import review_report
+    rows[0].update(ticker='SZSE:300866',fy_offset=0)
+    with pytest.raises(ValueError,match='identity/period'):
+        review_report(sample(),dict(rows=[rows[0]],cells=[]))
