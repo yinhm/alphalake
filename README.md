@@ -13,7 +13,7 @@
 | 定位通用数据缺口 | [原生覆盖基线与诊断](docs/native-coverage.md) |
 | 原生参考、默认口径与会话版本 | [参考接入](docs/native-reference-bridge.md) |
 | 人民币WACC及经营候选对照 | [显式政策与验收](docs/native-cny-policy.md) |
-| 审阅增长、利润率与资本需求 | [经济输入审阅](docs/native-policy-economic-review.md) |
+| 审阅增长、利润率与资本需求 | [经济输入审阅](docs/native-policy-economic-review.md)、[资本口径核算](docs/native-capital-definition.md) |
 | 为原网页准备数据 | [SQLite导出、字段与准入](docs/valuation-sqlite-export.md) |
 | 按显式政策估值 | [统一公司CLI](docs/company-valuation-entry.md) |
 | 查询、解释估值变化 | [历史运行](docs/valuation-run-query.md)、[运行比较](docs/valuation-comparison.md) |
