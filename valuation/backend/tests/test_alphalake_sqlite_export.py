@@ -98,6 +98,7 @@ class SQLiteExportTest(unittest.TestCase):
             def snapshot_command(argv, **kwargs):
                 rows = Path(argv[argv.index('--output')+1])
                 rows.mkdir()
+                (rows/'reviewed_zeros.jsonl').write_text('')
                 for name in ('companies.jsonl', 'facts.jsonl', 'conflicts.jsonl'):
                     (rows/name).write_text('')
             with patch('sys.argv', argv), patch.object(exporter.subprocess, 'run', side_effect=snapshot_command), patch.object(exporter, 'export_snapshot', side_effect=ValueError('invalid unit')):
@@ -207,3 +208,66 @@ def test_annual_effective_tax_rate_preserves_bad_denominators_and_evidence():
     with pytest.raises(ValueError, match='unit'):
         exporter.annual_effective_tax_rate(facts, set(), 7, end)
     assert exporter.annual_effective_tax_rate({}, set(), 7, end)[1] == 'missing_standard_fact'
+
+
+def test_reviewed_source_zero_is_separate_revocable_evidence():
+    import copy
+    import pytest
+    period = date(2023, 12, 31)
+    asof = datetime.fromisoformat('2026-09-27T00:00:00+00:00')
+    company = dict(symbols=['sz300866'], symbol_count=1, identifier_count=1,
+                   exchange_mic='XSHE', instrument_id=7, name='Synthetic')
+    facts = [dict(source='tdx', code='300866', instrument_id=7, period=period.isoformat(),
+                  field=f, canonical_field=f, value='1000000', unit='CNY', period_type='instant',
+                  statement_scope='provider_default', fact_id=f, available_at='2024-04-25T00:00:00Z',
+                  artifact_sha256='a'*64) for f in exporter.DEBT_COMPONENTS if f != 'bonds_payable']
+    zero = dict(code='300866', instrument_id=7, period=period.isoformat(), field='bonds_payable',
+                value='0', unit='CNY', period_type='instant', statement_scope='consolidated_statement',
+                available_at='2024-04-25T00:00:00Z', import_sha256='b'*64, artifact_sha256='a'*64,
+                review=dict(code='300866', period=period.isoformat(), value='0', unit='CNY', scope='consolidated_statement',
+                            item='reviewed_source_zero_bonds_payable', source_zero=dict(
+                                field='bonds_payable', conclusion='explicit_zero_balance', artifact_sha256='a'*64)))
+    payload = dict(facts=facts, reviewed_zeros=[zero], source_conflicts=[])
+    def fetch(code, end):
+        return dict(contract_version='alphalake-valuation-v2', code=code, report_period=end.isoformat(),
+                    information_as_of=asof.isoformat(), **payload)
+    def run(want):
+        with sqlite3.connect(':memory:') as db:
+            db.row_factory = sqlite3.Row
+            exporter.export_snapshot(db, [company], fetch, period, asof, years=1, quarters=1)
+            assert db.execute('SELECT bv_debt FROM financials_annual').fetchone()[0] == want
+            assert db.execute("SELECT count(*) FROM standard_facts WHERE field='bonds_payable'").fetchone()[0] == 0
+            evidence = json.loads(db.execute("SELECT evidence_json FROM export_cells WHERE series='annual' AND field='bv_debt'").fetchone()[0])
+            if want is not None:
+                assert [p['import_sha256'] for p in evidence if p.get('kind') == 'reviewed_source_zero'] == ['b'*64]
+                assert db.execute('SELECT count(*) FROM reviewed_source_zeros').fetchone()[0] == 1
+                assert not any('review' in p for p in evidence)
+                data = exporter.target.fetch_company(db, 'SZSE:300866')
+                assert data is not None
+    run(4)
+    payload['reviewed_zeros'] = []; run(None)
+    payload['reviewed_zeros'] = [zero]
+    payload['source_conflicts'] = [dict(period=period.isoformat())]; run(None)
+    payload['source_conflicts'] = []
+    for key, value in [('value', '1'), ('instrument_id', 8), ('available_at', '2027-01-01T00:00:00Z')]:
+        bad = copy.deepcopy(zero); bad[key] = value; payload['reviewed_zeros'] = [bad]
+        with pytest.raises(ValueError, match='reviewed source zero'):
+            run(None)
+    payload['reviewed_zeros'] = [zero]
+    # A supplement never overwrites an existing nonzero standard component.
+    indexed = {(r['period'], r['field']): r for r in facts}
+    indexed[(period.isoformat(), 'bonds_payable')] = dict(facts[0], field='bonds_payable')
+    assert exporter.cell(indexed, set(), 7, period, 'bv_debt', True,
+                         {(period.isoformat(), 'bonds_payable'): zero})[:2] == (5, 'available')
+
+
+def test_anker_explicit_zero_disclosure_is_not_not_applicable():
+    import hashlib
+    import re
+    from pypdf import PdfReader
+    root = Path(__file__).resolve().parents[3]/'internal/ingest/testdata/anker-history-2026'
+    report = json.loads((root/'reports.json').read_text())['1219800919']
+    path = root/report['file']
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == report['sha256']
+    page = re.sub(r'\s+', '', PdfReader(path).pages[172].extract_text())
+    assert '2023年9月子公司提前偿还该债券，截止本年末应付债券余额为0。' in page

@@ -34,7 +34,7 @@ FIELDS = {
     'cross_holdings': ('long_term_equity_investments', 'instant', 'CNY'),
 }
 EXCHANGES = {'XSHG': 'SHSE', 'XSHE': 'SZSE', 'XBSE': 'BJSE'}
-CONTRACT = 'alphalake-sqlite-v7'
+CONTRACT = 'alphalake-sqlite-v8'
 DEBT_COMPONENTS = ('short_term_borrowings', 'long_term_borrowings', 'bonds_payable',
                    'current_portion_noncurrent_liabilities', 'lease_liabilities')
 ASSET_COMPONENTS = ('monetary_funds', 'cash_and_cash_equivalents', 'trading_financial_assets',
@@ -65,7 +65,7 @@ def validate_dates(period, asof):
         raise ValueError('timezone-aware information cutoff after report period required')
 
 
-def cell(facts, conflicts, instrument, end, column, annual):
+def cell(facts, conflicts, instrument, end, column, annual, reviewed_zeros=None):
     """只读取标准金额；累计差分不是供应商TTM，也不对每股值求和。"""
     if column == 'bv_debt':
         components, basis, unit = DEBT_COMPONENTS, 'instant', 'CNY'
@@ -84,19 +84,29 @@ def cell(facts, conflicts, instrument, end, column, annual):
         if period.isoformat() in conflicts:
             return None, 'source_record_conflict', evidence
         row = facts.get((period.isoformat(), field))
+        reviewed = False
+        if row is None and reviewed_zeros is not None:
+            row = reviewed_zeros.get((period.isoformat(), field))
+            reviewed = row is not None
         if row is None:
             if column == 'cross_holdings':
                 missing.append(field)
                 continue
             return None, 'missing_standard_fact', evidence
         expected = 'instant' if basis == 'instant' else {3: 'Q1', 6: 'H1', 9: '9M', 12: 'FY'}[period.month]
-        if (row.get('instrument_id'), row.get('unit'), row.get('period_type'), row.get('statement_scope')) != (instrument, unit, expected, 'provider_default'):
+        if (row.get('instrument_id'), row.get('unit'), row.get('period_type'), row.get('statement_scope')) != (instrument, unit, expected, 'consolidated_statement' if reviewed else 'provider_default'):
             raise ValueError('incompatible standard identity/unit/period/scope: '+field)
         value = Decimal(row['value'])
         if not value.is_finite():
             raise ValueError('nonfinite standard value')
         if column == 'cross_holdings' and value < 0:
             raise ValueError('negative investment component requires review')
+        if reviewed:
+            if value != 0 or row['review']['source_zero']['conclusion'] != 'explicit_zero_balance':
+                raise ValueError('reviewed source zero must remain zero')
+            evidence.append(dict(kind='reviewed_source_zero', field=field, period=period.isoformat(),
+                                 import_sha256=row['import_sha256'], coefficient=coefficient))
+            continue
         total += value * coefficient
         evidence.append({'field': field, 'period': period.isoformat(), 'coefficient': coefficient,
                          'value': str(value), 'unit': unit, 'fact_id': row['fact_id'],
@@ -113,7 +123,7 @@ def cell(facts, conflicts, instrument, end, column, annual):
             'missing_components': missing if column == 'cross_holdings' else [f for f in ASSET_COMPONENTS if (end.isoformat(), f) not in facts],
             'component_arithmetic_complete': not missing if column == 'cross_holdings' else False})
         return result, 'estimated_partial_scope', evidence
-    return result, 'available', evidence
+    return result, 'available_with_reviewed_source_zero' if any(r.get('kind') == 'reviewed_source_zero' for r in evidence) else 'available', evidence
 
 
 
@@ -147,6 +157,7 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
     target.init_schema(connection)
     connection.executescript('''CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);
  CREATE TABLE standard_facts(ticker TEXT,period TEXT,field TEXT,value TEXT,unit TEXT,period_type TEXT,statement_scope TEXT,evidence_json TEXT,PRIMARY KEY(ticker,period,field));
+ CREATE TABLE reviewed_source_zeros(import_sha256 TEXT PRIMARY KEY,ticker TEXT,period TEXT,field TEXT,evidence_json TEXT);
  CREATE TABLE export_universe(candidate INTEGER PRIMARY KEY,code TEXT,instrument_id INTEGER,status TEXT,details TEXT);
  CREATE TABLE export_cells(ticker TEXT,series TEXT,period TEXT,period_offset INTEGER,field TEXT,status TEXT,evidence_json TEXT,
  PRIMARY KEY(ticker,series,period_offset,field));''')
@@ -169,7 +180,7 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
         if not valid:
             continue
         ticker = EXCHANGES[mic] + ':' + code
-        facts, conflicts = {}, set()
+        facts, conflicts, reviewed_zeros = {}, set(), {}
         # 每个现有导出覆盖当年及上年；按需缓存一家公司，不累积全市场历史。
         def load(end):
             payload = fetch(code, end)
@@ -198,6 +209,30 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                         (ticker, row['period'], row['field'], row['value'], row['unit'], row['period_type'],
                          row['statement_scope'], json.dumps(row, ensure_ascii=False, sort_keys=True)))
                 facts[key] = row
+            for zero in payload.get('reviewed_zeros', []):
+                review = zero['review']
+                binding = review['source_zero']
+                key = (zero['period'], zero['field'])
+                available = datetime.fromisoformat(zero['available_at'])
+                if (zero['code'] != code or zero['instrument_id'] != company['instrument_id']
+                        or (review['code'], review['period'], binding['field']) != (code, *key)
+                        or review['item'] != 'reviewed_source_zero_'+zero['field']
+                        or review['source_zero']['conclusion'] != 'explicit_zero_balance'
+                        or zero['value'] != '0' or Decimal(review['value']) != 0
+                        or zero['unit'] != 'CNY' or review['unit'] != 'CNY'
+                        or zero['statement_scope'] != 'consolidated_statement'
+                        or review['scope'] != 'consolidated_statement'
+                        or available.utcoffset() is None or available > asof
+                        or date.fromisoformat(zero['period']) > end
+                        or not re.fullmatch(r'[0-9a-f]{64}', zero['import_sha256'])
+                        or binding['artifact_sha256'] != zero['artifact_sha256']):
+                    raise ValueError('invalid reviewed source zero identity/value/evidence')
+                if key in reviewed_zeros and reviewed_zeros[key] != zero:
+                    raise ValueError('conflicting reviewed source zeros')
+                if key not in reviewed_zeros:
+                    connection.execute('INSERT INTO reviewed_source_zeros VALUES(?,?,?,?,?)',
+                        (zero['import_sha256'], ticker, zero['period'], zero['field'], json.dumps(zero, ensure_ascii=False, sort_keys=True)))
+                reviewed_zeros[key] = zero
         row = dict(ticker=ticker, company_name=company['name'], company_type='Public Company',
                    exchange_code=EXCHANGES[mic], primary_exchange=EXCHANGES[mic], region='CN',
                    filing_currency='CNY', listing_currency='CNY', fx_listing_to_reporting=1,
@@ -246,7 +281,7 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
             for offset, end in enumerate(ends):
                 values = {'ticker': ticker, 'fy_offset' if series == 'annual' else 'fq_offset': offset}
                 for column in target._ANNUAL_COLS[2:]:
-                    value, status, evidence = cell(facts, conflicts, company['instrument_id'], end, column, series == 'annual')
+                    value, status, evidence = cell(facts, conflicts, company['instrument_id'], end, column, series == 'annual', reviewed_zeros)
                     values[column] = value
                     connection.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
                                        (ticker, series, end.isoformat(), offset, column, status, json.dumps(evidence, ensure_ascii=False, sort_keys=True)))
@@ -315,6 +350,11 @@ def main():
                     for line in stream:
                         row = json.loads(line)
                         conflicts.setdefault(row['code'], []).append(row)
+                reviewed_zeros = {}
+                with (data/'reviewed_zeros.jsonl').open() as stream:
+                    for line in stream:
+                        zero = json.loads(line)
+                        reviewed_zeros.setdefault(zero['code'], []).append(zero)
                 with (data/'facts.jsonl').open() as stream:
                     groups = iter(itertools.groupby((json.loads(line) for line in stream), key=lambda r: r['code']))
                     current = next(groups, None)
@@ -325,7 +365,7 @@ def main():
                         facts = list(current[1]) if current and current[0] == code else []
                         return dict(contract_version='alphalake-valuation-v2', code=code,
                             report_period=end.isoformat(), information_as_of=args.as_of.isoformat(),
-                            facts=facts, source_conflicts=conflicts.get(code, []))
+                            facts=facts, source_conflicts=conflicts.get(code, []), reviewed_zeros=reviewed_zeros.get(code, []))
                     count = export_snapshot(connection, companies, fetch, args.period, args.as_of, args.years, args.quarters)
             from data_sources.native_references import write_snapshot
             reference_packet = subprocess.run([str(binary), 'export-native-references', str(source),
@@ -341,7 +381,8 @@ def main():
                             market_cap_basis='close_times_reported_total_shares_proxy; known_foreign_share_classes_use_explicit_a_share_price_proxy',
                             quarterly_flows='difference_of_standard_YTD_same_year; Q1 unchanged',
                             missing='NULL; see export_cells; source-zero/unreviewed not inferred from absence',
-                            boundary='TDX_standard_components; partial_target_scope_values_are_not_complete_totals; market_value_is_explicit_price_times_total_shares_proxy',
+                            reviewed_zero_basis='explicit_current_review_bound_to_TDX_zero_and_PDF; not_standard_fact_or_historical_system_time',
+                            boundary='TDX_standard_components_and_explicit_reviewed_source_zeros; partial_target_scope_values_are_not_complete_totals; market_value_is_explicit_price_times_total_shares_proxy',
                             standard_field_scope=','.join(SOURCE_FIELDS),
                             candidates=str(len(companies)), companies=str(count))
             connection.executemany('INSERT OR REPLACE INTO metadata VALUES(?,?)', metadata.items())

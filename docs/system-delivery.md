@@ -80,7 +80,7 @@ journalctl -u alphalake-native-publish --no-pager
 
 在线模式另需`--filings-start`和可选`--filings-end`，默认结束日为中国当日；行情使用`sync-valuation-quotes`，只追加报告日前14个自然日至报告日的观测，不更新完整日线及检查点；身份来自已有审核快照并逐日期核对，不按证券代码前缀猜市场。见[窗口同步](valuation-quote-window.md)。首次建立新范围先用local模式验证导出与身份；公告目录不会自动审核缺失的招股披露范围或源零。
 
-可选`--sync-references`同步既有六类参考及23份原生US/Global行业与国家税率工作簿，offline模式重放已注册归档。原生参考随SQLite v7发布，会话绑定参考内容版本；实际网页与候选结果不同会拒绝发布。全局没有安装定时器，也不新增常驻任务平台。
+可选`--sync-references`同步既有六类参考及23份原生US/Global行业与国家税率工作簿，offline模式重放已注册归档。原生参考随SQLite v8发布，会话绑定参考内容版本；实际网页与候选结果不同会拒绝发布。全局没有安装定时器，也不新增常驻任务平台。
 
 ## 失败与重放
 

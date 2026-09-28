@@ -2,7 +2,7 @@
 
 日常更新、原生API验收与原子发布使用[系统交付入口](system-delivery.md)。本文保留底层独立导出命令和字段契约；单独导出成功不等于网页已切换或估值已验收。
 
-当前提供TDX财务及版本化Damodaran参考组成的SQLite快照，完整报表目标仍有缺口；经用户批准，现金及长期投资的已知组成允许作为显式代理用于估值；安克、苏泊尔另通过[估值输入代理](valuation-book-proxies.md)接通原生API。专用前端和估值旁路已撤除；原页面和请求契约已恢复，未获准或不适用代理的缺项仍在后端拒绝，详见[字段契约及待审批缺口](valuation-native-data-contract-20260924.md)。工具不修改源DuckDB或默认seed。[本轮重新接入](valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v7`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
+当前提供TDX财务及版本化Damodaran参考组成的SQLite快照，完整报表目标仍有缺口；经用户批准，现金及长期投资的已知组成允许作为显式代理用于估值；安克、苏泊尔另通过[估值输入代理](valuation-book-proxies.md)接通原生API。专用前端和估值旁路已撤除；原页面和请求契约已恢复，未获准或不适用代理的缺项仍在后端拒绝，详见[字段契约及待审批缺口](valuation-native-data-contract-20260924.md)。工具不修改源DuckDB或默认seed。逐期间已核实TDX余额源零可通过[独立审核补充](historical-debt-zero-review.md)进入目标输入，保留完整审核证据，不写入标准事实；旧v7快照须显式重导出。[本轮重新接入](valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v8`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
 
 依赖Python 3.11+标准库和当前版本`alphalake`程序，无新增包。先构建当前程序；本机的大库任务、构建和测试须串行放在独立systemd系统服务中，参见[内存隔离约束](fundamental-memory-20260919.md)。例如：
 

@@ -286,9 +286,9 @@ def snapshot_metadata(conn: sqlite3.Connection) -> dict | None:
     if not tables.intersection({'metadata', 'valuation_inputs', 'standard_facts', 'export_cells'}):
         return None
     metadata = dict(conn.execute('SELECT key,value FROM metadata')) if 'metadata' in tables else {}
-    if metadata.get('contract') != 'alphalake-sqlite-v7':
+    if metadata.get('contract') != 'alphalake-sqlite-v8':
         raise ValueError('Unsupported AlphaLake SQLite contract; rebuild the snapshot with the current exporter')
-    if not {'standard_facts', 'export_cells', 'export_universe'} <= tables:
+    if not {'standard_facts', 'export_cells', 'export_universe', 'reviewed_source_zeros'} <= tables:
         raise ValueError('Incomplete AlphaLake SQLite snapshot')
     return metadata
 
@@ -364,6 +364,24 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
     policy = record.get('valuation_proxy', {})
     estimates = {(e['series'],e['offset'],e['field']):e for e in policy.get('cells', [])}
     required, conditional, history, warnings, blockers = [], [], [], [], []
+    zero_refs = [dict(series=s, offset=o, field=f, component=part['field'], period=part['period'], import_sha256=part['import_sha256'])
+        for (s,o,f),e in cells.items() for part in e['evidence'] if isinstance(part, dict) and part.get('kind') == 'reviewed_source_zero']
+    reviewed_zeros = []
+    if zero_refs:
+        approvals = {r['import_sha256']: json.loads(r['evidence_json']) for r in conn.execute(
+            'SELECT import_sha256,evidence_json FROM reviewed_source_zeros WHERE ticker=?', (ticker,))}
+        if any(r['import_sha256'] not in approvals for r in zero_refs):
+            raise ValueError('Missing reviewed source zero evidence; rebuild snapshot')
+        for ref in zero_refs:
+            proof = approvals[ref['import_sha256']]
+            if (proof['import_sha256'] != ref['import_sha256'] or proof['code'] != ticker.split(':')[-1]
+                    or proof['field'] != ref['component'] or proof['period'] != ref['period'] or proof['value'] != '0'):
+                raise ValueError('Mismatched reviewed source zero evidence')
+        reviewed_zeros = [dict(import_sha256=h, evidence=approvals[h],
+            cells=[r for r in zero_refs if r['import_sha256'] == h]) for h in sorted({r['import_sha256'] for r in zero_refs})]
+    if reviewed_zeros:
+        warnings.append('部分输入采用逐期间审核的TDX源零；原标准事实仍缺项，依据与审核版本见reviewed_source_zeros，撤销后须重新发布快照')
+    reviewed_cells = {(r['series'],r['offset'],r['field']) for r in zero_refs}
     if policy:
         warnings.extend(policy['limitations'])
         if policy['status'] != 'estimated':
@@ -373,6 +391,9 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
         v = row.get(field)
         evidence = cells.get((series,offset,field))
         invalid_evidence = source and series != 'company' and (evidence is None or evidence['status'] != 'available')
+        if (evidence and evidence['status'] == 'available_with_reviewed_source_zero'
+                and (series,offset,field) in reviewed_cells):
+            invalid_evidence = False
         if (evidence and evidence['status'] == 'estimated_partial_scope'
                 and field in ('cash_and_marketable_securities', 'cross_holdings')):
             invalid_evidence = False
@@ -471,6 +492,7 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
                 if isinstance(part, dict) and 'available_component_million_cny' in part), None), **e)
             for (s,o,f),e in cells.items() if e['status']=='estimated_partial_scope'
             and f in ('cash_and_marketable_securities','cross_holdings')],
+        reviewed_source_zeros=reviewed_zeros,
         financial_fields=coverage,
         company_fields=[dict(field=name,present=co.get(name) is not None) for name in _COMPANIES_COLS],
         scope='当前原生入口默认选择的数据准入；不认证预测假设、市场参数或调整后经营口径；政策改变须重新检查')

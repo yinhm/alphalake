@@ -47,6 +47,10 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
 	if err = os.Mkdir(dir, 0700); err != nil {
 		return err
 	}
+	root, err := FinancialArchiveRoot(ctx, db)
+	if err != nil {
+		return err
+	}
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -104,6 +108,9 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
 		return err
 	}
 	if err = copyQuery("conflicts.jsonl", `SELECT provider_code AS code,CAST(report_period AS VARCHAR) AS period,reason,artifact_sha256 FROM fundamental.provider_conflicts_asof(`+cutoff+`) WHERE report_period BETWEEN `+start+` AND `+finish); err != nil {
+		return err
+	}
+	if err = exportReviewedSourceZeros(ctx, tx, root, dir, fields, from, end, asof); err != nil {
 		return err
 	}
 	if _, err = tx.ExecContext(ctx, `DROP TABLE _sqlite_universe`); err != nil {

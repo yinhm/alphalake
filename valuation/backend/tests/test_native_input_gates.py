@@ -105,7 +105,7 @@ def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypat
     from api.main import app
 
     record = sample(monkeypatch)
-    record['data_source'] = dict(contract='alphalake-sqlite-v7', report_period='2025-12-31', information_as_of='2026-09-25')
+    record['data_source'] = dict(contract='alphalake-sqlite-v8', report_period='2025-12-31', information_as_of='2026-09-25')
     record['financials_annual'].append(dict(fy_offset=1,revenues=None,ebit=None))
     conn = sqlite3.connect(':memory:', check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -190,3 +190,30 @@ def test_original_manual_reference_selection_updates_numbers_and_keeps_failed_se
             rejected = client.patch('/api/valuation/'+session.id, json={'overrides':{path:'Unknown'}})
             assert rejected.status_code == 422
             assert session.inputs.model_dump() == saved
+
+
+def test_native_gate_requires_linked_review_for_source_zero(monkeypatch):
+    import json
+    import sqlite3
+    import pytest
+    record = sample(monkeypatch)
+    record['data_source'] = dict(contract='alphalake-sqlite-v8')
+    conn = sqlite3.connect(':memory:')
+    conn.row_factory = sqlite3.Row
+    conn.execute('CREATE TABLE export_cells(ticker,series,period_offset,field,period,status,evidence_json)')
+    conn.execute('CREATE TABLE reviewed_source_zeros(import_sha256,ticker,evidence_json)')
+    conn.executemany('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
+        [('TEST','annual',0,f,'2025-12-31','available','[]') for f in record['financials_annual'][0] if f != 'fy_offset'])
+    conn.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
+        ('TEST','company',0,'mv_equity_listing','2025-12-31','available','{}'))
+    proof = dict(import_sha256='a'*64,code='TEST',field='bonds_payable',period='2025-12-31',value='0')
+    ref = dict(kind='reviewed_source_zero',import_sha256='a'*64,field='bonds_payable',period='2025-12-31')
+    conn.execute('INSERT INTO reviewed_source_zeros VALUES(?,?,?)',('a'*64,'TEST',json.dumps(proof)))
+    conn.execute("UPDATE export_cells SET status='available_with_reviewed_source_zero',evidence_json=? WHERE field='bv_debt'",(json.dumps([ref]),))
+    report = db.native_compatibility(conn,'TEST')
+    assert report['status'] == 'ready'
+    assert len(report['reviewed_source_zeros']) == 1
+    conn.execute('DELETE FROM reviewed_source_zeros')
+    with pytest.raises(ValueError,match='Missing reviewed source zero'):
+        db.native_compatibility(conn,'TEST')
+    conn.close()

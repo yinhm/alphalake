@@ -47,6 +47,8 @@ type SourceFinancialObservation struct {
 	ProviderFactID int64  `json:"provider_fact_id"`
 	Revision       string `json:"source_revision"`
 	ArtifactID     *int64 `json:"artifact_id,omitempty"`
+	SourceRow      int    `json:"source_row"`
+	MappingSHA256  string `json:"mapping_sha256,omitempty"`
 }
 
 type SourceFinancialExport struct {
@@ -79,6 +81,25 @@ func ExportSourceFinancialData(ctx context.Context, db *sql.DB, code string, per
 		return out, err
 	}
 	fields, err := financial.FieldCatalog()
+	if err != nil {
+		return out, err
+	}
+	mappings := map[int]string{}
+	mappingRows, err := db.QueryContext(ctx, `SELECT CAST(substr(m.provider_field,3) AS INTEGER),sha256(CAST(to_json(m) AS VARCHAR)) FROM fundamental.statement_field m WHERE source='tdx' AND valid_from<=? AND (valid_to IS NULL OR ?<valid_to)`, period, period)
+	if err != nil {
+		return out, err
+	}
+	for mappingRows.Next() {
+		var index int
+		var hash string
+		if err = mappingRows.Scan(&index, &hash); err != nil {
+			mappingRows.Close()
+			return out, err
+		}
+		mappings[index] = hash
+	}
+	err = mappingRows.Err()
+	mappingRows.Close()
 	if err != nil {
 		return out, err
 	}
@@ -118,7 +139,7 @@ func ExportSourceFinancialData(ctx context.Context, db *sql.DB, code string, per
 			if i < len(fields) {
 				f = fields[i]
 			}
-			o := SourceFinancialObservation{NamedSourceValue: financial.DecodeSourceValue(f, v), ProviderFactID: r.id*8192 + int64(i+1), Revision: r.hash, ArtifactID: &r.artifact}
+			o := SourceFinancialObservation{NamedSourceValue: financial.DecodeSourceValue(f, v), ProviderFactID: r.id*8192 + int64(i+1), Revision: r.hash, ArtifactID: &r.artifact, SourceRow: r.row, MappingSHA256: mappings[i+1]}
 			out.States[o.State]++
 			out.Observations = append(out.Observations, o)
 		}

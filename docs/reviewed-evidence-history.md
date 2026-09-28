@@ -1,6 +1,6 @@
 # 审核证据与补充修订
 
-本能力引入于结构版本041/042；代码及正式财务／参考库现均为44，见[发布验收](core-main-publication-20260918.md)。041 将镜像原文审核从诊断表独立，042 增加补充审核历史及撤销状态。已有数据库先在备份副本执行 `alphalake init DB`、验收后发布；只读导出不会自动升级。
+本能力引入于结构版本041/042；当前主库结构见[实现状态](implementation-status.md)，历史发布验收见[原记录](core-main-publication-20260918.md)。041 将镜像原文审核从诊断表独立，042 增加补充审核历史及撤销状态。历史版本按对应迁移或可验证重建处理；只读导出不会自动升级。
 
 ## 镜像原文审核
 
@@ -55,3 +55,7 @@ alphalake supplement-history DB 300866
 `import-cninfo-document <db> <raw-root> <receipt-json> <pdf>` 用于有真实下载回执的 CNINFO 原件：回执包含 `code`、`period`、`announcement_id`、`url`、`sha256`、`fetched_at`。必须匹配库内已有且已解析的公告，只填空原文；校验原始下载时间、官方URL、PDF头及内容哈希，拒绝覆盖不同文档或镜像来源。重复导入保持原获取时间，损坏的本地缓存可按相同原件修复，不推进采集检查点。
 
 该入口不从哈希推断真实性；回执必须来自已留存的真实下载记录。镜像仍走前述独立审核入口，不可伪装成官方直接下载。安克2026H1回执来自 `internal/ingest/testdata/anker-valuation-2026/reports.json`。
+
+## 逐期间TDX余额源零
+
+新增可选`source_zero`证据绑定复用本表及修订/撤销机制。只在明确原文真零、源零与映射/身份校验通过后供原生批量导出消费；不改标准事实和字段级零策略。完整契约与验收见[历史债务源零审核](historical-debt-zero-review.md)。

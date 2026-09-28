@@ -15,21 +15,22 @@ import (
 
 // ReviewedSupplement 是已有原文人工核验后的源补充，不是模型假设。
 type ReviewedSupplement struct {
-	Code             string `json:"code"`
-	Period           string `json:"period"`
-	Item             string `json:"item"`
-	Value            string `json:"value"`
-	Unit             string `json:"unit"`
-	PeriodBasis      string `json:"period_basis"`
-	Scope            string `json:"scope"`
-	AnnouncementID   string `json:"announcement_id"`
-	PDFSHA256        string `json:"pdf_sha256"`
-	PDFPage          int    `json:"pdf_page"`
-	Reviewer         string `json:"reviewer"`
-	ReviewNote       string `json:"review_note"`
-	Action           string `json:"action,omitempty"`
-	SupersedesSHA256 string `json:"supersedes_sha256,omitempty"`
-	ReviewedAt       string `json:"reviewed_at,omitempty"`
+	Code             string              `json:"code"`
+	Period           string              `json:"period"`
+	Item             string              `json:"item"`
+	Value            string              `json:"value"`
+	Unit             string              `json:"unit"`
+	PeriodBasis      string              `json:"period_basis"`
+	Scope            string              `json:"scope"`
+	AnnouncementID   string              `json:"announcement_id"`
+	PDFSHA256        string              `json:"pdf_sha256"`
+	PDFPage          int                 `json:"pdf_page"`
+	Reviewer         string              `json:"reviewer"`
+	ReviewNote       string              `json:"review_note"`
+	Action           string              `json:"action,omitempty"`
+	SupersedesSHA256 string              `json:"supersedes_sha256,omitempty"`
+	ReviewedAt       string              `json:"reviewed_at,omitempty"`
+	SourceZero       *ReviewedSourceZero `json:"source_zero,omitempty"`
 }
 
 var sixDigitCode = regexp.MustCompile(`^[0-9]{6}$`)
@@ -38,6 +39,11 @@ var supplementItem = regexp.MustCompile(`^[a-z][a-z0-9_]*$`)
 
 // ImportReviewedSupplements 原子发布审核动作；显式修订或撤销保留旧记录，旧动作重放不覆盖当前头部。
 func ImportReviewedSupplements(ctx context.Context, db *sql.DB, records []ReviewedSupplement) (int, error) {
+	root, err := FinancialArchiveRoot(ctx, db)
+	if err != nil {
+		return 0, err
+	}
+	validator := sourceZeroValidator{root: root}
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, err
@@ -112,6 +118,14 @@ func ImportReviewedSupplements(ctx context.Context, db *sql.DB, records []Review
 		if exists {
 			continue
 		}
+		if strings.HasPrefix(r.Item, "reviewed_source_zero_") && r.SourceZero == nil {
+			return 0, errors.New("source zero binding required")
+		}
+		if r.SourceZero != nil && action != "revoke" {
+			if _, err = validator.validate(ctx, tx, r, filingID, time.Now()); err != nil {
+				return 0, fmt.Errorf("source zero review: %w", err)
+			}
+		}
 		var previous, previousRecord string
 		err = tx.QueryRowContext(ctx, `SELECT import_sha256,reviewed_record FROM fundamental.reviewed_supplement WHERE provider_code=? AND report_period=CAST(? AS DATE) AND item=? AND source_filing_id=?`, r.Code, r.Period, r.Item, filingID).Scan(&previous, &previousRecord)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -136,6 +150,9 @@ func ImportReviewedSupplements(ctx context.Context, db *sql.DB, records []Review
 			}
 			if action == "revoke" && (r.Value != prior.Value || r.Unit != prior.Unit || r.PeriodBasis != prior.PeriodBasis || r.Scope != prior.Scope || r.PDFSHA256 != prior.PDFSHA256 || r.PDFPage != prior.PDFPage) {
 				return 0, errors.New("revocation must retain previous evidence and value")
+			}
+			if action == "revoke" && !sameSourceZero(r.SourceZero, prior.SourceZero) {
+				return 0, errors.New("revocation must retain source zero binding")
 			}
 		}
 		var predecessor any
