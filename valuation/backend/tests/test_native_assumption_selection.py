@@ -55,6 +55,8 @@ def test_selected_inputs_flow_to_engine_without_mutating_facts():
     payload,audit=select(baseline,reference_inputs(baseline),[reference()], '2026-09-27T00:00:00+00:00',POLICY)
     assert baseline==original and payload['inputs']['raw_financials']==original['inputs']['raw_financials']
     assert audit['status']=='selected_conditional' and not audit['automatic_adoption']
+    assert audit['economic_basis']['status']=='not_established'
+    assert 'sustainable_adjusted_operating_margin' in audit['economic_basis']['unresolved']
     report=run_full_valuation(CompanyValuationInput.model_validate(payload['inputs']))
     assert report.dcf.revenue_projections[0]==pytest.approx(1100)
     growth=report.dcf.revenue_projections[1]/report.dcf.revenue_projections[0]-1
@@ -63,6 +65,19 @@ def test_selected_inputs_flow_to_engine_without_mutating_facts():
     assert report.dcf.reinvestment_projections[0]==pytest.approx((report.dcf.revenue_projections[1]-1100)/2)
     assert payload['inputs']['valuation_assumptions']['roic_stable_override']==.08
     assert report.cashflow.fcff is None
+
+
+def test_perpetual_effective_tax_is_not_silently_inherited():
+    baseline=sample(); inputs=reference_inputs(baseline)
+    inputs['macro_inputs']['tax_rate_effective']=.10
+    inputs['valuation_assumptions']['override_tax_convergence']=True
+    payload,audit=select(baseline,inputs,[reference()], '2026-09-27T00:00:00+00:00',POLICY)
+    assert payload is None
+    assert 'perpetual_effective_tax_requires_explicit_marginal_tax_basis' in audit['issues']
+    # An explicit phase override is the rate actually consumed by the engine.
+    inputs['valuation_assumptions']['effective_tax_rate_override_years_1_5']=.25
+    payload,audit=select(baseline,inputs,[reference()], '2026-09-27T00:00:00+00:00',POLICY)
+    assert payload is not None and audit['economic_basis']['status']=='not_established'
 
 
 @pytest.mark.parametrize('key,value', [('region','us'),('sample_count',29),('value','NaN'),('value','0'),

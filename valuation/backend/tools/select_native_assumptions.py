@@ -66,8 +66,26 @@ def select(baseline, discount_inputs, reference_rows, reference_cutoff, policy):
         growth=terminal, roic=wacc, basis='explicit_growth_cap_and_no_terminal_excess_returns')
     if not terminal_ok:
         issues.append('invalid_terminal_boundary')
+    assumptions = inputs.valuation_assumptions
+    effective_tax = assumptions.effective_tax_rate_override_years_1_5
+    if effective_tax is None:
+        effective_tax = inputs.macro_inputs.tax_rate_effective
+    if (assumptions.override_tax_convergence and effective_tax is not None
+            and effective_tax != inputs.macro_inputs.tax_rate_marginal):
+        issues.append('perpetual_effective_tax_requires_explicit_marginal_tax_basis')
     audit = dict(policy=policy, decisions=decisions, issues=issues, automatic_selection=True,
         automatic_adoption=False, predictive_validation='not_established',
+        economic_basis=dict(status='not_established',
+            review='docs/native-assumption-selection.md#达摩达兰方法核验',
+            unresolved=[
+                'company_growth_runway_and_fade_duration',
+                'sustainable_adjusted_operating_margin',
+                'industry_capital_proxy_accounting_and_marginal_return',
+                'reinvestment_lag_and_tax_transition_timing',
+                'operating_country_risk_exposure',
+                'company_credit_capital_structure_and_usable_tax_shield',
+                'terminal_risk_and_no_excess_return_scenario',
+                'inherited_adjustment_and_equity_bridge_policies']),
         status='rejected' if issues else 'selected_conditional',
         wacc_boundary='inherits_explicit_reference_scenario_not_company_market_WACC')
     if issues:
