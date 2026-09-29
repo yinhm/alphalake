@@ -40,6 +40,9 @@ func TestSourceFieldCatalogMatchesReviewedDefinitionsAndKeepsUnknownValues(t *te
 		t.Fatal(out)
 	}
 	for _, o := range out.Observations {
+		if o.Field == "bonds_payable" && (o.Value == nil || *o.Value != 0 || o.State != "source_observation_not_standard_fact") {
+			t.Fatal("published zero policy ignored", o)
+		}
 		if o.Field == "lease_liabilities" && (o.Value == nil || *o.Value != *o.Evidence.RawValue*10000) {
 			t.Fatal(o)
 		}

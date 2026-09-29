@@ -26,8 +26,17 @@ func TestCapitalHistoryReview(t *testing.T) {
 	}
 	var count int
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_field WHERE notes LIKE 'official-capital-history-v1;%' AND valid_to=DATE '2025-01-01' AND zero_policy='reject'`).Scan(&count))
-	if count != 26 {
+	if count != 25 {
 		t.Fatal(count)
+	}
+	// Upgrade the old historical zero policy in place; published semantics wait for replay.
+	checkExec := func(query string) { _, e := db.ExecContext(ctx, query); check(e) }
+	checkExec(`UPDATE fundamental.provider_field SET zero_policy='reject' WHERE canonical_field='bonds_payable' AND valid_to=DATE '2025-01-01'`)
+	_, err = ExtendCapitalHistory(ctx, db)
+	check(err)
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_field WHERE canonical_field='bonds_payable' AND zero_policy!='allow'`).Scan(&count))
+	if count != 0 {
+		t.Fatal("bonds zero still rejected", count)
 	}
 	var before, after string
 	original := `SELECT CAST(to_json(list(p ORDER BY provider_field)) AS VARCHAR) FROM fundamental.provider_field p WHERE valid_from=DATE '2025-01-01'`
@@ -133,9 +142,19 @@ func TestCapitalHistoryArchivedRecord(t *testing.T) {
 	var lease, depreciation float64
 	var bonds sql.NullFloat64
 	check(conn.QueryRowContext(ctx, `SELECT lease_liabilities,depreciation_depletion,bonds_payable FROM fundamental.statement_snapshot`).Scan(&lease, &depreciation, &bonds))
-	if lease != 62898500.9765625 || depreciation != 42345596 || bonds.Valid {
+	if lease != 62898500.9765625 || depreciation != 42345596 || !bonds.Valid || bonds.Float64 != 0 {
 		t.Fatal(lease, depreciation, bonds)
 	}
+	missing := r
+	missing.ProviderFields = r.ProviderFields[:55]
+	_, err = MaterializeFinancialSnapshotBatch(ctx, conn, 2, fields, []IndexedFinancialRecord{{ID: 1, Revision: "revision", Record: missing}})
+	check(err)
+	check(conn.QueryRowContext(ctx, `SELECT bonds_payable FROM fundamental.statement_snapshot`).Scan(&bonds))
+	if bonds.Valid {
+		t.Fatal("absent field became zero")
+	}
+	_, err = MaterializeFinancialSnapshotBatch(ctx, conn, 3, fields, []IndexedFinancialRecord{{ID: 1, Revision: "revision", Record: r}})
+	check(err)
 	// Independently decoded float32 amounts from the archived 2024 annual ZIP.
 	var balances [6]float64
 	check(conn.QueryRowContext(ctx, `SELECT current_assets,current_liabilities,accounts_receivable,inventories,accounts_payable,trading_financial_assets FROM fundamental.statement_snapshot`).Scan(&balances[0], &balances[1], &balances[2], &balances[3], &balances[4], &balances[5]))

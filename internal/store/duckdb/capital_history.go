@@ -8,10 +8,14 @@ import (
 )
 
 // This review extends source definitions, not company valuation classifications.
-// Existing dated reviews and their zero policies are retained verbatim.
-const capitalHistoryReview = `CREATE TEMP TABLE _capital_history_review AS
+// Existing dated reviews are retained, except the explicitly approved bonds zero policy.
+const capitalHistoryReview = `
+ UPDATE fundamental.provider_field SET zero_policy='allow'
+ WHERE source='tdx' AND canonical_field='bonds_payable';
+ CREATE TEMP TABLE _capital_history_review AS
  SELECT p.* REPLACE(DATE '1900-01-01' AS valid_from,p.valid_from AS valid_to,
- 'official-capital-history-v1;'||s.definition_reference AS notes,'reject' AS zero_policy)
+ 'official-capital-history-v1;'||s.definition_reference AS notes,
+ CASE WHEN p.canonical_field='bonds_payable' THEN 'allow' ELSE 'reject' END AS zero_policy)
  FROM fundamental.provider_field p JOIN fundamental.source_field s
  ON s.source=p.source AND s.provider_field=p.provider_field AND s.name=p.canonical_field
  AND s.unit=p.unit AND s.value_kind=p.value_kind AND s.period_basis=p.period_basis

@@ -85,18 +85,21 @@ func ExportSourceFinancialData(ctx context.Context, db *sql.DB, code string, per
 		return out, err
 	}
 	mappings := map[int]string{}
-	mappingRows, err := db.QueryContext(ctx, `SELECT CAST(substr(m.provider_field,3) AS INTEGER),sha256(CAST(to_json(m) AS VARCHAR)) FROM fundamental.statement_field m WHERE source='tdx' AND valid_from<=? AND (valid_to IS NULL OR ?<valid_to)`, period, period)
+	zeroAllowed := map[int]bool{}
+	mappingRows, err := db.QueryContext(ctx, `SELECT CAST(substr(m.provider_field,3) AS INTEGER),sha256(CAST(to_json(m) AS VARCHAR)),m.zero_policy='allow' FROM fundamental.statement_field m WHERE source='tdx' AND valid_from<=? AND (valid_to IS NULL OR ?<valid_to)`, period, period)
 	if err != nil {
 		return out, err
 	}
 	for mappingRows.Next() {
 		var index int
 		var hash string
-		if err = mappingRows.Scan(&index, &hash); err != nil {
+		var allow bool
+		if err = mappingRows.Scan(&index, &hash, &allow); err != nil {
 			mappingRows.Close()
 			return out, err
 		}
 		mappings[index] = hash
+		zeroAllowed[index] = allow
 	}
 	err = mappingRows.Err()
 	mappingRows.Close()
@@ -140,6 +143,11 @@ func ExportSourceFinancialData(ctx context.Context, db *sql.DB, code string, per
 				f = fields[i]
 			}
 			o := SourceFinancialObservation{NamedSourceValue: financial.DecodeSourceValue(f, v), ProviderFactID: r.id*8192 + int64(i+1), Revision: r.hash, ArtifactID: &r.artifact, SourceRow: r.row, MappingSHA256: mappings[i+1]}
+			if o.State == "zero_requires_review" && zeroAllowed[i+1] {
+				zero := 0.0
+				o.Value = &zero
+				o.State = "source_observation_not_standard_fact"
+			}
 			out.States[o.State]++
 			out.Observations = append(out.Observations, o)
 		}

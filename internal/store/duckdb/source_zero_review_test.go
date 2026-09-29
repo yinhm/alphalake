@@ -27,6 +27,10 @@ func TestReviewedSourceZeroExportAndRevocation(t *testing.T) {
 			t.Fatal(e)
 		}
 	}
+	// Exercise the generic review lifecycle under a synthetic restrictive mapping.
+	// Current bonds policy allows source zero without these company reviews.
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET zero_policy='reject' WHERE canonical_field='bonds_payable' AND valid_to=DATE '2025-01-01'`)
+	check(err)
 	id, err := UpsertInstrument(ctx, db, domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHE", Currency: "CNY"}, domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sz300866"})
 	check(err)
 	period := time.Date(2023, 12, 31, 0, 0, 0, 0, time.UTC)
