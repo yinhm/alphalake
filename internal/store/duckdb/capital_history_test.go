@@ -38,6 +38,17 @@ func TestCapitalHistoryReview(t *testing.T) {
 	if count != 0 {
 		t.Fatal("approved field zero still rejected", count)
 	}
+	// An existing catalogue must acquire minority equity without rewriting other reviews.
+	checkExec(`DELETE FROM fundamental.provider_field WHERE canonical_field='noncontrolling_interests' AND valid_to=DATE '2025-01-01'`)
+	nMinority, err := ExtendCapitalHistory(ctx, db)
+	check(err)
+	if nMinority != 1 {
+		t.Fatal("minority equity incremental review", nMinority)
+	}
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_field WHERE canonical_field='noncontrolling_interests' AND valid_from=DATE '1900-01-01' AND valid_to=DATE '2025-01-01' AND zero_policy='allow'`).Scan(&count))
+	if count != 1 {
+		t.Fatal("minority equity history or inherited zero policy missing", count)
+	}
 	var before, after string
 	original := `SELECT CAST(to_json(list(p ORDER BY provider_field)) AS VARCHAR) FROM fundamental.provider_field p WHERE valid_from=DATE '2025-01-01'`
 	check(db.QueryRowContext(ctx, original).Scan(&before))
@@ -45,7 +56,7 @@ func TestCapitalHistoryReview(t *testing.T) {
 	check(err)
 	n, err := ExtendCapitalHistory(ctx, db)
 	check(err)
-	if n != 26 {
+	if n != 27 {
 		t.Fatal(n)
 	}
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_field WHERE notes LIKE 'official-capital-history-v1;%'`).Scan(&count))

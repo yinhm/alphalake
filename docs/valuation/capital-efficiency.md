@@ -30,11 +30,11 @@
 
 ```bash
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.review_native_policy \
-  workspace/derived/capital-transition/baseline \
+  workspace/derived/minority-history/scenarios \
   workspace/derived/capital-proxy-review/new-review.json
 
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.compare_native_capital \
-  workspace/derived/capital-transition/baseline \
+  workspace/derived/minority-history/scenarios \
   workspace/derived/capital-transition/new-comparison.json \
   --web http://127.0.0.1:8080
 ```
@@ -55,19 +55,18 @@ v1漏计了合并子公司属于其他股东的资本；本次按达摩达兰[�
 
 ```bash
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.compare_native_capital \
-  workspace/derived/contraction-method/scenarios \
+  workspace/derived/minority-history/scenarios \
   workspace/derived/company-capital-method/new-comparison.json \
   --basis company-history --web http://127.0.0.1:8080
 ```
 
 运行仍须使用独立1GiB服务。输出保存三年证据、选定倍率、完整前后报告、逐年投入变化和每股影响；不按估值高低选择代理，`automatic_adoption=false`。现金、投资、债务和少数股权范围限制并未由三年聚合消除；公司历史存量比率不自动成为未来新增投资效率。
 
-2026-09-29同一12家/30场景复验：v1曾有7家24场景完成公司代理对照，但该分母遗漏了少数股权，故旧结果只留作历史差异依据。v2在同一快照上0场景完成、30场景保留缺项；原1家选择拒绝、2家输入阻断仍在分母。除原连续历史缺口外，最新年度之前的模型少数股权均未齐备，不能把旧24个结果继续称作已符合新口径。
+2026-09-29同一12家/30场景验收：少数股权历史补链及重新导出后，v2恢复7家24场景，并与8080真实API逐项相同；2家6场景仍缺连续模型资本历史，另1家原选择拒绝、2家原输入阻断继续保留。原v1遗漏少数股权的结果只留作历史对照，不再作为当前公司代理。
 
-已追踪到历史标准映射边界：`noncontrolling_interests`原映射从2025年开始，资本历史扩展目录未包含它；SQLite历史为空并非已经证明TDX没有数据。下一步应按官方定义及现有字段审核通道补足历史映射、核验源分布，再重建标准事实和发布快照；不从PDF另采主值，也不借独立历史直接填进旧模型。本轮未改主库/SQLite/网页，亦未将方法缺项升级为原生默认估值阻断。
+已重建同名单基线；24场景相对v1的收入、EBIT、折现因子和终值保持不变，每股差额来自资本代理变化，范围约−1.7260至+0.0031元。收缩路径可能因更高资本投入强度同时带来更多假设释放，不能断言补计少数股权一定降低价值。条件场景仍不自动采用。
 
-48项相关Python回归覆盖实际零、负少数股权、缺项、非正调整资本及股权桥接不重复扣减；Go全套及构建通过。v1冻结证据在`workspace/derived/company-capital-method/`，v2缺项及映射查询在`workspace/derived/consolidated-capital-method/`。首轮验收汇总对空成功集合调用min失败、另一次只读查询缺Python duckdb依赖均保留日志；改用已有Go驱动查询，不新增依赖。这轮没有成功的v2真实公司DCF，不能称8080已通过v2数值验收。
-
+48项Python方法回归见前轮收据，本轮Go全套和构建通过，100家默认API及24个显式公司代理场景完成真实8080复验。当前证据为`workspace/derived/minority-history/`；v1及补链前的缺项/失败保存在原目录，不重写冻结记录。
 
 ## 当前结论
 
@@ -88,3 +87,15 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.compare_native_capital \
 - [债务审核通道及安克先例](../history/historical-debt-zero-review.md)
 - [EBIT与投资范围审计](../history/ebit-investment-scope-audit.md)
 - [标准资本分量核算](native-capital-definition.md)
+
+### 历史映射补链
+
+少数股东权益的定义与[TDX官方目录](https://help.tdx.com.cn/quant/docs/markdown/TdxQuant.md/mindoc-1h10m001ic888.html)一致。`extend-capital-history`现将其与已有资本字段一起扩展至2025年前，原2025年起的审核记录保留；新旧规则不重叠，重复执行不新增映射。此处1900年是目录的开放历史下界，不意味着存在1900年数据；实际覆盖由本地归档、证券身份和披露关联决定。
+
+使用同一TDX目录和批量物化链路，未引入少数股权专用解析器；映射与金额核验分开。少数股权原已允许真实零，本次不更改零策略，也不把缺位置或无披露记录填成零。主库替换前比较全部其他标准值及既有少数股权值，SQLite仅允许历史少数股权单元格由空变为实际值；固定100家默认估值及12家条件场景分别复验。
+
+本轮源扫描覆盖5,222个已解析沪深证券、37个保留包版本、173,912条源记录：135,213非零、38,699零，缺位置/无效值均为0；版本记录不等于唯一公司期间或标准事实分母。主库新增6,928个2025年前少数股权值（1,249零、614负值），原有少数股权值不变，其他标准列逐记录SHA-256签名一致。主库共8,458,757个标准值，重复物化增改删均0；已有待解析/拒绝仍保留。
+
+相同100家SQLite新增706个少数股权单元格，其他年度/季度值不变；财务90准入、默认API89成功及其最终结果保持。主库重开、SQLite切换及100家真实API验证后已清理回滚副本，路径/哈希保留。财报2026H1，财务截止2026-09-27T08:12:14.060804+00:00、参考截止2026-09-28T10:57:05.699379Z不变。
+
+本地归档先扫描再重建，复制＋重建＋落盘29.73秒，幂等重放2.26秒，100家导出4.68秒；未重测全市场导出及标准查询性能。所有任务串行于独立1GiB服务。初次宽表EXCEPT校验触及384MB DuckDB查询上限，未发布；改为按记录键比较其余列的SHA-256签名，未增加内存或缩小数据范围。内核无OOM记录，失败日志保留。首轮Go全套另有三处旧映射计数断言失败，更新26→27、372→373后全套通过。

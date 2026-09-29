@@ -45,7 +45,7 @@ func TestCapitalHistoryCopyKeepsSourceAndRejectsOverwrite(t *testing.T) {
 		t.Fatal(err)
 	}
 	var count int
-	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_field WHERE notes LIKE 'official-capital-history-v1;%'`).Scan(&count); err != nil || count != 26 {
+	if err = db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_field WHERE notes LIKE 'official-capital-history-v1;%'`).Scan(&count); err != nil || count != 27 {
 		t.Fatal(count, err)
 	}
 	db.Close()

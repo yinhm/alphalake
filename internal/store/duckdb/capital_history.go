@@ -33,7 +33,7 @@ const capitalHistoryReview = `
  'inventory_decrease_cashflow','investment_property_depreciation_amortization','lease_liabilities',
  'long_term_borrowings','long_term_equity_investments','monetary_funds',
  'operating_payables_increase_cashflow','operating_receivables_decrease_cashflow',
- 'profit_before_tax','right_of_use_depreciation','short_term_borrowings','total_equity');`
+ 'profit_before_tax','right_of_use_depreciation','short_term_borrowings','total_equity','noncontrolling_interests');`
 
 func insertCapitalHistory(ctx context.Context, tx *sql.Tx) (int64, error) {
 	if _, err := tx.ExecContext(ctx, capitalHistoryReview); err != nil {
@@ -43,8 +43,8 @@ func insertCapitalHistory(ctx context.Context, tx *sql.Tx) (int64, error) {
 	if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM _capital_history_review`).Scan(&count); err != nil {
 		return 0, err
 	}
-	if count != 26 {
-		return 0, fmt.Errorf("capital history requires 26 unchanged official definitions, found %d", count)
+	if count != 27 {
+		return 0, fmt.Errorf("capital history requires 27 unchanged official definitions, found %d", count)
 	}
 	if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM (
  SELECT p.* FROM fundamental.provider_field p JOIN _capital_history_review h
