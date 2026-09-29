@@ -567,3 +567,24 @@ def test_company_capital_proxy_keeps_incomplete_scope(problem):
     assert result['status']=='outside_policy_scope'
     assert result['evidence']['missing'] and result['evidence']['ratio'] is None
     assert result['evidence']['required_years']==[2023,2024,2025]
+
+
+@pytest.mark.parametrize('minority', [50, -50, None, -600])
+def test_company_capital_matches_consolidated_revenue_and_keeps_equity_bridge(minority):
+    from tools.compare_native_capital import compare
+    inputs=CompanyValuationInput.model_validate(sample()['inputs'])
+    for row in inputs.raw_financials: row.minority_interests=minority
+    report=run_full_valuation(inputs)
+    baseline=dict(inputs=inputs.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
+        for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+    result=compare(baseline,'company-history')
+    if minority is None or minority==-600:
+        assert result['status']=='outside_policy_scope'
+        assert result['evidence']['missing']
+        return
+    assert result['evidence']['ratio']==pytest.approx(sum(r.revenues for r in inputs.raw_financials[:3])/(3*(550+minority)))
+    assert all(r['consolidated_capital_million_cny']==pytest.approx(550+minority)
+        for r in result['evidence']['capital_scope_bridge'])
+    assert result['candidate']['inputs']['raw_financials']==baseline['inputs']['raw_financials']
+    # Minority is already deducted in the shared equity bridge; do not adjust it again.
+    assert result['value_per_share_change']==pytest.approx(result['operating_value_change_million_cny']/10)

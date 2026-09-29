@@ -16,10 +16,11 @@ POLICY = dict(version='native-capital-transition-v1', unchanged_years=5, end_yea
     automatic_adoption=False, boundary='五年过渡为固定分析情景，不是公司新增资本效率事实；终值ROIC/WACC及经营假设不变')
 
 
-HISTORY_POLICY = dict(version='native-company-capital-v1', history_years=3,
-    aggregation='sum_revenue_divided_by_sum_research_adjusted_book_capital',
+HISTORY_POLICY = dict(version='native-company-capital-v2', history_years=3,
+    aggregation='sum_revenue_divided_by_sum_research_adjusted_capital_including_minority',
+    equity_basis='parent_book_equity_plus_book_minority_interests',
     application='constant_ratio_for_explicit_forecast_only', automatic_adoption=False,
-    boundary='公司三年存量倍率仅为显式预测代理；现金、债务、少数股权及投资范围未闭合，不代表新增投资效率或已批准预测；终值保持原政策')
+    boundary='公司三年存量倍率仅为显式预测代理；现金、债务及投资范围未闭合；少数股权按账面额配套合并收入，不代表新增投资效率或已批准预测；终值保持原政策')
 
 
 def compare(baseline, basis='terminal-transition'):
@@ -51,14 +52,27 @@ def compare(baseline, basis='terminal-transition'):
         if sorted(r['year'] for r in rows) != years:
             evidence['missing'].append('three_consecutive_unique_capital_years_required')
         raw = {r.fiscal_year:r for r in original.raw_financials}
+        capital_rows = []
         for row in rows:
             revenue, ratio = raw[row['year']].revenues, row['research_adjusted_sales_to_capital']
             if any(v is None or not math.isfinite(v) or v <= 0 for v in (revenue, ratio)):
                 evidence['missing'].append(dict(year=row['year'], reason='positive_revenue_and_adjusted_capital_required'))
+                continue
+            minority = raw[row['year']].minority_interests
+            if minority is None or not math.isfinite(minority):
+                evidence['missing'].append(dict(year=row['year'], reason='book_minority_equity_required'))
+                continue
+            capital = revenue/ratio + minority
+            capital_rows.append(dict(year=row['year'], revenue_million_cny=revenue,
+                input_capital_million_cny=revenue/ratio, minority_equity_million_cny=minority,
+                consolidated_capital_million_cny=capital))
+            if not math.isfinite(capital) or capital <= 0:
+                evidence['missing'].append(dict(year=row['year'], reason='positive_consolidated_capital_required'))
+        evidence['capital_scope_bridge'] = capital_rows
         if evidence['missing']:
             return dict(status='outside_policy_scope', policy=policy, reason='company_history_basis_incomplete', evidence=evidence)
         total_revenue = sum(raw[y].revenues for y in years)
-        total_capital = sum(raw[r['year']].revenues/r['research_adjusted_sales_to_capital'] for r in rows)
+        total_capital = sum(r['consolidated_capital_million_cny'] for r in capital_rows)
         ratio = total_revenue/total_capital
         evidence.update(total_revenue_million_cny=total_revenue, total_capital_million_cny=total_capital, ratio=ratio)
         ratios = [ratio]*a.projection_years
