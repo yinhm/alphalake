@@ -68,7 +68,7 @@ func TestNativeReferenceLocalPublication(t *testing.T) {
 		t.Fatal(err)
 	}
 	db.Close()
-	db, err = duckstore.OpenInitialized(ctx, path)
+	db, err = duckstore.Open(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}

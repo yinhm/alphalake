@@ -38,3 +38,5 @@
 - [020：官方定义批量映射与规范三表快照](020-official-statements-and-snapshots.md)
 
 - [021：招股书历史披露范围与TDX数值来源](021-prospectus-disclosure-coverage.md)
+
+- [022：财务数值可用性与公告日期分离](022-financial-availability-and-disclosure.md)——TDX日期直接采用，当前数值不依赖CNINFO关联；历史查询单独限制。

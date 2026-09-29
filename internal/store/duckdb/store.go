@@ -56,6 +56,9 @@ func open(ctx context.Context, path string, readOnly bool) (*sql.DB, error) {
 	// high-water mark across financial packages in the same connection.
 	options.Set("allocator_flush_threshold", "16MiB")
 	options.Set("allocator_bulk_deallocation_flush_threshold", "16MiB")
+	// Package commits remain durable in WAL. Avoid repeatedly recompressing wide
+	// financial row groups at the default 16MiB checkpoint interval.
+	options.Set("checkpoint_threshold", "1GiB")
 	for option, variable := range map[string]string{"memory_limit": "ALPHALAKE_DUCKDB_MEMORY_LIMIT", "threads": "ALPHALAKE_DUCKDB_THREADS"} {
 		if value := strings.TrimSpace(os.Getenv(variable)); value != "" {
 			options.Set(option, value)

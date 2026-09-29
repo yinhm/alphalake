@@ -1,8 +1,8 @@
 # 标准财务事实导出 SQLite
 
-日常更新、原生API验收与原子发布使用[系统交付入口](system-delivery.md)。本文保留底层独立导出命令和字段契约；单独导出成功不等于网页已切换或估值已验收。
+当前提供TDX标准财务及版本化Damodaran参考组成的SQLite快照，保持原生valuation页面、请求和估值引擎。经用户批准，现金及长期投资的已知组成可作为显式代理用于估值；不按公司套专项EBIT政策。财务值、代理与真实缺项分别留痕，准入依据见[实际模型准入](../valuation/valuation-input-gates-20260925.md)。工具不修改源DuckDB或默认seed。当前代码契约为`alphalake-sqlite-v9`，旧快照须显式重导出；主库与网页是否已切换以[项目状态](../implementation-status.md)为准。
 
-当前提供TDX财务及版本化Damodaran参考组成的SQLite快照，完整报表目标仍有缺口；经用户批准，现金及长期投资的已知组成允许作为显式代理用于估值；安克、苏泊尔另通过[估值输入代理](../valuation/valuation-book-proxies.md)接通原生API。专用前端和估值旁路已撤除；原页面和请求契约已恢复，未获准或不适用代理的缺项仍在后端拒绝，详见[实际模型准入](../valuation/valuation-input-gates-20260925.md)。工具不修改源DuckDB或默认seed。逐期间已核实TDX余额源零可通过[独立审核补充](../history/historical-debt-zero-review.md)进入目标输入，保留完整审核证据，不写入标准事实；旧v7快照须显式重导出。[本轮重新接入](../history/valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v8`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
+当前提供TDX财务及版本化Damodaran参考组成的SQLite快照，完整报表目标仍有缺口；经用户批准，现金及长期投资的已知组成允许作为显式代理用于估值；安克、苏泊尔另通过[估值输入代理](../valuation/valuation-book-proxies.md)接通原生API。专用前端和估值旁路已撤除；原页面和请求契约已恢复，未获准或不适用代理的缺项仍在后端拒绝，详见[实际模型准入](../valuation/valuation-input-gates-20260925.md)。工具不修改源DuckDB或默认seed。逐期间已核实TDX余额源零可通过[独立审核补充](../history/historical-debt-zero-review.md)进入目标输入，保留完整审核证据，不写入标准事实；旧快照须显式重导出。[本轮重新接入](../history/valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v9`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
 
 依赖Python 3.11+标准库和当前版本`alphalake`程序，无新增包。先构建当前程序；本机的大库任务、构建和测试须串行放在独立systemd系统服务中，参见[内存隔离约束](fundamental-memory-20260919.md)。例如：
 
@@ -44,11 +44,11 @@ journalctl -u alphalake-sqlite-export --no-pager
 
 ## 数据范围与语义
 
-链路：TDX原始包→已有标准语义/校验→DuckDB标准宽表→SQLite→网页→共享估值引擎。CNINFO关联只提供身份、时点与核验血缘；PDF附注金额、参考市场数据和模型假设不进入快照。
+链路：TDX原始包→已有标准语义/校验→DuckDB标准宽表→SQLite→网页→共享估值引擎。CNINFO补充公告身份、时点与核验血缘，不作为当前金额准入前提；PDF不覆盖TDX，参考数据和模型假设不混入标准财务事实。
 
 SQLite的`standard_facts`保存原生模型已映射目标及现金、投资、债务组成所需的标准事实、单位及独立证据，`export_cells`逐单元格保存缺项和差分血缘。全部346字段由主库标准查询提供；不再复制整份三表、TTM和估值JSON。导出通过`export-financial-snapshot`在一次只读事务内批量投影目标列，Python逐证券写入SQLite，不逐公司/期间启动进程。
 
-仍提供`companies`、`financials_annual`、`financials_quarterly`供通用数据读取；这些宽表金额为**百万元人民币**、股数为**百万股**，`standard_facts`金额仍为元、股数为股，按各行单位解释。原生估值使用宽表。保留源精度，不补小数。日期锚点来自指定报告期，年表以最近完整自然年为FY0，季表以指定季末为FQ0。固定时点取数不是逐季度当时留存的数据版本认证。
+仍提供`companies`、`financials_annual`、`financials_quarterly`供通用数据读取；这些宽表金额为**百万元人民币**、股数为**百万股**，`standard_facts`金额仍为元、股数为股，按各行单位解释。原生估值使用宽表。保留源精度，不补小数。日期锚点来自指定报告期，年表以最近完整自然年为FY0，季表以指定季末为FQ0。当前财务快照不是逐季度当时留存的数据版本认证。
 
 | SQLite列 | 标准字段 | 转换 |
 |---|---|---|
@@ -83,7 +83,7 @@ SQLite的`standard_facts`保存原生模型已映射目标及现金、投资、�
 
 ## 网页消费与估值
 
-当前8080使用[100家公司验收快照](../history/valuation-100-market-20260926.md)：100家已导出；招股披露补链后87家准入、13家保留缺项，结果见[最新发布记录](../history/valuation-prelisting-rd-20260927.md)。此前市值代理阶段的72/28仅为历史验收。
+8080使用固定100家公司验收快照；当前已发布数量与候选验收分开维护在[项目状态](../implementation-status.md)。旧72/28、87/13等数量仅为历史验收，不代表现行准入。
 
 如需手动让网页读取该快照，在启动网页后端的环境中显式设置：
 
@@ -111,7 +111,7 @@ curl http://127.0.0.1:8080/api/database/compatibility/SZSE:300866
 
 ## 原生参考发布
 
-当前v8在财务表之外包含`reference_release`、`reference_value`、`reference_company`；参考来自同一DuckDB的已完成发布，归档哈希须合格。主库须当前schema55，缺必要发布即拒绝导出，不从workspace散落工作簿回退。默认US行业方法保留，详见[参考接入与边界](../valuation/native-reference-bridge.md)。
+当前v9在财务表之外包含`reference_release`、`reference_value`、`reference_company`；参考来自同一DuckDB的已完成发布，归档哈希须合格。主库须当前schema56，缺必要发布即拒绝导出，不从workspace散落工作簿回退。默认US行业方法保留，详见[参考接入与边界](../valuation/native-reference-bridge.md)。
 
 默认参考截止等于`--as-of`；`--reference-as-of <RFC3339>`允许明确使用另一参考截止。例如固定旧财务窗口比较最新参考时，两个截止分别记录，不能称当时可用的历史估值。旧快照须显式重新导出，不能只改metadata契约标签。
 
@@ -121,3 +121,9 @@ curl http://127.0.0.1:8080/api/database/compatibility/SZSE:300866
 
 
 原生API依据出口的`annual_bv_equity=parent_attributable`元数据，将同期期末`bv_equity + minority_interests`映射为模型的`consolidated_book_equity`（合并账面权益），年度与季度规则相同；无需新增SQLite冗余列。来源范围不明确或任一分量缺失时不构造该值。资本诊断使用此字段，股权桥接中的少数权益扣减独立保存；不得将后者的市场估计反用于账面资本。未提供合并范围的外部输入仍可按其他已齐备输入计算DCF，但相应资本诊断留空。
+
+## 财务数值与公告日期
+
+当前v9消费现有标准财务快照，`financial_time_basis=current_standard_snapshot_not_pit`。`--as-of`仍用于身份、行情观测及默认参考截止，不再是财务公告准入门槛；财报期仍限定财务窗口。已知TDX公告日期优先，CNINFO可补充；未知日期留空，不丢弃有效金额。日期精度按中国次日零点记录保守边界，不能解释为真实时分秒。不同数据包版本按来源取得顺序选择，保留源哈希；不声称严格历史回放。依据和迁移见[ADR022](../decisions/022-financial-availability-and-disclosure.md)。
+
+投资代理遇到负分量时，该单元格保留`negative_investment_component_requires_review`及源值证据，代理值留空；标准源负值和其他公司仍导出，不对异常值取绝对值或归零。

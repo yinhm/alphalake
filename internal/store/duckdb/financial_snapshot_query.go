@@ -45,16 +45,18 @@ func snapshotObservationQueries(fields []SnapshotField) (string, error) {
 	return `
  CREATE OR REPLACE MACRO fundamental.financial_observations(security_code,from_period,to_period,as_of_time,min_instrument_id := NULL,max_instrument_id := NULL) AS TABLE (
  WITH headers AS MATERIALIZED (
- SELECT s.source_record_id,s.instrument_id,s.source_filing_id,s.report_period,s.announcement_time,s.ingest_run_id,r.provider_code,r.artifact_id,r.source_row,a.source AS primary_source,a.sha256 AS revision_key
+ SELECT s.source_record_id,s.instrument_id,s.source_filing_id,s.report_period,greatest(s.announcement_time,correction.announcement_time) AS announcement_time,CASE WHEN correction.announcement_time>s.announcement_time OR (s.announcement_time IS NULL AND correction.announcement_time IS NOT NULL) THEN 'cninfo_correction' ELSE s.announcement_source END AS announcement_source,s.ingest_run_id,r.provider_code,r.artifact_id,r.source_row,a.source AS primary_source,a.sha256 AS revision_key
  FROM fundamental.statement_snapshot s JOIN fundamental.source_record r USING(source_record_id)
  JOIN meta.artifact a USING(artifact_id)
+ LEFT JOIN fundamental.filing correction ON correction.filing_id=s.source_filing_id AND correction.is_correction
+ AND correction.resolution_status='resolved' AND correction.instrument_id=s.instrument_id AND correction.report_period=s.report_period
  WHERE (min_instrument_id IS NULL OR s.instrument_id>=min_instrument_id) AND (max_instrument_id IS NULL OR s.instrument_id<=max_instrument_id)
  AND (security_code IS NULL OR s.instrument_id IN (
  SELECT candidate.instrument_id FROM fundamental.statement_snapshot candidate
  JOIN fundamental.source_record locator USING(source_record_id) WHERE locator.provider_code=security_code))
  AND (from_period IS NULL OR s.report_period>=CAST(from_period AS DATE))
  AND (to_period IS NULL OR s.report_period<=CAST(to_period AS DATE))
- AND (as_of_time IS NULL OR s.announcement_time<=CAST(as_of_time AS TIMESTAMPTZ))
+ AND (as_of_time IS NULL OR greatest(s.announcement_time,correction.announcement_time)<=CAST(as_of_time AS TIMESTAMPTZ))
  ), selected AS (
  SELECT h.*,` + strings.Join(wideColumns, ",") + `
  FROM headers h JOIN fundamental.statement_snapshot w USING(source_record_id)
@@ -72,11 +74,14 @@ func snapshotObservationQueries(fields []SnapshotField) (string, error) {
  WHEN month(c.report_period)=12 AND day(c.report_period)=31 THEN 'FY' ELSE 'unknown' END AS period_type,
  'provider_default' AS statement_scope,
  CASE WHEN m.value_kind IN ('monetary','per_share') THEN 'CNY' END AS currency,
- 'tdx-float32-decimal-v4' AS normalization_rule,'pit-fundamental-v6' AS materializer_version
+ 'tdx-float32-decimal-v4' AS normalization_rule,'standard-financial-v7' AS materializer_version
  FROM numeric_cells c LEFT JOIN fundamental.statement_field_run l ON l.source_record_id=c.source_record_id AND l.canonical_field=c.canonical_field
  JOIN fundamental.statement_field m ON m.source=c.primary_source AND m.canonical_field=c.canonical_field
  AND (m.valid_from IS NULL OR m.valid_from<=c.report_period) AND (m.valid_to IS NULL OR c.report_period<m.valid_to)
- ) SELECT * FROM observations
+ ) SELECT * FROM observations o
+ WHERE as_of_time IS NULL OR o.announcement_source!='cninfo'
+ OR NOT EXISTS(SELECT 1 FROM fundamental.active_filing_coverage c WHERE c.filing_id=o.source_filing_id AND c.report_period=o.report_period)
+ OR EXISTS(SELECT 1 FROM fundamental.active_filing_coverage c WHERE c.filing_id=o.source_filing_id AND c.report_period=o.report_period AND list_contains(c.fields,o.canonical_field))
  );
  CREATE OR REPLACE MACRO fundamental.financial_observations_asof(security_code,from_period,to_period,as_of_time,min_instrument_id := NULL,max_instrument_id := NULL) AS TABLE (
  SELECT * EXCLUDE(rank) FROM (

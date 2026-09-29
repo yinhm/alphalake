@@ -2,7 +2,7 @@
 
 物理存储与查询名称已由[schema52切换](../history/financial-storage-cutover-20260925.md)更新；下文旧表名/接口记录当时决策，公告与分层语义继续适用。当前代码不提供旧接口别名。
 
-状态：已接受
+状态：历史决策；当前数值准入由[ADR022](022-financial-availability-and-disclosure.md)取代CNINFO前置门槛。TDX实际提供财报公告日期（日期精度），不得再据本页旧背景拒绝当前数值。
 
 ## 背景
 

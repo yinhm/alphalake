@@ -5,7 +5,7 @@
 ## 执行约束
 
 - 当前进程硬限额1GiB，`MemoryHigh=896M`、`MemorySwapMax=0`；先检查系统空闲内存，不能仅因单任务有上限就并发启动。
-- DuckDB使用512MiB、单线程；Go使用`GOMEMLIMIT=128MiB`、`GOMAXPROCS=1`。限额不足先分析结构与峰值，禁止盲目加内存、缩批或重试。
+- 全量财务重建使用DuckDB384MiB、单线程；Go使用`GOMEMLIMIT=128MiB`、`GOMAXPROCS=1`。限额不足先分析结构与峰值，禁止盲目加内存、缩批或重试。
 - 先小批验收，再执行固定范围任务；记录进程冷暖、耗时、RSS、输入版本和失败结果，门槛见[性能约束](financial-storage-redesign-20260925.md)。
 
 以下示例只演示隔离方式，实际操作先选定同步、物化或发布范围；不能把全量重放当作日常必做步骤。
@@ -17,7 +17,8 @@ systemd-run --no-block --unit=alphalake-materialize \
   --property=MemoryMax=1G --property=MemoryHigh=896M \
   --property=MemorySwapMax=0 \
   --setenv=GOMEMLIMIT=128MiB --setenv=GOMAXPROCS=1 \
-  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=512MiB \
+  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=384MiB \
+  --setenv=DUCKDB_JE_MALLOC_CONF=dirty_decay_ms:0,muzzy_decay_ms:0 \
   --setenv=ALPHALAKE_DUCKDB_THREADS=1 \
   /root/alphalake/alphalake materialize-fundamentals workspace/alphalake.duckdb
 systemctl show alphalake-materialize \
@@ -27,6 +28,10 @@ journalctl -u alphalake-materialize --no-pager -n 60
 ```
 
 必须核验服务确实处于独立ControlGroup且`MemoryMax=1073741824`。异常退出先查单元及内核日志，保留失败库/WAL；禁止删除WAL冒充恢复，或在原因未明时原参数重启。
+
+本机全量宽表重建还需将DuckDB原生分配器的闲置页及时归还系统（上述`DUCKDB_JE_MALLOC_CONF`）；该变量见[DuckDB官方说明](https://duckdb.org/docs/current/internals/jemalloc)。这是内存回收配置，不增加预算、不缩批或重连；实际耗时与RSS仍以同范围验收为准。
+
+批量写入仍按包提交WAL；当前连接将自动checkpoint阈值设为1GiB，避免默认16MiB频繁重压宽表，正常关闭时由DuckDB落盘。该阈值是日志大小而非内存预算；异常退出保留WAL恢复，不能删除。设置依据见[官方配置](https://duckdb.org/docs/current/configuration/overview)。
 
 ## 测试环境
 

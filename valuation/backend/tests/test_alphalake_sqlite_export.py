@@ -45,6 +45,9 @@ class SQLiteExportTest(unittest.TestCase):
         for field, value in [('income_tax_expense', '200000'), ('profit_before_tax', '1000000')]:
             facts.append(dict(facts[1], field=field, canonical_field=field, value=value))
 
+        facts.append(dict(facts[1], field='other_noncurrent_financial_assets',
+                          canonical_field='other_noncurrent_financial_assets', period_type='instant', value='-1'))
+
         def fetch(code, end):
             return dict(contract_version='alphalake-valuation-v2', code=code,
                         report_period=end.isoformat(), information_as_of=asof.isoformat(),
@@ -60,6 +63,9 @@ class SQLiteExportTest(unittest.TestCase):
             self.assertEqual(len(data['financials_annual']), 10)
             self.assertEqual(len(data['financials_quarterly']), 8)
             self.assertEqual(data['financials_annual'][0]['revenues'], 10)
+            self.assertIsNone(data['financials_annual'][0]['cross_holdings'])
+            self.assertEqual(db.execute("SELECT value FROM standard_facts WHERE field='other_noncurrent_financial_assets'").fetchone()[0], '-1')
+            self.assertEqual(db.execute("SELECT status FROM export_cells WHERE series='annual' AND period_offset=0 AND field='cross_holdings'").fetchone()[0], 'negative_investment_component_requires_review')
             self.assertEqual(data['company']['effective_tax_rate'], 0.2)
             self.assertEqual([r['revenues'] for r in data['financials_quarterly'][:4]], [4, 0, 3, None])
             self.assertEqual(data['financials_quarterly'][0]['shares_outstanding'], 500)
@@ -76,12 +82,19 @@ class SQLiteExportTest(unittest.TestCase):
             exporter.cell(indexed, set(), 7, date(2025, 12, 31), 'revenues', False)
         facts[0]['unit'] = 'CNY'
         for key, bad, message in [('instrument_id', 8, 'identity'),
-                                  ('available_at', '2027-01-01T00:00:00Z', 'future')]:
+                                  ('available_at', '2027-01-01T00:00:00', 'timezone')]:
             original = facts[-1][key]
             facts[-1][key] = bad
             with sqlite3.connect(':memory:') as db, self.assertRaisesRegex(ValueError, message):
                 exporter.export_snapshot(db, [company], fetch, period, asof)
             facts[-1][key] = original
+        for announcement in (None, '2027-01-01T00:00:00Z'):
+            original = facts[-1]['available_at']
+            facts[-1]['available_at'] = announcement
+            with sqlite3.connect(':memory:') as db:
+                self.assertEqual(exporter.export_snapshot(db, [company], fetch, period, asof), 1)
+                self.assertEqual(db.execute('SELECT count(*) FROM standard_facts').fetchone()[0], len(facts))
+            facts[-1]['available_at'] = original
         with sqlite3.connect(':memory:') as db:
             self.assertEqual(exporter.export_snapshot(db, [dict(company, symbols=[])], fetch, period, asof), 0)
             self.assertEqual(db.execute('SELECT status FROM export_universe').fetchone()[0], 'blocked_security_identity')
@@ -181,12 +194,16 @@ def test_long_term_subtotal_requires_valid_same_period_components():
     assert exporter.cell({}, set(), 7, period, 'cross_holdings', False)[:2] == (None, 'missing_standard_fact')
     row = facts[(period.isoformat(), 'other_noncurrent_financial_assets')]
     import pytest
-    for key, bad in [('unit', 'USD'), ('instrument_id', 8), ('period_type', 'H1'), ('value', '-1')]:
+    for key, bad in [('unit', 'USD'), ('instrument_id', 8), ('period_type', 'H1')]:
         old = row[key]
         row[key] = bad
         with pytest.raises(ValueError):
             exporter.cell(facts, set(), 7, period, 'cross_holdings', False)
         row[key] = old
+    row['value'] = '-1'
+    value, status, evidence = exporter.cell(facts, set(), 7, period, 'cross_holdings', False)
+    assert value is None and status == 'negative_investment_component_requires_review'
+    assert evidence[-1]['value'] == '-1'
     assert exporter.cell(facts, {period.isoformat()}, 7, period, 'cross_holdings', False)[1] == 'source_record_conflict'
 
 

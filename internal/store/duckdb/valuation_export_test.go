@@ -31,7 +31,18 @@ func TestValuationExportCandidateIdentitiesPreserveVersionSelection(t *testing.T
 		{6, "2026-06-30", "2026-10-01", "tdx", "000001"},
 		{7, "2026-06-30", "2026-07-01", "tdx", "000003"},
 	} {
-		seedStandardSnapshot(t, db, r.id, r.code, r.source, "monetary_funds", r.period, r.announced, i+1)
+		fact := seedStandardSnapshot(t, db, r.id, r.code, r.source, "monetary_funds", r.period, r.announced, i+1)
+		if r.source == "tdx" {
+			period, err := time.Parse("2006-01-02", r.period)
+			if err != nil {
+				t.Fatal(err)
+			}
+			source, _, _ := archiveFinancialFixture(t, ctx, db, r.code, r.id, period, map[int]float32{8: float32(i + 1)})
+			_, err = db.Exec(`UPDATE fundamental.source_record SET artifact_id=? WHERE source_record_id=?`, source.ArtifactID, fact/8192)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
 	}
 	end := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
 	for _, month := range []time.Month{7, 9} {

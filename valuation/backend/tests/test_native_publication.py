@@ -168,7 +168,8 @@ def test_comparison_distinguishes_evidence_refresh_from_new_value():
     assert delivery.compare_checks(before, after)[0]['changed_fields'] == ['diagnostic_sha256']
 
 
-def test_online_sync_uses_reviewed_symbols_and_bounded_filings(tmp_path, monkeypatch):
+@pytest.mark.parametrize('filing_exit', [0, 1, 124])
+def test_online_sync_uses_reviewed_symbols_and_optional_filings(tmp_path, monkeypatch, filing_exit):
     from types import SimpleNamespace
     target = tmp_path/'published.sqlite'; target.write_bytes(b'reviewed')
     monkeypatch.setattr(delivery, 'snapshot', lambda _: {'tickers':['SHSE:600519','SZSE:300866']})
@@ -180,6 +181,8 @@ def test_online_sync_uses_reviewed_symbols_and_bounded_filings(tmp_path, monkeyp
                 contract='alphalake-financial-sync-v1', status='completed', pending_complete=True,
                 selected_packages=6, unresolved_selected=0, pending_all=[], pending_selected=[],
                 error='', package_failures=0, master_failures=0, cache_fallbacks=0))
+        if log.stem == 'sync-filings':
+            return filing_exit
         return 1 if log.stem == 'materialize' else 0
     monkeypatch.setattr(delivery, 'execute', execute)
     args = SimpleNamespace(database=tmp_path/'alphalake.duckdb', alphalake=tmp_path/'alphalake',
@@ -187,6 +190,7 @@ def test_online_sync_uses_reviewed_symbols_and_bounded_filings(tmp_path, monkeyp
         source_mode='online', latest=6, stage_timeout=10, filings_start='2026-09-01', filings_end='2026-09-27')
     assert delivery.run(args, tmp_path) == 1
     assert [c[1] for c in calls] == ['sync-financial','sync-filings','sync-valuation-quotes','materialize-fundamentals']
+    assert json.loads((tmp_path/'run.json').read_text())['filing_metadata'] == dict(required_for_current_values=False, exit_code=filing_exit)
     assert calls[1][3:] == ['--start','2026-09-01','--end','2026-09-27','--metadata-only','--codes-file',str(tmp_path/'codes.txt')]
     assert calls[2][3:] == ['--symbols','sz300866,sh600519','--period','2026-06-30']
     assert target.read_bytes() == b'reviewed'

@@ -165,3 +165,18 @@ func sixDigitCode(code string) bool {
 	}
 	return true
 }
+
+// ParseAnnouncementDate decodes the official YYMMDD calendar date. Unknown or
+// invalid metadata does not invalidate financial amounts. Time-of-day is unknown.
+func ParseAnnouncementDate(value float64, period time.Time) (time.Time, bool) {
+	if math.IsNaN(value) || math.IsInf(value, 0) || value != math.Trunc(value) || value < 101 || value > 991231 {
+		return time.Time{}, false
+	}
+	n := int(value)
+	year, month, day := 2000+n/10000, time.Month(n/100%100), n%100
+	date := time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+	if date.Year() != year || date.Month() != month || date.Day() != day || !date.After(period) || date.After(time.Now().Add(8*time.Hour)) {
+		return time.Time{}, false
+	}
+	return date, true
+}

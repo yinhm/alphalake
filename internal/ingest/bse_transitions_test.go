@@ -239,7 +239,7 @@ func TestBSETransitionPublicationRealEvidence(t *testing.T) {
 		t.Fatal("modified interpretation accepted")
 	}
 	refresh(0)
-	materialize(0, 0, 1)
+	materialize(1, 0, 0) // Filing identity loss does not revoke independently resolved TDX amounts.
 	invalid, e := duckstore.ResolveFilingObservations(ctx, db, realFilings)
 	if e != nil {
 		t.Fatal(e)
@@ -254,7 +254,7 @@ func TestBSETransitionPublicationRealEvidence(t *testing.T) {
 		t.Fatal(err)
 	}
 	refresh(27)
-	materialize(1, 1, 0)
+	materialize(1, 0, 0)
 	materialize(1, 0, 0)
 	refresh(27) // 恢复后重复执行不丢失、不增加公告。
 	if _, err = db.ExecContext(ctx, `DELETE FROM meta.dataset_release_artifact WHERE release_id=? AND role='timing' AND artifact_id IN (SELECT artifact_id FROM meta.artifact WHERE source_locator=?)`, second.ReleaseID, bse.URLs["pilot-start"]); err != nil {

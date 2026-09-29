@@ -92,3 +92,15 @@ func runExportProspectuses(ctx context.Context, args []string) error {
 	}
 	return json.NewEncoder(os.Stdout).Encode(out)
 }
+
+func runFinancialAvailabilityUpgrade(ctx context.Context, args []string) error {
+	if len(args) != 1 {
+		return usageError("usage: upgrade-financial-availability <schema55-db>")
+	}
+	db, err := store.Open(ctx, args[0])
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	return store.UpgradeFinancialAvailability(ctx, db)
+}

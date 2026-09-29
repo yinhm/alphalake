@@ -34,7 +34,7 @@ FIELDS = {
     'cross_holdings': ('long_term_equity_investments', 'instant', 'CNY'),
 }
 EXCHANGES = {'XSHG': 'SHSE', 'XSHE': 'SZSE', 'XBSE': 'BJSE'}
-CONTRACT = 'alphalake-sqlite-v8'
+CONTRACT = 'alphalake-sqlite-v9'
 DEBT_COMPONENTS = ('short_term_borrowings', 'long_term_borrowings', 'bonds_payable',
                    'current_portion_noncurrent_liabilities', 'lease_liabilities')
 ASSET_COMPONENTS = ('monetary_funds', 'cash_and_cash_equivalents', 'trading_financial_assets',
@@ -103,7 +103,9 @@ def cell(facts, conflicts, instrument, end, column, annual, reviewed_zeros=None)
         if not value.is_finite():
             raise ValueError('nonfinite standard value')
         if column == 'cross_holdings' and value < 0:
-            raise ValueError('negative investment component requires review')
+            return None, 'negative_investment_component_requires_review', evidence + [dict(
+                kind='rejected_component', field=field, period=period.isoformat(), value=str(value),
+                unit=unit, fact_id=row['fact_id'], artifact_sha256=row['artifact_sha256'])]
         if reviewed:
             if value != 0 or row['review']['source_zero']['conclusion'] != 'explicit_zero_balance':
                 raise ValueError('reviewed source zero must remain zero')
@@ -113,7 +115,9 @@ def cell(facts, conflicts, instrument, end, column, annual, reviewed_zeros=None)
         total += value * coefficient
         evidence.append({'field': field, 'period': period.isoformat(), 'coefficient': coefficient,
                          'value': str(value), 'unit': unit, 'fact_id': row['fact_id'],
-                         'available_at': row['available_at'], 'artifact_sha256': row['artifact_sha256']})
+                         'available_at': row['available_at'], 'artifact_sha256': row['artifact_sha256'],
+                         'announcement_source': row.get('announcement_source'),
+                         'financial_time_basis': row.get('financial_time_basis')})
     if missing and column != 'cross_holdings':
         return None, 'missing_standard_fact', evidence
     if not evidence:
@@ -202,9 +206,11 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                     raise ValueError('historical security identity differs')
                 if row.get('field') != row.get('canonical_field') or not re.fullmatch(r'[a-z][a-z0-9_]*', row['field']):
                     raise ValueError('standard field name required')
-                available = datetime.fromisoformat(row['available_at'])
-                if available.utcoffset() is None or available > asof or date.fromisoformat(row['period']) > end:
-                    raise ValueError('future standard fact')
+                available = datetime.fromisoformat(row['available_at']) if row['available_at'] is not None else None
+                if available is not None and available.utcoffset() is None:
+                    raise ValueError('announcement timezone required')
+                if date.fromisoformat(row['period']) > end:
+                    raise ValueError('future standard report period')
                 key = (row['period'], row['field'])
                 if key in seen or key in facts and facts[key] != row:
                     raise ValueError('duplicate or changed standard fact')
@@ -378,6 +384,8 @@ def main():
             write_snapshot(connection, json.loads(reference_packet.stdout))
             metadata = dict(contract=CONTRACT, source_database_sha256=source_hash, exporter_sha256=digest(__file__),
                             alphalake_binary_sha256=digest(binary), report_period=args.period.isoformat(),
+                            financial_time_basis='current_standard_snapshot_not_pit',
+                            announcement_policy='TDX_report_date_first; optional_CNINFO; unknown_date_does_not_block_amounts',
                             information_as_of=args.as_of.isoformat(), exported_at=datetime.now(timezone.utc).isoformat(),
                             wide_money_unit='million_CNY', wide_shares_unit='million_shares',
                             standard_values='decimal_strings_in_each_rows_unit',

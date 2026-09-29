@@ -65,7 +65,7 @@ func TestMaterializeCanonicalFundamentalsNoLookAheadAndCorrection(t *testing.T) 
 		t.Fatal(e)
 	}
 	changed, e := MaterializeCanonicalFundamentals(ctx, db, 4, "tdx")
-	if e != nil || changed.Updated != 2 {
+	if e != nil || changed.Updated != 0 {
 		t.Fatal(changed, e)
 	}
 	var n int
@@ -97,7 +97,7 @@ func TestMaterializeCanonicalFundamentalsRejectsInvalidAndRemovesStale(t *testin
 		t.Fatal(e)
 	}
 	out, e := MaterializeCanonicalFundamentals(ctx, db, 4, "tdx")
-	if e != nil || out.Removed != 2 {
+	if e != nil || out.Removed != 0 || out.Updated != 0 {
 		t.Fatal(out, e)
 	}
 	if _, e = RefreshProviderFilingLinks(ctx, db, 5, "tdx"); e != nil {
@@ -258,7 +258,7 @@ func TestMaterializeRetagsOnlyUnaffectedPeriods(t *testing.T) {
 		t.Fatal(err)
 	}
 	restored, err := MaterializeCanonicalFundamentals(ctx, db, 5, "tdx")
-	if err != nil || restored.Updated != 2 {
+	if err != nil || restored.Updated != 0 {
 		t.Fatal(restored, err)
 	}
 	// Definition changes cannot be disguised as an out-of-period mapping edit.

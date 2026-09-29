@@ -255,12 +255,12 @@ func ExportValuationData(ctx context.Context, db *sql.DB, code string, end, asof
     SELECT f.instrument_id,f.provider_code AS code,CAST(f.report_period AS VARCHAR) AS period,f.canonical_field AS field,f.primary_source AS source,f.source_provider_field,
       f.canonical_field,CAST(f.value AS VARCHAR) AS value,f.unit,f.period_type,f.statement_scope,
       f.fact_id,f.revision_key,f.normalization_rule,f.materializer_version,
-      CAST(f.announcement_time AS VARCHAR) AS available_at,a.sha256 AS artifact_sha256,
+      CAST(f.announcement_time AS VARCHAR) AS available_at,f.announcement_source,a.sha256 AS artifact_sha256,
       f.source_row,a.local_path,a.source_locator,a.content_length,m.value_multiplier AS multiplier,
       d.source_filing_id AS announcement_id,d.sha256 AS pdf_sha256,d.source_url AS pdf_url
     FROM fundamental.financial_observations_asof(?,make_date(year(CAST(? AS DATE))-1,1,1),?,CAST(? AS TIMESTAMPTZ)) f
     JOIN meta.artifact a ON a.artifact_id=f.artifact_id
-    JOIN fundamental.filing d ON d.filing_id=f.source_filing_id
+    LEFT JOIN fundamental.filing d ON d.filing_id=f.source_filing_id
     JOIN fundamental.provider_field m ON m.source=f.primary_source AND m.provider_field=f.source_provider_field
       AND m.canonical_field=f.canonical_field
       AND m.valid_from<=f.report_period AND (m.valid_to IS NULL OR f.report_period<m.valid_to)

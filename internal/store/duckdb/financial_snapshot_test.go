@@ -122,7 +122,7 @@ func TestSnapshotDecimalMatchesSQL(t *testing.T) {
 	}
 	defer stmt.Close()
 	random := rand.New(rand.NewSource(42))
-	values := []float64{0, math.Copysign(0, -1), 0.00000000005, -0.00000000005, 0.00000000015, -0.00000000015, float64(float32(309.80)) * 10000, math.SmallestNonzeroFloat32, math.Nextafter(1e28, 0)}
+	values := []float64{0, math.Copysign(0, -1), (1 << 53) - 1, 1 << 53, (1 << 53) + 2, -(1 << 53), 0.00000000005, -0.00000000005, 0.00000000015, -0.00000000015, float64(float32(309.80)) * 10000, math.SmallestNonzeroFloat32, math.Nextafter(1e28, 0)}
 	for i := 0; i < 2048; i++ {
 		v := float64(math.Float32frombits(random.Uint32()))
 		for _, m := range []float64{1, 10000} {
@@ -413,13 +413,17 @@ func TestSnapshotBatchPreservesExactValuesAndLineage(t *testing.T) {
 	}
 	_, err = conn.ExecContext(ctx, `UPDATE fundamental.filing SET announcement_time='2026-03-02' WHERE filing_id=1`)
 	check(err)
-	apply(4, records, 0, 2, 0) // Metadata changes must also be detected.
+	apply(4, records, 0, 0, 0) // Record metadata changes do not rewrite field-value lineage.
 	apply(5, records, 0, 0, 0)
+	check(conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_field_run WHERE ingest_run_id IN (4,5)`).Scan(&n))
+	if n != 0 {
+		t.Fatal("disclosure-only change duplicated field lineage", n)
+	}
 	check(conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_rejection WHERE rule_code='provider_zero_ambiguous'`).Scan(&n))
 	if n != 2 {
 		t.Fatal("unchanged rejection evidence lost", n)
 	}
 	_, err = conn.ExecContext(ctx, `UPDATE fundamental.provider_filing_link SET status='pending',filing_id=NULL WHERE provider_code='300866'`)
 	check(err)
-	apply(6, records, 0, 0, 2) // One disappearing row alongside one unchanged row.
+	apply(6, records, 0, 0, 0) // Losing disclosure metadata does not delete valid amounts.
 }

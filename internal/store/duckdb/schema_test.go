@@ -111,3 +111,35 @@ func TestUpgradeAdjustedMarginReferences(t *testing.T) {
 		t.Fatal("repeat upgrade must reject")
 	}
 }
+
+func TestUpgradeFinancialAvailability(t *testing.T) {
+	ctx := t.Context()
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "availability.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	_, err = db.Exec(`ALTER TABLE fundamental.statement_snapshot DROP COLUMN announcement_source;
+ ALTER TABLE fundamental.statement_snapshot ALTER COLUMN source_filing_id SET NOT NULL;
+ ALTER TABLE fundamental.statement_snapshot ALTER COLUMN announcement_time SET NOT NULL;
+ UPDATE meta.schema_version SET version=55;
+ INSERT INTO fundamental.statement_snapshot(source_record_id,instrument_id,source_filing_id,report_period,announcement_time,ingest_run_id,revenue) VALUES(1,1,1,'2025-12-31','2026-03-01',1,123.5)`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = UpgradeFinancialAvailability(ctx, db); err != nil {
+		t.Fatal(err)
+	}
+	var value float64
+	var source string
+	if err = db.QueryRow(`SELECT revenue,announcement_source FROM fundamental.statement_snapshot`).Scan(&value, &source); err != nil || value != 123.5 || source != "cninfo" {
+		t.Fatal(value, source, err)
+	}
+	if err = UpgradeFinancialAvailability(ctx, db); err == nil {
+		t.Fatal("repeated migration accepted")
+	}
+	_, err = db.Exec(`INSERT INTO fundamental.statement_snapshot(source_record_id,instrument_id,report_period,ingest_run_id,announcement_source,revenue) VALUES(2,1,'2024-12-31',1,'unknown',456)`)
+	if err != nil {
+		t.Fatal(err)
+	}
+}

@@ -98,6 +98,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-classifications <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-industries <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-financial <db-path> [--all | --latest N] [--offline] [--report path]")
+	fmt.Fprintln(os.Stderr, "  upgrade-financial-availability <schema55-db> (explicit one-time schema56 upgrade)")
 	fmt.Fprintln(os.Stderr, "  upgrade-filing-coverage <schema52-db> (explicit one-time schema53 upgrade)")
 	fmt.Fprintln(os.Stderr, "  export-prospectuses <db-path>")
 	fmt.Fprintln(os.Stderr, "  import-filing-coverage <db-path> <reviews.json>")

@@ -34,9 +34,9 @@ type FundamentalMaterializationSummary struct {
 }
 
 // MaterializeProviderFundamentals is a local-only derivation. It never performs
-// network I/O: provider facts and authoritative filing evidence must already be
-// present. Retained pending filings are first retried against the current temporal
-// security master, then provider/filing links and canonical facts are reconciled.
+// network I/O: source archives must already be present. Optional filing metadata
+// is refreshed independently; missing disclosure linkage does not prevent amounts
+// from being materialized under the standard field and source identity rules.
 func MaterializeProviderFundamentals(ctx context.Context, db *sql.DB, providerSource string, fields ...string) (summary FundamentalMaterializationSummary, retErr error) {
 	if db == nil {
 		return summary, errors.New("duckdb is nil")

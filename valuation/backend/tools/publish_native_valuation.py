@@ -238,8 +238,9 @@ def run(args, root):
             ledger['freshness'] = ('local_or_fallback_not_upstream_verified' if args.source_mode == 'offline' or ledger['financial_source']['cache_fallbacks'] else 'selected_financial_packages_checked_against_upstream_manifest')
             if args.source_mode == 'online':
                 (root/'codes.txt').write_text('\n'.join(codes)+'\n')
-                stage('sync-filings', [str(args.alphalake), 'sync-filings', str(args.database),
-                    '--start', args.filings_start, '--end', args.filings_end, '--metadata-only', '--codes-file', str(root/'codes.txt')])
+                filing_code = stage('sync-filings', [str(args.alphalake), 'sync-filings', str(args.database),
+                    '--start', args.filings_start, '--end', args.filings_end, '--metadata-only', '--codes-file', str(root/'codes.txt')], allow_partial=True)
+                ledger['filing_metadata'] = dict(required_for_current_values=False, exit_code=filing_code)
                 # 沿用现有证券身份，不按代码前缀猜交易所。
                 if not args.output.exists():
                     raise ValueError('online quote sync needs an existing reviewed SH/SZ snapshot; bootstrap with local mode')

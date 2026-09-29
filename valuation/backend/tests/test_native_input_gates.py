@@ -105,7 +105,7 @@ def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypat
     from api.main import app
 
     record = sample(monkeypatch)
-    record['data_source'] = dict(contract='alphalake-sqlite-v8', report_period='2025-12-31', information_as_of='2026-09-25')
+    record['data_source'] = dict(contract='alphalake-sqlite-v9', report_period='2025-12-31', information_as_of='2026-09-25')
     record['financials_annual'].append(dict(fy_offset=1,revenues=None,ebit=None))
     conn = sqlite3.connect(':memory:', check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -197,7 +197,7 @@ def test_native_gate_requires_linked_review_for_source_zero(monkeypatch):
     import sqlite3
     import pytest
     record = sample(monkeypatch)
-    record['data_source'] = dict(contract='alphalake-sqlite-v8')
+    record['data_source'] = dict(contract='alphalake-sqlite-v9')
     conn = sqlite3.connect(':memory:')
     conn.row_factory = sqlite3.Row
     conn.execute('CREATE TABLE export_cells(ticker,series,period_offset,field,period,status,evidence_json)')

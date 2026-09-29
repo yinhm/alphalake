@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"math"
 	"testing"
+	"time"
 )
 
 func TestParseFileList(t *testing.T) {
@@ -80,5 +81,20 @@ func TestParseDatRejectsReportOffsetIntoHeaderTable(t *testing.T) {
 	binary.LittleEndian.PutUint32(dat[27:31], 20)
 	if _, err := ParseDat("gpcw20260630.zip", "gpcw20260630.dat", dat); err == nil {
 		t.Fatal("expected invalid report offset error")
+	}
+}
+
+func TestReportAnnouncementDate(t *testing.T) {
+	period := time.Date(2018, 12, 31, 0, 0, 0, 0, time.UTC)
+	for _, tc := range []struct {
+		value float64
+		want  string
+	}{
+		{190101, "2019-01-01"}, {200229, "2020-02-29"}, {190229, ""}, {181231, ""}, {0, ""}, {190101.5, ""}, {991231, ""}, {math.NaN(), ""},
+	} {
+		date, ok := ParseAnnouncementDate(tc.value, period)
+		if ok != (tc.want != "") || ok && date.Format("2006-01-02") != tc.want {
+			t.Fatalf("%v: %v %v", tc.value, date, ok)
+		}
 	}
 }

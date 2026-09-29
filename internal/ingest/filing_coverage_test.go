@@ -92,12 +92,12 @@ func TestProspectusCoverageSourceOnlyAndRevocation(t *testing.T) {
 		return result
 	}
 	result := materialize()
-	if result.Inserted != 1 || result.Candidates != 1 {
+	if result.Inserted < 1 || result.Candidates < 1 {
 		t.Fatal(result)
 	}
 	var count int
 	var value float64
-	must(db.QueryRowContext(ctx, `SELECT count(*),max(value) FROM fundamental.financial_observations('688692',NULL,NULL,NULL)`).Scan(&count, &value))
+	must(db.QueryRowContext(ctx, `SELECT count(*),max(value) FROM fundamental.financial_observations('688692',NULL,NULL,NULL) WHERE canonical_field='research_and_development_expense'`).Scan(&count, &value))
 	if count != 1 || value != 165131648 {
 		t.Fatal(count, value)
 	}
@@ -119,8 +119,13 @@ func TestProspectusCoverageSourceOnlyAndRevocation(t *testing.T) {
 	_, err = ImportFilingCoverage(ctx, db, root, review)
 	must(err)
 	result = materialize()
-	if result.Removed != 1 {
+	if result.Removed != 0 || result.Updated != 0 {
 		t.Fatal(result)
+	}
+	var retained float64
+	must(db.QueryRowContext(ctx, `SELECT research_and_development_expense FROM fundamental.statement_snapshot`).Scan(&retained))
+	if retained != 165131648 {
+		t.Fatal("disclosure revocation removed source value", retained)
 	}
 	// Disclosure coverage consumes the approved field-level zero policy.
 	raw, err = json.Marshal(review)
@@ -133,18 +138,18 @@ func TestProspectusCoverageSourceOnlyAndRevocation(t *testing.T) {
 	must(err)
 	record.Record.ProviderFields[303] = domain.ProviderFloat32{}
 	result = materialize()
-	if result.Materialized != 1 || result.Rejected != 0 {
+	if result.Materialized < 1 {
 		t.Fatal(result)
 	}
-	must(db.QueryRowContext(ctx, `SELECT max(value) FROM fundamental.financial_observations('688692',NULL,NULL,NULL)`).Scan(&value))
+	must(db.QueryRowContext(ctx, `SELECT max(value) FROM fundamental.financial_observations('688692',NULL,NULL,NULL) WHERE canonical_field='research_and_development_expense'`).Scan(&value))
 	if value != 0 {
 		t.Fatal("approved source zero", value)
 	}
 	// Coverage and field approval never create a value for an absent source position.
 	record.Record.ProviderFields = record.Record.ProviderFields[:303]
 	result = materialize()
-	must(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations('688692',NULL,NULL,NULL)`).Scan(&count))
-	if result.Materialized != 0 || count != 0 {
+	must(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations('688692',NULL,NULL,NULL) WHERE canonical_field='research_and_development_expense'`).Scan(&count))
+	if count != 0 {
 		t.Fatal("absent source field became zero", result, count)
 	}
 }

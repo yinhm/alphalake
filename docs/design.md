@@ -1,6 +1,6 @@
 # 数据与估值架构
 
-本页描述当前结构和不变约束；实现范围见[项目状态](implementation-status.md)，历史设计见[早期设计](history/design-v0.md)，具体语义决策见[ADR索引](decisions/README.md)。当前只维护schema55，不保留旧模型兼容层。
+本页描述当前结构和不变约束；实现范围见[项目状态](implementation-status.md)，历史设计见[早期设计](history/design-v0.md)，具体语义决策见[ADR索引](decisions/README.md)。当前只维护schema56，不保留旧模型兼容层。
 
 ## 数据流与责任
 
@@ -57,3 +57,7 @@ SQLite是原Investment_Valuation_Agent的可重建输入快照，含财务、参
 大库操作和全套测试串行运行于独立systemd服务，核验进程硬限额；DuckDB查询预算不是RSS上限。性能、证据和缺项纪律不能靠放大内存或默认补零绕过。
 
 当前无生产部署。模型或接口合法变更时同步调用方、测试、Skill和文档，旧库显式转换或可验证重建；先保护不可重建的证据及审核记录。冻结历史按原提交复验，不为历史结果保留运行时别名，也不把旧方法当作禁止改进的理由。
+
+### 当前财务值与历史时点
+
+[ADR022](decisions/022-financial-availability-and-disclosure.md)将数值物化与公告关联分开：TDX日期直接采用，日期未知不影响当前数值；CNINFO关联保留为补充证据。当前SQLite v9读取现有标准快照，不按公告时间设门槛；显式历史查询仍执行时点及已审核披露范围约束，不冒称严格系统PIT。日期及来源等记录元数据变化不产生逐字段血缘副本，仅金额变化维护字段级覆盖血缘。

@@ -7,6 +7,8 @@ description: 使用 AlphaLake 已有数据库和显式政策进行 A 股公司�
 
 调用项目已有 `tools.company_valuation`，把结构化结果解释给用户。计算、身份/单位/时点校验与政策准入由程序执行；不要在Skill中重写DCF、补数或另选数据源。
 
+当前SQLite财务为现有标准快照，不是历史PIT快照；公告日期缺失或未匹配CNINFO不代表数值缺失，不要求用户先补公告。报告财务期、快照版本与实际缺项，不能把当前取得的修订数据说成当时已知。
+
 ## 准备调用
 
 - 定位AlphaLake仓库：优先使用会话已知路径或`ALPHALAKE_ROOT`，否则检查当前目录及父目录的`valuation/backend/tools/company_valuation.py`。安装Skill的目录不等于仓库目录。

@@ -67,9 +67,9 @@ func CreateFinancialSnapshotTables(ctx context.Context, tx *sql.Tx, fields []Sna
  report_period DATE NOT NULL,instrument_id BIGINT,
   CHECK(source_row>0),UNIQUE(artifact_id,source_row));
  CREATE TABLE fundamental.statement_snapshot(
-  source_record_id BIGINT PRIMARY KEY,instrument_id BIGINT NOT NULL,source_filing_id BIGINT NOT NULL,
-  report_period DATE NOT NULL,announcement_time TIMESTAMPTZ NOT NULL,
-  ingest_run_id BIGINT NOT NULL,`+strings.Join(columns, ",")+`);
+  source_record_id BIGINT PRIMARY KEY,instrument_id BIGINT NOT NULL,source_filing_id BIGINT,
+  report_period DATE NOT NULL,announcement_time TIMESTAMPTZ,
+  ingest_run_id BIGINT NOT NULL,announcement_source VARCHAR NOT NULL DEFAULT 'cninfo',`+strings.Join(columns, ",")+`);
  CREATE TABLE fundamental.statement_field_run(source_record_id BIGINT NOT NULL,canonical_field VARCHAR NOT NULL,ingest_run_id BIGINT NOT NULL,PRIMARY KEY(source_record_id,canonical_field));
  CREATE TABLE fundamental.statement_rejection(
   source_record_id BIGINT NOT NULL,rule_code VARCHAR NOT NULL,fields VARCHAR[] NOT NULL,

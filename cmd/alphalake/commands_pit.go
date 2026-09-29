@@ -64,6 +64,8 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return true, runSupplementImport(ctx, args[1:])
 	case "filing-unresolved":
 		return true, runFilingUnresolved(ctx, args[1:])
+	case "upgrade-financial-availability":
+		return true, runFinancialAvailabilityUpgrade(ctx, args[1:])
 	case "upgrade-filing-coverage":
 		return true, runCoverageUpgrade(ctx, args[1:])
 	case "import-filing-coverage":
@@ -315,7 +317,7 @@ func runMaterializeFundamentals(ctx context.Context, args []string) error {
 		return usageError("usage: alphalake materialize-fundamentals <db-path> [--field FN110]")
 	}
 	fs := flag.NewFlagSet("materialize-fundamentals", flag.ContinueOnError)
-	field := fs.String("field", "", "only rebuild this field using existing filing links")
+	field := fs.String("field", "", "source maintenance: invalidate packages for this source field; filing linkage is optional")
 	if err := fs.Parse(args[1:]); err != nil {
 		return parseError(err)
 	}

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const SchemaVersion = 55
+const SchemaVersion = 56
 
 //go:embed schema.sql
 var schemaSQL string
@@ -140,6 +140,42 @@ func UpgradeNativeReferences(ctx context.Context, db *sql.DB) error {
 		}
 	}
 	if _, err = tx.ExecContext(ctx, `INSERT INTO reference.industry_stat SELECT * FROM reference.industry_stat_before_upgrade; DROP TABLE reference.industry_stat_before_upgrade; INSERT INTO meta.schema_version(version,description) VALUES (55,'Separate lease and research adjusted industry margins')`); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// UpgradeFinancialAvailability separates numeric facts from disclosure metadata.
+// Call on an unpublished copy, then rebuild and validate before replacing the main database.
+func UpgradeFinancialAvailability(ctx context.Context, db *sql.DB) error {
+	version, err := CurrentSchemaVersion(ctx, db)
+	if err != nil {
+		return err
+	}
+	if version != 55 {
+		return fmt.Errorf("financial availability upgrade requires schema55, found %d", version)
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err = tx.ExecContext(ctx, `ALTER TABLE fundamental.statement_snapshot ALTER COLUMN source_filing_id DROP NOT NULL;
+ ALTER TABLE fundamental.statement_snapshot ALTER COLUMN announcement_time DROP NOT NULL;
+ ALTER TABLE fundamental.statement_snapshot ADD COLUMN announcement_source VARCHAR DEFAULT 'cninfo';
+ DELETE FROM fundamental.materialization_state;
+ INSERT INTO meta.schema_version(version,description) VALUES(56,'TDX disclosure dates; financial values independent of announcement linkage')`); err != nil {
+		return err
+	}
+	fields, err := loadSnapshotFields(ctx, tx)
+	if err != nil {
+		return err
+	}
+	queries, err := snapshotObservationQueries(fields)
+	if err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, queries); err != nil {
 		return err
 	}
 	return tx.Commit()
