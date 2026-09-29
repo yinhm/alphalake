@@ -525,3 +525,45 @@ def test_contraction_path_is_conditional_and_retains_growth_boundaries(revenues)
         body=dict(inputs=candidate['inputs'], **{name:getattr(calculated,name).model_dump(mode='json')
             for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
         assert 'capital_release_requires_recoverability_basis' in review_report(body)['methodology']['findings']
+
+
+def test_company_capital_proxy_revalues_only_reinvestment():
+    from tools.compare_native_capital import compare
+    baseline=sample(); original=deepcopy(baseline)
+    result=compare(baseline, 'company-history')
+    assert baseline==original and result['status']=='calculated_conditional'
+    # Each year has 500 equity + 100 debt - 50 cash; no research adjustment.
+    expected=sum(r['revenues'] for r in baseline['inputs']['raw_financials'][:3])/(3*550)
+    assert result['evidence']['ratio']==pytest.approx(expected)
+    assert result['evidence']['required_years']==[2023,2024,2025]
+    assert result['annual_sales_to_capital']==pytest.approx([expected]*10)
+    before,after=baseline['dcf'],result['candidate']['dcf']
+    pv=0
+    for old,new,discount,delta in zip(before['fcff_projections'], after['fcff_projections'],
+            after['discount_factors'],result['annual_reinvestment_change_million_cny']):
+        assert new-old==pytest.approx(-delta)
+        pv+=(new-old)*discount
+    assert result['going_concern_value_change_million_cny']==pytest.approx(pv)
+    assert result['value_per_share_change']==pytest.approx(pv/10)
+    assert after['terminal_value_firm']==before['terminal_value_firm']
+    assert not result['automatic_adoption']
+    bad=deepcopy(baseline);bad['dcf']['fcff_projections'][0]+=1
+    with pytest.raises(ValueError,match='does not replay'):
+        compare(bad,'company-history')
+
+
+@pytest.mark.parametrize('problem',['missing_year','missing_balance','negative_capital','leases'])
+def test_company_capital_proxy_keeps_incomplete_scope(problem):
+    from tools.compare_native_capital import compare
+    inputs=CompanyValuationInput.model_validate(sample()['inputs'])
+    if problem=='missing_year': inputs.raw_financials.pop(1)
+    elif problem=='missing_balance': inputs.raw_financials[1].cash_and_marketable_securities=None
+    elif problem=='negative_capital': inputs.raw_financials[1].bv_equity=-1000
+    else: inputs.adjustment_inputs.has_operating_leases=True
+    report=run_full_valuation(inputs)
+    baseline=dict(inputs=inputs.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
+        for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+    result=compare(baseline,'company-history')
+    assert result['status']=='outside_policy_scope'
+    assert result['evidence']['missing'] and result['evidence']['ratio'] is None
+    assert result['evidence']['required_years']==[2023,2024,2025]
