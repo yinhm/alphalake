@@ -65,3 +65,62 @@ func TestRealIdenticalFinancialDuplicatesPreserveRawAndReplay(t *testing.T) {
 		}
 	}
 }
+
+func TestUnmappedDuplicateDifferenceDoesNotWithholdStandardFields(t *testing.T) {
+	ctx := context.Background()
+	db, err := store.OpenInitialized(ctx, filepath.Join(t.TempDir(), "duplicate-scope.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	raw, err := os.ReadFile("testdata/tdx-identical-duplicates-2026/gpcw20260630.zip")
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := &realDuplicateFinancialSource{fakeProfessionalFinancialSource{packageBytes: raw, instruments: []domain.InstrumentObservation{
+		observation(domain.InstrumentEquity, "XSHE", "样本", "sz301192"), observation(domain.InstrumentEquity, "XSHE", "样本2", "sz301321"), observation(domain.InstrumentEquity, "XSHG", "对照", "sh600519"),
+	}}}
+	if _, err := store.UpsertInstruments(ctx, db, source.instruments); err != nil {
+		t.Fatal(err)
+	}
+	rows, err := source.NormalizeProfessionalFinancialPackage(financial.FileEntry{Filename: "gpcw20260630.zip"}, raw, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	catalogue, err := financial.FieldCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+	excluded, err := store.UnmappedDuplicatePositions(ctx, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range catalogue {
+		if f.ValueKind != "ratio" && excluded[f.Index] {
+			t.Fatal("non-ratio excluded", f.Name)
+		}
+	}
+	position := 0
+	for _, f := range catalogue {
+		if f.Name == "reported_dividend_payout_ratio" {
+			position = f.Index - 1
+		}
+	}
+	if position <= 0 {
+		t.Fatal("missing source definition")
+	}
+	rows[1].ProviderFields = append([]domain.ProviderFloat32(nil), rows[1].ProviderFields...)
+	rows[1].ProviderFields[position].Bits ^= 1
+	rows[1].ProviderFields[position].Value = float64(math.Float32frombits(rows[1].ProviderFields[position].Bits))
+	kept, states, err := resolveProviderFinancialRecords(ctx, db, rows)
+	if err != nil || len(kept) != 3 || len(states) != 3 {
+		t.Fatalf("%d %+v %v", len(kept), states, err)
+	}
+	if _, err := db.ExecContext(ctx, `INSERT INTO fundamental.provider_field(source,provider_field,canonical_field,display_name,unit,value_kind,period_basis,value_multiplier,zero_policy) VALUES('tdx','FN337','reported_dividend_payout_ratio','source maintenance','percent','ratio','ytd',1,'reject')`); err != nil {
+		t.Fatal(err)
+	}
+	kept, _, err = resolveProviderFinancialRecords(ctx, db, rows)
+	if err != nil || len(kept) != 2 {
+		t.Fatalf("new mapping did not restore conflict: %d %v", len(kept), err)
+	}
+}

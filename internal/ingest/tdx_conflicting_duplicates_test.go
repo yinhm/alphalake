@@ -46,6 +46,10 @@ func TestRealConflictingSecurityIsolatedAndValuationBlocked(t *testing.T) {
 			t.Fatalf("unexpected additional difference FN%d", i+1)
 		}
 	}
+	// 明确模拟该来源比率已进入标准映射；未映射比率的等价放行另有回归。
+	if _, err = db.ExecContext(ctx, `INSERT INTO fundamental.provider_field(source,provider_field,canonical_field,display_name,unit,value_kind,period_basis,value_multiplier,zero_policy) VALUES('tdx','FN337','reported_dividend_payout_ratio','source maintenance','percent','ratio','ytd',1,'reject')`); err != nil {
+		t.Fatal(err)
+	}
 	root := filepath.Join(t.TempDir(), "raw")
 	t.Setenv("ALPHALAKE_WORKSPACE", root)
 	day := time.Date(2026, 9, 9, 0, 0, 0, 0, time.UTC)

@@ -426,11 +426,14 @@ func main() {
 		}
 		defer db.Close()
 
-		source, err := tdxsource.DialDefault()
-		if err != nil {
-			fatal(err)
+		source := new(tdxsource.Client)
+		if !offline {
+			source, err = tdxsource.DialDefault()
+			if err != nil {
+				fatal(err)
+			}
+			defer source.Close()
 		}
-		defer source.Close()
 
 		artifactRoot := filepath.Dir(dbPath)
 		lastFailures := 0

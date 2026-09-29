@@ -189,8 +189,9 @@ func SyncTDXProfessionalFinancialWithOptions(
 	}
 
 	sort.Slice(entries, func(i, j int) bool { return entries[i].Filename > entries[j].Filename })
-	// The live manifest includes empty placeholders for future reporting periods.
-	cutoff := "gpcw" + now.In(domain.ChinaDisclosureLocation).Format("20060102") + ".zip"
+	// The live manifest includes empty placeholders. A reporting period must
+	// have ended in China, including the whole final calendar day.
+	cutoff := "gpcw" + now.In(domain.ChinaDisclosureLocation).AddDate(0, 0, -1).Format("20060102") + ".zip"
 	for len(entries) > 0 && entries[0].Filename > cutoff {
 		entries = entries[1:]
 	}
@@ -342,6 +343,10 @@ func resolveProviderFinancialRecords(ctx context.Context, db *sql.DB, records []
 	if len(records) == 0 {
 		return nil, nil, nil
 	}
+	excluded, err := duckstore.UnmappedDuplicatePositions(ctx, db)
+	if err != nil {
+		return nil, nil, err
+	}
 	period := records[0].ReportPeriod
 	provider := strings.TrimSpace(records[0].Provider)
 	if provider == "" {
@@ -365,6 +370,14 @@ func resolveProviderFinancialRecords(ctx context.Context, db *sql.DB, records []
 		if previous, exists := seenCodes[code]; exists {
 			comparison := record
 			comparison.SourceRow = previous.SourceRow
+			if len(comparison.ProviderFields) == len(previous.ProviderFields) {
+				comparison.ProviderFields = append([]domain.ProviderFloat32(nil), comparison.ProviderFields...)
+				for i := range comparison.ProviderFields {
+					if excluded[i+1] {
+						comparison.ProviderFields[i] = previous.ProviderFields[i]
+					}
+				}
+			}
 			if reflect.DeepEqual(previous, comparison) {
 				continue
 			}

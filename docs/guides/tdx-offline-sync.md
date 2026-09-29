@@ -64,3 +64,9 @@ go run ./cmd/audit-financial-field --database workspace/alphalake.duckdb \
 [中邮科技原始核验](../../valuation/research/tdx-growth-expanded/README.md#中邮科技歧义零与跨期合并列示)直接证明：2025年报使用权折旧5,298,976.44元、投资性房地产折旧125,210.04元均已含在普通折旧行，对应独立源字段为零；两个半年报投资性房地产折旧各62,605.02元也同样合并。因此投资性房地产这项并非只有抽象的重复加总风险，而是有金额与源零对应的反例。
 
 达摩达兰在[《Investment Valuation》第三版第9章第230页](https://pages.stern.nyu.edu/~adamodar/pdfiles/val3ed/c09.pdf#page=3)明确讨论季度缺少年度项目：可采用最近年报值或估计最新值，代价分别是时点不一致与估计误差。原文以期权为例，不是对这8个TDX字段的具体授权。对本项目，这仅支持估值政策层显式选择旧期输入或估计，不允许标准事实填空、把旧年度改标TTM或静默放宽[现行准入](../valuation/valuation-input-gates-20260925.md)。本轮不新增估计器或自动回退，不改变网页默认。
+
+## 重复记录与未映射差异
+
+[ADR023](../decisions/023-unmapped-source-duplicate-boundary.md)限定：相同归档及元数据下，只有官方已定义、未审核且当前没有映射的来源比率位置不同，才允许等价标准报表继续接入；金额、已映射字段、未知位置或身份不同继续拒绝，原ZIP保留全部备选记录。后续新增映射须重同步和重算，不沿用旧等价判断。
+
+`sync-financial --offline`使用本地清单、缓存和既有身份，不建立TDX连接；不冒称上游版本最新。按中国时间仅选择已经结束的报告期，报告期末当日仍可能是占位包，不提前解析或推进其检查点。

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/yinhm/alphalake/internal/source/tdx/financial"
 )
 
 const (
@@ -369,6 +371,41 @@ func ListProviderFinancialResolutionsPage(ctx context.Context, db *sql.DB, statu
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("iterate provider resolutions: %w", err)
+	}
+	return out, nil
+}
+
+// UnmappedDuplicatePositions identifies known official ratios that are not
+// published. Differences remain in the archive; no standard value is chosen.
+// A later mapping immediately removes that position from this exclusion.
+func UnmappedDuplicatePositions(ctx context.Context, db snapshotDB) (map[int]bool, error) {
+	rows, err := db.QueryContext(ctx, `SELECT provider_field FROM fundamental.provider_field WHERE source='tdx'`)
+	if err != nil {
+		return nil, err
+	}
+	mapped := map[string]bool{}
+	for rows.Next() {
+		var name string
+		if err = rows.Scan(&name); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		mapped[name] = true
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	catalog, err := financial.FieldCatalog()
+	if err != nil {
+		return nil, err
+	}
+	out := map[int]bool{}
+	for _, f := range catalog {
+		if f.DefinitionStatus == "official" && f.ValueKind == "ratio" && f.Name != "" && f.MappingStatus == "not_reviewed" && !f.RequiresDisambiguation && !mapped[fmt.Sprintf("FN%d", f.Index)] {
+			out[f.Index] = true
+		}
 	}
 	return out, nil
 }

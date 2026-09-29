@@ -280,6 +280,10 @@ func RebuildFinancialStorage(ctx context.Context, previous, output, root, audit 
 			}); e != nil {
 				return e
 			}
+			excluded, e := UnmappedDuplicatePositions(ctx, conn)
+			if e != nil {
+				return e
+			}
 			seen := map[string]financial.Record{}
 			batch := []IndexedFinancialRecord{}
 			flush := func() error {
@@ -301,7 +305,7 @@ func RebuildFinancialStorage(ctx context.Context, previous, output, root, audit 
 						return fmt.Errorf("conflicting resolved duplicate")
 					}
 					for j, v := range r.Fields {
-						if identities[r.Code] > 0 && v.Bits != prior.Fields[j].Bits {
+						if identities[r.Code] > 0 && !excluded[j+1] && v.Bits != prior.Fields[j].Bits {
 							return fmt.Errorf("conflicting resolved duplicate")
 						}
 					}

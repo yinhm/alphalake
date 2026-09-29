@@ -40,3 +40,4 @@
 - [021：招股书历史披露范围与TDX数值来源](021-prospectus-disclosure-coverage.md)
 
 - [022：财务数值可用性与公告日期分离](022-financial-availability-and-disclosure.md)——TDX日期直接采用，当前数值不依赖CNINFO关联；历史查询单独限制。
+- [023：未映射来源差异与标准报表边界](023-unmapped-source-duplicate-boundary.md)——已审核字段位级等价时不因未映射比率差异拒绝整行，保留原始差异和未来映射约束。

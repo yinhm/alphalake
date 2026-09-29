@@ -91,7 +91,8 @@ func TestSyncTDXProfessionalFinancialPersistsArtifactFactsAndCheckpoint(t *testi
 		}},
 		packageBytes: []byte("zip!"), recordCode: "600001", marketMarker: 7, futurePlaceholder: true,
 	}
-	now := time.Date(2026, 9, 4, 12, 0, 0, 0, time.UTC)
+	// China is already September 30, but the reporting day has not ended.
+	now := time.Date(2026, 9, 29, 20, 0, 0, 0, time.UTC)
 	options := TDXProfessionalFinancialOptions{MaxPackages: 1, Now: func() time.Time { return now }}
 	first, err := SyncTDXProfessionalFinancialWithOptions(ctx, db, source, root, options)
 	if err != nil {
