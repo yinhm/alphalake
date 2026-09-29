@@ -76,6 +76,11 @@ def test_archived_real_main_copy_review(tmp_path,monkeypatch):
     for field in ('pretax_lease_research_adjusted_operating_margin', 'aftertax_lease_research_adjusted_operating_margin'):
         assert field not in old_inputs['industry_data']
         old_inputs['industry_data'][field] = None
+    # 冻结证据不改写；明确补入后来新增、在该旧请求中未启用的契约字段。
+    assert 'historical_research_expenses' not in old_inputs
+    assert 'annual_sales_to_capital' not in old_inputs['valuation_assumptions']
+    old_inputs['historical_research_expenses'] = {}
+    old_inputs['valuation_assumptions']['annual_sales_to_capital'] = None
     assert run['inputs'] == old_inputs
     saved = contents['review.json.gz']; calls = []
     def export(period):

@@ -49,6 +49,11 @@ def test_archived_standard_history_five(tmp_path,monkeypatch):
         for field in ('pretax_lease_research_adjusted_operating_margin', 'aftertax_lease_research_adjusted_operating_margin'):
             assert field not in old['inputs']['industry_data']
             old['inputs']['industry_data'][field] = None
+        # 冻结证据不改写；明确补入后来新增、在该旧请求中未启用的契约字段。
+        assert 'historical_research_expenses' not in old['inputs']
+        assert 'annual_sales_to_capital' not in old['inputs']['valuation_assumptions']
+        old['inputs']['historical_research_expenses'] = {}
+        old['inputs']['valuation_assumptions']['annual_sales_to_capital'] = None
         assert new['inputs']==old['inputs']
         assert new['method_assessment']['reinvestment']['implied_roic_status']=='missing_opening_capital'
         assert after['review']['statuses']==before['review']['statuses']
