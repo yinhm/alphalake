@@ -195,9 +195,11 @@ func TestRealFinancialWorkflow(t *testing.T) {
 	count("SELECT sum(field_count) FROM fundamental.source_record", 3504)
 	materialized, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if materialized.Inserted != 397 || materialized.Linked != 6 || materialized.Rejected != 83 || materialized.LinkPending != 0 || materialized.LinkAmbiguous != 0 {
+	if materialized.Inserted != 415 || materialized.Linked != 6 || materialized.Rejected != 65 || materialized.LinkPending != 0 || materialized.LinkAmbiguous != 0 {
 		t.Fatalf("materialization coverage: %+v", materialized)
 	}
+	// Field-level review admits 18 real source-zero investment balances.
+	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE canonical_field IN ('trading_financial_assets','debt_investments','other_debt_investments','other_noncurrent_financial_assets') AND value=0", 18)
 	for _, row := range annualReportValues(t) {
 		var value float64
 		var period, unit, filingID string
@@ -212,16 +214,16 @@ func TestRealFinancialWorkflow(t *testing.T) {
 	}
 	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE source_provider_field<>'FN238' AND period_type='Q4' AND unit='CNY'", 48)
 	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE source_provider_field='FN238' AND period_type='instant' AND unit='share'", 6)
-	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE period_type='instant' AND unit='CNY'", 201)
+	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE period_type='instant' AND unit='CNY'", 219)
 	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE period_type='FY' AND unit='CNY'", 142)
 	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE provider_code='603659' AND canonical_field='bonds_payable' AND period_type='instant' AND value=199443184 AND unit='CNY'", 1)
 	count("SELECT count(*) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,TIMESTAMPTZ '2026-03-06 15:59:59+00')", 0)
-	count("SELECT count(*) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,TIMESTAMPTZ '2026-03-06 16:00:00+00')", 397)
+	count("SELECT count(*) FROM fundamental.financial_observations_asof(NULL,NULL,NULL,TIMESTAMPTZ '2026-03-06 16:00:00+00')", 415)
 	again, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if again.Inserted != 0 || again.Updated != 0 || again.Removed != 0 || again.Rejected != 83 {
+	if again.Inserted != 0 || again.Updated != 0 || again.Removed != 0 || again.Rejected != 65 {
 		t.Fatalf("non-idempotent materialization: %+v", again)
 	}
-	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL)", 397)
-	t.Logf("真实样本验收通过：公告=12，目录页=3，正文=%d，源事实=3504，标准事实=305，独立金额=16；失败恢复、幂等及 PIT 边界通过", len(documents))
+	count("SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL)", 415)
+	t.Logf("真实样本验收通过：公告=12，目录页=3，正文=%d，源事实=3504，标准事实=415，独立金额=16；失败恢复、幂等及 PIT 边界通过", len(documents))
 }

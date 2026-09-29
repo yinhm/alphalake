@@ -8,14 +8,19 @@ import (
 )
 
 // This review extends source definitions, not company valuation classifications.
-// Existing dated reviews are retained, except the explicitly approved bonds zero policy.
+// Existing dated definitions are retained; approved main-statement zeros share one field policy.
 const capitalHistoryReview = `
  UPDATE fundamental.provider_field SET zero_policy='allow'
- WHERE source='tdx' AND canonical_field='bonds_payable';
+ WHERE source='tdx' AND canonical_field IN (
+ 'accounts_payable','accounts_receivable','current_assets','current_liabilities','inventories',
+ 'trading_financial_assets','equity_parent','bonds_payable','cash_and_cash_equivalents',
+ 'current_portion_noncurrent_liabilities','income_tax_expense','lease_liabilities',
+ 'long_term_borrowings','long_term_equity_investments','monetary_funds','profit_before_tax',
+ 'short_term_borrowings','total_equity','debt_investments','other_debt_investments',
+ 'other_noncurrent_financial_assets','research_and_development_expense');
  CREATE TEMP TABLE _capital_history_review AS
  SELECT p.* REPLACE(DATE '1900-01-01' AS valid_from,p.valid_from AS valid_to,
- 'official-capital-history-v1;'||s.definition_reference AS notes,
- CASE WHEN p.canonical_field='bonds_payable' THEN 'allow' ELSE 'reject' END AS zero_policy)
+ 'official-capital-history-v1;'||s.definition_reference AS notes)
  FROM fundamental.provider_field p JOIN fundamental.source_field s
  ON s.source=p.source AND s.provider_field=p.provider_field AND s.name=p.canonical_field
  AND s.unit=p.unit AND s.value_kind=p.value_kind AND s.period_basis=p.period_basis

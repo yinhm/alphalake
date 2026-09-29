@@ -83,7 +83,7 @@ func TestCNINFOToPointInTimeFundamentalEndToEnd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if firstMaterialization.Linked != 1 || firstMaterialization.Inserted != 28 || firstMaterialization.Rejected != 22 {
+	if firstMaterialization.Linked != 1 || firstMaterialization.Inserted != 29 || firstMaterialization.Rejected != 21 {
 		t.Fatalf("first materialization=%#v", firstMaterialization)
 	}
 
@@ -108,7 +108,7 @@ func TestCNINFOToPointInTimeFundamentalEndToEnd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if secondMaterialization.Linked != 2 || secondMaterialization.Inserted != 28 || secondMaterialization.Rejected != 44 {
+	if secondMaterialization.Linked != 2 || secondMaterialization.Inserted != 29 || secondMaterialization.Rejected != 42 {
 		t.Fatalf("second materialization=%#v", secondMaterialization)
 	}
 

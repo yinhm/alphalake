@@ -154,8 +154,13 @@ func TestRealValuationStandardChain(t *testing.T) {
 	restoreCurrentMappings(t, db, "provider_field IN ('FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579')")
 	upgraded, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if upgraded.Inserted != 111 || upgraded.Updated != 0 || upgraded.Removed != 0 {
+	if upgraded.Inserted != 131 || upgraded.Updated != 0 || upgraded.Removed != 0 {
 		t.Fatalf("approved catalog replay %+v", upgraded)
+	}
+	var reviewedInvestmentZeros int
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations(NULL,NULL,NULL,NULL) WHERE canonical_field IN ('trading_financial_assets','debt_investments','other_debt_investments','other_noncurrent_financial_assets') AND value=0`).Scan(&reviewedInvestmentZeros))
+	if reviewedInvestmentZeros != 20 {
+		t.Fatal("field-reviewed investment zeros", reviewedInvestmentZeros)
 	}
 	check(db.Close())
 	db, err = duckstore.OpenInitialized(ctx, dbPath)
@@ -322,14 +327,14 @@ func TestRealValuationStandardChain(t *testing.T) {
 	check(err)
 	rejectedFinancial, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if rejectedFinancial.Removed != 111 {
+	if rejectedFinancial.Removed != 131 {
 		t.Fatalf("financial instrument invalidation %+v", rejectedFinancial)
 	}
 	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=CASE WHEN provider_field IN ('FN9','FN59','FN299') THEN 1 ELSE 10000 END WHERE source='tdx' AND provider_field IN ('FN9','FN59','FN299','FN403','FN409','FN411','FN413','FN430','FN431','FN433','FN434','FN437','FN506','FN509','FN510','FN520','FN579')`)
 	check(err)
 	restoredFinancial, err := MaterializeProviderFundamentals(ctx, db, "tdx")
 	check(err)
-	if restoredFinancial.Inserted != 111 {
+	if restoredFinancial.Inserted != 131 {
 		t.Fatalf("financial instrument recovery %+v", restoredFinancial)
 	}
 	// 修改映射依据后必须撤销标准值，不能回退 PDF；恢复后从源证据重建。

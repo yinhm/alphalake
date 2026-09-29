@@ -26,17 +26,17 @@ func TestCapitalHistoryReview(t *testing.T) {
 	}
 	var count int
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_field WHERE notes LIKE 'official-capital-history-v1;%' AND valid_to=DATE '2025-01-01' AND zero_policy='reject'`).Scan(&count))
-	if count != 25 {
+	if count != 8 {
 		t.Fatal(count)
 	}
-	// Upgrade the old historical zero policy in place; published semantics wait for replay.
+	// Upgrade old historical policies in place; cashflow supplements remain rejected.
 	checkExec := func(query string) { _, e := db.ExecContext(ctx, query); check(e) }
-	checkExec(`UPDATE fundamental.provider_field SET zero_policy='reject' WHERE canonical_field='bonds_payable' AND valid_to=DATE '2025-01-01'`)
+	checkExec(`UPDATE fundamental.provider_field SET zero_policy='reject' WHERE canonical_field IN ('bonds_payable','short_term_borrowings','long_term_borrowings','lease_liabilities') AND valid_to=DATE '2025-01-01'`)
 	_, err = ExtendCapitalHistory(ctx, db)
 	check(err)
-	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_field WHERE canonical_field='bonds_payable' AND zero_policy!='allow'`).Scan(&count))
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_field WHERE canonical_field IN ('bonds_payable','short_term_borrowings','long_term_borrowings','lease_liabilities','research_and_development_expense','debt_investments') AND zero_policy!='allow'`).Scan(&count))
 	if count != 0 {
-		t.Fatal("bonds zero still rejected", count)
+		t.Fatal("approved field zero still rejected", count)
 	}
 	var before, after string
 	original := `SELECT CAST(to_json(list(p ORDER BY provider_field)) AS VARCHAR) FROM fundamental.provider_field p WHERE valid_from=DATE '2025-01-01'`
@@ -86,12 +86,12 @@ func TestCapitalHistoryReview(t *testing.T) {
 		t.Fatal("previous historical reviews changed", count)
 	}
 	// An incompatible historical review is never silently overwritten.
-	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET zero_policy='allow' WHERE canonical_field='lease_liabilities' AND valid_to=DATE '2025-01-01'`)
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=1 WHERE canonical_field='lease_liabilities' AND valid_to=DATE '2025-01-01'`)
 	check(err)
 	if _, err = ExtendCapitalHistory(ctx, db); err == nil {
 		t.Fatal("conflicting review accepted")
 	}
-	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET zero_policy='reject' WHERE canonical_field='lease_liabilities' AND valid_to=DATE '2025-01-01'; UPDATE fundamental.source_field SET value_multiplier=1 WHERE name='lease_liabilities'`)
+	_, err = db.ExecContext(ctx, `UPDATE fundamental.provider_field SET value_multiplier=10000 WHERE canonical_field='lease_liabilities' AND valid_to=DATE '2025-01-01'; UPDATE fundamental.source_field SET value_multiplier=1 WHERE name='lease_liabilities'`)
 	check(err)
 	if _, err = ExtendCapitalHistory(ctx, db); err == nil {
 		t.Fatal("incompatible official unit accepted")
@@ -154,6 +154,26 @@ func TestCapitalHistoryArchivedRecord(t *testing.T) {
 		t.Fatal("absent field became zero")
 	}
 	_, err = MaterializeFinancialSnapshotBatch(ctx, conn, 3, fields, []IndexedFinancialRecord{{ID: 1, Revision: "revision", Record: r}})
+	check(err)
+	// Synthetic zero mutations on a real record exercise the published field rules.
+	zeroed := r
+	zeroed.ProviderFields = append([]domain.ProviderFloat32(nil), r.ProviderFields...)
+	catalog, err := financial.FieldCatalog()
+	check(err)
+	for _, field := range catalog {
+		switch field.Name {
+		case "short_term_borrowings", "long_term_borrowings", "lease_liabilities", "research_and_development_expense", "right_of_use_depreciation":
+			zeroed.ProviderFields[field.Index-1] = domain.ProviderFloat32{}
+		}
+	}
+	_, err = MaterializeFinancialSnapshotBatch(ctx, conn, 4, fields, []IndexedFinancialRecord{{ID: 1, Revision: "revision", Record: zeroed}})
+	check(err)
+	var approved int
+	check(conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_snapshot WHERE short_term_borrowings=0 AND long_term_borrowings=0 AND lease_liabilities=0 AND research_and_development_expense=0 AND right_of_use_depreciation IS NULL`).Scan(&approved))
+	if approved != 1 {
+		t.Fatal("main statement zeros or supplement exclusion incorrect")
+	}
+	_, err = MaterializeFinancialSnapshotBatch(ctx, conn, 5, fields, []IndexedFinancialRecord{{ID: 1, Revision: "revision", Record: r}})
 	check(err)
 	// Independently decoded float32 amounts from the archived 2024 annual ZIP.
 	var balances [6]float64

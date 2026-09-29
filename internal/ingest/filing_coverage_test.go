@@ -122,7 +122,7 @@ func TestProspectusCoverageSourceOnlyAndRevocation(t *testing.T) {
 	if result.Removed != 1 {
 		t.Fatal(result)
 	}
-	// A new reviewed link still cannot turn an ambiguous source zero into a fact.
+	// Disclosure coverage consumes the approved field-level zero policy.
 	raw, err = json.Marshal(review)
 	must(err)
 	must(db.QueryRowContext(ctx, `SELECT sha256(?)`, string(raw)).Scan(&prior))
@@ -133,7 +133,18 @@ func TestProspectusCoverageSourceOnlyAndRevocation(t *testing.T) {
 	must(err)
 	record.Record.ProviderFields[303] = domain.ProviderFloat32{}
 	result = materialize()
-	if result.Materialized != 0 || result.Rejected != 1 {
+	if result.Materialized != 1 || result.Rejected != 0 {
 		t.Fatal(result)
+	}
+	must(db.QueryRowContext(ctx, `SELECT max(value) FROM fundamental.financial_observations('688692',NULL,NULL,NULL)`).Scan(&value))
+	if value != 0 {
+		t.Fatal("approved source zero", value)
+	}
+	// Coverage and field approval never create a value for an absent source position.
+	record.Record.ProviderFields = record.Record.ProviderFields[:303]
+	result = materialize()
+	must(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.financial_observations('688692',NULL,NULL,NULL)`).Scan(&count))
+	if result.Materialized != 0 || count != 0 {
+		t.Fatal("absent source field became zero", result, count)
 	}
 }

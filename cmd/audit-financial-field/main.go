@@ -1,4 +1,4 @@
-// audit-financial-field scans one catalogued field in the main database's archived
+// audit-financial-field scans catalogued fields in one pass in the main database's archived
 // SH/SZ source records. Source versions remain separate; it never changes policy.
 package main
 
@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strings"
 
 	f "github.com/yinhm/alphalake/internal/source/tdx/financial"
 	store "github.com/yinhm/alphalake/internal/store/duckdb"
@@ -41,21 +42,15 @@ func (c *counts) add(values int, index int, value float64) string {
 }
 func run() error {
 	dbpath := flag.String("database", "workspace/alphalake.duckdb", "authoritative database, read only")
-	name := flag.String("field", "", "standard field name in the source catalog")
+	name := flag.String("field", "", "comma-separated standard field names in the source catalog")
 	flag.Parse()
 	catalog, err := f.FieldCatalog()
 	if err != nil {
 		return err
 	}
-	var field *f.FieldDefinition
-	for i := range catalog {
-		if catalog[i].Name == *name && *name != "" {
-			field = &catalog[i]
-			break
-		}
-	}
-	if field == nil || field.DefinitionStatus != "official" || field.Multiplier == nil || (*field.Multiplier != 1 && *field.Multiplier != 10000) {
-		return fmt.Errorf("official named field with a defined multiplier required")
+	fields, err := selectFields(catalog, *name)
+	if err != nil {
+		return err
 	}
 	ctx := context.Background()
 	db, err := store.OpenReadOnly(ctx, *dbpath)
@@ -91,7 +86,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	total := counts{}
+	totals := make([]counts, len(fields))
 	versions := []map[string]any{}
 	securities := map[int64]bool{}
 	for _, a := range artifacts {
@@ -122,36 +117,71 @@ func run() error {
 		if err != nil {
 			return err
 		}
-		c := counts{}
-		samples := map[string][]map[string]any{}
-		for _, r := range locations {
-			if r.row < 1 || r.row > len(pkg.Records) {
-				return fmt.Errorf("source row out of range")
-			}
-			record := pkg.Records[r.row-1]
-			if record.Code != r.code || record.ReportPeriod.Format("2006-01-02") != r.period {
-				return fmt.Errorf("source identity or period mismatch")
-			}
-			index := field.Index - 1
-			value := 0.0
-			if index < len(record.Fields) {
-				value = record.Fields[index].Value * *field.Multiplier
-			}
-			state := c.add(len(record.Fields), index, value)
-			total.add(len(record.Fields), index, value)
-			securities[r.id] = true
-			if len(samples[state]) < 3 {
-				s := map[string]any{"code": r.code, "period": r.period, "source_row": r.row}
-				if state == "zero" || state == "nonzero" {
-					s["value"] = value
+		versionFields := []map[string]any{}
+		for i, field := range fields {
+			c := counts{}
+			samples := map[string][]map[string]any{}
+			for _, r := range locations {
+				if r.row < 1 || r.row > len(pkg.Records) {
+					return fmt.Errorf("source row out of range")
 				}
-				samples[state] = append(samples[state], s)
+				record := pkg.Records[r.row-1]
+				if record.Code != r.code || record.ReportPeriod.Format("2006-01-02") != r.period {
+					return fmt.Errorf("source identity or period mismatch")
+				}
+				index := field.Index - 1
+				value := 0.0
+				if index < len(record.Fields) {
+					value = record.Fields[index].Value * *field.Multiplier
+				}
+				state := c.add(len(record.Fields), index, value)
+				totals[i].add(len(record.Fields), index, value)
+				securities[r.id] = true
+				if len(samples[state]) < 3 {
+					s := map[string]any{"code": r.code, "period": r.period, "source_row": r.row}
+					if state == "zero" || state == "nonzero" {
+						s["value"] = value
+					}
+					samples[state] = append(samples[state], s)
+				}
+			}
+			versionFields = append(versionFields, map[string]any{"field": field.Name, "counts": c, "samples": samples})
+		}
+		versions = append(versions, map[string]any{"artifact_sha256": a.hash, "archive": a.path, "fields": versionFields})
+	}
+	summary := []map[string]any{}
+	for i, field := range fields {
+		summary = append(summary, map[string]any{"field": field.Name, "unit": field.Unit, "period_basis": field.PeriodBasis, "counts": totals[i]})
+	}
+	return json.NewEncoder(os.Stdout).Encode(map[string]any{"fields": summary, "scope": "all_retained_source_versions_for_resolved_SH_SZ_identities; records_are_not_unique_company_periods_or_PIT_facts", "securities": len(securities), "versions": versions, "automatic_policy_approval": false})
+
+}
+func selectFields(catalog []f.FieldDefinition, names string) ([]f.FieldDefinition, error) {
+	selected := []f.FieldDefinition{}
+	seen := map[string]bool{}
+	for _, name := range strings.Split(names, ",") {
+		name = strings.TrimSpace(name)
+		if name == "" || seen[name] {
+			return nil, fmt.Errorf("nonempty distinct standard fields required")
+		}
+		seen[name] = true
+		found := false
+		for _, field := range catalog {
+			if field.Name == name && field.DefinitionStatus == "official" && field.Multiplier != nil && (*field.Multiplier == 1 || *field.Multiplier == 10000) {
+				if found {
+					return nil, fmt.Errorf("ambiguous source field: %s", name)
+				}
+				selected = append(selected, field)
+				found = true
 			}
 		}
-		versions = append(versions, map[string]any{"artifact_sha256": a.hash, "archive": a.path, "counts": c, "samples": samples})
+		if !found {
+			return nil, fmt.Errorf("official named field with a defined multiplier required: %s", name)
+		}
 	}
-	return json.NewEncoder(os.Stdout).Encode(map[string]any{"field": field.Name, "unit": field.Unit, "period_basis": field.PeriodBasis, "scope": "all_retained_source_versions_for_resolved_SH_SZ_identities; records_are_not_unique_company_periods_or_PIT_facts", "securities": len(securities), "counts": total, "versions": versions, "automatic_policy_approval": false})
+	return selected, nil
 }
+
 func main() {
 	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
