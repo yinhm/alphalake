@@ -1,5 +1,5 @@
 {
-  "version": "native-assumption-selection-v1",
+  "version": "native-assumption-selection-v2",
   "growth": "latest_comparable_revenue_growth",
   "high_growth_years": 1,
   "projection_years": 10,
@@ -9,5 +9,6 @@
   "max_reference_age_days": 370,
   "terminal_growth_cap": 0.02,
   "terminal_roic": "wacc",
-  "boundary": "自动选择条件情景，尚未经预测有效性验证；负增长/亏损保留拒绝，不能自动假设复苏；WACC沿用显式情景，不冒充公司市场WACC。"
+  "boundary": "自动选择条件情景，尚未经预测有效性验证；盈利收缩仅生成趋稳恢复及隐含资本释放情景，不证明资产可收回或恢复必然发生；亏损仍需独立扭亏政策。WACC沿用显式情景，不冒充公司市场WACC。",
+  "contraction": "conditional_recovery_with_implied_capital_release"
 }

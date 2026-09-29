@@ -1,4 +1,4 @@
-"""自动选择不改变事实，不绕过亏损/收缩或失效参考的拒绝。"""
+"""自动选择不改变事实，收缩仅作显式条件路径，亏损和失效参考仍拒绝。"""
 from copy import deepcopy
 import json
 from pathlib import Path
@@ -112,11 +112,10 @@ def test_bad_reference_rejects_without_default(key,value):
     assert payload is None and audit['decisions']['capital']['status']=='rejected'
 
 
-def test_decline_missing_quarters_and_losses_are_not_repaired():
-    for problem in ('decline','loss','missing_quarters'):
+def test_missing_quarters_and_losses_are_not_repaired():
+    for problem in ('loss','missing_quarters'):
         baseline=sample();inputs=CompanyValuationInput.model_validate(baseline['inputs'])
-        if problem=='decline':inputs.raw_financials[0].revenues=800
-        elif problem=='loss':inputs.raw_financials[0].ebit=-10
+        if problem=='loss':inputs.raw_financials[0].ebit=-10
         else:
             inputs.quarters_since_10k=2;inputs.period_date_10q='2026-06-30'
             with pytest.raises(ValueError,match='insufficient quarterly'):
@@ -491,3 +490,38 @@ def test_five_dimension_review_distinguishes_calculation_from_economic_evidence(
     body['dcf']['reinvestment_projections'][0] += 1
     with pytest.raises(ValueError,match='does not replay'):
         review_report(body)
+
+
+@pytest.mark.parametrize('revenues', [800, 0, -1, 2000])
+def test_contraction_path_is_conditional_and_retains_growth_boundaries(revenues):
+    from tools.select_native_assumptions import scenario_payloads
+    from tools.review_native_policy import review_report
+    inputs=CompanyValuationInput.model_validate(sample()['inputs'])
+    inputs.raw_financials[0].revenues=revenues
+    report=run_full_valuation(inputs)
+    baseline=dict(inputs=inputs.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
+        for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+    original=deepcopy(baseline)
+    payload,audit=select(baseline,reference_inputs(baseline),[reference()], '2026-09-27T00:00:00+00:00',POLICY)
+    assert baseline==original
+    if revenues!=800:
+        assert payload is None
+        assert audit['decisions']['growth']['status']=='rejected'
+        return
+    assert payload is not None and not audit['automatic_adoption']
+    assert audit['decisions']['growth']['path']=='contraction_then_recovery_to_stable_growth'
+    assert 'capital_release_recoverability_not_implied_by_revenue_decline' in audit['economic_basis']['unresolved']
+    scenarios,scenario_audit=scenario_payloads(baseline,payload)
+    assert scenario_audit['selected_scenario'] is None
+    for candidate in [payload, *scenarios.values()]:
+        calculated=run_full_valuation(CompanyValuationInput.model_validate(candidate['inputs']))
+        dcf=calculated.dcf
+        assert dcf.revenue_projections[0]==pytest.approx(800*.88)
+        assert all(value>0 for value in dcf.revenue_projections)
+        assert dcf.revenue_projections[-1]/dcf.revenue_projections[-2]-1==pytest.approx(.02)
+        # Default one-year investment lead: lower following-year revenue releases capital.
+        assert dcf.reinvestment_projections[0]==pytest.approx((dcf.revenue_projections[1]-dcf.revenue_projections[0])/2)
+        assert dcf.reinvestment_projections[0]<0
+        body=dict(inputs=candidate['inputs'], **{name:getattr(calculated,name).model_dump(mode='json')
+            for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+        assert 'capital_release_requires_recoverability_basis' in review_report(body)['methodology']['findings']

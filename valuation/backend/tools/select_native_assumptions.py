@@ -7,7 +7,8 @@ from tools.review_native_policy import review_report
 
 
 def select(baseline, discount_inputs, reference_rows, reference_cutoff, policy):
-    expected = dict(version='native-assumption-selection-v1', growth='latest_comparable_revenue_growth',
+    expected = dict(version='native-assumption-selection-v2', growth='latest_comparable_revenue_growth',
+        contraction='conditional_recovery_with_implied_capital_release',
         high_growth_years=1, projection_years=10, margin='hold_positive_adjusted_ttm',
         capital_region='global', minimum_sample_count=30, max_reference_age_days=370,
         terminal_growth_cap=.02, terminal_roic='wacc')
@@ -33,11 +34,13 @@ def select(baseline, discount_inputs, reference_rows, reference_cutoff, policy):
     decisions = {}; issues = []
     recent = reviewed['model_input_recent_window']
     growth = recent.get('revenue_growth')
-    growth_ok = growth is not None and math.isfinite(growth) and 0 <= growth <= 1
+    growth_ok = growth is not None and math.isfinite(growth) and -1 < growth <= 1
     decisions['growth'] = dict(status='selected_conditional' if growth_ok else 'rejected',
-        value=growth, basis='latest_comparable_window_then_engine_fade', evidence=recent)
+        value=growth, basis='latest_comparable_window_then_engine_fade', evidence=recent,
+        path=('contraction_then_recovery_to_stable_growth' if growth_ok and growth < 0
+              else 'nonnegative_growth_to_stable_growth' if growth_ok else None))
     if not growth_ok:
-        issues.append('growth_missing_or_requires_explicit_recovery_or_extreme_growth_policy')
+        issues.append('growth_missing_or_outside_positive_revenue_path_or_extreme_growth_policy')
     margin = reviewed['margin_bridge']['adjusted_margin']
     margin_ok = margin is not None and math.isfinite(margin) and 0 < margin <= 1
     decisions['margin'] = dict(status='selected_conditional' if margin_ok else 'rejected',
@@ -98,6 +101,10 @@ def select(baseline, discount_inputs, reference_rows, reference_cutoff, policy):
                 'inherited_adjustment_and_equity_bridge_policies']),
         status='rejected' if issues else 'selected_conditional',
         wacc_boundary='inherits_explicit_reference_scenario_not_company_market_WACC')
+    if growth_ok and growth < 0:
+        audit['economic_basis']['unresolved'].extend([
+            'contraction_recovery_timing_and_survival',
+            'capital_release_recoverability_not_implied_by_revenue_decline'])
     if issues:
         return None, audit
     inputs.macro_inputs.risk_free_rate = reference.risk_free_rate
