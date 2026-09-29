@@ -1,33 +1,4 @@
-"""
-Compute the company's operating metrics for industry comparison.
-
-Damodaran's *Ginzu* valuation methodology treats R&D as a capital asset
-and operating leases as debt. Both adjustments materially change Invested
-Capital and EBIT. When the Module-1 adjusted figures are available, this
-module uses the Damodaran-canonical formulas:
-
-    Adjusted Invested Capital
-      = BV_equity + BV_debt
-      + PV(operating leases)        # Damodaran lease capitalization
-      + Research asset              # Damodaran R&D capitalization
-      − Cash
-      − Cross-holdings
-
-    Adjusted EBIT
-      = Raw EBIT
-      + (current R&D − R&D amortization)
-      + (lease expense − lease depreciation)
-
-    NOPAT = Adjusted EBIT × (1 − tax rate) + R&D reclassification × tax rate
-    ROIC  = NOPAT / Adjusted IC
-    S/C   = Revenues / Adjusted IC
-
-When the adjustments aren't available (bare-bones test data, or a firm
-with no R&D and no operating leases), falls back to the unadjusted book
-formulas.
-
-Marginal Sales-to-Capital uses year-over-year Δ rather than levels.
-"""
+"""公司诊断：合并账面资本配套合并利润；投资分类未闭合，不自动整桶扣除。"""
 
 from __future__ import annotations
 
@@ -42,29 +13,24 @@ from engine.data_dictionary import (
 
 
 def _unadjusted_ic(f: RawFinancials) -> float | None:
-    bve = f.bv_equity
+    bve = f.consolidated_book_equity
     bvd = f.bv_debt
-    if bve is None or bvd is None:
+    if bve is None or bvd is None or f.cash_and_marketable_securities is None:
         return None
-    cash = f.cash_and_marketable_securities or 0.0
+    cash = f.cash_and_marketable_securities
     return bve + bvd - cash
 
 
 def _adjusted_ic(f: RawFinancials, adjusted: AdjustedFinancials | None) -> float | None:
-    """Damodaran IC = book IC + research asset + PV(leases) − cross-holdings.
-
-    Returns None if we lack the basics. If `adjusted` is None we just return
-    the unadjusted book IC (same as the original simple formula).
-    """
+    """合并资本加研发资产及尚未入表租赁资本，不混用股权桥接市值。"""
     base = _unadjusted_ic(f)
     if base is None:
         return None
-    cross_h = f.cross_holdings or 0.0
     if adjusted is None:
-        return base - cross_h
+        return base
     research = adjusted.value_of_research_asset or 0.0
     lease_pv = adjusted.pv_of_operating_leases or 0.0
-    return base + research + lease_pv - cross_h
+    return base + research + lease_pv
 
 
 def compute_company_metrics(
@@ -103,16 +69,17 @@ def compute_company_metrics(
     if fin0.revenues and fin0.revenues != 0:
         pretax_margin = ebit_for_margin / fin0.revenues
 
-    # Invested capital — Damodaran adjusted (book IC + research asset + PV(leases) − cross-holdings)
+    # Consolidated capital + research asset + unrecognized lease capital.
     ic0 = _adjusted_ic(fin0, adjusted)
-    ic1 = _adjusted_ic(fin1, adjusted) if fin1 else None
+    ic1 = (_adjusted_ic(fin1, adjusted) if fin1 and fin0.fiscal_year == fin1.fiscal_year+1
+           and not (adjusted and adjusted.pv_of_operating_leases) else None)
     if ic1 is not None and adjusted is not None:
         # Remove the current R&D net addition to recover opening research capital.
-        # Prior lease PV remains the existing current-PV proxy.
+        # Lease opening capital is unavailable; never substitute current PV.
         ic1 -= adjusted.adjusted_ebit - fin0.ebit - adjusted.lease_adjustment_to_ebit
     # 3. Sales-to-capital ratio
     sales_to_cap = None
-    if ic0 and ic0 != 0:
+    if ic0 is not None and ic0 > 0:
         sales_to_cap = fin0.revenues / ic0
 
     # 4. Marginal sales-to-capital — ΔRev / ΔIC over the latest year
@@ -120,12 +87,12 @@ def compute_company_metrics(
     if fin1 and ic0 is not None and ic1 is not None and (ic0 - ic1) != 0:
         marginal_stc = (fin0.revenues - fin1.revenues) / (ic0 - ic1)
 
-    # 5. ROIC — NOPAT / IC using adjusted EBIT and adjusted IC when possible
+    # 5. ROIC uses aligned opening capital; a current balance is not a substitute.
     roic = None
-    if ic0 and ic0 != 0:
+    if ic1 is not None and ic1 > 0:
         nopat = (after_tax_operating_income(adjusted, fin0, tax_rate)
                  if adjusted is not None else fin0.ebit * (1 - tax_rate))
-        roic = nopat / ic0
+        roic = nopat / ic1
 
     # 7. Cost of capital (WACC) — passthrough from Module 2
     wacc = cost_of_capital.wacc if cost_of_capital else None

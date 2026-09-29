@@ -67,7 +67,14 @@ def test_archived_real_main_copy_review(tmp_path,monkeypatch):
     expected_report = deepcopy(old['report'])
     expected_report['dcf']['implied_roic_projections'] = [None]*10
     expected_report['dcf']['implied_roic_terminal'] = None
-    assert run['report'] == expected_report
+    # 冻结报告经济结果逐项保持；新增资本/税盾诊断由当前专门回归验证。
+    for key,value in expected_report.items():
+        if key == 'dcf':
+            assert {k:run['report'][key][k] for k in value} == value
+        elif key == 'ltm_financials':
+            assert {k:v for k,v in run['report'][key].items() if k!='consolidated_book_equity'} == value
+        else:
+            assert run['report'][key] == value
     from data_sources.alphalake import content_hash
     assert run['request'] == AlphaLakeRequest.model_validate(request).model_dump(mode='json')
     old_inputs = deepcopy(old['inputs'])
@@ -81,6 +88,8 @@ def test_archived_real_main_copy_review(tmp_path,monkeypatch):
     assert 'annual_sales_to_capital' not in old_inputs['valuation_assumptions']
     old_inputs['historical_research_expenses'] = {}
     old_inputs['valuation_assumptions']['annual_sales_to_capital'] = None
+    for row in old_inputs['raw_financials'] + [old_inputs['prepared_ttm']['financials']]:
+        row['consolidated_book_equity'] = None
     assert run['inputs'] == old_inputs
     saved = contents['review.json.gz']; calls = []
     def export(period):

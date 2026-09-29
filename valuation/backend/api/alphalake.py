@@ -38,8 +38,8 @@ ENGINE_REVISION = engine_revision()
 def terminal_return_sensitivity(inputs, report):
     """通用账面DCF的终值单因素对照；复用引擎，不替换主结果。"""
     assumptions = inputs.valuation_assumptions
-    roic = assumptions.roic_stable_override
-    wacc = assumptions.cost_of_capital_stable_override
+    roic = report.dcf.terminal_roic
+    wacc = report.dcf.terminal_wacc
     scenario = inputs.model_copy(deep=True)
     scenario.valuation_assumptions.roic_stable_override = wacc
     counter = report if roic == wacc else run_full_valuation(scenario)

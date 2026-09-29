@@ -60,7 +60,7 @@ def _compute_historical_series(
       NOPAT_i        = raw_EBIT_i × (1 - effective_tax_i) + R&D net adjustment
       effective_tax_i = tax_exp_i / ebt_i                   IQ_INC_TAX/IQ_EBT_EXCL
                       (unavailable if tax/EBT is missing or nonfinite, or EBT <= 0)
-      IC_i           = bv_equity_i + year-specific R&D asset + bv_debt_i - cash_i
+      IC_i           = consolidated_book_equity_i + year-specific R&D asset + bv_debt_i - cash_i
       ROIC_i         = NOPAT_i / IC_{i+1}   (prior-year IC, standard)
       S_C_i          = Revenue_i / IC_i      (current-year IC)
       Margin_i       = EBIT_i / Revenue_i    (pre-tax operating margin)
@@ -110,8 +110,8 @@ def _compute_historical_series(
                 _, amortization, _ = capitalize_r_and_d(cohort[0], cohort[1:], n)
                 delta = cohort[0] - amortization
         research_delta.append(delta)
-        if all(v is not None for v in (f.bv_equity, f.bv_debt, f.cash_and_marketable_securities, asset)):
-            ic_current.append(f.bv_equity + asset + f.bv_debt - f.cash_and_marketable_securities)
+        if all(v is not None for v in (f.consolidated_book_equity, f.bv_debt, f.cash_and_marketable_securities, asset)):
+            ic_current.append(f.consolidated_book_equity + asset + f.bv_debt - f.cash_and_marketable_securities)
         else:
             ic_current.append(None)
 
@@ -255,9 +255,9 @@ def compute_cashflow_and_growth(
     if annual_prior_valid and raw_financials_history is not None:
         years = Counter(f.fiscal_year for f in raw_financials_history)
         annual_prior_valid = years[raw.fiscal_year] == years[raw_prior_year.fiscal_year] == 1
-    if annual_prior_valid and all(v is not None for v in (raw_prior_year.bv_equity, raw_prior_year.bv_debt, raw_prior_year.cash_and_marketable_securities)):
+    if annual_prior_valid and all(v is not None for v in (raw_prior_year.bv_debt, raw_prior_year.cash_and_marketable_securities)):
         # Invested capital = BV Equity + BV Debt - Cash (beginning of period = prior year end)
-        prior_bv_equity = raw_prior_year.bv_equity or 0.0
+        prior_bv_equity = raw_prior_year.bv_equity
         prior_bv_debt = raw_prior_year.bv_debt or 0.0
         prior_cash = raw_prior_year.cash_and_marketable_securities or 0.0
 
@@ -265,14 +265,15 @@ def compute_cashflow_and_growth(
         prior_research_asset = adjusted.value_of_research_asset
         if adj_inputs.has_r_and_d:
             prior_research_asset -= adj_inputs.r_and_d_expense_current - adjusted.amortization_r_and_d
-        prior_adjusted_bv_equity = prior_bv_equity + prior_research_asset
+        prior_adjusted_bv_equity = prior_bv_equity + prior_research_asset if prior_bv_equity is not None else None
 
-        adjusted_invested_capital = prior_adjusted_bv_equity + prior_bv_debt - prior_cash
+        adjusted_invested_capital = (raw_prior_year.consolidated_book_equity + prior_research_asset + prior_bv_debt - prior_cash
+            if raw_prior_year.consolidated_book_equity is not None and not adj_inputs.has_operating_leases else None)
 
-        if adjusted_invested_capital > 0:
+        if adjusted_invested_capital is not None and adjusted_invested_capital > 0:
             roic = nopat / adjusted_invested_capital
 
-        if prior_adjusted_bv_equity > 0 and adjusted_net_income is not None:
+        if prior_adjusted_bv_equity is not None and prior_adjusted_bv_equity > 0 and adjusted_net_income is not None:
             roe = adjusted_net_income / prior_adjusted_bv_equity
 
     # --- Reinvestment Rates ---

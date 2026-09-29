@@ -465,7 +465,7 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
             warnings.append('公司年度有效税率未供给或须审核；原模型税率默认值仍是估值假设')
         warnings.append('债务为短长借款、债券、一年内到期非流动负债及租赁负债的账面合计；到期项范围与租赁重复资本化须另核')
         if any(r.get('minority_interests') not in (None, 0) for group in rows.values() for r in group.values()):
-            warnings.append('TDX权益为归母账面权益；原生资本/ROIC诊断未另加少数股权，不作为已核验合并经营回报；股权桥接的少数股权扣减为账面代理而非市场价值')
+            warnings.append('资本诊断使用归母权益加账面少数股权的合并权益；股权桥接的少数股权扣减仍为账面代理而非市场价值，经营/投资分类未因此闭合')
         market = cells.get(('company',0,'mv_equity_listing'))
         if market and market['status'] == 'a_share_total_share_proxy':
             warnings.append('多股类市值按A股价格×含B/H股的总股本估计；缺其他股类价格及汇率，不是分股类真实合计市值，影响WACC权重和杠杆调整')

@@ -49,7 +49,7 @@ def annual_capital_evidence(rows, research_life):
         margin = None
         if amortization is not None and valid(row['ebit']) and valid(row['revenues']) and row['revenues'] > 0:
             margin = (row['ebit']+(cohort[0] if research_life is not None else 0)-amortization)/row['revenues']
-        parts = ('bv_equity','bv_debt','cash_and_marketable_securities')
+        parts = ('bv_equity','bv_debt','cash_and_marketable_securities','minority_interests')
         absent = [key for key in parts if not valid(row[key])]
         capital = None if absent or asset is None else row['bv_equity']+row['bv_debt']-row['cash_and_marketable_securities']+asset
         minority, investments = row.get('minority_interests'), row.get('cross_holdings')
@@ -65,8 +65,8 @@ def annual_capital_evidence(rows, research_life):
                 +[key for key,value in (('minority_interests',minority),('cross_holdings',investments)) if not valid(value)]),
             boundary='合并利润对应资本应含少数股东权益；长期投资代理不等于已核验非经营资产，亦非市值；EBIT投资收益、现金重叠及租赁范围须另审，不能据此批准ROIC或预测倍率')
         result.append(dict(year=year,research_asset_million_cny=asset,research_amortization_million_cny=amortization,
-            research_adjusted_margin=margin,research_adjusted_invested_capital_million_cny=capital,
-            research_adjusted_sales_to_capital=row['revenues']/capital if capital is not None and capital > 0 and valid(row['revenues']) else None,
+            research_adjusted_margin=margin,research_adjusted_invested_capital_million_cny=consolidated,
+            research_adjusted_sales_to_capital=row['revenues']/consolidated if consolidated is not None and consolidated > 0 and valid(row['revenues']) else None,
             unavailable_research_cohort_years=missing,missing_balance_inputs=absent,capital_scope_bridge=scope))
     annual = {r['year']: r for r in result}
     for row in result:
@@ -79,7 +79,7 @@ def annual_capital_evidence(rows, research_life):
         row['capital_change_bridge'] = bridge
         if prior is None:
             continue
-        for field, sign in (('bv_equity',1), ('bv_debt',1), ('cash_and_marketable_securities',-1), ('research_asset_million_cny',1)):
+        for field, sign in (('bv_equity',1), ('minority_interests',1), ('bv_debt',1), ('cash_and_marketable_securities',-1), ('research_asset_million_cny',1)):
             before, after = ((prior.get(field),row.get(field)) if field == 'research_asset_million_cny'
                 else (history[year-1].get(field),history[year].get(field)))
             bridge['components'].append(dict(field=field, coefficient=sign, opening=before, closing=after,
@@ -187,7 +187,7 @@ def review_report(body, annual_evidence=None):
         model_annual_evidence.append(dict(year=f.fiscal_year,
             research_adjusted_margin=margin, research_adjusted_sales_to_capital=ratio,
             unavailable_research_cohort_years=unavailable,
-            missing_balance_inputs=[name for name in ('bv_equity','bv_debt','cash_and_marketable_securities')
+            missing_balance_inputs=[name for name in ('consolidated_book_equity','bv_debt','cash_and_marketable_securities')
                 if getattr(f,name) is None],
             boundary='原生历史诊断仅按逐年研发调整；租赁及现金/投资代理口径未因此闭合'))
     if annual_evidence is not None:
@@ -256,11 +256,8 @@ def review_report(body, annual_evidence=None):
             window['model_input_ebit_margin'] = (window['ebit']/window['revenues']
                 if window['ebit'] is not None and window['revenues'] else None)
     macro = inputs.macro_inputs
-    terminal_wacc = a.cost_of_capital_stable_override
-    if terminal_wacc is None:
-        rf = a.riskfree_after_yr10 if a.override_riskfree and a.riskfree_after_yr10 is not None else macro.risk_free_rate
-        terminal_wacc = rf + macro.equity_risk_premium
-    terminal_roic = a.roic_stable_override if a.roic_stable_override is not None else terminal_wacc
+    terminal_wacc = dcf.terminal_wacc
+    terminal_roic = dcf.terminal_roic
     g = macro.risk_free_rate
     if a.override_growth_perpetuity and a.growth_perpetuity_rate is not None:
         g = a.growth_perpetuity_rate
@@ -324,7 +321,8 @@ def review_report(body, annual_evidence=None):
     if a.annual_forecast is not None:
         margin, terminal_tax = a.annual_forecast[-1].margin, a.annual_forecast[-1].tax
     terminal_revenue = rows[-1]['revenue_million_cny']*(1+g)
-    terminal_nopat = terminal_revenue*margin*(1-terminal_tax)
+    terminal_ebit = terminal_revenue*margin
+    terminal_nopat = terminal_ebit-max(0.0,terminal_ebit)*terminal_tax
     terminal_investment = terminal_nopat*g/terminal_roic
     if not math.isclose(terminal_nopat-terminal_investment, terminal_fcff, rel_tol=1e-10, abs_tol=1e-8):
         raise ValueError('terminal economic bridge differs from engine')
@@ -424,10 +422,12 @@ def methodology_review(inputs, report, review):
             findings.append(code)
     flag('operating_income_and_asset_bridge_require_scope_evidence', True)
     flag('minority_value_basis_requires_evidence', raw.minority_interests not in (None, 0))
-    flag('engine_capital_scope_requires_equity_definition', raw.minority_interests not in (None, 0))
+    flag('consolidated_book_equity_required_for_capital_diagnostics', raw.consolidated_book_equity is None)
     flag('lease_capitalization_requires_no_prior_balance_sheet_recognition', inputs.adjustment_inputs.has_operating_leases)
     flag('rd_life_and_ttm_cohorts_are_estimation_policy', inputs.adjustment_inputs.has_r_and_d)
-    flag('nol_tax_shield_timing_requires_separate_validation', any(r < 0 for r in report.dcf.ebit_projections) or (a.override_nol and a.nol_amount > 0))
+    flag('tax_shield_path_uses_constant_initial_debt_component', any(report.dcf.wacc_tax_shield_adjustments))
+    flag('aggregate_wacc_tax_shield_not_decomposed', 'not_decomposed' in report.dcf.tax_shield_basis and any(v < 1 for v in report.dcf.debt_tax_shield_availability))
+    flag('terminal_unused_nol_not_separately_valued', report.dcf.unused_nol_at_terminal > 0)
     flag('turnaround_path_requires_basis', report.adjusted.adjusted_ebit <= 0)
     flag('capital_release_requires_recoverability_basis', any(r['reinvestment_million_cny'] < 0 for r in forecast) or terminal['growth'] < 0)
     flag('nonpositive_equity_requires_distress_interpretation', report.final.value_per_share is not None and report.final.value_per_share <= 0)
@@ -465,7 +465,8 @@ def methodology_review(inputs, report, review):
         operating_scope=dict(status='requires_scope_evidence',
             input_ebit=raw.ebit,
             adjustments='explicit_RD_and_lease_inputs_only; statement_EBIT_is_not_certified_operating_income',
-            engine_capital_basis='input_book_equity_plus_debt_minus_cash_plus_research_and_lease_adjustments; separately_reported_minority_not_added',
+            engine_capital_basis='explicit_consolidated_book_equity_plus_debt_minus_cash_plus_research_and_lease_adjustments',
+            consolidated_book_equity=raw.consolidated_book_equity,
             minority_bridge_basis='input_amount; native_TDX_book_equity_proxy_not_market_value',
             adjusted_ebit=report.adjusted.adjusted_ebit, research_asset=report.adjusted.value_of_research_asset,
             lease_capital=report.adjusted.pv_of_operating_leases,
@@ -482,7 +483,12 @@ def methodology_review(inputs, report, review):
             below_initial_wacc_years=review['economic_checks']['marginal_return_screen']['below_initial_wacc_years'],
             basis='growth_and_margin_path_with_aggregate_reinvestment; no_separate_RD_or_WC_deduction',
             boundary='收入规模、增长空间、目标利润率及投资滞后须有经济依据；没有统一数值阈值可自动批准'),
-        terminal_wacc=dict(growth=terminal['growth'], wacc=terminal['wacc'], roic=terminal['assumed_marginal_roic'],
+        terminal_wacc=dict(tax_shield_basis=report.dcf.tax_shield_basis,
+            debt_tax_shield_availability=report.dcf.debt_tax_shield_availability,
+            annual_wacc_adjustments=report.dcf.wacc_tax_shield_adjustments,
+            terminal_wacc_adjustment=report.dcf.terminal_tax_shield_adjustment,
+            unused_nol_at_terminal=report.dcf.unused_nol_at_terminal,
+            growth=terminal['growth'], wacc=terminal['wacc'], roic=terminal['assumed_marginal_roic'],
             reinvestment_rate=terminal['reinvestment_rate'], terminal_riskfree=terminal_rf, terminal_tax=terminal_tax,
             initial_wacc=report.cost_of_capital.wacc,
             initial_wacc_method=inputs.methodology_choices.cost_of_capital_approach,

@@ -12,7 +12,7 @@ from engine.module_5_multiples import compute_multiples
 @pytest.mark.parametrize('leases', [False, True])
 def test_rd_reclassification_preserves_tax_and_cashflow(current_rd, leases):
     raw = RawFinancials(fiscal_year=2025, revenues=1000, ebit=200, ebitda=240,
-        net_income=150, bv_equity=500, bv_debt=300, cash_and_marketable_securities=50,
+        net_income=150, bv_equity=500, consolidated_book_equity=500, bv_debt=300, cash_and_marketable_securities=50,
         capex=80, d_a=40, change_in_noncash_wc=10, net_debt_issued=20)
     prior = raw.model_copy(update={'fiscal_year':2024, 'revenues':900.0})
     capital = CostOfCapital(d_e_ratio=.4, beta_l=1.2, cost_of_equity=.1,
@@ -33,13 +33,12 @@ def test_rd_reclassification_preserves_tax_and_cashflow(current_rd, leases):
     assert new_cf.fcff == pytest.approx(old_cf.fcff)
     assert new_cf.fcfe == pytest.approx(old_cf.fcfe)
     # Prior research asset = 40 × (1 + 4/5 + 3/5 + 2/5 + 1/5) = 120.
-    assert new_cf.adjusted_invested_capital == pytest.approx(750+120)
+    assert new_cf.adjusted_invested_capital == (None if leases else pytest.approx(750+120))
     expected_nopat = (200+before.lease_adjustment_to_ebit)*.8+delta
     assert new_cf.fcff+new_cf.reinvestment_firm == pytest.approx(expected_nopat)
     metrics = compute_company_metrics([raw, prior], adjusted=after, tax_rate=.20)
-    current_ic = 750+after.value_of_research_asset+after.pv_of_operating_leases
-    assert metrics.roic == pytest.approx(expected_nopat/current_ic)
-    assert metrics.marginal_sales_to_capital == pytest.approx(100/delta)
+    assert metrics.roic == (None if leases else pytest.approx(expected_nopat/870))
+    assert metrics.marginal_sales_to_capital == (None if leases else pytest.approx(100/delta))
     multiples = compute_multiples(after, raw, new_cf, capital, ValuationAssumptions(stable_growth_rate=.02), macro)
     expected_value = old_cf.fcff/(.08-.02)
     assert multiples.ev_sales_intrinsic == pytest.approx(expected_value/1000)
@@ -77,7 +76,7 @@ def test_anker_reported_rd_matches_frozen_tax_unchanged_scenarios():
 
 def test_zero_adjusted_capital_has_no_book_capital_ratio_fallback():
     raw = RawFinancials(fiscal_year=2025, revenues=1000, ebit=100,
-        bv_equity=100, bv_debt=0, cash_and_marketable_securities=0, cross_holdings=100)
+        bv_equity=100, consolidated_book_equity=0, bv_debt=0, cash_and_marketable_securities=0, cross_holdings=100)
     metrics = compute_company_metrics([raw], adjusted=AdjustedFinancials(adjusted_ebit=100), tax_rate=.2)
     assert metrics.sales_to_capital is None
     assert metrics.roic is None

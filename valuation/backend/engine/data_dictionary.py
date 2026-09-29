@@ -44,6 +44,7 @@ class RawFinancials(BaseModel):
     net_debt_issued: float | None = Field(default=None, description="Net debt issuance")
     cash_and_marketable_securities: float | None = Field(default=None, description="Cash + marketable securities")
     bv_equity: float | None = Field(default=None, description="Book value of equity")
+    consolidated_book_equity: float | None = Field(default=None, description="Consolidated book equity including book noncontrolling interests; independent of minority market claim")
     bv_debt: float | None = Field(default=None, description="Book value of debt")
     mv_equity: float | None = Field(default=None, description="Market cap — reporting currency (for WACC math)")
     mv_equity_listing: float | None = Field(default=None, description="Market cap as-traded — listing currency (for display)")
@@ -502,6 +503,13 @@ class DCFResult(BaseModel):
     fcff_projections: list[float] = Field(default_factory=list)
     reinvestment_projections: list[float] = Field(default_factory=list)
     discount_factors: list[float] = Field(default_factory=list)
+    debt_tax_shield_availability: list[float] = Field(default_factory=list)
+    wacc_tax_shield_adjustments: list[float] = Field(default_factory=list)
+    tax_shield_basis: str = "not_evaluated"
+    terminal_wacc: float | None = None
+    terminal_roic: float | None = None
+    terminal_tax_shield_adjustment: float = 0.0
+    unused_nol_at_terminal: float = 0.0
     pv_fcff: list[float] = Field(default_factory=list)
     terminal_value_firm: float | None = Field(default=None)
     pv_terminal_value: float | None = Field(default=None)

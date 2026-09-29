@@ -204,6 +204,9 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
             earnings_before_tax=r.get("earnings_before_tax"),
             total_tax_expense=r.get("total_tax_expense"),
             bv_equity=r.get("bv_equity"),
+            consolidated_book_equity=(r["bv_equity"] + r["minority_interests"]
+                if record.get("data_source", {}).get("annual_bv_equity") == "parent_attributable"
+                and r.get("bv_equity") is not None and r.get("minority_interests") is not None else None),
             bv_debt=r.get("bv_debt"),
             cash_and_marketable_securities=r.get("cash_and_marketable_securities"),
             cross_holdings=r.get("cross_holdings"),
@@ -234,6 +237,9 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
             earnings_before_tax=r.get("earnings_before_tax"),
             total_tax_expense=r.get("total_tax_expense"),
             bv_equity=r.get("bv_equity"),
+            consolidated_book_equity=(r["bv_equity"] + r["minority_interests"]
+                if record.get("data_source", {}).get("annual_bv_equity") == "parent_attributable"
+                and r.get("bv_equity") is not None and r.get("minority_interests") is not None else None),
             bv_debt=r.get("bv_debt"),
             cash_and_marketable_securities=r.get("cash_and_marketable_securities"),
             cross_holdings=r.get("cross_holdings"),

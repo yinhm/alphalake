@@ -309,6 +309,8 @@ def compute_dcf(
 
     # --- NOL ---
     nol_initial = assumptions.nol_amount if assumptions.override_nol else 0.0
+    if not math.isfinite(nol_initial) or nol_initial < 0:
+        raise ValueError("NOL must be finite and nonnegative")
 
     # --- Paths ---
     g_path = _revenue_growth_path(g_year_1, g_years_2_5, g_terminal, high_growth_years, n)
@@ -343,6 +345,21 @@ def compute_dcf(
     # --- NOPAT with dynamic NOL ---
     nopat_projections, nol_projections = _apply_nol_and_tax(ebit_projections, tax_path_vals, nol_initial)
 
+    # Damodaran: no current debt tax benefit while operating income is fully
+    # sheltered by losses. Carry the selected initial debt-cost/weight component
+    # through the explicit horizon; this is not a forecast of actual tax law/debt.
+    # ponytail: constant initial debt component; financing paths need explicit future weights/costs.
+    shield_availability = []
+    opening_nol = nol_initial
+    for ebit, rate, closing_nol in zip(ebit_projections, tax_path_vals, nol_projections, strict=True):
+        shield_availability.append(max(0.0, ebit-opening_nol)/ebit if ebit > 0 and rate > 0 else 0.0)
+        opening_nol = closing_nol
+    decomposed = cost_of_capital.approach_used in ('detailed', 'reference_snapshot')
+    shield_spread = (cost_of_capital.weight_debt *
+        (cost_of_capital.cost_of_debt_pretax-cost_of_capital.cost_of_debt_aftertax)) if decomposed else 0.0
+    shield_adjustments = [shield_spread*(1-fraction) for fraction in shield_availability]
+    wacc_path_vals = [rate+delta for rate,delta in zip(wacc_path_vals,shield_adjustments,strict=True)]
+
     # --- Reinvestment ---
     reinvestment_projections = _reinvestment_path(
         extended_rev, sc_high, sc_stable, lag, high_growth_years, n, assumptions.annual_sales_to_capital
@@ -354,7 +371,11 @@ def compute_dcf(
     # --- Terminal year ---
     rev_terminal = extended_rev[n] * (1 + g_terminal)  # rev[11]
     ebit_terminal = rev_terminal * margin_target
-    nopat_terminal = ebit_terminal * (1 - tax_terminal)
+    terminal_shield_adjustment = shield_spread if ebit_terminal <= 0 or tax_terminal <= 0 else 0.0
+    wacc_terminal += terminal_shield_adjustment
+    if assumptions.roic_stable_override is None:
+        roic_terminal = wacc_terminal
+    nopat_terminal = ebit_terminal - max(0.0, ebit_terminal) * tax_terminal
     rir_terminal = g_terminal / roic_terminal
     # Damodaran: stable reinvestment = g/ROIC; negative g implies partial
     # liquidation, not zero reinvestment. Recovery of capital is an assumption.
@@ -378,14 +399,12 @@ def compute_dcf(
     value_as_going_concern = pv_cash_flows_sum + pv_terminal
 
     # --- Invested capital + ROIC path ---
-    # IC_base = Adjusted BV Equity (includes R&D asset from M1) + BV Debt − cash + lease PV
-    # Note: adjusted_bv_equity already = raw.bv_equity + value_of_research_asset
-    equity_base = adjusted.adjusted_bv_equity if adjusted.adjusted_bv_equity is not None else raw.bv_equity
-    capital_parts = (equity_base, raw.bv_debt, raw.cash_and_marketable_securities,
-                     adjusted.pv_of_operating_leases)
-    # Missing opening capital cannot be reconstructed from future reinvestment.
-    ic_base = (equity_base + raw.bv_debt - raw.cash_and_marketable_securities
-               + adjusted.pv_of_operating_leases
+    # Capital uses consolidated book equity; the equity bridge's minority claim
+    # can be a market estimate and must not be reused as book capital.
+    capital_parts = (raw.consolidated_book_equity, raw.bv_debt, raw.cash_and_marketable_securities,
+                     adjusted.value_of_research_asset, adjusted.pv_of_operating_leases)
+    ic_base = (raw.consolidated_book_equity + raw.bv_debt - raw.cash_and_marketable_securities
+               + adjusted.value_of_research_asset + adjusted.pv_of_operating_leases
                if all(v is not None and math.isfinite(v) for v in capital_parts) else None)
     ic_path = [ic_base]
     roic_path = []
@@ -456,6 +475,13 @@ def compute_dcf(
         fcff_projections=fcff_projections,
         reinvestment_projections=reinvestment_projections,
         discount_factors=cumulative_df,
+        terminal_wacc=wacc_terminal, terminal_roic=roic_terminal,
+        terminal_tax_shield_adjustment=terminal_shield_adjustment,
+        unused_nol_at_terminal=nol_projections[-1],
+        debt_tax_shield_availability=shield_availability,
+        wacc_tax_shield_adjustments=shield_adjustments,
+        tax_shield_basis=("initial_debt_component_constant; proportional_taxable_EBIT_proxy; terminal_normalized"
+            if decomposed else "aggregate_WACC_not_decomposed; tax_shield_timing_not_automatically_adjusted"),
         pv_fcff=pv_fcff,
         terminal_value_firm=terminal_value_firm,
         pv_terminal_value=pv_terminal,

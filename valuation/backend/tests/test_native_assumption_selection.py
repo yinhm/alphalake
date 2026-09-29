@@ -18,7 +18,7 @@ def sample():
     from engine.data_dictionary import RawFinancials, IndustryData, MacroInputs
     inputs = CompanyValuationInput(ticker='SHSE:600519', reporting_currency='CNY', stock_price_currency='CNY',
         period_date_10k='2025-12-31', raw_financials=[RawFinancials(fiscal_year=2025-i,
-            revenues=1000/(1.1**i), ebit=100, r_and_d_expense=0, bv_equity=500, bv_debt=100,
+            revenues=1000/(1.1**i), ebit=100, r_and_d_expense=0, bv_equity=500, consolidated_book_equity=500, bv_debt=100,
             cash_and_marketable_securities=50, cross_holdings=0,minority_interests=0,shares_outstanding=10) for i in range(6)],
         industry_data=IndustryData(industry_name='Beverage (Alcoholic)',beta_u=.7,cost_of_debt_pretax=.05),
         macro_inputs=MacroInputs(risk_free_rate=.04,equity_risk_premium=.04,tax_rate_marginal=.25))
@@ -140,7 +140,7 @@ def test_ambiguous_reference_and_unknown_policy_rejected():
 def test_independent_history_retains_research_when_ebit_missing():
     from tools.review_native_policy import annual_capital_evidence
     rows=[dict(fiscal_year=2025-i,r_and_d_expense=10,ebit=100 if i==0 else None,
-        revenues=1000,bv_equity=500,bv_debt=100,cash_and_marketable_securities=50) for i in range(6)]
+        revenues=1000,bv_equity=500,bv_debt=100,minority_interests=0,cash_and_marketable_securities=50) for i in range(6)]
     evidence=annual_capital_evidence(rows,5)
     assert evidence[0]['research_adjusted_margin']==.1
     assert evidence[0]['research_asset_million_cny']==30
@@ -159,12 +159,12 @@ def test_independent_history_retains_research_when_ebit_missing():
 def test_historical_capital_changes_reconcile_and_keep_gaps():
     from tools.review_native_policy import annual_capital_evidence
     rows=[dict(fiscal_year=2020+i,r_and_d_expense=10*(i+1),ebit=None,
-        revenues=100+20*i,bv_equity=100+30*i,bv_debt=50+5*i,
+        revenues=100+20*i,bv_equity=100+30*i,bv_debt=50+5*i,minority_interests=0,
         cash_and_marketable_securities=10+2*i) for i in range(4)]
     result=annual_capital_evidence(rows,2)
     bridge=result[0]['capital_change_bridge']
     assert bridge['capital_change_million_cny']==48  # 30+5-2+15，研发队列独立滚动
-    assert [p['contribution_million_cny'] for p in bridge['components']]==[30,5,-2,15]
+    assert [p['contribution_million_cny'] for p in bridge['components']]==[30,0,5,-2,15]
     assert bridge['revenue_change_per_capital_change']==pytest.approx(20/48)
     assert bridge['automatic_adoption'] is False
     changed=deepcopy(rows);changed[-1]['revenues']=100
@@ -191,7 +191,7 @@ def test_capital_scope_distinguishes_consolidation_from_investment_proxy():
     result=annual_capital_evidence([row],None)[0]
     scope=result['capital_scope_bridge']
     assert row==original
-    assert result['research_adjusted_invested_capital_million_cny']==550
+    assert result['research_adjusted_invested_capital_million_cny']==570
     assert scope['including_minority_capital_million_cny']==570
     assert scope['excluding_investment_proxy_capital_million_cny']==490
     assert scope['missing_inputs']==[] and not scope['automatic_adoption']
@@ -560,7 +560,7 @@ def test_company_capital_proxy_keeps_incomplete_scope(problem):
     inputs=CompanyValuationInput.model_validate(sample()['inputs'])
     if problem=='missing_year': inputs.raw_financials.pop(1)
     elif problem=='missing_balance': inputs.raw_financials[1].cash_and_marketable_securities=None
-    elif problem=='negative_capital': inputs.raw_financials[1].bv_equity=-1000
+    elif problem=='negative_capital': inputs.raw_financials[1].consolidated_book_equity=-1000
     else: inputs.adjustment_inputs.has_operating_leases=True
     report=run_full_valuation(inputs)
     baseline=dict(inputs=inputs.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
@@ -575,7 +575,9 @@ def test_company_capital_proxy_keeps_incomplete_scope(problem):
 def test_company_capital_matches_consolidated_revenue_and_keeps_equity_bridge(minority):
     from tools.compare_native_capital import compare
     inputs=CompanyValuationInput.model_validate(sample()['inputs'])
-    for row in inputs.raw_financials: row.minority_interests=minority
+    for row in inputs.raw_financials:
+        row.minority_interests=minority
+        row.consolidated_book_equity=row.bv_equity+minority if minority is not None else None
     report=run_full_valuation(inputs)
     baseline=dict(inputs=inputs.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
         for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})

@@ -175,6 +175,15 @@ def run_full_valuation(
         raw_current, inputs.valuation_assumptions, inputs.macro_inputs
     )
 
+    if any(report.dcf.wacc_tax_shield_adjustments) or report.dcf.terminal_tax_shield_adjustment:
+        report.warnings.append("Loss/NOL debt tax shield adjusted using constant initial debt cost/weight and proportional taxable EBIT; actual tax limits and future financing remain assumptions")
+    if ('not_decomposed' in report.dcf.tax_shield_basis
+            and any(v < 1 for v in report.dcf.debt_tax_shield_availability)):
+        report.warnings.append("Aggregate WACC not decomposed: loss/NOL debt tax shield timing not automatically adjusted")
+
+    if report.dcf.unused_nol_at_terminal > 0:
+        report.warnings.append("Unused projected NOL at terminal is not valued separately; normalized terminal taxes assumed")
+
     if inputs.equity_bridge is not None:
         from .equity_bridge import apply_equity_bridge
         report.equity_bridge = apply_equity_bridge(report.dcf, inputs.equity_bridge)
@@ -206,13 +215,17 @@ def run_full_valuation(
     ltm_then_prior: list = []
     if report.ltm_financials is not None:
         ltm_then_prior.append(report.ltm_financials)
-    ltm_then_prior.extend(inputs.raw_financials)
+    ltm_then_prior.extend(inputs.raw_financials if inputs.quarters_since_10k or inputs.prepared_ttm else inputs.raw_financials[1:])
     computed_cm = compute_company_metrics(
         ltm_then_prior,
         cost_of_capital=report.cost_of_capital,
         adjusted=report.adjusted,
         tax_rate=tax_rate_for_roic,
     )
+    # Share the aligned opening-capital/tax calculation; LTM is not a full fiscal year.
+    computed_cm.roic = report.cashflow.roic
+    if inputs.quarters_since_10k or inputs.prepared_ttm:
+        computed_cm.marginal_sales_to_capital = None
     # All of these fields are DERIVED from raw financials + module outputs,
     # so they MUST refresh on every run. Previously we only filled null
     # fields, which caused a subtle bug after PATCH: the session's

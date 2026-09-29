@@ -257,10 +257,10 @@ def test_invalid_capital_efficiency_api_keeps_saved_session(raw, macro, monkeypa
     assert session_store.list_sessions() == [sid]
 
 
-@pytest.mark.parametrize('missing', ['bv_equity', 'bv_debt', 'cash_and_marketable_securities'])
+@pytest.mark.parametrize('missing', ['consolidated_book_equity', 'bv_debt', 'cash_and_marketable_securities'])
 def test_implied_roic_requires_complete_opening_capital(cf_metrics, cost_of_capital, adjusted, raw, macro, missing):
     from decimal import Decimal as D
-    raw = raw.model_copy(update=dict(bv_equity=500., bv_debt=300., cash_and_marketable_securities=100.))
+    raw = raw.model_copy(update=dict(bv_equity=500., consolidated_book_equity=500., bv_debt=300., cash_and_marketable_securities=100.))
     assumptions = ValuationAssumptions(revenue_growth_next_year=.05)
     complete = compute_dcf(cf_metrics, cost_of_capital, adjusted, raw, assumptions, macro)
     capital = D(700)

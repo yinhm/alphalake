@@ -41,7 +41,7 @@ def raw_current():
         d_a=40.0,
         change_in_noncash_wc=10.0,
         net_debt_issued=20.0,
-        bv_equity=500.0,
+        bv_equity=500.0, consolidated_book_equity=500.0,
         bv_debt=300.0,
         cash_and_marketable_securities=50.0,
     )
@@ -53,7 +53,7 @@ def raw_prior():
         fiscal_year=-1,
         revenues=900.0,
         ebit=180.0,
-        bv_equity=450.0,
+        bv_equity=450.0, consolidated_book_equity=450.0,
         bv_debt=280.0,
         cash_and_marketable_securities=40.0,
     )
@@ -267,7 +267,7 @@ def test_historical_rd_uses_each_years_cohorts(cost_of_capital, life):
     from engine.module_1_adjustments import compute_adjustments
 
     history = [RawFinancials(fiscal_year=y, revenues=1000, ebit=200,
-        bv_equity=500, bv_debt=100, cash_and_marketable_securities=20,
+        bv_equity=500, consolidated_book_equity=500, bv_debt=100, cash_and_marketable_securities=20,
         earnings_before_tax=100, total_tax_expense=20,
         r_and_d_expense=100+10*(y-2017)) for y in range(2025,2016,-1)]
 
@@ -321,7 +321,7 @@ def test_historical_returns_require_actual_annual_intervals():
 
     def row(year, revenue):
         return RawFinancials(fiscal_year=year, revenues=revenue, ebit=100,
-                             bv_equity=500, bv_debt=100, cash_and_marketable_securities=0,
+                             bv_equity=500, consolidated_book_equity=500, bv_debt=100, cash_and_marketable_securities=0,
                              earnings_before_tax=100, total_tax_expense=21)
     history = [row(2025, 1331), row(2024, 1210), row(2022, 1000), row(2021, 900)]
     result = _compute_historical_series(history, None)
@@ -346,7 +346,7 @@ def test_historical_returns_require_actual_annual_intervals():
 def test_historical_missing_tax_does_not_invent_roic(tax, ebt):
     from engine.module_3_cashflow import _compute_historical_series
     history = [RawFinancials(fiscal_year=y, revenues=1000, ebit=100,
-        bv_equity=500, bv_debt=100, cash_and_marketable_securities=0,
+        bv_equity=500, consolidated_book_equity=500, bv_debt=100, cash_and_marketable_securities=0,
         total_tax_expense=tax, earnings_before_tax=ebt) for y in (2025,2024)]
     result = _compute_historical_series(history, None)
     assert result['historical_roic_by_year'] == [None,None]
@@ -365,7 +365,7 @@ def test_historical_missing_tax_does_not_invent_roic(tax, ebt):
 def test_historical_tax_benefit_keeps_its_sign():
     from engine.module_3_cashflow import _compute_historical_series
     history = [RawFinancials(fiscal_year=y, revenues=1000, ebit=100,
-        bv_equity=500, bv_debt=100, cash_and_marketable_securities=0,
+        bv_equity=500, consolidated_book_equity=500, bv_debt=100, cash_and_marketable_securities=0,
         total_tax_expense=-20, earnings_before_tax=100) for y in (2025,2024)]
     result = _compute_historical_series(history, None)
     assert result['historical_roic_by_year'] == [pytest.approx(120/600), None]

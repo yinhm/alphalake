@@ -96,12 +96,12 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 当前暂停为回测扩展早年采集。解释条件估值优先读取`economic_checks`及`growth_duration_effects`（`docs/valuation/capital-efficiency.md`）：核查再投资/回报与终值过渡，不把高增长当利好，不将等价资本倍率自动设为公司参数；历史缺项不是现有条件场景的新增门槛。
 
-比较资本效率过渡时读取`docs/valuation/capital-efficiency.md`，复用`tools.compare_native_capital`及当前已核验情景目录。该工具只改显式`annual_sales_to_capital`，保留其他假设；终点是原终值政策的代数配套，不是新发现的公司资本效率。报告再投资和条件值变化，并保留原12家缺项/拒绝，不按价格选择过渡情景。`--basis company-history`另以最近连续三年收入合计/含账面少数股权的研发调整资本合计执行完整DCF单因素对照；归母权益与少数股权分别使用，缺少数股权不归零；缺年、非正资本或租赁/prepared TTM口径不匹配则保留原因，不自动改用公司代理。
+比较资本效率过渡时读取`docs/valuation/capital-efficiency.md`，复用`tools.compare_native_capital`及当前已核验情景目录。该工具只改显式`annual_sales_to_capital`，保留其他假设；终点是原终值政策的代数配套，不是新发现的公司资本效率。报告再投资和条件值变化，并保留原12家缺项/拒绝，不按价格选择过渡情景。`--basis company-history`另以最近连续三年收入合计/含账面少数股权的研发调整资本合计执行完整DCF单因素对照；当前v3直接使用`consolidated_book_equity`，不再另加少数股权；不得将股权桥接的市场少数权益当作账面资本，缺项不归零；缺年、非正资本或租赁/prepared TTM口径不匹配则保留原因，不自动改用公司代理。
 
 资本倍率适用性核对复用`tools.review_native_policy`的`capital.proxy_comparison`：只看最新完整财年起五年，模型与独立SQLite不混合；历史存量倍率反事实只量化投入敏感性，不作为获批未来效率或完整DCF，缺年不延长窗口。参见[资本核对](../../docs/valuation/capital-efficiency.md)。
 
 原生入口统一使用标准财务出口，不再自动启用安克/苏泊尔专项EBIT。来源EBIT可用不证明经营范围已闭合；比较旧结果须同时核对利润、现金、投资及恢复的历史行，并按当前政策重建，不能只把差额归因于EBIT。
 
-解释原生准入与经济合理性时读取`docs/valuation/methodology-contract.md`：兼容API的`input_contract`说明所选方法可消费的输入；审阅结果的`methodology`区分经营范围、再投资与终值风险。`ready`或`numerical_replay=passed`不代表公司假设获批；负再投资需说明资本释放假设，单因素终值对照不称概率区间。
+解释原生准入与经济合理性时读取`docs/valuation/methodology-contract.md`：兼容API的`input_contract`说明所选方法可消费的输入；审阅结果的`methodology`区分经营范围、再投资与终值风险。`ready`或`numerical_replay=passed`不代表公司假设获批；负再投资需说明资本释放假设，单因素终值对照不称概率区间。亏损税盾解释须读取`dcf.wacc_tax_shield_adjustments`、`tax_shield_basis`和`unused_nol_at_terminal`；不可拆分WACC、固定初始融资分量及正常化终值均不冒充公司税务事实。
 
 自动假设选择采用`native-assumption-selection-v2`：盈利收缩可生成条件恢复情景，必须同时说明恢复持续期与负再投资回收依据未建立；不把负再投资当已实现现金、不自动采用场景，亏损仍需独立扭亏政策。旧政策运行按原提交复验，当前规则见[自动选择](../../docs/valuation/native-assumption-selection.md)。

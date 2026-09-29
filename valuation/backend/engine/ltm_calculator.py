@@ -22,7 +22,7 @@ FLOW_FIELDS = {
 }
 
 BALANCE_SHEET_FIELDS = {
-    "cash_and_marketable_securities", "bv_equity", "bv_debt",
+    "cash_and_marketable_securities", "bv_equity", "consolidated_book_equity", "bv_debt",
     "noncash_wc", "shares_outstanding", "cross_holdings", "minority_interests",
     "mv_equity", "mv_debt", "stock_price",
 }

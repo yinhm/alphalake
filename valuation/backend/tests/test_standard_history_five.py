@@ -42,7 +42,14 @@ def test_archived_standard_history_five(tmp_path,monkeypatch):
         old,new=deepcopy(before['run']),after['run']
         old['report']['dcf']['implied_roic_projections']=[None]*10
         old['report']['dcf']['implied_roic_terminal']=None
-        assert new['report']==old['report']
+        # 冻结报告经济结果逐项保持；新增资本/税盾诊断由当前专门回归验证。
+        for section,value in old['report'].items():
+            if section == 'dcf':
+                assert {k:new['report'][section][k] for k in value} == value
+            elif section == 'ltm_financials':
+                assert {k:v for k,v in new['report'][section].items() if k!='consolidated_book_equity'} == value
+            else:
+                assert new['report'][section] == value
         assert new['request']==AlphaLakeRequest.model_validate(inputs['request']).model_dump(mode='json')
         old['inputs']['prepared_ttm']['provenance']['alphalake_snapshot']=content_hash(new['request']['data'])
         # 冻结档案早于两个可空行业利润率字段；只补空契约，经济输入仍逐项相等。
@@ -54,6 +61,8 @@ def test_archived_standard_history_five(tmp_path,monkeypatch):
         assert 'annual_sales_to_capital' not in old['inputs']['valuation_assumptions']
         old['inputs']['historical_research_expenses'] = {}
         old['inputs']['valuation_assumptions']['annual_sales_to_capital'] = None
+        for row in old['inputs']['raw_financials'] + [old['inputs']['prepared_ttm']['financials']]:
+            row['consolidated_book_equity'] = None
         assert new['inputs']==old['inputs']
         assert new['method_assessment']['reinvestment']['implied_roic_status']=='missing_opening_capital'
         assert after['review']['statuses']==before['review']['statuses']

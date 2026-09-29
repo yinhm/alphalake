@@ -16,9 +16,9 @@ POLICY = dict(version='native-capital-transition-v1', unchanged_years=5, end_yea
     automatic_adoption=False, boundary='五年过渡为固定分析情景，不是公司新增资本效率事实；终值ROIC/WACC及经营假设不变')
 
 
-HISTORY_POLICY = dict(version='native-company-capital-v2', history_years=3,
+HISTORY_POLICY = dict(version='native-company-capital-v3', history_years=3,
     aggregation='sum_revenue_divided_by_sum_research_adjusted_capital_including_minority',
-    equity_basis='parent_book_equity_plus_book_minority_interests',
+    equity_basis='explicit_consolidated_book_equity',
     application='constant_ratio_for_explicit_forecast_only', automatic_adoption=False,
     boundary='公司三年存量倍率仅为显式预测代理；现金、债务及投资范围未闭合；少数股权按账面额配套合并收入，不代表新增投资效率或已批准预测；终值保持原政策')
 
@@ -58,13 +58,9 @@ def compare(baseline, basis='terminal-transition'):
             if any(v is None or not math.isfinite(v) or v <= 0 for v in (revenue, ratio)):
                 evidence['missing'].append(dict(year=row['year'], reason='positive_revenue_and_adjusted_capital_required'))
                 continue
-            minority = raw[row['year']].minority_interests
-            if minority is None or not math.isfinite(minority):
-                evidence['missing'].append(dict(year=row['year'], reason='book_minority_equity_required'))
-                continue
-            capital = revenue/ratio + minority
+            capital = revenue/ratio
             capital_rows.append(dict(year=row['year'], revenue_million_cny=revenue,
-                input_capital_million_cny=revenue/ratio, minority_equity_million_cny=minority,
+                consolidated_book_equity_million_cny=raw[row['year']].consolidated_book_equity,
                 consolidated_capital_million_cny=capital))
             if not math.isfinite(capital) or capital <= 0:
                 evidence['missing'].append(dict(year=row['year'], reason='positive_consolidated_capital_required'))

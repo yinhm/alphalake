@@ -118,3 +118,6 @@ curl http://127.0.0.1:8080/api/database/compatibility/SZSE:300866
 `/api/database/compatibility/<ticker>`分别返回财务状态和参考缺项。财务齐备但缺少默认行业/国家参考时为`blocked_reference_inputs`；这不是TDX财务缺失。用户可在既有`from-database` API传`industry_override`及新增的`country_override`明确选择会话参考，选择留痕、不回写公司分类；原前端无改动。
 
 缺项诊断会遍历全部目标分量：`export_cells.evidence_json`对缺标准值记录`kind=missing_standard_fact`及字段/期间/系数，后续已有金额和血缘仍保留。必需分量不齐时金额仍为NULL，不能把已知分量小计当成完整债务；源零原因须另回查来源证据。真实核对见[近期债务缺口](../history/native-capital-proxy-review.md#2024年债务缺口已定位)。
+
+
+原生API依据出口的`annual_bv_equity=parent_attributable`元数据，将同期期末`bv_equity + minority_interests`映射为模型的`consolidated_book_equity`（合并账面权益），年度与季度规则相同；无需新增SQLite冗余列。来源范围不明确或任一分量缺失时不构造该值。资本诊断使用此字段，股权桥接中的少数权益扣减独立保存；不得将后者的市场估计反用于账面资本。未提供合并范围的外部输入仍可按其他已齐备输入计算DCF，但相应资本诊断留空。

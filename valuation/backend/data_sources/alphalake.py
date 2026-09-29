@@ -469,7 +469,7 @@ def build_inputs(request: AlphaLakeRequest):
         bridge = EquityBridgeInputs(policy_id=policy.policy_id,components=components,operating_ownership=1,
             shares=shares*(1+p['extra_dilution_rate']),conversion_release=convertible*p['debt_multiple']+w['other_equity_instruments'],conversion_shares=face/conversion_price)
         raw = RawFinancials(fiscal_year=d.report_period.year,revenues=revenue,ebit=ebit,d_a=da,
-            capex=window('capital_expenditure_cash',False),r_and_d_expense=window('research_and_development_expense',False),bv_equity=w['total_equity'],
+            capex=window('capital_expenditure_cash',False),r_and_d_expense=window('research_and_development_expense',False),bv_equity=w['total_equity']-w['noncontrolling_interests'],consolidated_book_equity=w['total_equity'],
             bv_debt=debt,cash_and_marketable_securities=w['cash_and_cash_equivalents'],minority_interests=w['noncontrolling_interests'],shares_outstanding=shares)
     else:
         ebit = w['operating_profit_cumulative']-w['financial_business_interest_income']+w['financial_business_interest_expense']+w['financial_business_fee_expense']-w['investment_income']-w['fair_value_change_income']-w['credit_impairment_income']-w['asset_disposal_income']+w['interest_expense']-w['interest_income']
