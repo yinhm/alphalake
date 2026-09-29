@@ -1,6 +1,6 @@
 # AlphaLake 网页
 
-TDX SQLite快照的使用、数据边界及重建命令见[导出与网页估值](../../docs/valuation-sqlite-export.md)。已恢复原页面/导航和原数据库请求，移除专用政策UI与TDX结果页。当前TDX快照未通过原生数据契约，API明确报告阻断；原模型的手工输入与交互保留。
+TDX SQLite快照的使用、数据边界及重建命令见[导出与网页估值](../../docs/guides/valuation-sqlite-export.md)。已恢复原页面/导航和原数据库请求，移除专用政策UI与TDX结果页。当前TDX快照未通过原生数据契约，API明确报告阻断；原模型的手工输入与交互保留。
 
 构建：`npm ci`后执行`npm run build`，CI执行同样检查。当前前端无新增依赖。
 

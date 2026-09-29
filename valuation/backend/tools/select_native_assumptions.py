@@ -86,7 +86,7 @@ def select(baseline, discount_inputs, reference_rows, reference_cutoff, policy):
     audit = dict(policy=policy, decisions=decisions, issues=issues, automatic_selection=True,
         automatic_adoption=False, predictive_validation='not_established',
         economic_basis=dict(status='not_established',
-            review='docs/native-assumption-selection.md#达摩达兰方法核验',
+            review='docs/valuation/native-assumption-selection.md#达摩达兰方法核验',
             unresolved=[
                 'company_growth_runway_and_fade_duration',
                 'sustainable_adjusted_operating_margin',

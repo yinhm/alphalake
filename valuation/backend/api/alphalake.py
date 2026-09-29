@@ -84,7 +84,7 @@ def growth_path_sensitivity(inputs, report):
             medium_horizon='two_disjoint_120_company_cohorts_show_average_improvement_in_common_two_and_three_year_windows',
             counterevidence='one_year_validation_failed_and_some_medium_horizon_windows_worsened',
             adoption='not_adopted_as_default_or_company_specific_forecast',
-            review='docs/zero-growth-common-windows-20260911.md',
+            review='docs/history/zero-growth-common-windows-20260911.md',
             receipt=dict(path='docs/acceptance/zero-growth-common-windows-20260911.json',
                          sha256='1aa85158546b71ab986a0be0a31c32f02448be1c3dc455d9105523204faa75ca')),
         boundary='同一财务与信息时点，仅改十年收入增长路径；利润率、税率、资本效率、WACC、终值增长/ROIC及股权股本桥接输入不变。收入变化同时影响利润、再投资和终值金额；零收入增量再投资不等于零现金资本开支。中期样本改善不证明一年、第四年至终值、当前公司或完整DCF有效；不是价格区间、概率界限或推荐值。')

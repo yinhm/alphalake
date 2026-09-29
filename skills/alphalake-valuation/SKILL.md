@@ -10,7 +10,7 @@ description: 使用 AlphaLake 已有数据库和显式政策进行 A 股公司�
 ## 准备调用
 
 - 定位AlphaLake仓库：优先使用会话已知路径或`ALPHALAKE_ROOT`，否则检查当前目录及父目录的`valuation/backend/tools/company_valuation.py`。安装Skill的目录不等于仓库目录。
-- 首次使用读取仓库内`docs/company-valuation-entry.md`；需要准备行业政策或理解完整度时，再读`docs/a-share-automation-acceptance-20260910.md`。文档中的本机路径、报告期、估值数字是验收示例，不是默认配置。
+- 首次使用读取仓库内`docs/guides/company-valuation-entry.md`；需要准备行业政策或理解完整度时，再读`docs/history/a-share-automation-acceptance-20260910.md`。文档中的本机路径、报告期、估值数字是验收示例，不是默认配置。
 - 从用户请求和已确认配置取得：六位证券代码、财务库、报告期、带时区信息截止、已安装后端依赖的Python、一个或多个`BatchPolicy`文件；参考驱动政策还需匹配参考包或参考库。公司名称、代码身份、数据库范围不明确时先核实，不猜代码或按价格挑库。
 - 复用会话已经授权和确认的输入；必要参数确实缺失时只询问缺失部分，不重复请求许可。不要把单公司Policy JSON直接传给需要BatchPolicy的`--policy`；包装方法见上述入口文档。
 - 普通公司估值请求只计算并保存估值运行；不顺便同步全市场、升级/替换数据库或修改政策以消除拒绝。当前入口会计算所有候选并写入运行文件，并非只读历史检索。
@@ -48,7 +48,7 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 ## 发现历史运行
 
-用户未提供run ID时，先读`docs/valuation-run-query.md`，从已确认的运行目录查询；不要求用户查找哈希，不为了获得ID重新计算。
+用户未提供run ID时，先读`docs/guides/valuation-run-query.md`，从已确认的运行目录查询；不要求用户查找哈希，不为了获得ID重新计算。
 
 ```bash
 cd "$ALPHALAKE_ROOT/valuation/backend"
@@ -67,7 +67,7 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 ## 比较已有估值
 
-需要比较两个已知运行时，先读仓库的`docs/valuation-comparison.md`，使用已有run ID及其实际目录：
+需要比较两个已知运行时，先读仓库的`docs/guides/valuation-comparison.md`，使用已有run ID及其实际目录：
 
 ```bash
 cd "$ALPHALAKE_ROOT/valuation/backend"
@@ -88,14 +88,14 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 ## 原生跨公司条件情景
 
-需要自动生成假设而非已有专项政策估值时，先读项目`docs/native-uniform-scenarios.md`。复用`tools.evaluate_native_policy --selection-policy`，输入已确认的SQLite、参考包、统一配方与证券列表；不为单家公司改规则。结果在`summary.json`，以原名单为分母，先区分`blocked_inputs`、`blocked_policy`和`selection.status=rejected`，再读取`scenario_generation`与`scenario_*`结果。
+需要自动生成假设而非已有专项政策估值时，先读项目`docs/valuation/native-uniform-scenarios.md`。复用`tools.evaluate_native_policy --selection-policy`，输入已确认的SQLite、参考包、统一配方与证券列表；不为单家公司改规则。结果在`summary.json`，以原名单为分母，先区分`blocked_inputs`、`blocked_policy`和`selection.status=rejected`，再读取`scenario_generation`与`scenario_*`结果。
 
 `selected_scenario=null`表示没有自动推荐；3/5/10年持续期及历史利润率目标是条件假设，不按最高、最低或最接近股价挑选。缺少可比连续利润率时，历史目标场景缺席，不能用行业未调整利润率补位。来源类别、全部实际输入、预测规模/再投资/隐含回报随结果保存。用`tools.review_native_policy`重放整个目录；历史预测诊断不是完整DCF准确率，也不是严格PIT或独立留出。
 
-历史研发补充见`docs/native-research-cohort-bridge.md`：`historical_research_expenses`只保留完整利润行以外的年度研发观测；解释缺项时分别检查利润行与研发队列，不把独立研发年份当成完整财务年度，也不从不同政策EBIT口径借值。
+历史研发补充见`docs/history/native-research-cohort-bridge.md`：`historical_research_expenses`只保留完整利润行以外的年度研发观测；解释缺项时分别检查利润行与研发队列，不把独立研发年份当成完整财务年度，也不从不同政策EBIT口径借值。
 
-当前暂停为回测扩展早年采集。解释条件估值优先读取`economic_checks`及`growth_duration_effects`（`docs/native-current-economic-checks.md`）：核查再投资/回报与终值过渡，不把高增长当利好，不将等价资本倍率自动设为公司参数；历史缺项不是现有条件场景的新增门槛。
+当前暂停为回测扩展早年采集。解释条件估值优先读取`economic_checks`及`growth_duration_effects`（`docs/valuation/capital-efficiency.md`）：核查再投资/回报与终值过渡，不把高增长当利好，不将等价资本倍率自动设为公司参数；历史缺项不是现有条件场景的新增门槛。
 
-比较资本效率过渡时读取`docs/native-capital-transition.md`，复用`tools.compare_native_capital`及当前已核验情景目录。该工具只改显式`annual_sales_to_capital`，保留其他假设；终点是原终值政策的代数配套，不是新发现的公司资本效率。报告再投资和条件值变化，并保留原12家缺项/拒绝，不按价格选择过渡情景。
+比较资本效率过渡时读取`docs/valuation/capital-efficiency.md`，复用`tools.compare_native_capital`及当前已核验情景目录。该工具只改显式`annual_sales_to_capital`，保留其他假设；终点是原终值政策的代数配套，不是新发现的公司资本效率。报告再投资和条件值变化，并保留原12家缺项/拒绝，不按价格选择过渡情景。
 
-资本倍率适用性核对复用`tools.review_native_policy`的`capital.proxy_comparison`：只看最新完整财年起五年，模型与独立SQLite不混合；历史存量倍率反事实只量化投入敏感性，不作为获批未来效率或完整DCF，缺年不延长窗口。参见[资本核对](../../docs/native-capital-proxy-review.md)。
+资本倍率适用性核对复用`tools.review_native_policy`的`capital.proxy_comparison`：只看最新完整财年起五年，模型与独立SQLite不混合；历史存量倍率反事实只量化投入敏感性，不作为获批未来效率或完整DCF，缺年不延长窗口。参见[资本核对](../../docs/valuation/capital-efficiency.md)。

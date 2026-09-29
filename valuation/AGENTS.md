@@ -1,9 +1,9 @@
 # AlphaLake valuation 约定
 
-- 遵循根目录[AGENTS.md](../AGENTS.md)。当前能力只查[实现状态](../docs/implementation-status.md)，优先级及验收见[系统交付](../docs/system-delivery.md)；历史记录不作为当前接口规范。
+- 遵循根目录[AGENTS.md](../AGENTS.md)。当前能力及优先级只查[实现状态](../docs/implementation-status.md)，发布及恢复操作见[系统交付](../docs/guides/system-delivery.md)；历史记录不作为当前接口规范。
 - 当前只推进沪深非金融企业；金融专项与多市场暂停。100家仅作固定回归集合，范围外和拒绝记录保留。
 - 原生网页消费主库导出的SQLite，入口为`backend/api/database.py`，发布使用`backend/tools/publish_native_valuation.py`。保持原页面及请求，只修明确BUG或必要后端适配；显式政策CLI/API与原生默认政策分别记录。
-- 合法数据/口径变更应重建基线并重新估值，保存变更依据与前后差异；不得因新结果不同于旧结果而拒绝，也不得混用旧利润率与新资本输入。原生重建复用`tools.select_native_assumptions --rebuild`，详见[重建契约](../docs/native-assumption-selection.md#合法变更重建基线并重新估值)。
+- 合法数据/口径变更应重建基线并重新估值，保存变更依据与前后差异；不得因新结果不同于旧结果而拒绝，也不得混用旧利润率与新资本输入。原生重建复用`tools.select_native_assumptions --rebuild`，详见[重建契约](../docs/valuation/native-assumption-selection.md#合法变更重建基线并重新估值)。
 - 共用`engine/orchestrator.py`及既有模块，不另建DCF引擎。主库参考版本到原生实际输入仍须按当前进度逐项接通；不得把同步成功当成WACC已更新。用户显式覆盖优先，行业未匹配须明确待选，占位值不称公司事实。
 - 历史收入/利润行缺项不得连带丢弃已有研发队列；有效独立研发观测随完整输入保留，按真实财年计算，不补造收入/EBIT、不覆盖同年值。
 - 最新财务基年使用LTM（有则优先），不直接将年度首行当当前基年；前端既有`baseYear()`和后端期间选择保持一致。有效税率、边际税率及报告/挂牌币种分别处理，缺项不互相填补。

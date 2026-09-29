@@ -1,0 +1,59 @@
+# 数据更新、验收与网页发布
+
+本页是日常操作契约；当前分母、版本及缺口统一见[项目状态](../implementation-status.md)，旧性能、故障及发布记录见[历史验收](../history/system-delivery-20260927.md)。网页保留原流程，SQLite为可重建快照，不能把显式政策CLI成功当成网页已发布。
+
+## 原生网页交付入口
+
+`tools.publish_native_valuation`复用现有同步、导出、API和共享引擎。它不改变原前端，不使用显式政策CLI替代原生API验收。模型默认与参考消费边界见[原生输入政策审计](../history/native-input-policy-audit.md)。
+
+输入必须明确：主库、发布目标、报告期、证券清单、来源模式、验收无风险利率，以及读取该发布目标的本地网页地址。清单每行一个六位代码；不能以成功公司反推清单。无风险利率是验收假设，不是自动采集的公司WACC。
+
+本机示例（先确认8080读取目标SQLite、没有其他大任务在运行）：
+
+```bash
+systemd-run --unit=alphalake-native-publish \
+  --property=WorkingDirectory=/root/alphalake \
+  --property=MemoryMax=1G --property=MemoryHigh=896M \
+  --property=MemorySwapMax=0 --property=OOMPolicy=stop \
+  --setenv=PYTHONPATH=/root/alphalake/valuation/backend \
+  --setenv=ALPHALAKE_WORKSPACE=/root/alphalake/workspace \
+  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=512MiB \
+  --setenv=ALPHALAKE_DUCKDB_THREADS=1 \
+  --setenv=GOMEMLIMIT=128MiB --setenv=GOMAXPROCS=1 \
+  /root/alphalake/.venv/bin/python -m tools.publish_native_valuation \
+  --database workspace/alphalake.duckdb \
+  --output workspace/derived/valuation.sqlite \
+  --period 2026-06-30 \
+  --codes-file workspace/derived/system-delivery/codes.txt \
+  --source-mode offline --latest 6 \
+  --risk-free-rate 0.0425 --web-url http://127.0.0.1:8080
+systemctl show alphalake-native-publish -p ActiveState -p ExecMainStatus -p MemoryMax
+journalctl -u alphalake-native-publish --no-pager
+```
+
+上例为已固定100家样本；不随意更换清单，缩小分母必须作为单独范围验收。源码新增不等于该命令全部模式均已在线验收，当前验收边界见文末。
+
+| 模式 | 实际动作 | 来源新鲜度 |
+|---|---|---|
+| `local` | 仅导出既有标准事实、验收和发布 | 不检查上游，不声称完成同步 |
+| `offline` | 本地财务缓存源同步、物化，再导出验收发布 | ZIP核验合格不等于已确认上游最新 |
+| `online` | 财务同步、限定清单的公告目录与行情同步、物化、验收发布 | 须查看来源日志及缓存回退，不能用进程成功代替最新性 |
+
+在线模式另需`--filings-start`和可选`--filings-end`，默认结束日为中国当日；行情使用`sync-valuation-quotes`，只追加报告日前14个自然日至报告日的观测，不更新完整日线及检查点；身份来自已有审核快照并逐日期核对，不按证券代码前缀猜市场。见[窗口同步](valuation-quote-window.md)。首次建立新范围先用local模式验证导出与身份；公告目录不会自动审核缺失的招股披露范围或源零。
+
+可选`--sync-references`同步既有六类参考及23份原生US/Global行业与国家税率工作簿，offline模式重放已注册归档。原生参考随SQLite v8发布，会话绑定参考内容版本；实际网页与候选结果不同会拒绝发布。全局没有安装定时器，也不新增常驻任务平台。
+
+## 失败与重放
+
+- 所有阶段串行；同步下载/主数据失败、物化/导出/验收失败均返回非零，保留日志，不继续发布。财务源仅因待解析记录返回非零时，必须通过结构化完整收据证明没有下载/主数据错误、选中包的待解析项在报告期能唯一解析标准证券身份、与导出目标身份不相交，才允许继续；来源仍标记partial，受影响包不推进检查点。主库各来源已提交的有效事务保留，不把整轮失败误解释为主库从未更新。
+- 候选SQLite在同目录创建；验收核对完整分母、准入及实际计算。ready却计算失败拒绝发布；财务缺项与`blocked_reference_inputs`分别统计，两类422均保留。
+- 切换前记录发布日志并硬链接旧文件，原子替换后逐公司核验真实网页诊断、实际输入及最终结果。不重启网页；旧会话仍是原输入版本，新请求读取新快照。
+- 网页复验失败立即恢复旧文件；切换过程中被强杀，下次同命令先恢复未提交切换，再重新执行。日志不证明后台仍在运行，应查systemd单元。
+- SQLite内容（含参考快照）、程序/依赖、冻结模型参考及请求均相同时，复用已验收结果；源库物理内容和二进制也相同时不再导出。来源日志等元数据改变可能需要重新比对，不强行跳过质量检查。
+- 只有导出时间或主库物理哈希变化、有效内容未变时，不替换网页文件。信息截止不同仍属于新的输入版本，不能省略披露。
+- 成功收据位于目标旁的`.delivery.json`，切换日志为`.publication.json`，逐轮日志与比较在`workspace/derived/system-delivery/run-*`。后端和冻结模型参考哈希记录在每轮`runtime-inputs.json`，源参考发布/哈希随SQLite携带，不将这些动态文件提交仓库。
+
+
+## 验收边界
+
+离线完整周期、无变化重放和失败回滚已有真实验收；线上完整更新与自动定时调度未作为当前交付完成。每次发布保留目标证券分母、财报期、财务/参考截止、来源新鲜度、拒绝与失败；不要从成功公司反推清单。个别审核数据发布仍须候选比较、重开及真实API检查。
