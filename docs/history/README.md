@@ -6,6 +6,8 @@
 
 ## 最近主线证据
 
+- [近期债务、计息范围及资本倍率采用决策](capital-scope-review-20260929.md)
+
 - [公司与行业资本核对、债务源零发布](native-capital-proxy-review.md)
 - [资本效率过渡](native-capital-transition.md)
 - [EBIT与投资范围审计](ebit-investment-scope-audit.md)
