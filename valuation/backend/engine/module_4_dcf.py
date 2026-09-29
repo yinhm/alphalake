@@ -274,7 +274,7 @@ def compute_dcf(
     sc_high = assumptions.sales_to_capital_high
     sc_stable = assumptions.sales_to_capital_stable
     if sc_high is None:
-        sc_high = 2.5  # Damodaran default
+        sc_high = 2.5  # Original application assumption, not a universal company ratio
     if sc_stable is None:
         sc_stable = sc_high
 

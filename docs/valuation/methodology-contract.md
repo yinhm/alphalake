@@ -61,3 +61,27 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.check_native_sqlite \
 选择器v2将盈利收缩纳入显式条件恢复路径，详见[选择政策](native-assumption-selection.md#盈利收缩的条件路径v2)。固定相同12家、财务与参考版本，9家生成30个场景，1家亏损选择拒绝、2家输入阻断；原49份完整计算结果的输入、DCF及最终值全部相同。两家新增仅说明工具原来的收缩限制已解除，不证明公司一定恢复。
 
 72项针对性Python回归、Go全套及构建通过；共享引擎公式、网页、主库和SQLite未修改，无新增依赖。真实SQLite经原生API测试客户端生成并完整重放，未重启或声称再次发布8080。1GiB独立服务串行运行，协议、结果及日志在`workspace/derived/contraction-method/`；首次测试命令引用不存在的测试文件，未执行测试，修正路径后通过，失败日志保留。
+
+## 标准输入与方法复核（2026-09-29）
+
+本次审计覆盖原生数据库入口、TTM、共享引擎的研发/租赁、历史现金流/资本诊断、预测FCFF、WACC和终值/股权桥接，以及统一情景和资本候选。没有认证所有高级分支、公司经济假设或预测准确性。
+
+| 检查 | 结论及处理 |
+|---|---|
+| 标准利润输入 | 删除两家公司按代码自动覆盖EBIT、EBITDA及资产的接通政策，准入与估值读取同一标准出口。专项分量缺失不再使有效历史利润消失；真实缺项/冲突仍拒绝 |
+| 非经营收益与资产加回 | [官方原则](https://pages.stern.nyu.edu/adamodar/New_Home_Page/valquestions/a22.htm)要求匹配范围，不能推导出整桶投资收益/公允价值损益剔除。标准EBIT恢复后仍保留通用代理和范围警告，不声称已正常化 |
+| 研发 | [官方研发调整](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/R%26D.htm)支持资本化、摊销及原有税收利益不变。当前年度队列和历史NOPAT公式符合；五年寿命、TTM费用配年度队列及预测调整后利润率的税务解释仍是估计政策，不能声称精确滚动研发资产 |
+| 历史税费 | 修正所得税费用取绝对值：正利润年度负税费按原符号计算历史有效税率，税收利益不再变税负。亏损/缺税项仍不推算ROIC；历史税收利益不自动外推永久税率 |
+| 资本与少数股权 | [官方回报口径](https://pages.stern.nyu.edu/~adamodar/pdfiles/papers/returnmeasures.pdf)要求合并利润匹配合并资本。显式公司资本v2已加入账面少数股权；原生引擎历史/预测ROIC仍沿用输入权益范围且不额外加少数股权，已在结构化审阅标明，不能将它当作经认证的合并经营ROIC。净除投资还需要利润范围证据，不自动减整个投资小计 |
+| 再投资与增长 | [收入增量/资本倍率](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/littlebook/growthvaluedrivers.htm)支持当前预测公式和显式投入滞后；总净再投资不重复扣研发或营运资本。行业/公司存量倍率不是未来增量效率认证；资本释放须有回收依据 |
+| 税率与WACC | [税率原则](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/taxrate.htm)支持有效税率向边际税率过渡。当前亏损结转在现金税端处理，但WACC税盾未逐年联动：结构化提示，不认证税盾时点完整。国家风险应按[经营暴露](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/CountryRisk.htm)，注册地/BBB/行业权重均为显式代理 |
+| 终值 | [稳定期再投资](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm)按g/ROIC，折现率须高于增长率，资本回报须正；实现与负/零/正增长回归一致。ROIC=WACC为无超额回报情景，不是每家公司必然事实 |
+| 股权桥接与租赁 | [少数权益计价](https://pages.stern.nyu.edu/adamodar/New_Home_Page/valquestions/valcrosshold.htm)应按经济价值，账面扣减只是代理。租赁资本化适用于尚未入表的承诺；当前TDX债务包含租赁负债，不得自动再资本化同一负债。未知期权不代表无稀释 |
+
+`methodology.findings`新增收益/资产配套、账面少数股权、引擎资本范围、研发寿命/TTM队列、租赁重复计入和亏损税盾时点提示。它们区分可计算与方法适用性，不额外阻断已获准的代理条件估值。资料中的历史税率数字不作为本项目当前税率来源。
+
+明确错误直接修正；需要公司分类、租赁承诺、税盾利用或公允价值证据的部分保持显式边界，不用新默认事实填补。标准事实、政策输入、诊断及估值结果分别留痕。
+
+本次验收：同一100家SQLite哈希不变，财务90准入/10拒绝、API89成功/11拒绝。默认验收统一无风险率4%（测试假设），安克每股105.1932→106.5491、苏泊尔33.8611→33.7406；两家预测假设与WACC不变，但利润、现金/投资及历史行同时恢复标准出口，不能归因为单项EBIT变化。其他98家输入及最终结果不变。
+
+固定12家重建为9家33个条件场景，1家选择拒绝、2家输入阻断；资本v2为8家30场景可算，苏泊尔3场景保留研发队列缺项。100家默认入口与63个场景/资本候选均通过真实8080复验。Python584通过/4跳过、最终针对性83通过，Go全套及构建通过。首轮针对性校验发现删除分支后多余括号，以及测试误把已删来源证据也要求不变，均修正并保留失败日志；没有修改源事实以通过断言。所有动态证据在`workspace/derived/standard-input-audit/`。前端、主库、SQLite和依赖未改；旧政策执行代码删除，配置与原验收转为历史证据。

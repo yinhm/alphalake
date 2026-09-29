@@ -370,7 +370,7 @@ def from_database(req: FromDatabaseRequest) -> dict:
     Returns the same shape as /valuation/fetch-from-file."""
     try:
         with db.get_connection() as conn:
-            record = db.fetch_valuation_company(conn, req.ticker)
+            record = db.fetch_company(conn, req.ticker)
             compatibility = db.native_compatibility(conn, req.ticker) if record and record.get("data_source") else None
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Database unavailable: {e}")
@@ -417,7 +417,6 @@ def from_database(req: FromDatabaseRequest) -> dict:
     for field,value in (('industry_data.industry_name',req.industry_override),('country',req.country_override)):
         if value is not None:
             session.source_tracker.record(field,'User-selected reference assumption; company classification unchanged')
-    session.valuation_proxy = record.get("valuation_proxy")
     if compatibility and (compatibility['exported_asset_proxies'] or compatibility['market_proxy']):
         proxy = dict(session.valuation_proxy or dict(version=record['data_source']['contract'],
             status='estimated', source_snapshot=record['data_source'],

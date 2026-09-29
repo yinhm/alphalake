@@ -422,6 +422,12 @@ def methodology_review(inputs, report, review):
     def flag(code, applies):
         if applies:
             findings.append(code)
+    flag('operating_income_and_asset_bridge_require_scope_evidence', True)
+    flag('minority_value_basis_requires_evidence', raw.minority_interests not in (None, 0))
+    flag('engine_capital_scope_requires_equity_definition', raw.minority_interests not in (None, 0))
+    flag('lease_capitalization_requires_no_prior_balance_sheet_recognition', inputs.adjustment_inputs.has_operating_leases)
+    flag('rd_life_and_ttm_cohorts_are_estimation_policy', inputs.adjustment_inputs.has_r_and_d)
+    flag('nol_tax_shield_timing_requires_separate_validation', any(r < 0 for r in report.dcf.ebit_projections) or (a.override_nol and a.nol_amount > 0))
     flag('turnaround_path_requires_basis', report.adjusted.adjusted_ebit <= 0)
     flag('capital_release_requires_recoverability_basis', any(r['reinvestment_million_cny'] < 0 for r in forecast) or terminal['growth'] < 0)
     flag('nonpositive_equity_requires_distress_interpretation', report.final.value_per_share is not None and report.final.value_per_share <= 0)
@@ -457,6 +463,10 @@ def methodology_review(inputs, report, review):
             historical_fcff_required=False, missing_historical_cashflow=review['capital']['missing_historical_cashflow_inputs'],
             assumed_defaults=defaults, evidence_rule='explicit_input_is_not_automatically_reported_fact_or_approved_assumption'),
         operating_scope=dict(status='requires_scope_evidence',
+            input_ebit=raw.ebit,
+            adjustments='explicit_RD_and_lease_inputs_only; statement_EBIT_is_not_certified_operating_income',
+            engine_capital_basis='input_book_equity_plus_debt_minus_cash_plus_research_and_lease_adjustments; separately_reported_minority_not_added',
+            minority_bridge_basis='input_amount; native_TDX_book_equity_proxy_not_market_value',
             adjusted_ebit=report.adjusted.adjusted_ebit, research_asset=report.adjusted.value_of_research_asset,
             lease_capital=report.adjusted.pv_of_operating_leases,
             minority_equity=raw.minority_interests, financial_investments=raw.cross_holdings,

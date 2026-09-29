@@ -360,3 +360,14 @@ def test_historical_missing_tax_does_not_invent_roic(tax, ebt):
     history[0].total_tax_expense = 0
     known = _compute_historical_series(history, None)
     assert known['historical_roic_by_year'] == [pytest.approx(100/600),None]
+
+
+def test_historical_tax_benefit_keeps_its_sign():
+    from engine.module_3_cashflow import _compute_historical_series
+    history = [RawFinancials(fiscal_year=y, revenues=1000, ebit=100,
+        bv_equity=500, bv_debt=100, cash_and_marketable_securities=0,
+        total_tax_expense=-20, earnings_before_tax=100) for y in (2025,2024)]
+    result = _compute_historical_series(history, None)
+    assert result['historical_roic_by_year'] == [pytest.approx(120/600), None]
+    # A historical benefit is evidence for that year, not a perpetual forecast tax rate.
+    assert history[0].total_tax_expense == -20

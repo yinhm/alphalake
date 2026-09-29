@@ -6,6 +6,8 @@
 
 ## 最近主线证据
 
+- [已撤销的两公司账面接通政策](valuation-book-proxies.md)（仅历史依据；当前统一标准输入）
+
 - [近期债务、计息范围及资本倍率采用决策](capital-scope-review-20260929.md)
 
 - [公司与行业资本核对、债务源零发布](native-capital-proxy-review.md)

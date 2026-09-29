@@ -58,7 +58,7 @@ def _compute_historical_series(
 
     Convention:
       NOPAT_i        = raw_EBIT_i × (1 - effective_tax_i) + R&D net adjustment
-      effective_tax_i = |tax_exp_i| / |ebt_i|                   IQ_INC_TAX/IQ_EBT_EXCL
+      effective_tax_i = tax_exp_i / ebt_i                   IQ_INC_TAX/IQ_EBT_EXCL
                       (unavailable if tax/EBT is missing or nonfinite, or EBT <= 0)
       IC_i           = bv_equity_i + year-specific R&D asset + bv_debt_i - cash_i
       ROIC_i         = NOPAT_i / IC_{i+1}   (prior-year IC, standard)
@@ -85,7 +85,7 @@ def _compute_historical_series(
     s_c: list[float | None] = [None] * n_display
     margin: list[float | None] = [None] * n_display
     rev_growth: list[float | None] = [None] * n_display
-    nopat_series: list[float | None] = [None] * n_display  # for NOPAT-weighted ROIC avg
+    nopat_series: list[float | None] = [None] * n_display  # for capital-weighted ROIC avg
 
     # Per-year research cohorts; never borrow the current adjustment input.
     year_counts = Counter(f.fiscal_year for f in history)
@@ -125,7 +125,7 @@ def _compute_historical_series(
         if (f.total_tax_expense is not None and math.isfinite(f.total_tax_expense)
                 and f.earnings_before_tax is not None and math.isfinite(f.earnings_before_tax)
                 and f.earnings_before_tax > 0):
-            eff_tax_i = abs(f.total_tax_expense) / f.earnings_before_tax
+            eff_tax_i = f.total_tax_expense / f.earnings_before_tax
 
         # Margin
         if ebit_i is not None and rev_i not in (None, 0):
@@ -152,7 +152,7 @@ def _compute_historical_series(
             if rev_i is not None and rev_prev not in (None, 0):
                 rev_growth[i] = rev_i / rev_prev - 1
 
-    # NOPAT-weighted ROIC average (financially more robust than the naive mean
+    # Capital-weighted ROIC average (financially more robust than the naive mean
     # when IC varies a lot year-to-year): Σ NOPAT_i / Σ IC_{i+1}
     def _nopat_weighted_roic(k: int) -> float | None:
         num = 0.0
@@ -215,8 +215,8 @@ def compute_cashflow_and_growth(
         CashFlowMetrics with all computed values.
     """
     # Damodaran convention for base-year NOPAT / ROIC / reinvestment-rate:
-    # use the EFFECTIVE tax rate (what the firm actually paid) so historical
-    # ROIC matches reality. Marginal is reserved for DCF projections
+    # use the selected accounting effective tax rate, not a claim about cash
+    # taxes actually paid. Marginal is reserved for DCF projections
     # (Module 4) where it represents the tax the firm would pay on
     # incremental future earnings. Fall back to marginal if effective
     # isn't available, then to reverse-engineering from Kd.

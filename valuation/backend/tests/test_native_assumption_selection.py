@@ -486,6 +486,8 @@ def test_five_dimension_review_distinguishes_calculation_from_economic_evidence(
     assert result['applicability']['uncertainty']['delta_per_share']==pytest.approx(0)
     assert result['applicability']['predictive_validity']=='not_established'
     assert result['operating_scope']['status']=='requires_scope_evidence'
+    assert 'operating_income_and_asset_bridge_require_scope_evidence' in result['findings']
+    assert result['operating_scope']['input_ebit'] == body['ltm_financials']['ebit']
     assert not result['automatic_adoption']
     body['dcf']['reinvestment_projections'][0] += 1
     with pytest.raises(ValueError,match='does not replay'):

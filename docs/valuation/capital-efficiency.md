@@ -30,11 +30,11 @@
 
 ```bash
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.review_native_policy \
-  workspace/derived/minority-history/scenarios \
+  workspace/derived/standard-input-audit/scenarios \
   workspace/derived/capital-proxy-review/new-review.json
 
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.compare_native_capital \
-  workspace/derived/minority-history/scenarios \
+  workspace/derived/standard-input-audit/scenarios \
   workspace/derived/capital-transition/new-comparison.json \
   --web http://127.0.0.1:8080
 ```
@@ -55,18 +55,16 @@ v1漏计了合并子公司属于其他股东的资本；本次按达摩达兰[�
 
 ```bash
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.compare_native_capital \
-  workspace/derived/minority-history/scenarios \
+  workspace/derived/standard-input-audit/scenarios \
   workspace/derived/company-capital-method/new-comparison.json \
   --basis company-history --web http://127.0.0.1:8080
 ```
 
 运行仍须使用独立1GiB服务。输出保存三年证据、选定倍率、完整前后报告、逐年投入变化和每股影响；不按估值高低选择代理，`automatic_adoption=false`。现金、投资、债务和少数股权范围限制并未由三年聚合消除；公司历史存量比率不自动成为未来新增投资效率。
 
-2026-09-29同一12家/30场景验收：少数股权历史补链及重新导出后，v2恢复7家24场景，并与8080真实API逐项相同；2家6场景仍缺连续模型资本历史，另1家原选择拒绝、2家原输入阻断继续保留。原v1遗漏少数股权的结果只留作历史对照，不再作为当前公司代理。
+2026-09-29标准输入重建后，同一12家形成33个统一场景，资本v2可用于8家30场景，已与8080实际API逐项复验。苏泊尔3场景仍因2023年研发资产缺2019年费用而不可算；不是缺整套2023年资产负债数据。另1家原选择拒绝、2家原输入阻断保留。证据位于`workspace/derived/standard-input-audit/`。
 
-已重建同名单基线；24场景相对v1的收入、EBIT、折现因子和终值保持不变，每股差额来自资本代理变化，范围约−1.7260至+0.0031元。收缩路径可能因更高资本投入强度同时带来更多假设释放，不能断言补计少数股权一定降低价值。条件场景仍不自动采用。
-
-48项Python方法回归见前轮收据，本轮Go全套和构建通过，100家默认API及24个显式公司代理场景完成真实8080复验。当前证据为`workspace/derived/minority-history/`；v1及补链前的缺项/失败保存在原目录，不重写冻结记录。
+此前少数股权补链验收为7家24场景，另2家6场景缺模型历史：其中安克的缺口来自已撤销专项EBIT政策过滤整年，现已解除。旧v1与v2对照、失败及24场景收据仍保留于`workspace/derived/minority-history/`，按当时提交复验；不能将旧口径数值拼接到当前模型。
 
 ## 当前结论
 
