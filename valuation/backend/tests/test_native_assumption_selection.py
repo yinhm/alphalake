@@ -462,3 +462,32 @@ def test_capital_proxy_comparison_keeps_five_year_denominator_and_separate_bases
     review = review_report(baseline)
     assert len(review['capital']['proxy_comparison']['rows']) == 5
     assert review['capital']['proxy_comparison']['base_year'] == int(baseline['inputs']['period_date_10k'][:4])
+
+
+def test_five_dimension_review_distinguishes_calculation_from_economic_evidence():
+    from tools.review_native_policy import review_report
+    from engine.data_dictionary import ForecastYear
+    baseline = sample()
+    inputs = CompanyValuationInput.model_validate(baseline['inputs'])
+    inputs.valuation_assumptions.stable_growth_rate = -.02
+    inputs.valuation_assumptions.annual_forecast = [ForecastYear(growth=-.02, margin=.1, tax=.15) for _ in range(10)]
+    def report_body():
+        report = run_full_valuation(inputs)
+        return dict(inputs=inputs.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
+            for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+    body = report_body()
+    review = review_report(body)
+    result = review['methodology']
+    assert all(k in result for k in ('input_selection','operating_scope','growth_margin_reinvestment','terminal_wacc','applicability'))
+    assert result['terminal_wacc']['terminal_tax']==.15
+    assert 'perpetual_tax_differs_from_marginal' in result['findings']
+    assert 'capital_release_requires_recoverability_basis' in result['findings']
+    assert result['terminal_wacc']['reinvestment_rate'] < 0
+    assert result['growth_margin_reinvestment']['capital_release_years']==list(range(1,11))
+    assert result['applicability']['uncertainty']['delta_per_share']==pytest.approx(0)
+    assert result['applicability']['predictive_validity']=='not_established'
+    assert result['operating_scope']['status']=='requires_scope_evidence'
+    assert not result['automatic_adoption']
+    body['dcf']['reinvestment_projections'][0] += 1
+    with pytest.raises(ValueError,match='does not replay'):
+        review_report(body)

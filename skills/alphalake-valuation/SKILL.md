@@ -99,3 +99,5 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 比较资本效率过渡时读取`docs/valuation/capital-efficiency.md`，复用`tools.compare_native_capital`及当前已核验情景目录。该工具只改显式`annual_sales_to_capital`，保留其他假设；终点是原终值政策的代数配套，不是新发现的公司资本效率。报告再投资和条件值变化，并保留原12家缺项/拒绝，不按价格选择过渡情景。
 
 资本倍率适用性核对复用`tools.review_native_policy`的`capital.proxy_comparison`：只看最新完整财年起五年，模型与独立SQLite不混合；历史存量倍率反事实只量化投入敏感性，不作为获批未来效率或完整DCF，缺年不延长窗口。参见[资本核对](../../docs/valuation/capital-efficiency.md)。
+
+解释原生准入与经济合理性时读取`docs/valuation/methodology-contract.md`：兼容API的`input_contract`说明所选方法可消费的输入；审阅结果的`methodology`区分经营范围、再投资与终值风险。`ready`或`numerical_replay=passed`不代表公司假设获批；负再投资需说明资本释放假设，单因素终值对照不称概率区间。

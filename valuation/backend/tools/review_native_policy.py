@@ -325,7 +325,7 @@ def review_report(body, annual_evidence=None):
         margin, terminal_tax = a.annual_forecast[-1].margin, a.annual_forecast[-1].tax
     terminal_revenue = rows[-1]['revenue_million_cny']*(1+g)
     terminal_nopat = terminal_revenue*margin*(1-terminal_tax)
-    terminal_investment = terminal_nopat*g/terminal_roic if g > 0 else 0.0
+    terminal_investment = terminal_nopat*g/terminal_roic
     if not math.isclose(terminal_nopat-terminal_investment, terminal_fcff, rel_tol=1e-10, abs_tol=1e-8):
         raise ValueError('terminal economic bridge differs from engine')
     # 沿用原投入滞后，把同一个终值年度与继续沿用资本倍率的反事实相比。
@@ -352,7 +352,7 @@ def review_report(body, annual_evidence=None):
             requires_capital_transition_basis=not math.isclose(terminal_investment, continued_investment, rel_tol=1e-10, abs_tol=1e-8),
             boundary='同一终值年度、同一滞后下比较两条再投资规则；等价倍率是代数诊断，不自动替换行业代理或终值ROIC'))
     missing = [name for name in ('capex', 'd_a', 'change_in_noncash_wc') if getattr(raw, name) is None]
-    return dict(status='requires_analyst_judgment', automatic_adoption=False,
+    result = dict(status='requires_analyst_judgment', automatic_adoption=False,
         unit='million_CNY', ticker=inputs.ticker, economic_checks=economic_checks,
         model_input_history=historical,
         sustainability_evidence=dict(status='requires_company_and_accounting_basis',
@@ -400,7 +400,7 @@ def review_report(body, annual_evidence=None):
                 '研发资本化、租赁及现金/投资代理须按相同范围比较',
                 '历史报表行可能因缺EBIT而省略，不能据此判定标准收入缺失']),
         terminal=dict(growth=g, wacc=terminal_wacc, assumed_marginal_roic=terminal_roic,
-            reinvestment_rate=g/terminal_roic if g > 0 else 0,
+            reinvestment_rate=g/terminal_roic,
             fcff_million_cny=terminal_fcff, value_share=terminal_share,
             implied_book_roic=dcf.implied_roic_terminal,
             boundary='终值新增投资回报假设与存量资本隐含回报不同；不强制二者相等'),
@@ -409,6 +409,84 @@ def review_report(body, annual_evidence=None):
             capital='requires_marginal_capital_evidence',
             wacc='sensitivity_only_explicit_reference_policy'),
         boundary='同引擎重放只验证计算一致性，非独立语义证据或预测有效性；亏损和负再投资保留，不以阈值批准。')
+    result['methodology'] = methodology_review(inputs, replay, result)
+    return result
+
+
+def methodology_review(inputs, report, review):
+    """把现有经济诊断汇总为通用方法契约；不以检查通过批准公司假设。"""
+    a, raw, terminal = inputs.valuation_assumptions, report.ltm_financials, review['terminal']
+    forecast = review['forecast']
+    reference = inputs.methodology_choices.reference_capital_inputs
+    findings = []
+    def flag(code, applies):
+        if applies:
+            findings.append(code)
+    flag('turnaround_path_requires_basis', report.adjusted.adjusted_ebit <= 0)
+    flag('capital_release_requires_recoverability_basis', any(r['reinvestment_million_cny'] < 0 for r in forecast) or terminal['growth'] < 0)
+    flag('nonpositive_equity_requires_distress_interpretation', report.final.value_per_share is not None and report.final.value_per_share <= 0)
+    flag('terminal_loss_requires_finite_life_or_recovery_path', review['economic_checks']['terminal_transition']['nopat_million_cny'] <= 0)
+    terminal_rf = a.riskfree_after_yr10 if a.override_riskfree and a.riskfree_after_yr10 is not None else inputs.macro_inputs.risk_free_rate
+    flag('terminal_growth_exceeds_currency_riskfree_heuristic', terminal['growth'] > terminal_rf)
+    flag('terminal_excess_return_requires_competitive_basis', terminal['assumed_marginal_roic'] > terminal['wacc'])
+    flag('terminal_capital_transition_requires_basis', review['economic_checks']['terminal_transition']['requires_capital_transition_basis'])
+    terminal_tax = inputs.macro_inputs.tax_rate_marginal
+    if a.override_tax_convergence:
+        if a.effective_tax_rate_override_years_1_5 is not None:
+            terminal_tax = a.effective_tax_rate_override_years_1_5
+        elif inputs.macro_inputs.tax_rate_effective is not None:
+            terminal_tax = inputs.macro_inputs.tax_rate_effective
+    if a.annual_forecast is not None:
+        terminal_tax = a.annual_forecast[-1].tax
+    flag('perpetual_tax_differs_from_marginal', terminal_tax != inputs.macro_inputs.tax_rate_marginal)
+    # 标识实际采用的显式值/默认值，不能从“数值存在”推断它有公司证据。
+    defaults = [name for name in ('revenue_growth_next_year','operating_margin_next_year',
+        'target_operating_margin','sales_to_capital_high','sales_to_capital_stable',
+        'cost_of_capital_stable_override','roic_stable_override') if getattr(a,name) is None
+        and not (a.annual_forecast is not None and name in ('revenue_growth_next_year','operating_margin_next_year','target_operating_margin'))
+        and not (a.annual_sales_to_capital is not None and name in ('sales_to_capital_high','sales_to_capital_stable'))]
+    flag('model_defaults_require_explicit_economic_basis', bool(defaults))
+    scenario = inputs.model_copy(deep=True)
+    scenario.valuation_assumptions.roic_stable_override = terminal['wacc']
+    counter = run_full_valuation(scenario) if terminal['wacc'] > 0 else None
+    base_value, counter_value = report.final.value_per_share, counter.final.value_per_share if counter else None
+    return dict(version='native-methodology-v1', automatic_adoption=False,
+        economic_basis='not_established_by_arithmetic', findings=findings,
+        input_selection=dict(financial_period=inputs.period_date_10k, latest_period=inputs.period_date_10q,
+            financial_currency=inputs.reporting_currency, listing_currency=inputs.stock_price_currency,
+            historical_fcff_required=False, missing_historical_cashflow=review['capital']['missing_historical_cashflow_inputs'],
+            assumed_defaults=defaults, evidence_rule='explicit_input_is_not_automatically_reported_fact_or_approved_assumption'),
+        operating_scope=dict(status='requires_scope_evidence',
+            adjusted_ebit=report.adjusted.adjusted_ebit, research_asset=report.adjusted.value_of_research_asset,
+            lease_capital=report.adjusted.pv_of_operating_leases,
+            minority_equity=raw.minority_interests, financial_investments=raw.cross_holdings,
+            checks=['operating_profit_excludes_nonoperating_returns', 'consolidated_profit_matches_capital_and_minority_scope',
+                'cash_and_investments_not_double_counted', 'lease_debt_and_expense_not_capitalized_twice',
+                'research_profit_and_capital_use_same_life'],
+            boundary='原生ROIC为模型口径诊断；没有公司分类证据时不自动认证经营ROIC'),
+        growth_margin_reinvestment=dict(status='arithmetic_reconciled_economic_basis_required',
+            revenue_end_multiple=forecast[-1]['revenue_multiple_of_base'],
+            revenue_absolute_increase=forecast[-1]['revenue_million_cny']-raw.revenues,
+            total_net_reinvestment=sum(r['reinvestment_million_cny'] for r in forecast),
+            capital_release_years=[r['year'] for r in forecast if r['reinvestment_million_cny'] < 0],
+            below_initial_wacc_years=review['economic_checks']['marginal_return_screen']['below_initial_wacc_years'],
+            basis='growth_and_margin_path_with_aggregate_reinvestment; no_separate_RD_or_WC_deduction',
+            boundary='收入规模、增长空间、目标利润率及投资滞后须有经济依据；没有统一数值阈值可自动批准'),
+        terminal_wacc=dict(growth=terminal['growth'], wacc=terminal['wacc'], roic=terminal['assumed_marginal_roic'],
+            reinvestment_rate=terminal['reinvestment_rate'], terminal_riskfree=terminal_rf, terminal_tax=terminal_tax,
+            initial_wacc=report.cost_of_capital.wacc,
+            initial_wacc_method=inputs.methodology_choices.cost_of_capital_approach,
+            reference_policy=reference.model_dump(mode='json') if reference else None,
+            currency_and_inflation_basis='requires_same_currency_nominal_or_real_evidence',
+            company_risk_basis='credit_tax_shield_geographic_exposure_and_target_weights_not_inferred_from_listing',
+            terminal_value_share=terminal['value_share']),
+        applicability=dict(scope='SH_SZ_nonfinancial_method_review; industry_eligibility_not_inferred_from_ticker',
+            numerical_replay='passed', predictive_validity='not_established',
+            uncertainty=dict(method='terminal_ROIC_equals_terminal_WACC_only',
+                status='calculated' if counter else 'outside_positive_terminal_ROIC_domain',
+                baseline_value_per_share=base_value, counterfactual_value_per_share=counter_value,
+                delta_per_share=counter_value-base_value if counter_value is not None and base_value is not None else None,
+                probabilities=None, boundary='单因素情景，不是置信区间、不替换基准、不证明准确度')))
 
 
 def growth_duration_effects(variants, reviews):

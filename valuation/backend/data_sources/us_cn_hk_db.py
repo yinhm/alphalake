@@ -364,6 +364,7 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
     policy = record.get('valuation_proxy', {})
     estimates = {(e['series'],e['offset'],e['field']):e for e in policy.get('cells', [])}
     required, conditional, history, warnings, blockers = [], [], [], [], []
+    consumed_inputs = []
     zero_refs = [dict(series=s, offset=o, field=f, component=part['field'], period=part['period'], import_sha256=part['import_sha256'])
         for (s,o,f),e in cells.items() for part in e['evidence'] if isinstance(part, dict) and part.get('kind') == 'reviewed_source_zero']
     reviewed_zeros = []
@@ -404,7 +405,13 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
             evidence = dict(status=estimate['status'], evidence=[estimate])
         if source and series == 'company' and field == 'mv_equity_listing':
             invalid_evidence = evidence is None or evidence['status'] not in ('available','reported_share_price_proxy','a_share_total_share_proxy')
-        if invalid_evidence or v is None or not isinstance(v, (int,float)) or not math.isfinite(v) or (positive and v <= 0):
+        invalid = bool(invalid_evidence or v is None or not isinstance(v, (int,float)) or not math.isfinite(v) or (positive and v <= 0))
+        consumed_inputs.append(dict(series=series, offset=offset, field=field, purpose=purpose,
+            requirement='required' if dest is required else 'conditional' if dest is conditional else 'optional',
+            usable=not invalid, value=v if isinstance(v,(int,float)) and math.isfinite(v) else None,
+            source=evidence or dict(status='unverified_input'),
+            missing_action='retain_gap' if dest is history else 'block_selected_method'))
+        if invalid:
             partial = next((e for e in (evidence or {}).get('evidence', [])
                             if isinstance(e, dict) and e.get('not_complete_target')), {})
             dest.append(dict(series=series, offset=offset, field=field, purpose=purpose,
@@ -483,6 +490,9 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
         report_period=source.get('report_period') if source else co['period_date_quarterly'],
         information_as_of=source.get('information_as_of') if source else co['data_as_of'],
         blockers=blockers,required_missing=required,conditional_missing=conditional,
+        input_contract=dict(version='native-input-selection-v1', inputs=consumed_inputs,
+            scope='native_database_default_method; estimates_are_not_reported_facts',
+            historical_fcff_required=False, silent_previous_period_fallback=False),
         optional_history_missing=history,warnings=warnings,input_window=window,
         adjustment_selection=dict(rd=rd_enabled,leases=lease_enabled,basis='native_database_defaults'),
         valuation_proxy=policy or None,

@@ -290,3 +290,18 @@ def test_annual_capital_path_respects_investment_year_and_rejects_invalid():
     for values in ([], [2]*2, [2,0,2], [2,-1,2], [2,float('nan'),2], [2,float('inf'),2]):
         with pytest.raises(ValueError):
             ValuationAssumptions(projection_years=3,annual_sales_to_capital=values)
+
+@pytest.mark.parametrize('growth', [-.02, 0, .02])
+def test_terminal_growth_and_reinvestment_share_one_signed_formula(growth, macro, cost_of_capital, adjusted, raw, cf_metrics):
+    from engine.module_4_dcf import InvalidTerminalValue
+    assumptions = ValuationAssumptions(stable_growth_rate=growth,
+        operating_margin_next_year=.2, target_operating_margin=.2,
+        cost_of_capital_stable_override=.08, roic_stable_override=.08)
+    result = compute_dcf(cf_metrics, cost_of_capital, adjusted, raw, assumptions, macro)
+    nopat = result.revenue_projections[-1]*(1+growth)*.2*(1-macro.tax_rate_marginal)
+    assert result.terminal_value_firm == pytest.approx(nopat*(1-growth/.08)/(.08-growth))
+    # No excess returns: terminal value equals next-year NOPAT / WACC.
+    assert result.terminal_value_firm == pytest.approx(nopat/.08)
+    assumptions.stable_growth_rate = -1
+    with pytest.raises(InvalidTerminalValue, match='-100%'):
+        compute_dcf(cf_metrics, cost_of_capital, adjusted, raw, assumptions, macro)

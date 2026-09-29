@@ -13,7 +13,7 @@ def value_digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False, allow_nan=False).encode()).hexdigest()
 
 
-def check(database, output, risk_free_rate):
+def check(database, output, risk_free_rate, review_methodology=False):
     from fastapi.testclient import TestClient
     from api.main import app
 
@@ -45,8 +45,15 @@ def check(database, output, risk_free_rate):
                           final=body.get('final'), diagnostic=d, response=body,
                           diagnostic_sha256=value_digest(d), inputs_sha256=value_digest(body.get('inputs')),
                           unresolved_sha256=value_digest(body.get('unresolved_fields')))
+            if review_methodology:
+                from tools.review_native_policy import review_report
+                record['methodology_review'] = (review_report(body) if response.status_code == 200 else
+                    dict(status='not_calculated', reason=d['status'], automatic_adoption=False))
             (output/(ticker.replace(':','-')+'.json')).write_text(json.dumps(record,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
-            results.append({k:record[k] for k in ('ticker','admission','financial_admission','reference_missing','http_status','market_status','missing_fields','final','diagnostic_sha256','inputs_sha256','unresolved_sha256')})
+            item = {k:record[k] for k in ('ticker','admission','financial_admission','reference_missing','http_status','market_status','missing_fields','final','diagnostic_sha256','inputs_sha256','unresolved_sha256')}
+            if review_methodology:
+                item['methodology'] = record['methodology_review'].get('methodology', record['methodology_review'])
+            results.append(item)
     with database.open('rb') as stream:
         after = hashlib.file_digest(stream,'sha256').hexdigest()
     assert before == after, 'valuation must not mutate source SQLite'
@@ -57,6 +64,12 @@ def check(database, output, risk_free_rate):
                    financial_admission=dict(Counter(r['financial_admission'] for r in results)),
                    http_status=dict(Counter(r['http_status'] for r in results)),
                    missing_company_counts=dict(gaps), results=results)
+    if review_methodology:
+        summary['methodology'] = dict(companies=len(results),
+            reviewed=sum('version' in r['methodology'] for r in results),
+            not_calculated=sum('version' not in r['methodology'] for r in results),
+            findings=dict(Counter(f for r in results for f in r['methodology'].get('findings', []))),
+            economic_approval='not_inferred', predictive_validity='not_established')
     (output/'summary.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
     assert all(r['admission']!='diagnostic_error' for r in results), 'diagnostic failure; see summary'
     assert all(r['http_status'] in (200,422) for r in results), 'unexpected API failure; see summary'
@@ -69,5 +82,6 @@ if __name__ == '__main__':
     parser.add_argument('--database',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--risk-free-rate',type=float,required=True,help='explicit native API assumption, not an observed market rate')
+    parser.add_argument('--review-methodology',action='store_true',help='replay calculated reports and audit the five method dimensions; retains blocked companies')
     args=parser.parse_args()
-    print(json.dumps(check(args.database,args.output,args.risk_free_rate),ensure_ascii=False,indent=2))
+    print(json.dumps(check(args.database,args.output,args.risk_free_rate,args.review_methodology),ensure_ascii=False,indent=2))

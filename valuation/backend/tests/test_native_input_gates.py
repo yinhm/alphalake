@@ -245,3 +245,19 @@ def test_incomplete_income_year_keeps_research_cohort_without_inventing_profit(m
     future = deepcopy(inputs)
     future.historical_research_expenses[2026] = 999
     assert run_full_valuation(future).cashflow.historical_margin_by_year == report.cashflow.historical_margin_by_year
+
+
+def test_input_contract_exposes_selection_without_filling_missing_history(monkeypatch):
+    record = sample(monkeypatch)
+    record['financials_annual'].append(dict(fy_offset=1, revenues=None, ebit=None))
+    gate = db.native_compatibility(None, 'TEST')
+    contract = gate['input_contract']
+    assert not contract['historical_fcff_required']
+    assert not contract['silent_previous_period_fallback']
+    optional = [r for r in contract['inputs'] if r['requirement']=='optional']
+    assert len(optional)==2 and all(not r['usable'] and r['missing_action']=='retain_gap' for r in optional)
+    record['financials_annual'][0]['bv_debt'] = None
+    gate = db.native_compatibility(None, 'TEST')
+    debt = next(r for r in gate['input_contract']['inputs'] if r['field']=='bv_debt')
+    assert debt['requirement']=='required' and not debt['usable'] and debt['value'] is None
+    assert gate['status']=='blocked_required_inputs'

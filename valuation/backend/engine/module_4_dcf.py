@@ -295,6 +295,8 @@ def compute_dcf(
 
     if not math.isfinite(wacc_terminal) or not math.isfinite(g_terminal) or wacc_terminal <= g_terminal:
         raise InvalidTerminalValue("terminal WACC must be finite and exceed finite terminal growth")
+    if g_terminal <= -1:
+        raise InvalidTerminalValue("terminal growth must exceed -100% for a continuing business")
 
     # --- Terminal ROIC ---
     if assumptions.roic_stable_override is not None:
@@ -354,7 +356,9 @@ def compute_dcf(
     ebit_terminal = rev_terminal * margin_target
     nopat_terminal = ebit_terminal * (1 - tax_terminal)
     rir_terminal = g_terminal / roic_terminal
-    reinvestment_terminal = rir_terminal * nopat_terminal if g_terminal > 0 else 0.0
+    # Damodaran: stable reinvestment = g/ROIC; negative g implies partial
+    # liquidation, not zero reinvestment. Recovery of capital is an assumption.
+    reinvestment_terminal = rir_terminal * nopat_terminal
     fcff_terminal = nopat_terminal - reinvestment_terminal
 
     # --- Terminal Value (Gordon) ---
