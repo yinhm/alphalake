@@ -7,7 +7,7 @@ import pytest
 from data_sources.alphalake import AlphaLakeRequest
 from tools.review_company_inputs import review
 
-ROOT = Path(__file__).resolve().parents[2]/'research/current-contract-20260919/method-closure-20260912'
+ROOT = Path(__file__).resolve().parents[2]/'research/current-references-20260930/method-closure-20260912'
 
 
 @pytest.mark.parametrize('code', ['300866', '002032'])

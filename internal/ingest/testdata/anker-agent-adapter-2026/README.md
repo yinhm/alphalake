@@ -1,6 +1,8 @@
 # 安克 × Investment Valuation Agent 修正复验
 
-目标原版本 `c4b86e5` 的实际实验发现：缺少季度资本开支仍保留全年值、历史营运变动缺失仍计算 FCFF、没有显式 TTM 入口。原始实验见 AlphaLake 提交 `13a59f8`。本目录现验证目标修正提交 `7ce156a`，目标代码位于 `workspace/Investment_Valuation_Agent`，是单独的 Git 仓库。
+目标原版本 `c4b86e5` 的实际实验发现：缺少季度资本开支仍保留全年值、历史营运变动缺失仍计算 FCFF、没有显式 TTM 入口。原始实验见 AlphaLake 提交 `13a59f8`，导入前修正版本为 `7ce156a`。当前脚本验证本仓库`valuation/`，不依赖旧独立检出。
+
+本目录`request.json`/`result.json`保留冻结。当前完整预期及重建收据位于[2026-09-30现行适配证据](../../../../valuation/research/agent-adapters-current-contract-20260930/README.md)：显式补齐新增空契约字段、核验既有字段级源零重建的来源哈希变化，原数值与缺项保持不变；不修改引擎或公式。
 
 ## 数据链与实际入口
 
@@ -8,7 +10,7 @@
 
 安克代码 300866，信息截止 2026-09-06 UTC 零点，余额日 2026-06-30，TTM 区间 2025-07-01 至 2026-06-30，范围仍为 `provider_default`。标准元/股转换为百万元/百万股，转股价保持元/股；不二次乘万元倍率、不恢复源 float32 精度。
 
-`request.json` 使用实际 `CompanyValuationInput.prepared_ttm` 契约，封装为 `{ "inputs": ... }`。脚本通过真实 Pydantic JSON 往返，再调用 `run_full_valuation` 的 M1–M6 全链。prepared_ttm 的期间、币种、单位、信息截止和来源清单显式传入；不放入年度列表、不通过 K=0 隐藏二次转换，也不再用 None 伪造 CashFlowMetrics 参数。
+现行证据的`anker/request.json`使用实际 `CompanyValuationInput.prepared_ttm` 契约，封装为 `{ "inputs": ... }`。脚本通过真实 Pydantic JSON 往返，再调用 `run_full_valuation` 的 M1–M6 全链。prepared_ttm 的期间、币种、单位、信息截止和来源清单显式传入；不放入年度列表、不通过 K=0 隐藏二次转换，也不再用 None 伪造 CashFlowMetrics 参数。
 
 本轮验证共享编排器和 JSON 契约，未启动 HTTP 服务，不声称 HTTP 响应/错误码或界面操作已验收。目标还没有新增 TTM 界面编辑控件。
 
@@ -28,17 +30,17 @@ WACC 9%、RF 3%、ERP 6%、终值增长 3%、ROIC 12% 都是实验假设，非�
 
 ## 复现与范围
 
-使用 Python 3.12、pydantic 2.12.5、pypdf 6.17.0、Go，目标检出锁定版本：
+使用当前项目Python依赖、pypdf与Go，在仓库根目录执行：
 
 ```sh
-workspace/anker-agent-adapter-20260906/venv/bin/python internal/ingest/testdata/anker-agent-adapter-2026/verify.py
+python internal/ingest/testdata/anker-agent-adapter-2026/verify.py
 ```
 
-`--write` 经验证后重建 request.json/result.json；默认逐字比较。依赖仅安装在 workspace，两个项目的依赖文件未改变。安装时使用网络，证据校验消费本地文件。外部目标检出未纳入 AlphaLake CI，本实验仍是本地复验，不声称默认 CI 已覆盖。
+默认完整运行生产标准链与共享引擎，再与现行预期逐字比较，已纳入根CI。含Go的验证按仓库资源隔离要求运行。旧`--write`仅属于冻结历史流程，当前已移除以免覆写历史；新目录重建命令和逐项不变核验见[现行证据说明](../../../../valuation/research/agent-adapters-current-contract-20260930/README.md)。
 
-目标后端 115 项测试通过，4 项外部数据测试跳过。新增回归覆盖 prepared TTM JSON 往返、期间/币种/单位/时点约束、二次旋转拒绝、缺季、缺项及显式零；旧正向合成测试明确填入其原本假设为零的少数股权/跨持股，另有删除字段的负向断言。
+2026-09-06冻结验收：当时目标后端 115 项测试通过，4 项外部数据测试跳过。新增回归覆盖 prepared TTM JSON 往返、期间/币种/单位/时点约束、二次旋转拒绝、缺季、缺项及显式零；旧正向合成测试明确填入其原本假设为零的少数股权/跨持股，另有删除字段的负向断言。这是历史记录，不是当前完整后端测试数量。
 
-前端同步 nullable 类型和可选 prepared_ttm，未扩大界面功能。原锁文件有 Vite/Tailwind peer 冲突，安装使用 `npm ci --ignore-scripts --legacy-peer-deps`；构建仍失败，原提交和修正后各 25 条 TypeScript 错误，去除行列号后的错误集合相同，无本轮新增错误。这一限制未计作构建通过。
+该次历史前端验收同步 nullable 类型和可选 prepared_ttm，未扩大界面功能。当时原锁文件有 Vite/Tailwind peer 冲突，安装使用 `npm ci --ignore-scripts --legacy-peer-deps`；构建失败，原提交和修正后各 25 条 TypeScript 错误，去除行列号后的错误集合相同，无该轮新增错误。这一历史限制未计作构建通过，不作为当前构建状态。
 
 标准 TTM 研发费用现由 TDX FN304 提供（3567.709568 百万元），真实目标引擎回传值也有断言；未启用研发资本化，历史 FCFF 仍保留缺项。
 
