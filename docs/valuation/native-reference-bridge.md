@@ -14,7 +14,7 @@
 - `upgrade-native-references <db>`：当前显式schema54→55，增加研发/租赁调整后利润率指标；原schema53→54转换按原提交执行；先备份，重开并比较后清理回滚副本。
 - `sync-native-reference <db> --file betas --local workspace/damodaran/betas.xls --python .venv/bin/python`：导入已有原文件。`--local`、`--offline`互斥；前者按此次导入记首次取得，不猜早期下载时间；后者只重放已注册且哈希合格的发布。省略两者才访问该工作簿原官方URL。支持清单见解析器及离线证据`internal/source/damodaran/testdata/native/sources.json`。
 - `export-native-references <db> --as-of <RFC3339>`：在同一事务选取已完成发布，导出发布ID、源定位、SHA256、观察日、取得日、数值与缺项；归档缺失/坏哈希拒绝。
-- 当前SQLite导出契约为v9、原生参考契约为v2，包含`reference_release`、`reference_value`、`reference_company`、`reference_issuer_association`及内容签名。默认财务与参考同一截止；`--reference-as-of`可显式选择不同参考截止，必须分别报告，不能冒称严格历史PIT。旧契约必须显式重建，不作运行时回退。
+- 当前SQLite导出契约为v10、原生参考契约为v2，包含`reference_release`、`reference_value`、`reference_company`、`reference_issuer_association`及内容签名。默认财务与参考同一截止；`--reference-as-of`可显式选择不同参考截止，必须分别报告，不能冒称严格历史PIT。旧契约必须显式重建，不作运行时回退。
 - 原生默认仍是US；最近验收US/Global各94行业、21指标已解析，共3,948行业观测（其中两项调整后利润率为schema55新增）。来源金额按既有DECIMAL12规范存储，逐格复核允许最多半个末位量化误差，不声称恢复源Excel浮点无限精度。原生股票波动率读取WACC表同名字段；EVA债务资本比独立为`debt_capital_ratio`，不再覆盖Beta表`debt_equity_ratio`。
 - 国家风险复用主库CN/HK/US/IL已审核发布；国家税共4项，其中CN=25%、HK=16.5%、IL=23%，US为空且状态`ambiguous`。源表B217、B246分别为25.63%、25.886141%，没有依据选择其中一条，禁止最后一行覆盖。US税自动选择和未接入国家须拒绝，用户全量显式参数API仍保留；当前目标仍是沪深普通企业，不宣称全球国家覆盖。
 - 合成评级、区域/分位数等原引擎冻结参考JSON暂保留原方法版本，并在快照中单列`model_reference_hashes`。这些**不是同步的当前市场参考**；不拿主库大企业信用档替换不同边界的原表，不把默认WACC称公司已核验市场WACC。用户无风险利率、方法与显式参数优先，不强制自动替换为人民币国债。
