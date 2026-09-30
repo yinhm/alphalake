@@ -1,6 +1,7 @@
 """苏泊尔三年已识别金融资产扣减与负债比较列核查，不计算完整营运资本。"""
 import argparse
 from decimal import Decimal
+from functools import lru_cache
 import hashlib
 import json
 from pathlib import Path
@@ -28,19 +29,20 @@ def verify(ledger, pdf_directory):
         path=pdf_directory/doc['file']
         assert hashlib.sha256(path.read_bytes()).hexdigest()==doc['sha256']
         reader=PdfReader(path)
+        text = lru_cache(maxsize=None)(lambda n: reader.pages[n-1].extract_text())
         record=[r for r in source if r['code']=='002032' and r['period']==f'{year}-12-31']
         assert len(record)==1
         base=['current_assets','cash','trading_assets','current_liabilities','noncurrent_liabilities','current_debt_investment']
         assert [r['key'] for r in report['rows']]==base+(['term_deposit'] if year<2024 else ['warranty'])+['capital_payables','current_lease']
         values={}
-        header=reader.pages[report['rows'][0]['page']-1].extract_text()
+        header=text(report['rows'][0]['page'])
         compact=re.sub(r'\s+','',header)
         assert '合并资产负债表' in compact and '单位：元' in compact and f'{year}年12月31日' in compact
         labels=dict(zip(base,['流动资产合计','货币资金','交易性金融资产','流动负债合计','非流动负债合计','一年内到期的其他债权投资'])) | {'term_deposit':'定期存款','warranty':'产品质量保证','capital_payables':'设备工程款','current_lease':'一年内到期的租赁负债'}
         for row in report['rows']:
             assert row['label']==labels[row['key']], 'concept differs'
-            text=reader.pages[row['page']-1].extract_text()
-            lines=[l.strip() for l in text.splitlines() if l.strip().startswith(row['label']+' ')]
+            page=text(row['page'])
+            lines=[l.strip() for l in page.splitlines() if l.strip().startswith(row['label']+' ')]
             assert lines==[row['line']], 'PDF row differs'
             extracted=[v.replace(',','') for v in re.findall(r'-?[0-9,]+\.[0-9]{2}',lines[0])]
             assert extracted==row['amounts_cny'], 'PDF amount differs'

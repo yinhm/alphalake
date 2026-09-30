@@ -5,6 +5,7 @@ import json
 import re
 import struct
 import subprocess
+from tools.pdf_evidence import verified_pdf_text
 from tools import verify_cnty_debt as cnty, verify_five_debt as five
 from tools import verify_debt_maturities as maturity
 from tools.tdx_research_source import source_value as value, financial_value, source_components
@@ -27,9 +28,7 @@ def verify():
     for report in ledger['reports']:
         code, year = report['code'], report['year']
         path, sha = reports[code, year]
-        if hashlib.sha256(path.read_bytes()).hexdigest() != sha:
-            raise ValueError('PDF hash differs')
-        text = subprocess.check_output(['pdftotext', '-layout', str(path), '-'], text=True)
+        text = verified_pdf_text(path, sha)
         pages = text.split('\f')
         if (code, year) == ('000546', 2022):
             note = pages[193]

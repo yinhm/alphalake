@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import struct
 import subprocess
+from tools.pdf_evidence import verified_pdf_text
 from tools import verify_cnty_debt as cnty, verify_five_debt as five
 from tools.backtest_tdx_history import at, available
 from tools.tdx_research_source import source_value as value
@@ -30,8 +31,7 @@ def verify(ledger,reports,records,artifacts):
     results=[]
     for report in ledger['reports']:
         key=(report['code'],report['year']);path,sha=reports[key]
-        if hashlib.sha256(path.read_bytes()).hexdigest()!=sha:raise ValueError('PDF hash differs')
-        pages=subprocess.check_output(['pdftotext','-layout',str(path),'-'],text=True).split('\f')
+        pages=verified_pdf_text(path, sha).split('\f')
         clean=lambda x:re.sub(r'\s+','',x)
         text='\n'.join(pages[n-1] for n in report['section_pages'])
         match=re.search(r'\d+[、.]\s*一年内到期的非流动负债',text)

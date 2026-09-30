@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 import struct
 import subprocess
+from tools.pdf_evidence import verified_pdf_text
 
 from tools.backtest_tdx_history import at, available
 from tools.tdx_research_source import source_value as value
@@ -28,9 +29,7 @@ def verify(ledger,source):
     reports={}
     for r in ledger['reports']:
         path=DIRECTORY/r['file']
-        if hashlib.sha256(path.read_bytes()).hexdigest()!=r['sha256']:
-            raise ValueError('PDF hash differs')
-        pages=subprocess.check_output(['pdftotext','-layout',str(path),'-'],text=True).split('\f')
+        pages=verified_pdf_text(path, r['sha256']).split('\f')
         compact=lambda n:re.sub(r'\s+','',pages[n-1])
         year=r['year']
         if (r['statement_page'],r['bonds_page']) != ((153,145) if year==2021 else (108,101)):

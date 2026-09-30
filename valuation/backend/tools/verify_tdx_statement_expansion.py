@@ -38,7 +38,7 @@ def verify(directory=DEFAULT, evidence=None):
             if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
                 raise ValueError('original evidence hash differs: ' + str(path))
         reader = PdfReader(pdf)
-        pages = {n: compact(reader.pages[n-1].extract_text()) for table in report['tables'].values() for n in table['pages']}
+        pages = {n: compact(reader.pages[n-1].extract_text()) for n in {n for table in report['tables'].values() for n in table['pages']}}
         for category, table in report['tables'].items():
             start = pages[table['pages'][0]]
             expected_period = report['period'].replace('-', '年', 1).replace('-', '月')+'日' if category == 'balance_sheet' else report['period'][:4] + ('年半年度' if report['period'].endswith('06-30') else '年度')
