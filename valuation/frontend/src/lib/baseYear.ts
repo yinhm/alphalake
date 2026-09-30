@@ -15,7 +15,23 @@
  * than raw reported EBIT.
  */
 
-import type { ValuationResponse, RawFinancials } from '../types/valuation';
+import type { CompanyValuationInput, ValuationResponse, RawFinancials } from '../types/valuation';
+
+/** Rotation disabled for prepared TTM does not mean zero elapsed quarters. */
+export function elapsedQuarters(inputs: CompanyValuationInput): number | null {
+  if (!inputs.prepared_ttm) return inputs.quarters_since_10k ?? 0;
+  const annual = new Date(inputs.period_date_10k ?? '');
+  const current = new Date(inputs.prepared_ttm.period_end);
+  const n = (current.getUTCFullYear() * 12 + current.getUTCMonth()
+    - annual.getUTCFullYear() * 12 - annual.getUTCMonth()) / 3;
+  return Number.isInteger(n) && n >= 0 && n <= 4 ? n : null;
+}
+
+/** Real historical positions for display only; never request a second rotation. */
+export function quarterlyForDisplay(inputs: CompanyValuationInput): RawFinancials[] {
+  const evidence = inputs.prepared_ttm?.provenance.quarterly_display;
+  return evidence ? JSON.parse(evidence) : inputs.quarterly_financials ?? [];
+}
 
 /** The financial period the engine's DCF is anchored on.
  *  LTM if available, else plain FY0 from the raw data. */

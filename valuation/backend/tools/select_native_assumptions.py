@@ -148,7 +148,8 @@ def scenario_payloads(baseline, selected):
     required = list(range(year-2, year+1))
     evidence = [r for r in reviewed['sustainability_evidence']['annual_rows'] if r['year'] in required]
     history = {r.fiscal_year:r for r in inputs.raw_financials}
-    if inputs.adjustment_inputs.has_operating_leases or inputs.prepared_ttm is not None:
+    from data_sources.us_cn_hk_db import standard_cumulative_ttm
+    if inputs.adjustment_inputs.has_operating_leases or (inputs.prepared_ttm is not None and not standard_cumulative_ttm(inputs)):
         missing.append('historical_margin_requires_matching_lease_or_prepared_ttm_adjustments')
     elif (sorted(r['year'] for r in evidence) != required or any(
             r['research_adjusted_margin'] is None or r['unavailable_research_cohort_years']
@@ -196,7 +197,8 @@ def prediction_check(baseline):
     end = date.fromisoformat(inputs.period_date_10k[:10]).year
     raw = {r.fiscal_year:r for r in inputs.raw_financials}
     margins = {r['year']:r['research_adjusted_margin'] for r in reviewed['sustainability_evidence']['annual_rows']}
-    margin_comparable = not inputs.adjustment_inputs.has_operating_leases and inputs.prepared_ttm is None
+    from data_sources.us_cn_hk_db import standard_cumulative_ttm
+    margin_comparable = not inputs.adjustment_inputs.has_operating_leases and (inputs.prepared_ttm is None or standard_cumulative_ttm(inputs))
     duplicate = reviewed['sustainability_evidence']['duplicate_annual_years']
     def revenue(y):
         value = raw[y].revenues if y in raw and y not in duplicate else None

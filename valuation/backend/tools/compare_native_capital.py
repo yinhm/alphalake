@@ -47,7 +47,8 @@ def compare(baseline, basis='terminal-transition'):
         history = before['sustainability_evidence']
         rows = [r for r in history['annual_rows'] if r['year'] in years]
         evidence = dict(required_years=years, rows=rows, missing=[], ratio=None)
-        if original.adjustment_inputs.has_operating_leases or original.prepared_ttm is not None:
+        from data_sources.us_cn_hk_db import standard_cumulative_ttm
+        if original.adjustment_inputs.has_operating_leases or (original.prepared_ttm is not None and not standard_cumulative_ttm(original)):
             evidence['missing'].append('historical_capital_requires_matching_lease_or_prepared_ttm_scope')
         if sorted(r['year'] for r in rows) != years:
             evidence['missing'].append('three_consecutive_unique_capital_years_required')

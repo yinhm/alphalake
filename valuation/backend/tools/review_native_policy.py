@@ -234,7 +234,11 @@ def review_report(body, annual_evidence=None):
             model_input_ebit_margin=f.ebit/f.revenues if f.revenues else None))
     k = inputs.quarters_since_10k
     recent = dict(status='missing_comparable_window', current=None, prior=None)
-    if k and len(inputs.quarterly_financials) >= k+4:
+    from data_sources.us_cn_hk_db import standard_cumulative_ttm
+    if standard_cumulative_ttm(inputs):
+        windows = json.loads(inputs.prepared_ttm.provenance['cumulative_windows'])
+        recent.update(status='reported_ytd_comparison', **windows, period=inputs.period_date_10q)
+    elif k and len(inputs.quarterly_financials) >= k+4:
         # 原生季序契约：当前YTD=前k季，上年同窗=偏移4后的k季；不读占位fiscal_year。
         windows = [inputs.quarterly_financials[:k], inputs.quarterly_financials[4:4+k]]
         comparable = []

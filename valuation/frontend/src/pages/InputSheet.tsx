@@ -4,6 +4,7 @@ import SpreadsheetCell from '../components/SpreadsheetCell';
 import SpreadsheetGrid from '../components/SpreadsheetGrid';
 import ColorLegend from '../components/ColorLegend';
 import CurrencyInfoPanel from '../components/CurrencyInfoPanel';
+import { elapsedQuarters, quarterlyForDisplay } from '../lib/baseYear';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -163,7 +164,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
   const opt = inp.option_inputs;
   const coc = data.cost_of_capital;
 
-  const qFins = inp.quarterly_financials ?? [];
+  const qFins = quarterlyForDisplay(inp);
 
   // Balance sheet items are point-in-time, not flow items — use most recent value directly
   const BALANCE_SHEET_KEYS = new Set<keyof RawFinancials>([
@@ -176,11 +177,12 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
   // Frontend just reads data.ltm_financials, falling back to FY0 if backend didn't provide one.
   function ltmVal(key: keyof RawFinancials): number | null {
     const fromBackend = data.ltm_financials ? (data.ltm_financials[key] as number | null | undefined) : undefined;
+    if (inp.prepared_ttm) return fromBackend ?? null;
     if (fromBackend !== undefined && fromBackend !== null) return fromBackend;
     return fin0 ? (fin0[key] as number | null) ?? null : null;
   }
 
-  const quartersSince = inp.quarters_since_10k ?? 0;
+  const quartersSince = elapsedQuarters(inp) ?? 0;
   // quarters_since_10k: 0=same period, 1=0.25yr, 2=0.5yr, 3=0.75yr, 4=1yr
   const yearsSinceDisplay = quartersSince > 0
     ? (quartersSince * 0.25).toFixed(2)
@@ -446,7 +448,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
                   <SpreadsheetCell value={num(ltmVal(key))} type={isBalanceSheet ? 'financial' : 'calc'}
                     tooltip={isBalanceSheet
                       ? (qFins[0]?.[key] != null ? `From 10-Q (FQ-0): ${ciqTooltip(key, ticker, 0).replace('IQ_FY-0', 'IQ_FQ-0')}` : `From 10-K (FY-0): ${ciqTooltip(key, ticker, 0)}`)
-                      : ciqLtmTooltip(key, ticker, quartersSince)} />
+                      : inp.prepared_ttm?.provenance.formula ?? ciqLtmTooltip(key, ticker, quartersSince)} />
                   {annualFins.map((f, i) => (
                     <SpreadsheetCell key={`fy-${key}-${i}`} value={num(f[key] as number | null)} type="financial"
                       tooltip={ciqTooltip(key, ticker, i)} />

@@ -40,7 +40,7 @@ def company_scope(company, reference):
 
 def gap_category(cell):
     if cell['field'] == 'r_and_d_expense':
-        if cell['series'] == 'quarterly':
+        if cell['series'] in ('quarterly', 'ttm'):
             return 'research_ttm'
         return 'research_history' if cell['offset'] > 0 else 'research_base_year'
     if cell['field'] in ('revenues', 'ebit'):

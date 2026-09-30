@@ -1,8 +1,8 @@
 # 标准财务事实导出 SQLite
 
-当前提供TDX标准财务及版本化Damodaran参考组成的SQLite快照，保持原生valuation页面、请求和估值引擎。经用户批准，现金及长期投资的已知组成可作为显式代理用于估值；不按公司套专项EBIT政策。财务值、代理与真实缺项分别留痕，准入依据见[实际模型准入](../valuation/valuation-input-gates-20260925.md)。工具不修改源DuckDB或默认seed。当前代码契约为`alphalake-sqlite-v9`，旧快照须显式重导出；主库与网页是否已切换以[项目状态](../implementation-status.md)为准。
+当前提供TDX标准财务及版本化Damodaran参考组成的SQLite快照，保持原生valuation页面、请求和估值引擎。经用户批准，现金及长期投资的已知组成可作为显式代理用于估值；不按公司套专项EBIT政策。财务值、代理与真实缺项分别留痕，准入依据见[实际模型准入](../valuation/valuation-input-gates-20260925.md)。工具不修改源DuckDB或默认seed。当前代码契约为`alphalake-sqlite-v10`，旧快照须显式重导出；主库与网页是否已切换以[项目状态](../implementation-status.md)为准。
 
-逐期间已核实TDX余额源零可通过[独立审核补充](../history/historical-debt-zero-review.md)进入目标输入，保留完整审核证据，不写入标准事实；旧快照须显式重导出。[本轮重新接入](../history/valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v9`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
+逐期间已核实TDX余额源零可通过[独立审核补充](../history/historical-debt-zero-review.md)进入目标输入，保留完整审核证据，不写入标准事实；旧快照须显式重导出。[本轮重新接入](../history/valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v10`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
 
 依赖Python 3.11+标准库和当前版本`alphalake`程序，无新增包。先构建当前程序；本机的大库任务、构建和测试须串行放在独立systemd系统服务中，参见[内存隔离约束](fundamental-memory-20260919.md)。例如：
 
@@ -48,7 +48,7 @@ journalctl -u alphalake-sqlite-export --no-pager
 
 SQLite的`standard_facts`保存原生模型已映射目标及现金、投资、债务组成所需的标准事实、单位及独立证据，`export_cells`逐单元格保存缺项和差分血缘。全部346字段由主库标准查询提供；不再复制整份三表、TTM和估值JSON。导出通过`export-financial-snapshot`在一次只读事务内批量投影目标列，Python逐证券写入SQLite，不逐公司/期间启动进程。
 
-仍提供`companies`、`financials_annual`、`financials_quarterly`供通用数据读取；这些宽表金额为**百万元人民币**、股数为**百万股**，`standard_facts`金额仍为元、股数为股，按各行单位解释。原生估值使用宽表。保留源精度，不补小数。日期锚点来自指定报告期，年表以最近完整自然年为FY0，季表以指定季末为FQ0。当前财务快照不是逐季度当时留存的数据版本认证。
+仍提供`companies`、`financials_annual`、`financials_quarterly`供通用数据读取；这些宽表金额为**百万元人民币**、股数为**百万股**，`standard_facts`金额仍为元、股数为股，按各行单位解释。原生估值使用宽表；非年末消费新增`financials_ttm`，通过既有prepared TTM入口直通，不再要求先拆季度。转换规范见[数据接入spec](../valuation/data-contract.md)。保留源精度，不补小数。日期锚点来自指定报告期，年表以最近完整自然年为FY0，季表以指定季末为FQ0。当前财务快照不是逐季度当时留存的数据版本认证。
 
 | SQLite列 | 标准字段 | 转换 |
 |---|---|---|
@@ -69,7 +69,7 @@ SQLite的`standard_facts`保存原生模型已映射目标及现金、投资、�
 | companies.effective_tax_rate | income_tax_expense / profit_before_tax | 最近完整年度会计有效税率，非预测税率；缺项、分母≤0或比例不在[0,1]时留空并诊断 |
 | companies.mv_equity | 合格收盘价×total_shares | 最新完整收盘价×报告期股本代理；已知B/H股时按用户授权采用A股价格×总股本，标记a_share_total_share_proxy，不是分股类真实市值 |
 
-年度流量取全年累计；单季流量为当年累计减前一季度累计，Q1直接使用。不跨年度差分、不加总期末余额；前期缺失则差分结果为空。追溯调整可能影响跨期可比性，本工具未独立审核比较口径。来源冲突期间留空；字段单位、期间、身份或范围不符合预期则拒绝整份导出。
+TTM流量按上一全年＋本年累计−上年同月累计直接计算，三个组成独立留痕，不要求Q1或四季齐全；年末直接取全年。资产余额始终取当前期末。年度流量取全年累计；单季流量为当年累计减前一季度累计，Q1直接使用。不跨年度差分、不加总期末余额；前期缺失则差分结果为空。追溯调整可能影响跨期可比性，本工具未独立审核比较口径。来源冲突期间留空；字段单位、期间、身份或范围不符合预期则拒绝整份导出。
 
 总折旧摊销、租赁费用以及剔除特殊项目税前利润仍无已审核目标映射，保留NULL。现金及证券合计、长期投资已接入部分组成，目标范围未闭合时写入已知代理值并保留警告；全缺失仍为NULL；债务采用五项账面组成合计，具体边界见[重新接入记录](../history/valuation-reconnect-20260926.md)。EBIT/EBITDA现从来源报告标准指标导出，[组成边界](../history/tdx-supplementary-fields-20260925.md)明确保留，不因填列而批准原生估值。行情读取信息截止时最近已完成交易日的本地合格TDX未复权收盘价，窗口为最近完成收盘日起14个自然日；价格不以财报期末截断，取得运行须始于对应交易日15:00或之后。市值代理采用该价格×已披露报告期总股本，股本基期与价格日期分别留痕，不能视作当前完整分股类市值。缺行情时不编造；已提供最近完整年度的会计有效税率，但信用评级、预测税率假设、地理分部、期权、租赁承诺、行业与WACC政策不编造。补充证据不自动合并进标准事实。
 
@@ -111,7 +111,7 @@ curl http://127.0.0.1:8080/api/database/compatibility/SZSE:300866
 
 ## 原生参考发布
 
-当前v9在财务表之外包含`reference_release`、`reference_value`、`reference_company`及`reference_issuer_association`；参考来自同一DuckDB的已完成发布，归档哈希须合格。主库须当前schema57，缺必要发布即拒绝导出，不从workspace散落工作簿回退。原生参考契约为v2；经原文审核的同发行人关联供默认取数，精确源证券与用户覆盖优先，撤销及版本失效不回退旧关联。默认US行业方法保留，详见[参考接入与边界](../valuation/native-reference-bridge.md)。
+当前v10在财务表之外包含`reference_release`、`reference_value`、`reference_company`及`reference_issuer_association`；参考来自同一DuckDB的已完成发布，归档哈希须合格。主库须当前schema57，缺必要发布即拒绝导出，不从workspace散落工作簿回退。原生参考契约为v2；经原文审核的同发行人关联供默认取数，精确源证券与用户覆盖优先，撤销及版本失效不回退旧关联。默认US行业方法保留，详见[参考接入与边界](../valuation/native-reference-bridge.md)。
 
 默认参考截止等于`--as-of`；`--reference-as-of <RFC3339>`允许明确使用另一参考截止。例如固定旧财务窗口比较最新参考时，两个截止分别记录，不能称当时可用的历史估值。旧快照须显式重新导出，不能只改metadata契约标签。
 
@@ -124,10 +124,10 @@ curl http://127.0.0.1:8080/api/database/compatibility/SZSE:300866
 缺项诊断会遍历全部目标分量：`export_cells.evidence_json`对缺标准值记录`kind=missing_standard_fact`及字段/期间/系数，后续已有金额和血缘仍保留。必需分量不齐时金额仍为NULL，不能把已知分量小计当成完整债务；源零原因须另回查来源证据。真实核对见[近期债务缺口](../history/native-capital-proxy-review.md#2024年债务缺口已定位)。
 
 
-原生API依据出口的`annual_bv_equity=parent_attributable`元数据，将同期期末`bv_equity + minority_interests`映射为模型的`consolidated_book_equity`（合并账面权益），年度与季度规则相同；无需新增SQLite冗余列。来源范围不明确或任一分量缺失时不构造该值。资本诊断使用此字段，股权桥接中的少数权益扣减独立保存；不得将后者的市场估计反用于账面资本。未提供合并范围的外部输入仍可按其他已齐备输入计算DCF，但相应资本诊断留空。
+原生API的TTM、年度及展示季度依据出口的`annual_bv_equity=parent_attributable`元数据，将同期期末`bv_equity + minority_interests`映射为模型的`consolidated_book_equity`（合并账面权益），年度与季度规则相同；无需新增SQLite冗余列。来源范围不明确或任一分量缺失时不构造该值。资本诊断使用此字段，股权桥接中的少数权益扣减独立保存；不得将后者的市场估计反用于账面资本。未提供合并范围的外部输入仍可按其他已齐备输入计算DCF，但相应资本诊断留空。
 
 ## 财务数值与公告日期
 
-当前v9消费现有标准财务快照，`financial_time_basis=current_standard_snapshot_not_pit`。`--as-of`仍用于身份、行情观测及默认参考截止，不再是财务公告准入门槛；财报期仍限定财务窗口。已知TDX公告日期优先，CNINFO可补充；未知日期留空，不丢弃有效金额。日期精度按中国次日零点记录保守边界，不能解释为真实时分秒。不同数据包版本按来源取得顺序选择，保留源哈希；不声称严格历史回放。依据和迁移见[ADR022](../decisions/022-financial-availability-and-disclosure.md)。
+当前v10消费现有标准财务快照，`financial_time_basis=current_standard_snapshot_not_pit`。`--as-of`仍用于身份、行情观测及默认参考截止，不再是财务公告准入门槛；财报期仍限定财务窗口。已知TDX公告日期优先，CNINFO可补充；未知日期留空，不丢弃有效金额。日期精度按中国次日零点记录保守边界，不能解释为真实时分秒。不同数据包版本按来源取得顺序选择，保留源哈希；不声称严格历史回放。依据和迁移见[ADR022](../decisions/022-financial-availability-and-disclosure.md)。
 
 投资代理遇到负分量时，该单元格保留`negative_investment_component_requires_review`及源值证据，代理值留空；标准源负值和其他公司仍导出，不对异常值取绝对值或归零。

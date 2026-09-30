@@ -14,7 +14,8 @@ Endpoints:
 from __future__ import annotations
 
 import sys
-from datetime import datetime
+import json
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -123,7 +124,7 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
     from engine.data_dictionary import (
         CompanyValuationInput, RawFinancials, QuarterlyFinancials, MacroInputs, AdjustmentInputs,
         OptionInputs, ValuationAssumptions, MethodologyChoices, TaxHistory,
-        GeographicSegment, SegmentResolution, SegmentMember,
+        GeographicSegment, SegmentResolution, SegmentMember, PreparedTTM,
     )
     from engine.segment_resolver import resolve_segments
     from api.routes import _get_damodaran_store, _get_industry_mapper, _clean_rating
@@ -132,6 +133,7 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
     window = db.native_input_window(record)
     annual_rows = record["financials_annual"]
     quarterly_rows = record["financials_quarterly"]
+    use_prepared_ttm = bool(record.get('data_source') and window['quarters_since_10k'])
 
     # Industry / macro resolution — mirrors routes.py::fetch_from_file lines 542–587
     ticker = co["ticker"]
@@ -342,6 +344,34 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
         methodology_kwargs["kd_approach"] = "actual_rating"
     methodology = MethodologyChoices(**methodology_kwargs)
 
+    prepared_ttm = None
+    if use_prepared_ttm:
+        from decimal import Decimal
+        end = date.fromisoformat(co['period_date_quarterly'])
+        current, prior = {}, {}
+        for field in ('revenues', 'ebit'):
+            evidence = record['ttm_evidence'].get(field, [])
+            for values, term_end in ((current, end), (prior, end.replace(year=end.year-1))):
+                term = next((r for r in evidence if r.get('period') == term_end.isoformat() and 'value' in r), None)
+                values[field] = float(Decimal(term['value']) / Decimal(1000000)) if term else None
+        r = record['financials_ttm']
+        prepared_ttm = PreparedTTM(
+            financials=RawFinancials(fiscal_year=base_fy_year,
+                **{field: r.get(field) for field in db._ANNUAL_COLS[2:]},
+                consolidated_book_equity=(r['bv_equity'] + r['minority_interests']
+                    if record['data_source'].get('annual_bv_equity') == 'parent_attributable'
+                    and r.get('bv_equity') is not None and r.get('minority_interests') is not None else None),
+                stock_price=co.get('stock_price_listing'), mv_equity_listing=co.get('mv_equity_listing')),
+            period_start=end.replace(year=end.year-1)+timedelta(days=1), period_end=end,
+            information_as_of=datetime.fromisoformat(record['data_source']['information_as_of']),
+            currency=co['filing_currency'], money_unit='million_reporting_currency', shares_unit='million_shares',
+            provenance=dict(basis='standard_cumulative_ttm', contract=record['data_source']['contract'],
+                source_database_sha256=record['data_source']['source_database_sha256'],
+                formula='FY + current_YTD - prior_same_YTD',
+                cumulative_windows=json.dumps(dict(current=current, prior=prior, quarters=window['quarters_since_10k'])),
+                quarterly_display=json.dumps([q.model_dump(mode='json') for q in quarterly_financials]),
+                components=json.dumps(record['ttm_evidence'], ensure_ascii=False, sort_keys=True)))
+
     # Assemble
     inputs = CompanyValuationInput(
         ticker=ticker,
@@ -354,8 +384,9 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
         fx_rate_date=co.get("period_date_annual"),
         raw_financials=raw_financials,
         historical_research_expenses=historical_research_expenses,
-        quarterly_financials=quarterly_financials,
-        quarters_since_10k=quarters_since,
+        prepared_ttm=prepared_ttm,
+        quarterly_financials=[] if use_prepared_ttm else quarterly_financials,
+        quarters_since_10k=0 if use_prepared_ttm else quarters_since,
         period_date_10k=co.get("period_date_annual"),
         period_date_10q=co.get("period_date_quarterly"),
         effective_tax_rate_ciq=co.get("effective_tax_rate"),

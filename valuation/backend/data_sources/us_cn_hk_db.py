@@ -286,9 +286,9 @@ def snapshot_metadata(conn: sqlite3.Connection) -> dict | None:
     if not tables.intersection({'metadata', 'valuation_inputs', 'standard_facts', 'export_cells'}):
         return None
     metadata = dict(conn.execute('SELECT key,value FROM metadata')) if 'metadata' in tables else {}
-    if metadata.get('contract') != 'alphalake-sqlite-v9':
+    if metadata.get('contract') != 'alphalake-sqlite-v10':
         raise ValueError('Unsupported AlphaLake SQLite contract; rebuild the snapshot with the current exporter')
-    if not {'standard_facts', 'export_cells', 'export_universe', 'reviewed_source_zeros'} <= tables:
+    if not {'standard_facts', 'export_cells', 'export_universe', 'reviewed_source_zeros', 'financials_ttm'} <= tables:
         raise ValueError('Incomplete AlphaLake SQLite snapshot')
     return metadata
 
@@ -325,13 +325,19 @@ def fetch_company(conn: sqlite3.Connection, ticker: str) -> dict | None:
     metadata = snapshot_metadata(conn)
     if metadata is not None:
         result['data_source'] = metadata
+        ttm = conn.execute('SELECT * FROM financials_ttm WHERE ticker=?', (ticker,)).fetchone()
+        if ttm is None:
+            raise ValueError('Missing TTM row; rebuild the snapshot')
+        result['financials_ttm'] = dict(ttm)
+        result['ttm_evidence'] = {r['field']: json.loads(r['evidence_json']) for r in conn.execute(
+            "SELECT field,evidence_json FROM export_cells WHERE ticker=? AND series='ttm' AND period_offset=0", (ticker,))}
         result['standard_financials'] = [dict(r) for r in conn.execute(
             'SELECT period,field,value,unit,period_type,statement_scope FROM standard_facts WHERE ticker=? ORDER BY period,field', (ticker,))]
     return result
 
 
 def native_input_window(record: dict) -> dict:
-    """原引擎实际使用的FY0及同年/上年YTD季度位置；不按可用行压缩偏移。"""
+    """实际期间与消费路径；标准累计TTM不消费季度位置，不压缩历史偏移。"""
     co = record['company']
     annual = date.fromisoformat(co['period_date_annual'][:10])
     quarterly = date.fromisoformat((co.get('period_date_quarterly') or co['period_date_annual'])[:10])
@@ -339,9 +345,18 @@ def native_input_window(record: dict) -> dict:
     if months < 0 or months > 12 or months % 3:
         raise ValueError('财年末与季度末必须相隔0至4个完整季度')
     k = months // 3
+    prepared = bool(record.get('data_source') and k)
     return dict(quarters_since_10k=k, annual_offsets=[0],
-                quarterly_offsets=list(range(k))+list(range(4, 4+k)),
-                quarterly_slots=k+4 if k else 0)
+                quarterly_offsets=[] if prepared else list(range(k))+list(range(4, 4+k)),
+                quarterly_slots=0 if prepared else k+4 if k else 0,
+                flow_series='ttm' if prepared else 'quarterly' if k else 'annual')
+
+
+def standard_cumulative_ttm(inputs) -> bool:
+    """普通标准事实TTM，不是专项调整利润/资本输入；仅识别输入形态。"""
+    return (inputs.prepared_ttm is not None
+            and inputs.prepared_ttm.provenance.get('basis') == 'standard_cumulative_ttm'
+            and inputs.prepared_ttm.provenance.get('contract') == 'alphalake-sqlite-v10')
 
 
 def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
@@ -356,6 +371,8 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
              for r in conn.execute('SELECT series,period_offset,field,period,status,evidence_json FROM export_cells WHERE ticker=?', (ticker,))} if source else {}
     rows = {series: {r[key]: r for r in record['financials_'+series]}
             for series, key in [('annual','fy_offset'),('quarterly','fq_offset')]}
+    if source:
+        rows['ttm'] = {0: record['financials_ttm']}
     required, conditional, history, warnings, blockers = [], [], [], [], []
     consumed_inputs = []
     zero_refs = [dict(series=s, offset=o, field=f, component=part['field'], period=part['period'], import_sha256=part['import_sha256'])
@@ -408,11 +425,13 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
     except (TypeError, KeyError, ValueError) as e:
         window = dict(quarters_since_10k=0, annual_offsets=[0], quarterly_offsets=[], quarterly_slots=0)
         blockers.append('期间身份无效：'+str(e))
-    for series, offsets in [('annual',[0]), ('quarterly',window['quarterly_offsets'])]:
+    prepared = bool(source and window['quarters_since_10k'])
+    flow_windows = [('annual',[0]), ('ttm',[0])] if prepared else [('annual',[0]), ('quarterly',window['quarterly_offsets'])]
+    for series, offsets in flow_windows:
         for offset in offsets:
             for field in ('revenues','ebit'):
                 missing(series,offset,field,'base_year_or_TTM',required)
-    current = 'quarterly' if window['quarters_since_10k'] else 'annual'
+    current = 'ttm' if prepared else 'quarterly' if window['quarters_since_10k'] else 'annual'
     for field in ('cash_and_marketable_securities','bv_debt','cross_holdings','minority_interests','shares_outstanding'):
         missing(current,0,field,'per_share_equity_bridge',required,positive=field=='shares_outstanding')
     # 默认入口使用详细WACC和行业beta，市场股权权重不能把未知市值当零。
@@ -427,8 +446,11 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
         n = AdjustmentInputs().amortization_period_n
         for offset in range(1,n+1):
             missing('annual',offset,'r_and_d_expense','selected_RD_capitalization',conditional)
-        for offset in window['quarterly_offsets']:
-            missing('quarterly',offset,'r_and_d_expense','selected_RD_TTM',conditional)
+        if prepared:
+            missing('ttm',0,'r_and_d_expense','selected_RD_TTM',conditional)
+        else:
+            for offset in window['quarterly_offsets']:
+                missing('quarterly',offset,'r_and_d_expense','selected_RD_TTM',conditional)
     if lease_enabled:
         for name in [*(f'lease_commitment_yr{i}' for i in range(1,6)), 'lease_commitment_beyond']:
             missing('company',0,name,'selected_lease_capitalization',conditional)
@@ -445,7 +467,7 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
         for name in _ANNUAL_COLS[2:]:
             coverage.append(dict(series=series,field=name,present=sum(r.get(name) is not None for r in rows[series].values()),total=len(rows[series]),
                 estimated=sum(cells.get((series,o,name), {}).get('status') in ('estimated','estimated_partial_scope') for o in rows[series])))
-        needed = {0} if series=='annual' else set(window['quarterly_offsets'])
+        needed = {0} if series=='annual' else set() if source else set(window['quarterly_offsets'])
         for offset in rows[series]:
             if offset not in needed:
                 for name in ('revenues','ebit'):
@@ -470,14 +492,15 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
         if market and market['status'] == 'a_share_total_share_proxy':
             warnings.append('多股类市值按A股价格×含B/H股的总股本估计；缺其他股类价格及汇率，不是分股类真实合计市值，影响WACC权重和杠杆调整')
         if market and market['status'] == 'reported_share_price_proxy':
-            warnings.append('市值为报告期附近未复权价格×报告期总股本的代理；不是当前市值，也未认证未知的多股类范围')
+            warnings.append('市值为最新合格未复权收盘价×报告期总股本的代理；股本基期与价格日期分别留痕，未认证当前完整多股类市值')
         warnings.append('使用TDX来源报告EBIT；不代表已完成非经营/特殊项目调整或CIQ逐项口径认证')
         warnings.append('来源EBIT与现金/投资资产加回尚未完成经营范围配套核验，存在重复计价或遗漏风险；结果是条件估值，不是已正常化经营价值')
     return dict(ticker=ticker,status='blocked_required_inputs' if blockers else 'ready',
         report_period=source.get('report_period') if source else co['period_date_quarterly'],
         information_as_of=source.get('information_as_of') if source else co['data_as_of'],
         blockers=blockers,required_missing=required,conditional_missing=conditional,
-        input_contract=dict(version='native-input-selection-v2', inputs=consumed_inputs,
+        input_contract=dict(version='native-input-selection-v3', inputs=consumed_inputs,
+            flow_basis='standard_cumulative_TTM' if prepared else 'standard_annual' if source else 'provided_quarters_or_annual',
             profit_basis='tdx_reported_ebit' if source else 'provided_statement_ebit',
             automatic_company_overrides=False, operating_scope_verified=False,
             scope='native_database_default_method; estimates_are_not_reported_facts',

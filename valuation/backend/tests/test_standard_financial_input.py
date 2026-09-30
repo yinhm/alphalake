@@ -37,6 +37,7 @@ def test_standard_ebit_is_not_replaced_by_sample_policy(sample, ticker):
     sample.execute("UPDATE companies SET ticker=?", (ticker,))
     sample.execute("UPDATE financials_annual SET ticker=?", (ticker,))
     sample.execute("UPDATE financials_quarterly SET ticker=?", (ticker,))
+    sample.execute("UPDATE financials_ttm SET ticker=?", (ticker,))
     sample.execute("UPDATE export_cells SET ticker=?", (ticker,))
     raw = db.fetch_company(sample, ticker)
     assert raw['financials_annual'][0]['ebit'] == 440
@@ -54,10 +55,10 @@ def test_standard_ebit_is_not_replaced_by_sample_policy(sample, ticker):
 
 
 def test_standard_missing_and_conflicting_ebit_still_block(sample):
-    sample.execute("UPDATE financials_quarterly SET ebit=NULL WHERE fq_offset=0")
+    sample.execute("UPDATE financials_ttm SET ebit=NULL")
     gate = db.native_compatibility(sample, 'SZSE:300866')
     assert any(r['field'] == 'ebit' for r in gate['required_missing'])
-    sample.execute("UPDATE financials_quarterly SET ebit=110 WHERE fq_offset=0")
+    sample.execute("UPDATE financials_ttm SET ebit=440")
     sample.execute("UPDATE export_cells SET status='source_record_conflict' WHERE period='2026-06-30'")
     gate = db.native_compatibility(sample, 'SZSE:300866')
     assert any(r['field'] == 'ebit' and r['status'] == 'source_record_conflict' for r in gate['required_missing'])

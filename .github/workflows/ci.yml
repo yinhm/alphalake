@@ -81,6 +81,7 @@ jobs:
         run: |
           npm ci
           npm run build
+          node scripts/check-ttm.cjs
       - name: Test valuation backend
         working-directory: valuation/backend
         run: python -m pytest -q

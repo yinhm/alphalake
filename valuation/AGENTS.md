@@ -3,6 +3,7 @@
 - 遵循根目录[AGENTS.md](../AGENTS.md)。当前能力及优先级只查[实现状态](../docs/implementation-status.md)，发布及恢复操作见[系统交付](../docs/guides/system-delivery.md)；历史记录不作为当前接口规范。
 - 当前只推进沪深非金融企业；金融专项与多市场暂停。100家仅作固定回归集合，范围外和拒绝记录保留。
 - 原生网页消费主库导出的SQLite，入口为`backend/api/database.py`，发布使用`backend/tools/publish_native_valuation.py`。保持原页面及请求，只修明确BUG或必要后端适配；显式政策CLI/API与原生默认政策分别记录。
+- 数据转换、准入、会话及展示变更必须先查[数据接入spec](../docs/valuation/data-contract.md)并同步实际消费方；标准累计TTM复用已有prepared入口，来源事实、年度研发队列和展示季度分别保留，不将季度拆分当估值硬门槛。
 - 合法数据/口径变更应重建基线并重新估值，保存变更依据与前后差异；不得因新结果不同于旧结果而拒绝，也不得混用旧利润率与新资本输入。原生重建复用`tools.select_native_assumptions --rebuild`，详见[重建契约](../docs/valuation/native-assumption-selection.md#合法变更重建基线并重新估值)。
 - 引擎暂时冻结，仅允许有复现及回归的明确BUG修复；非BUG方法、默认政策、算法或输入接口扩展先记入[待审批](TODO.md)，等待明确审批，不借API或假设工具绕过冻结。既有数据契约的解析、核验及适配继续推进。
 - 引擎变更统一登记[调整台账](../docs/valuation/engine-change-ledger.md)，区分明确BUG、必要输入扩展和额外政策；原始方法依据、经济条件和回归分别核验，不能由测试通过追认本地算法符合达摩达兰方法。当前主线是数据及假设交付，不继续以数据接通为由扩展模型。

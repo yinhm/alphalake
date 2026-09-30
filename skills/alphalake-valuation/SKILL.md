@@ -5,6 +5,8 @@ description: 使用 AlphaLake 已有数据库和显式政策进行 A 股公司�
 
 # AlphaLake 公司估值
 
+解释数据期间、单位、缺项和接口适配前，读取`docs/valuation/data-contract.md`。标准累计TTM通过已有prepared入口消费，季度缺项不等于TTM缺项；`quarters_since_10k=0`在prepared路径表示关闭重复轮转，实际期间看prepared证据。普通标准TTM与专项调整TTM分别处理，年度研发队列仍独立检查。
+
 调用项目已有 `tools.company_valuation`，把结构化结果解释给用户。计算、身份/单位/时点校验与政策准入由程序执行；不要在Skill中重写DCF、补数或另选数据源。
 
 当前SQLite财务为现有标准快照，不是历史PIT快照；公告日期缺失或未匹配CNINFO不代表数值缺失，不要求用户先补公告。报告财务期、快照版本与实际缺项，不能把当前取得的修订数据说成当时已知。
@@ -98,7 +100,7 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 当前暂停为回测扩展早年采集。解释条件估值优先读取`economic_checks`及`growth_duration_effects`（`docs/valuation/capital-efficiency.md`）：核查再投资/回报与终值过渡，不把高增长当利好，不将等价资本倍率自动设为公司参数；历史缺项不是现有条件场景的新增门槛。
 
-比较资本效率过渡时读取`docs/valuation/capital-efficiency.md`，复用`tools.compare_native_capital`及当前已核验情景目录。该工具只改显式`annual_sales_to_capital`，保留其他假设；终点是原终值政策的代数配套，不是新发现的公司资本效率。报告再投资和条件值变化，并保留原12家缺项/拒绝，不按价格选择过渡情景。`--basis company-history`另以最近连续三年收入合计/含账面少数股权的研发调整资本合计执行完整DCF单因素对照；当前v3直接使用`consolidated_book_equity`，不再另加少数股权；不得将股权桥接的市场少数权益当作账面资本，缺项不归零；缺年、非正资本或租赁/prepared TTM口径不匹配则保留原因，不自动改用公司代理。
+比较资本效率过渡时读取`docs/valuation/capital-efficiency.md`，复用`tools.compare_native_capital`及当前已核验情景目录。该工具只改显式`annual_sales_to_capital`，保留其他假设；终点是原终值政策的代数配套，不是新发现的公司资本效率。报告再投资和条件值变化，并保留原12家缺项/拒绝，不按价格选择过渡情景。`--basis company-history`另以最近连续三年收入合计/含账面少数股权的研发调整资本合计执行完整DCF单因素对照；当前v3直接使用`consolidated_book_equity`，不再另加少数股权；不得将股权桥接的市场少数权益当作账面资本，缺项不归零；缺年、非正资本或租赁/专项prepared TTM口径不匹配则保留原因，不自动改用公司代理。
 
 资本倍率适用性核对复用`tools.review_native_policy`的`capital.proxy_comparison`：只看最新完整财年起五年，模型与独立SQLite不混合；历史存量倍率反事实只量化投入敏感性，不作为获批未来效率或完整DCF，缺年不延长窗口。参见[资本核对](../../docs/valuation/capital-efficiency.md)。
 

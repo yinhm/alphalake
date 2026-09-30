@@ -1,6 +1,7 @@
 import type { ValuationResponse, RawFinancials } from '../types/valuation';
 import SpreadsheetCell from '../components/SpreadsheetCell';
 import SpreadsheetGrid from '../components/SpreadsheetGrid';
+import { elapsedQuarters, quarterlyForDisplay } from '../lib/baseYear';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -71,8 +72,12 @@ const CIQ_MNEMONICS: Record<string, string> = {
 export default function TrailingTwelveMonth({ data }: { data: ValuationResponse; sessionId?: string | null }) {
   const inp = data.inputs;
   const fin0 = inp.raw_financials[0];
-  const qFins = inp.quarterly_financials ?? [];
-  const n = inp.quarters_since_10k ?? 0;
+  const qFins = quarterlyForDisplay(inp);
+  const elapsed = elapsedQuarters(inp);
+  const n = elapsed ?? 0;
+  const prepared = inp.prepared_ttm;
+  const terms: Record<string, {period: string; value?: string}[]> = prepared?.provenance.components
+    ? JSON.parse(prepared.provenance.components) : {};
   const ticker = inp.ticker;
   // Authoritative LTM — computed by backend (engine/ltm_calculator.py) per Ginzu formula.
   // Frontend does NOT recompute; it only displays the component breakdown for audit transparency.
@@ -85,13 +90,23 @@ export default function TrailingTwelveMonth({ data }: { data: ValuationResponse;
   }
 
   // Is quarterly data sufficient to actually rotate? Mirrors backend's guard.
-  const sufficient = n === 0 || qFins.length >= n + 4;
+  const sufficient = !!prepared || n === 0 || qFins.length >= n + 4;
 
   // Displays the derivation components (FY0 + Σnew − Σold) for transparency — NOT the final LTM value.
   // Final LTM comes from ltmBackend. If backend had to fall back to FY0 (insufficient data), new/old = 0.
   function ltmBreakdown(key: keyof RawFinancials) {
     const fy0 = typeof fin0?.[key] === 'number' ? (fin0[key] as number) : 0;
     const ltm = ltmBackend ? (ltmBackend[key] as number | null) ?? fy0 : fy0;
+    if (prepared) {
+      const component = (period: string) => {
+        const term = terms[key]?.find(t => t.period === period && t.value !== undefined);
+        return term ? Number(term.value) / 1e6 : null;
+      };
+      return { fy0: typeof fin0?.[key] === 'number' ? fin0[key] as number : null,
+        newSum: component(prepared.period_end),
+        oldSum: component(`${Number(prepared.period_end.slice(0, 4))-1}${prepared.period_end.slice(4)}`),
+        ltm: ltmBackend ? ltmBackend[key] as number | null : null };
+    }
     if (n === 0 || !sufficient) return { fy0, newSum: 0, oldSum: 0, ltm };
     let newSum = 0, oldSum = 0;
     for (let i = 0; i < n; i++) {
@@ -104,6 +119,7 @@ export default function TrailingTwelveMonth({ data }: { data: ValuationResponse;
   // Balance sheet: backend-authoritative (from ltm_financials which holds FQ-0 snapshot when available).
   function bsValue(key: keyof RawFinancials) {
     const backendV = ltmBackend ? (ltmBackend[key] as number | null) : null;
+    if (prepared) return { value: backendV, source: '10-Q' as const };
     const qv = qVal(0, key);
     // source label: if FQ-0 had the value, backend uses it (10-Q); else backend kept FY0 (10-K)
     if (qv !== null) return { value: backendV ?? qv, source: '10-Q' as const };
@@ -117,8 +133,8 @@ export default function TrailingTwelveMonth({ data }: { data: ValuationResponse;
     <div className="max-w-[95vw] mx-auto p-4">
       <h2 className="text-xl font-bold mb-2">Trailing 12 Month (LTM) Worksheet</h2>
       <p className="text-xs text-gray-500 mb-2">
-        Ginzu formula: LTM = FY0 (annual 10-K) + new quarters since 10-K − same quarters from prior year.
-        LTM values below are computed in the backend (<code className="bg-gray-100 px-1">engine/ltm_calculator.py</code>).
+        Ginzu formula: LTM = FY0 (annual 10-K) + current year-to-date − prior-year same year-to-date.
+        LTM values below are provided by the backend.
         The FY0 / +New / −Old breakdown is shown for audit transparency.
       </p>
       {!sufficient && n > 0 && (
@@ -137,18 +153,18 @@ export default function TrailingTwelveMonth({ data }: { data: ValuationResponse;
           <tr><SpreadsheetCell value="Latest 10-Q Period" type="label" /><SpreadsheetCell value={fmtDate(inp.period_date_10q)} type="financial" /></tr>
           <tr>
             <SpreadsheetCell value="Quarters Since 10-K (n)" type="label" />
-            <SpreadsheetCell value={String(n)} type="calc" tooltip="= months between 10-Q and 10-K / 3" />
+            <SpreadsheetCell value={elapsed === null ? '' : String(elapsed)} type="calc" tooltip="= months between 10-Q and 10-K / 3" />
           </tr>
           <tr>
             <SpreadsheetCell value="LTM Formula" type="label" />
             <td className="border px-2 py-1 bg-slate-50 text-xs font-mono">
-              {n === 0
+              {prepared ? (prepared.provenance.formula ? `LTM = ${prepared.provenance.formula}` : 'LTM = prepared twelve-month financials') : n === 0
                 ? 'LTM = FY0 (no new quarters since 10-K)'
                 : `LTM = FY0 + (${Array.from({length: n}, (_, i) => `FQ-${i}`).join(' + ')}) - (${Array.from({length: n}, (_, i) => `FQ-${i+4}`).join(' + ')})`
               }
             </td>
           </tr>
-          {n > 0 && (<>
+          {n > 0 && !prepared && (<>
             <tr>
               <SpreadsheetCell value="New quarters (added)" type="label" />
               <td className="border px-2 py-1 bg-green-50 text-xs font-medium text-green-800">
@@ -207,8 +223,8 @@ export default function TrailingTwelveMonth({ data }: { data: ValuationResponse;
           <tr>
             <SpreadsheetCell value="Item" type="header" width="180px" />
             <SpreadsheetCell value="FY0 (10-K)" type="header" />
-            {n > 0 && <SpreadsheetCell value="+ New Quarters" type="header" />}
-            {n > 0 && <SpreadsheetCell value="- Old Quarters" type="header" />}
+            {n > 0 && <SpreadsheetCell value={prepared ? '+ Current YTD' : '+ New Quarters'} type="header" />}
+            {n > 0 && <SpreadsheetCell value={prepared ? '- Prior YTD' : '- Old Quarters'} type="header" />}
             <SpreadsheetCell value="= LTM" type="header" />
           </tr>
         </thead>
@@ -243,8 +259,8 @@ export default function TrailingTwelveMonth({ data }: { data: ValuationResponse;
             const ebit = ltmBreakdown('ebit');
             const ebt = ltmBreakdown('earnings_before_tax');
             const tax = ltmBreakdown('total_tax_expense');
-            const margin = rev.ltm ? ebit.ltm / rev.ltm : null;
-            const effTax = ebt.ltm > 0 ? tax.ltm / ebt.ltm : null;
+            const margin = rev.ltm && ebit.ltm !== null ? ebit.ltm / rev.ltm : null;
+            const effTax = ebt.ltm !== null && ebt.ltm > 0 && tax.ltm !== null ? tax.ltm / ebt.ltm : null;
             const fy0Margin = fin0 && fin0.revenues ? fin0.ebit / fin0.revenues : null;
             const fy0Tax = fin0?.earnings_before_tax && (fin0.earnings_before_tax as number) > 0
               ? (fin0.total_tax_expense as number) / (fin0.earnings_before_tax as number) : null;

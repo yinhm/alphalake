@@ -34,7 +34,7 @@ FIELDS = {
     'cross_holdings': ('long_term_equity_investments', 'instant', 'CNY'),
 }
 EXCHANGES = {'XSHG': 'SHSE', 'XSHE': 'SZSE', 'XBSE': 'BJSE'}
-CONTRACT = 'alphalake-sqlite-v9'
+CONTRACT = 'alphalake-sqlite-v10'
 DEBT_COMPONENTS = ('short_term_borrowings', 'long_term_borrowings', 'bonds_payable',
                    'current_portion_noncurrent_liabilities', 'lease_liabilities')
 ASSET_COMPONENTS = ('monetary_funds', 'cash_and_cash_equivalents', 'trading_financial_assets',
@@ -70,7 +70,7 @@ def validate_dates(period, asof):
         raise ValueError('timezone-aware information cutoff after report period required')
 
 
-def cell(facts, conflicts, instrument, end, column, annual, reviewed_zeros=None):
+def cell(facts, conflicts, instrument, end, column, annual, reviewed_zeros=None, *, ttm=False):
     """只读取标准金额；累计差分不是供应商TTM，也不对每股值求和。"""
     if column == 'bv_debt':
         components, basis, unit = DEBT_COMPONENTS, 'instant', 'CNY'
@@ -82,7 +82,9 @@ def cell(facts, conflicts, instrument, end, column, annual, reviewed_zeros=None)
     else:
         return None, 'requires_separate_valuation_definition', []
     terms = [(end, 1)]
-    if basis == 'ytd' and not annual and end.month != 3:
+    if basis == 'ytd' and ttm and end.month != 12:
+        terms = [(date(end.year-1, 12, 31), 1), (end, 1), (end.replace(year=end.year-1), -1)]
+    elif basis == 'ytd' and not annual and end.month != 3:
         terms.append((quarter(end, 1), -1))
     evidence, total, missing = [], Decimal(0), []
     for field, (period, coefficient) in itertools.product(components, terms):
@@ -175,6 +177,9 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
  CREATE TABLE export_universe(candidate INTEGER PRIMARY KEY,code TEXT,instrument_id INTEGER,status TEXT,details TEXT);
  CREATE TABLE export_cells(ticker TEXT,series TEXT,period TEXT,period_offset INTEGER,field TEXT,status TEXT,evidence_json TEXT,
  PRIMARY KEY(ticker,series,period_offset,field));''')
+    ttm_columns = ['ticker'] + target._ANNUAL_COLS[2:]
+    connection.execute('CREATE TABLE financials_ttm(ticker TEXT PRIMARY KEY REFERENCES companies(ticker),'
+                       + ','.join(name+' REAL' for name in ttm_columns[1:])+')')
     connection.execute('INSERT INTO metadata VALUES(?,?)', ('contract', CONTRACT))
     base = date(period.year if period.month == 12 else period.year - 1, 12, 31)
     annual_ends = [date(base.year-i, 12, 31) for i in range(years)]
@@ -306,6 +311,15 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                     connection.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
                                        (ticker, series, end.isoformat(), offset, column, status, json.dumps(evidence, ensure_ascii=False, sort_keys=True)))
                 (target.insert_annual_financials if series == 'annual' else target.insert_quarterly_financials)(connection, [values])
+        values = {'ticker': ticker}
+        for column in ttm_columns[1:]:
+            value, status, evidence = cell(facts, conflicts, company['instrument_id'], period,
+                column, True, reviewed_zeros, ttm=True)
+            values[column] = value
+            connection.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
+                (ticker, 'ttm', period.isoformat(), 0, column, status,
+                 json.dumps(evidence, ensure_ascii=False, sort_keys=True)))
+        target._executemany_from_dicts(connection, 'financials_ttm', ttm_columns, [values])
         count += 1
     return count
 
@@ -402,6 +416,8 @@ def main():
                             market_price_window='latest_completed_unadjusted_close_at_information_cutoff_within_14_days',
                             market_cap_basis='close_times_reported_total_shares_proxy; known_foreign_share_classes_use_explicit_a_share_price_proxy',
                             quarterly_flows='difference_of_standard_YTD_same_year; Q1 unchanged',
+                            ttm_flows='FY_plus_current_YTD_minus_prior_same_YTD; FY_unchanged',
+                            ttm_balances='latest_report_period; never_sum_balances',
                             missing='NULL; see export_cells; source-zero/unreviewed not inferred from absence',
                             reviewed_zero_basis='explicit_current_review_bound_to_TDX_zero_and_PDF; not_standard_fact_or_historical_system_time',
                             boundary='TDX_standard_components_and_explicit_reviewed_source_zeros; partial_target_scope_values_are_not_complete_totals; market_value_is_explicit_price_times_total_shares_proxy',
