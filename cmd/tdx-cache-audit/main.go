@@ -135,6 +135,84 @@ func audit(cache string, requests []request, db *sql.DB) (map[string]any, error)
 	return map[string]any{"contract": "alphalake-cache-gap-audit-v1", "catalog_version": financial.CatalogVersion, "manifest_sha256": fmt.Sprintf("%x", sha256.Sum256(manifest)), "packages": packages, "results": results, "boundary": "仅已校验本地版本；代码命中不证明证券身份，源数值不替代标准审核，未检查上游当前版本。"}, nil
 }
 
+// 先限定请求的代码、期间和标准列，再展开少量宽行；不逐公司查询。
+func standardChain(db *sql.DB, requests []request) ([]map[string]any, error) {
+	ctx := context.Background()
+	catalog, err := store.LoadSnapshotFields(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+	known := map[string]bool{}
+	for _, f := range catalog {
+		known[f.Name] = true
+	}
+	wanted, names := []request{}, map[string]bool{}
+	out := []map[string]any{}
+	for _, r := range requests {
+		if !known[r.Field] {
+			out = append(out, map[string]any{"code": r.Code, "period": r.Period, "field": r.Field, "status": "standard_field_not_installed"})
+			continue
+		}
+		wanted = append(wanted, r)
+		names[r.Field] = true
+	}
+	if len(wanted) == 0 {
+		return out, nil
+	}
+	fields := []string{}
+	for name := range names {
+		fields = append(fields, `"`+name+`"`)
+	}
+	sort.Strings(fields)
+	values := []string{}
+	for _, f := range fields {
+		values = append(values, "CAST(w."+f+" AS VARCHAR) AS "+f)
+	}
+	raw, err := json.Marshal(wanted)
+	if err != nil {
+		return nil, err
+	}
+	query := `WITH requests AS (
+ SELECT value->>'code' code,(value->>'period')::DATE period,value->>'field' field FROM json_each(?)
+ ), headers AS MATERIALIZED (
+ SELECT r.*,a.sha256 AS artifact_sha256 FROM fundamental.source_record r JOIN meta.artifact a USING(artifact_id)
+ WHERE EXISTS(SELECT 1 FROM requests q WHERE q.code=r.provider_code AND q.period=r.report_period)
+ QUALIFY row_number() OVER(PARTITION BY r.provider_code,r.instrument_id,r.report_period ORDER BY a.fetched_at DESC,a.artifact_id DESC,r.source_record_id DESC)=1
+ ), selected AS (
+ SELECT h.source_record_id,h.provider_code AS code,h.report_period AS period,h.instrument_id,h.artifact_sha256,` + strings.Join(values, ",") + `
+ FROM headers h LEFT JOIN fundamental.statement_snapshot w USING(source_record_id)
+ ), cells AS (SELECT * FROM selected UNPIVOT INCLUDE NULLS (value FOR field IN (` + strings.Join(fields, ",") + `))), evidence AS (
+ SELECT q.code,CAST(q.period AS VARCHAR) AS period,q.field,c.source_record_id,c.instrument_id,c.artifact_sha256,c.value,
+ (SELECT coalesce(list(j.rule_code ORDER BY j.rule_code),[]) FROM fundamental.statement_rejection j
+ WHERE j.source_record_id=c.source_record_id AND list_contains(j.fields,q.field)) AS rejection_rules
+ FROM requests q LEFT JOIN cells c ON c.code=q.code AND c.period=q.period AND c.field=q.field
+ ) SELECT CAST(to_json(t) AS VARCHAR) FROM (
+ SELECT *,CASE WHEN source_record_id IS NULL THEN 'no_source_record'
+ WHEN instrument_id IS NULL THEN 'unresolved_source_identity'
+ WHEN value IS NOT NULL THEN 'available_standard_fact'
+ WHEN list_contains(rejection_rules,'provider_zero_ambiguous') THEN 'rejected_source_zero'
+ WHEN len(rejection_rules)>0 THEN 'rejected_standard_fact'
+ ELSE 'missing_standard_fact_without_rejection' END AS status
+ FROM evidence ORDER BY code,period,field,instrument_id,source_record_id) t`
+	rows, err := db.QueryContext(ctx, query, string(raw))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var raw string
+		if err = rows.Scan(&raw); err != nil {
+			return nil, err
+		}
+		var r map[string]any
+		if err = json.Unmarshal([]byte(raw), &r); err != nil {
+			return nil, err
+		}
+		out = append(out, r)
+	}
+	return out, rows.Err()
+}
+
 func main() {
 	cache := flag.String("cache", "", "flat authoritative TDX cache")
 	input := flag.String("requests", "", "JSON array: code, period, standard field")
@@ -161,6 +239,9 @@ func main() {
 	}
 	if err == nil {
 		result, err = audit(*cache, requests, db)
+	}
+	if err == nil && db != nil {
+		result["standard_chain"], err = standardChain(db, requests)
 	}
 	if err == nil {
 		err = json.NewEncoder(os.Stdout).Encode(result)

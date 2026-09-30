@@ -37,6 +37,34 @@ def source_requests(coverage):
     return [dict(code=c, period=p, field=f) for c,p,f in sorted(requests)]
 
 
+def target_gap_causes(coverage, probe):
+    chain = {}
+    for row in probe['standard_chain']:
+        chain.setdefault((row['code'], row['period'], row['field']), []).append(row)
+    results = []
+    for company in coverage['companies']:
+        if company['scope'] != 'nonfinancial_by_reference':
+            continue
+        for gap in company['gaps']:
+            if gap['category'] == 'market_capital_inputs':
+                continue
+            requests = source_requests(dict(companies=[dict(company, gaps=[gap])]))
+            components = []
+            for request in requests:
+                rows = chain[(request['code'], request['period'], request['field'])]
+                status = ('ambiguous_standard_source_identity' if len(rows)>1 else
+                          'different_security_identity' if rows[0].get('instrument_id') not in (None,company['instrument_id']) else
+                          rows[0]['status'])
+                components.append(dict(period=request['period'], field=request['field'], status=status,
+                    source_record_ids=[r.get('source_record_id') for r in rows if r.get('source_record_id') is not None]))
+            missing = [r for r in components if r['status']!='available_standard_fact']
+            results.append(dict(code=company['code'], series=gap['series'], period=gap['period'], field=gap['field'],
+                category=gap['category'], missing_components=missing,
+                causes=sorted({r['status'] for r in missing}) or ['delivery_contract_or_version_requires_check'],
+                available_components=len(components)-len(missing)))
+    return results
+
+
 def summarize(coverage, probe):
     classification = Counter()
     for company in coverage['companies']:
@@ -52,8 +80,10 @@ def summarize(coverage, probe):
         information_as_of=coverage['information_as_of'], snapshot_candidates=coverage['snapshot_candidates'],
         full_source_universe=coverage['full_source_universe'], scope_counts=coverage['scope_counts'],
         financial_source_cells=dict(Counter(r['status'] for r in probe['results'])),
+        standard_chain_cells=dict(Counter(r['status'] for r in probe['standard_chain'])),
         classification=dict(classification),
         market_capital_gap_companies=sum(c['scope']=='nonfinancial_by_reference' and any(g['category']=='market_capital_inputs' for g in c['gaps']) for c in coverage['companies']),
+        target_gaps=target_gap_causes(coverage, probe),
         source_audit=probe,
         boundary='源命中不批准证券身份、零披露或标准值；无代码仅指所核验本地包，不证明上游永远缺失。不自动推断行业/国家，不扩大历史取证。')
 
@@ -94,7 +124,7 @@ def main():
     with args.output.open('x') as stream:
         json.dump(result, stream, ensure_ascii=False, indent=2, allow_nan=False)
         stream.write('\n')
-    print(json.dumps({k:v for k,v in result.items() if k!='source_audit'}, ensure_ascii=False))
+    print(json.dumps({k:v for k,v in result.items() if k not in ('source_audit','target_gaps')}, ensure_ascii=False))
 
 
 if __name__ == '__main__':
