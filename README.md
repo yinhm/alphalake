@@ -30,6 +30,8 @@ PYTHONPATH=valuation/backend .venv/bin/python -m pytest -q valuation/backend/tes
 
 **本机全套测试、大库同步和导出必须串行运行于已核验MemoryMax的独立systemd服务**，不能直接把这些命令并行启动。具体环境及限制见[资源隔离](docs/guides/fundamental-memory-20260919.md)。只改文档时检查链接和`git diff --check`，无需重复全套测试。
 
+日常后端开发使用该指南中的快速范围并补相关回归；完整组保留真实Go/PDF证据和研究回放，默认pytest与CI仍全量执行，不要求每次局部修改都重复完整组。
+
 本地只读状态：`./alphalake status workspace/alphalake.duckdb`。命令参数以当前程序帮助为准；日常发布使用上表入口，不照抄历史验收中的旧路径和版本。
 
 ## 来源与致谢

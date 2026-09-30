@@ -41,8 +41,6 @@ jobs:
         run: python internal/ingest/testdata/core-financial-2025/verify.py
       - name: Verify Anker historical evidence offline
         run: python internal/ingest/testdata/anker-history-2026/verify.py
-      - name: Verify standard valuation chains and both PDF references offline
-        run: python internal/ingest/testdata/valuation-chain-2026/verify.py
       - name: Verify complete statement field expansion offline
         run: PYTHONPATH=valuation/backend python -m tools.verify_tdx_statement_expansion
       - name: Verify cashflow reconciliation evidence offline
@@ -87,5 +85,6 @@ jobs:
         run: python -m pytest -q
       - name: Verify merged valuation adapters
         run: |
+          # 两份独立适配验收均先执行完整标准来源链。
           python internal/ingest/testdata/anker-agent-adapter-2026/verify.py
           python internal/ingest/testdata/moutai-agent-adapter-2026/verify.py
