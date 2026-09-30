@@ -7,13 +7,13 @@
 依赖Python 3.11+标准库和当前版本`alphalake`程序，无新增包。先构建当前程序；本机的大库任务、构建和测试须串行放在独立systemd系统服务中，参见[内存隔离约束](fundamental-memory-20260919.md)。例如：
 
 ```bash
-cd /root/alphalake
+ALPHALAKE_REPO="$PWD"  # 在项目根目录执行
 systemd-run --unit=alphalake-sqlite-build \
-  --property=WorkingDirectory=/root/alphalake \
+  --property=WorkingDirectory="$ALPHALAKE_REPO" \
   --property=MemoryMax=1G --property=MemoryHigh=896M \
   --property=MemorySwapMax=0 --property=OOMPolicy=stop \
-  --setenv=GOPATH=/root/go --setenv=GOCACHE=/root/.cache/go-build \
-  --setenv=GOMEMLIMIT=128MiB --setenv=GOMAXPROCS=1 \
+  --setenv=GOPATH="$(go env GOPATH)" --setenv=GOCACHE="$(go env GOCACHE)" \
+  --setenv=GOMEMLIMIT=512MiB --setenv=GOMAXPROCS=1 \
   /usr/bin/go build -p 1 -o /tmp/alphalake-sqlite-export ./cmd/alphalake
 journalctl -u alphalake-sqlite-build --no-pager
 systemctl show alphalake-sqlite-build -p ActiveState -p ExecMainStatus
@@ -23,13 +23,14 @@ systemctl show alphalake-sqlite-build -p ActiveState -p ExecMainStatus
 
 ```bash
 systemd-run --unit=alphalake-sqlite-export \
-  --property=WorkingDirectory=/root/alphalake \
+  --property=WorkingDirectory="$ALPHALAKE_REPO" \
   --property=MemoryMax=1G --property=MemoryHigh=896M \
   --property=MemorySwapMax=0 --property=OOMPolicy=stop \
   --setenv=PYTHONPATH=valuation/backend \
+  --setenv=GOPATH="$(go env GOPATH)" --setenv=GOCACHE="$(go env GOCACHE)" \
   --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=1GiB \
   --setenv=ALPHALAKE_DUCKDB_THREADS=1 \
-  --setenv=GOMEMLIMIT=128MiB --setenv=GOMAXPROCS=1 \
+  --setenv=GOMEMLIMIT=512MiB --setenv=GOMAXPROCS=1 \
   /usr/bin/python3 -m tools.export_alphalake_sqlite \
   --database workspace/alphalake.duckdb \
   --output workspace/derived/valuation.next.sqlite \
@@ -88,7 +89,7 @@ TTM流量按上一全年＋本年累计−上年同月累计直接计算，三�
 如需手动让网页读取该快照，在启动网页后端的环境中显式设置：
 
 ```bash
-export US_CN_HK_DB_PATH=/root/alphalake/workspace/derived/valuation.sqlite
+export US_CN_HK_DB_PATH="$PWD/workspace/derived/valuation.sqlite"
 ```
 
 仅改变该进程选库，不合并到seed。原页面搜索与选择公司后，原客户端提交`{ticker, risk_free_rate}`；不上传政策文件、不新增参数表单。需要修改参数时沿用原页面。安克原始财务列仍有两项资产范围缺口；后端使用获准代理及配套经营收益后，原请求返回200。苏泊尔已补市值并原生计算成功，茅台市值也已补齐，现已允许通用资产代理并通过准入；不将样本成功扩称全市场准入。

@@ -5,22 +5,24 @@
 ## 执行约束
 
 - 当前进程硬限额1GiB，`MemoryHigh=896M`、`MemorySwapMax=0`；先检查系统空闲内存，不能仅因单任务有上限就并发启动。
-- 全量财务重建使用DuckDB384MiB、单线程；Go使用`GOMEMLIMIT=128MiB`、`GOMAXPROCS=1`。限额不足先分析结构与峰值，禁止盲目加内存、缩批或重试。
+- 当前统一DuckDB预算1GiB，单线程；Go使用`GOMEMLIMIT=512MiB`、`GOMAXPROCS=1`。`GOMEMLIMIT`是Go垃圾回收软预算，不是RSS上限，也不覆盖DuckDB原生分配；整个服务组仍受1GiB硬上限约束。限额不足先分析结构与峰值，禁止盲目加内存、缩批或重试。
 - 先小批验收，再执行固定范围任务；记录进程冷暖、耗时、RSS、输入版本和失败结果，门槛见[性能约束](financial-storage-redesign-20260925.md)。
 
 以下示例只演示隔离方式，实际操作先选定同步、物化或发布范围；不能把全量重放当作日常必做步骤。
 
 ```bash
+ALPHALAKE_REPO="$PWD"  # 在项目根目录执行
 systemd-run --no-block --unit=alphalake-materialize \
   --property=Type=oneshot --property=RemainAfterExit=yes \
-  --property=WorkingDirectory=/root/alphalake \
+  --property=WorkingDirectory="$ALPHALAKE_REPO" \
   --property=MemoryMax=1G --property=MemoryHigh=896M \
   --property=MemorySwapMax=0 \
-  --setenv=GOMEMLIMIT=128MiB --setenv=GOMAXPROCS=1 \
-  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=384MiB \
+  --setenv=GOPATH="$(go env GOPATH)" --setenv=GOCACHE="$(go env GOCACHE)" \
+  --setenv=GOMEMLIMIT=512MiB --setenv=GOMAXPROCS=1 \
+  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=1GiB \
   --setenv=DUCKDB_JE_MALLOC_CONF=dirty_decay_ms:0,muzzy_decay_ms:0 \
   --setenv=ALPHALAKE_DUCKDB_THREADS=1 \
-  /root/alphalake/alphalake materialize-fundamentals workspace/alphalake.duckdb
+  "$ALPHALAKE_REPO/alphalake" materialize-fundamentals workspace/alphalake.duckdb
 systemctl show alphalake-materialize \
   -p ControlGroup -p MemoryMax -p MemoryHigh -p MemorySwapMax \
   -p ActiveState -p Result -p ExecMainStatus -p MemoryPeak
@@ -35,6 +37,6 @@ journalctl -u alphalake-materialize --no-pager -n 60
 
 ## 测试环境
 
-全套测试同样使用独立服务，并与数据任务串行。本机Go缓存使用`GOPATH=/root/go`、`GOCACHE=/root/.cache/go-build`；Python回归使用项目`.venv/bin/python`，必要时设置`ALPHALAKE_TEST_PYTHON=/root/alphalake/.venv/bin/python`和`PYTHONPATH=/root/alphalake/valuation/backend`。测试应取消`ALPHALAKE_WORKSPACE`覆盖，避免临时样本误指向主workspace。依赖缺失或skip如实报告。
+全套测试同样使用独立服务，并与数据任务串行。Go缓存位置通过`go env GOPATH`、`go env GOCACHE`取得并显式传入服务；Python回归使用项目`.venv/bin/python`，必要时设置`ALPHALAKE_TEST_PYTHON="$PWD/.venv/bin/python"`和`PYTHONPATH="$PWD/valuation/backend"`（在项目根目录执行）。测试应取消`ALPHALAKE_WORKSPACE`覆盖，避免临时样本误指向主workspace。依赖缺失或skip如实报告。
 
 早期长表实现、1.5GiB试验及OOM测量见[历史记录](../history/fundamental-memory-20260919.md)，不是当前执行预算。

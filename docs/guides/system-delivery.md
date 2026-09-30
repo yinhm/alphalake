@@ -11,27 +11,31 @@
 本机示例（先确认8080读取目标SQLite、没有其他大任务在运行）：
 
 ```bash
+ALPHALAKE_REPO="$PWD"  # 在项目根目录执行
 systemd-run --unit=alphalake-native-publish \
-  --property=WorkingDirectory=/root/alphalake \
+  --property=WorkingDirectory="$ALPHALAKE_REPO" \
   --property=MemoryMax=1G --property=MemoryHigh=896M \
   --property=MemorySwapMax=0 --property=OOMPolicy=stop \
-  --setenv=PYTHONPATH=/root/alphalake/valuation/backend \
-  --setenv=ALPHALAKE_WORKSPACE=/root/alphalake/workspace \
-  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=512MiB \
+  --setenv=PYTHONPATH="$ALPHALAKE_REPO/valuation/backend" \
+  --setenv=ALPHALAKE_WORKSPACE="$ALPHALAKE_REPO/workspace" \
+  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=1GiB \
   --setenv=ALPHALAKE_DUCKDB_THREADS=1 \
-  --setenv=GOMEMLIMIT=128MiB --setenv=GOMAXPROCS=1 \
-  /root/alphalake/.venv/bin/python -m tools.publish_native_valuation \
+  --setenv=GOMEMLIMIT=512MiB --setenv=GOMAXPROCS=1 \
+  --setenv=GOPATH="$(go env GOPATH)" --setenv=GOCACHE="$(go env GOCACHE)" \
+  "$ALPHALAKE_REPO/.venv/bin/python" -m tools.publish_native_valuation \
   --database workspace/alphalake.duckdb \
   --output workspace/derived/valuation.sqlite \
   --period 2026-06-30 \
-  --codes-file workspace/derived/system-delivery/codes.txt \
+  --codes-file workspace/derived/system-delivery/published-codes.txt \
   --source-mode offline --latest 6 \
-  --risk-free-rate 0.0425 --web-url http://127.0.0.1:8080
+  --risk-free-rate 0.04 --web-url http://127.0.0.1:8080
 systemctl show alphalake-native-publish -p ActiveState -p ExecMainStatus -p MemoryMax
 journalctl -u alphalake-native-publish --no-pager
 ```
 
-上例为已固定100家样本；不随意更换清单，缩小分母必须作为单独范围验收。源码新增不等于该命令全部模式均已在线验收，当前验收边界见文末。
+清单由操作者事先固定；当前网页为固定100家加2家回归证券。扩大或缩小范围须单独验收，不能按成功结果筛清单。源码新增不等于该命令全部模式均已在线验收，当前验收边界见文末。
+
+刷新同一范围时沿用相同清单、报告期与验收利率；`online`另外传入公告目录日期范围。成功后取`.delivery.json`所指`run.json`中的`information_as_of`，用相同`--as-of`、`--source-mode local`重放，可验证同输入不重导、不重算且网页文件不替换。仅改变显式验收利率时，SQLite可复用，但必须重新验算及真实HTTP核对，不将旧利率的结果当作新结果。
 
 | 模式 | 实际动作 | 来源新鲜度 |
 |---|---|---|
@@ -104,7 +108,9 @@ schema57的`reference.issuer_industry_review`保存不可变验证包、完整�
 
 ## 验收边界
 
-离线完整周期、无变化重放和失败回滚已有真实验收；线上完整更新与自动定时调度未作为当前交付完成。每次发布保留目标证券分母、财报期、财务/参考截止、来源新鲜度、拒绝与失败；不要从成功公司反推清单。个别审核数据发布仍须候选比较、重开及真实API检查。
+指定102家范围的在线周期已完成真实验收：财务清单请求三台节点均为空，明确使用合格缓存；公告目录、9月30日收盘窗口、物化、候选API、原子发布与8080逐家复验完成。100成功、2项已知拒绝均保留；不称财务上游最新，未刷新参考上游。相同截止的local重放不重导、不重算、不替换网页文件；来源阶段故障保持可信网页文件，隔离副本的真实HTTP故障触发切换回滚。
+
+当前DuckDB预算1GiB、Go软预算512MiB、服务硬上限1GiB的缓存刷新及重放也已验收；资源预算涵盖整个服务组。详细测量及限制见[本轮验收](../history/scoped-refresh-publication-20260930.md)。未安装自动定时调度；每次发布保留目标证券分母、财报期、财务/参考截止、来源新鲜度、拒绝与失败，不从成功公司反推清单。个别审核数据发布仍须候选比较、重开及真实API检查。
 
 ### 契约升级的一次性协调切换
 

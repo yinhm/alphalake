@@ -9,7 +9,7 @@
 ./alphalake materialize-fundamentals workspace/alphalake.duckdb
 ```
 
-大库须使用[独立服务与内存限制](fundamental-memory-20260919.md)：本轮源入库采用DuckDB 512MiB、单线程、进程1GiB硬上限，构建、同步、物化、测试串行执行。不是把DuckDB查询预算当作进程RSS限制。
+大库须使用[独立服务与内存限制](fundamental-memory-20260919.md)：当前DuckDB预算及独立服务硬上限统一1GiB，单线程；以下历史验收源入库采用DuckDB 512MiB、进程1GiB硬上限，构建、同步、物化、测试串行执行。不是把DuckDB查询预算当作进程RSS限制。
 
 `--offline`完全不调用服务器，沿用主库已知证券身份。选择本地`gpcw.txt`所列且实际存在的ZIP，默认最近一期，`--all`处理全部已到报告期的本地包；未来占位包仍跳过。文件名不匹配、坏ZIP或解析错误拒绝；不从文件名猜公告日期。
 
