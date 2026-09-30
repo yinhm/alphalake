@@ -70,3 +70,5 @@ go run ./cmd/audit-financial-field --database workspace/alphalake.duckdb \
 [ADR023](../decisions/023-unmapped-source-duplicate-boundary.md)限定：相同归档及元数据下，只有官方已定义、未审核且当前没有映射的来源比率位置不同，才允许等价标准报表继续接入；金额、已映射字段、未知位置或身份不同继续拒绝，原ZIP保留全部备选记录。后续新增映射须重同步和重算，不沿用旧等价判断。
 
 `sync-financial --offline`使用本地清单、缓存和既有身份，不建立TDX连接；不冒称上游版本最新。按中国时间仅选择已经结束的报告期，报告期末当日仍可能是占位包，不提前解析或推进其检查点。
+
+源维护扫描允许一个通用名称对应多个未消歧位置，逐位置分别返回计数、样本及独立来源证据，不选择或合并金额。三处三表残余位置的定义与分布见[ADR020](../decisions/020-official-statements-and-snapshots.md#完成度口径)。
