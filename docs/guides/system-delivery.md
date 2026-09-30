@@ -43,6 +43,21 @@ journalctl -u alphalake-native-publish --no-pager
 
 可选`--sync-references`同步既有六类参考及23份原生US/Global行业与国家税率工作簿，offline模式重放已注册归档。原生参考随SQLite v9发布，会话绑定参考内容版本；实际网页与候选结果不同会拒绝发布。全局没有安装定时器，也不新增常驻任务平台。
 
+## 只读参考关联审核
+
+`tools.audit_reference_coverage`复用官方公司名单解析器及原生参考加载器，核对工作簿、SQLite参考和完整证券覆盖盘点的关联血缘；输出行业/国家缺项、分类冲突及TDX同业候选。候选不自动写库或替换默认政策，不运行DCF，也不重新判定财务完成度。
+
+在按[资源隔离](fundamental-memory-20260919.md)配置的独立服务中执行：
+
+```bash
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_reference_coverage \
+  workspace/derived/valuation.sqlite \
+  workspace/derived/financial-availability/coverage.json \
+  workspace/damodaran/indname-a1f4d70aa2cf.xls
+```
+
+输出保存在`workspace/derived/reference-association/`。旧盘点可复用证券分母与参考关系，但必须逐条通过现行来源版本、SHA-256、代码及定位校验；不能复用其旧财务准入数量。官方表缺精确证券条目时，重同步不能生成发行人关联；另一股类条目须另有同发行人证据，行业或国家代理须作为显式政策审核。原生国家参考范围不足与公司国家条目缺失分别处理。
+
 ## 失败与重放
 
 - 所有阶段串行；同步下载/主数据失败、物化/导出/验收失败均返回非零，保留日志，不继续发布。财务源仅因待解析记录返回非零时，必须通过结构化完整收据证明没有下载/主数据错误、选中包的待解析项在报告期能唯一解析标准证券身份、与导出目标身份不相交，才允许继续；来源仍标记partial，受影响包不推进检查点。主库各来源已提交的有效事务保留，不把整轮失败误解释为主库从未更新。
