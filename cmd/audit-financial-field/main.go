@@ -145,13 +145,13 @@ func run() error {
 					samples[state] = append(samples[state], s)
 				}
 			}
-			versionFields = append(versionFields, map[string]any{"field": field.Name, "counts": c, "samples": samples})
+			versionFields = append(versionFields, map[string]any{"field": field.Name, "source_evidence": map[string]any{"source_position": field.Index}, "counts": c, "samples": samples})
 		}
 		versions = append(versions, map[string]any{"artifact_sha256": a.hash, "archive": a.path, "fields": versionFields})
 	}
 	summary := []map[string]any{}
 	for i, field := range fields {
-		summary = append(summary, map[string]any{"field": field.Name, "unit": field.Unit, "period_basis": field.PeriodBasis, "counts": totals[i]})
+		summary = append(summary, map[string]any{"field": field.Name, "unit": field.Unit, "period_basis": field.PeriodBasis, "source_evidence": map[string]any{"source_position": field.Index}, "counts": totals[i]})
 	}
 	return json.NewEncoder(os.Stdout).Encode(map[string]any{"fields": summary, "scope": "all_retained_source_versions_for_resolved_SH_SZ_identities; records_are_not_unique_company_periods_or_PIT_facts", "securities": len(securities), "versions": versions, "automatic_policy_approval": false})
 
@@ -168,9 +168,6 @@ func selectFields(catalog []f.FieldDefinition, names string) ([]f.FieldDefinitio
 		found := false
 		for _, field := range catalog {
 			if field.Name == name && field.DefinitionStatus == "official" && field.Multiplier != nil && (*field.Multiplier == 1 || *field.Multiplier == 10000) {
-				if found {
-					return nil, fmt.Errorf("ambiguous source field: %s", name)
-				}
 				selected = append(selected, field)
 				found = true
 			}

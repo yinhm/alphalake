@@ -31,7 +31,11 @@ func TestBatchFields(t *testing.T) {
 	if err != nil || len(fields) != 2 || fields[0].Name != "short_term_borrowings" {
 		t.Fatal(fields, err)
 	}
-	for _, names := range []string{"", "short_term_borrowings,", "short_term_borrowings,short_term_borrowings", "unknown", "financial_loans_and_advances"} {
+	variants, err := selectFields(catalog, "financial_loans_and_advances")
+	if err != nil || len(variants) != 2 || variants[0].Index == variants[1].Index || !variants[0].RequiresDisambiguation || !variants[1].RequiresDisambiguation {
+		t.Fatal("source audit must retain both unresolved variants", variants, err)
+	}
+	for _, names := range []string{"", "short_term_borrowings,", "short_term_borrowings,short_term_borrowings", "unknown"} {
 		if _, err := selectFields(catalog, names); err == nil {
 			t.Fatal("invalid selection accepted", names)
 		}
