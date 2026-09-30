@@ -204,8 +204,10 @@ def accept_financial_report(path, exit_code, codes):
 
 
 def run(args, root):
+    codes = sorted(set(args.code))
     ledger = dict(status='running', started_at=timestamp(), stages=[], database=str(args.database),
                   output=str(args.output), report_period=args.period, source_mode=args.source_mode,
+                  requested_codes=codes, requested_companies=len(codes), sync_references=args.sync_references,
                   freshness='local_evidence_only_not_upstream_verified' if args.source_mode != 'online' else 'see_source_logs_and_cache_fallbacks',
                   risk_free_rate=dict(value=args.risk_free_rate, basis='explicit_acceptance_assumption_not_observed_rate'))
     candidate = args.output.with_name(args.output.name+'.next')
@@ -229,7 +231,6 @@ def run(args, root):
         if candidate.exists():
             ledger['discarded_candidate'] = dict(path=str(candidate), sha256=digest(candidate), reason='unpublished_candidate_rebuild')
             candidate.unlink()
-        codes = sorted(set(args.code))
         if args.source_mode != 'local':
             extra = ['--offline'] if args.source_mode == 'offline' else []
             report = root/'financial-source.json'
@@ -249,7 +250,8 @@ def run(args, root):
                 if any(c not in by_code for c in codes):
                     raise ValueError('quote identities missing from published snapshot')
                 symbols = [('sh' if by_code[c].startswith('SHSE:') else 'sz')+c for c in codes]
-                stage('sync-quotes', [str(args.alphalake), 'sync-valuation-quotes', str(args.database), '--symbols', ','.join(symbols), '--date', completed_market_date(datetime.fromisoformat(args.as_of or timestamp())).isoformat()])
+                ledger['quote_window_end'] = completed_market_date(datetime.fromisoformat(args.as_of or timestamp())).isoformat()
+                stage('sync-quotes', [str(args.alphalake), 'sync-valuation-quotes', str(args.database), '--symbols', ','.join(symbols), '--date', ledger['quote_window_end']])
             stage('materialize', [str(args.alphalake), 'materialize-fundamentals', str(args.database)])
         if args.sync_references:
             if args.source_mode == 'local':
@@ -295,7 +297,7 @@ def run(args, root):
             checked = previous_receipt['check']
             ledger['calculation_reused'] = True
         else:
-            stage('check-candidate', [sys.executable, '-m', 'tools.check_native_sqlite', '--database', str(candidate),
+            stage('check-candidate', [sys.executable, '-m', 'tools.check_native_sqlite', '--database', str(args.output if export_reused else candidate),
                   '--output', str(root/'candidate-check'), '--risk-free-rate', str(args.risk_free_rate)])
             checked = json.loads((root/'candidate-check/summary.json').read_text())
         validate_check(checked, current['tickers'])

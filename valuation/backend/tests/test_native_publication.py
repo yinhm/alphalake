@@ -108,8 +108,9 @@ def test_cycle_publishes_replays_without_export_and_keeps_last_snapshot_on_sourc
                 conn.executemany('INSERT INTO metadata VALUES(?,?)', [('contract',delivery.CONTRACT), ('source_database_sha256',delivery.digest(database))])
                 conn.execute("INSERT INTO companies VALUES('SZSE:300866',42)")
         elif log.stem.startswith('check-'):
+            assert Path(command[command.index('--database')+1]).exists()
             output = Path(command[command.index('--output')+1]); output.mkdir()
-            delivery.save(output/'summary.json', dict(companies=1, admission={'ready':1}, risk_free_rate=.0425,
+            delivery.save(output/'summary.json', dict(companies=1, admission={'ready':1}, risk_free_rate=float(command[command.index('--risk-free-rate')+1]),
                 results=[dict(ticker='SZSE:300866', admission='ready', http_status=200, final={'value_per_share':42})]))
         return 0
     monkeypatch.setattr(delivery, 'execute', execute)
@@ -125,10 +126,19 @@ def test_cycle_publishes_replays_without_export_and_keeps_last_snapshot_on_sourc
     assert calls == []  # 相同源、程序、参考及请求不重导、不重算。
     assert target.read_bytes() == saved and target.stat().st_ino == stat.st_ino
     assert json.loads((second/'run.json').read_text())['calculation_reused']
+    args.risk_free_rate = .04
+    changed_rate = tmp_path/'changed-rate'; changed_rate.mkdir()
+    assert delivery.run(args, changed_rate) == 0
+    assert calls == ['check-candidate', 'check-previous']
+    assert json.loads((changed_rate/'run.json').read_text())['export_reused']
+    assert not json.loads((changed_rate/'run.json').read_text()).get('calculation_reused')
+    assert target.read_bytes() == saved and target.stat().st_ino == stat.st_ino
+    calls.clear()
     args.source_mode = 'offline'
     third = tmp_path/'third'; third.mkdir()
     assert delivery.run(args, third) == 1
     assert calls == ['sync-financial'] and target.read_bytes() == saved
+    assert json.loads((third/'run.json').read_text())['requested_codes'] == ['300866']
 
     # 历史代码虽不同，解析到同一标准证券时仍拒绝，不能误判范围外。
     def related_source(command, log, timeout):
@@ -188,7 +198,7 @@ def test_online_sync_uses_reviewed_symbols_and_optional_filings(tmp_path, monkey
     monkeypatch.setattr(delivery, 'execute', execute)
     args = SimpleNamespace(database=tmp_path/'alphalake.duckdb', alphalake=tmp_path/'alphalake',
         output=target, code=['600519','300866'], period='2026-06-30', risk_free_rate=.0425,
-        source_mode='online', as_of='2026-09-30T05:00:00Z', latest=6, stage_timeout=10, filings_start='2026-09-01', filings_end='2026-09-27')
+        source_mode='online', sync_references=False, as_of='2026-09-30T05:00:00Z', latest=6, stage_timeout=10, filings_start='2026-09-01', filings_end='2026-09-27')
     assert delivery.run(args, tmp_path) == 1
     assert [c[1] for c in calls] == ['sync-financial','sync-filings','sync-valuation-quotes','materialize-fundamentals']
     assert json.loads((tmp_path/'run.json').read_text())['filing_metadata'] == dict(required_for_current_values=False, exit_code=filing_exit)
