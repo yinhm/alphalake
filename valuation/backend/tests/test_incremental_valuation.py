@@ -7,7 +7,7 @@ from pathlib import Path
 from tools.batch_valuate_alphalake import BatchPolicy
 from tools.incremental_valuation import run_incremental_batch
 
-ROOT = Path(__file__).resolve().parents[2]/'research/current-contract-20260919/method-closure-20260912'
+ROOT = Path(__file__).resolve().parents[2]/'research/current-references-20260930/method-closure-20260912'
 
 
 def test_revaluation_changes_failures_and_recovery(tmp_path, monkeypatch):
@@ -70,7 +70,7 @@ def test_revaluation_changes_failures_and_recovery(tmp_path, monkeypatch):
 
 def test_cutoff_only_reuse_rechecks_asset_review_expiry(tmp_path, monkeypatch):
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
-    p = ROOT.parent/'reviewed-assets-20260917/after-request.json.gz'
+    p = ROOT.parents[1]/'current-contract-20260919/reviewed-assets-20260917/after-request.json.gz'
     request = json.loads(gzip.decompress(p.read_bytes()))
     data = request.pop('data')
     policy = BatchPolicy(policy_version='reviewed', review_note='real reviewed archive', assignments={'300866':request})

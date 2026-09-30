@@ -1,0 +1,33 @@
+{
+  "country_scope": [
+    "CN",
+    "HK",
+    "US",
+    "IL"
+  ],
+  "parser": "valuation/backend/data_sources/damodaran_parsers/country_risk_parser.py",
+  "parser_sha256": "fea1275c92d6daea2bbe41e1a02a54cc3efc285096fdfad6821aff618a07643f",
+  "purpose": "current_four_country_regression_inputs_not_historical_publications",
+  "recorded_at": "2026-09-30T09:16:30Z",
+  "records": [
+    {
+      "file": "method-closure-20260912/300866-request.json.gz",
+      "new_country_rows": 13,
+      "old_country_rows": 10,
+      "sha256": "e7bde84010c7528c439cb813c06847eb0255652c9a1ee4ef96a496bfc0f3101f",
+      "source": "valuation/research/current-contract-20260919/method-closure-20260912/300866-request.json.gz",
+      "source_sha256": "2068eca34bbd52b6ef7fa002b0a64c1147f394b5ff688ecde0250f149d00844f"
+    },
+    {
+      "file": "method-closure-20260912/002032-request.json.gz",
+      "new_country_rows": 13,
+      "old_country_rows": 10,
+      "sha256": "fd81f2f01d355c95aa52e2e10d1c47b184be8ee2f9e25c3f25559c112d9bc77d",
+      "source": "valuation/research/current-contract-20260919/method-closure-20260912/002032-request.json.gz",
+      "source_sha256": "58e462f672c4b8848f692670332f1db2248a7e046e9dda72366a0f40e9fd8218"
+    }
+  ],
+  "runtime": "python=3.12.14;openpyxl=3.1.5",
+  "workbook": "internal/source/damodaran/testdata/ctrypremJuly26.xlsx",
+  "workbook_sha256": "8d7237c432bca23cd680f149395aa518a465d0b77bec1fdf788edc7a1748c60a"
+}

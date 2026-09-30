@@ -11,7 +11,7 @@ from data_sources.alphalake import AlphaLakeRequest
 from tools.verify_nonfinancial_dcf import verify
 
 ARCHIVES = Path(__file__).resolve().parents[3]/'valuation/research'
-ROOT = ARCHIVES/'current-contract-20260919/method-closure-20260912'
+ROOT = ARCHIVES/'current-references-20260930/method-closure-20260912'
 
 
 @pytest.mark.parametrize('code', ['300866','002032'])
@@ -169,7 +169,7 @@ def test_partial_asset_policy_with_explicit_synthetic_archive(tmp_path, monkeypa
 
 def test_supor_real_mirror_export_replay(tmp_path, monkeypatch):
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
-    directory = ROOT.parent/'reviewed-assets-20260917/supor'
+    directory = ARCHIVES/'current-contract-20260919/reviewed-assets-20260917/supor'
     requests = [json.loads(gzip.decompress((directory/(name+'-request.json.gz')).read_bytes())) for name in ('before','after')]
     before, after = [evaluate(AlphaLakeRequest.model_validate(r)) for r in requests]
     verify(before)
