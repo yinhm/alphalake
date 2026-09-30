@@ -129,6 +129,15 @@ func exchangeMIC(exchange protocol.Exchange) string {
 }
 
 func classifyInstrument(symbol string) domain.InstrumentType {
+	// SZSE证券代码区间表(2024年12月修订)：03为权证/期权，07/08为
+	// 申购及优先权；上游IsStock把全部sz0开头的证券都视为股票。
+	// https://www.szse.cn/marketServices/technicalservice/doc/P020241212550140892927.pdf
+	if len(symbol) == 8 && strings.EqualFold(symbol[:2], "sz") {
+		switch symbol[2:4] {
+		case "03", "07", "08":
+			return domain.InstrumentUnknown
+		}
+	}
 	switch {
 	case protocol.IsETF(symbol):
 		return domain.InstrumentETF

@@ -15,6 +15,19 @@ type fakeCodeListClient struct {
 	errors    map[protocol.Exchange]error
 }
 
+func TestSZSubscriptionAndRightsAreNotCompanyEquity(t *testing.T) {
+	for _, symbol := range []string{"sz030001", "sz033001", "sz034001", "sz036001", "sz037001", "sz038043", "sz039999", "sz070001", "sz080001"} {
+		if got := classifyInstrument(symbol); got != domain.InstrumentUnknown {
+			t.Fatalf("nonstock right %s classified as %s", symbol, got)
+		}
+	}
+	for _, symbol := range []string{"sz000016", "sz001280", "sz002731", "sz003816", "sz300866", "sz301139", "sh600519", "sh688496"} {
+		if got := classifyInstrument(symbol); got != domain.InstrumentEquity {
+			t.Fatalf("stock %s classified as %s", symbol, got)
+		}
+	}
+}
+
 func (f fakeCodeListClient) GetCodeAll(exchange protocol.Exchange) (*protocol.CodeResp, error) {
 	if err := f.errors[exchange]; err != nil {
 		return nil, err
