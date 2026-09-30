@@ -1,6 +1,8 @@
 # 贵州茅台：目标估值引擎适配验证
 
-验证 `Investment_Valuation_Agent` 提交 `7ce156a` 的显式 TTM、缺失传播及行业政策兼容性。结论分两部分：基础入口和缺失纪律可用；目标单一资本倍率/期限与普通股权桥接不能原样表达现有茅台研究政策。不能用目标引擎算出数值就声称茅台政策已经完整适配。
+原实验验证 `Investment_Valuation_Agent` 提交 `7ce156a` 的显式 TTM、缺失传播及行业政策兼容性；当前脚本验证已合仓的`valuation/`。结论分两部分：基础入口和缺失纪律可用；目标单一资本倍率/期限与普通股权桥接不能原样表达现有茅台研究政策。不能用目标引擎算出数值就声称茅台政策已经完整适配。
+
+本目录`requests.json`/`result.json`保留冻结。当前完整预期及重建收据位于[2026-09-30现行适配证据](../../../../valuation/research/agent-adapters-current-contract-20260930/README.md)：仅显式补齐空契约字段和已核验的来源哈希，三情景全部数值、缺项、警告及期限反例保持不变。
 
 ## 数据链
 
@@ -12,7 +14,7 @@
 
 ## 实际执行
 
-`requests.json` 含三组 `{scenario, request: {inputs: ...}}`，每组 request 对应目标输入契约。使用真实 Pydantic JSON 往返后运行完整 `run_full_valuation`，不把 TTM 当成年报，也不绕开入口。
+现行证据的`moutai/requests.json`含三组 `{scenario, request: {inputs: ...}}`，每组 request 对应目标输入契约。使用真实 Pydantic JSON 往返后运行完整 `run_full_valuation`，不把 TTM 当成年报，也不绕开入口。
 
 历史 FCFF/FCFE、依赖缺失再投资率的倍数，以及目标最终每股值必须留空。目标仍可按显式假设预测经营价值。研发/租赁资本化开关关闭，不把已有政策调整重复资本化；不声称公司不存在这些项目。直接 WACC 分支不使用占位行业 beta/市场权益，利率参数均为研究假设。
 
@@ -32,15 +34,15 @@
 
 ## 复现
 
-复用安克环境，无新增依赖：
+使用当前项目Python依赖、pypdf与Go，在仓库根目录执行：
 
 ```sh
-workspace/anker-agent-adapter-20260906/venv/bin/python internal/ingest/testdata/moutai-agent-adapter-2026/verify.py
+python internal/ingest/testdata/moutai-agent-adapter-2026/verify.py
 ```
 
-首次审核后使用 `--write` 生成 requests.json/result.json；默认重新验证上游并逐字核对两份输出。需要上述目标检出、Python 3.12、pydantic 2.12.5、pypdf 6.17.0 和 Go。
+默认重新验证上游，再与两份现行预期逐字核对，已纳入根CI。含Go的验证按仓库资源隔离要求运行。旧`--write`只属于冻结历史流程，当前已移除；只写新目录的显式重建及来源/经济内容核验见[现行证据说明](../../../../valuation/research/agent-adapters-current-contract-20260930/README.md)。不需要旧外部目标检出。
 
-仅验证本地 JSON 契约和共享编排器，未启动 HTTP 或验收界面。目标代码未修改；没有增加全市场字段完整率，也未把外部检出纳入默认 CI。正式支持茅台原政策，还需要分项投入期限和可审核的行业股权桥接，而不是将 lag 参数调大或将金融池填进现金字段。
+仅验证本地 JSON 契约和共享编排器，未启动 HTTP 或验收界面。此次契约复验未修改目标引擎，也没有增加全市场字段完整率。正式支持茅台原政策，还需要分项投入期限和可审核的行业股权桥接，而不是将 lag 参数调大或将金融池填进现金字段。
 
 ## 固定样本结果
 

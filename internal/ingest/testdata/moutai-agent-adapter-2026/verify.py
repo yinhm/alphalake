@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[3]
 CHAIN = ROOT.parent / 'valuation-chain-2026'
 TARGET = REPO / 'valuation'
+CURRENT = TARGET / 'research/agent-adapters-current-contract-20260930/moutai'
 REVISION = '7ce156a7c6d568d41f480919d84b998bee599d54'
 
 
@@ -25,7 +26,7 @@ def near(a, b):
     assert math.isclose(a, b, rel_tol=1e-11, abs_tol=1e-7), (a, b)
 
 
-def main(write=False):
+def main():
     subprocess.run([sys.executable, str(CHAIN / 'verify.py')], check=True)
     sys.path.insert(0, str(TARGET / 'backend'))
     from engine.data_dictionary import (RawFinancials, PreparedTTM, CompanyValuationInput,
@@ -164,15 +165,12 @@ def main(write=False):
         lag_probe=lag_probe, scenarios=results)
     for filename, obj in [('requests.json', requests), ('result.json', output)]:
         content = json.dumps(obj, ensure_ascii=False, indent=2, allow_nan=False) + '\n'
-        if write:
-            (ROOT / filename).write_text(content)
-        else:
-            assert (ROOT / filename).read_text() == content, filename + ' differs'
+        assert (CURRENT / filename).read_text() == content, filename + ' differs; frozen evidence is read-only'
     print('通过：茅台标准链/PDF、真实 JSON 编排器、三情景独立复算、缺项与储酒期限反例。')
     print(json.dumps([{k: r[k] for k in ('scenario', 'target_forecast_with_original_policy_bridge', 'original_per_share')} for r in results]))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--write', action='store_true')
-    main(parser.parse_args().write)
+    parser.parse_args()
+    main()

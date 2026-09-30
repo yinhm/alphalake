@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parents[3]
 CHAIN = ROOT.parent / 'valuation-chain-2026'
 TARGET = REPO / 'valuation'
+CURRENT = TARGET / 'research/agent-adapters-current-contract-20260930/anker'
 
 
 def rows(path):
@@ -30,7 +31,7 @@ def require_fields(raw, names):
         raise ValueError('缺少输入：' + ','.join(missing))
 
 
-def main(write=False):
+def main():
     subprocess.run([sys.executable, str(CHAIN / 'verify.py')], check=True)
     sys.path.insert(0, str(TARGET / 'backend'))
     from engine.data_dictionary import (PreparedTTM, RawFinancials, AdjustmentInputs, MacroInputs,
@@ -83,7 +84,9 @@ def main(write=False):
     adjusted = compute_adjustments(raw, adjustment, .09)
     near(adjusted.adjusted_ebit, raw.ebit)
     near(adjusted.adjusted_mv_debt, raw.bv_debt)
-    cost = compute_cost_of_capital(adjusted, macro, industry, 0, method)
+    cost = compute_cost_of_capital(adjusted, macro, industry, 0, method,
+                                   book_debt=raw.bv_debt)
+    near(cost.book_debt, raw.bv_debt)
     # 直接模块调用也必须保留缺失，不能仅在编排器掩盖结果。
     unsafe_cf = compute_cashflow_and_growth(adjusted, raw, adjustment, cost, macro=macro)
     assert unsafe_cf.fcff is None and unsafe_cf.fcfe is None
@@ -192,10 +195,7 @@ def main(write=False):
         alphalake_per_share=baseline, forecast=forecast)
     expected = json.dumps(output, ensure_ascii=False, indent=2, allow_nan=False) + '\n'
     for name, content in [('result.json', expected), ('request.json', request)]:
-        if write:
-            (ROOT / name).write_text(content)
-        else:
-            assert (ROOT / name).read_text() == content, '实验结果改变，先审核差异'
+        assert (CURRENT / name).read_text() == content, '现行适配证据改变，先审核差异；冻结结果不得覆写'
 
     print('通过：实际 Pydantic/LTM/完整引擎缺失反例、M1/M2/M4、十年独立复算与原桥接对照。')
     print(json.dumps({k: output[k] for k in ('target_forecast_with_alphalake_bridge_per_share', 'alphalake_per_share', 'probes')}, ensure_ascii=False))
@@ -203,5 +203,5 @@ def main(write=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--write', action='store_true')
-    main(parser.parse_args().write)
+    parser.parse_args()
+    main()

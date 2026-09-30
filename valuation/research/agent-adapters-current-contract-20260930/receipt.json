@@ -1,0 +1,61 @@
+{
+  "purpose": "current_adapter_contract_evidence_preserving_frozen_numeric_results",
+  "recorded_at": "2026-09-30T10:00:00+00:00",
+  "source_changes": {
+    "revision": "586677c2ecb0ddb886fe82dc64490e6a5f7159c2",
+    "added_zero_facts": 20,
+    "missing_to_zero_windows": 3,
+    "existing_fact_changes": 0,
+    "hashes": {
+      "facts.csv": {
+        "previous": "681bc21d3324b438173a2c776a976e0262edd1a2520f31201cec4336d3314c17",
+        "current": "1cb8ffd2dec29bddb30510c14295ec8c3ef4dc45adb6ebb8d569c2fa31c97814"
+      },
+      "windows.csv": {
+        "previous": "006fa8518d106cd1f642f870f3a8fd7ac56432e6448a82593ce8164210db326e",
+        "current": "39ab145ddf4c0f1f10e7f4b2c274c2858159f850897ac76cec78c187dca8e8da"
+      }
+    }
+  },
+  "contract_additions": {
+    "financials": {
+      "consolidated_book_equity": null
+    },
+    "valuation_assumptions": {
+      "annual_sales_to_capital": null
+    },
+    "inputs": {
+      "historical_research_expenses": {}
+    },
+    "industry_data": {
+      "pretax_lease_research_adjusted_operating_margin": null,
+      "aftertax_lease_research_adjusted_operating_margin": null
+    }
+  },
+  "records": [
+    {
+      "source": "internal/ingest/testdata/anker-agent-adapter-2026/request.json",
+      "source_sha256": "0fbcddbd488387499e214ff34dd48584d1fe4a5545dbd777d020f4b5f1028a5f",
+      "file": "anker/request.json",
+      "sha256": "81de7c1866e988a7dfefb15f986432d6d5999e9dc5e4c01818856b5954d01c2d"
+    },
+    {
+      "source": "internal/ingest/testdata/anker-agent-adapter-2026/result.json",
+      "source_sha256": "640b79c2994e0bbace68034d81c92519c0305d12c78a959b03069e80309173f0",
+      "file": "anker/result.json",
+      "sha256": "b33a9409fe994858e09a00113c06d2a2165d13224b73eb9bf45b0f6ca76f8e4b"
+    },
+    {
+      "source": "internal/ingest/testdata/moutai-agent-adapter-2026/requests.json",
+      "source_sha256": "a05944d3e0c09353adae6ae75fa41975ae9c2b79f52cf06944f73eeff2452564",
+      "file": "moutai/requests.json",
+      "sha256": "79556aee430100ca6b5946e2783b4e9743d9f6f70297ced825dfb0abff027907"
+    },
+    {
+      "source": "internal/ingest/testdata/moutai-agent-adapter-2026/result.json",
+      "source_sha256": "151a3f7bdef58549d9c96d69d69435150f548b1964612872712069a62a982b79",
+      "file": "moutai/result.json",
+      "sha256": "a8214f50d4cdce74eb9598f80d4b4a4ae7199b57a3b99378bfac10dbe8722ded"
+    }
+  ]
+}
