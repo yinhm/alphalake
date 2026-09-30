@@ -7,6 +7,7 @@ from pathlib import Path
 from statistics import mean
 
 from tools.backtest_tdx_history import error
+from tools.backtest_tdx_multiyear_growth import leave_one_company_out_revenue_nonworse
 from tools.backtest_tdx_normalized_margin import metrics as base_metrics
 from tools.validate_tdx_zero_growth import verify_sampling
 
@@ -68,7 +69,7 @@ def compare(p,original,phase):
         a=m['models'][baseline][key];b=m['models'][models[1]][key]
         return a is not None and b is not None and b<=a*ratio
     enough=summary['models'][models[1]]['revenue_n']>=g[phase+'_minimum_pairs'] and len(codes)>=g[phase+'_minimum_companies'];key='revenue_mae_pct'
-    checks=dict(minimum_sample=enough,primary_improvement=enough and summary['models'][models[0]][key]>0 and nonworse(summary,key,ratio=1-g['minimum_primary_improvement_fraction']),revenue_wape_nonworse=nonworse(summary,'revenue_wape_pct'),ebit_nonworse=all(nonworse(summary,k) for k in ('ebit_mae_pct_actual_revenue','ebit_wape_pct')),zero_growth_revenue_nonworse=all(nonworse(summary,k,models[2]) for k in (key,'revenue_wape_pct')),each_horizon_nonworse=all(nonworse(m,key) for m in by_horizon.values()),each_window_within_tolerance=all(nonworse(m,key,ratio=g['maximum_each_window_primary_ratio']) for m in by_window.values()),leave_one_company_out_nonworse=bool(codes) and all(nonworse(metrics([r for r in rows if r['code']!=c],models),key) for c in codes))
+    checks=dict(minimum_sample=enough,primary_improvement=enough and summary['models'][models[0]][key]>0 and nonworse(summary,key,ratio=1-g['minimum_primary_improvement_fraction']),revenue_wape_nonworse=nonworse(summary,'revenue_wape_pct'),ebit_nonworse=all(nonworse(summary,k) for k in ('ebit_mae_pct_actual_revenue','ebit_wape_pct')),zero_growth_revenue_nonworse=all(nonworse(summary,k,models[2]) for k in (key,'revenue_wape_pct')),each_horizon_nonworse=all(nonworse(m,key) for m in by_horizon.values()),each_window_within_tolerance=all(nonworse(m,key,ratio=g['maximum_each_window_primary_ratio']) for m in by_window.values()),leave_one_company_out_nonworse=leave_one_company_out_revenue_nonworse(rows, models[0], models[1]))
     return dict(protocol_id=p['protocol_id'],phase=phase,summary=summary,by_horizon=by_horizon,by_window=by_window,evaluated_companies=len(codes),decision=dict(passed=all(checks.values()),checks=checks),results=[{k:v for k,v in r.items() if phase=='holdout' or k not in ('base','actual','rule_evidence')} for r in rows],results_reference=None if phase=='holdout' else dict(path=p['parent_result'],sha256=p['parent_result_sha256'],join_key=['code','origin','horizon'],omitted_fields=['base','actual','rule_evidence']),boundary=p['boundary'])
 
 

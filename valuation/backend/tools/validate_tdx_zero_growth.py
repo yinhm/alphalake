@@ -4,7 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from tools.backtest_tdx_multiyear_growth import study,metrics
+from tools.backtest_tdx_multiyear_growth import study,metrics,leave_one_company_out_revenue_nonworse
 
 ROOT=Path(__file__).resolve().parents[3]
 BASE='flat_first_five'
@@ -44,7 +44,7 @@ def score(p,rows,phase,horizons=(2,3)):
         revenue_wape_nonworse=nonworse(summary,'revenue_wape_pct'),ebit_nonworse=all(nonworse(summary,k) for k in ('ebit_mae_pct_actual_revenue','ebit_wape_pct')),
         each_horizon_nonworse=all(nonworse(m,'revenue_mae_pct') for m in by_horizon.values()),
         each_window_nonworse=all(m['models'][CANDIDATE]['revenue_n']>0 and m['models'][CANDIDATE]['revenue_mae_pct']<=m['models'][BASE]['revenue_mae_pct']*g['maximum_each_window_primary_ratio'] for m in by_window.values()),
-        leave_one_company_out_nonworse=bool(codes) and all(nonworse(metrics([r for r in rows if r['code']!=code]),'revenue_mae_pct') for code in codes))
+        leave_one_company_out_nonworse=leave_one_company_out_revenue_nonworse(rows, BASE, CANDIDATE))
     return dict(protocol_id=p['protocol_id'],phase=phase,evaluated_companies=len(codes),summary=summary,by_horizon=by_horizon,by_window=by_window,decision=dict(passed=all(checks.values()),checks=checks),boundary=p['boundary'])
 
 

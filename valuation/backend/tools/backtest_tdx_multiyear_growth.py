@@ -1,7 +1,8 @@
 """两年/三年经营预测路径比较；复用生产增速规则，不生成历史FCFF。"""
 import argparse
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import date
+from fractions import Fraction
 import hashlib
 import json
 from pathlib import Path
@@ -37,6 +38,22 @@ def metrics(rows):
     return result
 
 
+def leave_one_company_out_revenue_nonworse(rows, baseline, candidate):
+    """只计算收入MAE；精确累加后转float，与statistics.mean一致。"""
+    valid = [r for r in rows if r['status'] == 'evaluated']
+    counts = Counter(r['code'] for r in valid)
+    if len(counts) < 2:
+        return False
+    sums = {m: defaultdict(Fraction) for m in (baseline, candidate)}
+    for row in valid:
+        for model in sums:
+            sums[model][row['code']] += Fraction(abs(row['errors'][model]['revenue_error_pct']))
+    totals = {m: sum(values.values()) for m, values in sums.items()}
+    return all(float((totals[candidate] - sums[candidate][code]) / (len(valid) - count))
+               <= float((totals[baseline] - sums[baseline][code]) / (len(valid) - count))
+               for code, count in counts.items())
+
+
 def forecast_rows(p,source,phase='development',horizons=(2,3)):
     if phase not in ('development','holdout'):raise ValueError('invalid study phase')
     p=p|dict(samples=[s for s in p['samples'] if s['split']==phase])
@@ -47,7 +64,11 @@ def forecast_rows(p,source,phase='development',horizons=(2,3)):
     if any(v is not True for k,v in p['gates'].items() if k.startswith('require_')):raise ValueError('required gate disabled')
     index=defaultdict(list);artifacts={a['file']:a for a in source['artifacts']}
     if len(artifacts)!=len(source['artifacts']):raise ValueError('duplicate artifact')
-    for r in source['records']:index[(r['code'],r['period'])].append(r)
+    company_indexes = defaultdict(dict)
+    for r in source['records']:
+        key = (r['code'], r['period'])
+        index[key].append(r)
+        company_indexes[r['code']][key] = index[key]
     rows=[]
     for sample in p['samples']:
         for w in p['windows']:
@@ -55,7 +76,7 @@ def forecast_rows(p,source,phase='development',horizons=(2,3)):
             if horizon not in horizons or (end.month,end.day)!=(6,30) or at(cutoff)>=at(p['evaluation_as_of']) or target>=at(p['evaluation_as_of']).date():raise ValueError('invalid forecast window')
             row=dict(code=sample['code'],origin=end.isoformat(),horizon=horizon,target=target.isoformat(),forecast_as_of=cutoff,status='blocked',actual_fcff=None);rows.append(row)
             try:
-                _,evidence=revenue_forecast(p,index,artifacts,sample['code'],end,cutoff)
+                _,evidence=revenue_forecast(p,company_indexes[sample['code']],artifacts,sample['code'],end,cutoff)
                 base=evidence['operating_inputs'];g=evidence['rule']['clipped_scenario_growth'];terminal=p['base_policy']['terminal_growth'];margin=base['ebit']/base['revenue']
                 paths={MODELS[0]:_revenue_growth_path(g,g,terminal,5,10),MODELS[1]:[0.]*10,MODELS[2]:_revenue_growth_path(g,g,terminal,1,5)+[terminal]*5}
                 forecasts={}
@@ -86,7 +107,7 @@ def study(p,source,phase='development'):
         each_horizon_nonworse=all(nonworse(m,'revenue_mae_pct') for m in by_horizon.values()),
         each_window_nonworse=all(m['models'][MODELS[2]]['revenue_n']>0 and m['models'][MODELS[2]]['revenue_mae_pct']<=m['models'][MODELS[0]]['revenue_mae_pct']*g['maximum_each_window_primary_ratio'] for m in by_window.values()))
     codes={r['code'] for r in rows if r['status']=='evaluated'}
-    checks['leave_one_company_out_nonworse']=bool(codes) and all(nonworse(metrics([r for r in rows if r['code']!=code]),'revenue_mae_pct') for code in codes)
+    checks['leave_one_company_out_nonworse']=leave_one_company_out_revenue_nonworse(rows, MODELS[0], MODELS[2])
     return dict(protocol_id=p['protocol_id'],summary=summary,by_horizon=by_horizon,by_window=by_window,decision=dict(passed=all(checks.values()),checks=checks),results=rows,boundary=p['boundary'])
 
 
