@@ -95,21 +95,31 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
  ) q USING(instrument_id) ORDER BY u.instrument_id`); err != nil {
 		return err
 	}
-	// Filter issuer identities before wide reads; rank versions before code checks.
-	values := `WITH headers AS MATERIALIZED (
+	// Sort narrow report rows before JSON export. Expanding shared lineage for
+	// every field before sorting multiplies memory and intermediate file size.
+	fieldNames, values := []string{}, []string{}
+	for i, name := range fields {
+		fieldNames = append(fieldNames, duckdbStringLiteral(name))
+		values = append(values, `CAST(w.`+names[i]+` AS VARCHAR) AS `+names[i])
+	}
+	if err = copyQuery("fields.jsonl", `SELECT canonical_field AS field,provider_field,unit,period_basis,
+ CAST(valid_from AS VARCHAR) AS valid_from,CAST(valid_to AS VARCHAR) AS valid_to
+ FROM fundamental.statement_field WHERE source='tdx' AND canonical_field IN (`+strings.Join(fieldNames, ",")+`)
+ ORDER BY canonical_field,valid_from`); err != nil {
+		return err
+	}
+	records := `WITH headers AS MATERIALIZED (
  SELECT r.source_record_id,r.instrument_id,s.source_filing_id,r.report_period,s.announcement_time,s.announcement_source,r.provider_code,a.sha256 AS artifact_sha256,a.fetched_at AS source_observed_at
  FROM fundamental.source_record r JOIN meta.artifact a USING(artifact_id) LEFT JOIN fundamental.statement_snapshot s USING(source_record_id)
  WHERE r.instrument_id IN(SELECT instrument_id FROM _sqlite_universe) AND r.report_period BETWEEN ` + start + ` AND ` + finish + `
  QUALIFY row_number() OVER(PARTITION BY r.instrument_id,r.report_period ORDER BY a.fetched_at DESC,a.artifact_id DESC,r.source_record_id DESC)=1
- ), selected AS (SELECT h.*,` + "w." + strings.Join(names, ",w.") + ` FROM headers h LEFT JOIN fundamental.statement_snapshot w USING(source_record_id)),cells AS (
- UNPIVOT selected ON ` + strings.Join(names, ",") + ` INTO NAME field VALUE value
  )
- SELECT c.instrument_id,c.provider_code AS code,CAST(c.report_period AS VARCHAR) AS period,c.field,c.field AS canonical_field,CAST(c.value AS VARCHAR) AS value,m.unit,'tdx' AS source,'provider_default' AS statement_scope,
- CASE WHEN m.period_basis IN('instant','opening_instant') THEN m.period_basis WHEN m.period_basis='quarter' THEN 'Q'||CAST(quarter(c.report_period) AS VARCHAR) WHEN m.period_basis='ttm' THEN 'TTM' WHEN month(c.report_period)=3 THEN 'Q1' WHEN month(c.report_period)=6 THEN 'H1' WHEN month(c.report_period)=9 THEN '9M' ELSE 'FY' END AS period_type,
- c.source_record_id*8192+CAST(substr(m.provider_field,3) AS BIGINT) AS fact_id,c.source_record_id,c.source_filing_id,CAST(c.announcement_time AS VARCHAR) AS available_at,c.announcement_source,'current_standard_snapshot_not_pit' AS financial_time_basis,CAST(c.source_observed_at AS VARCHAR) AS source_observed_at,c.artifact_sha256
- FROM cells c JOIN fundamental.statement_field m ON m.source='tdx' AND m.canonical_field=c.field AND (m.valid_from IS NULL OR m.valid_from<=c.report_period) AND (m.valid_to IS NULL OR c.report_period<m.valid_to)
- ORDER BY c.provider_code,c.instrument_id,c.report_period,c.field`
-	if err = copyQuery("facts.jsonl", values); err != nil {
+ SELECT h.instrument_id,h.provider_code AS code,CAST(h.report_period AS VARCHAR) AS period,
+ h.source_record_id,h.source_filing_id,CAST(h.announcement_time AS VARCHAR) AS available_at,h.announcement_source,
+ CAST(h.source_observed_at AS VARCHAR) AS source_observed_at,h.artifact_sha256,` + strings.Join(values, ",") + `
+ FROM headers h LEFT JOIN fundamental.statement_snapshot w USING(source_record_id)
+ ORDER BY h.provider_code,h.instrument_id,h.report_period`
+	if err = copyQuery("records.jsonl", records); err != nil {
 		return err
 	}
 	if err = copyQuery("conflicts.jsonl", `SELECT provider_code AS code,CAST(report_period AS VARCHAR) AS period,reason,artifact_sha256 FROM fundamental.provider_conflicts_asof(current_timestamp) WHERE report_period BETWEEN `+start+` AND `+finish); err != nil {

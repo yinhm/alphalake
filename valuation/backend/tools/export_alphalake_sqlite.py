@@ -47,6 +47,40 @@ PARTIAL_SCOPES = {
 }
 
 
+def record_facts(stream, definitions):
+    """批量宽行的源定位只存一次；按公司消费时还原既有标准事实契约。"""
+    catalog = {}
+    for definition in definitions:
+        catalog.setdefault(definition['field'], []).append(definition)
+    for line in stream:
+        row = json.loads(line)
+        period = date.fromisoformat(row['period'])
+        for field, definitions in sorted(catalog.items()):
+            value = row.get(field)
+            if value is None:
+                continue
+            applicable = [m for m in definitions if (m['valid_from'] is None or m['valid_from']<=row['period'])
+                          and (m['valid_to'] is None or row['period']<m['valid_to'])]
+            if len(applicable)>1:
+                raise ValueError('overlapping standard export mapping: '+field)
+            if not applicable:
+                continue
+            m = applicable[0]
+            if not isinstance(value,str) or not re.fullmatch(r'FN[1-9][0-9]*',m['provider_field']):
+                raise ValueError('invalid source decimal or locator')
+            basis = m['period_basis']
+            period_type = (basis if basis in ('instant','opening_instant') else
+                           'TTM' if basis=='ttm' else 'Q'+str((period.month-1)//3+1) if basis=='quarter' else
+                           {3:'Q1',6:'H1',9:'9M',12:'FY'}[period.month])
+            yield dict(instrument_id=row['instrument_id'], code=row['code'], period=row['period'],
+                field=field, canonical_field=field, value=value, unit=m['unit'], source='tdx',
+                statement_scope='provider_default', period_type=period_type,
+                fact_id=row['source_record_id']*8192+int(m['provider_field'][2:]),
+                **{key:row[key] for key in ('source_record_id','source_filing_id','available_at','announcement_source',
+                                         'source_observed_at','artifact_sha256')},
+                financial_time_basis='current_standard_snapshot_not_pit')
+
+
 def completed_market_date(asof):
     local = asof.astimezone(timezone(timedelta(hours=8)))
     return local.date() - timedelta(days=int(local.hour < 15))
@@ -397,8 +431,9 @@ def main():
                     for line in stream:
                         zero = json.loads(line)
                         reviewed_zeros.setdefault(zero['code'], []).append(zero)
-                with (data/'facts.jsonl').open() as stream:
-                    groups = iter(itertools.groupby((json.loads(line) for line in stream), key=lambda r: r['code']))
+                definitions = [json.loads(line) for line in (data/'fields.jsonl').read_text().splitlines()]
+                with (data/'records.jsonl').open() as stream:
+                    groups = iter(itertools.groupby(record_facts(stream, definitions), key=lambda r: r['code']))
                     current = next(groups, None)
                     def fetch(code, end):
                         nonlocal current

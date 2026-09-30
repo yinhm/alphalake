@@ -11,6 +11,27 @@ from tools import export_alphalake_sqlite as exporter
 
 
 class SQLiteExportTest(unittest.TestCase):
+    def test_wide_records_restore_exact_facts_without_old_revision_or_null_fill(self):
+        row = dict(instrument_id=7,code='300866',period='2025-12-31',source_record_id=12,
+            source_filing_id=None,available_at=None,announcement_source='unknown',
+            source_observed_at='2026-09-30',artifact_sha256='hash',revenue='123.5000000000',
+            bonds_payable='0.0000000000',total_shares=None)
+        definitions = [dict(field=f,provider_field=n,unit=u,period_basis=b,valid_from='1900-01-01',valid_to=None)
+                       for f,n,u,b in (('revenue','FN230','CNY','quarter'),
+                                      ('bonds_payable','FN56','CNY','instant'),('total_shares','FN238','share','instant'))]
+        facts = list(exporter.record_facts([json.dumps(row)],definitions))
+        self.assertEqual([f['field'] for f in facts],['bonds_payable','revenue'])
+        self.assertEqual(facts[0]['value'],'0.0000000000')
+        self.assertEqual(facts[1]['value'],'123.5000000000')
+        self.assertEqual((facts[1]['fact_id'],facts[1]['period_type']),(12*8192+230,'Q4'))
+        self.assertEqual(facts[1]['financial_time_basis'],'current_standard_snapshot_not_pit')
+        self.assertIsNone(facts[1]['available_at'])
+        with self.assertRaisesRegex(ValueError,'overlapping'):
+            list(exporter.record_facts([json.dumps(row)],definitions+[definitions[0]]))
+        row['revenue']=123.5
+        with self.assertRaisesRegex(ValueError,'decimal'):
+            list(exporter.record_facts([json.dumps(row)],definitions))
+
     def test_reported_earnings_use_standard_cumulative_facts(self):
         for column, field in [('ebit', 'reported_ebit'), ('ebitda', 'reported_ebitda')]:
             facts = {}
@@ -112,7 +133,7 @@ class SQLiteExportTest(unittest.TestCase):
                 rows = Path(argv[argv.index('--output')+1])
                 rows.mkdir()
                 (rows/'reviewed_zeros.jsonl').write_text('')
-                for name in ('companies.jsonl', 'facts.jsonl', 'conflicts.jsonl'):
+                for name in ('companies.jsonl', 'records.jsonl', 'fields.jsonl', 'conflicts.jsonl'):
                     (rows/name).write_text('')
             with patch('sys.argv', argv), patch.object(exporter.subprocess, 'run', side_effect=snapshot_command), patch.object(exporter, 'export_snapshot', side_effect=ValueError('invalid unit')):
                 with self.assertRaisesRegex(ValueError, 'invalid unit'):

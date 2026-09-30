@@ -196,7 +196,7 @@ func TestFinancialAvailabilityWithoutFiling(t *testing.T) {
 	if err = ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"revenue"}, time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC), time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)); err != nil {
 		t.Fatal(err)
 	}
-	f, err := os.Open(filepath.Join(dir, "facts.jsonl"))
+	f, err := os.Open(filepath.Join(dir, "records.jsonl"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -207,7 +207,7 @@ func TestFinancialAvailabilityWithoutFiling(t *testing.T) {
 		if err = decoder.Decode(&row); err != nil {
 			t.Fatal(err)
 		}
-		if row["financial_time_basis"] != "current_standard_snapshot_not_pit" || row["value"] != "123.5000000000" {
+		if row["revenue"] != "123.5000000000" {
 			t.Fatal(row)
 		}
 	}
@@ -241,8 +241,9 @@ func TestCurrentFinancialExportDoesNotFillFromOlderRevision(t *testing.T) {
 	if err = ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"revenue"}, period, period, period.AddDate(0, 1, 0)); err != nil {
 		t.Fatal(err)
 	}
-	raw, err := os.ReadFile(filepath.Join(dir, "facts.jsonl"))
-	if err != nil || len(raw) != 0 {
+	raw, err := os.ReadFile(filepath.Join(dir, "records.jsonl"))
+	var row map[string]any
+	if err != nil || json.Unmarshal(raw, &row) != nil || row["revenue"] != nil || row["source_record_id"] != float64(2) {
 		t.Fatal("unavailable latest value silently replaced by old revision", string(raw), err)
 	}
 }

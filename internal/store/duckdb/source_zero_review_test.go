@@ -70,9 +70,10 @@ func TestReviewedSourceZeroExportAndRevocation(t *testing.T) {
 		if strings.Count(string(raw), "\n") != want {
 			t.Fatal(string(raw), want)
 		}
-		facts, e := os.ReadFile(filepath.Join(dir, "facts.jsonl"))
+		facts, e := os.ReadFile(filepath.Join(dir, "records.jsonl"))
 		check(e)
-		if len(facts) != 0 {
+		var row map[string]any
+		if json.Unmarshal(facts, &row) != nil || row["bonds_payable"] != nil {
 			t.Fatal("review leaked into standard facts", string(facts))
 		}
 	}

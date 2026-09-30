@@ -49,6 +49,8 @@ journalctl -u alphalake-sqlite-export --no-pager
 
 SQLite的`standard_facts`保存原生模型已映射目标及现金、投资、债务组成所需的标准事实、单位及独立证据，`export_cells`保存缺项和派生组成；新增TTM只存标准事实引用及系数，完整来源从`standard_facts`与审核表复用，不复制源金额/哈希。全部346字段由主库标准查询提供；不再复制整份三表、TTM和估值JSON。导出通过`export-financial-snapshot`在一次只读事务内批量投影目标列，Python逐证券写入SQLite，不逐公司/期间启动进程。
 
+内部中间文件统一为`records.jsonl`财务宽行与`fields.jsonl`映射元数据，另保留证券、冲突及审核补充文件。共享源记录ID、报告期、公告信息和归档哈希每个报告只输出一次；金额以十进制字符串输出，NULL保留NULL，零不丢弃。宽行按证券代码、身份、期间排序，Python按映射有效区间还原既有标准事实及事实ID，再交给原导出逻辑；季度/累计/余额规则不变。禁止先展开成逐字段重复血缘后进行全范围排序。新版程序与消费方须一起使用，不保留旧中间文件读取路径；最终SQLite v10及网页/API契约不变。
+
 仍提供`companies`、`financials_annual`、`financials_quarterly`供通用数据读取；这些宽表金额为**百万元人民币**、股数为**百万股**，`standard_facts`金额仍为元、股数为股，按各行单位解释。原生估值使用宽表；非年末消费新增`financials_ttm`，通过既有prepared TTM入口直通，不再要求先拆季度。转换规范见[数据接入spec](../valuation/data-contract.md)。保留源精度，不补小数。日期锚点来自指定报告期，年表以最近完整自然年为FY0，季表以指定季末为FQ0。当前财务快照不是逐季度当时留存的数据版本认证。
 
 | SQLite列 | 标准字段 | 转换 |
