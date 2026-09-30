@@ -58,7 +58,7 @@ func TestFinancialCacheOfflineStaleAndTamper(t *testing.T) {
 			t.Fatal("cache must contain regular files", file.Name())
 		}
 	}
-	old, _, e := readFinancialCache(ctx, db, root, financial.FileEntry{Filename: "gpcw20260630.zip"})
+	old, _, e := ReadFinancialCache(ctx, db, root, financial.FileEntry{Filename: "gpcw20260630.zip"})
 	if e != nil {
 		t.Fatal(e)
 	}

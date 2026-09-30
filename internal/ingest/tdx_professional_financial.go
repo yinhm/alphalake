@@ -219,7 +219,7 @@ func SyncTDXProfessionalFinancialWithOptions(
 			continue
 		}
 		if !found {
-			cachedEntry, cachedRaw, cacheErr := readFinancialCache(ctx, db, artifactRoot, entry)
+			cachedEntry, cachedRaw, cacheErr := ReadFinancialCache(ctx, db, artifactRoot, entry)
 			if cacheErr == nil && (sameFinancialEntry(cachedEntry, entry) || fallback) {
 				raw = cachedRaw
 				entry = cachedEntry

@@ -18,7 +18,7 @@ import (
 
 // The cache is plain files. Upstream MD5/size verifies the current version;
 // archived provenance in DuckDB verifies an older version used while offline.
-func readFinancialCache(ctx context.Context, db *sql.DB, root string, expected financial.FileEntry) (financial.FileEntry, []byte, error) {
+func ReadFinancialCache(ctx context.Context, db *sql.DB, root string, expected financial.FileEntry) (financial.FileEntry, []byte, error) {
 	filename := expected.Filename
 	if filepath.Base(filename) != filename {
 		return financial.FileEntry{}, nil, fmt.Errorf("invalid cache filename")
@@ -32,6 +32,9 @@ func readFinancialCache(ctx context.Context, db *sql.DB, root string, expected f
 	entry.Size = int64(len(raw))
 	if sameFinancialEntry(entry, expected) {
 		return entry, raw, nil
+	}
+	if db == nil {
+		return entry, nil, fmt.Errorf("cache checksum/size mismatch: %s", filename)
 	}
 	var known bool
 	err = db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM meta.artifact WHERE source='tdx' AND dataset=? AND source_locator=? AND sha256=? AND content_length=?)`, tdxProfessionalFinancialDataset, "tdxfin/"+filename, fmt.Sprintf("%x", sha256.Sum256(raw)), entry.Size).Scan(&known)
