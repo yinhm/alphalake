@@ -1,6 +1,6 @@
 # 数据更新、验收与网页发布
 
-本页是日常操作契约；当前分母、版本及缺口统一见[项目状态](../implementation-status.md)，旧性能、故障及发布记录见[历史验收](../history/system-delivery-20260927.md)。网页保留原流程，SQLite为可重建快照，不能把显式政策CLI成功当成网页已发布。
+当前仍处研发阶段，手工执行刷新与验收，不安装定时任务、不扩建生产部署。本页是数据操作契约；当前分母、版本及缺口统一见[项目状态](../implementation-status.md)，旧性能、故障及发布记录见[历史验收](../history/system-delivery-20260927.md)。网页保留原流程，SQLite为可重建快照，不能把显式政策CLI成功当成网页已发布。
 
 ## 原生网页交付入口
 
@@ -46,6 +46,31 @@ journalctl -u alphalake-native-publish --no-pager
 在线模式另需`--filings-start`和可选`--filings-end`，默认结束日为中国当日；行情使用`sync-valuation-quotes`，只追加估值信息截止时最近已完成收盘日前14个自然日至该日的观测，价格时点与财报和股本基期独立，不更新完整日线及检查点；身份来自已有审核快照并逐日期核对，不按证券代码前缀猜市场。见[窗口同步](valuation-quote-window.md)。首次建立新范围先用local模式验证导出与身份；公告目录用于补充证据，不是当前TDX数值的准入前置；不会自动审核源零或解决真实数值冲突。
 
 可选`--sync-references`同步既有六类参考及23份原生US/Global行业与国家税率工作簿，offline模式重放已注册归档。原生参考随SQLite v10发布，会话绑定参考内容版本；实际网页与候选结果不同会拒绝发布。全局没有安装定时器，也不新增常驻任务平台。
+
+### 新鲜度与经济审阅收据
+
+每次成功交付的运行目录新增`freshness.json`，由实际候选SQLite读取，不从命令成功推断最新性：逐证券列报价日期、相对窗口末日的自然日年龄、取得运行日期及股本基期；财务单列本轮是否核对上游清单、是否使用历史缓存；参考列来源版本、SHA-256、可用日、首次取得日及观察日期。未知日期不借查询截止填充。报价仍使用既有14自然日契约；参考年龄仅报告，未设统一自动过期阈值，未运行参考同步不称本次已检查上游。固定旧`--as-of`重放描述原截止，不能当作今日新鲜度。
+
+发布验收现在固定复用`check_native_sqlite --review-methodology`：保存每家原输入与结果的重放、五项方法审阅及聚合发现。现有默认假设、经营范围、终值衔接和代理待审均明确保留；发现不自动改参数、批准经济合理性或新增准入限制。拒绝公司仍在分母中。结果相同但审阅证据新增，应区分证据变化和估值变化。
+
+### 按类别核对财务源缺口
+
+先取得现行`tools.audit_native_coverage`盘点；历史盘点可用于提出待核对的单元格，但不冒称本轮重新盘点全范围。`tools.audit_data_gaps`复用导出字段、债务/投资组成与累计TTM契约，一次调用Go源审核工具，按期间批量回读缓存，不逐公司启动进程、不创建PDF数值主源：
+
+```bash
+go build -o /tmp/alphalake-tdx-cache-audit ./cmd/tdx-cache-audit
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_data_gaps \
+  --coverage workspace/derived/cumulative-ttm/coverage.json \
+  --cache workspace/tdx-cache --source-database workspace/alphalake.duckdb \
+  --source-auditor /tmp/alphalake-tdx-cache-audit \
+  --output workspace/derived/gap-followup/source-gaps.json
+```
+
+构建及审核同样放在上述独立服务中，输出须为新文件。源码解析和缓存校验复用现有实现及完整目录：匹配本地清单MD5/大小，或显式通过主库已有SHA-256/大小收据核验历史版本；两种结果分别标记，损坏文件拒绝。清单不一致不直接判损坏，也不能冒称当前上游版本。输出保留源零、非零、缺位置、无效值及全部重复行；源码编号仅在独立源证据中保留。
+
+TTM核对的是所需分量，不是“待新增标准值”计数：已具备分量也会命中。缓存里无对应代码只证明该版本没有记录，不证明上游永远无数据；源非零还需核对标准映射、身份及组成缺口；源零不自动代表披露真零。分类无精确参考、来源冲突和其他关联歧义分别统计，不按同业多数或上市市场自动填写行业/国家。
+
+证券范围盘点复用源身份类型：深交所03权证/期权、07申购、08优先权代码段不属于公司普通股，依据[深交所证券代码区间表（2024年12月修订）](https://www.szse.cn/marketServices/technicalservice/doc/P020241212550140892927.pdf)从股票类型识别中排除。原始标识、名字和来源记录仍保存为待定产品类型；不当作公司缺财报、不纳入公司估值分母，也不按名字逐个特判。更新类型使用既有`sync-instruments`及实际TDX主数据，不另建公司覆盖表。
 
 ## 只读参考关联审核
 

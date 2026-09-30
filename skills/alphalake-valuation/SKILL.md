@@ -48,6 +48,8 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 必要时读取`valuation.evidence.run_file`或候选对应运行文件中的`request`、`audit`和`report`，按`run_id`追溯。先读摘要，按问题展开证据，避免把整个财务快照或全部历史运行塞入上下文。文件缺失如实报告，不根据文档数字伪造运行。
 
+解释原生网页发布数据时，可读`workspace/derived/valuation.sqlite.delivery.json`所指运行中的`freshness.json`及`methodology`摘要：分别报告报价日、股本基期、财务缓存/上游核验状态与参考版本日期。固定旧截止的重放不代表今日最新；方法审阅不自动批准默认假设，发现数不等于数据缺项数。当前研发阶段保留手工刷新，不因估值请求安装定时任务。
+
 回答通常给一张简短结果表，加关键假设/阻断和运行引用。不得把条件估值称为当前目标价；`share_date=null`不等于股本日期就是财报期。区分主库与审核隔离库：另一库拥有专项附注，不证明当前库已补齐。
 
 ## 发现历史运行

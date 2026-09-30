@@ -96,6 +96,7 @@ def test_cycle_publishes_replays_without_export_and_keeps_last_snapshot_on_sourc
     calls = []
     monkeypatch.setattr(delivery, 'runtime_identity', lambda _: {'engine':'fixed'})
     monkeypatch.setattr(delivery, 'verify_web', lambda *a, **kw: ['checked'])
+    monkeypatch.setattr(delivery, 'freshness_report', lambda *a: {'contract':'test-only'})
     def execute(command, log, timeout):
         calls.append(log.stem)
         log.write_text('test boundary\n')
@@ -110,7 +111,8 @@ def test_cycle_publishes_replays_without_export_and_keeps_last_snapshot_on_sourc
         elif log.stem.startswith('check-'):
             assert Path(command[command.index('--database')+1]).exists()
             output = Path(command[command.index('--output')+1]); output.mkdir()
-            delivery.save(output/'summary.json', dict(companies=1, admission={'ready':1}, risk_free_rate=float(command[command.index('--risk-free-rate')+1]),
+            assert '--review-methodology' in command
+            delivery.save(output/'summary.json', dict(companies=1, admission={'ready':1}, methodology={'economic_approval':'not_inferred'}, risk_free_rate=float(command[command.index('--risk-free-rate')+1]),
                 results=[dict(ticker='SZSE:300866', admission='ready', http_status=200, final={'value_per_share':42})]))
         return 0
     monkeypatch.setattr(delivery, 'execute', execute)
@@ -177,6 +179,28 @@ def test_comparison_distinguishes_evidence_refresh_from_new_value():
     before = {'results':[{'ticker':'SZSE:300866','final':{'value_per_share':42},'diagnostic_sha256':'old'}]}
     after = {'results':[{'ticker':'SZSE:300866','final':{'value_per_share':42},'diagnostic_sha256':'new'}]}
     assert delivery.compare_checks(before, after)[0]['changed_fields'] == ['diagnostic_sha256']
+
+
+def test_freshness_keeps_quote_and_reference_dates_separate(tmp_path):
+    path = tmp_path/'freshness.sqlite'
+    with sqlite3.connect(path) as conn:
+        conn.executescript('CREATE TABLE export_cells(ticker,series,field,status,evidence_json); CREATE TABLE reference_release(release_id,dataset,source_version,available_at,first_seen_at,sha256); CREATE TABLE reference_value(release_id,observation_date);')
+        evidence = dict(share_period='2026-06-30', quote=dict(trade_date='2026-09-29',acquisition_started_at='2026-09-29T08:00:00Z',run_finished_at='2026-09-29T08:01:00Z'))
+        conn.execute('INSERT INTO export_cells VALUES(?,?,?,?,?)',('SZSE:300866','company','mv_equity_listing','reported_share_price_proxy',json.dumps(evidence)))
+        conn.execute('INSERT INTO reference_release VALUES(1,?,?,?,?,?)',('beta','2026','2026-09-01T00:00:00Z','2026-08-31T00:00:00Z','hash'))
+        conn.execute("INSERT INTO reference_value VALUES(1,'2026-01-05')")
+    result = delivery.freshness_report(path,'2026-09-30T10:00:00Z')
+    assert result['financial']['status']=='not_checked_this_run'
+    assert result['quotes'][0]['recency']=='earlier_within_contract'
+    assert result['quotes'][0]['calendar_age_days']==1
+    assert result['references']['releases'][0]['observation_dates']==['2026-01-05']
+    assert result['references']['releases'][0]['first_seen_at']=='2026-08-31T00:00:00Z'
+    assert not result['references']['refresh_requested']
+    with sqlite3.connect(path) as conn:
+        evidence['quote']['trade_date']='2026-09-01'
+        conn.execute('UPDATE export_cells SET evidence_json=?',(json.dumps(evidence),))
+    with pytest.raises(ValueError,match='14-day'):
+        delivery.freshness_report(path,'2026-09-30T10:00:00Z')
 
 
 @pytest.mark.parametrize('filing_exit', [0, 1, 124])

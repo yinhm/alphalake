@@ -85,6 +85,39 @@ def validate_check(summary, expected):
             raise ValueError('unexpected native rejection: '+row['ticker'])
 
 
+def freshness_report(path, asof, financial_source=None, sync_references=False):
+    """按发布实际证据报告日期；年龄不冒充来源过期政策，不修改准入。"""
+    cutoff = datetime.fromisoformat(asof)
+    quote_end = completed_market_date(cutoff)
+    quotes, releases = [], []
+    with sqlite3.connect(path.resolve().as_uri()+'?mode=ro', uri=True) as conn:
+        for ticker, status, raw in conn.execute("SELECT ticker,status,evidence_json FROM export_cells WHERE series='company' AND field='mv_equity_listing' ORDER BY ticker"):
+            evidence = json.loads(raw)
+            quote = evidence.get('quote')
+            day = date.fromisoformat(quote['trade_date']) if quote else None
+            age = (quote_end-day).days if day else None
+            if age is not None and not 0 <= age <= 14:
+                raise ValueError('quote outside existing 14-day contract: '+ticker)
+            quotes.append(dict(ticker=ticker, status=status, trade_date=day.isoformat() if day else None,
+                calendar_age_days=age, recency='missing' if day is None else 'window_end' if age==0 else 'earlier_within_contract',
+                acquisition_started_at=quote.get('acquisition_started_at') if quote else None,
+                run_finished_at=quote.get('run_finished_at') if quote else None,
+                share_period=evidence['share_period']))
+        for release, dataset, version, available, first_seen, sha in conn.execute('SELECT release_id,dataset,source_version,available_at,first_seen_at,sha256 FROM reference_release ORDER BY release_id'):
+            dates = [r[0] for r in conn.execute('SELECT DISTINCT observation_date FROM reference_value WHERE release_id=? ORDER BY observation_date',(release,))]
+            releases.append(dict(release_id=release, dataset=dataset, source_version=version, sha256=sha,
+                available_at=available, first_seen_at=first_seen, observation_dates=dates,
+                observation_calendar_ages_days=[(cutoff.date()-date.fromisoformat(d)).days for d in dates]))
+    return dict(contract='alphalake-delivery-freshness-v1', information_as_of=asof,
+        quote_window_end=quote_end.isoformat(), quote_window_calendar_days=14, companies=len(quotes), quotes=quotes,
+        financial=dict(status='not_checked_this_run' if financial_source is None else
+            'local_or_fallback_not_upstream_verified' if financial_source.get('offline') or financial_source['cache_fallbacks'] else
+            'selected_packages_manifest_checked', selected_packages=financial_source.get('selected_packages') if financial_source else None),
+        references=dict(refresh_requested=sync_references, releases=releases,
+            boundary='取得日、可用日和观察日分别保留；未定义自动过期阈值，查询截止不证明本次上游更新。'),
+        boundary='报价沿用既有14自然日窗口；较早收盘不推断停牌或退市；金融、参考、行情分别报告，不自动认证经济合理性。')
+
+
 def compare_checks(before, after):
     old = {r['ticker']:r for r in before['results']} if before else {}
     return [dict(ticker=r['ticker'], changed_fields=[k for k,v in r.items() if old.get(r['ticker'], {}).get(k) != v], before=old.get(r['ticker']), after=r)
@@ -290,6 +323,7 @@ def run(args, root):
         ledger['candidate'] = current
         ledger['previous'] = previous
         reuse = (previous_receipt is not None
+                 and 'methodology' in previous_receipt['check']
                  and previous_receipt['content_sha256'] == current['content_sha256']
                  and previous_receipt['runtime_identity'] == identity
                  and previous_receipt['risk_free_rate'] == args.risk_free_rate)
@@ -298,18 +332,21 @@ def run(args, root):
             ledger['calculation_reused'] = True
         else:
             stage('check-candidate', [sys.executable, '-m', 'tools.check_native_sqlite', '--database', str(args.output if export_reused else candidate),
-                  '--output', str(root/'candidate-check'), '--risk-free-rate', str(args.risk_free_rate)])
+                  '--output', str(root/'candidate-check'), '--risk-free-rate', str(args.risk_free_rate), '--review-methodology'])
             checked = json.loads((root/'candidate-check/summary.json').read_text())
         validate_check(checked, current['tickers'])
         before = None
         if previous:
-            if previous_receipt and previous_receipt['published_sha256'] == previous['sha256'] and previous_receipt['runtime_identity'] == identity and previous_receipt['risk_free_rate'] == args.risk_free_rate:
+            if previous_receipt and 'methodology' in previous_receipt['check'] and previous_receipt['published_sha256'] == previous['sha256'] and previous_receipt['runtime_identity'] == identity and previous_receipt['risk_free_rate'] == args.risk_free_rate:
                 before = previous_receipt['check']
             else:
                 stage('check-previous', [sys.executable, '-m', 'tools.check_native_sqlite', '--database', str(args.output),
-                    '--output', str(root/'previous-check'), '--risk-free-rate', str(args.risk_free_rate)])
+                    '--output', str(root/'previous-check'), '--risk-free-rate', str(args.risk_free_rate), '--review-methodology'])
                 before = json.loads((root/'previous-check/summary.json').read_text())
             validate_check(before, previous['tickers'])
+        ledger['source_freshness'] = freshness_report(args.output if export_reused else candidate, asof,
+            ledger.get('financial_source'), args.sync_references)
+        save(root/'freshness.json', ledger['source_freshness'])
         save(root/'comparison.json', dict(changed_companies=compare_checks(before, checked),
             removed_tickers=sorted(set(previous['tickers'])-set(current['tickers'])) if previous else [],
             changed_tables=[k for k,v in current['tables'].items() if not previous or previous['tables'].get(k)!=v]))
@@ -328,6 +365,7 @@ def run(args, root):
             ledger['publication'] = publish(candidate, args.output, journal, lambda: verify_web(args.web_url, checked))
             ledger['status'] = 'published'
         ledger['admission'] = checked['admission']
+        ledger['methodology'] = checked['methodology']
         ledger['published_sha256'] = digest(args.output)
         save(receipt, dict(published_sha256=ledger['published_sha256'], content_sha256=current['content_sha256'],
             runtime_identity=identity, request_identity=request_identity, risk_free_rate=args.risk_free_rate, check=checked, report=str(root/'run.json')))
