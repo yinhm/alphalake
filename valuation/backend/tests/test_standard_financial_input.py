@@ -38,6 +38,7 @@ def test_standard_ebit_is_not_replaced_by_sample_policy(sample, ticker):
     sample.execute("UPDATE financials_annual SET ticker=?", (ticker,))
     sample.execute("UPDATE financials_quarterly SET ticker=?", (ticker,))
     sample.execute("UPDATE financials_ttm SET ticker=?", (ticker,))
+    sample.execute("UPDATE standard_facts SET ticker=?", (ticker,))
     sample.execute("UPDATE export_cells SET ticker=?", (ticker,))
     raw = db.fetch_company(sample, ticker)
     assert raw['financials_annual'][0]['ebit'] == 440

@@ -26,7 +26,7 @@ AlphaLake负责单位、期间、身份、范围、缺项及确定性转换；va
 
 ## SQLite和引擎输入
 
-当前AlphaLake快照契约为`alphalake-sqlite-v10`，新增每公司一行`financials_ttm`；`export_cells.series=ttm`保存各目标单元格的组成、系数、缺项及审核状态。原`financials_annual`、`financials_quarterly`保留真实历史，季表仍按累计差分产生，缺前季时保持NULL，不能伪造季度。`standard_facts`及原始ZIP仍是来源证据，TTM不回写成披露事实。
+当前AlphaLake快照契约为`alphalake-sqlite-v10`，新增每公司一行`financials_ttm`；`export_cells.series=ttm`只保存组成字段/期间引用、系数、缺项及审核状态，元数据`ttm_evidence_format=standard_fact_refs`；读取时从已有`standard_facts`/审核表解析来源，不再重复持久化金额、源包哈希或逐字段血缘。原`financials_annual`、`financials_quarterly`保留真实历史，季表仍按累计差分产生，缺前季时保持NULL，不能伪造季度。`standard_facts`及原始ZIP仍是来源证据，TTM不回写成披露事实。
 
 非年末原生后端将TTM行组装为**已有**`CompanyValuationInput.prepared_ttm`；期间为上一年同月末次日至当前报告期末，且明确币种、单位、信息截止和来源。`quarterly_financials=[]`、`quarters_since_10k=0`表示不再请求引擎季度轮转，**不表示财年后实际经过零个季度**。实际累计窗口及三个组成保存在`prepared_ttm.provenance`，真实季度展示数据单独留在`quarterly_display`证据中，不参与第二次计算；历史季表仍可从公司数据接口查询。prepared财务行的`fiscal_year`保留原入口FY0索引，TTM的真实起止以`period_start/period_end`为准，不从该索引推断披露年度。年末仍消费原年度路径，避免将完整财年误标为旋转TTM及改变匹配期初资本诊断。
 

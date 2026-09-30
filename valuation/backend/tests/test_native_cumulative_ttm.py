@@ -85,6 +85,8 @@ def snapshot(monkeypatch):
 def test_complete_quarter_equivalence_and_missing_q1_still_values(snapshot):
     facts,build=snapshot
     with build(facts) as conn:
+        refs = json.loads(conn.execute("SELECT evidence_json FROM export_cells WHERE series='ttm' AND field='ebit'").fetchone()[0])
+        assert all(set(r) == {'field','period','coefficient'} for r in refs)
         record=db.fetch_company(conn,'SZSE:300866')
         assert db.native_compatibility(conn,'SZSE:300866')['status']=='ready'
         inputs,_=_db_record_to_company_input(record,.04,None)
@@ -108,6 +110,9 @@ def test_complete_quarter_equivalence_and_missing_q1_still_values(snapshot):
         recent=review_report(body)['model_input_recent_window']
         assert recent['quarters']==2 and recent['revenue_growth']==.25
         assert json.loads(inputs.prepared_ttm.provenance['components'])['revenues'][1]['period']=='2026-06-30'
+        conn.execute("DELETE FROM standard_facts WHERE period='2025-06-30' AND field='reported_ebit'")
+        with pytest.raises(ValueError, match='Missing TTM component evidence'):
+            db.fetch_company(conn,'SZSE:300866')
     without_q1=[r for r in facts if r['period'] not in ('2025-03-31','2026-03-31')]
     with build(without_q1) as conn:
         assert db.native_compatibility(conn,'SZSE:300866')['status']=='ready'

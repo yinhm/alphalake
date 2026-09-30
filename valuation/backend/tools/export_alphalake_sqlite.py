@@ -143,6 +143,13 @@ def cell(facts, conflicts, instrument, end, column, annual, reviewed_zeros=None,
 
 
 
+def ttm_references(evidence):
+    """TTM只新增组成引用；源金额和完整血缘复用standard_facts。"""
+    return [{k: v for k, v in part.items() if k in
+             ('field', 'period', 'coefficient', 'kind', 'import_sha256')}
+            if 'field' in part else part for part in evidence]
+
+
 def annual_effective_tax_rate(facts, conflicts, instrument, end):
     """最近完整年度的会计有效税率；不冒充现金税率、边际税率或正常化预测。"""
     evidence = {'basis': 'annual_income_tax_expense_divided_by_profit_before_tax', 'period': end.isoformat(), 'components': []}
@@ -181,6 +188,7 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
     connection.execute('CREATE TABLE financials_ttm(ticker TEXT PRIMARY KEY REFERENCES companies(ticker),'
                        + ','.join(name+' REAL' for name in ttm_columns[1:])+')')
     connection.execute('INSERT INTO metadata VALUES(?,?)', ('contract', CONTRACT))
+    connection.execute('INSERT INTO metadata VALUES(?,?)', ('ttm_evidence_format', 'standard_fact_refs'))
     base = date(period.year if period.month == 12 else period.year - 1, 12, 31)
     annual_ends = [date(base.year-i, 12, 31) for i in range(years)]
     quarter_ends = [quarter(period, i) for i in range(quarters)]
@@ -318,7 +326,7 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
             values[column] = value
             connection.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
                 (ticker, 'ttm', period.isoformat(), 0, column, status,
-                 json.dumps(evidence, ensure_ascii=False, sort_keys=True)))
+                 json.dumps(ttm_references(evidence), ensure_ascii=False, sort_keys=True)))
         target._executemany_from_dicts(connection, 'financials_ttm', ttm_columns, [values])
         count += 1
     return count

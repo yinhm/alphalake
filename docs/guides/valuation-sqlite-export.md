@@ -46,7 +46,7 @@ journalctl -u alphalake-sqlite-export --no-pager
 
 链路：TDX原始包→已有标准语义/校验→DuckDB标准宽表→SQLite→网页→共享估值引擎。CNINFO补充公告身份、时点与核验血缘，不作为当前金额准入前提；PDF不覆盖TDX，参考数据和模型假设不混入标准财务事实。
 
-SQLite的`standard_facts`保存原生模型已映射目标及现金、投资、债务组成所需的标准事实、单位及独立证据，`export_cells`逐单元格保存缺项和差分血缘。全部346字段由主库标准查询提供；不再复制整份三表、TTM和估值JSON。导出通过`export-financial-snapshot`在一次只读事务内批量投影目标列，Python逐证券写入SQLite，不逐公司/期间启动进程。
+SQLite的`standard_facts`保存原生模型已映射目标及现金、投资、债务组成所需的标准事实、单位及独立证据，`export_cells`保存缺项和派生组成；新增TTM只存标准事实引用及系数，完整来源从`standard_facts`与审核表复用，不复制源金额/哈希。全部346字段由主库标准查询提供；不再复制整份三表、TTM和估值JSON。导出通过`export-financial-snapshot`在一次只读事务内批量投影目标列，Python逐证券写入SQLite，不逐公司/期间启动进程。
 
 仍提供`companies`、`financials_annual`、`financials_quarterly`供通用数据读取；这些宽表金额为**百万元人民币**、股数为**百万股**，`standard_facts`金额仍为元、股数为股，按各行单位解释。原生估值使用宽表；非年末消费新增`financials_ttm`，通过既有prepared TTM入口直通，不再要求先拆季度。转换规范见[数据接入spec](../valuation/data-contract.md)。保留源精度，不补小数。日期锚点来自指定报告期，年表以最近完整自然年为FY0，季表以指定季末为FQ0。当前财务快照不是逐季度当时留存的数据版本认证。
 

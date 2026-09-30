@@ -290,6 +290,8 @@ def snapshot_metadata(conn: sqlite3.Connection) -> dict | None:
         raise ValueError('Unsupported AlphaLake SQLite contract; rebuild the snapshot with the current exporter')
     if not {'standard_facts', 'export_cells', 'export_universe', 'reviewed_source_zeros', 'financials_ttm'} <= tables:
         raise ValueError('Incomplete AlphaLake SQLite snapshot')
+    if metadata.get('ttm_evidence_format') != 'standard_fact_refs':
+        raise ValueError('Invalid TTM evidence contract; rebuild the snapshot')
     return metadata
 
 
@@ -331,6 +333,19 @@ def fetch_company(conn: sqlite3.Connection, ticker: str) -> dict | None:
         result['financials_ttm'] = dict(ttm)
         result['ttm_evidence'] = {r['field']: json.loads(r['evidence_json']) for r in conn.execute(
             "SELECT field,evidence_json FROM export_cells WHERE ticker=? AND series='ttm' AND period_offset=0", (ticker,))}
+        periods = sorted({p['period'] for parts in result['ttm_evidence'].values() for p in parts if 'period' in p})
+        facts = {(r['period'], r['field']): json.loads(r['evidence_json']) for r in conn.execute(
+            'SELECT period,field,evidence_json FROM standard_facts WHERE ticker=? AND period IN ('
+            + ','.join('?' for _ in periods) + ')', (ticker, *periods))}
+        for parts in result['ttm_evidence'].values():
+            for part in parts:
+                if 'field' not in part or part.get('kind') in ('missing_standard_fact', 'reviewed_source_zero'):
+                    continue
+                fact = facts.get((part['period'], part['field']))
+                if fact is None:
+                    raise ValueError('Missing TTM component evidence; rebuild the snapshot')
+                part.update({key: fact.get(key) for key in ('value', 'unit', 'fact_id', 'available_at',
+                    'artifact_sha256', 'announcement_source', 'financial_time_basis')})
         result['standard_financials'] = [dict(r) for r in conn.execute(
             'SELECT period,field,value,unit,period_type,statement_scope FROM standard_facts WHERE ticker=? ORDER BY period,field', (ticker,))]
     return result
