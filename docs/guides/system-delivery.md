@@ -58,6 +58,24 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_reference_coverage 
 
 输出保存在`workspace/derived/reference-association/`。旧盘点可复用证券分母与参考关系，但必须逐条通过现行来源版本、SHA-256、代码及定位校验；不能复用其旧财务准入数量。官方表缺精确证券条目时，重同步不能生成发行人关联；另一股类条目须另有同发行人证据，行业或国家代理须作为显式政策审核。原生国家参考范围不足与公司国家条目缺失分别处理。
 
+### 同发行人参考的显式输入
+
+`tools.verify_issuer_reference`复验人工审核的A/H同发行人关联。交付单位是通用规则：官方三张名单一致、原行定位及哈希有效；CNINFO目录公告对应目标证券；正文同一公司信息/股票简况明确列出中英文法人全称、股类代码及交易所。英文全称只忽略大小写和空白，不做模糊匹配。集团、母子公司关系不接受；已有精确沪深源条目不能覆盖。原名单仍为5,100条，不把H股原行改写成官方A股记录，不新增H股行情同步。
+
+```bash
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.verify_issuer_reference \
+  --manifest workspace/derived/issuer-reference/reviews.json \
+  --workbook workspace/damodaran/indname-a1f4d70aa2cf.xls \
+  --coverage workspace/derived/financial-availability/coverage.json \
+  --workspace workspace > workspace/derived/issuer-reference/inputs.json
+```
+
+在独立限额服务中执行。审核清单声明`same_legal_issuer_different_share_class`，包含审核者、时间、说明及五类页码/原文锚点；程序检查证据是否仍成立，**不代替人工判断法人关系**。`publish`记录更新或撤销均以`supersedes`绑定上一事件内容哈希，`revoke`移出活动输出，恢复须接上撤销事件；不删除旧审核。输出锁定工作簿、完整证券盘点及审核清单内容，逐项保留原证券代码、原行和正文出处。
+
+活动项的`request`直接适配既有`POST /api/valuation/from-database`：只包含`ticker`、`industry_override`、`country_override`，不额外设置增长、利润率、资本倍率或WACC。调用方须保留输入文件及返回会话关联的收据；原会话仍按现有机制将覆盖标为显式参考假设，不伪称默认分类事实。撤销影响重新生成的输入，不追改已有冻结会话，也不自动撤销调用方已经复制的请求。
+
+此阶段没有写入主库默认关联或发布网页新快照。人工核验关联数量、显式参考可消费、默认参考齐备及估值成功分别统计；缺行情/财务继续保留。行业标签沿用官方来源不等于已认证经济适用，尤其不要为更符合直觉而改写来源行业。后续若要自动替换默认选择或扩展引擎输入契约，先按`valuation/TODO.md`审批。
+
 ## 失败与重放
 
 - 所有阶段串行；同步下载/主数据失败、物化/导出/验收失败均返回非零，保留日志，不继续发布。财务源仅因待解析记录返回非零时，必须通过结构化完整收据证明没有下载/主数据错误、选中包的待解析项在报告期能唯一解析标准证券身份、与导出目标身份不相交，才允许继续；来源仍标记partial，受影响包不推进检查点。主库各来源已提交的有效事务保留，不把整轮失败误解释为主库从未更新。
