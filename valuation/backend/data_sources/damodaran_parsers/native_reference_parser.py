@@ -27,7 +27,7 @@ FIELDS = {
     'countrytaxrates': [('corporate_marginal_tax_rate', 'Corporate Tax Rate', 0)],
 }
 US_NAMES = {'betas': 'beta', 'pedata': 'pe', 'pbvdata': 'pbv', 'psdata': 'ps'}
-COUNTRIES = {'China': 'CN', 'China, Hong Kong Special Administrative Region': 'HK', 'United States of America': 'US'}
+COUNTRIES = {'China': 'CN', 'China, Hong Kong Special Administrative Region': 'HK', 'United States of America': 'US', 'Israel': 'IL'}
 
 
 def snapshot(path):
@@ -98,9 +98,9 @@ def snapshot(path):
                 observations.append(dict(subject=COUNTRIES[name] if tax else name, metric_code=metric,
                     source_locator=f'{ws.name}!{xlrd.formula.colname(col)}{r+1}', raw_value=str(raw), raw_unit=unit,
                     sample_count=None if tax else int(sample), value=value, value_status='reported' if number else 'missing'))
-        if len(seen) != (3 if tax else 94):
+        if len(seen) != (len(COUNTRIES) if tax else 94):
             raise ValueError(f'incomplete reference scope: {stem}: {len(seen)}')
-        return dict(contract='alphalake-native-reference-source-v1', parser_version='damodaran-native-reference-v2',
+        return dict(contract='alphalake-native-reference-source-v1', parser_version='damodaran-native-reference-v3',
             observation_date=xlrd.xldate_as_datetime(ws.cell_value(0, 1), wb.datemode).date().isoformat(),
             sha256=hashlib.sha256(path.read_bytes()).hexdigest(), runtime=f'python={platform.python_version()};xlrd={xlrd.__version__}',
             unlevering_tax_rate=unlevering_tax_rate, file_stem=stem, sample_region='' if tax else region, observations=observations)

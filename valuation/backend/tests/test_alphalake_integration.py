@@ -1383,7 +1383,7 @@ def test_first_year_calibration_standard_chain(exports,tmp_path,monkeypatch,code
     assert len(list(tmp_path.glob('*.json')))==2
 
 
-def test_reviewed_asset_standard_chain(exports, tmp_path, monkeypatch):
+def test_reviewed_asset_standard_chain(exports, reference_export, tmp_path, monkeypatch):
     """真实TDX→标准→已归档附注→统一入口；不将账面代理当公允价值。"""
     import gzip
     import hashlib
@@ -1393,6 +1393,9 @@ def test_reviewed_asset_standard_chain(exports, tmp_path, monkeypatch):
     from pypdf import PdfReader
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path))
     original = json.loads(gzip.decompress((REPO/'valuation/research/current-contract-20260919/method-closure-20260912/300866-request.json.gz').read_bytes()))
+    # 冻结输入不改写；当前回归显式用真实发布夹具重建参考，不保留旧数据集运行兼容。
+    original['wacc_binding']['references'] = copy.deepcopy(reference_export)
+    original['wacc_binding']['references']['information_as_of'] = original['data']['information_as_of']
     frozen = evaluate(AlphaLakeRequest.model_validate(original))
     original['policy']['wacc'] = frozen['report']['cost_of_capital']['wacc']
     original['wacc_binding'] = None

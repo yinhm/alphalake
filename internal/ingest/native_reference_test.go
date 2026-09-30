@@ -45,6 +45,9 @@ func TestNativeReferenceLocalPublication(t *testing.T) {
 	if err = db.QueryRow(`SELECT CAST(value AS VARCHAR) FROM reference.country_tax WHERE subject_code='CN'`).Scan(&v); err != nil || v != "0.250000000000" {
 		t.Fatal(v, err)
 	}
+	if err = db.QueryRow(`SELECT CAST(value AS VARCHAR) FROM reference.country_tax WHERE subject_code='IL'`).Scan(&v); err != nil || v != "0.230000000000" {
+		t.Fatal(v, err)
+	}
 	if err = db.QueryRow(`SELECT count(*) FROM reference.country_tax WHERE subject_code='US' AND value IS NULL AND value_status='ambiguous' AND source_locator='Sheet1!B217;Sheet1!B246'`).Scan(&n); err != nil || n != 1 {
 		t.Fatal(n, err)
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 func TestSelectedCountryContract(t *testing.T) {
-	body, err := os.ReadFile("testdata/expected.json")
+	body, err := os.ReadFile("testdata/expected-selected-v2.json")
 	if err != nil {
 		t.Fatal(err)
 	}

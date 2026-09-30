@@ -7,7 +7,7 @@ from .damodaran_store import DamodaranStore
 from .industry_mapper import IndustryMapper, CompanyInfo
 
 CONTRACT = 'alphalake-native-references-v1'
-COUNTRIES = {'CN': 'China', 'HK': 'Hong Kong', 'US': 'United States'}
+COUNTRIES = {'CN': 'China', 'HK': 'Hong Kong', 'US': 'United States', 'IL': 'Israel'}
 METRICS = {
  'pretax_lease_research_adjusted_operating_margin': 'pretax_lease_rd_adj_margin',
  'aftertax_lease_research_adjusted_operating_margin': 'aftertax_lease_rd_adj_margin',
@@ -62,7 +62,7 @@ def write_snapshot(connection, packet):
         connection.execute('INSERT INTO reference_company VALUES(?,?,?,?,?,?,?,?,?,?)', (
             r['release_id'],co['ticker'],co['name'],co['industry'],co['country'],co['sector'],str(co['sic_code']),co['broad_group'],co['sub_group'],r['source_locator']))
     header = dict(contract=CONTRACT, information_as_of=packet['information_as_of'], model_reference_hashes=policy_hashes(),
-        country_scope=['CN','HK','US'], industry_regions=['US','Global'])
+        country_scope=sorted({r['subject_code'] for r in packet['country_tax']}), industry_regions=['US','Global'])
     connection.executemany('INSERT INTO metadata VALUES(?,?)', [
         ('reference_header',json.dumps(header,sort_keys=True)),('reference_snapshot_id',snapshot_hash(connection,header))])
     load_snapshot(connection)  # refuse incomplete snapshots before publication
@@ -108,7 +108,13 @@ def load_snapshot(connection):
                 raise ValueError('missing industry reference metrics: '+name)
             if any(values[f] is None for f in ('beta_u','beta_u_corrected_for_cash','cost_of_debt_pretax')):
                 raise ValueError('missing required native WACC reference: '+name)
-    for name in COUNTRIES.values():
+    scope = header['country_scope']
+    if len(scope) != len(set(scope)) or not {'CN','HK','US'} <= set(scope) <= set(COUNTRIES):
+        raise ValueError('invalid native country reference scope')
+    risk_countries = set(store._country_risk)-{'__mature_market_erp__'}
+    if risk_countries != set(store._country_tax) or risk_countries != {COUNTRIES[c] for c in scope}:
+        raise ValueError('country ERP/tax scope mismatch')
+    for name in (COUNTRIES[c] for c in scope):
         risk=store._country_risk.get(name,{})
         if any(risk.get(f) is None for f in ('total_equity_risk_premium','country_risk_premium','default_spread')) or name not in store._country_tax:
             raise ValueError('missing country ERP/tax reference: '+name)
@@ -120,7 +126,7 @@ def load_snapshot(connection):
     store.industry_mapper=mapper
     store._industry_stats=json.loads((Path(__file__).parent/'industry_stats.json').read_text())['industries']
     store.industries_loaded={r:len(store.list_industries(r)) for r in ('US','Global')}
-    store.countries_loaded=3
+    store.countries_loaded=len(scope)
     return store
 
 

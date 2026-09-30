@@ -80,7 +80,7 @@ def _cell_str(ws, row: int, col: int | None) -> str | None:
 
 
 def alphalake_country_snapshot(file_path: str | Path) -> dict:
-    """严格的首批 CN/HK/US 评级法快照；不推断公告时间或 CDS 口径。"""
+    """严格的CN/HK/US/IL 评级法快照；不推断公告时间或 CDS 口径。"""
     import hashlib
     import math
     import platform
@@ -118,7 +118,7 @@ def alphalake_country_snapshot(file_path: str | Path) -> dict:
 
         add("market_group", "mature", "mature_market_erp", "E3",
             parsed["__mature_market_erp__"]["equity_risk_premium"])
-        for name, code in (("China", "CN"), ("Hong Kong", "HK"), ("United States", "US")):
+        for name, code in (("China", "CN"), ("Hong Kong", "HK"), ("United States", "US"), ("Israel", "IL")):
             rows = [r for r in range(9, ws.max_row + 1) if ws.cell(r, 1).value == name]
             if len(rows) != 1:
                 raise ValueError(f"missing/duplicate country: {name}")
@@ -135,7 +135,7 @@ def alphalake_country_snapshot(file_path: str | Path) -> dict:
                 raise ValueError(f"ERP components inconsistent: {code}")
         return dict(contract="alphalake-country-risk-v1", observation_date=date,
                     workbook_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
-                    parser_version="damodaran-country-selected-v1",
+                    parser_version="damodaran-country-selected-v2",
                     runtime=f"python={platform.python_version()};openpyxl={openpyxl.__version__}",
                     observations=observations)
     finally:
@@ -145,7 +145,7 @@ def alphalake_country_snapshot(file_path: str | Path) -> dict:
 if __name__ == "__main__":
     import argparse
     import json
-    parser = argparse.ArgumentParser(description="AlphaLake CN/HK/US country risk snapshot")
+    parser = argparse.ArgumentParser(description="AlphaLake CN/HK/US/IL country risk snapshot")
     parser.add_argument("workbook", type=Path)
     args = parser.parse_args()
     print(json.dumps(alphalake_country_snapshot(args.workbook), allow_nan=False, sort_keys=True))

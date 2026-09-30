@@ -13,9 +13,9 @@ import (
 )
 
 const Source = "damodaran"
-const Dataset = "country-risk-cn-hk-us-rating-v1"
+const Dataset = "country-risk-rating-v2"
 const URL = "https://pages.stern.nyu.edu/~adamodar/pc/datasets/ctrypremJuly26.xlsx"
-const ParserVersion = "damodaran-country-selected-v1"
+const ParserVersion = "damodaran-country-selected-v2"
 const DefaultScript = "valuation/backend/data_sources/damodaran_parsers/country_risk_parser.py"
 
 type Observation struct {
@@ -47,7 +47,7 @@ func Parse(ctx context.Context, python, script, workbook string) (Snapshot, stri
 
 // Validate locks the supported scope and canonical decimal representation.
 func Validate(s Snapshot) error {
-	if s.Contract != "alphalake-country-risk-v1" || s.ParserVersion != ParserVersion || s.Runtime == "" || len(s.Observations) != 10 {
+	if s.Contract != "alphalake-country-risk-v1" || s.ParserVersion != ParserVersion || s.Runtime == "" || len(s.Observations) != 13 {
 		return errors.New("unsupported/incomplete country-risk snapshot")
 	}
 	date, err := time.Parse("2006-01-02", s.ObservationDate)
@@ -61,7 +61,7 @@ func Validate(s Snapshot) error {
 	values := map[string]*big.Rat{}
 	for _, o := range s.Observations {
 		valid := o.SubjectKind == "market_group" && o.SubjectCode == "mature" && o.MetricCode == "mature_market_erp"
-		if o.SubjectKind == "country" && (o.SubjectCode == "CN" || o.SubjectCode == "HK" || o.SubjectCode == "US") {
+		if o.SubjectKind == "country" && (o.SubjectCode == "CN" || o.SubjectCode == "HK" || o.SubjectCode == "US" || o.SubjectCode == "IL") {
 			valid = o.MetricCode == "sovereign_default_spread" || o.MetricCode == "total_equity_risk_premium" || o.MetricCode == "country_risk_premium"
 		}
 		key := o.SubjectCode + ":" + o.MetricCode

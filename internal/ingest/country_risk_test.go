@@ -65,7 +65,7 @@ func TestCountryRiskRealArchiveReplay(t *testing.T) {
 	opts := CountryRiskOptions{Python: python, Script: script, Client: client}
 	root := filepath.Join(dir, "raw")
 	first, err := SyncCountryRisk(ctx, db, root, opts)
-	if err != nil || !first.Inserted || first.Observations != 10 {
+	if err != nil || !first.Inserted || first.Observations != 13 {
 		t.Fatal(first, err)
 	}
 	second, err := SyncCountryRisk(ctx, db, root, opts)
@@ -100,7 +100,7 @@ func TestCountryRiskRealArchiveReplay(t *testing.T) {
   (SELECT count(*) FROM reference.risk_observation),
   (SELECT count(*) FROM meta.checkpoint WHERE source='damodaran'),
   (SELECT count(*) FROM meta.ingest_run WHERE ingest_run_id=? AND status='failed' AND error_message IS NOT NULL)`, failed.RunID).Scan(&releases, &rows, &checkpoints, &failedRuns)
-	if err != nil || releases != 1 || rows != 10 || checkpoints != 1 || failedRuns != 1 {
+	if err != nil || releases != 1 || rows != 13 || checkpoints != 1 || failedRuns != 1 {
 		t.Fatal(releases, rows, checkpoints, failedRuns, err)
 	}
 }

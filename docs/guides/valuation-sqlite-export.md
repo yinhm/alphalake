@@ -117,6 +117,10 @@ curl http://127.0.0.1:8080/api/database/compatibility/SZSE:300866
 
 `/api/database/compatibility/<ticker>`分别返回财务状态和参考缺项。财务齐备但缺少默认行业/国家参考时为`blocked_reference_inputs`；这不是TDX财务缺失。用户可在既有`from-database` API传`industry_override`及新增的`country_override`明确选择会话参考，选择留痕、不回写公司分类；原前端无改动。
 
+原生国家参考解析范围为CN/HK/US/IL；Israel用于消费既有沪深公司名单中的国家条目，不扩采以色列证券或改变国家选择政策。国家税率与ERP必须覆盖同一声明范围，缺任一项拒绝发布；范围随SQLite内容签名绑定会话。国家标签仍是来源分类，不证明公司的实际地区风险暴露。较早的显式人民币WACC政策国家权重仍限CN/HK/US，本轮不扩展该政策接口。
+
+国家风险源数据集现为`country-risk-rating-v2`，13条记录（四国各三项加成熟市场ERP）；当前显式WACC参考输入须从主库重新导出，不改写历史冻结请求或保留旧数据集别名。既有归档可通过`sync-country-risk --local <xlsx>`重新解析注册，之后`--offline`幂等重放；采集时点与文件内业务日期分别保留。
+
 缺项诊断会遍历全部目标分量：`export_cells.evidence_json`对缺标准值记录`kind=missing_standard_fact`及字段/期间/系数，后续已有金额和血缘仍保留。必需分量不齐时金额仍为NULL，不能把已知分量小计当成完整债务；源零原因须另回查来源证据。真实核对见[近期债务缺口](../history/native-capital-proxy-review.md#2024年债务缺口已定位)。
 
 

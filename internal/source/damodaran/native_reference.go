@@ -9,7 +9,7 @@ import (
 )
 
 const NativeReferenceScript = "valuation/backend/data_sources/damodaran_parsers/native_reference_parser.py"
-const NativeReferenceVersion = "damodaran-native-reference-v2"
+const NativeReferenceVersion = "damodaran-native-reference-v3"
 
 var NativeReferenceFiles = []string{"betas", "betaGlobal", "wacc", "waccGlobal", "margin", "marginGlobal", "taxrate", "taxrateGlobal", "capex", "capexGlobal", "fundgrEB", "fundgrEBGlobal", "EVA", "EVAGlobal", "vebitda", "vebitdaGlobal", "pedata", "peGlobal", "pbvdata", "pbvGlobal", "psdata", "psGlobal", "countrytaxrates"}
 
@@ -84,7 +84,7 @@ func ValidateNativeReference(s NativeReferenceSnapshot) error {
 		seen[key] = true
 		subjects[o.Subject]++
 		if tax {
-			if o.MetricCode != "corporate_marginal_tax_rate" || (o.Subject != "CN" && o.Subject != "HK" && o.Subject != "US") || o.SampleCount != nil {
+			if o.MetricCode != "corporate_marginal_tax_rate" || (o.Subject != "CN" && o.Subject != "HK" && o.Subject != "US" && o.Subject != "IL") || o.SampleCount != nil {
 				return errors.New("invalid tax identity")
 			}
 		} else if o.SampleCount == nil || *o.SampleCount < 0 {
@@ -100,7 +100,7 @@ func ValidateNativeReference(s NativeReferenceSnapshot) error {
 	}
 	count := 94
 	if tax {
-		count = 3
+		count = 4
 	}
 	if len(subjects) != count {
 		return errors.New("incomplete reference subjects")

@@ -27,7 +27,7 @@ func TestWACCReferenceExport(t *testing.T) {
 	ids := []int64{}
 	firstSeen := time.Date(2026, 9, 9, 12, 0, 0, 123456000, time.UTC)
 	for _, kind := range []string{"country", "beta", "yield", "credit"} {
-		source, dataset, url, rawFile, jsonFile := damodaran.Source, damodaran.Dataset, damodaran.URL, "../source/damodaran/testdata/ctrypremJuly26.xlsx", "../source/damodaran/testdata/expected.json"
+		source, dataset, url, rawFile, jsonFile := damodaran.Source, damodaran.Dataset, damodaran.URL, "../source/damodaran/testdata/ctrypremJuly26.xlsx", "../source/damodaran/testdata/expected-selected-v2.json"
 		if kind == "beta" {
 			dataset, url, rawFile, jsonFile = damodaran.BetaDataset, damodaran.BetaURL, "../source/damodaran/testdata/betaGlobal.xls", "../source/damodaran/testdata/beta-expected.json"
 		}

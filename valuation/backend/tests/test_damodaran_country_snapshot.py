@@ -18,10 +18,12 @@ FIXTURE = ROOT / "internal/source/damodaran/testdata/ctrypremJuly26.xlsx"
 def test_real_country_snapshot_against_xml():
     assert hashlib.sha256(FIXTURE.read_bytes()).hexdigest() == "8d7237c432bca23cd680f149395aa518a465d0b77bec1fdf788edc7a1748c60a"
     actual = alphalake_country_snapshot(FIXTURE)
-    expected = json.loads(FIXTURE.with_name("expected.json").read_text())
+    expected = json.loads(FIXTURE.with_name("expected-selected-v2.json").read_text())
     actual.pop("runtime")
     expected.pop("runtime")  # 环境版本影响发布签名，不影响源值预期。
     assert actual == expected
+    prior = json.loads(FIXTURE.with_name("expected.json").read_text())
+    assert actual['observations'][:10] == prior['observations']
     with ZipFile(FIXTURE) as z:
         ns = {"m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
         workbook = ET.fromstring(z.read("xl/workbook.xml"))
@@ -31,7 +33,7 @@ def test_real_country_snapshot_against_xml():
         target = next(r.attrib["Target"] for r in rels if r.attrib["Id"] == rid)
         cells = ET.fromstring(z.read("xl/" + target)).findall(".//m:c", ns)
         raw = {c.attrib["r"]: c.findtext("m:v", namespaces=ns) for c in cells}
-    assert len(actual["observations"]) == 10
+    assert len(actual["observations"]) == 13
     for row in actual["observations"]:
         coordinate = row["source_locator"].split("!")[1]
         value = Decimal(raw[coordinate]).quantize(Decimal("0.000000000001"), rounding=ROUND_HALF_EVEN)

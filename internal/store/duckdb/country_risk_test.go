@@ -20,7 +20,7 @@ func TestCountryRiskPublication(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	body, err := os.ReadFile("../../source/damodaran/testdata/expected.json")
+	body, err := os.ReadFile("../../source/damodaran/testdata/expected-selected-v2.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +72,7 @@ func TestCountryRiskPublication(t *testing.T) {
 	if err != nil || inserted || id2 != id {
 		t.Fatal("replay", id2, inserted, err)
 	}
-	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM reference.risk_observation`).Scan(&count); err != nil || count != 10 {
+	if err := db.QueryRowContext(ctx, `SELECT count(*) FROM reference.risk_observation`).Scan(&count); err != nil || count != 13 {
 		t.Fatal(count, err)
 	}
 	if err := FinishIngestRun(ctx, db, run, IngestRunCompleted, nil, nil); err != nil {

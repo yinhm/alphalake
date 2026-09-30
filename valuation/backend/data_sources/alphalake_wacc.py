@@ -117,7 +117,7 @@ class ReferenceSnapshot(Strict):
         count = 4 if self.contract_version.endswith("v2") else 3
         if (count == 3 and self.credit_spreads) or len(releases) != count or len(self.releases) != count:
             raise ValueError('reference release count does not match contract version')
-        expected = [('country_risk', 'damodaran', 'country-risk-cn-hk-us-rating-v1', 10),
+        expected = [('country_risk', 'damodaran', 'country-risk-rating-v2', 13),
                     ('industry_stats', 'damodaran', 'global-industry-beta-2026-v1', 376),
                     ('yield_curve', 'chinabond', 'cny-government-eight-tenors-v1', 8)]
         if count == 4:

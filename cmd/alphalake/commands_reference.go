@@ -47,6 +47,7 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 	}
 	script := fs.String("parser", defaultScript, "reviewed parser script")
 	offline := fs.Bool("offline", false, "replay latest verified local archive without HTTP")
+	local := fs.String("local", "", "import existing source file; acquisition time is import time")
 	if err := fs.Parse(args[1:]); err != nil {
 		return parseError(err)
 	}
@@ -75,7 +76,7 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 	case "sync-cny-yield":
 		sync = ingest.SyncCNYGovernmentYield
 	}
-	out, err := sync(ctx, db, filepath.Dir(args[0]), ingest.ReferenceOptions{Python: *python, Script: *script, Offline: *offline})
+	out, err := sync(ctx, db, filepath.Dir(args[0]), ingest.ReferenceOptions{Python: *python, Script: *script, Offline: *offline, LocalPath: *local})
 	if encodeErr := json.NewEncoder(os.Stdout).Encode(out); encodeErr != nil {
 		return errors.Join(err, encodeErr)
 	}

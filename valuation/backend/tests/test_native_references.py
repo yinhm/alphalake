@@ -17,7 +17,8 @@ def test_reviewed_native_workbooks_and_source_cells():
         path=ROOT/entry['file']
         assert hashlib.sha256(path.read_bytes()).hexdigest()==entry['sha256']
         packet=snapshot(path)
-        assert len(packet['observations'])==entry['observations']
+        # sources.json保留原三国冻结回执；当前范围另增已有Israel源行。
+        assert len(packet['observations'])==(4 if entry['file']=='countrytaxrates.xls' else entry['observations'])
         total+=len(packet['observations'])
         if entry['file']=='betas.xls':
             row=next(o for o in packet['observations'] if o['subject']=='Computers/Peripherals' and o['metric_code']=='beta_unlevered_cash_adjusted')
@@ -26,9 +27,10 @@ def test_reviewed_native_workbooks_and_source_cells():
             rows={o['subject']:o for o in packet['observations']}
             assert rows['CN']['value']=='0.250000000000'
             assert rows['HK']['value']=='0.165000000000'
+            assert rows['IL']['value']=='0.230000000000'
             assert rows['US']['value'] is None and rows['US']['value_status']=='ambiguous'
             assert rows['US']['source_locator']=='Sheet1!B217;Sheet1!B246'
-    assert total==3951
+    assert total==3952
 
 
 def test_region_and_header_tampering_rejected(monkeypatch):
@@ -91,11 +93,21 @@ def test_sqlite_snapshot_roundtrip_hash_and_missing_reference():
         assert diagnostic['financial_status']=='ready' and diagnostic['status']=='blocked_reference_inputs'
         assert reference_gaps(loaded,'SZSE:003816','Power','China')==[]
         assert loaded.lookup_country('China').tax_rate_marginal==.25
+        israel = loaded.lookup_country('Israel')
+        assert loaded.countries_loaded == 4
+        assert israel.tax_rate_marginal == .23
+        assert israel.equity_risk_premium + israel.country_risk_premium == pytest.approx(.061783145701,abs=5e-13)
+        assert israel.default_spread == .012726408901
         with pytest.raises(ValueError,match='ambiguous'):
             loaded.lookup_country('United States')
         conn.execute("UPDATE reference_value SET value='0.99' WHERE metric='cost_of_debt_pretax' AND region='us'")
         with pytest.raises(ValueError,match='hash mismatch'):
             load_snapshot(conn)
+    with sqlite3.connect(':memory:') as conn:
+        conn.execute('CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
+        incomplete = packet | {'country_risk':[r for r in packet['country_risk'] if r['subject_code']!='IL']}
+        with pytest.raises(ValueError,match='scope mismatch'):
+            write_snapshot(conn,incomplete)
 
 
 def test_adjusted_margin_source_column_and_header_rejection(monkeypatch):
