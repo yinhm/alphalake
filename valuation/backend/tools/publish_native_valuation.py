@@ -16,7 +16,7 @@ import time
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 
-from tools.export_alphalake_sqlite import CONTRACT, digest, validate_dates
+from tools.export_alphalake_sqlite import CONTRACT, digest, validate_dates, completed_market_date
 from tools.check_native_sqlite import value_digest
 from tools.refresh_valuate_alphalake import execute, reference_commands, timestamp
 
@@ -249,7 +249,7 @@ def run(args, root):
                 if any(c not in by_code for c in codes):
                     raise ValueError('quote identities missing from published snapshot')
                 symbols = [('sh' if by_code[c].startswith('SHSE:') else 'sz')+c for c in codes]
-                stage('sync-quotes', [str(args.alphalake), 'sync-valuation-quotes', str(args.database), '--symbols', ','.join(symbols), '--period', str(args.period)])
+                stage('sync-quotes', [str(args.alphalake), 'sync-valuation-quotes', str(args.database), '--symbols', ','.join(symbols), '--date', completed_market_date(datetime.fromisoformat(args.as_of or timestamp())).isoformat()])
             stage('materialize', [str(args.alphalake), 'materialize-fundamentals', str(args.database)])
         if args.sync_references:
             if args.source_mode == 'local':

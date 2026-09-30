@@ -137,7 +137,8 @@ def test_standard_bridge_components_and_market_proxy():
     asof = datetime.fromisoformat('2026-09-26T00:00:00+00:00')
     company = dict(symbols=['sz300866'],symbol_count=1,identifier_count=1,
         exchange_mic='XSHE',instrument_id=7,name='Synthetic',
-        quote=dict(close='10',trade_date='2026-06-30',recorded_at='2026-09-25T00:00:00+00:00'))
+        quote=dict(close='10',trade_date='2026-09-24',recorded_at='2026-09-25T00:00:00+00:00',
+                   acquisition_started_at='2026-09-25T00:00:00+00:00',run_finished_at='2026-09-25T00:00:00+00:00'))
     def fact(field,value,unit='CNY'):
         return dict(source='tdx',code='300866',instrument_id=7,period=period.isoformat(),field=field,
             canonical_field=field,value=str(value),unit=unit,period_type='instant',statement_scope='provider_default',
@@ -166,6 +167,16 @@ def test_standard_bridge_components_and_market_proxy():
         assert db.execute("SELECT status FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()[0]=='a_share_total_share_proxy'
         evidence = json.loads(db.execute("SELECT evidence_json FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()[0])
         assert evidence['known_foreign_share_classes']['listed_h_shares']['value'] == '1'
+    original_quote = company['quote'].copy()
+    for changes in ({'trade_date':'2026-06-30'},
+                    {'acquisition_started_at':'2026-09-24T06:59:59+00:00'},
+                    {'run_finished_at':'2026-09-27T00:00:00+00:00'}):
+        company['quote'] = original_quote | changes
+        with sqlite3.connect(':memory:') as db:
+            with unittest.TestCase().assertRaises(ValueError):
+                exporter.export_snapshot(db,[company],fetch,period,asof,years=1,quarters=1)
+    assert exporter.completed_market_date(datetime.fromisoformat('2026-09-30T06:59:59Z')) == date(2026,9,29)
+    assert exporter.completed_market_date(datetime.fromisoformat('2026-09-30T07:00:00Z')) == date(2026,9,30)
     company['quote'] = None
     with sqlite3.connect(':memory:') as db:
         exporter.export_snapshot(db,[company],fetch,period,asof,years=1,quarters=1)

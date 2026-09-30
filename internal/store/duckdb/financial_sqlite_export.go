@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/yinhm/alphalake/internal/domain"
 )
 
 // ExportFinancialSQLiteRows exports one read transaction, never one process per
@@ -60,6 +62,7 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
 	start := duckdbStringLiteral(from.Format("2006-01-02")) + `::DATE`
 	finish := duckdbStringLiteral(end.Format("2006-01-02")) + `::DATE`
 	day := duckdbStringLiteral(asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02")) + `::DATE`
+	quoteEnd := duckdbStringLiteral(domain.CompletedMarketDate(asof).Format("2006-01-02")) + `::DATE`
 	codeFilter := ""
 	market := `i.exchange_mic IN ('XSHG','XSHE')`
 	if len(codes) > 0 {
@@ -80,12 +83,13 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
 	if err = copyQuery("companies.jsonl", `SELECT u.*,q.quote FROM _sqlite_universe u LEFT JOIN (
  SELECT o.instrument_id,struct_pack(close:=CAST(o.close AS VARCHAR),trade_date:=CAST(o.trade_date AS VARCHAR),
  observation_id:=o.observation_id,ingest_run_id:=o.ingest_run_id,recorded_at:=CAST(o.recorded_at AS VARCHAR),
+ acquisition_started_at:=CAST(r.started_at AS VARCHAR),run_finished_at:=CAST(r.finished_at AS VARCHAR),
  adjustment:='unadjusted',source:='tdx') AS quote
  FROM market.daily_observation o JOIN meta.ingest_run r USING(ingest_run_id)
  WHERE o.instrument_id IN(SELECT instrument_id FROM _sqlite_universe) AND o.source='tdx' AND r.source='tdx'
  AND r.dataset IN ('daily_ohlcv','valuation_quote_window') AND r.status IN ('completed','partial') AND o.close>0
- AND o.trade_date BETWEEN `+finish+`-INTERVAL 14 DAY AND `+finish+`
- AND r.started_at>=((o.trade_date+1)::TIMESTAMP AT TIME ZONE 'Asia/Shanghai')
+ AND o.trade_date BETWEEN `+quoteEnd+`-INTERVAL 14 DAY AND `+quoteEnd+`
+ AND r.started_at>=((o.trade_date::TIMESTAMP+INTERVAL 15 HOUR) AT TIME ZONE 'Asia/Shanghai')
  AND o.recorded_at<=`+cutoff+` AND r.finished_at<=`+cutoff+`
  QUALIFY row_number() OVER(PARTITION BY o.instrument_id ORDER BY o.trade_date DESC,o.recorded_at DESC,o.observation_id DESC)=1
  ) q USING(instrument_id) ORDER BY u.instrument_id`); err != nil {

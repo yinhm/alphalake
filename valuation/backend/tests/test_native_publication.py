@@ -1,4 +1,5 @@
 """真实文件切换与故障恢复；不以此冒充100家真实财务验收。"""
+from datetime import datetime
 import json
 import os
 from pathlib import Path
@@ -187,10 +188,10 @@ def test_online_sync_uses_reviewed_symbols_and_optional_filings(tmp_path, monkey
     monkeypatch.setattr(delivery, 'execute', execute)
     args = SimpleNamespace(database=tmp_path/'alphalake.duckdb', alphalake=tmp_path/'alphalake',
         output=target, code=['600519','300866'], period='2026-06-30', risk_free_rate=.0425,
-        source_mode='online', latest=6, stage_timeout=10, filings_start='2026-09-01', filings_end='2026-09-27')
+        source_mode='online', as_of='2026-09-30T05:00:00Z', latest=6, stage_timeout=10, filings_start='2026-09-01', filings_end='2026-09-27')
     assert delivery.run(args, tmp_path) == 1
     assert [c[1] for c in calls] == ['sync-financial','sync-filings','sync-valuation-quotes','materialize-fundamentals']
     assert json.loads((tmp_path/'run.json').read_text())['filing_metadata'] == dict(required_for_current_values=False, exit_code=filing_exit)
     assert calls[1][3:] == ['--start','2026-09-01','--end','2026-09-27','--metadata-only','--codes-file',str(tmp_path/'codes.txt')]
-    assert calls[2][3:] == ['--symbols','sz300866,sh600519','--period','2026-06-30']
+    assert calls[2][3:] == ['--symbols','sz300866,sh600519','--date', delivery.completed_market_date(datetime.fromisoformat(args.as_of)).isoformat()]
     assert target.read_bytes() == b'reviewed'

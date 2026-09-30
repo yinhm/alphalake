@@ -1,7 +1,7 @@
 """显式导出AlphaLake标准事实到现有网页SQLite结构；不改变默认数据源。"""
 import argparse
 import calendar
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 import hashlib
 import itertools
@@ -45,6 +45,11 @@ PARTIAL_SCOPES = {
     'cash_and_marketable_securities': 'cash_equivalents_only; short_term_investment_scope_and_overlap_unresolved',
     'cross_holdings': 'known_long_term_investment_components; missing_components_and_valuation_scope_unresolved',
 }
+
+
+def completed_market_date(asof):
+    local = asof.astimezone(timezone(timedelta(hours=8)))
+    return local.date() - timedelta(days=int(local.hour < 15))
 
 
 def digest(path):
@@ -252,14 +257,18 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
         load(period)
         quote = company.get('quote')
         market_evidence = {'quote': quote, 'share_period': period.isoformat(),
+                           'price_information_as_of': asof.isoformat(),
                            'basis': 'unadjusted_close_times_reported_total_shares'}
         shares = facts.get((period.isoformat(), 'total_shares'))
         foreign = [f for f in ('listed_b_shares', 'listed_h_shares')
                    if (period.isoformat(),f) in facts and Decimal(facts[(period.isoformat(),f)]['value']) > 0]
         if quote:
             quote_day = date.fromisoformat(quote['trade_date'])
-            if not 0 <= (period-quote_day).days <= 14 or datetime.fromisoformat(quote['recorded_at']) > asof:
+            if not 0 <= (completed_market_date(asof)-quote_day).days <= 14 or datetime.fromisoformat(quote['recorded_at']) > asof:
                 raise ValueError('market observation outside date/cutoff')
+            close_boundary = datetime.combine(quote_day, datetime.min.time(), timezone(timedelta(hours=8))) + timedelta(hours=15)
+            if datetime.fromisoformat(quote['acquisition_started_at']) < close_boundary or datetime.fromisoformat(quote['run_finished_at']) > asof:
+                raise ValueError('market observation acquired before close or completed after cutoff')
             price = Decimal(quote['close'])
             if not price.is_finite() or price <= 0:
                 raise ValueError('invalid market price')
@@ -390,7 +399,7 @@ def main():
                             wide_money_unit='million_CNY', wide_shares_unit='million_shares',
                             standard_values='decimal_strings_in_each_rows_unit',
                             annual_net_income='parent_attributable', annual_bv_equity='parent_attributable',
-                            market_price_window='latest_completed_unadjusted_close_at_or_before_report_period_within_14_days',
+                            market_price_window='latest_completed_unadjusted_close_at_information_cutoff_within_14_days',
                             market_cap_basis='close_times_reported_total_shares_proxy; known_foreign_share_classes_use_explicit_a_share_price_proxy',
                             quarterly_flows='difference_of_standard_YTD_same_year; Q1 unchanged',
                             missing='NULL; see export_cells; source-zero/unreviewed not inferred from absence',

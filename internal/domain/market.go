@@ -42,9 +42,9 @@ type ShareCapital struct {
 	EffectiveDate  time.Time
 	FloatShares    int64
 	TotalShares    int64
-	Source          string
+	Source         string
 	SourceCategory int
-	SourceRecordID  string
+	SourceRecordID string
 }
 
 // CorporateActionObservation is the provider-neutral boundary emitted by a
@@ -61,7 +61,7 @@ type CorporateActionObservation struct {
 // trading-date interval. AdjustedPrice = Mul*RawPrice + Add. Historical
 // effective_to values are inclusive; the latest segment has EffectiveTo=nil.
 type AdjustmentSegment struct {
-	InstrumentID int64
+	InstrumentID  int64
 	EffectiveFrom time.Time
 	EffectiveTo   *time.Time
 	QFQMul        float64
@@ -70,4 +70,15 @@ type AdjustmentSegment struct {
 	HFQAdd        float64
 	Method        string
 	Source        string
+}
+
+// CompletedMarketDate returns the latest calendar date whose SH/SZ closing
+// auction has ended. Actual trading dates come from source bars, not a calendar guess.
+func CompletedMarketDate(at time.Time) time.Time {
+	local := at.In(ChinaDisclosureLocation)
+	day := time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, time.UTC)
+	if local.Hour() < 15 {
+		return day.AddDate(0, 0, -1)
+	}
+	return day
 }

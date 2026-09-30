@@ -90,7 +90,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  export-financial-snapshot <db-path> --output <new-directory> --fields <standard-names> --from YYYY-MM-DD --period YYYY-MM-DD --as-of RFC3339 [--codes 300866,600519]")
 	fmt.Fprintln(os.Stderr, "  init <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-daily <db-path> <tdx-symbol>")
-	fmt.Fprintln(os.Stderr, "  sync-valuation-quotes <db-path> --symbols sh600004,... --period YYYY-MM-DD")
+	fmt.Fprintln(os.Stderr, "  sync-valuation-quotes <db-path> --symbols sh600004,... --date YYYY-MM-DD")
 	fmt.Fprintln(os.Stderr, "  sync-instruments <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-daily-all <db-path> [--symbols sh600519,sz002032,...]")
 	fmt.Fprintln(os.Stderr, "  sync-actions <db-path> [--force]")

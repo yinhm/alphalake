@@ -26,9 +26,9 @@ type QuoteWindowSummary struct {
 // SyncValuationQuoteWindow uses already-resolved identities and the native
 // model's inclusive 14-day lookback. It does not advance full-history coverage.
 func SyncValuationQuoteWindow(ctx context.Context, db *sql.DB, source QuoteWindowSource, symbols []string, end time.Time) (out QuoteWindowSummary, retErr error) {
-	today := time.Now().In(time.FixedZone("China", 8*3600)).Format("2006-01-02")
-	if db == nil || source == nil || len(symbols) == 0 || end.IsZero() || end.Format("2006-01-02") >= today {
-		return out, fmt.Errorf("known SH/SZ symbols and a closed historical report date required")
+	latest := domain.CompletedMarketDate(time.Now()).Format("2006-01-02")
+	if db == nil || source == nil || len(symbols) == 0 || end.IsZero() || end.Format("2006-01-02") > latest {
+		return out, fmt.Errorf("known SH/SZ symbols and a completed market date required")
 	}
 	seen := map[string]bool{}
 	for _, s := range symbols {
@@ -66,7 +66,7 @@ func SyncValuationQuoteWindow(ctx context.Context, db *sql.DB, source QuoteWindo
 			return e
 		}
 		if !found {
-			return fmt.Errorf("unresolved identity at report date; refresh identity evidence explicitly")
+			return fmt.Errorf("unresolved identity at market date; refresh identity evidence explicitly")
 		}
 		current, found, e := store.ResolveInstrumentIdentifierAt(ctx, db, "tdx", "symbol", symbol, time.Now())
 		if e != nil {

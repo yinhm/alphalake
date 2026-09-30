@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// ExportValuationQuote exports an exact-date, observed-after-day-end A-share close.
+// ExportValuationQuote exports an exact-date, observed-after-market-close A-share close.
 // ASOF uses local capture + tracked run completion, never a guessed publication time.
 func ExportValuationQuote(ctx context.Context, db *sql.DB, symbol string, day, asof time.Time) (map[string]any, error) {
 	if db == nil || !regexp.MustCompile(`^(sh|sz|bj)[0-9]{6}$`).MatchString(symbol) || day.IsZero() || asof.IsZero() {
@@ -47,10 +47,10 @@ func exportValuationQuoteOnTx(ctx context.Context, tx *sql.Tx, symbol string, da
 	if mic != expected || currency != "CNY" || kind != "equity" {
 		return nil, errors.New("only reviewed mainland CNY equity quotes supported")
 	}
-	// Require acquisition to start AFTER the local trading date. A bar captured
+	// Require acquisition to start after the local closing auction. A bar captured
 	// intraday is not promoted to a completed close merely by waiting until tomorrow.
 	local := time.FixedZone("China", 8*3600)
-	boundary := time.Date(day.Year(), day.Month(), day.Day()+1, 0, 0, 0, 0, local)
+	boundary := time.Date(day.Year(), day.Month(), day.Day(), 15, 0, 0, 0, local)
 	var payload string
 	err = tx.QueryRowContext(ctx, `SELECT CAST(to_json(q) AS VARCHAR) FROM (
  SELECT o.observation_id,o.instrument_id,CAST(o.trade_date AS VARCHAR) AS trade_date,
@@ -61,7 +61,7 @@ func exportValuationQuoteOnTx(ctx context.Context, tx *sql.Tx, symbol string, da
  AND r.status IN ('completed','partial') AND r.started_at>=? AND o.recorded_at<=? AND r.finished_at<=?
  ORDER BY o.recorded_at DESC,o.observation_id DESC LIMIT 1) q`, id, day.Format("2006-01-02"), boundary, asof, asof).Scan(&payload)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, errors.New("no eligible exact-date observed close; resync after date end, or review cutoff/identity")
+		return nil, errors.New("no eligible exact-date observed close; resync after market close, or review cutoff/identity")
 	}
 	if err != nil {
 		return nil, err

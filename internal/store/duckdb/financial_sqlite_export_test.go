@@ -23,11 +23,12 @@ func TestFinancialSQLiteMarketQuoteBoundary(t *testing.T) {
 		t.Fatal(err)
 	}
 	day := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+	quoteDay := domain.CompletedMarketDate(time.Now()).AddDate(0, 0, -1)
 	run, err := StartIngestRun(ctx, db, "tdx", "daily_ohlcv", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = UpsertDailyBarsForRun(ctx, db, run, []domain.DailyBar{{InstrumentID: id, TradeDate: day, Open: 10, High: 11, Low: 9, Close: 10, Volume: 100, Amount: 1000, Source: "tdx"}}); err != nil {
+	if err = UpsertDailyBarsForRun(ctx, db, run, []domain.DailyBar{{InstrumentID: id, TradeDate: quoteDay, Open: 10, High: 11, Low: 9, Close: 10, Volume: 100, Amount: 1000, Source: "tdx"}}); err != nil {
 		t.Fatal(err)
 	}
 	if err = FinishIngestRun(ctx, db, run, IngestRunCompleted, nil, nil); err != nil {
@@ -49,10 +50,11 @@ func TestFinancialSQLiteMarketQuoteBoundary(t *testing.T) {
 		}
 		return row
 	}
-	if read()["quote"].(map[string]any)["close"] != "10.000000" {
+	quote := read()["quote"].(map[string]any)
+	if quote["close"] != "10.000000" || quote["trade_date"] != quoteDay.Format("2006-01-02") {
 		t.Fatal("quote lost")
 	}
-	if _, err = db.ExecContext(ctx, `UPDATE meta.ingest_run SET started_at=? WHERE ingest_run_id=?`, day, run); err != nil {
+	if _, err = db.ExecContext(ctx, `UPDATE meta.ingest_run SET started_at=? WHERE ingest_run_id=?`, quoteDay, run); err != nil {
 		t.Fatal(err)
 	}
 	if read()["quote"] != nil {

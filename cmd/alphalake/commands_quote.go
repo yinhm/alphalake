@@ -128,18 +128,18 @@ func runMarketCapitalExport(ctx context.Context, args []string) error {
 
 func runSyncQuoteWindow(ctx context.Context, args []string) error {
 	if len(args) < 1 {
-		return usageError("usage: sync-valuation-quotes <db> --symbols sh600004,... --period YYYY-MM-DD")
+		return usageError("usage: sync-valuation-quotes <db> --symbols sh600004,... --date YYYY-MM-DD")
 	}
 	fs := flag.NewFlagSet("sync-valuation-quotes", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	symbols := fs.String("symbols", "", "explicit resolved SH/SZ symbols")
-	period := fs.String("period", "", "report date; inclusive 14-day lookback")
+	period := fs.String("date", "", "completed market date; inclusive 14-day lookback")
 	if e := fs.Parse(args[1:]); e != nil {
 		return parseError(e)
 	}
 	end, e := time.Parse("2006-01-02", *period)
 	if e != nil || *symbols == "" || fs.NArg() != 0 {
-		return usageError("valid --period and --symbols required")
+		return usageError("valid --date and --symbols required")
 	}
 	db, e := duckstore.OpenInitialized(ctx, args[0])
 	if e != nil {
