@@ -111,7 +111,7 @@ curl http://127.0.0.1:8080/api/database/compatibility/SZSE:300866
 
 ## 原生参考发布
 
-当前v9在财务表之外包含`reference_release`、`reference_value`、`reference_company`；参考来自同一DuckDB的已完成发布，归档哈希须合格。主库须当前schema56，缺必要发布即拒绝导出，不从workspace散落工作簿回退。默认US行业方法保留，详见[参考接入与边界](../valuation/native-reference-bridge.md)。
+当前v9在财务表之外包含`reference_release`、`reference_value`、`reference_company`及`reference_issuer_association`；参考来自同一DuckDB的已完成发布，归档哈希须合格。主库须当前schema57，缺必要发布即拒绝导出，不从workspace散落工作簿回退。原生参考契约为v2；经原文审核的同发行人关联供默认取数，精确源证券与用户覆盖优先，撤销及版本失效不回退旧关联。默认US行业方法保留，详见[参考接入与边界](../valuation/native-reference-bridge.md)。
 
 默认参考截止等于`--as-of`；`--reference-as-of <RFC3339>`允许明确使用另一参考截止。例如固定旧财务窗口比较最新参考时，两个截止分别记录，不能称当时可用的历史估值。旧快照须显式重新导出，不能只改metadata契约标签。
 

@@ -1,6 +1,6 @@
 # 数据与估值架构
 
-本页描述当前结构和不变约束；实现范围见[项目状态](implementation-status.md)，历史设计见[早期设计](history/design-v0.md)，具体语义决策见[ADR索引](decisions/README.md)。当前只维护schema56，不保留旧模型兼容层。
+本页描述当前结构和不变约束；实现范围见[项目状态](implementation-status.md)，历史设计见[早期设计](history/design-v0.md)，具体语义决策见[ADR索引](decisions/README.md)。当前只维护schema57，不保留旧模型兼容层。
 
 ## 数据流与责任
 
@@ -29,7 +29,7 @@ AlphaLake交付事实、参考、确定性派生及显式假设，valuation消�
 | `core` | 公司、证券、上市及来源标识，按业务时点解析身份 |
 | `market` / `classification` | 未复权行情、股本/行动、汇率和时态分类 |
 | `fundamental` | 源记录定位、公告关联、标准财务宽表、拒绝原因、逐期间审核补充 |
-| `reference` | 版本化国家/行业、风险与成本参考；不是公司事实 |
+| `reference` | 版本化国家/行业、风险与成本参考及同发行人审核关联；不是公司财务事实 |
 | `meta` | 原始归档、发布版本、运行、检查点与治理记录 |
 | workspace派生文件 | SQLite、估值运行与研究结果，可按输入和版本重建 |
 
@@ -47,6 +47,8 @@ AlphaLake交付事实、参考、确定性派生及显式假设，valuation消�
 - 来源当前可用、上游最新、字段齐备、模型准入、估值产出和经济合理性分别验收。
 
 ## 应用契约
+
+`reference.issuer_industry_review`每次审核导入保存一份验证包及完整事件链，原文、清单与官方工作簿各自绑定归档；精确证券条目优先，最新撤销或源版本失效不复活旧关联。关联只补参考取数，不复制源名单、财务值或多股类市值。
 
 SQLite是原Investment_Valuation_Agent的可重建输入快照，含财务、参考和独立诊断；网页只读SQLite，不打开大DuckDB。保留原页面及操作流程，JSON政策仅在后端显式接口消费。默认参考、用户修改和人民币候选不能混称公司市场WACC。
 

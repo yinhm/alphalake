@@ -58,7 +58,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_reference_coverage 
 
 输出保存在`workspace/derived/reference-association/`。旧盘点可复用证券分母与参考关系，但必须逐条通过现行来源版本、SHA-256、代码及定位校验；不能复用其旧财务准入数量。官方表缺精确证券条目时，重同步不能生成发行人关联；另一股类条目须另有同发行人证据，行业或国家代理须作为显式政策审核。原生国家参考范围不足与公司国家条目缺失分别处理。
 
-### 同发行人参考的显式输入
+### 同发行人参考的默认关联
 
 `tools.verify_issuer_reference`复验人工审核的A/H同发行人关联。交付单位是通用规则：官方三张名单一致、原行定位及哈希有效；CNINFO目录公告对应目标证券；正文同一公司信息/股票简况明确列出中英文法人全称、股类代码及交易所。英文全称只忽略大小写和空白，不做模糊匹配。集团、母子公司关系不接受；已有精确沪深源条目不能覆盖。原名单仍为5,100条，不把H股原行改写成官方A股记录，不新增H股行情同步。
 
@@ -72,9 +72,24 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.verify_issuer_reference \
 
 在独立限额服务中执行。审核清单声明`same_legal_issuer_different_share_class`，包含审核者、时间、说明及五类页码/原文锚点；程序检查证据是否仍成立，**不代替人工判断法人关系**。`publish`记录更新或撤销均以`supersedes`绑定上一事件内容哈希，`revoke`移出活动输出，恢复须接上撤销事件；不删除旧审核。输出锁定工作簿、完整证券盘点及审核清单内容，逐项保留原证券代码、原行和正文出处。
 
-活动项的`request`直接适配既有`POST /api/valuation/from-database`：只包含`ticker`、`industry_override`、`country_override`，不额外设置增长、利润率、资本倍率或WACC。调用方须保留输入文件及返回会话关联的收据；原会话仍按现有机制将覆盖标为显式参考假设，不伪称默认分类事实。撤销影响重新生成的输入，不追改已有冻结会话，也不自动撤销调用方已经复制的请求。
+审核入库命令会重新执行上述原文/来源校验，不接受已生成的覆盖请求代替证据。在独立限额服务内，先对schema56主库副本显式升级，再导入：
 
-此阶段没有写入主库默认关联或发布网页新快照。人工核验关联数量、显式参考可消费、默认参考齐备及估值成功分别统计；缺行情/财务继续保留。行业标签沿用官方来源不等于已认证经济适用，尤其不要为更符合直觉而改写来源行业。后续若要自动替换默认选择或扩展引擎输入契约，先按`valuation/TODO.md`审批。
+```bash
+./alphalake upgrade-issuer-references workspace/alphalake.issuer-candidate.duckdb
+./alphalake import-issuer-references workspace/alphalake.issuer-candidate.duckdb \
+  --manifest workspace/derived/issuer-reference/reviews.json \
+  --workbook workspace/damodaran/indname-a1f4d70aa2cf.xls \
+  --coverage workspace/derived/financial-availability/coverage.json \
+  --workspace workspace --python .venv/bin/python
+```
+
+schema57的`reference.issuer_industry_review`保存不可变验证包、完整事件链及证据归档关联；不是另建公司财务事实或多股类行情表。重复导入幂等，不能删去旧事件或重放旧短清单。最新审核包撤销或工作簿版本不匹配时不回退旧关联；更新官方工作簿后须按新原行重审。撤销与恢复均先导入候选、重导出及验收，再发布，不追改既有冻结会话。
+
+默认路径为主库审核关联→SQLite `reference_issuer_association`→原生参考加载器→原会话。精确沪深来源条目优先，用户显式覆盖仍优先；来源代码、审核哈希、原文及官方工作簿版本分别保留，不把关联说成官方A股原行。原名单仍为5,100条。原工具的`request`仅为可选显式调用输出，网页使用默认关联无需上传JSON。
+
+SQLite财务契约仍为v9，原生参考契约升级为v2；旧参考v1须重建，不能改标签或运行时回退。先核对财务和身份/行情内容未变、原样本结果及新增关联，再协调主库、SQLite、匹配后端重启及真实HTTP复验；失败恢复旧数据和对应运行代码。契约升级需要重启，普通同契约数据发布按既有流程处理。
+
+人工核验关联数量、默认参考齐备和估值成功分别统计；缺行情/财务继续保留。来源行业不是公司经济适用性认证，不为符合直觉改写官方标签；TDX同业推断等政策代理仍待审批。
 
 ## 失败与重放
 
