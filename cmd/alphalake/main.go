@@ -101,6 +101,8 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  upgrade-financial-availability <schema55-db> (explicit one-time schema56 upgrade)")
 	fmt.Fprintln(os.Stderr, "  upgrade-filing-coverage <schema52-db> (explicit one-time schema53 upgrade)")
 	fmt.Fprintln(os.Stderr, "  export-prospectuses <db-path>")
+	fmt.Fprintln(os.Stderr, "  upgrade-issuer-references <schema56-db>")
+	fmt.Fprintln(os.Stderr, "  import-issuer-references <db-path> --manifest file --workbook file --coverage file --workspace root --python interpreter")
 	fmt.Fprintln(os.Stderr, "  import-filing-coverage <db-path> <reviews.json>")
 	fmt.Fprintln(os.Stderr, "  sync-filings <db-path> [--all] [--start YYYY-MM-DD] [--end YYYY-MM-DD] [--metadata-only] [--rescan] [--prospectus] [--code 600519 | --codes-file path]")
 	fmt.Fprintln(os.Stderr, "  repair-filings <db-path> --period YYYY-MM-DD [--limit N]")

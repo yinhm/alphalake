@@ -54,7 +54,7 @@ def verify(manifest, workspace, workbook, universe):
     current, documents = {}, {}
     for event in manifest['events']:
         ticker = event['target_ticker']
-        if not re.fullmatch(r'(SHSE|SZSE):[0-9]{6}', ticker) or ticker not in targets:
+        if not re.fullmatch(r'(SHSE|SZSE):[0-9]{6}', ticker):
             raise ValueError('SHSE/SZSE target required')
         prior = current.get(ticker)
         if event.get('supersedes') != (prior['review_sha256'] if prior else None):
@@ -80,6 +80,8 @@ def verify(manifest, workspace, workbook, universe):
     for ticker, event in current.items():
         if event['action'] == 'revoke':
             continue
+        if ticker not in targets:
+            raise ValueError('SHSE/SZSE target required')
         if ticker in exact:
             raise ValueError('missing exact-source SHSE/SZSE target required')
         if event['relationship'] != 'same_legal_issuer_different_share_class':
@@ -141,10 +143,13 @@ def verify(manifest, workspace, workbook, universe):
         current[ticker] = dict(action='publish', reviewed_at=event['reviewed_at'],
             review_sha256=event['review_sha256'], source_ticker=source_ticker, source_locator=event['source_locator'],
             document=doc, relationship=event['relationship'], reviewer=event['reviewer'],
+            source_company=dict(zip(['name', 'ticker', 'industry', 'sector', 'sic_code', 'country', 'broad_group', 'sub_group'], values),
+                                source_locator=event['source_locator']),
             request=dict(ticker=ticker, industry_override=values[2], country_override=values[5]))
     return dict(contract='alphalake-reviewed-issuer-inputs-v1', workbook_sha256=snapshot['sha256'],
         review_manifest_sha256=signature(manifest), source_universe=universe['source_universe'],
         coverage_sha256=signature(universe),
+        review_events=[dict(review_sha256=signature(e), reviewed_record=e) for e in manifest['events']],
         active=[dict(target_ticker=t, **r) for t, r in sorted(current.items()) if r['action']=='publish'],
         revoked=[t for t, r in sorted(current.items()) if r['action']=='revoke'],
         defaults_changed=False, valuations_run=0,

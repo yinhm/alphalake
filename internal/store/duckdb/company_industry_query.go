@@ -67,7 +67,8 @@ func companyIndustriesAsOf(ctx context.Context, tx *sql.Tx, asof time.Time) (map
 		return nil, info, err
 	}
 	s := damodaran.CompanyIndustrySnapshot{Contract: "alphalake-company-industries-v1", SHA256: sha, ParserVersion: parser, Runtime: parts[2], TotalRows: 48156, UnidentifiedRows: 12, OutsideScopeRows: 43056}
-	catalog, err := tx.QueryContext(ctx, `SELECT n.source_node_code FROM classification.node n JOIN classification.taxonomy t USING(taxonomy_id)
+	industryNodeIDs := map[string]int64{}
+	catalog, err := tx.QueryContext(ctx, `SELECT n.node_id,n.source_node_code FROM classification.node n JOIN classification.taxonomy t USING(taxonomy_id)
  WHERE t.source=? AND t.taxonomy_code=? AND t.name='Damodaran industries 2026' AND t.taxonomy_type='industry'
  AND n.name=n.source_node_code AND n.level=1 AND n.parent_node_id IS NULL ORDER BY n.source_node_code`, damodaran.Source, damodaran.BetaTaxonomy)
 	if err != nil {
@@ -75,10 +76,12 @@ func companyIndustriesAsOf(ctx context.Context, tx *sql.Tx, asof time.Time) (map
 	}
 	for catalog.Next() {
 		var name string
-		if err = catalog.Scan(&name); err != nil {
+		var nodeID int64
+		if err = catalog.Scan(&nodeID, &name); err != nil {
 			catalog.Close()
 			return nil, info, err
 		}
+		industryNodeIDs[name] = nodeID
 		s.Industries = append(s.Industries, name)
 	}
 	err = catalog.Err()
@@ -210,6 +213,20 @@ func companyIndustriesAsOf(ctx context.Context, tx *sql.Tx, asof time.Time) (map
 	sort.Slice(pending, func(i, j int) bool {
 		return pending[i]["source_observation_id"].(int64) < pending[j]["source_observation_id"].(int64)
 	})
+	associations, err := issuerIndustryAssociations(ctx, tx, releaseID, sha, asof)
+	if err != nil {
+		return nil, info, err
+	}
+	for _, a := range associations {
+		nodeID := industryNodeIDs[a.SourceCompany.Industry]
+		if nodeID == 0 {
+			return nil, info, errors.New("reviewed issuer industry outside official catalogue")
+		}
+		if len(members[a.InstrumentID]) == 0 {
+			members[a.InstrumentID] = []any{issuerAssociationMembership(a, nodeID)}
+			counts["reviewed_same_issuer_A_equity"]++
+		}
+	}
 	info["status"] = "verified_source"
 	info["identity_date"] = day
 	info["identity_basis"] = "first_seen_snapshot_date_not_source_effective_date"

@@ -21,6 +21,7 @@ def audit(connection, coverage, source_snapshot):
         raise ValueError('complete unique security denominator required')
     store = load_snapshot(connection)
     releases = {r['release_id']: r for r in store.reference_snapshot['releases']}
+    associations = store.reference_snapshot.get('issuer_associations',{})
     source = {r[1]: r for r in connection.execute('SELECT release_id,ticker,industry,country,source_locator FROM reference_company')}
     raw = {r['ticker']: r for r in source_snapshot['companies']}
     if set(raw) != set(source) or len(raw) != len(source_snapshot['companies']):
@@ -47,6 +48,24 @@ def audit(connection, coverage, source_snapshot):
                     or member['node_name'] != ref[2] or member['source_locator'] != ref[4]
                     or member['artifact_sha256'] != releases[ref[0]]['sha256']):
                 raise ValueError('reference lineage mismatch: '+ticker)
+        elif ticker in associations:
+            a = associations[ticker]
+            if a['instrument_id'] != company['instrument_id']:
+                raise ValueError('reviewed issuer target identity mismatch: '+ticker)
+            c = a['source_company']
+            if official:
+                if (len(official)!=1 or official[0]['review_sha256']!=a['review_sha256']
+                        or official[0]['source_ticker']!=a['source_ticker']
+                        or official[0]['artifact_sha256']!=a['workbook_sha256']):
+                    raise ValueError('reviewed issuer membership differs: '+ticker)
+            else:
+                # 旧盘点仅复用证券身份；新增关系必须来自当前主库导出的审核记录。
+                members = members + [dict(source='damodaran',taxonomy_code='damodaran_industry_2026',
+                    node_name=c['industry'],node_code=c['industry'],source_ticker=a['source_ticker'],
+                    source_release_id=a['source_release_id'],artifact_sha256=a['workbook_sha256'],
+                    source_locator=a['source_locator'],review_sha256=a['review_sha256'],
+                    identity_basis='reviewed_same_legal_issuer_different_share_class')]
+            ref = (a['source_release_id'],ticker,c['industry'],c['country'],a['source_locator'])
         elif official:
             raise ValueError('associated source row absent from snapshot: '+ticker)
         scope, _ = company_scope(dict(industry_memberships=members), {'status':'verified_source'})
@@ -57,7 +76,8 @@ def audit(connection, coverage, source_snapshot):
                 peers[node][ref[2]] += 1
         gaps = reference_gaps(store, ticker)
         rows.append(dict(ticker=ticker, name=company['name'], scope=scope,
-            association_status='exact_source_security' if ref else 'missing_exact_source_security',
+            association_status=('exact_source_security' if ticker in source else 'reviewed_same_issuer' if ref else 'missing_exact_source_security'),
+            source_ticker=ticker if ticker in source else associations[ticker]['source_ticker'] if ref else None,
             source_industry=ref[2] if ref else None, source_country=ref[3] if ref else None,
             source_locator=ref[4] if ref else None, reference_missing=gaps, tdx_nodes=nodes))
     unresolved = []

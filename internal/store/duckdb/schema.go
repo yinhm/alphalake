@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const SchemaVersion = 56
+const SchemaVersion = 57
 
 //go:embed schema.sql
 var schemaSQL string
@@ -18,6 +18,9 @@ var financialQueriesSQL string
 
 //go:embed filing_coverage.sql
 var filingCoverageSQL string
+
+//go:embed issuer_industry.sql
+var issuerIndustrySQL string
 
 // Initialize creates the current schema atomically in an empty database.
 // Existing current databases are left unchanged; older/newer versions are rejected.
@@ -51,6 +54,9 @@ func Initialize(ctx context.Context, db *sql.DB) error {
 		return fmt.Errorf("initialize current schema: %w", err)
 	}
 	if _, err := tx.ExecContext(ctx, filingCoverageSQL); err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, issuerIndustrySQL); err != nil {
 		return err
 	}
 	if err := insertSourceFieldCatalog(ctx, tx); err != nil {
@@ -176,6 +182,29 @@ func UpgradeFinancialAvailability(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 	if _, err = tx.ExecContext(ctx, queries); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// UpgradeIssuerReferences adds reviewed reference associations without rewriting financial facts.
+func UpgradeIssuerReferences(ctx context.Context, db *sql.DB) error {
+	version, err := CurrentSchemaVersion(ctx, db)
+	if err != nil {
+		return err
+	}
+	if version != 56 {
+		return fmt.Errorf("issuer reference upgrade requires schema56, found %d", version)
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err = tx.ExecContext(ctx, issuerIndustrySQL); err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, `INSERT INTO meta.schema_version(version,description) VALUES (57,'Reviewed same-issuer reference associations')`); err != nil {
 		return err
 	}
 	return tx.Commit()

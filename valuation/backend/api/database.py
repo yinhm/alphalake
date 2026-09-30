@@ -423,6 +423,11 @@ def from_database(req: FromDatabaseRequest) -> dict:
     for field,value in (('industry_data.industry_name',req.industry_override),('country',req.country_override)):
         if value is not None:
             session.source_tracker.record(field,'User-selected reference assumption; company classification unchanged')
+    association = store.reference_snapshot.get('issuer_associations',{}).get(req.ticker)
+    if association:
+        for field, override in (('industry_data.industry_name',req.industry_override),('country',req.country_override)):
+            if override is None:
+                session.source_tracker.record(field, 'Reviewed same-issuer reference association; source '+association['source_ticker']+'; review '+association['review_sha256'])
     if compatibility and (compatibility['exported_asset_proxies'] or compatibility['market_proxy']):
         proxy = dict(session.valuation_proxy or dict(version=record['data_source']['contract'],
             status='estimated', source_snapshot=record['data_source'],

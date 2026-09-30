@@ -6,7 +6,7 @@ from pathlib import Path
 from .damodaran_store import DamodaranStore
 from .industry_mapper import IndustryMapper, CompanyInfo
 
-CONTRACT = 'alphalake-native-references-v1'
+CONTRACT = 'alphalake-native-references-v2'
 COUNTRIES = {'CN': 'China', 'HK': 'Hong Kong', 'US': 'United States', 'IL': 'Israel'}
 METRICS = {
  'pretax_lease_research_adjusted_operating_margin': 'pretax_lease_rd_adj_margin',
@@ -21,7 +21,7 @@ METRICS = {
  'debt_capital_ratio': 'debt_capital_ratio', 'enterprise_value_ebitda_multiple': 'ev_ebitda',
  'current_price_earnings_multiple': 'pe_ratio', 'price_book_multiple': 'pbv_ratio', 'enterprise_value_sales_multiple': 'ev_sales',
 }
-TABLES = ('reference_release', 'reference_value', 'reference_company')
+TABLES = ('reference_release', 'reference_value', 'reference_company', 'reference_issuer_association')
 
 
 def policy_hashes():
@@ -35,7 +35,8 @@ def snapshot_hash(connection, header):
     h = hashlib.sha256(json.dumps(header, sort_keys=True, separators=(',', ':')).encode())
     for table in TABLES:
         h.update(table.encode())
-        for row in connection.execute(f'SELECT * FROM {table} ORDER BY 1,2,3'):
+        order = '1' if table=='reference_issuer_association' else '1,2,3'
+        for row in connection.execute(f'SELECT * FROM {table} ORDER BY {order}'):
             h.update(json.dumps(list(row), ensure_ascii=False, separators=(',', ':')).encode())
             h.update(b'\n')
     return h.hexdigest()
@@ -47,6 +48,7 @@ def write_snapshot(connection, packet):
     connection.executescript('''
  CREATE TABLE reference_release(release_id INTEGER PRIMARY KEY,dataset TEXT NOT NULL,source_version TEXT,available_at TEXT NOT NULL,first_seen_at TEXT NOT NULL,source_locator TEXT NOT NULL,sha256 TEXT NOT NULL,content_key TEXT NOT NULL,parser_version TEXT NOT NULL,normalization_version TEXT NOT NULL);
  CREATE TABLE reference_value(release_id INTEGER NOT NULL,subject TEXT NOT NULL,metric TEXT NOT NULL,region TEXT NOT NULL,value TEXT,status TEXT NOT NULL,unit TEXT NOT NULL,source_locator TEXT NOT NULL,raw_value TEXT NOT NULL,sample_count INTEGER,method_code TEXT NOT NULL,observation_date TEXT NOT NULL,PRIMARY KEY(release_id,subject,metric,region));
+ CREATE TABLE reference_issuer_association(target_ticker TEXT PRIMARY KEY,verified_record TEXT NOT NULL);
  CREATE TABLE reference_company(release_id INTEGER NOT NULL,ticker TEXT PRIMARY KEY,name TEXT NOT NULL,industry TEXT NOT NULL,country TEXT NOT NULL,sector TEXT,sic_code TEXT,broad_group TEXT,sub_group TEXT,source_locator TEXT NOT NULL);
  ''')
     for r in packet['releases']:
@@ -61,6 +63,8 @@ def write_snapshot(connection, packet):
         co=json.loads(r['raw_payload'])
         connection.execute('INSERT INTO reference_company VALUES(?,?,?,?,?,?,?,?,?,?)', (
             r['release_id'],co['ticker'],co['name'],co['industry'],co['country'],co['sector'],str(co['sic_code']),co['broad_group'],co['sub_group'],r['source_locator']))
+    for association in packet['issuer_associations']:
+        connection.execute('INSERT INTO reference_issuer_association VALUES(?,?)', (association['target_ticker'],json.dumps(association,ensure_ascii=False,sort_keys=True)))
     header = dict(contract=CONTRACT, information_as_of=packet['information_as_of'], model_reference_hashes=policy_hashes(),
         country_scope=sorted({r['subject_code'] for r in packet['country_tax']}), industry_regions=['US','Global'])
     connection.executemany('INSERT INTO metadata VALUES(?,?)', [
@@ -121,6 +125,25 @@ def load_snapshot(connection):
     mapper=IndustryMapper()
     for release,ticker,name,industry,country,sector,sic,broad,sub,locator in connection.execute('SELECT * FROM reference_company ORDER BY ticker'):
         mapper._index_company(CompanyInfo(name,ticker,industry,sector,sic,country,broad,sub))
+    associations = {}
+    for ticker, raw in connection.execute('SELECT * FROM reference_issuer_association ORDER BY target_ticker'):
+        a = json.loads(raw)
+        c = a['source_company']
+        release = next((r for r in releases if r['release_id']==a['source_release_id']), None)
+        if (ticker != a['target_ticker'] or not re.fullmatch(r'(SHSE|SZSE):[0-9]{6}',ticker)
+                or not re.fullmatch(r'SEHK:[0-9]{1,5}',a['source_ticker'])
+                or c['ticker'] != a['source_ticker'] or c['source_locator'] != a['source_locator']
+                or a['relationship'] != 'same_legal_issuer_different_share_class'
+                or release is None or release['sha256'] != a['workbook_sha256']
+                or not re.fullmatch('[0-9a-f]{64}',a['review_sha256'])
+                or not re.fullmatch('[0-9a-f]{64}',a['association_artifact_sha256'])
+                or c['industry'] not in store.list_industries('US')):
+            raise ValueError('invalid reviewed issuer association: '+ticker)
+        if ticker in mapper._by_exchange_ticker:
+            raise ValueError('reviewed issuer association cannot overwrite exact source: '+ticker)
+        mapper._index_company(CompanyInfo(c['name'],ticker,c['industry'],c['sector'],str(c['sic_code']),c['country'],c['broad_group'],c['sub_group']))
+        associations[ticker] = a
+    store.reference_snapshot['issuer_associations'] = associations
     if mapper.total_companies==0:
         raise ValueError('missing published company classifications')
     store.industry_mapper=mapper
@@ -150,6 +173,7 @@ def reference_gaps(store, ticker, industry_override=None, country_override=None)
 def attach_reference_diagnostic(diagnostic, store, ticker, industry_override=None):
     result=dict(diagnostic,financial_status=diagnostic['status'],reference_snapshot_id=store.reference_snapshot.get('id'))
     result['reference_missing']=reference_gaps(store,ticker,industry_override)
+    result['reference_association']=store.reference_snapshot.get('issuer_associations',{}).get(ticker)
     if result['status']=='ready' and result['reference_missing']:
         result['status']='blocked_reference_inputs'
         result['blockers']=[r['reason'] for r in result['reference_missing']]

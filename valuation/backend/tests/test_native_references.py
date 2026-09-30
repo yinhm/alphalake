@@ -49,8 +49,8 @@ def test_sqlite_snapshot_roundtrip_hash_and_missing_reference():
     import sqlite3
     from data_sources.native_references import write_snapshot,load_snapshot
     from data_sources.damodaran_parsers.country_risk_parser import alphalake_country_snapshot
-    packet=dict(contract='alphalake-native-references-v1',information_as_of='2026-09-27T14:00:00Z',
-        releases=[],industry_stats=[],country_tax=[],country_risk=[],companies=[])
+    packet=dict(contract='alphalake-native-references-v2',information_as_of='2026-09-27T14:00:00Z',
+        releases=[],industry_stats=[],country_tax=[],country_risk=[],companies=[],issuer_associations=[])
     def release(identity,dataset,source_hash):
         packet['releases'].append(dict(release_id=identity,dataset=dataset,source_version='2026-01-05',
             available_at=packet['information_as_of'],first_seen_at=packet['information_as_of'],source_locator='fixture:'+dataset,
@@ -67,11 +67,20 @@ def test_sqlite_snapshot_roundtrip_hash_and_missing_reference():
     release(25,'company-industry','a'*64)
     packet['companies']=[dict(release_id=25,source_locator='fixture!A2:H2',raw_payload=json.dumps(dict(
         ticker='SZSE:300866',name='Anker',industry='Computers/Peripherals',country='China',sector='Technology',sic_code='test',broad_group='test',sub_group='test')))]
+    association = dict(target_ticker='SZSE:001234',source_ticker='SEHK:1234',
+        source_release_id=25,workbook_sha256='a'*64,source_locator='By company name!A2:H2',
+        relationship='same_legal_issuer_different_share_class',review_sha256='b'*64,
+        association_artifact_sha256='c'*64,source_company=dict(name='Issuer',ticker='SEHK:1234',
+            source_locator='By company name!A2:H2',industry='Power',country='China',sector='Utilities',
+            sic_code='0',broad_group='Emerging Markets',sub_group='China'))
+    packet['issuer_associations'] = [association]
     with sqlite3.connect(':memory:') as conn:
         conn.execute('CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
         write_snapshot(conn,packet)
         loaded=load_snapshot(conn)
         assert loaded.industry_mapper.lookup('SZSE:300866').industry_group=='Computers/Peripherals'
+        assert loaded.industry_mapper.lookup('SZSE:001234').industry_group=='Power'
+        assert loaded.reference_snapshot['issuer_associations']['SZSE:001234']['source_ticker']=='SEHK:1234'
         assert loaded.lookup_industry('Computers/Peripherals','US').beta_u_corrected_for_cash==pytest.approx(1.3245870396777912,abs=5e-13)
         from data_sources.damodaran_store import DamodaranStore
         source=DamodaranStore.from_directory(ROOT)
@@ -103,6 +112,12 @@ def test_sqlite_snapshot_roundtrip_hash_and_missing_reference():
         conn.execute("UPDATE reference_value SET value='0.99' WHERE metric='cost_of_debt_pretax' AND region='us'")
         with pytest.raises(ValueError,match='hash mismatch'):
             load_snapshot(conn)
+    for altered, message in [(association | {'target_ticker':'SZSE:300866'}, 'cannot overwrite exact'),
+                             (association | {'workbook_sha256':'d'*64}, 'invalid reviewed issuer')]:
+        with sqlite3.connect(':memory:') as conn:
+            conn.execute('CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
+            with pytest.raises(ValueError,match=message):
+                write_snapshot(conn,packet | {'issuer_associations':[altered]})
     with sqlite3.connect(':memory:') as conn:
         conn.execute('CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
         incomplete = packet | {'country_risk':[r for r in packet['country_risk'] if r['subject_code']!='IL']}

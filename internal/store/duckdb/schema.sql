@@ -241,7 +241,7 @@ INSERT INTO fundamental.provider_field ("source","provider_field","canonical_fie
 ('tdx','FN96','net_income_parent_ytd','归属于母公司所有者的净利润（累计）','CNY','monetary','2025-01-01',NULL,'Parent income YTD; distinct from FN232 single quarter; balance-profit-2026','ytd','1'),
 ('tdx','FN97','net_income_minority_ytd','少数股东损益（累计）','CNY','monetary','2025-01-01',NULL,'Minority profit/loss YTD; not minority book equity or segment allocation; balance-profit-2026','ytd','1'),
 ('tdx','FN99','tax_refunds_received','收到的税费返还','CNY','monetary','2025-01-01',NULL,'Cashflow statement; not income tax benefit; cash-rd-2026','ytd','1');
-INSERT INTO meta.schema_version(version,description) VALUES (56,'TDX disclosure dates; financial values independent of announcement linkage');
+INSERT INTO meta.schema_version(version,description) VALUES (57,'Reviewed same-issuer reference associations');
 
 CREATE TABLE fundamental.source_field (
  source VARCHAR NOT NULL, provider_field VARCHAR NOT NULL, source_index INTEGER NOT NULL,
