@@ -41,3 +41,5 @@
 
 - [022：财务数值可用性与公告日期分离](022-financial-availability-and-disclosure.md)——TDX日期直接采用，当前数值不依赖CNINFO关联；历史查询单独限制。
 - [023：未映射来源差异与标准报表边界](023-unmapped-source-duplicate-boundary.md)——已审核字段位级等价时不因未映射比率差异拒绝整行，保留原始差异和未来映射约束。
+
+- [024：短历史估值与退市身份边界](024-short-history-and-delisting.md)——历史不足不等于不能估值，未知研发不补零；正式摘牌日与TDX观测区间分离，来源链尚待接通。
