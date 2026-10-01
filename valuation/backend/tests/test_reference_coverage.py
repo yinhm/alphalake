@@ -37,6 +37,12 @@ def test_reference_audit_keeps_missing_country_conflicts_and_candidate_boundarie
     assert result['scope_counts']=={'nonfinancial_by_reference':1,'unresolved_industry_scope':2}
     assert result['scope_and_reference_complete']==0 and result['reference_complete']==1
     assert result['unresolved_companies'][2]['peer_industry_counts']=={'Chemical (Specialty)':1}
+    categories = {c['node_code']: c for c in result['industry_categories']}
+    assert categories['X2701']['priority_single_candidate_tickers']==['SZSE:003816']
+    assert categories['X2701']['peer_industry_counts']=={'Chemical (Specialty)':1}
+    assert [r['ticker'] for r in categories['X2701']['members']]==['SZSE:000553','SZSE:003816']
+    assert categories['X510305']['peer_industry_counts']=={}
+    assert categories['X510305']['status']=='candidate_not_approved'
     assert not result['defaults_changed'] and result['valuations_run']==0
     assert result['coverage_source_database_sha256'] != result['snapshot_source_database_sha256']
     tampered = deepcopy(coverage)

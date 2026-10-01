@@ -88,6 +88,17 @@ def audit(connection, coverage, source_snapshot):
                 candidates.update(peers[node])
             unresolved.append(dict(**row, peer_industry_counts=dict(sorted(candidates.items())),
                 candidate_status='not_company_fact_or_automatic_default'))
+    pending_nodes = {tuple(n) for r in unresolved if r['scope']=='unresolved_industry_scope' for n in r['tdx_nodes']}
+    single_candidate_tickers = {r['ticker'] for r in unresolved
+        if r['scope']=='unresolved_industry_scope' and len(r['peer_industry_counts'])==1}
+    categories = []
+    for node in sorted(pending_nodes):
+        members = [r for r in rows if node in r['tdx_nodes']]
+        categories.append(dict(node_code=node[0], node_name=node[1],
+            peer_industry_counts=dict(sorted(peers[node].items())), members=members,
+            unresolved_tickers=[r['ticker'] for r in members if r['scope']=='unresolved_industry_scope'],
+            priority_single_candidate_tickers=[r['ticker'] for r in members if r['ticker'] in single_candidate_tickers],
+            status='candidate_not_approved'))
     return dict(contract='alphalake-reference-coverage-v1', source_universe=len(rows),
         coverage_source_database_sha256=coverage['source_database_sha256'],
         snapshot_source_database_sha256=metadata['source_database_sha256'],
@@ -99,7 +110,8 @@ def audit(connection, coverage, source_snapshot):
         association_counts=dict(Counter(r['association_status'] for r in rows)),
         reference_gap_counts=dict(Counter(g['field'] for r in rows for g in r['reference_missing'])),
         reference_gap_scope_counts=dict(Counter(r['scope'] for r in rows if r['reference_missing'])),
-        unresolved_companies=unresolved, reference_complete=sum(not r['reference_missing'] for r in rows),
+        unresolved_companies=unresolved, industry_categories=categories,
+        reference_complete=sum(not r['reference_missing'] for r in rows),
         scope_and_reference_complete=sum(not r['reference_missing'] and r['scope']=='nonfinancial_by_reference' for r in rows),
         valuations_run=0, defaults_changed=False,
         boundary='仅审核参考关联及版本血缘；不是财务完成度、发行人等同性或经济适用性认证。')
