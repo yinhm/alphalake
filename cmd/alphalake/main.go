@@ -396,14 +396,14 @@ func main() {
 				p.RunID, p.Processed, p.Total, p.Synced, p.Failed, p.Taxonomy)
 		}}
 		summary, syncErr := ingest.SyncTDXIndustriesWithOptions(ctx, db, source, options)
-		fmt.Printf("TDX industry sync: run=%d taxonomies=%d synced=%d nodes=%d members=%d opened=%d closed=%d failures=%d master_failures=%d\n",
+		fmt.Printf("TDX industry sync: run=%d taxonomies=%d synced=%d nodes=%d members=%d opened=%d closed=%d failures=%d\n",
 			summary.RunID, summary.Taxonomies, summary.Synced, summary.Nodes, summary.Members,
-			summary.Opened, summary.Closed, len(summary.Failures), len(summary.MasterFailures))
+			summary.Opened, summary.Closed, len(summary.Failures))
 		for _, failure := range summary.Failures {
 			fmt.Fprintf(os.Stderr, "TDX industry issue: run=%d taxonomy=%s error=%q\n", summary.RunID, failure.Family, failure.Err)
 		}
 		if syncErr != nil {
-			fatal(syncErr)
+			fatal(errors.Join(syncErr, db.Close()))
 		}
 
 	case "sync-financial":

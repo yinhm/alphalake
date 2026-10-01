@@ -14,12 +14,7 @@ import (
 )
 
 type fakeIndustrySource struct {
-	instruments []domain.InstrumentObservation
-	results     []domain.ClassificationSnapshotResult
-}
-
-func (f *fakeIndustrySource) InstrumentSnapshot(context.Context) (domain.InstrumentMasterSnapshot, error) {
-	return testMasterSnapshot(time.Date(2026, 9, 3, 0, 0, 0, 0, time.UTC), true, f.instruments), nil
+	results []domain.ClassificationSnapshotResult
 }
 
 func (f *fakeIndustrySource) IndustrySnapshotResults(context.Context) ([]domain.ClassificationSnapshotResult, error) {
@@ -53,8 +48,10 @@ func TestSyncTDXIndustriesPersistsBothTaxonomies(t *testing.T) {
 
 	instrument := observation(domain.InstrumentEquity, "XSHG", "Test", "sh600001")
 	member := domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh600001"}
+	if _, err := duckstore.ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(time.Date(2026, 9, 3, 0, 0, 0, 0, time.UTC), true, []domain.InstrumentObservation{instrument})); err != nil {
+		t.Fatal(err)
+	}
 	source := &fakeIndustrySource{
-		instruments: []domain.InstrumentObservation{instrument},
 		results: []domain.ClassificationSnapshotResult{
 			resultForSnapshot(industrySnapshot("tdx_industry", "TDX Industry", "T010101", member)),
 			resultForSnapshot(industrySnapshot("tdx_shenwan_industry", "Shenwan Industry", "X010101", member)),
@@ -102,8 +99,10 @@ func TestSyncTDXIndustriesKeepsSuccessfulTaxonomyWhenOtherBuildFails(t *testing.
 	instrument := observation(domain.InstrumentEquity, "XSHG", "Test", "sh600001")
 	member := domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh600001"}
 	good := industrySnapshot("tdx_shenwan_industry", "Shenwan Industry", "X010101", member)
+	if _, err := duckstore.ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(time.Date(2026, 9, 3, 0, 0, 0, 0, time.UTC), true, []domain.InstrumentObservation{instrument})); err != nil {
+		t.Fatal(err)
+	}
 	source := &fakeIndustrySource{
-		instruments: []domain.InstrumentObservation{instrument},
 		results: []domain.ClassificationSnapshotResult{
 			{Code: "tdx_industry", Error: "malformed TDX industry code"},
 			resultForSnapshot(good),
@@ -164,7 +163,10 @@ func TestRealIndustryUnknownMemberKeepsPublishedKnownMembers(t *testing.T) {
 			}
 		}
 	}
-	source := &fakeIndustrySource{instruments: instruments, results: []domain.ClassificationSnapshotResult{resultForSnapshot(snapshot)}}
+	if _, err := duckstore.ApplyInstrumentMasterSnapshot(ctx, db, testMasterSnapshot(time.Date(2026, 9, 9, 0, 0, 0, 0, time.UTC), true, instruments)); err != nil {
+		t.Fatal(err)
+	}
+	source := &fakeIndustrySource{results: []domain.ClassificationSnapshotResult{resultForSnapshot(snapshot)}}
 	now := time.Date(2026, 9, 10, 3, 0, 0, 0, time.UTC)
 	result, err := SyncTDXIndustriesWithOptions(ctx, db, source, TDXIndustrySyncOptions{Now: func() time.Time { return now }})
 	if err == nil || result.Synced != 1 || result.Members != 9 || len(result.Failures) != 1 || result.Closed != 0 {
