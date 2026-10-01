@@ -8,6 +8,7 @@
 | 引擎冻结与审批 | [valuation TODO](../../valuation/TODO.md) | 仅修明确BUG；其余方法、政策及接口调整等待审批 |
 | 五项通用方法契约 | [输入、经营范围、再投资、终值及边界](methodology-contract.md) | 结构化检查与条件对照；不将可计算当作经济依据通过 |
 | 数据接入spec | [实际消费与转换契约](data-contract.md) | TTM/累计/单季、单位、余额、研发队列及会话；任何对接前先核对 |
+| 国内行业与估值关联 | [TDX、申万及跨体系映射调研](industry-association.md) | 国内分类与估值参考分别计数；申万主分类及新映射默认政策尚未上线 |
 | 原生参考与版本 | [参考桥接](native-reference-bridge.md) | 默认US口径保留，主库→SQLite→会话参考有版本；不是公司市场WACC自动认证 |
 | 人民币显式场景 | [WACC与经营候选](native-cny-policy.md) | 来源、折现及经营假设分别保存，不与网页默认混为价格更新 |
 | 自动选择与合法变更 | [基础选择规则](native-assumption-selection.md) | 规则只是条件候选；合法输入变更须重建基线，不静默混用口径 |
