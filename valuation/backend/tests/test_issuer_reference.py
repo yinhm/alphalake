@@ -98,3 +98,56 @@ def test_present_pdf_text_still_requires_the_right_share_class_code(review, monk
         SimpleNamespace(extract_text=lambda:'\n'.join(a['text'] for a in evidence.values()))]))
     with pytest.raises(ValueError, match='other share-class code mismatch'):
         tool.verify(*review)
+
+
+def test_explicit_hong_kong_listing_role_and_and_typography(review, monkeypatch):
+    manifest, workspace, workbook, universe = review
+    event = manifest['events'][0]
+    event['legal_name_en'] = 'Issuer&Partner Limited'
+    event['evidence']['legal_name_en']['text'] = '公司的外文名称 Issuer&Partner Limited'
+    sheet = SimpleNamespace(nrows=2, cell_value=lambda *_:'SEHK:1234',
+        row_values=lambda _:['Issuer and Partner Limited (SEHK:1234)', 'SEHK:1234', 'Power', 'Utilities', '0', 'China', '', ''])
+    monkeypatch.setattr(tool.xlrd, 'open_workbook', lambda *_args, **_kwargs:
+        SimpleNamespace(sheet_by_name=lambda _:sheet, release_resources=lambda:None))
+    event['evidence']['other_listing']['text'] = '港股上市交易所：香港联交所 港股股票代码：01234'
+    monkeypatch.setattr(tool, 'PdfReader', lambda _:SimpleNamespace(pages=[
+        SimpleNamespace(extract_text=lambda:'\n'.join(a['text'] for a in event['evidence'].values()))]))
+    assert tool.verify(*review)['active'][0]['source_company']['name'].startswith('Issuer and Partner')
+    event['evidence']['other_listing']['text'] = '港股报价 香港联交所 01234'
+    with pytest.raises(ValueError, match='share-class/exchange role mismatch'):
+        tool.verify(*review)
+    event['evidence']['other_listing']['text'] = '港股上市交易所：香港联交所 港股股票代码：99999'
+    with pytest.raises(ValueError, match='other share-class code mismatch'):
+        tool.verify(*review)
+    event['legal_name_en'] = 'Issuer&Parent Limited'
+    with pytest.raises(ValueError, match='legal name differs'):
+        tool.verify(*review)
+    assert tool.legal_name_key('Anderson Limited') != tool.legal_name_key('&erson Limited')
+
+
+def test_ipo_security_code_can_be_bound_by_official_catalogue(review, monkeypatch):
+    manifest, workspace, workbook, universe = review
+    event = manifest['events'][0]
+    catalogue = json.loads((workspace/'catalogue.json').read_text())
+    catalogue['announcements'][0]['announcementTitle'] = '首次公开发行股票招股意向书'
+    (workspace/'catalogue.json').write_text(json.dumps(catalogue))
+    event['document']['catalogue_sha256'] = tool.digest(workspace/'catalogue.json')
+    event['evidence']['a_listing'].update(text='本次发行人民币普通股（A股），深圳证券交易所',
+                                        identifier_source='catalogue')
+    monkeypatch.setattr(tool, 'PdfReader', lambda _:SimpleNamespace(pages=[
+        SimpleNamespace(extract_text=lambda:'\n'.join(a['text'] for a in event['evidence'].values()))]))
+    assert tool.verify(*review)['active'][0]['target_ticker'] == 'SZSE:001234'
+    event['evidence']['a_listing']['text'] += ' 股票代码001235'
+    with pytest.raises(ValueError, match='unsupported security identifier evidence'):
+        tool.verify(*review)
+    event['evidence']['a_listing']['text'] = '本次发行人民币普通股（A股），深圳证券交易所'
+    catalogue['announcements'][0]['secCode'] = '001235'
+    (workspace/'catalogue.json').write_text(json.dumps(catalogue))
+    event['document']['catalogue_sha256'] = tool.digest(workspace/'catalogue.json')
+    with pytest.raises(ValueError, match='catalogue announcement target mismatch'):
+        tool.verify(*review)
+    catalogue['announcements'][0].update(secCode='001234', announcementTitle='年度报告')
+    (workspace/'catalogue.json').write_text(json.dumps(catalogue))
+    event['document']['catalogue_sha256'] = tool.digest(workspace/'catalogue.json')
+    with pytest.raises(ValueError, match='unsupported security identifier evidence'):
+        tool.verify(*review)

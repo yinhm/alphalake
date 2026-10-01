@@ -22,6 +22,11 @@ def compact(text):
     return re.sub(r'\s+', '', text).casefold()
 
 
+def legal_name_key(text):
+    # 只统一独立连词的排印表示；不删除词语、后缀或按相似度匹配法人。
+    return compact(re.sub(r'\band\b', '&', text, flags=re.IGNORECASE))
+
+
 def local_file(workspace, name):
     path = (workspace / name).resolve()
     if not path.is_relative_to(workspace.resolve()):
@@ -93,7 +98,7 @@ def verify(manifest, workspace, workbook, universe):
         if event['source_locator'] != f'By company name!A{row}:H{row}':
             raise ValueError('source row mismatch')
         source_name = values[0].removesuffix(' (' + source_ticker + ')')
-        if compact(source_name) != compact(event['legal_name_en']):
+        if legal_name_key(source_name) != legal_name_key(event['legal_name_en']):
             raise ValueError('source issuer legal name differs')
         doc = event['document']
         catalogue = local_file(workspace, doc['catalogue_path'])
@@ -129,14 +134,27 @@ def verify(manifest, workspace, workbook, universe):
         }
         for role, value in checks.items():
             text = compact(evidence[role]['text'])
+            identifier_source = evidence[role].get('identifier_source', 'document')
+            if identifier_source != 'document':
+                # 招股文件可能在分配A股代码前发布；代码必须来自已绑定的官方目录。
+                if (role != 'a_listing' or identifier_source != 'catalogue'
+                        or '首次公开发行' not in announcement.get('announcementTitle', '')
+                        or '招股' not in announcement.get('announcementTitle', '')
+                        or '本次发行' not in text
+                        or re.search(r'(?<!\d)\d{6}(?!\d)', text)):
+                    raise ValueError('unsupported security identifier evidence')
+                continue
             if role == 'other_listing':
                 codes = re.findall(r'(?<!\d)\d{1,5}(?!\d)', text)
                 if not any(int(code) == int(value) for code in codes):
                     raise ValueError('other share-class code mismatch')
             elif compact(value) not in text:
                 raise ValueError('identity anchor mismatch: ' + role)
+        other_text = compact(evidence['other_listing']['text'])
+        other_role = ('h股' in other_text or
+                      ('港股上市交易所' in other_text and '港股股票代码' in other_text))
         if ('a股' not in compact(evidence['a_listing']['text'])
-                or 'h股' not in compact(evidence['other_listing']['text'])
+                or not other_role
                 or '香港' not in evidence['exchanges']['text']
                 or ('上海' if ticker.startswith('SHSE:') else '深圳') not in evidence['exchanges']['text']):
             raise ValueError('share-class/exchange role mismatch')
