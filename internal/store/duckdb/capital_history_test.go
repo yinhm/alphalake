@@ -32,9 +32,10 @@ func TestCapitalHistoryReview(t *testing.T) {
 	// Upgrade old historical policies in place; cashflow supplements remain rejected.
 	checkExec := func(query string) { _, e := db.ExecContext(ctx, query); check(e) }
 	checkExec(`UPDATE fundamental.provider_field SET zero_policy='reject' WHERE canonical_field IN ('bonds_payable','short_term_borrowings','long_term_borrowings','lease_liabilities') AND valid_to=DATE '2025-01-01'`)
+	checkExec(`UPDATE fundamental.provider_field SET zero_policy='reject' WHERE canonical_field='revenue_cumulative'`)
 	_, err = ExtendCapitalHistory(ctx, db)
 	check(err)
-	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_field WHERE canonical_field IN ('bonds_payable','short_term_borrowings','long_term_borrowings','lease_liabilities','research_and_development_expense','debt_investments') AND zero_policy!='allow'`).Scan(&count))
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_field WHERE canonical_field IN ('bonds_payable','short_term_borrowings','long_term_borrowings','lease_liabilities','research_and_development_expense','debt_investments','revenue_cumulative') AND zero_policy!='allow'`).Scan(&count))
 	if count != 0 {
 		t.Fatal("approved field zero still rejected", count)
 	}
@@ -151,7 +152,7 @@ func TestCapitalHistoryArchivedRecord(t *testing.T) {
 	_, err = MaterializeFinancialSnapshotBatch(ctx, conn, 1, fields, []IndexedFinancialRecord{{ID: 1, Revision: "revision", Record: r}})
 	check(err)
 	var lease, depreciation float64
-	var bonds sql.NullFloat64
+	var bonds, revenue sql.NullFloat64
 	check(conn.QueryRowContext(ctx, `SELECT lease_liabilities,depreciation_depletion,bonds_payable FROM fundamental.statement_snapshot`).Scan(&lease, &depreciation, &bonds))
 	if lease != 62898500.9765625 || depreciation != 42345596 || !bonds.Valid || bonds.Float64 != 0 {
 		t.Fatal(lease, depreciation, bonds)
@@ -160,8 +161,8 @@ func TestCapitalHistoryArchivedRecord(t *testing.T) {
 	missing.ProviderFields = r.ProviderFields[:55]
 	_, err = MaterializeFinancialSnapshotBatch(ctx, conn, 2, fields, []IndexedFinancialRecord{{ID: 1, Revision: "revision", Record: missing}})
 	check(err)
-	check(conn.QueryRowContext(ctx, `SELECT bonds_payable FROM fundamental.statement_snapshot`).Scan(&bonds))
-	if bonds.Valid {
+	check(conn.QueryRowContext(ctx, `SELECT bonds_payable,revenue_cumulative FROM fundamental.statement_snapshot`).Scan(&bonds, &revenue))
+	if bonds.Valid || revenue.Valid {
 		t.Fatal("absent field became zero")
 	}
 	_, err = MaterializeFinancialSnapshotBatch(ctx, conn, 3, fields, []IndexedFinancialRecord{{ID: 1, Revision: "revision", Record: r}})
@@ -173,14 +174,14 @@ func TestCapitalHistoryArchivedRecord(t *testing.T) {
 	check(err)
 	for _, field := range catalog {
 		switch field.Name {
-		case "short_term_borrowings", "long_term_borrowings", "lease_liabilities", "research_and_development_expense", "right_of_use_depreciation":
+		case "short_term_borrowings", "long_term_borrowings", "lease_liabilities", "research_and_development_expense", "revenue_cumulative", "right_of_use_depreciation":
 			zeroed.ProviderFields[field.Index-1] = domain.ProviderFloat32{}
 		}
 	}
 	_, err = MaterializeFinancialSnapshotBatch(ctx, conn, 4, fields, []IndexedFinancialRecord{{ID: 1, Revision: "revision", Record: zeroed}})
 	check(err)
 	var approved int
-	check(conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_snapshot WHERE short_term_borrowings=0 AND long_term_borrowings=0 AND lease_liabilities=0 AND research_and_development_expense=0 AND right_of_use_depreciation IS NULL`).Scan(&approved))
+	check(conn.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.statement_snapshot WHERE short_term_borrowings=0 AND long_term_borrowings=0 AND lease_liabilities=0 AND research_and_development_expense=0 AND revenue_cumulative=0 AND right_of_use_depreciation IS NULL`).Scan(&approved))
 	if approved != 1 {
 		t.Fatal("main statement zeros or supplement exclusion incorrect")
 	}

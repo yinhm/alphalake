@@ -17,7 +17,10 @@ const capitalHistoryReview = `
  'current_portion_noncurrent_liabilities','income_tax_expense','lease_liabilities',
  'long_term_borrowings','long_term_equity_investments','monetary_funds','profit_before_tax',
  'short_term_borrowings','total_equity','debt_investments','other_debt_investments',
- 'other_noncurrent_financial_assets','research_and_development_expense');
+ 'other_noncurrent_financial_assets','research_and_development_expense','revenue_cumulative');
+ UPDATE fundamental.provider_field SET notes=replace(notes,'; nonzero only',
+ '; source zeros accepted 20261001; model suitability is separate')
+ WHERE source='tdx' AND canonical_field='revenue_cumulative';
  CREATE TEMP TABLE _capital_history_review AS
  SELECT p.* REPLACE(DATE '1900-01-01' AS valid_from,p.valid_from AS valid_to,
  'official-capital-history-v1;'||s.definition_reference AS notes)
