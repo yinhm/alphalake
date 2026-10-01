@@ -22,7 +22,7 @@ jobs:
           go mod tidy
           git diff --exit-code -- go.mod go.sum
       - name: Test
-        run: go test ./...
+        run: go test -timeout 30m ./...
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'

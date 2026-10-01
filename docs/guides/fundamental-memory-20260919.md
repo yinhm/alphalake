@@ -37,7 +37,7 @@ journalctl -u alphalake-materialize --no-pager -n 60
 
 ## 测试环境
 
-全套测试同样使用独立服务，并与数据任务串行。Go缓存位置通过`go env GOPATH`、`go env GOCACHE`取得并显式传入服务；Python回归使用项目`.venv/bin/python`，必要时设置`ALPHALAKE_TEST_PYTHON="$PWD/.venv/bin/python"`和`PYTHONPATH="$PWD/valuation/backend"`（在项目根目录执行）。测试应取消`ALPHALAKE_WORKSPACE`覆盖，避免临时样本误指向主workspace。依赖缺失或skip如实报告。
+全套测试同样使用独立服务，并与数据任务串行。 全量Go使用`go test -timeout 30m ./...`：当前真实源链包在本机可能超过Go默认10分钟；该参数只扩展包级超时，不跳过测试或放宽1GiB资源限额。Go缓存位置通过`go env GOPATH`、`go env GOCACHE`取得并显式传入服务；Python回归使用项目`.venv/bin/python`，必要时设置`ALPHALAKE_TEST_PYTHON="$PWD/.venv/bin/python"`和`PYTHONPATH="$PWD/valuation/backend"`（在项目根目录执行）。测试应取消`ALPHALAKE_WORKSPACE`覆盖，避免临时样本误指向主workspace。依赖缺失或skip如实报告。
 
 日常后端开发先执行下列快速范围，再补本轮修改对应的测试文件；提交前涉及来源、研究统计或广泛行为时执行完整组。快速范围覆盖引擎、原生接口/输入、发布和调度，不包含Go真实源链或全部研究回放；不能称完整测试。pytest默认仍执行完整组，CI没有删掉对应验收。
 

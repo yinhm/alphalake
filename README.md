@@ -23,7 +23,7 @@
 Go版本以`go.mod`为准，Python依赖见`valuation/backend/pyproject.toml`。常用检查：
 
 ```bash
-go test ./...
+go test -timeout 30m ./...
 go build ./cmd/alphalake
 PYTHONPATH=valuation/backend .venv/bin/python -m pytest -q valuation/backend/tests
 ```
