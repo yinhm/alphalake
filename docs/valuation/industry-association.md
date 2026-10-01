@@ -171,6 +171,36 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 
 本轮复用已有通用通道，活动人工审核关联3→6，官方沪深原名单仍5,100行。板材18家均有默认参考关联，候选3家行业/国家缺项由来源补链闭合；国内申万标签不覆盖官方行业，US地域及原引擎不变。缺报价另用既有TDX窗口补采，3家公司已通过默认网页/API；负条件值保留，不视为预测已合理。
 
-当前重审：5,227家中4,970非金融、120金融范围外、137待定；5,077已关联、150缺默认参考（含19家金融）。待定14家单一候选、117家多候选、6家冲突，89个申万节点、9个优先类别；原首轮90类/17家报告保留为基线，不改写冻结证据。当前报告在`workspace/derived/steel-reference/reference-audit.log`，复验仍用同一只读工具，换成该目录的`classification-coverage.json`；完整发布状态见[项目状态](../implementation-status.md#板材来源关联闭合与发布当前)。
+板材轮重审：5,227家中4,970非金融、120金融范围外、137待定；5,077已关联、150缺默认参考（含19家金融）。待定14家单一候选、117家多候选、6家冲突，89个申万节点、9个优先类别；原首轮90类/17家报告保留为基线，不改写冻结证据。板材轮报告在`workspace/derived/steel-reference/reference-audit.log`，复验仍用同一只读工具，换成该目录的`classification-coverage.json`；后续发布状态见[项目状态](../implementation-status.md#跨类别同发行人补链与发布当前)。
 
 通用排查顺序：精确证券原行→有原文证明的同发行人其他股类→显式业务映射候选；前两步能解决的不升级为行业代理。其他类别仍需审核，不能仅凭H股原行存在、名字相似或国家标签证明法人等同、业务同质或国家风险暴露已闭合。
+
+## 跨类别补链及未解决边界
+
+先查官方同发行人原行的通用顺序已覆盖汽车、高速公路、石化及电信，不另建申万代理或逐公司计算分支。以下7项为人工身份审核，复验、入库、导出及原生发布沿用现有机制；原6项关联链不改写。原目录、PDF哈希及角色证据在`workspace/derived/issuer-association/reviews.json`，当前工作簿仍为`indname-a1f4d70aa2cf.xls`。
+
+| 沪深目标及法人 | 官方H股原行 | 官方行业 / 国家 | 法人及股类原文 |
+|---|---|---|---|
+| SZSE:002594 比亚迪股份有限公司 | SEHK:1211 / 第6558行 | Auto & Truck / China | [公司简介](https://static.cninfo.com.cn/finalpage/2026-03-28/1225045351.PDF)，PDF第9页 |
+| SHSE:600377 江苏宁沪高速公路股份有限公司 | SEHK:177 / 第21559行 | Transportation / China | [公司简介](https://static.cninfo.com.cn/finalpage/2026-03-30/1225049417.PDF)，PDF第7页 |
+| SHSE:600548 深圳高速公路集团股份有限公司 | SEHK:548 / 第37709行 | Transportation / China | [公司简介](https://static.cninfo.com.cn/finalpage/2026-03-26/1225032115.PDF)，PDF第10页 |
+| SHSE:600688 中国石化上海石油化工股份有限公司 | SEHK:338 / 第38705行 | Chemical (Basic) / China | [公司简介](https://static.cninfo.com.cn/finalpage/2026-03-19/1225017109.PDF)，PDF第6页 |
+| SHSE:601107 四川成渝高速公路股份有限公司 | SEHK:107 / 第38316行 | Transportation / China | [公司简介](https://static.cninfo.com.cn/finalpage/2025-08-29/1224607579.PDF)，PDF第7页 |
+| SHSE:601633 长城汽车股份有限公司 | SEHK:2333 / 第16572行 | Auto & Truck / China | [公司简介](https://static.cninfo.com.cn/finalpage/2026-03-28/1225047452.PDF)，PDF第5页 |
+| SHSE:601728 中国电信股份有限公司 | SEHK:728 / 第8338行 | Telecom. Services / China | [公司简介](https://static.cninfo.com.cn/finalpage/2026-03-25/1225027302.PDF)，PDF第6页 |
+
+**同业唯一候选不等于发行人来源。**中国电信官方源为Telecom. Services，而此前国内同业候选为Telecom (Wireless)；中国石化官方H股原行为Oil/Gas (Integrated)，此前同业候选为Chemical (Basic)。应保留来源差异，不能自动将申万整类映射为票数最高或唯一同业标签。后者本轮仍未接入，不能把查到原行等同于身份审核通过。行业标签接通也不证明全公司业务风险同质，China源标签不是独立国家暴露核验。
+
+本轮完整5,227家重审：4,977非金融、120金融范围外、130待定；精确5,071＋人工同发行人13＝5,084已关联，143缺默认参考（124待定、19金融）。130待定为6家单一、118家多个候选及6家来源冲突，涉及86个国内节点、5个优先类别。新增中国电信源标签使中国移动的同业候选由一个变为两个，不能用简单减法替代全范围重审。原申万partial观测及1家并列归属仍保留，不冒称本轮重新同步行业。
+
+原14家优先组还有7家，按通用缺口分别处理：
+
+| 类别 | 证券 | 当前事实与下一步边界 |
+|---|---|---|
+| 未证实其他股类关联 | 世盟001220、盛龙001257 | 未取得可证明的其他股类关联；继续作为业务/国家候选，不称上游无数据、不自动填代理 |
+| 公告目录关联未接入 | 力勤001246 | 官方原表有SEHK:2245；已找到[上市公告书](https://static.cninfo.com.cn/finalpage/2026-09-29/1225586094.PDF)，尚未接入可由现有合同核验的真实目录关联；只补身份链，不扩采旧财务 |
+| 文本解码不足 | 中国石化600028、中国外运601598 | 年报及原目录已归档，但现有提取未得到完整可核对的公司简介。需复用可解码的官方同发行人身份文件；不借哈希或名字相似代替语义核验，不要求提取财务金额 |
+| 股类适用边界 | 中国移动600941 | 年报列A股与“港股”，不是H股表述；不能把原文改写成H股来满足现有合同。应先明确通用股类身份契约，不涉及H股价格采集或多市场估值 |
+| 法人英文名表示差异 | 新华文轩601811 | 年报`XinhuaWinsharePublishing&MediaCo.,Ltd.`与官方源`Xinhua Winshare Publishing and Media Co., Ltd.`不同；现有复验只忽略空白，尚无显式表示差异依据，不扩大模糊匹配 |
+
+本轮未修改默认US地域、行业代理政策、估值引擎或前端。正式发布及重放见[当前状态](../implementation-status.md#跨类别同发行人补链与发布当前)；新报告使用`workspace/derived/issuer-association/classification-coverage.json`与`reference-audit.log`。原首轮及板材报告保留冻结时点，不覆盖为新计数。参考关联齐全、API可算、经济适配及预测有效性分别验收。

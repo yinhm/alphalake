@@ -33,7 +33,7 @@ systemctl show alphalake-native-publish -p ActiveState -p ExecMainStatus -p Memo
 journalctl -u alphalake-native-publish --no-pager
 ```
 
-清单由操作者事先固定；当前网页为固定100家加5家关联回归证券。扩大或缩小范围须单独验收，不能按成功结果筛清单。源码新增不等于该命令全部模式均已在线验收，当前验收边界见文末。
+清单由操作者事先固定；当前网页为固定100家加12家关联回归证券。扩大或缩小范围须单独验收，不能按成功结果筛清单。源码新增不等于该命令全部模式均已在线验收，当前验收边界见文末。
 
 刷新同一范围时沿用相同清单、报告期与验收利率；`online`另外传入公告目录日期范围。成功后取`.delivery.json`所指`run.json`中的`information_as_of`，用相同`--as-of`、`--source-mode local`重放，可验证同输入不重导、不重算且网页文件不替换。仅改变显式验收利率时，SQLite可复用，但必须重新验算及真实HTTP核对，不将旧利率的结果当作新结果。
 
