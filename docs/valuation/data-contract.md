@@ -91,3 +91,5 @@ AlphaLake经已有`CompanyValuationInput.methodology_choices.reference_capital_i
 Macro中的CNY无风险率、成熟ERP/CRP和预测假设须同步解释；仅填写参考WACC而继续继承旧终值增长不属于完整人民币条件政策。`cost_of_capital_stable_override`及`stable_growth_rate`分别明示稳态，`roic_stable_override`未填仍按原引擎采用实际终值WACC，既有亏损税盾调整保留。原公司预测、金融调整、研发和股权桥不随接通WACC改写；输入与结果差异逐项记录，运行后回填的资本成本不是新增来源事实。
 
 typed输入不携带每个参考的原始归档定位，AlphaLake须在请求旁保存源版本、定位、哈希、观察日、截止、字段依据及政策标签；不能把结构校验当来源核验。报告的参考快照绑定与显式组件证据分别留痕。公司信用/经营暴露未知时可以用明确命名的条件情景，不冒充已审核公司市场WACC；当前自动选择及网页默认不因接口可表达而获得批准。
+
+WACC数据选择的诊断证据至少分开记录：公司评级或债券证据是否提供、报告EBIT与利息费用的TTM原组成、租赁/经营调整是否同范围、参考样本适用性与原区间、地域模型及税率依据。`reported_ebit/interest_expense`可用于算术诊断，不自动等于经审核的合成信用输入；利息零、负值或缺项不得直接选AAA、取绝对值或补零。缺信用证据不删除已有财务、不改变原生准入，仅限制拟选择政策的认证。126家现有输入审计及待审批顺序见[数据选择方案](native-cny-policy.md#数据选择方案待审批)，不新增typed字段或改变默认算法。
