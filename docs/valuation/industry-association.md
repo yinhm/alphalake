@@ -221,9 +221,9 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 
 最终5,227家重审为4,982非金融、120金融范围外、125待定；5,071精确＋18人工同发行人＝5,089参考齐全，138缺默认参考（119待定、19金融）。125待定为2家单一候选、117家多候选、6家来源冲突，涉及82个申万节点。世盟、盛龙是原优先组的剩余2家，不是整个项目剩余2项。新文件使用`workspace/derived/issuer-association-market/reference-audit.log`及同目录分类盘点；国内申万观测仍为运行5987，未重新同步。
 
-### 可审阅的下一步方案，尚未采用
+### 已批准的显式条件代理方案
 
-已按原年报法人英文名及确定性表示规则扫描完整官方公司原表，两家均未取得可验证的同发行人原行，原始匹配结果保留。不能给它们伪造官方公司分类；应改走明确标注的业务类别政策。以下业务类别判断是本地提案，不是达摩达兰官方对这两家公司的标签：
+已按原年报法人英文名及确定性表示规则扫描完整官方公司原表，两家均未取得可验证的同发行人原行，原始匹配结果保留。不能给它们伪造官方公司分类；应改走明确标注的业务类别政策。以下业务类别判断是已批准的本地条件政策，不是达摩达兰官方对这两家公司的标签：
 
 | 业务规则候选 | 真实正例与边界 | 既有接口上的条件选择 |
 |---|---|---|
@@ -234,6 +234,16 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 
 国家另审：可提交`country_override=China`作为**明确的中国国家风险/税率条件代理**，沿用现有官方China参考；年报境内注册及主要国内业务为有限依据，不能证明全部收入、资产或国家风险都在中国。跨国客户不自动等于境外经营暴露，注册地亦不自动决定全部风险。采用前须明确批准代理而非认证公司事实，后续如取得经营暴露再按[国家风险原文](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/CountryRisk.htm)重审，不加新风险权重或重复叠加国家溢价。
 
-最小实施方案是批准后通过原生API已有`industry_override`及`country_override`进行显式条件输入，不增引擎、表单或默认生成器，不写入官方`reference_company`。两家公司已在119家网页快照及数据接口中，9月30日行情/市值已补齐；世盟财务准入ready，盛龙仍缺2020/2021研发，按现行政策继续拒绝，不承诺批准参考即可解锁后者。若以后要批量默认采用，须另行审批通用类别规则、国家代理与政策血缘；不是凭两家公司推断整类。
+当前实施方式为通过原生API已有`industry_override`及`country_override`进行显式条件输入，不增引擎、表单或默认生成器，不写入官方`reference_company`。两家公司已在119家网页快照及数据接口中，9月30日行情/市值已补齐；世盟财务准入ready，盛龙仍缺2020/2021研发，按现行政策继续拒绝，不承诺批准参考即可解锁后者。若以后要批量默认采用，须另行审批通用类别规则、国家代理与政策血缘；不是凭两家公司推断整类。
 
-该方案已记录[valuation TODO](../../valuation/TODO.md)。引擎冻结及默认政策须等待明确审批的约定仍有效；本轮没有采用上述代理或运行其条件DCF。当前原生发布结果见[项目状态](../implementation-status.md#剩余身份缺口闭合及行情发布当前)。
+2026-10-02用户批准上述显式条件方案，已通过现有API实施：世盟请求Transportation/China，HTTP200，条件每股值21.3199023363元；盛龙请求Metals & Mining/China，HTTP422，结构化诊断仍为2020/2021年度研发缺失。原US地域、4.25%无风险率及经营预测默认值保持，不能把此值称公司合理目标价。会话分别记录用户选择的行业/国家参考，不写官方公司事实；世盟重复请求的实际输入及最终值相同，伪造行业名称请求422。
+
+当前119家默认路径仍为115成功/4拒绝；仅对两家采用已批准显式请求时为116成功/3拒绝，两种口径分别报告。主库及SQLite哈希均未变，无新发布或默认关联变更。政策、完整请求/响应、运行会话及验证位于`workspace/derived/approved-reference-proxies/`；批量默认映射、Global地域及缺失研发估计仍未批准。后续政策边界见[valuation TODO](../../valuation/TODO.md)，当前默认发布结果见[项目状态](../implementation-status.md#剩余身份缺口闭合及行情发布当前)。
+
+复验已批准的世盟显式请求（原生服务已运行时）：
+
+```bash
+curl --fail-with-body -sS http://127.0.0.1:8080/api/valuation/from-database \
+  -H "Content-Type: application/json" \
+  --data '{"ticker":"SZSE:001220","industry_override":"Transportation","country_override":"China"}'
+```
