@@ -171,7 +171,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 
 本轮复用已有通用通道，活动人工审核关联3→6，官方沪深原名单仍5,100行。板材18家均有默认参考关联，候选3家行业/国家缺项由来源补链闭合；国内申万标签不覆盖官方行业，US地域及原引擎不变。缺报价另用既有TDX窗口补采，3家公司已通过默认网页/API；负条件值保留，不视为预测已合理。
 
-板材轮重审：5,227家中4,970非金融、120金融范围外、137待定；5,077已关联、150缺默认参考（含19家金融）。待定14家单一候选、117家多候选、6家冲突，89个申万节点、9个优先类别；原首轮90类/17家报告保留为基线，不改写冻结证据。板材轮报告在`workspace/derived/steel-reference/reference-audit.log`，复验仍用同一只读工具，换成该目录的`classification-coverage.json`；后续发布状态见[项目状态](../implementation-status.md#剩余身份缺口闭合及行情发布当前)。
+板材轮重审：5,227家中4,970非金融、120金融范围外、137待定；5,077已关联、150缺默认参考（含19家金融）。待定14家单一候选、117家多候选、6家冲突，89个申万节点、9个优先类别；原首轮90类/17家报告保留为基线，不改写冻结证据。板材轮报告在`workspace/derived/steel-reference/reference-audit.log`，复验仍用同一只读工具，换成该目录的`classification-coverage.json`；后续发布状态见[项目状态](../implementation-status.md#剩余身份缺口闭合及行情发布上轮验收)。
 
 通用排查顺序：精确证券原行→有原文证明的同发行人其他股类→显式业务映射候选；前两步能解决的不升级为行业代理。其他类别仍需审核，不能仅凭H股原行存在、名字相似或国家标签证明法人等同、业务同质或国家风险暴露已闭合。
 
@@ -203,7 +203,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 | 股类适用边界 | 中国移动600941 | 年报列A股与“港股”，不是H股表述；不能把原文改写成H股来满足现有合同。应先明确通用股类身份契约，不涉及H股价格采集或多市场估值 |
 | 法人英文名表示差异 | 新华文轩601811 | 年报`XinhuaWinsharePublishing&MediaCo.,Ltd.`与官方源`Xinhua Winshare Publishing and Media Co., Ltd.`不同；现有复验只忽略空白，尚无显式表示差异依据，不扩大模糊匹配 |
 
-本轮未修改默认US地域、行业代理政策、估值引擎或前端。后续正式发布及重放见[当前状态](../implementation-status.md#剩余身份缺口闭合及行情发布当前)；新报告使用`workspace/derived/issuer-association/classification-coverage.json`与`reference-audit.log`。原首轮及板材报告保留冻结时点，不覆盖为新计数。参考关联齐全、API可算、经济适配及预测有效性分别验收。
+本轮未修改默认US地域、行业代理政策、估值引擎或前端。后续正式发布及重放见[当前状态](../implementation-status.md#剩余身份缺口闭合及行情发布上轮验收)；新报告使用`workspace/derived/issuer-association/classification-coverage.json`与`reference-audit.log`。原首轮及板材报告保留冻结时点，不覆盖为新计数。参考关联齐全、API可算、经济适配及预测有效性分别验收。
 
 ## 剩余身份缺口及代理审批边界
 
@@ -219,7 +219,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 
 中国石化/中国外运改用可解析半年报，不新建OCR或PDF金额来源；中国移动的原文“港股”不改成H股；新华文轩仅规范独立and/&排印；力勤招股文件中的A股发行角色与官方目录001246明确分开，不声称PDF印有未在证据锚点列示的代码。具体条件及拒绝规则见[身份取证spec](data-contract.md#同发行人参考的身份取证)。保留原文、目录哈希、组织ID及原13项事件，已有原文身份链优先于新建同业代理。
 
-最终5,227家重审为4,982非金融、120金融范围外、125待定；5,071精确＋18人工同发行人＝5,089参考齐全，138缺默认参考（119待定、19金融）。125待定为2家单一候选、117家多候选、6家来源冲突，涉及82个申万节点。世盟、盛龙是原优先组的剩余2家，不是整个项目剩余2项。新文件使用`workspace/derived/issuer-association-market/reference-audit.log`及同目录分类盘点；国内申万观测仍为运行5987，未重新同步。
+身份轮5,227家重审为4,982非金融、120金融范围外、125待定；5,071精确＋18人工同发行人＝5,089参考齐全，138缺默认参考（119待定、19金融）。125待定为2家单一候选、117家多候选、6家来源冲突，涉及82个申万节点。世盟、盛龙是原优先组的剩余2家，不是整个项目剩余2项。新文件使用`workspace/derived/issuer-association-market/reference-audit.log`及同目录分类盘点；国内申万观测仍为运行5987，未重新同步。
 
 ### 已批准的显式条件代理方案
 
@@ -234,11 +234,11 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 
 国家另审：可提交`country_override=China`作为**明确的中国国家风险/税率条件代理**，沿用现有官方China参考；年报境内注册及主要国内业务为有限依据，不能证明全部收入、资产或国家风险都在中国。跨国客户不自动等于境外经营暴露，注册地亦不自动决定全部风险。采用前须明确批准代理而非认证公司事实，后续如取得经营暴露再按[国家风险原文](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/CountryRisk.htm)重审，不加新风险权重或重复叠加国家溢价。
 
-当前实施方式为通过原生API已有`industry_override`及`country_override`进行显式条件输入，不增引擎、表单或默认生成器，不写入官方`reference_company`。两家公司已在119家网页快照及数据接口中，9月30日行情/市值已补齐；世盟财务准入ready，盛龙仍缺2020/2021研发，按现行政策继续拒绝，不承诺批准参考即可解锁后者。若以后要批量默认采用，须另行审批通用类别规则、国家代理与政策血缘；不是凭两家公司推断整类。
+当前实施方式为通过原生API已有`industry_override`及`country_override`进行显式条件输入，不增引擎、表单或默认生成器，不写入官方`reference_company`。两家公司已在网页快照及数据接口中，9月30日行情/市值已补齐；世盟财务准入ready，盛龙仍缺2020/2021研发，按现行政策继续拒绝，不承诺批准参考即可解锁后者。若以后要批量默认采用，须另行审批通用类别规则、国家代理与政策血缘；不是凭两家公司推断整类。
 
 2026-10-02用户批准上述显式条件方案，已通过现有API实施：世盟请求Transportation/China，HTTP200，条件每股值21.3199023363元；盛龙请求Metals & Mining/China，HTTP422，结构化诊断仍为2020/2021年度研发缺失。原US地域、4.25%无风险率及经营预测默认值保持，不能把此值称公司合理目标价。会话分别记录用户选择的行业/国家参考，不写官方公司事实；世盟重复请求的实际输入及最终值相同，伪造行业名称请求422。
 
-当前119家默认路径仍为115成功/4拒绝；仅对两家采用已批准显式请求时为116成功/3拒绝，两种口径分别报告。主库及SQLite哈希均未变，无新发布或默认关联变更。政策、完整请求/响应、运行会话及验证位于`workspace/derived/approved-reference-proxies/`；批量默认映射、Global地域及缺失研发估计仍未批准。后续政策边界见[valuation TODO](../../valuation/TODO.md)，当前默认发布结果见[项目状态](../implementation-status.md#剩余身份缺口闭合及行情发布当前)。
+初轮119家默认路径为115成功/4拒绝；仅对两家采用已批准显式请求时为116成功/3拒绝，两种口径分别报告。该代理验收轮主库及SQLite哈希均未变，无新发布或默认关联变更。政策、完整请求/响应、运行会话及验证位于`workspace/derived/approved-reference-proxies/`；批量默认映射、Global地域及缺失研发估计仍未批准。后续政策边界见[valuation TODO](../../valuation/TODO.md)，当前默认发布结果见[项目状态](../implementation-status.md#剩余身份缺口闭合及行情发布上轮验收)。
 
 批量复验复用原验收工具，按[显式参考政策契约](data-contract.md#显式参考政策的批量验收)提供已批准文件；不再依赖一次性脚本。在[独立1GiB服务](../guides/fundamental-memory-20260919.md#测试环境)中运行：
 
@@ -259,3 +259,25 @@ curl --fail-with-body -sS http://127.0.0.1:8080/api/valuation/from-database \
   -H "Content-Type: application/json" \
   --data '{"ticker":"SZSE:001220","industry_override":"Transportation","country_override":"China"}'
 ```
+
+## 能源类别来源补链（当前）
+
+按煤炭、油气开采、油田服务和火力发电固定8项身份候选，其中7项核验同一法人及A/H股代码后接入既有通道，不新增行业代理或公司计算分支：
+
+| 目标 | 官方另一股类原行 | 身份证据（PDF页序） |
+|---|---|---|
+| SHSE:600188 兖矿能源集团股份有限公司 | SEHK:1171 | [原文](https://static.cninfo.com.cn/finalpage/2026-08-29/1225532257.PDF)，法人第6页、股类第6页 |
+| SHSE:601088 中国神华能源股份有限公司 | SEHK:1088 | [原文](https://static.cninfo.com.cn/finalpage/2026-08-29/1225531759.PDF)，法人第5页、股类第6页 |
+| SHSE:601857 中国石油天然气股份有限公司 | SEHK:857 | [原文](https://static.cninfo.com.cn/finalpage/2026-08-31/1225535179.PDF)，法人第4页、股类第5页 |
+| SHSE:600871 中石化石油工程技术服务股份有限公司 | SEHK:1033 | [原文](https://static.cninfo.com.cn/finalpage/2026-08-18/1225477856.PDF)，法人第6页、股类第6页 |
+| SHSE:601808 中海油田服务股份有限公司 | SEHK:2883 | [原文](https://static.cninfo.com.cn/finalpage/2026-08-26/1225505637.PDF)，法人第5页、股类第6页 |
+| SHSE:600011 华能国际电力股份有限公司 | SEHK:902 | [原文](https://static.cninfo.com.cn/finalpage/2026-08-19/1225480837.PDF)，法人第5页、股类第6页 |
+| SHSE:601991 大唐国际发电股份有限公司 | SEHK:991 | [原文](https://static.cninfo.com.cn/finalpage/2026-08-29/1225531327.PDF)，法人第4页、股类第5页 |
+
+各自官方源行业为Coal & Related Energy（兖矿/神华）、Oil/Gas (Integrated)（中国石油）、Oilfield Svcs/Equip.（石化油服）、Oil/Gas (Production and Exploration)（中海油服）、Power（华能/大唐），国家均沿原行China。中海油服的源分类与申万类别不同，不能为符合直觉改写。第8项中海油600938仍有SEHK:883候选，但两份当前报告中文提取乱码，保留证据不猜关联；原行国家Hong Kong也不覆盖为China。本轮不建立OCR或新PDF财务数值主源。
+
+活动人工审核25项，原18项事件不变；官方沪深源表仍5,100行。当前完整5,227家重审：4,989非金融、120金融范围外、118待定；默认参考5,096齐备、131缺失（112待定＋19金融）。118待定拆为2项单一、110项多个候选及6项来源冲突，79个申万节点；申万观测仍来自既有partial运行5987，不宣称本轮行业全采。
+
+126家默认原生API及8080验收122成功/4拒绝，新增7家全部成功，原119家结果不变；既有两家显式代理重新绑定当前参考快照后为123成功/3拒绝，世盟仍21.32元/股，盛龙仍缺研发。报价仍9月30日、财务/股本2026H1。原119家条件输入的变化仅信息截止及来源库哈希，完整差异保留；不是财务数值或默认政策变化。7项收入金额核验与25项身份复验分别留证，不把前者说成全部财务附注已核验，不把人工审核数量称自动化完成度。
+
+当前证据为`workspace/derived/energy-issuer-reference/`，完整发布、性能及来源限制见[当前项目状态](../implementation-status.md#能源类别参考补链与发布当前)。下一步按类别继续排查已有官方原行与业务差异；已批准的两类显式代理不外推到这些源分类或其他国内行业。
