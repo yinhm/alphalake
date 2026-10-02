@@ -31,6 +31,10 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 
 程序先保存原用户输入及`user_explicit`结果，再组合已有3/5/10年增长收敛、公司三年历史资本代理及后五年稳态资本过渡；同时输出收入规模、逐年净再投资/FCFF及终值审阅。`selected_scenario=null`、`automatic_adoption=false`是正常交付结果，不是要求用户从价格中选胜出者。公司历史缺项留原因，原输入结果与其他可计算条件保留；非十年预测仅交付原结果，不强制改成十年。完整组合边界见[显式政策](../valuation/explicit-policy.md)。
 
+已批准的报表信用条件通过可选`--reported-credit workspace/derived/native-inputs/credit-policy.json`附加，适用于上述两种模式。政策文件包含`version="reported-statement-credit-conditions-v1"`、`references`完整WACC包、`sovereign_spread_policy="add_cn_default_spread"`或`"none"`、显式`max_credit_age_days`和`reason`。参考包由主库既有`export-wacc-references`在同截止导出，不能从旧样本摘要复制评级；范围和来源依据见[已批准规则](../valuation/native-cny-policy.md#已批准规则与依据)。
+
+先准备已确认的CNY参考融资组件，程序不会把原生详细/default分支静默切换。额外结果为`reported_credit_initial_credit_only`和`reported_credit_hold_current_wacc_and_no_terminal_excess_return`，仅从原基线生成、不与全部增长/资本路径交叉扩张；用户原信用及默认结果保持。`reported_credit`记录表内标签、覆盖率、标准组成、年龄和不适用原因，均非正式评级。旧SQLite缺金融业务范围字段时明确要求重建；不借此给零利息赋AAA或删除原条件。
+
 标准输出仅给`contract=native-conditional-delivery-v1`、`run_id`、公司数和`summary_file`。先读摘要，再按场景展开request/result/review及资本证据；协议保存源请求、SQLite及实现哈希。这个run ID追溯到该目录`summary.json`，不能传给旧`list_valuation_runs/compare_valuations`解析。存在业务拒绝时仍须逐行报告，进程退出0不等于全部可计算；版本冲突或源文件途中改变则失败且不写最终摘要，已有部分文件保留用于诊断。
 
 此入口不自动刷新行情/参考，也不认证请求里的财务来源、公司信用或未来经济依据。按原请求的财务/信息/股本时点解释；数据库当前参考绑定不能将归档WACC变成今日市场WACC。原始输入保存不变，原引擎仍重算公司派生指标。

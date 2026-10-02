@@ -98,6 +98,8 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 重复`--explicit-input`在单进程处理已确认范围，使用新的`workspace/derived`输出目录，按项目资源隔离规则运行；可用`--web`核验现行API。先读`native-conditional-delivery-v1`的`summary_file`，保留`user_explicit`、全部条件、拒绝及原因；`selected_scenario=null`是预期结果，不要求选最高/最低/中间值。收入规模、FCFF与终值检查不是预测认证，归档参考不称今日WACC。该run ID在本次目录追溯，不传给旧估值运行查询或比较入口。
 
+已批准报表信用附加条件使用同一入口的可选`--reported-credit`及已有显式政策/参考包，先读`docs/valuation/native-cny-policy.md`已批准规则。不从统一BBB、净财务费用或零利息推信用；保留原用户结果，解释表内标签及两种初始/稳态条件差别。缺明确CNY参考融资组件、范围或匹配版本时报告原因，不自动切原生详细/default分支；不能称代理为公司正式评级或新市场WACC。
+
 ## 原生跨公司条件情景
 
 需要自动生成假设而非已有专项政策估值时，先读项目`docs/valuation/native-uniform-scenarios.md`。复用`tools.evaluate_native_policy --selection-policy`，输入已确认的SQLite、参考包、统一配方与证券列表；不为单家公司改规则。结果在`summary.json`，以原名单为分母，先区分`blocked_inputs`、`blocked_policy`和`selection.status=rejected`，再读取`scenario_generation`与`scenario_*`结果。
