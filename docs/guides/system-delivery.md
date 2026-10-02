@@ -55,15 +55,27 @@ journalctl -u alphalake-native-publish --no-pager
 
 ### 按类别核对财务源缺口
 
-先取得现行`tools.audit_native_coverage`盘点；历史盘点可用于提出待核对的单元格，但不冒称本轮重新盘点全范围。`tools.audit_data_gaps`复用导出字段、债务/投资组成与累计TTM契约，一次调用Go源审核工具，按期间批量回读缓存，不逐公司启动进程、不创建PDF数值主源：
+先从同一主库取得现行`tools.audit_native_coverage`盘点；`--all`限定全部本地沪深身份，不以网页样本替代总体。以下命令仍须放在已核验1GiB硬限额的独立服务内串行运行，`REPORT_DIR`选择尚未使用的主题目录，`REPORT_PERIOD`与`INFORMATION_AS_OF`显式设置：
+
+```bash
+AUDIT_TMP=$(mktemp -d)
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.export_alphalake_sqlite \
+  --database workspace/alphalake.duckdb --output "$AUDIT_TMP/all.sqlite" --all \
+  --period "$REPORT_PERIOD" --as-of "$INFORMATION_AS_OF"
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_native_coverage \
+  --source-database workspace/alphalake.duckdb --database "$AUDIT_TMP/all.sqlite" \
+  --output "$REPORT_DIR/coverage.json"
+```
+
+报告按实际必需/条件输入保留金融范围外及分类待定，财务准入与参考齐备分开；不运行DCF、不更改主库或网页。原生诊断包含已批准代理，准入不认证经济合理性。完成完整性检查、源库前后哈希核对及缓存根因审核后，记录临时SQLite路径/体积/哈希/清理原因并删除；失败输出保留待查，不重复保留可重建全量库。当前盘点证据见项目状态；历史盘点可用于提出待核对的单元格，但不冒称本轮重新盘点全范围。`tools.audit_data_gaps`复用导出字段、债务/投资组成与累计TTM契约，一次调用Go源审核工具，按期间批量回读缓存，不逐公司启动进程、不创建PDF数值主源：
 
 ```bash
 go build -o /tmp/alphalake-tdx-cache-audit ./cmd/tdx-cache-audit
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_data_gaps \
-  --coverage workspace/derived/cumulative-ttm/coverage.json \
+  --coverage "$REPORT_DIR/coverage.json" \
   --cache workspace/tdx-cache --source-database workspace/alphalake.duckdb \
   --source-auditor /tmp/alphalake-tdx-cache-audit \
-  --output workspace/derived/gap-followup/source-gaps.json
+  --output "$REPORT_DIR/source-gaps.json"
 ```
 
 构建及审核同样放在上述独立服务中，输出须为新文件。源码解析和缓存校验复用现有实现及完整目录：匹配本地清单MD5/大小，或显式通过主库已有SHA-256/大小收据核验历史版本；两种结果分别标记，损坏文件拒绝。清单不一致不直接判损坏，也不能冒称当前上游版本。输出保留源零、非零、缺位置、无效值及全部重复行；源码编号仅在独立源证据中保留。
