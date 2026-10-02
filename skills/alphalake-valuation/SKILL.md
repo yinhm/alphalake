@@ -94,7 +94,7 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 ## 用户完整输入的条件交付
 
-用户已要求或授权具名条件比较时，先读`docs/guides/company-valuation-entry.md`的“原生具名条件自动交付”，使用既有`tools.evaluate_native_policy --explicit-input`。从已保存原生请求及已确认用户参数取得完整输入，SQLite与来源时点分别核对；此模式不需要BatchPolicy或新前端JSON表单，也不替用户指定信用、增长或资本倍率。缺完整输入先按数据契约准备，不借样本参数凑齐。
+用户已要求或授权具名条件比较时，先读`docs/guides/company-valuation-entry.md`的“原生具名条件自动交付”，使用既有`tools.evaluate_native_policy --explicit-input`。已有完整请求使用`--explicit-input`；仅有证券及已确认参数时使用`--prepare-inputs --ticker`，可选`--overrides`按证券提供原生假设点路径，复用SQLite取数及PATCH，不手工拼财务。两种模式互斥，不需要BatchPolicy或新前端JSON表单；不替用户指定信用、增长或资本倍率，不借样本参数凑齐。核对`protocol.input_preparation`来源、继承默认与覆盖，保留准备失败分母；`user_explicit`在准备模式只是基线名，不表示所有字段都由用户提供。
 
 重复`--explicit-input`在单进程处理已确认范围，使用新的`workspace/derived`输出目录，按项目资源隔离规则运行；可用`--web`核验现行API。先读`native-conditional-delivery-v1`的`summary_file`，保留`user_explicit`、全部条件、拒绝及原因；`selected_scenario=null`是预期结果，不要求选最高/最低/中间值。收入规模、FCFF与终值检查不是预测认证，归档参考不称今日WACC。该run ID在本次目录追溯，不传给旧估值运行查询或比较入口。
 

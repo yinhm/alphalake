@@ -4,19 +4,30 @@
 
 ## 原生具名条件自动交付
 
-用户要求比较已有假设时，复用`tools.evaluate_native_policy --explicit-input`；普通单次公司估值仍使用本页原`tools.company_valuation`入口。新模式消费**已核验来源的完整原生请求**（仅`{"inputs": CompanyValuationInput}`），不接受BatchPolicy，不另采财务或替用户决定信用、增长和利润率。请求可来自原生API保存的输入及已授权参数；没有完整输入时先按[数据契约](../valuation/data-contract.md)准备，不能照抄样本参数。
+用户要求比较已有假设时，复用`tools.evaluate_native_policy`；普通单次公司估值仍使用本页原`tools.company_valuation`入口。可按证券直接从已发布SQLite准备完整输入，或消费已保存原生请求，不接受BatchPolicy。命令在项目根目录、[独立1GiB服务](fundamental-memory-20260919.md)中执行；每次使用新的输出目录。
 
-以下命令在项目根目录、[独立1GiB服务](fundamental-memory-20260919.md)中执行；每次使用新的输出目录：
+**从SQLite准备并交付**，无需手工拼完整JSON：
 
 ```bash
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
   --database workspace/derived/valuation.sqlite \
-  --explicit-input workspace/derived/native-inputs/company-request.json \
+  --prepare-inputs --ticker SZSE:300866 \
+  --overrides workspace/derived/native-inputs/overrides.json \
   --output workspace/derived/conditional-delivery/new-run \
   --web http://127.0.0.1:8080
 ```
 
-重复`--explicit-input`即可在一个进程交付多家公司。`--web`可选，提供时逐项比对现行完整API的实际输入、DCF、每股结果及参考版本；不改网页。禁止与`--recipe/--references/--ticker/--selection-policy`混用。
+`--overrides`可省略；提供时，文件按证券组织原生点路径。下面只说明格式，数值须由用户确认，不能当公司默认预测：
+
+```json
+{"SZSE:300866": {"valuation_assumptions.revenue_growth_next_year": 0.08}}
+```
+
+复用现行`from-database`与PATCH；允许`valuation_assumptions.*`、`macro_inputs.*`、`methodology_choices.*`及`country/industry_data.industry_name`已有路径，整体年度数组或参考组件可按既有typed字段提供，不能用数字索引补造财务。行业/国家选择同时更新参考数值，不只改标签；缺默认公司关联时可显式提供已批准参考。未知路径、财务覆盖及名单外覆盖拒绝。未覆盖字段保留原模型默认/来源值，准备记录保存原生来源说明及显式覆盖；这些默认没有获得经济认证。
+
+重复`--ticker`在一个进程处理多家公司。财务或参考缺项按`blocked_preparation`保留分母，参数无效按`blocked_override`保留，不用参数补造事实；原生默认取数阶段无法计算时也保留拒绝，不新增另一条绕过路径。完整请求在输出目录`input-preparation/`，来源与默认记录在`protocol.input_preparation`；`user_explicit`在此模式表示准备后的基线，不能把未覆盖字段都称用户输入。
+
+**已有完整请求**仍用`--explicit-input workspace/derived/native-inputs/company-request.json`替代`--prepare-inputs/--ticker/--overrides`，可重复提供多家公司；文件仅包含`{"inputs": CompanyValuationInput}`。两种模式互斥，不能与`--recipe/--references/--selection-policy`混用。`--web`可选，提供时逐项比对现行完整API的实际输入、DCF、每股结果及参考版本；不改网页。
 
 程序先保存原用户输入及`user_explicit`结果，再组合已有3/5/10年增长收敛、公司三年历史资本代理及后五年稳态资本过渡；同时输出收入规模、逐年净再投资/FCFF及终值审阅。`selected_scenario=null`、`automatic_adoption=false`是正常交付结果，不是要求用户从价格中选胜出者。公司历史缺项留原因，原输入结果与其他可计算条件保留；非十年预测仅交付原结果，不强制改成十年。完整组合边界见[显式政策](../valuation/explicit-policy.md)。
 
