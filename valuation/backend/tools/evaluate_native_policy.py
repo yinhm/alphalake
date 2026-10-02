@@ -204,7 +204,55 @@ def evaluate(database, references, recipe, tickers, output, web=None, selection_
     return summary
 
 
-def deliver_conditions(database, request_files, output, web=None):
+def prepare_sqlite_requests(database, tickers, output, overrides_file=None):
+    """复用原生取数及PATCH，只准备既有契约输入，不覆盖财务事实。"""
+    from fastapi.testclient import TestClient
+    from api.main import app
+    if not tickers or len(set(tickers)) != len(tickers) or any(not re.fullmatch(r'(?:SHSE|SZSE):[0-9]{6}', t) for t in tickers):
+        raise ValueError('unique SH/SZ tickers required')
+    overrides = json.loads(overrides_file.read_text()) if overrides_file else {}
+    if not isinstance(overrides, dict) or set(overrides)-set(tickers):
+        raise ValueError('overrides must be keyed by requested ticker')
+    for fields in overrides.values():
+        if not isinstance(fields, dict) or any(not isinstance(p, str) or not (p.startswith(('valuation_assumptions.', 'macro_inputs.', 'methodology_choices.')) or p in ('country', 'industry_data.industry_name')) for p in fields):
+            raise ValueError('only existing assumption/reference paths may be overridden')
+    os.environ['US_CN_HK_DB_PATH'] = str(database)
+    output.mkdir(parents=True)
+    paths, rows = [], []
+    with TestClient(app, raise_server_exceptions=False) as client:
+        for ticker in tickers:
+            fields = overrides.get(ticker, {})
+            request = dict(ticker=ticker)
+            for path, name in [('macro_inputs.risk_free_rate','risk_free_rate'), ('country','country_override'), ('industry_data.industry_name','industry_override')]:
+                if path in fields: request[name] = fields[path]
+            response = client.post('/api/valuation/from-database', json=request)
+            row = dict(ticker=ticker, database_request=request, overrides=fields)
+            rows.append(row)
+            if response.status_code != 200:
+                row.update(status='blocked_preparation', http_status=response.status_code, reason=response.text); continue
+            body = response.json()
+            if fields:
+                # PATCH允许开放字典；先核对真实typed路径，防止拼错键静默丢失。
+                for path in fields:
+                    value = body['inputs']
+                    for part in path.split('.'):
+                        if not isinstance(value, dict) or part not in value:
+                            raise ValueError('unknown native override path: '+path)
+                        value = value[part]
+                response = client.patch('/api/valuation/'+body['id'], json=dict(overrides=fields))
+                if response.status_code != 200:
+                    row.update(status='blocked_override', http_status=response.status_code, reason=response.text); continue
+                body = response.json()
+            path = output/(ticker.replace(':','-')+'-request.json')
+            path.write_text(json.dumps(dict(inputs=body['inputs']),ensure_ascii=False,indent=2,allow_nan=False)+'\n')
+            paths.append(path)
+            row.update(status='prepared', source_metadata=body.get('source_metadata'),
+                reference_snapshot=body.get('reference_snapshot'), source_snapshot=body.get('valuation_proxy'),
+                inherited_policy='未覆盖字段沿原生取数及默认政策，不自动认证经济依据')
+    return paths, rows
+
+
+def deliver_conditions(database, request_files, output, web=None, *, tickers=None, overrides_file=None):
     """保存用户完整输入，组合既有增长/资本对照，不选择胜出者。"""
     from fastapi.testclient import TestClient
     from api.main import app
@@ -218,8 +266,22 @@ def deliver_conditions(database, request_files, output, web=None):
 
     database = database.resolve(strict=True)
     output = output.resolve()
-    if not request_files or output.exists() or not output.is_relative_to(workspace_path('derived').resolve()):
+    if bool(request_files) == bool(tickers) or output.exists() or not output.is_relative_to(workspace_path('derived').resolve()):
         raise ValueError('explicit requests and new output under workspace/derived required')
+    if overrides_file and not tickers:
+        raise ValueError('overrides require SQLite preparation')
+    with sqlite3.connect(database.as_uri()+'?mode=ro', uri=True) as connection:
+        metadata = dict(connection.execute('SELECT key,value FROM metadata'))
+        snapshot_tickers = {r[0] for r in connection.execute('SELECT ticker FROM companies')}
+    if metadata.get('contract') != 'alphalake-sqlite-v10':
+        raise ValueError('current native SQLite contract required')
+    with database.open('rb') as stream: snapshot_hash = hashlib.file_digest(stream, 'sha256').hexdigest()
+    override_source = dict(path=str(overrides_file), sha256=hashlib.sha256(overrides_file.read_bytes()).hexdigest()) if overrides_file else None
+    preparation = []
+    if tickers:
+        request_files, preparation = prepare_sqlite_requests(database, tickers, output/'input-preparation', overrides_file)
+        if any(r['status']=='prepared' and (r.get('reference_snapshot') or {}).get('id')!=metadata.get('reference_snapshot_id') for r in preparation):
+            raise ValueError('prepared reference publication mismatch')
     requests = []
     for path in request_files:
         raw = path.read_bytes(); payload = json.loads(raw)
@@ -231,24 +293,20 @@ def deliver_conditions(database, request_files, output, web=None):
         requests.append((inputs.ticker, payload, dict(path=str(path), sha256=hashlib.sha256(raw).hexdigest())))
     if len({ticker for ticker, _, _ in requests}) != len(requests):
         raise ValueError('duplicate explicit company requests')
-    with sqlite3.connect(database.as_uri()+'?mode=ro', uri=True) as connection:
-        metadata = dict(connection.execute('SELECT key,value FROM metadata'))
-        snapshot_tickers = {r[0] for r in connection.execute('SELECT ticker FROM companies')}
-    if metadata.get('contract') != 'alphalake-sqlite-v10':
-        raise ValueError('current native SQLite contract required')
-    with database.open('rb') as stream: snapshot_hash = hashlib.file_digest(stream, 'sha256').hexdigest()
     os.environ['US_CN_HK_DB_PATH'] = str(database)
-    output.mkdir(parents=True)
+    output.mkdir(parents=True, exist_ok=True)
     def save(name, value):
         (output/name).write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False)+'\n')
     protocol = dict(contract='native-conditional-delivery-v1', sqlite_sha256=snapshot_hash,
         metadata=metadata,
+        input_preparation=preparation, override_source=override_source,
         requests=[source | dict(ticker=ticker) for ticker, _, source in requests],
         growth_rules=SCENARIO_RULES, capital_rules=[POLICY, HISTORY_POLICY],
         runtime=runtime_identity(database.parent), selected_scenario=None,
         boundary='用户完整输入优先；来源归档/经济依据须另行核验，既有条件无概率和自动胜出者，不改默认或事实')
     save('protocol.json', protocol)
-    rows = []
+    rows = [dict(ticker=r['ticker'], status=r['status'], reason=r['reason'], http_status=r['http_status'],
+        scenarios={}, selected_scenario=None, automatic_adoption=False) for r in preparation if r['status'] != 'prepared']
     with TestClient(app, raise_server_exceptions=False) as client:
         for ticker, payload, source in requests:
             inputs = CompanyValuationInput.model_validate(payload['inputs'])
@@ -329,11 +387,13 @@ def deliver_conditions(database, request_files, output, web=None):
     with database.open('rb') as stream:
         if hashlib.file_digest(stream, 'sha256').hexdigest() != snapshot_hash:
             raise ValueError('publication changed during delivery')
-    for _, _, source in requests:
+    for source in [r[2] for r in requests]+([override_source] if override_source else []):
         if hashlib.sha256(Path(source['path']).read_bytes()).hexdigest() != source['sha256']:
             raise ValueError('explicit request changed during delivery')
     result = dict(contract=protocol['contract'], protocol=protocol, companies=len(rows), results=rows,
         selected_scenario=None, automatic_adoption=False)
+    if tickers:
+        rows.sort(key=lambda row: tickers.index(row['ticker']))
     result['run_id'] = value_digest(result)
     save('summary.json', result)
     return result
@@ -346,18 +406,21 @@ def main():
     parser.add_argument('--recipe',type=Path)
     parser.add_argument('--ticker',action='append')
     parser.add_argument('--explicit-input',type=Path,action='append',help='完整原生inputs请求；重复提供公司，自动交付具名条件，无胜出者')
+    parser.add_argument('--prepare-inputs',action='store_true',help='按ticker复用原生SQLite取数，准备完整输入并交付条件')
+    parser.add_argument('--overrides',type=Path,help='按ticker组织的既有原生点路径覆盖；仅与prepare-inputs配合')
     parser.add_argument('--output',required=True,type=Path)
     parser.add_argument('--selection-policy',type=Path,help='explicit automatic conditional assumption selection policy')
     parser.add_argument('--web',help='optional unchanged full-input API verification URL')
     args=parser.parse_args()
-    if args.explicit_input:
-        if args.references or args.recipe or args.ticker or args.selection_policy:
+    if args.explicit_input or args.prepare_inputs:
+        if args.references or args.recipe or args.selection_policy or (args.explicit_input and (args.ticker or args.prepare_inputs or args.overrides)):
             parser.error('explicit inputs cannot be mixed with policy selection')
-        result = deliver_conditions(args.database, args.explicit_input, args.output, args.web)
+        result = deliver_conditions(args.database, args.explicit_input, args.output, args.web,
+            tickers=args.ticker if args.prepare_inputs else None, overrides_file=args.overrides)
         print(json.dumps(dict(contract=result['contract'], run_id=result['run_id'], companies=result['companies'],
             selected_scenario=None, summary_file=str(args.output/'summary.json')), ensure_ascii=False))
         return
-    if not args.references or not args.recipe or not args.ticker:
+    if args.overrides or not args.references or not args.recipe or not args.ticker:
         parser.error('references, recipe and ticker required without explicit inputs')
     print(json.dumps(evaluate(args.database,json.loads(args.references.read_text()),json.loads(args.recipe.read_text()),args.ticker,args.output,args.web,json.loads(args.selection_policy.read_text()) if args.selection_policy else None),ensure_ascii=False))
 

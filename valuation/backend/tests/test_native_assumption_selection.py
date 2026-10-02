@@ -693,3 +693,45 @@ def test_condition_delivery_rejects_changed_source(tmp_path, monkeypatch):
     with pytest.raises(ValueError,match='request changed'):
         deliver_conditions(database,[request],tmp_path/'derived'/'changed')
     assert not (tmp_path/'derived'/'changed'/'summary.json').exists()
+
+
+def test_sqlite_input_preparation_preserves_overrides_and_blocked_denominator(tmp_path, monkeypatch):
+    import fastapi.testclient
+    from types import SimpleNamespace
+    from api.routes import _set_nested
+    from tools.evaluate_native_policy import deliver_conditions
+    delivery_client(monkeypatch); monkeypatch.setenv('ALPHALAKE_WORKSPACE',str(tmp_path))
+    original_client=fastapi.testclient.TestClient
+    supplied=sample()['inputs']
+    class PreparingClient(original_client):
+        def post(self, path, json):
+            if path.endswith('/from-database'):
+                if json['ticker']!='SHSE:600519':
+                    return SimpleNamespace(status_code=422,text='missing historical research')
+                self.inputs=deepcopy(supplied)
+                self.inputs['macro_inputs']['risk_free_rate']=json.get('risk_free_rate',.0425)
+                body=super().post('/api/valuation',{'inputs':self.inputs}).json()
+                body.update(id='prepared',source_metadata={'valuation_assumptions':'Original model defaults'})
+                return SimpleNamespace(status_code=200,json=lambda:body)
+            return super().post(path,json)
+        def patch(self, path, json):
+            for key,value in json['overrides'].items(): _set_nested(self.inputs,key,value)
+            body=super().post('/api/valuation',{'inputs':self.inputs}).json()
+            body.update(source_metadata={'valuation_assumptions.revenue_growth_next_year':'User override'})
+            return SimpleNamespace(status_code=200,json=lambda:body)
+    monkeypatch.setattr(fastapi.testclient,'TestClient',PreparingClient)
+    database=delivery_database(tmp_path,monkeypatch)
+    overrides=tmp_path/'overrides.json'; overrides.write_text(json.dumps({'SHSE:600519':{
+        'macro_inputs.risk_free_rate':.03,'valuation_assumptions.revenue_growth_next_year':.17}}))
+    result=deliver_conditions(database,None,tmp_path/'derived/run',tickers=['SHSE:600519','SZSE:000001'],overrides_file=overrides)
+    assert result['companies']==2 and result['results'][1]['status']=='blocked_preparation'
+    assert result['results'][0]['scenarios']['user_explicit']['forecast'][0]['growth']==pytest.approx(.17)
+    prepared=json.loads((tmp_path/'derived/run/input-preparation/SHSE-600519-request.json').read_text())
+    assert prepared['inputs']['raw_financials']==supplied['raw_financials']
+    assert prepared['inputs']['macro_inputs']['risk_free_rate']==.03
+    assert result['protocol']['input_preparation'][0]['source_metadata']
+    assert result['selected_scenario'] is None
+    for path, message in [('raw_financials','only existing'),('valuation_assumptions.typo','unknown native')]:
+        overrides.write_text(json.dumps({'SHSE:600519':{path:1}}))
+        with pytest.raises(ValueError,match=message):
+            deliver_conditions(database,None,tmp_path/'derived'/message.split()[0],tickers=['SHSE:600519'],overrides_file=overrides)
