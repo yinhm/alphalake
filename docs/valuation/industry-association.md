@@ -240,6 +240,18 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 
 当前119家默认路径仍为115成功/4拒绝；仅对两家采用已批准显式请求时为116成功/3拒绝，两种口径分别报告。主库及SQLite哈希均未变，无新发布或默认关联变更。政策、完整请求/响应、运行会话及验证位于`workspace/derived/approved-reference-proxies/`；批量默认映射、Global地域及缺失研发估计仍未批准。后续政策边界见[valuation TODO](../../valuation/TODO.md)，当前默认发布结果见[项目状态](../implementation-status.md#剩余身份缺口闭合及行情发布当前)。
 
+批量复验复用原验收工具，按[显式参考政策契约](data-contract.md#显式参考政策的批量验收)提供已批准文件；不再依赖一次性脚本。在[独立1GiB服务](../guides/fundamental-memory-20260919.md#测试环境)中运行：
+
+```bash
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.check_native_sqlite \
+  --database workspace/derived/valuation.sqlite \
+  --output workspace/derived/explicit-reference-batch/conditional \
+  --risk-free-rate .0425 \
+  --reference-policy workspace/derived/explicit-reference-batch/policy.json
+```
+
+`.0425`仅固定原模型无风险率假设用于本轮对照，不称已观测市场利率。已按同一119家、同一SQLite和该利率串行运行无政策/显式政策两组，117家非政策公司完整结果行、实际输入及缺项签名一致；世盟与先前真实HTTP条件值一致，盛龙保留财务拒绝。21项相关Python回归通过，包括未知/重复证券、缺审批、夹带其他覆盖及财务阻断不得放行；没有Go改动，不重复Go全套或完整后端。资源单元硬限额1GiB，快速结束未取得MemoryPeak，明确留空。报告及对照在`workspace/derived/explicit-reference-batch/`。
+
 复验已批准的世盟显式请求（原生服务已运行时）：
 
 ```bash

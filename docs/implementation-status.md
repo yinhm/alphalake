@@ -4,6 +4,8 @@
 
 2026-10-02已批准并验证两类行业及China国家的显式条件代理：世盟Transportation/China原生API成功，条件值21.32元/股；盛龙Metals & Mining/China仍缺2020/2021研发。仅对两家采用该显式请求时，119家为116成功/3拒绝；默认网页/API仍115成功/4拒绝。批准不包含批量默认映射或地域切换。来源、重复计算及错误行业拒绝证据在`workspace/derived/approved-reference-proxies/`，主库/SQLite哈希未变，引擎及前端未改。具体边界见[已批准方案](valuation/industry-association.md#已批准的显式条件代理方案)。
 
+显式参考已接入`tools.check_native_sqlite --reference-policy`通用批量验收入口，审批/证据/证券范围及实际请求留痕，默认诊断与条件结果分别统计。119家默认/条件对照为115/4与116/3，117家非政策结果及输入签名不变；21项相关Python回归通过。未修改发布器、引擎、前端、默认假设或主库，未批准自动映射其他类别；报告在`workspace/derived/explicit-reference-batch/`，文件契约见[数据spec](valuation/data-contract.md#显式参考政策的批量验收)。
+
 财务转换、导出、准入及展示的统一约束见[数据接入spec](valuation/data-contract.md)；后续变更先核对该spec及实际消费方，不把季度拆分误作估值硬要求。
 
 后端回归已消除重复原文提取、全范围重复索引扫描及未消费研究统计；同配置完整组由702.19秒降至577.88秒（637通过/4跳过，原有测试零删除）。[日常快速范围](guides/fundamental-memory-20260919.md#测试环境)262通过/4跳过、13.80秒；须另补修改相关回归，不代替完整源链验收。上述优化轮未改估值引擎、冻结结果、主库或网页快照；本轮数据交付更新另列下文。
