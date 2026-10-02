@@ -735,3 +735,37 @@ def test_sqlite_input_preparation_preserves_overrides_and_blocked_denominator(tm
         overrides.write_text(json.dumps({'SHSE:600519':{path:1}}))
         with pytest.raises(ValueError,match=message):
             deliver_conditions(database,None,tmp_path/'derived'/message.split()[0],tickers=['SHSE:600519'],overrides_file=overrides)
+
+
+def test_reported_credit_conditions_preserve_baseline_and_scope():
+    from tools.reported_native_credit import compare, POLICY_VERSION
+    baseline=sample(); baseline['inputs']=reference_inputs(baseline); baseline['inputs']['country']='China'
+    policy=dict(version=POLICY_VERSION,sovereign_spread_policy='add_cn_default_spread',max_credit_age_days=370,reason='合成测试报表信用代理')
+    fact=dict(ticker='SHSE:600519',period='2025-12-31',unit='CNY',period_type='FY',statement_scope='provider_default')
+    evidence=dict(terms=[('2025-12-31',1)],cutoff='2026-10-02T00:00:00+00:00',sovereign={'value':'0.005'},
+        bands=[dict(coverage_lower='8.50',coverage_upper='100000',rating='Aaa/AAA',value='0.004',observation_date='2026-01-01')],
+        rows={'SHSE:600519':[dict(fact,field='reported_ebit',value='100000000'),dict(fact,field='interest_expense',value='1000000')]})
+    original=deepcopy(baseline)
+    result=compare(baseline,evidence,policy)
+    assert result['status']=='conditional_proxy' and result['coverage_ratio']=='100'
+    assert baseline==original and not result['automatic_adoption']
+    assert len(result['variants'])==2
+    candidate=result['variants']['initial_credit_only']['inputs']
+    assert candidate['raw_financials']==baseline['inputs']['raw_financials']
+    assert candidate['valuation_assumptions']==baseline['inputs']['valuation_assumptions']
+    assert candidate['methodology_choices']['reference_capital_inputs']['debt_cost_pretax']==pytest.approx(
+        baseline['inputs']['methodology_choices']['reference_capital_inputs']['risk_free_rate']+.009)
+    for value in ('0','-1'):
+        changed=deepcopy(evidence);changed['rows']['SHSE:600519'][1]['value']=value
+        assert compare(baseline,changed,policy)['reason']=='nonpositive_gross_interest'
+    changed=deepcopy(evidence);changed['rows']['SHSE:600519'].append(dict(fact,field='financial_business_interest_income',value='1'))
+    assert compare(baseline,changed,policy)['reason']=='financial_business_interest_components_observed'
+    changed=deepcopy(evidence);changed['rows']['SHSE:600519'].pop()
+    assert compare(baseline,changed,policy)['reason']=='missing_standard_credit_components'
+    changed=deepcopy(evidence);changed['bands'][0]['coverage_lower']='100'
+    assert compare(baseline,changed,policy)['reason']=='official_credit_interval_gap_or_conflict'
+    assert compare(baseline,evidence,dict(policy,max_credit_age_days=1))['reason']=='credit_reference_outside_explicit_age_limit'
+    changed=deepcopy(evidence);changed['rows']['SHSE:600519'][0]['unit']='USD'
+    assert compare(baseline,changed,policy)['reason']=='incompatible_standard_credit_fact'
+    changed=deepcopy(baseline);changed['ltm_financials']['ebit']+=1
+    assert compare(changed,evidence,policy)['reason']=='model_reported_ebit_differs_from_standard_basis'
