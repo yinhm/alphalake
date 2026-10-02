@@ -2,6 +2,28 @@
 
 当前财务输入使用`alphalake-valuation-v2`，就绪度使用`alphalake-readiness-v3`，要求财务库schema46。业务字段使用通用报表名称，源编号仅留血缘；旧请求与运行的迁移边界见[ADR 018](../decisions/018-standard-financial-consumption.md)。
 
+## 原生具名条件自动交付
+
+用户要求比较已有假设时，复用`tools.evaluate_native_policy --explicit-input`；普通单次公司估值仍使用本页原`tools.company_valuation`入口。新模式消费**已核验来源的完整原生请求**（仅`{"inputs": CompanyValuationInput}`），不接受BatchPolicy，不另采财务或替用户决定信用、增长和利润率。请求可来自原生API保存的输入及已授权参数；没有完整输入时先按[数据契约](../valuation/data-contract.md)准备，不能照抄样本参数。
+
+以下命令在项目根目录、[独立1GiB服务](fundamental-memory-20260919.md)中执行；每次使用新的输出目录：
+
+```bash
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
+  --database workspace/derived/valuation.sqlite \
+  --explicit-input workspace/derived/native-inputs/company-request.json \
+  --output workspace/derived/conditional-delivery/new-run \
+  --web http://127.0.0.1:8080
+```
+
+重复`--explicit-input`即可在一个进程交付多家公司。`--web`可选，提供时逐项比对现行完整API的实际输入、DCF、每股结果及参考版本；不改网页。禁止与`--recipe/--references/--ticker/--selection-policy`混用。
+
+程序先保存原用户输入及`user_explicit`结果，再组合已有3/5/10年增长收敛、公司三年历史资本代理及后五年稳态资本过渡；同时输出收入规模、逐年净再投资/FCFF及终值审阅。`selected_scenario=null`、`automatic_adoption=false`是正常交付结果，不是要求用户从价格中选胜出者。公司历史缺项留原因，原输入结果与其他可计算条件保留；非十年预测仅交付原结果，不强制改成十年。完整组合边界见[显式政策](../valuation/explicit-policy.md)。
+
+标准输出仅给`contract=native-conditional-delivery-v1`、`run_id`、公司数和`summary_file`。先读摘要，再按场景展开request/result/review及资本证据；协议保存源请求、SQLite及实现哈希。这个run ID追溯到该目录`summary.json`，不能传给旧`list_valuation_runs/compare_valuations`解析。存在业务拒绝时仍须逐行报告，进程退出0不等于全部可计算；版本冲突或源文件途中改变则失败且不写最终摘要，已有部分文件保留用于诊断。
+
+此入口不自动刷新行情/参考，也不认证请求里的财务来源、公司信用或未来经济依据。按原请求的财务/信息/股本时点解释；数据库当前参考绑定不能将归档WACC变成今日市场WACC。原始输入保存不变，原引擎仍重算公司派生指标。
+
 ## 已保存预测的到期核验
 
 新增只读命令`tools.review_valuation_forecast`，使用已有run ID核验历史增长及显式一年校准政策的十年收入/调整EBIT预测。先复用`load_run`检查请求/引擎哈希，再用当前引擎完整重放原报告；当前引擎不能复现时拒绝，不悄悄改用新预测。此工具不执行新估值，不改政策或旧运行。

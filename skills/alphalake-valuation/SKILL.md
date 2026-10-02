@@ -1,6 +1,6 @@
 ---
 name: alphalake-valuation
-description: 使用 AlphaLake 已有数据库和显式政策进行 A 股公司条件估值，解释专项与行业候选、缺项和来源证据。适用于公司估值、历史估值发现、已有估值结果解读、两次估值比较和口径核对；不用于一般股价预测、仓库开发或全市场同步维护。
+description: 使用 AlphaLake 已有数据库和显式政策进行 A 股公司条件估值，解释专项与行业候选、缺项和来源证据。适用于公司估值、历史估值发现、已有估值结果解读、两次估值比较、具名条件交付和口径核对；不用于一般股价预测、仓库开发或全市场同步维护。
 ---
 
 # AlphaLake 公司估值
@@ -91,6 +91,12 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 当前默认主库为项目workspace/alphalake.duckdb，财务和达摩达兰参考数据共用此库；动态输出仅写workspace/derived，默认运行目录为workspace/derived/valuation-runs。历史日期目录只作迁移记录，不作为运行配置。
 
+
+## 用户完整输入的条件交付
+
+用户已要求或授权具名条件比较时，先读`docs/guides/company-valuation-entry.md`的“原生具名条件自动交付”，使用既有`tools.evaluate_native_policy --explicit-input`。从已保存原生请求及已确认用户参数取得完整输入，SQLite与来源时点分别核对；此模式不需要BatchPolicy或新前端JSON表单，也不替用户指定信用、增长或资本倍率。缺完整输入先按数据契约准备，不借样本参数凑齐。
+
+重复`--explicit-input`在单进程处理已确认范围，使用新的`workspace/derived`输出目录，按项目资源隔离规则运行；可用`--web`核验现行API。先读`native-conditional-delivery-v1`的`summary_file`，保留`user_explicit`、全部条件、拒绝及原因；`selected_scenario=null`是预期结果，不要求选最高/最低/中间值。收入规模、FCFF与终值检查不是预测认证，归档参考不称今日WACC。该run ID在本次目录追溯，不传给旧估值运行查询或比较入口。
 
 ## 原生跨公司条件情景
 

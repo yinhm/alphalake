@@ -123,6 +123,8 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.compare_native_capital \
 - [EBIT与投资范围审计](../history/ebit-investment-scope-audit.md)
 - [标准资本分量核算](native-capital-definition.md)
 
+2026-10-02用户已批准具名条件的自动组合交付，现有资本比较已接入[完整用户输入入口](../guides/company-valuation-entry.md#原生具名条件自动交付)。原用户结果保留，两种资本条件分别保存，没有自动采用公司历史或稳态过渡；当前12家验收与不适用项见[项目状态](../implementation-status.md)。
+
 ### 历史映射补链
 
 少数股东权益的定义与[TDX官方目录](https://help.tdx.com.cn/quant/docs/markdown/TdxQuant.md/mindoc-1h10m001ic888.html)一致。`extend-capital-history`现将其与已有资本字段一起扩展至2025年前，原2025年起的审核记录保留；新旧规则不重叠，重复执行不新增映射。此处1900年是目录的开放历史下界，不意味着存在1900年数据；实际覆盖由本地归档、证券身份和披露关联决定。
