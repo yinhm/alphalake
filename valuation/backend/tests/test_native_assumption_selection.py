@@ -592,3 +592,104 @@ def test_company_capital_matches_consolidated_revenue_and_keeps_equity_bridge(mi
     assert result['candidate']['inputs']['raw_financials']==baseline['inputs']['raw_financials']
     # Minority is already deducted in the shared equity bridge; do not adjust it again.
     assert result['value_per_share_change']==pytest.approx(result['operating_value_change_million_cny']/10)
+
+
+def delivery_database(tmp_path, monkeypatch):
+    import sqlite3
+    database=tmp_path/'input.sqlite'
+    with sqlite3.connect(database) as connection:
+        connection.executescript("CREATE TABLE companies(ticker TEXT); CREATE TABLE metadata(key TEXT,value TEXT);")
+        connection.execute("INSERT INTO companies VALUES('SHSE:600519')")
+        connection.executemany('INSERT INTO metadata VALUES(?,?)', [('contract','alphalake-sqlite-v10'),('reference_snapshot_id','test')])
+    monkeypatch.setenv('US_CN_HK_DB_PATH',str(database))
+    return database
+
+
+def delivery_client(monkeypatch):
+    """使用真实引擎响应隔离编排；真实HTTP另作发布快照验收。"""
+    import fastapi.testclient
+    class Client:
+        def __init__(self, *args, **kwargs): pass
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+        def post(self, path, json):
+            inputs = CompanyValuationInput.model_validate(json['inputs'])
+            report = run_full_valuation(inputs)
+            body = dict(inputs=inputs.model_dump(mode='json'), reference_snapshot={'id':'test'},
+                **{name:getattr(report,name).model_dump(mode='json') for name in
+                   ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+            class Response:
+                status_code = 200
+                def json(self): return body
+            return Response()
+    monkeypatch.setattr(fastapi.testclient, 'TestClient', Client)
+
+
+@pytest.mark.parametrize('projection', [5, 10])
+def test_condition_delivery_preserves_user_and_no_winner(tmp_path, monkeypatch, projection):
+    from tools.evaluate_native_policy import deliver_conditions
+    from tools.check_native_sqlite import value_digest
+    delivery_client(monkeypatch)
+    monkeypatch.setenv('ALPHALAKE_WORKSPACE', str(tmp_path))
+    baseline = sample(); inputs = baseline['inputs']
+    inputs['valuation_assumptions'].update(projection_years=projection,
+        revenue_growth_next_year=.17,revenue_growth_years_2_5=.17,target_operating_margin=.13,
+        sales_to_capital_high=2.2,sales_to_capital_stable=2.2)
+    request = tmp_path/'request.json'; request.write_text(json.dumps({'inputs':inputs}))
+    database=delivery_database(tmp_path,monkeypatch)
+    result=deliver_conditions(database,[request],tmp_path/'derived'/'run')
+    assert result['selected_scenario'] is None and not result['automatic_adoption']
+    row=result['results'][0]; original=json.loads((tmp_path/'derived/run/SHSE-600519-user_explicit-request.json').read_text())
+    assert original['inputs']==inputs
+    assert row['scenarios']['user_explicit']['forecast'][0]['growth']==pytest.approx(.17)
+    assert row['scenarios']['user_explicit']['projection_years']==projection
+    assert len(row['scenarios'])==(10 if projection==10 else 1)
+    assert all(s['status']=='calculated_conditional' for s in row['scenarios'].values())
+    run_id=result.pop('run_id'); assert run_id==value_digest(result)
+    with pytest.raises(ValueError,match='new output'):
+        deliver_conditions(database,[request],tmp_path/'derived'/'run')
+
+
+def test_condition_delivery_retains_history_gap_and_rejects_duplicate(tmp_path, monkeypatch):
+    from tools.evaluate_native_policy import deliver_conditions
+    delivery_client(monkeypatch); monkeypatch.setenv('ALPHALAKE_WORKSPACE',str(tmp_path))
+    inputs=sample()['inputs']; inputs['raw_financials']=[r for r in inputs['raw_financials'] if r['fiscal_year']!=2023]
+    request=tmp_path/'request.json';request.write_text(json.dumps({'inputs':inputs}))
+    database=delivery_database(tmp_path,monkeypatch)
+    result=deliver_conditions(database,[request],tmp_path/'derived'/'gaps')
+    scenarios=result['results'][0]['scenarios']
+    assert scenarios['user_explicit']['status']=='calculated_conditional'
+    assert all(scenarios[f'fade{n}_company-history']['reason']=='company_history_basis_incomplete' for n in (3,5,10))
+    assert all(scenarios[f'fade{n}_terminal-transition']['status']=='calculated_conditional' for n in (3,5,10))
+    with pytest.raises(ValueError,match='duplicate'):
+        deliver_conditions(database,[request,request],tmp_path/'derived'/'duplicate')
+
+
+def test_condition_delivery_rejects_reference_mismatch(tmp_path, monkeypatch):
+    import sqlite3
+    from tools.evaluate_native_policy import deliver_conditions
+    delivery_client(monkeypatch); monkeypatch.setenv('ALPHALAKE_WORKSPACE',str(tmp_path))
+    database=delivery_database(tmp_path,monkeypatch)
+    with sqlite3.connect(database) as connection:
+        connection.execute("UPDATE metadata SET value='different' WHERE key='reference_snapshot_id'")
+    request=tmp_path/'request.json'; request.write_text(json.dumps({'inputs':sample()['inputs']}))
+    with pytest.raises(ValueError,match='reference publication mismatch'):
+        deliver_conditions(database,[request],tmp_path/'derived'/'mismatch')
+    assert not (tmp_path/'derived'/'mismatch'/'summary.json').exists()
+
+
+def test_condition_delivery_rejects_changed_source(tmp_path, monkeypatch):
+    import fastapi.testclient
+    from tools.evaluate_native_policy import deliver_conditions
+    delivery_client(monkeypatch); monkeypatch.setenv('ALPHALAKE_WORKSPACE',str(tmp_path))
+    database=delivery_database(tmp_path,monkeypatch)
+    request=tmp_path/'request.json'; request.write_text(json.dumps({'inputs':sample()['inputs']}))
+    original_client=fastapi.testclient.TestClient
+    class ChangingClient(original_client):
+        def post(self, *args, **kwargs):
+            request.write_text('{}')
+            return super().post(*args, **kwargs)
+    monkeypatch.setattr(fastapi.testclient,'TestClient',ChangingClient)
+    with pytest.raises(ValueError,match='request changed'):
+        deliver_conditions(database,[request],tmp_path/'derived'/'changed')
+    assert not (tmp_path/'derived'/'changed'/'summary.json').exists()

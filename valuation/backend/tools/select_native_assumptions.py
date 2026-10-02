@@ -131,6 +131,13 @@ SCENARIO_RULES = dict(version='native-evidence-scenarios-v1', fade_years=[3, 5, 
     predictive_validation='not_established')
 
 
+def growth_scenarios(initial, terminal):
+    """既有十年持续期压力，不选择公司预测或改其他输入。"""
+    return [dict(name=f'fade{horizon}', reason='既有持续期条件；不证明公司增长空间或竞争优势',
+        growth=[initial+(terminal-initial)*min(i/(horizon-1), 1) for i in range(10)])
+        for horizon in SCENARIO_RULES['fade_years']]
+
+
 def scenario_payloads(baseline, selected):
     """复用已选参考和同口径财务；统一生成场景，不将历史均值认证为可持续目标。"""
     from engine.data_dictionary import ForecastYear
@@ -172,14 +179,13 @@ def scenario_payloads(baseline, selected):
         raise ValueError('annual scenario cannot change terminal tax')
     taxes[-1] = terminal_tax  # 消除逐步相加舍入，使终值严格采用同一边际税率。
     payloads = {}
-    for horizon in SCENARIO_RULES['fade_years']:
-        growth = [a.revenue_growth_next_year + (a.stable_growth_rate-a.revenue_growth_next_year)
-                  * min(i/(horizon-1), 1) for i in range(10)]
+    for scenario in growth_scenarios(a.revenue_growth_next_year, a.stable_growth_rate):
+        growth = scenario['growth']
         for name, target in targets.items():
             changed = inputs.model_copy(deep=True)
             changed.valuation_assumptions.annual_forecast = [ForecastYear(growth=g,
                 margin=current+(target-current)*min(i/4, 1), tax=taxes[i]) for i,g in enumerate(growth)]
-            payloads[f'scenario_fade{horizon}_{name}'] = dict(inputs=changed.model_dump(mode='json'))
+            payloads[f"scenario_{scenario['name']}_{name}"] = dict(inputs=changed.model_dump(mode='json'))
     return payloads, dict(rules=SCENARIO_RULES, margin_targets=targets, required_history_years=required,
         historical_margin_evidence=evidence, missing=missing, selected_scenario=None,
         boundary='历史收入加权利润率仅为均值回归情景；3/5/10年为固定压力持续期，不是公司预测或达摩达兰指定值；税、WACC、资本代理及股权桥接保持所选口径',

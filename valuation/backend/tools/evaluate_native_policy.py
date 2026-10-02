@@ -204,16 +204,161 @@ def evaluate(database, references, recipe, tickers, output, web=None, selection_
     return summary
 
 
+def deliver_conditions(database, request_files, output, web=None):
+    """保存用户完整输入，组合既有增长/资本对照，不选择胜出者。"""
+    from fastapi.testclient import TestClient
+    from api.main import app
+    from tools.audit_native_coverage import FINANCIAL_INDUSTRIES
+    from tools.compare_native_capital import compare as compare_capital, POLICY, HISTORY_POLICY
+    from tools.compare_native_growth import compare as compare_growth
+    from tools.review_native_policy import review_report
+    from tools.select_native_assumptions import growth_scenarios, SCENARIO_RULES
+    from tools.publish_native_valuation import runtime_identity
+    from data_sources.paths import workspace_path
+
+    database = database.resolve(strict=True)
+    output = output.resolve()
+    if not request_files or output.exists() or not output.is_relative_to(workspace_path('derived').resolve()):
+        raise ValueError('explicit requests and new output under workspace/derived required')
+    requests = []
+    for path in request_files:
+        raw = path.read_bytes(); payload = json.loads(raw)
+        if set(payload) != {'inputs'}:
+            raise ValueError('complete native request must contain only inputs')
+        inputs = CompanyValuationInput.model_validate(payload['inputs'])
+        if not re.fullmatch(r'(?:SHSE|SZSE):[0-9]{6}', inputs.ticker):
+            raise ValueError('explicit SH/SZ ticker required')
+        requests.append((inputs.ticker, payload, dict(path=str(path), sha256=hashlib.sha256(raw).hexdigest())))
+    if len({ticker for ticker, _, _ in requests}) != len(requests):
+        raise ValueError('duplicate explicit company requests')
+    with sqlite3.connect(database.as_uri()+'?mode=ro', uri=True) as connection:
+        metadata = dict(connection.execute('SELECT key,value FROM metadata'))
+        snapshot_tickers = {r[0] for r in connection.execute('SELECT ticker FROM companies')}
+    if metadata.get('contract') != 'alphalake-sqlite-v10':
+        raise ValueError('current native SQLite contract required')
+    with database.open('rb') as stream: snapshot_hash = hashlib.file_digest(stream, 'sha256').hexdigest()
+    os.environ['US_CN_HK_DB_PATH'] = str(database)
+    output.mkdir(parents=True)
+    def save(name, value):
+        (output/name).write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False)+'\n')
+    protocol = dict(contract='native-conditional-delivery-v1', sqlite_sha256=snapshot_hash,
+        metadata=metadata,
+        requests=[source | dict(ticker=ticker) for ticker, _, source in requests],
+        growth_rules=SCENARIO_RULES, capital_rules=[POLICY, HISTORY_POLICY],
+        runtime=runtime_identity(database.parent), selected_scenario=None,
+        boundary='用户完整输入优先；来源归档/经济依据须另行核验，既有条件无概率和自动胜出者，不改默认或事实')
+    save('protocol.json', protocol)
+    rows = []
+    with TestClient(app, raise_server_exceptions=False) as client:
+        for ticker, payload, source in requests:
+            inputs = CompanyValuationInput.model_validate(payload['inputs'])
+            key = ticker.replace(':', '-')
+            row = dict(ticker=ticker, source=source, selected_scenario=None, automatic_adoption=False,
+                scenarios={}, conditions_status='not_generated')
+            rows.append(row)
+            if ticker not in snapshot_tickers:
+                row.update(status='outside_scope', reason='outside_sqlite_security_scope'); continue
+            if inputs.industry_data.industry_name in FINANCIAL_INDUSTRIES:
+                row.update(status='outside_scope', reason='financial_industry'); continue
+            def calculate(name, request):
+                save(key+'-'+name+'-request.json', request)
+                response = client.post('/api/valuation', json=request)
+                if response.status_code != 200:
+                    row['scenarios'][name] = dict(status='rejected', http_status=response.status_code, reason=response.text)
+                    return None
+                body = response.json()
+                if body.get('reference_snapshot', {}).get('id') != metadata.get('reference_snapshot_id'):
+                    raise ValueError('native reference publication mismatch')
+                supplied = CompanyValuationInput.model_validate(request['inputs'])
+                returned = CompanyValuationInput.model_validate(body['inputs'])
+                # 原引擎每次刷新公司派生指标；只有股价波动率可由用户供给。
+                if supplied.company_metrics is not None and supplied.company_metrics.std_dev_stock is not None:
+                    if returned.company_metrics is None or returned.company_metrics.std_dev_stock != supplied.company_metrics.std_dev_stock:
+                        raise ValueError('explicit stock deviation changed')
+                supplied.company_metrics = returned.company_metrics
+                if supplied != returned:
+                    raise ValueError('explicit input changed during calculation')
+                reviewed = review_report(body)
+                if web:
+                    req = Request(web.rstrip('/')+'/api/valuation', json.dumps(request).encode(), {'Content-Type':'application/json'})
+                    with urlopen(req, timeout=60) as live: actual = json.load(live)
+                    if any(actual[field] != body[field] for field in ('dcf', 'final', 'reference_snapshot')):
+                        raise ValueError('live result/reference mismatch')
+                    if CompanyValuationInput.model_validate(actual['inputs']) != CompanyValuationInput.model_validate(body['inputs']):
+                        raise ValueError('live explicit input mismatch')
+                save(key+'-'+name+'-result.json', body)
+                save(key+'-'+name+'-review.json', reviewed)
+                row['scenarios'][name] = dict(status='calculated_conditional', value_per_share=body['final']['value_per_share'],
+                    projection_years=len(reviewed['forecast']), revenue_multiple_end=reviewed['forecast'][-1]['revenue_multiple_of_base'],
+                    forecast=reviewed['forecast'], terminal=reviewed['terminal'], economic_checks=reviewed['economic_checks'],
+                    reference_snapshot=body.get('reference_snapshot'), live_verified=bool(web),
+                    request_file=key+'-'+name+'-request.json', result_file=key+'-'+name+'-result.json')
+                return body
+            baseline = calculate('user_explicit', payload)
+            if baseline is None:
+                row['status'] = 'blocked_explicit_inputs'; continue
+            row['status'] = 'explicit_calculated'
+            if inputs.valuation_assumptions.projection_years != 10:
+                row['conditions_reason'] = 'existing_conditions_require_ten_year_projection'; continue
+            revenue = baseline['ltm_financials']['revenues']
+            if revenue is None or revenue <= 0:
+                row['conditions_reason'] = 'positive_base_revenue_required'; continue
+            initial = baseline['dcf']['revenue_projections'][0]/revenue-1
+            terminal_growth = row['scenarios']['user_explicit']['terminal']['growth']
+            try:
+                comparison = compare_growth(baseline, growth_scenarios(initial, terminal_growth))
+            except ValueError as error:
+                row['conditions_reason'] = str(error); continue
+            save(key+'-growth-comparison.json', comparison)
+            row['conditions_status'] = 'generated_without_selection'
+            for scenario in comparison['scenarios']:
+                name = scenario['name']
+                body = calculate(name, dict(inputs=scenario['inputs']))
+                if body is None: continue
+                if body['dcf'] != scenario['dcf'] or body['final'] != scenario['final']:
+                    raise ValueError('growth condition differs from comparison')
+                for basis in ('company-history', 'terminal-transition'):
+                    capital = compare_capital(body, basis)
+                    save(key+'-'+name+'-'+basis+'-comparison.json', capital)
+                    if capital['status'] != 'calculated_conditional':
+                        row['scenarios'][name+'_'+basis] = dict(status=capital['status'], reason=capital['reason'], evidence=capital.get('evidence'))
+                        continue
+                    actual = calculate(name+'_'+basis, dict(inputs=capital['candidate']['inputs']))
+                    if actual is not None and (actual['dcf'] != capital['candidate']['dcf'] or actual['final'] != capital['candidate']['final']):
+                        raise ValueError('capital condition differs from comparison')
+    with database.open('rb') as stream:
+        if hashlib.file_digest(stream, 'sha256').hexdigest() != snapshot_hash:
+            raise ValueError('publication changed during delivery')
+    for _, _, source in requests:
+        if hashlib.sha256(Path(source['path']).read_bytes()).hexdigest() != source['sha256']:
+            raise ValueError('explicit request changed during delivery')
+    result = dict(contract=protocol['contract'], protocol=protocol, companies=len(rows), results=rows,
+        selected_scenario=None, automatic_adoption=False)
+    result['run_id'] = value_digest(result)
+    save('summary.json', result)
+    return result
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--database',required=True,type=Path)
-    parser.add_argument('--references',required=True,type=Path)
-    parser.add_argument('--recipe',required=True,type=Path)
-    parser.add_argument('--ticker',required=True,action='append')
+    parser.add_argument('--references',type=Path)
+    parser.add_argument('--recipe',type=Path)
+    parser.add_argument('--ticker',action='append')
+    parser.add_argument('--explicit-input',type=Path,action='append',help='完整原生inputs请求；重复提供公司，自动交付具名条件，无胜出者')
     parser.add_argument('--output',required=True,type=Path)
     parser.add_argument('--selection-policy',type=Path,help='explicit automatic conditional assumption selection policy')
     parser.add_argument('--web',help='optional unchanged full-input API verification URL')
     args=parser.parse_args()
+    if args.explicit_input:
+        if args.references or args.recipe or args.ticker or args.selection_policy:
+            parser.error('explicit inputs cannot be mixed with policy selection')
+        result = deliver_conditions(args.database, args.explicit_input, args.output, args.web)
+        print(json.dumps(dict(contract=result['contract'], run_id=result['run_id'], companies=result['companies'],
+            selected_scenario=None, summary_file=str(args.output/'summary.json')), ensure_ascii=False))
+        return
+    if not args.references or not args.recipe or not args.ticker:
+        parser.error('references, recipe and ticker required without explicit inputs')
     print(json.dumps(evaluate(args.database,json.loads(args.references.read_text()),json.loads(args.recipe.read_text()),args.ticker,args.output,args.web,json.loads(args.selection_policy.read_text()) if args.selection_policy else None),ensure_ascii=False))
 
 
