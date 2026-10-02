@@ -81,3 +81,13 @@ AlphaLake负责单位、期间、身份、范围、缺项及确定性转换；va
 2. 完整季度与直接累计路径在相同组成下应等价，按源精度/浮点误差比较；对Q1/H1/9M/年末及跨年验证。删除Q1但保留完整累计三项应可算；删除任一累计项、冲突、单位/身份/范围不符应拒绝或保留缺项。
 3. 研发年度队列、最新余额、行情/市值、参考及默认政策分别比较。真实样本经TDX→主库→SQLite→原生API复验，解释所有数值变化；全范围只盘点输入，不为验收运行全市场DCF。
 4. 候选经原生API验收、版本一致及只读完整性检查后原子发布；失败回滚。记录主库/SQLite哈希、范围、资源和耗时，验收后删除可重建临时副本。完成度统一写[项目状态](../implementation-status.md)。
+
+## 人民币WACC的显式输入契约
+
+AlphaLake经已有`CompanyValuationInput.methodology_choices.reference_capital_inputs`向原完整`POST /api/valuation`交付显式参考输入，`cost_of_capital_approach=reference_snapshot`。不是向原数据库网页新增JSON表单，不更新引擎算法。方法、源值和适用条件统一见[人民币口径](native-cny-policy.md#人民币输入契约)。
+
+利率、ERP、税率、资本权重用小数比例；Beta无量纲。`risk_free_rate`为指定CNY口径；`mature_market_erp`与已经按政策加权的`country_risk_contribution`分别交付，后者不能再放入成熟ERP。`debt_cost_pretax`是CNY同基准完整利率，`debt_cost_basis`说明公司证据或参考代理；不将US行业完整利率改标签后复用。`market_equity`/`estimated_debt`以与财务相同的百万元人民币计，`capital_structure_basis=market_equity_estimated_debt`，`debt_weight=D/(D+E)`须匹配金额。`tax_shield_rate`须与所选公司边际税率政策及Macro的对应假设一致。
+
+Macro中的CNY无风险率、成熟ERP/CRP和预测假设须同步解释；仅填写参考WACC而继续继承旧终值增长不属于完整人民币条件政策。`cost_of_capital_stable_override`及`stable_growth_rate`分别明示稳态，`roic_stable_override`未填仍按原引擎采用实际终值WACC，既有亏损税盾调整保留。原公司预测、金融调整、研发和股权桥不随接通WACC改写；输入与结果差异逐项记录，运行后回填的资本成本不是新增来源事实。
+
+typed输入不携带每个参考的原始归档定位，AlphaLake须在请求旁保存源版本、定位、哈希、观察日、截止、字段依据及政策标签；不能把结构校验当来源核验。报告的参考快照绑定与显式组件证据分别留痕。公司信用/经营暴露未知时可以用明确命名的条件情景，不冒充已审核公司市场WACC；当前自动选择及网页默认不因接口可表达而获得批准。
