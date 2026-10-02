@@ -171,7 +171,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 
 本轮复用已有通用通道，活动人工审核关联3→6，官方沪深原名单仍5,100行。板材18家均有默认参考关联，候选3家行业/国家缺项由来源补链闭合；国内申万标签不覆盖官方行业，US地域及原引擎不变。缺报价另用既有TDX窗口补采，3家公司已通过默认网页/API；负条件值保留，不视为预测已合理。
 
-板材轮重审：5,227家中4,970非金融、120金融范围外、137待定；5,077已关联、150缺默认参考（含19家金融）。待定14家单一候选、117家多候选、6家冲突，89个申万节点、9个优先类别；原首轮90类/17家报告保留为基线，不改写冻结证据。板材轮报告在`workspace/derived/steel-reference/reference-audit.log`，复验仍用同一只读工具，换成该目录的`classification-coverage.json`；后续发布状态见[项目状态](../implementation-status.md#跨类别同发行人补链与发布当前)。
+板材轮重审：5,227家中4,970非金融、120金融范围外、137待定；5,077已关联、150缺默认参考（含19家金融）。待定14家单一候选、117家多候选、6家冲突，89个申万节点、9个优先类别；原首轮90类/17家报告保留为基线，不改写冻结证据。板材轮报告在`workspace/derived/steel-reference/reference-audit.log`，复验仍用同一只读工具，换成该目录的`classification-coverage.json`；后续发布状态见[项目状态](../implementation-status.md#剩余身份缺口闭合及行情发布当前)。
 
 通用排查顺序：精确证券原行→有原文证明的同发行人其他股类→显式业务映射候选；前两步能解决的不升级为行业代理。其他类别仍需审核，不能仅凭H股原行存在、名字相似或国家标签证明法人等同、业务同质或国家风险暴露已闭合。
 
@@ -191,9 +191,9 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 
 **同业唯一候选不等于发行人来源。**中国电信官方源为Telecom. Services，而此前国内同业候选为Telecom (Wireless)；中国石化官方H股原行为Oil/Gas (Integrated)，此前同业候选为Chemical (Basic)。应保留来源差异，不能自动将申万整类映射为票数最高或唯一同业标签。后者本轮仍未接入，不能把查到原行等同于身份审核通过。行业标签接通也不证明全公司业务风险同质，China源标签不是独立国家暴露核验。
 
-本轮完整5,227家重审：4,977非金融、120金融范围外、130待定；精确5,071＋人工同发行人13＝5,084已关联，143缺默认参考（124待定、19金融）。130待定为6家单一、118家多个候选及6家来源冲突，涉及86个国内节点、5个优先类别。新增中国电信源标签使中国移动的同业候选由一个变为两个，不能用简单减法替代全范围重审。原申万partial观测及1家并列归属仍保留，不冒称本轮重新同步行业。
+上一轮完整5,227家重审：4,977非金融、120金融范围外、130待定；精确5,071＋人工同发行人13＝5,084已关联，143缺默认参考（124待定、19金融）。130待定为6家单一、118家多个候选及6家来源冲突，涉及86个国内节点、5个优先类别。新增中国电信源标签使中国移动的同业候选由一个变为两个，不能用简单减法替代全范围重审。原申万partial观测及1家并列归属仍保留，不冒称本轮重新同步行业。
 
-原14家优先组还有7家，按通用缺口分别处理：
+上一轮原14家优先组还剩7家，以下为当时缺口，本轮后续修复见下一节：
 
 | 类别 | 证券 | 当前事实与下一步边界 |
 |---|---|---|
@@ -203,4 +203,37 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 | 股类适用边界 | 中国移动600941 | 年报列A股与“港股”，不是H股表述；不能把原文改写成H股来满足现有合同。应先明确通用股类身份契约，不涉及H股价格采集或多市场估值 |
 | 法人英文名表示差异 | 新华文轩601811 | 年报`XinhuaWinsharePublishing&MediaCo.,Ltd.`与官方源`Xinhua Winshare Publishing and Media Co., Ltd.`不同；现有复验只忽略空白，尚无显式表示差异依据，不扩大模糊匹配 |
 
-本轮未修改默认US地域、行业代理政策、估值引擎或前端。正式发布及重放见[当前状态](../implementation-status.md#跨类别同发行人补链与发布当前)；新报告使用`workspace/derived/issuer-association/classification-coverage.json`与`reference-audit.log`。原首轮及板材报告保留冻结时点，不覆盖为新计数。参考关联齐全、API可算、经济适配及预测有效性分别验收。
+本轮未修改默认US地域、行业代理政策、估值引擎或前端。后续正式发布及重放见[当前状态](../implementation-status.md#剩余身份缺口闭合及行情发布当前)；新报告使用`workspace/derived/issuer-association/classification-coverage.json`与`reference-audit.log`。原首轮及板材报告保留冻结时点，不覆盖为新计数。参考关联齐全、API可算、经济适配及预测有效性分别验收。
+
+## 剩余身份缺口及代理审批边界
+
+原7项中5项已按通用身份契约闭合，官方公司名单和参考原值不改写，新增人工审核13→18：
+
+| 目标 | 官方原行 | 身份证据 |
+|---|---|---|
+| SHSE:600028 | SEHK:386，Oil/Gas (Integrated) / China | [原文](https://static.cninfo.com.cn/finalpage/2025-08-22/1224532889.PDF)，法人第3页；股类第4 / 4页 |
+| SHSE:601598 | SEHK:598，Transportation / China | [原文](https://static.cninfo.com.cn/finalpage/2025-08-27/1224583073.PDF)，法人第8页；股类第9 / 9页 |
+| SHSE:600941 | SEHK:941，Telecom (Wireless) / China | [原文](https://static.cninfo.com.cn/finalpage/2026-03-27/1225036280.PDF)，法人第5页；股类第6 / 6页 |
+| SHSE:601811 | SEHK:811，Publishing & Newspapers / China | [原文](https://static.cninfo.com.cn/finalpage/2026-03-27/1225038033.PDF)，法人第5页；股类第6 / 6页 |
+| SZSE:001246 | SEHK:2245，Metals & Mining / China | [原文](https://static.cninfo.com.cn/finalpage/2026-09-10/1225556595.PDF)，法人第52页；股类第19 / 56页 |
+
+中国石化/中国外运改用可解析半年报，不新建OCR或PDF金额来源；中国移动的原文“港股”不改成H股；新华文轩仅规范独立and/&排印；力勤招股文件中的A股发行角色与官方目录001246明确分开，不声称PDF印有未在证据锚点列示的代码。具体条件及拒绝规则见[身份取证spec](data-contract.md#同发行人参考的身份取证)。保留原文、目录哈希、组织ID及原13项事件，已有原文身份链优先于新建同业代理。
+
+最终5,227家重审为4,982非金融、120金融范围外、125待定；5,071精确＋18人工同发行人＝5,089参考齐全，138缺默认参考（119待定、19金融）。125待定为2家单一候选、117家多候选、6家来源冲突，涉及82个申万节点。世盟、盛龙是原优先组的剩余2家，不是整个项目剩余2项。新文件使用`workspace/derived/issuer-association-market/reference-audit.log`及同目录分类盘点；国内申万观测仍为运行5987，未重新同步。
+
+### 可审阅的下一步方案，尚未采用
+
+已按原年报法人英文名及确定性表示规则扫描完整官方公司原表，两家均未取得可验证的同发行人原行，原始匹配结果保留。不能给它们伪造官方公司分类；应改走明确标注的业务类别政策。以下业务类别判断是本地提案，不是达摩达兰官方对这两家公司的标签：
+
+| 业务规则候选 | 真实正例与边界 | 既有接口上的条件选择 |
+|---|---|---|
+| 以运输、仓储、关务组成的一体化供应链物流 | [世盟2025年报第11、15页](https://static.cninfo.com.cn/finalpage/2026-04-29/1225240869.PDF)说明自有/外协公路运输及一体化服务；不能外推所有“跨境物流”、航空公司、资产所有人、纯代理或物流软件 | `industry_override=Transportation`；保留宽行业代理限制，不直接用其均值认证公司利润率或资本效率 |
+| 采矿、选矿及一次冶炼的基础金属生产 | [盛龙2025年报](https://static.cninfo.com.cn/finalpage/2026-04-28/1225215397.PDF)说明钼精矿、钼铁和产业链上游；不覆盖电子金属粉体、纯贸易及高附加值深加工 | `industry_override=Metals & Mining`；真实商品周期保留，不以高利润删异常或估算研发 |
+
+方法沿用达摩达兰[Bottom-up Beta原文](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/TenQs/TenQsBottomupBetas.htm)的实际业务/可比性要求；单一标签仅是条件近似，不推导多业务价值权重，不改变原US地域或算法。
+
+国家另审：可提交`country_override=China`作为**明确的中国国家风险/税率条件代理**，沿用现有官方China参考；年报境内注册及主要国内业务为有限依据，不能证明全部收入、资产或国家风险都在中国。跨国客户不自动等于境外经营暴露，注册地亦不自动决定全部风险。采用前须明确批准代理而非认证公司事实，后续如取得经营暴露再按[国家风险原文](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/CountryRisk.htm)重审，不加新风险权重或重复叠加国家溢价。
+
+最小实施方案是批准后通过原生API已有`industry_override`及`country_override`进行显式条件输入，不增引擎、表单或默认生成器，不写入官方`reference_company`。两家公司已在119家网页快照及数据接口中，9月30日行情/市值已补齐；世盟财务准入ready，盛龙仍缺2020/2021研发，按现行政策继续拒绝，不承诺批准参考即可解锁后者。若以后要批量默认采用，须另行审批通用类别规则、国家代理与政策血缘；不是凭两家公司推断整类。
+
+该方案已记录[valuation TODO](../../valuation/TODO.md)。引擎冻结及默认政策须等待明确审批的约定仍有效；本轮没有采用上述代理或运行其条件DCF。当前原生发布结果见[项目状态](../implementation-status.md#剩余身份缺口闭合及行情发布当前)。
