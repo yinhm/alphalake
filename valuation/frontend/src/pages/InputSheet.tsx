@@ -249,23 +249,23 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
           {/* --- All financial rows: fetched data + computed rows --- */}
           {(() => {
             // Define all rows: [label, key, type] where type is 'data' (fetched) or 'calc' (computed)
-            type RowDef = { label: string; key?: keyof RawFinancials; type: 'data' | 'calc' | 'section'; calc?: (f: RawFinancials, prev?: RawFinancials) => number | null };
+            type RowDef = { label: string; termId?: string; key?: keyof RawFinancials; type: 'data' | 'calc' | 'section'; calc?: (f: RawFinancials, prev?: RawFinancials) => number | null };
             const rows: RowDef[] = [
               // --- Income Statement ---
               { label: 'INCOME STATEMENT', type: 'section' },
               { label: 'Revenues', key: 'revenues', type: 'data' },
-              { label: '  Revenue Growth (%)', type: 'calc', calc: (f, prev) => prev && prev.revenues ? (f.revenues - prev.revenues) / Math.abs(prev.revenues) : null },
-              { label: 'EBIT (Operating Income)', key: 'ebit', type: 'data' },
-              { label: '  Operating Margin (%)', type: 'calc', calc: (f) => f.revenues ? f.ebit / f.revenues : null },
+              { label: '  Revenue Growth (%)', termId: 'revenue-growth', type: 'calc', calc: (f, prev) => prev && prev.revenues ? (f.revenues - prev.revenues) / Math.abs(prev.revenues) : null },
+              { label: 'EBIT (Operating Income)', termId: 'ebit', key: 'ebit', type: 'data' },
+              { label: '  Operating Margin (%)', termId: 'operating-margin', type: 'calc', calc: (f) => f.revenues ? f.ebit / f.revenues : null },
               { label: 'EBITDA', key: 'ebitda', type: 'data' },
               { label: 'Net Income', key: 'net_income', type: 'data' },
               { label: 'Earnings Before Tax', key: 'earnings_before_tax', type: 'data' },
               { label: 'Tax Expense', key: 'total_tax_expense', type: 'data' },
-              { label: '  Effective Tax Rate (%)', type: 'calc', calc: (f) => f.earnings_before_tax && f.earnings_before_tax > 0 && f.total_tax_expense != null ? f.total_tax_expense / f.earnings_before_tax : null },
+              { label: '  Effective Tax Rate (%)', termId: 'effective-tax-rate', type: 'calc', calc: (f) => f.earnings_before_tax && f.earnings_before_tax > 0 && f.total_tax_expense != null ? f.total_tax_expense / f.earnings_before_tax : null },
               { label: 'Interest Expense', key: 'interest_expense', type: 'data' },
               { label: 'D&A', key: 'd_a', type: 'data' },
-              { label: 'R&D Expense', key: 'r_and_d_expense', type: 'data' },
-              { label: 'Capital Expenditures', key: 'capex', type: 'data' },
+              { label: 'R&D Expense', termId: 'rd-capitalization', key: 'r_and_d_expense', type: 'data' },
+              { label: 'Capital Expenditures', termId: 'capital-expenditure', key: 'capex', type: 'data' },
               // --- Balance Sheet ---
               { label: 'BALANCE SHEET', type: 'section' },
               { label: 'Cash & Marketable Securities', key: 'cash_and_marketable_securities', type: 'data' },
@@ -279,14 +279,14 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
               // and the source CIQ fields so the user can cross-check every cell.
               { label: 'RATIOS', type: 'section' },
               {
-                label: '  Invested Capital',
+                label: '  Invested Capital', termId: 'invested-capital',
                 type: 'calc',
                 calc: (f) => (f.bv_equity != null && f.bv_debt != null && f.cash_and_marketable_securities != null)
                   ? (f.bv_equity + f.bv_debt - f.cash_and_marketable_securities)
                   : null,
               },
               {
-                label: '  ROIC',
+                label: '  ROIC', termId: 'roic',
                 type: 'calc',
                 calc: (f, prev) => {
                   const taxRate = (f.total_tax_expense != null && f.earnings_before_tax && f.earnings_before_tax > 0)
@@ -303,7 +303,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
                 },
               },
               {
-                label: '  Sales / Capital',
+                label: '  Sales / Capital', termId: 'sales-to-capital',
                 type: 'calc',
                 calc: (f) => {
                   const ic = (f.bv_equity != null && f.bv_debt != null && f.cash_and_marketable_securities != null)
@@ -314,7 +314,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
                 },
               },
               {
-                label: '  Reinvestment Rate',
+                label: '  Reinvestment Rate', termId: 'reinvestment-rate',
                 type: 'calc',
                 calc: (f) => {
                   if (f.ebit == null || f.earnings_before_tax == null || f.earnings_before_tax <= 0 || f.total_tax_expense == null) return null;
@@ -328,7 +328,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
                 },
               },
               {
-                label: '  Fundamental Growth',
+                label: '  Fundamental Growth', termId: 'fundamental-growth',
                 type: 'calc',
                 calc: (f, prev) => {
                   if (f.ebit == null || f.earnings_before_tax == null || f.earnings_before_tax <= 0 || f.total_tax_expense == null) return null;
@@ -409,7 +409,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
                     : '';
                 return (
                   <tr key={`calc-${ri}`}>
-                    <SpreadsheetCell value={row.label} type="label" tooltip={calcFormula} width="160px" wrap />
+                    <SpreadsheetCell value={row.label} type="label" termId={row.termId} tooltip={calcFormula} width="160px" wrap />
                     <SpreadsheetCell
                       value={
                         isDollar ? num(ltmCalc)
@@ -444,7 +444,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
               const ticker = inp.ticker;
               return (
                 <tr key={`d-${key}`}>
-                  <SpreadsheetCell value={row.label} type="label" width="160px" wrap />
+                  <SpreadsheetCell value={row.label} type="label" termId={row.termId} width="160px" wrap />
                   <SpreadsheetCell value={num(ltmVal(key))} type={isBalanceSheet ? 'financial' : 'calc'}
                     tooltip={isBalanceSheet
                       ? (qFins[0]?.[key] != null ? `From 10-Q (FQ-0): ${ciqTooltip(key, ticker, 0).replace('IQ_FY-0', 'IQ_FQ-0')}` : `From 10-K (FY-0): ${ciqTooltip(key, ticker, 0)}`)
@@ -487,19 +487,19 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
       <SpreadsheetGrid title="3. R&D Expenses">
         <tbody>
           <tr>
-            <SpreadsheetCell value="Has R&D Expenses?" type="label" width="240px" />
+            <SpreadsheetCell value="Has R&D Expenses?" type="label" width="240px" termId="rd-capitalization" />
             <YesNoSelect value={adj.has_r_and_d} dotPath="adjustment_inputs.has_r_and_d" onUpdate={update} />
             <SpreadsheetCell value="" type="label" />
           </tr>
           {adj.has_r_and_d && (
             <>
               <tr>
-                <SpreadsheetCell value="Amortization Period (years)" type="label" />
+                <SpreadsheetCell value="Amortization Period (years)" type="label" termId="rd-capitalization" />
                 <EditableNum value={adj.amortization_period_n} dotPath="adjustment_inputs.amortization_period_n" format="num" onUpdate={update} />
                 <SpreadsheetCell value="3, 5, or 10" type="hint" />
               </tr>
               <tr>
-                <SpreadsheetCell value="Current Year R&D" type="label" />
+                <SpreadsheetCell value="Current Year R&D" type="label" termId="rd-capitalization" />
                 <SpreadsheetCell value={num(adj.r_and_d_expense_current)} type="financial"
                   tooltip={`=CIQ("${inp.ticker}","IQ_RD_EXP","IQ_FY-0")`} />
               </tr>
@@ -524,14 +524,14 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
       <SpreadsheetGrid title="4. Operating Leases">
         <tbody>
           <tr>
-            <SpreadsheetCell value="Has Operating Leases?" type="label" width="240px" />
+            <SpreadsheetCell value="Has Operating Leases?" type="label" width="240px" termId="lease-capitalization" />
             <YesNoSelect value={adj.has_operating_leases} dotPath="adjustment_inputs.has_operating_leases" onUpdate={update} />
             <SpreadsheetCell value="" type="label" />
           </tr>
           {adj.has_operating_leases && (
             <>
               <tr>
-                <SpreadsheetCell value="Current Lease Expense" type="label" />
+                <SpreadsheetCell value="Current Lease Expense" type="label" termId="lease-capitalization" />
                 <SpreadsheetCell value={num(adj.operating_lease_expense_current)} type="financial"
                   tooltip={`=CIQ("${inp.ticker}","IQ_OPERATING_LEASE_PAYMENTS","IQ_FY-0")`} />
               </tr>
@@ -576,7 +576,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
       <SpreadsheetGrid title="6. Tax Rates">
         <tbody>
           <tr>
-            <SpreadsheetCell value="Effective Tax Rate (CIQ)" type="label" width="200px" />
+            <SpreadsheetCell value="Effective Tax Rate (CIQ)" type="label" width="200px" termId="effective-tax-rate" />
             <SpreadsheetCell
               value={inp.effective_tax_rate_ciq == null ? '—' : pct(inp.effective_tax_rate_ciq)}
               type="financial"
@@ -587,7 +587,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
             />
           </tr>
           <tr>
-            <SpreadsheetCell value="Effective Tax Rate (Calculated)" type="label" />
+            <SpreadsheetCell value="Effective Tax Rate (Calculated)" type="label" termId="effective-tax-rate" />
             <SpreadsheetCell
               value={pct(macro.tax_rate_effective)}
               type="calc"
@@ -595,7 +595,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
             />
           </tr>
           <tr>
-            <SpreadsheetCell value="Marginal Tax Rate" type="label" />
+            <SpreadsheetCell value="Marginal Tax Rate" type="label" termId="marginal-tax-rate" bindingId="tax.marginal" />
             <SpreadsheetCell
               value={pct(macro.tax_rate_marginal)}
               type="reference"
@@ -704,7 +704,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
           <tbody>
             {/* Revenue Growth — Year 1 */}
             <tr>
-              <SpreadsheetCell value="Revenue Growth — Next Year" type="label" />
+              <SpreadsheetCell value="Revenue Growth — Next Year" type="label" termId="revenue-growth" bindingId="revenue-growth.next-year" />
               <EditableNum value={va.revenue_growth_next_year} dotPath="valuation_assumptions.revenue_growth_next_year" format="pct" onUpdate={update} />
               <SpreadsheetCell value={pct(rev_yoy)} type="calc" tooltip={`YoY = (Revenue[FY${latestFy}] - Revenue[FY${latestFy-1}]) / Revenue[FY${latestFy-1}]`} />
               <SpreadsheetCell value={pct(rev_cagr_3)} type="calc" tooltip={cagrTooltip(3, latestFy, latestFy-3, 'Revenue')} />
@@ -717,7 +717,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
 
             {/* Revenue Growth — Years 2-5 */}
             <tr>
-              <SpreadsheetCell value="Revenue Growth — Years 2-5" type="label" />
+              <SpreadsheetCell value="Revenue Growth — Years 2-5" type="label" termId="revenue-growth" bindingId="revenue-growth.high" />
               <EditableNum value={va.revenue_growth_years_2_5} dotPath="valuation_assumptions.revenue_growth_years_2_5" format="pct" onUpdate={update} />
               <SpreadsheetCell value="—" type="calc" tooltip="Forward assumption — no per-year historical" />
               <SpreadsheetCell value={pct(rev_cagr_3)} type="calc" tooltip={cagrTooltip(3, latestFy, latestFy-3, 'Revenue')} />
@@ -730,7 +730,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
 
             {/* Operating Margin — Year 1 */}
             <tr>
-              <SpreadsheetCell value="Operating Margin — Next Year" type="label" />
+              <SpreadsheetCell value="Operating Margin — Next Year" type="label" termId="operating-margin" bindingId="operating-margin.next-year" />
               <EditableNum
                 value={va.operating_margin_next_year ?? margin_now}
                 dotPath="valuation_assumptions.operating_margin_next_year" format="pct" onUpdate={update} />
@@ -745,7 +745,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
 
             {/* Target Margin */}
             <tr>
-              <SpreadsheetCell value="Target Pre-tax Op Margin" type="label" />
+              <SpreadsheetCell value="Target Pre-tax Op Margin" type="label" termId="operating-margin" bindingId="operating-margin.target" />
               <EditableNum value={va.target_operating_margin} dotPath="valuation_assumptions.target_operating_margin" format="pct" onUpdate={update} />
               <SpreadsheetCell value="—" type="calc" tooltip="Terminal target — no historical analog" />
               <SpreadsheetCell value={pct(margin_avg_3)} type="calc" tooltip={avgTooltip(3, 'Op Margin')} />
@@ -774,7 +774,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
               <SpreadsheetCell
                 value="Sales / Capital — Years 1-5"
                 type="label"
-                tooltip={'Reinvestment = ΔRevenue / Sales-to-Capital. Two values (high-growth and stable) reflect that capital efficiency typically changes as a firm matures. Folder reference: module_05_dcf_projection.md §3.6.'}
+                tooltip={'Reinvestment = ΔRevenue / Sales-to-Capital. Two values (high-growth and stable) reflect that capital efficiency typically changes as a firm matures. Folder reference: module_05_dcf_projection.md §3.6.'} termId="sales-to-capital" bindingId="sales-to-capital.high"
               />
               <EditableNum value={va.sales_to_capital_high} dotPath="valuation_assumptions.sales_to_capital_high" format="dec" onUpdate={update} />
               <SpreadsheetCell value={dec(stoc_now)} type="calc" tooltip={`Implied Sales/Capital = Revenue / (BV Equity + BV Debt - Cash)\nMost recent FY`} />
@@ -791,7 +791,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
               <SpreadsheetCell
                 value="Sales / Capital — Years 6-10"
                 type="label"
-                tooltip={'Stable-period Sales/Capital, typically closer to 1–2× for mature firms. Drives reinvestment during the convergence phase (years 6–10). Folder: module_05 §3.6.'}
+                tooltip={'Stable-period Sales/Capital, typically closer to 1–2× for mature firms. Drives reinvestment during the convergence phase (years 6–10). Folder: module_05 §3.6.'} termId="sales-to-capital" bindingId="sales-to-capital.stable"
               />
               <EditableNum value={va.sales_to_capital_stable} dotPath="valuation_assumptions.sales_to_capital_stable" format="dec" onUpdate={update} />
               <SpreadsheetCell value="—" type="calc" tooltip="Forward assumption — use 10Y avg or industry as anchor" />
@@ -859,12 +859,12 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
       {/* ----------------------------------------------------------------- */}
       <SpreadsheetGrid title="8. Market Numbers">
         <tbody>
-          <tr><SpreadsheetCell value="Risk-free Rate" type="label" width="200px" /><EditableNum value={macro.risk_free_rate} dotPath="macro_inputs.risk_free_rate" format="pct" onUpdate={update} /></tr>
-          <tr><SpreadsheetCell value="Equity Risk Premium (ERP)" type="label" /><SpreadsheetCell value={pct(macro.equity_risk_premium)} type="reference" tooltip="Source: ctryprem.xlsx (Damodaran)" /></tr>
-          <tr><SpreadsheetCell value="Country Risk Premium (CRP)" type="label" /><SpreadsheetCell value={pct(macro.country_risk_premium)} type="reference" tooltip="Source: ctryprem.xlsx (Damodaran)" /></tr>
-          <tr><SpreadsheetCell value="Default Spread" type="label" /><SpreadsheetCell value={pct(macro.default_spread)} type="reference" tooltip="Source: ctryprem.xlsx (Damodaran)" /></tr>
+          <tr><SpreadsheetCell value="Risk-free Rate" type="label" width="200px" termId="risk-free-rate" bindingId="risk-free-rate.input" /><EditableNum value={macro.risk_free_rate} dotPath="macro_inputs.risk_free_rate" format="pct" onUpdate={update} /></tr>
+          <tr><SpreadsheetCell value="Equity Risk Premium (ERP)" type="label" termId="equity-risk-premium" bindingId="equity-risk-premium.input" /><SpreadsheetCell value={pct(macro.equity_risk_premium)} type="reference" tooltip="Source: ctryprem.xlsx (Damodaran)" /></tr>
+          <tr><SpreadsheetCell value="Country Risk Premium (CRP)" type="label" termId="country-risk-premium" bindingId="country-risk-premium.input" /><SpreadsheetCell value={pct(macro.country_risk_premium)} type="reference" tooltip="Source: ctryprem.xlsx (Damodaran)" /></tr>
+          <tr><SpreadsheetCell value="Default Spread" type="label" termId="default-spread" /><SpreadsheetCell value={pct(macro.default_spread)} type="reference" tooltip="Source: ctryprem.xlsx (Damodaran)" /></tr>
           <tr>
-            <SpreadsheetCell value="WACC (from Cost of Capital module)" type="label" />
+            <SpreadsheetCell value="WACC (from Cost of Capital module)" type="label" termId="wacc" bindingId="wacc.current" />
             <SpreadsheetCell
               value={pct(coc?.wacc)}
               type="calc"
@@ -884,15 +884,15 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
             const betaFile = bSuffix ? `beta${bSuffix}.xls` : 'betas.xls';
             const waccFile = bSuffix ? `wacc${bSuffix}.xls` : 'wacc.xls';
             return (<>
-              <tr><SpreadsheetCell value="Unlevered Beta" type="label" width="200px" /><SpreadsheetCell value={dec(ind.beta_u)} type="reference" tooltip={`Source: ${betaFile}`} /></tr>
+              <tr><SpreadsheetCell value="Unlevered Beta" type="label" width="200px" termId="beta" /><SpreadsheetCell value={dec(ind.beta_u)} type="reference" tooltip={`Source: ${betaFile}`} /></tr>
               <tr><SpreadsheetCell value="Industry D/E Ratio" type="label" /><SpreadsheetCell value={pct(ind.industry_d_e_ratio)} type="reference" tooltip={`Source: ${betaFile}`} /></tr>
               <tr><SpreadsheetCell value="Industry Eff Tax Rate" type="label" /><SpreadsheetCell value={pct(ind.industry_effective_tax_rate)} type="reference" tooltip={`Source: ${waccFile}`} /></tr>
-              <tr><SpreadsheetCell value="Pre-tax Cost of Debt" type="label" /><SpreadsheetCell value={pct(ind.cost_of_debt_pretax)} type="reference" tooltip={`Source: ${waccFile}`} /></tr>
-              <tr><SpreadsheetCell value="Levered Beta" type="label" /><SpreadsheetCell value={dec(coc?.beta_l)} type="calc" /></tr>
-              <tr><SpreadsheetCell value="Cost of Equity" type="label" /><SpreadsheetCell value={pct(coc?.cost_of_equity)} type="calc" /></tr>
-              <tr><SpreadsheetCell value="D/E Ratio (Company)" type="label" /><SpreadsheetCell value={dec(coc?.d_e_ratio)} type="calc" /></tr>
-              <tr><SpreadsheetCell value="Weight of Equity" type="label" /><SpreadsheetCell value={pct(coc?.weight_equity)} type="calc" /></tr>
-              <tr><SpreadsheetCell value="Weight of Debt" type="label" /><SpreadsheetCell value={pct(coc?.weight_debt)} type="calc" /></tr>
+              <tr><SpreadsheetCell value="Pre-tax Cost of Debt" type="label" termId="cost-of-debt" /><SpreadsheetCell value={pct(ind.cost_of_debt_pretax)} type="reference" tooltip={`Source: ${waccFile}`} /></tr>
+              <tr><SpreadsheetCell value="Levered Beta" type="label" termId="beta" bindingId="beta.levered" /><SpreadsheetCell value={dec(coc?.beta_l)} type="calc" /></tr>
+              <tr><SpreadsheetCell value="Cost of Equity" type="label" termId="cost-of-equity" bindingId="cost-of-equity.current" /><SpreadsheetCell value={pct(coc?.cost_of_equity)} type="calc" /></tr>
+              <tr><SpreadsheetCell value="D/E Ratio (Company)" type="label" termId="capital-structure" bindingId="capital-structure.debt-equity" /><SpreadsheetCell value={dec(coc?.d_e_ratio)} type="calc" /></tr>
+              <tr><SpreadsheetCell value="Weight of Equity" type="label" termId="capital-structure" bindingId="capital-structure.equity-weight" /><SpreadsheetCell value={pct(coc?.weight_equity)} type="calc" /></tr>
+              <tr><SpreadsheetCell value="Weight of Debt" type="label" termId="capital-structure" bindingId="capital-structure.debt-weight" /><SpreadsheetCell value={pct(coc?.weight_debt)} type="calc" /></tr>
             </>);
           })()}
         </tbody>
@@ -955,7 +955,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
           </tr>
           {va.stable_growth_rate !== null && (
             <tr>
-              <SpreadsheetCell value="Stable Growth Rate" type="label" />
+              <SpreadsheetCell value="Stable Growth Rate" type="label" termId="stable-growth" bindingId="stable-growth.input" />
               <EditableNum value={va.stable_growth_rate} dotPath="valuation_assumptions.stable_growth_rate" format="pct" onUpdate={update} />
               <SpreadsheetCell value="" type="hint" />
             </tr>
@@ -976,7 +976,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
           </tr>
           {va.cost_of_capital_stable_override !== null && (
             <tr>
-              <SpreadsheetCell value="Stable Cost of Capital" type="label" />
+              <SpreadsheetCell value="Stable Cost of Capital" type="label" termId="wacc" bindingId="wacc.stable-override" />
               <EditableNum value={va.cost_of_capital_stable_override} dotPath="valuation_assumptions.cost_of_capital_stable_override" format="pct" onUpdate={update} />
               <SpreadsheetCell value="" type="hint" />
             </tr>
@@ -997,7 +997,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
           </tr>
           {va.roic_stable_override !== null && (
             <tr>
-              <SpreadsheetCell value="Stable ROIC" type="label" />
+              <SpreadsheetCell value="Stable ROIC" type="label" termId="roic" bindingId="roic.stable-override" />
               <EditableNum value={va.roic_stable_override} dotPath="valuation_assumptions.roic_stable_override" format="pct" onUpdate={update} />
               <SpreadsheetCell value="" type="hint" />
             </tr>
@@ -1026,7 +1026,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
           </tr>
           {va.override_nol && (
             <tr>
-              <SpreadsheetCell value="NOL Amount" type="label" />
+              <SpreadsheetCell value="NOL Amount" type="label" termId="net-operating-loss" />
               <EditableNum value={va.nol_amount} dotPath="valuation_assumptions.nol_amount" format="num" onUpdate={update} />
               <SpreadsheetCell value="Net operating loss carryforward" type="hint" />
             </tr>
@@ -1038,7 +1038,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
             by specifying a probability of failure and what you expect to recover in distress.
           </td></tr>
           <tr>
-            <SpreadsheetCell value="Failure Probability" type="label" />
+            <SpreadsheetCell value="Failure Probability" type="label" termId="failure-probability" bindingId="failure-probability.input" />
             <EditableNum value={va.failure_probability} dotPath="valuation_assumptions.failure_probability" format="pct" onUpdate={update} />
             <SpreadsheetCell value="0% = no failure risk" type="hint" />
           </tr>

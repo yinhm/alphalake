@@ -65,7 +65,7 @@ export default function LeaseConverter({ data }: { data: ValuationResponse; sess
         </thead>
         <tbody>
           <tr>
-            <SpreadsheetCell value="Operating lease expense (current year)" type="label" />
+            <SpreadsheetCell value="Operating lease expense (current year)" type="label" termId="lease-capitalization" />
             <SpreadsheetCell value={leaseExpense} type="hypothesis"
               tooltip={ciq(ticker, "IQ_OPERATING_LEASE_PAYMENTS", "IQ_FY-0")} />
           </tr>
@@ -90,7 +90,7 @@ export default function LeaseConverter({ data }: { data: ValuationResponse; sess
       <SpreadsheetGrid title="Lease Conversion Parameters">
         <tbody>
           <tr>
-            <SpreadsheetCell value="Pre-tax cost of debt" type="label" width="280px" />
+            <SpreadsheetCell value="Pre-tax cost of debt" type="label" width="280px" termId="cost-of-debt" bindingId="cost-of-debt.pretax" />
             <SpreadsheetCell value={costOfDebt} type="reference"
               tooltip={damodaran("wacc.xls", "Cost of Debt (pre-tax)", industry.industry_name)} />
           </tr>
@@ -135,7 +135,7 @@ export default function LeaseConverter({ data }: { data: ValuationResponse; sess
             </tr>
           ))}
           <tr>
-            <SpreadsheetCell value="Debt Value of leases" type="label" bold />
+            <SpreadsheetCell value="Debt Value of leases" type="label" bold termId="lease-capitalization" bindingId="lease-capitalization.present" />
             <SpreadsheetCell value="" type="label" />
             <SpreadsheetCell value={debtValue} type="calc" bold
               tooltip={backendField("adjusted.pv_of_operating_leases", "Σ of all PV rows above. Added to total debt.")} />
@@ -147,7 +147,7 @@ export default function LeaseConverter({ data }: { data: ValuationResponse; sess
       <SpreadsheetGrid title="Effect on Financial Statements">
         <tbody>
           <tr>
-            <SpreadsheetCell value="Depreciation on lease asset" type="label" width="280px" />
+            <SpreadsheetCell value="Depreciation on lease asset" type="label" width="280px" termId="lease-capitalization" />
             <SpreadsheetCell
               value={adjusted?.depreciation_on_lease_asset ?? depreciation}
               type="calc"
@@ -157,7 +157,7 @@ export default function LeaseConverter({ data }: { data: ValuationResponse; sess
             <SpreadsheetCell value={`= PV / ${adjusted?.lease_years_total ?? totalLeaseYears} years`} type="label" />
           </tr>
           <tr>
-            <SpreadsheetCell value="Adjustment to Operating Earnings" type="label" />
+            <SpreadsheetCell value="Adjustment to Operating Earnings" type="label" termId="lease-capitalization" />
             <SpreadsheetCell
               value={adjusted?.lease_adjustment_to_ebit ?? ebitAdj}
               type="calc"

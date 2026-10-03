@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { Term } from '../knowledge/Term';
 
 export type CellType = 'hypothesis' | 'financial' | 'reference' | 'calc' | 'label' | 'hint' | 'header';
 
@@ -14,6 +15,9 @@ interface SpreadsheetCellProps {
   align?: 'left' | 'center' | 'right';
   width?: string;
   tooltip?: string;
+  /** Stable knowledge ID on a readable label; never attached to an editor. */
+  termId?: string;
+  bindingId?: string;
   /**
    * Allow the cell content to wrap across multiple lines instead of
    * forcing the column wider. Useful for long row labels.
@@ -66,6 +70,8 @@ export default function SpreadsheetCell({
   align = type === 'label' || type === 'hint' ? 'left' : 'right',
   width,
   tooltip,
+  termId,
+  bindingId,
   wrap = false,
   sticky = false,
 }: SpreadsheetCellProps) {
@@ -89,7 +95,7 @@ export default function SpreadsheetCell({
 
   if (editing) {
     return (
-      <td colSpan={colSpan} rowSpan={rowSpan} className={baseClasses} style={width ? { width } : undefined}>
+      <td data-knowledge-ignore colSpan={colSpan} rowSpan={rowSpan} className={baseClasses} style={width ? { width } : undefined}>
         <input
           autoFocus
           type="text"
@@ -113,8 +119,11 @@ export default function SpreadsheetCell({
       onDoubleClick={startEdit}
       style={width ? { width } : undefined}
       title={tooltip || undefined}
+      data-knowledge-ignore={editable ? true : undefined}
     >
-      {formatValue(value)}
+      {termId && !editable ? (
+        <Term termId={termId} bindingId={bindingId}>{formatValue(value)}</Term>
+      ) : formatValue(value)}
       {hasTip && (
         <span
           aria-hidden="true"

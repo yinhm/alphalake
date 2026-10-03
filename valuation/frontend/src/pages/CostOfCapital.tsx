@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Term } from '../knowledge/Term';
 import type {
   ValuationResponse,
   MethodologyChoices,
@@ -69,11 +70,11 @@ const FIRM_TYPES = ['large','small','financial'];
 // Small building blocks
 // ──────────────────────────────────────────────────────────────────────────
 
-function Section({ title, children, subtitle }: { title: string; subtitle?: string; children: React.ReactNode }) {
+function Section({ title, children, subtitle, termId }: { title: string; subtitle?: string; children: React.ReactNode; termId?: string }) {
   return (
     <section className="bg-white border border-gray-300 rounded-md shadow-sm">
       <header className="px-4 py-2 bg-gray-100 border-b border-gray-300">
-        <h2 className="text-sm font-bold text-gray-800">{title}</h2>
+        <h2 className="text-sm font-bold text-gray-800">{termId ? <Term termId={termId}>{title}</Term> : title}</h2>
         {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
       </header>
       <div className="p-4">{children}</div>
@@ -91,14 +92,14 @@ function Field({ label, children, hint }: { label: string; children: React.React
   );
 }
 
-function KV({ label, value, bold, tooltip }: { label: string; value: string; bold?: boolean; tooltip?: string }) {
+function KV({ label, value, bold, tooltip, termId, bindingId }: { label: string; value: string; bold?: boolean; tooltip?: string; termId?: string; bindingId?: string }) {
   const hasTip = Boolean(tooltip && tooltip.length > 0);
   return (
     <div
       className={`flex justify-between items-center py-1 border-b border-gray-100 last:border-0 ${hasTip ? 'cursor-help hover:bg-sky-50/60' : ''}`}
       title={tooltip}
     >
-      <span className={`text-xs ${bold ? 'font-bold' : 'text-gray-700'}`}>{label}</span>
+      <span className={`text-xs ${bold ? 'font-bold' : 'text-gray-700'}`}>{termId ? <Term termId={termId} bindingId={bindingId}>{label}</Term> : label}</span>
       <span className={`text-xs tabular-nums inline-flex items-center gap-1 ${bold ? 'font-bold' : 'text-gray-900'}`}>
         {value}
         {hasTip && <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-sky-500 opacity-60" />}
@@ -198,7 +199,7 @@ export default function CostOfCapital({ data, onPatch }: Props) {
       </Section>
 
       {/* ─── APPROACH PICKER ─── */}
-      <Section title="1. Cost-of-Capital Approach" subtitle="Top-level selector: which of Ginzu's four methods to use.">
+      <Section title="1. Cost-of-Capital Approach" termId="wacc" subtitle="Top-level selector: which of Ginzu's four methods to use.">
         <Field label="Approach">
           <select
             value={m.cost_of_capital_approach}
@@ -255,7 +256,7 @@ export default function CostOfCapital({ data, onPatch }: Props) {
       {m.cost_of_capital_approach === 'detailed' && (
         <>
           {/* ─── BETA ─── */}
-          <Section title="2. Unlevered Beta (β_u) Methodology">
+          <Section title="2. Unlevered Beta (β_u) Methodology" termId="beta">
             <Field label="Beta approach">
               <select
                 value={m.beta_approach}
@@ -303,7 +304,7 @@ export default function CostOfCapital({ data, onPatch }: Props) {
           </Section>
 
           {/* ─── ERP ─── */}
-          <Section title="3. Equity Risk Premium (ERP) Methodology">
+          <Section title="3. Equity Risk Premium (ERP) Methodology" termId="equity-risk-premium">
             <Field label="ERP approach">
               <select
                 value={m.erp_approach}
@@ -351,7 +352,7 @@ export default function CostOfCapital({ data, onPatch }: Props) {
           </Section>
 
           {/* ─── Kd ─── */}
-          <Section title="4. Cost of Debt (Kd) Methodology">
+          <Section title="4. Cost of Debt (Kd) Methodology" termId="cost-of-debt">
             <Field label="Kd approach">
               <select
                 value={m.kd_approach}
@@ -419,7 +420,7 @@ export default function CostOfCapital({ data, onPatch }: Props) {
           </Section>
 
           {/* ─── Debt pricing + Preferred + Convertibles ─── */}
-          <Section title="5. MV of Debt, Preferred & Convertibles (advanced)">
+          <Section title="5. MV of Debt, Preferred & Convertibles (advanced)" termId="capital-structure">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Field label="MV of debt calculation method">
@@ -523,31 +524,31 @@ export default function CostOfCapital({ data, onPatch }: Props) {
       )}
 
       {/* ─── RESULTS ─── */}
-      <Section title="Computed WACC" subtitle={`Result of the methodology selected above. Market values in reporting currency.`}>
+      <Section title="Computed WACC" termId="wacc" subtitle={`Result of the methodology selected above. Market values in reporting currency.`}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Beta & Risk</h3>
-            <KV label="β_u (unlevered)"     value={fmtNum(coc?.beta_u)}     tooltip={tip("cost_of_capital.beta_u")} />
-            <KV label="β_L (levered)"       value={fmtNum(coc?.beta_l)}     tooltip={tip("cost_of_capital.beta_l")} />
-            <KV label="D/E ratio"           value={fmtNum(coc?.d_e_ratio)}  tooltip={tip("cost_of_capital.d_e_ratio")} />
-            <KV label="Risk-free rate"      value={fmtPct(coc?.risk_free_rate)}
+            <KV label="β_u (unlevered)" termId="beta" bindingId="beta.unlevered"     value={fmtNum(coc?.beta_u)}     tooltip={tip("cost_of_capital.beta_u")} />
+            <KV label="β_L (levered)" termId="beta" bindingId="beta.levered"       value={fmtNum(coc?.beta_l)}     tooltip={tip("cost_of_capital.beta_l")} />
+            <KV label="D/E ratio" termId="capital-structure" bindingId="capital-structure.debt-equity"           value={fmtNum(coc?.d_e_ratio)}  tooltip={tip("cost_of_capital.d_e_ratio")} />
+            <KV label="Risk-free rate" termId="risk-free-rate" bindingId="risk-free-rate.current"      value={fmtPct(coc?.risk_free_rate)}
                                             tooltip={user("Risk-free rate (10y treasury)", "user-supplied via upload form; typically 4.25% US T-bond")} />
-            <KV label="ERP (used)"          value={fmtPct(coc?.equity_risk_premium)}
+            <KV label="ERP (used)" termId="equity-risk-premium" bindingId="equity-risk-premium.current"          value={fmtPct(coc?.equity_risk_premium)}
                                             tooltip={tip("cost_of_capital.equity_risk_premium")} />
             {coc?.interest_coverage_ratio !== null && coc?.interest_coverage_ratio !== undefined && (
-              <KV label="Interest coverage" value={fmtNum(coc.interest_coverage_ratio, 2)}
+              <KV label="Interest coverage" termId="interest-coverage" bindingId="interest-coverage.current" value={fmtNum(coc.interest_coverage_ratio, 2)}
                                             tooltip={formula("Coverage = Adjusted EBIT / Interest expense",
                                                              `${fmtCur(data.adjusted?.adjusted_ebit)} / ${fmtCur(fin?.interest_expense)} = ${fmtNum(coc.interest_coverage_ratio, 2)}`)} />
             )}
             {coc?.synthetic_rating && (
-              <KV label="Inferred rating"   value={coc.synthetic_rating}
+              <KV label="Inferred rating" termId="synthetic-rating"   value={coc.synthetic_rating}
                                             tooltip={`Coverage-to-rating table (large/small firms) from cost_of_capital_reference.json`} />
             )}
           </div>
 
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Capital Structure</h3>
-            <KV label="MV equity"                   value={fmtCur(coc?.mv_equity)}
+            <KV label="MV equity" termId="capital-structure"                   value={fmtCur(coc?.mv_equity)}
                                                     tooltip={formula("MV_equity = shares × price",
                                                                       `${fmtNum(fin?.shares_outstanding, 2)} × ${fmtNum(fin?.stock_price, 2)} = ${fmtCur(coc?.mv_equity)}`) + " — " + ciq(ticker, "IQ_MARKETCAP")} />
             <KV label="MV straight debt"            value={fmtCur(coc?.mv_straight_debt)}
@@ -558,9 +559,9 @@ export default function CostOfCapital({ data, onPatch }: Props) {
                                                     tooltip={m.has_convertible ? "Bond-priced value of the straight-debt portion of convertibles" : "No convertible debt — disabled"} />
             <KV label="Equity in convertibles"      value={fmtCur(coc?.equity_in_convertible)}
                                                     tooltip={m.has_convertible ? "= Convertible MV − straight-debt bond value" : "N/A"} />
-            <KV label="MV leases (as debt)"         value={fmtCur(coc?.mv_leases)}
+            <KV label="MV leases (as debt)" termId="lease-capitalization"         value={fmtCur(coc?.mv_leases)}
                                                     tooltip={data.inputs.adjustment_inputs.has_operating_leases ? "PV of lease commitments discounted at Kd" : "Leases not capitalized (post-ASC 842 they are in bv_debt)"} />
-            <KV label="MV debt total"               value={fmtCur(coc?.mv_debt_total)}
+            <KV label="MV debt total" termId="capital-structure" bindingId="capital-structure.debt-value"               value={fmtCur(coc?.mv_debt_total)}
                                                     tooltip={tip("cost_of_capital.mv_debt_total")} />
             <KV label="MV preferred"                value={fmtCur(coc?.mv_preferred)}
                                                     tooltip={m.has_preferred ? "Preferred shares × price per share" : "No preferred stock"} />
@@ -570,17 +571,17 @@ export default function CostOfCapital({ data, onPatch }: Props) {
 
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">Component Costs & Weights</h3>
-            <KV label="Cost of equity"      value={fmtPct(coc?.cost_of_equity)}
+            <KV label="Cost of equity" termId="cost-of-equity" bindingId="cost-of-equity.current"      value={fmtPct(coc?.cost_of_equity)}
                                             tooltip={tip("cost_of_capital.cost_of_equity")} />
-            <KV label="Kd pre-tax"          value={fmtPct(coc?.cost_of_debt_pretax)}
+            <KV label="Kd pre-tax" termId="cost-of-debt" bindingId="cost-of-debt.pretax"          value={fmtPct(coc?.cost_of_debt_pretax)}
                                             tooltip={tip("cost_of_capital.cost_of_debt_pretax")} />
-            <KV label="Kd after-tax"        value={fmtPct(coc?.cost_of_debt_aftertax)}
+            <KV label="Kd after-tax" termId="cost-of-debt" bindingId="cost-of-debt.aftertax"        value={fmtPct(coc?.cost_of_debt_aftertax)}
                                             tooltip={tip("cost_of_capital.cost_of_debt_aftertax")} />
             <KV label="Cost of preferred"   value={fmtPct(coc?.cost_of_preferred)}
                                             tooltip={m.has_preferred ? "= dividend per share / price per share" : "N/A (no preferred stock)"} />
-            <KV label="Weight equity"       value={fmtPct(coc?.weight_equity)}
+            <KV label="Weight equity" termId="capital-structure" bindingId="capital-structure.equity-weight"       value={fmtPct(coc?.weight_equity)}
                                             tooltip={tip("cost_of_capital.weight_equity")} />
-            <KV label="Weight debt"         value={fmtPct(coc?.weight_debt)}
+            <KV label="Weight debt" termId="capital-structure" bindingId="capital-structure.debt-weight"         value={fmtPct(coc?.weight_debt)}
                                             tooltip={tip("cost_of_capital.weight_debt")} />
             <KV label="Weight preferred"    value={fmtPct(coc?.weight_preferred)}
                                             tooltip={formula("W_p = MV_preferred / Total Capital")} />
@@ -588,7 +589,7 @@ export default function CostOfCapital({ data, onPatch }: Props) {
               className="mt-3 bg-indigo-50 border border-indigo-300 rounded px-3 py-2 cursor-help hover:bg-indigo-100"
               title={tip("cost_of_capital.wacc")}
             >
-              <div className="text-xs text-gray-600">WACC <span className="text-sky-500">ⓘ</span></div>
+              <div className="text-xs text-gray-600"><Term termId="wacc" bindingId="wacc.current">WACC</Term> <span className="text-sky-500">ⓘ</span></div>
               <div className="text-2xl font-bold text-indigo-900 tabular-nums">{fmtPct(coc?.wacc, 2)}</div>
             </div>
           </div>
@@ -601,21 +602,21 @@ export default function CostOfCapital({ data, onPatch }: Props) {
       {/* ─── INDUSTRY REFERENCE ─── */}
       <Section title="Industry Reference" subtitle={`Damodaran ${ind.region} industry averages for "${ind.industry_name}".`}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-          <KV label="Industry β_u"             value={fmtNum(ind.beta_u)}
+          <KV label="Industry β_u" termId="beta"             value={fmtNum(ind.beta_u)}
                                                tooltip={damodaran("betas.xls", "Unlevered beta", ind.industry_name)} />
-          <KV label="Industry β_u (cash-corr)" value={fmtNum(ind.beta_u_corrected_for_cash)}
+          <KV label="Industry β_u (cash-corr)" termId="beta" value={fmtNum(ind.beta_u_corrected_for_cash)}
                                                tooltip={damodaran("betas.xls", "Unlevered beta corrected for cash", ind.industry_name)} />
-          <KV label="Industry D/E"           value={fmtNum(ind.industry_d_e_ratio)}
+          <KV label="Industry D/E" termId="capital-structure"           value={fmtNum(ind.industry_d_e_ratio)}
                                              tooltip={damodaran("betas.xls", "D/E Ratio", ind.industry_name)} />
-          <KV label="Industry effective tax" value={fmtPct(ind.industry_effective_tax_rate)}
+          <KV label="Industry effective tax" termId="effective-tax-rate" value={fmtPct(ind.industry_effective_tax_rate)}
                                              tooltip={damodaran("betas.xls", "Effective Tax rate", ind.industry_name)} />
-          <KV label="Industry Ke"            value={fmtPct(ind.cost_of_equity)}
+          <KV label="Industry Ke" termId="cost-of-equity"            value={fmtPct(ind.cost_of_equity)}
                                              tooltip={damodaran("wacc.xls", "Cost of Equity", ind.industry_name)} />
-          <KV label="Industry Kd pre-tax"    value={fmtPct(ind.cost_of_debt_pretax)}
+          <KV label="Industry Kd pre-tax" termId="cost-of-debt"    value={fmtPct(ind.cost_of_debt_pretax)}
                                              tooltip={damodaran("wacc.xls", "Cost of Debt (pre-tax)", ind.industry_name)} />
-          <KV label="Industry WACC"          value={fmtPct(ind.wacc)}
+          <KV label="Industry WACC" termId="wacc"          value={fmtPct(ind.wacc)}
                                              tooltip={damodaran("wacc.xls", "Cost of Capital", ind.industry_name)} />
-          <KV label="Industry ROIC"          value={fmtPct(ind.roic)}
+          <KV label="Industry ROIC" termId="roic"          value={fmtPct(ind.roic)}
                                              tooltip={damodaran("EVA.xls", "ROIC", ind.industry_name)} />
         </div>
       </Section>

@@ -71,7 +71,7 @@ export default function RDConverter({ data }: { data: ValuationResponse; session
             </tr>
           ))}
           <tr>
-            <SpreadsheetCell value="Amortization Period (years)" type="label" bold />
+            <SpreadsheetCell value="Amortization Period (years)" type="label" bold termId="rd-capitalization" />
             <SpreadsheetCell value={n} type="hypothesis"
               tooltip={user('R&D amortization period N', 'Damodaran industry default: Pharma/Biotech/Aerospace = 10y; Online Retail / Internet Software = 3y; all others = 5y.')} />
           </tr>
@@ -136,22 +136,22 @@ export default function RDConverter({ data }: { data: ValuationResponse; session
       <SpreadsheetGrid title="Section 3: Summary">
         <tbody>
           <tr>
-            <SpreadsheetCell value="Value of Research Asset" type="label" bold width="280px" />
+            <SpreadsheetCell value="Value of Research Asset" type="label" bold width="280px" termId="rd-capitalization" bindingId="rd-capitalization.asset" />
             <SpreadsheetCell value={adjusted?.value_of_research_asset} type="calc" width="200px"
               tooltip={backendField("adjusted.value_of_research_asset", "Current R&D + Σ unamortized past R&D. Added to Invested Capital.")} />
           </tr>
           <tr>
-            <SpreadsheetCell value="Unamortized R&D" type="label" bold />
+            <SpreadsheetCell value="Unamortized R&D" type="label" bold termId="rd-capitalization" />
             <SpreadsheetCell value={adjusted?.unamortized_r_and_d} type="calc"
               tooltip={backendField("adjusted.unamortized_r_and_d", "Σ past R&D × (N−t)/N. Capital-asset component.")} />
           </tr>
           <tr>
-            <SpreadsheetCell value="Amortization of R&D" type="label" bold />
+            <SpreadsheetCell value="Amortization of R&D" type="label" bold termId="rd-capitalization" />
             <SpreadsheetCell value={adjusted?.amortization_r_and_d} type="calc"
               tooltip={backendField("adjusted.amortization_r_and_d", "Σ past R&D / N. Becomes D&A expense.")} />
           </tr>
           <tr>
-            <SpreadsheetCell value="Adjusted EBIT" type="label" bold />
+            <SpreadsheetCell value="Adjusted EBIT" type="label" bold termId="ebit" />
             <SpreadsheetCell value={adjusted?.adjusted_ebit} type="calc"
               tooltip={formula("Adjusted EBIT = Raw EBIT + R&D current − Amortization + Lease adj",
                                "Recognizes R&D as capex. Positive adjustment when current R&D > amortization (growing R&D firms).")} />

@@ -238,10 +238,12 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
     values: (number | undefined)[],
     format?: 'pct' | 'num',
     tooltip?: string | ((i: number) => string),
+    termId?: string,
+    bindingId?: string,
   ) {
     return (
       <tr>
-        <SpreadsheetCell value={label} type="label" align="left" width="180px" />
+        <SpreadsheetCell value={label} type="label" align="left" width="180px" termId={termId} bindingId={bindingId} />
         {values.map((v, i) => {
           const tip = typeof tooltip === 'function' ? tooltip(i) : tooltip;
           return (
@@ -258,7 +260,7 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
   }
 
   /** Single value-bridge row: label + value */
-  function bridgeRow(label: string, value: number | string | null | undefined, tooltip?: string, indent = false) {
+  function bridgeRow(label: string, value: number | string | null | undefined, tooltip?: string, indent = false, termId?: string, bindingId?: string) {
     return (
       <tr>
         <SpreadsheetCell
@@ -266,6 +268,8 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
           type="label"
           align="left"
           width="320px"
+          termId={termId}
+          bindingId={bindingId}
         />
         <SpreadsheetCell value={fmtNum(value)} type="calc" tooltip={tooltip} />
       </tr>
@@ -315,13 +319,13 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
           </thead>
           <tbody>
             {projRow('Revenue growth rate', revenueGrowth, 'pct',
-              projTip('year {i}', 'g = (Rev_t − Rev_{t-1}) / Rev_{t-1}. Year 1 = user hypothesis; years 2-5 = CAGR user input; years 6-10 = linear decay to stable growth rate ≤ RF'))}
+              projTip('year {i}', 'g = (Rev_t − Rev_{t-1}) / Rev_{t-1}. Year 1 = user hypothesis; years 2-5 = CAGR user input; years 6-10 = linear decay to stable growth rate ≤ RF'), 'revenue-growth')}
             {projRow('Revenues', revenues, 'num',
               projTip('year {i}', 'Rev_t = Rev_{t-1} × (1 + g_t). Base year is LTM revenue from CIQ.'))}
             {projRow('EBIT margin', ebitMargin, 'pct',
-              projTip('year {i}', 'Margin path: starts at user hypothesis (yr 1), converges linearly to target_operating_margin by margin_convergence_year, then holds flat.'))}
+              projTip('year {i}', 'Margin path: starts at user hypothesis (yr 1), converges linearly to target_operating_margin by margin_convergence_year, then holds flat.'), 'operating-margin')}
             {projRow('EBIT', ebit, 'num',
-              projTip('year {i}', 'EBIT_t = Rev_t × margin_t (Ginzu: explicit compound, not EBIT×(1+growth))'))}
+              projTip('year {i}', 'EBIT_t = Rev_t × margin_t (Ginzu: explicit compound, not EBIT×(1+growth))'), 'ebit')}
             {projRow(
               'Tax rate',
               taxRatePerYear,
@@ -330,19 +334,20 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
                 'Effective in base year, converges to marginal over the projection',
                 `Base = ${pct(macro.tax_rate_effective)} (what the firm actually paid); terminal → ${pct(macro.tax_rate_marginal)} (marginal). Per-year value back-calculated from the engine's FCFF + Reinvestment so it reconciles exactly with the EBIT(1-t) row below.`,
               ),
+              'effective-tax-rate',
             )}
             {projRow('EBIT(1-t)', ebitAfterTax, 'num',
-              formula('EBIT × (1 − tax rate) using the per-year tax rate shown above (NOT a flat marginal rate). Matches the engine\'s NOPAT.'))}
+              formula('EBIT × (1 − tax rate) using the per-year tax rate shown above (NOT a flat marginal rate). Matches the engine\'s NOPAT.'), 'nopat')}
             {projRow('Reinvestment', reinvestment, 'num',
-              projTip('year {i}', 'Sales-to-capital method: Reinvest_t = (Rev_t − Rev_{t−lag}) / (S/C ratio). Lag = 1 year default.'))}
+              projTip('year {i}', 'Sales-to-capital method: Reinvest_t = (Rev_t − Rev_{t−lag}) / (S/C ratio). Lag = 1 year default.'), 'reinvestment')}
             {projRow('FCFF', fcff, 'num',
-              projTip('year {i}', 'FCFF_t = EBIT(1−t)_t − Reinvest_t'))}
+              projTip('year {i}', 'FCFF_t = EBIT(1−t)_t − Reinvest_t'), 'fcff')}
             {projRow('Cost of capital', costOfCapital, 'pct',
-              'WACC from Module 2. If "stable WACC override" is set, terminal WACC may differ from years 1-10.')}
+              'WACC from Module 2. If "stable WACC override" is set, terminal WACC may differ from years 1-10.', 'wacc', 'wacc.current')}
             {projRow('Cumulated discount factor', discountFactor, 'num',
-              projTip('year {i}', 'CumDiscount_t = Π(1 / (1 + WACC_s)) for s=1..t. Product form handles non-constant WACC.'))}
+              projTip('year {i}', 'CumDiscount_t = Π(1 / (1 + WACC_s)) for s=1..t. Product form handles non-constant WACC.'), 'discount-factor')}
             {projRow('PV(FCFF)', pvFcff, 'num',
-              projTip('year {i}', 'PV = FCFF_t × CumDiscount_t'))}
+              projTip('year {i}', 'PV = FCFF_t × CumDiscount_t'), 'present-value')}
           </tbody>
         </SpreadsheetGrid>
       </div>
@@ -351,17 +356,17 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
       <SpreadsheetGrid title={`Value Bridge (${data.inputs.reporting_currency ?? '—'}, in millions — per-share figures on final row)`}>
         <tbody>
           {bridgeRow('Terminal cash flow', terminalCF,
-            'FCFF in year 10. If override_growth_perpetuity is set, FCFF is adjusted for post-yr-10 growth rate.')}
+            'FCFF in year 10. If override_growth_perpetuity is set, FCFF is adjusted for post-yr-10 growth rate.', false, 'fcff')}
           {bridgeRow('Terminal cost of capital', pct(terminalCostOfCapital),
             user('Stable-period WACC', 'Default = same as year-10 WACC; can be overridden (typically 8.5% for mature firms).'))}
           {bridgeRow('Terminal value', dcf?.terminal_value_firm,
-            formula('TV = FCFF_yr10 × (1 + g_stable) / (WACC_stable − g_stable)', 'Gordon growth; g_stable ≤ RF per Damodaran constraint.'))}
+            formula('TV = FCFF_yr10 × (1 + g_stable) / (WACC_stable − g_stable)', 'Gordon growth; g_stable ≤ RF per Damodaran constraint.'), false, 'terminal-value', 'terminal-value.current')}
           {bridgeRow('PV(terminal value)', pvTerminal,
-            formula('PV(TV) = TV × CumDiscount_yr10'))}
+            formula('PV(TV) = TV × CumDiscount_yr10'), false, 'terminal-value', 'terminal-value.present')}
           {bridgeRow('PV(cash flows over next 10 years)', pvCashFlows,
             formula('Σ PV(FCFF_t) for t=1..10') + ' — ' + backendField('dcf.pv_cash_flows_sum'))}
           {bridgeRow('Sum of PV (operating assets)', valueOfOpAssets,
-            formula('V_operating = Σ PV(FCFF) + PV(TV)') + ' — ' + backendField('dcf.value_of_operating_assets'))}
+            formula('V_operating = Σ PV(FCFF) + PV(TV)') + ' — ' + backendField('dcf.value_of_operating_assets'), false, 'operating-asset-value', 'operating-asset-value.current')}
           {bridgeRow('Probability of failure', pct(failureProbability),
             user('Failure probability', 'Default 0%. Override via FailureRate page. Applied as overlay to going-concern value.'))}
           {bridgeRow('Proceeds if firm fails', proceedsIfFails,
@@ -377,7 +382,7 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
           {bridgeRow('Plus: Non-operating assets', nonOpAssets,
             'Cross-holdings / investments in affiliates — placeholder in current schema')}
           {bridgeRow('Value of equity', equityValue,
-            formula('V_equity = V_op (adj) − Debt − Minority + Cash + Non-op'))}
+            formula('V_equity = V_op (adj) − Debt − Minority + Cash + Non-op'), false, 'equity-value', 'equity-value.current')}
           {bridgeRow('Minus: Value of options', optionsValue,
             'Iterative Black-Scholes from Module 6 (Option value page).')}
           {bridgeRow('Value of equity in common stock', equityInCommon,
@@ -397,7 +402,7 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
             return (
               <>
                 <tr>
-                  <SpreadsheetCell value="Value per share (reporting ccy)" type="label" align="left" width="320px" />
+                  <SpreadsheetCell value="Value per share (reporting ccy)" type="label" align="left" width="320px" termId="value-per-share" bindingId="value-per-share.current" />
                   <td className="border px-1.5 py-0.5 bg-emerald-50 border-emerald-200 text-right whitespace-nowrap"
                       title={formula('VPS = V_equity_common / shares') + ' — ' + backendField('final.value_per_share')}>
                     <DualCurrency valueReporting={vpsReporting} reportingCcy={repCcy} listingCcy={listCcy} fxRate={fxRate} />
