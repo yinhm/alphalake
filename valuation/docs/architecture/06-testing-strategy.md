@@ -1,5 +1,7 @@
 # Testing Strategy
 
+> 此页保留上游设计背景，不是AlphaLake当前测试目录或运行规范。当前默认回归、显式全局验收及历史清理以[测试约定](../../../docs/guides/testing.md)为准；本文未实现的目录示例和原方法政策不得当作当前功能。
+
 ## Core Principle: Excel as Formula-Level Test Oracle
 
 The Damodaran spreadsheet (`knowledge_base/fcffsimpleginzu.xlsx`) is the ground truth. But **never load it all at once**. Instead:

@@ -6,6 +6,9 @@
 
 ## 最近主线证据
 
+- [测试耗时审核、历史研究清理与全局分层](test-suite-audit-20261003.md)
+- [9月30日后端测试优化基线](backend-test-performance-20260930.md)
+
 - [已撤销的两公司账面接通政策](valuation-book-proxies.md)（仅历史依据；当前统一标准输入）
 
 - [近期债务、计息范围及资本倍率采用决策](capital-scope-review-20260929.md)

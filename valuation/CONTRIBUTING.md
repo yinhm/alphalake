@@ -1,5 +1,7 @@
 # Contributing
 
+AlphaLake当前[测试约定](../docs/guides/testing.md)：下面pytest命令运行默认回归，真实源链须加`--full`，CI执行全局；本机串行隔离要求见该指南。引擎冻结及方法变更权限以[AGENTS.md](AGENTS.md)为准，下面保留上游贡献背景。
+
 Contributions are welcome — bug reports, pull requests, and methodology
 discussions all appreciated.
 
