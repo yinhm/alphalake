@@ -6,6 +6,7 @@ const terms: KnowledgeTermSummary[] = [
   { term_id: 'wacc', title_zh: '测试资本成本', title_en: 'WACC', kind: '测试概念', category: '合成样本', summary: '用于验证交互的资本成本简释。', aliases: ['Capital cost'] },
   { term_id: 'capital-a', title_zh: '测试资本甲', title_en: 'Capital A', kind: '测试概念', category: '合成样本', summary: '用于验证歧义的第一种资本。', aliases: ['资本'] },
   { term_id: 'capital-b', title_zh: '测试资本乙', title_en: 'Capital B', kind: '测试概念', category: '合成样本', summary: '用于验证歧义的第二种资本。', aliases: ['资本'] },
+  ...Array.from({ length: 12 }, (_, i) => ({ term_id: `extra-${i}`, title_zh: `扩展词条${i}`, title_en: `Extra ${i}`, kind: '测试概念', category: '合成样本', summary: '用于验证目录限制不影响全库检索。', aliases: [`extra-alias-${i}`] })),
 ];
 const API_ROUTE = /^http:\/\/127\.0\.0\.1:4173\/api\//;
 const index: KnowledgeIndex = { status: 'ready', release_id: 'fixture-r1', schema_version: 1, terms };
@@ -67,6 +68,20 @@ const panel = (page: Page) => page.getByRole('complementary', { name: '估值词
 test('standalone glossary works without a valuation, searches aliases and follows safe crosslinks', async ({ page }) => {
   await mockKnowledge(page);
   await page.goto('/knowledge');
+  const list = page.locator('.knowledge-directory-list li');
+  const search = page.getByRole('searchbox', { name: '搜索词条' });
+  await expect(list).toHaveCount(10);
+  await search.fill('合成样本');
+  await expect(list).toHaveCount(10);
+  await search.fill('extra-alias-11');
+  await expect(list).toHaveCount(1);
+  await list.getByRole('link').click();
+  await expect(page.getByRole('heading', { name: '扩展词条11', exact: true })).toBeVisible();
+  await page.goto('/knowledge/extra-11');
+  await expect(list).toHaveCount(10);
+  await expect(page.getByRole('heading', { name: '扩展词条11', exact: true })).toBeVisible();
+  await search.fill('不存在的词条');
+  await expect(page.getByRole('status')).toHaveText('没有匹配的词条，请尝试其他名称。');
   await page.getByRole('searchbox', { name: '搜索词条' }).fill('capital cost');
   await page.getByRole('link', { name: /测试资本成本/ }).click();
   await expect(page).toHaveURL(/\/knowledge\/wacc$/);

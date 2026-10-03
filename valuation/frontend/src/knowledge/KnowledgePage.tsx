@@ -13,6 +13,7 @@ export function KnowledgePage() {
   useEffect(() => { articleRef.current?.scrollIntoView({ block: 'start' }); }, [termId]);
   if (!knowledge) return null;
   const { index, indexError, refreshIndex } = knowledge;
+  const matches = searchTerms(query, index?.terms ?? []);
   return <div className="knowledge-page">
     <header className="knowledge-page-header"><p className="knowledge-eyebrow">ALPHALAKE · 估值知识</p><h1>估值词汇与方法</h1><p>阅读定义、公式、适用条件与原始来源。在估值页面选择词语，或点击词语旁的问号，即可随时查阅。</p></header>
     {indexError ? <div role="status" className="knowledge-empty"><p>{indexError}</p><button type="button" className="knowledge-link" onClick={() => void refreshIndex()}>重试读取词条库</button></div>
@@ -21,12 +22,12 @@ export function KnowledgePage() {
       : <div className={`knowledge-directory${termId ? ' has-article' : ''}`}>
         <section className="knowledge-directory-list" aria-label="词条目录"><label htmlFor="knowledge-search">搜索词条</label>
           <input id="knowledge-search" type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="中文、英文或缩写" autoComplete="off" />
-          <p className="knowledge-muted">{searchTerms(query, index.terms).length} 个词条</p>
-          {index.terms.length === 0 ? <p>此版本尚未收录词条。</p> : searchTerms(query, index.terms).length === 0 ? <p role="status">没有匹配的词条，请尝试其他名称。</p> : <ul>{searchTerms(query, index.terms).map(term => <li key={term.term_id}><Link to={`/knowledge/${term.term_id}`} aria-current={term.term_id === termId ? 'page' : undefined}>
+          <p className="knowledge-muted">{matches.length} 个词条{matches.length > 10 && '，显示前10条；请细化搜索或通过词条链接阅读。'}</p>
+          {index.terms.length === 0 ? <p>此版本尚未收录词条。</p> : matches.length === 0 ? <p role="status">没有匹配的词条，请尝试其他名称。</p> : <ul>{matches.slice(0, 10).map(term => <li key={term.term_id}><Link to={`/knowledge/${term.term_id}`} aria-current={term.term_id === termId ? 'page' : undefined}>
             <strong>{term.title_zh || term.title_en}</strong>{term.title_en && <span>{term.title_en}</span>}<p>{term.summary}</p>
           </Link></li>)}</ul>}
         </section>
-        {termId && <div ref={articleRef} className="knowledge-page-article"><Link to="/knowledge" className="knowledge-back">← 全部词条</Link><KnowledgeArticle termId={termId} onTerm={id => navigate(`/knowledge/${id}`)} /></div>}
+        {termId && <div ref={articleRef} className="knowledge-page-article"><Link to="/knowledge" className="knowledge-back">← 词条目录</Link><KnowledgeArticle termId={termId} onTerm={id => navigate(`/knowledge/${id}`)} /></div>}
       </div>}
   </div>;
 }
