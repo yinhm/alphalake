@@ -114,7 +114,7 @@ def prepare(baseline, references, recipe, metadata, revenue_facts):
         boundaries=recipe['boundaries'],changes={k:list(changes(baseline['inputs'],v['inputs'])) for k,v in payloads.items()})
 
 
-def evaluate(database, references, recipe, tickers, output, web=None, selection_policy=None):
+def evaluate(database, recipe, tickers, output, web=None, selection_policy=None):
     if not tickers or len(set(tickers))!=len(tickers) or any(not re.fullmatch(r"(?:SHSE|SZSE):[0-9]{6}",t) for t in tickers):
         raise ValueError("unique SH/SZ tickers required")
     from fastapi.testclient import TestClient
@@ -127,6 +127,8 @@ def evaluate(database, references, recipe, tickers, output, web=None, selection_
     with database.open('rb') as stream: snapshot_hash=hashlib.file_digest(stream,'sha256').hexdigest()
     with sqlite3.connect(database.as_uri()+'?mode=ro',uri=True) as conn:
         metadata=dict(conn.execute('SELECT key,value FROM metadata'))
+        from data_sources.native_references import load_wacc_references
+        references = load_wacc_references(conn)
         conn.row_factory=sqlite3.Row
         from tools.review_native_policy import load_annual_evidence
         annual_evidence=load_annual_evidence(conn,tickers)
@@ -423,7 +425,6 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--database',required=True,type=Path)
-    parser.add_argument('--references',type=Path)
     parser.add_argument('--recipe',type=Path)
     parser.add_argument('--ticker',action='append')
     parser.add_argument('--explicit-input',type=Path,action='append',help='完整原生inputs请求；重复提供公司，自动交付具名条件，无胜出者')
@@ -435,16 +436,16 @@ def main():
     parser.add_argument('--web',help='optional unchanged full-input API verification URL')
     args=parser.parse_args()
     if args.explicit_input or args.prepare_inputs:
-        if args.references or args.recipe or args.selection_policy or (args.explicit_input and (args.ticker or args.prepare_inputs or args.overrides)):
+        if args.recipe or args.selection_policy or (args.explicit_input and (args.ticker or args.prepare_inputs or args.overrides)):
             parser.error('explicit inputs cannot be mixed with policy selection')
         result = deliver_conditions(args.database, args.explicit_input, args.output, args.web,
             tickers=args.ticker if args.prepare_inputs else None, overrides_file=args.overrides, credit_policy_file=args.reported_credit)
         print(json.dumps(dict(contract=result['contract'], run_id=result['run_id'], companies=result['companies'],
             selected_scenario=None, summary_file=str(args.output/'summary.json')), ensure_ascii=False))
         return
-    if args.overrides or args.reported_credit or not args.references or not args.recipe or not args.ticker:
-        parser.error('references, recipe and ticker required without explicit inputs')
-    print(json.dumps(evaluate(args.database,json.loads(args.references.read_text()),json.loads(args.recipe.read_text()),args.ticker,args.output,args.web,json.loads(args.selection_policy.read_text()) if args.selection_policy else None),ensure_ascii=False))
+    if args.overrides or args.reported_credit or not args.recipe or not args.ticker:
+        parser.error('recipe and ticker required without explicit inputs; references come from SQLite')
+    print(json.dumps(evaluate(args.database,json.loads(args.recipe.read_text()),args.ticker,args.output,args.web,json.loads(args.selection_policy.read_text()) if args.selection_policy else None),ensure_ascii=False))
 
 
 if __name__=='__main__':main()

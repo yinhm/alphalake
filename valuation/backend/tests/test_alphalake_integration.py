@@ -1633,5 +1633,5 @@ def test_native_cny_policy_rejects_bad_tickers(tmp_path):
     from tools.evaluate_native_policy import evaluate
     for tickers in ([],['SHSE:600519']*2,['../../escape'],['XBSE:920001']):
         with pytest.raises(ValueError,match='unique SH/SZ'):
-            evaluate(tmp_path/'missing.sqlite',{}, {},tickers,tmp_path/'output')
+            evaluate(tmp_path/'missing.sqlite',{},tickers,tmp_path/'output')
     assert not (tmp_path/'output').exists()

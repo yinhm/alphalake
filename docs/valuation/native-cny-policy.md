@@ -144,7 +144,7 @@ FROM financials_ttm GROUP BY source_status;
 
 ### 接入、来源修复与采用边界
 
-`--reported-credit`提供显式政策文件：版本`reported-statement-credit-conditions-v1`、完整既有WACC参考包、`sovereign_spread_policy`、`max_credit_age_days`及理由。参考包复用原`ReferenceSnapshot`校验，截止须匹配SQLite、China主权利差须匹配发布版本；年龄限制显式传入，不默认放宽。政策、参考和文件哈希在计算前保存，结束复核未变；自动生成附加条件不等于自动采用为推荐值。
+`--reported-credit`提供显式政策文件：版本`reported-statement-credit-conditions-v2`、`sovereign_spread_policy`、`max_credit_age_days`及理由。参考从同一SQLite读取，复用原`ReferenceSnapshot`校验，截止须匹配SQLite、China主权利差须匹配发布版本；年龄限制显式传入，不默认放宽。政策、参考和文件哈希在计算前保存，结束复核未变；自动生成附加条件不等于自动采用为推荐值。
 
 只有CNY、China显式国家条件及`reference_snapshot`融资组件已准备时生成；原生详细分支不自动切换。已有额外经营租赁资本化时需匹配信用范围，当前不生成。直接批量读取SQLite标准报表，按完整累计三项重建TTM，核对单位/期间/范围及模型原报表EBIT一致；不以研发调整利润选信用。金融利息组成、非正总利息、真实缺源和区间缝隙分别留原因；缺信用条件不清空原基线或其他条件。
 
@@ -174,20 +174,17 @@ Global WACC同行与US资本效率同行不是同一个样本口径，两者分�
 
 ## 接口与执行
 
-`tools.evaluate_native_policy`读取SQLite、主库导出的WACC参考及显式配方，先写固定样本和版本协议，再经原生API输出每家公司：默认结果、完整请求、政策/源值/请求及实际输入差异、条件结果和拒绝原因。每份成功候选另存[经济输入审阅](../history/native-policy-economic-review.md)，经输入重放核对后列出经营和资本需求；既有目录可独立补审阅。可选`--web`逐项核对8080的完整输入API；不修改网页快照。完整请求可直接提交`POST /api/valuation`，无需新增API或前端JSON入口。工具输出目录必须是新的派生目录，不覆盖既有验收。
+`tools.evaluate_native_policy`读取SQLite内绑定的主库WACC参考及显式配方，先写固定样本和版本协议，再经原生API输出每家公司：默认结果、完整请求、政策/源值/请求及实际输入差异、条件结果和拒绝原因。每份成功候选另存[经济输入审阅](../history/native-policy-economic-review.md)，经输入重放核对后列出经营和资本需求；既有目录可独立补审阅。可选`--web`逐项核对8080的完整输入API；不修改网页快照。完整请求可直接提交`POST /api/valuation`，无需新增API或前端JSON入口。工具输出目录必须是新的派生目录，不覆盖既有验收。
 
 ```bash
-./alphalake export-wacc-references workspace/alphalake.duckdb \
-  --as-of <参考截止RFC3339> --latest > workspace/derived/native-policy/references.json
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
   --database workspace/derived/valuation.sqlite \
-  --references workspace/derived/native-policy/references.json \
   --recipe valuation/examples/native-cny-candidates.json \
   --ticker SZSE:300866 --ticker SHSE:600519 \
   --output workspace/derived/native-policy/new-run --web http://127.0.0.1:8080
 ```
 
-本机操作须串行放入已核验1GiB硬限额的独立systemd服务。金融分类、币种不匹配、参考过期、报告期/快照失配均拒绝；WACC参考截止和财务截止分别记录，不能冒称严格历史PIT。工具的参考包需来自可信主库，结构校验不是数据库数字签名。
+本机操作须串行放入已核验1GiB硬限额的独立systemd服务。金融分类、币种不匹配、参考过期、报告期/快照失配均拒绝；WACC参考截止和财务截止分别记录，不能冒称严格历史PIT。参考包与原生参考共用SQLite内容签名；来源归档和结构校验各有边界，不是数据库数字签名。
 
 WACC范围改为由调用链传入：原生为合并口径，茅台专项仍为酒业口径；不按证券代码替调用者决定会计范围。合成评级/市场债务分支需要独立已审核证据，当前原生候选拒绝这两种输入，使用显式信用档情景。
 

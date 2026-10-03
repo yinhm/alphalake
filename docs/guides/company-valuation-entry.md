@@ -4,6 +4,8 @@
 
 ## 原生具名条件自动交付
 
+人民币利率及达摩达兰WACC来源参考随SQLite发布；读取`GET /api/database/wacc-references`即可取得同一`reference_snapshot_id`的曲线、国家风险、行业Beta和信用档，以及源日期/哈希/定位。条件工具直接读取SQLite，不再提供`--references`文件。完整公司WACC仍需要显式公司/代理政策，接口不会把信用档、注册国或行业均值认定为公司风险；原页面手工输入及默认选择保持。
+
 用户要求比较已有假设时，复用`tools.evaluate_native_policy`；普通单次公司估值仍使用本页原`tools.company_valuation`入口。可按证券直接从已发布SQLite准备完整输入，或消费已保存原生请求，不接受BatchPolicy。命令在项目根目录、[独立1GiB服务](fundamental-memory-20260919.md)中执行；每次使用新的输出目录。
 
 **从SQLite准备并交付**，无需手工拼完整JSON：
@@ -27,11 +29,11 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 
 重复`--ticker`在一个进程处理多家公司。财务或参考缺项按`blocked_preparation`保留分母，参数无效按`blocked_override`保留，不用参数补造事实；原生默认取数阶段无法计算时也保留拒绝，不新增另一条绕过路径。完整请求在输出目录`input-preparation/`，来源与默认记录在`protocol.input_preparation`；`user_explicit`在此模式表示准备后的基线，不能把未覆盖字段都称用户输入。
 
-**已有完整请求**仍用`--explicit-input workspace/derived/native-inputs/company-request.json`替代`--prepare-inputs/--ticker/--overrides`，可重复提供多家公司；文件仅包含`{"inputs": CompanyValuationInput}`。两种模式互斥，不能与`--recipe/--references/--selection-policy`混用。`--web`可选，提供时逐项比对现行完整API的实际输入、DCF、每股结果及参考版本；不改网页。
+**已有完整请求**仍用`--explicit-input workspace/derived/native-inputs/company-request.json`替代`--prepare-inputs/--ticker/--overrides`，可重复提供多家公司；文件仅包含`{"inputs": CompanyValuationInput}`。两种模式互斥，不能与`--recipe/--selection-policy`混用。`--web`可选，提供时逐项比对现行完整API的实际输入、DCF、每股结果及参考版本；不改网页。
 
 程序先保存原用户输入及`user_explicit`结果，再组合已有3/5/10年增长收敛、公司三年历史资本代理及后五年稳态资本过渡；同时输出收入规模、逐年净再投资/FCFF及终值审阅。`selected_scenario=null`、`automatic_adoption=false`是正常交付结果，不是要求用户从价格中选胜出者。公司历史缺项留原因，原输入结果与其他可计算条件保留；非十年预测仅交付原结果，不强制改成十年。完整组合边界见[显式政策](../valuation/explicit-policy.md)。
 
-已批准的报表信用条件通过可选`--reported-credit workspace/derived/native-inputs/credit-policy.json`附加，适用于上述两种模式。政策文件包含`version="reported-statement-credit-conditions-v1"`、`references`完整WACC包、`sovereign_spread_policy="add_cn_default_spread"`或`"none"`、显式`max_credit_age_days`和`reason`。参考包由主库既有`export-wacc-references`在同截止导出，不能从旧样本摘要复制评级；范围和来源依据见[已批准规则](../valuation/native-cny-policy.md#已批准规则与依据)。
+已批准的报表信用条件通过可选`--reported-credit workspace/derived/native-inputs/credit-policy.json`附加，适用于上述两种模式。政策文件包含`version="reported-statement-credit-conditions-v2"`、`sovereign_spread_policy="add_cn_default_spread"`或`"none"`、显式`max_credit_age_days`和`reason`。参考直接读取当前SQLite中绑定的WACC发布；政策文件不再携带源数值，不能从旧样本摘要复制评级；范围和来源依据见[已批准规则](../valuation/native-cny-policy.md#已批准规则与依据)。
 
 先准备已确认的CNY参考融资组件，程序不会把原生详细/default分支静默切换。额外结果为`reported_credit_initial_credit_only`和`reported_credit_hold_current_wacc_and_no_terminal_excess_return`，仅从原基线生成、不与全部增长/资本路径交叉扩张；用户原信用及默认结果保持。`reported_credit`记录表内标签、覆盖率、标准组成、年龄和不适用原因，均非正式评级。旧SQLite缺金融业务范围字段时明确要求重建；不借此给零利息赋AAA或删除原条件。
 

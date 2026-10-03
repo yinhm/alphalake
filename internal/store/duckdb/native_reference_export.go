@@ -39,7 +39,7 @@ func NativeReferenceExport(ctx context.Context, db *sql.DB, asof time.Time) (map
 		"country_risk":   `SELECT CAST(to_json(t) AS VARCHAR) FROM (SELECT * FROM reference.risk_observation WHERE release_id IN (` + selected + `) ORDER BY release_id,subject_code,metric_code) t`,
 		"companies":      `SELECT CAST(to_json(t) AS VARCHAR) FROM (SELECT * FROM reference.security_industry WHERE release_id IN (` + selected + `) ORDER BY exchange_ticker) t`,
 	}
-	out := map[string]any{"contract": "alphalake-native-references-v2", "information_as_of": asof.Format(time.RFC3339Nano)}
+	out := map[string]any{"contract": "alphalake-native-references-v3", "information_as_of": asof.Format(time.RFC3339Nano)}
 	for key, query := range queries {
 		rows, err := tx.QueryContext(ctx, query, string(idsJSON))
 		if err != nil {
@@ -73,5 +73,11 @@ func NativeReferenceExport(ctx context.Context, db *sql.DB, asof time.Time) (map
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
+	// 复用已有完整发布选择及血缘校验；人民币曲线和信用档随同一截止导出。
+	wacc, err := ExportLatestWACCReferences(ctx, db, asof, nil)
+	if err != nil {
+		return nil, fmt.Errorf("published WACC references: %w", err)
+	}
+	out["wacc_references"] = wacc
 	return out, nil
 }

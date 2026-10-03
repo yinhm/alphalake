@@ -6,6 +6,7 @@ from pathlib import Path
 import sqlite3
 
 import pytest
+from tests.test_alphalake_integration import reference_export  # noqa: F401
 from tools import publish_native_valuation as delivery
 
 
@@ -181,7 +182,7 @@ def test_comparison_distinguishes_evidence_refresh_from_new_value():
     assert delivery.compare_checks(before, after)[0]['changed_fields'] == ['diagnostic_sha256']
 
 
-def test_freshness_keeps_quote_and_reference_dates_separate(tmp_path):
+def test_freshness_keeps_quote_and_reference_dates_separate(tmp_path, reference_export):
     path = tmp_path/'freshness.sqlite'
     with sqlite3.connect(path) as conn:
         conn.executescript('CREATE TABLE export_cells(ticker,series,field,status,evidence_json); CREATE TABLE reference_release(release_id,dataset,source_version,available_at,first_seen_at,sha256); CREATE TABLE reference_value(release_id,observation_date);')
@@ -189,6 +190,8 @@ def test_freshness_keeps_quote_and_reference_dates_separate(tmp_path):
         conn.execute('INSERT INTO export_cells VALUES(?,?,?,?,?)',('SZSE:300866','company','mv_equity_listing','reported_share_price_proxy',json.dumps(evidence)))
         conn.execute('INSERT INTO reference_release VALUES(1,?,?,?,?,?)',('beta','2026','2026-09-01T00:00:00Z','2026-08-31T00:00:00Z','hash'))
         conn.execute("INSERT INTO reference_value VALUES(1,'2026-01-05')")
+        conn.execute('CREATE TABLE reference_wacc(singleton INTEGER PRIMARY KEY,packet_json TEXT NOT NULL)')
+        conn.execute('INSERT INTO reference_wacc VALUES(1,?)',(json.dumps(reference_export),))
     result = delivery.freshness_report(path,'2026-09-30T10:00:00Z')
     assert result['financial']['status']=='not_checked_this_run'
     assert result['quotes'][0]['recency']=='earlier_within_contract'
@@ -196,6 +199,9 @@ def test_freshness_keeps_quote_and_reference_dates_separate(tmp_path):
     assert result['references']['releases'][0]['observation_dates']==['2026-01-05']
     assert result['references']['releases'][0]['first_seen_at']=='2026-08-31T00:00:00Z'
     assert not result['references']['refresh_requested']
+    curve = next(r for r in result['references']['wacc_releases'] if r['source']=='chinabond')
+    assert curve['observation_dates']==['2026-09-09']
+    assert curve['observation_calendar_ages_days']==[21]
     with sqlite3.connect(path) as conn:
         evidence['quote']['trade_date']='2026-09-01'
         conn.execute('UPDATE export_cells SET evidence_json=?',(json.dumps(evidence),))

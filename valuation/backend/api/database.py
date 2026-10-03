@@ -9,6 +9,7 @@ Endpoints:
   GET  /api/database/search?q=<query>            autocomplete
   GET  /api/database/company/<ticker>            full structured snapshot
   GET  /api/database/company-exists/<ticker>     lightweight existence check
+  GET  /api/database/wacc-references              published CNY/Damodaran sources
   POST /api/valuation/from-database {ticker}     run full pipeline, create session
 """
 from __future__ import annotations
@@ -32,6 +33,15 @@ router = APIRouter(prefix="/database", tags=["database"])
 # ---------------------------------------------------------------------------
 # Search + lookup
 # ---------------------------------------------------------------------------
+
+@router.get("/wacc-references")
+def wacc_references() -> dict:
+    """提供版本绑定的人民币及达摩达兰来源参考，不计算或自动采用公司WACC。"""
+    from api.routes import _get_damodaran_store
+    store = _get_damodaran_store()
+    return dict(reference_snapshot_id=store.reference_snapshot['id'], references=store.wacc_references,
+                selection='source_references_only; explicit_policy_required')
+
 
 @router.get("/search")
 def search(q: str = "", limit: int = 20) -> dict:

@@ -7,26 +7,24 @@ from data_sources.us_cn_hk_db import load_standard_facts
 from engine.data_dictionary import CompanyValuationInput, ReferenceCapitalInputs
 from engine.module_2_risk import compute_reference_cost_of_capital
 
-POLICY_VERSION = 'reported-statement-credit-conditions-v1'
+POLICY_VERSION = 'reported-statement-credit-conditions-v2'
 FIELDS = ('reported_ebit', 'interest_expense', 'financial_business_interest_income',
           'financial_business_interest_expense', 'lease_liabilities', 'right_of_use_assets')
 
 
 def load_evidence(connection, tickers, metadata, policy):
-    if set(policy) != {'version', 'references', 'sovereign_spread_policy', 'max_credit_age_days', 'reason'} or policy['version'] != POLICY_VERSION:
+    if set(policy) != {'version', 'sovereign_spread_policy', 'max_credit_age_days', 'reason'} or policy['version'] != POLICY_VERSION:
         raise ValueError('explicit reported credit policy required')
     if policy['sovereign_spread_policy'] not in ('add_cn_default_spread', 'none') or not isinstance(policy['reason'], str) or not policy['reason'].strip():
         raise ValueError('sovereign spread policy and reason required')
     if type(policy['max_credit_age_days']) is not int or policy['max_credit_age_days'] < 0:
         raise ValueError('explicit nonnegative credit reference age required')
-    refs = ReferenceSnapshot.model_validate(policy['references'])
+    from data_sources.native_references import load_wacc_references
+    refs = ReferenceSnapshot.model_validate(load_wacc_references(connection))
     cutoff = datetime.fromisoformat(metadata['information_as_of'])
     if refs.information_as_of != cutoff or not refs.credit_spreads:
         raise ValueError('credit reference cutoff mismatch or missing bands')
     sovereign = next(r for r in refs.country_risk if r['subject_code']=='CN' and r['metric_code']=='sovereign_default_spread')
-    published = connection.execute("SELECT value,release_id,observation_date FROM reference_value WHERE subject='CN' AND metric='sovereign_default_spread'").fetchall()
-    if len(published)!=1 or tuple(published[0]) != (sovereign['value'],sovereign['release_id'],sovereign['observation_date']):
-        raise ValueError('credit country reference differs from SQLite publication')
     if not connection.execute("SELECT 1 FROM standard_facts WHERE field IN ('financial_business_interest_income','financial_business_interest_expense') LIMIT 1").fetchone():
         raise ValueError('SQLite credit scope fields not exported; rebuild snapshot before credit conditions')
     end = date.fromisoformat(metadata['report_period'])

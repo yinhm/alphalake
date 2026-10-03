@@ -5,6 +5,7 @@ import json
 from decimal import Decimal
 import pytest
 import xlrd
+from tests.test_alphalake_integration import reference_export  # noqa: F401
 from data_sources.damodaran_parsers.native_reference_parser import snapshot
 
 ROOT=Path(__file__).resolve().parents[3]/'internal/source/damodaran/testdata/native'
@@ -45,18 +46,18 @@ def test_region_and_header_tampering_rejected(monkeypatch):
         snapshot(ROOT/'betas.xls')
 
 
-def test_sqlite_snapshot_roundtrip_hash_and_missing_reference():
+def test_sqlite_snapshot_roundtrip_hash_and_missing_reference(reference_export, monkeypatch):
     import sqlite3
     from data_sources.native_references import write_snapshot,load_snapshot
     from data_sources.damodaran_parsers.country_risk_parser import alphalake_country_snapshot
-    packet=dict(contract='alphalake-native-references-v2',information_as_of='2026-09-27T14:00:00Z',
+    packet=dict(contract='alphalake-native-references-v3',information_as_of='2026-09-27T14:00:00Z',
         releases=[],industry_stats=[],country_tax=[],country_risk=[],companies=[],issuer_associations=[])
     def release(identity,dataset,source_hash):
         packet['releases'].append(dict(release_id=identity,dataset=dataset,source_version='2026-01-05',
             available_at=packet['information_as_of'],first_seen_at=packet['information_as_of'],source_locator='fixture:'+dataset,
             sha256=source_hash,content_key=source_hash,parser_version='fixture',normalization_version='fixture'))
     for identity,entry in enumerate(json.loads((ROOT/'sources.json').read_text()),1):
-        parsed=snapshot(ROOT/entry['file']);release(identity,entry['file'],entry['sha256'])
+        parsed=snapshot(ROOT/entry['file']);release(identity,'native-reference-'+entry['file'].removesuffix('.xls')+'-v1',entry['sha256'])
         group='country_tax' if entry['file']=='countrytaxrates.xls' else 'industry_stats'
         for row in parsed['observations']:
             row=dict(row,release_id=identity,method_code='provider_reported',observation_date=parsed['observation_date'],industry=row['subject'],subject_code=row['subject'],sample_region=parsed['sample_region'])
@@ -74,10 +75,33 @@ def test_sqlite_snapshot_roundtrip_hash_and_missing_reference():
             source_locator='By company name!A2:H2',industry='Power',country='China',sector='Utilities',
             sic_code='0',broad_group='Emerging Markets',sub_group='China'))
     packet['issuer_associations'] = [association]
+    from copy import deepcopy
+    wacc = deepcopy(reference_export)
+    wacc['information_as_of'] = packet['information_as_of']
+    country_release = next(r for r in wacc['releases'] if r['dataset']=='country-risk-rating-v2')
+    old_id = country_release['release_id']
+    country_release['release_id'] = 24
+    country_release['content_key'] = risk['workbook_sha256']
+    for row in wacc['country_risk']:
+        assert row['release_id'] == old_id
+        row['release_id'] = 24
+    packet['wacc_references'] = wacc
+    # 原生JSON会缩短十进制尾零；与定长WACC金额按Decimal比较而非字符串。
+    for row in packet['country_risk']:
+        row['value'] = str(Decimal(row['value']).normalize())
     with sqlite3.connect(':memory:') as conn:
         conn.execute('CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
         write_snapshot(conn,packet)
         loaded=load_snapshot(conn)
+        assert loaded.wacc_references == wacc
+        from fastapi.testclient import TestClient
+        from api.main import app
+        monkeypatch.setattr('api.routes._get_damodaran_store', lambda:loaded)
+        with TestClient(app) as client:
+            response = client.get('/api/database/wacc-references')
+            assert response.status_code == 200
+            assert response.json()['references'] == wacc
+            assert response.json()['reference_snapshot_id'] == loaded.reference_snapshot['id']
         assert loaded.industry_mapper.lookup('SZSE:300866').industry_group=='Computers/Peripherals'
         assert loaded.industry_mapper.lookup('SZSE:001234').industry_group=='Power'
         assert loaded.reference_snapshot['issuer_associations']['SZSE:001234']['source_ticker']=='SEHK:1234'
@@ -109,9 +133,18 @@ def test_sqlite_snapshot_roundtrip_hash_and_missing_reference():
         assert israel.default_spread == .012726408901
         with pytest.raises(ValueError,match='ambiguous'):
             loaded.lookup_country('United States')
-        conn.execute("UPDATE reference_value SET value='0.99' WHERE metric='cost_of_debt_pretax' AND region='us'")
+        conn.execute("UPDATE reference_wacc SET packet_json=json_set(packet_json,'$.yield_curve[0].value','0.99')")
         with pytest.raises(ValueError,match='hash mismatch'):
             load_snapshot(conn)
+    for mutation in ('missing_curve', 'cutoff', 'country_conflict', 'beta_source_conflict'):
+        bad = deepcopy(packet)
+        if mutation == 'missing_curve': bad['wacc_references']['yield_curve'].pop()
+        elif mutation == 'cutoff': bad['wacc_references']['information_as_of']='2026-09-28T14:00:00Z'
+        elif mutation == 'country_conflict': bad['country_risk'][0]['value']='0.99'
+        else: next(r for r in bad['wacc_references']['releases'] if r['dataset']=='global-industry-beta-2026-v1')['artifact_sha256']='d'*64
+        with sqlite3.connect(':memory:') as conn:
+            conn.execute('CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
+            with pytest.raises(ValueError): write_snapshot(conn,bad)
     for altered, message in [(association | {'target_ticker':'SZSE:300866'}, 'cannot overwrite exact'),
                              (association | {'workbook_sha256':'d'*64}, 'invalid reviewed issuer')]:
         with sqlite3.connect(':memory:') as conn:

@@ -84,6 +84,10 @@ AlphaLake负责单位、期间、身份、范围、缺项及确定性转换；va
 
 ## 人民币WACC的显式输入契约
 
+2026-10-03起，原生参考契约为`alphalake-native-references-v3`。SQLite v11新增单行`reference_wacc`，保存主库已有四类完整发布的解析参考包：国家风险、Global行业Beta、人民币国债曲线及大型非金融信用档。包与原生参考共用信息截止及内容签名；重复的国家风险须与原生源行、发布ID及观察日一致；两类Global Beta解析须绑定同一原文件哈希，不能混用修订版本。旧SQLite必须显式重导出，缺包、内容篡改或跨版本混用拒绝，不从散落JSON回退。
+
+`GET /api/database/wacc-references`只读返回`reference_snapshot_id`及完整来源参考，保留观察日、取得时点、归档哈希和定位，不自动选择公司WACC。`evaluate_native_policy --recipe`及已批准报表信用条件从同一SQLite读取参考，取消额外`--references`；信用政策v2只存政策及年龄限制，不再内嵌源数据。用户完整请求仍可通过既有typed API供给，来源与政策分别留痕。数据新鲜度等待手工刷新；发布旧观察不等于最新，原显式政策年龄门槛不自动放宽。接通不授权US/Global切换、默认信用或网页默认替换。
+
 AlphaLake经已有`CompanyValuationInput.methodology_choices.reference_capital_inputs`向原完整`POST /api/valuation`交付显式参考输入，`cost_of_capital_approach=reference_snapshot`。不是向原数据库网页新增JSON表单，不更新引擎算法。方法、源值和适用条件统一见[人民币口径](native-cny-policy.md#人民币输入契约)。
 
 利率、ERP、税率、资本权重用小数比例；Beta无量纲。`risk_free_rate`为指定CNY口径；`mature_market_erp`与已经按政策加权的`country_risk_contribution`分别交付，后者不能再放入成熟ERP。`debt_cost_pretax`是CNY同基准完整利率，`debt_cost_basis`说明公司证据或参考代理；不将US行业完整利率改标签后复用。`market_equity`/`estimated_debt`以与财务相同的百万元人民币计，`capital_structure_basis=market_equity_estimated_debt`，`debt_weight=D/(D+E)`须匹配金额。`tax_shield_rate`须与所选公司边际税率政策及Macro的对应假设一致。

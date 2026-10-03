@@ -2,11 +2,13 @@
 import hashlib
 import json
 import re
+from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
 from .damodaran_store import DamodaranStore
 from .industry_mapper import IndustryMapper, CompanyInfo
 
-CONTRACT = 'alphalake-native-references-v2'
+CONTRACT = 'alphalake-native-references-v3'
 COUNTRIES = {'CN': 'China', 'HK': 'Hong Kong', 'US': 'United States', 'IL': 'Israel'}
 METRICS = {
  'pretax_lease_research_adjusted_operating_margin': 'pretax_lease_rd_adj_margin',
@@ -21,7 +23,7 @@ METRICS = {
  'debt_capital_ratio': 'debt_capital_ratio', 'enterprise_value_ebitda_multiple': 'ev_ebitda',
  'current_price_earnings_multiple': 'pe_ratio', 'price_book_multiple': 'pbv_ratio', 'enterprise_value_sales_multiple': 'ev_sales',
 }
-TABLES = ('reference_release', 'reference_value', 'reference_company', 'reference_issuer_association')
+TABLES = ('reference_release', 'reference_value', 'reference_company', 'reference_issuer_association', 'reference_wacc')
 
 
 def policy_hashes():
@@ -35,7 +37,7 @@ def snapshot_hash(connection, header):
     h = hashlib.sha256(json.dumps(header, sort_keys=True, separators=(',', ':')).encode())
     for table in TABLES:
         h.update(table.encode())
-        order = '1' if table=='reference_issuer_association' else '1,2,3'
+        order = '1' if table in ('reference_issuer_association', 'reference_wacc') else '1,2,3'
         for row in connection.execute(f'SELECT * FROM {table} ORDER BY {order}'):
             h.update(json.dumps(list(row), ensure_ascii=False, separators=(',', ':')).encode())
             h.update(b'\n')
@@ -49,6 +51,7 @@ def write_snapshot(connection, packet):
  CREATE TABLE reference_release(release_id INTEGER PRIMARY KEY,dataset TEXT NOT NULL,source_version TEXT,available_at TEXT NOT NULL,first_seen_at TEXT NOT NULL,source_locator TEXT NOT NULL,sha256 TEXT NOT NULL,content_key TEXT NOT NULL,parser_version TEXT NOT NULL,normalization_version TEXT NOT NULL);
  CREATE TABLE reference_value(release_id INTEGER NOT NULL,subject TEXT NOT NULL,metric TEXT NOT NULL,region TEXT NOT NULL,value TEXT,status TEXT NOT NULL,unit TEXT NOT NULL,source_locator TEXT NOT NULL,raw_value TEXT NOT NULL,sample_count INTEGER,method_code TEXT NOT NULL,observation_date TEXT NOT NULL,PRIMARY KEY(release_id,subject,metric,region));
  CREATE TABLE reference_issuer_association(target_ticker TEXT PRIMARY KEY,verified_record TEXT NOT NULL);
+ CREATE TABLE reference_wacc(singleton INTEGER PRIMARY KEY CHECK(singleton=1),packet_json TEXT NOT NULL);
  CREATE TABLE reference_company(release_id INTEGER NOT NULL,ticker TEXT PRIMARY KEY,name TEXT NOT NULL,industry TEXT NOT NULL,country TEXT NOT NULL,sector TEXT,sic_code TEXT,broad_group TEXT,sub_group TEXT,source_locator TEXT NOT NULL);
  ''')
     for r in packet['releases']:
@@ -65,6 +68,8 @@ def write_snapshot(connection, packet):
             r['release_id'],co['ticker'],co['name'],co['industry'],co['country'],co['sector'],str(co['sic_code']),co['broad_group'],co['sub_group'],r['source_locator']))
     for association in packet['issuer_associations']:
         connection.execute('INSERT INTO reference_issuer_association VALUES(?,?)', (association['target_ticker'],json.dumps(association,ensure_ascii=False,sort_keys=True)))
+    connection.execute('INSERT INTO reference_wacc VALUES(1,?)',
+                       (json.dumps(packet['wacc_references'],ensure_ascii=False,sort_keys=True,allow_nan=False),))
     header = dict(contract=CONTRACT, information_as_of=packet['information_as_of'], model_reference_hashes=policy_hashes(),
         country_scope=sorted({r['subject_code'] for r in packet['country_tax']}), industry_regions=['US','Global'])
     connection.executemany('INSERT INTO metadata VALUES(?,?)', [
@@ -150,7 +155,40 @@ def load_snapshot(connection):
     store._industry_stats=json.loads((Path(__file__).parent/'industry_stats.json').read_text())['industries']
     store.industries_loaded={r:len(store.list_industries(r)) for r in ('US','Global')}
     store.countries_loaded=len(scope)
+    store.wacc_references = load_wacc_references(connection, header)
     return store
+
+
+def load_wacc_references(connection, header=None):
+    """读取同一发布内的来源参考；不选择公司政策、不放宽新鲜度要求。"""
+    from data_sources.alphalake_wacc import ReferenceSnapshot
+    if header is None:
+        return load_snapshot(connection).wacc_references
+    rows = connection.execute('SELECT packet_json FROM reference_wacc WHERE singleton=1').fetchall()
+    if len(rows) != 1:
+        raise ValueError('missing published WACC references; rebuild SQLite')
+    packet = json.loads(rows[0][0])
+    refs = ReferenceSnapshot.model_validate(packet)
+    if refs.contract_version != 'alphalake-wacc-references-v2' or refs.information_as_of != datetime.fromisoformat(header['information_as_of']):
+        raise ValueError('WACC/native reference cutoff or contract mismatch')
+    release = next(r for r in refs.releases if r['dataset']=='country-risk-rating-v2')
+    native_release = connection.execute('SELECT sha256,content_key FROM reference_release WHERE release_id=?',
+                                        (release['release_id'],)).fetchone()
+    if native_release is None or tuple(native_release) != (release['artifact_sha256'],release['content_key']):
+        raise ValueError('WACC country release differs from native publication')
+    beta_release = next(r for r in refs.releases if r['dataset']=='global-industry-beta-2026-v1')
+    native_beta = connection.execute("SELECT sha256 FROM reference_release WHERE dataset='native-reference-betaGlobal-v1'").fetchall()
+    if len(native_beta) != 1 or native_beta[0][0] != beta_release['artifact_sha256']:
+        raise ValueError('WACC/native Global Beta source version mismatch')
+    for row in refs.country_risk:
+        native = connection.execute('SELECT release_id,value,status,observation_date FROM reference_value '
+                                    'WHERE subject=? AND metric=? AND region=\'\'',
+                                    (row['subject_code'],row['metric_code'])).fetchall()
+        if (len(native) != 1 or native[0][1] is None
+                or (native[0][0],native[0][2],native[0][3]) != (row['release_id'],row['value_status'],row['observation_date'])
+                or Decimal(native[0][1]) != Decimal(row['value'])):
+            raise ValueError('WACC country reference differs from native publication')
+    return packet
 
 
 def reference_gaps(store, ticker, industry_override=None, country_override=None):

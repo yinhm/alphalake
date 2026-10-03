@@ -106,7 +106,8 @@ func ExportWACCReferences(ctx context.Context, db *sql.DB, asof time.Time, recor
 		count       int
 	}{
 		{"releases", `SELECT r.release_id,r.source,r.dataset,r.source_version,r.content_key,r.parser_version,r.normalization_version,
-    CAST(r.available_at AS VARCHAR) AS available_at,CAST(r.recorded_at AS VARCHAR) AS recorded_at,r.availability_basis,
+    CAST(r.available_at AS VARCHAR) AS available_at,CAST(r.first_seen_at AS VARCHAR) AS first_seen_at,
+    CAST(r.recorded_at AS VARCHAR) AS recorded_at,r.availability_basis,
     a.artifact_id,a.sha256 AS artifact_sha256,a.source_locator AS source_url
     FROM meta.dataset_release r JOIN meta.dataset_release_artifact l ON l.release_id=r.release_id AND l.role='data'
     JOIN meta.artifact a ON a.artifact_id=l.artifact_id WHERE r.release_id IN (?,?,?,?) ORDER BY r.release_id`, []any{country, beta, yield, credit}, 3},

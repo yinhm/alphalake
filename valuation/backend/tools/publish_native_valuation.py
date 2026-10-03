@@ -108,12 +108,23 @@ def freshness_report(path, asof, financial_source=None, sync_references=False):
             releases.append(dict(release_id=release, dataset=dataset, source_version=version, sha256=sha,
                 available_at=available, first_seen_at=first_seen, observation_dates=dates,
                 observation_calendar_ages_days=[(cutoff.date()-date.fromisoformat(d)).days for d in dates]))
+        from data_sources.alphalake_wacc import ReferenceSnapshot
+        packet = conn.execute('SELECT packet_json FROM reference_wacc WHERE singleton=1').fetchone()
+        if packet is None:
+            raise ValueError('published WACC reference packet missing')
+        wacc = ReferenceSnapshot.model_validate_json(packet[0])
+        wacc_releases = []
+        for release in wacc.releases:
+            dates = sorted({r['observation_date'] for group in ('country_risk','industry_stats','yield_curve','credit_spreads')
+                            for r in getattr(wacc,group) if r['release_id']==release['release_id']})
+            wacc_releases.append(dict(release, observation_dates=dates,
+                observation_calendar_ages_days=[(cutoff.date()-date.fromisoformat(d)).days for d in dates]))
     return dict(contract='alphalake-delivery-freshness-v1', information_as_of=asof,
         quote_window_end=quote_end.isoformat(), quote_window_calendar_days=14, companies=len(quotes), quotes=quotes,
         financial=dict(status='not_checked_this_run' if financial_source is None else
             'local_or_fallback_not_upstream_verified' if financial_source.get('offline') or financial_source['cache_fallbacks'] else
             'selected_packages_manifest_checked', selected_packages=financial_source.get('selected_packages') if financial_source else None),
-        references=dict(refresh_requested=sync_references, releases=releases,
+        references=dict(refresh_requested=sync_references, releases=releases, wacc_releases=wacc_releases,
             boundary='取得日、可用日和观察日分别保留；未定义自动过期阈值，查询截止不证明本次上游更新。'),
         boundary='报价沿用既有14自然日窗口；较早收盘不推断停牌或退市；金融、参考、行情分别报告，不自动认证经济合理性。')
 
