@@ -7,7 +7,7 @@
 
 ```bash
 PYTHONPATH=valuation/backend python -m tools.verify_tdx_statement_expansion
-go test ./internal/ingest -run '^TestRealStatementExpansion$' -count=1
+go test -tags=full ./internal/ingest -run '^TestRealStatementExpansion$' -count=1
 ```
 
 Python依赖既有pypdf，CI已强制执行。去空白前先移除安克主表“七、数字”的附注标记，避免把金额首位吞进附注号；经营/投资/筹资现金净额的“产生/使用”、年度“年初/年末”版式差异用各报告原文标签固定。页面必须属于合并主表，逐表核对单位和当期/比较列头，不允许母公司表混入。

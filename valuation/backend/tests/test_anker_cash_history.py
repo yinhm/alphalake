@@ -8,6 +8,8 @@ import shutil
 import pytest
 from tools.verify_anker_cash_history import verify
 
+pytestmark = pytest.mark.full
+
 ROOT=Path(__file__).resolve().parents[3]
 DIRECTORY=ROOT/'internal/ingest/testdata/anker-cash-history-2024'
 

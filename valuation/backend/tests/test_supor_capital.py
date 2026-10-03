@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 from tools.verify_supor_capital import verify, DIRECTORY
 
+pytestmark = pytest.mark.full
+
 
 def test_supor_capital_actual_source_and_tamper(monkeypatch):
     root=Path(__file__).resolve().parents[3]

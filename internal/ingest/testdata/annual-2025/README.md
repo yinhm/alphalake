@@ -28,11 +28,11 @@ go test ./internal/ingest -run '^TestRealAnnualReportValues$' -count=1 -v
 
 ```bash
 # 默认离线运行：真实目录字节和财务记录，无需本地历史归档。
-go test ./internal/ingest -run '^TestReal(AnnualReportValues|FinancialWorkflow)$' -count=1 -v
+go test -tags=full ./internal/ingest -run '^TestReal(AnnualReportValues|FinancialWorkflow)$' -count=1 -v
 
 # 同时检查真实 PDF 完整性、下载入库、正文复用及不同模式的检查点。
 ALPHALAKE_ACCEPTANCE_RAW="$PWD/workspace/live-sync-20260905/raw" \
-  go test ./internal/ingest -run '^TestRealFinancialWorkflow$' -count=1 -v
+  go test -tags=full ./internal/ingest -run '^TestRealFinancialWorkflow$' -count=1 -v
 ```
 
 测试在临时数据库中调用生产 HTTP 客户端和采集/归一化/物化函数，向第二页注入 HTTP 503，关闭并重新打开数据库后恢复，再检查幂等重放和 PIT 边界。未设置环境变量时明确记录未校验正文；设置后缺失或损坏的 PDF 必须失败。测试不修改原始归档，不访问上游，不依赖旧数据库及旧运行日志。

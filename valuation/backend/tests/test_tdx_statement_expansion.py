@@ -3,6 +3,8 @@ import json
 import pytest
 from tools.verify_tdx_statement_expansion import DEFAULT, verify
 
+pytestmark = pytest.mark.full
+
 
 def test_full_statement_evidence():
     assert verify()['matched_nonzero'] == 188

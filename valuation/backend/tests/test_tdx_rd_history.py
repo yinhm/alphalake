@@ -3,6 +3,7 @@ import copy
 import struct
 
 from tools.audit_tdx_rd_history import audit
+import pytest
 
 
 def test_rd_history_requires_oldest_amortization_cohort_and_preserves_rejections():
@@ -34,6 +35,7 @@ def test_rd_history_requires_oldest_amortization_cohort_and_preserves_rejections
         assert actual['results'][1:] == expected['results'][1:]
 
 
+@pytest.mark.full
 def test_real_rd_semantics_keep_positive_bits_and_zero_counterexample():
     import pytest
     from tools.verify_tdx_rd_semantics import load_inputs, verify

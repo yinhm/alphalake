@@ -7,6 +7,8 @@ import pytest
 
 from tools.verify_management_targets import verify, coverage
 
+pytestmark = pytest.mark.full
+
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE = ROOT/'valuation/research/management-targets-five'
 PDFS = workspace_path('cninfo','views','management-targets-five')

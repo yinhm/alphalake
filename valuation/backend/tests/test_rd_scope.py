@@ -6,6 +6,8 @@ import pytest
 
 from tools.verify_rd_scope import DIRECTORY, load_inputs, verify
 
+pytestmark = pytest.mark.full
+
 
 def test_real_rd_scope_does_not_substitute_total_or_stock_for_expense():
     ledger, source = load_inputs()

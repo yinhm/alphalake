@@ -11,6 +11,8 @@ import pytest
 
 from data_sources.damodaran_parsers.country_risk_parser import alphalake_country_snapshot
 
+pytestmark = pytest.mark.full
+
 ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = ROOT / "internal/source/damodaran/testdata/ctrypremJuly26.xlsx"
 

@@ -8,6 +8,8 @@ from unittest.mock import patch
 import pytest
 from tools.verify_prospectus_coverage import verify
 
+pytestmark = pytest.mark.full
+
 
 def test_disclosure_evidence_and_tampering(tmp_path):
     pdf = b'%PDF synthetic extraction fixture'

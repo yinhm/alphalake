@@ -9,7 +9,10 @@ from fastapi.testclient import TestClient
 
 from api.main import app
 from tools.export_alphalake_sqlite import export_snapshot
-from tests.test_alphalake_integration import exports, REPO  # noqa: F401
+from tests.conftest import REPO
+import pytest
+
+pytestmark = pytest.mark.full
 
 
 def policy(code='300866'):

@@ -29,6 +29,7 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["full: 真实Go建库、PDF/工作簿全量取证及跨语言验收；仅--full或CI运行"]
 
 [tool.setuptools.packages.find]
 include = ["api*", "engine*", "data_sources*", "knowledge*", "tools*"]

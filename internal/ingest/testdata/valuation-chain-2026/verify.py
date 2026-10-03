@@ -154,7 +154,7 @@ def build():
 
 def main(write=False):
     env=os.environ|{'GOPROXY':'off','GOSUMDB':'off'};env.pop('ALPHALAKE_WRITE_VALUATION_CHAIN',None)
-    subprocess.run(['go','test','./internal/ingest','-run','^TestRealValuationStandardChain$','-count=1'],cwd=REPO,env=env,check=True)
+    subprocess.run(['go','test','-tags=full','./internal/ingest','-run','^TestRealValuationStandardChain$','-count=1'],cwd=REPO,env=env,check=True)
     for script in ['anker-dcf-2026/verify.py','moutai-valuation-2026/verify.py']:
         subprocess.run([sys.executable,str(ROOT.parent/script)],cwd=REPO,check=True)
     module('earnings_wc_evidence', ROOT.parent/'earnings-working-capital-2026/verify.py').verify(write)

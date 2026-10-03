@@ -7,7 +7,7 @@
 TDX 字节直接复用 `../quarters-2025/gpcw20250630.zip` 和 `gpcw20250930.zip`，均保留两家公司完整记录；原包与裁剪包哈希、真实取得时间见该目录的 `packages.json`，不再复制 ZIP。原始包金额单位为元，PDF 金额直接转 float32 比较，无万元缩放。
 
 ```bash
-go test ./internal/ingest -run 'TestRealCoreFinancialValues|TestRealQuarterFinancialWorkflow' -count=1 -v
+go test -tags=full ./internal/ingest -run 'TestRealCoreFinancialValues|TestRealQuarterFinancialWorkflow' -count=1 -v
 python3 internal/ingest/testdata/core-financial-2025/verify.py
 ```
 

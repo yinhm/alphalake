@@ -32,10 +32,10 @@
 ## 验收边界
 
 ```bash
-go test ./internal/ingest -run TestRealGenericValuationSourceChain -count=1
+go test -tags=full ./internal/ingest -run TestRealGenericValuationSourceChain -count=1
 python internal/ingest/testdata/generic-valuation-2026/verify.py
 cd valuation/backend
-python -m pytest -q tests/test_alphalake_integration.py -k new_companies_standard_chain
+python -m pytest --full -q tests/test_alphalake_integration.py -k new_companies_standard_chain
 ```
 
 Go使用真实目录/包经源归一化、身份解析、标准物化、时点导出；PDF哈希在Go强制核对，字符/列/Decimal提取在CI Python校验。Python再从这个Go导出调用正式共享估值入口，以独立公式复算十年预测、终值和股权桥接。该计算只证明混合原披露口径下的机械情景实现，不认证可比历史、预测合理性或当前公允价值，历史FCFF仍空。

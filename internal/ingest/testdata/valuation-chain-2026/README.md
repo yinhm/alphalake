@@ -38,7 +38,7 @@ python internal/ingest/testdata/valuation-chain-2026/verify.py
 
 默认 Go 测试包含关闭重开、PIT 前后边界、幂等重放，以及把货币资金倍率改为 -1 后撤销 12 条事实、查询为空、恢复后重建。本轮另在内存副本删除标准货币资金、改写标准值、制造 PDF/源位冲突，三路均拒绝，恢复后通过。原 PDF 验证器继续检查原文、恒等式及模型，哈希/重复提取/恒等式并不冒充独立语义证据。
 
-更新查询快照仅在审核证据/映射变化后显式运行 `ALPHALAKE_WRITE_VALUATION_CHAIN=1 go test ./internal/ingest -run '^TestRealValuationStandardChain$' -count=1`；随后 `verify.py --write` 重建模型表，再用默认入口验收。默认 Python 会移除该写入环境变量，不能在验收时顺便覆盖标准快照。
+更新查询快照仅在审核证据/映射变化后显式运行 `ALPHALAKE_WRITE_VALUATION_CHAIN=1 go test -tags=full ./internal/ingest -run '^TestRealValuationStandardChain$' -count=1`；随后 `verify.py --write` 重建模型表，再用默认入口验收。默认 Python 会移除该写入环境变量，不能在验收时顺便覆盖标准快照。
 
 译本自身及指向译本的旧更正前序关系在迁移时清除；目录重放可重新查找合格前序。新写入的译本更正公告同样不能建立 PIT 更正关系。
 

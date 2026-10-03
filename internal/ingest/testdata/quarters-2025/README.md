@@ -33,7 +33,7 @@
 仓库根目录执行：
 
 ```bash
-go test ./internal/ingest -run '^TestRealQuarter' -count=1 -v
+go test -tags=full ./internal/ingest -run '^TestRealQuarter' -count=1 -v
 ```
 
 `TestRealQuarterReportValues` 校验 24 个金额的累计/季度口径与源位模式；`TestRealQuarterFinancialWorkflow` 在新数据库中运行生产目录解析、身份解析、财务归一化、公告关联及物化，检查 24 个金额的期间、单位、原始公告关联和各自 PIT 边界，并验证重放。

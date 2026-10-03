@@ -4,6 +4,8 @@ import json
 import pytest
 from tools import verify_book_capital as tool
 
+pytestmark = pytest.mark.full
+
 
 def test_cash_scope_and_restatement_evidence(monkeypatch):
     result = tool.verify()

@@ -6,7 +6,6 @@ from pathlib import Path
 import sqlite3
 
 import pytest
-from tests.test_alphalake_integration import reference_export  # noqa: F401
 from tools import publish_native_valuation as delivery
 
 
@@ -182,6 +181,7 @@ def test_comparison_distinguishes_evidence_refresh_from_new_value():
     assert delivery.compare_checks(before, after)[0]['changed_fields'] == ['diagnostic_sha256']
 
 
+@pytest.mark.full
 def test_freshness_keeps_quote_and_reference_dates_separate(tmp_path, reference_export):
     path = tmp_path/'freshness.sqlite'
     with sqlite3.connect(path) as conn:

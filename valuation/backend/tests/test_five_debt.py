@@ -3,6 +3,8 @@ import copy
 import pytest
 from tools.verify_five_debt import load_inputs, verify
 
+pytestmark = pytest.mark.full
+
 
 def test_five_debt_source_values_and_current_bond_counterexample():
     ledger,source=load_inputs()

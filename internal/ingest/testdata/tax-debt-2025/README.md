@@ -11,7 +11,7 @@ TDX 字节复用 `../quarters-2025/` 的 H1/Q3 包与 `../annual-2025/` 年报�
 - 例如大为租赁负债 PDF 为 3,097,985.12 元，源值为 float32(309.80) 万元，标准值为 3,097,999.8779296875 元。误差来自源舍入与 float32，不能修改原始证据把它补成财报精度。
 
 ```bash
-go test ./internal/ingest -run 'TestRealTaxDebtValues|TestRealQuarterFinancialWorkflow|TestRealFinancialWorkflow' -count=1 -v
+go test -tags=full ./internal/ingest -run 'TestRealTaxDebtValues|TestRealQuarterFinancialWorkflow|TestRealFinancialWorkflow' -count=1 -v
 python3 internal/ingest/testdata/tax-debt-2025/verify.py
 ```
 

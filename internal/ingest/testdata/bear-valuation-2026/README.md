@@ -2,7 +2,7 @@
 
 五份 CNINFO 原始 PDF、完整代码目录、六期真实 TDX 包的一条记录裁剪，以及35组金额/口径比较。`reports.json` 保存公告身份、URL与PDF哈希；`packages.json` 保存全量包哈希/MD5、原始记录位置和裁剪包哈希。原始全量包仍在本次 workspace 归档中；生成时逐字段检查裁剪记录与生产标准导出的源位一致。
 
-`go test ./internal/ingest -run TestRealBearValuationSourceChain` 强制检查原始文件哈希，走源解析→身份解析→标准物化→ASOF/TTM导出，保留全部6期及源float32精度，重放不改事实。`python internal/ingest/testdata/bear-valuation-2026/verify.py` 离线重提取原文，已进默认CI。35组比较中34组源位一致、1组是附注加总范围与主表字段不同；不是35个不同字段，也不是TDX解析错误。
+`go test -tags=full ./internal/ingest -run TestRealBearValuationSourceChain` 强制检查原始文件哈希，走源解析→身份解析→标准物化→ASOF/TTM导出，保留全部6期及源float32精度，重放不改事实。`python internal/ingest/testdata/bear-valuation-2026/verify.py` 离线重提取原文，已进默认CI。35组比较中34组源位一致、1组是附注加总范围与主表字段不同；不是35个不同字段，也不是TDX解析错误。
 
 ## 已核对
 

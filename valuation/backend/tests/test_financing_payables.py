@@ -2,6 +2,8 @@
 import pytest
 from tools import verify_financing_payables as tool
 
+pytestmark = pytest.mark.full
+
 
 def test_financing_nature_and_unreconciled_narrative(monkeypatch):
     result=tool.verify()

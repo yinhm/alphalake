@@ -6,6 +6,8 @@ import pytest
 
 from tools.verify_anker_q1_history import verify
 
+pytestmark = pytest.mark.full
+
 
 def test_q1_original_and_rejection(tmp_path):
     source = Path(__file__).resolve().parents[3]/'internal/ingest/testdata/anker-q1-history-2024'

@@ -3,6 +3,8 @@ import copy
 import pytest
 from tools.verify_cnty_debt import load_inputs, verify
 
+pytestmark = pytest.mark.full
+
 
 def test_cnty_debt_real_evidence_and_tampering():
     ledger,source=load_inputs()

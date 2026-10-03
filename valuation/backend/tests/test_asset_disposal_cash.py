@@ -14,6 +14,7 @@ from tools.verify_asset_disposal_cash import verify
 ROOT = Path(__file__).resolve().parents[3]
 
 
+@pytest.mark.full
 def test_disposal_evidence_and_missing_ttm(monkeypatch):
     evidence = verify()
     assert [r['standard_eligible'] for r in evidence] == [False, False, True]
@@ -60,13 +61,14 @@ def test_disposal_evidence_and_missing_ttm(monkeypatch):
     assert complete['company_capital_evidence']['cash_capex_after_disposals_status'] == 'cash_component_not_total_reinvestment'
 
 
+@pytest.mark.full
 def test_reviewed_zero_real_lifecycle(tmp_path, monkeypatch):
     import os
     import subprocess
     from tools.verify_disposal_review import verify_chain, request_for, approve_zeros
     directory = tmp_path/'source'
     env = dict(os.environ, ALPHALAKE_DISPOSAL_EXPORT_DIR=str(directory))
-    subprocess.run(['go','test','./internal/ingest','-run','^TestRealAssetDisposalCash$','-count=1'],cwd=ROOT,env=env,check=True,capture_output=True)
+    subprocess.run(['go','test','-tags=full','./internal/ingest','-run','^TestRealAssetDisposalCash$','-count=1'],cwd=ROOT,env=env,check=True,capture_output=True)
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR', str(tmp_path/'runs'))
     receipt, _ = verify_chain(directory,tmp_path/'runs')
     assert receipt['reviewed_cash_capex_after_disposals_cny']=='319616930'

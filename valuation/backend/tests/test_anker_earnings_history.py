@@ -6,6 +6,8 @@ import pytest
 
 from tools.verify_anker_earnings_history import verify
 
+pytestmark = pytest.mark.full
+
 
 def test_original_earnings_and_tamper_rejection(tmp_path):
     source = Path(__file__).resolve().parents[3]/'internal/ingest/testdata/anker-cash-history-2024'

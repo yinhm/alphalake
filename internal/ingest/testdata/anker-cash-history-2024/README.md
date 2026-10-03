@@ -1,6 +1,6 @@
 # 安克2024年历史现金输入补证
 
-当前已完成原文与TDX源值核验、迁移038、标准链及[真实主库副本现金交叉检查正向验收](../../../../docs/acceptance/cash-history-upgrade-20260911.json)。随后已[备份发布主库schema38并重开验收](../../../../docs/cash-main-publication-20260911.md)，原副本阶段回执按历史保留。目标是补[上轮缺项](../../../../docs/acceptance/cash-crosscheck-20260911.json)，不绕过标准事实层。
+当前已完成原文与TDX源值核验、迁移038、标准链及[真实主库副本现金交叉检查正向验收](../../../../docs/acceptance/cash-history-upgrade-20260911.json)。随后已[备份发布主库schema38并重开验收](../../../../docs/history/cash-main-publication-20260911.md)，原副本阶段回执按历史保留。目标是补[上轮缺项](../../../../docs/acceptance/cash-crosscheck-20260911.json)，不绕过标准事实层。
 
 ## 历史调整EBIT分量补证
 
@@ -15,12 +15,12 @@
 ```bash
 cd valuation/backend
 python -m tools.verify_anker_earnings_history ../../internal/ingest/testdata/anker-cash-history-2024
-python -m pytest tests/test_anker_earnings_history.py tests/test_anker_cash_history.py -q
+python -m pytest --full tests/test_anker_earnings_history.py tests/test_anker_cash_history.py -q
 ```
 
 源层验证器先复用原现金验证器，锁定公告身份、日期、整条原记录与PDF哈希，再核对损益。回归覆盖原文金额加0.01元、误取母公司页及FN305源位篡改拒绝，进入已有pytest CI；源层补证时2项回归通过，无新增依赖或原文下载。后续标准链验收单独使用数据库副本，范围见下；Python原文校验依赖已有pypdf，不因Go测试通过而省略。
 
-迁移039已扩展六字段有效期至2024-06-30；[真实主库副本验收](../../../../docs/acceptance/earnings-history-upgrade-20260911.json)新增18条事实，撤销/恢复各18条，旧事实内容与当前估值输入不变，重开重放全零。副本验收之后已[备份发布主库schema39](../../../../docs/earnings-main-publication-20260911.md)，原副本回执按历史保留。历史预测另补[2024Q1收入](../anker-q1-history-2024/README.md)，不降低两组同比门槛；已有原文不直接充作标准实际值。该原文与TDX版本均后来取得，不能称当时已留存的严格PIT预测。
+迁移039已扩展六字段有效期至2024-06-30；[真实主库副本验收](../../../../docs/acceptance/earnings-history-upgrade-20260911.json)新增18条事实，撤销/恢复各18条，旧事实内容与当前估值输入不变，重开重放全零。副本验收之后已[备份发布主库schema39](../../../../docs/history/earnings-main-publication-20260911.md)，原副本回执按历史保留。历史预测另补[2024Q1收入](../anker-q1-history-2024/README.md)，不降低两组同比门槛；已有原文不直接充作标准实际值。该原文与TDX版本均后来取得，不能称当时已留存的严格PIT预测。
 
 ## 来源及核验范围
 
@@ -51,7 +51,7 @@ python -m pytest tests/test_anker_earnings_history.py tests/test_anker_cash_hist
 ```bash
 cd valuation/backend
 python -m tools.verify_anker_cash_history ../../internal/ingest/testdata/anker-cash-history-2024
-python -m pytest tests/test_anker_cash_history.py -q
+python -m pytest --full tests/test_anker_cash_history.py -q
 ```
 
 若已有本次全量归档，可追加`--full-archive ../../workspace/anker-cash-history-source-20260911`重新比较完整原包哈希及逐字节记录。CI无需该本地路径：仍执行原文、三份裁剪包、源快照与七个源位校验；本次本地另外完成全量字节比较，不把两种验证范围混称。

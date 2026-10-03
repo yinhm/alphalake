@@ -10,8 +10,8 @@
 
 ```bash
 PYTHONPATH=valuation/backend python -m tools.verify_anker_q1_history internal/ingest/testdata/anker-q1-history-2024
-PYTHONPATH=valuation/backend python -m pytest valuation/backend/tests/test_anker_q1_history.py -q
-go test ./internal/ingest -run '^TestRealAnkerQ1History$' -count=1
+PYTHONPATH=valuation/backend python -m pytest --full valuation/backend/tests/test_anker_q1_history.py -q
+go test -tags=full ./internal/ingest -run '^TestRealAnkerQ1History$' -count=1
 ```
 
 PDF重提取与金额/源位/身份篡改拒绝进入既有pytest CI，依赖已有pypdf；Go测试覆盖真实导入、标准FN230位值/期间/单位、公告边界、重开重放以及当前估值输入不变。其他整条记录字段依已有审核映射物化，不声称本样本逐项核验全部584字段。

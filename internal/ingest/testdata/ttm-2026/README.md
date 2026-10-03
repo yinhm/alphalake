@@ -18,7 +18,7 @@
 税项/资本开支的累计路径验证三个输入，存量只取期末一个输入。公告日期精度的可用前一秒不返回完整 TTM，到中国次日零点才完整。重放没有事实变更。
 
 ```bash
-go test ./internal/ingest -run '^TestRealSixQuarterWindows$' -count=1 -v
+go test -tags=full ./internal/ingest -run '^TestRealSixQuarterWindows$' -count=1 -v
 python3 internal/ingest/testdata/ttm-2026/verify.py
 ```
 

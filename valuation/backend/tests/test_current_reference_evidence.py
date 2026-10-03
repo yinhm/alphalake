@@ -11,6 +11,8 @@ from data_sources.alphalake import AlphaLakeRequest
 from data_sources.damodaran_parsers.country_risk_parser import alphalake_country_snapshot
 from tools import rebuild_method_closure_references as rebuild_tool
 
+pytestmark = pytest.mark.full
+
 ROOT = Path(__file__).resolve().parents[3]
 CURRENT = ROOT/'valuation/research/current-references-20260930'
 

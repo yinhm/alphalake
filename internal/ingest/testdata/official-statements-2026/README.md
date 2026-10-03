@@ -10,7 +10,7 @@
 
 ```bash
 PYTHONPATH=valuation/backend python -m tools.verify_tdx_statement_expansion internal/ingest/testdata/official-statements-2026
-go test ./internal/ingest -run '^TestRealOfficialStatements$' -count=1
+go test -tags=full ./internal/ingest -run '^TestRealOfficialStatements$' -count=1
 ```
 
 Go真实标准链另外覆盖全部124个新映射在两公司六期包中的非零/零分支、规范三表查询、错误倍率撤除与恢复、重开重放。[设计与发布](../../../../docs/decisions/020-official-statements-and-snapshots.md)区分全目录定义审核、源编码检查及抽样PDF证据。

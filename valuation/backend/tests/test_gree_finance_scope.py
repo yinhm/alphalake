@@ -8,6 +8,8 @@ import pytest
 
 from tools.verify_gree_finance_scope import verify
 
+pytestmark = pytest.mark.full
+
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE = ROOT/'valuation/research/continuing-operations-five'
 PDFS = workspace_path('cninfo','views','gree-finance-scope')

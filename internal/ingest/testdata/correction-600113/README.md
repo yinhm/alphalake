@@ -9,7 +9,7 @@
 **未取得更正前 TDX 包。** 原始 PDF 的旧金额仅作为公告证据，不能用来伪造 TDX 旧记录。测试检查当前版本优先关联更正后的完整报告、更正前不生成无源版本支持的事实、边界可见及幂等重放，不声称完成真实旧值到新值的双版本验证。
 
 ```bash
-go test ./internal/ingest -run '^TestRealCorrectionWithoutOriginalProviderVersion$' -count=1 -v
+go test -tags=full ./internal/ingest -run '^TestRealCorrectionWithoutOriginalProviderVersion$' -count=1 -v
 ```
 
 三份原始 PDF 已随样本提交，普通 Go 测试强制检查大小及 SHA-256，无需本地 workspace。`comparison.csv` 列出营业收入、利润总额、归母净利润、扣非净利润的更正前后单季度值及未变的累计值。Go 测试将其中三个已映射字段与当前 TDX 原始位及标准事实比较；利润总额不等于 FN231 营业利润，不参与该映射。
@@ -20,4 +20,4 @@ go test ./internal/ingest -run '^TestRealCorrectionWithoutOriginalProviderVersio
 python3 internal/ingest/testdata/correction-600113/verify.py
 ```
 
-脚本离线从三份 PDF 重新提取，按项目名及表格列检查 16 个单季度单元格、16 个累计单元格；依赖或文件缺失直接失败，不静默跳过。它是固定样本验收，不是通用 PDF 财务提取器。完整 TDX 包仍在本地归档。证据缺口及归档基线见[调查记录](../../../../docs/correction-evidence-20260905.md)。
+脚本离线从三份 PDF 重新提取，按项目名及表格列检查 16 个单季度单元格、16 个累计单元格；依赖或文件缺失直接失败，不静默跳过。它是固定样本验收，不是通用 PDF 财务提取器。完整 TDX 包仍在本地归档。证据缺口及归档基线见[调查记录](../../../../docs/history/correction-evidence-20260905.md)。

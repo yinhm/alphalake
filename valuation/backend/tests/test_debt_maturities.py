@@ -3,6 +3,8 @@ import copy
 import pytest
 from tools.verify_debt_maturities import load_inputs, verify
 
+pytestmark = pytest.mark.full
+
 
 def test_real_maturities_and_negative_evidence():
     ledger,reports,records,artifacts=load_inputs()

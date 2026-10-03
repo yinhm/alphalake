@@ -9,6 +9,8 @@ import pytest
 
 from tools import rebuild_agent_adapter_evidence as rebuild
 
+pytestmark = pytest.mark.full
+
 ROOT = Path(__file__).resolve().parents[3]
 CURRENT = ROOT / 'valuation/research/agent-adapters-current-contract-20260930'
 

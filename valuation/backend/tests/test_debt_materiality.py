@@ -4,6 +4,8 @@ import json
 import pytest
 from tools import diagnose_debt_materiality as tool
 
+pytestmark = pytest.mark.full
+
 
 def test_verified_materiality_and_source_tampering(monkeypatch):
     result = tool.diagnose()

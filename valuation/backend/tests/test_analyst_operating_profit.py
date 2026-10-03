@@ -7,6 +7,8 @@ import pytest
 
 from tools.verify_analyst_operating_profit import build
 
+pytestmark = pytest.mark.full
+
 
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE = ROOT/'valuation/research/analyst-revenue-latest'

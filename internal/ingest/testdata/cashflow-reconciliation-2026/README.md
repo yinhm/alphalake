@@ -8,7 +8,7 @@
 
 ```bash
 PYTHONPATH=valuation/backend python -m tools.verify_tdx_statement_expansion internal/ingest/testdata/cashflow-reconciliation-2026
-go test ./internal/ingest -run '^TestRealCashflowReconciliation$' -count=1
+go test -tags=full ./internal/ingest -run '^TestRealCashflowReconciliation$' -count=1
 ```
 
-复用三表校验器及整批标准链测试；既有Python3/pypdf依赖，默认CI强制原文验证。负向检查覆盖金额、位、倍率、期间、章节、符号和虚假零。源码位比较只证明编码一致，章节/行标签与期间的审核才限定业务语义。范围与落库结果见[本轮说明](../../../../docs/cashflow-reconciliation-review-20260919.md)。
+复用三表校验器及整批标准链测试；既有Python3/pypdf依赖，默认CI强制原文验证。负向检查覆盖金额、位、倍率、期间、章节、符号和虚假零。源码位比较只证明编码一致，章节/行标签与期间的审核才限定业务语义。范围与落库结果见[本轮说明](../../../../docs/history/cashflow-reconciliation-review-20260919.md)。

@@ -16,6 +16,8 @@ from api.main import app
 from data_sources.alphalake import build_inputs, AlphaLakeRequest
 from engine.orchestrator import run_full_valuation
 
+pytestmark = pytest.mark.full
+
 REPO = Path(__file__).resolve().parents[3]
 CHAIN = REPO/'internal/ingest/testdata/valuation-chain-2026'
 
@@ -75,13 +77,6 @@ def test_saved_forecast_review_standard_actuals_and_boundaries(exports):
         review(run,'2025-09-01T00:00:00+08:00',export)
 
 
-@pytest.fixture(scope='module')
-def exports(tmp_path_factory):
-    output = tmp_path_factory.mktemp('alphalake_exports')
-    env = os.environ | {'ALPHALAKE_VALUATION_EXPORT_DIR':str(output),'GOPROXY':'off','GOSUMDB':'off'}
-    subprocess.run(['go','test','./internal/ingest','-run','^TestRealValuationStandardChain$','-count=1'],
-                   cwd=REPO,env=env,check=True,capture_output=True,text=True)
-    return {code:json.loads((output/(code+'.json')).read_text()) for code in ['300866','600519','999999']}
 
 
 def request_for(exports,company,scenario='central'):
@@ -242,13 +237,6 @@ def test_no_repeated_adjustments_or_employee_option_overlay(exports):
             type(inputs).model_validate(data)
 
 
-@pytest.fixture(scope='module')
-def reference_export(tmp_path_factory):
-    output = tmp_path_factory.mktemp('wacc_references')
-    env = os.environ | {'ALPHALAKE_WACC_EXPORT_DIR':str(output),'GOPROXY':'off','GOSUMDB':'off'}
-    subprocess.run(['go','test','./internal/ingest','-run','^TestWACCReferenceExport$','-count=1'],
-                   cwd=REPO,env=env,check=True,capture_output=True,text=True)
-    return json.loads((output/'credit-references.json').read_text())
 
 
 def reference_request(exports, reference_export, company):
@@ -381,13 +369,6 @@ def test_v1_reference_packet_still_supported(exports,reference_export):
     assert inputs.methodology_choices.cost_of_capital_approach=='reference_snapshot'
 
 
-@pytest.fixture(scope='module')
-def market_export(tmp_path_factory):
-    import sys
-    output=tmp_path_factory.mktemp('market_capital')
-    env=os.environ|{'ALPHALAKE_MARKET_EXPORT_DIR':str(output),'ALPHALAKE_TEST_PYTHON':sys.executable,'GOPROXY':'off','GOSUMDB':'off'}
-    subprocess.run(['go','test','./internal/ingest','-run','^TestMarketCapitalArchiveReplay$','-count=1'],cwd=REPO,env=env,check=True,capture_output=True,text=True)
-    return {code:json.loads((output/(code+'.json')).read_text()) for code in ['300866','600519','300866-funding']}
 
 
 def market_request(exports,reference_export,market_export,company):
@@ -859,7 +840,7 @@ def test_new_companies_standard_chain_and_review_hold(tmp_path,monkeypatch):
     from tools.batch_valuate_alphalake import BatchPolicy,run_batch
     output=tmp_path/'exports'
     env=os.environ|{'ALPHALAKE_GENERIC_EXPORT_DIR':str(output),'GOPROXY':'off','GOSUMDB':'off'}
-    subprocess.run(['go','test','./internal/ingest','-run','^TestRealGenericValuationSourceChain$','-count=1'],
+    subprocess.run(['go','test','-tags=full','./internal/ingest','-run','^TestRealGenericValuationSourceChain$','-count=1'],
                    cwd=REPO,env=env,check=True,capture_output=True,text=True)
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path/'runs'))
     profile=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_text())
@@ -1010,7 +991,7 @@ def test_bear_standard_chain_preserves_interest_scope_review(tmp_path,monkeypatc
     from tools.batch_valuate_alphalake import BatchPolicy,run_batch
     exports=tmp_path/'exports'
     env=os.environ|{'ALPHALAKE_BEAR_EXPORT_DIR':str(exports),'GOPROXY':'off','GOSUMDB':'off'}
-    subprocess.run(['go','test','./internal/ingest','-run','^TestRealBearValuationSourceChain$','-count=1'],cwd=REPO,env=env,check=True,capture_output=True,text=True)
+    subprocess.run(['go','test','-tags=full','./internal/ingest','-run','^TestRealBearValuationSourceChain$','-count=1'],cwd=REPO,env=env,check=True,capture_output=True,text=True)
     d=json.loads((exports/'002959.json').read_text())
     p=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_text())
     p['nonfinancial_scope_review']='小熊真实源链机械验算；年度与半年报租赁利息口径差异另列审核'

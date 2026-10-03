@@ -8,6 +8,7 @@ import tempfile
 from unittest.mock import patch
 
 from tools import export_alphalake_sqlite as exporter
+import pytest
 
 
 class SQLiteExportTest(unittest.TestCase):
@@ -333,6 +334,7 @@ def test_reviewed_source_zero_is_separate_revocable_evidence():
                          {(period.isoformat(), 'bonds_payable'): zero})[:2] == (5, 'available')
 
 
+@pytest.mark.full
 def test_anker_explicit_zero_disclosure_is_not_not_applicable():
     import hashlib
     import re

@@ -5,7 +5,6 @@ import json
 from decimal import Decimal
 import pytest
 import xlrd
-from tests.test_alphalake_integration import reference_export  # noqa: F401
 from data_sources.damodaran_parsers.native_reference_parser import snapshot
 
 ROOT=Path(__file__).resolve().parents[3]/'internal/source/damodaran/testdata/native'
@@ -46,6 +45,7 @@ def test_region_and_header_tampering_rejected(monkeypatch):
         snapshot(ROOT/'betas.xls')
 
 
+@pytest.mark.full
 def test_sqlite_snapshot_roundtrip_hash_and_missing_reference(reference_export, monkeypatch):
     import sqlite3
     from data_sources.native_references import write_snapshot,load_snapshot
