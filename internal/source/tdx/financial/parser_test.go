@@ -84,6 +84,25 @@ func TestParseDatRejectsReportOffsetIntoHeaderTable(t *testing.T) {
 	}
 }
 
+func TestParseDatRequiresMatchingPeriodAndNonemptyRecords(t *testing.T) {
+	dat := make([]byte, gpcwHeaderSize+gpcwStockItemSize+4)
+	binary.LittleEndian.PutUint32(dat[2:6], 20260630)
+	binary.LittleEndian.PutUint16(dat[6:8], 1)
+	binary.LittleEndian.PutUint32(dat[12:16], 4)
+	copy(dat[20:26], "600519")
+	binary.LittleEndian.PutUint32(dat[27:31], 31)
+	if _, err := ParseDat("gpcw20260630.ZIP", "report.dat", dat); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ParseDat("gpcw20260331.zip", "report.dat", dat); err == nil {
+		t.Fatal("filename/header period mismatch accepted")
+	}
+	binary.LittleEndian.PutUint16(dat[6:8], 0)
+	if _, err := ParseDat("gpcw20260630.zip", "report.dat", dat); err == nil {
+		t.Fatal("zero-record package accepted")
+	}
+}
+
 func TestReportAnnouncementDate(t *testing.T) {
 	period := time.Date(2018, 12, 31, 0, 0, 0, 0, time.UTC)
 	for _, tc := range []struct {

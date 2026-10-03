@@ -88,6 +88,10 @@ func ParsePackage(filename string, rawZip []byte) (Package, error) {
 
 func ParseDat(filename, datName string, data []byte) (Package, error) {
 	var out Package
+	filename = strings.TrimSpace(filename)
+	if !validPackageFilename(filename) {
+		return out, fmt.Errorf("invalid gpcw package filename %q", filename)
+	}
 	if len(data) < gpcwHeaderSize {
 		return out, errors.New("gpcw dat is shorter than header")
 	}
@@ -109,6 +113,12 @@ func ParseDat(filename, datName string, data []byte) (Package, error) {
 	reportPeriod, err := parseYYYYMMDD(h.ReportDateRaw)
 	if err != nil {
 		return out, fmt.Errorf("invalid gpcw report date %d: %w", h.ReportDateRaw, err)
+	}
+	if filename[4:12] != reportPeriod.Format("20060102") {
+		return out, fmt.Errorf("gpcw filename %q disagrees with report date %d", filename, h.ReportDateRaw)
+	}
+	if h.StockCount == 0 {
+		return out, errors.New("gpcw package contains no stock records")
 	}
 	headerTableEnd := gpcwHeaderSize + int(h.StockCount)*gpcwStockItemSize
 	if headerTableEnd > len(data) {

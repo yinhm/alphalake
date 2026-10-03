@@ -212,7 +212,12 @@ func SyncTDXProfessionalFinancialWithOptions(
 			continue
 		}
 
-		stored, raw, found, err := loadRetainedFinancialPackage(ctx, db, artifactRoot, entry)
+		var stored artifact.Stored
+		var raw []byte
+		var found bool
+		if !options.Offline {
+			stored, raw, found, err = loadRetainedFinancialPackage(ctx, db, artifactRoot, entry)
+		}
 		if err != nil {
 			summary.Failures = append(summary.Failures, TDXProfessionalFinancialFailure{Package: entry.Filename, Err: err})
 			reportProfessionalFinancialProgress(options, summary, i+1, entry.Filename)

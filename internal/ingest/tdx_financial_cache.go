@@ -112,9 +112,8 @@ func sameFinancialEntry(a, b financial.FileEntry) bool {
 	return a.Filename == b.Filename && a.Size == b.Size && strings.EqualFold(a.MD5, b.MD5)
 }
 
-// Explicit offline ingestion selects only files actually present locally. MD5
-// describes those bytes, not an assertion that they match the latest upstream
-// revision. The normal package parser still validates ZIP structure and CRC.
+// Offline selection preserves manifest checksums. ReadFinancialCache verifies
+// each local file against that manifest or a registered historical artifact.
 func localFinancialManifest(root string) ([]financial.FileEntry, []byte, error) {
 	raw, err := os.ReadFile(filepath.Join(root, "tdx-cache", "gpcw.txt"))
 	if err != nil {
@@ -126,15 +125,13 @@ func localFinancialManifest(root string) ([]financial.FileEntry, []byte, error) 
 	}
 	local := make([]financial.FileEntry, 0, len(entries))
 	for _, entry := range entries {
-		b, err := os.ReadFile(filepath.Join(root, "tdx-cache", entry.Filename))
+		_, err := os.Stat(filepath.Join(root, "tdx-cache", entry.Filename))
 		if os.IsNotExist(err) {
 			continue
 		}
 		if err != nil {
 			return nil, nil, err
 		}
-		entry.Size = int64(len(b))
-		entry.MD5 = fmt.Sprintf("%x", md5.Sum(b))
 		local = append(local, entry)
 	}
 	if len(local) == 0 {
