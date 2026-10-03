@@ -70,9 +70,18 @@ const panel = (page: Page) => page.getByRole('complementary', { name: '估值词
 test('read-only financial labels resolve exact unique aliases, with explicit IDs taking priority', async ({ page }) => {
   await openHarness(page);
   await expect(page.getByTestId('financial-labels').getByRole('button')).toHaveCount(2);
-  await page.getByTestId('financial-labels').locator('[data-term-id="revenue"] button').click();
+  const revenue = page.getByTestId('financial-labels').locator('[data-term-id="revenue"]');
+  const ebitda = page.getByTestId('financial-labels').locator('[data-term-id="ebitda"]');
+  await expect(revenue.getByRole('button')).toHaveCSS('opacity', '0');
+  const beforeHover = await revenue.boundingBox();
+  await revenue.hover();
+  await expect(revenue.getByRole('button')).toHaveCSS('opacity', '1');
+  await expect(ebitda.getByRole('button')).toHaveCSS('opacity', '0');
+  expect(await revenue.boundingBox()).toEqual(beforeHover);
+  await revenue.getByRole('button').click();
   await expect(panel(page).getByRole('heading', { name: '测试收入', exact: true })).toBeVisible();
-  await page.getByTestId('financial-labels').locator('[data-term-id="ebitda"] button').click();
+  await ebitda.hover();
+  await ebitda.getByRole('button').click();
   await expect(panel(page).getByRole('heading', { name: '测试息税折旧摊销前利润', exact: true })).toBeVisible();
   await expect(page.getByTestId('ambiguous-label').getByRole('button')).toHaveCount(0);
   await expect(page.getByTestId('financial-value').getByRole('button')).toHaveCount(0);
@@ -192,7 +201,9 @@ test('selection preference persists while explicit keyboard help remains availab
   await selectText(page.locator('[data-term-id="wacc"][data-binding-id="wacc.current"]'), 1, 4);
   await expect(preview(page)).toHaveCount(0);
   const help = page.locator('[data-binding-id="wacc.current"]').getByRole('button');
+  await expect(help).toHaveCSS('opacity', '0');
   await help.focus();
+  await expect(help).toHaveCSS('opacity', '1');
   await help.press('Enter');
   await expect(panel(page).getByRole('heading', { name: '测试资本成本' })).toBeVisible();
 });
@@ -217,6 +228,18 @@ test('narrow screens use a modal with keyboard containment and return focus on E
   await expect(help).toBeFocused();
 });
 
+test('touch users can open term help without hovering', async ({ browser }) => {
+  const context = await browser.newContext({ baseURL: 'http://127.0.0.1:4173', viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  try {
+    const page = await context.newPage();
+    await openHarness(page);
+    const help = page.locator('[data-binding-id="wacc.current"]').getByRole('button');
+    await expect(help).toHaveCSS('opacity', '1');
+    await help.tap();
+    await expect(page.getByRole('dialog', { name: '估值词条解释' }).getByRole('heading', { name: '测试资本成本' })).toBeVisible();
+  } finally { await context.close(); }
+});
+
 test('a newly published release refreshes the open article and selection summaries together', async ({ page }) => {
   let release = 'fixture-r1';
   await page.route('**/api/knowledge/**', async route => {
@@ -230,6 +253,7 @@ test('a newly published release refreshes the open article and selection summari
   });
   await page.goto('/tests/fixtures/knowledge.html');
   await expect(page.getByTestId('knowledge-status')).toHaveText('ready');
+  await page.locator('[data-binding-id="wacc.current"]').hover();
   await page.locator('[data-binding-id="wacc.current"]').getByRole('button').click();
   await expect(panel(page)).toContainText('仅为浏览器测试文本。');
   release = 'fixture-r2';
