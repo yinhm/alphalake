@@ -10,7 +10,7 @@ for (const ext of ['.ts', '.tsx']) {
       esModuleInterop: true, target: ts.ScriptTarget.ES2022,
     }}).outputText, filename);
 }
-const { matchTerms, normalizeAlias, readSelection } = require('../src/knowledge/matching.ts');
+const { matchTerms, normalizeAlias, readSelection, searchTerms } = require('../src/knowledge/matching.ts');
 const { KnowledgeClient } = require('../src/knowledge/client.ts');
 const terms = [
   { term_id: 'wacc', title_zh: '测试资本成本', title_en: 'WACC', aliases: ['资本', 'Cost of capital'] },
@@ -22,6 +22,24 @@ assert.deepEqual(matchTerms('ACC', terms), []);
 assert.equal(matchTerms('资本', terms).length, 2);
 assert.equal(matchTerms('  COST  of CAPITAL ', terms)[0].term_id, 'wacc');
 assert.equal(matchTerms('WACC', terms, 'unknown').length, 0);
+
+// An exact term must remain reachable within the ten-row directory even if
+// many earlier entries contain the same word in their category or title.
+const searchSample = [
+  ...Array.from({ length: 12 }, (_, i) => ({
+    term_id: `topic-${i}`, title_zh: `资本主题${i}`, title_en: '',
+    category: '增长与再投资', aliases: ['Net Reinvestment'],
+  })),
+  { term_id: 'reinvestment', title_zh: '再投资', title_en: 'Reinvestment', category: '增长与再投资', aliases: ['投入'] },
+];
+for (const query of ['再投资', ' REINVESTMENT ', '投入']) {
+  assert.equal(searchTerms(query, searchSample)[0].term_id, 'reinvestment');
+}
+assert.equal(searchTerms('再投资', searchSample).length, 13);
+assert.deepEqual(searchTerms('', searchSample), searchSample);
+assert.equal(searchSample[0].term_id, 'topic-0', 'search must not reorder its input index');
+assert.equal(searchTerms('不存在的术语', searchSample).length, 0);
+assert.equal(searchTerms('资本', terms).length, 2, 'ambiguous exact aliases remain candidates');
 
 const dom = new JSDOM('<main data-knowledge-scope><p><span data-term-id="wacc" data-binding-id="wacc.current">WACC</span></p><p id="plain">WACC</p><p id="number">12.5%</p><p id="editor" contenteditable="true">WACC</p><p><span id="across">WACC</span><input></p><table><tbody><tr><td id="cell1">WACC</td><td id="cell2">Capital</td><td data-knowledge-ignore id="editable">WACC</td></tr></tbody></table></main><aside id="outside">WACC</aside>');
 const document = dom.window.document;

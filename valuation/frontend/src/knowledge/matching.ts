@@ -39,5 +39,7 @@ export function readSelection(selection: Selection | null): { text: string; term
 export function searchTerms(query: string, terms: KnowledgeTermSummary[]): KnowledgeTermSummary[] {
   const q = normalizeAlias(query);
   if (!q) return terms;
-  return terms.filter(term => normalizeAlias([term.title_zh, term.title_en, term.category, ...term.aliases].join(' ')).includes(q));
+  const matches = terms.filter(term => normalizeAlias([term.title_zh, term.title_en, term.category, ...term.aliases].join(' ')).includes(q));
+  const exactIds = new Set(matchTerms(q, matches).map(term => term.term_id));
+  return matches.sort((a, b) => Number(exactIds.has(b.term_id)) - Number(exactIds.has(a.term_id)));
 }
