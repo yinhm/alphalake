@@ -53,7 +53,7 @@ class SQLiteExportTest(unittest.TestCase):
                        exchange_mic='XSHE', instrument_id=7, name='测试公司')
         facts = []
         for end, value in [('2025-09-30', '7000000'), ('2025-12-31', '10000000'),
-                           ('2026-03-31', '0'), ('2026-06-30', '4000000')]:
+                           ('2026-03-31', '0.0000000000'), ('2026-06-30', '4000000')]:
             facts.append(dict(source='tdx', code='300866', instrument_id=7, period=end,
                               field='revenue_cumulative', canonical_field='revenue_cumulative',
                               value=value, unit='CNY', period_type={3:'Q1', 6:'H1', 9:'9M', 12:'FY'}[int(end[5:7])],
@@ -79,6 +79,11 @@ class SQLiteExportTest(unittest.TestCase):
             db.row_factory = sqlite3.Row
             self.assertEqual(exporter.export_snapshot(db, [company], fetch, period, asof), 1)
             self.assertEqual(db.execute('SELECT count(*) FROM standard_facts').fetchone()[0], len(facts))
+            restored = exporter.target.load_standard_facts(db, ['SZSE:300866'])
+            self.assertEqual([{k:v for k,v in r.items() if k != 'ticker'} for r in restored],
+                             sorted(facts, key=lambda r:(r['period'],r['field'])))
+            self.assertLess(db.execute('SELECT count(*) FROM standard_records').fetchone()[0], len(facts))
+            self.assertNotIn('evidence_json', {r[1] for r in db.execute('PRAGMA table_info(standard_facts)')})
             self.assertEqual(db.execute("SELECT count(*) FROM sqlite_master WHERE name='valuation_inputs'").fetchone()[0], 0)
             data = exporter.target.fetch_company(db, 'SZSE:300866')
             self.assertEqual(len(data['financials_annual']), 10)
@@ -96,6 +101,24 @@ class SQLiteExportTest(unittest.TestCase):
             self.assertIsNone(data['financials_annual'][1]['revenues'])
             evidence = json.loads(db.execute("SELECT evidence_json FROM export_cells WHERE series='quarterly' AND period_offset=0 AND field='revenues'").fetchone()[0])
             self.assertEqual([r['coefficient'] for r in evidence], [1, -1])
+            self.assertTrue(all(set(r)=={'field','period','coefficient'} for r in evidence))
+            by_field = {(r['period'],r['field']):r for r in restored}
+            annual_evidence = exporter.target.resolve_cell_evidence(json.loads(json.dumps(evidence)), by_field)
+            ttm_evidence = exporter.target.resolve_cell_evidence(json.loads(json.dumps(evidence)), by_field, ttm=True)
+            self.assertEqual(annual_evidence[1]['value'], '0E-10')
+            self.assertEqual(ttm_evidence[1]['value'], '0.0000000000')
+            rejected = json.loads(db.execute("SELECT evidence_json FROM export_cells WHERE series='annual' AND period_offset=0 AND field='cross_holdings'").fetchone()[0])
+            restored_rejection = exporter.target.resolve_cell_evidence(rejected, {(r['period'],r['field']):r for r in restored})
+            self.assertEqual(restored_rejection[0]['value'], '-1')
+            record_id = db.execute("SELECT record_id FROM standard_facts WHERE field='revenue_cumulative' LIMIT 1").fetchone()[0]
+            original = db.execute('SELECT evidence_json FROM standard_records WHERE record_id=?',(record_id,)).fetchone()[0]
+            altered = json.loads(original); altered['code']='600519'
+            db.execute('UPDATE standard_records SET evidence_json=? WHERE record_id=?',(json.dumps(altered),record_id))
+            with self.assertRaisesRegex(ValueError, 'identity/period'):
+                exporter.target.fetch_company(db, 'SZSE:300866')
+            db.execute('DELETE FROM standard_records WHERE record_id=?',(record_id,))
+            with self.assertRaisesRegex(ValueError, 'Missing standard record'):
+                exporter.target.fetch_company(db, 'SZSE:300866')
         indexed = {(r['period'], r['field']): r for r in facts}
         self.assertEqual(exporter.cell(indexed, {'2026-03-31'}, 7, period, 'revenues', False)[1], 'source_record_conflict')
         facts[0]['unit'] = 'USD'

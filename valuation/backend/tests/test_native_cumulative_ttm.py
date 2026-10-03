@@ -111,7 +111,7 @@ def test_complete_quarter_equivalence_and_missing_q1_still_values(snapshot):
         assert recent['quarters']==2 and recent['revenue_growth']==.25
         assert json.loads(inputs.prepared_ttm.provenance['components'])['revenues'][1]['period']=='2026-06-30'
         conn.execute("DELETE FROM standard_facts WHERE period='2025-06-30' AND field='reported_ebit'")
-        with pytest.raises(ValueError, match='Missing TTM component evidence'):
+        with pytest.raises(ValueError, match='Missing financial component evidence'):
             db.fetch_company(conn,'SZSE:300866')
     without_q1=[r for r in facts if r['period'] not in ('2025-03-31','2026-03-31')]
     with build(without_q1) as conn:
@@ -135,6 +135,6 @@ def test_missing_cumulative_and_research_queue_remain_distinct(snapshot):
         gate=db.native_compatibility(conn,'SZSE:300866')
         assert any(r['series']=='ttm' and r['field']=='ebit' for r in gate['required_missing'])
         assert {(r['series'],r['field']) for r in gate['conditional_missing']}=={('ttm','r_and_d_expense'),('annual','r_and_d_expense')}
-        conn.execute("UPDATE metadata SET value='alphalake-sqlite-v9' WHERE key='contract'")
+        conn.execute("UPDATE metadata SET value='alphalake-sqlite-v10' WHERE key='contract'")
         with pytest.raises(ValueError,match='Unsupported'):
             db.fetch_company(conn,'SZSE:300866')

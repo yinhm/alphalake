@@ -34,7 +34,7 @@ FIELDS = {
     'cross_holdings': ('long_term_equity_investments', 'instant', 'CNY'),
 }
 EXCHANGES = {'XSHG': 'SHSE', 'XSHE': 'SZSE', 'XBSE': 'BJSE'}
-CONTRACT = 'alphalake-sqlite-v10'
+CONTRACT = 'alphalake-sqlite-v11'
 DEBT_COMPONENTS = ('short_term_borrowings', 'long_term_borrowings', 'bonds_payable',
                    'current_portion_noncurrent_liabilities', 'lease_liabilities')
 ASSET_COMPONENTS = ('monetary_funds', 'cash_and_cash_equivalents', 'trading_financial_assets',
@@ -178,8 +178,8 @@ def cell(facts, conflicts, instrument, end, column, annual, reviewed_zeros=None,
 
 
 
-def ttm_references(evidence):
-    """TTM只新增组成引用；源金额和完整血缘复用standard_facts。"""
+def fact_references(evidence):
+    """年、季、TTM只保存组成引用；金额和血缘复用标准事实与共享记录。"""
     return [{k: v for k, v in part.items() if k in
              ('field', 'period', 'coefficient', 'kind', 'import_sha256')}
             if 'field' in part else part for part in evidence]
@@ -214,16 +214,18 @@ def annual_effective_tax_rate(facts, conflicts, instrument, end):
 def export_snapshot(connection, companies, fetch, period, asof, years=10, quarters=8):
     target.init_schema(connection)
     connection.executescript('''CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);
- CREATE TABLE standard_facts(ticker TEXT,period TEXT,field TEXT,value TEXT,unit TEXT,period_type TEXT,statement_scope TEXT,evidence_json TEXT,PRIMARY KEY(ticker,period,field));
+ CREATE TABLE standard_records(record_id INTEGER PRIMARY KEY,evidence_json TEXT NOT NULL);
+ CREATE TABLE standard_facts(ticker TEXT,period TEXT,field TEXT,value TEXT,unit TEXT,period_type TEXT,statement_scope TEXT,fact_id INTEGER,record_id INTEGER NOT NULL REFERENCES standard_records(record_id),PRIMARY KEY(ticker,period,field)) WITHOUT ROWID;
  CREATE TABLE reviewed_source_zeros(import_sha256 TEXT PRIMARY KEY,ticker TEXT,period TEXT,field TEXT,evidence_json TEXT);
  CREATE TABLE export_universe(candidate INTEGER PRIMARY KEY,code TEXT,instrument_id INTEGER,status TEXT,details TEXT);
  CREATE TABLE export_cells(ticker TEXT,series TEXT,period TEXT,period_offset INTEGER,field TEXT,status TEXT,evidence_json TEXT,
- PRIMARY KEY(ticker,series,period_offset,field));''')
+ PRIMARY KEY(ticker,series,period_offset,field)) WITHOUT ROWID;''')
     ttm_columns = ['ticker'] + target._ANNUAL_COLS[2:]
     connection.execute('CREATE TABLE financials_ttm(ticker TEXT PRIMARY KEY REFERENCES companies(ticker),'
                        + ','.join(name+' REAL' for name in ttm_columns[1:])+')')
     connection.execute('INSERT INTO metadata VALUES(?,?)', ('contract', CONTRACT))
     connection.execute('INSERT INTO metadata VALUES(?,?)', ('ttm_evidence_format', 'standard_fact_refs'))
+    connection.execute('INSERT INTO metadata VALUES(?,?)', ('financial_evidence_format', 'shared_records_and_standard_fact_refs'))
     base = date(period.year if period.month == 12 else period.year - 1, 12, 31)
     annual_ends = [date(base.year-i, 12, 31) for i in range(years)]
     quarter_ends = [quarter(period, i) for i in range(quarters)]
@@ -242,7 +244,7 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
         if not valid:
             continue
         ticker = EXCHANGES[mic] + ':' + code
-        facts, conflicts, reviewed_zeros = {}, set(), {}
+        facts, conflicts, reviewed_zeros, records = {}, set(), {}, {}
         # 每个现有导出覆盖当年及上年；按需缓存一家公司，不累积全市场历史。
         def load(end):
             payload = fetch(code, end)
@@ -269,9 +271,14 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                     raise ValueError('duplicate or changed standard fact')
                 seen.add(key)
                 if key not in facts:
-                    connection.execute('INSERT INTO standard_facts VALUES(?,?,?,?,?,?,?,?)',
+                    shared = json.dumps({k:v for k,v in row.items() if k not in (
+                        'field','canonical_field','value','unit','period_type','statement_scope','fact_id')},
+                        ensure_ascii=False, sort_keys=True)
+                    if shared not in records:
+                        records[shared] = connection.execute('INSERT INTO standard_records(evidence_json) VALUES(?)', (shared,)).lastrowid
+                    connection.execute('INSERT INTO standard_facts VALUES(?,?,?,?,?,?,?,?,?)',
                         (ticker, row['period'], row['field'], row['value'], row['unit'], row['period_type'],
-                         row['statement_scope'], json.dumps(row, ensure_ascii=False, sort_keys=True)))
+                         row['statement_scope'], row['fact_id'], records[shared]))
                 facts[key] = row
             for zero in payload.get('reviewed_zeros', []):
                 review = zero['review']
@@ -352,7 +359,7 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                     value, status, evidence = cell(facts, conflicts, company['instrument_id'], end, column, series == 'annual', reviewed_zeros)
                     values[column] = value
                     connection.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
-                                       (ticker, series, end.isoformat(), offset, column, status, json.dumps(evidence, ensure_ascii=False, sort_keys=True)))
+                                       (ticker, series, end.isoformat(), offset, column, status, json.dumps(fact_references(evidence), ensure_ascii=False, sort_keys=True)))
                 (target.insert_annual_financials if series == 'annual' else target.insert_quarterly_financials)(connection, [values])
         values = {'ticker': ticker}
         for column in ttm_columns[1:]:
@@ -361,7 +368,7 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
             values[column] = value
             connection.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
                 (ticker, 'ttm', period.isoformat(), 0, column, status,
-                 json.dumps(ttm_references(evidence), ensure_ascii=False, sort_keys=True)))
+                 json.dumps(fact_references(evidence), ensure_ascii=False, sort_keys=True)))
         target._executemany_from_dicts(connection, 'financials_ttm', ttm_columns, [values])
         count += 1
     return count

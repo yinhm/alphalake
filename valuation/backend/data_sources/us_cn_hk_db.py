@@ -21,6 +21,7 @@ from __future__ import annotations
 import json
 import math
 from datetime import date
+from decimal import Decimal
 import os
 import sqlite3
 from contextlib import contextmanager
@@ -286,13 +287,57 @@ def snapshot_metadata(conn: sqlite3.Connection) -> dict | None:
     if not tables.intersection({'metadata', 'valuation_inputs', 'standard_facts', 'export_cells'}):
         return None
     metadata = dict(conn.execute('SELECT key,value FROM metadata')) if 'metadata' in tables else {}
-    if metadata.get('contract') != 'alphalake-sqlite-v10':
+    if metadata.get('contract') != 'alphalake-sqlite-v11':
         raise ValueError('Unsupported AlphaLake SQLite contract; rebuild the snapshot with the current exporter')
-    if not {'standard_facts', 'export_cells', 'export_universe', 'reviewed_source_zeros', 'financials_ttm'} <= tables:
+    if not {'standard_records', 'standard_facts', 'export_cells', 'export_universe', 'reviewed_source_zeros', 'financials_ttm'} <= tables:
         raise ValueError('Incomplete AlphaLake SQLite snapshot')
     if metadata.get('ttm_evidence_format') != 'standard_fact_refs':
         raise ValueError('Invalid TTM evidence contract; rebuild the snapshot')
+    if metadata.get('financial_evidence_format') != 'shared_records_and_standard_fact_refs':
+        raise ValueError('Invalid financial evidence contract; rebuild the snapshot')
     return metadata
+
+
+def load_standard_facts(conn, tickers, *, periods=None, fields=None):
+    """限定证券及所需列/期间，还原共享来源；不保留旧快照读取路径。"""
+    clauses, parameters = [], []
+    for column, values in [('ticker',tickers), ('period',periods), ('field',fields)]:
+        if values is not None:
+            if not values:
+                return []
+            clauses.append('f.'+column+' IN ('+','.join('?' for _ in values)+')')
+            parameters.extend(values)
+    records, result = {}, []
+    for row in conn.execute('SELECT f.*,r.evidence_json AS record_evidence FROM standard_facts f '
+            'LEFT JOIN standard_records r USING(record_id) WHERE '+' AND '.join(clauses)
+            +' ORDER BY f.ticker,f.period,f.field', parameters):
+        if row['record_evidence'] is None:
+            raise ValueError('Missing standard record evidence; rebuild the snapshot')
+        record_id = row['record_id']
+        if record_id not in records:
+            records[record_id] = json.loads(row['record_evidence'])
+        shared = records[record_id]
+        if shared['period'] != row['period'] or shared['code'] != row['ticker'].split(':')[-1]:
+            raise ValueError('Mismatched standard record identity/period; rebuild the snapshot')
+        result.append(shared | {key:row[key] for key in ('period','field','value','unit',
+            'period_type','statement_scope','fact_id')} | {'canonical_field':row['field'], 'ticker':row['ticker']})
+    return result
+
+
+def resolve_cell_evidence(parts, facts, *, ttm=False):
+    """组成引用恢复原接口证据；保留缺项、审核零和范围诊断。"""
+    for part in parts:
+        if 'field' not in part or part.get('kind') in ('missing_standard_fact', 'reviewed_source_zero'):
+            continue
+        fact = facts.get((part['period'], part['field']))
+        if fact is None:
+            raise ValueError('Missing financial component evidence; rebuild the snapshot')
+        keys = ('value','unit','fact_id','artifact_sha256') if not ttm and part.get('kind') == 'rejected_component' else (
+            'value','unit','fact_id','available_at','artifact_sha256','announcement_source','financial_time_basis')
+        part.update({key:fact.get(key) for key in keys})
+        if not ttm:
+            part['value'] = str(Decimal(fact['value']))
+    return parts
 
 
 def fetch_company(conn: sqlite3.Connection, ticker: str) -> dict | None:
@@ -333,21 +378,12 @@ def fetch_company(conn: sqlite3.Connection, ticker: str) -> dict | None:
         result['financials_ttm'] = dict(ttm)
         result['ttm_evidence'] = {r['field']: json.loads(r['evidence_json']) for r in conn.execute(
             "SELECT field,evidence_json FROM export_cells WHERE ticker=? AND series='ttm' AND period_offset=0", (ticker,))}
-        periods = sorted({p['period'] for parts in result['ttm_evidence'].values() for p in parts if 'period' in p})
-        facts = {(r['period'], r['field']): json.loads(r['evidence_json']) for r in conn.execute(
-            'SELECT period,field,evidence_json FROM standard_facts WHERE ticker=? AND period IN ('
-            + ','.join('?' for _ in periods) + ')', (ticker, *periods))}
+        source_facts = load_standard_facts(conn, [ticker])
+        facts = {(r['period'],r['field']):r for r in source_facts}
         for parts in result['ttm_evidence'].values():
-            for part in parts:
-                if 'field' not in part or part.get('kind') in ('missing_standard_fact', 'reviewed_source_zero'):
-                    continue
-                fact = facts.get((part['period'], part['field']))
-                if fact is None:
-                    raise ValueError('Missing TTM component evidence; rebuild the snapshot')
-                part.update({key: fact.get(key) for key in ('value', 'unit', 'fact_id', 'available_at',
-                    'artifact_sha256', 'announcement_source', 'financial_time_basis')})
-        result['standard_financials'] = [dict(r) for r in conn.execute(
-            'SELECT period,field,value,unit,period_type,statement_scope FROM standard_facts WHERE ticker=? ORDER BY period,field', (ticker,))]
+            resolve_cell_evidence(parts, facts, ttm=True)
+        result['standard_financials'] = [{key:r[key] for key in ('period','field','value','unit',
+            'period_type','statement_scope')} for r in source_facts]
     return result
 
 
@@ -371,7 +407,7 @@ def standard_cumulative_ttm(inputs) -> bool:
     """普通标准事实TTM，不是专项调整利润/资本输入；仅识别输入形态。"""
     return (inputs.prepared_ttm is not None
             and inputs.prepared_ttm.provenance.get('basis') == 'standard_cumulative_ttm'
-            and inputs.prepared_ttm.provenance.get('contract') == 'alphalake-sqlite-v10')
+            and inputs.prepared_ttm.provenance.get('contract') == 'alphalake-sqlite-v11')
 
 
 def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
@@ -384,6 +420,11 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
     cells = {(r['series'], r['period_offset'], r['field']):
              dict(period=r['period'], status=r['status'], evidence=json.loads(r['evidence_json']))
              for r in conn.execute('SELECT series,period_offset,field,period,status,evidence_json FROM export_cells WHERE ticker=?', (ticker,))} if source else {}
+    if source:
+        facts = {(r['period'],r['field']):r for r in load_standard_facts(conn, [ticker])}
+        for (series,_,_), cell in cells.items():
+            if series in ('annual','quarterly'):
+                resolve_cell_evidence(cell['evidence'], facts)
     rows = {series: {r[key]: r for r in record['financials_'+series]}
             for series, key in [('annual','fy_offset'),('quarterly','fq_offset')]}
     if source:

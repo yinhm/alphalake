@@ -1,5 +1,6 @@
 """标准数据直通：专项分量缺失不能覆盖报表值，真实缺项仍拒绝。"""
 from datetime import date, datetime
+import json
 import sqlite3
 
 import pytest
@@ -39,6 +40,9 @@ def test_standard_ebit_is_not_replaced_by_sample_policy(sample, ticker):
     sample.execute("UPDATE financials_quarterly SET ticker=?", (ticker,))
     sample.execute("UPDATE financials_ttm SET ticker=?", (ticker,))
     sample.execute("UPDATE standard_facts SET ticker=?", (ticker,))
+    for row in sample.execute("SELECT record_id,evidence_json FROM standard_records").fetchall():
+        evidence=json.loads(row["evidence_json"]); evidence["code"]=ticker.split(":")[-1]
+        sample.execute("UPDATE standard_records SET evidence_json=? WHERE record_id=?", (json.dumps(evidence),row["record_id"]))
     sample.execute("UPDATE export_cells SET ticker=?", (ticker,))
     raw = db.fetch_company(sample, ticker)
     assert raw['financials_annual'][0]['ebit'] == 440

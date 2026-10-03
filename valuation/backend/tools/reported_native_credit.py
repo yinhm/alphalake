@@ -3,6 +3,7 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from data_sources.alphalake_wacc import ReferenceSnapshot
+from data_sources.us_cn_hk_db import load_standard_facts
 from engine.data_dictionary import CompanyValuationInput, ReferenceCapitalInputs
 from engine.module_2_risk import compute_reference_cost_of_capital
 
@@ -30,13 +31,9 @@ def load_evidence(connection, tickers, metadata, policy):
         raise ValueError('SQLite credit scope fields not exported; rebuild snapshot before credit conditions')
     end = date.fromisoformat(metadata['report_period'])
     terms = [(end, 1)] if end.month==12 else [(date(end.year-1,12,31),1),(end,1),(end.replace(year=end.year-1),-1)]
-    marks = ','.join('?' for _ in tickers)
-    field_marks = ','.join('?' for _ in FIELDS)
-    period_marks = ','.join('?' for _ in terms)
     rows = {ticker:[] for ticker in tickers}
-    if tickers:
-        for row in connection.execute(f"SELECT * FROM standard_facts WHERE ticker IN ({marks}) AND field IN ({field_marks}) AND period IN ({period_marks})",[*tickers,*FIELDS,*[p.isoformat() for p,_ in terms]]):
-            rows[row['ticker']].append(dict(row))
+    for row in load_standard_facts(connection, tickers, fields=FIELDS, periods=[p.isoformat() for p,_ in terms]):
+        rows[row['ticker']].append(row)
     return dict(terms=[(p.isoformat(),c) for p,c in terms], rows=rows,
         bands=refs.credit_spreads, sovereign=sovereign, cutoff=cutoff.isoformat())
 

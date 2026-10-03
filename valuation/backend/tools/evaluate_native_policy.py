@@ -273,7 +273,7 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
     with sqlite3.connect(database.as_uri()+'?mode=ro', uri=True) as connection:
         metadata = dict(connection.execute('SELECT key,value FROM metadata'))
         snapshot_tickers = {r[0] for r in connection.execute('SELECT ticker FROM companies')}
-    if metadata.get('contract') != 'alphalake-sqlite-v10':
+    if metadata.get('contract') != 'alphalake-sqlite-v11':
         raise ValueError('current native SQLite contract required')
     with database.open('rb') as stream: snapshot_hash = hashlib.file_digest(stream, 'sha256').hexdigest()
     override_source = dict(path=str(overrides_file), sha256=hashlib.sha256(overrides_file.read_bytes()).hexdigest()) if overrides_file else None
