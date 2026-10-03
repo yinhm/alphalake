@@ -80,6 +80,11 @@ jobs:
           npm ci
           npm run build
           node scripts/check-ttm.cjs
+      - name: Test knowledge interactions
+        working-directory: valuation/frontend
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:knowledge
       - name: Test valuation backend
         working-directory: valuation/backend
         run: python -m pytest -q

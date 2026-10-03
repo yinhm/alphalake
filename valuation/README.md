@@ -2,6 +2,8 @@
 
 AlphaLake 当前入口：[全市场条件估值与运行命令](../docs/history/a-share-automation-acceptance-20260910.md)、[实现状态与下一步](../docs/implementation-status.md)、[标准数据桥接](docs/alphalake-integration.md)。当前可通过[纯TDX SQLite快照及显式政策在网页估值](../docs/guides/valuation-sqlite-export.md)；上游CIQ功能仍独立，不能作为TDX缺项后备。
 
+网页词条功能与内容准备见[估值知识库](../docs/guides/valuation-knowledge.md)：支持划词、解释侧栏和独立词条页；数据库位于 workspace，不随仓库分发，首版内容另行审核。
+
 <div align="center">
 
 # 📊 Investment Valuation Agent

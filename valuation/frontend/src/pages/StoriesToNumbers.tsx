@@ -33,10 +33,12 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
   const q = (k: 'revenue_growth_3y' | 'pretax_operating_margin' | 'sales_to_capital') =>
     stats?.[k] ?? null;
 
-  const narrative: { narrative: string; driver: string; input: string; value: string | number | null; type: 'hypothesis' | 'calc' | 'reference' }[] = [
+  const narrative: { narrative: string; driver: string; termId?: string; bindingId?: string; input: string; value: string | number | null; type: 'hypothesis' | 'calc' | 'reference' }[] = [
     {
       narrative: 'How fast will the company grow revenues?',
       driver: 'Revenue growth (next year)',
+      termId: 'revenue-growth',
+      bindingId: 'revenue-growth.next-year',
       input: 'revenue_growth_next_year',
       value: assumptions.revenue_growth_next_year,
       type: 'hypothesis',
@@ -44,6 +46,8 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
     {
       narrative: 'How fast will it grow after year 1?',
       driver: 'Revenue growth (years 2–5)',
+      termId: 'revenue-growth',
+      bindingId: 'revenue-growth.high',
       input: 'revenue_growth_years_2_5',
       value: assumptions.revenue_growth_years_2_5,
       type: 'hypothesis',
@@ -51,6 +55,8 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
     {
       narrative: 'How profitable will the company be at maturity?',
       driver: 'Target pre-tax operating margin',
+      termId: 'operating-margin',
+      bindingId: 'operating-margin.target',
       input: 'target_operating_margin',
       value: assumptions.target_operating_margin,
       type: 'hypothesis',
@@ -58,6 +64,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
     {
       narrative: 'How long until current margin reaches target?',
       driver: 'Margin convergence year (K)',
+      termId: 'operating-margin',
       input: 'margin_convergence_year',
       value: assumptions.margin_convergence_year,
       type: 'hypothesis',
@@ -65,6 +72,8 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
     {
       narrative: 'How efficiently will capital generate revenue?',
       driver: 'Sales/Capital (years 1–5)',
+      termId: 'sales-to-capital',
+      bindingId: 'sales-to-capital.high',
       input: 'sales_to_capital_high',
       value: assumptions.sales_to_capital_high,
       type: 'hypothesis',
@@ -72,6 +81,8 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
     {
       narrative: 'Reinvestment in the stable phase',
       driver: 'Sales/Capital (years 6–10)',
+      termId: 'sales-to-capital',
+      bindingId: 'sales-to-capital.stable',
       input: 'sales_to_capital_stable',
       value: assumptions.sales_to_capital_stable,
       type: 'hypothesis',
@@ -79,6 +90,8 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
     {
       narrative: 'How risky is this company?',
       driver: 'Cost of capital (WACC)',
+      termId: 'wacc',
+      bindingId: 'wacc.current',
       input: 'wacc',
       value: data.cost_of_capital?.wacc ?? null,
       type: 'calc',
@@ -86,6 +99,8 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
     {
       narrative: 'What is the long-term growth rate?',
       driver: 'Terminal growth',
+      termId: 'stable-growth',
+      bindingId: 'stable-growth.input',
       input: 'stable_growth_rate',
       value: assumptions.stable_growth_rate ?? data.inputs.macro_inputs.risk_free_rate,
       type: 'hypothesis',
@@ -93,6 +108,8 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
     {
       narrative: 'Could this company fail?',
       driver: 'Probability of failure',
+      termId: 'failure-probability',
+      bindingId: 'failure-probability.input',
       input: 'failure_probability',
       value: assumptions.failure_probability,
       type: 'hypothesis',
@@ -196,7 +213,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
           {narrative.map((s, i) => (
             <tr key={i}>
               <SpreadsheetCell type="label" value={s.narrative} align="left" />
-              <SpreadsheetCell type="label" value={s.driver} align="left" />
+              <SpreadsheetCell type="label" value={s.driver} align="left" termId={s.termId} bindingId={s.bindingId} />
               <SpreadsheetCell type="hint" value={s.input} align="left" />
               <SpreadsheetCell type={s.type} value={s.value} />
               <SpreadsheetCell type="label" value={

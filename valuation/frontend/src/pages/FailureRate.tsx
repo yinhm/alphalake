@@ -51,7 +51,7 @@ export default function FailureRate({ data, onPatch }: Props) {
       <SpreadsheetGrid title="Failure Probability Inputs">
         <tbody>
           <tr>
-            <SpreadsheetCell type="label" value="Probability of failure" />
+            <SpreadsheetCell type="label" value="Probability of failure" termId="failure-probability" bindingId="failure-probability.input" />
             <SpreadsheetCell type="hypothesis" value={(failProb * 100).toFixed(2) + '%'} editable
               onChange={(raw) => {
                 const v = parsePct(raw);
@@ -83,23 +83,23 @@ export default function FailureRate({ data, onPatch }: Props) {
       <SpreadsheetGrid title="Impact on Valuation">
         <tbody>
           <tr>
-            <SpreadsheetCell type="label" value="Value of operating assets (going concern)" />
+            <SpreadsheetCell type="label" value="Value of operating assets (going concern)" termId="operating-asset-value" bindingId="operating-asset-value.current" />
             <SpreadsheetCell type="calc" value={opAssets}
               tooltip={backendField('dcf.value_of_operating_assets', 'Σ PV(FCFF) + PV(Terminal Value) before failure overlay')} />
           </tr>
           <tr>
-            <SpreadsheetCell type="label" value="Probability of failure" />
+            <SpreadsheetCell type="label" value="Probability of failure" termId="failure-probability" bindingId="failure-probability.input" />
             <SpreadsheetCell type="calc" value={failProb}
               tooltip="Echoed from Failure Probability Inputs above" />
           </tr>
           <tr>
-            <SpreadsheetCell type="label" value="Distress sale proceeds" />
+            <SpreadsheetCell type="label" value="Distress sale proceeds" termId="distress-value" />
             <SpreadsheetCell type="calc" value={opAssets * proceedsPct}
               tooltip={formula('Proceeds = V_op × distress_proceeds_pct',
                                `${opAssets.toLocaleString('en-US',{maximumFractionDigits:0})} × ${(proceedsPct*100).toFixed(0)}% = ${(opAssets*proceedsPct).toLocaleString('en-US',{maximumFractionDigits:0})}`)} />
           </tr>
           <tr>
-            <SpreadsheetCell type="label" value="Expected operating asset value" bold />
+            <SpreadsheetCell type="label" value="Expected operating asset value" bold termId="distress-value" />
             <SpreadsheetCell type="calc" value={opAssets * (1 - failProb) + opAssets * proceedsPct * failProb} bold
               tooltip={formula('V_expected = V_op × (1 − p_fail) + Proceeds × p_fail', 'Probability-weighted blend of going-concern + distress scenarios.')} />
           </tr>

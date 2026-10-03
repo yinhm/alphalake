@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate, Link } from 'react-router-dom';
 import { useState, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -23,6 +23,7 @@ import CurrencyBanner from './components/CurrencyBanner';
 import UnresolvedFieldsPanel from './components/UnresolvedFieldsPanel';
 import type { ValuationResponse } from './types/valuation';
 import { createValuation, patchValuation, downloadFullWorkbook, type PatchValue } from './api/client';
+import { KnowledgeProvider, KnowledgePanel, KnowledgePage, useKnowledge } from './knowledge';
 
 export default function App() {
   const [data, setData] = useState<ValuationResponse | null>(null);
@@ -78,12 +79,22 @@ export default function App() {
   // <main> area is rendering the OnboardingWizard instead of the routed
   // page tree.
   const isAdminRoute = pathname.startsWith('/admin');
+  const isKnowledgeRoute = pathname === '/knowledge' || pathname.startsWith('/knowledge/');
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <KnowledgeProvider valuation={data}>
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-100">
       <Sidebar />
-      <main className="flex-1 p-6 overflow-auto">
-        {isAdminRoute ? (
+      <main className="min-w-0 flex-1 p-3 md:p-6 overflow-auto" data-knowledge-scope>
+        <KnowledgeToolbar />
+        {isKnowledgeRoute ? (
+          <ErrorBoundary resetKey={pathname}>
+            <Routes>
+              <Route path="/knowledge" element={<KnowledgePage />} />
+              <Route path="/knowledge/:termId" element={<KnowledgePage />} />
+            </Routes>
+          </ErrorBoundary>
+        ) : isAdminRoute ? (
           <Routes>
             <Route path="/admin" element={<AdminDataSources />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
@@ -137,6 +148,22 @@ export default function App() {
           </>
         )}
       </main>
+      <KnowledgePanel />
+    </div>
+    </KnowledgeProvider>
+  );
+}
+
+function KnowledgeToolbar() {
+  const knowledge = useKnowledge();
+  return (
+    <div className="mb-4 flex flex-wrap items-center justify-end gap-4 text-xs text-slate-600" data-knowledge-ignore>
+      <label className="inline-flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" checked={knowledge?.selectionEnabled ?? false}
+          onChange={(event) => knowledge?.setSelectionEnabled(event.target.checked)} />
+        划词解释
+      </label>
+      <Link to="/knowledge" className="text-blue-700 hover:underline">估值知识库</Link>
     </div>
   );
 }

@@ -13,3 +13,7 @@ __pycache__/
 
 # Local Python runtime; dynamic financial data belongs under workspace.
 /.venv/
+
+# Editorial knowledge content is workspace data, including local path overrides.
+knowledge.sqlite
+knowledge.sqlite-*

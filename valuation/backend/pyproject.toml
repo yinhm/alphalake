@@ -31,4 +31,4 @@ dev = [
 testpaths = ["tests"]
 
 [tool.setuptools.packages.find]
-include = ["api*", "engine*", "data_sources*", "tools*"]
+include = ["api*", "engine*", "data_sources*", "knowledge*", "tools*"]

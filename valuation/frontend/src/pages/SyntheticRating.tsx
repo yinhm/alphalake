@@ -62,7 +62,7 @@ export default function SyntheticRating({ data }: { data: ValuationResponse; ses
       <SpreadsheetGrid title="Company Interest Coverage">
         <tbody>
           <tr>
-            <SpreadsheetCell type="label" value="EBIT (adjusted)" />
+            <SpreadsheetCell type="label" value="EBIT (adjusted)" termId="ebit" />
             <SpreadsheetCell type="calc" value={ebit}
               tooltip={backendField('adjusted.adjusted_ebit', 'Raw EBIT + R&D current − Amortization + Lease adj. Source for coverage ratio calc.')} />
           </tr>
@@ -72,18 +72,18 @@ export default function SyntheticRating({ data }: { data: ValuationResponse; ses
               tooltip={ciq(data.inputs.ticker, 'IQ_INTEREST_EXP', 'LTM')} />
           </tr>
           <tr>
-            <SpreadsheetCell type="label" value="Interest coverage ratio" bold />
+            <SpreadsheetCell type="label" value="Interest coverage ratio" bold termId="interest-coverage" bindingId="interest-coverage.current" />
             <SpreadsheetCell type="calc" value={coverage.toFixed(2)} bold
               tooltip={formula('Coverage = Adjusted EBIT / Interest expense',
                                `${ebit.toLocaleString(undefined,{maximumFractionDigits:0})} / ${interest.toLocaleString(undefined,{maximumFractionDigits:0})} = ${coverage.toFixed(2)}`)} />
           </tr>
           <tr>
-            <SpreadsheetCell type="label" value="Estimated bond rating" bold />
+            <SpreadsheetCell type="label" value="Estimated bond rating" bold termId="synthetic-rating" />
             <SpreadsheetCell type="calc" value={match?.rating ?? 'N/A'} bold
               tooltip="Coverage → rating via lookup table below (Damodaran small-firm). Ginzu cost_of_capital_reference.json has both 'large' and 'small' versions." />
           </tr>
           <tr>
-            <SpreadsheetCell type="label" value="Estimated default spread" bold />
+            <SpreadsheetCell type="label" value="Estimated default spread" bold termId="default-spread" />
             <SpreadsheetCell type="calc" value={match?.spread ?? 0} bold
               tooltip="Spread above risk-free rate at the inferred rating. Kd_pretax = RF + spread." />
           </tr>
@@ -135,12 +135,12 @@ export default function SyntheticRating({ data }: { data: ValuationResponse; ses
             </tr>
           )}
           <tr>
-            <SpreadsheetCell type="label" value="Rating used by engine" bold />
+            <SpreadsheetCell type="label" value="Rating used by engine" bold termId="synthetic-rating" />
             <SpreadsheetCell type="calc" value={engineRating ?? match?.rating ?? '—'} bold
               tooltip="The rating the engine ultimately applied when computing Kd. Compare with the 'Estimated bond rating' in the table above — disagreement means the engine bypassed synthetic-rating logic." />
           </tr>
           <tr>
-            <SpreadsheetCell type="label" value="Kd pre-tax (engine)" bold />
+            <SpreadsheetCell type="label" value="Kd pre-tax (engine)" bold termId="cost-of-debt" bindingId="cost-of-debt.pretax" />
             <SpreadsheetCell type="calc" value={engineKdPretax}
               tooltip="Cost of debt pre-tax currently feeding the WACC. = RF + credit spread from the rating the engine used." />
           </tr>

@@ -163,7 +163,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
 
           {/* Revenue Growth % */}
           <tr>
-            <SpreadsheetCell value="  Revenue Growth %" type="label" />
+            <SpreadsheetCell value="  Revenue Growth %" type="label" termId="revenue-growth" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`g-${t}`} value="—" type="label" width={COL_WIDTH} />;
               if (t === n + 1) return <SpreadsheetCell key={`g-${t}`} value={pct(g_terminal)} type="reference" tooltip={`Terminal growth rate: ${va.override_growth_perpetuity ? 'override' : va.override_riskfree ? 'RF override' : 'risk-free rate'}`} width={COL_WIDTH} />;
@@ -173,7 +173,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
 
           {/* Operating Margin % */}
           <tr>
-            <SpreadsheetCell value="Operating Margin %" type="label" />
+            <SpreadsheetCell value="Operating Margin %" type="label" termId="operating-margin" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`m-${t}`} value={pct(marginPath[0])} type="financial" tooltip="EBIT / Revenue (base year, adjusted for R&D if capitalized)" width={COL_WIDTH} />;
               if (t === n + 1) return <SpreadsheetCell key={`m-${t}`} value={pct(va.target_operating_margin ?? marginPath[n])} type="reference" tooltip="Terminal Op Margin = target_operating_margin (flat at maturity)" width={COL_WIDTH} />;
@@ -183,7 +183,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
 
           {/* Operating Income (EBIT) */}
           <tr>
-            <SpreadsheetCell value="Operating Income (EBIT)" type="label" />
+            <SpreadsheetCell value="Operating Income (EBIT)" type="label" termId="ebit" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`ebit-${t}`} value={num(baseEbit)} type="financial" tooltip="Damodaran-adjusted EBIT (raw EBIT + R&D add-back + lease add-back). Matches the base-year EBIT used as the starting point of M4's margin path." width={COL_WIDTH} />;
               if (t === n + 1) {
@@ -197,7 +197,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
 
           {/* Tax Rate % */}
           <tr>
-            <SpreadsheetCell value="  Tax Rate %" type="label" />
+            <SpreadsheetCell value="  Tax Rate %" type="label" termId="effective-tax-rate" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`tx-${t}`} value={pct(macro.tax_rate_effective)} type="financial" tooltip="Effective tax rate (base year)" width={COL_WIDTH} />;
               if (t === n + 1) {
@@ -210,7 +210,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
 
           {/* After-tax Operating Income (NOPAT) */}
           <tr>
-            <SpreadsheetCell value="NOPAT = EBIT × (1-t)" type="label" />
+            <SpreadsheetCell value="NOPAT = EBIT × (1-t)" type="label" termId="nopat" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`nopat-${t}`} value="—" type="label" width={COL_WIDTH} />;
               if (t === n + 1) {
@@ -225,7 +225,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
 
           {/* Reinvestment */}
           <tr>
-            <SpreadsheetCell value="− Reinvestment" type="label" />
+            <SpreadsheetCell value="− Reinvestment" type="label" termId="reinvestment" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`r-${t}`} value="—" type="label" width={COL_WIDTH} />;
               if (t === n + 1) {
@@ -242,7 +242,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
 
           {/* FCFF */}
           <tr>
-            <SpreadsheetCell value="FCFF" type="label" />
+            <SpreadsheetCell value="FCFF" type="label" termId="fcff" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`f-${t}`} value="—" type="label" width={COL_WIDTH} />;
               if (t === n + 1) return <SpreadsheetCell key={`f-${t}`} value="TV formula" type="reference" tooltip={`Terminal FCFF used in Gordon: TV = FCFF_terminal / (WACC_T - g_T)\nTV = ${num(dcf.terminal_value_firm)}`} width={COL_WIDTH} />;
@@ -252,7 +252,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
 
           {/* WACC */}
           <tr>
-            <SpreadsheetCell value="WACC" type="label" />
+            <SpreadsheetCell value="WACC" type="label" termId="wacc" bindingId="wacc.current" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`w-${t}`} value={pct(coc?.wacc)} type="financial" tooltip="Initial WACC" width={COL_WIDTH} />;
               if (t === n + 1) return <SpreadsheetCell key={`w-${t}`} value={pct(wacc_terminal)} type="reference" tooltip={va.cost_of_capital_stable_override != null ? 'override_cost_of_capital_stable' : 'Default: RF + ERP'} width={COL_WIDTH} />;
@@ -262,7 +262,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
 
           {/* Cumulative Discount Factor */}
           <tr>
-            <SpreadsheetCell value="Cumulative DF" type="label" />
+            <SpreadsheetCell value="Cumulative DF" type="label" termId="discount-factor" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`df-${t}`} value={dec(1, 4)} type="financial" tooltip="DF[0] = 1.0 by definition" width={COL_WIDTH} />;
               if (t === n + 1) return <SpreadsheetCell key={`df-${t}`} value={dec(dcf.discount_factors[n - 1], 4)} type="reference" tooltip="Terminal discounted at year-10 cumulative factor" width={COL_WIDTH} />;
@@ -272,7 +272,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
 
           {/* PV of FCFF */}
           <tr>
-            <SpreadsheetCell value="PV of FCFF" type="label" />
+            <SpreadsheetCell value="PV of FCFF" type="label" termId="present-value" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`pv-${t}`} value="—" type="label" width={COL_WIDTH} />;
               if (t === n + 1) return <SpreadsheetCell key={`pv-${t}`} value={num(dcf.pv_terminal_value)} type="reference" tooltip="PV(Terminal Value) = TV × Cumulative DF[year 10]" width={COL_WIDTH} />;
@@ -286,27 +286,27 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
       <SpreadsheetGrid title="Value Rollup">
         <tbody>
           <tr>
-            <SpreadsheetCell value="Σ PV of FCFF (Years 1-10)" type="label" width="320px" />
+            <SpreadsheetCell value="Σ PV of FCFF (Years 1-10)" type="label" width="320px" termId="present-value" />
             <SpreadsheetCell value={num(dcf.pv_cash_flows_sum)} type="calc" tooltip="Sum of PV(FCFF) for years 1 through 10" />
           </tr>
           <tr>
-            <SpreadsheetCell value="+ PV of Terminal Value" type="label" />
+            <SpreadsheetCell value="+ PV of Terminal Value" type="label" termId="terminal-value" bindingId="terminal-value.present" />
             <SpreadsheetCell value={num(dcf.pv_terminal_value)} type="calc" tooltip="Gordon perpetuity discounted to present" />
           </tr>
           <tr>
-            <SpreadsheetCell value="= Value of Operating Assets" type="label" bold />
+            <SpreadsheetCell value="= Value of Operating Assets" type="label" bold termId="operating-asset-value" bindingId="operating-asset-value.current" />
             <SpreadsheetCell value={num(dcf.value_of_operating_assets)} type="calc" bold tooltip={va.failure_probability > 0 ? `After failure overlay (p = ${pct(va.failure_probability)}, tie_to = ${va.failure_tie_to})` : 'No failure overlay'} />
           </tr>
           <tr>
-            <SpreadsheetCell value="= Value of Equity (after bridge)" type="label" bold />
+            <SpreadsheetCell value="= Value of Equity (after bridge)" type="label" bold termId="equity-value" bindingId="equity-value.current" />
             <SpreadsheetCell value={num(dcf.value_of_equity)} type="calc" bold tooltip="V_op - Debt - Minority + Cash_usable + Cross_holdings" />
           </tr>
           <tr>
-            <SpreadsheetCell value="Value per Share (pre-options)" type="label" bold />
+            <SpreadsheetCell value="Value per Share (pre-options)" type="label" bold termId="value-per-share" />
             <SpreadsheetCell value={num(dcf.value_per_share_pre_options)} type="calc" bold tooltip="Value per share before deducting employee-option dilution. = Value of Equity / Shares Outstanding. Source: dcf.value_per_share_pre_options. The final Value per Share below is this figure minus option dilution (Module 6)." />
           </tr>
           <tr>
-            <SpreadsheetCell value={`Value per Share (final, ${data.inputs.reporting_currency || '?'})`} type="label" bold />
+            <SpreadsheetCell value={`Value per Share (final, ${data.inputs.reporting_currency || '?'})`} termId="value-per-share" bindingId="value-per-share.current" type="label" bold />
             <td className="border px-1.5 py-0.5 bg-emerald-50 border-emerald-200 text-right whitespace-nowrap font-bold"
                 title="After subtracting option dilution — in reporting currency">
               <DualCurrency valueReporting={data.final?.value_per_share} reportingCcy={data.inputs.reporting_currency} listingCcy={data.inputs.stock_price_currency} fxRate={data.inputs.fx_rate} />
