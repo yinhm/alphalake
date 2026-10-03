@@ -264,8 +264,8 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
               { label: '  Effective Tax Rate (%)', termId: 'effective-tax-rate', type: 'calc', calc: (f) => f.earnings_before_tax && f.earnings_before_tax > 0 && f.total_tax_expense != null ? f.total_tax_expense / f.earnings_before_tax : null },
               { label: 'Interest Expense', key: 'interest_expense', type: 'data' },
               { label: 'D&A', key: 'd_a', type: 'data' },
-              { label: 'R&D Expense', termId: 'rd-capitalization', key: 'r_and_d_expense', type: 'data' },
-              { label: 'Capital Expenditures', termId: 'capital-expenditure', key: 'capex', type: 'data' },
+              { label: 'R&D Expense', termId: 'rd-expense', key: 'r_and_d_expense', type: 'data' },
+              { label: 'Capital Expenditures', termId: 'capex', key: 'capex', type: 'data' },
               // --- Balance Sheet ---
               { label: 'BALANCE SHEET', type: 'section' },
               { label: 'Cash & Marketable Securities', key: 'cash_and_marketable_securities', type: 'data' },
@@ -505,7 +505,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
               </tr>
               {Array.from({ length: adj.amortization_period_n }, (_, i) => (
                 <tr key={`rd-${i}`}>
-                  <SpreadsheetCell value={`R&D Year -${i + 1}`} type="label" />
+                  <SpreadsheetCell value={`R&D Year -${i + 1}`} type="label" termId="rd-expense" />
                   <SpreadsheetCell
                     value={i < adj.r_and_d_expense_past.length ? num(adj.r_and_d_expense_past[i]) : ''}
                     type="financial"
@@ -539,7 +539,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
                 const mnems = ['IQ_OL_COMM_CY','IQ_OL_COMM_CY1','IQ_OL_COMM_CY2','IQ_OL_COMM_CY3','IQ_OL_COMM_CY4'];
                 return (
                 <tr key={`lease-${i}`}>
-                  <SpreadsheetCell value={`Commitment Year ${i + 1}`} type="label" />
+                  <SpreadsheetCell value={`Commitment Year ${i + 1}`} type="label" termId="lease-commitment" />
                   <SpreadsheetCell value={num(v)} type="financial"
                     tooltip={`=CIQ("${inp.ticker}","${mnems[i]}")`} />
                 </tr>
@@ -562,10 +562,10 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
       {/* ----------------------------------------------------------------- */}
       <SpreadsheetGrid title={`5. Market Data`}>
         <tbody>
-          <tr><SpreadsheetCell value={`Current Stock Price (${inp.stock_price_currency ?? '—'})`} type="label" width="240px" /><SpreadsheetCell value={dec(fin0?.stock_price)} type="financial" tooltip={`=CIQ("${inp.ticker}","IQ_CLOSEPRICE") — quoted in the exchange's listing currency`} /></tr>
-          <tr><SpreadsheetCell value={`Market Cap (${inp.reporting_currency ?? '—'}, millions)`} type="label" /><SpreadsheetCell value={num(fin0?.mv_equity)} type="financial" tooltip={`Market cap in reporting currency ${inp.reporting_currency ?? '—'} — used for WACC weights and the Price/Value comparison. When the CIQ template doesn't ship mv_equity_reporting directly, this is derived as mv_equity_listing × fx_rate.`} /></tr>
+          <tr><SpreadsheetCell value={`Current Stock Price (${inp.stock_price_currency ?? '—'})`} type="label" termId="stock-price" width="240px" /><SpreadsheetCell value={dec(fin0?.stock_price)} type="financial" tooltip={`=CIQ("${inp.ticker}","IQ_CLOSEPRICE") — quoted in the exchange's listing currency`} /></tr>
+          <tr><SpreadsheetCell value={`Market Cap (${inp.reporting_currency ?? '—'}, millions)`} type="label" termId="market-cap" /><SpreadsheetCell value={num(fin0?.mv_equity)} type="financial" tooltip={`Market cap in reporting currency ${inp.reporting_currency ?? '—'} — used for WACC weights and the Price/Value comparison. When the CIQ template doesn't ship mv_equity_reporting directly, this is derived as mv_equity_listing × fx_rate.`} /></tr>
           {fin0?.mv_equity_listing != null && inp.stock_price_currency && inp.stock_price_currency !== inp.reporting_currency && (
-            <tr><SpreadsheetCell value={`Market Cap (${inp.stock_price_currency}, millions)`} type="label" /><SpreadsheetCell value={num(fin0.mv_equity_listing)} type="financial" tooltip={`=CIQ("${inp.ticker}","IQ_MARKETCAP") — raw listing-currency market cap, preserved for broker-side comparison.`} /></tr>
+            <tr><SpreadsheetCell value={`Market Cap (${inp.stock_price_currency}, millions)`} type="label" termId="market-cap" /><SpreadsheetCell value={num(fin0.mv_equity_listing)} type="financial" tooltip={`=CIQ("${inp.ticker}","IQ_MARKETCAP") — raw listing-currency market cap, preserved for broker-side comparison.`} /></tr>
           )}
         </tbody>
       </SpreadsheetGrid>

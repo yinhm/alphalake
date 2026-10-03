@@ -121,7 +121,7 @@ export default function SpreadsheetCell({
       title={tooltip || undefined}
       data-knowledge-ignore={editable ? true : undefined}
     >
-      {termId && !editable ? (
+      {!editable && (termId || type === 'label' || type === 'header') ? (
         <Term termId={termId} bindingId={bindingId}>{formatValue(value)}</Term>
       ) : formatValue(value)}
       {hasTip && (

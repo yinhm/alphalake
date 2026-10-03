@@ -210,7 +210,7 @@ export default function Diagnostics({ data }: { data: ValuationResponse; session
             <SpreadsheetCell value={valuePerShare} type="calc" tooltip="Intrinsic value per share in reporting currency. Source: final.value_per_share. = (Value of Equity − Options) / Shares." />
           </tr>
           <tr>
-            <SpreadsheetCell value={`Stock price (${listingCcy ?? '—'}, listing ccy)`} type="label" />
+            <SpreadsheetCell value={`Stock price (${listingCcy ?? '—'}, listing ccy)`} type="label" termId="stock-price" />
             <SpreadsheetCell value={stockPriceListing} type="financial"
               tooltip={fxRate != null && !sameCcy && stockPriceInReporting != null
                 ? `≈ ${stockPriceInReporting.toFixed(2)} ${reportingCcy} at FX ${fxRate.toFixed(4)}`

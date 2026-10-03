@@ -33,6 +33,10 @@ export function Harness() {
         <p contentEditable suppressContentEditableWarning data-testid="editable-text">WACC</p>
         <label>普通输入<input aria-label="普通输入" defaultValue="WACC" /></label>
         <table><tbody>
+          <tr data-testid="financial-labels"><SpreadsheetCell value="Revenues" type="label" /><SpreadsheetCell value="EBITDA" type="header" /></tr>
+          <tr data-testid="ambiguous-label"><SpreadsheetCell value="资本" type="label" /></tr>
+          <tr data-testid="explicit-label"><SpreadsheetCell value="Revenues" type="label" termId="wacc" /></tr>
+          <tr data-testid="financial-value"><SpreadsheetCell value="Revenues" type="financial" /></tr>
           <tr data-testid="editable-row"><SpreadsheetCell value={cell} type="hypothesis" editable termId="wacc" onChange={setCell} /></tr>
           <tr data-testid="two-cells"><SpreadsheetCell value="WACC" type="label" /><SpreadsheetCell value="资本" type="label" /></tr>
         </tbody></table>

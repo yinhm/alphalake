@@ -6,6 +6,8 @@ const terms: KnowledgeTermSummary[] = [
   { term_id: 'wacc', title_zh: '测试资本成本', title_en: 'WACC', kind: '测试概念', category: '合成样本', summary: '用于验证交互的资本成本简释。', aliases: ['Capital cost'] },
   { term_id: 'capital-a', title_zh: '测试资本甲', title_en: 'Capital A', kind: '测试概念', category: '合成样本', summary: '用于验证歧义的第一种资本。', aliases: ['资本'] },
   { term_id: 'capital-b', title_zh: '测试资本乙', title_en: 'Capital B', kind: '测试概念', category: '合成样本', summary: '用于验证歧义的第二种资本。', aliases: ['资本'] },
+  { term_id: 'revenue', title_zh: '测试收入', title_en: 'Revenue', kind: '测试概念', category: '合成样本', summary: '测试标签自动关联。', aliases: ['Revenues'] },
+  { term_id: 'ebitda', title_zh: '测试息税折旧摊销前利润', title_en: 'EBITDA', kind: '测试概念', category: '合成样本', summary: '测试表头自动关联。', aliases: [] },
   ...Array.from({ length: 12 }, (_, i) => ({ term_id: `extra-${i}`, title_zh: `扩展词条${i}`, title_en: `Extra ${i}`, kind: '测试概念', category: '合成样本', summary: '用于验证目录限制不影响全库检索。', aliases: [`extra-alias-${i}`] })),
 ];
 const API_ROUTE = /^http:\/\/127\.0\.0\.1:4173\/api\//;
@@ -65,6 +67,19 @@ async function openHarness(page: Page) {
 const preview = (page: Page) => page.getByRole('region', { name: '选中文字的词条解释' });
 const panel = (page: Page) => page.getByRole('complementary', { name: '估值词条解释' });
 
+test('read-only financial labels resolve exact unique aliases, with explicit IDs taking priority', async ({ page }) => {
+  await openHarness(page);
+  await expect(page.getByTestId('financial-labels').getByRole('button')).toHaveCount(2);
+  await page.getByTestId('financial-labels').locator('[data-term-id="revenue"] button').click();
+  await expect(panel(page).getByRole('heading', { name: '测试收入', exact: true })).toBeVisible();
+  await page.getByTestId('financial-labels').locator('[data-term-id="ebitda"] button').click();
+  await expect(panel(page).getByRole('heading', { name: '测试息税折旧摊销前利润', exact: true })).toBeVisible();
+  await expect(page.getByTestId('ambiguous-label').getByRole('button')).toHaveCount(0);
+  await expect(page.getByTestId('financial-value').getByRole('button')).toHaveCount(0);
+  await expect(page.getByTestId('editable-row').getByRole('button')).toHaveCount(0);
+  await expect(page.getByTestId('explicit-label').locator('[data-term-id="wacc"]')).toHaveCount(1);
+});
+
 test('standalone glossary works without a valuation, searches aliases and follows safe crosslinks', async ({ page }) => {
   await mockKnowledge(page);
   await page.goto('/knowledge');
@@ -81,7 +96,7 @@ test('standalone glossary works without a valuation, searches aliases and follow
   await expect(list).toHaveCount(10);
   await expect(page.getByRole('heading', { name: '扩展词条11', exact: true })).toBeVisible();
   await search.fill('不存在的词条');
-  await expect(page.getByRole('status')).toHaveText('没有匹配的词条，请尝试其他名称。');
+  await expect(page.getByRole('status').filter({ hasText: '没有匹配的词条' })).toHaveText('没有匹配的词条，请尝试其他名称。');
   await page.getByRole('searchbox', { name: '搜索词条' }).fill('capital cost');
   await page.getByRole('link', { name: /测试资本成本/ }).click();
   await expect(page).toHaveURL(/\/knowledge\/wacc$/);
@@ -114,7 +129,7 @@ test('unpublished and invalid databases have distinct recoverable states', async
 test('a partial annotated label opens its exact term without replacing selection or stealing focus', async ({ page }, testInfo) => {
   await openHarness(page);
   await page.getByTestId('focus-anchor').focus();
-  await selectText(page.locator('[data-term-id="wacc"]'), 1, 4);
+  await selectText(page.locator('[data-term-id="wacc"][data-binding-id="wacc.current"]'), 1, 4);
   await expect(preview(page)).toContainText('用于验证交互的资本成本简释。');
   await expect(page.getByTestId('focus-anchor')).toBeFocused();
   expect(await page.evaluate(() => window.getSelection()?.toString())).toBe('ACC');
@@ -174,9 +189,9 @@ test('selection preference persists while explicit keyboard help remains availab
   await page.getByRole('checkbox', { name: '划词解释' }).uncheck();
   await page.reload();
   await expect(page.getByRole('checkbox', { name: '划词解释' })).not.toBeChecked();
-  await selectText(page.locator('[data-term-id="wacc"]'), 1, 4);
+  await selectText(page.locator('[data-term-id="wacc"][data-binding-id="wacc.current"]'), 1, 4);
   await expect(preview(page)).toHaveCount(0);
-  const help = page.getByRole('button', { name: '查看 WACC 的词条解释' });
+  const help = page.locator('[data-binding-id="wacc.current"]').getByRole('button');
   await help.focus();
   await help.press('Enter');
   await expect(panel(page).getByRole('heading', { name: '测试资本成本' })).toBeVisible();
@@ -185,7 +200,7 @@ test('selection preference persists while explicit keyboard help remains availab
 test('narrow screens use a modal with keyboard containment and return focus on Escape', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openHarness(page);
-  const help = page.getByRole('button', { name: '查看 WACC 的词条解释' });
+  const help = page.locator('[data-binding-id="wacc.current"]').getByRole('button');
   await help.focus();
   await help.press('Enter');
   const dialog = page.getByRole('dialog', { name: '估值词条解释' });
@@ -215,14 +230,14 @@ test('a newly published release refreshes the open article and selection summari
   });
   await page.goto('/tests/fixtures/knowledge.html');
   await expect(page.getByTestId('knowledge-status')).toHaveText('ready');
-  await page.getByRole('button', { name: '查看 WACC 的词条解释' }).click();
+  await page.locator('[data-binding-id="wacc.current"]').getByRole('button').click();
   await expect(panel(page)).toContainText('仅为浏览器测试文本。');
   release = 'fixture-r2';
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
   await expect(panel(page)).toContainText('新版合成正文。');
   await expect(panel(page)).toContainText('新版合成简释。');
   await panel(page).getByRole('button', { name: '关闭词条解释' }).click();
-  await selectText(page.locator('[data-term-id="wacc"]'), 1, 4);
+  await selectText(page.locator('[data-term-id="wacc"][data-binding-id="wacc.current"]'), 1, 4);
   await expect(preview(page)).toContainText('新版合成简释。');
   await expect(preview(page)).not.toContainText('用于验证交互的资本成本简释。');
 });

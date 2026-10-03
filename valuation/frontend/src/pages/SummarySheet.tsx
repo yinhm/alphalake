@@ -313,7 +313,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
             </td>
           </tr>
           <tr>
-            <SpreadsheetCell value={`Market Price (${data.inputs.stock_price_currency || '?'})`} type="label" />
+            <SpreadsheetCell value={`Market Price (${data.inputs.stock_price_currency || '?'})`} type="label" termId="stock-price" />
             <td className="border px-1.5 py-0.5 bg-sky-50 border-sky-200 text-right whitespace-nowrap"
                 title={`Stock price in listing currency ${data.inputs.stock_price_currency || '?'}; also shown converted to reporting ccy ${data.inputs.reporting_currency || '?'} for apples-to-apples vs VPS`}>
               <DualCurrency valueListing={fin0?.stock_price} reportingCcy={data.inputs.reporting_currency} listingCcy={data.inputs.stock_price_currency} fxRate={data.inputs.fx_rate} primary="listing" />

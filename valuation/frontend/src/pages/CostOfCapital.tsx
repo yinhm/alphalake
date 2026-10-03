@@ -85,7 +85,7 @@ function Section({ title, children, subtitle, termId }: { title: string; subtitl
 function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
   return (
     <div className="mb-3">
-      <label className="block text-xs font-semibold text-gray-700 mb-1">{label}</label>
+      <label className="block text-xs font-semibold text-gray-700 mb-1"><Term>{label}</Term></label>
       {children}
       {hint && <p className="text-xs text-gray-500 mt-0.5">{hint}</p>}
     </div>
@@ -99,7 +99,7 @@ function KV({ label, value, bold, tooltip, termId, bindingId }: { label: string;
       className={`flex justify-between items-center py-1 border-b border-gray-100 last:border-0 ${hasTip ? 'cursor-help hover:bg-sky-50/60' : ''}`}
       title={tooltip}
     >
-      <span className={`text-xs ${bold ? 'font-bold' : 'text-gray-700'}`}>{termId ? <Term termId={termId} bindingId={bindingId}>{label}</Term> : label}</span>
+      <span className={`text-xs ${bold ? 'font-bold' : 'text-gray-700'}`}><Term termId={termId} bindingId={bindingId}>{label}</Term></span>
       <span className={`text-xs tabular-nums inline-flex items-center gap-1 ${bold ? 'font-bold' : 'text-gray-900'}`}>
         {value}
         {hasTip && <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-sky-500 opacity-60" />}

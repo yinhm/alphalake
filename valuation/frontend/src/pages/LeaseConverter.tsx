@@ -71,7 +71,7 @@ export default function LeaseConverter({ data }: { data: ValuationResponse; sess
           </tr>
           {yr1to5.map((c, i) => (
             <tr key={i}>
-              <SpreadsheetCell value={`Year ${i + 1} commitment`} type="label" />
+              <SpreadsheetCell value={`Year ${i + 1} commitment`} type="label" termId="lease-commitment" />
               <SpreadsheetCell value={c} type="hypothesis"
                 tooltip={ciq(ticker, `IQ_OL_COMM_YR_${i + 1}`) + " — footnote to 10-K contractual commitments"} />
             </tr>
