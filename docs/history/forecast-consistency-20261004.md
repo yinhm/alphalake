@@ -1,6 +1,6 @@
 # Forecast参数与显示一致性验收
 
-2026-10-04；修复前提交`01fa559`。用户在厘清利润率多路径后要求合理解决forecast参数及估值BUG（含显示），保持前后端一致。本轮不新增合理参数自动选择器，不自动替换公司默认条件。当前契约见[数据接入spec](../valuation/data-contract.md#利润率口径取值优先级与展示)，方法及工程登记[E31/E32](../valuation/engine-change-ledger.md#e31e32forecast解析展示及利润率过渡修正2026-10-04)。
+2026-10-04；修复前提交`01fa559`；实现提交`f85cf50`。用户在厘清利润率多路径后要求合理解决forecast参数及估值BUG（含显示），保持前后端一致。本轮不新增合理参数自动选择器，不自动替换公司默认条件。当前契约见[数据接入spec](../valuation/data-contract.md#利润率口径取值优先级与展示)，方法及工程登记[E31/E32](../valuation/engine-change-ledger.md#e31e32forecast解析展示及利润率过渡修正2026-10-04)。
 
 ## 交付与依据
 
@@ -32,4 +32,8 @@
 - 所有重型任务串行置于已核验1GiB独立systemd组，取消测试真实workspace与CI继承，Go配置显式GOPATH/GOCACHE。Go服务峰值896.4MiB，未触发OOM；具体内核读数、CPU及失败日志在动态收据。候选API组亦限制1GiB。
 - 初次测试的失败保留：TypeScript补齐原已存在的年度输入类型及清理未用变量；新增合成夹具缺必填融资/Beta字段；原引擎NaN测试须与更早的typed校验分层；浏览器断言把原生title当DOM浮层、全页Q1当敏感性标签，以及过宽mock误截`src/api`模块，均修正测试定位后通过。比较脚本误设`.18200000000000002`而真实路径为`.182`，改为与请求末年精确比较；没有修改生产金额以迁就测试。
 
-动态证据在`workspace/derived/forecast-consistency/`：`before/after/defaults.jsonl`、三组显式响应、`comparison.json`、资源日志及源码/构建收据。修复前`margin-path-audit`保留。候选API已通过，8080发布及真实网页重开结果将在同页补齐。
+动态证据在`workspace/derived/forecast-consistency/`：`before/after/defaults.jsonl`、三组显式响应、`comparison.json`、资源日志及源码/构建收据。修复前`margin-path-audit`保留。8080已发布并重开：126家全部复验，122份成功响应（除会话ID）与候选逐字段相等，4拒绝保留。真实浏览器验证安克、茅台、苏泊尔输入/敏感性与后端利润率一致；安克目标改20%、清空恢复103.908717797、无效K=0显示422原因且仍为K=5，页面无JS错误。主库在发布前后SHA256相同，SQLite哈希相同；`source-receipt.json`绑定实现、当前构建及验收脚本，`publication.json/browser.json`分别记录API与界面，不把浏览器三家公司泛称全范围逐个原文核验。
+
+发布失败/恢复一并保留：原8080是临时systemd单元，stop后被回收，start找不到单元；按原uvicorn配置和相同SQLite重建临时服务，1GiB硬上限，未安装调度或持久生产部署。最初真实浏览器脚本精确匹配漏掉KB问号及导航编号，核对真实DOM后改为单元格包含文本和已存在链接地址，随后通过；没有为迁就验收改变原页面流程。skill校验的项目解释器缺PyYAML，改用已有系统Python校验通过，未增依赖。失败单元日志均保留，不冒称首轮全通过。
+
+成功后已停止8091候选、清理回滚构建和一次性/tmp脚本/构建产物；路径、哈希及原因在`cleanup.json`。两项此前候选构建残留且无当前引用的旧chunk按哈希清理，当前静态文件保留。运行证据保存在workspace/derived，不写入仓库；旧默认与条件报告可按原提交及已归档输入复验。
