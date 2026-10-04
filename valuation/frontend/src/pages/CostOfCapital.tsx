@@ -493,16 +493,32 @@ export default function CostOfCapital({ data, onPatch }: Props) {
                     Firm has convertible debt
                   </label>
                 </Field>
-                {m.has_convertible && (
+                <p className="text-xs text-gray-500 mb-2">Fill terms before enabling. Book value is included in total debt; face and cash coupon are separate. Irregular payments require exact cashflows via API.</p>
+                {(
                   <div className="grid grid-cols-4 gap-2">
                     <Field label="Book value">
-                      <input type="number" defaultValue={m.convertible_debt.book_value}
-                        onBlur={(e) => patchM('convertible_debt', { ...m.convertible_debt, book_value: parseFloat(e.target.value) || 0 })}
+                      <input type="number" defaultValue={m.convertible_debt.book_value ?? ''}
+                        onBlur={(e) => patchM('convertible_debt', { ...m.convertible_debt, book_value: e.target.value === '' ? null : Number(e.target.value) })}
                         className="w-full border border-gray-300 rounded px-2 py-1 text-sm" />
                     </Field>
-                    <Field label="Interest expense">
-                      <input type="number" defaultValue={m.convertible_debt.interest_expense}
-                        onBlur={(e) => patchM('convertible_debt', { ...m.convertible_debt, interest_expense: parseFloat(e.target.value) || 0 })}
+                    <Field label="Accounting interest">
+                      <input type="number" defaultValue={m.convertible_debt.interest_expense ?? ''}
+                        onBlur={(e) => patchM('convertible_debt', { ...m.convertible_debt, interest_expense: e.target.value === '' ? null : Number(e.target.value) })}
+                        className="w-full border border-gray-300 rounded px-2 py-1 text-sm" />
+                    </Field>
+                    <Field label="Face value">
+                      <input type="number" defaultValue={m.convertible_debt.face_value}
+                        onBlur={(e) => patchM('convertible_debt', { ...m.convertible_debt, face_value: parseFloat(e.target.value) || 0 })}
+                        className="w-full border border-gray-300 rounded px-2 py-1 text-sm" />
+                    </Field>
+                    <Field label="Annual cash coupon">
+                      <input type="number" defaultValue={m.convertible_debt.annual_coupon ?? ''}
+                        onBlur={(e) => patchM('convertible_debt', { ...m.convertible_debt, cashflows: [], annual_coupon: e.target.value === '' ? null : Number(e.target.value) })}
+                        className="w-full border border-gray-300 rounded px-2 py-1 text-sm" />
+                    </Field>
+                    <Field label="Coupons per year">
+                      <input type="number" min="1" max="12" step="1" defaultValue={m.convertible_debt.coupon_frequency}
+                        onBlur={(e) => patchM('convertible_debt', { ...m.convertible_debt, coupon_frequency: Number(e.target.value) })}
                         className="w-full border border-gray-300 rounded px-2 py-1 text-sm" />
                     </Field>
                     <Field label="Maturity (yrs)">
@@ -510,7 +526,7 @@ export default function CostOfCapital({ data, onPatch }: Props) {
                         onBlur={(e) => patchM('convertible_debt', { ...m.convertible_debt, maturity_years: parseFloat(e.target.value) || 0 })}
                         className="w-full border border-gray-300 rounded px-2 py-1 text-sm" />
                     </Field>
-                    <Field label="Total market value">
+                    <Field label="Total dirty market value">
                       <input type="number" defaultValue={m.convertible_debt.market_value}
                         onBlur={(e) => patchM('convertible_debt', { ...m.convertible_debt, market_value: parseFloat(e.target.value) || 0 })}
                         className="w-full border border-gray-300 rounded px-2 py-1 text-sm" />

@@ -284,12 +284,34 @@ class GeographicSegment(BaseModel):
     resolution: SegmentResolution | None = Field(default=None, description="Auto-resolved mapping to Damodaran")
 
 
+class ConvertibleCashFlow(BaseModel):
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    time_years: float = Field(gt=0, le=1000)
+    amount: float = Field(ge=0)
+
+
 class ConvertibleDebt(BaseModel):
-    """Convertible debt inputs for bond-pricing decomposition."""
-    book_value: float = Field(default=0.0)
-    interest_expense: float = Field(default=0.0)
-    maturity_years: float = Field(default=0.0)
-    market_value: float = Field(default=0.0, description="Total market value including conversion option")
+    """同报表币种/单位的转债：账面扣减、合同现金流与含权全价分开。"""
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    book_value: float | None = Field(default=None, ge=0, description='Known carrying amount included in total book debt; explicit zero allowed')
+    interest_expense: float | None = Field(default=None, ge=0, description='Accounting interest included in total interest expense; not cash coupon')
+    face_value: float = Field(default=0, ge=0)
+    annual_coupon: float | None = Field(default=None, ge=0)
+    maturity_years: float = Field(default=0, ge=0, le=1000)
+    coupon_frequency: int = Field(default=1, ge=1, le=12)
+    cashflows: list[ConvertibleCashFlow] = Field(default_factory=list, max_length=10000)
+    discount_rate: float | None = Field(default=None, gt=-1)
+    market_value: float = Field(default=0, ge=0, description='Total dirty market value, including conversion rights')
+    conversion_shares: float = Field(default=0, ge=0, description='Potential new shares; diagnostic only, same unit as current shares')
+
+    @model_validator(mode='after')
+    def schedule(self):
+        times = [r.time_years for r in self.cashflows]
+        if times != sorted(set(times)):
+            raise ValueError('convertible cashflows require unique increasing times')
+        if self.cashflows and self.annual_coupon is not None:
+            raise ValueError('provide exact convertible cashflows or regular annual coupon, never both')
+        return self
 
 
 class PreferredStock(BaseModel):
@@ -677,20 +699,17 @@ class PreparedTTM(BaseModel):
 
 class EquityBridgeInputs(BaseModel):
     """显式估值政策，金额百万元；不写回报表事实。"""
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
     policy_id: str = Field(min_length=1)
     components: dict[str, float]
     operating_ownership: float = Field(ge=0, le=1)
     shares: float = Field(gt=0)
-    conversion_release: float = Field(ge=0)
-    conversion_shares: float = Field(ge=0)
 
     @model_validator(mode="after")
     def finite_values(self):
         if not self.components or not all(math.isfinite(v) for v in [*self.components.values(),
-                self.operating_ownership, self.shares, self.conversion_release, self.conversion_shares]):
+                self.operating_ownership, self.shares]):
             raise ValueError("equity bridge requires finite explicit components")
-        if bool(self.conversion_release) != bool(self.conversion_shares):
-            raise ValueError("conversion release and shares must both be supplied")
         return self
 
 

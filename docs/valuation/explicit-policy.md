@@ -10,6 +10,8 @@
 
 请求旁保存来源版本、定位、哈希、期间、单位、政策理由及批准范围，沿用已有运行证据格式；这些证据不是新增typed字段。动态请求、结果与收据放`workspace/derived/`，不写进源代码或标准财务事实。
 
+存在显式可转债条件时，按[索偿契约](methodology-contract.md#可转债索偿契约)提供合同现金流、全价市值、可比纯债收益率及已含账面余额。纯债与权利扣一次后除现有股数；详细WACC同步拆分，其他融资条件单独审核。缺市场输入不沿用旧转股终局取低或账面期权代理。
+
 ## 折现与融资选择
 
 选择`methodology_choices.cost_of_capital_approach=reference_snapshot`时，下表组件位于`methodology_choices.reference_capital_inputs`。Macro中的币种、无风险率、风险和边际税率假设须同步解释，不能只换初始WACC、保留另一币种的终值参数。

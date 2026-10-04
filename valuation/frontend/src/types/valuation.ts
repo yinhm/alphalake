@@ -157,10 +157,16 @@ export interface GeographicSegment {
 }
 
 export interface ConvertibleDebt {
-  book_value: number;
-  interest_expense: number;
+  book_value: number | null;
+  interest_expense: number | null;
+  face_value: number;
+  annual_coupon: number | null;
   maturity_years: number;
+  coupon_frequency: number;
+  cashflows: { time_years: number; amount: number }[];
+  discount_rate: number | null;
   market_value: number;
+  conversion_shares: number;
 }
 
 export interface PreferredStock {
@@ -473,6 +479,8 @@ export interface ValuationResponse {
   dcf: DCFResult | null;
   multiples: MultiplesResult | null;
   final: FinalValuation | null;
+  equity_bridge?: Record<string, unknown> | null;
+  convertible_claim?: Record<string, unknown> | null;
   warnings: string[];
   source_metadata: Record<string, string>;
   reference_snapshot?: { id?: string; information_as_of?: string };

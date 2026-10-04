@@ -17,6 +17,7 @@ from api.alphalake import evaluate, ENGINE_REVISION
 from data_sources.alphalake import Policy, ScreenPolicy, BookDCFPolicy, HistoricalDCFPolicy, CalibratedHistoricalDCFPolicy, ReviewedHistoricalDCFPolicy, WACCBinding, AlphaLakeRequest, MissingInputs, content_hash
 from data_sources.alphalake_wacc import WACCPolicy, ReferenceSnapshot
 from data_sources.alphalake_capital import CapitalBinding, CapitalPolicy, CapitalReferences
+from engine.data_dictionary import ConvertibleDebt
 
 
 def execution_error_reason(error):
@@ -32,6 +33,7 @@ class Assignment(BaseModel):
     policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy | CalibratedHistoricalDCFPolicy | ReviewedHistoricalDCFPolicy
     wacc_binding: WACCBinding | None = None
     capital_binding: CapitalBinding | None = None
+    convertible_debt: ConvertibleDebt | None = None
 
 
 class IndustryWACCPolicy(WACCPolicy):

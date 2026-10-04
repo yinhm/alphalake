@@ -43,6 +43,7 @@ class ValuationReport:
     final: FinalValuation | None = None
     warnings: list[str] = field(default_factory=list)
     equity_bridge: dict | None = None
+    convertible_claim: dict | None = None
 
 
 def run_full_valuation(
@@ -193,6 +194,32 @@ def run_full_valuation(
     if inputs.equity_bridge is not None:
         from .equity_bridge import apply_equity_bridge
         report.equity_bridge = apply_equity_bridge(report.dcf, inputs.equity_bridge)
+
+    if inputs.methodology_choices.has_convertible:
+        from .equity_bridge import InvalidConvertibleInput, value_convertible
+        policy = inputs.methodology_choices.convertible_debt
+        if raw_current.bv_debt is None or policy.book_value is None or policy.book_value > raw_current.bv_debt:
+            raise InvalidConvertibleInput('convertible carrying amount requires a known inclusive book debt total')
+        risk = report.cost_of_capital
+        split = value_convertible(policy, risk.cost_of_debt_pretax if risk.approach_used == 'detailed' else None)
+        report.convertible_claim = split
+        equity = report.dcf.value_of_equity
+        shares = inputs.equity_bridge.shares if inputs.equity_bridge else raw_current.shares_outstanding
+        if equity is not None and shares is not None and shares > 0:
+            if inputs.equity_bridge is None and risk.approach_used == 'detailed':
+                # M4原桥扣的是含转债账面总债务；详细WACC已有同次市场债务拆分。
+                adjustment = report.adjusted.adjusted_mv_debt - risk.mv_debt_total - split['conversion_rights_value']
+                debt_basis = 'detailed_market_debt_replaces_inclusive_book_bridge'
+            else:
+                adjustment = policy.book_value - split['total_market_value']
+                debt_basis = 'replace_convertible_carrying_claim_only'
+            report.dcf.value_of_equity = equity+adjustment
+            report.dcf.value_per_share_pre_options = (equity+adjustment)/shares
+            split.update(equity_before_revaluation=equity, equity_adjustment=adjustment,
+                equity_after_claims=equity+adjustment, shares=shares, debt_bridge_basis=debt_basis)
+            if report.equity_bridge is not None:
+                report.equity_bridge['per_share'] = report.dcf.value_per_share_pre_options
+        report.warnings.append('Convertible split uses straight-debt PV and dirty-market residual; conversion dilution is already in the rights deduction, no automatic extra shares. Non-detailed WACC remains an explicit financing condition.')
 
     # --- Module 5: Multiples ---
     report.multiples = compute_multiples(

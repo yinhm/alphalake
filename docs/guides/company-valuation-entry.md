@@ -31,6 +31,8 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 
 **已有完整请求**仍用`--explicit-input workspace/derived/native-inputs/company-request.json`替代`--prepare-inputs/--ticker/--overrides`，可重复提供多家公司；文件仅包含`{"inputs": CompanyValuationInput}`。两种模式互斥，不能与`--recipe/--selection-policy`混用。`--web`可选，提供时逐项比对现行完整API的实际输入、DCF、每股结果及参考版本；不改网页。
 
+可转债用同一完整入口：显式设置`methodology_choices.has_convertible=true`及`methodology_choices.convertible_debt`，见[字段与市场拆分](../valuation/methodology-contract.md#可转债索偿契约)。未选择详细WACC时必须独立提供可比纯债收益率。索偿对象须供给账面总债务中已含余额、剩余票面本金、含权全价市值及合同现金流；非等额/非完整期用`cashflows`，不是会计利息。输出读取`convertible_claim`，扣权利后不再全转股摊薄；缺行情不能用旧账面代理取代。原生默认不自动识别或开启。旧专项批次在证券assignment中显式附`convertible_debt`，不是对所有证券增加转债条件。
+
 程序先保存原用户输入及`user_explicit`结果，再组合已有3/5/10年增长收敛、公司三年历史资本代理及后五年稳态资本过渡；同时输出收入规模、逐年净再投资/FCFF及终值审阅。`selected_scenario=null`、`automatic_adoption=false`是正常交付结果，不是要求用户从价格中选胜出者。公司历史缺项留原因，原输入结果与其他可计算条件保留；非十年预测不生成这些增长/资本组合，不强制改成十年。完整组合边界见[显式政策](../valuation/explicit-policy.md)。
 
 已批准研发税务条件使用可选`--research-tax`，适用于上述两种模式及非十年预测。附加`research_tax_current_ratio_ordinary_deduction`：保持当前研发费用/收入比率、普通当期扣除，复用原收入、调整EBIT、总再投资及税率代理；不猜加计扣除资格、不替换用户基线或原显式研发路径。完整API也可直接提供`valuation_assumptions.research_tax`年度费用/扣除及终值首年金额，字段、税率语义和无到期抵亏限制见[研发契约](../valuation/methodology-contract.md#研发预测税务契约)。

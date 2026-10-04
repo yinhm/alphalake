@@ -81,8 +81,19 @@ def test_saved_forecast_review_standard_actuals_and_boundaries(exports):
 
 def request_for(exports,company,scenario='central'):
     code = '300866' if company == 'anker' else '600519'
-    return dict(data=copy.deepcopy(exports[code]),
+    request = dict(data=copy.deepcopy(exports[code]),
                 policy=json.loads((REPO/f'valuation/examples/{company}-2026H1-{scenario}.json').read_text()))
+    if company == 'anker':
+        windows={r['field']:float(r['value'])/1e6 for r in request['data']['windows'] if r['value'] is not None}
+        notes={r['item']:float(r['value'])/(1 if r['unit']=='CNY/share' else 1e6)
+               for r in request['data']['supplements'] if r['period']==request['data']['report_period']}
+        # 合成转债价格/票息条件，只验通用接口，绝不冒称安克实际市场行情。
+        face=notes['convertible_face']
+        request['convertible_debt']=dict(book_value=windows['bonds_payable']+notes['current_bonds'],
+            face_value=face,market_value=face*1.2,discount_rate=.06,
+            cashflows=[dict(time_years=1,amount=face*1.02)],
+            conversion_shares=face/notes['extra_conversion_price'])
+    return request
 
 
 def near(a,b):
@@ -134,8 +145,7 @@ def test_real_http_forecast_bridge_and_replay(exports,tmp_path,monkeypatch,compa
         offset = sum(v for k,v in original.items() if k!='operating_enterprise_value')
         equity = ev+offset
         shares = i['shares']*(1+p['extra_dilution_rate'])
-        price = min(equity/shares,(equity+i['convertible_debt']*p['debt_multiple']+i['convertible_equity_book'])/
-                    (shares+i['convertible_face']/(i['conversion_price']*1e6)))
+        price = (equity+i['convertible_debt']*p['debt_multiple']+i['convertible_equity_book']-req['convertible_debt']['market_value'])/shares
     else:
         minority = -original['operating_minority_proxy']/original['liquor_enterprise_proxy']
         fixed = sum(v for k,v in original.items() if k not in ('liquor_enterprise_proxy','operating_minority_proxy'))
@@ -215,7 +225,8 @@ def test_optional_historical_cashflow_missing_does_not_fake_fcff(exports,tmp_pat
     result=response.json()
     assert result['report']['cashflow']['fcff'] is None
     assert result['inputs']['prepared_ttm']['financials']['capex'] is None
-    near(result['report']['final']['value_per_share'],101.64374605804052)
+    original=run_full_valuation(build_inputs(AlphaLakeRequest.model_validate(request_for(exports,'anker')))[0])
+    near(result['report']['final']['value_per_share'],original.final.value_per_share)
 
 
 def test_unknown_security_has_no_inferred_policy(exports,tmp_path,monkeypatch):
@@ -523,7 +534,7 @@ def test_revised_anker_annual_forecast(exports,reference_export,market_export,tm
     with TestClient(app) as client:
         direct=client.post('/api/valuation/from-alphalake',json=req)
         assert direct.status_code==200,direct.text
-        assert abs(direct.json()['report']['final']['value_per_share']-153.50)<.005
+        assert direct.json()['report']['convertible_claim']['total_market_value']==req['convertible_debt']['market_value']
         bound=market_request(exports,reference_export,market_export,'anker')
         bound['policy']=json.loads((REPO/'valuation/examples/wacc/anker-revised-forecast-policy.json').read_text())
         bound['wacc_binding']['policy']=json.loads((REPO/'valuation/examples/wacc/anker-contractual-debt-policy.json').read_text())
@@ -545,14 +556,16 @@ def test_revised_anker_annual_forecast(exports,reference_export,market_export,tm
             tv=rev*(1+g)*D(str(forecast[-1]['margin']))*(1-D(str(forecast[-1]['tax'])))*(1-g/D(str(p['terminal_roic'])))/(wacc-g)/(1+wacc)**10
             near(float(pv+tv),result['report']['dcf']['value_of_operating_assets'])
             bridge=result['inputs']['equity_bridge'];eq=pv+tv+sum(D(str(x)) for x in bridge['components'].values())
-            plain=eq/D(str(bridge['shares']));converted=(eq+D(str(bridge['conversion_release'])))/(D(str(bridge['shares']))+D(str(bridge['conversion_shares'])))
-            near(float(min(plain,converted)),result['report']['final']['value_per_share'])
+            claim=result['report']['convertible_claim']
+            near(float((eq+D(str(claim['book_value']))-D(str(claim['total_market_value'])))/D(str(bridge['shares']))),result['report']['final']['value_per_share'])
             near(bridge['components']['minority_claim_proxy'],-float(windows['net_income_minority_ytd']*15))
             subprocess.run([sys.executable,str(REPO/'valuation/backend/tools/verify_revised_valuation.py'),str(tmp_path/(result['run_id']+'.json'))],check=True,capture_output=True,text=True)
             assert result['report']['cashflow']['fcff'] is None
         audit=response.json()['audit']['wacc_reference']['market_capital']['debt_valuation']
         bridge=response.json()['inputs']['equity_bridge']
-        near(-bridge['components']['debt_claim_proxy'],float(audit['upper_bound_million_cny']))
+        kd=D(str(audit['discount_rate']));bond=audit['components']['bond']
+        bond_pv=sum(D(bond[i])/(1+kd)**t for i,t in enumerate((0,1,2,5)))
+        near(-bridge['components']['debt_claim_proxy'],float(D(audit['upper_bound_million_cny'])-bond_pv)+req['convertible_debt']['book_value'])
         for case in ('short','tax','growth','legacy_scalar','version','missing_nci','missing_binding'):
             bad=copy.deepcopy(bound)
             if case=='short': bad['policy']['annual_forecast'].pop()
@@ -580,12 +593,12 @@ def test_revised_capital_scenario_moves_cash_and_shares_together(exports,referen
             result=response.json();bridge=result['inputs']['equity_bridge']
             near(bridge['shares'],588.054402*1.01)
             near(bridge['components']['post_report_funding_cash_scenario'],4860.86*.86482*retention)
-            near(bridge['conversion_shares'],1104.6608/108.86)
+            near(result['report']['convertible_claim']['potential_conversion_shares'],1104.6608/108.86)
             audit=result['audit']['wacc_reference']['market_capital']
             equity=(D(audit['common_equity_million_cny'])-sum(D(str(v)) for k,v in bridge['components'].items() if k!='debt_claim_proxy'))
             near(float(equity),result['report']['cost_of_capital']['mv_equity'])
             eq=result['report']['dcf']['value_of_operating_assets']+sum(bridge['components'].values())
-            expected=min(eq/bridge['shares'],(eq+bridge['conversion_release'])/(bridge['shares']+bridge['conversion_shares']))
+            expected=(eq+req['convertible_debt']['book_value']-req['convertible_debt']['market_value'])/bridge['shares']
             near(expected,result['report']['final']['value_per_share'])
             assert result['audit']['capital_scenario']['conversion_terms_period']=='2026-06-30'
             subprocess.run([sys.executable,str(REPO/'valuation/backend/tools/verify_revised_valuation.py'),str(tmp_path/(result['run_id']+'.json'))],check=True,capture_output=True,text=True)
@@ -603,7 +616,7 @@ def test_batch_keeps_denominator_and_isolates_missing_inputs(exports,tmp_path,mo
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
     requests=[request_for(exports,c) for c in ('anker','moutai')]
     policy=BatchPolicy(policy_version='reviewed-two-company-v1',review_note='真实标准链测试',
-        assignments={r['data']['code']:dict(policy=r['policy']) for r in requests})
+        assignments={r['data']['code']:dict(policy=r['policy'],convertible_debt=r.get('convertible_debt')) for r in requests})
     companies=[]
     for request,symbol in zip(requests,['sz300866','sh600519']):
         companies.append(dict(instrument_id=request['data']['facts'][0]['instrument_id'],name=symbol,
@@ -891,6 +904,7 @@ def test_generic_reference_wacc_real_chain(exports,reference_export,tmp_path,mon
     monkeypatch.setenv('ALPHALAKE_VALUATION_RUN_DIR',str(tmp_path))
     req=reference_request(exports,reference_export,'anker')
     policy=json.loads((REPO/'valuation/examples/nonfinancial-history-template.json').read_text())
+    req.pop('convertible_debt')
     policy.pop('wacc')
     policy['nonfinancial_scope_review']='安克合并普通经营模型回归；不是公司预测建议'
     if kind=='screen':
@@ -1084,6 +1098,7 @@ def test_company_entry_selection_summary_and_no_fallback(exports,tmp_path,monkey
     generic=BatchPolicy(policy_version='industry-v1',review_note='synthetic industry routing; real financial input',assignments={},industry_rules=[dict(
         rule_id='test',source='tdx',taxonomy_code='tdx_industry',node_codes=['test'],max_age_days=30,review_note='test only',policy=profile)])
     specific=BatchPolicy(policy_version='anker-v2',review_note='reviewed company policy',assignments={'300866':dict(
+        convertible_debt=request_for(exports,'anker')['convertible_debt'],
         policy=json.loads((REPO/'valuation/examples/anker-2026H1-revised.json').read_text()))})
     calls=[]
     def export(code):calls.append(code);return exports[code]
@@ -1098,7 +1113,8 @@ def test_company_entry_selection_summary_and_no_fallback(exports,tmp_path,monkey
     assert result['selection']==dict(policy_version='anker-v2',reason='configured_company_assignment_precedes_industry',fallback_applied=False)
     assert len(result['candidates'])==2
     assert result['valuation']['policy_id']=='anker-consolidated-v2'
-    assert round(result['valuation']['value_per_share']['value'],2)==153.50
+    # 同一预测的新索偿基线；所用转债行情是显式合成条件。
+    assert round(result['valuation']['value_per_share']['value'],2)==153.93
     assert result['valuation']['value_per_share']['unit']=='CNY/share'
     assert result['valuation']['share_date']==data['report_period']
     assert result['valuation']['historical_fcff_status'] is not None
@@ -1258,7 +1274,7 @@ def test_run_query_retains_ties_duplicates_and_corruption(exports,tmp_path,monke
     a=evaluate(AlphaLakeRequest(data=exports['300866'],policy=p))
     b=evaluate(AlphaLakeRequest(data=exports['300866'],policy=p|dict(wacc=.09)))
     revised=json.loads((REPO/'valuation/examples/anker-2026H1-revised.json').read_text())
-    c=evaluate(AlphaLakeRequest(data=exports['300866'],policy=revised))
+    c=evaluate(AlphaLakeRequest(data=exports['300866'],policy=revised,convertible_debt=request_for(exports,'anker')['convertible_debt']))
     snapshot={f.name:f.read_bytes() for f in first.iterdir()}
     # 修改mtime不改变信息截止下的并列；不运行引擎便能查询既有结果。
     os.utime(first/(a['run_id']+'.json'),(1,1))

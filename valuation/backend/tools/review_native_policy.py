@@ -155,6 +155,10 @@ def review_report(body, annual_evidence=None):
     for field in ('ltm_financials', 'adjusted', 'cost_of_capital', 'cashflow', 'dcf', 'final'):
         if getattr(replay, field).model_dump(mode='json') != body[field]:
             raise ValueError('saved report does not replay: ' + field)
+    if replay.convertible_claim != body.get('convertible_claim'):
+        raise ValueError('saved report does not replay: convertible_claim')
+    if replay.equity_bridge != body.get('equity_bridge'):
+        raise ValueError('saved report does not replay: equity_bridge')
     raw, adjusted, dcf = replay.ltm_financials, replay.adjusted, replay.dcf
     a = inputs.valuation_assumptions
     previous_revenue = raw.revenues
@@ -492,6 +496,7 @@ def methodology_review(inputs, report, review):
     base_value, counter_value = report.final.value_per_share, counter.final.value_per_share if counter else None
     return dict(version='native-methodology-v1', automatic_adoption=False,
         economic_basis='not_established_by_arithmetic', findings=findings,
+        convertible_claim=report.convertible_claim,
         input_selection=dict(financial_period=inputs.period_date_10k, latest_period=inputs.period_date_10q,
             financial_currency=inputs.reporting_currency, listing_currency=inputs.stock_price_currency,
             historical_fcff_required=False, missing_historical_cashflow=review['capital']['missing_historical_cashflow_inputs'],

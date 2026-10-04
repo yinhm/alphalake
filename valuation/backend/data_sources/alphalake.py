@@ -14,7 +14,7 @@ from data_sources.alphalake_wacc import WACCBinding, resolve_wacc
 from data_sources.alphalake_capital import CapitalBinding, resolve_capital
 from data_sources.alphalake_calibration import FirstYearCalibration
 from engine.data_dictionary import (CompanyValuationInput, PreparedTTM, RawFinancials,
-    MacroInputs, IndustryData, MethodologyChoices, ValuationAssumptions, EquityBridgeInputs, ForecastYear)
+    MacroInputs, IndustryData, MethodologyChoices, ValuationAssumptions, EquityBridgeInputs, ForecastYear, ConvertibleDebt)
 
 
 class Snapshot(BaseModel):
@@ -244,9 +244,12 @@ class AlphaLakeRequest(BaseModel):
     policy: Policy | ScreenPolicy | BookDCFPolicy | HistoricalDCFPolicy | CalibratedHistoricalDCFPolicy | ReviewedHistoricalDCFPolicy
     wacc_binding: WACCBinding | None = None
     capital_binding: CapitalBinding | None = None
+    convertible_debt: ConvertibleDebt | None = None
 
     @model_validator(mode='after')
     def wacc_source(self):
+        if self.convertible_debt is not None and (not isinstance(self.policy, Policy) or not self.policy.policy_id.startswith('anker-')):
+            raise ValueError('this snapshot adapter accepts convertible claims only with the reviewed Anker bridge; use full typed API for other explicit claims')
         if isinstance(self.policy, BookDCFPolicy):
             if (self.capital_binding is None) == (self.policy.sales_to_capital is None):
                 raise ValueError('provide either direct sales-to-capital or reference binding, never both or neither')
@@ -431,7 +434,7 @@ def build_inputs(request: AlphaLakeRequest):
         return note(item) if d.report_period.month == 12 else note(item,annual)+note(item)-note(item,prior)
 
     required_windows = ('revenue operating_profit_cumulative interest_expense interest_income investment_income fair_value_change_income asset_disposal_income total_shares '+
-        ('depreciation_depletion intangible_amortization deferred_expense_amortization investment_property_depreciation_amortization right_of_use_depreciation monetary_funds cash_and_cash_equivalents long_term_equity_investments noncontrolling_interests short_term_borrowings long_term_borrowings bonds_payable lease_liabilities provisions other_equity_instruments total_equity' if anker else
+        ('depreciation_depletion intangible_amortization deferred_expense_amortization investment_property_depreciation_amortization right_of_use_depreciation monetary_funds cash_and_cash_equivalents long_term_equity_investments noncontrolling_interests short_term_borrowings long_term_borrowings bonds_payable lease_liabilities provisions total_equity' if anker else
          'financial_business_interest_income financial_business_interest_expense financial_business_fee_expense credit_impairment_income net_income_minority_ytd monetary_funds funds_lent financial_assets_purchased_under_resale_agreements noncurrent_assets_due_within_one_year loans_and_advances_noncurrent debt_investments other_debt_investments other_noncurrent_financial_assets long_term_equity_investments deposits_and_interbank_placements current_portion_noncurrent_liabilities lease_liabilities')).split()
     if revised: required_windows.append('net_income_minority_ytd')
     missing = ['TDX/'+f for f in required_windows if f not in windows or windows[f].get('coverage_status') != 'complete' or windows[f].get('value') is None]
@@ -461,13 +464,20 @@ def build_inputs(request: AlphaLakeRequest):
         minority_claim = w['net_income_minority_ytd']*p['minority_earnings_multiple'] if revised else w['noncontrolling_interests']*p['minority_multiple']
         if minority_claim<0: raise ValueError('negative minority earnings cannot value the claim with this policy')
         components = dict(excess_cash=excess,financial_assets_after_haircut=investments+risky*p['investment_recovery'],
-            debt_claim_proxy=-debt*p['debt_multiple'],minority_claim_proxy=-minority_claim,
-            convertible_option_book_proxy=-w['other_equity_instruments'],existing_other_claims=-claims)
+            debt_claim_proxy=-(debt-convertible)*p['debt_multiple']-convertible,minority_claim_proxy=-minority_claim,
+            existing_other_claims=-claims)
         conversion_price, face = note('extra_conversion_price'), note('convertible_face')
         if conversion_price <= 0 or face <= 0:
             raise ValueError('positive conversion price and remaining face required')
+        cd = request.convertible_debt
+        if cd is None:
+            raise MissingInputs(['convertible_debt.market_value_and_contractual_cashflows'])
+        if (cd.book_value is None or not math.isclose(cd.book_value,convertible,rel_tol=1e-10,abs_tol=1e-7)
+                or not math.isclose(cd.face_value,face,rel_tol=1e-10,abs_tol=1e-7)
+                or not math.isclose(cd.conversion_shares,face/conversion_price,rel_tol=1e-10,abs_tol=1e-7)):
+            raise ValueError('convertible carrying amount, face and conversion shares differ from reviewed report terms')
         bridge = EquityBridgeInputs(policy_id=policy.policy_id,components=components,operating_ownership=1,
-            shares=shares*(1+p['extra_dilution_rate']),conversion_release=convertible*p['debt_multiple']+w['other_equity_instruments'],conversion_shares=face/conversion_price)
+            shares=shares*(1+p['extra_dilution_rate']))
         raw = RawFinancials(fiscal_year=d.report_period.year,revenues=revenue,ebit=ebit,d_a=da,
             capex=window('capital_expenditure_cash',False),r_and_d_expense=window('research_and_development_expense',False),bv_equity=w['total_equity']-w['noncontrolling_interests'],consolidated_book_equity=w['total_equity'],
             bv_debt=debt,cash_and_marketable_securities=w['cash_and_cash_equivalents'],minority_interests=w['noncontrolling_interests'],shares_outstanding=shares)
@@ -488,7 +498,7 @@ def build_inputs(request: AlphaLakeRequest):
         components = {k:v*ownership for k,v in pool.items()}
         components['owned_finance_equity_value'] = finance_equity*p['finance_ownership']*p['finance_pb']
         bridge = EquityBridgeInputs(policy_id=policy.policy_id,components=components,operating_ownership=ownership,
-            shares=shares,conversion_release=0,conversion_shares=0)
+            shares=shares)
         raw = RawFinancials(fiscal_year=d.report_period.year,revenues=revenue,ebit=ebit,shares_outstanding=shares)
     if request.wacc_binding is not None:
         reference_components, reference_audit = resolve_wacc(request.wacc_binding, d.code, d.report_period, d.information_as_of, scope="consolidated" if anker else "liquor_proxy", ebit=ebit, interest=w['interest_expense'], debt=debt if anker else w['current_portion_noncurrent_liabilities']+w['lease_liabilities'], bridge=bridge, note=note)
@@ -500,11 +510,10 @@ def build_inputs(request: AlphaLakeRequest):
         debt_value = market.get('debt_valuation') if market else None
         if not debt_value or debt_value['selected_bound']!='upper':
             raise ValueError('reviewed contractual debt upper bound required for equity bridge')
-        bridge.components['debt_claim_proxy']=-float(debt_value['upper_bound_million_cny'])
         bond=debt_value['components']['bond']
         rate=Decimal(1)+Decimal(str(debt_value['discount_rate']))
         bond_pv=sum(Decimal(bond[i])/rate**t for i,t in enumerate((0,1,2,5)))
-        bridge.conversion_release=float(bond_pv)+w['other_equity_instruments']
+        bridge.components['debt_claim_proxy']=-float(debt_value['upper_bound_million_cny'])+float(bond_pv)-convertible
     capital_audit=None
     if revised:
         market=reference_audit.get('market_capital') if reference_audit else None
@@ -532,6 +541,9 @@ def build_inputs(request: AlphaLakeRequest):
             provenance={'alphalake_snapshot':content_hash(d.model_dump(mode='json')),'valuation_policy':content_hash(policy.model_dump(mode='json'))}),
         equity_bridge=bridge,macro_inputs=MacroInputs(risk_free_rate=.03,equity_risk_premium=.06,tax_rate_effective=p['tax_start'],tax_rate_marginal=p['tax_terminal']),
         industry_data=IndustryData(industry_name='unused_direct_wacc',beta_u=0),methodology_choices=MethodologyChoices(cost_of_capital_approach='direct',wacc_direct_input=p['wacc']),valuation_assumptions=assumptions)
+    if anker:
+        inputs.methodology_choices.has_convertible = True
+        inputs.methodology_choices.convertible_debt = request.convertible_debt
     audit = dict(consumed_inputs=consumed,source='alphalake',
         required_input_count=len(required_windows)+len(required_notes),
         available_required_input_count=len(required_windows)+len(required_notes),
@@ -549,7 +561,8 @@ def build_inputs(request: AlphaLakeRequest):
         audit['debt_basis']=policy.debt_basis
         audit['minority_basis']='TTM minority income times explicit policy multiple'
     if reference_components is not None:
-        inputs.methodology_choices = MethodologyChoices(cost_of_capital_approach='reference_snapshot', reference_capital_inputs=reference_components)
+        inputs.methodology_choices = MethodologyChoices(cost_of_capital_approach='reference_snapshot', reference_capital_inputs=reference_components,
+            has_convertible=anker,convertible_debt=request.convertible_debt if anker else ConvertibleDebt())
         inputs.macro_inputs.risk_free_rate = reference_components.risk_free_rate
         inputs.macro_inputs.equity_risk_premium = reference_components.mature_market_erp
         audit['wacc_reference'] = reference_audit
@@ -644,7 +657,7 @@ def build_book_dcf_inputs(d, policy):
         minority_book_proxy=-values['noncontrolling_interests']*policy.minority_book_multiple,
         additional_claims_scenario=-policy.additional_claims_million_cny)
     inputs.equity_bridge=EquityBridgeInputs(policy_id=policy.policy_id,components=components,operating_ownership=1,
-        shares=values['total_shares']*(1+policy.extra_dilution_rate),conversion_release=0,conversion_shares=0)
+        shares=values['total_shares']*(1+policy.extra_dilution_rate))
     inputs.valuation_assumptions=ValuationAssumptions(projection_years=10,high_growth_years=5,
         annual_forecast=policy.annual_forecast,sales_to_capital_high=policy.sales_to_capital,
         sales_to_capital_stable=policy.sales_to_capital,override_reinvestment_lag=True,reinvestment_lag_years=0,

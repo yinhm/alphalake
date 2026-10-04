@@ -120,7 +120,7 @@ def verify(run):
             components['reviewed_asset_'+rule['field']] = (expected-restricted)/1000000*D(str(rule['recovery']))
     shares = w['total_shares']*(1+D(str(p['extra_dilution_rate']))); equity = ev+sum(components.values()); value = equity/shares
     bridge = run['inputs']['equity_bridge']
-    if set(bridge['components']) != set(components) or bridge['operating_ownership'] != 1 or bridge['conversion_release'] != 0 or bridge['conversion_shares'] != 0:
+    if set(bridge['components']) != set(components) or bridge['operating_ownership'] != 1:
         raise ValueError('unsupported equity bridge')
     for key,amount in components.items(): near(bridge['components'][key],amount,key)
     near(bridge['shares'],shares,'diluted shares')

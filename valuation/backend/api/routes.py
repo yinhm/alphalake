@@ -264,6 +264,8 @@ def _report_to_dict(session) -> dict:
         "dcf": r.dcf.model_dump() if r.dcf else None,
         "multiples": r.multiples.model_dump() if r.multiples else None,
         "final": r.final.model_dump() if r.final else None,
+        "equity_bridge": r.equity_bridge,
+        "convertible_claim": r.convertible_claim,
         "warnings": list(dict.fromkeys(r.warnings + (session.valuation_proxy or {}).get("limitations", []))),
         "valuation_proxy": session.valuation_proxy,
         "reference_snapshot": session.reference_store.reference_snapshot,

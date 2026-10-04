@@ -469,22 +469,34 @@ def compute_cost_of_capital(
     mv_conv_straight = 0.0
     equity_in_conv = 0.0
     debt_for_pricing = book_debt
+    interest_for_pricing = interest_expense
+    if m.has_convertible:
+        from .equity_bridge import InvalidConvertibleInput, value_convertible
+        cd = m.convertible_debt
+        if cd.book_value is None or cd.book_value > book_debt:
+            raise InvalidConvertibleInput('convertible carrying amount/interest exceeds the inclusive debt/interest total')
+        if m.use_bond_pricing_for_debt and (cd.interest_expense is None or cd.interest_expense > interest_expense):
+            raise InvalidConvertibleInput('pricing remaining debt requires the convertible accounting interest included in the total')
+        split = value_convertible(cd, kd_pretax)
+        mv_conv_straight = split['straight_debt_value']
+        equity_in_conv = split['conversion_rights_value']
+        debt_for_pricing -= cd.book_value
+        if m.use_bond_pricing_for_debt:
+            interest_for_pricing -= cd.interest_expense
     if debt_for_pricing > 0:
-        if m.use_bond_pricing_for_debt and interest_expense > 0 and m.debt_maturity_years > 0:
-            mv_straight = _bond_price_of_debt(debt_for_pricing, interest_expense, kd_pretax, m.debt_maturity_years)
+        if m.use_bond_pricing_for_debt and interest_for_pricing > 0 and m.debt_maturity_years > 0:
+            mv_straight = _bond_price_of_debt(debt_for_pricing, interest_for_pricing, kd_pretax, m.debt_maturity_years)
         else:
             mv_straight = debt_for_pricing  # explicit book-value proxy
 
-    if m.has_convertible and m.convertible_debt.book_value > 0:
-        cd = m.convertible_debt
-        mv_conv_straight = _bond_price_of_debt(cd.book_value, cd.interest_expense, kd_pretax, cd.maturity_years or 1.0)
-        equity_in_conv = max(0.0, cd.market_value - mv_conv_straight)
-
     mv_leases = adjusted.pv_of_operating_leases or 0.0
     mv_debt_total = mv_straight + mv_conv_straight + mv_leases
+    if m.has_convertible and mv_debt_total > 0 and split['discount_rate'] != kd_pretax:
+        kd_pretax = ((mv_straight+mv_leases)*kd_pretax + mv_conv_straight*split['discount_rate'])/mv_debt_total
+        kd_branch += '; convertible_split_weighted_debt_cost'
 
     # --- MV of equity ---
-    mv_equity_val = float(mv_equity or 0.0)
+    mv_equity_val = float(mv_equity or 0.0) + equity_in_conv
 
     # --- MV of preferred ---
     mv_preferred = 0.0
