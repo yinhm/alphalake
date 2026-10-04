@@ -20,6 +20,8 @@ from tools.compare_valuations import changes
 
 def prepare(baseline, references, recipe, metadata, revenue_facts):
     inputs = CompanyValuationInput.model_validate(baseline['inputs'])
+    if inputs.valuation_assumptions.debt_tax_shield is not None:
+        raise ValueError('do not overwrite explicit future financing with a two-stage reference policy')
     if inputs.reporting_currency != 'CNY' or inputs.stock_price_currency != 'CNY' or not inputs.ticker.startswith(('SHSE:', 'SZSE:')):
         raise ValueError('CNY SH/SZ company required')
     if baseline['reference_snapshot']['id'] != metadata['reference_snapshot_id']:

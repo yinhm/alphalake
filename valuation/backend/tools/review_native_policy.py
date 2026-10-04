@@ -483,7 +483,8 @@ def methodology_review(inputs, report, review):
         'target_operating_margin','sales_to_capital_high','sales_to_capital_stable',
         'cost_of_capital_stable_override','roic_stable_override') if getattr(a,name) is None
         and not (a.annual_forecast is not None and name in ('revenue_growth_next_year','operating_margin_next_year','target_operating_margin'))
-        and not (a.annual_sales_to_capital is not None and name in ('sales_to_capital_high','sales_to_capital_stable'))]
+        and not (a.annual_sales_to_capital is not None and name in ('sales_to_capital_high','sales_to_capital_stable'))
+        and not (a.debt_tax_shield is not None and name == 'cost_of_capital_stable_override')]
     flag('model_defaults_require_explicit_economic_basis', bool(defaults))
     scenario = inputs.model_copy(deep=True)
     scenario.valuation_assumptions.roic_stable_override = terminal['wacc']

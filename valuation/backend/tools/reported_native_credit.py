@@ -44,6 +44,8 @@ def compare(baseline, evidence, policy):
     def reject(reason):
         row['reason']=reason
         return row
+    if inputs.valuation_assumptions.debt_tax_shield is not None:
+        return reject('explicit_future_financing_not_replaced_by_initial_credit_condition')
     if inputs.reporting_currency!='CNY' or inputs.country!='China' or inputs.methodology_choices.cost_of_capital_approach!='reference_snapshot':
         return reject('requires_explicit_CNY_China_reference_capital_inputs')
     if inputs.adjustment_inputs.has_operating_leases:

@@ -158,6 +158,8 @@ M4输出逐年`research_amortization_projections`、`tax_base_projections`、`ca
 
 只交付用户选择的整体WACC及对应债务分量，不自动推算Ke、Beta或融资结构；二者的经济一致性由显式政策说明。M2继续表示当前资本成本，DCF未来路径单独供给；长期融资不因NOL耗尽另换权重。未提供分量的整体WACC不自动拆分；提供路径也不把f认证成真实边际扣除。无债务分量时不额外调整WACC；FCFF不重复加入融资利息节税。
 
+已有完整未来融资路径优先，旧两阶段参考准备/自动选择明确拒绝替换，报表信用附加条件保留范围外原因及空候选；原完整CLI/API仍可估值，增长及研发对照继续沿所供融资。审阅不再把显式长期WACC误标为继承默认。
+
 结果增加`debt_tax_shield_spreads`及`terminal_debt_tax_shield_spread`，与可用比例、WACC调整及`tax_shield_basis`解释实际折现。普通及研发均标`terminal_nol_treatment=unlimited_carryforward_without_expiry_valued_in_tax_tail`，含义是规则已承接，不是余额全已实现。稳态金额和首年实际条件值保持分开；终值=正常化Gordon+税务过渡差额。无效税率、亏损及融资路径返回422，PATCH失败保留会话。
 
 原始依据：[达摩达兰第10章，第7—9页](https://pages.stern.nyu.edu/~adamodar/pdfiles/valn2ed/ch10.pdf)、[税率与NOL问答](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/taxrate.htm)。抵亏节税按利用时点计价，经营现金税与融资税盾配套；无到期、平均比例和未来融资均为本地条件。回归见`test_nol_terminal_tax.py`，旧输入与证据在`workspace/derived/nol-tax-terminal/`。

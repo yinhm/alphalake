@@ -1,6 +1,8 @@
 """普通亏损尾部与显式融资路径：独立逐年现金流、解析算例及API拒绝。"""
 from copy import deepcopy
+import json
 import math
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -144,7 +146,8 @@ def test_api_tax_rejection_preserves_session_and_review_uses_valued_tail(monkeyp
             assert client.get('/api/valuation/'+sid).json() == saved
         year=dict(normal_wacc=.09,debt_weight=.2,cost_of_debt_pretax=.06,tax_shield_rate=.25)
         valid=client.patch('/api/valuation/'+sid,json={'overrides':{
-            'valuation_assumptions.debt_tax_shield':dict(policy_id='user-financing',years=[year],terminal=year)}})
+            'valuation_assumptions.debt_tax_shield':dict(policy_id='user-financing',years=[year],terminal=year),
+            'valuation_assumptions.cost_of_capital_stable_override':None}})
         assert valid.status_code == 200, valid.text
         changed=valid.json()
         assert changed['dcf']['fcff_projections'] == saved['dcf']['fcff_projections']
@@ -152,3 +155,15 @@ def test_api_tax_rejection_preserves_session_and_review_uses_valued_tail(monkeyp
         reviewed=review_report(changed)
         assert 'tax_shield_path_uses_constant_initial_debt_component' not in reviewed['methodology']['findings']
         assert reviewed['methodology']['terminal_wacc']['explicit_financing_policy']['policy_id'] == 'user-financing'
+        assert 'cost_of_capital_stable_override' not in reviewed['methodology']['input_selection']['assumed_defaults']
+        from tools.evaluate_native_policy import prepare
+        from tools.reported_native_credit import compare
+        from tools.select_native_assumptions import select
+        policy=json.loads((Path(__file__).resolve().parents[4]/'valuation/examples/native-assumption-selection.json').read_text())
+        with pytest.raises(ValueError,match='financing'):
+            prepare(changed,{}, {}, {}, [])
+        with pytest.raises(ValueError,match='financing'):
+            select(changed,changed['inputs'],[],'2026-10-04T00:00:00+00:00',policy)
+        credit=compare(changed,{'rows':{}},{})
+        assert credit['reason'] == 'explicit_future_financing_not_replaced_by_initial_credit_condition'
+        assert credit['variants'] == {}
