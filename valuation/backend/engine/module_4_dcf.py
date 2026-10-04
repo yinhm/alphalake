@@ -1,5 +1,5 @@
 """
-Module 4: Intrinsic Valuation (DCF) — Ginzu-faithful implementation.
+Module 4: Intrinsic Valuation (DCF) — Ginzu paths with an explicit R&D tax bridge.
 
 Projects FCFF through high-growth and transition periods per ginzu_spec_v2.md §6,
 computes Gordon terminal value, discounts at a year-by-year cumulative factor,
@@ -12,7 +12,8 @@ Key mechanics that differ from the previous implementation:
   - Operating Income = Revenue × Margin (NOT compounded EBIT)
   - Margin path linearly converges from operating_margin_next_year to target over K years
   - Tax path: flat effective for years 1–5, linear convergence to marginal for 6–10
-  - Dynamic NOL carryforward with NOPAT = EBIT − max(0, EBIT−NOL_start) × rate
+  - Dynamic NOL carryforward on the selected tax base; NOPAT = economic EBIT − cash tax
+  - Explicit R&D cohorts/deductions and terminal tax transition when supplied
   - Reinvestment = ΔRevenue / Sales-to-Capital with lag (0–3 years)
   - WACC path: flat for years 1–5, linear convergence to terminal for 6–10
   - Cumulative discount factors built year-by-year
@@ -35,7 +36,9 @@ from .data_dictionary import (
     ValuationAssumptions,
     DCFResult,
     MacroInputs,
+    AdjustmentInputs,
 )
+from .module_1_adjustments import capitalize_r_and_d
 
 
 # ---------------------------------------------------------------------------
@@ -48,6 +51,10 @@ class InvalidTerminalValue(ValueError):
 
 class InvalidReinvestment(ValueError):
     """收入增量法缺少有效的资本效率，不能据此把投入归零。"""
+
+
+class InvalidResearchTax(ValueError):
+    """研发税基桥缺队列或有效税率，不输出隐含税务利益。"""
 
 
 def _revenue_growth_path(
@@ -141,33 +148,84 @@ def _apply_nol_and_tax(
     ebit_path: list[float],
     tax_path: list[float],
     nol_initial: float,
+    tax_base_path: list[float] | None = None,
 ) -> tuple[list[float], list[float]]:
-    """Dynamic NOL carryforward. Returns (nopat_path, nol_end_path).
+    """现金税=max(0,税基−期初亏损)×税率；NOPAT=经济EBIT−税。
 
-    For each year t:
-      - If EBIT_t < 0: NOL grows (nol_end = nol_start − ebit_t, since ebit negative).
-        NOPAT = ebit_t (loss, no tax).
-      - Else: taxable = max(0, ebit_t − nol_start);
-              tax = taxable × rate_t;
-              nol_end = max(0, nol_start − ebit_t);
-              NOPAT = ebit_t − tax.
+    无到期或抵扣上限；未显式桥接时税基代理为EBIT，亏损按税基滚动。
     """
     nopat_path = []
     nol_path = []
     nol_end = nol_initial
-    for t_idx, ebit_t in enumerate(ebit_path):
-        rate = tax_path[t_idx]
+    bases = ebit_path if tax_base_path is None else tax_base_path
+    for ebit_t, base, rate in zip(ebit_path, bases, tax_path, strict=True):
         nol_start = nol_end
-        if ebit_t < 0:
-            nol_end = nol_start - ebit_t  # ebit negative so nol grows
-            nopat_path.append(ebit_t)
-        else:
-            taxable = max(0.0, ebit_t - nol_start)
-            tax_paid = taxable * rate
-            nol_end = max(0.0, nol_start - ebit_t)
-            nopat_path.append(ebit_t - tax_paid)
+        tax_paid = max(0.0, base - nol_start) * rate
+        nol_end = max(0.0, nol_start - base)
+        nopat_path.append(ebit_t - tax_paid)
         nol_path.append(nol_end)
     return nopat_path, nol_path
+
+
+def _nol_terminal_value(fcff, tax_base, tax, nol, growth, wacc, shield_spread):
+    """已达研发稳态的尾部；无到期/抵扣上限NOL，解析求抵亏年数，无截断。"""
+    if tax_base <= 0 or tax <= 0 or nol <= 0:
+        return fcff / (wacc - growth)
+    no_shield_wacc = wacc + shield_spread
+    untaxed_fcff = fcff + tax_base * tax
+    if growth < 0 and nol >= tax_base / -growth:
+        return untaxed_fcff / (no_shield_wacc - growth)
+    # Fully sheltered years, followed by at most one partially sheltered year.
+    if growth == 0:
+        years = math.floor(nol / tax_base)
+        used = tax_base * years
+        scale = 1.0
+    else:
+        years = max(0, math.floor(math.log1p(nol * growth / tax_base) / math.log1p(growth)))
+        scale = (1 + growth) ** years
+        used = tax_base * math.expm1(years * math.log1p(growth)) / growth
+    remaining = max(0.0, nol - used)
+    base_next = tax_base * scale
+    fraction = max(0.0, base_next - remaining) / base_next
+    partial_wacc = wacc + shield_spread * (1 - fraction)
+    ratio = (1 + growth) / (1 + no_shield_wacc)
+    full_pv = untaxed_fcff / (no_shield_wacc - growth) * (1 - ratio ** years)
+    # Discount the growth factor as a ratio, avoiding overflow for long NOL tails.
+    partial_and_tail = (fcff + min(remaining / base_next, 1.0) * tax_base * tax
+        + fcff * (1 + growth) / (wacc - growth)) / (1 + partial_wacc)
+    return full_pv + ratio ** years * partial_and_tail
+
+
+def _research_terminal(ebit, forecast, cohorts, life, growth, tax, nol, wacc, spread, roic_override):
+    """先逐年替换旧研发队列，再解析计价NOL尾部；临时税收利益不增加经营再投资。"""
+    expense, deduction = forecast.terminal_expense, forecast.terminal_deduction
+    amort = expense * sum((1 + growth) ** -i for i in range(1, life + 1)) / life
+    base = ebit + amort - deduction
+    normal_tax = max(0.0, base) * tax
+    normal_wacc = wacc + (spread if base <= 0 or tax <= 0 else 0.0)
+    roic = roic_override if roic_override is not None else normal_wacc
+    nopat = ebit - normal_tax
+    investment = nopat * growth / roic
+    fcff = nopat - investment
+    discount, value, scale = 1.0, 0.0, 1.0
+    first_base = first_tax = None
+    cohorts = list(cohorts)
+    for _ in range(life):
+        actual_base = ebit * scale + sum(cohorts) / life - deduction * scale
+        cash_tax = max(0.0, actual_base - nol) * tax
+        fraction = max(0.0, actual_base - nol) / actual_base if actual_base > 0 and tax > 0 else 0.0
+        nol = max(0.0, nol - actual_base)
+        discount /= 1 + wacc + spread * (1 - fraction)
+        value += (ebit * scale - cash_tax - investment * scale) * discount
+        if first_base is None:
+            first_base, first_tax = actual_base, cash_tax
+        cohorts = [expense * scale, *cohorts[:life-1]]
+        scale *= 1 + growth
+    value += discount * _nol_terminal_value(fcff * scale, base * scale, tax, nol,
+        growth, normal_wacc, spread if base > 0 and tax > 0 else 0.0)
+    return dict(value=value, wacc=normal_wacc, roic=roic, tax_base=base, cash_tax=normal_tax,
+        nopat=nopat, investment=investment, fcff=fcff,
+        transition_value=value-fcff/(normal_wacc-growth), first_base=first_base, first_tax=first_tax)
 
 
 def _reinvestment_path(
@@ -217,6 +275,7 @@ def compute_dcf(
     raw: RawFinancials,
     assumptions: ValuationAssumptions,
     macro: MacroInputs,
+    *, adjustment_inputs: AdjustmentInputs | None = None,
 ) -> DCFResult:
     # --- Resolve structural parameters ---
     n = assumptions.projection_years or 10
@@ -343,7 +402,31 @@ def compute_dcf(
     ebit_projections = [revenue_projections[i] * margin_path_vals[i] for i in range(n)]
 
     # --- NOPAT with dynamic NOL ---
-    nopat_projections, nol_projections = _apply_nol_and_tax(ebit_projections, tax_path_vals, nol_initial)
+    research_tax = assumptions.research_tax
+    amortization_path = []
+    tax_base_projections = list(ebit_projections)
+    cohorts = []
+    if research_tax is not None:
+        if (adjustment_inputs is None or not adjustment_inputs.has_r_and_d
+                or adjustment_inputs.amortization_period_n < 1
+                or len(adjustment_inputs.r_and_d_expense_past) < adjustment_inputs.amortization_period_n
+                or any(not math.isfinite(v) or v < 0 for v in
+                    [adjustment_inputs.r_and_d_expense_current,
+                     *adjustment_inputs.r_and_d_expense_past[:adjustment_inputs.amortization_period_n]])):
+            raise InvalidResearchTax('research tax forecast requires the complete selected research cohort')
+        if any(not math.isfinite(t) or not 0 <= t <= 1 for t in [*tax_path_vals, tax_terminal]):
+            raise InvalidResearchTax('research tax rates must be finite and between zero and one')
+        life = adjustment_inputs.amortization_period_n
+        cohorts = [adjustment_inputs.r_and_d_expense_current, *adjustment_inputs.r_and_d_expense_past[:life-1]]
+        for expense in research_tax.expenses:
+            _, amort, _ = capitalize_r_and_d(expense, cohorts, life)
+            amortization_path.append(amort)
+            cohorts = [expense, *cohorts[:life-1]]
+        tax_base_projections = [e + a - d for e, a, d in zip(
+            ebit_projections, amortization_path, research_tax.deductions, strict=True)]
+    nopat_projections, nol_projections = _apply_nol_and_tax(
+        ebit_projections, tax_path_vals, nol_initial, tax_base_projections)
+    cash_tax_projections = [e - p for e, p in zip(ebit_projections, nopat_projections, strict=True)]
 
     # Damodaran: no current debt tax benefit while operating income is fully
     # sheltered by losses. Carry the selected initial debt-cost/weight component
@@ -351,8 +434,8 @@ def compute_dcf(
     # ponytail: constant initial debt component; financing paths need explicit future weights/costs.
     shield_availability = []
     opening_nol = nol_initial
-    for ebit, rate, closing_nol in zip(ebit_projections, tax_path_vals, nol_projections, strict=True):
-        shield_availability.append(max(0.0, ebit-opening_nol)/ebit if ebit > 0 and rate > 0 else 0.0)
+    for base, rate, closing_nol in zip(tax_base_projections, tax_path_vals, nol_projections, strict=True):
+        shield_availability.append(max(0.0, base-opening_nol)/base if base > 0 and rate > 0 else 0.0)
         opening_nol = closing_nol
     decomposed = cost_of_capital.approach_used in ('detailed', 'reference_snapshot')
     shield_spread = (cost_of_capital.weight_debt *
@@ -371,6 +454,10 @@ def compute_dcf(
     # --- Terminal year ---
     rev_terminal = extended_rev[n] * (1 + g_terminal)  # rev[11]
     ebit_terminal = rev_terminal * margin_target
+    terminal_tax_base = ebit_terminal
+    terminal_cash_tax = max(0.0, terminal_tax_base) * tax_terminal
+    terminal_first_base, terminal_first_tax = terminal_tax_base, terminal_cash_tax
+    terminal_transition_value = 0.0
     terminal_shield_adjustment = shield_spread if ebit_terminal <= 0 or tax_terminal <= 0 else 0.0
     wacc_terminal += terminal_shield_adjustment
     if assumptions.roic_stable_override is None:
@@ -384,6 +471,17 @@ def compute_dcf(
 
     # --- Terminal Value (Gordon) ---
     terminal_value_firm = fcff_terminal / (wacc_terminal - g_terminal)
+    if research_tax is not None:
+        terminal = _research_terminal(ebit_terminal, research_tax, cohorts, life, g_terminal,
+            tax_terminal, nol_projections[-1], wacc_terminal-terminal_shield_adjustment,
+            shield_spread, assumptions.roic_stable_override)
+        terminal_value_firm = terminal['value']
+        terminal_shield_adjustment = terminal['wacc']-(wacc_terminal-terminal_shield_adjustment)
+        wacc_terminal, roic_terminal = terminal['wacc'], terminal['roic']
+        terminal_tax_base, terminal_cash_tax = terminal['tax_base'], terminal['cash_tax']
+        nopat_terminal, reinvestment_terminal, fcff_terminal = terminal['nopat'], terminal['investment'], terminal['fcff']
+        terminal_transition_value = terminal['transition_value']
+        terminal_first_base, terminal_first_tax = terminal['first_base'], terminal['first_tax']
 
     # --- Cumulative discount factors (year-by-year product) ---
     cumulative_df = []
@@ -472,15 +570,25 @@ def compute_dcf(
     return DCFResult(
         revenue_projections=revenue_projections,
         ebit_projections=ebit_projections,
+        nopat_projections=nopat_projections, tax_base_projections=tax_base_projections,
+        cash_tax_projections=cash_tax_projections, nol_projections=nol_projections,
+        research_amortization_projections=amortization_path,
+        operating_tax_basis=('explicit_research_tax_bridge; '+research_tax.tax_rate_basis
+            if research_tax else 'economic_ebit_tax_proxy'),
         fcff_projections=fcff_projections,
         reinvestment_projections=reinvestment_projections,
         discount_factors=cumulative_df,
         terminal_wacc=wacc_terminal, terminal_roic=roic_terminal,
         terminal_tax_shield_adjustment=terminal_shield_adjustment,
         unused_nol_at_terminal=nol_projections[-1],
+        terminal_tax_base=terminal_tax_base, terminal_cash_tax=terminal_cash_tax,
+        terminal_nopat=nopat_terminal, terminal_reinvestment=reinvestment_terminal, terminal_fcff=fcff_terminal,
+        terminal_tax_transition_value=terminal_transition_value,
+        terminal_first_year_tax_base=terminal_first_base, terminal_first_year_cash_tax=terminal_first_tax,
+        terminal_nol_treatment='unlimited_carryforward_without_expiry_valued_in_tax_tail' if research_tax else 'not_separately_valued',
         debt_tax_shield_availability=shield_availability,
         wacc_tax_shield_adjustments=shield_adjustments,
-        tax_shield_basis=("initial_debt_component_constant; proportional_taxable_EBIT_proxy; terminal_normalized"
+        tax_shield_basis=("initial_debt_component_constant; proportional_tax_base_proxy; terminal_normalized"
             if decomposed else "aggregate_WACC_not_decomposed; tax_shield_timing_not_automatically_adjusted"),
         pv_fcff=pv_fcff,
         terminal_value_firm=terminal_value_firm,

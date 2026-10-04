@@ -13,13 +13,15 @@ from .data_dictionary import RawFinancials, AdjustmentInputs, AdjustedFinancials
 def after_tax_operating_income(
     adjusted: AdjustedFinancials, raw: RawFinancials, tax_rate: float,
 ) -> float:
-    """Keep modelled taxes unchanged by the M1 R&D reclassification.
+    """R&D reclassification preserves selected taxes on a positive tax base.
 
     M1 changes EBIT only for R&D and leases. Exclude the lease adjustment
-    when recovering the R&D delta; this does not assume extra tax credits.
+    when recovering the R&D delta; losses do not imply an immediate refund.
     """
     research_delta = adjusted.adjusted_ebit - raw.ebit - adjusted.lease_adjustment_to_ebit
-    return adjusted.adjusted_ebit * (1 - tax_rate) + research_delta * tax_rate
+    # A tax loss does not create an immediate refund without credit evidence.
+    tax_base = adjusted.adjusted_ebit - research_delta
+    return adjusted.adjusted_ebit - max(0.0, tax_base) * tax_rate
 
 
 def capitalize_r_and_d(

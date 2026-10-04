@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from engine.module_4_dcf import InvalidTerminalValue, InvalidReinvestment
+from engine.module_4_dcf import InvalidTerminalValue, InvalidReinvestment, InvalidResearchTax
 
 from .alphalake import router as alphalake_router
 from .routes import router
@@ -21,6 +21,7 @@ app = FastAPI(title="Valuation Engine API", version="0.1.0")
 
 @app.exception_handler(InvalidTerminalValue)
 @app.exception_handler(InvalidReinvestment)
+@app.exception_handler(InvalidResearchTax)
 async def invalid_dcf_input(request: Request, error: ValueError):
     return JSONResponse(status_code=422, content={'detail': {'status': 'rejected_input_or_policy', 'reason': str(error)}})
 

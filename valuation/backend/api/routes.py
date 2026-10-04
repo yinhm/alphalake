@@ -1129,7 +1129,10 @@ def patch_valuation(session_id: str, req: OverrideRequest):
         _set_nested(inputs_dict, path, value)
 
     # Rebuild inputs and recompute
-    new_inputs = CompanyValuationInput(**inputs_dict)
+    try:
+        new_inputs = CompanyValuationInput(**inputs_dict)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail={'status':'rejected_input_or_policy','reason':str(error)}) from error
     ind_lookup = _build_industry_lookup(store)
     new_report = run_full_valuation(new_inputs, industry_lookup=ind_lookup)
     industry_resolved = industry_selected or not any(f['path']=='industry_data.industry_name' for f in session.unresolved_fields)

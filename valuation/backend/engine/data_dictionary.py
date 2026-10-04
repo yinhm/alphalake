@@ -446,12 +446,38 @@ class ForecastYear(BaseModel):
     tax: float = Field(ge=0, le=1)
 
 
+class ResearchTaxForecast(BaseModel):
+    """显式研发费用/税务扣除，金额沿用报表单位；抵亏假设无到期或上限。"""
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    policy_id: str = Field(min_length=1)
+    expenses: list[float]
+    deductions: list[float]
+    terminal_expense: float = Field(ge=0)
+    terminal_deduction: float = Field(ge=0)
+    tax_rate_basis: Literal['taxable_profit_rate', 'reported_effective_rate_proxy']
+
+    @model_validator(mode='after')
+    def amounts(self):
+        if any(v < 0 for v in self.expenses + self.deductions):
+            raise ValueError('research expenses and deductions must be nonnegative')
+        if self.tax_rate_basis == 'reported_effective_rate_proxy' and (
+                any(d != r for r, d in zip(self.expenses, self.deductions))
+                or self.terminal_deduction != self.terminal_expense):
+            raise ValueError('effective tax proxy cannot also claim separate research tax incentives')
+        return self
+
+
 class ValuationAssumptions(BaseModel):
     annual_forecast: list[ForecastYear] | None = None
+    research_tax: ResearchTaxForecast | None = None
     annual_sales_to_capital: list[float] | None = Field(default=None, description="Explicit positive sales/capital per forecast investment year; overrides two-stage ratios")
 
     @model_validator(mode='after')
     def forecast_length(self):
+        if self.research_tax is not None and (self.projection_years < 1
+                or len(self.research_tax.expenses) != self.projection_years
+                or len(self.research_tax.deductions) != self.projection_years):
+            raise ValueError('research tax forecast must cover every projection year')
         if self.annual_forecast is not None and (self.projection_years < 1 or len(self.annual_forecast) != self.projection_years):
             raise ValueError('explicit forecast must cover every projection year')
         if self.annual_sales_to_capital is not None and (self.projection_years < 1
@@ -500,6 +526,12 @@ class ValuationAssumptions(BaseModel):
 class DCFResult(BaseModel):
     revenue_projections: list[float] = Field(default_factory=list)
     ebit_projections: list[float] = Field(default_factory=list)
+    nopat_projections: list[float] = Field(default_factory=list)
+    tax_base_projections: list[float] = Field(default_factory=list)
+    cash_tax_projections: list[float] = Field(default_factory=list)
+    nol_projections: list[float] = Field(default_factory=list)
+    research_amortization_projections: list[float] = Field(default_factory=list)
+    operating_tax_basis: str = 'economic_ebit_tax_proxy'
     fcff_projections: list[float] = Field(default_factory=list)
     reinvestment_projections: list[float] = Field(default_factory=list)
     discount_factors: list[float] = Field(default_factory=list)
@@ -510,6 +542,15 @@ class DCFResult(BaseModel):
     terminal_roic: float | None = None
     terminal_tax_shield_adjustment: float = 0.0
     unused_nol_at_terminal: float = 0.0
+    terminal_tax_base: float = 0.0
+    terminal_cash_tax: float = 0.0
+    terminal_nopat: float = 0.0
+    terminal_reinvestment: float = 0.0
+    terminal_fcff: float = 0.0
+    terminal_tax_transition_value: float = 0.0
+    terminal_first_year_tax_base: float = 0.0
+    terminal_first_year_cash_tax: float = 0.0
+    terminal_nol_treatment: str = 'not_separately_valued'
     pv_fcff: list[float] = Field(default_factory=list)
     terminal_value_firm: float | None = Field(default=None)
     pv_terminal_value: float | None = Field(default=None)
@@ -671,6 +712,13 @@ class CompanyValuationInput(BaseModel):
         if any(year in years or not math.isfinite(value) or value < 0
                for year, value in self.historical_research_expenses.items()):
             raise ValueError("supplementary research years must be disjoint, finite and nonnegative")
+        if self.valuation_assumptions.research_tax is not None:
+            adj = self.adjustment_inputs
+            if (not adj.has_r_and_d or adj.amortization_period_n < 1
+                    or len(adj.r_and_d_expense_past) < adj.amortization_period_n
+                    or any(not math.isfinite(v) or v < 0 for v in
+                        [adj.r_and_d_expense_current, *adj.r_and_d_expense_past[:adj.amortization_period_n]])):
+                raise ValueError('research tax forecast requires the complete selected research cohort')
         return self
 
     @model_validator(mode="after")

@@ -254,7 +254,39 @@ def prepare_sqlite_requests(database, tickers, output, overrides_file=None):
     return paths, rows
 
 
-def deliver_conditions(database, request_files, output, web=None, *, tickers=None, overrides_file=None, credit_policy_file=None):
+def research_tax_condition(baseline, terminal_growth):
+    """保持当前费用率的具名条件；复用原利润/税率/总投入，不认证税务优惠。"""
+    inputs = CompanyValuationInput.model_validate(baseline['inputs'])
+    adj = inputs.adjustment_inputs
+    if inputs.valuation_assumptions.research_tax is not None:
+        raise ValueError('explicit research tax path already supplied; do not overwrite')
+    if not adj.has_r_and_d:
+        raise ValueError('research capitalization not selected')
+    revenue = baseline['ltm_financials']['revenues']
+    if revenue is None or revenue <= 0:
+        raise ValueError('positive base revenue required for research expense ratio')
+    ratio = adj.r_and_d_expense_current / revenue
+    expenses = [ratio*r for r in baseline['dcf']['revenue_projections']]
+    terminal_expense = expenses[-1]*(1+terminal_growth)
+    payload = deepcopy(baseline['inputs'])
+    payload['valuation_assumptions']['research_tax'] = dict(
+        policy_id='research-current-expense-ratio-ordinary-deduction-v1', expenses=expenses,
+        deductions=expenses, terminal_expense=terminal_expense, terminal_deduction=terminal_expense,
+        tax_rate_basis='reported_effective_rate_proxy')
+    CompanyValuationInput.model_validate(payload)
+    return dict(inputs=payload), dict(version='research-current-expense-ratio-ordinary-deduction-v1',
+        expense_ratio=ratio, current_expense=adj.r_and_d_expense_current, base_revenue=revenue,
+        amortization_years=adj.amortization_period_n, terminal_growth=terminal_growth,
+        deduction_basis='ordinary_current_expense_only; no_additional_deduction_claim',
+        tax_rate_basis='selected_original_tax_path_is_taxable_profit_rate_proxy_not_verified_tax_law',
+        nol_basis='unlimited_carryforward_without_expiry_or_limits; condition_not_company_tax_fact',
+        reinvestment='original_total_net_reinvestment_unchanged; no_extra_RD_deduction',
+        method_source='https://pages.stern.nyu.edu/adamodar/New_Home_Page/valquestions/R%26D.htm',
+        expense_forecast_basis='local_constant_current_expense_ratio_condition_not_Damodaran_prescription',
+        selected_scenario=None, automatic_adoption=False)
+
+
+def deliver_conditions(database, request_files, output, web=None, *, tickers=None, overrides_file=None, credit_policy_file=None, research_tax=False):
     """保存用户完整输入，组合既有增长/资本对照，不选择胜出者。"""
     from fastapi.testclient import TestClient
     from api.main import app
@@ -312,6 +344,7 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
         metadata=metadata,
         input_preparation=preparation, override_source=override_source,
         reported_credit_policy=credit_policy, reported_credit_source=credit_source,
+        research_tax_condition='research-current-expense-ratio-ordinary-deduction-v1' if research_tax else None,
         requests=[source | dict(ticker=ticker) for ticker, _, source in requests],
         growth_rules=SCENARIO_RULES, capital_rules=[POLICY, HISTORY_POLICY],
         runtime=runtime_identity(database.parent), selected_scenario=None,
@@ -368,6 +401,20 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
             if baseline is None:
                 row['status'] = 'blocked_explicit_inputs'; continue
             row['status'] = 'explicit_calculated'
+            if research_tax:
+                name = 'research_tax_current_ratio_ordinary_deduction'
+                try:
+                    request, evidence = research_tax_condition(baseline, row['scenarios']['user_explicit']['terminal']['growth'])
+                except ValueError as error:
+                    row['scenarios'][name] = dict(status='not_generated', reason=str(error))
+                else:
+                    save(key+'-research-tax-evidence.json', evidence)
+                    body = calculate(name, request)
+                    if body is not None:
+                        for field in ('revenue_projections','ebit_projections','reinvestment_projections'):
+                            if body['dcf'][field] != baseline['dcf'][field]:
+                                raise ValueError('research tax condition changed operating path '+field)
+                        row['scenarios'][name]['evidence_file'] = key+'-research-tax-evidence.json'
             if credit_policy:
                 from tools.reported_native_credit import compare as compare_credit
                 credit = compare_credit(baseline, credit_evidence, credit_policy)
@@ -431,6 +478,7 @@ def main():
     parser.add_argument('--prepare-inputs',action='store_true',help='按ticker复用原生SQLite取数，准备完整输入并交付条件')
     parser.add_argument('--overrides',type=Path,help='按ticker组织的既有原生点路径覆盖；仅与prepare-inputs配合')
     parser.add_argument('--reported-credit',type=Path,help='已批准报表信用附加条件政策及参考包；不替换基线或默认')
+    parser.add_argument('--research-tax',action='store_true',help='附加当前研发费用率/普通扣除条件；不替换显式路径、基线或默认')
     parser.add_argument('--output',required=True,type=Path)
     parser.add_argument('--selection-policy',type=Path,help='explicit automatic conditional assumption selection policy')
     parser.add_argument('--web',help='optional unchanged full-input API verification URL')
@@ -439,11 +487,12 @@ def main():
         if args.recipe or args.selection_policy or (args.explicit_input and (args.ticker or args.prepare_inputs or args.overrides)):
             parser.error('explicit inputs cannot be mixed with policy selection')
         result = deliver_conditions(args.database, args.explicit_input, args.output, args.web,
-            tickers=args.ticker if args.prepare_inputs else None, overrides_file=args.overrides, credit_policy_file=args.reported_credit)
+            tickers=args.ticker if args.prepare_inputs else None, overrides_file=args.overrides, credit_policy_file=args.reported_credit,
+            research_tax=args.research_tax)
         print(json.dumps(dict(contract=result['contract'], run_id=result['run_id'], companies=result['companies'],
             selected_scenario=None, summary_file=str(args.output/'summary.json')), ensure_ascii=False))
         return
-    if args.overrides or args.reported_credit or not args.recipe or not args.ticker:
+    if args.overrides or args.reported_credit or args.research_tax or not args.recipe or not args.ticker:
         parser.error('recipe and ticker required without explicit inputs; references come from SQLite')
     print(json.dumps(evaluate(args.database,json.loads(args.recipe.read_text()),args.ticker,args.output,args.web,json.loads(args.selection_policy.read_text()) if args.selection_policy else None),ensure_ascii=False))
 

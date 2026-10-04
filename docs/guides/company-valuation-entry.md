@@ -31,7 +31,11 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 
 **已有完整请求**仍用`--explicit-input workspace/derived/native-inputs/company-request.json`替代`--prepare-inputs/--ticker/--overrides`，可重复提供多家公司；文件仅包含`{"inputs": CompanyValuationInput}`。两种模式互斥，不能与`--recipe/--selection-policy`混用。`--web`可选，提供时逐项比对现行完整API的实际输入、DCF、每股结果及参考版本；不改网页。
 
-程序先保存原用户输入及`user_explicit`结果，再组合已有3/5/10年增长收敛、公司三年历史资本代理及后五年稳态资本过渡；同时输出收入规模、逐年净再投资/FCFF及终值审阅。`selected_scenario=null`、`automatic_adoption=false`是正常交付结果，不是要求用户从价格中选胜出者。公司历史缺项留原因，原输入结果与其他可计算条件保留；非十年预测仅交付原结果，不强制改成十年。完整组合边界见[显式政策](../valuation/explicit-policy.md)。
+程序先保存原用户输入及`user_explicit`结果，再组合已有3/5/10年增长收敛、公司三年历史资本代理及后五年稳态资本过渡；同时输出收入规模、逐年净再投资/FCFF及终值审阅。`selected_scenario=null`、`automatic_adoption=false`是正常交付结果，不是要求用户从价格中选胜出者。公司历史缺项留原因，原输入结果与其他可计算条件保留；非十年预测不生成这些增长/资本组合，不强制改成十年。完整组合边界见[显式政策](../valuation/explicit-policy.md)。
+
+已批准研发税务条件使用可选`--research-tax`，适用于上述两种模式及非十年预测。附加`research_tax_current_ratio_ordinary_deduction`：保持当前研发费用/收入比率、普通当期扣除，复用原收入、调整EBIT、总再投资及税率代理；不猜加计扣除资格、不替换用户基线或原显式研发路径。完整API也可直接提供`valuation_assumptions.research_tax`年度费用/扣除及终值首年金额，字段、税率语义和无到期抵亏限制见[研发契约](../valuation/methodology-contract.md#研发预测税务契约)。
+
+例如在前述命令中加`--research-tax`，原输出之外保存研发证据、请求、结果及审阅。先比较逐年税基、现金税/NOL及正常化终值与过渡值；恒定费用率是本地条件，不是未来事实。总投入减研发净投入若隐含非研发资本释放，审阅明确标记所需依据，不自动认证资本效率。
 
 已批准的报表信用条件通过可选`--reported-credit workspace/derived/native-inputs/credit-policy.json`附加，适用于上述两种模式。政策文件包含`version="reported-statement-credit-conditions-v2"`、`sovereign_spread_policy="add_cn_default_spread"`或`"none"`、显式`max_credit_age_days`和`reason`。参考直接读取当前SQLite中绑定的WACC发布；政策文件不再携带源数值，不能从旧样本摘要复制评级；范围和来源依据见[已批准规则](../valuation/native-cny-policy.md#已批准规则与依据)。
 

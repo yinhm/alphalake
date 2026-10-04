@@ -167,11 +167,21 @@ def review_report(body, annual_evidence=None):
             revenue_multiple_of_base=revenue/raw.revenues if raw.revenues and raw.revenues > 0 else None,
             growth=revenue/previous_revenue-1 if previous_revenue else None,
             adjusted_operating_margin=ebit/revenue if revenue else None,
+            tax_base_million_cny=dcf.tax_base_projections[i], cash_tax_million_cny=dcf.cash_tax_projections[i],
+            closing_nol_million_cny=dcf.nol_projections[i], operating_tax_basis=dcf.operating_tax_basis,
+            research_expense_million_cny=a.research_tax.expenses[i] if a.research_tax else None,
+            research_amortization_million_cny=dcf.research_amortization_projections[i] if a.research_tax else None,
+            research_tax_deduction_million_cny=a.research_tax.deductions[i] if a.research_tax else None,
             nopat_million_cny=nopat, reinvestment_million_cny=reinvestment,
             reinvestment_rate=reinvestment/nopat if nopat > 0 else None,
             fcff_million_cny=fcff, pv_fcff_million_cny=fcff*discount,
             implied_book_roic=dcf.implied_roic_projections[i]))
         previous_revenue = revenue
+    if a.research_tax is not None:
+        for i, row in enumerate(rows):
+            research_net = a.research_tax.expenses[i]-dcf.research_amortization_projections[i]
+            row['research_net_investment_million_cny'] = research_net
+            row['implied_nonresearch_net_reinvestment_million_cny'] = row['reinvestment_million_cny']-research_net
     history = sorted(inputs.raw_financials, key=lambda f: f.fiscal_year)
     # 复用引擎逐年研发队列结果；不拿当前研发资产或TTM利润率填历史。
     counts = Counter(f.fiscal_year for f in inputs.raw_financials)
@@ -310,7 +320,7 @@ def review_report(body, annual_evidence=None):
                     incremental_nopat_per_reinvestment=nopat_delta/investment if investment > 0 else None,
                     constant_nopat_margin_incremental_return=revenue_part/investment if investment > 0 else None)
         row['incremental_return_bridge'] = bridge
-    terminal_fcff = dcf.terminal_value_firm * (terminal_wacc-g)
+    terminal_fcff = dcf.terminal_fcff
     terminal_share = dcf.pv_terminal_value/dcf.value_of_operating_assets if dcf.value_of_operating_assets else None
     # 对齐共享引擎的终值利润/税口径，显式解释资本规则切换；不依赖更老财务。
     margin = a.target_operating_margin
@@ -326,10 +336,17 @@ def review_report(body, annual_evidence=None):
         margin, terminal_tax = a.annual_forecast[-1].margin, a.annual_forecast[-1].tax
     terminal_revenue = rows[-1]['revenue_million_cny']*(1+g)
     terminal_ebit = terminal_revenue*margin
-    terminal_nopat = terminal_ebit-max(0.0,terminal_ebit)*terminal_tax
+    tax_base = terminal_ebit
+    if a.research_tax is not None:
+        life = inputs.adjustment_inputs.amortization_period_n
+        tax_base += a.research_tax.terminal_expense * sum((1+g)**-i for i in range(1,life+1))/life-a.research_tax.terminal_deduction
+    terminal_nopat = terminal_ebit-max(0.0,tax_base)*terminal_tax
     terminal_investment = terminal_nopat*g/terminal_roic
     if not math.isclose(terminal_nopat-terminal_investment, terminal_fcff, rel_tol=1e-10, abs_tol=1e-8):
         raise ValueError('terminal economic bridge differs from engine')
+    if not math.isclose(terminal_fcff/(terminal_wacc-g)+dcf.terminal_tax_transition_value,
+            dcf.terminal_value_firm, rel_tol=1e-10, abs_tol=1e-8):
+        raise ValueError('terminal normalized value and tax transition differ from engine')
     # 沿用原投入滞后，把同一个终值年度与继续沿用资本倍率的反事实相比。
     funded_delta = rows[-1]['revenue_million_cny']*(1+g)**lag*g
     ending_ratio = a.annual_sales_to_capital[-1] if a.annual_sales_to_capital is not None else sc_stable
@@ -402,6 +419,11 @@ def review_report(body, annual_evidence=None):
                 '研发资本化、租赁及现金/投资代理须按相同范围比较',
                 '历史报表行可能因缺EBIT而省略，不能据此判定标准收入缺失']),
         terminal=dict(growth=g, wacc=terminal_wacc, assumed_marginal_roic=terminal_roic,
+            tax_base_million_cny=dcf.terminal_tax_base, cash_tax_million_cny=dcf.terminal_cash_tax,
+            first_year_tax_base_million_cny=dcf.terminal_first_year_tax_base,
+            first_year_cash_tax_million_cny=dcf.terminal_first_year_cash_tax,
+            tax_transition_value_million_cny=dcf.terminal_tax_transition_value,
+            nol_treatment=dcf.terminal_nol_treatment,
             reinvestment_rate=g/terminal_roic,
             fcff_million_cny=terminal_fcff, value_share=terminal_share,
             implied_book_roic=dcf.implied_roic_terminal,
@@ -440,6 +462,10 @@ def methodology_review(inputs, report, review):
     flag('terminal_growth_exceeds_currency_riskfree_heuristic', terminal['growth'] > terminal_rf)
     flag('terminal_excess_return_requires_competitive_basis', terminal['assumed_marginal_roic'] > terminal['wacc'])
     flag('terminal_capital_transition_requires_basis', review['economic_checks']['terminal_transition']['requires_capital_transition_basis'])
+    flag('future_research_tax_bridge_unspecified', inputs.adjustment_inputs.has_r_and_d and a.research_tax is None)
+    flag('research_tax_forecast_requires_expense_deduction_and_NOL_basis', a.research_tax is not None)
+    flag('research_condition_requires_nonresearch_capital_release_basis', any(
+        r.get('implied_nonresearch_net_reinvestment_million_cny',0) < 0 for r in forecast))
     terminal_tax = inputs.macro_inputs.tax_rate_marginal
     if a.override_tax_convergence:
         if a.effective_tax_rate_override_years_1_5 is not None:

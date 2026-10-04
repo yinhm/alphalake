@@ -665,6 +665,26 @@ def test_condition_delivery_retains_history_gap_and_rejects_duplicate(tmp_path, 
         deliver_conditions(database,[request,request],tmp_path/'derived'/'duplicate')
 
 
+def test_condition_delivery_adds_opt_in_research_tax_without_replacing_baseline(tmp_path, monkeypatch):
+    from tools.evaluate_native_policy import deliver_conditions
+    delivery_client(monkeypatch); monkeypatch.setenv('ALPHALAKE_WORKSPACE',str(tmp_path))
+    inputs = sample()['inputs']
+    inputs['raw_financials'][0]['r_and_d_expense'] = 100
+    inputs['adjustment_inputs'].update(has_r_and_d=True, r_and_d_expense_current=100,
+        r_and_d_expense_past=[40]*5)
+    request = tmp_path/'request.json'; request.write_text(json.dumps({'inputs':inputs}))
+    result = deliver_conditions(delivery_database(tmp_path,monkeypatch),[request],
+        tmp_path/'derived'/'tax', research_tax=True)
+    row = result['results'][0]
+    assert row['scenarios']['user_explicit']['status'] == 'calculated_conditional'
+    condition = row['scenarios']['research_tax_current_ratio_ordinary_deduction']
+    assert condition['status'] == 'calculated_conditional'
+    assert condition['value_per_share'] != row['scenarios']['user_explicit']['value_per_share']
+    assert result['selected_scenario'] is None and not result['automatic_adoption']
+    original = json.loads((tmp_path/'derived/tax/SHSE-600519-user_explicit-request.json').read_text())
+    assert original['inputs'] == inputs and original['inputs']['valuation_assumptions']['research_tax'] is None
+
+
 def test_condition_delivery_rejects_reference_mismatch(tmp_path, monkeypatch):
     import sqlite3
     from tools.evaluate_native_policy import deliver_conditions

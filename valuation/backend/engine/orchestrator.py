@@ -172,16 +172,21 @@ def run_full_valuation(
     # --- Module 4: DCF ---
     report.dcf = compute_dcf(
         report.cashflow, report.cost_of_capital, report.adjusted,
-        raw_current, inputs.valuation_assumptions, inputs.macro_inputs
+        raw_current, inputs.valuation_assumptions, inputs.macro_inputs,
+        adjustment_inputs=inputs.adjustment_inputs,
     )
 
     if any(report.dcf.wacc_tax_shield_adjustments) or report.dcf.terminal_tax_shield_adjustment:
-        report.warnings.append("Loss/NOL debt tax shield adjusted using constant initial debt cost/weight and proportional taxable EBIT; actual tax limits and future financing remain assumptions")
+        report.warnings.append("Loss/NOL debt tax shield adjusted using constant initial debt cost/weight and proportional taxable profit; actual tax limits and future financing remain assumptions")
     if ('not_decomposed' in report.dcf.tax_shield_basis
             and any(v < 1 for v in report.dcf.debt_tax_shield_availability)):
         report.warnings.append("Aggregate WACC not decomposed: loss/NOL debt tax shield timing not automatically adjusted")
 
-    if report.dcf.unused_nol_at_terminal > 0:
+    if inputs.valuation_assumptions.research_tax is not None:
+        report.warnings.append("Explicit research tax bridge: forecast expenses/deductions and unlimited NOL carryforward are conditions, not company tax facts; temporary tax benefits do not change total reinvestment")
+    elif inputs.adjustment_inputs.has_r_and_d:
+        report.warnings.append("Future research tax bridge unspecified: economic EBIT used as forecast tax proxy; research tax differences not separately reconstructed")
+    if report.dcf.unused_nol_at_terminal > 0 and report.dcf.terminal_nol_treatment == 'not_separately_valued':
         report.warnings.append("Unused projected NOL at terminal is not valued separately; normalized terminal taxes assumed")
 
     if inputs.equity_bridge is not None:

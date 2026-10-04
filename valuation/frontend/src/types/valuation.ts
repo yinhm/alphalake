@@ -269,6 +269,14 @@ export interface TaxHistory {
 }
 
 export interface ValuationAssumptions {
+  research_tax?: {
+    policy_id: string;
+    expenses: number[];
+    deductions: number[];
+    terminal_expense: number;
+    terminal_deduction: number;
+    tax_rate_basis: 'taxable_profit_rate' | 'reported_effective_rate_proxy';
+  } | null;
   projection_years: number;
   high_growth_years: number;
   stable_growth_rate: number | null;
@@ -303,6 +311,21 @@ export interface ValuationAssumptions {
 }
 
 export interface DCFResult {
+  nopat_projections: number[];
+  tax_base_projections: number[];
+  cash_tax_projections: number[];
+  nol_projections: number[];
+  research_amortization_projections: number[];
+  operating_tax_basis: string;
+  terminal_tax_base: number;
+  terminal_cash_tax: number;
+  terminal_nopat: number;
+  terminal_reinvestment: number;
+  terminal_fcff: number;
+  terminal_tax_transition_value: number;
+  terminal_first_year_tax_base: number;
+  terminal_first_year_cash_tax: number;
+  terminal_nol_treatment: string;
   revenue_projections: number[];
   ebit_projections: number[];
   fcff_projections: number[];
