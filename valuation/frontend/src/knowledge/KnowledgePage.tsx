@@ -22,6 +22,7 @@ export function KnowledgePage() {
       : <div className={`knowledge-directory${termId ? ' has-article' : ''}`}>
         <section className="knowledge-directory-list" aria-label="词条目录"><label htmlFor="knowledge-search">搜索词条</label>
           <input id="knowledge-search" type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="中文、英文或缩写" autoComplete="off" />
+          {index.terms.some(term => term.term_id === 'learning-roadmap') && <p><Link to="/knowledge/learning-roadmap">从估值自学路线开始 →</Link></p>}
           <p className="knowledge-muted">{matches.length} 个词条{matches.length > 10 && '，显示前10条；请细化搜索或通过词条链接阅读。'}</p>
           {index.terms.length === 0 ? <p>此版本尚未收录词条。</p> : matches.length === 0 ? <p role="status">没有匹配的词条，请尝试其他名称。</p> : <ul>{matches.slice(0, 10).map(term => <li key={term.term_id}><Link to={`/knowledge/${term.term_id}`} aria-current={term.term_id === termId ? 'page' : undefined}>
             <strong>{term.title_zh || term.title_en}</strong>{term.title_en && <span>{term.title_en}</span>}<p>{term.summary}</p>

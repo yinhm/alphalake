@@ -59,6 +59,12 @@
 .knowledge-directory-list label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
 .knowledge-directory-list input { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; font-size: 14px; }
 .knowledge-directory-list > p { margin: 10px 0 16px; }
+.knowledge-course { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+.knowledge-outline, .knowledge-answer { padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; margin: 16px 0; }
+.knowledge-article summary { cursor: pointer; font-weight: 600; }
+.knowledge-context-values > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; border-bottom: 1px solid #dbeafe; padding: 6px 0; }
+.knowledge-binding-choice { display: grid; gap: 6px; margin: 12px 0; }
+.knowledge-binding-choice select { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; }
 .knowledge-directory-list ul { display: grid; gap: 10px; }
 .knowledge-directory-list li a { display: block; border: 1px solid #e2e8f0; border-radius: 10px; background: white; padding: 16px; }
 .knowledge-directory-list li a:hover, .knowledge-directory-list li a[aria-current] { border-color: #93c5fd; background: #eff6ff; }

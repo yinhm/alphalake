@@ -19,10 +19,10 @@ function detail(termId: string, release = 'fixture-r1'): KnowledgeDetail | null 
   return {
     release_id: release,
     term: { ...term, body_md: termId === 'wacc'
-      ? '仅为浏览器测试文本。公式 $x^2$。\n\n[关联定义](/knowledge/capital-a)\n\n[危险链接](javascript:alert(1))\n\n<script>window.knowledgeInjected=true</script>\n\n![远程图片](https://example.invalid/tracker.png)'
+      ? '仅为浏览器测试文本。公式 $x^2$。\n\n## 基本解释\n\n[关联定义](/knowledge/capital-a)\n\n[危险链接](javascript:alert(1))\n\n<script>window.knowledgeInjected=true</script>\n\n![远程图片](https://example.invalid/tracker.png)\n\n## 自己试一试\n\n测试问题。\n\n## 答案与解析\n\n先区分输入和结果。\n\n## 继续阅读\n\n课程结尾。'
       : '这是合成的关联词条正文。', content_hash: `fixture-${termId}` },
     bindings: termId === 'wacc' ? [{ binding_id: 'wacc.current', term_id: termId, page_key: 'fixture', field_path: 'cost_of_capital.wacc', context_key: 'fixture', usage_md: '读取合成估值结果中的原值。', limitations_md: '仅为测试。', reviewed_engine_ref: 'fixture' }] : [],
-    relations: termId === 'wacc' ? [{ term_id: 'capital-b', title_zh: '测试资本乙', title_en: 'Capital B', relation_type: '相关概念' }] : [],
+    relations: termId === 'wacc' ? [{ term_id: 'capital-b', title_zh: '测试资本乙', title_en: 'Capital B', relation_type: '下一课' }] : [],
     sources: [{ source_id: 'fixture-source', title: '合成来源', author: '测试', url: 'https://example.org/reference', published_at: null, verified_at: '2026-01-01', section_anchor: 'definition', locator: '测试章节' }],
   };
 }
@@ -87,6 +87,46 @@ test('read-only financial labels resolve exact unique aliases, with explicit IDs
   await expect(page.getByTestId('financial-value').getByRole('button')).toHaveCount(0);
   await expect(page.getByTestId('editable-row').getByRole('button')).toHaveCount(0);
   await expect(page.getByTestId('explicit-label').locator('[data-term-id="wacc"]')).toHaveCount(1);
+});
+
+test('reading outline, hidden answers and course navigation preserve content', async ({ page }) => {
+  await mockKnowledge(page);
+  await page.goto('/knowledge/wacc');
+  const article = page.locator('.knowledge-page-article');
+  await expect(article.getByText('先区分输入和结果。', { exact: true })).not.toBeVisible();
+  await article.getByText('本文目录', { exact: true }).click();
+  await article.getByRole('navigation', { name: '本文目录' }).getByRole('button', { name: '答案与解析', exact: true }).click();
+  await expect(article.getByText('先区分输入和结果。', { exact: true })).toBeVisible();
+  await expect(article.locator('.knowledge-answer > div')).toBeFocused();
+  await article.getByText('展开答案与解析', { exact: true }).click();
+  await page.reload();
+  await expect(article.locator('.knowledge-answer')).toBeVisible();
+  await expect(article.getByText('先区分输入和结果。', { exact: true })).not.toBeVisible();
+  await expect(page.getByRole('button', { name: /收藏|打印|保存PDF/ })).toHaveCount(0);
+  await expect(page.getByRole('checkbox', { name: '只看收藏' })).toHaveCount(0);
+  await article.getByRole('navigation', { name: '课程导航' }).getByRole('button', { name: '下一课：测试资本乙' }).click();
+  await expect(page).toHaveURL(/\/knowledge\/capital-b$/);
+});
+
+test('current context displays returned values and provenance, updates company and clears without a session', async ({ page }) => {
+  await openHarness(page);
+  const help = page.locator('[data-binding-id="wacc.current"]').getByRole('button');
+  await help.focus();
+  await help.press('Enter');
+  await panel(page).getByText('本次输入、计算分支与来源', { exact: true }).click();
+  await expect(panel(page)).toContainText('10.00%');
+  await expect(panel(page)).toContainText('1.25');
+  await expect(panel(page)).toContainText('原始合成来源');
+  await expect(panel(page)).toContainText('SYNTH:FIRST');
+  await expect(panel(page)).toContainText('standard-test-snapshot');
+  await page.getByRole('button', { name: '更新合成估值' }).click();
+  await expect(panel(page)).toContainText('12.00%');
+  await expect(panel(page)).toContainText('SYNTH:SECOND');
+  await expect(panel(page)).toContainText('用户合成覆盖');
+  await expect(panel(page)).not.toContainText('SYNTH:FIRST');
+  await page.getByRole('button', { name: '清除合成估值' }).click();
+  await expect(panel(page)).toContainText('选择公司后');
+  await expect(panel(page)).not.toContainText('12.00%');
 });
 
 test('standalone glossary works without a valuation, searches aliases and follows safe crosslinks', async ({ page }) => {

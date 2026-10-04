@@ -35,22 +35,22 @@ const fields = {
   'final.value_per_share': { label: '本次每股价值', read: d => d.final?.value_per_share, format: 'per-share' },
   'adjusted.value_of_research_asset': { label: '本次研发资产价值', read: d => d.adjusted?.value_of_research_asset, format: 'money' },
   'adjusted.pv_of_operating_leases': { label: '本次经营租赁现值', read: d => d.adjusted?.pv_of_operating_leases, format: 'money' },
-  'inputs.macro_inputs.risk_free_rate': { label: '无风险利率输入', read: d => d.inputs.macro_inputs.risk_free_rate, format: 'percent' },
-  'inputs.macro_inputs.equity_risk_premium': { label: '股权风险溢价输入', read: d => d.inputs.macro_inputs.equity_risk_premium, format: 'percent' },
-  'inputs.macro_inputs.country_risk_premium': { label: '国家风险溢价输入', read: d => d.inputs.macro_inputs.country_risk_premium, format: 'percent' },
-  'inputs.macro_inputs.tax_rate_effective': { label: '有效税率输入', read: d => d.inputs.macro_inputs.tax_rate_effective, format: 'percent' },
-  'inputs.macro_inputs.tax_rate_marginal': { label: '边际税率输入', read: d => d.inputs.macro_inputs.tax_rate_marginal, format: 'percent' },
-  'inputs.valuation_assumptions.stable_growth_rate': { label: '稳定增长率输入', read: d => d.inputs.valuation_assumptions.stable_growth_rate, format: 'percent' },
-  'inputs.valuation_assumptions.growth_perpetuity_rate': { label: '永续增长率覆盖输入', read: d => d.inputs.valuation_assumptions.growth_perpetuity_rate, format: 'percent' },
-  'inputs.valuation_assumptions.revenue_growth_next_year': { label: '下一年收入增长率假设', read: d => d.inputs.valuation_assumptions.revenue_growth_next_year, format: 'percent' },
-  'inputs.valuation_assumptions.revenue_growth_years_2_5': { label: '第 2–5 年收入增长率假设', read: d => d.inputs.valuation_assumptions.revenue_growth_years_2_5, format: 'percent' },
-  'inputs.valuation_assumptions.operating_margin_next_year': { label: '下一年经营利润率假设', read: d => d.inputs.valuation_assumptions.operating_margin_next_year, format: 'percent' },
-  'inputs.valuation_assumptions.target_operating_margin': { label: '目标经营利润率假设', read: d => d.inputs.valuation_assumptions.target_operating_margin, format: 'percent' },
-  'inputs.valuation_assumptions.sales_to_capital_high': { label: '高增长期销售／资本倍率假设', read: d => d.inputs.valuation_assumptions.sales_to_capital_high, format: 'multiple' },
-  'inputs.valuation_assumptions.sales_to_capital_stable': { label: '稳定期销售／资本倍率假设', read: d => d.inputs.valuation_assumptions.sales_to_capital_stable, format: 'multiple' },
-  'inputs.valuation_assumptions.cost_of_capital_stable_override': { label: '稳定期 WACC 覆盖输入', read: d => d.inputs.valuation_assumptions.cost_of_capital_stable_override, format: 'percent' },
-  'inputs.valuation_assumptions.roic_stable_override': { label: '稳定期 ROIC 覆盖输入', read: d => d.inputs.valuation_assumptions.roic_stable_override, format: 'percent' },
-  'inputs.valuation_assumptions.failure_probability': { label: '失败概率假设', read: d => d.inputs.valuation_assumptions.failure_probability, format: 'percent' },
+  'inputs.macro_inputs.risk_free_rate': { label: '无风险利率输入', read: d => d.inputs.macro_inputs?.risk_free_rate, format: 'percent' },
+  'inputs.macro_inputs.equity_risk_premium': { label: '股权风险溢价输入', read: d => d.inputs.macro_inputs?.equity_risk_premium, format: 'percent' },
+  'inputs.macro_inputs.country_risk_premium': { label: '国家风险溢价输入', read: d => d.inputs.macro_inputs?.country_risk_premium, format: 'percent' },
+  'inputs.macro_inputs.tax_rate_effective': { label: '有效税率输入', read: d => d.inputs.macro_inputs?.tax_rate_effective, format: 'percent' },
+  'inputs.macro_inputs.tax_rate_marginal': { label: '边际税率输入', read: d => d.inputs.macro_inputs?.tax_rate_marginal, format: 'percent' },
+  'inputs.valuation_assumptions.stable_growth_rate': { label: '稳定增长率输入', read: d => d.inputs.valuation_assumptions?.stable_growth_rate, format: 'percent' },
+  'inputs.valuation_assumptions.growth_perpetuity_rate': { label: '永续增长率覆盖输入', read: d => d.inputs.valuation_assumptions?.growth_perpetuity_rate, format: 'percent' },
+  'inputs.valuation_assumptions.revenue_growth_next_year': { label: '下一年收入增长率假设', read: d => d.inputs.valuation_assumptions?.revenue_growth_next_year, format: 'percent' },
+  'inputs.valuation_assumptions.revenue_growth_years_2_5': { label: '第 2–5 年收入增长率假设', read: d => d.inputs.valuation_assumptions?.revenue_growth_years_2_5, format: 'percent' },
+  'inputs.valuation_assumptions.operating_margin_next_year': { label: '下一年经营利润率假设', read: d => d.inputs.valuation_assumptions?.operating_margin_next_year, format: 'percent' },
+  'inputs.valuation_assumptions.target_operating_margin': { label: '目标经营利润率假设', read: d => d.inputs.valuation_assumptions?.target_operating_margin, format: 'percent' },
+  'inputs.valuation_assumptions.sales_to_capital_high': { label: '高增长期销售／资本倍率假设', read: d => d.inputs.valuation_assumptions?.sales_to_capital_high, format: 'multiple' },
+  'inputs.valuation_assumptions.sales_to_capital_stable': { label: '稳定期销售／资本倍率假设', read: d => d.inputs.valuation_assumptions?.sales_to_capital_stable, format: 'multiple' },
+  'inputs.valuation_assumptions.cost_of_capital_stable_override': { label: '稳定期 WACC 覆盖输入', read: d => d.inputs.valuation_assumptions?.cost_of_capital_stable_override, format: 'percent' },
+  'inputs.valuation_assumptions.roic_stable_override': { label: '稳定期 ROIC 覆盖输入', read: d => d.inputs.valuation_assumptions?.roic_stable_override, format: 'percent' },
+  'inputs.valuation_assumptions.failure_probability': { label: '失败概率假设', read: d => d.inputs.valuation_assumptions?.failure_probability, format: 'percent' },
 } satisfies Record<string, Field>;
 
 // Stable UI attachment points for future knowledge releases. This is an
@@ -103,4 +103,34 @@ export function resolveLiveValue(valuation: ValuationResponse | null, fieldPath:
   if (field.format === 'multiple') return { label: field.label, value };
   const currency = valuation.inputs.reporting_currency || '报告币种未提供';
   return { label: field.label, value: `${value} ${field.format === 'money' ? `百万 ${currency}` : `${currency}/股`}` };
+}
+
+// Display the response's ingredients and provenance, never recompute them or
+// infer that a missing provenance entry certifies a default or company fact.
+export function resolveLiveContext(valuation: ValuationResponse | null, fieldPath: string) {
+  if (!valuation || !Object.hasOwn(fields, fieldPath)) return null;
+  const relative = fieldPath.replace(/^inputs\./, '');
+  const exact = valuation.source_metadata?.[relative];
+  const inherited = relative.startsWith('valuation_assumptions.') ? valuation.source_metadata?.valuation_assumptions : undefined;
+  const capital = fieldPath.startsWith('cost_of_capital.') || fieldPath.startsWith('inputs.macro_inputs.');
+  const forecast = fieldPath.startsWith('inputs.valuation_assumptions.') || fieldPath.startsWith('dcf.') || fieldPath === 'final.value_per_share';
+  const paths = capital ? [
+    'cost_of_capital.risk_free_rate', 'cost_of_capital.equity_risk_premium', 'cost_of_capital.beta_l',
+    'cost_of_capital.cost_of_equity', 'cost_of_capital.cost_of_debt_aftertax',
+    'cost_of_capital.weight_equity', 'cost_of_capital.weight_debt', 'inputs.macro_inputs.tax_rate_marginal',
+  ] : forecast ? [
+    'inputs.valuation_assumptions.revenue_growth_next_year', 'inputs.valuation_assumptions.target_operating_margin',
+    'inputs.valuation_assumptions.sales_to_capital_high', 'inputs.valuation_assumptions.stable_growth_rate',
+    'inputs.valuation_assumptions.roic_stable_override', 'inputs.valuation_assumptions.cost_of_capital_stable_override',
+    'cost_of_capital.wacc', 'dcf.value_of_operating_assets', 'dcf.value_of_equity',
+  ] : ['adjusted.value_of_research_asset', 'adjusted.pv_of_operating_leases', 'cashflow.fcff', 'cashflow.adjusted_invested_capital'];
+  return {
+    nature: relative.startsWith('valuation_assumptions.') ? '情景假设输入' : fieldPath.startsWith('inputs.') ? '风险或税率输入；来源须另核对' : '引擎计算结果',
+    source: exact ? `字段来源记录：${exact}` : inherited ? `共享假设来源记录：${inherited}` : '响应未提供此字段的独立来源记录；不能据此认定为公司事实或用户覆盖。',
+    components: paths.filter(path => path !== fieldPath).map(path => ({ path, ...resolveLiveValue(valuation, path)! })),
+    branches: capital && valuation.cost_of_capital ? [
+      ['资本成本方法', valuation.cost_of_capital.approach_used], ['Beta分支', valuation.cost_of_capital.beta_branch_used],
+      ['ERP分支', valuation.cost_of_capital.erp_branch_used], ['债务成本分支', valuation.cost_of_capital.kd_branch_used],
+    ].filter(([, value]) => value) : [],
+  };
 }

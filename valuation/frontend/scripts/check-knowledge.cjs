@@ -66,7 +66,7 @@ assert.equal(readSelection(selection('[data-term-id]', 0, 4, '#plain')), null);
 const { safeKnowledgeUrl } = require('../src/knowledge/urls.ts');
 for (const url of ['javascript:alert(1)', 'data:text/html,test', '//other.test', '/admin', '/knowledge-bad']) assert.equal(safeKnowledgeUrl(url), undefined);
 for (const url of ['https://example.test/source', '/knowledge/wacc', '/knowledge', '#formula']) assert.equal(safeKnowledgeUrl(url), url);
-const { resolveLiveValue } = require('../src/knowledge/liveValues.ts');
+const { resolveLiveContext, resolveLiveValue } = require('../src/knowledge/liveValues.ts');
 const valueData = {
   inputs: { reporting_currency: 'CNY', macro_inputs: { country_risk_premium: 0 }, valuation_assumptions: { cost_of_capital_stable_override: null } },
   cost_of_capital: { wacc: 0.1 }, cashflow: { fcff: -250 }, final: { value_per_share: 25 }, dcf: { terminal_value_firm: 2000 },
@@ -82,6 +82,13 @@ assert.equal(resolveLiveValue(valueData, 'final.value_per_share').value, '25 CNY
 assert.equal(resolveLiveValue(valueData, 'dcf.terminal_value_firm').value, '2,000 百万 CNY');
 for (const wacc of [null, undefined, NaN, Infinity]) assert.equal(resolveLiveValue({ ...valueData, cost_of_capital: { wacc } }, 'cost_of_capital.wacc').value, '未提供');
 assert.equal(resolveLiveValue({ ...valueData, cost_of_capital: undefined }, 'cost_of_capital.wacc').value, '未提供');
+assert.equal(resolveLiveContext(null, 'cost_of_capital.wacc'), null);
+assert.equal(resolveLiveContext(valueData, '__proto__'), null);
+assert.match(resolveLiveContext(valueData, 'cost_of_capital.wacc').source, /未提供/);
+const sourced = { ...valueData, source_metadata: { 'macro_inputs.risk_free_rate': '用户来源', valuation_assumptions: '原模型共享默认' } };
+assert.match(resolveLiveContext(sourced, 'inputs.macro_inputs.risk_free_rate').source, /字段来源记录：用户来源/);
+assert.match(resolveLiveContext(sourced, 'inputs.valuation_assumptions.stable_growth_rate').source, /共享假设来源记录：原模型共享默认/);
+assert.equal(resolveLiveContext(sourced, 'inputs.valuation_assumptions.stable_growth_rate').nature, '情景假设输入');
 
 async function checkClient() {
   const calls = [];

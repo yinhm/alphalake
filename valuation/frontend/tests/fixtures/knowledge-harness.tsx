@@ -17,8 +17,12 @@ export function SelectionToggle() {
 export function Harness() {
   const [wacc, setWacc] = useState(0.1);
   const [cell, setCell] = useState('WACC');
-  // Only the allowlisted WACC response field is consumed by this fixture.
-  const valuation = { inputs: { reporting_currency: 'USD' }, cost_of_capital: { wacc } } as ValuationResponse;
+  const [cleared, setCleared] = useState(false);
+  // Intentionally independent response numbers test display, not calculation.
+  const valuation = cleared ? null : { id: 'synthetic-session', ticker: wacc === 0.1 ? 'SYNTH:FIRST' : 'SYNTH:SECOND',
+    inputs: { reporting_currency: 'USD', macro_inputs: {}, industry_data: { industry_name: '合成行业', region: 'TEST' } },
+    cost_of_capital: { wacc, beta_l: 1.25 }, source_metadata: { 'cost_of_capital.wacc': wacc === 0.1 ? '原始合成来源' : '用户合成覆盖' },
+    reference_snapshot: { id: 'standard-test-snapshot' }, warnings: [] } as unknown as ValuationResponse;
   return <BrowserRouter><KnowledgeProvider valuation={valuation}>
     <div className="flex min-h-screen">
       <main className="min-w-0 flex-1 p-6" data-knowledge-scope>
@@ -42,6 +46,7 @@ export function Harness() {
         </tbody></table>
         <output data-testid="committed-cell">{cell}</output>
         <button type="button" onClick={() => setWacc(0.12)}>更新合成估值</button>
+        <button type="button" onClick={() => setCleared(true)}>清除合成估值</button>
         <button type="button" data-testid="focus-anchor">保留焦点</button>
       </main>
       <KnowledgePanel />

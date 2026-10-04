@@ -14,7 +14,7 @@ const isWide = () => window.matchMedia(QUERY).matches;
 
 function containDialogFocus(event: ReactKeyboardEvent<HTMLDialogElement>) {
   if (event.key !== 'Tab') return;
-  const elements = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+  const elements = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), summary, input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
     .filter(element => element.getClientRects().length > 0);
   const first = elements[0];
   const last = elements[elements.length - 1];

@@ -431,6 +431,7 @@ export interface ValuationResponse {
   final: FinalValuation | null;
   warnings: string[];
   source_metadata: Record<string, string>;
+  reference_snapshot?: { id?: string; information_as_of?: string };
   industry_stats?: IndustryStatDistributions | null;
   unresolved_fields?: UnresolvedField[];
 }
