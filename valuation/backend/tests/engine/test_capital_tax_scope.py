@@ -63,7 +63,7 @@ def test_aggregate_wacc_cannot_invent_a_debt_component():
     result = calculate([-.1]*10, 'direct')
     assert result.wacc_tax_shield_adjustments == [0]*10
     assert 'not_decomposed' in result.tax_shield_basis
-    with pytest.raises(ValueError,match='NOL'):
+    with pytest.raises(ValueError,match='nol_amount'):
         calculate([.2]*10,nol=-1)
 
 

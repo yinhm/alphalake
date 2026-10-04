@@ -467,13 +467,33 @@ class ResearchTaxForecast(BaseModel):
         return self
 
 
+class DebtTaxShieldYear(BaseModel):
+    """显式正常化WACC及其债务抵税分量；不据此推算Beta或融资结构。"""
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    normal_wacc: float = Field(ge=0)
+    debt_weight: float = Field(ge=0, le=1)
+    cost_of_debt_pretax: float = Field(ge=0)
+    tax_shield_rate: float = Field(ge=0, le=1)
+
+
+class DebtTaxShieldForecast(BaseModel):
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    policy_id: str = Field(min_length=1)
+    years: list[DebtTaxShieldYear]
+    terminal: DebtTaxShieldYear
+
+
 class ValuationAssumptions(BaseModel):
     annual_forecast: list[ForecastYear] | None = None
     research_tax: ResearchTaxForecast | None = None
+    debt_tax_shield: DebtTaxShieldForecast | None = None
     annual_sales_to_capital: list[float] | None = Field(default=None, description="Explicit positive sales/capital per forecast investment year; overrides two-stage ratios")
 
     @model_validator(mode='after')
     def forecast_length(self):
+        if self.debt_tax_shield is not None and (self.projection_years < 1
+                or len(self.debt_tax_shield.years) != self.projection_years):
+            raise ValueError('debt tax shield forecast must cover every projection year')
         if self.research_tax is not None and (self.projection_years < 1
                 or len(self.research_tax.expenses) != self.projection_years
                 or len(self.research_tax.deductions) != self.projection_years):
@@ -505,7 +525,7 @@ class ValuationAssumptions(BaseModel):
     reinvestment_lag_years: int = Field(default=1)
     override_tax_convergence: bool = Field(default=False)
     override_nol: bool = Field(default=False)
-    nol_amount: float = Field(default=0.0)
+    nol_amount: float = Field(default=0.0, ge=0, allow_inf_nan=False)
     override_riskfree: bool = Field(default=False)
     riskfree_after_yr10: float | None = Field(default=None)
     override_growth_perpetuity: bool = Field(default=False)
@@ -537,6 +557,8 @@ class DCFResult(BaseModel):
     discount_factors: list[float] = Field(default_factory=list)
     debt_tax_shield_availability: list[float] = Field(default_factory=list)
     wacc_tax_shield_adjustments: list[float] = Field(default_factory=list)
+    debt_tax_shield_spreads: list[float] = Field(default_factory=list)
+    terminal_debt_tax_shield_spread: float = 0.0
     tax_shield_basis: str = "not_evaluated"
     terminal_wacc: float | None = None
     terminal_roic: float | None = None

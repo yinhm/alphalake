@@ -451,9 +451,12 @@ def methodology_review(inputs, report, review):
     flag('consolidated_book_equity_required_for_capital_diagnostics', raw.consolidated_book_equity is None)
     flag('lease_capitalization_requires_no_prior_balance_sheet_recognition', inputs.adjustment_inputs.has_operating_leases)
     flag('rd_life_and_ttm_cohorts_are_estimation_policy', inputs.adjustment_inputs.has_r_and_d)
-    flag('tax_shield_path_uses_constant_initial_debt_component', any(report.dcf.wacc_tax_shield_adjustments))
+    flag('tax_shield_path_uses_constant_initial_debt_component',
+        'initial_debt_component_constant' in report.dcf.tax_shield_basis and
+        (any(report.dcf.wacc_tax_shield_adjustments) or report.dcf.terminal_debt_tax_shield_spread > 0 and report.dcf.unused_nol_at_terminal > 0))
+    flag('partial_tax_shield_availability_is_proportional_proxy', any(0 < f < 1 for f in report.dcf.debt_tax_shield_availability))
+    flag('nol_utilization_requires_tax_law_and_profit_evidence', any(report.dcf.nol_projections) or a.override_nol)
     flag('aggregate_wacc_tax_shield_not_decomposed', 'not_decomposed' in report.dcf.tax_shield_basis and any(v < 1 for v in report.dcf.debt_tax_shield_availability))
-    flag('terminal_unused_nol_not_separately_valued', report.dcf.unused_nol_at_terminal > 0)
     flag('turnaround_path_requires_basis', report.adjusted.adjusted_ebit <= 0)
     flag('capital_release_requires_recoverability_basis', any(r['reinvestment_million_cny'] < 0 for r in forecast) or terminal['growth'] < 0)
     flag('nonpositive_equity_requires_distress_interpretation', report.final.value_per_share is not None and report.final.value_per_share <= 0)
@@ -515,9 +518,13 @@ def methodology_review(inputs, report, review):
             boundary='收入规模、增长空间、目标利润率及投资滞后须有经济依据；没有统一数值阈值可自动批准'),
         terminal_wacc=dict(tax_shield_basis=report.dcf.tax_shield_basis,
             debt_tax_shield_availability=report.dcf.debt_tax_shield_availability,
+            annual_debt_tax_shield_spreads=report.dcf.debt_tax_shield_spreads,
+            terminal_debt_tax_shield_spread=report.dcf.terminal_debt_tax_shield_spread,
+            explicit_financing_policy=a.debt_tax_shield.model_dump(mode='json') if a.debt_tax_shield else None,
             annual_wacc_adjustments=report.dcf.wacc_tax_shield_adjustments,
             terminal_wacc_adjustment=report.dcf.terminal_tax_shield_adjustment,
             unused_nol_at_terminal=report.dcf.unused_nol_at_terminal,
+            terminal_nol_treatment=report.dcf.terminal_nol_treatment,
             growth=terminal['growth'], wacc=terminal['wacc'], roic=terminal['assumed_marginal_roic'],
             reinvestment_rate=terminal['reinvestment_rate'], terminal_riskfree=terminal_rf, terminal_tax=terminal_tax,
             initial_wacc=report.cost_of_capital.wacc,

@@ -268,7 +268,19 @@ export interface TaxHistory {
   avg_5yr: number | null;
 }
 
+export interface DebtTaxShieldYear {
+  normal_wacc: number;
+  debt_weight: number;
+  cost_of_debt_pretax: number;
+  tax_shield_rate: number;
+}
+
 export interface ValuationAssumptions {
+  debt_tax_shield: {
+    policy_id: string;
+    years: DebtTaxShieldYear[];
+    terminal: DebtTaxShieldYear;
+  } | null;
   research_tax?: {
     policy_id: string;
     expenses: number[];
@@ -311,6 +323,15 @@ export interface ValuationAssumptions {
 }
 
 export interface DCFResult {
+  debt_tax_shield_availability: number[];
+  wacc_tax_shield_adjustments: number[];
+  debt_tax_shield_spreads: number[];
+  terminal_debt_tax_shield_spread: number;
+  tax_shield_basis: string;
+  terminal_wacc: number | null;
+  terminal_roic: number | null;
+  terminal_tax_shield_adjustment: number;
+  unused_nol_at_terminal: number;
   nopat_projections: number[];
   tax_base_projections: number[];
   cash_tax_projections: number[];

@@ -114,15 +114,53 @@ NOPAT = P×(1−τ) + (R−A)
 
 金额单位沿完整输入：本项目原生SQLite为百万元。费用是已费用化的部分，不重复加入报表已资本化的开发支出。经济利润E仍取原收入×调整后利润率；由E、R、A推导P，不在适配器偷偷修改利润率。显式抵亏仍采用既有`override_nol/nol_amount`，本路径限定无到期/上限、无抵免、无跨法人差异条件，不能认证真实可利用亏损。
 
-M4输出逐年`research_amortization_projections`、`tax_base_projections`、`cash_tax_projections`、`nopat_projections`和`nol_projections`。融资比例代理改按B/期初L判断，而非E；固定初始债务分量与不可拆分WACC的限制保留。API拒绝无效路径，PATCH失败保留旧会话。
+M4输出逐年`research_amortization_projections`、`tax_base_projections`、`cash_tax_projections`、`nopat_projections`和`nol_projections`。融资比例代理改按B/期初L判断，而非E；默认固定初始债务分量，可提供下节显式融资路径；未提供分量的整体WACC不自动拆分。API拒绝无效路径，PATCH失败保留旧会话。
 
 终值区分长期稳态与旧队列/亏损的过渡：先按R随g增长推导稳态A/B，计算正常化NOPAT及总投入`NOPAT×g/ROIC`；逐年替换剩余旧研发cohort，再解析计价无限期抵亏尾部，不截断年份。临时税收利益不自动形成额外经营再投资。实际尾部现金税与既有税盾融资代理配套，默认稳态ROIC随实际长期WACC。
 
-`terminal_nopat/reinvestment/fcff/tax_base/cash_tax`是**正常化稳态金额**；`terminal_first_year_tax_base/cash_tax`是预测期之后首年含旧队列和剩余NOL的实际条件值。`terminal_value_firm = terminal_fcff/(terminal_wacc−g) + terminal_tax_transition_value`；过渡差额同时包含队列、抵亏及折现时序，不单独称“研发税盾价值”。`unused_nol_at_terminal`仍指预测期末余额；`terminal_nol_treatment`表明已在税务尾部考虑，不等于全部余额都有正价值。非研发桥分支的剩余NOL正常化边界仍在TODO。
+`terminal_nopat/reinvestment/fcff/tax_base/cash_tax`是**正常化稳态金额**；`terminal_first_year_tax_base/cash_tax`是预测期之后首年含旧队列和剩余NOL的实际条件值。`terminal_value_firm = terminal_fcff/(terminal_wacc−g) + terminal_tax_transition_value`；过渡差额同时包含队列、抵亏及折现时序，不单独称“研发税盾价值”。`unused_nol_at_terminal`仍指预测期末余额；`terminal_nol_treatment`表明已在税务尾部考虑，不等于全部余额都有正价值。普通及研发路径都按下节规则承接剩余NOL，不因是否开启研发而区别计价。
 
 `tools.evaluate_native_policy --research-tax`只附加一个`research_tax_current_ratio_ordinary_deduction`条件：R/收入保持当前比率，D=R，复用原税率代理、增长、经济利润率和总再投资。费用率持续是本地条件，不是达摩达兰规定或公司事实；不声称中国加计扣除、不替换显式路径/原基线、不自动选值、不与全部增长/资本情景交叉组合。
 
 调整前Decimal反例保留于`workspace/derived/valuation-upstream-review/rd-tax-contract-check.json`；E28代码回归及固定12家同输入影响见`workspace/derived/research-tax-bridge/`。主库、财务SQLite、默认用户输入未改；方法原文、代数推导、实现假设及条件数值分别记录，不声称提升了预测准确率。
+
+## 亏损抵扣与融资税盾契约
+
+2026-10-04用户批准统一普通NOL终值、明示税盾条件及有限税务过渡。复用M4及E28尾部，不新增第二套DCF。
+
+### 现金税与剩余亏损
+
+既有`override_nol/nol_amount`仅提供显式期初可利用税务亏损L，金额同报表，非负有限；默认不启用，不等于公司确无亏损。会计亏损、未分配利润和递延所得税资产不能直接代替L。普通路径B=经济EBIT代理，研发路径B=E+A−D；税率/逐年tax作用于B，范围[0,1]，负税基不自动获得退税。
+
+现金税C=max(0,B−期初L)×税率；期末L=max(0,期初L−B)；NOPAT=E−C。限定单一聚合税基、无到期/抵扣上限、无税额抵免和跨法人差异；实际税法不能从简化规则反推。不自动从历史负EBIT估计公司可利用亏损。
+
+所有路径都承接预测期末剩余L。先计算正常化税基/NOPAT及总投入g/ROIC；普通路径解析计价完整抵亏、至多一个部分抵亏年度及正常经营尾部，研发路径先替换旧队列再复用尾部。不截断年份，不把L×税率立即加到股权价值。未来税基非正或税率为0时，不凭亏损余额创造节税；负增长下可能永远不能全部利用。临时节税不自动增加经营再投资。
+
+虚构例：预测期末L=800，此后每年利润/税基200、税率25%、g=0、WACC8%、无债务及再投资。正常终值150/8%=1875；四年节税现值Σ50/1.08^t=165.606342；完整尾部2040.606342。金额在预测期末，不是今天股权价值或公司目标价。
+
+### 债务分量与显式融资路径
+
+默认具名条件`initial_debt_component_constant`：潜在税盾分量S=初始债务权重×(税前Kd−税后Kd)。可用比例f=max(0,B−期初L)/B（B>0且税率>0，否则0）；实际WACC=正常化WACC+S×(1−f)。**f是本地平均税基比例代理，不等于新增利息的边际扣除率**，不是达摩达兰规定的精确部分抵扣算法。延期利息抵扣、到期和法人限制未重建；保留诊断，不认证真实税务。
+
+可选完整API字段`valuation_assumptions.debt_tax_shield`：
+
+| 字段 | 契约 |
+|---|---|
+| `policy_id` | 非空显式融资条件标识 |
+| `years` | 每个预测年度一行，不压缩或补齐缺年 |
+| `terminal` | 预测期之后的固定长期融资条件，覆盖抵亏及其后尾部 |
+| 每行`normal_wacc` | 非负有限整体正常化WACC，已含本行潜在债务税盾，尚未调整亏损导致的不可用部分 |
+| 每行`debt_weight` | [0,1]市场融资权重条件，不是账面负债率 |
+| 每行`cost_of_debt_pretax` | 非负有限税前债务成本 |
+| 每行`tax_shield_rate` | [0,1]潜在利息抵税率，独立于经营现金税/EBIT比值 |
+
+所有率以小数表示。提供路径时，逐年及终值正常化WACC优先于原两阶段WACC/`cost_of_capital_stable_override`；S改为各行债务权重×税前Kd×抵税率，再按f调整。未提供时沿用原WACC过渡及固定初始分量。稳态ROIC仍优先显式`roic_stable_override`，未填时等于实际正常化稳态WACC；临时节税不重定义长期再投资率。
+
+只交付用户选择的整体WACC及对应债务分量，不自动推算Ke、Beta或融资结构；二者的经济一致性由显式政策说明。M2继续表示当前资本成本，DCF未来路径单独供给；长期融资不因NOL耗尽另换权重。未提供分量的整体WACC不自动拆分；提供路径也不把f认证成真实边际扣除。无债务分量时不额外调整WACC；FCFF不重复加入融资利息节税。
+
+结果增加`debt_tax_shield_spreads`及`terminal_debt_tax_shield_spread`，与可用比例、WACC调整及`tax_shield_basis`解释实际折现。普通及研发均标`terminal_nol_treatment=unlimited_carryforward_without_expiry_valued_in_tax_tail`，含义是规则已承接，不是余额全已实现。稳态金额和首年实际条件值保持分开；终值=正常化Gordon+税务过渡差额。无效税率、亏损及融资路径返回422，PATCH失败保留会话。
+
+原始依据：[达摩达兰第10章，第7—9页](https://pages.stern.nyu.edu/~adamodar/pdfiles/valn2ed/ch10.pdf)、[税率与NOL问答](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/taxrate.htm)。抵亏节税按利用时点计价，经营现金税与融资税盾配套；无到期、平均比例和未来融资均为本地条件。回归见`test_nol_terminal_tax.py`，旧输入与证据在`workspace/derived/nol-tax-terminal/`。
 
 ## 输入与缺项规则
 

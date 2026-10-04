@@ -110,11 +110,8 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
   else if (va.override_riskfree && va.riskfree_after_yr10 != null) g_terminal = va.riskfree_after_yr10;
   else g_terminal = macro.risk_free_rate;
 
-  // Terminal WACC
-  let wacc_terminal: number | null = null;
-  if (va.cost_of_capital_stable_override != null) wacc_terminal = va.cost_of_capital_stable_override;
-  else if (va.override_riskfree && va.riskfree_after_yr10 != null) wacc_terminal = va.riskfree_after_yr10 + macro.equity_risk_premium;
-  else wacc_terminal = macro.risk_free_rate + macro.equity_risk_premium;
+  // The engine resolves explicit financing paths and loss/NOL tax-shield effects.
+  const wacc_terminal = dcf.terminal_wacc;
 
   // Classify each year's color
   function yearCellType(t: number): 'financial' | 'calc' | 'reference' {

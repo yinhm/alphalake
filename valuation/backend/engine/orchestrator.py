@@ -177,7 +177,8 @@ def run_full_valuation(
     )
 
     if any(report.dcf.wacc_tax_shield_adjustments) or report.dcf.terminal_tax_shield_adjustment:
-        report.warnings.append("Loss/NOL debt tax shield adjusted using constant initial debt cost/weight and proportional taxable profit; actual tax limits and future financing remain assumptions")
+        financing = "explicit normal WACC/debt-component path" if inputs.valuation_assumptions.debt_tax_shield else "constant initial debt cost/weight"
+        report.warnings.append(f"Loss/NOL debt tax shield adjusted using {financing} and proportional taxable profit; partial-year availability is a local proxy, not a marginal interest deduction rate")
     if ('not_decomposed' in report.dcf.tax_shield_basis
             and any(v < 1 for v in report.dcf.debt_tax_shield_availability)):
         report.warnings.append("Aggregate WACC not decomposed: loss/NOL debt tax shield timing not automatically adjusted")
@@ -186,8 +187,8 @@ def run_full_valuation(
         report.warnings.append("Explicit research tax bridge: forecast expenses/deductions and unlimited NOL carryforward are conditions, not company tax facts; temporary tax benefits do not change total reinvestment")
     elif inputs.adjustment_inputs.has_r_and_d:
         report.warnings.append("Future research tax bridge unspecified: economic EBIT used as forecast tax proxy; research tax differences not separately reconstructed")
-    if report.dcf.unused_nol_at_terminal > 0 and report.dcf.terminal_nol_treatment == 'not_separately_valued':
-        report.warnings.append("Unused projected NOL at terminal is not valued separately; normalized terminal taxes assumed")
+    if any(report.dcf.nol_projections) or inputs.valuation_assumptions.override_nol:
+        report.warnings.append("NOL cash-tax/terminal tail assumes unlimited carryforward without expiry or deduction caps; balances and future utilization are conditions, not verified company tax facts")
 
     if inputs.equity_bridge is not None:
         from .equity_bridge import apply_equity_bridge

@@ -100,7 +100,7 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 已批准报表信用附加条件使用同一入口的可选`--reported-credit`及已有显式政策，参考从同一SQLite读取，先读`docs/valuation/native-cny-policy.md`已批准规则。不从统一BBB、净财务费用或零利息推信用；保留原用户结果，解释表内标签及两种初始/稳态条件差别。缺明确CNY参考融资组件、范围或匹配版本时报告原因，不自动切原生详细/default分支；不能称代理为公司正式评级或新市场WACC。
 
-研发税务对照先读`docs/valuation/methodology-contract.md`的研发契约。已有显式`research_tax`路径优先；需要保持当前研发费用率的条件时，在同一具名交付入口加`--research-tax`。该条件只用普通扣除和原税率代理，原用户基线保留；不自动开启默认、不从全部费用认定加计扣除。解释`operating_tax_basis`、逐年税基/现金税/NOL、稳态及过渡终值，并指出无到期/限额抵亏和固定融资代理；金额变化不证明预测更准。不混用旧C/E现金税比例与新税基税率，不额外扣研发再投资。
+研发税务对照先读`docs/valuation/methodology-contract.md`的研发契约。已有显式`research_tax`路径优先；需要保持当前研发费用率的条件时，在同一具名交付入口加`--research-tax`。该条件只用普通扣除和原税率代理，原用户基线保留；不自动开启默认、不从全部费用认定加计扣除。解释`operating_tax_basis`、逐年税基/现金税/NOL、稳态及过渡终值，并指出无到期/限额抵亏和实际选择的融资/比例代理；金额变化不证明预测更准。不混用旧C/E现金税比例与新税基税率，不额外扣研发再投资。
 
 ## 原生跨公司条件情景
 
@@ -118,6 +118,6 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 原生入口统一使用标准财务出口，不再自动启用安克/苏泊尔专项EBIT。来源EBIT可用不证明经营范围已闭合；比较旧结果须同时核对利润、现金、投资及恢复的历史行，并按当前政策重建，不能只把差额归因于EBIT。
 
-解释原生准入与经济合理性时读取`docs/valuation/methodology-contract.md`：兼容API的`input_contract`说明所选方法可消费的输入；审阅结果的`methodology`区分经营范围、再投资与终值风险。`ready`或`numerical_replay=passed`不代表公司假设获批；负再投资需说明资本释放假设，单因素终值对照不称概率区间。亏损税盾解释须读取`dcf.wacc_tax_shield_adjustments`、`tax_shield_basis`、`unused_nol_at_terminal`及`terminal_nol_treatment`；显式研发条件已在税务尾部考虑剩余NOL，其他分支仍有正常化边界，不一概说未计价。不可拆分WACC及固定初始融资分量均不冒充公司税务事实。
+解释原生准入与经济合理性时读取`docs/valuation/methodology-contract.md`：兼容API的`input_contract`说明所选方法可消费的输入；审阅结果的`methodology`区分经营范围、再投资与终值风险。`ready`或`numerical_replay=passed`不代表公司假设获批；负再投资需说明资本释放假设，单因素终值对照不称概率区间。亏损税盾解释须读取`dcf.wacc_tax_shield_adjustments`、`tax_shield_basis`、`unused_nol_at_terminal`及`terminal_nol_treatment`；普通及研发条件均已在税务尾部承接剩余NOL，不再报告“普通路径未计价”。读取新增年度/长期`debt_tax_shield_spreads`和可选`inputs.valuation_assumptions.debt_tax_shield`；未来正常化WACC/债务分量由完整显式路径供给，否则保留固定初始分量。整体WACC不猜拆，比例代理不等于边际扣除；真实到期/限额、融资与亏损余额未自动核实。
 
 自动假设选择采用`native-assumption-selection-v2`：盈利收缩可生成条件恢复情景，必须同时说明恢复持续期与负再投资回收依据未建立；不把负再投资当已实现现金、不自动采用场景，亏损仍需独立扭亏政策。旧政策运行按原提交复验，当前规则见[自动选择](../../docs/valuation/native-assumption-selection.md)。

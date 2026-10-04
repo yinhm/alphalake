@@ -13,7 +13,7 @@ Key mechanics that differ from the previous implementation:
   - Margin path linearly converges from operating_margin_next_year to target over K years
   - Tax path: flat effective for years 1–5, linear convergence to marginal for 6–10
   - Dynamic NOL carryforward on the selected tax base; NOPAT = economic EBIT − cash tax
-  - Explicit R&D cohorts/deductions and terminal tax transition when supplied
+  - Shared NOL terminal tail, with explicit R&D cohorts/deductions when supplied
   - Reinvestment = ΔRevenue / Sales-to-Capital with lag (0–3 years)
   - WACC path: flat for years 1–5, linear convergence to terminal for 6–10
   - Cumulative discount factors built year-by-year
@@ -55,6 +55,10 @@ class InvalidReinvestment(ValueError):
 
 class InvalidResearchTax(ValueError):
     """研发税基桥缺队列或有效税率，不输出隐含税务利益。"""
+
+
+class InvalidTaxForecast(ValueError):
+    """现金税/融资税盾条件无效，不把负税率或缺分量视为现金收益。"""
 
 
 def _revenue_growth_path(
@@ -167,8 +171,13 @@ def _apply_nol_and_tax(
     return nopat_path, nol_path
 
 
+def _tax_shield_availability(tax_base, opening_nol, tax):
+    """本地比例代理，不等同于利息的边际扣除率或实际税法。"""
+    return max(0.0, tax_base-opening_nol)/tax_base if tax_base > 0 and tax > 0 else 0.0
+
+
 def _nol_terminal_value(fcff, tax_base, tax, nol, growth, wacc, shield_spread):
-    """已达研发稳态的尾部；无到期/抵扣上限NOL，解析求抵亏年数，无截断。"""
+    """通用稳态税务尾部；无到期/抵扣上限NOL，解析求抵亏年数，无截断。"""
     if tax_base <= 0 or tax <= 0 or nol <= 0:
         return fcff / (wacc - growth)
     no_shield_wacc = wacc + shield_spread
@@ -213,7 +222,7 @@ def _research_terminal(ebit, forecast, cohorts, life, growth, tax, nol, wacc, sp
     for _ in range(life):
         actual_base = ebit * scale + sum(cohorts) / life - deduction * scale
         cash_tax = max(0.0, actual_base - nol) * tax
-        fraction = max(0.0, actual_base - nol) / actual_base if actual_base > 0 and tax > 0 else 0.0
+        fraction = _tax_shield_availability(actual_base, nol, tax)
         nol = max(0.0, nol - actual_base)
         discount /= 1 + wacc + spread * (1 - fraction)
         value += (ebit * scale - cash_tax - investment * scale) * discount
@@ -352,6 +361,10 @@ def compute_dcf(
         # Default terminal WACC: riskfree + mature market ERP (beta=1 proxy)
         wacc_terminal = macro.risk_free_rate + macro.equity_risk_premium
 
+    financing = assumptions.debt_tax_shield
+    if financing is not None:
+        wacc_terminal = financing.terminal.normal_wacc
+
     if not math.isfinite(wacc_terminal) or not math.isfinite(g_terminal) or wacc_terminal <= g_terminal:
         raise InvalidTerminalValue("terminal WACC must be finite and exceed finite terminal growth")
     if g_terminal <= -1:
@@ -369,7 +382,7 @@ def compute_dcf(
     # --- NOL ---
     nol_initial = assumptions.nol_amount if assumptions.override_nol else 0.0
     if not math.isfinite(nol_initial) or nol_initial < 0:
-        raise ValueError("NOL must be finite and nonnegative")
+        raise InvalidTaxForecast("NOL must be finite and nonnegative")
 
     # --- Paths ---
     g_path = _revenue_growth_path(g_year_1, g_years_2_5, g_terminal, high_growth_years, n)
@@ -382,7 +395,11 @@ def compute_dcf(
         margin_path_vals = [r.margin for r in assumptions.annual_forecast]
         tax_path_vals = [r.tax for r in assumptions.annual_forecast]
         margin_target, tax_terminal = margin_path_vals[-1], tax_path_vals[-1]
+    if any(not math.isfinite(t) or not 0 <= t <= 1 for t in [*tax_path_vals, tax_terminal]):
+        raise InvalidTaxForecast('tax rates must be finite and between zero and one')
     wacc_path_vals = _wacc_path(wacc_initial, wacc_terminal, high_growth_years, n)
+    if financing is not None:
+        wacc_path_vals = [row.normal_wacc for row in financing.years]
 
     # --- Revenue projections (base + years 1..n + padding for lag) ---
     rev_base = raw.revenues or 0.0
@@ -414,8 +431,6 @@ def compute_dcf(
                     [adjustment_inputs.r_and_d_expense_current,
                      *adjustment_inputs.r_and_d_expense_past[:adjustment_inputs.amortization_period_n]])):
             raise InvalidResearchTax('research tax forecast requires the complete selected research cohort')
-        if any(not math.isfinite(t) or not 0 <= t <= 1 for t in [*tax_path_vals, tax_terminal]):
-            raise InvalidResearchTax('research tax rates must be finite and between zero and one')
         life = adjustment_inputs.amortization_period_n
         cohorts = [adjustment_inputs.r_and_d_expense_current, *adjustment_inputs.r_and_d_expense_past[:life-1]]
         for expense in research_tax.expenses:
@@ -428,19 +443,27 @@ def compute_dcf(
         ebit_projections, tax_path_vals, nol_initial, tax_base_projections)
     cash_tax_projections = [e - p for e, p in zip(ebit_projections, nopat_projections, strict=True)]
 
-    # Damodaran: no current debt tax benefit while operating income is fully
-    # sheltered by losses. Carry the selected initial debt-cost/weight component
-    # through the explicit horizon; this is not a forecast of actual tax law/debt.
-    # ponytail: constant initial debt component; financing paths need explicit future weights/costs.
+    # Damodaran requires cash-tax/shield timing consistency. The partial-year
+    # proportion below is a local approximation, not a marginal tax calculation.
     shield_availability = []
     opening_nol = nol_initial
     for base, rate, closing_nol in zip(tax_base_projections, tax_path_vals, nol_projections, strict=True):
-        shield_availability.append(max(0.0, base-opening_nol)/base if base > 0 and rate > 0 else 0.0)
+        shield_availability.append(_tax_shield_availability(base, opening_nol, rate))
         opening_nol = closing_nol
     decomposed = cost_of_capital.approach_used in ('detailed', 'reference_snapshot')
     shield_spread = (cost_of_capital.weight_debt *
         (cost_of_capital.cost_of_debt_pretax-cost_of_capital.cost_of_debt_aftertax)) if decomposed else 0.0
-    shield_adjustments = [shield_spread*(1-fraction) for fraction in shield_availability]
+    # ponytail: absent an explicit financing path, retain the named constant
+    # initial debt-component condition; do not invent future weights or costs.
+    shield_spreads = [shield_spread]*n
+    if financing is not None:
+        shield_spreads = [row.debt_weight*row.cost_of_debt_pretax*row.tax_shield_rate
+            for row in financing.years]
+        shield_spread = (financing.terminal.debt_weight*financing.terminal.cost_of_debt_pretax
+            *financing.terminal.tax_shield_rate)
+    if any(not math.isfinite(s) or s < 0 for s in [*shield_spreads, shield_spread]):
+        raise InvalidTaxForecast('debt tax shield components must be finite and nonnegative')
+    shield_adjustments = [spread*(1-fraction) for spread,fraction in zip(shield_spreads, shield_availability, strict=True)]
     wacc_path_vals = [rate+delta for rate,delta in zip(wacc_path_vals,shield_adjustments,strict=True)]
 
     # --- Reinvestment ---
@@ -471,6 +494,7 @@ def compute_dcf(
 
     # --- Terminal Value (Gordon) ---
     terminal_value_firm = fcff_terminal / (wacc_terminal - g_terminal)
+    terminal_first_tax = max(0.0, terminal_tax_base-nol_projections[-1])*tax_terminal
     if research_tax is not None:
         terminal = _research_terminal(ebit_terminal, research_tax, cohorts, life, g_terminal,
             tax_terminal, nol_projections[-1], wacc_terminal-terminal_shield_adjustment,
@@ -482,6 +506,10 @@ def compute_dcf(
         nopat_terminal, reinvestment_terminal, fcff_terminal = terminal['nopat'], terminal['investment'], terminal['fcff']
         terminal_transition_value = terminal['transition_value']
         terminal_first_base, terminal_first_tax = terminal['first_base'], terminal['first_tax']
+    elif nol_projections[-1] > 0 and terminal_tax_base > 0 and tax_terminal > 0:
+        terminal_value_firm = _nol_terminal_value(fcff_terminal, terminal_tax_base, tax_terminal,
+            nol_projections[-1], g_terminal, wacc_terminal, shield_spread)
+        terminal_transition_value = terminal_value_firm-fcff_terminal/(wacc_terminal-g_terminal)
 
     # --- Cumulative discount factors (year-by-year product) ---
     cumulative_df = []
@@ -585,11 +613,13 @@ def compute_dcf(
         terminal_nopat=nopat_terminal, terminal_reinvestment=reinvestment_terminal, terminal_fcff=fcff_terminal,
         terminal_tax_transition_value=terminal_transition_value,
         terminal_first_year_tax_base=terminal_first_base, terminal_first_year_cash_tax=terminal_first_tax,
-        terminal_nol_treatment='unlimited_carryforward_without_expiry_valued_in_tax_tail' if research_tax else 'not_separately_valued',
+        terminal_nol_treatment='unlimited_carryforward_without_expiry_valued_in_tax_tail',
         debt_tax_shield_availability=shield_availability,
         wacc_tax_shield_adjustments=shield_adjustments,
-        tax_shield_basis=("initial_debt_component_constant; proportional_tax_base_proxy; terminal_normalized"
-            if decomposed else "aggregate_WACC_not_decomposed; tax_shield_timing_not_automatically_adjusted"),
+        debt_tax_shield_spreads=shield_spreads, terminal_debt_tax_shield_spread=shield_spread,
+        tax_shield_basis=(("explicit_normal_wacc_and_debt_component_path; " if financing else
+            "initial_debt_component_constant; ")+"proportional_tax_base_proxy; terminal_tax_tail"
+            if financing or decomposed else "aggregate_WACC_not_decomposed; tax_shield_timing_not_automatically_adjusted"),
         pv_fcff=pv_fcff,
         terminal_value_firm=terminal_value_firm,
         pv_terminal_value=pv_terminal,
