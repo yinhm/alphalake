@@ -51,6 +51,13 @@ const fields = {
   'inputs.valuation_assumptions.cost_of_capital_stable_override': { label: '稳定期 WACC 覆盖输入', read: d => d.inputs.valuation_assumptions?.cost_of_capital_stable_override, format: 'percent' },
   'inputs.valuation_assumptions.roic_stable_override': { label: '稳定期 ROIC 覆盖输入', read: d => d.inputs.valuation_assumptions?.roic_stable_override, format: 'percent' },
   'inputs.valuation_assumptions.failure_probability': { label: '失败概率假设', read: d => d.inputs.valuation_assumptions?.failure_probability, format: 'percent' },
+  'dcf.forecast_parameters.revenue_growth_next_year.value': { label: '生效的第一年增长率', read: d => d.dcf?.forecast_parameters?.revenue_growth_next_year?.value, format: 'percent' },
+  'dcf.forecast_parameters.revenue_growth_years_2_5.value': { label: '生效的高增长期增长率', read: d => d.dcf?.forecast_parameters?.revenue_growth_years_2_5?.value, format: 'percent' },
+  'dcf.forecast_parameters.operating_margin_next_year.value': { label: '生效的第一年调整利润率', read: d => d.dcf?.forecast_parameters?.operating_margin_next_year?.value, format: 'percent' },
+  'dcf.forecast_parameters.target_operating_margin.value': { label: '生效的目标调整利润率', read: d => d.dcf?.forecast_parameters?.target_operating_margin?.value, format: 'percent' },
+  'dcf.forecast_parameters.sales_to_capital_high.value': { label: '生效的高增长期资本倍率', read: d => d.dcf?.forecast_parameters?.sales_to_capital_high?.value, format: 'multiple' },
+  'dcf.forecast_parameters.sales_to_capital_stable.value': { label: '生效的过渡期资本倍率', read: d => d.dcf?.forecast_parameters?.sales_to_capital_stable?.value, format: 'multiple' },
+  'dcf.forecast_parameters.growth_perpetuity_rate.value': { label: '生效的终值增长率', read: d => d.dcf?.forecast_parameters?.growth_perpetuity_rate?.value, format: 'percent' },
 } satisfies Record<string, Field>;
 
 // Stable UI attachment points for future knowledge releases. This is an
@@ -111,6 +118,8 @@ export function resolveLiveContext(valuation: ValuationResponse | null, fieldPat
   if (!valuation || !Object.hasOwn(fields, fieldPath)) return null;
   const relative = fieldPath.replace(/^inputs\./, '');
   const exact = valuation.source_metadata?.[relative];
+  const resolved = relative.startsWith('valuation_assumptions.')
+    ? valuation.dcf?.forecast_parameters?.[relative.slice('valuation_assumptions.'.length)] : null;
   const inherited = relative.startsWith('valuation_assumptions.') ? valuation.source_metadata?.valuation_assumptions : undefined;
   const capital = fieldPath.startsWith('cost_of_capital.') || fieldPath.startsWith('inputs.macro_inputs.');
   const forecast = fieldPath.startsWith('inputs.valuation_assumptions.') || fieldPath.startsWith('dcf.') || fieldPath === 'final.value_per_share';
@@ -119,14 +128,15 @@ export function resolveLiveContext(valuation: ValuationResponse | null, fieldPat
     'cost_of_capital.cost_of_equity', 'cost_of_capital.cost_of_debt_aftertax',
     'cost_of_capital.weight_equity', 'cost_of_capital.weight_debt', 'inputs.macro_inputs.tax_rate_marginal',
   ] : forecast ? [
-    'inputs.valuation_assumptions.revenue_growth_next_year', 'inputs.valuation_assumptions.target_operating_margin',
-    'inputs.valuation_assumptions.sales_to_capital_high', 'inputs.valuation_assumptions.stable_growth_rate',
+    'dcf.forecast_parameters.revenue_growth_next_year.value', 'dcf.forecast_parameters.operating_margin_next_year.value',
+    'dcf.forecast_parameters.target_operating_margin.value', 'dcf.forecast_parameters.sales_to_capital_high.value',
+    'dcf.forecast_parameters.growth_perpetuity_rate.value',
     'inputs.valuation_assumptions.roic_stable_override', 'inputs.valuation_assumptions.cost_of_capital_stable_override',
     'cost_of_capital.wacc', 'dcf.value_of_operating_assets', 'dcf.value_of_equity',
   ] : ['adjusted.value_of_research_asset', 'adjusted.pv_of_operating_leases', 'cashflow.fcff', 'cashflow.adjusted_invested_capital'];
   return {
     nature: relative.startsWith('valuation_assumptions.') ? '情景假设输入' : fieldPath.startsWith('inputs.') ? '风险或税率输入；来源须另核对' : '引擎计算结果',
-    source: exact ? `字段来源记录：${exact}` : inherited ? `共享假设来源记录：${inherited}` : '响应未提供此字段的独立来源记录；不能据此认定为公司事实或用户覆盖。',
+    source: resolved ? `${resolved.source}：${resolved.basis}${exact ? `；来源记录：${exact}` : ''}` : exact ? `字段来源记录：${exact}` : inherited ? `共享假设来源记录：${inherited}` : '响应未提供此字段的独立来源记录；不能据此认定为公司事实或用户覆盖。',
     components: paths.filter(path => path !== fieldPath).map(path => ({ path, ...resolveLiveValue(valuation, path)! })),
     branches: capital && valuation.cost_of_capital ? [
       ['资本成本方法', valuation.cost_of_capital.approach_used], ['Beta分支', valuation.cost_of_capital.beta_branch_used],

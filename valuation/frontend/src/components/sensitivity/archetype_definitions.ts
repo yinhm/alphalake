@@ -1,15 +1,5 @@
-/**
- * Damodaran's six story archetypes, rendered as coherent multi-driver patches.
- *
- * Each archetype returns a patch payload that sets all 8 tornado drivers at
- * once, so the user can say "treat this like a utility" and see the entire
- * dial set snap to a plausible utility-shaped set of assumptions.
- *
- * Values are industry-aware where Damodaran's industry data carries a usable
- * median (growth, margin, sales-to-capital). For drivers without industry
- * comparables (failure probability, convergence year, WACC shift), we use
- * canonical values from Damodaran's published sensitivity examples.
- */
+/** Local illustrative presets, not Damodaran-prescribed or verified company forecasts. */
+import { forecastValue } from '../../lib/forecast';
 
 import type { ValuationResponse } from '../../types/valuation';
 import type { PatchValue } from '../../api/client';
@@ -161,14 +151,14 @@ export const ARCHETYPES: Archetype[] = [
 export function closestArchetype(data: ValuationResponse): string | null {
   const va = data.inputs.valuation_assumptions;
   const mc = data.inputs.methodology_choices;
-  if (!va || !mc) return null;
+  if (!va || !mc || va.annual_forecast || va.annual_sales_to_capital) return null;
 
   const cur = [
-    va.revenue_growth_next_year ?? 0,
-    va.revenue_growth_years_2_5 ?? 0,
-    va.target_operating_margin ?? 0.15,
-    (va.margin_convergence_year ?? 5) / 10,      // scale to same order-of-magnitude
-    (va.sales_to_capital_high ?? 2) / 5,          // scale down
+    forecastValue(data, 'revenue_growth_next_year') ?? NaN,
+    forecastValue(data, 'revenue_growth_years_2_5') ?? NaN,
+    forecastValue(data, 'target_operating_margin') ?? NaN,
+    (forecastValue(data, 'margin_convergence_year') ?? NaN) / 10,      // scale to same order-of-magnitude
+    (forecastValue(data, 'sales_to_capital_high') ?? NaN) / 5,          // scale down
     ((mc.wacc_level_shift_bps ?? 0) / 1000),      // 150 bps → 0.15
     va.failure_probability ?? 0,
   ];
@@ -192,23 +182,4 @@ export function closestArchetype(data: ValuationResponse): string | null {
   }
   // Only call it a "match" if we're reasonably close
   return bestDist < 0.25 ? bestId : null;
-}
-
-/** Piecewise-linear percentile: where does `value` fall within Q1/Median/Q3? */
-export function percentile(value: number, q1: number, median: number, q3: number): number | null {
-  if (q1 === undefined || median === undefined || q3 === undefined) return null;
-  if (q1 >= q3) return null;
-  if (value <= q1) {
-    // extrapolate below Q1: linear toward 0
-    const span = median - q1;
-    if (span <= 0) return 25;
-    return Math.max(0, 25 - ((q1 - value) / span) * 25);
-  }
-  if (value >= q3) {
-    const span = q3 - median;
-    if (span <= 0) return 75;
-    return Math.min(100, 75 + ((value - q3) / span) * 25);
-  }
-  if (value <= median) return 25 + ((value - q1) / (median - q1)) * 25;
-  return 50 + ((value - median) / (q3 - median)) * 25;
 }

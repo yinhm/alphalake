@@ -1,3 +1,4 @@
+import { forecastValue } from '../lib/forecast';
 import type { ValuationResponse } from '../types/valuation';
 import SpreadsheetCell from '../components/SpreadsheetCell';
 import SpreadsheetGrid from '../components/SpreadsheetGrid';
@@ -7,7 +8,6 @@ import { baseYear, priorYear, baseYearMargin } from '../lib/baseYear';
 export default function Diagnostics({ data }: { data: ValuationResponse; sessionId?: string | null }) {
   const by = baseYear(data);
   const py = priorYear(data);
-  const assumptions = data.inputs.valuation_assumptions;
   const industry = data.inputs.industry_data;
   const macro = data.inputs.macro_inputs;
   const dcf = data.dcf;
@@ -74,11 +74,11 @@ export default function Diagnostics({ data }: { data: ValuationResponse; session
           </tr>
           <tr>
             <SpreadsheetCell value="Your forecast — Year 1 growth" type="label" />
-            <SpreadsheetCell value={assumptions.revenue_growth_next_year} type="hypothesis" tooltip="Analyst input: valuation_assumptions.revenue_growth_next_year." />
+            <SpreadsheetCell value={forecastValue(data, 'revenue_growth_next_year')} type="hypothesis" tooltip="Resolved assumption: valuation_assumptions.revenue_growth_next_year." />
           </tr>
           <tr>
             <SpreadsheetCell value="Your forecast — Years 2-5 growth" type="label" />
-            <SpreadsheetCell value={assumptions.revenue_growth_years_2_5} type="hypothesis" tooltip="Analyst input: valuation_assumptions.revenue_growth_years_2_5. Single flat rate applied across years 2–5." />
+            <SpreadsheetCell value={forecastValue(data, 'revenue_growth_years_2_5')} type="hypothesis" tooltip="Resolved assumption: valuation_assumptions.revenue_growth_years_2_5. Single flat rate applied across years 2–5." />
           </tr>
           <tr>
             <SpreadsheetCell
@@ -132,7 +132,7 @@ export default function Diagnostics({ data }: { data: ValuationResponse; session
           </tr>
           <tr>
             <SpreadsheetCell value="Target operating margin" type="label" />
-            <SpreadsheetCell value={assumptions.target_operating_margin} type="hypothesis" tooltip="Analyst input: valuation_assumptions.target_operating_margin. The mature-state margin the firm converges to." />
+            <SpreadsheetCell value={forecastValue(data, 'target_operating_margin')} type="hypothesis" tooltip="Resolved assumption: valuation_assumptions.target_operating_margin. The mature-state margin the firm converges to." />
           </tr>
           <tr>
             <SpreadsheetCell value="Industry pretax margin" type="label" />
@@ -140,7 +140,7 @@ export default function Diagnostics({ data }: { data: ValuationResponse; session
           </tr>
           <tr>
             <SpreadsheetCell value="Year of convergence" type="label" />
-            <SpreadsheetCell value={assumptions.margin_convergence_year} type="hypothesis" tooltip="Analyst input: valuation_assumptions.margin_convergence_year (K). Years 2..K interpolate linearly from current margin to target; years K+1..10 flat at target." />
+            <SpreadsheetCell value={forecastValue(data, 'margin_convergence_year')} type="hypothesis" tooltip="Resolved assumption: valuation_assumptions.margin_convergence_year (K). Years 2..K interpolate linearly from current margin to target; years K+1..10 flat at target." />
           </tr>
           <tr>
             <SpreadsheetCell
@@ -157,11 +157,11 @@ export default function Diagnostics({ data }: { data: ValuationResponse; session
         <tbody>
           <tr>
             <SpreadsheetCell value="Sales/capital years 1-5" type="label" width="280px" />
-            <SpreadsheetCell value={assumptions.sales_to_capital_high} type="calc" tooltip="Analyst input: valuation_assumptions.sales_to_capital_high. Used in reinvestment = ΔRevenue / S/C for years 1–5." />
+            <SpreadsheetCell value={forecastValue(data, 'sales_to_capital_high')} type="calc" tooltip="Resolved assumption: valuation_assumptions.sales_to_capital_high. Used in reinvestment = ΔRevenue / S/C for years 1–5." />
           </tr>
           <tr>
             <SpreadsheetCell value="Sales/capital years 6-10" type="label" />
-            <SpreadsheetCell value={assumptions.sales_to_capital_stable} type="calc" tooltip="Analyst input: valuation_assumptions.sales_to_capital_stable. Used for years 6–10 during convergence to the stable state." />
+            <SpreadsheetCell value={forecastValue(data, 'sales_to_capital_stable')} type="calc" tooltip="Resolved assumption: valuation_assumptions.sales_to_capital_stable. Used for years 6–10 during convergence to the stable state." />
           </tr>
           <tr>
             <SpreadsheetCell value="Industry sales/capital" type="label" />

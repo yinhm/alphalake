@@ -3,25 +3,26 @@ import type { ValuationResponse } from '../types/valuation';
 import type { PatchValue } from '../api/client';
 import { fetchSensitivity } from '../api/client';
 import type { SensitivityResponse, SensitivityBar } from './sensitivity/types';
-import { ARCHETYPES, closestArchetype, percentile } from './sensitivity/archetype_definitions';
+import { forecastValue } from '../lib/forecast';
+import { ARCHETYPES, closestArchetype } from './sensitivity/archetype_definitions';
 
 /**
- * Damodaran-grade sensitivity panel.
+ * Sensitivity panel with explicitly local sweep ranges.
  *
  * Three stacked sections:
  *
- *   1. Impact ranking — tornado chart: for each of the 8 canonical drivers,
- *      how much does VPS move if we flex from industry Q1 to Q3 (or canonical
+ *   1. Impact ranking — tornado chart: for each of the active drivers,
+ *      how much does VPS move if we flex from local industry-reference bands (or application-example
  *      range). Served by POST /api/valuation/{sid}/sensitivity; re-fetches
  *      after every slider commit so the ranking adapts to the operating point.
  *
  *   2. Drivers — the same 8 drivers as sliders, ranked by impact, annotated
- *      with industry Q1/median/Q3 markers and a live percentile chip. Each
+ *      with reference bands, labelled separately from observed quartiles. Each
  *      slider commits (debounced 300 ms) back to the engine via PATCH.
  *
  *   3. Story archetypes — six preset buttons (Disruptor / Growth / Mature /
- *      Utility / Cyclical / Distressed), each sets all 8 drivers coherently
- *      to that story's plausible values. The button closest to the user's
+ *      Utility / Cyclical / Distressed), each sets a local illustrative condition;
+ *      company economic consistency must be reviewed separately. The button closest to the user's
  *      current dials is highlighted.
  *
  * Live impact cards (VPS, market price, P/V, operating-asset value) live on
@@ -120,9 +121,8 @@ export default function SensitivityPanel({ data, onPatch, onPatchMany }: Props) 
       <header className="px-4 py-3 border-b border-slate-200 bg-slate-50 rounded-t-md">
         <h2 className="text-sm font-semibold text-slate-800">What-if sensitivity</h2>
         <p className="text-xs text-slate-500 mt-0.5">
-          Tornado ranks the 8 canonical Damodaran drivers by how much they move VPS over industry Q1–Q3 (or
-          canonical) ranges. Sliders are ordered by that ranking. Archetype buttons set all 8 drivers to a
-          story-coherent preset.
+          Tornado ranks active model drivers by how much they move VPS over local 80–120% industry-reference bands or application examples. Sliders are ordered by that ranking. Archetype buttons set all 8 drivers to a
+          local illustrative preset requiring economic review.
         </p>
       </header>
 
@@ -241,7 +241,9 @@ function ArchetypePanel({
   onPatchMany?: (overrides: Record<string, PatchValue>) => void | Promise<void>;
   sessionId?: string | null;
 }) {
-  // The 8 driver patch paths we manage.
+  const scalarControlsActive = !data.inputs.valuation_assumptions.annual_forecast
+    && !data.inputs.valuation_assumptions.annual_sales_to_capital;
+  // The active driver patch paths we manage.
   const patchPaths: { path: string; driver: string }[] = useMemo(
     () => rankedBars.map((b) => ({ path: b.patch_path, driver: b.driver })),
     [rankedBars],
@@ -249,7 +251,8 @@ function ArchetypePanel({
 
   const snapshotRef = useRef<{
     sid: string | null;
-    values: Record<string, number>;
+    values: Record<string, PatchValue>;
+    effectiveValues: Record<string, number>;
   } | null>(null);
 
   // Take the snapshot once per session.
@@ -257,11 +260,16 @@ function ArchetypePanel({
     if (!sessionId) return;
     if (snapshotRef.current?.sid === sessionId) return;   // already snapshotted
     if (patchPaths.length === 0) return;                   // tornado not yet loaded
-    const values: Record<string, number> = {};
+    const values: Record<string, PatchValue> = {};
+    const effectiveValues: Record<string, number> = {};
     for (const { path, driver } of patchPaths) {
-      values[path] = readDriverValue(data, driver);
+      values[path] = driver === 'wacc_level_shift_bps'
+        ? data.inputs.methodology_choices.wacc_level_shift_bps
+        : (data.inputs.valuation_assumptions[driver as keyof typeof data.inputs.valuation_assumptions] ?? null);
+      effectiveValues[path] = readDriverValue(data, driver);
     }
-    snapshotRef.current = { sid: sessionId, values };
+    values['valuation_assumptions.override_growth_perpetuity'] = data.inputs.valuation_assumptions.override_growth_perpetuity;
+    snapshotRef.current = { sid: sessionId, values, effectiveValues };
     // Note: intentionally NOT dependent on `data` so later manual edits
     // don't overwrite the snapshot. Snapshot is the state at entry.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -279,16 +287,16 @@ function ArchetypePanel({
     const snap = snapshotRef.current?.values;
     if (!snap) return false;
     for (const { path, driver } of patchPaths) {
-      const cur = readDriverValue(data, driver);
-      const saved = snap[path];
-      if (saved == null) continue;
-      if (Math.abs(cur - saved) > 1e-9) return true;
+      const cur = driver === 'wacc_level_shift_bps'
+        ? data.inputs.methodology_choices.wacc_level_shift_bps
+        : (data.inputs.valuation_assumptions[driver as keyof typeof data.inputs.valuation_assumptions] ?? null);
+      if (JSON.stringify(cur) !== JSON.stringify(snap[path])) return true;
     }
-    return false;
+    return data.inputs.valuation_assumptions.override_growth_perpetuity !== snap['valuation_assumptions.override_growth_perpetuity'];
   }, [data, patchPaths]);
 
   const applyArchetype = (a: typeof ARCHETYPES[number]) => {
-    if (!onPatchMany) return;
+    if (!onPatchMany || !scalarControlsActive) return;
     setSelectedId(a.id);
     onPatchMany(a.build(data));
   };
@@ -307,7 +315,7 @@ function ArchetypePanel({
             Story archetypes
           </div>
           <div className="text-[10px] text-slate-500">
-            Click a card to apply its Damodaran values. Reset restores your original inputs.
+            本地示例情景，行业锚点不代表公司预测；需自行核实增长、利润率、再投资及风险的一致性。Reset恢复原始输入（含空值）。
           </div>
         </div>
         <button
@@ -328,6 +336,7 @@ function ArchetypePanel({
         </button>
       </div>
 
+      {!scalarControlsActive && <p className="text-xs text-slate-600 my-2">年度路径优先，标量预设不可应用；请在原年度路径中修改。</p>}
       {/* Archetype row — click applies */}
       <div className="flex flex-wrap gap-2">
         {ARCHETYPES.map((a) => {
@@ -337,7 +346,7 @@ function ArchetypePanel({
             <button
               key={a.id}
               onClick={() => applyArchetype(a)}
-              disabled={!onPatchMany}
+              disabled={!onPatchMany || !scalarControlsActive}
               className={`flex flex-col items-center justify-center min-w-[104px] px-3 py-2 rounded-md border text-xs transition-colors ${
                 isSelected
                   ? 'bg-slate-900 text-white border-slate-900'
@@ -383,7 +392,7 @@ function ArchetypePanel({
             <tbody>
               {rankedBars.map((bar) => {
                 const current = readDriverValue(data, bar.driver);
-                const orig = snapshotRef.current?.values[bar.patch_path];
+                const orig = snapshotRef.current?.effectiveValues[bar.patch_path];
                 const meta = getDriverMeta(bar, data.inputs.industry_data);
                 const delta = orig != null ? current - orig : null;
                 const sign = delta == null ? '' : delta > 0 ? '+' : delta < 0 ? '−' : '';
@@ -500,7 +509,7 @@ function Tornado({ bars, baseline, currency }: { bars: SensitivityBar[]; baselin
 //
 // Replaces the earlier slider design: a number input box (direct edit or
 // step arrows), auto-populated from the currently-committed value, with the
-// industry Q1 / median / Q3 shown compactly next to it as reference numbers
+// local reference bands shown compactly next to it as reference numbers
 // instead of as tick marks on a slider axis.
 
 function DriverInput({
@@ -522,13 +531,14 @@ function DriverInput({
   useEffect(() => { setDraft(meta.edit(currentValue)); }, [currentValue, meta]);
 
   const median = (bar.range_lo + bar.range_hi) / 2;
-  const pct = percentile(currentValue, bar.range_lo, median, bar.range_hi);
 
   const commit = (raw: string) => {
     const parsed = meta.parse(raw);
     if (parsed == null) { setDraft(meta.edit(currentValue)); return; }
-    const clamped = Math.max(wide.min, Math.min(wide.max, parsed));
-    setDraft(meta.edit(clamped));
+    const clamped = parsed; // Typed values are validated by the backend; UI step bounds are not model constraints.
+    // Only the successful response changes the displayed value. A rejected
+    // edit cannot leave a new-looking number beside the old valuation.
+    setDraft(meta.edit(currentValue));
     if (clamped !== currentValue) onChange(clamped);
   };
 
@@ -583,20 +593,20 @@ function DriverInput({
 
       {/* Industry reference — numbers, not tick marks */}
       <div className="flex-1 flex items-center gap-2 text-[10px] text-slate-500 tabular-nums pl-1 overflow-hidden">
-        {bar.range_source === 'industry_q1_q3' ? (
+        {bar.range_source === 'industry_median_band' ? (
           <>
-            <ReferenceChip label="Q1"  value={meta.display(bar.range_lo)} />
-            <ReferenceChip label="med" value={meta.display(median)} emphasis />
-            <ReferenceChip label="Q3"  value={meta.display(bar.range_hi)} />
+            <ReferenceChip label="band low"  value={meta.display(bar.range_lo)} />
+            <ReferenceChip label="ref." value={meta.display(median)} emphasis />
+            <ReferenceChip label="band high"  value={meta.display(bar.range_hi)} />
           </>
         ) : (
           <span className="text-slate-400 italic text-[10px]">no industry data</span>
         )}
       </div>
 
-      {/* Percentile chip — narrow, right-aligned */}
+      {/* Reference-band marker, not a percentile. */}
       <span className="w-9 text-right text-[10px] text-slate-500 tabular-nums">
-        {bar.range_source === 'industry_q1_q3' && pct != null ? `p${Math.round(pct)}` : ''}
+        {bar.range_source === 'industry_median_band' ? '±20%' : 'example'}
       </span>
     </div>
   );
@@ -719,10 +729,10 @@ function getDriverMeta(bar: SensitivityBar, _industry: ValuationResponse['inputs
 
 /** Wide, driver-specific hard bounds for the slider.
  *
- * These intentionally go far beyond industry Q1/Q3 so the user can model
+ * These intentionally go far beyond local reference bands so the user can model
  * outlier cases (distressed companies at negative margins, disruptors at
  * 80% margins, capital-intensive firms at 0.3× sales-to-capital, etc.).
- * Damodaran industry markers remain as visual tick marks on the track,
+ * Published industry references remain as visual tick marks on the track,
  * but they do NOT constrain the slider.
  */
 function getDriverWideBounds(driver: string, data: ValuationResponse): { min: number; max: number } {
@@ -741,17 +751,7 @@ function getDriverWideBounds(driver: string, data: ValuationResponse): { min: nu
 }
 
 function readDriverValue(data: ValuationResponse, driver: string): number {
-  const va = data.inputs.valuation_assumptions;
-  const mc = data.inputs.methodology_choices;
-  switch (driver) {
-    case 'revenue_growth_next_year':   return va.revenue_growth_next_year ?? 0;
-    case 'revenue_growth_years_2_5':   return va.revenue_growth_years_2_5 ?? 0;
-    case 'growth_perpetuity_rate':     return va.growth_perpetuity_rate ?? (data.inputs.macro_inputs?.risk_free_rate ?? 0.04);
-    case 'target_operating_margin':    return va.target_operating_margin ?? 0.15;
-    case 'margin_convergence_year':    return va.margin_convergence_year ?? 5;
-    case 'sales_to_capital_high':      return va.sales_to_capital_high ?? 2.5;
-    case 'wacc_level_shift_bps':       return (mc as any)?.wacc_level_shift_bps ?? 0;
-    case 'failure_probability':        return va.failure_probability ?? 0;
-    default: return 0;
-  }
+  if (driver === 'wacc_level_shift_bps') return data.inputs.methodology_choices.wacc_level_shift_bps;
+  if (driver === 'failure_probability') return data.inputs.valuation_assumptions.failure_probability;
+  return forecastValue(data, driver) ?? NaN;
 }

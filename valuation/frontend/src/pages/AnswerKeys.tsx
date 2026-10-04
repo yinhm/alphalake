@@ -1,3 +1,4 @@
+import { forecastValue } from '../lib/forecast';
 import type { ValuationResponse } from '../types/valuation';
 import SpreadsheetCell from '../components/SpreadsheetCell';
 import SpreadsheetGrid from '../components/SpreadsheetGrid';
@@ -28,10 +29,10 @@ export default function AnswerKeys({ data }: { data: ValuationResponse; sessionI
     {
       category: 'Key Assumptions',
       items: [
-        { label: 'Revenue Growth (Yr 1)', value: assumptions.revenue_growth_next_year },
-        { label: 'Revenue Growth (Yrs 2-5)', value: assumptions.revenue_growth_years_2_5 },
-        { label: 'Target Operating Margin', value: assumptions.target_operating_margin },
-        { label: 'Convergence Year', value: assumptions.margin_convergence_year },
+        { label: 'Revenue Growth (Yr 1)', value: forecastValue(data, 'revenue_growth_next_year') },
+        { label: 'Revenue Growth (Yrs 2-5)', value: forecastValue(data, 'revenue_growth_years_2_5') },
+        { label: 'Target Operating Margin', value: forecastValue(data, 'target_operating_margin') },
+        { label: 'Convergence Year', value: forecastValue(data, 'margin_convergence_year') },
         { label: 'Risk-free Rate', value: macro.risk_free_rate },
         { label: 'Failure Probability', value: assumptions.failure_probability },
       ],

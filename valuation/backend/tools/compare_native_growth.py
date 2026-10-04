@@ -41,6 +41,10 @@ def compare(baseline, scenarios):
         ForecastYear(growth=g, margin=m, tax=t) for g, m, t in zip(growth, margins, taxes, strict=True)]
     reproduced = run_full_valuation(replay)
     for field, expected in baseline['dcf'].items():
+        if field == 'forecast_parameters':
+            # Equal cash flows can come from scalar or explicit annual inputs;
+            # their provenance must differ. Numeric outputs are still checked.
+            continue
         actual = reproduced.dcf.model_dump(mode='json')[field]
         if isinstance(expected, (int, float)) and expected is not None:
             equal = math.isclose(actual, expected, rel_tol=1e-10, abs_tol=1e-8)

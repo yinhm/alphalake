@@ -1,3 +1,4 @@
+import { forecastValue } from '../lib/forecast';
 import type { ValuationResponse } from '../types/valuation';
 import type { PatchValue } from '../api/client';
 import SpreadsheetCell from '../components/SpreadsheetCell';
@@ -40,7 +41,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
       termId: 'revenue-growth',
       bindingId: 'revenue-growth.next-year',
       input: 'revenue_growth_next_year',
-      value: assumptions.revenue_growth_next_year,
+      value: forecastValue(data, 'revenue_growth_next_year'),
       type: 'hypothesis',
     },
     {
@@ -49,7 +50,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
       termId: 'revenue-growth',
       bindingId: 'revenue-growth.high',
       input: 'revenue_growth_years_2_5',
-      value: assumptions.revenue_growth_years_2_5,
+      value: forecastValue(data, 'revenue_growth_years_2_5'),
       type: 'hypothesis',
     },
     {
@@ -58,7 +59,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
       termId: 'operating-margin',
       bindingId: 'operating-margin.target',
       input: 'target_operating_margin',
-      value: assumptions.target_operating_margin,
+      value: forecastValue(data, 'target_operating_margin'),
       type: 'hypothesis',
     },
     {
@@ -66,7 +67,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
       driver: 'Margin convergence year (K)',
       termId: 'operating-margin',
       input: 'margin_convergence_year',
-      value: assumptions.margin_convergence_year,
+      value: forecastValue(data, 'margin_convergence_year'),
       type: 'hypothesis',
     },
     {
@@ -75,7 +76,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
       termId: 'sales-to-capital',
       bindingId: 'sales-to-capital.high',
       input: 'sales_to_capital_high',
-      value: assumptions.sales_to_capital_high,
+      value: forecastValue(data, 'sales_to_capital_high'),
       type: 'hypothesis',
     },
     {
@@ -84,7 +85,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
       termId: 'sales-to-capital',
       bindingId: 'sales-to-capital.stable',
       input: 'sales_to_capital_stable',
-      value: assumptions.sales_to_capital_stable,
+      value: forecastValue(data, 'sales_to_capital_stable'),
       type: 'hypothesis',
     },
     {
@@ -102,7 +103,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
       termId: 'stable-growth',
       bindingId: 'stable-growth.input',
       input: 'stable_growth_rate',
-      value: assumptions.stable_growth_rate ?? data.inputs.macro_inputs.risk_free_rate,
+      value: forecastValue(data, 'growth_perpetuity_rate'),
       type: 'hypothesis',
     },
     {
@@ -124,9 +125,9 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
   ];
 
   // Reverse-check values for the three story blocks
-  const impliedROIC = requiredROIC(assumptions.target_operating_margin, assumptions.sales_to_capital_high);
+  const impliedROIC = requiredROIC(forecastValue(data, 'target_operating_margin'), forecastValue(data, 'sales_to_capital_high'));
   const roicAnchor = assumptions.roic_stable_override ?? cf?.historical_roic_avg_5yr ?? data.cost_of_capital?.wacc ?? null;
-  const impliedSCReq = requiredSC(roicAnchor, assumptions.target_operating_margin);
+  const impliedSCReq = requiredSC(roicAnchor, forecastValue(data, 'target_operating_margin'));
 
   // Per-cell tooltip builders — surface the exact calculation for every
   // historical annual value, reading from raw_financials so the analyst
@@ -145,45 +146,25 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
   };
 
   const marginTooltip = (i: number): string => {
-    const ebit = history[i]?.ebit;
-    const rev = history[i]?.revenues;
-    if (ebit == null || rev == null) return `No data for ${yearLabel(i)} (EBIT or Revenue missing).`;
-    const m = ebit / rev;
-    return `${yearLabel(i)} pre-tax operating margin = EBIT / Revenue\n= ${fmtM(ebit)} / ${fmtM(rev)}\n= ${(m * 100).toFixed(2)}%\nSource: IQ_EBIT / IQ_TOTAL_REV × IQ_FY-${i}.`;
+    const margin = cf?.historical_margin_by_year?.[i];
+    if (margin == null) return `No complete adjusted margin for ${yearLabel(i)}.`;
+    return `${yearLabel(i)} (${history[i]?.fiscal_year}) adjusted operating margin = ${(margin * 100).toFixed(2)}%\n后端逐年研发队列：年度EBIT + 当年研发 − 当年研发摊销，再除以当年收入。不能用当期研发资产或未调整EBIT替代。历史年度租赁调整未重建，与当前调整利润率仍须核对组成。`;
   };
 
   const scTooltip = (i: number): string => {
-    const rev = history[i]?.revenues;
-    const eq = history[i]?.bv_equity;
-    const debt = history[i]?.bv_debt;
-    const cash = history[i]?.cash_and_marketable_securities;
-    if (rev == null || eq == null || debt == null || cash == null) {
-      return `No data for ${yearLabel(i)} (Revenue, BV Equity, BV Debt, or Cash missing for this year).`;
-    }
-    const ic = eq + debt - cash;
-    if (ic === 0) return 'Invested Capital is zero — division undefined.';
-    const sc = rev / ic;
-    return `${yearLabel(i)} Sales / Capital = Revenue / Invested Capital\nIC = BV Equity + BV Debt − Cash\n   = ${fmtM(eq)} + ${fmtM(debt)} − ${fmtM(cash)} = ${fmtM(ic)}\nS/C = ${fmtM(rev)} / ${fmtM(ic)} = ${sc.toFixed(3)}×\nSource: IQ_TOTAL_REV, IQ_TOTAL_EQUITY, IQ_TOTAL_DEBT, IQ_CASH_ST_INVEST × IQ_FY-${i}.`;
+    const value = cf?.historical_s_c_by_year?.[i];
+    return value == null ? `No complete capital ratio for ${yearLabel(i)}.`
+      : `${yearLabel(i)} (${history[i]?.fiscal_year}) sales/capital = ${value.toFixed(3)}×\n后端年度收入/年度投入资本（含可重建的研发资产），不是新增收入/新增资本的预测倍率。`;
   };
 
   const roicTooltip = (i: number): string => {
-    const ebit = history[i]?.ebit;
-    const eff = history[i]?.total_tax_expense != null && history[i]?.earnings_before_tax
-      ? (history[i]!.total_tax_expense! / history[i]!.earnings_before_tax!)
-      : data.inputs.macro_inputs?.tax_rate_effective ?? 0.21;
-    const prev = history[i + 1];
-    if (!prev || ebit == null || prev.bv_equity == null || prev.bv_debt == null || prev.cash_and_marketable_securities == null) {
-      return `No data for ${yearLabel(i)} ROIC — needs current-year EBIT and prior-year (${yearLabel(i + 1)}) Invested Capital.`;
-    }
-    const nopat = ebit * (1 - eff);
-    const icPrev = prev.bv_equity + prev.bv_debt - prev.cash_and_marketable_securities;
-    if (icPrev === 0) return 'Prior-year Invested Capital is zero — ROIC undefined.';
-    const roic = nopat / icPrev;
-    return `${yearLabel(i)} ROIC = NOPAT / Prior-year IC\nNOPAT = EBIT × (1 − eff. tax)\n      = ${fmtM(ebit)} × (1 − ${(eff * 100).toFixed(2)}%)\n      = ${fmtM(nopat)}\nIC[${yearLabel(i + 1)}] = ${fmtM(prev.bv_equity)} + ${fmtM(prev.bv_debt)} − ${fmtM(prev.cash_and_marketable_securities)} = ${fmtM(icPrev)}\nROIC = ${fmtM(nopat)} / ${fmtM(icPrev)} = ${(roic * 100).toFixed(2)}%\nSources: IQ_EBIT, IQ_INC_TAX, IQ_EBT_EXCL × IQ_FY-${i}; IQ_TOTAL_EQUITY, IQ_TOTAL_DEBT, IQ_CASH_ST_INVEST × IQ_FY-${i + 1}.`;
+    const value = cf?.historical_roic_by_year?.[i];
+    return value == null ? `No complete ROIC for ${yearLabel(i)}.`
+      : `${yearLabel(i)} (${history[i]?.fiscal_year}) ROIC = ${(value * 100).toFixed(2)}%\n后端当年调整NOPAT/上年期末投入资本，使用当年税务证据；缺项不以默认税率补算。`;
   };
 
-  const avgTooltip = (label: string, n: 3 | 5) => (_w: 3 | 5) =>
-    `${n}-year mean of ${label} across FY-0 through FY-${n - 1} (values that resolved to None are skipped).`;
+  const avgTooltip = (metric: string, years: number) => (_window: 3 | 5): string =>
+    `${years}Y average ${metric}: complete backend annual diagnostics only; missing years are not zero.`;
 
   return (
     <div className="max-w-6xl">
@@ -215,9 +196,9 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
               <SpreadsheetCell type="label" value={s.narrative} align="left" />
               <SpreadsheetCell type="label" value={s.driver} align="left" termId={s.termId} bindingId={s.bindingId} />
               <SpreadsheetCell type="hint" value={s.input} align="left" />
-              <SpreadsheetCell type={s.type} value={s.value} />
+              <SpreadsheetCell type={s.type} value={s.value} tooltip={data.dcf?.forecast_parameters?.[s.input === 'stable_growth_rate' ? 'growth_perpetuity_rate' : s.input]?.basis} />
               <SpreadsheetCell type="label" value={
-                s.type === 'hypothesis' ? 'User Input' :
+                s.type === 'hypothesis' ? (data.dcf?.forecast_parameters?.[s.input === 'stable_growth_rate' ? 'growth_perpetuity_rate' : s.input]?.source ?? 'User Input') :
                 s.type === 'reference' ? 'Industry/Market' : 'Calculated'
               } align="center" />
             </tr>

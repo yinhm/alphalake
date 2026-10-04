@@ -100,7 +100,7 @@ def _margin_path(
         if t == 1:
             path.append(margin_y1)
         elif t <= K:
-            path.append(margin_target - (margin_target - margin_y1) * (K - t) / K)
+            path.append(margin_y1 + (margin_target - margin_y1) * (t - 1) / (K - 1))
         else:
             path.append(margin_target)
     return path
@@ -395,6 +395,53 @@ def compute_dcf(
         margin_path_vals = [r.margin for r in assumptions.annual_forecast]
         tax_path_vals = [r.tax for r in assumptions.annual_forecast]
         margin_target, tax_terminal = margin_path_vals[-1], tax_path_vals[-1]
+
+    # Expose the values already resolved above, so every display uses the
+    # same priority and missing-value rules as the calculation.
+    forecast_parameters = {}
+    for name, value, source, basis in [
+        ('revenue_growth_next_year', g_year_1,
+         'explicit_input' if assumptions.revenue_growth_next_year is not None else 'application_default',
+         '显式增长假设；空值沿用原应用0%条件，不是公司增长预测。'),
+        ('revenue_growth_years_2_5', g_years_2_5,
+         'explicit_input' if assumptions.revenue_growth_years_2_5 is not None else 'inherited',
+         '显式高增长期假设；空值继承第一年增长率。'),
+        ('operating_margin_next_year', margin_y1,
+         'explicit_input' if assumptions.operating_margin_next_year is not None else 'adjusted_base',
+         '显式利润率优先；空值用调整后EBIT/基期收入并持平延续，不是已核实的未来利润率。'),
+        ('target_operating_margin', margin_target,
+         'explicit_input' if assumptions.target_operating_margin is not None else 'inherited',
+         '显式成熟期假设；空值继承第一年利润率，不自动采用历史或行业均值。'),
+        ('margin_convergence_year', K, 'structural_input',
+         '本地线性过渡：第一年为起点，第K年达到目标；K=1时第二年采用目标。5年不是理论硬要求。'),
+        ('sales_to_capital_high', sc_high,
+         'explicit_input' if assumptions.sales_to_capital_high is not None else 'application_default',
+         '新增收入/新增资本的预测假设；空值沿用原应用2.5倍条件，未自动认证公司经济依据。'),
+        ('sales_to_capital_stable', sc_stable,
+         'explicit_input' if assumptions.sales_to_capital_stable is not None else 'inherited',
+         '过渡期资本效率；空值继承高增长期，不等于终值ROIC。'),
+        ('growth_perpetuity_rate', g_terminal,
+         ('explicit_perpetuity' if assumptions.override_growth_perpetuity and assumptions.growth_perpetuity_rate is not None
+          else 'explicit_stable_capped' if assumptions.stable_growth_rate is not None and not assumptions.override_growth_perpetuity
+          else 'explicit_riskfree' if assumptions.override_riskfree and assumptions.riskfree_after_yr10 is not None
+          else 'risk_free_reference'),
+         '引擎按永续覆盖、稳定增长及无风险利率规则解析；普通路径不超过无风险利率。'),
+    ]:
+        forecast_parameters[name] = dict(value=value, source=source, basis=basis)
+    if assumptions.annual_forecast is not None:
+        for name, value in [
+            ('revenue_growth_next_year', g_path[0]),
+            ('revenue_growth_years_2_5', None),
+            ('operating_margin_next_year', margin_path_vals[0]),
+            ('target_operating_margin', margin_target),
+            ('margin_convergence_year', None),
+        ]:
+            forecast_parameters[name] = dict(value=value, source='annual_forecast', editable=False,
+                basis='显式年度路径优先；标量不参与计算。首年增长/利润率取首行，终值利润率取末行，修改须提交年度路径。')
+    if assumptions.annual_sales_to_capital is not None:
+        for name in ('sales_to_capital_high', 'sales_to_capital_stable'):
+            forecast_parameters[name] = dict(value=None, source='annual_sales_to_capital', editable=False,
+                basis='显式年度资本效率路径优先；两阶段标量不参与计算。')
     if any(not math.isfinite(t) or not 0 <= t <= 1 for t in [*tax_path_vals, tax_terminal]):
         raise InvalidTaxForecast('tax rates must be finite and between zero and one')
     wacc_path_vals = _wacc_path(wacc_initial, wacc_terminal, high_growth_years, n)
@@ -596,6 +643,10 @@ def compute_dcf(
     implied_roic_terminal = nopat_terminal / ic_last if ic_last is not None and ic_last > 0 else None
 
     return DCFResult(
+        forecast_parameters=forecast_parameters,
+        terminal_growth=g_terminal, terminal_revenue=rev_terminal,
+        terminal_ebit=ebit_terminal, terminal_margin=margin_target,
+        tax_rate_projections=tax_path_vals, terminal_tax_rate=tax_terminal,
         revenue_projections=revenue_projections,
         ebit_projections=ebit_projections,
         nopat_projections=nopat_projections, tax_base_projections=tax_base_projections,

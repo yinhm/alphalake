@@ -1181,6 +1181,9 @@ def sensitivity(session_id: str):
     driver_ranges = build_ranges(session.inputs)
     bars = []
     for dr in driver_ranges:
+        resolved = session.report.dcf.forecast_parameters.get(dr.driver)
+        if resolved is not None and not resolved.editable:
+            continue  # The annual path supersedes this scalar; it is not a sensitivity driver.
         endpoint_results = {}
         for kind, endpoint_val in [("lo", dr.range_lo), ("hi", dr.range_hi)]:
             trial_dict = session.inputs.model_dump()

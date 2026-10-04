@@ -19,9 +19,9 @@ function dec(v: number | null | undefined, digits = 4): string {
 }
 
 // Get year label for column header
-function yearLabel(t: number, baseYear: number): string {
+function yearLabel(t: number, baseYear: number, n: number): string {
   if (t === 0) return `FY${baseYear} (Base)`;
-  if (t === 11) return 'Terminal';
+  if (t === n + 1) return 'Terminal';
   return `Year ${t}`;
 }
 
@@ -71,24 +71,8 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
     else marginPath.push(null);
   }
 
-  // NOPAT = EBIT(1-t). Approximate using discount_factors step to back out wacc_t → tax path unclear,
-  // so compute FCFF + Reinvestment approach: NOPAT = FCFF + Reinvestment.
-  const nopat: (number | null)[] = [null];  // base NOPAT not in DCFResult
-  for (let i = 0; i < n; i++) {
-    nopat.push(dcf.fcff_projections[i] + dcf.reinvestment_projections[i]);
-  }
-
-  // Effective tax per projected year = 1 - NOPAT/EBIT
-  const taxPath: (number | null)[] = [null];  // base not applicable
-  for (let i = 1; i <= n; i++) {
-    const ebit_i = ebit[i];
-    const nopat_i = nopat[i];
-    if (ebit_i && ebit_i !== 0 && nopat_i !== null) {
-      taxPath.push(1 - nopat_i / ebit_i);
-    } else {
-      taxPath.push(null);
-    }
-  }
+  const nopat = [null, ...dcf.nopat_projections];
+  const taxPath = [null, ...dcf.tax_rate_projections];
 
   // WACC path inferred from discount factors: wacc_t = df[t-1]/df[t] - 1
   const waccPath: (number | null)[] = [null];  // base not applicable
@@ -102,13 +86,9 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
     }
   }
 
-  // Terminal-year values (column n+1)
-  // We don't have explicit terminal arrays in DCFResult, but we can derive key numbers
-  // Terminal growth
-  let g_terminal: number | null = null;
-  if (va.override_growth_perpetuity && va.growth_perpetuity_rate != null) g_terminal = va.growth_perpetuity_rate;
-  else if (va.override_riskfree && va.riskfree_after_yr10 != null) g_terminal = va.riskfree_after_yr10;
-  else g_terminal = macro.risk_free_rate;
+  // Terminal values are resolved by the engine, including annual paths,
+  // research tax and NOL. The frontend does not run a second DCF.
+  const g_terminal = dcf.terminal_growth;
 
   // The engine resolves explicit financing paths and loss/NOL tax-shield effects.
   const wacc_terminal = dcf.terminal_wacc;
@@ -116,8 +96,8 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
   // Classify each year's color
   function yearCellType(t: number): 'financial' | 'calc' | 'reference' {
     if (t === 0) return 'financial';  // base (historical)
-    if (t <= 5) return 'calc';        // high growth (green)
-    if (t <= 10) return 'calc';       // transition (same color, shown in tooltip)
+    if (t <= va.high_growth_years) return 'calc';        // high growth (green)
+    if (t <= n) return 'calc';       // transition (same color, shown in tooltip)
     return 'reference';               // terminal (purple)
   }
 
@@ -128,7 +108,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
     <div className="max-w-[95vw] mx-auto p-4">
       <h1 className="text-xl font-bold mb-1">Summary Sheet — Year-by-Year DCF</h1>
       <p className="text-sm text-gray-600 mb-4">
-        Base year + 10-year explicit projection + terminal row. Columns color-coded:
+        Base year + {n}-year explicit projection + terminal row. Columns color-coded:
         <span className="inline-block bg-sky-50 border border-sky-200 px-2 ml-2 rounded-sm">Base</span>
         <span className="inline-block bg-emerald-50 border border-emerald-200 px-2 ml-1 rounded-sm">High Growth (Yr 1-5)</span>
         <span className="inline-block bg-teal-50 border border-teal-200 px-2 ml-1 rounded-sm">Transition (Yr 6-10)</span>
@@ -140,7 +120,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
           <tr>
             <SpreadsheetCell value="Line Item" type="header" width="200px" />
             {years.map(t => (
-              <SpreadsheetCell key={`h-${t}`} value={yearLabel(t, baseYear)} type="header" width={COL_WIDTH} />
+              <SpreadsheetCell key={`h-${t}`} value={yearLabel(t, baseYear, n)} type="header" width={COL_WIDTH} />
             ))}
           </tr>
         </thead>
@@ -151,7 +131,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`rev-${t}`} value={num(fin0?.revenues)} type="financial" tooltip="FY0 actual (base year)" width={COL_WIDTH} />;
               if (t === n + 1) {
-                const rev_term = rev[n] * (1 + (g_terminal ?? 0));
+                const rev_term = dcf.terminal_revenue;
                 return <SpreadsheetCell key={`rev-${t}`} value={num(rev_term)} type="reference" tooltip={`Terminal Revenue = Yr${n} Revenue × (1 + g_terminal) = ${num(rev[n])} × ${pct(g_terminal)}`} width={COL_WIDTH} />;
               }
               return <SpreadsheetCell key={`rev-${t}`} value={num(dcf.revenue_projections[t - 1])} type={yearCellType(t)} tooltip={`Revenue[Yr${t}] = Revenue[Yr${t - 1}] × (1 + growth_rate)`} width={COL_WIDTH} />;
@@ -163,7 +143,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
             <SpreadsheetCell value="  Revenue Growth %" type="label" termId="revenue-growth" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`g-${t}`} value="—" type="label" width={COL_WIDTH} />;
-              if (t === n + 1) return <SpreadsheetCell key={`g-${t}`} value={pct(g_terminal)} type="reference" tooltip={`Terminal growth rate: ${va.override_growth_perpetuity ? 'override' : va.override_riskfree ? 'RF override' : 'risk-free rate'}`} width={COL_WIDTH} />;
+              if (t === n + 1) return <SpreadsheetCell key={`g-${t}`} value={pct(g_terminal)} type="reference" tooltip={dcf.forecast_parameters?.growth_perpetuity_rate?.basis} width={COL_WIDTH} />;
               return <SpreadsheetCell key={`g-${t}`} value={pct(growthPath[t])} type={yearCellType(t)} tooltip={`growth_t = Revenue[Yr${t}]/Revenue[Yr${t - 1}] - 1`} width={COL_WIDTH} />;
             })}
           </tr>
@@ -173,8 +153,8 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
             <SpreadsheetCell value="Operating Margin %" type="label" termId="operating-margin" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`m-${t}`} value={pct(marginPath[0])} type="financial" tooltip="EBIT / Revenue (base year, adjusted for R&D if capitalized)" width={COL_WIDTH} />;
-              if (t === n + 1) return <SpreadsheetCell key={`m-${t}`} value={pct(va.target_operating_margin ?? marginPath[n])} type="reference" tooltip="Terminal Op Margin = target_operating_margin (flat at maturity)" width={COL_WIDTH} />;
-              return <SpreadsheetCell key={`m-${t}`} value={pct(marginPath[t])} type={yearCellType(t)} tooltip={t === 1 ? 'Year 1 = operating_margin_next_year' : `Margin[Yr${t}] = linear convergence to target by year ${va.margin_convergence_year}`} width={COL_WIDTH} />;
+              if (t === n + 1) return <SpreadsheetCell key={`m-${t}`} value={pct(dcf.terminal_margin)} type="reference" tooltip={dcf.forecast_parameters?.target_operating_margin?.basis} width={COL_WIDTH} />;
+              return <SpreadsheetCell key={`m-${t}`} value={pct(marginPath[t])} type={yearCellType(t)} tooltip={va.annual_forecast ? 'Explicit annual forecast margin' : `Resolved margin; year 1 to year ${va.margin_convergence_year} linear transition`} width={COL_WIDTH} />;
             })}
           </tr>
 
@@ -184,8 +164,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`ebit-${t}`} value={num(baseEbit)} type="financial" tooltip="Damodaran-adjusted EBIT (raw EBIT + R&D add-back + lease add-back). Matches the base-year EBIT used as the starting point of M4's margin path." width={COL_WIDTH} />;
               if (t === n + 1) {
-                const rev_term = rev[n] * (1 + (g_terminal ?? 0));
-                const ebit_term = rev_term * (va.target_operating_margin ?? marginPath[n] ?? 0);
+                const ebit_term = dcf.terminal_ebit;
                 return <SpreadsheetCell key={`ebit-${t}`} value={num(ebit_term)} type="reference" tooltip="Terminal EBIT = Terminal Revenue × Target Margin" width={COL_WIDTH} />;
               }
               return <SpreadsheetCell key={`ebit-${t}`} value={num(dcf.ebit_projections[t - 1])} type={yearCellType(t)} tooltip="EBIT = Revenue × Margin (NOT compounded — rebuilt each year)" width={COL_WIDTH} />;
@@ -194,27 +173,25 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
 
           {/* Tax Rate % */}
           <tr>
-            <SpreadsheetCell value="  Tax Rate %" type="label" termId="effective-tax-rate" />
+            <SpreadsheetCell value="  Forecast Tax Rate %" type="label" termId="effective-tax-rate" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`tx-${t}`} value={pct(macro.tax_rate_effective)} type="financial" tooltip="Effective tax rate (base year)" width={COL_WIDTH} />;
               if (t === n + 1) {
-                const terminal_tax = va.override_tax_convergence ? macro.tax_rate_effective : macro.tax_rate_marginal;
-                return <SpreadsheetCell key={`tx-${t}`} value={pct(terminal_tax)} type="reference" tooltip={va.override_tax_convergence ? 'Override: stay at effective' : 'Default: marginal'} width={COL_WIDTH} />;
+                const terminal_tax = dcf.terminal_tax_rate;
+                return <SpreadsheetCell key={`tx-${t}`} value={pct(terminal_tax)} type="reference" tooltip="Resolved terminal tax parameter; cash tax may differ due to research deductions or NOL" width={COL_WIDTH} />;
               }
-              return <SpreadsheetCell key={`tx-${t}`} value={pct(taxPath[t])} type={yearCellType(t)} tooltip={t <= 5 ? 'Years 1-5: effective' : 'Years 6-10: linear convergence to marginal'} width={COL_WIDTH} />;
+              return <SpreadsheetCell key={`tx-${t}`} value={pct(taxPath[t])} type={yearCellType(t)} tooltip="Resolved forecast tax parameter; NOPAT uses actual cash tax from the engine" width={COL_WIDTH} />;
             })}
           </tr>
 
           {/* After-tax Operating Income (NOPAT) */}
           <tr>
-            <SpreadsheetCell value="NOPAT = EBIT × (1-t)" type="label" termId="nopat" />
+            <SpreadsheetCell value="NOPAT (EBIT − Cash Tax)" type="label" termId="nopat" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`nopat-${t}`} value="—" type="label" width={COL_WIDTH} />;
               if (t === n + 1) {
-                const rev_term = rev[n] * (1 + (g_terminal ?? 0));
-                const terminal_tax = va.override_tax_convergence ? macro.tax_rate_effective : macro.tax_rate_marginal;
-                const nopat_term = rev_term * (va.target_operating_margin ?? marginPath[n] ?? 0) * (1 - (terminal_tax ?? 0));
-                return <SpreadsheetCell key={`nopat-${t}`} value={num(nopat_term)} type="reference" tooltip="NOPAT terminal = EBIT terminal × (1 - terminal tax)" width={COL_WIDTH} />;
+                const nopat_term = dcf.terminal_nopat;
+                return <SpreadsheetCell key={`nopat-${t}`} value={num(nopat_term)} type="reference" tooltip="Engine terminal NOPAT: economic EBIT less normal cash tax; research/NOL transition is separately valued" width={COL_WIDTH} />;
               }
               return <SpreadsheetCell key={`nopat-${t}`} value={num(nopat[t])} type={yearCellType(t)} tooltip="NOPAT = FCFF + Reinvestment (NOL-adjusted in engine)" width={COL_WIDTH} />;
             })}
@@ -226,11 +203,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`r-${t}`} value="—" type="label" width={COL_WIDTH} />;
               if (t === n + 1) {
-                const rev_term = rev[n] * (1 + (g_terminal ?? 0));
-                const terminal_tax = va.override_tax_convergence ? macro.tax_rate_effective : macro.tax_rate_marginal;
-                const nopat_term = rev_term * (va.target_operating_margin ?? marginPath[n] ?? 0) * (1 - (terminal_tax ?? 0));
-                const roic_term = va.roic_stable_override ?? (wacc_terminal ?? 0);
-                const reinv_term = roic_term > 0 && (g_terminal ?? 0) > 0 ? ((g_terminal ?? 0) / roic_term) * nopat_term : 0;
+                const reinv_term = dcf.terminal_reinvestment;
                 return <SpreadsheetCell key={`r-${t}`} value={num(reinv_term)} type="reference" tooltip="Terminal Reinvestment = (g_T / ROIC_T) × NOPAT_T" width={COL_WIDTH} />;
               }
               return <SpreadsheetCell key={`r-${t}`} value={num(dcf.reinvestment_projections[t - 1])} type={yearCellType(t)} tooltip="Reinvestment = ΔRevenue / Sales-to-Capital (with lag)" width={COL_WIDTH} />;
@@ -242,7 +215,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
             <SpreadsheetCell value="FCFF" type="label" termId="fcff" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`f-${t}`} value="—" type="label" width={COL_WIDTH} />;
-              if (t === n + 1) return <SpreadsheetCell key={`f-${t}`} value="TV formula" type="reference" tooltip={`Terminal FCFF used in Gordon: TV = FCFF_terminal / (WACC_T - g_T)\nTV = ${num(dcf.terminal_value_firm)}`} width={COL_WIDTH} />;
+              if (t === n + 1) return <SpreadsheetCell key={`f-${t}`} value={num(dcf.terminal_fcff)} type="reference" tooltip={`Terminal FCFF used in Gordon: TV = FCFF_terminal / (WACC_T - g_T)\nTV = ${num(dcf.terminal_value_firm)}`} width={COL_WIDTH} />;
               return <SpreadsheetCell key={`f-${t}`} value={num(dcf.fcff_projections[t - 1])} type={yearCellType(t)} tooltip="FCFF = NOPAT - Reinvestment" width={COL_WIDTH} />;
             })}
           </tr>
@@ -252,8 +225,8 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
             <SpreadsheetCell value="WACC" type="label" termId="wacc" bindingId="wacc.current" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`w-${t}`} value={pct(coc?.wacc)} type="financial" tooltip="Initial WACC" width={COL_WIDTH} />;
-              if (t === n + 1) return <SpreadsheetCell key={`w-${t}`} value={pct(wacc_terminal)} type="reference" tooltip={va.cost_of_capital_stable_override != null ? 'override_cost_of_capital_stable' : 'Default: RF + ERP'} width={COL_WIDTH} />;
-              return <SpreadsheetCell key={`w-${t}`} value={pct(waccPath[t])} type={yearCellType(t)} tooltip={t <= 5 ? 'Years 1-5: initial WACC (flat)' : 'Years 6-10: linear convergence to terminal'} width={COL_WIDTH} />;
+              if (t === n + 1) return <SpreadsheetCell key={`w-${t}`} value={pct(wacc_terminal)} type="reference" tooltip="Resolved terminal WACC, including explicit financing and terminal tax-shield adjustment" width={COL_WIDTH} />;
+              return <SpreadsheetCell key={`w-${t}`} value={pct(waccPath[t])} type={yearCellType(t)} tooltip="Resolved discount rate inferred from the engine cumulative factors" width={COL_WIDTH} />;
             })}
           </tr>
 
@@ -262,7 +235,7 @@ export default function SummarySheet({ data }: { data: ValuationResponse; sessio
             <SpreadsheetCell value="Cumulative DF" type="label" termId="discount-factor" />
             {years.map(t => {
               if (t === 0) return <SpreadsheetCell key={`df-${t}`} value={dec(1, 4)} type="financial" tooltip="DF[0] = 1.0 by definition" width={COL_WIDTH} />;
-              if (t === n + 1) return <SpreadsheetCell key={`df-${t}`} value={dec(dcf.discount_factors[n - 1], 4)} type="reference" tooltip="Terminal discounted at year-10 cumulative factor" width={COL_WIDTH} />;
+              if (t === n + 1) return <SpreadsheetCell key={`df-${t}`} value={dec(dcf.discount_factors[n - 1], 4)} type="reference" tooltip={`Terminal discounted at year-${n} cumulative factor`} width={COL_WIDTH} />;
               return <SpreadsheetCell key={`df-${t}`} value={dec(dcf.discount_factors[t - 1], 4)} type={yearCellType(t)} tooltip="Cumulative DF = Π 1/(1 + WACC_k), year-by-year product" width={COL_WIDTH} />;
             })}
           </tr>

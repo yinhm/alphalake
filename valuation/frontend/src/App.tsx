@@ -22,7 +22,7 @@ import AdminDataSources from './pages/AdminDataSources';
 import CurrencyBanner from './components/CurrencyBanner';
 import UnresolvedFieldsPanel from './components/UnresolvedFieldsPanel';
 import type { ValuationResponse } from './types/valuation';
-import { createValuation, patchValuation, downloadFullWorkbook, type PatchValue } from './api/client';
+import { createValuation, patchValuation, downloadFullWorkbook, apiErrorMessage, type PatchValue } from './api/client';
 import { KnowledgeProvider, KnowledgePanel, KnowledgePage, useKnowledge } from './knowledge';
 
 export default function App() {
@@ -36,8 +36,9 @@ export default function App() {
     try {
       const resp = await patchValuation(sessionId, { [dotPath]: value });
       setData(resp);
-    } catch {
-      // silently ignore patch errors for now
+      setError(null);
+    } catch (e: unknown) {
+      setError(`参数未生效，保留上一次估值：${apiErrorMessage(e)}`);
     }
   }, [sessionId, data]);
 
@@ -46,8 +47,9 @@ export default function App() {
     try {
       const resp = await patchValuation(sessionId, overrides);
       setData(resp);
-    } catch {
-      // silently ignore
+      setError(null);
+    } catch (e: unknown) {
+      setError(`参数未生效，保留上一次估值：${apiErrorMessage(e)}`);
     }
   }, [sessionId, data]);
 

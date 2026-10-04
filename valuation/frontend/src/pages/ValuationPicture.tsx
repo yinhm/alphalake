@@ -1,3 +1,4 @@
+import { forecastValue } from '../lib/forecast';
 import type { ValuationResponse } from '../types/valuation';
 import SpreadsheetCell from '../components/SpreadsheetCell';
 import SpreadsheetGrid from '../components/SpreadsheetGrid';
@@ -6,7 +7,6 @@ import { baseYear, baseYearMargin } from '../lib/baseYear';
 
 export default function ValuationPicture({ data }: { data: ValuationResponse; sessionId?: string | null }) {
   const fin = baseYear(data);                   // LTM-rotated base year
-  const assumptions = data.inputs.valuation_assumptions;
   const dcf = data.dcf;
   const final_ = data.final;
   const coc = data.cost_of_capital;
@@ -15,8 +15,8 @@ export default function ValuationPicture({ data }: { data: ValuationResponse; se
   // Damodaran-adjusted margin (post R&D + lease capitalization). Matches
   // what the engine uses as the starting point for the margin path.
   const currentMargin = baseYearMargin(data) ?? 0;
-  const terminalRevenue = dcf?.revenue_projections?.[dcf.revenue_projections.length - 1] ?? 0;
-  const terminalEbit = dcf?.ebit_projections?.[dcf.ebit_projections.length - 1] ?? 0;
+  const terminalRevenue = dcf?.terminal_revenue ?? null;
+  const terminalEbit = dcf?.terminal_ebit ?? null;
 
   return (
     <div className="max-w-6xl">
@@ -34,11 +34,11 @@ export default function ValuationPicture({ data }: { data: ValuationResponse; se
             <SpreadsheetCell type="label" value="Current revenues" />
             <SpreadsheetCell type="financial" value={baseRevenue} tooltip="LTM revenue (base year). Source: IQ_TOTAL_REV rotated from FY-0 + quarterly delta." />
             <SpreadsheetCell type="label" value="→ Growth yr 1" />
-            <SpreadsheetCell type="hypothesis" value={assumptions.revenue_growth_next_year} tooltip="Analyst input: revenue_growth_next_year. Year-1 growth rate applied to base revenue." />
+            <SpreadsheetCell type="hypothesis" value={forecastValue(data, 'revenue_growth_next_year')} tooltip="Resolved assumption: revenue_growth_next_year. Year-1 growth rate applied to base revenue." />
             <SpreadsheetCell type="label" value="→ Growth yrs 2-5" />
-            <SpreadsheetCell type="hypothesis" value={assumptions.revenue_growth_years_2_5} tooltip="Analyst input: revenue_growth_years_2_5. Single flat rate applied to years 2–5 per folder §3.1." />
+            <SpreadsheetCell type="hypothesis" value={forecastValue(data, 'revenue_growth_years_2_5')} tooltip="Resolved assumption: revenue_growth_years_2_5. Single flat rate applied to years 2–5 per folder §3.1." />
             <SpreadsheetCell type="label" value="→ Terminal revenues" />
-            <SpreadsheetCell type="calc" value={terminalRevenue} tooltip="Year-10 projected revenue from the DCF engine (dcf.revenue_projections[9]). Compound growth through yr-1, yrs 2–5, then linear convergence yrs 6–10." />
+            <SpreadsheetCell type="calc" value={terminalRevenue} tooltip="Terminal-year revenue resolved by the DCF engine, after the explicit projection period." />
           </tr>
         </tbody>
       </SpreadsheetGrid>
@@ -50,11 +50,11 @@ export default function ValuationPicture({ data }: { data: ValuationResponse; se
             <SpreadsheetCell type="label" value="Current EBIT margin" />
             <SpreadsheetCell type="calc" value={currentMargin} tooltip="Base-year operating margin = adjusted EBIT / LTM revenue. Uses R&D- and lease-adjusted EBIT." />
             <SpreadsheetCell type="label" value="→ Target margin" />
-            <SpreadsheetCell type="hypothesis" value={assumptions.target_operating_margin} tooltip="Analyst input: target_operating_margin. The mature-state margin the firm converges to by year K." />
+            <SpreadsheetCell type="hypothesis" value={forecastValue(data, 'target_operating_margin')} tooltip="Resolved assumption: target_operating_margin. The mature-state margin the firm converges to by year K." />
             <SpreadsheetCell type="label" value="→ Converge year" />
-            <SpreadsheetCell type="hypothesis" value={assumptions.margin_convergence_year} tooltip="Analyst input: margin_convergence_year (K). Years 2..K interpolate linearly from year-1 margin to target; years K+1..10 flat at target." />
+            <SpreadsheetCell type="hypothesis" value={forecastValue(data, 'margin_convergence_year')} tooltip="Resolved assumption: margin_convergence_year (K). Years 2..K interpolate linearly from year-1 margin to target; years K+1..10 flat at target." />
             <SpreadsheetCell type="label" value="→ Terminal EBIT" />
-            <SpreadsheetCell type="calc" value={terminalEbit} tooltip="Terminal revenue × target margin — EBIT at the end of the projection window." />
+            <SpreadsheetCell type="calc" value={terminalEbit} tooltip="Terminal revenue × target margin — EBIT in the terminal year after the explicit projection." />
           </tr>
         </tbody>
       </SpreadsheetGrid>

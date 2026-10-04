@@ -68,12 +68,15 @@ class TestMarginPath:
         # After K: flat at target
         for i in range(5, 10):
             assert path[i] == pytest.approx(0.60)
-        # Year 2: target - (target - y1) × (K - 2)/K = 0.60 - 0.20 × 3/5 = 0.48
-        assert path[1] == pytest.approx(0.48)
-        # Year 3: 0.60 - 0.20 × 2/5 = 0.52
-        assert path[2] == pytest.approx(0.52)
-        # Year 4: 0.60 - 0.20 × 1/5 = 0.56
-        assert path[3] == pytest.approx(0.56)
+        # Four equal intervals from year 1 to year 5. Previously year 2
+        # skipped a step (.48), contradicting the linear endpoint contract.
+        assert path[:5] == pytest.approx([.40, .45, .50, .55, .60])
+
+    def test_falling_flat_and_short_paths(self):
+        assert _margin_path(.6, .4, 5, 7) == pytest.approx([.6,.55,.5,.45,.4,.4,.4])
+        assert _margin_path(0, 0, 5, 3) == [0,0,0]
+        assert _margin_path(.4, .6, 1, 3) == [.4,.6,.6]
+        assert _margin_path(.4, .6, 2, 3) == [.4,.6,.6]
 
 
 class TestTaxPath:

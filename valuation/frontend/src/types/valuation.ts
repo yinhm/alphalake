@@ -282,6 +282,8 @@ export interface DebtTaxShieldYear {
 }
 
 export interface ValuationAssumptions {
+  annual_forecast?: { growth: number; margin: number; tax: number }[] | null;
+  annual_sales_to_capital?: number[] | null;
   debt_tax_shield: {
     policy_id: string;
     years: DebtTaxShieldYear[];
@@ -328,7 +330,21 @@ export interface ValuationAssumptions {
   effective_tax_rate_override_years_1_5: number | null;
 }
 
+export interface ForecastParameter {
+  value: number | null;
+  source: string;
+  basis: string;
+  editable: boolean;
+}
+
 export interface DCFResult {
+  forecast_parameters: Record<string, ForecastParameter>;
+  terminal_growth: number | null;
+  terminal_revenue: number | null;
+  terminal_ebit: number | null;
+  terminal_margin: number | null;
+  tax_rate_projections: number[];
+  terminal_tax_rate: number | null;
   debt_tax_shield_availability: number[];
   wacc_tax_shield_adjustments: number[];
   debt_tax_shield_spreads: number[];

@@ -195,6 +195,38 @@ def test_original_manual_reference_selection_updates_numbers_and_keeps_failed_se
             assert session.inputs.model_dump() == saved
 
 
+def test_forecast_patch_resolution_and_inactive_sensitivity(monkeypatch):
+    from fastapi.testclient import TestClient
+    from api.main import app
+    from api.session_store import create_session
+    record = sample(monkeypatch)
+    inputs, _ = _db_record_to_company_input(record, .04, None)
+    from api.routes import _get_damodaran_store
+    session = create_session(inputs, run_full_valuation(inputs), reference_store=_get_damodaran_store())
+    url = '/api/valuation/'+session.id
+    with TestClient(app) as client:
+        edited = client.patch(url, json={'overrides': {'valuation_assumptions.revenue_growth_next_year':.12}})
+        assert edited.status_code == 200, edited.text
+        assert edited.json()['dcf']['forecast_parameters']['revenue_growth_years_2_5']['value'] == .12
+        saved = client.get(url).json()
+        for overrides in ({'valuation_assumptions.margin_convergence_year':0},
+                          {'valuation_assumptions.sales_to_capital_high':0},
+                          {'valuation_assumptions.revenue_growth_next_year':-1.1}):
+            rejected = client.patch(url, json={'overrides':overrides})
+            assert rejected.status_code == 422, rejected.text
+            assert client.get(url).json() == saved
+        annual = client.patch(url, json={'overrides': {
+            'valuation_assumptions.annual_forecast': [dict(growth=0, margin=.2, tax=.25)]*10,
+            'valuation_assumptions.annual_sales_to_capital':[3]*10,
+        }})
+        assert annual.status_code == 200, annual.text
+        assert not annual.json()['dcf']['forecast_parameters']['target_operating_margin']['editable']
+        sensitivity = client.post(url+'/sensitivity').json()
+        assert {b['driver'] for b in sensitivity['bars']} == {
+            'growth_perpetuity_rate', 'wacc_level_shift_bps', 'failure_probability'}
+        assert all(b['range_source'] == 'application_example' for b in sensitivity['bars'])
+
+
 def test_native_gate_requires_linked_review_for_source_zero(monkeypatch):
     import json
     import sqlite3

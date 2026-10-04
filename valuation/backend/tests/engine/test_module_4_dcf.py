@@ -199,7 +199,8 @@ def test_damodaran_terminal_reinvestment_identity(cf_metrics, cost_of_capital, a
 
 @pytest.mark.parametrize('wacc,growth', [(0.02,0.02),(0.01,0.02),(float('nan'),0.02),(0.09,float('inf'))])
 def test_invalid_terminal_denominator_rejected(wacc,growth,cf_metrics,cost_of_capital,adjusted,raw,macro):
-    assumptions=ValuationAssumptions(override_growth_perpetuity=True,growth_perpetuity_rate=growth,
+    # Bypass API validation to retain direct-engine defensive coverage.
+    assumptions=ValuationAssumptions.model_construct(override_growth_perpetuity=True,growth_perpetuity_rate=growth,
         cost_of_capital_stable_override=wacc,roic_stable_override=0.12)
     with pytest.raises(ValueError,match='terminal WACC must be finite'):
         compute_dcf(cf_metrics,cost_of_capital,adjusted,raw,assumptions,macro)
@@ -207,7 +208,8 @@ def test_invalid_terminal_denominator_rejected(wacc,growth,cf_metrics,cost_of_ca
 
 @pytest.mark.parametrize('roic', [0, -0.01, float('nan'), float('inf')])
 def test_invalid_terminal_roic_rejected(roic, cf_metrics, cost_of_capital, adjusted, raw, macro):
-    assumptions = ValuationAssumptions(override_growth_perpetuity=True, growth_perpetuity_rate=0.02,
+    # API rejects nonfinite values; direct engine must still defend itself.
+    assumptions = ValuationAssumptions.model_construct(override_growth_perpetuity=True, growth_perpetuity_rate=0.02,
         cost_of_capital_stable_override=0.09, roic_stable_override=roic)
     with pytest.raises(ValueError, match='terminal ROIC must be finite and positive'):
         compute_dcf(cf_metrics, cost_of_capital, adjusted, raw, assumptions, macro)

@@ -1,5 +1,5 @@
 import type { PatchValue } from '../api/client';
-import type { ValuationResponse, RawFinancials } from '../types/valuation';
+import type { ValuationResponse, RawFinancials, ForecastParameter } from '../types/valuation';
 import SpreadsheetCell from '../components/SpreadsheetCell';
 import SpreadsheetGrid from '../components/SpreadsheetGrid';
 import ColorLegend from '../components/ColorLegend';
@@ -71,22 +71,25 @@ function YesNoSelect({ value, dotPath, onUpdate }: {
 // Editable number cell
 // ---------------------------------------------------------------------------
 
-function EditableNum({ value, dotPath, format, onUpdate, tooltip }: {
+function EditableNum({ value, dotPath, format, onUpdate, tooltip, parameter }: {
   value: number | null | undefined;
   dotPath: string;
   format: 'num' | 'pct' | 'dec';
   onUpdate: (path: string, val: number | null) => void;
   tooltip?: string;
+  parameter?: ForecastParameter;
 }) {
-  const display = format === 'pct' ? pct(value) : format === 'num' ? num(value) : dec(value);
+  if (parameter) value = parameter.value;
+  const display = parameter && !parameter.editable && value == null ? '年度路径'
+    : format === 'pct' ? pct(value) : format === 'num' ? num(value) : dec(value);
   // Default tooltip shows the dot-path backing this input so the analyst
   // can always identify which ValuationAssumptions field they're editing.
-  const effectiveTooltip = tooltip ?? `Editable input — backs ${dotPath}. PATCH commits update the session and re-run the DCF.`;
+  const effectiveTooltip = parameter ? `${parameter.source}: ${parameter.basis}\n${!parameter.editable ? '请修改显式年度路径。' : parameter.source === 'structural_input' ? '请输入正整数；不能清空。' : '清空恢复该参数的原生回退；显式0保留。'}` : tooltip ?? `Editable input — backs ${dotPath}. PATCH commits update the session and re-run the DCF.`;
   return (
     <SpreadsheetCell
       value={display}
       type="hypothesis"
-      editable
+      editable={parameter?.editable ?? true}
       tooltip={effectiveTooltip}
       onChange={(raw) => {
         const cleaned = raw.replace(/[,%\s]/g, '');
@@ -161,6 +164,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
   const indGlobal = inp.industry_data_global;
   const cm = inp.company_metrics;
   const va = inp.valuation_assumptions;
+  const parameters = data.dcf?.forecast_parameters;
   const opt = inp.option_inputs;
   const coc = data.cost_of_capital;
 
@@ -688,16 +692,17 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
 
         return (
         <SpreadsheetGrid title="7. Value Drivers — with co-located reference data">
+          <caption className="text-left text-xs text-slate-600 py-2">生效值由后端解析；悬停查看来源，双击修改，可空参数清空恢复原生回退。历史与行业参考不自动成为预测；历史列为年度未调整口径，不能直接替代研发调整后的利润率。年度路径生效时，对应标量只读。</caption>
           <thead>
             <tr>
               <SpreadsheetCell value="Driver" type="header" width="230px" />
-              <SpreadsheetCell value="Your Input" type="header" width="110px" />
-              <SpreadsheetCell value="Co LTM / YoY" type="header" width="100px" />
+              <SpreadsheetCell value="Effective Forecast" type="header" width="110px" />
+              <SpreadsheetCell value={`FY${latestFy} / YoY (reported)`} type="header" width="100px" />
               <SpreadsheetCell value="3Y CAGR/Avg" type="header" width="100px" />
               <SpreadsheetCell value="5Y CAGR/Avg" type="header" width="100px" />
               <SpreadsheetCell value="10Y CAGR/Avg" type="header" width="100px" />
-              <SpreadsheetCell value={`${ind.region} Ind. Median`} type="header" width="120px" />
-              <SpreadsheetCell value="Global Median" type="header" width="120px" />
+              <SpreadsheetCell value={`${ind.region} Ind. Reference`} type="header" width="120px" />
+              <SpreadsheetCell value="Global Reference" type="header" width="120px" />
               <SpreadsheetCell value="Stat Q1–Q3" type="header" width="140px" />
             </tr>
           </thead>
@@ -705,7 +710,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
             {/* Revenue Growth — Year 1 */}
             <tr>
               <SpreadsheetCell value="Revenue Growth — Next Year" type="label" termId="revenue-growth" bindingId="revenue-growth.next-year" />
-              <EditableNum value={va.revenue_growth_next_year} dotPath="valuation_assumptions.revenue_growth_next_year" format="pct" onUpdate={update} />
+              <EditableNum value={va.revenue_growth_next_year} parameter={parameters?.revenue_growth_next_year} dotPath="valuation_assumptions.revenue_growth_next_year" format="pct" onUpdate={update} />
               <SpreadsheetCell value={pct(rev_yoy)} type="calc" tooltip={`YoY = (Revenue[FY${latestFy}] - Revenue[FY${latestFy-1}]) / Revenue[FY${latestFy-1}]`} />
               <SpreadsheetCell value={pct(rev_cagr_3)} type="calc" tooltip={cagrTooltip(3, latestFy, latestFy-3, 'Revenue')} />
               <SpreadsheetCell value={pct(rev_cagr_5)} type="calc" tooltip={cagrTooltip(5, latestFy, latestFy-5, 'Revenue')} />
@@ -718,7 +723,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
             {/* Revenue Growth — Years 2-5 */}
             <tr>
               <SpreadsheetCell value="Revenue Growth — Years 2-5" type="label" termId="revenue-growth" bindingId="revenue-growth.high" />
-              <EditableNum value={va.revenue_growth_years_2_5} dotPath="valuation_assumptions.revenue_growth_years_2_5" format="pct" onUpdate={update} />
+              <EditableNum value={va.revenue_growth_years_2_5} parameter={parameters?.revenue_growth_years_2_5} dotPath="valuation_assumptions.revenue_growth_years_2_5" format="pct" onUpdate={update} />
               <SpreadsheetCell value="—" type="calc" tooltip="Forward assumption — no per-year historical" />
               <SpreadsheetCell value={pct(rev_cagr_3)} type="calc" tooltip={cagrTooltip(3, latestFy, latestFy-3, 'Revenue')} />
               <SpreadsheetCell value={pct(rev_cagr_5)} type="calc" tooltip={cagrTooltip(5, latestFy, latestFy-5, 'Revenue')} />
@@ -732,8 +737,8 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
             <tr>
               <SpreadsheetCell value="Operating Margin — Next Year" type="label" termId="operating-margin" bindingId="operating-margin.next-year" />
               <EditableNum
-                value={va.operating_margin_next_year ?? margin_now}
-                dotPath="valuation_assumptions.operating_margin_next_year" format="pct" onUpdate={update} />
+                value={va.operating_margin_next_year}
+                parameter={parameters?.operating_margin_next_year} dotPath="valuation_assumptions.operating_margin_next_year" format="pct" onUpdate={update} />
               <SpreadsheetCell value={pct(margin_now)} type="calc" tooltip={`Current Op Margin = EBIT[FY${latestFy}] / Revenue[FY${latestFy}]\n(change YoY: ${margin_yoy_delta != null ? (margin_yoy_delta >= 0 ? '+' : '') + (margin_yoy_delta * 100).toFixed(2) + ' pp' : 'n/a'})`} />
               <SpreadsheetCell value={pct(margin_avg_3)} type="calc" tooltip={avgTooltip(3, 'Op Margin')} />
               <SpreadsheetCell value={pct(margin_avg_5)} type="calc" tooltip={avgTooltip(5, 'Op Margin')} />
@@ -746,7 +751,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
             {/* Target Margin */}
             <tr>
               <SpreadsheetCell value="Target Pre-tax Op Margin" type="label" termId="operating-margin" bindingId="operating-margin.target" />
-              <EditableNum value={va.target_operating_margin} dotPath="valuation_assumptions.target_operating_margin" format="pct" onUpdate={update} />
+              <EditableNum value={va.target_operating_margin} parameter={parameters?.target_operating_margin} dotPath="valuation_assumptions.target_operating_margin" format="pct" onUpdate={update} />
               <SpreadsheetCell value="—" type="calc" tooltip="Terminal target — no historical analog" />
               <SpreadsheetCell value={pct(margin_avg_3)} type="calc" tooltip={avgTooltip(3, 'Op Margin')} />
               <SpreadsheetCell value={pct(margin_avg_5)} type="calc" tooltip={avgTooltip(5, 'Op Margin')} />
@@ -758,12 +763,12 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
 
             {/* Margin Convergence Year */}
             <tr>
-              <SpreadsheetCell value="Year of Convergence (1–10)" type="label" />
-              <EditableNum value={va.margin_convergence_year} dotPath="valuation_assumptions.margin_convergence_year" format="num" onUpdate={update} />
-              <SpreadsheetCell value="—" type="calc" tooltip="No historical equivalent — this is a projection-control input (integer K between 1 and 10)." />
+              <SpreadsheetCell value="Year of Convergence (K)" type="label" />
+              <EditableNum value={va.margin_convergence_year} parameter={parameters?.margin_convergence_year} dotPath="valuation_assumptions.margin_convergence_year" format="num" onUpdate={update} />
+              <SpreadsheetCell value="—" type="calc" tooltip="No historical equivalent — this is a projection-control input (positive integer K; if beyond the projection, the terminal target remains explicit)." />
               <SpreadsheetCell value="—" type="calc" tooltip="No 3-year historical equivalent for this input." />
               <SpreadsheetCell value="—" type="calc" tooltip="No 5-year historical equivalent for this input." />
-              <SpreadsheetCell value="5 typical" type="calc" tooltip="Damodaran convention: converge margin linearly to target by year 5" />
+              <SpreadsheetCell value="5 (app default)" type="calc" tooltip="Local application default; convergence time requires company evidence, not a universal Damodaran rule." />
               <SpreadsheetCell value="—" type="reference" tooltip="No industry (regional) benchmark — convergence year is a modelling choice, not a firm-level observable." />
               <SpreadsheetCell value="—" type="reference" tooltip="No industry (global) benchmark." />
               <SpreadsheetCell value="—" type="reference" tooltip="No Q1/Q3 benchmark range — same reason." />
@@ -776,7 +781,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
                 type="label"
                 tooltip={'Reinvestment = ΔRevenue / Sales-to-Capital. Two values (high-growth and stable) reflect that capital efficiency typically changes as a firm matures. Folder reference: module_05_dcf_projection.md §3.6.'} termId="sales-to-capital" bindingId="sales-to-capital.high"
               />
-              <EditableNum value={va.sales_to_capital_high} dotPath="valuation_assumptions.sales_to_capital_high" format="dec" onUpdate={update} />
+              <EditableNum value={va.sales_to_capital_high} parameter={parameters?.sales_to_capital_high} dotPath="valuation_assumptions.sales_to_capital_high" format="dec" onUpdate={update} />
               <SpreadsheetCell value={dec(stoc_now)} type="calc" tooltip={`Implied Sales/Capital = Revenue / (BV Equity + BV Debt - Cash)\nMost recent FY`} />
               <SpreadsheetCell value={dec(stoc_avg_3)} type="calc" tooltip={avgTooltip(3, 'Implied Sales/Capital')} />
               <SpreadsheetCell value={dec(stoc_avg_5)} type="calc" tooltip={avgTooltip(5, 'Implied Sales/Capital')} />
@@ -793,7 +798,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
                 type="label"
                 tooltip={'Stable-period Sales/Capital, typically closer to 1–2× for mature firms. Drives reinvestment during the convergence phase (years 6–10). Folder: module_05 §3.6.'} termId="sales-to-capital" bindingId="sales-to-capital.stable"
               />
-              <EditableNum value={va.sales_to_capital_stable} dotPath="valuation_assumptions.sales_to_capital_stable" format="dec" onUpdate={update} />
+              <EditableNum value={va.sales_to_capital_stable} parameter={parameters?.sales_to_capital_stable} dotPath="valuation_assumptions.sales_to_capital_stable" format="dec" onUpdate={update} />
               <SpreadsheetCell value="—" type="calc" tooltip="Forward assumption — use 10Y avg or industry as anchor" />
               <SpreadsheetCell value={dec(stoc_avg_3)} type="calc" tooltip={avgTooltip(3, 'Implied Sales/Capital')} />
               <SpreadsheetCell value={dec(stoc_avg_5)} type="calc" tooltip={avgTooltip(5, 'Implied Sales/Capital')} />

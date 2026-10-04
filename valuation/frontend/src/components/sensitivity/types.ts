@@ -10,7 +10,7 @@ export interface SensitivityBar {
   vps_hi: number | null;
   delta_lo: number | null;
   delta_hi: number | null;
-  range_source: 'industry_q1_q3' | 'canonical' | 'industry_fallback_canonical';
+  range_source: 'industry_median_band' | 'application_example';
 }
 
 export interface SensitivityResponse {

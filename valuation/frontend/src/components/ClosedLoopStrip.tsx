@@ -1,3 +1,4 @@
+import { forecastValue } from '../lib/forecast';
 /**
  * Top-of-page summary strip for the three-story joint examination.
  *
@@ -33,13 +34,13 @@ export default function ClosedLoopStrip({ data }: Props) {
 
   // Story-implied required values — from the analyst's inputs.
   const impliedROIC = requiredROIC(
-    va.target_operating_margin,
-    va.sales_to_capital_high,
+    forecastValue(data, 'target_operating_margin'),
+    forecastValue(data, 'sales_to_capital_high'),
   );
   // ROIC anchor for required-S/C: prefer roic_stable_override, then hist 5yr avg, else WACC.
   const roicAnchor =
     va.roic_stable_override ?? cf?.historical_roic_avg_5yr ?? wacc;
-  const impliedSCReq = requiredSC(roicAnchor, va.target_operating_margin);
+  const impliedSCReq = requiredSC(roicAnchor, forecastValue(data, 'target_operating_margin'));
 
   // Historical (5yr avg) and industry references
   const histROIC = cf?.historical_roic_avg_5yr ?? null;
@@ -56,7 +57,7 @@ export default function ClosedLoopStrip({ data }: Props) {
 
   // Terminal state invariant
   const terminalImplied = data.dcf?.implied_roic_terminal ?? null;
-  const terminalWACC = va.cost_of_capital_stable_override ?? wacc;
+  const terminalWACC = data.dcf?.terminal_wacc ?? null;
 
   return (
     <section className="my-4 bg-white border border-slate-300 rounded-md shadow-sm p-3">

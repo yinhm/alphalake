@@ -506,6 +506,7 @@ class DebtTaxShieldForecast(BaseModel):
 
 
 class ValuationAssumptions(BaseModel):
+    model_config = ConfigDict(allow_inf_nan=False)
     annual_forecast: list[ForecastYear] | None = None
     research_tax: ResearchTaxForecast | None = None
     debt_tax_shield: DebtTaxShieldForecast | None = None
@@ -528,14 +529,14 @@ class ValuationAssumptions(BaseModel):
             raise ValueError('annual sales-to-capital must cover every year with finite positive values')
         return self
 
-    projection_years: int = Field(default=10, description="Total projection years (high growth + transition)")
-    high_growth_years: int = Field(default=5, description="High-growth period length")
+    projection_years: int = Field(default=10, ge=1, description="Total projection years (high growth + transition)")
+    high_growth_years: int = Field(default=5, ge=1, description="High-growth period length")
     stable_growth_rate: float | None = Field(default=None, description="Terminal growth (defaults to risk_free_rate)")
-    revenue_growth_next_year: float | None = Field(default=None)
+    revenue_growth_next_year: float | None = Field(default=None, ge=-1)
     operating_margin_next_year: float | None = Field(default=None, description="User hypothesis for next year operating margin")
-    revenue_growth_years_2_5: float | None = Field(default=None)
+    revenue_growth_years_2_5: float | None = Field(default=None, ge=-1)
     target_operating_margin: float | None = Field(default=None)
-    margin_convergence_year: int = Field(default=5)
+    margin_convergence_year: int = Field(default=5, ge=1)
     sales_to_capital_high: float | None = Field(default=None, description="Sales/Capital for high-growth years")
     sales_to_capital_stable: float | None = Field(default=None, description="Sales/Capital for stable years")
     cost_of_capital_stable_override: float | None = Field(default=None)
@@ -565,7 +566,22 @@ class ValuationAssumptions(BaseModel):
 # I. DCF Result (Module 4 output)
 # ---------------------------------------------------------------------------
 
+class ForecastParameter(BaseModel):
+    """Resolved input, not an independently verified economic forecast."""
+    value: float | None
+    source: str
+    basis: str
+    editable: bool = True
+
+
 class DCFResult(BaseModel):
+    forecast_parameters: dict[str, ForecastParameter] = Field(default_factory=dict)
+    terminal_growth: float | None = None
+    terminal_revenue: float | None = None
+    terminal_ebit: float | None = None
+    terminal_margin: float | None = None
+    tax_rate_projections: list[float] = Field(default_factory=list)
+    terminal_tax_rate: float | None = None
     revenue_projections: list[float] = Field(default_factory=list)
     ebit_projections: list[float] = Field(default_factory=list)
     nopat_projections: list[float] = Field(default_factory=list)

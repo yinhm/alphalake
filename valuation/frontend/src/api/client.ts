@@ -3,6 +3,14 @@ import type { ValuationResponse } from '../types/valuation';
 
 const api = axios.create({ baseURL: '/api' });
 
+export function apiErrorMessage(error: unknown): string {
+  const detail = axios.isAxiosError(error) ? error.response?.data?.detail : null;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail)) return detail.map(item => `${item.loc?.join('.')}: ${item.msg}`).join('; ');
+  if (detail?.reason) return String(detail.reason);
+  return error instanceof Error ? error.message : '请求失败';
+}
+
 // ---------------------------------------------------------------------------
 // Admin token — stored in localStorage. When set, every request carries it
 // in the X-Admin-Token header so admin endpoints succeed; all other endpoints
