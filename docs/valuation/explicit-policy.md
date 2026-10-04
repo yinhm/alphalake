@@ -21,7 +21,7 @@
 | `mature_market_erp`、`country_risk_contribution` | 成熟ERP与已按显式暴露政策加权的国家风险分别供给 | 不重复叠加总ERP中的CRP；注册/上市地不证明经营暴露，λ=1仅为条件代理 |
 | `debt_cost_pretax`、`debt_cost_basis` | 同币种完整债务成本；公司债券/评级证据优先，合成估计次之，不足则命名信用情景 | `analyst_credit_reference`可标参考情景，不证明真实评级。US完整债务利率不能重标为CNY；信用分母须正、同期间同范围 |
 | `capital_structure_basis`、`market_equity`、`estimated_debt`、`debt_weight` | 当前路径选`market_equity_estimated_debt`，权益/债务金额以百万元人民币供给 | `debt_weight=D/(D+E)`匹配金额；A股价格×总股本及账面债务仍是批准代理，不称完整市场价值 |
-| `tax_shield_rate` | 对应所选边际抵税率；会计有效税率另用于经营预测 | 国家税率不证明公司优惠期限或足额抵税；保留既有亏损税盾计算，不改变算法 |
+| `tax_shield_rate` | 对应所选边际抵税率；会计有效税率另用于经营预测 | 国家税率不证明公司优惠期限或足额抵税；税盾时点及可选未来分量按[亏损契约](methodology-contract.md#亏损抵扣与融资税盾契约)，不从有效税率猜实际边际扣除 |
 
 已入表租赁债务不再加一次付款PV，已含租赁利息不重复加入分母。报告EBIT与研发调整后EBIT分别保存，不能在适配层自动更换信用分子。报表信用附加条件已批准并接入显式入口，不替换原用户请求；正式评级、自动推荐和默认替换仍未批准。缺/零/负利息和官方区间缝隙保留，不填AAA或插值。具体原始依据及选择顺序见[人民币政策](native-cny-policy.md#已批准规则与依据)和[组成审计](native-cny-policy.md#利润利息与租赁组成审计)。
 
@@ -38,6 +38,7 @@
 | `effective_tax_rate_override_years_1_5`、`override_tax_convergence` | 与`macro_inputs`有效/边际税率对应的经营税路径 | 字段名不能代替实际时序：高增长窗口影响税率过渡。分别看税率、NOL、税盾和税后利润，不称纯增长变化 |
 | `cost_of_capital_stable_override`、`stable_growth_rate`、`roic_stable_override` | 成熟风险/融资、同币种增长与新增资本回报 | 检查实际终值WACC大于g、ROIC有限且正；`roic_stable_override`留空按现有引擎使用实际终值WACC，是无超额回报情景，不是公司必然状态 |
 | `research_tax` | 逐年损益研发费用/税务总扣除、终值首年金额及税率依据 | 已批准显式接口；复用完整研发队列，以E+A−D计税和抵亏；费用、优惠资格及无到期/上限NOL均须明确是条件，不重复扣总投入中的研发 |
+| `override_nol/nol_amount`、`debt_tax_shield` | 显式亏损余额、完整年度/长期正常化WACC及其债务分量 | 普通/研发统一承接无到期NOL尾部；融资路径优先于两阶段WACC，不自动估计余额/融资。部分可用比例仍是代理，见[契约](methodology-contract.md#亏损抵扣与融资税盾契约) |
 
 已有`annual_forecast`可逐年交付`growth/margin/tax`，长度必须覆盖`projection_years`，覆盖两阶段增长/利润率/税率路径，最后一年利润率和税率延续至终值；已有`annual_sales_to_capital`逐年覆盖两阶段倍率，要求全程有限且正。两者不覆盖终值的`g/ROIC`再投资规则。显式零值按其实际语义处理，不当作“未填写”；基期收入为零的商业化路径仍属[引擎待审批](../../valuation/TODO.md)。
 

@@ -45,6 +45,8 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 
 此入口不自动刷新行情/参考，也不认证请求里的财务来源、公司信用或未来经济依据。按原请求的财务/信息/股本时点解释；数据库当前参考绑定不能将归档WACC变成今日市场WACC。原始输入保存不变，原引擎仍重算公司派生指标。
 
+完整显式输入还可提供`valuation_assumptions.debt_tax_shield`；逐年/长期整体正常化WACC及对应债务分量须一起给出，不能只改债务权重后沿用不匹配的整体WACC。所有路径统一承接剩余NOL，规则及无到期/限额、部分比例边界见[亏损契约](../valuation/methodology-contract.md#亏损抵扣与融资税盾契约)。不另加自动融资预测或网页参数入口。
+
 ## 已保存预测的到期核验
 
 新增只读命令`tools.review_valuation_forecast`，使用已有run ID核验历史增长及显式一年校准政策的十年收入/调整EBIT预测。先复用`load_run`检查请求/引擎哈希，再用当前引擎完整重放原报告；当前引擎不能复现时拒绝，不悄悄改用新预测。此工具不执行新估值，不改政策或旧运行。
