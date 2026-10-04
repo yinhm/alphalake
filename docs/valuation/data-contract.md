@@ -108,6 +108,8 @@ WACC、经营与稳态的实际字段、覆盖优先级及交付步骤统一见[
 
 已有完整API可以表达增长、目标利润率及资本倍率/年度路径，无须新增接口。交付同时记录收入绝对规模、净再投资、资本释放、隐含回报与终值g/ROIC规则切换，不能仅存最终价格；初始WACC相同不证明税率时序及实际终值折现相同。历史FCFF缺项不自动阻断显式预测，但不能用预测再投资填补历史事实。实测及采用边界见[经营输入联动审阅](native-assumption-selection.md#当前经营输入联动审阅2026-10-02)；新增规则或自动默认采用仍须审批。
 
+研发预测须按[研发预测税务契约](methodology-contract.md#研发预测税务契约)分开费用、经济摊销、税务扣除、税基及现金经营税。基期E10修复不等于预测已处理税差；未来金额是显式假设，不来自TDX事实。现有`annual_forecast.tax`实际施加于预测EBIT且末年延续至终值，不能将现金税比例等同于法定/边际税率或WACC抵税率。总净再投资不再另扣研发；该语义说明未新增typed字段、自动桥接或准入门槛，未完整表达的亏损/终值处理仍待审批。
+
 ## 具名条件交付契约
 
 `tools.evaluate_native_policy --explicit-input`复用当前完整`CompanyValuationInput`和`POST /api/valuation`，不增加引擎字段或页面。调用者提供已核验来源的完整`{"inputs": ...}`，批量证券须唯一且为沪深代码；SQLite须为v11，结果绑定实际`reference_snapshot_id`。具体命令和运行追溯见[统一入口](../guides/company-valuation-entry.md#原生具名条件自动交付)。
