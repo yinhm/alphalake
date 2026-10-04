@@ -112,6 +112,31 @@ WACC、经营与稳态的实际字段、覆盖优先级及交付步骤统一见[
 
 普通及研发路径统一承接剩余亏损，现金税、税盾分量及终值规则见[亏损抵扣契约](methodology-contract.md#亏损抵扣与融资税盾契约)。可选`valuation_assumptions.debt_tax_shield`完整供给逐年/长期正常化WACC和债务分量，不由TDX财务或整体WACC猜测；沿用原生完整API及PATCH，不改变SQLite事实或网页流程。
 
+## 利润率口径、取值优先级与展示
+
+2026-10-04核对。以下为当前实现契约，不新增默认预测政策；界面错显单列为BUG，不能用改模型来对齐显示。
+
+| 层次／路径 | 分子、期间及作用 |
+|---|---|
+| 年度报表利润率 | 各财年标准报表EBIT／同年收入；`raw_financials`保留年度事实，不能标成当前TTM |
+| 当前报表利润率 | `ltm_financials.ebit/revenues`；TTM优先，年度入口沿显式年度基期。报表EBIT不自动等于已正常化的主营利润 |
+| 当前调整后利润率 | 同基期报表EBIT＋当期研发费用－历史研发摊销＋适用租赁利润调整，再除同基期收入；`company_metrics`、DCF缺省起点及`baseYearMargin()`使用此值 |
+| 年度调整后历史 | `cashflow.historical_margin_by_year`逐年用当年及以前研发队列重建，缺队列保留空值；历史系列不是当前TTM。原生Input Sheet另算的历史列仍是未调整年度EBIT／收入，两者不能混称同一历史利润率；额外租赁历史未闭合时不生成同口径历史目标条件 |
+| 行业参考 | `industry_data.pretax_operating_margin`及Global参考独立展示；不自动成为公司目标，不直接将未调整行业利润率与研发调整后公司利润率认作可比 |
+| 用户预测 | `operating_margin_next_year`、`target_operating_margin`、`margin_convergence_year`，或完整`annual_forecast[].margin`；预测EBIT为预测收入乘实际消费的利润率，属于假设而非报表事实 |
+
+**引擎优先级：**完整`annual_forecast`覆盖全部逐年利润率，末年利润率用于终值；此时三参数利润率路径不生效。未提供逐年路径时，次年参数优先，空值取当前调整后利润率；目标参数优先，空值沿用次年值；收敛年数只控制有差异的起点／目标过渡。行业及历史参考不会因未填参数而自动采用。`research_tax`处理经济利润对应的税基和现金税，不选择或重新加回预测利润率。
+
+**既有条件路径：**`select_native_assumptions`和组合条件可显式保持调整后TTM；`scenario_payloads`另提供最近三年收入加权、逐年研发调整后的历史目标。加权目标不等于Input Sheet的原始年度均值，也不等于历史调整利润率的简单平均；统一附加交付仍按[既有延期方案](explicit-policy.md#同口径利润率条件接入方案)，不自动替换用户路径。
+
+**过渡公式边界：**原生三参数路径第1年为起点，第2至K年按`m1+(target-m1)*t/K`计算；现有五年历史条件用`m1+(target-m1)*min((t-1)/4,1)`。相同起点、目标及名义五年不代表中间路径相同；这属于既有本地规则差异，不能作为显示BUG顺带改写，也不能称任一时间刻度为教材规定。
+
+**已确认待修显示BUG：**Input Sheet次年利润率为空时显示年度原始利润率，且将年度参考列标作LTM；敏感性面板目标为空时显示固定15%，与引擎沿用实际起点不同；Stories历史单元格读取调整后系列但提示按原始EBIT解释；Summary终值在显式年度路径下仍可能优先读取已失效的标量目标。当前参数／参考、已解析的默认及实际计算路径必须分别呈现；已有事实继续按真实期间展示，不把全部历史改成TTM。见[待办边界](../../valuation/TODO.md#利润率展示bug与路径边界)。
+
+真实8080小批核验安克、茅台、苏泊尔，均确认空参数沿调整后TTM；安克年度报表、TTM报表、调整后TTM分别为9.4409%、10.6658%、17.6083%。当前安克基期为2026H1末TTM、年度为2025；不是三种未来预测。显式标量、逐年覆盖及两种过渡均经HTTP复验，源码哈希和数值记录在`workspace/derived/margin-path-audit/receipt.json`；仅审核取值与显示，不认证未来利润率可持续。
+
+研发重分类依据见[达摩达兰研发盈利与估值](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/R%26D.htm)；未来可持续利润率需成本结构、竞争及成熟度依据，见[增长公司价值驱动](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/littlebook/growthvaluedrivers.htm)。调整后利润率提高不代表新增现金，也不证明可以永久维持该水平。
+
 ## 具名条件交付契约
 
 `tools.evaluate_native_policy --explicit-input`复用当前完整`CompanyValuationInput`和`POST /api/valuation`，不增加页面；研发及融资税盾扩展沿用已批准typed字段。调用者提供已核验来源的完整`{"inputs": ...}`，批量证券须唯一且为沪深代码；SQLite须为v11，结果绑定实际`reference_snapshot_id`。具体命令和运行追溯见[统一入口](../guides/company-valuation-entry.md#原生具名条件自动交付)。
