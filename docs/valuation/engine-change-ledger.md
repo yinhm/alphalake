@@ -116,6 +116,7 @@ E27拆两行以区分明确资本修正与额外税盾政策；截至`4568cf4`�
 - T9：[研发预测税基桥](../../valuation/backend/tests/engine/test_rd_forecast_tax.py)，五年队列、税基异号、现金税、七组独立1000年终值现金流及API会话保护；动态跨行业影响在`workspace/derived/research-tax-bridge/`。
 
 - T10：[通用NOL与融资税盾](../../valuation/backend/tests/engine/test_nol_terminal_tax.py)，四年节税、七组独立1000年现金流、逐年融资分量、API拒绝/会话保护；[汇总页](../../valuation/frontend/tests/summary.spec.ts)核验实际终值WACC显示。
+- T11：[可转债索偿](../../valuation/backend/tests/engine/test_convertible_claims.py)，现金流独立现值、详细WACC分量/利息剔除、四条股权路径、员工期权顺序及无效会话/残差篡改拒绝。
 
 导入后11个差异文件全部对应上述条目：`data_dictionary.py`（输入/输出契约），`equity_bridge.py`（E01），`module_1_adjustments.py`（E10），`module_2_risk.py`（E02–07/E19），`module_3_cashflow.py`（E10–15/E23/E26/E27），`module_4_dcf.py`（E05/E08/E09/E16/E17/E24–27），`module_5_multiples.py`（E10），`company_metrics.py`（E10/E19/E27），`ltm_calculator.py`（E18/E27），`orchestrator.py`（桥接、期间、提示与派生刷新），`segment_resolver.py`（E21）。准确上游比较还包含导入前已改变的`module_6_options.py`，合计12个文件。
 
@@ -177,7 +178,7 @@ E27拆两行以区分明确资本修正与额外税盾政策；截至`4568cf4`�
 
 ## E30：可转债市场索偿拆分（2026-10-04，用户明确批准）
 
-实现提交在本轮交付记录中绑定；代码为`data_dictionary.py`、`equity_bridge.py`、M2、编排器及其实际API/适配调用方。
+实现提交`3014df4`；代码为`data_dictionary.py`、`equity_bridge.py`、M2、编排器及其实际API/适配调用方。默认后端459通过，真实8080的126家122/4及12研发条件均不变；原市场输入缺项不被测试合成值填补。
 
 - **前后行为**：撤销不转股/全转股取低和其他权益账面期权代理。B由独立合同现金流和可比纯债收益率计算，O=M−B；撤销原已扣转债账面额后扣B、O，分母保留现有股数。精确现金流与等额票息条件分开，会计利息不再充当现金票息；员工期权继续在既有M6扣除。详细WACC剔除已含转债的账面本金/会计利息后估普通债务，D含B、E含O，并按债务分量成本加权；其他整体WACC不猜拆。
 - **原始依据**：S9 Steps1–4；[第8章pp46–47](https://pages.stern.nyu.edu/~adamodar/pdfiles/valn2ed/ch8.pdf)拆纯债/权益及其资本成本；[第33章pp28–31](https://pages.stern.nyu.edu/~adamodar/pdfiles/valn2ed/ch33.pdf)现金流现值、期权和稀释/提前行权限制。教材网站Sterling示例的文字可比利率8.5%与算式7.5%不一致，本轮遵循公式，不将该四舍五入数字当精确测试锚点。
@@ -194,7 +195,7 @@ E27拆两行以区分明确资本修正与额外税盾政策；截至`4568cf4`�
 
 准确上游代码基线已于2026-10-04补齐，退出方法待办；原本地Git对象的历史认证限制继续保留。上述反例、当前使用范围及验证见[模型复核](../history/valuation-model-review-20261004.md)。
 
-准确上游复核仅记录事实与约束；随后E28/E29分别按本轮明确批准实施。其他待办不能因文档署名、此前review或本次提交而自动转成“符合”。
+准确上游复核仅记录事实与约束；随后E28/E29/E30分别按明确批准实施。其他待办不能因文档署名、此前review或本次提交而自动转成“符合”。
 
 ## 后续变更要求
 
