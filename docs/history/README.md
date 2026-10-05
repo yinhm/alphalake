@@ -6,6 +6,8 @@
 
 ## 最近主线证据
 
+- [全量沪深数据、原生API与现有网页发布](full-data-publication-20261005.md)
+
 - [有来源的可编辑初值、稳态覆盖及Excel会话快照](source-defaults-20261005.md)
 
 - [LTM用途、同窗同比及页面/Excel实际基期](ltm-usage-audit-20261005.md)
