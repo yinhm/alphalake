@@ -10,6 +10,12 @@ import (
 	"time"
 )
 
+func TestMain(m *testing.M) {
+	// 测试库的源证据必须跟随临时库，不能继承真实主库的 workspace。
+	os.Unsetenv("ALPHALAKE_WORKSPACE")
+	os.Exit(m.Run())
+}
+
 func TestOpenUsesNativeResourceLimits(t *testing.T) {
 	t.Setenv("ALPHALAKE_DUCKDB_MEMORY_LIMIT", "256MiB")
 	t.Setenv("ALPHALAKE_DUCKDB_THREADS", "2")

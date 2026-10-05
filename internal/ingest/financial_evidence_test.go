@@ -19,6 +19,12 @@ import (
 	"time"
 )
 
+func TestMain(m *testing.M) {
+	// 显式测试配置可在各用例设置；禁止继承真实主库的归档目录。
+	os.Unsetenv("ALPHALAKE_WORKSPACE")
+	os.Exit(m.Run())
+}
+
 // sourceEvidenceDB is test-only: source assertions re-read hash-verified ZIPs.
 // No production source EAV table or compatibility view is installed.
 func sourceEvidenceDB(t *testing.T, ctx context.Context, db *sql.DB) *sql.DB {
