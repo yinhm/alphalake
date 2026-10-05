@@ -41,7 +41,7 @@ func TestQuoteWindowDoesNotAdvanceDailyHistoryAndRejectsInvalidScope(t *testing.
 	f := &windowSource{}
 	before := time.Now()
 	r, e := SyncValuationQuoteWindow(ctx, db, f, []string{"sh600004"}, day)
-	if e != nil || r.Written != 1 {
+	if e != nil || r.Written != 1 || !r.Complete {
 		t.Fatal(r, e)
 	}
 	if _, found, e := store.LatestDailyDate(ctx, db, id, "tdx"); e != nil || found {
@@ -59,7 +59,7 @@ func TestQuoteWindowDoesNotAdvanceDailyHistoryAndRejectsInvalidScope(t *testing.
 	}
 	f.bad = true
 	r, e = SyncValuationQuoteWindow(ctx, db, f, []string{"sh600004", "sh999999"}, day)
-	if e == nil || len(r.Failures) != 2 || r.Written != 0 {
+	if e == nil || len(r.Failures) != 2 || r.Written != 0 || !r.Complete {
 		t.Fatal(r, e)
 	}
 	var n int

@@ -21,6 +21,7 @@ type QuoteWindowSummary struct {
 	Companies int      `json:"companies"`
 	Written   int      `json:"observations_written"`
 	Failures  []string `json:"failures"`
+	Complete  bool     `json:"complete"`
 }
 
 // SyncValuationQuoteWindow uses already-resolved identities and the native
@@ -126,6 +127,7 @@ func SyncValuationQuoteWindow(ctx context.Context, db *sql.DB, source QuoteWindo
 			}
 		}
 	}
+	out.Complete = true
 	if len(out.Failures) > 0 {
 		return out, fmt.Errorf("%d quote windows failed; first %s", len(out.Failures), out.Failures[0])
 	}

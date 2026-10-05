@@ -5,10 +5,10 @@
 ```bash
 alphalake sync-valuation-quotes workspace/alphalake.duckdb \
   --symbols sh600004,sh600006,sh600008,sh600009,sh600010 \
-  --date 2026-09-29
+  --date 2026-09-29 --report workspace/derived/quote-review/source.json
 ```
 
-本机须在已核验MemoryMax的独立systemd服务中运行，与其他主库写入、大导出及全套测试串行。输出JSON包含运行号、公司数、写入观测数及失败清单；存在失败时退出非零，正常公司可以保留为partial运行，不伪造整批成功。
+本机须在已核验MemoryMax的独立systemd服务中运行，与其他主库写入、大导出及全套测试串行。输出JSON包含运行号、公司数、写入观测数、整份清单是否已处理及失败清单；可用`--report`另存不覆盖的结构化收据，绑定日期、完整symbols清单和落库运行状态（先创建其父目录）。存在失败时退出非零，正常公司可以保留为partial运行，不伪造整批成功。
 
 ## 数据边界
 

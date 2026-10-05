@@ -134,6 +134,7 @@ func runSyncQuoteWindow(ctx context.Context, args []string) error {
 	fs.SetOutput(io.Discard)
 	symbols := fs.String("symbols", "", "explicit resolved SH/SZ symbols")
 	period := fs.String("date", "", "completed market date; inclusive 14-day lookback")
+	report := fs.String("report", "", "new structured source receipt path")
 	if e := fs.Parse(args[1:]); e != nil {
 		return parseError(e)
 	}
@@ -152,6 +153,22 @@ func runSyncQuoteWindow(ctx context.Context, args []string) error {
 	}
 	defer source.Close()
 	result, e := ingest.SyncValuationQuoteWindow(ctx, db, source, strings.Split(*symbols, ","), end)
+	if *report != "" {
+		var status string
+		if writeErr := db.QueryRowContext(ctx, `SELECT status FROM meta.ingest_run WHERE ingest_run_id=?`, result.RunID).Scan(&status); writeErr != nil {
+			return errors.Join(e, writeErr)
+		}
+		file, writeErr := os.OpenFile(*report, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+		if writeErr != nil {
+			return errors.Join(e, writeErr)
+		}
+		writeErr = json.NewEncoder(file).Encode(map[string]any{
+			"contract": "alphalake-quote-sync-v1", "date": end.Format("2006-01-02"), "symbols": strings.Split(*symbols, ","), "run_status": status, "result": result,
+		})
+		if writeErr = errors.Join(writeErr, file.Sync(), file.Close()); writeErr != nil {
+			return errors.Join(e, writeErr)
+		}
+	}
 	if writeErr := json.NewEncoder(os.Stdout).Encode(result); writeErr != nil {
 		return errors.Join(e, writeErr)
 	}
