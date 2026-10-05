@@ -32,8 +32,9 @@ type TDXProfessionalFinancialSource interface {
 }
 
 type TDXProfessionalFinancialOptions struct {
-	Offline     bool // only existing local packages and identities; no network calls
-	MaxPackages int  // zero means every listed package; positive processes newest N
+	Offline     bool      // only existing local packages and identities; no network calls
+	MaxPackages int       // zero means every listed package; positive processes newest N
+	Through     time.Time // optional maximum report period, independent of observation time
 	Now         func() time.Time
 	OnProgress  func(TDXProfessionalFinancialProgress)
 }
@@ -192,6 +193,9 @@ func SyncTDXProfessionalFinancialWithOptions(
 	// The live manifest includes empty placeholders. A reporting period must
 	// have ended in China, including the whole final calendar day.
 	cutoff := "gpcw" + now.In(domain.ChinaDisclosureLocation).AddDate(0, 0, -1).Format("20060102") + ".zip"
+	if through := "gpcw" + options.Through.Format("20060102") + ".zip"; !options.Through.IsZero() && through < cutoff {
+		cutoff = through
+	}
 	for len(entries) > 0 && entries[0].Filename > cutoff {
 		entries = entries[1:]
 	}

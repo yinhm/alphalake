@@ -33,9 +33,9 @@ func TestFinancialReportKeepsPendingScopeAndFailure(t *testing.T) {
 		t.Fatal(err)
 	}
 	path := filepath.Join(t.TempDir(), "report.json")
-	limit, offline, report, err := parseFinancialLimit([]string{"--latest", "6", "--offline", "--report", path})
-	if err != nil || limit != 6 || !offline || report != path {
-		t.Fatal(limit, offline, report, err)
+	limit, offline, report, through, err := parseFinancialLimit([]string{"--latest", "6", "--offline", "--report", path, "--through", "2026-06-30"})
+	if err != nil || limit != 6 || !offline || report != path || through.Format("2006-01-02") != "2026-06-30" {
+		t.Fatal(limit, offline, report, through, err)
 	}
 	summary := ingest.TDXProfessionalFinancialSummary{RunID: 7, Selected: 6, Unresolved: 1, CacheFallbacks: 1}
 	if err := writeFinancialSyncReport(ctx, db, path, summary, errors.New("download failed"), true); err != nil {

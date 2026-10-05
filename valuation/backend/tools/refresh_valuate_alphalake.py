@@ -82,7 +82,7 @@ def run_cycle(args, root):
         return code
 
     try:
-        for name, extra in [('sync-financial',['--latest',str(args.latest)]),
+        for name, extra in [('sync-financial',['--latest',str(args.latest),'--through',args.period]),
                             ('sync-filings',['--start',args.filings_start,'--end',args.filings_end,'--metadata-only']),
                             ('sync-industries',[])]:
             stage(name, [args.alphalake,name,args.database,*extra])

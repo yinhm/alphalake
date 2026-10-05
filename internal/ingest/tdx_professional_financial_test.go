@@ -115,6 +115,10 @@ func TestSyncTDXProfessionalFinancialPersistsArtifactFactsAndCheckpoint(t *testi
 		t.Fatalf("facts/artifacts/resolved=%d/%d/%d", facts, artifacts, resolved)
 	}
 
+	// Once Q3 has ended, the explicitly selected H1 must still exclude its
+	// placeholder before applying the newest-package limit.
+	options.Through = time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
+	options.Now = func() time.Time { return time.Date(2026, 10, 5, 0, 0, 0, 0, time.UTC) }
 	second, err := SyncTDXProfessionalFinancialWithOptions(ctx, db, source, root, options)
 	if err != nil {
 		t.Fatal(err)

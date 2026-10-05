@@ -97,7 +97,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  calc-adjustments <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-classifications <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-industries <db-path>")
-	fmt.Fprintln(os.Stderr, "  sync-financial <db-path> [--all | --latest N] [--offline] [--report path]")
+	fmt.Fprintln(os.Stderr, "  sync-financial <db-path> [--all | --latest N] [--through YYYY-MM-DD] [--offline] [--report path]")
 	fmt.Fprintln(os.Stderr, "  upgrade-financial-availability <schema55-db> (explicit one-time schema56 upgrade)")
 	fmt.Fprintln(os.Stderr, "  upgrade-filing-coverage <schema52-db> (explicit one-time schema53 upgrade)")
 	fmt.Fprintln(os.Stderr, "  export-prospectuses <db-path>")
@@ -411,7 +411,7 @@ func main() {
 			usage()
 			os.Exit(2)
 		}
-		maxPackages, offline, reportPath, err := parseFinancialLimit(os.Args[3:])
+		maxPackages, offline, reportPath, through, err := parseFinancialLimit(os.Args[3:])
 		if err != nil {
 			fatal(err)
 		}
@@ -443,6 +443,7 @@ func main() {
 		options := ingest.TDXProfessionalFinancialOptions{
 			MaxPackages: maxPackages,
 			Offline:     offline,
+			Through:     through,
 			OnProgress: func(p ingest.TDXProfessionalFinancialProgress) {
 				if p.Error != "" {
 					fmt.Fprintf(os.Stderr, "TDX financial package failed: run=%d package=%s error=%q\n", p.RunID, p.Package, p.Error)
@@ -459,7 +460,7 @@ func main() {
 		summary, syncErr := ingest.SyncTDXProfessionalFinancialWithOptions(ctx, db, source, artifactRoot, options)
 		if reportPath != "" {
 			if err := writeFinancialSyncReport(ctx, db, reportPath, summary, syncErr, offline); err != nil {
-				fatal(err)
+				fatal(errors.Join(err, db.Close()))
 			}
 		}
 		fmt.Printf("TDX financial sync: run=%d listed=%d selected=%d packages=%d skipped=%d records_attempted=%d records_inserted=%d records_reassigned=%d records_unresolved=%d unresolved=%d acknowledged=%d failures=%d master_failures=%d cache_fallbacks=%d all=%v root=%s\n",
@@ -467,11 +468,11 @@ func main() {
 			summary.RecordsAttempted, summary.RecordsInserted, summary.RecordsReassigned, summary.RecordsUnresolved,
 			summary.Unresolved, summary.Acknowledged, len(summary.Failures), len(summary.MasterFailures), summary.CacheFallbacks, all, artifactRoot)
 		if syncErr != nil {
-			fatal(syncErr)
+			fatal(errors.Join(syncErr, db.Close()))
 		}
 
 		if summary.Unresolved > 0 || len(summary.MasterFailures) > 0 {
-			fatal(fmt.Errorf("financial sync is partial: unresolved=%d master_failures=%d; inspect financial-unresolved/status", summary.Unresolved, len(summary.MasterFailures)))
+			fatal(errors.Join(fmt.Errorf("financial sync is partial: unresolved=%d master_failures=%d; inspect financial-unresolved/status", summary.Unresolved, len(summary.MasterFailures)), db.Close()))
 		}
 
 	case "financial-unresolved":

@@ -278,7 +278,7 @@ def run(args, root):
         if args.source_mode != 'local':
             extra = ['--offline'] if args.source_mode == 'offline' else []
             report = root/'financial-source.json'
-            code = stage('sync-financial', [str(args.alphalake), 'sync-financial', str(args.database), '--latest', str(args.latest), '--report', str(report), *extra], allow_partial=True)
+            code = stage('sync-financial', [str(args.alphalake), 'sync-financial', str(args.database), '--latest', str(args.latest), '--through', args.period, '--report', str(report), *extra], allow_partial=True)
             ledger['financial_source'] = accept_financial_report(report, code, codes)
             ledger['freshness'] = ('local_or_fallback_not_upstream_verified' if args.source_mode == 'offline' or ledger['financial_source']['cache_fallbacks'] else 'selected_financial_packages_checked_against_upstream_manifest')
             if args.source_mode == 'online':
