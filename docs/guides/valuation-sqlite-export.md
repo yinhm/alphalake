@@ -78,7 +78,7 @@ TTM流量按上一全年＋本年累计−上年同月累计直接计算，三�
 
 长期投资诊断现复用三表推导的五项标准组成，`available_component_million_cny`为全部已知组成小计，`missing_components`只列该组合缺项；即使算术组成齐全，也不自动认证可全额加回的估值范围。详见[接入及真实验收](../history/tdx-asset-derivation-20260926.md#长期投资组成接入正式导出)。
 
-`export_cells`逐单元格记录`available`、`missing_standard_fact`、`source_record_conflict`、`estimated_partial_scope`或`requires_separate_valuation_definition`等状态，年表、季表与TTM均保存组成的标准字段、期间和系数引用，读取时还原标准值、事实ID、可用时间和归档哈希；缺项、拒绝分量、审核零及范围诊断保留原状态。公司行情/税率诊断继续保存原文档，不改行情或税率口径。标准事实缺失不进一步推断为源零、未披露或未审核；更细状态需查`financial-statements`。`metadata`记录源库/程序/导出器哈希、报告期、信息截止及取得时间；公司`data_as_of`为信息截止日期，不冒充实际下载日。
+`export_cells`逐单元格记录`available`、`missing_standard_fact`、`source_record_conflict`、`estimated_partial_scope`或`requires_separate_valuation_definition`等状态，年表、季表与TTM均保存组成的标准字段、期间和系数引用，读取时还原标准值、事实ID、可用时间和归档哈希；缺项、拒绝分量、审核零及范围诊断保留原状态。公司行情/税率诊断继续保存原文档，不改行情或税率口径。报告期总股本非正时保留标准值及合格报价，市值为NULL，标记`nonpositive_reported_shares`；它不能用于市值／每股计算，也不应中止其他证券的导出。单位、身份冲突及非有限金额仍拒绝。标准事实缺失不进一步推断为源零、未披露或未审核；更细状态需查`financial-statements`。`metadata`记录源库/程序/导出器哈希、报告期、信息截止及取得时间；公司`data_as_of`为信息截止日期，不冒充实际下载日。
 
 ## SQLite证据存储契约
 

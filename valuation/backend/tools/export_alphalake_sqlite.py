@@ -336,15 +336,18 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
             market_status = 'missing_or_conflicting_reported_shares'
         else:
             share_value = Decimal(shares['value'])
-            if not price.is_finite() or price <= 0 or not share_value.is_finite() or share_value <= 0:
-                raise ValueError('invalid market price/shares')
+            if not share_value.is_finite():
+                raise ValueError('invalid market shares: '+ticker)
             if (shares['unit'], shares['period_type'], shares['instrument_id']) != ('share', 'instant', company['instrument_id']):
                 raise ValueError('invalid market share unit/identity/period')
-            row['mv_equity_listing'] = float(price*share_value/Decimal(1000000))
-            if not math.isfinite(row['mv_equity_listing']):
-                raise ValueError('market cap overflow')
             market_evidence['shares'] = shares
-            market_status = 'a_share_total_share_proxy' if foreign else 'reported_share_price_proxy'
+            if share_value <= 0:
+                market_status = 'nonpositive_reported_shares'
+            else:
+                row['mv_equity_listing'] = float(price*share_value/Decimal(1000000))
+                if not math.isfinite(row['mv_equity_listing']):
+                    raise ValueError('market cap overflow')
+                market_status = 'a_share_total_share_proxy' if foreign else 'reported_share_price_proxy'
         tax_rate, tax_status, tax_evidence = annual_effective_tax_rate(facts, conflicts, company['instrument_id'], base)
         row['effective_tax_rate'] = tax_rate
         target.insert_companies(connection, [row])

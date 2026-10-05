@@ -213,6 +213,17 @@ def test_standard_bridge_components_and_market_proxy():
         evidence = json.loads(db.execute("SELECT evidence_json FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()[0])
         assert evidence['known_foreign_share_classes']['listed_h_shares']['value'] == '1'
     original_quote = company['quote'].copy()
+    # A genuine zero remains a source fact, but cannot provide market/per-share
+    # inputs. One such security must not abort the complete export universe.
+    shares = next(r for r in facts if r['field'] == 'total_shares')
+    shares['value'] = '0'
+    with sqlite3.connect(':memory:') as db:
+        exporter.export_snapshot(db,[company],fetch,period,asof,years=1,quarters=1)
+        assert db.execute('SELECT stock_price_listing,mv_equity_listing FROM companies').fetchone() == (10,None)
+        assert db.execute("SELECT value FROM standard_facts WHERE field='total_shares'").fetchone()[0] == '0'
+        status, evidence = db.execute("SELECT status,evidence_json FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()
+        assert status == 'nonpositive_reported_shares' and json.loads(evidence)['shares']['value'] == '0'
+    shares['value'] = '1000000'
     for changes in ({'trade_date':'2026-06-30'},
                     {'acquisition_started_at':'2026-09-24T06:59:59+00:00'},
                     {'run_finished_at':'2026-09-27T00:00:00+00:00'}):

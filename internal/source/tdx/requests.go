@@ -25,10 +25,36 @@ func (r nodeRequests) GetCodeAll(exchange protocol.Exchange) (*protocol.CodeResp
 	})
 }
 func (r nodeRequests) GetKlineDayAll(code string) (*protocol.KlineResp, error) {
-	return withNode(r.ctx, r.owner, "daily/"+code, func(c *tdxlib.Client) (*protocol.KlineResp, error) { return c.GetKlineDayAll(code) })
+	return withNode(r.ctx, r.owner, "daily/"+code, func(c *tdxlib.Client) (*protocol.KlineResp, error) { return dailyResponse(c.GetKlineDayAll(code)) })
 }
 func (r nodeRequests) GetKlineDayUntil(code string, f func(*protocol.Kline) bool) (*protocol.KlineResp, error) {
-	return withNode(r.ctx, r.owner, "daily-since/"+code, func(c *tdxlib.Client) (*protocol.KlineResp, error) { return c.GetKlineDayUntil(code, f) })
+	return withNode(r.ctx, r.owner, "daily-since/"+code, func(c *tdxlib.Client) (*protocol.KlineResp, error) {
+		v, err := c.GetKlineDayUntil(code, f)
+		return dailyWindowResponse(v, err, f)
+	})
+}
+
+// An empty response is not proof of delisting or absent history. Route it
+// through the existing three-node retry policy before reporting failure.
+func dailyResponse(v *protocol.KlineResp, err error) (*protocol.KlineResp, error) {
+	if err == nil && (v == nil || len(v.List) == 0) {
+		err = fmt.Errorf("empty daily response")
+	}
+	return v, err
+}
+
+func dailyWindowResponse(v *protocol.KlineResp, err error, stop func(*protocol.Kline) bool) (*protocol.KlineResp, error) {
+	if err == nil {
+		if v != nil {
+			for _, row := range v.List {
+				if row != nil && !stop(row) {
+					return v, nil
+				}
+			}
+		}
+		err = fmt.Errorf("empty daily interval")
+	}
+	return v, err
 }
 func (r nodeRequests) GetGbbq(code string) (*protocol.GbbqResp, error) {
 	return withNode(r.ctx, r.owner, "gbbq/"+code, func(c *tdxlib.Client) (*protocol.GbbqResp, error) { return c.GetGbbq(code) })

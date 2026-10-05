@@ -18,6 +18,7 @@ alphalake sync-valuation-quotes workspace/alphalake.duckdb \
 - 仅向既有`market.daily_observation`追加观测，运行dataset为`valuation_quote_window`。不写`market.ohlcv_daily`，不修改任何完整历史续传/重试检查点；否则窗口末日会错误成为全历史起始边界。
 - 沪深收盘竞价于15:00结束（[上交所交易规则](https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/exchange/c/c_20260424_10816482.shtml)、[深交所规则说明](https://investor.szse.cn/knowledge/stock/deal/t20191204_572383.html)）。取得运行须在对应交易日15:00或之后开始；盘中取得不因后来等待而变成收盘证据。仅使用未复权收盘价；市值沿用已批准的价格×报告期总股本代理，明确保留股本基期，不声称股类价格和当前股本已完整。
 - 原生导出和精确日期行情查询接受完成/部分完成的窗口运行，并保留原有取得时间、运行结束时间及信息截止条件。失败、取消和未结束运行不作为可用报价。
+- 上游空响应或返回的行情全部早于窗口起点，按既有`tdx.Hosts`轮询规则最多尝试三台服务器，再记录窗口失败；不能把空响应直接当作成功、停牌或退市。已提交的其他证券观测及原有有效报价保留，不用零价格填补。
 - 空窗口、非法价格、重复日期、身份或来源不一致显式失败并记录诊断；不补前期价格、不填零。重复在线取得是新的观测证据，不宣称零写入重放。无需新增表、迁移或依赖。
 
 历史样本数值、运行标识及测试收据见[验收记录](../history/valuation-quote-window.md)；当前交付数量统一见[项目状态](../implementation-status.md)。
