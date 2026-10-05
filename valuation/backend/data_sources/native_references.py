@@ -8,7 +8,7 @@ from pathlib import Path
 from .damodaran_store import DamodaranStore
 from .industry_mapper import IndustryMapper, CompanyInfo
 
-CONTRACT = 'alphalake-native-references-v3'
+CONTRACT = 'alphalake-native-references-v4'
 COUNTRIES = {'CN': 'China', 'HK': 'Hong Kong', 'US': 'United States', 'IL': 'Israel'}
 METRICS = {
  'pretax_lease_research_adjusted_operating_margin': 'pretax_lease_rd_adj_margin',
@@ -91,6 +91,7 @@ def load_snapshot(connection):
     if len(releases)!=25 or any(not re.fullmatch('[0-9a-f]{64}',r['sha256']) or not re.fullmatch('[0-9a-f]{64}',r['content_key']) for r in releases):
         raise ValueError('incomplete native reference releases')
     store.reference_snapshot['releases']=releases
+    store.native_debt_bases = {}
     for release,subject,metric,region,value,status,unit,locator,raw,count,method,observation_date in connection.execute('SELECT * FROM reference_value ORDER BY release_id,subject,metric,region'):
         number=float(value) if status=='reported' and value is not None else None
         if region:
@@ -100,6 +101,16 @@ def load_snapshot(connection):
             if field in values:
                 raise ValueError('duplicate industry metric across reference releases')
             values[field]=number
+            if metric=='cost_of_debt_pretax':
+                if not re.fullmatch(r'provider_usd_risk_free_[0-9]+\.[0-9]{12}',method):
+                    raise ValueError('missing USD industry debt basis; reparse WACC workbooks and rebuild SQLite')
+                rate=Decimal(method.removeprefix('provider_usd_risk_free_'))
+                if not 0<=rate<1 or number is None or Decimal(value)<rate:
+                    raise ValueError('invalid USD industry debt basis or negative industry spread')
+                basis=dict(release_id=release,value=str(rate),source_locator='Industry Averages!D9',currency='USD')
+                if key[0] in store.native_debt_bases and store.native_debt_bases[key[0]]!=basis:
+                    raise ValueError('conflicting USD industry debt bases')
+                store.native_debt_bases[key[0]]=basis
         elif metric=='corporate_marginal_tax_rate':
             store._country_tax[COUNTRIES[subject]]=dict(corporate_tax_rate=number, value_status=status)
         elif metric=='mature_market_erp':

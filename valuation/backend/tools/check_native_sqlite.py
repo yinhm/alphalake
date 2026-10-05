@@ -13,11 +13,11 @@ def value_digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False, allow_nan=False).encode()).hexdigest()
 
 
-def check(database, output, risk_free_rate, review_methodology=False, reference_policy=None):
+def check(database, output, risk_free_rate=None, review_methodology=False, reference_policy=None):
     from fastapi.testclient import TestClient
     from api.main import app
 
-    if not math.isfinite(risk_free_rate):
+    if risk_free_rate is not None and not math.isfinite(risk_free_rate):
         raise ValueError('finite risk-free rate required')
     os.environ['US_CN_HK_DB_PATH'] = str(database.resolve(strict=True))
     output.mkdir(parents=True, exist_ok=True)
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--database',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--risk-free-rate',type=float,required=True,help='explicit native API assumption, not an observed market rate')
+    parser.add_argument('--risk-free-rate',type=float,help='optional user CNY assumption; omit to test published native financing initial conditions')
     parser.add_argument('--review-methodology',action='store_true',help='replay calculated reports and audit the five method dimensions; retains blocked companies')
     parser.add_argument('--reference-policy',type=Path,help='explicit approved industry/country requests; no default mapping or financial overrides')
     args=parser.parse_args()

@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from api.database import _db_record_to_company_input, _initialize_native_assumptions
+from api.database import _db_record_to_company_input, _initialize_native_assumptions, _initialize_native_cny_financing
 from data_sources import us_cn_hk_db as db
 from engine.data_dictionary import IndustryData, MacroInputs
 from engine.ltm_calculator import compute_ltm_financials
@@ -87,6 +87,70 @@ def test_missing_or_invalid_reference_initialization_keeps_explicit_limitations(
     assert inputs.valuation_assumptions.sales_to_capital_high is None
     assert inputs.valuation_assumptions.high_growth_years == 5
     assert any('同比' in w for w in report.warnings) and any('资本倍率' in w for w in report.warnings)
+
+
+def test_cny_source_financing_rebases_debt_and_preserves_explicit_rf(monkeypatch):
+    import gzip
+    import json
+    from pathlib import Path
+    from decimal import Decimal
+    path=Path(__file__).resolve().parents[3]/'valuation/research/current-references-20260930/method-closure-20260912/300866-request.json.gz'
+    refs=json.loads(gzip.decompress(path.read_bytes()))['wacc_binding']['references']
+    store=SimpleNamespace(wacc_references=refs,native_debt_bases={'US':dict(value='0.039500000000',release_id=1,source_locator='Industry Averages!D9')})
+    record=sample(monkeypatch)
+    inputs,_=_db_record_to_company_input(record,.0425,None)
+    run_full_valuation(inputs)
+    before=inputs.model_dump()
+    assert _initialize_native_cny_financing(inputs,store,None)==({},[])
+    inputs.ticker='SZSE:300866'
+    inputs.reporting_currency=inputs.stock_price_currency='CNY'
+    gov=Decimal(next(r['value'] for r in refs['yield_curve'] if r['tenor_months']==120))
+    sovereign=Decimal(next(r['value'] for r in refs['country_risk'] if (r['subject_code'],r['metric_code'])==('CN','sovereign_default_spread')))
+    for explicit in (None,0,.03):
+        sources,warnings=_initialize_native_cny_financing(inputs,store,explicit)
+        rf=float(gov-sovereign) if explicit is None else explicit
+        assert inputs.macro_inputs.risk_free_rate==rf
+        assert inputs.methodology_choices.kd_direct_input==pytest.approx(rf+float(sovereign)+.05-.0395)
+        report=run_full_valuation(inputs)
+        assert report.cost_of_capital.cost_of_debt_pretax==inputs.methodology_choices.kd_direct_input
+        assert report.cost_of_capital.risk_free_rate==rf
+        assert [f.model_dump() for f in inputs.raw_financials]==before['raw_financials']
+        assert 'D9' in sources['methodology_choices.kd_direct_input'] and warnings
+    inputs.industry_data.cost_of_debt_pretax=.02
+    with pytest.raises(ValueError,match='invalid CNY financing'):
+        _initialize_native_cny_financing(inputs,store,None)
+    # 实际PATCH只联动来源初值；独立覆盖优先，清空融资条件恢复人民币初值。
+    from api.routes import _get_damodaran_store
+    from api.main import app
+    from api.session_store import create_session
+    from fastapi.testclient import TestClient
+    bound_store=_get_damodaran_store()
+    bound_store.wacc_references=refs
+    bound_store.native_debt_bases=store.native_debt_bases
+    inputs.industry_data.cost_of_debt_pretax=.05
+    sources,_=_initialize_native_cny_financing(inputs,bound_store,None)
+    report=run_full_valuation(inputs)
+    stable='valuation_assumptions.cost_of_capital_stable_override'
+    inputs.valuation_assumptions.cost_of_capital_stable_override=report.cost_of_capital.wacc
+    session=create_session(inputs,run_full_valuation(inputs),reference_store=bound_store)
+    session.source_tracker.record('methodology_choices','Native CNY financing initialization v1;')
+    for field,basis in sources.items():session.source_tracker.record(field,basis)
+    session.source_tracker.record(stable,'人民币融资初值v1；持有当前融资')
+    with TestClient(app) as client:
+        def patch(overrides):
+            response=client.patch('/api/valuation/'+session.id,json={'overrides':overrides})
+            assert response.status_code==200,response.text
+            return response.json()
+        changed=patch({'macro_inputs.risk_free_rate':.03})
+        assert changed['cost_of_capital']['cost_of_debt_pretax']==pytest.approx(.03+float(sovereign)+.0105)
+        assert changed['inputs']['valuation_assumptions']['cost_of_capital_stable_override']==changed['cost_of_capital']['wacc']
+        patch({'methodology_choices.kd_direct_input':0,stable:.09})
+        changed=patch({'macro_inputs.risk_free_rate':.02})
+        assert changed['cost_of_capital']['cost_of_debt_pretax']==0
+        assert changed['inputs']['valuation_assumptions']['cost_of_capital_stable_override']==.09
+        changed=patch({'methodology_choices.kd_direct_input':None,stable:None})
+        assert changed['cost_of_capital']['cost_of_debt_pretax']==pytest.approx(.02+float(sovereign)+.0105)
+        assert changed['inputs']['valuation_assumptions']['cost_of_capital_stable_override']==changed['cost_of_capital']['wacc']
 
 
 def test_ttm_reads_only_aligned_quarters_and_keeps_holes(monkeypatch):

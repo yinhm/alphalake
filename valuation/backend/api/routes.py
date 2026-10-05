@@ -1133,10 +1133,32 @@ def patch_valuation(session_id: str, req: OverrideRequest):
     # Rebuild inputs and recompute
     try:
         new_inputs = CompanyValuationInput(**inputs_dict)
+        financing_sources,financing_warnings={},[]
+        source_prefix='人民币融资初值v1；'
+        kd_path='methodology_choices.kd_direct_input'
+        stable_path='valuation_assumptions.cost_of_capital_stable_override'
+        native_cny=(session.source_tracker.get('methodology_choices') or '').startswith('Native CNY financing initialization v1;')
+        # 只有数据库来源条件继续按同一发布联动；显式值（包括0）解除相应联动。
+        if (((session.source_tracker.get(kd_path) or '').startswith(source_prefix)
+                or (native_cny and kd_path in req.overrides and req.overrides[kd_path] is None))
+                and 'methodology_choices' not in req.overrides
+                and req.overrides.get(kd_path) is None
+                and new_inputs.methodology_choices.kd_approach=='direct'):
+            from api.database import _initialize_native_cny_financing
+            financing_sources,financing_warnings=_initialize_native_cny_financing(new_inputs,store,new_inputs.macro_inputs.risk_free_rate)
+            financing_sources.pop('macro_inputs.risk_free_rate',None)
     except ValueError as error:
         raise HTTPException(status_code=422, detail={'status':'rejected_input_or_policy','reason':str(error)}) from error
     ind_lookup = _build_industry_lookup(store)
     new_report = run_full_valuation(new_inputs, industry_lookup=ind_lookup)
+    if (((session.source_tracker.get(stable_path) or '').startswith(source_prefix)
+            or (native_cny and stable_path in req.overrides and req.overrides[stable_path] is None))
+            and req.overrides.get(stable_path) is None and 'valuation_assumptions' not in req.overrides
+            and new_inputs.valuation_assumptions.debt_tax_shield is None):
+        new_inputs.valuation_assumptions.cost_of_capital_stable_override=new_report.cost_of_capital.wacc
+        new_report=run_full_valuation(new_inputs,industry_lookup=ind_lookup)
+        financing_sources[stable_path]='人民币融资初值v1；正常税盾初始WACC持有至稳态；现有税盾不可用调整另算，ROIC沿既有无超额回报分支。用户覆盖独立留痕'
+    new_report.warnings.extend(financing_warnings)
     industry_resolved = industry_selected or not any(f['path']=='industry_data.industry_name' for f in session.unresolved_fields)
     unresolved = (_build_unresolved_fields(new_inputs, store, industry_resolved=industry_resolved)
                   if session.unresolved_fields or industry_selected or "country" in req.overrides else [])
@@ -1145,12 +1167,15 @@ def patch_valuation(session_id: str, req: OverrideRequest):
     session.unresolved_fields = unresolved
     session.inputs = new_inputs
     session.report = new_report
+    for path,basis in financing_sources.items():
+        session.source_tracker.record(path,basis)
     for path in (['industry_data', 'industry_data_global'] if industry_selected else []) + (['macro_inputs'] if 'country' in req.overrides else []):
         session.source_tracker.record(path, 'User-selected Damodaran reference (session only; source database unchanged)')
     if "effective_tax_rate_ciq" in req.overrides:
         session.source_tracker.record("macro_inputs.tax_rate_effective", "User effective tax input (session only; source database unchanged)")
     for path in req.overrides:
-        session.source_tracker.record(path, 'User override (session only; source database unchanged)')
+        if path not in financing_sources or req.overrides[path] is not None:
+            session.source_tracker.record(path, 'User override (session only; source database unchanged)')
     return _report_to_dict(session)
 
 

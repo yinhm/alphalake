@@ -51,6 +51,12 @@ def snapshot(path):
         if not tax and ws.cell_value(2, 5) != ('Global' if region == 'global' else 'US companies'):
             raise ValueError('reference sample region mismatch')
         unlevering_tax_rate=''
+        usd_risk_free_rate=''
+        if family=='wacc':
+            rate=ws.cell_value(8,3)
+            if ws.cell_value(8,0)!='Long Term Treasury bond rate =' or not isinstance(rate,(int,float)) or not math.isfinite(rate) or not 0<=rate<1:
+                raise ValueError('unsupported USD debt risk-free basis')
+            usd_risk_free_rate=format(Decimal(str(rate)).quantize(Decimal('0.000000000001')), 'f')
         if family=='beta':
             tax_choice=ws.cell_value(8,5)
             if ws.cell_value(7,5)!='Marginal' or not isinstance(tax_choice,(int,float)) or not 0<=tax_choice<=1:
@@ -100,10 +106,11 @@ def snapshot(path):
                     sample_count=None if tax else int(sample), value=value, value_status='reported' if number else 'missing'))
         if len(seen) != (len(COUNTRIES) if tax else 94):
             raise ValueError(f'incomplete reference scope: {stem}: {len(seen)}')
-        return dict(contract='alphalake-native-reference-source-v1', parser_version='damodaran-native-reference-v3',
+        return dict(contract='alphalake-native-reference-source-v1', parser_version='damodaran-native-reference-v4',
             observation_date=xlrd.xldate_as_datetime(ws.cell_value(0, 1), wb.datemode).date().isoformat(),
             sha256=hashlib.sha256(path.read_bytes()).hexdigest(), runtime=f'python={platform.python_version()};xlrd={xlrd.__version__}',
-            unlevering_tax_rate=unlevering_tax_rate, file_stem=stem, sample_region='' if tax else region, observations=observations)
+            unlevering_tax_rate=unlevering_tax_rate, usd_risk_free_rate=usd_risk_free_rate,
+            file_stem=stem, sample_region='' if tax else region, observations=observations)
     finally:
         wb.release_resources()
 

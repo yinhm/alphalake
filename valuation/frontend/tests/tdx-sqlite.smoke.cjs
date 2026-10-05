@@ -42,7 +42,7 @@ const root = path.resolve(__dirname, '../../..');
       assert.equal(await page.getByLabel('估值政策文件').count(), 0);
       const sent = page.waitForRequest(r => r.url().endsWith('/api/valuation/from-database') && r.method() === 'POST');
       await run.click();
-      assert.deepEqual(Object.keys((await sent).postDataJSON()).sort(), ['risk_free_rate', 'ticker']);
+      assert.deepEqual(Object.keys((await sent).postDataJSON()).sort(), ['ticker']);
       await page.getByText(/原生估值数据尚未达标/).waitFor();
       await page.goto(`http://127.0.0.1:${port}`);
     }

@@ -39,7 +39,7 @@ func NativeReferenceExport(ctx context.Context, db *sql.DB, asof time.Time) (map
 		"country_risk":   `SELECT CAST(to_json(t) AS VARCHAR) FROM (SELECT * FROM reference.risk_observation WHERE release_id IN (` + selected + `) ORDER BY release_id,subject_code,metric_code) t`,
 		"companies":      `SELECT CAST(to_json(t) AS VARCHAR) FROM (SELECT * FROM reference.security_industry WHERE release_id IN (` + selected + `) ORDER BY exchange_ticker) t`,
 	}
-	out := map[string]any{"contract": "alphalake-native-references-v3", "information_as_of": asof.Format(time.RFC3339Nano)}
+	out := map[string]any{"contract": "alphalake-native-references-v4", "information_as_of": asof.Format(time.RFC3339Nano)}
 	for key, query := range queries {
 		rows, err := tx.QueryContext(ctx, query, string(idsJSON))
 		if err != nil {

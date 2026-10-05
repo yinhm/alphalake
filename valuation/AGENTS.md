@@ -21,3 +21,5 @@
 上游来源及credit见[UPSTREAM.md](UPSTREAM.md)；导入时的开发背景移至[历史说明](docs/upstream-development-notes.md)，其中默认回退、多市场及旧测试结果不作为本阶段要求。
 
 - 数据库新会话采用已批准的[来源初值v1](../docs/valuation/default-assumptions.md)：仅初始化缺省参数，用户显式0／完整路径优先，H=1联动税率与WACC须留痕。不要将历史同比／行业存量倍率认证为公司预测；完整API不注入该政策。Excel导出共享会话快照，不另写DCF或WACC计算器。
+
+- 已批准的人民币数据库融资初值读取同发布CNY基准及同工作簿美元债务基准，保留行业利差代理；来源Kd／稳态按依赖联动，显式覆盖优先。禁止把US完整借款利率或旧网页4.25%当CNY默认，禁止将币种一致冒称公司信用/经营风险认证；完整API与模板不注入。见[人民币契约](../docs/valuation/data-contract.md#人民币数据库默认与编辑联动2026-10-05)。

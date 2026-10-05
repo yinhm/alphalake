@@ -253,7 +253,7 @@ def run(args, root):
                   output=str(args.output), report_period=args.period, source_mode=args.source_mode,
                   requested_codes=codes, requested_companies=len(codes), sync_references=args.sync_references,
                   freshness='local_evidence_only_not_upstream_verified' if args.source_mode != 'online' else 'see_source_logs_and_cache_fallbacks',
-                  risk_free_rate=dict(value=args.risk_free_rate, basis='explicit_acceptance_assumption_not_observed_rate'))
+                  risk_free_rate=dict(value=args.risk_free_rate, basis='published_native_initial_condition' if args.risk_free_rate is None else 'explicit_acceptance_assumption_not_observed_rate'))
     candidate = args.output.with_name(args.output.name+'.next')
     journal = args.output.with_name(args.output.name+'.publication.json')
     started = time.monotonic()
@@ -343,7 +343,7 @@ def run(args, root):
             ledger['calculation_reused'] = True
         else:
             stage('check-candidate', [sys.executable, '-m', 'tools.check_native_sqlite', '--database', str(args.output if export_reused else candidate),
-                  '--output', str(root/'candidate-check'), '--risk-free-rate', str(args.risk_free_rate), '--review-methodology'])
+                  '--output', str(root/'candidate-check'), '--review-methodology'] + ([] if args.risk_free_rate is None else ['--risk-free-rate',str(args.risk_free_rate)]))
             checked = json.loads((root/'candidate-check/summary.json').read_text())
         validate_check(checked, current['tickers'])
         before = None
@@ -352,7 +352,7 @@ def run(args, root):
                 before = previous_receipt['check']
             else:
                 stage('check-previous', [sys.executable, '-m', 'tools.check_native_sqlite', '--database', str(args.output),
-                    '--output', str(root/'previous-check'), '--risk-free-rate', str(args.risk_free_rate), '--review-methodology'])
+                    '--output', str(root/'previous-check'), '--review-methodology'] + ([] if args.risk_free_rate is None else ['--risk-free-rate',str(args.risk_free_rate)]))
                 before = json.loads((root/'previous-check/summary.json').read_text())
             validate_check(before, previous['tickers'])
         ledger['source_freshness'] = freshness_report(args.output if export_reused else candidate, asof,
@@ -404,7 +404,7 @@ def main():
     parser.add_argument('--filings-end', default=datetime.now(timezone(timedelta(hours=8))).date().isoformat())
     parser.add_argument('--latest', type=int, default=6)
     parser.add_argument('--sync-references', action='store_true', help='将已接入参考刷新至同一主库；导出时绑定参考发布')
-    parser.add_argument('--risk-free-rate', type=float, required=True)
+    parser.add_argument('--risk-free-rate', type=float, help='optional explicit assumption; omit to use the published native CNY initial condition')
     parser.add_argument('--web-url', required=True, help='读取output的本地原生服务URL；切换后逐公司复验')
     parser.add_argument('--stage-timeout', type=int, default=3600)
     parser.add_argument('--alphalake', type=Path, default=Path(__file__).resolve().parents[3]/'alphalake')
@@ -421,7 +421,7 @@ def main():
         parser.error('empty company universe')
     if any(len(c)!=6 or not c.isascii() or not c.isdigit() for c in args.code):
         parser.error('six-digit codes required')
-    if args.latest < 1 or args.stage_timeout < 1 or not math.isfinite(args.risk_free_rate) or not 0 <= args.risk_free_rate < 1:
+    if args.latest < 1 or args.stage_timeout < 1 or (args.risk_free_rate is not None and (not math.isfinite(args.risk_free_rate) or not 0 <= args.risk_free_rate < 1)):
         parser.error('positive limits and risk-free rate in [0,1) required')
     if args.source_mode == 'online' and (not args.filings_start or date.fromisoformat(args.filings_start)>date.fromisoformat(args.filings_end)):
         parser.error('online mode needs a valid filings date range')

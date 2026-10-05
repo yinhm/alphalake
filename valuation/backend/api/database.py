@@ -117,7 +117,7 @@ def compatibility(ticker: str) -> dict:
 class FromDatabaseRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     ticker: str
-    risk_free_rate: float = Field(default=0.0425, ge=0, lt=1)
+    risk_free_rate: float | None = Field(default=None, ge=0, lt=1)
     industry_override: str | None = None
     country_override: str | None = None
 
@@ -436,6 +436,45 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
     return inputs, industry_resolved
 
 
+def _initialize_native_cny_financing(inputs, store, risk_free_rate):
+    """同一发布内的人民币融资条件；沿用原Beta/ERP/权重和可编辑Kd入口。"""
+    from datetime import date
+    from decimal import Decimal
+    from data_sources.alphalake_wacc import ReferenceSnapshot
+    from tools.audit_native_coverage import FINANCIAL_INDUSTRIES
+    if (inputs.reporting_currency!='CNY' or inputs.stock_price_currency!='CNY'
+            or not inputs.ticker.startswith(('SHSE:', 'SZSE:'))
+            or inputs.industry_data.industry_name in FINANCIAL_INDUSTRIES):
+        return {}, []
+    refs=ReferenceSnapshot.model_validate(store.wacc_references)
+    curves=[r for r in refs.yield_curve if r['currency']=='CNY' and r['tenor_months']==120]
+    sovereign=[r for r in refs.country_risk if r['subject_code']=='CN' and r['metric_code']=='sovereign_default_spread']
+    if len(curves)!=1 or len(sovereign)!=1:
+        raise ValueError('unique CNY ten-year curve and China sovereign spread required')
+    curve, country=curves[0], sovereign[0]
+    gov, spread=Decimal(curve['value']),Decimal(country['value'])
+    rf=gov-spread if risk_free_rate is None else Decimal(str(risk_free_rate))
+    basis=store.native_debt_bases[inputs.industry_data.region]
+    industry_spread=Decimal(str(inputs.industry_data.cost_of_debt_pretax))-Decimal(basis['value'])
+    if rf<0 or not 0<=industry_spread<1 or not 0<=rf+spread+industry_spread<1:
+        raise ValueError('invalid CNY financing condition; no clipping or USD fallback')
+    inputs.macro_inputs.risk_free_rate=float(rf)
+    inputs.methodology_choices.kd_approach='direct'
+    inputs.methodology_choices.kd_direct_input=float(rf+spread+industry_spread)
+    prefix='人民币融资初值v1；可编辑条件代理，非公司市场WACC：'
+    sources={
+        'macro_inputs.risk_free_rate':('User-provided CNY risk-free assumption' if risk_free_rate is not None else
+            prefix+f"{curve['observation_date']}十年人民币国债{gov}减中国主权利差{spread}；发布{curve['release_id']}/{country['release_id']}"),
+        'methodology_choices.kd_approach':prefix+'direct仅表示显式供给融资初值，不表示债务成本已被市场核实',
+        'methodology_choices.kd_direct_input':prefix+f"Rf_CNY+中国主权利差+US行业利差；US行业Kd减同工作簿USD基准{basis['value']}（发布{basis['release_id']}，{basis['source_locator']}）；行业信用/全额主权传导为代理，非公司评级",
+    }
+    age=(refs.information_as_of.date()-date.fromisoformat(curve['observation_date'])).days
+    warnings=[f"人民币融资初值采用已发布参考（国债{curve['observation_date']}，截至快照{age}天）；未核实公司借款报价/经营地域，用户覆盖优先。"]
+    if age>7:
+        warnings.append('人民币国债超过显式市场WACC政策的7天新鲜度；当前仅为归档来源初值，等待手工刷新，不认证新鲜市场WACC。')
+    return sources,warnings
+
+
 def _initialize_native_assumptions(inputs, report):
     """已批准的可编辑来源条件；不选择胜出预测，不覆盖显式路径或输入。"""
     assumptions = inputs.valuation_assumptions
@@ -506,17 +545,23 @@ def from_database(req: FromDatabaseRequest) -> dict:
     if gaps:
         raise HTTPException(status_code=422,detail='；'.join(r['reason'] for r in gaps))
     try:
-        inputs, industry_resolved = _db_record_to_company_input(record, req.risk_free_rate, req.industry_override, reference_store=store, country_override=req.country_override)
+        inputs, industry_resolved = _db_record_to_company_input(record, .0425 if req.risk_free_rate is None else req.risk_free_rate, req.industry_override, reference_store=store, country_override=req.country_override)
+        financing_sources, financing_warnings = _initialize_native_cny_financing(inputs, store, req.risk_free_rate)
     except ValueError as e:
         raise HTTPException(status_code=422,detail=str(e)) from e
     ind_lookup = _build_industry_lookup(store)
     report = run_full_valuation(inputs, industry_lookup=ind_lookup)
     initialization_sources = _initialize_native_assumptions(inputs, report)
+    if financing_sources:
+        inputs.valuation_assumptions.cost_of_capital_stable_override=report.cost_of_capital.wacc
+        financing_sources['valuation_assumptions.cost_of_capital_stable_override']='人民币融资初值v1；正常税盾初始WACC持有至稳态；现有税盾不可用调整另算，ROIC沿既有无超额回报分支。持有信用/杠杆/Beta是条件，不是成熟业务预测'
+        initialization_sources.update(financing_sources)
     initialization_warnings = list(report.warnings)
     if initialization_sources:
         report = run_full_valuation(inputs, industry_lookup=ind_lookup)
         report.warnings.extend(w for w in initialization_warnings if w.startswith('来源初值：'))
-    report.warnings.append('经营参数为可编辑来源初值，不是已验证公司预测；融资保留原生用户/参考条件，不认证公司市场WACC。用户覆盖优先，清空恢复引擎回退，重新加载恢复来源初值')
+    report.warnings.extend(financing_warnings)
+    report.warnings.append('经营及融资参数为可编辑来源初值，不是已验证公司预测或市场WACC。用户覆盖优先，清空恢复引擎回退，重新加载恢复来源初值；初始与稳态融资条件分别编辑')
     if compatibility is not None:
         report.warnings.extend(compatibility["warnings"])
         if compatibility["optional_history_missing"]:
@@ -529,12 +574,12 @@ def from_database(req: FromDatabaseRequest) -> dict:
         report.warnings.append('公司行业未匹配；当前行业仅为原模型占位，请使用原页面确认行业，不能视为公司分类事实。')
     session = create_session(inputs, report, unresolved_fields=unresolved, reference_store=store)
     session.source_tracker.record('macro_inputs.risk_free_rate',
-        'User-provided assumption; not an automatically selected market yield' if 'risk_free_rate' in req.model_fields_set
+        'User-provided assumption; not an automatically selected market yield' if req.risk_free_rate is not None
         else 'Original model default 0.0425; not an observed market yield')
     session.source_tracker.record('valuation_assumptions','native-source-initialization-v1; editable conditional starting values, not validated forecasts; unspecified inputs retain original model conditions')
     for field, basis in initialization_sources.items():
         session.source_tracker.record(field, basis)
-    session.source_tracker.record('methodology_choices','Original model defaults; explicit later choices are recorded separately')
+    session.source_tracker.record('methodology_choices', 'Native CNY financing initialization v1; other original model defaults; user overrides are separate' if financing_sources else 'Original model defaults; explicit later choices are recorded separately')
     for field,value in (('industry_data.industry_name',req.industry_override),('country',req.country_override)):
         if value is not None:
             session.source_tracker.record(field,'User-selected reference assumption; company classification unchanged')

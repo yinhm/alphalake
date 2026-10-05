@@ -6,7 +6,7 @@
 
 `fundamental.statement_snapshot`标准宽表→`ExportFinancialSQLiteRows`批量投影→`tools.export_alphalake_sqlite`→SQLite→`data_sources.us_cn_hk_db.fetch_company/native_compatibility`→`api.database._db_record_to_company_input`→`engine.orchestrator.run_full_valuation`。
 
-AlphaLake负责单位、期间、身份、范围、缺项及确定性转换；valuation负责调整、WACC、FCFF、预测、终值与股权桥接。原生网页仍提交`{ticker, risk_free_rate}`，不新增政策文件或参数表单。外部文件/CIQ季度输入与AlphaLake标准累计输入是不同的源契约，不是旧版快照兼容路径。
+AlphaLake负责单位、期间、身份、范围、缺项及确定性转换；valuation负责调整、WACC、FCFF、预测、终值与股权桥接。原生网页提交`{ticker}`；可选`risk_free_rate`为用户显式覆盖，缺省或NULL采用发布绑定的人民币融资初值，不再隐含提交美元4.25%，不新增政策文件或参数表单。外部文件/CIQ季度输入与AlphaLake标准累计输入是不同的源契约，不是旧版快照兼容路径。
 
 ## 期间与单位
 
@@ -94,9 +94,9 @@ LTM与TTM在本项目均指最近十二个月。它是经营流量基期，不�
 
 ## 人民币WACC的显式输入契约
 
-2026-10-03起，原生参考契约为`alphalake-native-references-v3`。SQLite v11新增单行`reference_wacc`，保存主库已有四类完整发布的解析参考包：国家风险、Global行业Beta、人民币国债曲线及大型非金融信用档。包与原生参考共用信息截止及内容签名；重复的国家风险须与原生源行、发布ID及观察日一致；两类Global Beta解析须绑定同一原文件哈希，不能混用修订版本。旧SQLite必须显式重导出，缺包、内容篡改或跨版本混用拒绝，不从散落JSON回退。
+2026-10-05起，原生参考契约为`alphalake-native-references-v4`。SQLite v11保留单行`reference_wacc`，保存主库已有四类完整发布的解析参考包：国家风险、Global行业Beta、人民币国债曲线及大型非金融信用档。包与原生参考共用信息截止及内容签名；重复的国家风险须与原生源行、发布ID及观察日一致；两类Global Beta解析须绑定同一原文件哈希，不能混用修订版本。旧SQLite必须显式重导出，缺包、内容篡改或跨版本混用拒绝，不从散落JSON回退。
 
-`GET /api/database/wacc-references`只读返回`reference_snapshot_id`及完整来源参考，保留观察日、取得时点、归档哈希和定位，不自动选择公司WACC。`evaluate_native_policy --recipe`及已批准报表信用条件从同一SQLite读取参考，取消额外`--references`；信用政策v2只存政策及年龄限制，不再内嵌源数据。用户完整请求仍可通过既有typed API供给，来源与政策分别留痕。数据新鲜度等待手工刷新；发布旧观察不等于最新，原显式政策年龄门槛不自动放宽。接通不授权US/Global切换、默认信用或网页默认替换。
+`GET /api/database/wacc-references`只读返回`reference_snapshot_id`及完整来源参考，保留观察日、取得时点、归档哈希和定位，不自动选择公司WACC。`evaluate_native_policy --recipe`及已批准报表信用条件从同一SQLite读取参考，取消额外`--references`；信用政策v2只存政策及年龄限制，不再内嵌源数据。用户完整请求仍可通过既有typed API供给，来源与政策分别留痕。数据新鲜度等待手工刷新；发布旧观察不等于最新，原显式政策年龄门槛不自动放宽。2026-10-05用户已批准人民币默认融资初值，范围见下节；不随之批准US/Global切换或公司信用认证。
 
 AlphaLake经已有`CompanyValuationInput.methodology_choices.reference_capital_inputs`向原完整`POST /api/valuation`交付显式参考输入，`cost_of_capital_approach=reference_snapshot`。不是向原数据库网页新增JSON表单，不更新引擎算法。方法、源值和适用条件统一见[人民币口径](native-cny-policy.md#人民币输入契约)。
 
@@ -104,7 +104,7 @@ AlphaLake经已有`CompanyValuationInput.methodology_choices.reference_capital_i
 
 Macro中的CNY无风险率、成熟ERP/CRP和预测假设须同步解释；仅填写参考WACC而继续继承旧终值增长不属于完整人民币条件政策。`cost_of_capital_stable_override`及`stable_growth_rate`分别明示稳态，`roic_stable_override`未填仍按原引擎采用实际终值WACC，既有亏损税盾调整保留。原公司预测、金融调整、研发和股权桥不随接通WACC改写；输入与结果差异逐项记录，运行后回填的资本成本不是新增来源事实。
 
-typed输入不携带每个参考的原始归档定位，AlphaLake须在请求旁保存源版本、定位、哈希、观察日、截止、字段依据及政策标签；不能把结构校验当来源核验。报告的参考快照绑定与显式组件证据分别留痕。公司信用/经营暴露未知时可以用明确命名的条件情景，不冒充已审核公司市场WACC；当前自动选择及网页默认不因接口可表达而获得批准。
+typed输入不携带每个参考的原始归档定位，AlphaLake须在请求旁保存源版本、定位、哈希、观察日、截止、字段依据及政策标签；不能把结构校验当来源核验。报告的参考快照绑定与显式组件证据分别留痕。公司信用/经营暴露未知时可以用明确命名的条件情景，不冒充已审核公司市场WACC；公司信用/经营暴露的自动认证不因接口可表达而获得批准；数据库来源初值已另获本轮明确授权。
 
 WACC数据选择的诊断证据至少分开记录：公司评级或债券证据是否提供、报告EBIT与利息费用的TTM原组成、租赁/经营调整是否同范围、参考样本适用性与原区间、地域模型及税率依据。`reported_ebit/interest_expense`可用于算术诊断，不自动等于经审核的合成信用输入；利息零、负值或缺项不得直接选AAA、取绝对值或补零。缺信用证据不删除已有财务、不改变原生准入，仅限制拟选择政策的认证。126家现有输入审计及待审批顺序见[数据选择方案](native-cny-policy.md#数据选择方案待审批)，不新增typed字段或改变默认算法。
 
@@ -183,3 +183,15 @@ SQLite标准事实出口增加金融业务利息收入/费用及使用权资产�
 `POST /api/valuation/from-database`取数及初次共享计算后，只对缺省标量执行已批准的来源初始化，重新交由同一引擎计算；规则、H=1的税率/WACC联动、缺项范围及保留融资见[初值spec](default-assumptions.md)。来源版本为`native-source-initialization-v1`，原始财务及参考快照不改写；用户显式0、完整路径及期间优先。其他完整API/模板入口不注入该政策。字段来源在`source_metadata`单列；清空、Reset和重新加载的差异按该spec验收。
 
 稳态WACC覆盖值为`dcf.forecast_parameters.cost_of_capital_stable_override.value`的正常税盾基础，不是已经调整的`terminal_wacc`；完整融资路径下该标量不可编辑。ROIC及增长按钮读取实际终值，开启编辑不再偷偷改成统一常数。Excel的DCF、融资与每股结果读取共享响应快照，按实际预测年数输出，不维护第二套固定期限公式；编辑后在网页/API重算并重新导出。
+
+### 人民币数据库默认与编辑联动（2026-10-05）
+
+用户批准“闭合人民币默认WACC”。仅沪深非金融、报告及挂牌币种CNY的数据库新会话初始化；完整API、模板和金融范围不注入。复用原详细M2：US行业Beta、注册地总ERP一次计入、市场权益/估计债务权重不变；Rf为同发布人民币十年国债减中国主权利差。
+
+源解析v4验证WACC工作簿`Industry Averages!D9`为美元长期基准，以`cost_of_debt_pretax.method_code=provider_usd_risk_free_<DECIMAL12>`保存对应估计基础，不增加财务字段或源BLOB。US/Global基准分别与自身发布绑定，冲突、缺基准及负行业利差拒绝。主库离线重解析`wacc/waccGlobal`后显式重导SQLite；旧参考v3拒绝，不设置别名或美元回退。原行业Kd仍作为美元来源值保留，不改写成人民币事实。
+
+`Kd_CNY=Rf_CNY+China主权利差+(US行业Kd−同表USD基准)`，通过现有`kd_approach=direct/kd_direct_input`交付。这是跨市场行业信用及全额主权债务传导条件，不是公司正式评级。新会话正常税盾初始WACC持有至稳态；ROIC按既有无超额回报分支，终值增长以CNY Rf为原生边界条件，税盾不可用调整照旧。不得把整个估值变化称初始WACC单因素。
+
+来源初值Kd随会话Rf或行业更新重新基准化，来源稳态条件随初始WACC重算；用户显式Kd、稳态值（包括0）分别解除对应联动，完整未来融资路径优先。清空这两项融资覆盖恢复人民币来源条件，避免隐含回退美元行业利率；其他经营参数的既有清空行为不变。失败PATCH先拒绝，保留会话与来源记录。来源初值及用户覆盖分别保存在`source_metadata`。
+
+`check_native_sqlite`及手工发布的`--risk-free-rate`现为可选；省略验收实际数据库初值，显式传入仍是用户条件。参考年龄按快照截止报告；当前归档国债超过独立显式市场政策7天时警告，允许研发来源初值，不宣称新鲜市场报价，也不放宽显式政策拒绝门槛。方法、代理及KB入口见[人民币政策](native-cny-policy.md#当前数据库默认人民币融资2026-10-05)。

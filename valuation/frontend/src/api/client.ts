@@ -181,7 +181,7 @@ export async function companyExists(ticker: string): Promise<{ ticker: string; i
   return data;
 }
 
-export async function valueFromDatabase(ticker: string, riskFreeRate = 0.0425): Promise<ValuationResponse> {
+export async function valueFromDatabase(ticker: string, riskFreeRate?: number): Promise<ValuationResponse> {
   const { data } = await api.post('/valuation/from-database', {
     ticker,
     risk_free_rate: riskFreeRate,

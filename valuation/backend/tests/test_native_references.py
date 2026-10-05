@@ -30,6 +30,8 @@ def test_reviewed_native_workbooks_and_source_cells():
             assert rows['IL']['value']=='0.230000000000'
             assert rows['US']['value'] is None and rows['US']['value_status']=='ambiguous'
             assert rows['US']['source_locator']=='Sheet1!B217;Sheet1!B246'
+        if entry['file'] in ('wacc.xls','waccGlobal.xls'):
+            assert packet['usd_risk_free_rate']=='0.039500000000'
     assert total==3952
 
 
@@ -45,12 +47,23 @@ def test_region_and_header_tampering_rejected(monkeypatch):
         snapshot(ROOT/'betas.xls')
 
 
+def test_usd_debt_basis_header_tampering_rejected(monkeypatch):
+    real=xlrd.open_workbook
+    def tampered(*args,**kwargs):
+        wb=real(*args,**kwargs)
+        wb.sheet_by_name('Industry Averages')._cell_values[8][0]='Different currency'
+        return wb
+    monkeypatch.setattr(xlrd,'open_workbook',tampered)
+    with pytest.raises(ValueError,match='USD debt risk-free basis'):
+        snapshot(ROOT/'wacc.xls')
+
+
 @pytest.mark.full
 def test_sqlite_snapshot_roundtrip_hash_and_missing_reference(reference_export, monkeypatch):
     import sqlite3
     from data_sources.native_references import write_snapshot,load_snapshot
     from data_sources.damodaran_parsers.country_risk_parser import alphalake_country_snapshot
-    packet=dict(contract='alphalake-native-references-v3',information_as_of='2026-09-27T14:00:00Z',
+    packet=dict(contract='alphalake-native-references-v4',information_as_of='2026-09-27T14:00:00Z',
         releases=[],industry_stats=[],country_tax=[],country_risk=[],companies=[],issuer_associations=[])
     def release(identity,dataset,source_hash):
         packet['releases'].append(dict(release_id=identity,dataset=dataset,source_version='2026-01-05',
@@ -60,7 +73,8 @@ def test_sqlite_snapshot_roundtrip_hash_and_missing_reference(reference_export, 
         parsed=snapshot(ROOT/entry['file']);release(identity,'native-reference-'+entry['file'].removesuffix('.xls')+'-v1',entry['sha256'])
         group='country_tax' if entry['file']=='countrytaxrates.xls' else 'industry_stats'
         for row in parsed['observations']:
-            row=dict(row,release_id=identity,method_code='provider_reported',observation_date=parsed['observation_date'],industry=row['subject'],subject_code=row['subject'],sample_region=parsed['sample_region'])
+            method=('provider_usd_risk_free_'+parsed['usd_risk_free_rate'] if row['metric_code']=='cost_of_debt_pretax' else 'provider_reported')
+            row=dict(row,release_id=identity,method_code=method,observation_date=parsed['observation_date'],industry=row['subject'],subject_code=row['subject'],sample_region=parsed['sample_region'])
             packet[group].append(row)
     risk=alphalake_country_snapshot(ROOT.parent/'ctrypremJuly26.xlsx')
     release(24,'country-risk',risk['workbook_sha256'])

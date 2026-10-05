@@ -9,7 +9,7 @@ import (
 )
 
 const NativeReferenceScript = "valuation/backend/data_sources/damodaran_parsers/native_reference_parser.py"
-const NativeReferenceVersion = "damodaran-native-reference-v3"
+const NativeReferenceVersion = "damodaran-native-reference-v4"
 
 var NativeReferenceFiles = []string{"betas", "betaGlobal", "wacc", "waccGlobal", "margin", "marginGlobal", "taxrate", "taxrateGlobal", "capex", "capexGlobal", "fundgrEB", "fundgrEBGlobal", "EVA", "EVAGlobal", "vebitda", "vebitdaGlobal", "pedata", "peGlobal", "pbvdata", "pbvGlobal", "psdata", "psGlobal", "countrytaxrates"}
 
@@ -26,6 +26,7 @@ type NativeReferenceObservation struct {
 type NativeReferenceSnapshot struct {
 	reference.Header
 	UnleveringTaxRate string                       `json:"unlevering_tax_rate"`
+	USDRiskFreeRate   string                       `json:"usd_risk_free_rate"`
 	FileStem          string                       `json:"file_stem"`
 	SampleRegion      string                       `json:"sample_region"`
 	Observations      []NativeReferenceObservation `json:"observations"`
@@ -62,6 +63,16 @@ func ValidateNativeReference(s NativeReferenceSnapshot) error {
 		}
 	} else if s.UnleveringTaxRate != "" {
 		return errors.New("unexpected beta tax")
+	}
+	if s.FileStem == "wacc" || s.FileStem == "waccGlobal" {
+		if err := reference.Decimal12(s.USDRiskFreeRate, s.USDRiskFreeRate, 1); err != nil {
+			return err
+		}
+		if !strings.HasPrefix(s.USDRiskFreeRate, "0.") {
+			return errors.New("invalid USD debt risk-free basis")
+		}
+	} else if s.USDRiskFreeRate != "" {
+		return errors.New("unexpected USD debt risk-free basis")
 	}
 	tax := s.FileStem == "countrytaxrates"
 	expected := "us"

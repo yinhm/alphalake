@@ -28,7 +28,7 @@ systemd-run --unit=alphalake-native-publish \
   --period 2026-06-30 \
   --codes-file workspace/derived/system-delivery/published-codes.txt \
   --source-mode offline --latest 6 \
-  --risk-free-rate 0.04 --web-url http://127.0.0.1:8080
+  --web-url http://127.0.0.1:8080
 systemctl show alphalake-native-publish -p ActiveState -p ExecMainStatus -p MemoryMax
 journalctl -u alphalake-native-publish --no-pager
 ```
@@ -172,3 +172,5 @@ schema57的`reference.issuer_industry_review`保存不可变验证包、完整�
 先在未发布主库副本执行`upgrade-financial-availability`和物化，比较全部旧非空金额、日期来源及重放结果，再替换主库。SQLite v9须从新主库重导出，不能只改旧文件版本号。旧v8与新v9切换属于显式契约升级：保留旧快照备份，先完成候选原生API验收，再协调后端数据适配加载、原子替换及真实HTTP复验，失败恢复旧文件与对应实现；不得用旧运行成功记录替代验收。
 
 在线流程仍补采CNINFO公告元数据，但该可选步骤失败或超时只记录退出码与日志，不阻断合格TDX当前数值的物化及导出；证券身份、数值来源、行情与必要参考失败仍按原规则处理。
+
+人民币数据库来源初值现为默认验收请求；`--risk-free-rate`仅在明确使用用户利率条件时提供。省略不会套4.25%。参考v3升级v4须先离线重解析WACC两表并重导SQLite，按原提交保存旧结果作差异基线，不要求当前读取旧参考。见[人民币输入](../valuation/data-contract.md#人民币数据库默认与编辑联动2026-10-05)。

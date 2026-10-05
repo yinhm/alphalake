@@ -112,7 +112,7 @@ def test_cycle_publishes_replays_without_export_and_keeps_last_snapshot_on_sourc
             assert Path(command[command.index('--database')+1]).exists()
             output = Path(command[command.index('--output')+1]); output.mkdir()
             assert '--review-methodology' in command
-            delivery.save(output/'summary.json', dict(companies=1, admission={'ready':1}, methodology={'economic_approval':'not_inferred'}, risk_free_rate=float(command[command.index('--risk-free-rate')+1]),
+            delivery.save(output/'summary.json', dict(companies=1, admission={'ready':1}, methodology={'economic_approval':'not_inferred'}, risk_free_rate=float(command[command.index('--risk-free-rate')+1]) if '--risk-free-rate' in command else None,
                 results=[dict(ticker='SZSE:300866', admission='ready', http_status=200, final={'value_per_share':42})]))
         return 0
     monkeypatch.setattr(delivery, 'execute', execute)
@@ -135,6 +135,12 @@ def test_cycle_publishes_replays_without_export_and_keeps_last_snapshot_on_sourc
     assert json.loads((changed_rate/'run.json').read_text())['export_reused']
     assert not json.loads((changed_rate/'run.json').read_text()).get('calculation_reused')
     assert target.read_bytes() == saved and target.stat().st_ino == stat.st_ino
+    calls.clear()
+    args.risk_free_rate=None
+    published_initial = tmp_path/'published-initial'; published_initial.mkdir()
+    assert delivery.run(args,published_initial)==0
+    assert calls==['check-candidate','check-previous']
+    assert json.loads((published_initial/'run.json').read_text())['risk_free_rate']['basis']=='published_native_initial_condition'
     calls.clear()
     args.source_mode = 'offline'
     third = tmp_path/'third'; third.mkdir()

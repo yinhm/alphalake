@@ -366,8 +366,8 @@ export default function CostOfCapital({ data, onPatch }: Props) {
             <div className="bg-gray-50 border border-gray-200 rounded p-2 mb-3">
               <div className="text-xs font-semibold text-gray-700 mb-1">Reference</div>
               <div className="grid grid-cols-3 gap-2 text-xs">
-                <div>Industry Kd pre-tax: <span className="font-mono cursor-help" title={damodaran("wacc.xls", "Cost of Debt (pre-tax)", ind.industry_name)}>{fmtPct(ind.cost_of_debt_pretax)}</span></div>
-                <div>Risk-free rate: <span className="font-mono cursor-help" title={user("Risk-free rate", `10y local-currency sovereign rate for ${data.inputs.country ?? 'this firm'}. Default 4.25% (US). Edit on the Input Sheet → Macro Numbers section.`)}>{fmtPct(macro.risk_free_rate)}</span></div>
+                <div>US industry Kd (USD): <span className="font-mono cursor-help" title={damodaran("wacc.xls", "Cost of Debt (pre-tax, USD benchmark included)", ind.industry_name)}>{fmtPct(ind.cost_of_debt_pretax)}</span></div>
+                <div>Risk-free rate: <span className="font-mono cursor-help" title={user("Risk-free rate", `Must match the cash-flow currency (${data.inputs.reporting_currency}). Native CNY sessions use the published ten-year CNY government yield minus China's sovereign spread; user overrides remain editable on Input Sheet.`)}>{fmtPct(macro.risk_free_rate)}</span></div>
                 <div>Country default spread: <span className="font-mono cursor-help" title={countrySrc("DefaultSpread", data.inputs.country || "?")}>{fmtPct(macro.default_spread)}</span></div>
                 <div>Interest expense (LTM): <span className="font-mono cursor-help" title={ciq(ticker, "IQ_INTEREST_EXP", "LTM")}>{fmtCur(fin?.interest_expense)}</span></div>
                 <div>Book debt: <span className="font-mono cursor-help" title={ciq(ticker, "IQ_TOTAL_DEBT", "IQ_FY-0")}>{fmtCur(fin?.bv_debt)}</span></div>
@@ -548,7 +548,7 @@ export default function CostOfCapital({ data, onPatch }: Props) {
             <KV label="β_L (levered)" termId="beta" bindingId="beta.levered"       value={fmtNum(coc?.beta_l)}     tooltip={tip("cost_of_capital.beta_l")} />
             <KV label="D/E ratio" termId="capital-structure" bindingId="capital-structure.debt-equity"           value={fmtNum(coc?.d_e_ratio)}  tooltip={tip("cost_of_capital.d_e_ratio")} />
             <KV label="Risk-free rate" termId="risk-free-rate" bindingId="risk-free-rate.current"      value={fmtPct(coc?.risk_free_rate)}
-                                            tooltip={user("Risk-free rate (10y treasury)", "user-supplied via upload form; typically 4.25% US T-bond")} />
+                                            tooltip={user("Risk-free rate", "Cash-flow currency basis; native CNY uses the published government yield minus sovereign spread. Source dates and user overrides remain explicit.")} />
             <KV label="ERP (used)" termId="equity-risk-premium" bindingId="equity-risk-premium.current"          value={fmtPct(coc?.equity_risk_premium)}
                                             tooltip={tip("cost_of_capital.equity_risk_premium")} />
             {coc?.interest_coverage_ratio !== null && coc?.interest_coverage_ratio !== undefined && (

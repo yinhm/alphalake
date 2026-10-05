@@ -46,6 +46,9 @@ func PublishNativeReference(ctx context.Context, db *sql.DB, runID, artifactID i
 		if o.MetricCode == "beta_unlevered" || o.MetricCode == "beta_unlevered_cash_adjusted" {
 			method = "provider_marginal_tax_" + s.UnleveringTaxRate
 		}
+		if o.MetricCode == "cost_of_debt_pretax" {
+			method = "provider_usd_risk_free_" + s.USDRiskFreeRate
+		}
 		cols := "release_id,artifact_id,source_locator,raw_value,raw_unit,observation_date,metric_code,method_code,value,value_status"
 		args := []any{p.id, artifactID, o.SourceLocator, o.RawValue, o.RawUnit, s.ObservationDate, o.MetricCode, method, o.Value, o.ValueStatus}
 		placeholders := "?,?,?,?,?,?,?,?,CAST(? AS DECIMAL(38,12)),?"
