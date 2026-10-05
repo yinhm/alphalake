@@ -60,11 +60,13 @@ def build_ranges(
             range_source="application_example",
         ))
 
-    # 2) Revenue growth, years 2-5 CAGR — same industry anchor, slightly tighter bounds
+    # 2) Initial-stage / transition-anchor growth; the period follows the input.
+    high = inputs.valuation_assumptions.high_growth_years
+    growth_label = "Revenue growth (transition anchor)" if high == 1 else f"Revenue growth (Y2-{high})"
     if rg_q:
         ranges.append(DriverRange(
             driver="revenue_growth_years_2_5",
-            label="Revenue growth (Y2-5)",
+            label=growth_label,
             patch_path="valuation_assumptions.revenue_growth_years_2_5",
             range_lo=rg_q[0] * 0.90, range_hi=rg_q[1] * 0.90,
             range_source="industry_median_band",
@@ -72,7 +74,7 @@ def build_ranges(
     else:
         ranges.append(DriverRange(
             driver="revenue_growth_years_2_5",
-            label="Revenue growth (Y2-5)",
+            label=growth_label,
             patch_path="valuation_assumptions.revenue_growth_years_2_5",
             range_lo=0.02, range_hi=0.20,
             range_source="application_example",

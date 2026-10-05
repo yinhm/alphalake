@@ -369,3 +369,16 @@ def test_input_contract_exposes_selection_without_filling_missing_history(monkey
     debt = next(r for r in gate['input_contract']['inputs'] if r['field']=='bv_debt')
     assert debt['requirement']=='required' and not debt['usable'] and debt['value'] is None
     assert gate['status']=='blocked_required_inputs'
+
+
+def test_sensitivity_growth_label_follows_native_initial_period():
+    from engine.sensitivity_ranges import build_ranges
+    from engine.data_dictionary import CompanyValuationInput
+    inputs = CompanyValuationInput(ticker='TEST', macro_inputs=MacroInputs(risk_free_rate=.04, equity_risk_premium=.05, tax_rate_marginal=.25), industry_data=IndustryData(industry_name='Synthetic', beta_u=1))
+    inputs.valuation_assumptions.high_growth_years = 1
+    initial = next(r for r in build_ranges(inputs) if r.driver == 'revenue_growth_years_2_5')
+    assert initial.label == 'Revenue growth (transition anchor)'
+    inputs.valuation_assumptions.high_growth_years = 3
+    later = next(r for r in build_ranges(inputs) if r.driver == initial.driver)
+    assert later.label == 'Revenue growth (Y2-3)'
+    assert (later.patch_path, later.range_lo, later.range_hi) == (initial.patch_path, initial.range_lo, initial.range_hi)
