@@ -39,14 +39,6 @@ export function baseYear(data: ValuationResponse): RawFinancials | undefined {
   return data.ltm_financials ?? data.inputs.raw_financials[0];
 }
 
-/** The prior annual period (for YoY / marginal ratios).
- *  When the engine rotates LTM, the first raw_financials row IS the
- *  most-recent 10-K annual — which functions as "FY-1" relative to LTM. */
-export function priorYear(data: ValuationResponse): RawFinancials | undefined {
-  if (data.ltm_financials) return data.inputs.raw_financials[0];
-  return data.inputs.raw_financials[1];
-}
-
 /** EBIT for display / ratio calculations — Damodaran-adjusted where
  *  available (adjusted_ebit = raw EBIT + R&D add-back + lease add-back).
  *  Falls back to raw EBIT from the base year if no adjustments ran. */

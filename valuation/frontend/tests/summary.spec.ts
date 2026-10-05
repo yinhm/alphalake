@@ -27,6 +27,42 @@ test('summary displays resolved terminal WACC rather than reconstructing the inp
   expect(errors).toEqual([]);
 });
 
+test('LTM growth uses the backend aligned comparison and never substitutes stale annual fields', async ({ page }) => {
+  const base = forecastFixture();
+  const data = {
+    ...base,
+    inputs: { ...base.inputs, period_date_10k: '2025-12-31', period_date_10q: '2026-06-30',
+      raw_financials: [{ fiscal_year:2025, revenues:30514.403328, ebit:2880.846592, bv_debt:70, d_a:1 },
+                      { fiscal_year:2024, revenues:24710.080512, ebit:2000 }],
+      company_metrics: { revenue_growth:.2264400293305613 as number | null,
+        revenue_growth_basis:'TTM同比：2026-06-30 / 2025-06-30；不是未来预测。' },
+      prepared_ttm: { period_start:'2025-07-01', period_end:'2026-06-30', provenance:{} },
+    },
+    ltm_financials: { fiscal_year:2025, revenues:34252.649472, ebit:3653.317376, bv_debt:null, d_a:null },
+  };
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.route('**/api/synthetic-summary', route => route.fulfill({ json:data }));
+  const row = (label: string) => page.getByRole('row').filter({ has: page.getByText(label, { exact:true }) });
+  await page.goto('/tests/fixtures/summary.html?sheet=input');
+  await expect(row('Revenue Growth (%)').getByRole('cell').nth(1)).toHaveText('22.64%');
+  await expect(row('Revenue Growth (%)').getByRole('cell').nth(2)).toHaveText('23.49%');
+  await expect(row('Revenue Growth').getByRole('cell').nth(1)).toHaveText('22.64%');
+  await expect(row('Revenue Growth').getByRole('cell').nth(1)).toHaveAttribute('title', /2025-06-30/);
+  await expect(row('Book Value of Debt').getByRole('cell').nth(1)).toHaveText('');
+  await page.goto('/tests/fixtures/summary.html?sheet=diagnostics');
+  await expect(row('Most recent revenue growth').getByRole('cell').nth(1)).toHaveText('22.64%');
+  data.inputs.company_metrics.revenue_growth = null;
+  await page.reload();
+  await expect(row('Most recent revenue growth').getByRole('cell').nth(1)).toHaveText('');
+  await page.goto('/tests/fixtures/summary.html?sheet=ltm');
+  await expect(row('D&A').getByRole('cell').last()).toHaveText('');
+  await expect(row('Book Value of Debt').getByRole('cell').nth(3)).toHaveText('');
+  await page.goto('/tests/fixtures/summary.html?sheet=output');
+  await expect(page.getByText('10-K-1', { exact:true })).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
 function forecastFixture(annual = false) {
   const parameters = Object.fromEntries([
     ['revenue_growth_next_year', .12], ['revenue_growth_years_2_5', .12],

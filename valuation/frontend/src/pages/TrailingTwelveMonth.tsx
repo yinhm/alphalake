@@ -93,10 +93,10 @@ export default function TrailingTwelveMonth({ data }: { data: ValuationResponse;
   const sufficient = !!prepared || n === 0 || qFins.length >= n + 4;
 
   // Displays the derivation components (FY0 + Σnew − Σold) for transparency — NOT the final LTM value.
-  // Final LTM comes from ltmBackend. If backend had to fall back to FY0 (insufficient data), new/old = 0.
+  // Final LTM comes from ltmBackend;缺项不借年度值或零补齐。
   function ltmBreakdown(key: keyof RawFinancials) {
-    const fy0 = typeof fin0?.[key] === 'number' ? (fin0[key] as number) : 0;
-    const ltm = ltmBackend ? (ltmBackend[key] as number | null) ?? fy0 : fy0;
+    const fy0 = typeof fin0?.[key] === 'number' ? (fin0[key] as number) : null;
+    const ltm = ltmBackend ? (ltmBackend[key] as number | null) : null;
     if (prepared) {
       const component = (period: string) => {
         const term = terms[key]?.find(t => t.period === period && t.value !== undefined);
@@ -107,24 +107,19 @@ export default function TrailingTwelveMonth({ data }: { data: ValuationResponse;
         oldSum: component(`${Number(prepared.period_end.slice(0, 4))-1}${prepared.period_end.slice(4)}`),
         ltm: ltmBackend ? ltmBackend[key] as number | null : null };
     }
-    if (n === 0 || !sufficient) return { fy0, newSum: 0, oldSum: 0, ltm };
-    let newSum = 0, oldSum = 0;
-    for (let i = 0; i < n; i++) {
-      newSum += qVal(i, key) ?? 0;
-      oldSum += qVal(i + 4, key) ?? 0;
-    }
+    if (n === 0) return { fy0, newSum: 0, oldSum: 0, ltm };
+    const windowSum = (offset: number) => {
+      const values = Array.from({ length: n }, (_, i) => qVal(i + offset, key));
+      return values.every(v => v !== null) ? values.reduce<number>((sum, v) => sum + v!, 0) : null;
+    };
+    const newSum = windowSum(0), oldSum = windowSum(4);
     return { fy0, newSum, oldSum, ltm };
   }
 
   // Balance sheet: backend-authoritative (from ltm_financials which holds FQ-0 snapshot when available).
   function bsValue(key: keyof RawFinancials) {
     const backendV = ltmBackend ? (ltmBackend[key] as number | null) : null;
-    if (prepared) return { value: backendV, source: '10-Q' as const };
-    const qv = qVal(0, key);
-    // source label: if FQ-0 had the value, backend uses it (10-Q); else backend kept FY0 (10-K)
-    if (qv !== null) return { value: backendV ?? qv, source: '10-Q' as const };
-    const fv = fin0 ? (fin0[key] as number | null) : null;
-    return { value: backendV ?? fv, source: '10-K' as const };
+    return { value: backendV, source: n > 0 || prepared ? '10-Q' as const : '10-K' as const };
   }
 
   const maxQ = Math.min(8, qFins.length);
@@ -141,8 +136,7 @@ export default function TrailingTwelveMonth({ data }: { data: ValuationResponse;
         <div className="mb-4 p-3 rounded bg-amber-50 border border-amber-300 text-sm">
           <strong>⚠ Insufficient quarterly data for LTM rotation:</strong>{' '}
           K = {n}, but only {qFins.length} quarter{qFins.length === 1 ? '' : 's'} available
-          (Ginzu formula needs K + 4 = {n + 4}). Backend fell back to FY-0 values for flow items;
-          LTM shown below equals FY-0 until a fuller template is uploaded.
+          (Ginzu formula needs K + 4 = {n + 4}). 本输入不能构造完整LTM；不使用旧年报替代。
         </div>
       )}
 
@@ -304,7 +298,7 @@ export default function TrailingTwelveMonth({ data }: { data: ValuationResponse;
                 <SpreadsheetCell value={label} type="label" />
                 <SpreadsheetCell value={num(qVal(0, key))} type="financial" tooltip={`=CIQ("${ticker}","${mnem}","IQ_FQ-0")`} />
                 <SpreadsheetCell value={num(fin0?.[key] as number | null)} type="financial" tooltip={`=CIQ("${ticker}","${mnem}","IQ_FY-0")`} />
-                <SpreadsheetCell value={num(bs.value)} type="calc" tooltip={`LTM balance-sheet value = most recent 10-Q snapshot (IQ_FQ-0) when available, else falls back to 10-K (IQ_FY-0). Balance-sheet items are point-in-time, not rotated.`} />
+                <SpreadsheetCell value={num(bs.value)} type="calc" tooltip="资产负债表使用引擎最新期末余额，不作四季加总；缺项保留，不借旧年度替代。" />
                 <td className={`border px-1.5 py-0.5 text-xs font-medium ${bs.source === '10-Q' ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}`}>
                   {bs.source === '10-Q' ? '10-Q (most recent)' : '10-K (no quarterly data)'}
                 </td>

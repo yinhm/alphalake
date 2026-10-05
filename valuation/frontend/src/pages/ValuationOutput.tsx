@@ -50,10 +50,7 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
   const assumptions = inputs.valuation_assumptions;
   const macro = inputs.macro_inputs;
 
-  // Per-field vintage for the prominent base-year values. Issue 3 from
-  // the Lenovo audit: LTM may have some fields null on thin-feed tickers;
-  // we fall back field-by-field to annual[0] (10-K) then annual[1] (10-K-1)
-  // and surface the source next to each affected cell.
+  // 展示实际引擎基期；缺项不以另一期间替代。
   const revVintage = getField(data, 'revenues');
   const debtVintage = getField(data, 'bv_debt');
   const cashVintage = getField(data, 'cash_and_marketable_securities');
@@ -71,7 +68,7 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
   // ---------- derived projection arrays (length 12 each) ----------
 
   // Revenues: index 0 = base-year, 1..11 from revenue_projections.
-  // Base-year falls back field-by-field: LTM.revenues → FY-0.revenues → FY-1.revenues.
+  // Base-year uses the same revenue as the engine.
   const revenues: (number | undefined)[] = Array(colCount).fill(undefined);
   revenues[0] = (revVintage.value ?? fin0.revenues) as number | undefined;
   if (dcf?.revenue_projections) {
@@ -209,9 +206,6 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
   // (the engine DOES subtract minority and add cross-holdings).
   // Prefer the CostOfCapital.mv_debt_total (includes lease PV and
   // convertible straight part) when available, falling back to raw bv_debt.
-  // Equity-bridge components — use per-field vintage cascade so thin-LTM
-  // tickers don't show blank cells when the value exists in a different
-  // vintage (Issue 3).
   const debt = (data.cost_of_capital?.mv_debt_total ?? debtVintage.value ?? fin0.bv_debt) as number | undefined;
   const minorityInterests = fin0.minority_interests ?? 0;
   const cash = (cashVintage.value ?? fin0.cash_and_marketable_securities) as number | undefined;
@@ -293,10 +287,7 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
 
       <ColorLegend />
 
-      {/* Base-year vintage summary — shows which vintage each key field
-          came from (LTM / 10-K / 10-K-1). Useful when LTM has thin
-          quarterly data and some fields cascade down to the annual
-          filings. (Issue 3 from the Lenovo audit.) */}
+      {/* 各字段使用引擎实际基期；缺项不借旧年度补齐。 */}
       <div className="text-xs text-slate-500 mb-3 flex flex-wrap gap-x-3 gap-y-1 items-center">
         <span className="font-medium">Base-year vintage:</span>
         <span>Revenue <VintageBadge source={revVintage.vintage} /></span>
@@ -388,7 +379,7 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
           {bridgeRow('Value of equity in common stock', equityInCommon,
             formula('= V_equity − Options'))}
           {bridgeRow('Number of shares', sharesOutstanding,
-            `Shares outstanding from the LTM base-year snapshot. CIQ mnemonic =CIQ("${inputs.ticker}","IQ_TOTAL_OUTSTANDING_FILING_DATE") — point-in-time shares at the most recent filing date. Falls back to FY-0 if the quarterly snapshot didn't provide a value.`)}
+            `Shares outstanding from the engine base-year snapshot. CIQ mnemonic =CIQ("${inputs.ticker}","IQ_TOTAL_OUTSTANDING_FILING_DATE"). Missing current shares remain missing.`)}
           {(() => {
             const repCcy = inputs.reporting_currency;
             const listCcy = inputs.stock_price_currency;

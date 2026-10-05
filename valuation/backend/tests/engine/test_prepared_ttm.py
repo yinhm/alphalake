@@ -1,8 +1,12 @@
 """Explicit TTM and missing-data regression at shared calculation boundaries."""
+import json
+from types import SimpleNamespace
+
 import pytest
 from pydantic import ValidationError
 from engine.data_dictionary import (RawFinancials, PreparedTTM, CompanyValuationInput,
-    MacroInputs, IndustryData, MethodologyChoices, ValuationAssumptions)
+    MacroInputs, IndustryData, MethodologyChoices, ValuationAssumptions, QuarterlyFinancials)
+from engine.company_metrics import compute_revenue_growth
 from engine.ltm_calculator import compute_ltm_financials
 from engine.orchestrator import run_full_valuation
 
@@ -74,3 +78,89 @@ def test_missing_bridge_does_not_publish_price(field):
     assert report.dcf.value_of_operating_assets is not None
     assert report.dcf.value_per_share_pre_options is None
     assert report.final.value_per_share is None
+
+
+def test_ttm_growth_requires_aligned_comparison_and_does_not_drive_forecast():
+    inputs = payload()
+    inputs.raw_financials = [inputs.prepared_ttm.financials.model_copy(update={'fiscal_year':2025, 'revenues':80})]
+    before = run_full_valuation(inputs)
+    assert inputs.company_metrics.revenue_growth is None  # 100/80-1不是TTM同比。
+    assert '缺上年同截止月' in inputs.company_metrics.revenue_growth_basis
+    evidence = dict(period_end='2025-06-30', currency='CNY', money_unit='million_reporting_currency', revenues='50')
+    inputs.prepared_ttm.provenance['prior_ttm_revenue'] = json.dumps(evidence)
+    after = run_full_valuation(inputs)
+    assert inputs.company_metrics.revenue_growth == 1
+    assert after.dcf == before.dcf and after.final == before.final
+    inputs.prepared_ttm.financials.revenues = 0
+    assert compute_revenue_growth(inputs, inputs.prepared_ttm.financials)[0] == -1
+    for change in [dict(revenues='0'), dict(revenues='-1'), dict(revenues='NaN'),
+                   dict(currency='USD'), dict(period_end='2025-12-31'), dict(money_unit='CNY')]:
+        inputs.prepared_ttm.provenance['prior_ttm_revenue'] = json.dumps(evidence | change)
+        assert compute_revenue_growth(inputs, inputs.prepared_ttm.financials)[0] is None
+
+
+@pytest.mark.parametrize('k', [0,1,2,3,4])
+def test_annual_and_quarterly_growth_use_one_year_apart_windows(k):
+    inputs = payload()
+    inputs.prepared_ttm = None
+    inputs.raw_financials = [RawFinancials(fiscal_year=2025, revenues=100, ebit=20),
+                            RawFinancials(fiscal_year=2024, revenues=50, ebit=10)]
+    inputs.quarters_since_10k = k
+    inputs.quarterly_financials = [QuarterlyFinancials(fiscal_year=2026, revenues=v, ebit=v*.2)
+        for v in [40,35,30,25,20,15,10,5]]
+    current = compute_ltm_financials(inputs.raw_financials[0], inputs.quarterly_financials, k)
+    growth, _ = compute_revenue_growth(inputs, current)
+    assert growth == current.revenues / 50 - 1
+    if k:
+        for invalid in [None, float('inf'), float('nan'), 1e308]:
+            inputs.quarterly_financials[7].revenues = invalid
+            if invalid == 1e308:
+                inputs.quarterly_financials[6].revenues = invalid
+            assert compute_revenue_growth(inputs, current)[0] is None
+    else:
+        inputs.raw_financials[1].fiscal_year = 2023
+    assert compute_revenue_growth(inputs, current)[0] is None
+
+
+def test_prepared_growth_handles_leap_day_without_blocking_valuation():
+    from datetime import date
+    inputs = payload()
+    inputs.prepared_ttm.period_start = date(2023,3,1)
+    inputs.prepared_ttm.period_end = date(2024,2,29)
+    inputs.prepared_ttm.provenance['prior_ttm_revenue'] = json.dumps(dict(
+        period_end='2023-02-28', currency='CNY', money_unit='million_reporting_currency', revenues='50'))
+    report = run_full_valuation(inputs)
+    assert inputs.company_metrics.revenue_growth == 1 and report.dcf is not None
+
+
+def test_excel_ltm_columns_use_engine_flows_and_latest_balances():
+    from openpyxl import Workbook
+    from api.export import _build_input_sheet
+    from api.export_workbook import _write_input_sheet, _write_trailing_twelve_month, _write_diagnostics
+    inputs = payload()
+    inputs.raw_financials = [inputs.prepared_ttm.financials.model_copy(update={'fiscal_year':2025, 'revenues':80, 'bv_debt':70, 'cash_and_marketable_securities':50})]
+    report = run_full_valuation(inputs)
+    wb = Workbook()
+    _write_input_sheet(wb, inputs, report)
+    assert wb['Input Sheet']['B12'].value == 100
+    assert wb['Input Sheet']['C12'].value == 80
+    assert wb['Input Sheet']['B20'].value == 10
+    assert wb['Input Sheet']['B23'].value == 3
+    _write_trailing_twelve_month(wb, inputs, report)
+    ws = wb['Trailing 12 Month']
+    assert [ws.cell(3, c).value for c in (2,3,4)] == [100,80,100]
+    _write_diagnostics(wb, inputs, report)
+    ws = wb['Diagnostics']
+    assert ws['B4'].value is None
+    assert next(row[1].value for row in ws if row[0].value == 'Base year revenues') == 100
+    simple = _build_input_sheet(SimpleNamespace(inputs=inputs, report=report)).active
+    assert next(row[1].value for row in simple if row[0].value == 'Revenues') == 100
+    inputs.prepared_ttm = None
+    inputs.quarters_since_10k = 2
+    inputs.quarterly_financials = [QuarterlyFinancials(fiscal_year=2026, revenues=20, ebit=4, bv_debt=7, net_income=0) for _ in range(8)]
+    inputs.raw_financials[0].net_income = 0
+    report = run_full_valuation(inputs)
+    wb = Workbook()
+    _write_input_sheet(wb, inputs, report)
+    assert wb['Input Sheet']['B20'].value == 7
+    assert wb['Input Sheet']['B15'].value == 0

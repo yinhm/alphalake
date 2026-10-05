@@ -2,14 +2,58 @@
 
 from __future__ import annotations
 
+import json
+import math
+from calendar import monthrange
+
 from .module_1_adjustments import after_tax_operating_income
 
 from engine.data_dictionary import (
     AdjustedFinancials,
     CompanyMetrics,
     CostOfCapital,
+    CompanyValuationInput,
     RawFinancials,
 )
+
+
+def compute_revenue_growth(inputs: CompanyValuationInput, current: RawFinancials) -> tuple[float | None, str]:
+    """同比只比较相隔一年的同长度窗口，不将TTM/FY之比年化。"""
+    if inputs.prepared_ttm is not None:
+        prepared = inputs.prepared_ttm
+        end = prepared.period_end
+        prior_end = end.replace(year=end.year-1, day=min(end.day, monthrange(end.year-1, end.month)[1]))
+        basis = f'TTM同比：{end} / {prior_end}'
+        evidence = prepared.provenance.get('prior_ttm_revenue')
+        if evidence is None:
+            return None, basis + '；缺上年同截止月TTM收入，不以最近全年替代。'
+        try:
+            comparison = json.loads(evidence)
+            if (comparison['period_end'] != prior_end.isoformat()
+                    or comparison['currency'] != prepared.currency
+                    or comparison['money_unit'] != prepared.money_unit):
+                raise ValueError('unaligned comparison')
+            prior = float(comparison['revenues'])
+        except (KeyError, TypeError, ValueError, OverflowError):
+            return None, basis + '；比较收入的期间或单位证据无效。'
+    elif inputs.quarters_since_10k:
+        basis = 'TTM同比：当前十二个月 / 上年同截止月十二个月（FQ-4至FQ-7）'
+        quarters = inputs.quarterly_financials or []
+        if len(quarters) < 8 or any(q.revenues is None or not math.isfinite(q.revenues) for q in quarters[4:8]):
+            return None, basis + '；比较窗口不完整，不以最近全年替代。'
+        try:
+            prior = math.fsum(q.revenues for q in quarters[4:8])
+        except OverflowError:
+            return None, basis + '；比较收入溢出。'
+    else:
+        annual = inputs.raw_financials
+        basis = '全年同比：相邻完整财年收入'
+        if len(annual) < 2 or annual[0].fiscal_year != annual[1].fiscal_year+1:
+            return None, basis + '；缺相邻财年。'
+        prior = annual[1].revenues
+    if prior is None or not math.isfinite(prior) or prior <= 0 or not math.isfinite(current.revenues):
+        return None, basis + '；比较收入缺失、非有限或非正，百分比增长无定义。'
+    return current.revenues / prior - 1, basis + f'；收入 {current.revenues:g} / {prior:g} - 1，百万元报表币种；不是未来预测。'
 
 
 def _unadjusted_ic(f: RawFinancials) -> float | None:
@@ -38,7 +82,6 @@ def compute_company_metrics(
     cost_of_capital: CostOfCapital | None = None,
     adjusted: AdjustedFinancials | None = None,
     tax_rate: float = 0.21,
-    years_since_10k: float = 1.0,
 ) -> CompanyMetrics:
     """Compute the Damodaran-style company metrics.
 
@@ -55,11 +98,8 @@ def compute_company_metrics(
 
     # 1. Revenue growth (most recent)
     revenue_growth = None
-    if fin1 and fin1.revenues and fin1.revenues != 0:
-        if years_since_10k > 0:
-            revenue_growth = (fin0.revenues / fin1.revenues) ** (1 / years_since_10k) - 1
-        else:
-            revenue_growth = (fin0.revenues / fin1.revenues) - 1
+    if fin1 and fin0.fiscal_year == fin1.fiscal_year+1 and fin1.revenues is not None and fin1.revenues > 0:
+        revenue_growth = fin0.revenues / fin1.revenues - 1
 
     # 2. Pre-tax operating margin.
     # Use adjusted EBIT when available — matches Damodaran's "post-R&D-

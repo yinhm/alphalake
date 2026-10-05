@@ -98,6 +98,34 @@ def test_adjustments_require_only_their_selected_inputs(monkeypatch):
     assert any('期间身份无效' in b for b in db.native_compatibility(None,'TEST')['blockers'])
 
 
+def test_prepared_ttm_growth_rebuilds_comparison_from_cumulative_facts_without_quarters(monkeypatch):
+    import json
+    record = sample(monkeypatch, quarter='2026-06-30')
+    record['data_source'] = dict(contract='alphalake-sqlite-v11', information_as_of='2026-09-25T00:00:00Z', source_database_sha256='fixture')
+    record['financials_ttm'] = record['financials_annual'][0] | dict(revenues=1200, ebit=170)
+    record['ttm_evidence'] = {'revenues':[dict(period=p, value=v) for p,v in
+        [('2025-12-31','1000000000'),('2026-06-30','600000000'),('2025-06-30','400000000')]]}
+    record['standard_financials'] = [dict(field='revenue_cumulative', period=p, value=v, unit='USD',
+        period_type=basis, statement_scope='provider_default') for p,v,basis in
+        [('2025-12-31','1000000000','FY'),('2026-06-30','600000000','H1'),
+         ('2025-06-30','400000000','H1'),('2024-12-31','900000000','FY'),('2024-06-30','350000000','H1')]]
+    inputs, _ = _db_record_to_company_input(record,.04,None)
+    assert not inputs.quarterly_financials
+    evidence = json.loads(inputs.prepared_ttm.provenance['prior_ttm_revenue'])
+    assert evidence['revenues'] == '950' and evidence['period_end'] == '2025-06-30'
+    before = run_full_valuation(inputs)
+    assert inputs.company_metrics.revenue_growth == pytest.approx(1200/950-1)
+    for change in [dict(unit='CNY'), dict(period_type='instant'), dict(statement_scope='parent_statement'),
+                   dict(value='NaN'), dict(period='2024-03-31')]:
+        original = record['standard_financials'][-1]
+        record['standard_financials'][-1] = original | change
+        invalid, _ = _db_record_to_company_input(record,.04,None)
+        after = run_full_valuation(invalid)
+        assert invalid.company_metrics.revenue_growth is None
+        assert after.dcf == before.dcf  # 可选同比诊断不阻断或改变估值。
+        record['standard_financials'][-1] = original
+
+
 def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypatch):
     import sqlite3
     from contextlib import contextmanager

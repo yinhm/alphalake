@@ -411,6 +411,7 @@ export interface FinalValuation {
 
 export interface CompanyMetrics {
   revenue_growth: number | null;
+  revenue_growth_basis: string | null;
   pretax_operating_margin: number | null;
   sales_to_capital: number | null;
   marginal_sales_to_capital: number | null;

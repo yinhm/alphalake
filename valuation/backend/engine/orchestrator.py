@@ -25,7 +25,7 @@ from .module_4_dcf import compute_dcf
 from .module_5_multiples import compute_multiples
 from .module_6_options import compute_options_and_final_value
 from .ltm_calculator import compute_ltm_financials
-from .company_metrics import compute_company_metrics
+from .company_metrics import compute_company_metrics, compute_revenue_growth
 
 logger = logging.getLogger(__name__)
 
@@ -255,6 +255,7 @@ def run_full_valuation(
         adjusted=report.adjusted,
         tax_rate=tax_rate_for_roic,
     )
+    computed_cm.revenue_growth, computed_cm.revenue_growth_basis = compute_revenue_growth(inputs, ltm)
     # Share the aligned opening-capital/tax calculation; LTM is not a full fiscal year.
     computed_cm.roic = report.cashflow.roic
     if inputs.quarters_since_10k or inputs.prepared_ttm:
@@ -268,7 +269,7 @@ def run_full_valuation(
     # overwrite.
     existing = inputs.company_metrics
     _DERIVED_CM_FIELDS = (
-        "revenue_growth", "pretax_operating_margin", "sales_to_capital",
+        "revenue_growth", "revenue_growth_basis", "pretax_operating_margin", "sales_to_capital",
         "marginal_sales_to_capital", "roic", "cost_of_capital",
     )
     if existing is None:

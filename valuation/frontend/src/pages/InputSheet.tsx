@@ -180,10 +180,8 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
   // LTM values are now computed on the backend (engine/ltm_calculator.py::compute_ltm_financials).
   // Frontend just reads data.ltm_financials, falling back to FY0 if backend didn't provide one.
   function ltmVal(key: keyof RawFinancials): number | null {
-    const fromBackend = data.ltm_financials ? (data.ltm_financials[key] as number | null | undefined) : undefined;
-    if (inp.prepared_ttm) return fromBackend ?? null;
-    if (fromBackend !== undefined && fromBackend !== null) return fromBackend;
-    return fin0 ? (fin0[key] as number | null) ?? null : null;
+    const base = data.ltm_financials ?? fin0;
+    return base ? (base[key] as number | null) ?? null : null;
   }
 
   const quartersSince = elapsedQuarters(inp) ?? 0;
@@ -258,7 +256,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
               // --- Income Statement ---
               { label: 'INCOME STATEMENT', type: 'section' },
               { label: 'Revenues', key: 'revenues', type: 'data' },
-              { label: '  Revenue Growth (%)', termId: 'revenue-growth', type: 'calc', calc: (f, prev) => prev && prev.revenues ? (f.revenues - prev.revenues) / Math.abs(prev.revenues) : null },
+              { label: '  Revenue Growth (%)', termId: 'revenue-growth', type: 'calc', calc: (f, prev) => prev && f.fiscal_year === prev.fiscal_year + 1 && prev.revenues != null && prev.revenues > 0 ? f.revenues / prev.revenues - 1 : null },
               { label: 'EBIT (Operating Income)', termId: 'ebit', key: 'ebit', type: 'data' },
               { label: '  Operating Margin (%)', termId: 'operating-margin', type: 'calc', calc: (f) => f.revenues ? f.ebit / f.revenues : null },
               { label: 'EBITDA', key: 'ebitda', type: 'data' },
@@ -387,10 +385,10 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
                 const isDec = row.label.includes('Sales / Capital');
                 const isDollar = row.label.includes('Invested Capital');
 
-                // LTM calc — needs prior-year context for ROIC / fundamental
-                // growth / rev growth. Use fin0 (most recent annual) as the
-                // prior-period anchor for LTM-column calcs.
-                const ltmCalc = row.calc(ltmFake, fin0);
+                // 最新全年不是TTM的上年同窗；年末只用真正的上年全年。
+                const isRevenueGrowth = row.label.includes('Revenue Growth');
+                const ltmCalc = isRevenueGrowth ? cm?.revenue_growth ?? null
+                  : row.calc(ltmFake, quartersSince === 0 ? annualFins[1] : undefined);
 
                 // Formula explanation for tooltip. Shown on every cell.
                 const calcFormula =
@@ -421,7 +419,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
                         : pct(ltmCalc)
                       }
                       type="calc"
-                      tooltip={`${calcFormula} (LTM)`}
+                      tooltip={isRevenueGrowth ? cm?.revenue_growth_basis ?? '同比比较窗口未提供。' : `${calcFormula} (LTM)`}
                     />
                     {annualFins.map((f, i) => {
                       const prev = annualFins[i + 1];
@@ -848,7 +846,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
               <tr key={`cmp-${label}`}>
                 <SpreadsheetCell value={label} type="label" tooltip={`Row: ${label}. Left column = this firm (computed from CIQ data + LTM base year). Regional and Global columns = Damodaran industry reference values.`} />
                 <SpreadsheetCell value={fmt === 'pct' ? pct(company) : dec(company)} type="calc"
-                  tooltip={`${label} — firm-level, computed from M3/M4 on the LTM-rotated base year. See the Ratios block above (Section 2) for the exact per-year formula.`} />
+                  tooltip={label === 'Revenue Growth' ? cm?.revenue_growth_basis ?? '同比比较窗口未提供。' : `${label} — firm-level, computed from M3/M4 on the LTM-rotated base year. See the Ratios block above (Section 2) for the exact per-year formula.`} />
                 <SpreadsheetCell value={fmt === 'pct' ? pct(regional) : dec(regional)} type="reference"
                   tooltip={`Source: ${srcRegional} | Industry: ${ind.industry_name} (${ind.region})`} />
                 <SpreadsheetCell value={fmt === 'pct' ? pct(global_) : dec(global_)} type="reference"

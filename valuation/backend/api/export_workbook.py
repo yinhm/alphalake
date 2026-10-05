@@ -105,7 +105,7 @@ def _write_input_sheet(wb: openpyxl.Workbook, inp: CompanyValuationInput, report
         ws.column_dimensions[col_letter].width = 18
 
     fins = inp.raw_financials
-    fin0 = fins[0] if fins else None
+    fin0 = report.ltm_financials
     adj = inp.adjustment_inputs
     macro = inp.macro_inputs
     ind = inp.industry_data
@@ -152,16 +152,9 @@ def _write_input_sheet(wb: openpyxl.Workbook, inp: CompanyValuationInput, report
         (19, "Book Value of Equity", "bv_equity"),
         (20, "Book Value of Debt", "bv_debt"),
     ]
-    q_fins = inp.quarterly_financials or []
     for r, label, key in fin_fields:
         _cell(ws, r, 1, label, font=BOLD_FONT)
-        # LTM column (col B) — formula if quarterly data, else copy from FY0
-        if len(q_fins) >= 4:
-            ltm_val = sum(getattr(q, key, 0) or 0 for q in q_fins[:4])
-            _cell(ws, r, 2, ltm_val if ltm_val else None, fill=GRAY_FILL, fmt=NUM_FMT)
-        else:
-            # LTM = FY0 (col C) via formula
-            _cell(ws, r, 2, f"=C{r}", fill=GRAY_FILL, fmt=NUM_FMT)
+        _cell(ws, r, 2, getattr(report.ltm_financials, key, None), fill=GRAY_FILL, fmt=NUM_FMT)
         # Annual columns (col C onwards) — raw input values
         for i, f in enumerate(annual):
             _cell(ws, r, 3 + i, getattr(f, key, None), fill=BLUE_FILL, fmt=NUM_FMT)
@@ -264,7 +257,7 @@ def _write_answer_keys(wb: openpyxl.Workbook, inp: CompanyValuationInput, report
     ws.column_dimensions['A'].width = 30
     ws.column_dimensions['B'].width = 20
 
-    fin0 = inp.raw_financials[0] if inp.raw_financials else None
+    fin0 = report.ltm_financials
     va = inp.valuation_assumptions
     ind = inp.industry_data
     macro = inp.macro_inputs
@@ -328,8 +321,8 @@ def _write_trailing_twelve_month(wb: openpyxl.Workbook, inp: CompanyValuationInp
     ws.column_dimensions['C'].width = 20
     ws.column_dimensions['D'].width = 20
 
-    fin0 = inp.raw_financials[0] if inp.raw_financials else None
-    fin1 = inp.raw_financials[1] if len(inp.raw_financials) > 1 else None
+    fin0 = report.ltm_financials
+    fin1 = inp.raw_financials[0] if inp.raw_financials else None
     adj = inp.adjustment_inputs
 
     row = 1
@@ -337,7 +330,7 @@ def _write_trailing_twelve_month(wb: openpyxl.Workbook, inp: CompanyValuationInp
     # Income Statement Items
     _section_title(ws, row, "Income Statement Items", 4)
     row += 1
-    _header_row(ws, row, ["Item", "LTM / Most Recent", "Prior Annual", "TTM Computed"])
+    _header_row(ws, row, ["Item", "LTM / Most Recent", "Latest Full Fiscal Year", "TTM Computed"])
     row += 1
 
     is_fields = [
@@ -351,7 +344,7 @@ def _write_trailing_twelve_month(wb: openpyxl.Workbook, inp: CompanyValuationInp
         _cell(ws, row, 1, label)
         _cell(ws, row, 2, ltm, fill=BLUE_FILL, fmt=NUM_FMT)
         _cell(ws, row, 3, annual, fill=BLUE_FILL, fmt=NUM_FMT)
-        _cell(ws, row, 4, ltm, fill=GRAY_FILL, fmt=NUM_FMT)  # TTM = LTM for now
+        _cell(ws, row, 4, ltm, fill=GRAY_FILL, fmt=NUM_FMT)
         row += 1
     row += 1
 
@@ -399,7 +392,7 @@ def _write_option_value(wb: openpyxl.Workbook, inp: CompanyValuationInput, repor
     import math
 
     opt = inp.option_inputs
-    fin0 = inp.raw_financials[0] if inp.raw_financials else None
+    fin0 = report.ltm_financials
     macro = inp.macro_inputs
     final_ = report.final
 
@@ -485,7 +478,7 @@ def _write_valuation_picture(wb: openpyxl.Workbook, inp: CompanyValuationInput, 
     ws.column_dimensions['G'].width = 25
     ws.column_dimensions['H'].width = 18
 
-    fin0 = inp.raw_financials[0] if inp.raw_financials else None
+    fin0 = report.ltm_financials
     va = inp.valuation_assumptions
     dcf = report.dcf
     final_ = report.final
@@ -575,7 +568,7 @@ def _write_stories_to_numbers(wb: openpyxl.Workbook, inp: CompanyValuationInput,
 
     va = inp.valuation_assumptions
     ind = inp.industry_data
-    fin0 = inp.raw_financials[0] if inp.raw_financials else None
+    fin0 = report.ltm_financials
     coc = report.cost_of_capital
 
     row = 1
@@ -612,20 +605,18 @@ def _write_diagnostics(wb: openpyxl.Workbook, inp: CompanyValuationInput, report
     ws.column_dimensions['A'].width = 35
     ws.column_dimensions['B'].width = 18
 
-    fin = inp.raw_financials
     va = inp.valuation_assumptions
     ind = inp.industry_data
     macro = inp.macro_inputs
     dcf = report.dcf
-    fin0 = fin[0] if fin else None
-    fin1 = fin[1] if len(fin) > 1 else None
+    fin0 = report.ltm_financials
 
     row = 1
 
     # Step 1: Revenue Growth
     _section_title(ws, row, "Step 1: Revenue Growth", 2)
     row += 1
-    recent_growth = ((fin0.revenues - fin1.revenues) / abs(fin1.revenues)) if fin0 and fin1 and fin1.revenues else None
+    recent_growth = inp.company_metrics.revenue_growth if inp.company_metrics else None
     _cell(ws, row, 1, "Industry avg revenue growth", font=BOLD_FONT)
     _cell(ws, row, 2, ind.revenue_growth, fill=ORANGE_FILL, fmt=PCT_FMT)
     row += 1
@@ -659,7 +650,7 @@ def _write_diagnostics(wb: openpyxl.Workbook, inp: CompanyValuationInput, report
     # Step 3: Operating Margins
     _section_title(ws, row, "Step 3: Operating Margins", 2)
     row += 1
-    current_margin = fin0.ebit / fin0.revenues if fin0 and fin0.revenues else None
+    current_margin = report.adjusted.adjusted_ebit / fin0.revenues if fin0 and fin0.revenues and report.adjusted else None
     _cell(ws, row, 1, "Current operating margin", font=BOLD_FONT)
     _cell(ws, row, 2, current_margin, fill=GRAY_FILL, fmt=PCT_FMT)
     row += 1
@@ -787,7 +778,7 @@ def _write_synthetic_rating(wb: openpyxl.Workbook, inp: CompanyValuationInput, r
     ws.column_dimensions['C'].width = 18
     ws.column_dimensions['D'].width = 18
 
-    fin = inp.raw_financials[0] if inp.raw_financials else None
+    fin = report.ltm_financials
     ebit = report.adjusted.adjusted_ebit if report.adjusted else (fin.ebit if fin else 0)
     interest = fin.interest_expense if fin and fin.interest_expense else 1
     coverage = ebit / interest if interest > 0 else 999

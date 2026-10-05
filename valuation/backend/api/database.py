@@ -381,6 +381,30 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
                 cumulative_windows=json.dumps(dict(current=current, prior=prior, quarters=window['quarters_since_10k'])),
                 quarterly_display=json.dumps([q.model_dump(mode='json') for q in quarterly_financials]),
                 components=json.dumps(record['ttm_evidence'], ensure_ascii=False, sort_keys=True)))
+        # 比较TTM仍用标准累计三项；无需八个完整季度，不增加估值准入条件。
+        prior_end = end.replace(year=end.year-1)
+        comparison_periods = [f'{prior_end.year-1}-12-31', prior_end.isoformat(),
+                              prior_end.replace(year=prior_end.year-1).isoformat()]
+        terms = [[f for f in record.get('standard_financials', [])
+                  if f['field'] == 'revenue_cumulative' and f['period'] == period]
+                 for period in comparison_periods]
+        if all(len(matches) == 1 for matches in terms):
+            facts = [matches[0] for matches in terms]
+            expected_types = ['FY', {3:'Q1', 6:'H1', 9:'9M', 12:'FY'}[end.month]]
+            if (all(f['unit'] == co['filing_currency'] for f in facts)
+                    and [f['period_type'] for f in facts] == [expected_types[0], expected_types[1], expected_types[1]]
+                    and len({f['statement_scope'] for f in facts}) == 1
+                    and facts[0]['statement_scope'] == next((f['statement_scope'] for f in record.get('standard_financials', [])
+                        if f['field'] == 'revenue_cumulative' and f['period'] == end.isoformat()), None)):
+                amounts = [Decimal(f['value']) for f in facts]
+                if all(v.is_finite() for v in amounts):
+                    prepared_ttm.provenance['prior_ttm_revenue'] = json.dumps(dict(
+                        period_end=prior_end.isoformat(), currency=co['filing_currency'],
+                        money_unit='million_reporting_currency',
+                        revenues=str((amounts[0]+amounts[1]-amounts[2])/Decimal(1000000)),
+                        formula='FY + current_YTD - prior_same_YTD',
+                        components=[f | {'coefficient': coefficient} for f, coefficient in zip(facts, (1,1,-1))]),
+                        ensure_ascii=False, sort_keys=True)
 
     # Assemble
     inputs = CompanyValuationInput(

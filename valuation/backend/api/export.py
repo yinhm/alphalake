@@ -50,8 +50,6 @@ def _build_input_sheet(session) -> Workbook:
     ws.title = "Input Sheet"
 
     inp = session.inputs
-    fin0 = inp.raw_financials[0] if inp.raw_financials else None
-    fin1 = inp.raw_financials[1] if len(inp.raw_financials) > 1 else None
     macro = inp.macro_inputs
     ind = inp.industry_data
     va = inp.valuation_assumptions
@@ -97,8 +95,8 @@ def _build_input_sheet(session) -> Workbook:
     for label, attr in fin_rows:
         _write_cell(ws, r, 1, label, "label")
         col = 2
-        # LTM column placeholder
-        _write_cell(ws, r, col, getattr(fin0, attr, None) if fin0 else None, "calc")
+        # 与网页及估值引擎使用同一基期，余额不作四季加总。
+        _write_cell(ws, r, col, getattr(session.report.ltm_financials, attr, None), "calc")
         col += 1
         for fin in inp.raw_financials:
             _write_cell(ws, r, col, getattr(fin, attr, None), "financial")

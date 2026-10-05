@@ -665,7 +665,8 @@ class FinalValuation(BaseModel):
 
 class CompanyMetrics(BaseModel):
     """7 company metrics for comparison against industry averages."""
-    revenue_growth: float | None = Field(default=None, description="Revenue growth (most recent year)")
+    revenue_growth: float | None = Field(default=None, description="Aligned annual or TTM year-over-year revenue growth; not forecast growth")
+    revenue_growth_basis: str | None = Field(default=None, description="Comparison windows, formula and missing-data reason")
     pretax_operating_margin: float | None = Field(default=None, description="EBIT / Revenues")
     sales_to_capital: float | None = Field(default=None, description="Revenues / Invested Capital")
     marginal_sales_to_capital: float | None = Field(default=None, description="ΔRevenues / ΔInvested Capital")

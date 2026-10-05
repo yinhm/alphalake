@@ -3,20 +3,16 @@ import type { ValuationResponse } from '../types/valuation';
 import SpreadsheetCell from '../components/SpreadsheetCell';
 import SpreadsheetGrid from '../components/SpreadsheetGrid';
 import ColorLegend from '../components/ColorLegend';
-import { baseYear, priorYear, baseYearMargin } from '../lib/baseYear';
+import { baseYear, baseYearMargin } from '../lib/baseYear';
 
 export default function Diagnostics({ data }: { data: ValuationResponse; sessionId?: string | null }) {
   const by = baseYear(data);
-  const py = priorYear(data);
   const industry = data.inputs.industry_data;
   const macro = data.inputs.macro_inputs;
   const dcf = data.dcf;
 
   // ---------- Step 1 helpers ----------
-  const recentRevenueGrowth =
-    by && py && by.revenues && py.revenues
-      ? (by.revenues - py.revenues) / Math.abs(py.revenues)
-      : null;
+  const recentRevenueGrowth = data.inputs.company_metrics?.revenue_growth ?? null;
 
   // ---------- Step 2 helpers ----------
   const baseRevenue = by?.revenues ?? null;
@@ -70,7 +66,7 @@ export default function Diagnostics({ data }: { data: ValuationResponse; session
           </tr>
           <tr>
             <SpreadsheetCell value="Most recent revenue growth" type="label" />
-            <SpreadsheetCell value={recentRevenueGrowth} type="calc" tooltip="= (FY-0 Revenue − FY-1 Revenue) / FY-1 Revenue. Source: IQ_TOTAL_REV × IQ_FY-0 and IQ_FY-1." />
+            <SpreadsheetCell value={recentRevenueGrowth} type="calc" tooltip={data.inputs.company_metrics?.revenue_growth_basis ?? '同比比较窗口未提供。'} />
           </tr>
           <tr>
             <SpreadsheetCell value="Your forecast — Year 1 growth" type="label" />
