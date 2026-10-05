@@ -91,7 +91,7 @@ export default function Diagnostics({ data }: { data: ValuationResponse; session
         <tbody>
           <tr>
             <SpreadsheetCell value="Base year revenues" type="label" width="280px" />
-            <SpreadsheetCell value={baseRevenue} type="financial" tooltip="LTM revenue. Source: rotated from IQ_TOTAL_REV × IQ_FY-0 with quarterly deltas (Module 0 / LTM calculator)." />
+            <SpreadsheetCell value={baseRevenue} type="financial" tooltip="后端 ltm_financials.revenues：已核验累计三项或完整季度更新得到的最近十二个月收入；没有更新期间时使用最新完整年度。" />
           </tr>
           {dcf && (
             <>

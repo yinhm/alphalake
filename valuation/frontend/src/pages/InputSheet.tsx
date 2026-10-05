@@ -4,7 +4,7 @@ import SpreadsheetCell from '../components/SpreadsheetCell';
 import SpreadsheetGrid from '../components/SpreadsheetGrid';
 import ColorLegend from '../components/ColorLegend';
 import CurrencyInfoPanel from '../components/CurrencyInfoPanel';
-import { elapsedQuarters, quarterlyForDisplay } from '../lib/baseYear';
+import { elapsedQuarters } from '../lib/baseYear';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -167,8 +167,6 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
   const parameters = data.dcf?.forecast_parameters;
   const opt = inp.option_inputs;
   const coc = data.cost_of_capital;
-
-  const qFins = quarterlyForDisplay(inp);
 
   // Balance sheet items are point-in-time, not flow items — use most recent value directly
   const BALANCE_SHEET_KEYS = new Set<keyof RawFinancials>([
@@ -449,7 +447,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
                   <SpreadsheetCell value={row.label} type="label" termId={row.termId} width="160px" wrap />
                   <SpreadsheetCell value={num(ltmVal(key))} type={isBalanceSheet ? 'financial' : 'calc'}
                     tooltip={isBalanceSheet
-                      ? (qFins[0]?.[key] != null ? `From 10-Q (FQ-0): ${ciqTooltip(key, ticker, 0).replace('IQ_FY-0', 'IQ_FQ-0')}` : `From 10-K (FY-0): ${ciqTooltip(key, ticker, 0)}`)
+                      ? `后端 ltm_financials.${key}：余额与股数使用基期存量，行情使用独立价格时点；不按季度加总，缺项不借旧年度补值。`
                       : inp.prepared_ttm?.provenance.formula ?? ciqLtmTooltip(key, ticker, quartersSince)} />
                   {annualFins.map((f, i) => (
                     <SpreadsheetCell key={`fy-${key}-${i}`} value={num(f[key] as number | null)} type="financial"
@@ -593,7 +591,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
             <SpreadsheetCell
               value={pct(macro.tax_rate_effective)}
               type="calc"
-              tooltip={`= |total_tax_expense| / |earnings_before_tax| from FY-0 raw financials. This is the rate the engine USES for base-year NOPAT, ROIC, and EV/Sales. Independent of the CIQ row above — if that one is blank, this one is your source of truth.`}
+              tooltip="后端 macro_inputs.tax_rate_effective：数据适配或显式输入提供的有效税率。基期财务采用后端LTM，未来税率另由预测条件决定；不能将此值一律解释为FY-0比率。"
             />
           </tr>
           <tr>
@@ -612,7 +610,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
       {/* ----------------------------------------------------------------- */}
       {(() => {
         // Compute historical statistics per metric from raw_financials[]
-        // Convention: fins[0] = most recent (LTM-equivalent base year), fins[1] = last year, etc.
+        // Annual history stays separate from the backend LTM base year.
         const stats = data.industry_stats ?? null;
 
         // Revenue YoY (latest) and CAGRs
