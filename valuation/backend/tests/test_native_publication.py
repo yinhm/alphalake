@@ -248,11 +248,13 @@ def test_freshness_keeps_quote_and_reference_dates_separate(tmp_path, reference_
         delivery.freshness_report(path,'2026-09-30T10:00:00Z')
 
 
-@pytest.mark.parametrize('filing_exit', [0, 1, 124])
+@pytest.mark.parametrize('filing_exit', [None, 0, 1, 124])
 def test_online_sync_uses_reviewed_symbols_and_optional_filings(tmp_path, monkeypatch, filing_exit):
     from types import SimpleNamespace
-    target = tmp_path/'published.sqlite'; target.write_bytes(b'reviewed')
-    monkeypatch.setattr(delivery, 'snapshot', lambda _: {'tickers':['SHSE:600519','SZSE:300866']})
+    target = tmp_path/'published.sqlite'
+    with sqlite3.connect(target) as db:
+        db.execute('CREATE TABLE companies(ticker TEXT)')
+        db.executemany('INSERT INTO companies VALUES(?)',[('SHSE:600519',),('SZSE:300866',)])
     calls = []
     def execute(command, log, timeout):
         calls.append(command)
@@ -263,14 +265,83 @@ def test_online_sync_uses_reviewed_symbols_and_optional_filings(tmp_path, monkey
                 error='', package_failures=0, master_failures=0, cache_fallbacks=0))
         if log.stem == 'sync-filings':
             return filing_exit
+        if log.stem == 'sync-quotes':
+            delivery.save(Path(command[command.index('--report')+1]), dict(
+                contract='alphalake-quote-sync-v1', date='2026-09-29', symbols=['sz300866','sh600519'],run_status='completed',
+                result=dict(run_id=1,companies=2,observations_written=20,failures=[],complete=True)))
         return 1 if log.stem == 'materialize' else 0
     monkeypatch.setattr(delivery, 'execute', execute)
     args = SimpleNamespace(database=tmp_path/'alphalake.duckdb', alphalake=tmp_path/'alphalake',
         output=target, code=['600519','300866'], period='2026-06-30', risk_free_rate=.0425,
-        source_mode='online', sync_references=False, as_of='2026-09-30T05:00:00Z', latest=6, stage_timeout=10, filings_start='2026-09-01', filings_end='2026-09-27')
+        source_mode='online', sync_references=False, as_of='2026-09-30T05:00:00Z', quote_date='2026-09-29', latest=6, stage_timeout=10, filings_start='2026-09-01' if filing_exit is not None else None, filings_end='2026-09-27')
     assert delivery.run(args, tmp_path) == 1
-    assert [c[1] for c in calls] == ['sync-financial','sync-filings','sync-valuation-quotes','materialize-fundamentals']
-    assert json.loads((tmp_path/'run.json').read_text())['filing_metadata'] == dict(required_for_current_values=False, exit_code=filing_exit)
-    assert calls[1][3:] == ['--start','2026-09-01','--end','2026-09-27','--metadata-only','--codes-file',str(tmp_path/'codes.txt')]
-    assert calls[2][3:] == ['--symbols','sz300866,sh600519','--date', delivery.completed_market_date(datetime.fromisoformat(args.as_of)).isoformat()]
-    assert target.read_bytes() == b'reviewed'
+    assert [c[1] for c in calls] == ['sync-financial', *(['sync-filings'] if filing_exit is not None else []), 'sync-valuation-quotes','materialize-fundamentals']
+    record=json.loads((tmp_path/'run.json').read_text())
+    assert record['filing_metadata'] == dict(required_for_current_values=False, **({'exit_code':filing_exit} if filing_exit is not None else {'status':'not_requested'}))
+    if filing_exit is not None:
+        assert calls[1][3:] == ['--start','2026-09-01','--end','2026-09-27','--metadata-only','--codes-file',str(tmp_path/'codes.txt')]
+    assert calls[-2][3:] == ['--symbols','sz300866,sh600519','--date','2026-09-29','--report',str(tmp_path/'quote-source.json')]
+    assert record['quote_source']['status']=='completed'
+
+
+def test_partial_quote_receipt_keeps_failures_and_rejects_incomplete_or_all_failed(tmp_path):
+    symbols=['sz300866','sh600519'];path=tmp_path/'quotes.json'
+    result=dict(run_id=1,companies=2,observations_written=10,failures=['sh600519: timeout'],complete=True)
+    receipt=dict(contract='alphalake-quote-sync-v1',date='2026-09-30',symbols=symbols,run_status='partial',result=result)
+    delivery.save(path,receipt)
+    accepted=delivery.accept_quote_report(path,1,symbols,'2026-09-30')
+    assert accepted['status']=='partial' and accepted['result']['failures']==result['failures']
+    for change in ({'complete':False},{'companies':1},{'observations_written':-1},
+                   {'failures':['sz000001: timeout']},{'failures':result['failures']*2},
+                   {'failures':['sz300866: timeout','sh600519: timeout']}):
+        delivery.save(path,receipt|{'result':result|change})
+        with pytest.raises(ValueError):delivery.accept_quote_report(path,1,symbols,'2026-09-30')
+    delivery.save(path,receipt)
+    for exit_code, expected_date in [(0,'2026-09-30'),(124,'2026-09-30'),(1,'2026-09-29')]:
+        with pytest.raises(ValueError):delivery.accept_quote_report(path,exit_code,symbols,expected_date)
+    delivery.save(path,receipt|{'run_status':'running'})
+    with pytest.raises(ValueError):delivery.accept_quote_report(path,1,symbols,'2026-09-30')
+
+
+def test_native_response_archive_preserves_bytes_and_retains_original_on_tampering(tmp_path, monkeypatch):
+    directory=tmp_path/'candidate-check';directory.mkdir()
+    delivery.save(directory/'summary.json',{'companies':1})
+    response=directory/'SZSE_300866.json';response.write_bytes(b'{"value":42}\n')
+    expected=delivery.digest(response)
+    record=delivery.archive_check(directory)
+    assert record['files'][response.name]==expected and not response.exists()
+    assert (directory/'summary.json').exists()
+    assert json.loads((tmp_path/'candidate-check.archive.json').read_text())==record
+    directory=tmp_path/'previous-check';directory.mkdir()
+    delivery.save(directory/'summary.json',{'companies':1})
+    response=directory/'SZSE_300866.json';response.write_bytes(b'{"value":42}\n')
+    original_add=delivery.tarfile.TarFile.add
+    def tamper(stream,path,**kwargs):
+        if Path(path)==response: response.write_bytes(b'{"value":43}\n')
+        return original_add(stream,path,**kwargs)
+    monkeypatch.setattr(delivery.tarfile.TarFile,'add',tamper)
+    with pytest.raises(ValueError,match='archive differs'):
+        delivery.archive_check(directory)
+    assert response.exists() and not (tmp_path/'previous-check.archive.json').exists()
+
+
+def test_published_scope_uses_current_snapshot_instead_of_stale_sample_file(tmp_path, monkeypatch):
+    workspace=tmp_path;monkeypatch.setenv('ALPHALAKE_WORKSPACE',str(workspace))
+    database=workspace/'alphalake.duckdb';database.write_bytes(b'source')
+    binary=workspace/'alphalake';binary.write_bytes(b'binary')
+    target=workspace/'valuation.sqlite'
+    with sqlite3.connect(target) as db:
+        db.executescript('CREATE TABLE metadata(key TEXT,value TEXT);CREATE TABLE companies(ticker TEXT);')
+        db.execute('INSERT INTO metadata VALUES(?,?)',('contract',delivery.CONTRACT))
+        db.executemany('INSERT INTO companies VALUES(?)',[(t,) for t in ['SZSE:300866','SHSE:600519','SHSE:600000']])
+    state=workspace/'derived/system-delivery';state.mkdir(parents=True)
+    (state/'published-codes.txt').write_text('300866\n')
+    monkeypatch.setattr(delivery.sys,'argv',['publish','--database',str(database),'--output',str(target),
+        '--alphalake',str(binary),'--period','2026-06-30','--source-mode','local','--published-scope','--web-url','http://localhost'])
+    def run(args,root):
+        assert args.code==['600000','600519','300866']  # 金融／缺项仍保留在原分母。
+        return 0
+    monkeypatch.setattr(delivery,'run',run)
+    assert delivery.main()==0
+    with sqlite3.connect(target) as db: db.execute("UPDATE companies SET ticker='BSE:920001' WHERE ticker='SHSE:600000'")
+    with pytest.raises(SystemExit):delivery.main()

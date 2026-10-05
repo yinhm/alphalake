@@ -32,7 +32,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m pytest -q valuation/backend/tes
 
 以上默认命令执行日常回归。真实Go建库、PDF全量取证及跨语言验收仅在显式全局测试或CI运行：Go加`-tags=full`，Python加`--full`；涉及这些链路的修改须补相应全局回归。已结束研究的冻结结果按原提交复验，不再跟随当前运行时反复重放。范围及删除记录见[测试约定](docs/guides/testing.md)。
 
-本地只读状态：`./alphalake status workspace/alphalake.duckdb`。命令参数以当前程序帮助为准；日常发布使用上表入口，不照抄历史验收中的旧路径和版本。
+本地只读状态：`./alphalake status workspace/alphalake.duckdb`。手工刷新统一使用`tools.publish_native_valuation --published-scope`，在锁内冻结当前网页完整范围；在线模式另须明确最近已完成交易日`--quote-date`，具体命令见[发布手册](docs/guides/system-delivery.md)。命令参数以当前程序帮助为准，不照抄历史验收中的旧路径和版本。
 
 ## 来源与致谢
 

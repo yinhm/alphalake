@@ -48,7 +48,7 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 必要时读取`valuation.evidence.run_file`或候选对应运行文件中的`request`、`audit`和`report`，按`run_id`追溯。先读摘要，按问题展开证据，避免把整个财务快照或全部历史运行塞入上下文。文件缺失如实报告，不根据文档数字伪造运行。
 
-解释原生网页发布数据时，可读`workspace/derived/system-delivery/valuation.sqlite.delivery.json`所指运行中的`freshness.json`及`methodology`摘要：分别报告报价日、股本基期、财务缓存/上游核验状态与参考版本日期。固定旧截止的重放不代表今日最新；方法审阅不自动批准默认假设，发现数不等于数据缺项数。当前研发阶段保留手工刷新，不因估值请求安装定时任务。
+解释原生网页发布数据时，可读`workspace/derived/system-delivery/valuation.sqlite.delivery.json`所指运行中的`freshness.json`及`methodology`摘要：分别报告报价日、股本基期、财务缓存/上游核验状态与参考版本日期。发布范围以该收据及每轮冻结的`codes.txt`为准；`--published-scope`保留完整现行范围，不按成功筛选。报价来源partial与整批未完成分别报告，完整响应可从该轮`.tar.gz`及逐文件哈希清单追溯。发布范围以该收据及每轮冻结的`codes.txt`为准；`--published-scope`保留完整现行范围，不按成功筛选。报价来源partial与整批未完成分别报告，完整响应可从该轮`.tar.gz`及逐文件哈希清单追溯。固定旧截止的重放不代表今日最新；方法审阅不自动批准默认假设，发现数不等于数据缺项数。当前研发阶段保留手工刷新，不因估值请求安装定时任务。
 
 解释实际forecast参数时读取报告的`dcf.forecast_parameters`（值、来源、条件及是否被年度路径覆盖），保留`inputs.valuation_assumptions`作为原输入。空输入不等于未计算，显式0不等于缺项；不另用15%或年度未调整利润率补显示。终值组成直接读DCF输出；2.5倍、基期持平、行业参考带及预设均不自动成为合理公司预测。数据库新会话/无覆盖的准备入口现采用来源初值v1：合格同窗同比、持平调整后利润率及匹配US行业倍率；H=1还提前税率/WACC过渡。历史/行业代理不是公司预测，完整显式API不被重写；空值回退及保留融资见`docs/valuation/default-assumptions.md`。完整优先级与本地过渡契约见`docs/valuation/data-contract.md`；旧报告用原提交或显式重建，不混用新旧响应。
 

@@ -11,6 +11,7 @@ from pathlib import Path
 import signal
 import sqlite3
 import sys
+import tarfile
 import tempfile
 import time
 from urllib.request import Request, urlopen
@@ -253,6 +254,52 @@ def accept_financial_report(path, exit_code, codes):
     return report
 
 
+def accept_quote_report(path, exit_code, symbols, quote_date):
+    report = json.loads(path.read_text())
+    result = report['result']
+    failures = result['failures']
+    failed_symbols = [message.split(':', 1)[0] for message in failures]
+    if (report['contract'] != 'alphalake-quote-sync-v1' or report['date'] != quote_date
+        or report['symbols'] != symbols or result['companies'] != len(symbols)
+        or result['complete'] is not True or result['run_id'] <= 0 or result['observations_written'] < 0
+        or len(set(failed_symbols)) != len(failed_symbols) or set(failed_symbols)-set(symbols)
+        or len(failures) >= len(symbols) or report['run_status'] != ('partial' if failures else 'completed')
+        or exit_code != (1 if failures else 0)):
+        raise ValueError('incomplete or inconsistent quote source receipt')
+    return dict(report, status='partial' if failures else 'completed',
+                boundary='逐证券失败保留旧有效观测及缺项；完整候选仍须原生API验收，不称报价全部刷新。')
+
+
+def archive_check(directory):
+    """压缩逐证券完整响应；逐文件复核后才删除展开副本。"""
+    files = sorted(directory.glob('*.json'))
+    if not files or not (directory/'summary.json').is_file():
+        raise ValueError('native check summary/evidence missing')
+    expected = {p.name:digest(p) for p in files}
+    archive = directory.with_suffix('.tar.gz')
+    with tarfile.open(archive, 'x:gz') as stream:
+        for path in files:
+            stream.add(path, arcname=path.name, recursive=False)
+    actual = {}
+    with tarfile.open(archive, 'r|gz') as stream:
+        for member in stream:
+            if not member.isfile():
+                raise ValueError('non-file native check evidence')
+            h = hashlib.sha256()
+            with stream.extractfile(member) as body:
+                for block in iter(lambda:body.read(1<<20), b''):
+                    h.update(block)
+            actual[member.name] = h.hexdigest()
+    if actual != expected:
+        raise ValueError('native check archive differs from original evidence')
+    record = dict(path=str(archive), sha256=digest(archive), bytes=archive.stat().st_size, files=expected)
+    save(directory.with_suffix('.archive.json'), record)
+    for path in files:
+        if path.name != 'summary.json':
+            path.unlink()
+    return record
+
+
 def run(args, root):
     codes = sorted(set(args.code))
     ledger = dict(status='running', started_at=timestamp(), stages=[], database=str(args.database),
@@ -271,14 +318,18 @@ def run(args, root):
     def stage(name, command, allow_partial=False):
         entry = dict(name=name, command=command, started_at=timestamp(), log=str(root/(name+'.log')))
         ledger['stages'].append(entry); save(root/'run.json', ledger)
+        print(json.dumps(dict(stage=name, status='running', log=entry['log'])), flush=True)
         code = execute(command, Path(entry['log']), args.stage_timeout)
         entry.update(exit_code=code, finished_at=timestamp())
         save(root/'run.json', ledger)
+        print(json.dumps(dict(stage=name, status='completed' if code == 0 else 'partial_or_failed', exit_code=code)), flush=True)
         if code and not allow_partial:
             raise ValueError(name+' failed; see '+entry['log'])
         return code
 
     try:
+        (root/'codes.txt').write_text('\n'.join(codes)+'\n')
+        ledger['scope'] = dict(file=str(root/'codes.txt'), sha256=digest(root/'codes.txt'), companies=len(codes))
         ledger['recovery'] = recover(args.output, journal)
         if candidate.exists():
             ledger['discarded_candidate'] = dict(path=str(candidate), sha256=digest(candidate), reason='unpublished_candidate_rebuild')
@@ -290,26 +341,34 @@ def run(args, root):
             ledger['financial_source'] = accept_financial_report(report, code, codes)
             ledger['freshness'] = ('local_or_fallback_not_upstream_verified' if args.source_mode == 'offline' or ledger['financial_source']['cache_fallbacks'] else 'selected_financial_packages_checked_against_upstream_manifest')
             if args.source_mode == 'online':
-                (root/'codes.txt').write_text('\n'.join(codes)+'\n')
-                filing_code = stage('sync-filings', [str(args.alphalake), 'sync-filings', str(args.database),
-                    '--start', args.filings_start, '--end', args.filings_end, '--metadata-only', '--codes-file', str(root/'codes.txt')], allow_partial=True)
-                ledger['filing_metadata'] = dict(required_for_current_values=False, exit_code=filing_code)
+                if args.filings_start:
+                    filing_code = stage('sync-filings', [str(args.alphalake), 'sync-filings', str(args.database),
+                        '--start', args.filings_start, '--end', args.filings_end, '--metadata-only', '--codes-file', str(root/'codes.txt')], allow_partial=True)
+                    ledger['filing_metadata'] = dict(required_for_current_values=False, exit_code=filing_code)
+                else:
+                    ledger['filing_metadata'] = dict(required_for_current_values=False, status='not_requested')
                 # 沿用现有证券身份，不按代码前缀猜交易所。
                 if not args.output.exists():
                     raise ValueError('online quote sync needs an existing reviewed SH/SZ snapshot; bootstrap with local mode')
-                old = snapshot(args.output)
-                by_code = {t.split(':')[1]:t for t in old['tickers']}
+                with sqlite3.connect(args.output.resolve().as_uri()+'?mode=ro', uri=True) as connection:
+                    by_code = {t.split(':')[1]:t for t, in connection.execute('SELECT ticker FROM companies')}
                 if any(c not in by_code for c in codes):
                     raise ValueError('quote identities missing from published snapshot')
                 symbols = [('sh' if by_code[c].startswith('SHSE:') else 'sz')+c for c in codes]
-                ledger['quote_window_end'] = completed_market_date(datetime.fromisoformat(args.as_of or timestamp())).isoformat()
-                stage('sync-quotes', [str(args.alphalake), 'sync-valuation-quotes', str(args.database), '--symbols', ','.join(symbols), '--date', ledger['quote_window_end']])
+                ledger['quote_window_end'] = args.quote_date
+                quote_report = root/'quote-source.json'
+                quote_exit = stage('sync-quotes', [str(args.alphalake), 'sync-valuation-quotes', str(args.database),
+                    '--symbols', ','.join(symbols), '--date', args.quote_date, '--report', str(quote_report)], allow_partial=True)
+                ledger['quote_source'] = accept_quote_report(quote_report, quote_exit, symbols, args.quote_date)
             stage('materialize', [str(args.alphalake), 'materialize-fundamentals', str(args.database)])
         if args.sync_references:
             if args.source_mode == 'local':
                 raise ValueError('local mode does not synchronize references')
+            ledger['reference_source'] = dict(status='running', mode=args.source_mode, completed_datasets=[])
             for name, command in reference_commands(args.alphalake, args.database, args.source_mode == 'offline'):
                 stage(name, command)
+                ledger['reference_source']['completed_datasets'].append(name)
+            ledger['reference_source']['status'] = 'completed'
         asof = args.as_of or timestamp()
         ledger['information_as_of'] = asof
         identity = runtime_identity(workspace)
@@ -365,10 +424,13 @@ def run(args, root):
             validate_check(before, previous['tickers'])
         ledger['source_freshness'] = freshness_report(args.output if export_reused else candidate, asof,
             ledger.get('financial_source'), args.sync_references)
+        ledger['source_freshness']['quote_source'] = ledger.get('quote_source', {'status':'not_requested'})
+        ledger['source_freshness']['reference_source'] = ledger.get('reference_source', {'status':'not_requested'})
         save(root/'freshness.json', ledger['source_freshness'])
         save(root/'comparison.json', dict(changed_companies=compare_checks(before, checked),
             removed_tickers=sorted(set(previous['tickers'])-set(current['tickers'])) if previous else [],
             changed_tables=[k for k,v in current['tables'].items() if not previous or previous['tables'].get(k)!=v]))
+        ledger['evidence_archives'] = [archive_check(root/name) for name in ('candidate-check','previous-check') if (root/name).exists()]
         if runtime_identity(workspace) != identity:
             raise ValueError('runtime/reference inputs changed during validation')
         if digest(args.database) != request_identity['source_sha256']:
@@ -393,7 +455,7 @@ def run(args, root):
     finally:
         ledger.update(finished_at=timestamp(), elapsed_seconds=time.monotonic()-started)
         save(root/'run.json', ledger)
-    print(json.dumps(dict(status=ledger['status'], source_status=ledger.get('financial_source', {}).get('status', 'not_synchronized'), freshness=ledger.get('freshness', 'existing_local_standard_facts'), admission=ledger.get('admission'), error=ledger.get('error'), report=str(root/'run.json')), ensure_ascii=False), flush=True)
+    print(json.dumps(dict(status=ledger['status'], source_status=ledger.get('financial_source', {}).get('status', 'not_synchronized'), quote_status=ledger.get('quote_source', {}).get('status','not_requested'), reference_status=ledger.get('reference_source', {}).get('status','not_requested'), freshness=ledger.get('freshness', 'existing_local_standard_facts'), admission=ledger.get('admission'), error=ledger.get('error'), report=str(root/'run.json')), ensure_ascii=False), flush=True)
     return 0 if ledger['status'] in ('published', 'unchanged') else 1
 
 
@@ -403,9 +465,11 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--period', required=True)
     parser.add_argument('--as-of')
+    parser.add_argument('--quote-date', help='online必须明确最近已完成交易日；不猜休市日历')
     scope = parser.add_mutually_exclusive_group(required=True)
     scope.add_argument('--code', action='append')
     scope.add_argument('--codes-file', type=Path, help='每行一个六位证券代码；明确固定验收分母')
+    scope.add_argument('--published-scope', action='store_true', help='锁内读取现行发布SQLite的完整证券范围并冻结，不按估值成功筛选')
     parser.add_argument('--source-mode', choices=['online', 'offline', 'local'], required=True,
                         help='online刷新源；offline重放财务缓存；local仅发布既有标准事实')
     parser.add_argument('--filings-start')
@@ -425,14 +489,15 @@ def main():
         parser.error('use workspace/alphalake.duckdb and workspace/valuation.sqlite')
     if args.codes_file:
         args.code = args.codes_file.read_text().split()
-    if not args.code:
-        parser.error('empty company universe')
-    if any(len(c)!=6 or not c.isascii() or not c.isdigit() for c in args.code):
-        parser.error('six-digit codes required')
     if args.latest < 1 or args.stage_timeout < 1 or (args.risk_free_rate is not None and (not math.isfinite(args.risk_free_rate) or not 0 <= args.risk_free_rate < 1)):
         parser.error('positive limits and risk-free rate in [0,1) required')
-    if args.source_mode == 'online' and (not args.filings_start or date.fromisoformat(args.filings_start)>date.fromisoformat(args.filings_end)):
-        parser.error('online mode needs a valid filings date range')
+    if args.filings_start and (args.source_mode != 'online' or date.fromisoformat(args.filings_start)>date.fromisoformat(args.filings_end)):
+        parser.error('filings date range requires online mode and start <= end')
+    if args.source_mode == 'online':
+        if not args.quote_date or not 0 <= (completed_market_date(datetime.fromisoformat(args.as_of or timestamp()))-date.fromisoformat(args.quote_date)).days <= 14:
+            parser.error('online needs --quote-date within the completed 14-calendar-day window')
+    elif args.quote_date:
+        parser.error('--quote-date requires online mode')
     validate_dates(date.fromisoformat(args.period), datetime.fromisoformat(args.as_of or timestamp()))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     root = workspace/'derived/system-delivery'; root.mkdir(parents=True, exist_ok=True)
@@ -441,6 +506,20 @@ def main():
         for name in (root/(args.database.name+'.valuation.lock'), root/(args.output.name+'.lock')):
             lock = stack.enter_context(open(name, 'a'))
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        if args.published_scope:
+            if not args.output.is_file():
+                parser.error('--published-scope requires an existing published snapshot')
+            with sqlite3.connect(args.output.as_uri()+'?mode=ro', uri=True) as connection:
+                if dict(connection.execute('SELECT key,value FROM metadata')).get('contract') != CONTRACT:
+                    parser.error('current published SQLite contract required')
+                tickers = [t for t, in connection.execute('SELECT ticker FROM companies ORDER BY ticker')]
+            if any(not t.startswith(('SHSE:','SZSE:')) for t in tickers):
+                parser.error('published scope must contain SH/SZ securities only')
+            args.code = [t.split(':',1)[1] for t in tickers]
+        if not args.code or len(set(args.code)) != len(args.code):
+            parser.error('nonempty scope without duplicate codes required')
+        if any(len(c)!=6 or not c.isascii() or not c.isdigit() for c in args.code):
+            parser.error('six-digit codes required')
         root = Path(tempfile.mkdtemp(prefix='run-', dir=root))
         def cancel(*_):
             raise KeyboardInterrupt
