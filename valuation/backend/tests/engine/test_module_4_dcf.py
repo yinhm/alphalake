@@ -11,6 +11,18 @@ from engine.data_dictionary import (
 from engine.module_4_dcf import compute_dcf
 
 
+def test_terminal_override_initialization_preserves_normal_basis_and_tax_adjustment(cf_metrics, cost_of_capital, adjusted, raw, macro):
+    assumptions = ValuationAssumptions(target_operating_margin=-.05)
+    original = compute_dcf(cf_metrics, cost_of_capital, adjusted, raw, assumptions, macro)
+    normal = original.forecast_parameters['cost_of_capital_stable_override'].value
+    assert normal == pytest.approx(.09)
+    assert original.terminal_wacc > normal
+    assert original.terminal_wacc == pytest.approx(normal + original.terminal_tax_shield_adjustment)
+    assumptions.cost_of_capital_stable_override = normal
+    edited = compute_dcf(cf_metrics, cost_of_capital, adjusted, raw, assumptions, macro)
+    assert edited.model_dump(exclude={'forecast_parameters'}) == original.model_dump(exclude={'forecast_parameters'})
+
+
 @pytest.fixture
 def macro():
     return MacroInputs(

@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from api.database import _db_record_to_company_input
+from api.database import _db_record_to_company_input, _initialize_native_assumptions
 from data_sources import us_cn_hk_db as db
 from engine.data_dictionary import IndustryData, MacroInputs
 from engine.ltm_calculator import compute_ltm_financials
@@ -45,6 +45,48 @@ def test_one_annual_year_can_value_without_optional_history(monkeypatch):
     record['financials_annual'].pop(0)
     with pytest.raises(ValueError, match='FY0'):
         _db_record_to_company_input(record, .04, None)
+
+
+def test_source_initial_conditions_replay_without_changing_facts_or_user_inputs(monkeypatch):
+    record = sample(monkeypatch)
+    record['financials_annual'].append(dict(fy_offset=1, revenues=800, ebit=100))
+    inputs, _ = _db_record_to_company_input(record, .04, None)
+    inputs.industry_data.sales_to_capital = 4
+    before = run_full_valuation(inputs)
+    facts = [f.model_dump() for f in inputs.raw_financials]
+    sources = _initialize_native_assumptions(inputs, before)
+    a = inputs.valuation_assumptions
+    assert (a.revenue_growth_next_year, a.revenue_growth_years_2_5, a.high_growth_years) == (.25, .25, 1)
+    assert (a.operating_margin_next_year, a.target_operating_margin) == (.15, .15)
+    assert (a.sales_to_capital_high, a.sales_to_capital_stable) == (4, 4)
+    after = run_full_valuation(inputs)
+    assert after.dcf.revenue_projections[0] == 1250
+    assert after.dcf.revenue_projections[1] / 1250 - 1 == pytest.approx(.25-(.25-.04)/9)
+    assert after.dcf.tax_rate_projections == before.dcf.tax_rate_projections  # 同边际/有效税率
+    assert after.adjusted == before.adjusted and after.cost_of_capital == before.cost_of_capital
+    assert [f.model_dump() for f in inputs.raw_financials] == facts
+    assert 'US/Synthetic' in sources['valuation_assumptions.sales_to_capital_high']
+    assert _initialize_native_assumptions(inputs, after) == {}
+    a.revenue_growth_next_year = a.revenue_growth_years_2_5 = 0
+    a.operating_margin_next_year = .2
+    a.target_operating_margin = None
+    a.sales_to_capital_high = 8
+    a.sales_to_capital_stable = None
+    a.high_growth_years = 3
+    assert _initialize_native_assumptions(inputs, after) == {}
+    assert (a.revenue_growth_next_year, a.operating_margin_next_year, a.sales_to_capital_high, a.high_growth_years) == (0, .2, 8, 3)
+    assert a.target_operating_margin is None and a.sales_to_capital_stable is None
+
+
+def test_missing_or_invalid_reference_initialization_keeps_explicit_limitations(monkeypatch):
+    inputs, _ = _db_record_to_company_input(sample(monkeypatch), .04, None)
+    inputs.industry_data.sales_to_capital = -2
+    report = run_full_valuation(inputs)
+    _initialize_native_assumptions(inputs, report)
+    assert inputs.valuation_assumptions.revenue_growth_next_year is None
+    assert inputs.valuation_assumptions.sales_to_capital_high is None
+    assert inputs.valuation_assumptions.high_growth_years == 5
+    assert any('同比' in w for w in report.warnings) and any('资本倍率' in w for w in report.warnings)
 
 
 def test_ttm_reads_only_aligned_quarters_and_keeps_holes(monkeypatch):

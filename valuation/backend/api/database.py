@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import sys
 import json
+import math
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -435,6 +436,47 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
     return inputs, industry_resolved
 
 
+def _initialize_native_assumptions(inputs, report):
+    """已批准的可编辑来源条件；不选择胜出预测，不覆盖显式路径或输入。"""
+    assumptions = inputs.valuation_assumptions
+    if assumptions.annual_forecast is not None:
+        return {}
+    sources = {}
+
+    def initialize(name, value, basis):
+        if getattr(assumptions, name) is None and value is not None and math.isfinite(value):
+            setattr(assumptions, name, value)
+            sources['valuation_assumptions.' + name] = '来源初值v1；条件假设，未认证预测：' + basis
+
+    growth = inputs.company_metrics.revenue_growth
+    if (assumptions.revenue_growth_next_year is None
+            and assumptions.revenue_growth_years_2_5 is None
+            and growth is not None and math.isfinite(growth) and -1 < growth <= 1):
+        initialize('revenue_growth_next_year', growth, inputs.company_metrics.revenue_growth_basis)
+        initialize('revenue_growth_years_2_5', growth, '同一历史增长作为过渡起点，不保持五年；其后沿现有引擎向稳态衰减')
+        if 'high_growth_years' not in assumptions.model_fields_set:
+            assumptions.high_growth_years = 1
+            sources['valuation_assumptions.high_growth_years'] = '来源初值v1；本地条件：历史增长只保持首年，之后过渡；不认证公司竞争优势持续期。税率及WACC过渡也按此期间启动'
+        if growth < 0:
+            report.warnings.append('来源初值：收入收缩条件可能隐含资本释放；回收金额、恢复速度与生存风险尚未核实，不能当成已实现现金')
+    elif assumptions.revenue_growth_next_year is None and assumptions.revenue_growth_years_2_5 is None:
+        report.warnings.append('来源初值：同比缺失或超出既有条件范围(-100%,100%]；增长保留原应用条件，请显式判断。保留原诊断，不截尾，不将真实零或负收入补成正数')
+    current = report.ltm_financials
+    if assumptions.operating_margin_next_year is None and current.revenues is not None and current.revenues > 0:
+        margin = report.adjusted.adjusted_ebit / current.revenues
+        initialize('operating_margin_next_year', margin, '当前调整后EBIT/同窗收入；含既有研发调整，不是原始报表利润率')
+        initialize('target_operating_margin', margin, '当前调整后利润率持平延续；未与不同口径行业均值混合，不认证可持续目标')
+    if assumptions.annual_sales_to_capital is None and assumptions.sales_to_capital_high is None:
+        ratio = inputs.industry_data.sales_to_capital
+        if ratio is not None and math.isfinite(ratio) and ratio > 0:
+            basis = f'{inputs.industry_data.region}/{inputs.industry_data.industry_name}行业销售资本倍率参考；作为新增投入效率的条件代理，不是公司边际效率'
+            initialize('sales_to_capital_high', ratio, basis)
+            initialize('sales_to_capital_stable', ratio, basis + '；终值再投资仍由g/ROIC决定')
+        else:
+            report.warnings.append('来源初值：没有合格匹配行业资本倍率；保留原2.5倍条件，不能冒称有来源的公司效率')
+    return sources
+
+
 @valuation_router.post("/from-database")
 def from_database(req: FromDatabaseRequest) -> dict:
     """Run the full valuation pipeline starting from a DB-sourced ticker.
@@ -469,6 +511,12 @@ def from_database(req: FromDatabaseRequest) -> dict:
         raise HTTPException(status_code=422,detail=str(e)) from e
     ind_lookup = _build_industry_lookup(store)
     report = run_full_valuation(inputs, industry_lookup=ind_lookup)
+    initialization_sources = _initialize_native_assumptions(inputs, report)
+    initialization_warnings = list(report.warnings)
+    if initialization_sources:
+        report = run_full_valuation(inputs, industry_lookup=ind_lookup)
+        report.warnings.extend(w for w in initialization_warnings if w.startswith('来源初值：'))
+    report.warnings.append('经营参数为可编辑来源初值，不是已验证公司预测；融资保留原生用户/参考条件，不认证公司市场WACC。用户覆盖优先，清空恢复引擎回退，重新加载恢复来源初值')
     if compatibility is not None:
         report.warnings.extend(compatibility["warnings"])
         if compatibility["optional_history_missing"]:
@@ -483,7 +531,9 @@ def from_database(req: FromDatabaseRequest) -> dict:
     session.source_tracker.record('macro_inputs.risk_free_rate',
         'User-provided assumption; not an automatically selected market yield' if 'risk_free_rate' in req.model_fields_set
         else 'Original model default 0.0425; not an observed market yield')
-    session.source_tracker.record('valuation_assumptions','Original model defaults; editable assumptions, not reported company facts')
+    session.source_tracker.record('valuation_assumptions','native-source-initialization-v1; editable conditional starting values, not validated forecasts; unspecified inputs retain original model conditions')
+    for field, basis in initialization_sources.items():
+        session.source_tracker.record(field, basis)
     session.source_tracker.record('methodology_choices','Original model defaults; explicit later choices are recorded separately')
     for field,value in (('industry_data.industry_name',req.industry_override),('country',req.country_override)):
         if value is not None:

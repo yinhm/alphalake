@@ -405,7 +405,8 @@ def compute_dcf(
          '显式增长假设；空值沿用原应用0%条件，不是公司增长预测。'),
         ('revenue_growth_years_2_5', g_years_2_5,
          'explicit_input' if assumptions.revenue_growth_years_2_5 is not None else 'inherited',
-         '显式高增长期假设；空值继承第一年增长率。'),
+         ('过渡起点增长率：只保持首年时，第2年起向稳态衰减；空值继承首年。'
+          if high_growth_years == 1 else f'第2至{high_growth_years}年持平增长；之后过渡，空值继承首年。')),
         ('operating_margin_next_year', margin_y1,
          'explicit_input' if assumptions.operating_margin_next_year is not None else 'adjusted_base',
          '显式利润率优先；空值用调整后EBIT/基期收入并持平延续，不是已核实的未来利润率。'),
@@ -442,6 +443,14 @@ def compute_dcf(
         for name in ('sales_to_capital_high', 'sales_to_capital_stable'):
             forecast_parameters[name] = dict(value=None, source='annual_sales_to_capital', editable=False,
                 basis='显式年度资本效率路径优先；两阶段标量不参与计算。')
+    forecast_parameters['cost_of_capital_stable_override'] = dict(
+        value=wacc_terminal,
+        source=('explicit_financing' if financing is not None else
+                'explicit_input' if assumptions.cost_of_capital_stable_override is not None else 'riskfree_plus_erp_proxy'),
+        basis='正常税盾下的终值WACC基础值；报告终值WACC另含不可利用税盾调整。完整融资路径优先，不能重复加回税盾调整。',
+        editable=financing is None,
+    )
+
     if any(not math.isfinite(t) or not 0 <= t <= 1 for t in [*tax_path_vals, tax_terminal]):
         raise InvalidTaxForecast('tax rates must be finite and between zero and one')
     wacc_path_vals = _wacc_path(wacc_initial, wacc_terminal, high_growth_years, n)

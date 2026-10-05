@@ -46,7 +46,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
     },
     {
       narrative: 'How fast will it grow after year 1?',
-      driver: 'Revenue growth (years 2–5)',
+      driver: data.inputs.valuation_assumptions.high_growth_years === 1 ? 'Revenue growth (transition anchor)' : `Revenue growth (years 2–${data.inputs.valuation_assumptions.high_growth_years})`,
       termId: 'revenue-growth',
       bindingId: 'revenue-growth.high',
       input: 'revenue_growth_years_2_5',
@@ -72,7 +72,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
     },
     {
       narrative: 'How efficiently will capital generate revenue?',
-      driver: 'Sales/Capital (years 1–5)',
+      driver: 'Sales/Capital (initial stage)',
       termId: 'sales-to-capital',
       bindingId: 'sales-to-capital.high',
       input: 'sales_to_capital_high',
@@ -81,7 +81,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
     },
     {
       narrative: 'Reinvestment in the stable phase',
-      driver: 'Sales/Capital (years 6–10)',
+      driver: 'Sales/Capital (transition stage)',
       termId: 'sales-to-capital',
       bindingId: 'sales-to-capital.stable',
       input: 'sales_to_capital_stable',

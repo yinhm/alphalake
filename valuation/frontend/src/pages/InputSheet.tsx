@@ -5,6 +5,7 @@ import SpreadsheetGrid from '../components/SpreadsheetGrid';
 import ColorLegend from '../components/ColorLegend';
 import CurrencyInfoPanel from '../components/CurrencyInfoPanel';
 import { elapsedQuarters } from '../lib/baseYear';
+import { forecastValue } from '../lib/forecast';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -718,7 +719,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
 
             {/* Revenue Growth — Years 2-5 */}
             <tr>
-              <SpreadsheetCell value="Revenue Growth — Years 2-5" type="label" termId="revenue-growth" bindingId="revenue-growth.high" />
+              <SpreadsheetCell value={va.high_growth_years === 1 ? 'Revenue Growth — Transition Anchor' : `Revenue Growth — Years 2-${va.high_growth_years}`} type="label" termId="revenue-growth" bindingId="revenue-growth.high" />
               <EditableNum value={va.revenue_growth_years_2_5} parameter={parameters?.revenue_growth_years_2_5} dotPath="valuation_assumptions.revenue_growth_years_2_5" format="pct" onUpdate={update} />
               <SpreadsheetCell value="—" type="calc" tooltip="Forward assumption — no per-year historical" />
               <SpreadsheetCell value={pct(rev_cagr_3)} type="calc" tooltip={cagrTooltip(3, latestFy, latestFy-3, 'Revenue')} />
@@ -764,7 +765,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
               <SpreadsheetCell value="—" type="calc" tooltip="No historical equivalent — this is a projection-control input (positive integer K; if beyond the projection, the terminal target remains explicit)." />
               <SpreadsheetCell value="—" type="calc" tooltip="No 3-year historical equivalent for this input." />
               <SpreadsheetCell value="—" type="calc" tooltip="No 5-year historical equivalent for this input." />
-              <SpreadsheetCell value="5 (app default)" type="calc" tooltip="Local application default; convergence time requires company evidence, not a universal Damodaran rule." />
+              <SpreadsheetCell value="—" type="calc" tooltip="过渡年数不是历史财务观测；需依据成本、产能及竞争变化判断，原应用5年只是条件。" />
               <SpreadsheetCell value="—" type="reference" tooltip="No industry (regional) benchmark — convergence year is a modelling choice, not a firm-level observable." />
               <SpreadsheetCell value="—" type="reference" tooltip="No industry (global) benchmark." />
               <SpreadsheetCell value="—" type="reference" tooltip="No Q1/Q3 benchmark range — same reason." />
@@ -773,7 +774,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
             {/* Sales-to-Capital Yr 1-5 */}
             <tr>
               <SpreadsheetCell
-                value="Sales / Capital — Years 1-5"
+                value="Sales / Capital — Initial Stage"
                 type="label"
                 tooltip={'Reinvestment = ΔRevenue / Sales-to-Capital. Two values (high-growth and stable) reflect that capital efficiency typically changes as a firm matures. Folder reference: module_05_dcf_projection.md §3.6.'} termId="sales-to-capital" bindingId="sales-to-capital.high"
               />
@@ -790,9 +791,9 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
             {/* Sales-to-Capital Yr 6-10 */}
             <tr>
               <SpreadsheetCell
-                value="Sales / Capital — Years 6-10"
+                value="Sales / Capital — Transition Stage"
                 type="label"
-                tooltip={'Stable-period Sales/Capital, typically closer to 1–2× for mature firms. Drives reinvestment during the convergence phase (years 6–10). Folder: module_05 §3.6.'} termId="sales-to-capital" bindingId="sales-to-capital.stable"
+                tooltip={'过渡期新增收入/新增资本的条件代理，期间随高增长保持期变化；不是统一1–2倍。终值再投资另由g/ROIC决定。'} termId="sales-to-capital" bindingId="sales-to-capital.stable"
               />
               <EditableNum value={va.sales_to_capital_stable} parameter={parameters?.sales_to_capital_stable} dotPath="valuation_assumptions.sales_to_capital_stable" format="dec" onUpdate={update} />
               <SpreadsheetCell value="—" type="calc" tooltip="Forward assumption — use 10Y avg or industry as anchor" />
@@ -943,16 +944,16 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
         <tbody>
           {/* --- Stable Growth Rate --- */}
           <tr><td colSpan={3} className="border px-3 py-2 text-sm bg-gray-50 italic">
-            In stable growth, the growth rate used for your firm will be capped at the risk-free rate
-            ({pct(macro.risk_free_rate)}). If you disagree, enter a different stable growth rate below.
+            稳定增长须与币种、通胀及长期经济增长一致，不能超过可维持的经济增长。
+            当前使用 {pct(data.dcf?.terminal_growth)}；利率参考不是公司必然增长速度。
           </td></tr>
           <tr>
             <SpreadsheetCell value="Do you want to change the stable growth rate?" type="label" width="360px" />
             <YesNoSelect value={va.stable_growth_rate !== null} dotPath="" onUpdate={(_, val) => {
               if (!val) update('valuation_assumptions.stable_growth_rate', null);
-              else update('valuation_assumptions.stable_growth_rate', macro.risk_free_rate);
+              else update('valuation_assumptions.stable_growth_rate', data.dcf?.terminal_growth ?? null);
             }} />
-            <SpreadsheetCell value={`Default: ${pct(macro.risk_free_rate)}`} type="hint" />
+            <SpreadsheetCell value={`Current terminal growth: ${pct(data.dcf?.terminal_growth)}`} type="hint" />
           </tr>
           {va.stable_growth_rate !== null && (
             <tr>
@@ -964,21 +965,21 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
 
           {/* --- Cost of Capital in Stable Growth --- */}
           <tr><td colSpan={3} className="border px-3 py-2 text-sm bg-gray-50 italic">
-            In stable growth, I will assume your firm will have a cost of capital similar to typical mature companies
-            (8-10%). If you disagree, enter your own cost of capital.
+            稳态资本成本读取本次引擎条件，不采用统一8–10%。开启覆盖将当前值填入，
+            再由你根据同币种利率、成熟期风险、信用和资本结构修改。
           </td></tr>
           <tr>
             <SpreadsheetCell value="Do you want to override the stable cost of capital?" type="label" />
             <YesNoSelect value={va.cost_of_capital_stable_override !== null} dotPath="" onUpdate={(_, val) => {
               if (!val) update('valuation_assumptions.cost_of_capital_stable_override', null);
-              else update('valuation_assumptions.cost_of_capital_stable_override', 0.09);
+              else update('valuation_assumptions.cost_of_capital_stable_override', forecastValue(data, 'cost_of_capital_stable_override'));
             }} />
-            <SpreadsheetCell value="Default: computed from WACC convergence" type="hint" />
+            <SpreadsheetCell value={`Normal-tax terminal WACC: ${pct(forecastValue(data, 'cost_of_capital_stable_override'))}`} type="hint" tooltip="覆盖输入是正常税盾基础值；最终WACC可能另含税盾不可用调整，不能重复填入。" />
           </tr>
           {va.cost_of_capital_stable_override !== null && (
             <tr>
               <SpreadsheetCell value="Stable Cost of Capital" type="label" termId="wacc" bindingId="wacc.stable-override" />
-              <EditableNum value={va.cost_of_capital_stable_override} dotPath="valuation_assumptions.cost_of_capital_stable_override" format="pct" onUpdate={update} />
+              <EditableNum value={va.cost_of_capital_stable_override} parameter={parameters?.cost_of_capital_stable_override} dotPath="valuation_assumptions.cost_of_capital_stable_override" format="pct" onUpdate={update} />
               <SpreadsheetCell value="" type="hint" />
             </tr>
           )}
@@ -992,9 +993,9 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
             <SpreadsheetCell value="Do you want to override the stable ROIC?" type="label" />
             <YesNoSelect value={va.roic_stable_override !== null} dotPath="" onUpdate={(_, val) => {
               if (!val) update('valuation_assumptions.roic_stable_override', null);
-              else update('valuation_assumptions.roic_stable_override', 0.10);
+              else update('valuation_assumptions.roic_stable_override', data.dcf?.terminal_roic ?? null);
             }} />
-            <SpreadsheetCell value="Default: ROIC = Cost of Capital" type="hint" />
+            <SpreadsheetCell value={`Current terminal ROIC: ${pct(data.dcf?.terminal_roic)}`} type="hint" />
           </tr>
           {va.roic_stable_override !== null && (
             <tr>
@@ -1041,7 +1042,7 @@ export default function InputSheet({ data, onUpdate }: InputSheetProps) {
           <tr>
             <SpreadsheetCell value="Failure Probability" type="label" termId="failure-probability" bindingId="failure-probability.input" />
             <EditableNum value={va.failure_probability} dotPath="valuation_assumptions.failure_probability" format="pct" onUpdate={update} />
-            <SpreadsheetCell value="0% = no failure risk" type="hint" />
+            <SpreadsheetCell value="0% = 持续经营条件，未计失败情景" type="hint" />
           </tr>
           {va.failure_probability > 0 && (
             <>

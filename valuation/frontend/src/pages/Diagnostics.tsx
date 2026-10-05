@@ -73,8 +73,8 @@ export default function Diagnostics({ data }: { data: ValuationResponse; session
             <SpreadsheetCell value={forecastValue(data, 'revenue_growth_next_year')} type="hypothesis" tooltip="Resolved assumption: valuation_assumptions.revenue_growth_next_year." />
           </tr>
           <tr>
-            <SpreadsheetCell value="Your forecast — Years 2-5 growth" type="label" />
-            <SpreadsheetCell value={forecastValue(data, 'revenue_growth_years_2_5')} type="hypothesis" tooltip="Resolved assumption: valuation_assumptions.revenue_growth_years_2_5. Single flat rate applied across years 2–5." />
+            <SpreadsheetCell value={data.inputs.valuation_assumptions.high_growth_years === 1 ? 'Your forecast — Transition growth anchor' : 'Your forecast — Initial-stage growth'} type="label" />
+            <SpreadsheetCell value={forecastValue(data, 'revenue_growth_years_2_5')} type="hypothesis" tooltip={data.dcf?.forecast_parameters.revenue_growth_years_2_5?.basis} />
           </tr>
           <tr>
             <SpreadsheetCell

@@ -68,7 +68,7 @@ function forecastFixture(annual = false) {
     ['revenue_growth_next_year', .12], ['revenue_growth_years_2_5', .12],
     ['operating_margin_next_year', .2], ['target_operating_margin', .2],
     ['margin_convergence_year', 5], ['sales_to_capital_high', 2.5],
-    ['sales_to_capital_stable', 2.5], ['growth_perpetuity_rate', .01],
+    ['sales_to_capital_stable', 2.5], ['growth_perpetuity_rate', .01], ['cost_of_capital_stable_override', .1234],
   ].map(([name, value]) => [name, { value, editable: !annual, source: annual ? 'annual_forecast' : 'inherited', basis: '合成条件，非公司预测。' }]));
   return {
     id: 'fixture', ticker: 'SYNTHETIC',
@@ -76,6 +76,7 @@ function forecastFixture(annual = false) {
       company_name: 'Synthetic', reporting_currency: 'CNY', stock_price_currency: 'CNY', fx_rate: 1,
       raw_financials: [{ fiscal_year: 2025, revenues: 1000, ebit: 100 }, { fiscal_year: 2024, revenues: 900, ebit: 90 }],
       valuation_assumptions: { projection_years: 2, high_growth_years: 1, margin_convergence_year: 5,
+        cost_of_capital_stable_override: null, roic_stable_override: null,
         target_operating_margin: annual ? .9 : null, override_growth_perpetuity: false,
         ...(annual ? { annual_forecast: Array(2).fill({ growth: 0, margin: .2, tax: .15 }) } : {}) },
       macro_inputs: { risk_free_rate: .04, equity_risk_premium: .04, tax_rate_marginal: .25 },
@@ -86,7 +87,7 @@ function forecastFixture(annual = false) {
     cashflow: { historical_margin_by_year: [.15,.1] },
     warnings: [],
     dcf: {
-      forecast_parameters: parameters, terminal_growth: .01, terminal_wacc: .1234,
+      forecast_parameters: parameters, terminal_growth: .01, terminal_wacc: .1234, terminal_roic: .1234,
       terminal_revenue: 1010, terminal_ebit: 202, terminal_margin: .2, terminal_tax_rate: .15,
       terminal_nopat: 192, terminal_reinvestment: -3, terminal_fcff: 195,
       revenue_projections: [1000,1000], ebit_projections: [200,200], nopat_projections: [195,190],
@@ -105,7 +106,7 @@ test('forecast cells use resolved values, preserve zero and clear, and lock supe
   await expect(margin).toHaveText('20.00%');
   await expect(row('Operating Margin — Next Year').getByRole('cell').nth(2)).toHaveText('10.00%');
   await expect(row('Target Pre-tax Op Margin').getByRole('cell').nth(1)).toHaveText('20.00%');
-  await expect(row('Revenue Growth — Years 2-5').getByRole('cell').nth(1)).toHaveText('12.00%');
+  await expect(row('Revenue Growth — Transition Anchor').getByRole('cell').nth(1)).toHaveText('12.00%');
   await margin.dblclick();
   await margin.locator('input').fill('0');
   await margin.locator('input').press('Enter');
@@ -134,6 +135,21 @@ test('terminal display reads annual, research and NOL outputs without a second c
     await expect(row.getByRole('cell').last()).toHaveText(value);
   }
   await expect(page.locator('thead').getByText('Terminal', { exact: true })).toHaveCount(1);
+});
+
+test('enabling terminal overrides starts at actual engine values rather than fixed percentages', async ({ page }) => {
+  const data = forecastFixture();
+  data.dcf.terminal_wacc = .1334;  // 最终含税盾调整；覆盖输入仍取正常基础值.1234
+  data.dcf.terminal_roic = .1334;
+  data.inputs.valuation_assumptions.cost_of_capital_stable_override = null;
+  data.inputs.valuation_assumptions.roic_stable_override = null;
+  await page.route('**/api/synthetic-summary', route => route.fulfill({ json:data }));
+  await page.goto('/tests/fixtures/summary.html?sheet=input');
+  const row = (text:string) => page.getByRole('row').filter({has:page.getByText(text,{exact:true})});
+  await row('Do you want to override the stable cost of capital?').locator('select').selectOption('Yes');
+  await expect(page.getByTestId('patch')).toHaveText('{"valuation_assumptions.cost_of_capital_stable_override":0.1234}');
+  await row('Do you want to override the stable ROIC?').locator('select').selectOption('Yes');
+  await expect(page.getByTestId('patch')).toHaveText('{"valuation_assumptions.roic_stable_override":0.1334}');
 });
 
 test('history tooltip and sensitivity show the same resolved margin', async ({ page }) => {
