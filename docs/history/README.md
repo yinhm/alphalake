@@ -6,6 +6,7 @@
 
 ## 最近主线证据
 
+- [LTM用途、同窗同比及页面/Excel实际基期](ltm-usage-audit-20261005.md)
 - [研发预测税基桥、具名条件及同输入影响](research-tax-bridge-20261004.md)
 - [测试耗时审核、历史研究清理与全局分层](test-suite-audit-20261003.md)
 - [9月30日后端测试优化基线](backend-test-performance-20260930.md)
