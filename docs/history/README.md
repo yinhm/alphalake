@@ -6,6 +6,8 @@
 
 ## 最近主线证据
 
+- [有来源的可编辑初值、稳态覆盖及Excel会话快照](source-defaults-20261005.md)
+
 - [LTM用途、同窗同比及页面/Excel实际基期](ltm-usage-audit-20261005.md)
 - [研发预测税基桥、具名条件及同输入影响](research-tax-bridge-20261004.md)
 - [测试耗时审核、历史研究清理与全局分层](test-suite-audit-20261003.md)

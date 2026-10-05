@@ -16,7 +16,7 @@
 
 主库为`workspace/alphalake.duckdb`；网页使用`workspace/derived/valuation.sqlite`。TDX是主要结构化数值来源，其有效公告日期直接采用；CNINFO补充披露身份、时点和原文核验。缺公告关联或日期不阻断当前数值，达摩达兰参考数据与财务合库。SQLite可以重建，不能作为第二权威库。文件位置与清理约定见[workspace布局](docs/guides/workspace-layout.md)。
 
-固定100家公司用于发布回归；证券分母、准入数量、时点及限制统一在[项目状态](docs/implementation-status.md)维护。样本成功率不等于全市场完成度，更不等于估值准确率。网页保留原流程，用户可修改参数；自动候选尚未替换默认政策。
+固定100家公司用于发布回归；证券分母、准入数量、时点及限制统一在[项目状态](docs/implementation-status.md)维护。样本成功率不等于全市场完成度，更不等于估值准确率。网页保留原流程，用户可修改参数；数据库新会话按已批准的[来源初值](docs/valuation/default-assumptions.md)起步并保留用户覆盖；没有经济参数自动胜出者，融资等未闭合条件仍明示。
 
 ## 开发与验证
 
