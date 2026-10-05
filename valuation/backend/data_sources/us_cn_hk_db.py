@@ -30,13 +30,13 @@ from typing import Any, Iterator
 
 from data_sources.paths import workspace_path
 
-DB_PATH = workspace_path('derived', 'valuation.sqlite')
+DB_PATH = workspace_path('valuation.sqlite')
 
 
 def get_db_path() -> Path:
     """使用显式配置或唯一动态快照；不回退到仓库内的示例数据库。"""
     env = os.environ.get('US_CN_HK_DB_PATH')
-    return Path(env) if env else workspace_path('derived', 'valuation.sqlite')
+    return Path(env) if env else workspace_path('valuation.sqlite')
 
 
 @contextmanager

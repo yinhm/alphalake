@@ -24,7 +24,7 @@ systemd-run --unit=alphalake-native-publish \
   --setenv=GOPATH="$(go env GOPATH)" --setenv=GOCACHE="$(go env GOCACHE)" \
   "$ALPHALAKE_REPO/.venv/bin/python" -m tools.publish_native_valuation \
   --database workspace/alphalake.duckdb \
-  --output workspace/derived/valuation.sqlite \
+  --output workspace/valuation.sqlite \
   --period 2026-06-30 \
   --codes-file workspace/derived/system-delivery/published-codes.txt \
   --source-mode offline --latest 6 \
@@ -43,7 +43,7 @@ journalctl -u alphalake-native-publish --no-pager
 
 部署目标、运行提交、Python依赖版本、SQLite/参考版本及知识库发布版本必须明确。候选须完整性检查、原生API验收及实际服务复验；采用原子切换，失败恢复旧文件。生产网页使用只读SQLite与独立知识库，不把主DuckDB交给网页写入。原API会话保存在进程内，当前运行单worker；重启会丢失临时会话，数据快照及已保存运行证据不受影响。不能据此宣称有持久化会话或多worker支持；不自动安装调度。批量候选／真实服务验收在取得完整响应后通过`DELETE /api/valuation/{session_id}`释放本次创建的临时会话，避免按公司数永久累积；不会清理其他用户会话。客户端可显式释放自己的会话，释放后读取／修改返回404，不影响已保存的响应证据。
 
-刷新同一范围时沿用相同清单、报告期及默认／显式利率选择；默认来源值可以随新参考合法变化。`online`另外传入公告目录日期范围。成功后取`.delivery.json`所指`run.json`中的`information_as_of`，用相同`--as-of`、`--source-mode local`重放，可验证同输入不重导、不重算且网页文件不替换。仅改变显式验收利率时，SQLite可复用，但必须重新验算及真实HTTP核对，不将旧利率的结果当作新结果。
+刷新同一范围时沿用相同清单、报告期及默认／显式利率选择；默认来源值可以随新参考合法变化。`online`另外传入公告目录日期范围。成功后取`workspace/derived/system-delivery/valuation.sqlite.delivery.json`所指`run.json`中的`information_as_of`，用相同`--as-of`、`--source-mode local`重放，可验证同输入不重导、不重算且网页文件不替换。仅改变显式验收利率时，SQLite可复用，但必须重新验算及真实HTTP核对，不将旧利率的结果当作新结果。
 
 | 模式 | 实际动作 | 来源新鲜度 |
 |---|---|---|
@@ -112,7 +112,7 @@ TTM核对的是所需分量，不是“待新增标准值”计数：已具备�
 
 ```bash
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_reference_coverage \
-  workspace/derived/valuation.sqlite \
+  workspace/valuation.sqlite \
   workspace/derived/financial-availability/coverage.json \
   workspace/damodaran/indname-a1f4d70aa2cf.xls
 ```
@@ -167,12 +167,12 @@ schema57的`reference.issuer_industry_review`保存不可变验证包、完整�
 ## 失败与重放
 
 - 所有阶段串行；同步下载/主数据失败、物化/导出/验收失败均返回非零，保留日志，不继续发布。财务源仅因待解析记录返回非零时，必须通过结构化完整收据证明没有下载/主数据错误、选中包的待解析项在报告期能唯一解析标准证券身份、与导出目标身份不相交，才允许继续；来源仍标记partial，受影响包不推进检查点。主库各来源已提交的有效事务保留，不把整轮失败误解释为主库从未更新。
-- 候选SQLite在同目录创建；验收核对完整分母、准入及实际计算。ready却计算失败拒绝发布；财务缺项与`blocked_reference_inputs`分别统计，两类422均保留。
+- 候选SQLite在`workspace/derived/system-delivery/`创建，与发布目标须在同一文件系统；验收核对完整分母、准入及实际计算。ready却计算失败拒绝发布；财务缺项与`blocked_reference_inputs`分别统计，两类422均保留。
 - 切换前记录发布日志并硬链接旧文件，原子替换后逐公司核验真实网页诊断、实际输入及最终结果。不重启网页；旧会话仍是原输入版本，新请求读取新快照。
 - 网页复验失败立即恢复旧文件；切换过程中被强杀，下次同命令先恢复未提交切换，再重新执行。日志不证明后台仍在运行，应查systemd单元。
 - SQLite内容（含参考快照）、程序/依赖、冻结模型参考及请求均相同时，复用已验收结果；源库物理内容和二进制也相同时不再导出。来源日志等元数据改变可能需要重新比对，不强行跳过质量检查。
 - 只有导出时间或主库物理哈希变化、有效内容未变时，不替换网页文件。信息截止不同仍属于新的输入版本，不能省略披露。
-- 成功收据位于目标旁的`.delivery.json`，切换日志为`.publication.json`，逐轮日志与比较在`workspace/derived/system-delivery/run-*`。后端和冻结模型参考哈希记录在每轮`runtime-inputs.json`，源参考发布/哈希随SQLite携带，不将这些动态文件提交仓库。
+- 成功收据为`workspace/derived/system-delivery/valuation.sqlite.delivery.json`，切换日志为同目录的`valuation.sqlite.publication.json`；候选、回滚副本及锁也在该目录，逐轮日志与比较在`run-*`。后端和冻结模型参考哈希记录在每轮`runtime-inputs.json`，源参考发布/哈希随SQLite携带，不将这些动态文件提交仓库。
 
 
 ## 验收边界

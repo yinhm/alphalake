@@ -12,7 +12,7 @@
 
 ```bash
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
-  --database workspace/derived/valuation.sqlite \
+  --database workspace/valuation.sqlite \
   --prepare-inputs --ticker SZSE:300866 \
   --overrides workspace/derived/native-inputs/overrides.json \
   --output workspace/derived/conditional-delivery/new-run \

@@ -33,7 +33,7 @@ systemd-run --unit=alphalake-sqlite-export \
   --setenv=GOMEMLIMIT=512MiB --setenv=GOMAXPROCS=1 \
   /usr/bin/python3 -m tools.export_alphalake_sqlite \
   --database workspace/alphalake.duckdb \
-  --output workspace/derived/valuation.next.sqlite \
+  --output workspace/derived/system-delivery/valuation.sqlite.next \
   --period 2026-06-30 --as-of 2026-09-25T00:00:00Z \
   --code 300866 --code 600519 --code 002032 \
   --alphalake /tmp/alphalake-sqlite-export
@@ -97,7 +97,7 @@ v11不在每条事实重复保存完整JSON：`standard_records(record_id,eviden
 如需手动让网页读取该快照，在启动网页后端的环境中显式设置：
 
 ```bash
-export US_CN_HK_DB_PATH="$PWD/workspace/derived/valuation.sqlite"
+export US_CN_HK_DB_PATH="$PWD/workspace/valuation.sqlite"
 ```
 
 仅改变该进程选库，不合并到seed。原页面搜索与选择公司后，原客户端提交`{ticker, risk_free_rate}`；不上传政策文件、不新增参数表单。需要修改参数时沿用原页面。安克原始财务列仍有两项资产范围缺口；后端使用获准代理及配套经营收益后，原请求返回200。苏泊尔已补市值并原生计算成功，茅台市值也已补齐，现已允许通用资产代理并通过准入；不将样本成功扩称全市场准入。

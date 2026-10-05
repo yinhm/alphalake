@@ -148,7 +148,7 @@
 
 ```bash
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates \
-  workspace/derived/valuation.sqlite \
+  workspace/valuation.sqlite \
   workspace/derived/shenwan-sync/classification-coverage.json \
   workspace/damodaran/indname-a1f4d70aa2cf.xls workspace/damodaran \
   > workspace/derived/industry-candidates/report.json
@@ -244,7 +244,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 
 ```bash
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.check_native_sqlite \
-  --database workspace/derived/valuation.sqlite \
+  --database workspace/valuation.sqlite \
   --output workspace/derived/explicit-reference-batch/conditional \
   --risk-free-rate .0425 \
   --reference-policy workspace/derived/explicit-reference-batch/policy.json

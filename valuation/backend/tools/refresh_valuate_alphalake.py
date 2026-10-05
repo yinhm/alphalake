@@ -168,7 +168,9 @@ def main():
     args.alphalake = str(Path(args.alphalake).resolve())
     Path(args.database).parent.mkdir(parents=True,exist_ok=True)
     # ponytail: 本机进程锁；远程分布式调度不在此入口范围。
-    with open(args.database+'.valuation.lock','a') as lock:
+    state = Path(args.database).parent/'derived/system-delivery'
+    state.mkdir(parents=True, exist_ok=True)
+    with open(state/(Path(args.database).name+'.valuation.lock'),'a') as lock:
         try:
             fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         except BlockingIOError:

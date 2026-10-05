@@ -235,7 +235,7 @@ M4输出逐年`research_amortization_projections`、`tax_base_projections`、`ca
 
 ```bash
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.check_native_sqlite \
-  --database workspace/derived/valuation.sqlite \
+  --database workspace/valuation.sqlite \
   --output workspace/derived/methodology-contract/new-check \
   --risk-free-rate 0.04 --review-methodology
 ```

@@ -192,7 +192,7 @@ Global WACC同行与US资本效率同行不是同一个样本口径，两者分�
 
 ```bash
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
-  --database workspace/derived/valuation.sqlite \
+  --database workspace/valuation.sqlite \
   --recipe valuation/examples/native-cny-candidates.json \
   --ticker SZSE:300866 --ticker SHSE:600519 \
   --output workspace/derived/native-policy/new-run --web http://127.0.0.1:8080

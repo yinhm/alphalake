@@ -37,7 +37,8 @@ def test_live_check_releases_own_session_even_when_value_differs(monkeypatch, mi
 
 
 def test_publish_failure_rollback_and_success(tmp_path):
-    old, new, journal = [tmp_path/n for n in ('current.sqlite', 'next.sqlite', 'publication.json')]
+    state = tmp_path/'derived/system-delivery'; state.mkdir(parents=True)
+    old, new, journal = tmp_path/'current.sqlite', state/'next.sqlite', state/'publication.json'
     old.write_bytes(b'trusted')
     new.write_bytes(b'candidate')
     def reject():
@@ -51,7 +52,8 @@ def test_publish_failure_rollback_and_success(tmp_path):
     result = delivery.publish(new, old, journal, lambda: ['verified'])
     assert result['status'] == 'published'
     assert old.read_bytes() == b'candidate'
-    assert not list(tmp_path.glob('*.delivery-backup'))
+    assert set(tmp_path.iterdir()) == {state.parent, old}
+    assert not list(state.glob('*.delivery-backup'))
 
 
 @pytest.mark.parametrize('point', ['before_backup', 'after_backup', 'after_replace', 'after_commit'])
@@ -148,6 +150,10 @@ def test_cycle_publishes_replays_without_export_and_keeps_last_snapshot_on_sourc
         source_mode='local', sync_references=False, latest=6, web_url='http://localhost')
     first = tmp_path/'first'; first.mkdir()
     assert delivery.run(args, first) == 0
+    state = workspace/'derived/system-delivery'
+    assert (state/'valuation.sqlite.delivery.json').exists()
+    assert (state/'valuation.sqlite.publication.json').exists()
+    assert not list(workspace.glob('*.json')) and not list(workspace.glob('*.next'))
     saved = target.read_bytes(); stat = target.stat()
     calls.clear()
     second = tmp_path/'second'; second.mkdir()

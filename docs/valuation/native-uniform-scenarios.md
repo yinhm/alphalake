@@ -38,7 +38,7 @@
 
 ```bash
 PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
-  --database workspace/derived/valuation.sqlite \
+  --database workspace/valuation.sqlite \
   --recipe valuation/examples/native-cny-candidates.json \
   --selection-policy valuation/examples/native-assumption-selection.json \
   --ticker SHSE:600519 --ticker SZSE:002032 \

@@ -25,7 +25,7 @@
 
 ## 存储边界
 
-默认位置：`workspace/knowledge/knowledge.sqlite`。`ALPHALAKE_WORKSPACE` 可改变 workspace 根目录，`ALPHALAKE_KNOWLEDGE_DB` 可显式指定知识库文件。该 SQLite 是编辑性知识内容，与主 DuckDB 中的财务事实、参考数据及 `derived/valuation.sqlite` 财务发布快照职责不同，不新增财务权威来源。
+默认位置：`workspace/knowledge/knowledge.sqlite`。`ALPHALAKE_WORKSPACE` 可改变 workspace 根目录，`ALPHALAKE_KNOWLEDGE_DB` 可显式指定知识库文件。该 SQLite 是编辑性知识内容，与主 DuckDB 中的财务事实、参考数据及 `valuation.sqlite` 财务发布快照职责不同，不新增财务权威来源。
 
 | 表 | 职责 |
 |---|---|

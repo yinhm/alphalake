@@ -177,7 +177,7 @@ def recover(target, journal):
         if backup.exists():
             if record['status'] != 'published' or actual != record['candidate_sha256'] or digest(backup) != record['before_sha256']:
                 raise ValueError('unrecognized leftover publication backup')
-            backup.unlink(); sync_directory(target.parent)
+            backup.unlink(); sync_directory(backup.parent)
         return None
     if actual not in (record['before_sha256'], record['candidate_sha256']):
         raise ValueError('publication interrupted and target changed externally')
@@ -192,6 +192,7 @@ def recover(target, journal):
         if not backup.exists() or digest(backup) != record['before_sha256']:
             raise ValueError('publication rollback evidence missing/corrupt')
         os.replace(backup, target)
+    sync_directory(backup.parent)
     sync_directory(target.parent)
     record.update(status='rolled_back', recovered_at=timestamp())
     save(journal, record)
@@ -200,7 +201,7 @@ def recover(target, journal):
 
 def publish(candidate, target, journal, verify):
     before = digest(target) if target.exists() else None
-    backup = target.with_name(target.name+'.delivery-backup')
+    backup = journal.parent/(target.name+'.delivery-backup')
     if backup.exists():
         raise ValueError('unresolved previous backup: '+str(backup))
     record = dict(status='prepared', target=str(target), backup=str(backup),
@@ -210,8 +211,9 @@ def publish(candidate, target, journal, verify):
         if target.exists():
             # 同一文件系统硬链接保留旧快照，不复制整库。
             os.link(target, backup)
-            sync_directory(target.parent)
+            sync_directory(backup.parent)
         os.replace(candidate, target)
+        sync_directory(candidate.parent)
         sync_directory(target.parent)
         record['web_checks'] = verify()
         record.update(status='published', published_at=timestamp())
@@ -220,7 +222,7 @@ def publish(candidate, target, journal, verify):
         recover(target, journal)
         raise
     backup.unlink(missing_ok=True)
-    sync_directory(target.parent)
+    sync_directory(backup.parent)
     return record
 
 
@@ -258,11 +260,13 @@ def run(args, root):
                   requested_codes=codes, requested_companies=len(codes), sync_references=args.sync_references,
                   freshness='local_evidence_only_not_upstream_verified' if args.source_mode != 'online' else 'see_source_logs_and_cache_fallbacks',
                   risk_free_rate=dict(value=args.risk_free_rate, basis='published_native_initial_condition' if args.risk_free_rate is None else 'explicit_acceptance_assumption_not_observed_rate'))
-    candidate = args.output.with_name(args.output.name+'.next')
-    journal = args.output.with_name(args.output.name+'.publication.json')
     started = time.monotonic()
     workspace = args.database.parent
-    receipt = args.output.with_name(args.output.name+'.delivery.json')
+    state = workspace/'derived/system-delivery'
+    state.mkdir(parents=True, exist_ok=True)
+    candidate = state/(args.output.name+'.next')
+    journal = state/(args.output.name+'.publication.json')
+    receipt = state/(args.output.name+'.delivery.json')
 
     def stage(name, command, allow_partial=False):
         entry = dict(name=name, command=command, started_at=timestamp(), log=str(root/(name+'.log')))
@@ -417,8 +421,8 @@ def main():
     args.database = args.database.resolve(strict=True)
     args.alphalake = args.alphalake.resolve(strict=True)
     args.output = args.output.resolve()
-    if args.database != workspace/'alphalake.duckdb' or not args.output.is_relative_to(workspace/'derived'):
-        parser.error('use authoritative workspace/alphalake.duckdb and an output under workspace/derived')
+    if args.database != workspace/'alphalake.duckdb' or args.output != workspace/'valuation.sqlite':
+        parser.error('use workspace/alphalake.duckdb and workspace/valuation.sqlite')
     if args.codes_file:
         args.code = args.codes_file.read_text().split()
     if not args.code:
@@ -434,7 +438,7 @@ def main():
     root = workspace/'derived/system-delivery'; root.mkdir(parents=True, exist_ok=True)
     # ponytail: 单机排他锁；不实现分布式调度。直接调用底层命令的操作者仍须遵守串行约定。
     with ExitStack() as stack:
-        for name in (str(args.database)+'.valuation.lock', str(args.output)+'.lock'):
+        for name in (root/(args.database.name+'.valuation.lock'), root/(args.output.name+'.lock')):
             lock = stack.enter_context(open(name, 'a'))
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         root = Path(tempfile.mkdtemp(prefix='run-', dir=root))
