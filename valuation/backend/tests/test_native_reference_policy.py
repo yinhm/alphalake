@@ -13,7 +13,7 @@ def test_explicit_reference_requests_preserve_default_diagnostic_and_financial_g
     policy = dict(version='explicit-reference-policy-v1', approval='用户批准', evidence='审核文档及原文', requests=[
         dict(ticker='SZSE:001220',industry_override='Transportation',country_override='China'),
         dict(ticker='SZSE:001257',industry_override='Metals & Mining',country_override='China')])
-    posted=[]
+    posted, deleted = [], []
     class Response:
         def __init__(self, status, body): self.status_code,self.body,self.text=status,body,str(body)
         def json(self): return self.body
@@ -28,11 +28,15 @@ def test_explicit_reference_requests_preserve_default_diagnostic_and_financial_g
                 reference_missing=['industry'],required_missing=[],conditional_missing=[]))
         def post(self, path, json):
             posted.append(json)
-            return Response(422 if json['ticker'].endswith('001257') else 200, {})
+            return Response(422 if json['ticker'].endswith('001257') else 200, {'id':json['ticker']})
+        def delete(self, path):
+            deleted.append(path)
+            return Response(204, None)
     monkeypatch.setattr('fastapi.testclient.TestClient',Client)
     result=check(database,tmp_path/'out',.0425,reference_policy=policy)
     assert result['http_status']=={200:2,422:1}
     assert result['admission']['blocked_reference_inputs']==2
+    assert deleted == ['/api/valuation/SZSE:001220','/api/valuation/SZSE:300866']
     assert posted[0]['industry_override']=='Transportation' and 'industry_override' not in posted[2]
     record=json.loads((tmp_path/'out/SZSE-001220.json').read_text())
     assert record['admission']=='blocked_reference_inputs' and record['request_status']=='calculated_conditional_reference_proxy'
@@ -45,7 +49,7 @@ def test_explicit_reference_requests_preserve_default_diagnostic_and_financial_g
         with pytest.raises(ValueError,match=message): check(database,tmp_path/'bad',.0425,reference_policy=bad)
     original=Client.post
     def invalid_success(self,path,json):
-        return Response(200,{}) if json['ticker'].endswith('001257') else original(self,path,json)
+        return Response(200,{'id':json['ticker']}) if json['ticker'].endswith('001257') else original(self,path,json)
     monkeypatch.setattr(Client,'post',invalid_success)
     with pytest.raises(AssertionError,match='financially blocked'):
         check(database,tmp_path/'invalid-success',.0425,reference_policy=policy)

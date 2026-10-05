@@ -9,6 +9,33 @@ import pytest
 from tools import publish_native_valuation as delivery
 
 
+@pytest.mark.parametrize('mismatch', [False, True])
+def test_live_check_releases_own_session_even_when_value_differs(monkeypatch, mismatch):
+    import io
+    diagnostic = {'status':'ready'}
+    result = dict(id='verification', inputs={}, unresolved_fields=[], final={'value_per_share':42})
+    calls = []
+    def respond(request, timeout):
+        calls.append((request.get_method(), request.full_url))
+        method = request.get_method()
+        body = diagnostic if method=='GET' else result if method=='POST' else None
+        stream = io.BytesIO(json.dumps(body).encode())
+        stream.status = 204 if method=='DELETE' else 200
+        return stream
+    monkeypatch.setattr(delivery,'urlopen',respond)
+    row = dict(ticker='SZSE:300866',admission='ready',http_status=200,
+        diagnostic_sha256=delivery.value_digest(diagnostic),inputs_sha256=delivery.value_digest({}),
+        unresolved_sha256=delivery.value_digest([]),final={'value_per_share':43 if mismatch else 42})
+    summary = dict(risk_free_rate=None,results=[row])
+    if mismatch:
+        with pytest.raises(ValueError,match='live valuation differs'):
+            delivery.verify_web('http://localhost',summary)
+    else:
+        assert delivery.verify_web('http://localhost',summary)==[dict(ticker='SZSE:300866',http_status=200)]
+    assert [m for m,u in calls] == ['GET','POST','DELETE']
+    assert calls[-1][1] == 'http://localhost/api/valuation/verification'
+
+
 def test_publish_failure_rollback_and_success(tmp_path):
     old, new, journal = [tmp_path/n for n in ('current.sqlite', 'next.sqlite', 'publication.json')]
     old.write_bytes(b'trusted')

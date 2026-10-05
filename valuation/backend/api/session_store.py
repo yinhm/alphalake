@@ -49,5 +49,9 @@ def get_session(sid: str) -> Session | None:
     return _sessions.get(sid)
 
 
+def delete_session(sid: str) -> bool:
+    return _sessions.pop(sid, None) is not None
+
+
 def list_sessions() -> list[str]:
     return list(_sessions.keys())

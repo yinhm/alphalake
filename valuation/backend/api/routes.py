@@ -22,7 +22,7 @@ from engine.source_tracker import SourceTracker
 from data_sources.damodaran_store import DamodaranStore
 from data_sources.industry_mapper import IndustryMapper
 from data_sources.exchange_currency_map import get_stock_price_currency
-from .session_store import create_session, get_session
+from .session_store import create_session, get_session, delete_session
 
 logger = logging.getLogger(__name__)
 
@@ -1086,6 +1086,13 @@ def get_valuation(session_id: str):
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
     return _report_to_dict(session)
+
+
+@router.delete("/valuation/{session_id}", status_code=204)
+def discard_valuation(session_id: str):
+    """Release one temporary valuation session without changing saved evidence."""
+    if not delete_session(session_id):
+        raise HTTPException(status_code=404, detail="Session not found")
 
 
 @router.patch("/valuation/{session_id}")

@@ -137,13 +137,13 @@ def compare_checks(before, after):
 
 def verify_web(url, summary, calculate=True):
     """确认真实服务加载候选数据；HTTP422也是保留分母的一种结果。"""
-    def request(path, body=None):
+    def request(path, body=None, method=None):
         req = Request(url.rstrip('/')+path,
                       data=json.dumps(body).encode() if body else None,
-                      headers={'Content-Type':'application/json'})
+                      headers={'Content-Type':'application/json'}, method=method)
         try:
             with urlopen(req, timeout=60) as response:
-                return response.status, json.load(response)
+                return response.status, None if response.status == 204 else json.load(response)
         except HTTPError as error:
             return error.code, json.load(error)
     checked = []
@@ -156,6 +156,10 @@ def verify_web(url, summary, calculate=True):
             checked.append(dict(ticker=ticker, admission=row['admission'], calculation='reused_verified_inputs'))
             continue
         status, result = request('/api/valuation/from-database', dict(ticker=ticker, risk_free_rate=summary['risk_free_rate']))
+        if status == 200:
+            session_id = result.get('id')
+            if not isinstance(session_id, str) or request('/api/valuation/'+session_id, method='DELETE')[0] != 204:
+                raise ValueError('failed to release live verification session: '+ticker)
         if status != row['http_status'] or (status == 200 and (result.get('final') != row['final'] or value_digest(result.get('inputs')) != row['inputs_sha256'] or value_digest(result.get('unresolved_fields')) != row['unresolved_sha256'])):
             raise ValueError('live valuation differs: '+ticker)
         checked.append(dict(ticker=ticker, http_status=status))

@@ -6,6 +6,20 @@ import pytest
 from tools.check_native_sqlite import check
 
 
+def test_delete_releases_only_requested_session(monkeypatch):
+    from fastapi.testclient import TestClient
+    from api.main import app
+    from api import session_store
+    other = object()
+    monkeypatch.setattr(session_store, '_sessions', {'verification':object(), 'user':other})
+    with TestClient(app) as client:
+        assert client.delete('/api/valuation/verification').status_code == 204
+        assert client.get('/api/valuation/verification').status_code == 404
+        assert client.delete('/api/valuation/verification').status_code == 404
+    assert session_store.list_sessions() == ['user']
+    assert session_store.get_session('user') is other
+
+
 def test_failed_diagnostic_keeps_company_and_continues_batch(tmp_path, monkeypatch):
     database = tmp_path/'input.sqlite'
     with sqlite3.connect(database) as conn:

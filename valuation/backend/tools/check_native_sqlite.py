@@ -56,6 +56,9 @@ def check(database, output, risk_free_rate=None, review_methodology=False, refer
                 body = response.json()
             except ValueError:
                 body = {'unhandled_response':response.text}
+            if response.status_code == 200:
+                assert isinstance(body.get('id'), str), 'calculated response has no session ID'
+                assert client.delete('/api/valuation/'+body['id']).status_code == 204, 'failed to release verification session'
             missing = sorted({r['field'] for group in ('required_missing','conditional_missing') for r in d.get(group, [])})
             gaps.update(missing)
             record = dict(ticker=ticker, admission=d['status'], financial_admission=d.get('financial_status',d['status']), reference_missing=d.get('reference_missing',[]), http_status=response.status_code,

@@ -124,7 +124,9 @@ def test_real_http_forecast_bridge_and_replay(exports,tmp_path,monkeypatch,compa
     for year in range(1,11):
         growth = p['growth'] if year <= 5 else p['growth']+(p['terminal_growth']-p['growth'])*(year-5)/5
         revenue = rev*(1+growth)
-        margin = margin0 if year == 1 else margin0+(p['margin']-margin0)*min(year/5,1)
+        # E31: five-year convergence includes the specified first year, so
+        # four equal steps connect years 1 and 5. Frozen old results stay intact.
+        margin = margin0+(p['margin']-margin0)*min((year-1)/4,1)
         tax = p['tax_start'] if year <= 5 else p['tax_start']+(p['tax_terminal']-p['tax_start'])*(year-5)/5
         reinvestment = (revenue-rev)/p['sales_to_capital']
         fcff = revenue*margin*(1-tax)-reinvestment
@@ -1220,7 +1222,8 @@ def test_company_entry_moutai_and_corrupt_saved_result(exports,tmp_path,monkeypa
     policy=BatchPolicy(policy_version='moutai-reviewed-v1',review_note='reviewed company policy',assignments={'600519':dict(
         policy=json.loads((REPO/'valuation/examples/moutai-2026H1-central.json').read_text()))})
     result=company_valuation(scan,'600519',[policy],lambda _:data,tmp_path)
-    assert round(result['valuation']['value_per_share']['value'],2)==1269.02
+    # Current E31 margin path; the prior 1269.02 remains in frozen evidence.
+    assert round(result['valuation']['value_per_share']['value'],2)==1268.89
     run_id=result['valuation']['run_id']
     row=dict(run_id=run_id,status=result['status'],value_per_share=result['valuation']['value_per_share']['value'])
     p=tmp_path/(run_id+'.json');saved=json.loads(p.read_text());saved['request']['policy']['scenario']='tampered'
