@@ -164,3 +164,39 @@ def test_excel_ltm_columns_use_engine_flows_and_latest_balances():
     _write_input_sheet(wb, inputs, report)
     assert wb['Input Sheet']['B20'].value == 7
     assert wb['Input Sheet']['B15'].value == 0
+
+
+@pytest.mark.parametrize('negative', [False, True])
+def test_full_excel_is_shared_engine_snapshot_not_fixed_five_year_calculator(negative):
+    import io
+    from openpyxl import load_workbook
+    from api.export_workbook import generate_full_workbook
+    inputs = payload()
+    inputs.valuation_assumptions.high_growth_years = 1
+    inputs.valuation_assumptions.projection_years = 7
+    inputs.valuation_assumptions.revenue_growth_years_2_5 = .1
+    inputs.valuation_assumptions.target_operating_margin = -.05 if negative else .3
+    inputs.valuation_assumptions.override_nol = True
+    inputs.valuation_assumptions.nol_amount = 200
+    inputs.valuation_assumptions.stable_growth_rate = 0  # 显式0不回退Rf。
+    inputs.valuation_assumptions.sales_to_capital_high = 4
+    inputs.valuation_assumptions.sales_to_capital_stable = 5
+    inputs.valuation_assumptions.failure_probability = .2
+    report = run_full_valuation(inputs)
+    wb = load_workbook(io.BytesIO(generate_full_workbook(inputs, report)))
+    assert len(wb.sheetnames) == 13
+    ws = wb['Valuation Output']
+    assert [ws.cell(4, c).value for c in range(3, 10)] == pytest.approx(report.dcf.revenue_projections, rel=1e-15)
+    assert [ws.cell(8, c).value for c in range(3, 10)] == pytest.approx(report.dcf.nopat_projections, rel=1e-15)
+    assert [ws.cell(9, c).value for c in range(3, 10)] == pytest.approx(report.dcf.reinvestment_projections, rel=1e-15)
+    assert [ws.cell(10, c).value for c in range(3, 10)] == pytest.approx(report.dcf.fcff_projections, rel=1e-15)
+    assert [ws.cell(12, c).value for c in range(3, 10)] == pytest.approx(report.dcf.discount_factors, rel=1e-15)
+    assert ws['J2'].value == 'Terminal year' and ws['J10'].value == pytest.approx(report.dcf.terminal_fcff)
+    assert ws['J13'].value == pytest.approx(report.dcf.terminal_value_firm)
+    assert ws['B18'].value == pytest.approx(report.dcf.value_of_operating_assets)
+    assert ws['B27'].value == pytest.approx(report.final.value_per_share)
+    assert wb['Cost of Capital']['B28'].value == report.cost_of_capital.wacc  # direct分支不重算Beta。
+    assert wb['Input Sheet']['B36'].value == report.dcf.forecast_parameters['operating_margin_next_year'].value
+    assert wb['Input Sheet']['A37'].value == 'Revenue Growth - Transition Anchor'
+    assert '快照' in ws['A31'].value
+    assert all(cell.data_type != 'f' for name in ['Valuation Output', 'Cost of Capital'] for row in wb[name] for cell in row)

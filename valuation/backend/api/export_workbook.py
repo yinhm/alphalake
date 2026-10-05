@@ -3,7 +3,8 @@ Export full valuation workbook — all 13 sheets matching frontend pages.
 
 Each sheet mirrors the exact layout shown on the corresponding frontend page.
 Cell types: blue=financial data, green=hypothesis/editable, gray=calculated, orange=reference.
-Calculated cells use Excel formulas so the workbook works as a calculator.
+DCF and financing cells are snapshots of the shared engine response.
+Edit assumptions in the web/API and export again; this is not a second calculator.
 """
 
 from __future__ import annotations
@@ -194,25 +195,26 @@ def _write_input_sheet(wb: openpyxl.Workbook, inp: CompanyValuationInput, report
     _section_title(ws, 34, "5. Value Drivers", 4)
     _cell(ws, 35, 1, "Revenue Growth - Next Year", font=BOLD_FONT)
     _cell(ws, 35, 2, va.revenue_growth_next_year, fill=GREEN_FILL, fmt=PCT_FMT)
+    _cell(ws, 35, 2, report.dcf.forecast_parameters["revenue_growth_next_year"].value, fill=GREEN_FILL, fmt=PCT_FMT)
     pos["growth_yr1"] = "B35"
     _cell(ws, 36, 1, "Operating Margin - Next Year", font=BOLD_FONT)
-    _cell(ws, 36, 2, f"=C13/C12", fill=GRAY_FILL, fmt=PCT_FMT)  # FORMULA: EBIT/Revenues
+    _cell(ws, 36, 2, report.dcf.forecast_parameters["operating_margin_next_year"].value, fill=GREEN_FILL, fmt=PCT_FMT)
     pos["op_margin_current"] = "B36"
-    _cell(ws, 37, 1, "Revenue Growth - Years 2-5", font=BOLD_FONT)
-    _cell(ws, 37, 2, va.revenue_growth_years_2_5, fill=GREEN_FILL, fmt=PCT_FMT)
+    _cell(ws, 37, 1, "Revenue Growth - Transition Anchor" if va.high_growth_years == 1 else f"Revenue Growth - Years 2-{va.high_growth_years}", font=BOLD_FONT)
+    _cell(ws, 37, 2, report.dcf.forecast_parameters["revenue_growth_years_2_5"].value, fill=GREEN_FILL, fmt=PCT_FMT)
     pos["growth_yr2_5"] = "B37"
     _cell(ws, 38, 1, "Target Pre-tax Operating Margin", font=BOLD_FONT)
-    _cell(ws, 38, 2, va.target_operating_margin, fill=GREEN_FILL, fmt=PCT_FMT)
+    _cell(ws, 38, 2, report.dcf.forecast_parameters["target_operating_margin"].value, fill=GREEN_FILL, fmt=PCT_FMT)
     pos["target_margin"] = "B38"
     _cell(ws, 38, 3, f"Industry avg: {ind.pretax_operating_margin}", fill=YELLOW_FILL)
     _cell(ws, 39, 1, "Year of Convergence", font=BOLD_FONT)
     _cell(ws, 39, 2, va.margin_convergence_year, fill=GREEN_FILL)
     pos["convergence_year"] = "B39"
-    _cell(ws, 40, 1, "Sales / Capital - Years 1-5", font=BOLD_FONT)
-    _cell(ws, 40, 2, va.sales_to_capital_high, fill=GREEN_FILL, fmt=DEC_FMT)
+    _cell(ws, 40, 1, "Sales / Capital - Initial Stage", font=BOLD_FONT)
+    _cell(ws, 40, 2, report.dcf.forecast_parameters["sales_to_capital_high"].value, fill=GREEN_FILL, fmt=DEC_FMT)
     pos["sales_cap_high"] = "B40"
-    _cell(ws, 41, 1, "Sales / Capital - Years 6-10", font=BOLD_FONT)
-    _cell(ws, 41, 2, va.sales_to_capital_stable, fill=GREEN_FILL, fmt=DEC_FMT)
+    _cell(ws, 41, 1, "Sales / Capital - Transition Stage", font=BOLD_FONT)
+    _cell(ws, 41, 2, report.dcf.forecast_parameters["sales_to_capital_stable"].value, fill=GREEN_FILL, fmt=DEC_FMT)
     pos["sales_cap_stable"] = "B41"
 
     # Row 43: Section 6 Market Numbers
@@ -248,6 +250,7 @@ def _write_input_sheet(wb: openpyxl.Workbook, inp: CompanyValuationInput, report
             _cell(ws, r, 2, val, fill=GREEN_FILL, fmt=fmt)
             pos[key] = f"B{r}"
 
+    _cell(ws, 57, 1, "会话快照：修改参数请返回网页/API重算，Excel不会重新运行估值引擎。", fill=YELLOW_FILL)
     return pos
 
 
@@ -278,7 +281,7 @@ def _write_answer_keys(wb: openpyxl.Workbook, inp: CompanyValuationInput, report
         ]),
         ("Key Assumptions", GREEN_FILL, [
             ("Revenue Growth (Yr 1)", va.revenue_growth_next_year, PCT_FMT),
-            ("Revenue Growth (Yrs 2-5)", va.revenue_growth_years_2_5, PCT_FMT),
+            ("Revenue Growth (transition anchor / initial stage)", va.revenue_growth_years_2_5, PCT_FMT),
             ("Target Operating Margin", va.target_operating_margin, PCT_FMT),
             ("Convergence Year", va.margin_convergence_year, None),
             ("Risk-free Rate", macro.risk_free_rate, PCT_FMT),
@@ -577,13 +580,13 @@ def _write_stories_to_numbers(wb: openpyxl.Workbook, inp: CompanyValuationInput,
 
     stories = [
         ("How fast will the company grow revenues?", "Revenue growth (next year)", "revenue_growth_next_year", va.revenue_growth_next_year, "User Input", PCT_FMT, GREEN_FILL),
-        ("How fast will it grow after year 1?", "Revenue growth (years 2-5)", "revenue_growth_years_2_5", va.revenue_growth_years_2_5, "User Input", PCT_FMT, GREEN_FILL),
+        ("How fast will it grow after year 1?", "Revenue growth (transition anchor / initial stage)", "revenue_growth_years_2_5", va.revenue_growth_years_2_5, "User Input", PCT_FMT, GREEN_FILL),
         ("How profitable at maturity?", "Target pre-tax operating margin", "target_operating_margin", va.target_operating_margin, "User Input", PCT_FMT, GREEN_FILL),
         ("How long to reach target margin?", "Year of convergence", "margin_convergence_year", va.margin_convergence_year, "User Input", None, GREEN_FILL),
-        ("How efficiently reinvest?", "Sales/Capital (years 1-5)", "sales_to_capital_high", va.sales_to_capital_high, "Calculated", DEC_FMT, GRAY_FILL),
-        ("Reinvestment in stable growth?", "Sales/Capital (years 6-10)", "sales_to_capital_stable", va.sales_to_capital_stable, "Calculated", DEC_FMT, GRAY_FILL),
+        ("How efficiently reinvest?", "Sales/Capital (initial stage)", "sales_to_capital_high", va.sales_to_capital_high, "Calculated", DEC_FMT, GRAY_FILL),
+        ("Reinvestment in stable growth?", "Sales/Capital (transition stage)", "sales_to_capital_stable", va.sales_to_capital_stable, "Calculated", DEC_FMT, GRAY_FILL),
         ("How risky is this company?", "Cost of capital", "wacc", coc.wacc if coc else None, "Calculated", PCT_FMT, GRAY_FILL),
-        ("What is the long-term growth rate?", "Stable growth rate", "stable_growth_rate", va.stable_growth_rate or inp.macro_inputs.risk_free_rate, "User Input", PCT_FMT, GREEN_FILL),
+        ("What is the long-term growth rate?", "Stable growth rate", "stable_growth_rate", report.dcf.terminal_growth, "User Input", PCT_FMT, GREEN_FILL),
         ("Could this company fail?", "Probability of failure", "failure_probability", va.failure_probability, "User Input", PCT_FMT, GREEN_FILL),
         ("What are industry margins like?", "Industry pre-tax margin", "pretax_operating_margin", ind.pretax_operating_margin, "Industry/Market", PCT_FMT, ORANGE_FILL),
         ("Industry reinvestment?", "Industry sales/capital", "sales_to_capital", ind.sales_to_capital, "Industry/Market", DEC_FMT, ORANGE_FILL),
@@ -629,7 +632,7 @@ def _write_diagnostics(wb: openpyxl.Workbook, inp: CompanyValuationInput, report
     _cell(ws, row, 1, "Forecast - Year 1 growth", font=BOLD_FONT)
     _cell(ws, row, 2, va.revenue_growth_next_year, fill=GREEN_FILL, fmt=PCT_FMT)
     row += 1
-    _cell(ws, row, 1, "Forecast - Years 2-5 growth", font=BOLD_FONT)
+    _cell(ws, row, 1, "Forecast - Transition anchor / initial stage growth", font=BOLD_FONT)
     _cell(ws, row, 2, va.revenue_growth_years_2_5, fill=GREEN_FILL, fmt=PCT_FMT)
     row += 2
 
@@ -1002,261 +1005,110 @@ def _write_rd_converter(wb: openpyxl.Workbook, inp: CompanyValuationInput, repor
 
 
 def _write_cost_of_capital(wb: openpyxl.Workbook, inp: CompanyValuationInput, report: ValuationReport, pos: dict):
-    """Sheet 3: Cost of Capital — ALL computed cells are Excel formulas.
-
-    Fixed layout: WACC is at B28 (referenced by Input Sheet B47).
-    """
+    """Export the selected financing branch; B28 remains the initial WACC."""
     ws = wb.create_sheet("Cost of Capital")
     ws.column_dimensions['A'].width = 40
     ws.column_dimensions['B'].width = 20
-
+    coc = report.cost_of_capital
     ind = inp.industry_data
-    IS = "'Input Sheet'"  # shorthand for cross-sheet refs
-
-    # Row 1: Beta Estimation
-    _section_title(ws, 1, "Beta Estimation", 2)
-    _cell(ws, 2, 1, "Beta estimation source", font=BOLD_FONT)
-    _cell(ws, 2, 2, "Bottom up", fill=GREEN_FILL)
-    _cell(ws, 3, 1, "Unlevered beta", font=BOLD_FONT)
-    _cell(ws, 3, 2, ind.beta_u, fill=ORANGE_FILL, fmt='0.0000')  # input from Damodaran
-    _cell(ws, 4, 1, "Unlevered beta (corrected for cash)", font=BOLD_FONT)
-    _cell(ws, 4, 2, ind.beta_u_corrected_for_cash, fill=ORANGE_FILL, fmt='0.0000')
-
-    # Row 6: Debt Inputs
-    _section_title(ws, 6, "Debt Inputs", 2)
-    _cell(ws, 7, 1, "BV debt", font=BOLD_FONT)
-    _cell(ws, 7, 2, f"={IS}!{pos.get('bv_debt','B20')}", fill=BLUE_FILL, fmt=NUM_FMT)  # cross-sheet
-    _cell(ws, 8, 1, "Interest expense", font=BOLD_FONT)
-    _cell(ws, 8, 2, f"={IS}!{pos.get('interest_expense','C16')}", fill=BLUE_FILL, fmt=NUM_FMT)
-    _cell(ws, 9, 1, "Pre-tax cost of debt", font=BOLD_FONT)
-    _cell(ws, 9, 2, ind.cost_of_debt_pretax, fill=ORANGE_FILL, fmt=PCT_FMT)  # Damodaran input
-
-    # Row 11: Capital Structure — ALL FORMULAS
-    _section_title(ws, 11, "Capital Structure", 2)
-    _cell(ws, 12, 1, "Market Cap (equity)", font=BOLD_FONT)
-    _cell(ws, 12, 2, f"={IS}!{pos.get('market_cap','B28')}", fill=BLUE_FILL, fmt=NUM_FMT)
-    _cell(ws, 13, 1, "D/E ratio", font=BOLD_FONT)
-    _cell(ws, 13, 2, "=B7/B12", fill=GRAY_FILL, fmt='0.0000')  # BV Debt / Market Cap
-    _cell(ws, 14, 1, "Levered beta", font=BOLD_FONT)
-    # beta_L = beta_U * (1 + (1 - tax) * D/E)
-    _cell(ws, 14, 2, f"=B3*(1+(1-{IS}!{pos.get('tax_marginal','B32')})*B13)", fill=GRAY_FILL, fmt='0.0000')
-    _cell(ws, 15, 1, "Weight of equity", font=BOLD_FONT)
-    _cell(ws, 15, 2, "=B12/(B12+B7)", fill=GRAY_FILL, fmt=PCT_FMT)  # MktCap / (MktCap+Debt)
-    _cell(ws, 16, 1, "Weight of debt", font=BOLD_FONT)
-    _cell(ws, 16, 2, "=B7/(B12+B7)", fill=GRAY_FILL, fmt=PCT_FMT)
-
-    # Row 18: Cost of Capital — ALL FORMULAS
-    _section_title(ws, 18, "Cost of Capital", 2)
-    _cell(ws, 19, 1, "Risk-free rate", font=BOLD_FONT)
-    _cell(ws, 19, 2, f"={IS}!{pos.get('risk_free','B44')}", fill=GREEN_FILL, fmt=PCT_FMT)
-    _cell(ws, 20, 1, "Equity risk premium (ERP)", font=BOLD_FONT)
-    _cell(ws, 20, 2, f"={IS}!{pos.get('erp','B45')}", fill=ORANGE_FILL, fmt=PCT_FMT)
-    _cell(ws, 21, 1, "Country risk premium", font=BOLD_FONT)
-    _cell(ws, 21, 2, f"={IS}!{pos.get('crp','B46')}", fill=ORANGE_FILL, fmt=PCT_FMT)
-    _cell(ws, 22, 1, "Cost of equity", font=BOLD_FONT)
-    # CoE = Rf + Beta_L * ERP
-    _cell(ws, 22, 2, "=B19+B14*B20", fill=GRAY_FILL, fmt=PCT_FMT)
-    _cell(ws, 23, 1, "Cost of debt (pre-tax)", font=BOLD_FONT)
-    _cell(ws, 23, 2, "=B9", fill=GRAY_FILL, fmt=PCT_FMT)  # ref to Damodaran input
-    _cell(ws, 24, 1, "Cost of debt (after-tax)", font=BOLD_FONT)
-    # CoD_at = CoD * (1 - t)
-    _cell(ws, 24, 2, f"=B23*(1-{IS}!{pos.get('tax_marginal','B32')})", fill=GRAY_FILL, fmt=PCT_FMT)
-    _cell(ws, 25, 1, "Marginal tax rate", font=BOLD_FONT)
-    _cell(ws, 25, 2, f"={IS}!{pos.get('tax_marginal','B32')}", fill=GREEN_FILL, fmt=PCT_FMT)
-    # WACC = CoE * We + CoD_at * Wd
-    _cell(ws, 28, 1, "WACC", font=Font(bold=True, size=11))
-    _cell(ws, 28, 2, "=B22*B15+B24*B16", fill=GRAY_FILL, fmt=PCT_FMT, font=Font(bold=True, size=11))
-    pos["coc_wacc"] = "B28"
-
-    # Row 30: Industry Comparison — static reference data
-    _section_title(ws, 30, "Industry Comparison", 2)
-    ind_items = [
+    for row, title in [(1, "Beta Estimation"), (6, "Debt Inputs"),
+                       (11, "Capital Structure"), (18, "Cost of Capital"), (30, "Industry Comparison")]:
+        _section_title(ws, row, title, 2)
+    items = [
+        (2, "Approach / beta branch", f"{coc.approach_used} / {coc.beta_branch_used}", None),
+        (3, "Unlevered beta used", coc.beta_u, '0.0000'),
+        (4, "Industry beta corrected for cash (reference)", ind.beta_u_corrected_for_cash, '0.0000'),
+        (7, "Debt value used", coc.mv_debt_total, NUM_FMT),
+        (8, "Interest expense (reported)", report.ltm_financials.interest_expense, NUM_FMT),
+        (9, "Pre-tax cost of debt used", coc.cost_of_debt_pretax, PCT_FMT),
+        (12, "Equity value used", coc.mv_equity, NUM_FMT),
+        (13, "D/E ratio used", coc.d_e_ratio, '0.0000'),
+        (14, "Levered beta used", coc.beta_l, '0.0000'),
+        (15, "Weight of equity", coc.weight_equity, PCT_FMT),
+        (16, "Weight of debt", coc.weight_debt, PCT_FMT),
+        (17, "Weight of preferred", coc.weight_preferred, PCT_FMT),
+        (19, "Risk-free rate", coc.risk_free_rate, PCT_FMT),
+        (20, "ERP used", coc.equity_risk_premium, PCT_FMT),
+        (21, "Country risk contribution", coc.country_risk_contribution, PCT_FMT),
+        (22, "Cost of equity", coc.cost_of_equity, PCT_FMT),
+        (23, "Cost of debt (pre-tax)", coc.cost_of_debt_pretax, PCT_FMT),
+        (24, "Cost of debt (after-tax)", coc.cost_of_debt_aftertax, PCT_FMT),
+        (25, "Marginal tax rate", inp.macro_inputs.tax_rate_marginal, PCT_FMT),
+        (26, "Capital structure basis", coc.capital_structure_basis, None),
+        (27, "Cost of preferred", coc.cost_of_preferred, PCT_FMT),
+        (28, "WACC", coc.wacc, PCT_FMT),
         (31, "Industry", ind.industry_name, None),
         (32, "Industry D/E ratio", ind.industry_d_e_ratio, DEC_FMT),
         (33, "Industry effective tax rate", ind.industry_effective_tax_rate, PCT_FMT),
         (34, "Industry WACC", ind.wacc, PCT_FMT),
         (35, "Industry cost of equity", ind.cost_of_equity, PCT_FMT),
     ]
-    for r, label, val, fmt in ind_items:
-        _cell(ws, r, 1, label, font=BOLD_FONT)
-        _cell(ws, r, 2, val, fill=ORANGE_FILL, fmt=fmt)
+    for row, label, value, fmt in items:
+        _cell(ws, row, 1, label, font=BOLD_FONT)
+        _cell(ws, row, 2, value, fill=ORANGE_FILL if row >= 31 else GRAY_FILL, fmt=fmt)
+    pos["coc_wacc"] = "B28"
 
 
 def _write_valuation_output(wb: openpyxl.Workbook, inp: CompanyValuationInput, report: ValuationReport, pos: dict):
-    """Sheet 2: Valuation Output — ALL computed cells are Excel formulas.
-
-    Fixed layout:
-    Row 1: section title
-    Row 2: headers (B=Base year, C-L=Year 1-10, M=Terminal year, N=Terminal Value)
-    Row 3: Revenue growth rate    Row 4: Revenues
-    Row 5: EBIT margin            Row 6: EBIT
-    Row 7: Tax rate                Row 8: EBIT(1-t)
-    Row 9: - Reinvestment          Row 10: FCFF
-    Row 11: Cost of capital        Row 12: Cumulated discount factor
-    Row 13: PV(FCFF)
-    Row 15+: Value Bridge
-    """
+    """Export actual projection/terminal/bridge values, without a parallel DCF."""
     ws = wb.create_sheet("Valuation Output")
-    ws.column_dimensions['A'].width = 35
-    for col_letter in 'BCDEFGHIJKLMN':
-        ws.column_dimensions[col_letter].width = 15
-
-    from openpyxl.utils import get_column_letter as gcl
-    IS = "'Input Sheet'"
-    COC = "'Cost of Capital'"
-
-    # Row 1: Section title
-    _section_title(ws, 1, "Projection Table", 14)
-
-    # Row 2: Headers — B=Base year, C=Year 1 ... L=Year 10, M=Terminal year
-    headers = ["", "Base year"] + [f"Year {i}" for i in range(1, 11)] + ["Terminal year"]
-    _header_row(ws, 2, headers)
-
-    # --- Row 3: Revenue growth rate ---
-    _cell(ws, 3, 1, "Revenue growth rate", font=BOLD_FONT)
-    _cell(ws, 3, 2, None, fill=GRAY_FILL)  # base year: no growth
-    # Year 1: from Input Sheet growth_yr1
-    _cell(ws, 3, 3, f"={IS}!{pos.get('growth_yr1','B35')}", fill=GREEN_FILL, fmt=PCT_FMT)
-    # Years 2-5: from Input Sheet growth_yr2_5
-    for col in range(4, 8):  # D-G = years 2-5
-        _cell(ws, 3, col, f"={IS}!{pos.get('growth_yr2_5','B37')}", fill=GREEN_FILL, fmt=PCT_FMT)
-    # Years 6-10: linearly converge to stable growth (risk-free rate)
-    # Simplified: use risk-free rate as stable growth
-    for col in range(8, 13):  # H-L = years 6-10
-        yr = col - 2  # year number (6-10)
-        # Linear interpolation: g_yr5 + (yr-5)/5 * (g_stable - g_yr5)
-        _cell(ws, 3, col, f"=G3+(({yr}-5)/5)*({IS}!{pos.get('risk_free','B44')}-G3)", fill=GRAY_FILL, fmt=PCT_FMT)
-    # Terminal: stable growth = risk-free rate
-    _cell(ws, 3, 13, f"={IS}!{pos.get('risk_free','B44')}", fill=GRAY_FILL, fmt=PCT_FMT)
-
-    # --- Row 4: Revenues ---
-    _cell(ws, 4, 1, "Revenues", font=BOLD_FONT)
-    _cell(ws, 4, 2, f"={IS}!{pos.get('revenues','C12')}", fill=BLUE_FILL, fmt=NUM_FMT)  # base year from Input
-    # Year 1..10: Rev_t = Rev_{t-1} * (1 + growth_t)
-    for col in range(3, 13):  # C-L
-        prev = gcl(col - 1)
-        _cell(ws, 4, col, f"={prev}4*(1+{gcl(col)}3)", fill=GRAY_FILL, fmt=NUM_FMT)
-    # Terminal: Rev_terminal = Rev_yr10 * (1 + g_stable)
-    _cell(ws, 4, 13, "=L4*(1+M3)", fill=GRAY_FILL, fmt=NUM_FMT)
-
-    # --- Row 5: EBIT margin ---
-    _cell(ws, 5, 1, "EBIT margin", font=BOLD_FONT)
-    # Base year: EBIT/Revenue from Input Sheet
-    _cell(ws, 5, 2, f"={IS}!{pos.get('ebit','C13')}/{IS}!{pos.get('revenues','C12')}", fill=GRAY_FILL, fmt=PCT_FMT)
-    # Year 1-5: linear convergence from current margin to target margin
-    for col in range(3, 8):  # C-G = years 1-5
-        yr = col - 2
-        conv = pos.get('convergence_year', 'B39')
-        _cell(ws, 5, col, f"=B5+({yr}/{IS}!{conv})*({IS}!{pos.get('target_margin','B38')}-B5)", fill=GRAY_FILL, fmt=PCT_FMT)
-    # Years 6-10 and terminal: at target margin
-    for col in range(8, 14):  # H-M
-        _cell(ws, 5, col, f"={IS}!{pos.get('target_margin','B38')}", fill=GRAY_FILL, fmt=PCT_FMT)
-
-    # --- Row 6: EBIT = Revenues × Margin ---
-    _cell(ws, 6, 1, "EBIT", font=BOLD_FONT)
-    _cell(ws, 6, 2, f"={IS}!{pos.get('ebit','C13')}", fill=BLUE_FILL, fmt=NUM_FMT)
-    for col in range(3, 14):  # C-M
-        _cell(ws, 6, col, f"={gcl(col)}4*{gcl(col)}5", fill=GRAY_FILL, fmt=NUM_FMT)
-
-    # --- Row 7: Tax rate ---
-    _cell(ws, 7, 1, "Tax rate", font=BOLD_FONT)
-    for col in range(2, 14):  # B-M: all reference Input Sheet marginal tax
-        _cell(ws, 7, col, f"={IS}!{pos.get('tax_marginal','B32')}", fill=GREEN_FILL, fmt=PCT_FMT)
-
-    # --- Row 8: EBIT(1-t) = EBIT × (1 - tax) ---
-    _cell(ws, 8, 1, "EBIT(1-t)", font=BOLD_FONT)
-    for col in range(2, 14):
-        _cell(ws, 8, col, f"={gcl(col)}6*(1-{gcl(col)}7)", fill=GRAY_FILL, fmt=NUM_FMT)
-
-    # --- Row 9: Reinvestment = ΔRevenue / Sales-to-Capital ---
-    _cell(ws, 9, 1, "- Reinvestment", font=BOLD_FONT)
-    _cell(ws, 9, 2, None, fill=GRAY_FILL)  # base year: no reinvestment
-    # Years 1-5: use sales_cap_high
-    for col in range(3, 8):
-        prev = gcl(col - 1)
-        _cell(ws, 9, col, f"=({gcl(col)}4-{prev}4)/{IS}!{pos.get('sales_cap_high','B40')}", fill=GRAY_FILL, fmt=NUM_FMT)
-    # Years 6-10: use sales_cap_stable
-    for col in range(8, 13):
-        prev = gcl(col - 1)
-        _cell(ws, 9, col, f"=({gcl(col)}4-{prev}4)/{IS}!{pos.get('sales_cap_stable','B41')}", fill=GRAY_FILL, fmt=NUM_FMT)
-    # Terminal reinvestment = g_stable / ROIC_stable * EBIT(1-t)_terminal
-    # Simplified: terminal reinvestment rate = g / WACC (if ROIC = WACC in stable)
-    _cell(ws, 9, 13, f"=M3/{COC}!B28*M8", fill=GRAY_FILL, fmt=NUM_FMT)
-
-    # --- Row 10: FCFF = EBIT(1-t) - Reinvestment ---
-    _cell(ws, 10, 1, "FCFF", font=BOLD_FONT)
-    _cell(ws, 10, 2, None, fill=GRAY_FILL)
-    for col in range(3, 14):  # C-M
-        _cell(ws, 10, col, f"={gcl(col)}8-{gcl(col)}9", fill=GRAY_FILL, fmt=NUM_FMT)
-
-    # --- Row 11: Cost of capital = WACC from Cost of Capital sheet ---
-    _cell(ws, 11, 1, "Cost of capital", font=BOLD_FONT)
-    _cell(ws, 11, 2, None, fill=GRAY_FILL)
-    for col in range(3, 14):
-        _cell(ws, 11, col, f"={COC}!B28", fill=GRAY_FILL, fmt=PCT_FMT)
-
-    # --- Row 12: Cumulated discount factor = 1/(1+WACC)^t ---
-    _cell(ws, 12, 1, "Cumulated discount factor", font=BOLD_FONT)
-    _cell(ws, 12, 2, None, fill=GRAY_FILL)
-    for col in range(3, 13):  # C-L = years 1-10
-        yr = col - 2
-        _cell(ws, 12, col, f"=1/(1+{gcl(col)}11)^{yr}", fill=GRAY_FILL, fmt='0.0000')
-
-    # --- Row 13: PV(FCFF) = FCFF × discount factor ---
-    _cell(ws, 13, 1, "PV(FCFF)", font=BOLD_FONT)
-    _cell(ws, 13, 2, None, fill=GRAY_FILL)
-    for col in range(3, 13):
-        _cell(ws, 13, col, f"={gcl(col)}10*{gcl(col)}12", fill=GRAY_FILL, fmt=NUM_FMT)
-    # Terminal value = Terminal FCFF / (WACC - g_stable), in col M
-    _cell(ws, 13, 13, "=M10/(M11-M3)", fill=GRAY_FILL, fmt=NUM_FMT)
-    # Col N: terminal value label
-    _cell(ws, 2, 14, "Terminal Value", fill=HEADER_FILL, font=HEADER_FONT)
-    _cell(ws, 13, 14, "=M13", fill=GRAY_FILL, fmt=NUM_FMT)
-
-    # === Row 15+: Value Bridge (FIXED ROWS) ===
-    _section_title(ws, 15, "Value Bridge", 3)
-    # Row 16: PV of cash flows = SUM of PV(FCFF) years 1-10
-    _cell(ws, 16, 1, "PV(cash flows, years 1-10)", font=BOLD_FONT)
-    _cell(ws, 16, 2, "=SUM(C13:L13)", fill=GRAY_FILL, fmt=NUM_FMT)
-    # Row 17: PV of terminal value = terminal_value * discount_factor_yr10
-    _cell(ws, 17, 1, "PV(terminal value)", font=BOLD_FONT)
-    _cell(ws, 17, 2, "=M13*L12", fill=GRAY_FILL, fmt=NUM_FMT)
-    # Row 18: Value of operating assets = PV_cf + PV_tv
-    _cell(ws, 18, 1, "Value of operating assets", font=Font(bold=True, size=11))
-    _cell(ws, 18, 2, "=B16+B17", fill=GRAY_FILL, fmt=NUM_FMT, font=Font(bold=True, size=11))
-    # Row 19: - Debt (from Input Sheet)
-    _cell(ws, 19, 1, "- Debt", font=BOLD_FONT)
-    _cell(ws, 19, 2, f"={IS}!{pos.get('bv_debt','C20')}", fill=BLUE_FILL, fmt=NUM_FMT)
-    # Row 20: - Minority interests
-    _cell(ws, 20, 1, "- Minority interests", font=BOLD_FONT)
-    _cell(ws, 20, 2, f"={IS}!{pos.get('minority_interests','B25')}", fill=BLUE_FILL, fmt=NUM_FMT)
-    # Row 21: + Cash
-    _cell(ws, 21, 1, "+ Cash", font=BOLD_FONT)
-    _cell(ws, 21, 2, f"={IS}!{pos.get('cash','B23')}", fill=BLUE_FILL, fmt=NUM_FMT)
-    # Row 22: + Cross holdings
-    _cell(ws, 22, 1, "+ Non-operating assets (cross holdings)", font=BOLD_FONT)
-    _cell(ws, 22, 2, f"={IS}!{pos.get('cross_holdings','B24')}", fill=BLUE_FILL, fmt=NUM_FMT)
-    # Row 23: Value of equity = OpAssets - Debt - Minority + Cash + CrossHoldings
-    _cell(ws, 23, 1, "Value of equity", font=Font(bold=True, size=11))
-    _cell(ws, 23, 2, "=B18-B19-B20+B21+B22", fill=GRAY_FILL, fmt=NUM_FMT, font=Font(bold=True, size=11))
-    # Row 24: - Value of options (cross-sheet to Option Value, or 0)
-    _cell(ws, 24, 1, "- Value of options", font=BOLD_FONT)
-    _cell(ws, 24, 2, "='Option Value'!B20", fill=GRAY_FILL, fmt=NUM_FMT)
-    # Row 25: Equity in common stock = Equity - Options
-    _cell(ws, 25, 1, "Value of equity in common stock", font=Font(bold=True, size=11))
-    _cell(ws, 25, 2, "=B23-B24", fill=GRAY_FILL, fmt=NUM_FMT, font=Font(bold=True, size=11))
-    # Row 26: Number of shares
-    _cell(ws, 26, 1, "Number of shares", font=BOLD_FONT)
-    _cell(ws, 26, 2, f"={IS}!{pos.get('shares','B26')}", fill=BLUE_FILL, fmt=NUM_FMT)
-    # Row 27: Value per share = Equity / Shares
-    _cell(ws, 27, 1, "Estimated value per share", font=Font(bold=True, size=11))
-    _cell(ws, 27, 2, "=B25/B26", fill=GRAY_FILL, fmt=DEC_FMT, font=Font(bold=True, size=11))
-    # Row 28: Current price
-    _cell(ws, 28, 1, "Current price", font=BOLD_FONT)
-    _cell(ws, 28, 2, f"={IS}!{pos.get('stock_price','B27')}", fill=BLUE_FILL, fmt=DEC_FMT)
-    # Row 29: Price as % of value
-    _cell(ws, 29, 1, "Price as % of value", font=BOLD_FONT)
-    _cell(ws, 29, 2, "=B28/B27", fill=GRAY_FILL, fmt=PCT_FMT)
+    ws.column_dimensions['A'].width = 40
+    dcf = report.dcf
+    raw = report.ltm_financials
+    n = len(dcf.revenue_projections)
+    _section_title(ws, 1, "Projection Table — Engine Snapshot", n + 4)
+    _header_row(ws, 2, ["", "Base year"] + [f"Year {i}" for i in range(1, n+1)] + ["Terminal year", "Terminal Value"])
+    revenues = [raw.revenues, *dcf.revenue_projections, dcf.terminal_revenue]
+    ebits = [report.adjusted.adjusted_ebit, *dcf.ebit_projections, dcf.terminal_ebit]
+    # Ratios below explain the saved results; they do not recalculate cash flows.
+    growth = [None] + [(cur / prev - 1) if cur is not None and prev else None
+                       for prev, cur in zip(revenues, revenues[1:])]
+    margin = [e / r if e is not None and r else None for e, r in zip(ebits, revenues)]
+    factors = dcf.discount_factors
+    wacc = [prior / cur - 1 for prior, cur in zip([1, *factors], factors)]
+    rows = [
+        (3, "Revenue growth rate", growth, PCT_FMT),
+        (4, "Revenues", revenues, NUM_FMT),
+        (5, "EBIT margin", margin, PCT_FMT),
+        (6, "Economic EBIT", ebits, NUM_FMT),
+        (7, "Tax-base rate (not cash tax / EBIT)", [inp.macro_inputs.tax_rate_effective, *dcf.tax_rate_projections, dcf.terminal_tax_rate], PCT_FMT),
+        (8, "NOPAT (economic EBIT minus cash tax)", [report.cashflow.fcff + report.cashflow.reinvestment_firm if report.cashflow.fcff is not None and report.cashflow.reinvestment_firm is not None else None, *dcf.nopat_projections, dcf.terminal_nopat], NUM_FMT),
+        (9, "- Reinvestment", [report.cashflow.reinvestment_firm, *dcf.reinvestment_projections, dcf.terminal_reinvestment], NUM_FMT),
+        (10, "FCFF", [report.cashflow.fcff, *dcf.fcff_projections, dcf.terminal_fcff], NUM_FMT),
+        (11, "Cost of capital", [report.cost_of_capital.wacc, *wacc, dcf.terminal_wacc], PCT_FMT),
+        (12, "Cumulated discount factor", [None, *factors], '0.0000'),
+        (13, "PV(FCFF) / terminal value", [None, *dcf.pv_fcff, dcf.terminal_value_firm], NUM_FMT),
+    ]
+    for row, label, values, fmt in rows:
+        _cell(ws, row, 1, label, font=BOLD_FONT)
+        for col, value in enumerate(values, 2):
+            _cell(ws, row, col, value, fill=GRAY_FILL, fmt=fmt)
+    _cell(ws, 13, n+4, dcf.terminal_value_firm, fill=GRAY_FILL, fmt=NUM_FMT)
+    bridge = inp.equity_bridge
+    shares = bridge.shares if bridge else raw.shares_outstanding
+    common = dcf.value_of_equity - report.final.value_of_all_options if dcf.value_of_equity is not None else None
+    _section_title(ws, 15, "Value Bridge — Engine Snapshot", 3)
+    items = [
+        (16, f"PV(cash flows, years 1-{n})", dcf.pv_cash_flows_sum, NUM_FMT),
+        (17, "PV(terminal value incl. tax transition)", dcf.pv_terminal_value, NUM_FMT),
+        (18, "Operating assets (after failure overlay)", dcf.value_of_operating_assets, NUM_FMT),
+        (19, "Debt before explicit bridge / convertible adjustments", report.adjusted.adjusted_mv_debt, NUM_FMT),
+        (20, "Minority interests (reported)", raw.minority_interests, NUM_FMT),
+        (21, "Cash (before trapped-cash adjustment)", raw.cash_and_marketable_securities, NUM_FMT),
+        (22, "Non-operating assets (reported)", raw.cross_holdings, NUM_FMT),
+        (23, "Value of equity (all selected adjustments)", dcf.value_of_equity, NUM_FMT),
+        (24, "- Employee options", report.final.value_of_all_options, NUM_FMT),
+        (25, "Value of equity in common stock", common, NUM_FMT),
+        (26, "Number of shares used", shares, NUM_FMT),
+        (27, "Estimated value per share", report.final.value_per_share, DEC_FMT),
+        (28, "Current price (reporting currency)", raw.stock_price, DEC_FMT),
+        (29, "Price as % of value", raw.stock_price / report.final.value_per_share if raw.stock_price is not None and report.final.value_per_share else None, PCT_FMT),
+    ]
+    for row, label, value, fmt in items:
+        _cell(ws, row, 1, label, font=BOLD_FONT)
+        _cell(ws, row, 2, value, fill=GRAY_FILL, fmt=fmt)
+    _cell(ws, 31, 1, "导出是当前会话快照；请在网页/API修改并重算后重新导出。附表交叉引用不驱动DCF。", fill=YELLOW_FILL)
+    _cell(ws, 32, 1, "桥接分项为原始参考；受限现金、显式桥接、转债及失败调整以共享引擎的权益/每股结果为准。", fill=YELLOW_FILL)
 
 
 def generate_full_workbook(inp: CompanyValuationInput, report: ValuationReport) -> bytes:
