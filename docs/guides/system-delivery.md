@@ -20,6 +20,7 @@ systemd-run --unit=alphalake-native-publish \
   --setenv=ALPHALAKE_WORKSPACE="$ALPHALAKE_REPO/workspace" \
   --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=1GiB \
   --setenv=ALPHALAKE_DUCKDB_THREADS=1 \
+  --setenv=DUCKDB_JE_MALLOC_CONF=dirty_decay_ms:0,muzzy_decay_ms:0 \
   --setenv=GOMEMLIMIT=512MiB --setenv=GOMAXPROCS=1 \
   --setenv=GOPATH="$(go env GOPATH)" --setenv=GOCACHE="$(go env GOCACHE)" \
   "$ALPHALAKE_REPO/.venv/bin/python" -m tools.publish_native_valuation \
@@ -34,7 +35,7 @@ systemctl show alphalake-native-publish -p ActiveState -p ExecMainStatus -p Memo
 journalctl -u alphalake-native-publish --no-pager
 ```
 
-证券范围由操作者明确选择；`--published-scope`复用已验收的完整发布范围，不读取旧样本清单。固定100家加26家关联及缺口证券是回归范围，首次建立或扩大生产范围须从主库身份另外固定。扩大或缩小范围须单独验收，不能按成功结果筛清单。只消费现有数据时改用`--source-mode local`并去掉`--sync-references`、`--quote-date`；缓存财务及参考重放用`--source-mode offline --sync-references`，不刷新行情。源码新增不等于该命令全部模式均已在线验收，当前验收边界见文末。
+证券范围由操作者明确选择；`--published-scope`复用已验收的完整发布范围，不读取旧样本清单。固定100家加26家关联及缺口证券是回归范围，首次建立或扩大生产范围须从主库身份另外固定。扩大或缩小范围须单独验收，不能按成功结果筛清单。只消费现有数据时改用`--source-mode local`并去掉`--sync-references`、`--quote-date`；缓存财务及参考重放用`--source-mode offline --sync-references`，同样去掉`--quote-date`，不刷新行情。源码新增不等于该命令全部模式均已在线验收，当前验收边界见文末。
 
 ### 全量数据与生产发布
 
@@ -178,6 +179,8 @@ schema57的`reference.issuer_industry_review`保存不可变验证包、完整�
 
 
 ## 验收边界
+
+10月5日现行完整发布范围已通过新入口的offline财务／参考组合、候选与旧快照复算、真实8080原子发布及逐家复验；证券范围由`--published-scope`冻结，不沿用旧样本文件。隔离两股真实副本另外验证同截止复用和HTTP故障回滚；两股独立在线行情验证新来源收据，部分／未完成／全失败边界有回归。该新组合尚未全量重跑online模式，不能据此称全部上游已核对最新。数量、性能和收据见[手工交付验收](../history/manual-delivery-workflow-20261005.md)。
 
 9月30日指定102家范围的在线周期已完成真实验收：财务清单请求三台节点均为空，明确使用合格缓存；公告目录、9月30日收盘窗口、物化、候选API、原子发布与8080逐家复验完成。100成功、2项已知拒绝均保留；不称财务上游最新，未刷新参考上游。相同截止的local重放不重导、不重算、不替换网页文件；来源阶段故障保持可信网页文件，隔离副本的真实HTTP故障触发切换回滚。
 

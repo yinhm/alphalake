@@ -3,6 +3,7 @@
 `sync-valuation-quotes`只取得原生估值实际消费的近期行情窗口。在线`publish_native_valuation`已改用此入口；完整日线同步仍由`sync-daily`/`sync-daily-all`负责，不改变其语义。
 
 ```bash
+mkdir -p workspace/derived/quote-review
 alphalake sync-valuation-quotes workspace/alphalake.duckdb \
   --symbols sh600004,sh600006,sh600008,sh600009,sh600010 \
   --date 2026-09-29 --report workspace/derived/quote-review/source.json
