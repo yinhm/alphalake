@@ -29,7 +29,7 @@ def compare(baseline, basis='terminal-transition'):
     before = review_report(baseline)
     original = CompanyValuationInput.model_validate(baseline['inputs'])
     a = original.valuation_assumptions
-    if a.projection_years != 10 or a.annual_sales_to_capital is not None:
+    if a.projection_years != 10 or a.annual_sales_to_capital is not None or a.annual_net_reinvestment is not None:
         return dict(status='outside_policy_scope', reason='requires ten-year two-stage capital baseline')
     policy = POLICY if basis == 'terminal-transition' else HISTORY_POLICY
     evidence = None

@@ -116,6 +116,8 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 比较资本效率过渡时读取`docs/valuation/capital-efficiency.md`，复用`tools.compare_native_capital`及当前已核验情景目录。该工具只改显式`annual_sales_to_capital`，保留其他假设；终点是原终值政策的代数配套，不是新发现的公司资本效率。报告再投资和条件值变化，并保留原12家缺项/拒绝，不按价格选择过渡情景。`--basis company-history`另以最近连续三年收入合计/含账面少数股权的研发调整资本合计执行完整DCF单因素对照；当前v3直接使用`consolidated_book_equity`，不再另加少数股权；不得将股权桥接的市场少数权益当作账面资本，缺项不归零；缺年、非正资本或租赁/专项prepared TTM口径不匹配则保留原因，不自动改用公司代理。
 
+显式总资本预算使用`inputs.valuation_assumptions.annual_net_reinvestment`，按实际投资年、百万元报表币种供给完整预测年数；与`annual_sales_to_capital`互斥，不再按销售领先期移动，标量倍率不消费。总预算已含资本化研发净投入，不再加研发或营运资本；零／负预算保留，公司依据另审。终值仍按g/ROIC，末期衔接由现有审阅器诊断，不能自动延长预算或设置投入下限；无预算时保留原路径。完整请求／PATCH及清空规则见[数据契约](../../docs/valuation/data-contract.md#显式年度总净再投资)。既有周期／资本倍率／规则候选工具不替换用户已填预算，完整显式条件可直接交付。
+
 资本倍率适用性核对复用`tools.review_native_policy`的`capital.proxy_comparison`：只看最新完整财年起五年，模型与独立SQLite不混合；历史存量倍率反事实只量化投入敏感性，不作为获批未来效率或完整DCF，缺年不延长窗口。参见[资本核对](../../docs/valuation/capital-efficiency.md)。
 
 原生入口统一使用标准财务出口，不再自动启用安克/苏泊尔专项EBIT。来源EBIT可用不证明经营范围已闭合；比较旧结果须同时核对利润、现金、投资及恢复的历史行，并按当前政策重建，不能只把差额归因于EBIT。

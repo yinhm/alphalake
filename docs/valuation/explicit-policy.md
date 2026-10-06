@@ -36,6 +36,7 @@
 | `revenue_growth_next_year`、`revenue_growth_years_2_5`、`high_growth_years`、`projection_years` | 同窗收入观测、未来起点、持续期及收敛期限 | 看预测收入绝对规模；一年高增长窗口仍可能有十年渐变，不把最近同比称长期预测事实 |
 | `operating_margin_next_year`、`target_operating_margin`、`margin_convergence_year` | 报表→研发/租赁调整桥、未来利润率目标与过渡 | 历史/行业利润率按相同范围和税前后口径比较；正利润不证明持续性，亏损不等于无估值方法 |
 | `sales_to_capital_high`、`sales_to_capital_stable` | 公司存量或明确地域的行业资本代理，用于预测新增投入 | 分开存量/新增效率；再投资已是合计净投入，不另加研发或营运资本。资本释放需可回收依据；隐含回报不等于项目IRR |
+| `annual_net_reinvestment` | 显式逐年总净再投资预算，百万元报表币种，按实际投资年对齐 | 与年度资本倍率互斥；已含资本化研发净投入，不再追加；零／负值保留，不自动生成预算或改变终值g/ROIC |
 | `override_reinvestment_lag`、`reinvestment_lag_years` | 是否覆盖投入到收入的时间差 | 不把一年当统一经济规律；沿用现有路径并解释建设/周转假设 |
 | `effective_tax_rate_override_years_1_5`、`override_tax_convergence` | 与`macro_inputs`有效/边际税率对应的经营税路径 | 字段名不能代替实际时序：高增长窗口影响税率过渡。分别看税率、NOL、税盾和税后利润，不称纯增长变化 |
 | `cost_of_capital_stable_override`、`stable_growth_rate`、`roic_stable_override` | 成熟风险/融资、同币种增长与新增资本回报 | 检查实际终值WACC大于g、ROIC有限且正；`roic_stable_override`留空按现有引擎使用实际终值WACC，是无超额回报情景，不是公司必然状态 |

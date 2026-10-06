@@ -96,7 +96,8 @@ def cycle_conditions(baseline):
     """附加固定观察条件；不更改原事实，不覆盖用户已填未来路径。"""
     inputs = CompanyValuationInput.model_validate(baseline['inputs'])
     a, adj = inputs.valuation_assumptions, inputs.adjustment_inputs
-    if a.annual_forecast is not None or a.annual_sales_to_capital is not None or a.research_tax is not None:
+    if (a.annual_forecast is not None or a.annual_sales_to_capital is not None
+            or a.annual_net_reinvestment is not None or a.research_tax is not None):
         raise ValueError('explicit_future_path_preserved; submit a separately reviewed cycle condition')
     if adj.has_operating_leases:
         raise ValueError('reported_margin_requires_matching_lease_adjustment_scope')

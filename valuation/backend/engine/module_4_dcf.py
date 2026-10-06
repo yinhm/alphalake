@@ -245,6 +245,7 @@ def _reinvestment_path(
     high_growth_years: int,
     total_years: int,
     annual_sales_to_capital: list[float] | None = None,
+    annual_net_reinvestment: list[float] | None = None,
 ) -> list[float]:
     """Sales-to-Capital reinvestment with lag ∈ {0, 1, 2, 3}.
 
@@ -255,7 +256,16 @@ def _reinvestment_path(
     For year t (1-indexed):
       S/C_t = explicit annual path when supplied; otherwise high/stable ratio
       reinvestment_t = (rev[t + lag] − rev[t + lag − 1]) / S/C_t
+
+    A direct total budget is aligned to the investment year, without lag or
+    another research/working-capital deduction. It does not set terminal ROIC.
     """
+    if annual_net_reinvestment is not None:
+        if annual_sales_to_capital is not None:
+            raise InvalidReinvestment('annual net reinvestment and annual sales-to-capital are mutually exclusive')
+        if len(annual_net_reinvestment) != total_years or any(not math.isfinite(v) for v in annual_net_reinvestment):
+            raise InvalidReinvestment('annual net reinvestment must cover every year with finite values')
+        return list(annual_net_reinvestment)
     ratios = annual_sales_to_capital if annual_sales_to_capital is not None else (sc_high, sc_stable)
     if annual_sales_to_capital is not None and len(annual_sales_to_capital) != total_years:
         raise InvalidReinvestment("annual sales-to-capital must cover every year")
@@ -443,6 +453,10 @@ def compute_dcf(
         for name in ('sales_to_capital_high', 'sales_to_capital_stable'):
             forecast_parameters[name] = dict(value=None, source='annual_sales_to_capital', editable=False,
                 basis='显式年度资本效率路径优先；两阶段标量不参与计算。')
+    if assumptions.annual_net_reinvestment is not None:
+        for name in ('sales_to_capital_high', 'sales_to_capital_stable'):
+            forecast_parameters[name] = dict(value=None, source='annual_net_reinvestment', editable=False,
+                basis='显式年度总净再投资预算优先，按实际投资年对齐；资本倍率及销售领先期不参与计算，预算已含资本化研发净投入，不再重复扣减。')
     forecast_parameters['cost_of_capital_stable_override'] = dict(
         value=wacc_terminal,
         source=('explicit_financing' if financing is not None else
@@ -524,7 +538,8 @@ def compute_dcf(
 
     # --- Reinvestment ---
     reinvestment_projections = _reinvestment_path(
-        extended_rev, sc_high, sc_stable, lag, high_growth_years, n, assumptions.annual_sales_to_capital
+        extended_rev, sc_high, sc_stable, lag, high_growth_years, n,
+        assumptions.annual_sales_to_capital, assumptions.annual_net_reinvestment
     )
 
     # --- FCFF ---

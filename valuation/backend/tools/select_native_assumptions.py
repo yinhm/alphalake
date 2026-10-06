@@ -15,6 +15,9 @@ def select(baseline, discount_inputs, reference_rows, reference_cutoff, policy):
     if {k:v for k,v in policy.items() if k != 'boundary'} != expected or not policy.get('boundary'):
         raise ValueError('unsupported assumption selection policy')
     inputs = CompanyValuationInput.model_validate(discount_inputs).model_copy(deep=True)
+    if (inputs.valuation_assumptions.annual_net_reinvestment is not None
+            or baseline['inputs']['valuation_assumptions'].get('annual_net_reinvestment') is not None):
+        raise ValueError('explicit net reinvestment requires a matching selection policy; use complete explicit delivery')
     if inputs.valuation_assumptions.debt_tax_shield is not None:
         raise ValueError('explicit future financing requires a matching selection policy; use complete explicit delivery')
     if inputs.ticker != baseline['inputs']['ticker']:

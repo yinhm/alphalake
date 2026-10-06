@@ -583,8 +583,8 @@ def _write_stories_to_numbers(wb: openpyxl.Workbook, inp: CompanyValuationInput,
         ("How fast will it grow after year 1?", "Revenue growth (transition anchor / initial stage)", "revenue_growth_years_2_5", va.revenue_growth_years_2_5, "User Input", PCT_FMT, GREEN_FILL),
         ("How profitable at maturity?", "Target pre-tax operating margin", "target_operating_margin", va.target_operating_margin, "User Input", PCT_FMT, GREEN_FILL),
         ("How long to reach target margin?", "Year of convergence", "margin_convergence_year", va.margin_convergence_year, "User Input", None, GREEN_FILL),
-        ("How efficiently reinvest?", "Sales/Capital (initial stage)", "sales_to_capital_high", va.sales_to_capital_high, "Calculated", DEC_FMT, GRAY_FILL),
-        ("Reinvestment in stable growth?", "Sales/Capital (transition stage)", "sales_to_capital_stable", va.sales_to_capital_stable, "Calculated", DEC_FMT, GRAY_FILL),
+        ("How efficiently reinvest?", "Sales/Capital (initial stage)", "sales_to_capital_high", None if va.annual_net_reinvestment is not None else va.sales_to_capital_high, "Not consumed: explicit total budget" if va.annual_net_reinvestment is not None else "Calculated", DEC_FMT, GRAY_FILL),
+        ("Reinvestment in stable growth?", "Sales/Capital (transition stage)", "sales_to_capital_stable", None if va.annual_net_reinvestment is not None else va.sales_to_capital_stable, "Not consumed: explicit total budget" if va.annual_net_reinvestment is not None else "Calculated", DEC_FMT, GRAY_FILL),
         ("How risky is this company?", "Cost of capital", "wacc", coc.wacc if coc else None, "Calculated", PCT_FMT, GRAY_FILL),
         ("What is the long-term growth rate?", "Stable growth rate", "stable_growth_rate", report.dcf.terminal_growth, "User Input", PCT_FMT, GREEN_FILL),
         ("Could this company fail?", "Probability of failure", "failure_probability", va.failure_probability, "User Input", PCT_FMT, GREEN_FILL),
@@ -671,10 +671,10 @@ def _write_diagnostics(wb: openpyxl.Workbook, inp: CompanyValuationInput, report
     _section_title(ws, row, "Step 4: Reinvestment", 2)
     row += 1
     _cell(ws, row, 1, "Sales/capital years 1-5", font=BOLD_FONT)
-    _cell(ws, row, 2, va.sales_to_capital_high, fill=GRAY_FILL, fmt=DEC_FMT)
+    _cell(ws, row, 2, None if va.annual_net_reinvestment is not None else va.sales_to_capital_high, fill=GRAY_FILL, fmt=DEC_FMT)
     row += 1
     _cell(ws, row, 1, "Sales/capital years 6-10", font=BOLD_FONT)
-    _cell(ws, row, 2, va.sales_to_capital_stable, fill=GRAY_FILL, fmt=DEC_FMT)
+    _cell(ws, row, 2, None if va.annual_net_reinvestment is not None else va.sales_to_capital_stable, fill=GRAY_FILL, fmt=DEC_FMT)
     row += 1
     _cell(ws, row, 1, "Industry sales/capital", font=BOLD_FONT)
     _cell(ws, row, 2, ind.sales_to_capital, fill=ORANGE_FILL, fmt=DEC_FMT)

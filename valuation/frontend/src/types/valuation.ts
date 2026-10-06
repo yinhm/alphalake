@@ -284,6 +284,7 @@ export interface DebtTaxShieldYear {
 export interface ValuationAssumptions {
   annual_forecast?: { growth: number; margin: number; tax: number }[] | null;
   annual_sales_to_capital?: number[] | null;
+  annual_net_reinvestment?: number[] | null;
   debt_tax_shield: {
     policy_id: string;
     years: DebtTaxShieldYear[];

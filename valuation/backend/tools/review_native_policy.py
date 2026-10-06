@@ -127,7 +127,7 @@ def capital_proxy_comparison(base_year, model_rows, independent_rows, peers, for
             comparison['industry_comparisons'].append(dict(industry=peer['industry'], region=peer['region'],
                 sales_to_capital=industry_ratio,
                 model_to_industry_ratio=ratio/industry_ratio if positive(ratio) and positive(industry_ratio) else None))
-        if positive(ratio):
+        if positive(ratio) and all(r['capital_funding']['incremental_revenue_million_cny'] is not None for r in forecast[:5]):
             # 同一批未来收入增量和投入滞后；这里只量化资本选择，终值/股权桥不参与。
             original = [r['reinvestment_million_cny'] for r in forecast[:5]]
             alternative = [r['capital_funding']['incremental_revenue_million_cny']/ratio for r in forecast[:5]]
@@ -286,27 +286,29 @@ def review_report(body, annual_evidence=None):
     sc_high = a.sales_to_capital_high if a.sales_to_capital_high is not None else 2.5
     sc_stable = a.sales_to_capital_stable if a.sales_to_capital_stable is not None else sc_high
     lag = max(0, min(3, a.reinvestment_lag_years)) if a.override_reinvestment_lag else 1
+    direct_budget = a.annual_net_reinvestment is not None
     extended_revenue = [raw.revenues or 0.0, *dcf.revenue_projections]
     for _ in range(3):
         extended_revenue.append(extended_revenue[-1]*(1+g))
     for row in rows:
         year = row['year']
-        funded_year = year+lag
-        ratio = a.annual_sales_to_capital[year-1] if a.annual_sales_to_capital is not None else (sc_high if year <= (a.high_growth_years or 5) else sc_stable)
-        delta = extended_revenue[funded_year]-extended_revenue[funded_year-1]
-        expected = delta/ratio
+        funded_year = None if direct_budget else year+lag
+        ratio = None if direct_budget else (a.annual_sales_to_capital[year-1] if a.annual_sales_to_capital is not None else (sc_high if year <= (a.high_growth_years or 5) else sc_stable))
+        delta = None if direct_budget else extended_revenue[funded_year]-extended_revenue[funded_year-1]
+        expected = a.annual_net_reinvestment[year-1] if direct_budget else delta/ratio
         if not math.isclose(expected, row['reinvestment_million_cny'], rel_tol=1e-12, abs_tol=1e-9):
-            raise ValueError('forecast reinvestment does not match sales-to-capital funding')
+            raise ValueError('forecast reinvestment does not match explicit budget' if direct_budget else 'forecast reinvestment does not match sales-to-capital funding')
         row['capital_funding'] = dict(revenue_year=funded_year,
-            revenue_extension='terminal_growth_padding' if funded_year > len(rows) else 'forecast',
+            revenue_extension=('not_inferred_from_explicit_budget' if direct_budget else
+                'terminal_growth_padding' if funded_year > len(rows) else 'forecast'),
             incremental_revenue_million_cny=delta, sales_to_capital=ratio,
             recomputed_reinvestment_million_cny=expected)
-        bridge = dict(status='outside_comparable_forecast', funded_year=funded_year,
+        bridge = dict(status='not_inferred_from_explicit_budget' if direct_budget else 'outside_comparable_forecast', funded_year=funded_year,
             incremental_nopat_million_cny=None, revenue_contribution_million_cny=None,
             nopat_margin_contribution_million_cny=None,
             incremental_nopat_per_reinvestment=None, constant_nopat_margin_incremental_return=None)
         # 不以历史不同税/研发口径补第0年，也不把终值延长收入伪装成已预测利润。
-        if 2 <= funded_year <= len(rows):
+        if not direct_budget and 2 <= funded_year <= len(rows):
             prior, current = rows[funded_year-2:funded_year]
             if prior['revenue_million_cny'] > 0 and current['revenue_million_cny'] > 0:
                 prior_margin = prior['nopat_million_cny']/prior['revenue_million_cny']
@@ -353,9 +355,9 @@ def review_report(body, annual_evidence=None):
         raise ValueError('terminal normalized value and tax transition differ from engine')
     # 沿用原投入滞后，把同一个终值年度与继续沿用资本倍率的反事实相比。
     funded_delta = rows[-1]['revenue_million_cny']*(1+g)**lag*g
-    ending_ratio = a.annual_sales_to_capital[-1] if a.annual_sales_to_capital is not None else sc_stable
-    continued_investment = funded_delta/ending_ratio
-    equivalent_ratio = funded_delta/terminal_investment if terminal_investment > 0 and funded_delta > 0 else None
+    ending_ratio = None if direct_budget else (a.annual_sales_to_capital[-1] if a.annual_sales_to_capital is not None else sc_stable)
+    continued_investment = (rows[-1]['reinvestment_million_cny']*(1+g) if direct_budget else funded_delta/ending_ratio)
+    equivalent_ratio = funded_delta/terminal_investment if not direct_budget and terminal_investment > 0 and funded_delta > 0 else None
     spreads = [dict(investment_year=r['year'], funded_year=r['capital_funding']['revenue_year'],
         constant_margin_return=r['incremental_return_bridge']['constant_nopat_margin_incremental_return'],
         initial_wacc=replay.cost_of_capital.wacc,
@@ -365,7 +367,7 @@ def review_report(body, annual_evidence=None):
         marginal_return_screen=dict(years=spreads, below_initial_wacc_years=[r['investment_year'] for r in spreads if r['spread'] < 0],
             boundary='恒定税后利润率分量相对初始WACC的筛查；不是项目IRR，不认证时间变化风险或投资因果'),
         terminal_transition=dict(nopat_million_cny=terminal_nopat,
-            reinvestment_million_cny=terminal_investment, continued_capital_ratio_reinvestment_million_cny=continued_investment,
+            reinvestment_million_cny=terminal_investment, continued_capital_ratio_reinvestment_million_cny=None if direct_budget else continued_investment,
             reinvestment_rule_change_million_cny=terminal_investment-continued_investment,
             fcff_rule_change_million_cny=continued_investment-terminal_investment,
             equivalent_sales_to_capital=equivalent_ratio, forecast_sales_to_capital=ending_ratio,
@@ -373,7 +375,12 @@ def review_report(body, annual_evidence=None):
             reinvestment_change_from_last_year_million_cny=terminal_investment-rows[-1]['reinvestment_million_cny'],
             fcff_change_from_last_year_million_cny=terminal_fcff-rows[-1]['fcff_million_cny'],
             requires_capital_transition_basis=not math.isclose(terminal_investment, continued_investment, rel_tol=1e-10, abs_tol=1e-8),
-            boundary='同一终值年度、同一滞后下比较两条再投资规则；等价倍率是代数诊断，不自动替换行业代理或终值ROIC'))
+            boundary=('最后显式预算按稳定增长扩大后与g/ROIC投入比较，只作衔接诊断，不推算永续预算或新增资本回报；研发及非研发范围另审。' if direct_budget else
+                '同一终值年度、同一滞后下比较两条再投资规则；等价倍率是代数诊断，不自动替换行业代理或终值ROIC')))
+    if direct_budget:
+        economic_checks['terminal_transition'].update(
+            comparison_basis='last_explicit_budget_scaled_by_terminal_growth_not_perpetual_forecast',
+            continued_explicit_budget_reinvestment_million_cny=continued_investment)
     missing = [name for name in ('capex', 'd_a', 'change_in_noncash_wc') if getattr(raw, name) is None]
     result = dict(status='requires_analyst_judgment', automatic_adoption=False,
         unit='million_CNY', ticker=inputs.ticker, economic_checks=economic_checks,
@@ -404,12 +411,12 @@ def review_report(body, annual_evidence=None):
         forecast=rows,
         capital=dict(proxy_comparison=capital_proxy_comparison(date.fromisoformat(inputs.period_date_10k[:10]).year,
                 model_annual_evidence, annual_evidence_rows, peers, rows),
-            annual_sales_to_capital=a.annual_sales_to_capital, sales_to_capital_high=sc_high,
-            high_ratio_basis='annual_path_overrides_two_stage' if a.annual_sales_to_capital is not None else ('explicit_assumption' if a.sales_to_capital_high is not None else 'model_default'),
-            sales_to_capital_stable=sc_stable,
-            stable_ratio_basis='annual_path_overrides_two_stage' if a.annual_sales_to_capital is not None else ('explicit_assumption' if a.sales_to_capital_stable is not None else 'inherits_high_ratio'),
+            annual_sales_to_capital=a.annual_sales_to_capital, sales_to_capital_high=None if direct_budget else sc_high,
+            high_ratio_basis='not_consumed_by_explicit_budget' if direct_budget else ('annual_path_overrides_two_stage' if a.annual_sales_to_capital is not None else ('explicit_assumption' if a.sales_to_capital_high is not None else 'model_default')),
+            sales_to_capital_stable=None if direct_budget else sc_stable,
+            stable_ratio_basis='not_consumed_by_explicit_budget' if direct_budget else ('annual_path_overrides_two_stage' if a.annual_sales_to_capital is not None else ('explicit_assumption' if a.sales_to_capital_stable is not None else 'inherits_high_ratio')),
             reinvestment_lag_years=lag,
-            forecast_method='incremental_revenue_divided_by_sales_to_capital',
+            forecast_method='explicit_annual_total_net_reinvestment' if direct_budget else 'incremental_revenue_divided_by_sales_to_capital',
             forecast_scope='aggregate_net_reinvestment; do_not_add_working_capital_or_RD_again',
             historical_cashflow_is_forecast_prerequisite=False,
             historical_cashflow_role='classification_and_capital_efficiency_validation_not_automatic_forecast',
@@ -437,6 +444,17 @@ def review_report(body, annual_evidence=None):
             capital='requires_marginal_capital_evidence',
             wacc='sensitivity_only_explicit_reference_policy'),
         boundary='同引擎重放只验证计算一致性，非独立语义证据或预测有效性；亏损和负再投资保留，不以阈值批准。')
+    if direct_budget:
+        result['capital'].update(annual_net_reinvestment=a.annual_net_reinvestment,
+            reinvestment_lag_applied=False, budget_evidence_verified=False)
+        result['decision']['capital'] = 'requires_total_net_reinvestment_budget_evidence'
+        if a.research_tax is not None:
+            amort = dcf.terminal_tax_base-dcf.terminal_ebit+a.research_tax.terminal_deduction
+            net = a.research_tax.terminal_expense-amort
+            result['terminal']['research_capital'] = dict(
+                amortization_million_cny=amort, net_investment_million_cny=net,
+                nonresearch_net_investment_million_cny=terminal_investment-net,
+                evidence_verified=False)
     result['methodology'] = methodology_review(inputs, replay, result)
     return result
 
@@ -487,7 +505,8 @@ def methodology_review(inputs, report, review):
         'target_operating_margin','sales_to_capital_high','sales_to_capital_stable',
         'cost_of_capital_stable_override','roic_stable_override') if getattr(a,name) is None
         and not (a.annual_forecast is not None and name in ('revenue_growth_next_year','operating_margin_next_year','target_operating_margin'))
-        and not (a.annual_sales_to_capital is not None and name in ('sales_to_capital_high','sales_to_capital_stable'))
+        and not ((a.annual_sales_to_capital is not None or a.annual_net_reinvestment is not None)
+            and name in ('sales_to_capital_high','sales_to_capital_stable'))
         and not (a.debt_tax_shield is not None and name == 'cost_of_capital_stable_override')]
     flag('model_defaults_require_explicit_economic_basis', bool(defaults))
     scenario = inputs.model_copy(deep=True)

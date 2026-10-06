@@ -511,6 +511,7 @@ class ValuationAssumptions(BaseModel):
     research_tax: ResearchTaxForecast | None = None
     debt_tax_shield: DebtTaxShieldForecast | None = None
     annual_sales_to_capital: list[float] | None = Field(default=None, description="Explicit positive sales/capital per forecast investment year; overrides two-stage ratios")
+    annual_net_reinvestment: list[float] | None = Field(default=None, description="Explicit total net reinvestment per actual forecast investment year, in millions of reporting currency; includes capitalized research net investment, not an additional deduction")
 
     @model_validator(mode='after')
     def forecast_length(self):
@@ -527,6 +528,11 @@ class ValuationAssumptions(BaseModel):
                 or len(self.annual_sales_to_capital) != self.projection_years
                 or any(not math.isfinite(v) or v <= 0 for v in self.annual_sales_to_capital)):
             raise ValueError('annual sales-to-capital must cover every year with finite positive values')
+        if self.annual_net_reinvestment is not None:
+            if self.annual_sales_to_capital is not None:
+                raise ValueError('annual net reinvestment and annual sales-to-capital are mutually exclusive')
+            if len(self.annual_net_reinvestment) != self.projection_years:
+                raise ValueError('annual net reinvestment must cover every projection year')
         return self
 
     projection_years: int = Field(default=10, ge=1, description="Total projection years (high growth + transition)")

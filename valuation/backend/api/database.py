@@ -505,7 +505,8 @@ def _initialize_native_assumptions(inputs, report):
         margin = report.adjusted.adjusted_ebit / current.revenues
         initialize('operating_margin_next_year', margin, '当前调整后EBIT/同窗收入；含既有研发调整，不是原始报表利润率')
         initialize('target_operating_margin', margin, '当前调整后利润率持平延续；未与不同口径行业均值混合，不认证可持续目标')
-    if assumptions.annual_sales_to_capital is None and assumptions.sales_to_capital_high is None:
+    if (assumptions.annual_sales_to_capital is None and assumptions.annual_net_reinvestment is None
+            and assumptions.sales_to_capital_high is None):
         ratio = inputs.industry_data.sales_to_capital
         if ratio is not None and math.isfinite(ratio) and ratio > 0:
             basis = f'{inputs.industry_data.region}/{inputs.industry_data.industry_name}行业销售资本倍率参考；作为新增投入效率的条件代理，不是公司边际效率'
