@@ -39,13 +39,17 @@ const capitalHistoryReview = `
  'profit_before_tax','right_of_use_depreciation','short_term_borrowings','total_equity','noncontrolling_interests');
  INSERT INTO _capital_history_review
  SELECT p.* REPLACE(DATE '2021-01-01' AS valid_from,p.valid_from AS valid_to,
- 'official-capital-earnings-history-v1;'||s.definition_reference AS notes)
+ CASE WHEN p.valid_from=DATE '2025-01-01' THEN 'official-income-composition-history-v1;'
+ ELSE 'official-capital-earnings-history-v1;' END||s.definition_reference AS notes)
  FROM fundamental.provider_field p JOIN fundamental.source_field s
  ON s.source=p.source AND s.provider_field=p.provider_field AND s.name=p.canonical_field
  AND s.unit=p.unit AND s.value_kind=p.value_kind AND s.period_basis=p.period_basis
  AND s.value_multiplier=p.value_multiplier AND s.definition_status='official'
- WHERE p.source='tdx' AND p.valid_from=DATE '2024-06-30' AND p.valid_to IS NULL
- AND p.canonical_field IN ('capital_expenditure_cash','investment_income','fair_value_change_income');`
+ WHERE p.source='tdx' AND p.valid_to IS NULL AND (
+ (p.valid_from=DATE '2024-06-30' AND p.canonical_field IN
+ ('capital_expenditure_cash','investment_income','fair_value_change_income','operating_profit_cumulative'))
+ OR (p.valid_from=DATE '2025-01-01' AND p.canonical_field IN
+ ('associates_and_joint_ventures_investment_income','investment_income_cash','debt_investments','other_debt_investments')));`
 
 func insertCapitalHistory(ctx context.Context, tx *sql.Tx) (int64, error) {
 	if _, err := tx.ExecContext(ctx, capitalHistoryReview); err != nil {
@@ -55,8 +59,8 @@ func insertCapitalHistory(ctx context.Context, tx *sql.Tx) (int64, error) {
 	if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM _capital_history_review`).Scan(&count); err != nil {
 		return 0, err
 	}
-	if count != 30 {
-		return 0, fmt.Errorf("capital history requires 30 unchanged official definitions, found %d", count)
+	if count != 35 {
+		return 0, fmt.Errorf("capital history requires 35 unchanged official definitions, found %d", count)
 	}
 	if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM (
  SELECT p.* FROM fundamental.provider_field p JOIN _capital_history_review h

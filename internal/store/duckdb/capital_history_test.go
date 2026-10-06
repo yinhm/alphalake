@@ -29,18 +29,35 @@ func TestCapitalHistoryReview(t *testing.T) {
 	if count != 8 {
 		t.Fatal(count)
 	}
-	// Three already-reviewed CNY/YTD fields share their existing zero rule;
+	// Already-reviewed CNY/YTD fields share their existing zero rule;
 	// only the current five-year observation window is extended.
 	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_field WHERE notes LIKE 'official-capital-earnings-history-v1;%' AND valid_from=DATE '2021-01-01' AND valid_to=DATE '2024-06-30' AND unit='CNY' AND period_basis='ytd' AND value_multiplier=1 AND zero_policy='allow'`).Scan(&count))
-	if count != 3 {
+	if count != 4 {
 		t.Fatal("capital/earnings historical scope or unit incorrect", count)
 	}
 	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE notes LIKE 'official-capital-earnings-history-v1;%'`)
 	check(err)
 	nEarnings, err := ExtendCapitalHistory(ctx, db)
 	check(err)
-	if nEarnings != 3 {
+	if nEarnings != 4 {
 		t.Fatal("capital/earnings incremental review", nEarnings)
+	}
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_field
+ WHERE notes LIKE 'official-income-composition-history-v1;%'
+ AND valid_from=DATE '2021-01-01' AND valid_to=DATE '2025-01-01' AND unit='CNY'
+ AND ((canonical_field IN ('associates_and_joint_ventures_investment_income','investment_income_cash')
+ AND period_basis='ytd' AND value_multiplier=1 AND zero_policy='reject')
+ OR (canonical_field IN ('debt_investments','other_debt_investments')
+ AND period_basis='instant' AND value_multiplier=10000 AND zero_policy='allow'))`).Scan(&count))
+	if count != 4 {
+		t.Fatal("income/asset historical scale, period or zero policy incorrect", count)
+	}
+	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE notes LIKE 'official-income-composition-history-v1;%'`)
+	check(err)
+	nComposition, err := ExtendCapitalHistory(ctx, db)
+	check(err)
+	if nComposition != 4 {
+		t.Fatal("income/asset incremental review", nComposition)
 	}
 	// Upgrade old historical policies in place; cashflow supplements remain rejected.
 	checkExec := func(query string) { _, e := db.ExecContext(ctx, query); check(e) }
@@ -205,6 +222,13 @@ func TestCapitalHistoryArchivedRecord(t *testing.T) {
 	check(conn.QueryRowContext(ctx, `SELECT current_assets,current_liabilities,accounts_receivable,inventories,accounts_payable,trading_financial_assets FROM fundamental.statement_snapshot`).Scan(&balances[0], &balances[1], &balances[2], &balances[3], &balances[4], &balances[5]))
 	if balances != [6]float64{12367549440, 5901511680, 1654200064, 3233554176, 1778359168, 2330707712} {
 		t.Fatal("historical balances", balances)
+	}
+	var composition [5]float64
+	check(conn.QueryRowContext(ctx, `SELECT operating_profit_cumulative,
+ associates_and_joint_ventures_investment_income,investment_income_cash,debt_investments,other_debt_investments
+ FROM fundamental.statement_snapshot`).Scan(&composition[0], &composition[1], &composition[2], &composition[3], &composition[4]))
+	if composition != [5]float64{2376915712, 35621340, 33622328, 0, 0} {
+		t.Fatal("historical income/asset components", composition)
 	}
 	var parentEquity, totalEquity float64
 	check(conn.QueryRowContext(ctx, `SELECT equity_parent,total_equity FROM fundamental.statement_snapshot`).Scan(&parentEquity, &totalEquity))
