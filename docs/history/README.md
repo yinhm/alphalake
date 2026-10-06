@@ -6,6 +6,9 @@
 
 ## 最近主线证据
 
+- [周期行业框架、全发布范围及资本组成边界](cyclical-framework-delivery-20261006.md)
+- [周期七公司显式条件与源证据](cyclical-validation-20261006.md)
+
 - [全量沪深数据、原生API与现有网页发布](full-data-publication-20261005.md)
 
 - [有来源的可编辑初值、稳态覆盖及Excel会话快照](source-defaults-20261005.md)

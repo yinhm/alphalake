@@ -2,6 +2,8 @@
 
 本页是AlphaLake→SQLite→原生API→valuation的数据转换规范。修改解析、派生、导出、准入、会话或展示前，先核对本页及实际调用方；不能仅凭数据库列名或历史验收推断引擎要求。字段与来源映射由[SQLite导出手册](../guides/valuation-sqlite-export.md#数据范围与语义)统一维护，不再复制第二份词典。
 
+周期行业条件批次复用本页既有完整年度接口，不改变事实、原生准入或默认；调用方须同时遵守[周期契约](cyclical-valuation.md#条件批次与数据契约)。行业候选先绑定同版主库／SQLite范围审核，金额保持百万元CNY，原用户未来路径不覆盖；观察均值及回落年限是显式条件。总再投资包含研发净投入，隐含非研发资本释放和终值组成单独留痕，不新增额外研发扣款。直接年度净再投资尚无批准接口，不按收入持平臆造0资本需求。
+
 ## 职责与实际调用链
 
 `fundamental.statement_snapshot`标准宽表→`ExportFinancialSQLiteRows`批量投影→`tools.export_alphalake_sqlite`→SQLite→`data_sources.us_cn_hk_db.fetch_company/native_compatibility`→`api.database._db_record_to_company_input`→`engine.orchestrator.run_full_valuation`。
