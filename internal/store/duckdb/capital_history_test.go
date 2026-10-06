@@ -29,6 +29,19 @@ func TestCapitalHistoryReview(t *testing.T) {
 	if count != 8 {
 		t.Fatal(count)
 	}
+	// Three already-reviewed CNY/YTD fields share their existing zero rule;
+	// only the current five-year observation window is extended.
+	check(db.QueryRowContext(ctx, `SELECT count(*) FROM fundamental.provider_field WHERE notes LIKE 'official-capital-earnings-history-v1;%' AND valid_from=DATE '2021-01-01' AND valid_to=DATE '2024-06-30' AND unit='CNY' AND period_basis='ytd' AND value_multiplier=1 AND zero_policy='allow'`).Scan(&count))
+	if count != 3 {
+		t.Fatal("capital/earnings historical scope or unit incorrect", count)
+	}
+	_, err = db.ExecContext(ctx, `DELETE FROM fundamental.provider_field WHERE notes LIKE 'official-capital-earnings-history-v1;%'`)
+	check(err)
+	nEarnings, err := ExtendCapitalHistory(ctx, db)
+	check(err)
+	if nEarnings != 3 {
+		t.Fatal("capital/earnings incremental review", nEarnings)
+	}
 	// Upgrade old historical policies in place; cashflow supplements remain rejected.
 	checkExec := func(query string) { _, e := db.ExecContext(ctx, query); check(e) }
 	checkExec(`UPDATE fundamental.provider_field SET zero_policy='reject' WHERE canonical_field IN ('bonds_payable','short_term_borrowings','long_term_borrowings','lease_liabilities') AND valid_to=DATE '2025-01-01'`)

@@ -6,6 +6,7 @@
 
 ## 最近主线证据
 
+- [周期资本宽行核算、历史来源缺项归因及映射补链](cyclical-capital-inputs-20261006.md)
 - [周期行业框架、全发布范围及资本组成边界](cyclical-framework-delivery-20261006.md)
 - [周期七公司显式条件与源证据](cyclical-validation-20261006.md)
 

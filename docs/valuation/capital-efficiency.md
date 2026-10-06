@@ -127,6 +127,8 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.compare_native_capital \
 
 ### 历史映射补链
 
+2026-10-06继续复用`extend-capital-history`补通`capital_expenditure_cash`、`investment_income`、`fair_value_change_income`的2021-01-01至2024-06-30历史区间，原2024年起审核记录保留。三项均为已审核CNY元／累计流量，倍率1，沿用既有允许真实零的字段规则；只消除样本审核日期形成的实现缺口，不扩大五年观察窗或经济分类。来源核验与发布结果见[周期资本补链](../history/cyclical-capital-inputs-20261006.md)。
+
 少数股东权益的定义与[TDX官方目录](https://help.tdx.com.cn/quant/docs/markdown/TdxQuant.md/mindoc-1h10m001ic888.html)一致。`extend-capital-history`现将其与已有资本字段一起扩展至2025年前，原2025年起的审核记录保留；新旧规则不重叠，重复执行不新增映射。此处1900年是目录的开放历史下界，不意味着存在1900年数据；实际覆盖由本地归档、证券身份和披露关联决定。
 
 使用同一TDX目录和批量物化链路，未引入少数股权专用解析器；映射与金额核验分开。少数股权原已允许真实零，本次不更改零策略，也不把缺位置或无披露记录填成零。主库替换前比较全部其他标准值及既有少数股权值，SQLite仅允许历史少数股权单元格由空变为实际值；固定100家默认估值及12家条件场景分别复验。
