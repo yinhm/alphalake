@@ -60,6 +60,28 @@
 
 后续应先收紧识别：区分有明确价格／供需机制的周期暴露、尚待业务核实的需求暴露及一般经营风险；确认主营业务、利润传导和可比历史后再判断正常化是否适用。一般利润波动、高／低估值或固定五年均值不构成周期证据。真实周期股数量当前未确定；原观察协议、4,090家分母及结果保持冻结，不据此自动采用预测。上述口径纠正未修改筛选代码或估值默认。
 
+### 沪深300限定识别与重估
+
+用户进一步授权只识别沪深300，并据此重新计算。`tools.csi300_valuation`限定完整300只官方成分，消费同版主库范围审核和已发布SQLite；使用已留存申万细分业务筛选资源价格、材料价差、供需产能、生物供给、运力运价、经济需求及投资订单机制，不再按65个宽泛达摩达兰行业整体纳入。该识别是显式业务政策，不回写行业事实；行业分类证明主营类别，不证明当前峰谷、周期强弱或五年覆盖完整周期。
+
+细分类别不能区分具体业务时，允许显式原文业务审核文件`explicit-cycle-business-review-v1`：绑定证券、预期申万细分、业务说明和PDF路径／哈希／URL／页码；冲突、证据缺失或金融范围被覆盖时拒绝。存储、AI芯片、EDA和其他设计公司不因同属“集成电路设计”就采用同一路径；食品、软件、公用事业及品牌消费电子不自动正常化。未命中仅标“未采用周期方法”，不证明公司没有周期。
+
+全体非金融或分类待定成分重新调用现有网页`from-database`，金融保留范围外与报价。已识别周期股复用上述四个既有观察条件；主表在计算前固定展示`arithmetic-3y`，同时保留1／5年算术及3年收入加权结果，不按股价或估值高低选择。固定展示不是经济参数自动选择或默认采用；展示条件受阻时留空，不回退原默认或其他成功情景。其他成分保留原默认条件和真实拒绝。
+
+没有外部公司资本预算时继续保留原条件中的资本释放边界，不能借新接口自动估计预算或设置研发下限。原始收益口径、正常价格／销量、融资及资源寿命未闭合仍列限制；不得把条件可算当作合理预测。源码／协议、300只清单、分类依据、数据／参考／报价版本及完整API证据绑定，CSV／Excel／Markdown／HTML保留全部分母、原默认及价差。
+
+```bash
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.csi300_valuation \
+  --database workspace/valuation.sqlite --source-database workspace/alphalake.duckdb \
+  --constituents workspace/derived/csi300-valuation/constituents.json \
+  --scope workspace/derived/cyclical-income-history/published-coverage.json \
+  --business-overrides workspace/derived/csi300-valuation/cycle-inputs/business-reviews.json \
+  --output workspace/derived/csi300-valuation/cycle-adjusted \
+  --web http://127.0.0.1:8080 --quote-date 2026-09-30
+```
+
+执行前确认当前成分、参考、报价与同版范围报告，路径及日期是本轮实例；按独立1GiB服务串行运行。`--ticker`可用于小批接口验收，但不将子样本称作300只重估。网页和主库默认均不替换。
+
 ## 收益与资产组成的来源审核
 
 达摩达兰的[经营资产与其他资产说明](https://pages.stern.nyu.edu/adamodar/New_Home_Page/valquestions/a22.htm)要求收益口径与资产桥一致：经营DCF未计入的资产收益，对应资产才在桥接中另估；[持股估值说明](https://pages.stern.nyu.edu/adamodar/New_Home_Page/valquestions/valcrosshold.htm)进一步区分独立持股与合并子公司。保留持股收益的预测同时再加持股价值，存在重复计价风险；全部剔除投资收益也可能移除经营套保或其他业务收益。不能只凭科目名称统一减利润、加资产，更不能将账面余额认证为持股市场价值。
