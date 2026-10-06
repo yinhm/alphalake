@@ -4,8 +4,8 @@
 
 ## 执行约束
 
-- 当前进程硬限额1GiB，`MemoryHigh=896M`、`MemorySwapMax=0`；先检查系统空闲内存，不能仅因单任务有上限就并发启动。
-- 当前统一DuckDB预算1GiB，单线程；Go使用`GOMEMLIMIT=512MiB`、`GOMAXPROCS=1`。`GOMEMLIMIT`是Go垃圾回收软预算，不是RSS上限，也不覆盖DuckDB原生分配；整个服务组仍受1GiB硬上限约束。限额不足先分析结构与峰值，禁止盲目加内存、缩批或重试。
+- 当前整个服务组硬限额1GiB，宽表重建及多阶段导出的已验证配置为`MemoryHigh=960M`、`MemorySwapMax=0`；先检查系统空闲内存，不能仅因单任务有上限就并发启动。
+- 上述任务使用DuckDB组件预算512MiB、单线程，为Python编排、Go、原生分配和结果保留空间；不能把DuckDB预算设成整个服务的1GiB硬上限。Go使用`GOMEMLIMIT=512MiB`、`GOMAXPROCS=1`。两个软预算不保证RSS，也不能相加推算整组峰值；须核验实际服务资源。10月6日组件1GiB／768MiB均曾触发持续内存回收限速，512MiB接续成功，失败及WAL恢复见[补链验收](../history/cyclical-capital-inputs-20261006.md#全库存储验收)。限额不足先分析结构与峰值，禁止盲目加内存、缩批或重试。
 - 先小批验收，再执行固定范围任务；记录进程冷暖、耗时、RSS、输入版本和失败结果，门槛见[性能约束](financial-storage-redesign-20260925.md)。
 
 以下示例只演示隔离方式，实际操作先选定同步、物化或发布范围；不能把全量重放当作日常必做步骤。
@@ -15,11 +15,11 @@ ALPHALAKE_REPO="$PWD"  # 在项目根目录执行
 systemd-run --no-block --unit=alphalake-materialize \
   --property=Type=oneshot --property=RemainAfterExit=yes \
   --property=WorkingDirectory="$ALPHALAKE_REPO" \
-  --property=MemoryMax=1G --property=MemoryHigh=896M \
+  --property=MemoryMax=1G --property=MemoryHigh=960M \
   --property=MemorySwapMax=0 \
   --setenv=GOPATH="$(go env GOPATH)" --setenv=GOCACHE="$(go env GOCACHE)" \
   --setenv=GOMEMLIMIT=512MiB --setenv=GOMAXPROCS=1 \
-  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=1GiB \
+  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=512MiB \
   --setenv=DUCKDB_JE_MALLOC_CONF=dirty_decay_ms:0,muzzy_decay_ms:0 \
   --setenv=ALPHALAKE_DUCKDB_THREADS=1 \
   "$ALPHALAKE_REPO/alphalake" materialize-fundamentals workspace/alphalake.duckdb
@@ -45,12 +45,12 @@ journalctl -u alphalake-materialize --no-pager -n 60
 ALPHALAKE_REPO="$PWD"
 systemd-run --unit=alphalake-backend-test \
   --property=WorkingDirectory="$ALPHALAKE_REPO" \
-  --property=MemoryMax=1G --property=MemoryHigh=896M \
+  --property=MemoryMax=1G --property=MemoryHigh=960M \
   --property=MemorySwapMax=0 --property=OOMPolicy=stop \
   --setenv=PYTHONPATH="$ALPHALAKE_REPO/valuation/backend" \
   --setenv=GOPATH="$(go env GOPATH)" --setenv=GOCACHE="$(go env GOCACHE)" \
   --setenv=GOMEMLIMIT=512MiB --setenv=GOMAXPROCS=1 \
-  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=1GiB \
+  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=512MiB \
   --setenv=ALPHALAKE_DUCKDB_THREADS=1 \
   /usr/bin/env -u ALPHALAKE_WORKSPACE \
   "$ALPHALAKE_REPO/.venv/bin/python" -m pytest -q valuation/backend/tests --durations=30
