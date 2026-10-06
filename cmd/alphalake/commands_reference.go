@@ -7,7 +7,6 @@ import (
 	"flag"
 	"io"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/yinhm/alphalake/internal/ingest"
@@ -76,7 +75,11 @@ func runReferenceSync(ctx context.Context, command string, args []string) error 
 	case "sync-cny-yield":
 		sync = ingest.SyncCNYGovernmentYield
 	}
-	out, err := sync(ctx, db, filepath.Dir(args[0]), ingest.ReferenceOptions{Python: *python, Script: *script, Offline: *offline, LocalPath: *local})
+	root, err := duckstore.FinancialArchiveRoot(ctx, db)
+	if err != nil {
+		return err
+	}
+	out, err := sync(ctx, db, root, ingest.ReferenceOptions{Python: *python, Script: *script, Offline: *offline, LocalPath: *local})
 	if encodeErr := json.NewEncoder(os.Stdout).Encode(out); encodeErr != nil {
 		return errors.Join(err, encodeErr)
 	}

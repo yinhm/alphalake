@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -11,7 +12,6 @@ import (
 	duckstore "github.com/yinhm/alphalake/internal/store/duckdb"
 	"io"
 	"os"
-	"path/filepath"
 	"time"
 )
 
@@ -56,30 +56,45 @@ func runNativeReference(ctx context.Context, command string, args []string) erro
 		if exportErr != nil {
 			return exportErr
 		}
-		for _, body := range packet["releases"].([]json.RawMessage) {
-			var r struct {
-				ArtifactID int64 `json:"artifact_id"`
-			}
-			if err = json.Unmarshal(body, &r); err != nil {
-				return err
-			}
-			if _, _, err = artifact.LoadByID(ctx, db, filepath.Dir(args[0]), r.ArtifactID); err != nil {
-				return fmt.Errorf("native reference evidence verification: %w", err)
-			}
-		}
-		for _, a := range packet["issuer_associations"].([]duckstore.IssuerIndustryAssociation) {
-			for _, id := range []int64{a.AssociationArtifactID, a.Document.ArtifactID, a.Document.CatalogueArtifactID} {
-				if _, _, err = artifact.LoadByID(ctx, db, filepath.Dir(args[0]), id); err != nil {
-					return fmt.Errorf("issuer reference evidence verification: %w", err)
-				}
-			}
+		if err = verifyNativeReferenceEvidence(ctx, db, packet); err != nil {
+			return err
 		}
 		out = packet
 	} else {
-		out, err = ingest.SyncNativeReference(ctx, db, filepath.Dir(args[0]), *stem, ingest.ReferenceOptions{Python: *python, Script: *script, LocalPath: *local, Offline: *offline})
+		root, e := duckstore.FinancialArchiveRoot(ctx, db)
+		if e != nil {
+			return e
+		}
+		out, err = ingest.SyncNativeReference(ctx, db, root, *stem, ingest.ReferenceOptions{Python: *python, Script: *script, LocalPath: *local, Offline: *offline})
 	}
 	if err != nil {
 		return err
 	}
 	return json.NewEncoder(os.Stdout).Encode(out)
+}
+
+func verifyNativeReferenceEvidence(ctx context.Context, db *sql.DB, packet map[string]any) error {
+	root, err := duckstore.FinancialArchiveRoot(ctx, db)
+	if err != nil {
+		return err
+	}
+	for _, body := range packet["releases"].([]json.RawMessage) {
+		var r struct {
+			ArtifactID int64 `json:"artifact_id"`
+		}
+		if err = json.Unmarshal(body, &r); err != nil {
+			return err
+		}
+		if _, _, err = artifact.LoadByID(ctx, db, root, r.ArtifactID); err != nil {
+			return fmt.Errorf("native reference evidence verification: %w", err)
+		}
+	}
+	for _, a := range packet["issuer_associations"].([]duckstore.IssuerIndustryAssociation) {
+		for _, id := range []int64{a.AssociationArtifactID, a.Document.ArtifactID, a.Document.CatalogueArtifactID} {
+			if _, _, err = artifact.LoadByID(ctx, db, root, id); err != nil {
+				return fmt.Errorf("issuer reference evidence verification: %w", err)
+			}
+		}
+	}
+	return nil
 }
