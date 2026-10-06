@@ -31,9 +31,11 @@ BALANCE_FORMULAS = {
 }
 FLOW_CONTEXT = ('right_of_use_depreciation', 'investment_property_depreciation_amortization', 'capital_expenditure_cash',
     'revenue_cumulative', 'research_and_development_expense', 'investment_income', 'fair_value_change_income',
-    'income_tax_expense', 'profit_before_tax')
+    'income_tax_expense', 'profit_before_tax', 'operating_profit_cumulative',
+    'associates_and_joint_ventures_investment_income', 'investment_income_cash', 'net_exposure_hedging_income')
 BALANCE_CONTEXT = ('other_receivables', 'other_payables', 'other_current_assets',
-    'noncurrent_assets_due_within_one_year', 'notes_payable', 'derivative_financial_assets')
+    'noncurrent_assets_due_within_one_year', 'notes_payable', 'derivative_financial_assets',
+    'long_term_equity_investments', 'debt_investments', 'other_debt_investments', 'other_equity_instrument_investments')
 FLOW_FIELDS = {f for terms in FLOW_FORMULAS.values() for f, _ in terms} | set(FLOW_CONTEXT)
 FIELDS = sorted(FLOW_FIELDS | {f for terms in BALANCE_FORMULAS.values() for f, _ in terms} | set(BALANCE_CONTEXT))
 BOUNDARIES = {
