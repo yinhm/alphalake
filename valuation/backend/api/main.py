@@ -1,9 +1,12 @@
 """FastAPI application entry point — serves API + bundled frontend."""
 
 from pathlib import Path
+import math
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -18,6 +21,14 @@ from .database import router as database_router, valuation_router as db_valuatio
 from .knowledge import router as knowledge_router
 
 app = FastAPI(title="Valuation Engine API", version="0.1.0")
+
+
+@app.exception_handler(RequestValidationError)
+async def invalid_request_input(request: Request, error: RequestValidationError):
+    # Invalid NaN/Infinity inputs must not break the JSON rejection response.
+    detail = jsonable_encoder(error.errors(), custom_encoder={
+        float: lambda value: value if math.isfinite(value) else str(value)})
+    return JSONResponse(status_code=422, content={'detail': detail})
 
 
 @app.exception_handler(InvalidTerminalValue)

@@ -154,6 +154,13 @@ def test_api_budget_rejection_preserves_session_and_can_restore_ratio_path(monke
                 headers={'Content-Type':'application/json'})
             assert rejected.status_code == 422, rejected.text
             assert client.get(url).json() == saved
+        for values in ([0], [0, math.nan, 0], [0, math.inf, 0]):
+            invalid = inputs_for().model_dump(mode='json')
+            invalid['valuation_assumptions']['annual_net_reinvestment'] = values
+            rejected = client.post('/api/valuation', content=json.dumps({'inputs':invalid}),
+                headers={'Content-Type':'application/json'})
+            assert rejected.status_code == 422, rejected.text
+            assert client.get(url).json() == saved
         sensitivity = client.post(url+'/sensitivity')
         assert sensitivity.status_code == 200, sensitivity.text
         assert 'sales_to_capital_high' not in {r['driver'] for r in sensitivity.json()['bars']}
