@@ -15,6 +15,7 @@
 | 人民币显式场景 | [WACC与经营候选](native-cny-policy.md) | 来源、折现及经营假设分别保存，不与网页默认混为价格更新 |
 | 自动选择与合法变更 | [基础选择规则](native-assumption-selection.md) | 规则只是条件候选；合法输入变更须重建基线，不静默混用口径 |
 | 跨公司复验 | [统一情景](native-uniform-scenarios.md) | 固定分母、持续期与利润率场景，不逐个公司调参挑结果 |
+| 周期企业 | [正常化与显式回落路径](cyclical-valuation.md) | 利润、收入、研发、资本和融资联合核对；历史均值及回落年限不是自动预测 |
 | 资本效率 | [投入、回报及过渡](capital-efficiency.md) | 公司/行业存量倍率、未来新增效率、终值回报分开 |
 | 历史资本分量 | [标准资本核算](native-capital-definition.md) | 算术闭合不等于经营分类或预测倍率获批 |
 | 资产代理 | [已批准账面代理](valuation-book-proxies.md) | 现金/投资/债务范围限制保留，不冒充完整公允价值 |
