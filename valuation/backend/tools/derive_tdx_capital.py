@@ -3,13 +3,17 @@ import argparse
 from collections import Counter
 from datetime import date, datetime
 from decimal import Decimal
+import gzip
+import itertools
 import json
 from pathlib import Path
 import re
+import resource
 import subprocess
 import tempfile
+import time
 
-from tools.export_alphalake_sqlite import digest, validate_dates
+from tools.export_alphalake_sqlite import digest, record_facts, validate_dates
 
 FLOW_FORMULAS = {
     'reported_ebitda_less_ebit': (('reported_ebitda', 1), ('reported_ebit', -1)),
@@ -25,7 +29,9 @@ BALANCE_FORMULAS = {
         ('trading_financial_assets', -1), ('current_liabilities', -1),
         ('short_term_borrowings', 1), ('current_portion_noncurrent_liabilities', 1)),
 }
-FLOW_CONTEXT = ('right_of_use_depreciation', 'investment_property_depreciation_amortization', 'capital_expenditure_cash')
+FLOW_CONTEXT = ('right_of_use_depreciation', 'investment_property_depreciation_amortization', 'capital_expenditure_cash',
+    'revenue_cumulative', 'research_and_development_expense', 'investment_income', 'fair_value_change_income',
+    'income_tax_expense', 'profit_before_tax')
 BALANCE_CONTEXT = ('other_receivables', 'other_payables', 'other_current_assets',
     'noncurrent_assets_due_within_one_year', 'notes_payable', 'derivative_financial_assets')
 FLOW_FIELDS = {f for terms in FLOW_FORMULAS.values() for f, _ in terms} | set(FLOW_CONTEXT)
@@ -51,11 +57,11 @@ def derive(rows, instrument, period, cutoff, conflict=False):
         if (row['canonical_field'], row['instrument_id'], row['period'], row['unit'], row['period_type'],
                 row['statement_scope'], row['source']) != (field, instrument, period.isoformat(), 'CNY', expected, 'provider_default', 'tdx'):
             raise ValueError('incompatible standard identity/unit/period/scope')
-        available = datetime.fromisoformat(row['available_at'])
+        available = datetime.fromisoformat(row['available_at']) if row['available_at'] is not None else None
         amount = Decimal(row['value'])
-        if available.utcoffset() is None or available > cutoff or not amount.is_finite():
-            raise ValueError('future or invalid standard fact')
-        if not row['source_record_id'] or not row['source_filing_id'] or not row['artifact_sha256']:
+        if (available is not None and available.utcoffset() is None) or not amount.is_finite():
+            raise ValueError('invalid standard amount or announcement timezone')
+        if not row['source_record_id'] or not row['artifact_sha256']:
             raise ValueError('source evidence required')
         facts[field] = row
     calculations = {}
@@ -72,16 +78,71 @@ def derive(rows, instrument, period, cutoff, conflict=False):
     comparison_fields = {f for name in ('reported_ebitda_less_ebit', 'core_depreciation_amortization_components') for f, _ in FLOW_FORMULAS[name]}
     same_record = len({(facts[f]['source_record_id'], facts[f]['source_filing_id'], facts[f]['artifact_sha256']) for f in comparison_fields if f in facts}) == 1
     residual = str(Decimal(left)-Decimal(right)) if same_record and left is not None and right is not None else None
+    records, indices, values = [], {}, {}
+    shared = ('instrument_id', 'source_record_id', 'source_filing_id', 'period', 'available_at', 'artifact_sha256',
+              'announcement_source', 'source_observed_at')
+    for field, fact in facts.items():
+        key = tuple(fact.get(k) for k in shared)
+        if key not in indices:
+            indices[key] = len(records)
+            records.append({k:fact.get(k) for k in shared})
+        values[field] = dict(value_cny=fact['value'], record_index=indices[key])
     return dict(period=period.isoformat(), calculations=calculations,
         ebitda_difference_less_core_components_cny=residual,
         residual_boundary='source_precision_retained; equality_is_not_independent_scope_validation',
         context={f: facts.get(f, {}).get('value') for f in (*FLOW_CONTEXT, *BALANCE_CONTEXT)},
-        source_evidence=facts,
+        source_evidence=dict(records=records, field_values=values, unit='CNY', statement_scope='provider_default',
+            financial_time_basis='current_standard_snapshot_not_pit',
+            announcement_policy='TDX_date_if_known; optional_CNINFO; date_does_not_block_current_amounts'),
         valuation_inputs=dict(d_a=None, noncash_wc=None, change_in_noncash_wc=None, historical_fcff=None),
         valuation_approved=False, unresolved=BOUNDARIES)
 
 
+def audit_export(data, codes, periods, cutoff):
+    """消费当前宽行导出；只保留一个公司的所选期间。"""
+    companies = {}
+    with (data/'companies.jsonl').open() as stream:
+        for line in stream:
+            company = json.loads(line)
+            symbols = company.get('symbols') or []
+            if len(symbols) == 1 and company.get('symbol_count') == 1 and company.get('identifier_count') == 1:
+                if company['exchange_mic'] in ('XSHG', 'XSHE') and re.fullmatch(r'(?:sh|sz)[0-9]{6}', symbols[0]):
+                    if symbols[0][:2] != {'XSHG': 'sh', 'XSHE': 'sz'}[company['exchange_mic']]:
+                        raise ValueError('incompatible exchange identity')
+                    code = symbols[0][2:]
+                    if code in companies:
+                        raise ValueError('ambiguous exported company')
+                    companies[code] = company
+    with (data/'conflicts.jsonl').open() as stream:
+        conflicts = {(row['code'],row['period']) for row in map(json.loads,stream)}
+    with (data/'fields.jsonl').open() as stream:
+        definitions = list(map(json.loads,stream))
+    wanted = {p.isoformat() for p in periods}
+    with (data/'records.jsonl').open() as stream:
+        groups = iter(itertools.groupby(record_facts(stream, definitions), key=lambda r:r['code']))
+        current = next(groups, None)
+        for code in sorted(codes):
+            if current and current[0] < code:
+                raise ValueError('unexpected exported company')
+            grouped = {}
+            if current and current[0] == code:
+                for fact in current[1]:
+                    if fact['period'] in wanted:
+                        grouped.setdefault(fact['period'], []).append(fact)
+                current = next(groups, None)
+            for period in sorted(periods):
+                company = companies.get(code)
+                row = dict(code=code, period=period.isoformat(), status='blocked_security_identity')
+                if company:
+                    row.update(status='audited_not_valuation_approved', **derive(grouped.get(period.isoformat(), []),
+                        company['instrument_id'], period, cutoff, (code,period.isoformat()) in conflicts))
+                yield row
+        if current is not None:
+            raise ValueError('unexpected exported company')
+
+
 def main():
+    started = time.monotonic()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--database', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
@@ -105,47 +166,35 @@ def main():
         command = [str(args.alphalake.resolve()), 'export-financial-snapshot', str(args.database.resolve()),
             '--output', str(data), '--codes', args.codes, '--fields', ','.join(FIELDS),
             '--from', min(args.period).isoformat(), '--period', max(args.period).isoformat(), '--as-of', args.as_of.isoformat()]
-        subprocess.run(command, check=True)
-        packets = {name: [json.loads(line) for line in (data/(name+'.jsonl')).read_text().splitlines()]
-                   for name in ('companies', 'facts', 'conflicts')}
-    if digest(args.database) != source_hash or Path(str(args.database)+'.wal').exists():
-        raise ValueError('source changed during export')
-    companies = {}
-    for company in packets['companies']:
-        symbols = company.get('symbols') or []
-        if len(symbols) == 1 and company.get('symbol_count') == 1 and company.get('identifier_count') == 1:
-            if company['exchange_mic'] in ('XSHG', 'XSHE') and re.fullmatch(r'(?:sh|sz)[0-9]{6}', symbols[0]):
-                if symbols[0][:2] != {'XSHG': 'sh', 'XSHE': 'sz'}[company['exchange_mic']]:
-                    raise ValueError('incompatible exchange identity')
-                code = symbols[0][2:]
-                if code in companies:
-                    raise ValueError('ambiguous exported company')
-                companies[code] = company
-    grouped = {}
-    for row in packets['facts']:
-        if row['code'] not in codes:
-            raise ValueError('unexpected exported company')
-        grouped.setdefault((row['code'], row['period']), []).append(row)
-    conflicts = {(r['code'], r['period']) for r in packets['conflicts']}
-    results = []
-    for code in codes:
-        for period in args.period:
-            company = companies.get(code)
-            row = dict(code=code, period=period.isoformat(), status='blocked_security_identity')
-            if company:
-                row.update(status='audited_not_valuation_approved', **derive(grouped.get((code,period.isoformat()), []),
-                    company['instrument_id'], period, args.as_of, (code,period.isoformat()) in conflicts))
-            results.append(row)
-    report = dict(contract='tdx-capital-derivation-v1', source_database_sha256=source_hash,
-        information_as_of=args.as_of.isoformat(), codes=codes, periods=[p.isoformat() for p in args.period],
-        positions=len(results), source_fields=FIELDS, results=results,
-        statuses=dict(Counter(r['status'] for r in results)),
-        calculation_complete_counts={name: sum(r.get('calculations', {}).get(name, {}).get('status') ==
-            'arithmetic_complete_not_valuation_approved' for r in results) for name in FLOW_FORMULAS | BALANCE_FORMULAS},
-        source_command=command, implementation_sha256=digest(Path(__file__)), automatic_adoption=False)
-    with args.output.open('x') as stream:
-        json.dump(report, stream, ensure_ascii=False, indent=2, allow_nan=False)
-        stream.write('\n')
+        subprocess.run(command, check=True, timeout=600)
+        counts, complete = Counter(), Counter({name:0 for name in FLOW_FORMULAS | BALANCE_FORMULAS})
+        stream = (gzip.open(args.output, 'xt', compresslevel=1) if args.output.suffix == '.gz' else args.output.open('x'))
+        try:
+            with stream:
+                stream.write('{"results":[\n')
+                for index, row in enumerate(audit_export(data, codes, args.period, args.as_of)):
+                    if index:
+                        stream.write(',\n')
+                    json.dump(row, stream, ensure_ascii=False, allow_nan=False)
+                    counts[row['status']] += 1
+                    complete.update(name for name, value in row.get('calculations', {}).items()
+                        if value['status'] == 'arithmetic_complete_not_valuation_approved')
+                if digest(args.database) != source_hash or Path(str(args.database)+'.wal').exists():
+                    raise ValueError('source changed during export')
+                report = dict(contract='tdx-capital-derivation-v2', source_database_sha256=source_hash,
+                    information_as_of=args.as_of.isoformat(), codes=codes, periods=[p.isoformat() for p in args.period],
+                    positions=len(codes)*len(args.period), source_fields=FIELDS,
+                    statuses=dict(counts), calculation_complete_counts=dict(complete),
+                    source_evidence_catalog=[json.loads(line) for line in (data/'fields.jsonl').read_text().splitlines()],
+                    execution=dict(elapsed_seconds=time.monotonic()-started,
+                        python_peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,
+                        export_peak_rss_bytes=resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss*1024,
+                        measurement='serial narrow-column export and streamed audit; peaks are separate processes'),
+                    source_command=command, implementation_sha256=digest(Path(__file__)), automatic_adoption=False)
+                stream.write('\n],'+json.dumps(report, ensure_ascii=False, allow_nan=False)[1:]+'\n')
+        except Exception:
+            args.output.unlink(missing_ok=True)
+            raise
 
 
 if __name__ == '__main__':

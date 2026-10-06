@@ -1,10 +1,14 @@
 from copy import deepcopy
 from datetime import date, datetime, timezone
 from decimal import Decimal
+import json
+import gzip
+import sys
+from unittest.mock import patch
 
 import pytest
 
-from tools.derive_tdx_capital import derive, FIELDS, FLOW_FIELDS
+from tools.derive_tdx_capital import audit_export, derive, main, FIELDS, FLOW_FIELDS
 
 PERIOD = date(2025, 12, 31)
 CUTOFF = datetime(2026, 9, 27, tzinfo=timezone.utc)
@@ -43,7 +47,7 @@ def test_missing_and_conflict_never_become_zero():
 
 @pytest.mark.parametrize('key,value', [('unit','million_CNY'), ('period_type','Q4'),
     ('instrument_id',2), ('statement_scope','parent'), ('source','pdf'),
-    ('available_at','2027-01-01T00:00:00+00:00'), ('value','NaN'), ('source_record_id',0)])
+    ('available_at','2027-01-01T00:00:00'), ('value','NaN'), ('source_record_id',0)])
 def test_tampered_standard_fact_rejected(key, value):
     rows = facts()
     rows[0][key] = value
@@ -71,3 +75,73 @@ def test_decimal_source_precision_is_not_repaired():
             row['value'] = amounts[row['field']]
     result = derive(rows, 1, PERIOD, CUTOFF)
     assert Decimal(result['calculations']['reported_ebitda_less_ebit']['value_cny']) == Decimal('6.0625')
+
+
+def test_current_amounts_do_not_require_announcement_date_or_cninfo_link():
+    for available in (None, '2027-01-01T00:00:00+00:00'):
+        rows = facts()
+        for row in rows:
+            row.update(available_at=available, source_filing_id=None)
+        result = derive(rows, 1, PERIOD, CUTOFF)
+        assert result['calculations']['reported_ebitda_less_ebit']['value_cny'] == '30'
+        evidence = result['source_evidence']
+        assert evidence['financial_time_basis'] == 'current_standard_snapshot_not_pit'
+        assert len(evidence['records']) == 1
+        assert evidence['records'][0]['available_at'] == available
+        assert evidence['records'][0]['source_filing_id'] is None
+        assert evidence['field_values']['reported_ebit']['record_index'] == 0
+
+
+def wide_export(data):
+    data.mkdir()
+    companies = [dict(instrument_id=1, exchange_mic='XSHE', symbols=['sz300866'],symbol_count=1,identifier_count=1)]
+    definitions = [dict(field=f,provider_field='FN'+str(i+1),unit='CNY',period_basis='ytd' if f in FLOW_FIELDS else 'instant',
+        valid_from='1900-01-01',valid_to=None) for i,f in enumerate(FIELDS)]
+    row = dict(instrument_id=1,code='300866',period=PERIOD.isoformat(),source_record_id=1,
+        source_filing_id=None,available_at=None,announcement_source='unknown',source_observed_at='2026-09-27',artifact_sha256='fixture')
+    row.update({f['field']:f['value'] for f in facts()})
+    for name, rows in [('companies',companies),('fields',definitions),('records',[row]),('conflicts',[])]:
+        (data/(name+'.jsonl')).write_text(''.join(json.dumps(r)+'\n' for r in rows))
+
+
+def test_actual_wide_contract_preserves_missing_positions_and_streams_source(tmp_path):
+    wide_export(tmp_path/'data')
+    rows = list(audit_export(tmp_path/'data', ['999999','300866'], [PERIOD, date(2024,12,31)], CUTOFF))
+    assert len(rows) == 4
+    assert rows[0]['calculations']['reported_ebitda_less_ebit']['status'] == 'missing_standard_fact'
+    assert rows[1]['calculations']['reported_ebitda_less_ebit']['value_cny'] == '30'
+    assert rows[2]['status'] == rows[3]['status'] == 'blocked_security_identity'
+    assert len(rows[1]['source_evidence']['records']) == 1
+    row = json.loads((tmp_path/'data/records.jsonl').read_text())
+    row['code'] = '000001'
+    (tmp_path/'data/records.jsonl').write_text(json.dumps(row)+'\n')
+    with pytest.raises(ValueError, match='unexpected exported company'):
+        list(audit_export(tmp_path/'data', ['300866'], [PERIOD], CUTOFF))
+
+
+def test_cli_writes_current_contract_and_removes_failed_partial_output(tmp_path):
+    database = tmp_path/'db'; database.write_bytes(b'unchanged-source')
+    output = tmp_path/'result.json'
+    args = ['derive_tdx_capital','--database',str(database),'--output',str(output),'--codes','300866',
+        '--period',PERIOD.isoformat(),'--as-of',CUTOFF.isoformat()]
+    def export(command, **kwargs):
+        data = next(command[i+1] for i,v in enumerate(command) if v=='--output')
+        from pathlib import Path
+        wide_export(Path(data))
+    with patch.object(sys,'argv',args),patch('tools.derive_tdx_capital.subprocess.run',side_effect=export):
+        main()
+    result = json.loads(output.read_text())
+    assert result['contract'] == 'tdx-capital-derivation-v2' and result['positions'] == 1
+    assert result['calculation_complete_counts']['reported_ebitda_less_ebit'] == 1
+    assert result['results'][0]['calculations']['reported_ebitda_less_ebit']['value_cny'] == '30'
+    compressed = tmp_path/'result.json.gz'; gzip_args = [str(compressed) if a==str(output) else a for a in args]
+    with patch.object(sys,'argv',gzip_args),patch('tools.derive_tdx_capital.subprocess.run',side_effect=export):
+        main()
+    with gzip.open(compressed,'rt') as stream:
+        assert json.load(stream)['results'] == result['results']
+    output.unlink()
+    with patch.object(sys,'argv',args),patch('tools.derive_tdx_capital.subprocess.run',side_effect=export),patch(
+            'tools.derive_tdx_capital.derive',side_effect=ValueError('bad scope')):
+        with pytest.raises(ValueError, match='bad scope'):
+            main()
+    assert not output.exists()

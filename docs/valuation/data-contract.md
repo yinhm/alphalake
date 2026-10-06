@@ -4,6 +4,8 @@
 
 周期行业条件批次复用本页既有完整年度接口，不改变事实、原生准入或默认；调用方须同时遵守[周期契约](cyclical-valuation.md#条件批次与数据契约)。行业候选先绑定同版主库／SQLite范围审核，金额保持百万元CNY，原用户未来路径不覆盖；观察均值及回落年限是显式条件。总再投资包含研发净投入，隐含非研发资本释放和终值组成单独留痕，不新增额外研发扣款。直接年度净再投资尚无批准接口，不按收入持平臆造0资本需求。
 
+只读资本核算工具同样消费当前宽行导出及共用字段目录适配，按[资本来源契约](native-capital-definition.md)输出`tdx-capital-derivation-v2`。公告时间与CNINFO关联为空不阻断当前金额；共享来源按记录保存，金额仍为CNY元。核算候选不写回事实、不自动填历史FCFF或未来资本预算，不与百万元估值输入混用。
+
 ## 职责与实际调用链
 
 `fundamental.statement_snapshot`标准宽表→`ExportFinancialSQLiteRows`批量投影→`tools.export_alphalake_sqlite`→SQLite→`data_sources.us_cn_hk_db.fetch_company/native_compatibility`→`api.database._db_record_to_company_input`→`engine.orchestrator.run_full_valuation`。
