@@ -9,6 +9,10 @@ const terms: KnowledgeTermSummary[] = [
   { term_id: 'revenue', title_zh: '测试收入', title_en: 'Revenue', kind: '测试概念', category: '合成样本', summary: '测试标签自动关联。', aliases: ['Revenues'] },
   { term_id: 'ebitda', title_zh: '测试息税折旧摊销前利润', title_en: 'EBITDA', kind: '测试概念', category: '合成样本', summary: '测试表头自动关联。', aliases: [] },
   ...Array.from({ length: 12 }, (_, i) => ({ term_id: `extra-${i}`, title_zh: `扩展词条${i}`, title_en: `Extra ${i}`, kind: '测试概念', category: '合成样本', summary: '用于验证目录限制不影响全库检索。', aliases: [`extra-alias-${i}`] })),
+  ...[
+    ['learning-roadmap', '测试学习路线'], ['lesson-financials', '测试第一课'],
+    ['learning-practice', '测试案例练习'], ['forecast-assumptions', '测试预测专题'],
+  ].map(([term_id, title_zh]) => ({ term_id, title_zh, title_en: '', kind: '测试课程', category: '合成样本', summary: '仅用于验证已发布内容的首页导航。', aliases: [] })),
 ];
 const API_ROUTE = /^http:\/\/127\.0\.0\.1:4173\/api\//;
 const index: KnowledgeIndex = { status: 'ready', release_id: 'fixture-r1', schema_version: 1, terms };
@@ -147,7 +151,7 @@ test('standalone glossary works without a valuation, searches aliases and follow
   await search.fill('不存在的词条');
   await expect(page.getByRole('status').filter({ hasText: '没有匹配的词条' })).toHaveText('没有匹配的词条，请尝试其他名称。');
   await page.getByRole('searchbox', { name: '搜索词条' }).fill('capital cost');
-  await page.getByRole('link', { name: /测试资本成本/ }).click();
+  await page.locator('.knowledge-directory-list').getByRole('link', { name: /测试资本成本/ }).click();
   await expect(page).toHaveURL(/\/knowledge\/wacc$/);
   await expect(page.getByRole('heading', { name: '测试资本成本' })).toBeVisible();
   await expect(page.locator('.katex').first()).toBeVisible();
@@ -160,10 +164,48 @@ test('standalone glossary works without a valuation, searches aliases and follow
   await expect(page.getByRole('heading', { name: '测试资本甲' })).toBeVisible();
 });
 
+test('knowledge home offers published learning, category and topic links while keeping search independent', async ({ page }) => {
+  await mockKnowledge(page);
+  await page.goto('/knowledge');
+  await expect(page.getByRole('heading', { name: '估值知识库', exact: true })).toBeVisible();
+  const home = page.locator('.knowledge-home');
+  const learning = home.getByRole('region', { name: '估值自学路线' });
+  await expect(learning.getByRole('link', { name: '测试学习路线' })).toBeVisible();
+  // The publication intentionally omits the other lessons and most topic entries.
+  await expect(home.locator('a[href="/knowledge/lesson-risk"]')).toHaveCount(0);
+  await expect(home.locator('a[href="/knowledge/currency-wacc"]')).toHaveCount(0);
+  const lesson = learning.getByRole('link', { name: '测试第一课' });
+  await lesson.focus();
+  await lesson.press('Enter');
+  await expect(page).toHaveURL(/\/knowledge\/lesson-financials$/);
+  await expect(page.getByRole('heading', { name: '测试第一课', exact: true })).toBeVisible();
+  await expect(home).toHaveCount(0);
+  await page.getByRole('link', { name: '← 知识库首页', exact: true }).click();
+  await expect(learning).toBeVisible();
+  await home.getByRole('navigation', { name: '风险与折现' }).getByRole('link', { name: '测试资本成本', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '测试资本成本', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: '← 知识库首页', exact: true }).click();
+  await home.getByRole('region', { name: '专题与实践' }).getByRole('link', { name: '测试预测专题' }).click();
+  await expect(page.getByRole('heading', { name: '测试预测专题', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: '← 知识库首页', exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(learning).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.getByRole('link', { name: '已有问题？直接搜索词条 →' }).click();
+  const search = page.getByRole('searchbox', { name: '搜索词条' });
+  await expect(search).toBeFocused();
+  await expect(page.locator('.knowledge-directory-list li')).toHaveCount(10);
+  await search.fill('extra-alias-11');
+  await expect(page.locator('.knowledge-directory-list li')).toHaveCount(1);
+  await page.locator('.knowledge-directory-list li').getByRole('link').click();
+  await expect(page.getByRole('heading', { name: '扩展词条11', exact: true })).toBeVisible();
+});
+
 test('unpublished and invalid databases have distinct recoverable states', async ({ page }) => {
   await mockKnowledge(page, 'missing');
   await page.goto('/knowledge/wacc');
   await expect(page.getByRole('heading', { name: '词条库尚未发布' })).toBeVisible();
+  await expect(page.locator('.knowledge-home')).toHaveCount(0);
   await page.unroute(API_ROUTE);
   await mockKnowledge(page, 'invalid');
   await page.goto('/knowledge');
@@ -172,7 +214,7 @@ test('unpublished and invalid databases have distinct recoverable states', async
   await mockKnowledge(page);
   await page.getByRole('button', { name: '重试读取词条库', exact: true }).click();
   await expect(page.getByRole('searchbox', { name: '搜索词条' })).toBeVisible();
-  await expect(page.getByRole('link', { name: /测试资本成本/ })).toBeVisible();
+  await expect(page.locator('.knowledge-directory-list').getByRole('link', { name: /测试资本成本/ })).toBeVisible();
 });
 
 test('a partial annotated label opens its exact term without replacing selection or stealing focus', async ({ page }, testInfo) => {
