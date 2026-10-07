@@ -2,16 +2,14 @@ import { forecastValue } from '../lib/forecast';
 /**
  * Top-of-page summary strip for the three-story joint examination.
  *
- * Displays the implied ROIC and implied S/C that the analyst's three
- * stories require, alongside historical (5-yr avg), industry median,
- * and WACC anchors. No severity scoring — raw numbers plus a factual
- * gap statement. Analyst reads the comparison and judges.
+ * Reads projected ROIC from the engine. Incremental capital assumptions and
+ * historical stock turnover are distinct bases, without reverse inference.
  *
- * Grounded in `docs/Ginzu understanding/three_story_joint_examination.md §3`.
+ * Current contract: AlphaLake `docs/valuation/engine-change-ledger.md`, E39.
  */
 
 import type { ValuationResponse } from '../types/valuation';
-import { requiredROIC, requiredSC, gapStatement } from '../lib/reverseChecks';
+import { firstProjectedROIC, gapStatement } from '../lib/reverseChecks';
 
 interface Props {
   data: ValuationResponse;
@@ -28,19 +26,11 @@ function dec(v: number | null | undefined, digits = 2): string {
 
 export default function ClosedLoopStrip({ data }: Props) {
   const cf = data.cashflow;
-  const va = data.inputs.valuation_assumptions;
   const ind = data.inputs.industry_data;
   const wacc = data.cost_of_capital?.wacc ?? null;
 
-  // Story-implied required values — from the analyst's inputs.
-  const impliedROIC = requiredROIC(
-    forecastValue(data, 'target_operating_margin'),
-    forecastValue(data, 'sales_to_capital_high'),
-  );
-  // ROIC anchor for required-S/C: prefer roic_stable_override, then hist 5yr avg, else WACC.
-  const roicAnchor =
-    va.roic_stable_override ?? cf?.historical_roic_avg_5yr ?? wacc;
-  const impliedSCReq = requiredSC(roicAnchor, forecastValue(data, 'target_operating_margin'));
+  const impliedROIC = firstProjectedROIC(data);
+  const initialCapitalRatio = forecastValue(data, 'sales_to_capital_high');
 
   // Historical (5yr avg) and industry references
   const histROIC = cf?.historical_roic_avg_5yr ?? null;
@@ -52,8 +42,6 @@ export default function ClosedLoopStrip({ data }: Props) {
   const roicGapHist = gapStatement(impliedROIC, histROIC, 'pp');
   const roicGapInd = gapStatement(impliedROIC, indROIC, 'pp');
   const roicGapWacc = gapStatement(impliedROIC, wacc, 'pp');
-  const scGapHist = gapStatement(impliedSCReq, histSC, '×');
-  const scGapInd = gapStatement(impliedSCReq, indSC, '×');
 
   // Terminal state invariant
   const terminalImplied = data.dcf?.implied_roic_terminal ?? null;
@@ -62,12 +50,12 @@ export default function ClosedLoopStrip({ data }: Props) {
   return (
     <section className="my-4 bg-white border border-slate-300 rounded-md shadow-sm p-3">
       <h3 className="text-sm font-semibold text-slate-800 mb-2">
-        Closed-loop summary — what your three stories require
+        Closed-loop summary — projected returns and capital assumptions
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-6 gap-2 text-xs">
         {/* ROIC row */}
         <div className="md:col-span-6 border-b border-slate-200 pb-2">
-          <div className="font-semibold text-slate-700 mb-1">Required ROIC</div>
+          <div className="font-semibold text-slate-700 mb-1">First-year projected ROIC (NOPAT / opening capital)</div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 items-baseline">
             <span className="text-emerald-700 font-mono font-semibold text-sm">
               {pct(impliedROIC)}
@@ -86,19 +74,19 @@ export default function ClosedLoopStrip({ data }: Props) {
 
         {/* S/C row */}
         <div className="md:col-span-6 border-b border-slate-200 pb-2">
-          <div className="font-semibold text-slate-700 mb-1">Required Sales/Capital</div>
+          <div className="font-semibold text-slate-700 mb-1">Initial incremental Sales/Capital assumption</div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 items-baseline">
             <span className="text-emerald-700 font-mono font-semibold text-sm">
-              {dec(impliedSCReq)}
+              {dec(initialCapitalRatio)}
             </span>
             <span className="text-slate-500">
-              vs Historical 5-yr avg: <span className="font-mono text-slate-800">{dec(histSC)}</span> <span className="text-slate-400">({scGapHist})</span>
+              Historical stock turnover: <span className="font-mono text-slate-800">{dec(histSC)}</span>
             </span>
             <span className="text-slate-500">
-              vs Industry median: <span className="font-mono text-slate-800">{dec(indSC)}</span> <span className="text-slate-400">({scGapInd})</span>
+              Industry stock turnover: <span className="font-mono text-slate-800">{dec(indSC)}</span>
             </span>
             <span className="text-slate-400 italic">
-              (anchor ROIC: {pct(roicAnchor)})
+              （新增收入／总净投入与历史收入／存量资本口径不同，不反推已核验回报。）
             </span>
           </div>
         </div>
@@ -114,7 +102,7 @@ export default function ClosedLoopStrip({ data }: Props) {
               vs Terminal WACC: <span className="font-mono text-slate-800">{pct(terminalWACC)}</span> <span className="text-slate-400">({gapStatement(terminalImplied, terminalWACC, 'pp')})</span>
             </span>
             <span className="text-slate-400 italic">
-              (Damodaran: terminal ROIC should converge to WACC — no excess returns in perpetuity)
+              稳态回报条件：{pct(data.dcf?.terminal_roic)}。未覆盖时采用WACC的无超额回报条件；持续优势需经营依据。
             </span>
           </div>
         </div>

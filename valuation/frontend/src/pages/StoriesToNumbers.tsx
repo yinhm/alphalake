@@ -5,7 +5,7 @@ import SpreadsheetCell from '../components/SpreadsheetCell';
 import SpreadsheetGrid from '../components/SpreadsheetGrid';
 import ColorLegend from '../components/ColorLegend';
 import { baseYear } from '../lib/baseYear';
-import { requiredROIC, requiredSC } from '../lib/reverseChecks';
+import { firstProjectedROIC } from '../lib/reverseChecks';
 import ClosedLoopStrip from '../components/ClosedLoopStrip';
 import StoryValidationBlock from '../components/StoryValidationBlock';
 import TaxOverridePanel from '../components/TaxOverridePanel';
@@ -124,10 +124,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
     },
   ];
 
-  // Reverse-check values for the three story blocks
-  const impliedROIC = requiredROIC(forecastValue(data, 'target_operating_margin'), forecastValue(data, 'sales_to_capital_high'));
-  const roicAnchor = assumptions.roic_stable_override ?? cf?.historical_roic_avg_5yr ?? data.cost_of_capital?.wacc ?? null;
-  const impliedSCReq = requiredSC(roicAnchor, forecastValue(data, 'target_operating_margin'));
+  const impliedROIC = firstProjectedROIC(data);
 
   // Per-cell tooltip builders — surface the exact calculation for every
   // historical annual value, reading from raw_financials so the analyst
@@ -173,7 +170,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
 
       <p className="text-sm text-slate-600 mb-3">
         Three stories — Growth, Margin, Capital Efficiency — are mathematically coupled.
-        This page surfaces what your inputs imply (Required ROIC, Required S/C) alongside
+        This page surfaces projected ROIC and explicit capital assumptions alongside
         historical and industry anchors so you can judge whether the three stories close
         the loop. Edit drivers in the Sensitivity panel below; everything on this page
         recomputes on every change.
@@ -234,7 +231,7 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
         cellTooltip={marginTooltip}
         averageTooltip={avgTooltip('pre-tax operating margin', 5)}
         reverseCheck={{
-          label: 'Required ROIC (DuPont: margin × S/C)',
+          label: 'First-year projected ROIC (NOPAT / opening capital)',
           required: impliedROIC,
           actual: cf?.historical_roic_avg_5yr ?? null,
           unit: 'pp',
@@ -267,12 +264,6 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
         formatAs="dec"
         cellTooltip={scTooltip}
         averageTooltip={avgTooltip('Sales/Capital', 5)}
-        reverseCheck={{
-          label: 'Required S/C (given roicAnchor / your margin)',
-          required: impliedSCReq,
-          actual: cf?.historical_s_c_avg_5yr ?? null,
-          unit: '×',
-        }}
       />
 
       {/* 10-year detailed historical table — lists every annual value for
@@ -350,22 +341,21 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
             </dd>
           </div>
           <div>
-            <dt className="font-semibold text-slate-900">Required ROIC (your story implies)</dt>
+            <dt className="font-semibold text-slate-900">First-year projected ROIC</dt>
             <dd className="ml-3 font-mono text-[11px]">
-              = target_operating_margin × sales_to_capital_high
+              = first-year NOPAT / opening invested capital
               <br />
-              DuPont identity: ROIC = margin × asset turnover. The ROIC your three stories force the firm to
-              earn for the arithmetic to close. Compare against historical ROIC (has the firm done it?),
-              industry median (has any peer done it?), and WACC (does growth create or destroy value?).
+              Read directly from the existing DCF response, using matched after-tax operating profit
+              and capital. Missing capital remains unavailable. Historical ROIC and WACC are references;
+              they do not certify the operating forecast.
             </dd>
           </div>
           <div>
-            <dt className="font-semibold text-slate-900">Required Sales / Capital (your story implies)</dt>
+            <dt className="font-semibold text-slate-900">Incremental and historical Sales / Capital</dt>
             <dd className="ml-3 font-mono text-[11px]">
-              = ROIC anchor / target_operating_margin
-              <br />
-              Where ROIC anchor = roic_stable_override (if set) else historical 5-yr avg ROIC else WACC.
-              Answers: given your margin story and a reference ROIC, what asset turnover must the firm achieve?
+              The forecast assumption pairs incremental revenue with total net reinvestment and its timing.
+              Historical turnover pairs annual revenue with stock capital. Their scopes differ; dividing
+              an after-tax ROIC anchor by a pre-tax target margin does not establish a required ratio.
             </dd>
           </div>
           <div>
@@ -375,7 +365,9 @@ export default function StoriesToNumbers({ data, onPatch, onPatchMany }: Props) 
               <br />
               As the stories project forward, IC rolls forward as IC[t] = IC[t−1] + Reinvestment[t].
               <br />
-              The terminal implied ROIC should converge to terminal WACC (Damodaran: no excess returns in perpetuity).
+              Terminal ROIC defaults to WACC as a no-excess-return condition. An explicit override can
+              represent sustained competitive advantage when supported by business evidence. The capital
+              path's implied terminal return is a separate consistency check.
             </dd>
           </div>
         </dl>

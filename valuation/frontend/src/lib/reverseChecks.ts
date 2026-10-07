@@ -1,32 +1,9 @@
-/**
- * Reverse-calculation helpers for the three-story joint examination.
- *
- * Grounded in `docs/Ginzu understanding/three_story_joint_examination.md §3`.
- * These functions are pure — no side effects, no session state. Display only.
- */
+import type { ValuationResponse } from '../types/valuation';
 
-/** DuPont-derived: Required_ROIC = margin × Sales/Capital. */
-export function requiredROIC(
-  margin: number | null | undefined,
-  sc: number | null | undefined,
-): number | null {
-  if (margin == null || sc == null) return null;
-  return margin * sc;
-}
-
-/**
- * Reverse-derived: Required_S_C = target_ROIC / margin.
- * Answers: "given my margin story, what S/C do I need to produce this ROIC?"
- *
- * `roicAnchor` is typically historical 5-yr avg ROIC. If undefined/null
- * or margin is zero/missing, returns null.
- */
-export function requiredSC(
-  roicAnchor: number | null | undefined,
-  margin: number | null | undefined,
-): number | null {
-  if (roicAnchor == null || margin == null || margin === 0) return null;
-  return roicAnchor / margin;
+/** Read the engine's matched NOPAT/opening-capital result; no second return formula. */
+export function firstProjectedROIC(data: ValuationResponse): number | null {
+  const value = data.dcf?.implied_roic_projections?.[0];
+  return value == null || !Number.isFinite(value) ? null : value;
 }
 
 /**

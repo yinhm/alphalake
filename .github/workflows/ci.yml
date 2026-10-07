@@ -70,6 +70,7 @@ jobs:
           npm ci
           npm run build
           node scripts/check-ttm.cjs
+          node scripts/check-stories.cjs
       - name: Test knowledge interactions
         working-directory: valuation/frontend
         run: |
