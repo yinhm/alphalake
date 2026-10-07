@@ -112,6 +112,8 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 用自身`verify RUN_DIR`核验归档、重新编译和重放；修订写`previous_run_id`并增加改动故事的`revision`，运行到新目录后`compare BEFORE_DIR AFTER_DIR`。收据写在运行目录外，不把故事run ID传给旧历史查询／比较工具。新数据或合法口径变更重新准备基线、保留旧证据并解释输入差异；经济自动选择、短历史估计和新引擎分支仍延期。
 
+已明确逐证券历史锚点与过渡条件时，可用`tools.narrative_conditions --prepared ... --assignments ... --output ...`展开，再沿上述run/verify；先读设计文档“逐证券显式条件展开”。FY同比、三年CAGR、持平及报表利润率目标分别标明，年数是显式研究选择，不按行业自动认证参数。`--run ... --database ... --output ...`从核验后的故事响应及同版SQLite生成完整价差表；A/B按输入顺序并列，拒绝、缺报价、资本释放及终值衔接保留，不称乐观／悲观或自动目标价。
+
 ## 原生跨公司条件情景
 
 需要自动生成假设而非已有专项政策估值时，先读项目`docs/valuation/native-uniform-scenarios.md`。复用`tools.evaluate_native_policy --selection-policy`，输入已确认的SQLite、统一配方与证券列表；人民币曲线及达摩达兰参考从SQLite绑定发布读取；不为单家公司改规则。结果在`summary.json`，以原名单为分母，先区分`blocked_inputs`、`blocked_policy`和`selection.status=rejected`，再读取`scenario_generation`与`scenario_*`结果。

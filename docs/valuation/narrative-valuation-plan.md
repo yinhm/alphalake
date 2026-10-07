@@ -1,6 +1,6 @@
 # 估值叙事：公司证据到原生估值的方案
 
-状态：2026-10-07已完成确定性故事输入链路：草稿准备、证据／主张绑定、年度条件编译、原生API计算、中文报告、归档核验及修订比较。12家公司、24条条件已用当前SQLite及8080实际接口复验；这证明输入交付，不认证公司预测。仅修原Stories页面的回报及终值解释BUG，未改DCF、默认或数据，未实现参数自动选择。范围仍为沪深非金融，短历史估计、金融及多市场不启动。实际证据见[交付验收](../history/narrative-valuation-delivery-20261007.md)。
+状态：2026-10-07已完成确定性故事输入链路，并应用到既有沪深300名单：完整300只、533条记录，220家公司产出433条显式条件；金融、参考待定、来源缺项及条件不适用分别保留。原生8080及归档重放通过，不认证公司预测。先前12家试点见[链路验收](../history/narrative-valuation-delivery-20261007.md)。DCF、默认和财务数据不变，未实现参数自动选择；短历史估计、金融及多市场不启动。
 
 ## 目标与架构
 
@@ -39,6 +39,37 @@ AlphaLake管理证据和显式假设，valuation消费现有`CompanyValuationInp
 最后一类含当前未完备的引擎能力；识别问题仍有价值，但不能为接通伪造永久经营、续期或恢复。研发是可叠加机制，费用金额不自动证明创新成功。原始方法要求利润、研究资本及再投资一致，见[研发与估值](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/R%26D.htm)。
 
 安克、茅台和江波龙的既有材料分别用于产品扩张、成熟优势和供需价差的提问。已完成的12家试点固定跨机制样本；经营增长、资本比例及压力幅度是人工显式条件，没有获得公司预测或价格认证，不继续围绕一家调参。
+
+## 逐证券显式条件展开
+
+`tools.narrative_conditions`消费人工指定的`explicit-narrative-assignments-v1`，不执行行业分类或经济参数选择。每个证券明确写出画像、机制、主张、反例、修订触发、限制、证据以及`recipes`；完整证券集合必须等于已准备范围。`evidence`沿用故事契约。未来路径不能覆盖事实、身份、股本或索偿；已有年度路径不被自动替换。
+
+每条recipe保存`id/title/narrative`，并显式指定以下条件：
+
+| 输入 | 可用锚点／含义 |
+|---|---|
+| `growth_anchor` | `latest_fy`为最近完整FY同比；`three_year_cagr`要求连续四年收入；`flat`为规模持平条件；`existing_cycle`复用既有周期条件 |
+| `hold_years/stable_year` | 前者保持锚点增长、之后线性过渡，后者到达原生稳态增长；均为人工指定年数，不是作者统一规定 |
+| `margin_anchor/margin_year` | 当前报表TTM利润率、最近三年收入加权报表利润率，或既有周期条件；从当前报表利润率于指定年到达目标，再逐年加研发费用减摊销桥 |
+| `cycle_variant` | 周期明确指定`arithmetic-3y`或`revenue_weighted-3y`；复用原观察窗、利润、研发及资本过渡，不另造“正常”数值 |
+
+一般路径保持当前研发费用／收入比，复用普通扣除具名条件及原寿命／队列，现金税由原引擎处理；税率、融资、资本倍率及终点未覆盖项继承同版基线。历史增长不是未来预测；利润率目标也不是同业或公司经济合理性认证。缺年、过界、亏损恢复条件及口径不匹配保留不适用，不能裁剪、补零、改生命周期或静默换锚点。一般路径本轮以正报表利润终点作为条件边界，不反向删除亏损事实或禁止其他已授权输入入口。
+
+```bash
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.narrative_conditions \
+  --prepared "$ALPHALAKE_PREPARED_STORIES" --assignments "$ALPHALAKE_ASSIGNMENTS" \
+  --output "$ALPHALAKE_NEW_STORIES"
+```
+
+输出故事文档及`.anchors.json`保留实际历史位置、增长／利润锚点、研发依据和拒绝。文件须在`workspace/derived`，不能覆盖旧文件。随后沿下文`narrative_valuation run/verify`计算。完整值与收盘价列表从已核验故事及同版SQLite生成：
+
+```bash
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.narrative_conditions \
+  --run "$ALPHALAKE_NARRATIVE_RUN" --database workspace/valuation.sqlite \
+  --output "$ALPHALAKE_NEW_PRICE_REPORT"
+```
+
+报告保留完整证券、A/B输入顺序、故事、拒绝、收盘日期、两种条件值／价差、隐含非研发资本释放与终值衔接；JSON、CSV、Excel、Markdown及可搜索HTML共同留哈希。A/B不是乐观／悲观、概率或自动胜出者：规模不扩张时利润恢复也可能使B高于A。只读取原生结果，不增加DCF公式或修改网页默认。本轮名单及报价有冻结时点，不能称今日最新。
 
 ## 每个故事保存什么
 
