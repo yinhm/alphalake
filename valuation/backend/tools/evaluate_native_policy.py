@@ -208,6 +208,47 @@ def evaluate(database, recipe, tickers, output, web=None, selection_policy=None)
     return summary
 
 
+def calculate_request(client, request, metadata, web=None):
+    """完整显式请求的统一API、输入保留及重放核验；不生成额外条件。"""
+    from tools.review_native_policy import review_report
+    response = client.post('/api/valuation', json=request)
+    if response.status_code != 200:
+        return None, dict(status='rejected', http_status=response.status_code, reason=response.text)
+    body = response.json()
+    try:
+        if body.get('reference_snapshot', {}).get('id') != metadata.get('reference_snapshot_id'):
+            raise ValueError('native reference publication mismatch')
+        supplied = CompanyValuationInput.model_validate(request['inputs'])
+        returned = CompanyValuationInput.model_validate(body['inputs'])
+        # 原引擎重建派生指标；股价波动率仍保留用户显式供给。
+        if supplied.company_metrics is not None and supplied.company_metrics.std_dev_stock is not None:
+            if returned.company_metrics is None or returned.company_metrics.std_dev_stock != supplied.company_metrics.std_dev_stock:
+                raise ValueError('explicit stock deviation changed')
+        supplied.company_metrics = returned.company_metrics
+        if supplied != returned:
+            raise ValueError('explicit input changed during calculation')
+        reviewed = review_report(body)
+        if web:
+            req = Request(web.rstrip('/')+'/api/valuation', json.dumps(request).encode(), {'Content-Type':'application/json'})
+            with urlopen(req, timeout=60) as live:
+                actual = json.load(live)
+            try:
+                if any(actual[field] != body[field] for field in ('dcf', 'final', 'reference_snapshot')):
+                    raise ValueError('live result/reference mismatch')
+                if CompanyValuationInput.model_validate(actual['inputs']) != returned:
+                    raise ValueError('live explicit input mismatch')
+            finally:
+                if actual.get('id'):
+                    discard = Request(web.rstrip('/')+'/api/valuation/'+actual['id'], method='DELETE')
+                    with urlopen(discard, timeout=60) as deleted:
+                        if deleted.status != 204:
+                            raise ValueError('live verification session release failed')
+        return body, reviewed
+    finally:
+        if body.get('id') and client.delete('/api/valuation/'+body['id']).status_code != 204:
+            raise ValueError('verification session release failed')
+
+
 def prepare_sqlite_requests(database, tickers, output, overrides_file=None):
     """复用原生取数及PATCH，只准备既有契约输入，不覆盖财务事实。"""
     from fastapi.testclient import TestClient
@@ -367,30 +408,10 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
                 row.update(status='outside_scope', reason='financial_industry'); continue
             def calculate(name, request):
                 save(key+'-'+name+'-request.json', request)
-                response = client.post('/api/valuation', json=request)
-                if response.status_code != 200:
-                    row['scenarios'][name] = dict(status='rejected', http_status=response.status_code, reason=response.text)
+                body, reviewed = calculate_request(client, request, metadata, web)
+                if body is None:
+                    row['scenarios'][name] = reviewed
                     return None
-                body = response.json()
-                if body.get('reference_snapshot', {}).get('id') != metadata.get('reference_snapshot_id'):
-                    raise ValueError('native reference publication mismatch')
-                supplied = CompanyValuationInput.model_validate(request['inputs'])
-                returned = CompanyValuationInput.model_validate(body['inputs'])
-                # 原引擎每次刷新公司派生指标；只有股价波动率可由用户供给。
-                if supplied.company_metrics is not None and supplied.company_metrics.std_dev_stock is not None:
-                    if returned.company_metrics is None or returned.company_metrics.std_dev_stock != supplied.company_metrics.std_dev_stock:
-                        raise ValueError('explicit stock deviation changed')
-                supplied.company_metrics = returned.company_metrics
-                if supplied != returned:
-                    raise ValueError('explicit input changed during calculation')
-                reviewed = review_report(body)
-                if web:
-                    req = Request(web.rstrip('/')+'/api/valuation', json.dumps(request).encode(), {'Content-Type':'application/json'})
-                    with urlopen(req, timeout=60) as live: actual = json.load(live)
-                    if any(actual[field] != body[field] for field in ('dcf', 'final', 'reference_snapshot')):
-                        raise ValueError('live result/reference mismatch')
-                    if CompanyValuationInput.model_validate(actual['inputs']) != CompanyValuationInput.model_validate(body['inputs']):
-                        raise ValueError('live explicit input mismatch')
                 save(key+'-'+name+'-result.json', body)
                 save(key+'-'+name+'-review.json', reviewed)
                 row['scenarios'][name] = dict(status='calculated_conditional', value_per_share=body['final']['value_per_share'],
