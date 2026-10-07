@@ -262,6 +262,22 @@ E27拆两行以区分明确资本修正与额外税盾政策；截至`4568cf4`�
 - 审核／回归分别覆盖细分与宽泛行业区分、存储业务证据定位、身份及金融边界、拒绝无回退、负股权条件值、独立FCFF／终值聚合及现金流篡改拒绝。真实交付另按完整300只验收，数量与数值以本轮交付记录为准。
 - 资本释放、正常收入、收益／资产范围、正常融资及资源寿命仍未经济认证。不自动生成年度预算、设投入下限、改变WACC或替换已有生产默认，也不称更接近股价证明准确度提升。
 
+## E39：Stories回报与终值显示BUG（2026-10-07）
+
+实现`bb20af5`，原`reverseChecks.ts`把税前目标利润率×新增资本倍率显示为Required ROIC，并反推Required Sales/Capital，与税后历史ROIC／WACC混比。修正后`StoriesToNumbers`与共享`ClosedLoopStrip`直接读取引擎`implied_roic_projections[0]`（NOPAT／匹配期初资本）；未知留空、真实0保留。新增投入倍率与历史／行业存量周转单列，不再由不同范围的数值反推“已核验要求”。
+
+- **原始依据**：[达摩达兰回报度量论文](https://pages.stern.nyu.edu/~adamodar/pdfiles/papers/returnmeasures.pdf)区分利润／资本匹配及既有资产与新投资回报；[超额回报与终值](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm)允许有依据的持续超额回报。页面先前写成终值必须向WACC收敛，现准确区分原缺省无超额回报条件和显式优势条件。
+- **适用／数值影响**：仅解释与显示修复，不改引擎、默认、现金流或索偿。历史／行业参考仍有期间和经营范围限制，显示实际税后ROIC不认证未来回报。假设税前率10%、新增倍率2，而实际引擎ROIC15%，页面必须显示15%而不是原20%；终值ROIC12%、WACC8%的显式条件不被文案错误否定。
+- **验证**：共享组件真实SSR、缺项／0值与终值覆盖回归进入CI；TypeScript及生产构建通过，8080返回新index及同哈希bundle。旧构建核验后清理，源码可按原提交恢复。见[交付验收](../history/narrative-valuation-delivery-20261007.md)。
+
+## E40：确定性故事输入交付（2026-10-07）
+
+用户要求建立完整故事估值链路，实现`473575c`。新增`tools.narrative_valuation`，提取并复用既有`evaluate_native_policy.calculate_request`；没有修改`engine/`、API路由、默认或SQLite。此前证据只在请求旁人工说明，现以`narrative-valuation-v1`绑定主张／证据／反例与完整年度经营、资本、研发、融资及终点条件，再机械编译到已有typed请求。
+
+- **方法及本地契约**：[叙事原始说明](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/NNPreface.html)支持主张到数字与反馈，[增长驱动](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/littlebook/growthvaluedrivers.htm)、[研发](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/R%26D.htm)及上述终值资料用于核对经济机制。故事schema、哈希、版本号、条件状态及现金核验是本地工程契约，不是达摩达兰规定的分类、增长率或资本比例。收入金额转换相邻增长，沿原FCFF／税基／投入／g/ROIC／股权桥，无第二DCF。
+- **适用条件**：同版发布SQLite及范围收据，沪深非金融CNY公司、正基期与年度收入、完整路径及既有界限。原生基线重新查询核对，禁止故事替换财务／身份／股本／索偿输入；同证券多故事允许，未覆盖条件显式继承。零收入、有限寿命、分部、复杂困境及短历史估计仍保持现有能力边界，不擅自绕过冻结。
+- **实际影响与回归**：12家公司27条记录保留，24条件原生与实际8080一致，草稿、不适用及非法增长各1；第二版仅改一条故事首年利润率，其余23条件值不变。人工增长、资本比例和压力条件未经经济认证，没有概率或自动采用。48份响应共享重放与独立现金流聚合、真实现金流／同步改哈希篡改拒绝、原生基线伪造拒绝、事实保护及修订回归通过。默认后端551通过／4跳过／155重型未选，最终相关60通过，Go默认及构建通过；数据与默认未变。完整数值与资源见[验收](../history/narrative-valuation-delivery-20261007.md)。
+
 ## 不能追认为“全部符合”的待办
 
 1. **转债市场输入与复杂条款（E30）**：原E01取低法已获批撤销，现用纯债现值及含权市值残差扣减，再除现有股数。残差并非独立的纯转股期权模型；实际市值、日期、条款及信用未自动取得/认证，非详细WACC仍为显式融资条件，不扩展成全市场默认。

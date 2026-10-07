@@ -1,13 +1,13 @@
 ---
 name: alphalake-valuation
-description: 使用 AlphaLake 已有数据库和显式政策进行 A 股公司条件估值，解释专项与行业候选、缺项和来源证据。适用于公司估值、历史估值发现、已有估值结果解读、两次估值比较、具名条件交付和口径核对；不用于一般股价预测、仓库开发或全市场同步维护。
+description: 使用 AlphaLake 已有数据库和显式政策进行 A 股公司条件估值，解释专项与行业候选、缺项和来源证据。适用于公司估值、故事条件与修订、历史估值发现、已有结果解读、两次估值比较、具名条件交付和口径核对；不用于一般股价预测、仓库开发或全市场同步维护。
 ---
 
 # AlphaLake 公司估值
 
 解释数据期间、单位、缺项和接口适配前，读取`docs/valuation/data-contract.md`。标准累计TTM通过已有prepared入口消费，季度缺项不等于TTM缺项；`quarters_since_10k=0`在prepared路径表示关闭重复轮转，实际期间看prepared证据。普通标准TTM与专项调整TTM分别处理，年度研发队列仍独立检查。
 
-调用项目已有 `tools.company_valuation`，把结构化结果解释给用户。计算、身份/单位/时点校验与政策准入由程序执行；不要在Skill中重写DCF、补数或另选数据源。
+已有专项／行业政策使用`tools.company_valuation`；原生完整条件用下方具名交付，业务故事用“故事估值与修订”入口。把结构化结果解释给用户；计算、身份／单位／时点及政策准入由程序执行，不在Skill中重写DCF、补数或另选数据源。
 
 当前SQLite财务契约为v11，报告血缘通过共享记录及标准事实引用恢复，旧快照须显式重导出，不只改版本号。财务为现有标准快照，不是历史PIT快照；公告日期缺失或未匹配CNINFO不代表数值缺失，不要求用户先补公告。报告财务期、快照版本与实际缺项，不能把当前取得的修订数据说成当时已知。
 
@@ -48,7 +48,7 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 必要时读取`valuation.evidence.run_file`或候选对应运行文件中的`request`、`audit`和`report`，按`run_id`追溯。先读摘要，按问题展开证据，避免把整个财务快照或全部历史运行塞入上下文。文件缺失如实报告，不根据文档数字伪造运行。
 
-解释原生网页发布数据时，可读`workspace/derived/system-delivery/valuation.sqlite.delivery.json`所指运行中的`freshness.json`及`methodology`摘要：分别报告报价日、股本基期、财务缓存/上游核验状态与参考版本日期。发布范围以该收据及每轮冻结的`codes.txt`为准；`--published-scope`保留完整现行范围，不按成功筛选。报价来源partial与整批未完成分别报告，完整响应可从该轮`.tar.gz`及逐文件哈希清单追溯。发布范围以该收据及每轮冻结的`codes.txt`为准；`--published-scope`保留完整现行范围，不按成功筛选。报价来源partial与整批未完成分别报告，完整响应可从该轮`.tar.gz`及逐文件哈希清单追溯。固定旧截止的重放不代表今日最新；方法审阅不自动批准默认假设，发现数不等于数据缺项数。当前研发阶段保留手工刷新，不因估值请求安装定时任务。
+解释原生网页发布数据时，可读`workspace/derived/system-delivery/valuation.sqlite.delivery.json`所指运行中的`freshness.json`及`methodology`摘要：分别报告报价日、股本基期、财务缓存/上游核验状态与参考版本日期。发布范围以该收据及每轮冻结的`codes.txt`为准；`--published-scope`保留完整现行范围，不按成功筛选。报价来源partial与整批未完成分别报告，完整响应可从该轮`.tar.gz`及逐文件哈希清单追溯。固定旧截止的重放不代表今日最新；方法审阅不自动批准默认假设，发现数不等于数据缺项数。当前研发阶段保留手工刷新，不因估值请求安装定时任务。
 
 解释实际forecast参数时读取报告的`dcf.forecast_parameters`（值、来源、条件及是否被年度路径覆盖），保留`inputs.valuation_assumptions`作为原输入。空输入不等于未计算，显式0不等于缺项；不另用15%或年度未调整利润率补显示。终值组成直接读DCF输出；2.5倍、基期持平、行业参考带及预设均不自动成为合理公司预测。数据库新会话/无覆盖的准备入口现采用来源初值v1：合格同窗同比、持平调整后利润率及匹配US行业倍率；H=1还提前税率/WACC过渡。历史/行业代理不是公司预测，完整显式API不被重写；空值回退及保留融资见`docs/valuation/default-assumptions.md`。完整优先级与本地过渡契约见`docs/valuation/data-contract.md`；旧报告用原提交或显式重建，不混用新旧响应。
 
@@ -103,6 +103,14 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 已批准报表信用附加条件使用同一入口的可选`--reported-credit`及已有显式政策，参考从同一SQLite读取，先读`docs/valuation/native-cny-policy.md`已批准规则。不从统一BBB、净财务费用或零利息推信用；保留原用户结果，解释表内标签及两种初始/稳态条件差别。缺明确CNY参考融资组件、范围或匹配版本时报告原因，不自动切原生详细/default分支；不能称代理为公司正式评级或新市场WACC。
 
 研发税务对照先读`docs/valuation/methodology-contract.md`的研发契约。已有显式`research_tax`路径优先；需要保持当前研发费用率的条件时，在同一具名交付入口加`--research-tax`。该条件只用普通扣除和原税率代理，原用户基线保留；不自动开启默认、不从全部费用认定加计扣除。解释`operating_tax_basis`、逐年税基/现金税/NOL、稳态及过渡终值，并指出无到期/限额抵亏和实际选择的融资/比例代理；金额变化不证明预测更准。不混用旧C/E现金税比例与新税基税率，不额外扣研发再投资。
+
+## 故事估值与修订
+
+用户要求业务故事到估值时，先读`docs/valuation/narrative-valuation-plan.md`和数据契约的“叙事到年度输入契约”，使用`tools.narrative_valuation`。已确认同版SQLite、范围收据及证券后`prepare`生成待审草稿；只把用户明确条件或有依据、明确标记的研究判断写为`conditional`。记录证据类型、文件哈希和定位，每项经营／资本／研发／融资／终点条件绑定主张、反例和修订触发。不能将准备时的默认增长当成采用的公司故事，不能从用户一句话补出获认证的参数。
+
+`run --database ... --stories ... --output ...`只计算文档指定故事，可用`--web`复验实际API；同公司多个故事保留，无概率或胜出者。先读取`narrative-valuation-v1`摘要及中文`report.md`，run ID由工具生成，区分草稿、范围外、不适用、来源受阻与计算拒绝；经济依据不足和算术通过分别解释，不覆盖事实、股权股本输入或网页默认。
+
+用自身`verify RUN_DIR`核验归档、重新编译和重放；修订写`previous_run_id`并增加改动故事的`revision`，运行到新目录后`compare BEFORE_DIR AFTER_DIR`。收据写在运行目录外，不把故事run ID传给旧历史查询／比较工具。新数据或合法口径变更重新准备基线、保留旧证据并解释输入差异；经济自动选择、短历史估计和新引擎分支仍延期。
 
 ## 原生跨公司条件情景
 

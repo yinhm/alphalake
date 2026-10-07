@@ -125,7 +125,7 @@ PYTHONPATH=valuation/backend python -m tools.knowledge_db validate
 
 正文用周期恢复、研发商业化、扩产、成熟优势及有限期限解释差异。算例明确币种、经营范围、税务和投入时差；当年投入例与既有一年领先案例不混用，资本化研发的利润、税基和净投入桥须同时闭合。税前回报、税后ROIC、存量周转与新增倍率分别解释；ROIC=WACC只作为无新增超额回报条件，不写成所有公司的要求。
 
-当前 Stories to Numbers 只有参数、历史／参考、反向诊断和敏感性，没有文字理解或合理参数自动选择。既有税前利润率乘资本倍率与税后回报比较、永久回报必须收敛WACC的显示问题已记入[待办](../../valuation/TODO.md)，正文说明边界；本次不修改显示、公式或默认。三份原始资料平铺归档在 `workspace/damodaran/`，内容、独立算术、来源定位、失败／回滚及发布证据在 `workspace/derived/knowledge-narrative/`。本轮记录见[叙事专题交付](../history/kb-narrative-to-numbers-20261007.md)。
+当前Stories to Numbers仍为参数、历史／参考、回报诊断和敏感性视图，没有文字理解或合理参数自动选择。回报／终值显示BUG已按[台账E39](../valuation/engine-change-ledger.md#e39stories回报与终值显示bug2026-10-07)修复；独立输入工具已实现[故事证据到年度条件与原生估值](../valuation/narrative-valuation-plan.md)，不新增网页故事编辑器、公式或默认。词条当前用法随实现修正，教学算例及其他554篇不变，见[本轮交付](../history/narrative-valuation-delivery-20261007.md)。三份原始资料平铺归档在`workspace/damodaran/`；此前内容、独立算术、来源定位及发布证据在`workspace/derived/knowledge-narrative/`，见[叙事专题历史](../history/kb-narrative-to-numbers-20261007.md)。
 
 ## 开发检查
 

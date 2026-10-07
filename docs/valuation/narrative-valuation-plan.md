@@ -1,6 +1,6 @@
 # 估值叙事：公司证据到原生估值的方案
 
-状态：2026-10-07研究提案，未实现叙事编排或参数自动选择，未改引擎、默认、网页及数据。当前接入能力按代码核对；方法依据、公司判断和建议的产品规则分别说明。范围仍为沪深非金融，短历史估计、金融及多市场不在本轮方案中启动。
+状态：2026-10-07已完成确定性故事输入链路：草稿准备、证据／主张绑定、年度条件编译、原生API计算、中文报告、归档核验及修订比较。12家公司、24条条件已用当前SQLite及8080实际接口复验；这证明输入交付，不认证公司预测。仅修原Stories页面的回报及终值解释BUG，未改DCF、默认或数据，未实现参数自动选择。范围仍为沪深非金融，短历史估计、金融及多市场不启动。实际证据见[交付验收](../history/narrative-valuation-delivery-20261007.md)。
 
 ## 目标与架构
 
@@ -38,11 +38,11 @@ AlphaLake管理证据和显式假设，valuation消费现有`CompanyValuationInp
 
 最后一类含当前未完备的引擎能力；识别问题仍有价值，但不能为接通伪造永久经营、续期或恢复。研发是可叠加机制，费用金额不自动证明创新成功。原始方法要求利润、研究资本及再投资一致，见[研发与估值](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/R%26D.htm)。
 
-安克、茅台和江波龙的既有材料可分别用于练习产品扩张、成熟优势和供需价差的提问；这里不为三家批准新参数、分类结论或价格。正式试点选跨公司固定样本，不继续围绕一家调参。
+安克、茅台和江波龙的既有材料分别用于产品扩张、成熟优势和供需价差的提问。已完成的12家试点固定跨机制样本；经营增长、资本比例及压力幅度是人工显式条件，没有获得公司预测或价格认证，不继续围绕一家调参。
 
 ## 每个故事保存什么
 
-先使用一份可阅读的说明及请求旁的结构化证据，复用既有运行归档；以下是建议内容，尚非新API或已实现schema。
+使用`narrative-valuation-v1`故事文件及同版原生基线，运行后生成中文说明和逐项结构化证据。以下内容已落实为输入侧记录；没有扩展`CompanyValuationInput`或新增财务表。
 
 | 内容 | 最少需要记录 |
 |---|---|
@@ -91,7 +91,7 @@ AlphaLake管理证据和显式假设，valuation消费现有`CompanyValuationInp
 |---|---|---|
 | 完整年度经营路径 | `valuation_assumptions.annual_forecast[].growth/margin/tax` | 覆盖所选全部年数；年度增长>−100%且≤100%，利润率−100%至100%，税0至100%；末年利润率／税率进入终值，不截断超界故事来凑契约 |
 | 简单标量路径 | 次年／后续增长、次年／目标利润率和收敛年数 | 网页可编辑，复用生效参数响应；完整年度路径优先，被覆盖标量只读 |
-| 新增效率 | `annual_sales_to_capital`及投入领先期 | 全期有限正倍率；目前倍率分支实际领先期被限制在0–3年，超界被截取。故事需要更长时差时明确表达边界，可评估已有实际年预算入口，不擅改算法 |
+| 新增效率 | `annual_sales_to_capital`及投入领先期 | 全期有限正倍率；原倍率分支实际领先期限制在0–3年。故事入口明确拒绝超界，不让原截取行为误表达故事；更长时差可使用既有实际年预算，不改算法 |
 | 实际投入预算 | `annual_net_reinvestment` | 全期有限值，0及负值保留；与年度倍率互斥，直接预算不按领先期再移动；终值仍按g/ROIC |
 | 研发费用和税基 | `research_tax`、既有历史队列／经济寿命 | 完整年度费用／扣除及终值首年，复用经济摊销；不从故事自动估计缺历史或优惠资格 |
 | 初始融资 | `methodology_choices`与现有参考组件 | 参考版本及CNY口径绑定；实际信用、经营地域和行业代理分别标记 |
@@ -101,29 +101,56 @@ AlphaLake管理证据和显式假设，valuation消费现有`CompanyValuationInp
 
 核对调用链为 `api/database.py` 的数据库准备 → `api/routes.py` 的完整POST／PATCH → `engine/orchestrator.py` → `module_4_dcf.py`。原生网页的来源初值保留作对照，不因新故事覆盖历史、研发、股权桥或默认。零收入商业化、有限寿命、完整分部估值和复杂困境不能仅靠现有标量准确表达；这类记录为当前路径不适用，而非公司没有价值。
 
-现有 `StoriesToNumbers.tsx` 是参数、历史／行业比较及敏感性的视图，没有自由文本理解或证据到参数的编排。回报口径和终值文案问题已进入[TODO](../../valuation/TODO.md)，应先按明确BUG规则修正解释，不能让该页成为错误的故事认证器。
+现有`StoriesToNumbers.tsx`仍是参数、历史／行业比较及敏感性的视图，没有自由文本理解或故事编辑表单。显示BUG已修：ROIC直接读取引擎同范围税后利润／期初资本结果，新增资本倍率与历史存量周转分开；终值文案区分无超额回报条件和有依据的持续优势。DCF和默认不变，详见[台账E39](engine-change-ledger.md#e39stories回报与终值显示bug2026-10-07)。
 
 ## 最小接入方式与产出
 
-现阶段可由研究者直接准备故事说明和完整请求，调用现有完整`POST /api/valuation`；也可用[具名交付入口](../guides/company-valuation-entry.md#原生具名条件自动交付)保存请求及核验结果：
+统一使用`tools.narrative_valuation`。先从同版SQLite和完整范围收据准备草稿，再登记业务证据、主张、反例及采用的年度条件；状态明确改为`conditional`才计算。命令在仓库根目录、[独立1GiB服务](../guides/fundamental-memory-20260919.md)中串行执行，示例中的文件必须换成本次真实配置：
 
 ```bash
-PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.narrative_valuation prepare \
   --database workspace/valuation.sqlite \
-  --explicit-input workspace/derived/narrative-valuation/company-request.json \
+  --coverage workspace/derived/cyclical-income-history/published-coverage.json \
+  --ticker SZSE:300866 --ticker SHSE:600519 \
+  --output workspace/derived/narrative-valuation/new-prepared
+
+# 人工审核并编辑new-prepared/stories.json后，使用新运行目录。
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.narrative_valuation run \
+  --database workspace/valuation.sqlite \
+  --stories workspace/derived/narrative-valuation/new-prepared/stories.json \
   --output workspace/derived/narrative-valuation/new-run \
   --web http://127.0.0.1:8080
+
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.narrative_valuation verify \
+  workspace/derived/narrative-valuation/new-run
+
+# 新故事注明previous_run_id，改动的故事增加revision，再计算new-revised。
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.narrative_valuation compare \
+  workspace/derived/narrative-valuation/new-run \
+  workspace/derived/narrative-valuation/new-revised
 ```
 
-这是已有命令的用法，不表示本轮已创建请求或执行估值；按独立1GiB服务串行运行。不同故事按独立请求／运行保存，因为当前具名批次不允许同一证券重复。其自动附加的3／5／10年增长及资本对照仍只是固定条件，不等于研究者的替代故事；不能混为一张故事概率表。批次聚合及故事证据绑定尚未产品化。
+`--coverage`是与SQLite哈希、主库哈希、报告期及截止完全匹配的`alphalake-native-coverage-v1`收据，位置从当前发布证据核对，不能复用旧快照或仅改哈希。`--web`可选；指定后所有计算条件逐项复验实际原生完整API，不发布故事或替换网页默认。
 
-请求文件仅为既有后端`{"inputs": CompanyValuationInput}`；故事和证据保存在旁侧说明中，不向现有typed输入塞入未知字段。完整请求只证明显式数值已交付，仍须核对它们与来源快照、所采用故事的一致性。
+### 故事文件与机械转换
+
+- 顶层`snapshot/scope`由`prepare`生成；完整保留指定证券分母。`evidence`登记workspace相对文件、SHA-256、原文定位、说明及来源类型。类型区分原生基线、报告事实、公司计划、参考、政策代理和研究判断；文件哈希不证明经济主张为真。
+- 每条`stories[]`有稳定`id`、递增`revision`、`ticker`、共享原生基线、中文叙事、经济画像、机制、限制及状态。一个发行人可有多个故事；`draft`不算，`not_applicable`保留边界，`conditional`只表示明确供给条件，不是自动批准。
+- `claims[]`记录主张、参数集合、证据ID、`supported/conflicting/insufficient`、反例及修订触发。必须覆盖`revenue/margin/tax/capital/research/financing/terminal`及每项完整覆盖路径；资本、研发、融资或终点沿基线时也须说明继承依据和限制。
+- `annual_operating_plan`连续覆盖第1至N年，字段为`year/revenue_million_cny/adjusted_operating_margin/tax_rate`；金额百万元人民币，百分比用小数。先从绝对收入算相邻年度增长，机械编译为原`annual_forecast`，不裁剪超界值、不自动推导经营假设。
+- `assumption_overrides`按原生点路径给既有假设、融资／参考方法参数，如`valuation_assumptions.annual_net_reinvestment`。完整数组仍遵守原长度与互斥契约。年度经营字段由计划生成；财务、身份、股本、期权、转债／优先索偿、困境及现金桥输入不能由故事覆盖。其他未覆盖条件继承同版基线，实际融资政策的计算影响仍需审阅。
+
+完整typed请求只包含`{"inputs": CompanyValuationInput}`；故事文件在计算外保存。条件计算前，每家已准备基线与当前实际`from-database`响应核对，不能通过改证据哈希替换财务。年度计划和返回收入、调整EBIT及税率逐项核对；研发、税盾、投入与终值沿现有计算规则。
 
 每家公司建议最多先研究三条因果连贯的条件，例如“既有产品扩张”“竞争压价”“新产品延迟”。这是本地控制工作量的建议，不是三条必须同数值规则或发生概率。在看估值及股价之前写清主张、参数与选择理由；选择主故事须由证据和判断决定，不由价格决定。
 
 最小结果包括：故事摘要与证据状态；完整年度请求；收入、调整利润、现金税、净投入与FCFF；终值占比与约束；经营价值、股权桥和每股值；相对同版默认的输入及结果差异；未闭合依据与可推翻条件。来源和请求留痕放`workspace/derived/narrative-valuation/`，不能成为第二财务库。
 
-当前完整API没有自动读取故事文件或公司叙事目录的能力，也不会把外部完整请求中每个显式数值都认证为公司事实。第一阶段请求旁保留业务证据即可；后续新增结构化编排、证据到字段校验、故事选择或展示都须明确授权并同步契约。KB已经提供叙事／自测及经济策略，可以用于理解、编辑与复核，但不作为默认参数规则库。
+中文`report.md`与`summary.csv`读取已有响应；完整请求、绑定、结果、审阅及证据保存在同目录。run ID在计算前由规范故事内容与实现版本生成，`manifest.json`登记所有产物；已存在目录不覆盖，运行计算阶段失败保留`failure.json`且不产生完整manifest。逐条业务拒绝保留分母，退出0也不表示每条故事已算或获经济认证。
+
+`verify`验证归档成员和哈希，重新编译请求、重放共享引擎并独立聚合现金流／终值；即使篡改响应并同步改哈希，也不能代替引擎结果。实现变更本身不拒绝旧证据，须报告版本差异并实际重放；行为不再相同则按合法新输入重建。`compare`要求明确的`previous_run_id`，改动故事递增版本，列内容、输入与结果变化，不自动归因多因素或选胜出者。核验／比较收据放运行目录之外，避免污染不可变归档。
+
+结构化编排现已实现；原生网页未新增故事编辑器、叙事目录或文字转参数能力。KB可供理解与人工复核，不是默认参数规则库。
 
 ## 验收与修订
 
@@ -136,16 +163,16 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 
 合法新证据可修订故事与假设，重建完整基线并解释变化。拆分事实刷新、经营路径、投入、折现和股权桥；多因素共同改变不称单因素贡献。不同变更顺序可能有交互效应，不将顺序对照冒充唯一归因。手工刷新沿原发布流程；故事修订不自动替换全市场网页默认，也不安装调度。
 
-## 建议实施顺序与停止条件
+## 交付阶段与停止条件
 
-**第一阶段：证据与人工输入试点。** 固定12–20家现有已准入、跨机制非金融样本及同一来源快照；保留默认，人工写主张／证据／反例，使用现有年度API完成条件。新接口尚不需要。先修现有Stories显示BUG，独立于经营参数研究，不改DCF。
+**已完成：人工输入试点。** 固定12家现有已准入、跨机制非金融样本和同一快照，24条人工显式条件完成原生与实际8080计算；另保留草稿、不适用及非法增长对照。重要经营主张仍标证据不足，不宣称预测合理性。修正Stories显示BUG，未改DCF。
 
-**第二阶段：确定性输入编排。** 经批准后，增加最小故事记录到既有typed请求的连接，校验参数与来源定位，沿现有运行收据及审阅器。机械计算、完整性和版本匹配可自动；缺需求／竞争证据仍由研究者给条件，不填编造的增长。
+**已完成：确定性输入编排与修订。** 故事、证据、typed请求、原生API、现金结果和归档核验已连接；两版本真实重估及逐项差异通过。机械计算、完整性和版本匹配自动执行，经营证据与采用数值仍由研究者明确给定。
 
-**第三阶段：更新与展示。** 先做版本比较和手工重估；若获前端授权，再在原Stories页面展示业务问题、依据与反例，复用KB及当前响应。网页提供普通语言和数值编辑，不暴露JSON，不另建估值流程。
+**延期：网页故事编辑／展示扩展。** 当前交付中文报告及现有Stories参数视图。若未来获前端授权，再在原页面接入业务主张、依据、反例及普通语言编辑，不以JSON表单或另建估值流程接通。
 
 **参数自动选择／LLM叙事仅作后续研究。** 当前延期约定不因本提案解除。若以后获准，可用模型辅助提取经营证据和生成可审阅草稿，逐条引用并保留冲突；不能从漂亮文章直接生成获认证的参数或概率。经济选择规则须另建基线与验证，不能伪装为输入编排。
 
-第一阶段交付以“跨公司同一规则可复验、能解释现金变化和仍缺依据”为止，不追求全部样本转绿，不按股价选择主故事；不具备市场、成本或资本依据时交付透明条件与最小补证清单。试点完成后再决定是否扩展编排和发布范围，不开始全市场逐公司取证。
+本轮交付止于“跨公司同一规则可复验、能解释现金变化和仍缺依据”。不追求全部样本转绿、不按股价选择主故事；没有市场、成本或资本依据时保留透明条件与补证问题，不开始全市场逐公司取证。
 
-配套学习入口：`/knowledge/narrative-to-numbers`、`/knowledge/practice-narrative-to-numbers`及经济策略专题。当前已实现内容与数量只查[项目状态](../implementation-status.md)，本页不冒称任何新故事已经采用。
+配套学习入口：`/knowledge/narrative-to-numbers`、`/knowledge/practice-narrative-to-numbers`及经济策略专题。当前数量只查[项目状态](../implementation-status.md)，计算条件不等于采用为公司预测或网页默认。

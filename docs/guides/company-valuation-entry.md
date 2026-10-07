@@ -49,6 +49,14 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 
 完整显式输入还可提供`valuation_assumptions.debt_tax_shield`；逐年/长期整体正常化WACC及对应债务分量须一起给出，不能只改债务权重后沿用不匹配的整体WACC。所有路径统一承接剩余NOL，规则及无到期/限额、部分比例边界见[亏损契约](../valuation/methodology-contract.md#亏损抵扣与融资税盾契约)。不另加自动融资预测或网页参数入口。
 
+## 故事到估值与版本修订
+
+需要把业务主张、证据、反例及人工年度条件连接到估值时，使用`tools.narrative_valuation`；完整命令、文件结构及采用边界见[故事输入方案](../valuation/narrative-valuation-plan.md#最小接入方式与产出)。`prepare`从同版发布SQLite和`alphalake-native-coverage-v1`范围收据生成草稿，人工给定完整经营路径并绑定既有资本／研发／融资／终点条件，`run`复用原生完整API计算。
+
+同公司可有多个故事，只计算明确指定条件，不生成额外3／5／10年对照。`narrative-valuation-v1`的run ID由程序在计算前生成，读取本次`summary.json`即可取得；此类运行用自身`verify`及`compare`命令，不交给旧`list_valuation_runs/compare_valuations`。中文`report.md`展示主张、年度现金和每股结果；默认基线并列保留，证据不足仍可作为明确条件计算，但不认证预测。
+
+修订填写`previous_run_id`，改动故事增加`revision`，计算到新目录，再比较两次输入与结果。核验收据放不可变运行目录之外。事实刷新须重新prepare并显式重建，不能只改快照哈希。使用独立1GiB服务、按已确认范围串行运行；当前没有网页故事编辑器、自动故事生成或经济参数选择器。
+
 ## 已保存预测的到期核验
 
 新增只读命令`tools.review_valuation_forecast`，使用已有run ID核验历史增长及显式一年校准政策的十年收入/调整EBIT预测。先复用`load_run`检查请求/引擎哈希，再用当前引擎完整重放原报告；当前引擎不能复现时拒绝，不悄悄改用新预测。此工具不执行新估值，不改政策或旧运行。
