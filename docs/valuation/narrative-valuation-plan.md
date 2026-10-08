@@ -42,6 +42,22 @@ AlphaLake管理证据和显式假设，valuation消费现有`CompanyValuationInp
 
 ## 逐证券显式条件展开
 
+### 经营报告证据准备
+
+`tools.collect_narrative_evidence`只消费主库已解析的公告目录清单，不发现证券、不裁决同名公告、不提取标准财务值，也不选择预测参数。当前研究窗口明确限定2025年报和2026半年报；清单保留冻结证券范围、公告ID、官方URL、类型、报告期、解析状态及已有归档定位/哈希。全文候选的英文版、H股版、更新版及误标摘要均先保留，采用哪一份须另记内容依据，不能按ID大小猜测。
+
+```bash
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.collect_narrative_evidence \
+  --inventory "$ALPHALAKE_REPORT_INVENTORY" \
+  --output workspace/derived/narrative-valuation/company-evidence/full
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.collect_narrative_evidence \
+  --verify workspace/derived/narrative-valuation/company-evidence/full
+```
+
+原PDF放`workspace/cninfo`，文本、选择清单及失败收据放指定derived目录。已有登记哈希须匹配；未登记的初见缓存仅记为待核验，不能声称已独立认证。新下载限定官方公告URL、校验PDF响应，文本提取复用系统`pdftotext`；扫描件/空正文拒绝，不静默换OCR。两个采集任务共享隔离服务的1GiB预算，没有新增Python依赖。`--verify`核对成功材料的PDF与文本哈希并保留失败分母，**不认证发行人、业务语义、公司计划实现或预测准确度**。
+
+人工故事应分别记录业务组成、需求/竞争机制、反例及数字条件。报告写“扩张市场”并不支持某个精确增长百分比，管理层日历年度计划也不能直接当模型未来滚动一年收入。可以使用现有完整年度接口提出研究条件，但须标明判断来源和未闭合项，不把读过报告等同于已核实十年预测。
+
 `tools.narrative_conditions`消费人工指定的`explicit-narrative-assignments-v1`，不执行行业分类或经济参数选择。每个证券明确写出画像、机制、主张、反例、修订触发、限制、证据以及`recipes`；完整证券集合必须等于已准备范围。`evidence`沿用故事契约。未来路径不能覆盖事实、身份、股本或索偿；已有年度路径不被自动替换。
 
 每条recipe保存`id/title/narrative`，并显式指定以下条件：
