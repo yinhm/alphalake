@@ -6,7 +6,8 @@
 
 ## 最近主线证据
 
-- [沪深300公司故事、显式条件及完整价差表](csi300-narrative-valuation-20261007.md)
+- [沪深300经营材料、故事修订及条件估值](csi300-company-narratives-20261008.md)
+- [沪深300前版故事、显式条件及完整价差表](csi300-narrative-valuation-20261007.md)
 - [故事输入链路、真实API与修订核验](narrative-valuation-delivery-20261007.md)
 - [周期资本宽行核算、历史来源缺项归因及映射补链](cyclical-capital-inputs-20261006.md)
 - [周期行业框架、全发布范围及资本组成边界](cyclical-framework-delivery-20261006.md)
