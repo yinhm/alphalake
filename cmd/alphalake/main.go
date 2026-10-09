@@ -62,6 +62,9 @@ func usageError(format string, args ...any) error {
 }
 
 func usage() {
+	fmt.Fprintln(os.Stderr, "  sync-earnings-guidance <db> --period YYYY-MM-DD --start YYYY-MM-DD --end YYYY-MM-DD --scope-file file [--offline --metadata-only]")
+	fmt.Fprintln(os.Stderr, "  earnings-guidance <db> --period YYYY-MM-DD --scope-file file")
+	fmt.Fprintln(os.Stderr, "  upgrade-earnings-guidance <unpublished-schema57-copy>")
 	fmt.Fprintln(os.Stderr, "usage: alphalake <command> [args] [--include-bse] (default: Shanghai/Shenzhen)")
 	fmt.Fprintln(os.Stderr, "commands:")
 	fmt.Fprintln(os.Stderr, "  financial-statements <db-path> <code> --period YYYY-MM-DD --as-of RFC3339 [--include-evidence]")

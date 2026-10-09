@@ -22,8 +22,17 @@ const (
 		"category_ndbg_bj;category_bndbg_bj;category_yjdbg_bj;category_sjdbg_bj"
 )
 
+type CatalogueKind string
+
+const (
+	CataloguePeriodic   CatalogueKind = "periodic"
+	CatalogueProspectus CatalogueKind = "prospectus"
+	CatalogueGuidance   CatalogueKind = "earnings_guidance"
+	GuidanceCategories                = "category_yjygjxz_szsh"
+)
+
 type CatalogueRequest struct {
-	ProspectusOnly bool
+	Kind           CatalogueKind
 	Code           string
 	OrganizationID string
 	Page           int
@@ -46,6 +55,7 @@ type CataloguePage struct {
 	HasMore      bool
 	Filings      []domain.FilingObservation
 	Issues       []CatalogueIssue
+	RowPositions map[string]int
 }
 
 type rawCatalogueResponse struct {
@@ -142,13 +152,15 @@ func ParseCataloguePage(raw []byte) (CataloguePage, error) {
 		page.TotalPages = (page.TotalRecords + page.PageSize - 1) / page.PageSize
 	}
 	page.Filings = make([]domain.FilingObservation, 0, len(response.Announcements))
-	for _, item := range response.Announcements {
+	page.RowPositions = make(map[string]int)
+	for i, item := range response.Announcements {
 		filing, issue := normalizeAnnouncement(item)
 		if issue != nil {
 			page.Issues = append(page.Issues, *issue)
 			continue
 		}
 		page.Filings = append(page.Filings, filing)
+		page.RowPositions[filing.SourceFilingID] = i + 1
 	}
 	return page, nil
 }
@@ -334,6 +346,9 @@ func containsAny(value string, needles ...string) bool {
 }
 
 func ValidateCatalogueRequest(request CatalogueRequest) error {
+	if request.Kind != "" && request.Kind != CataloguePeriodic && request.Kind != CatalogueProspectus && request.Kind != CatalogueGuidance {
+		return errors.New("unsupported CNINFO catalogue kind")
+	}
 	if request.OrganizationID != "" && (request.Code == "" || !organizationIDPattern.MatchString(request.OrganizationID)) {
 		return errors.New("CNINFO organization requires a security code and a valid opaque ID")
 	}

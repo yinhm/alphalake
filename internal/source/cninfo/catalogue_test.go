@@ -420,7 +420,7 @@ func TestProspectusScope(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	request := CatalogueRequest{Code: "688692", OrganizationID: "9900048178", ProspectusOnly: true, Page: 1, PageSize: 30, StartDate: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), EndDate: time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC)}
+	request := CatalogueRequest{Code: "688692", OrganizationID: "9900048178", Kind: CatalogueProspectus, Page: 1, PageSize: 30, StartDate: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), EndDate: time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC)}
 	page, _, err := client.CataloguePage(t.Context(), request)
 	if err != nil {
 		t.Fatal(err)

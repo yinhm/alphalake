@@ -37,7 +37,7 @@ type CNINFOFilingSource interface {
 }
 
 type CNINFOFilingOptions struct {
-	ProspectusOnly bool
+	Kind           cninfo.CatalogueKind
 	Code           string
 	organizationID string
 	StartDate      time.Time
@@ -117,7 +117,10 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 	if artifactRoot == "" {
 		return summary, errors.New("artifact root is required")
 	}
-	if options.ProspectusOnly && options.Code == "" {
+	if options.Kind != "" && options.Kind != cninfo.CataloguePeriodic && options.Kind != cninfo.CatalogueProspectus {
+		return summary, errors.New("filing sync only accepts periodic or prospectus catalogue; guidance has a separate publication path")
+	}
+	if options.Kind == cninfo.CatalogueProspectus && options.Code == "" {
 		return summary, errors.New("prospectus sync requires one security code")
 	}
 	now := time.Now().UTC()
@@ -157,7 +160,7 @@ func SyncCNINFOFilingsWithOptions(ctx context.Context, db *sql.DB, source CNINFO
 		windowName := filingWindowName(window.start, window.end)
 		// Older checkpoints may omit documents, final pages, or accept repeated pages.
 		checkpointKey := fmt.Sprintf("catalogue-window:v6:include-bse=%t:metadata-only=%t:%s", domain.IncludesBSE(ctx), options.MetadataOnly, windowName)
-		if options.ProspectusOnly {
+		if options.Kind == cninfo.CatalogueProspectus {
 			checkpointKey += ":prospectus-search-v2"
 		}
 		if options.Code != "" {
@@ -371,14 +374,14 @@ func acquireCNINFOFilingWindow(
 	expectedRows := 0
 	for pageNumber := 1; pageNumber <= 10000; pageNumber++ {
 		page, raw, err := source.CataloguePage(ctx, cninfo.CatalogueRequest{
-			ProspectusOnly: options.ProspectusOnly, Code: options.Code, OrganizationID: options.organizationID, Page: pageNumber, PageSize: pageSize, StartDate: start, EndDate: end,
+			Kind: options.Kind, Code: options.Code, OrganizationID: options.organizationID, Page: pageNumber, PageSize: pageSize, StartDate: start, EndDate: end,
 		})
 		if err != nil {
 			failures = append(failures, CNINFOFilingFailure{Window: windowName, Page: pageNumber, Err: err})
 			break
 		}
 		locator := fmt.Sprintf("periodic/%s/page-%05d-size-%d.json", windowName, pageNumber, pageSize)
-		if options.ProspectusOnly {
+		if options.Kind == cninfo.CatalogueProspectus {
 			locator = "prospectus/" + locator
 		}
 		if options.Code != "" {
@@ -481,6 +484,16 @@ func attachCNINFOFilingDocument(
 		return nil
 	}
 
+	return archiveCNINFODocument(ctx, db, source, artifactRoot, runID, now, filing, summary)
+}
+
+// archiveCNINFODocument serves both periodic and guidance attachments; nil source is offline.
+func archiveCNINFODocument(ctx context.Context, db *sql.DB, source CNINFOFilingSource, artifactRoot string, runID int64, now time.Time, filing *domain.FilingObservation, summary *CNINFOFilingSummary) error {
+	sourceURL := filing.SourceURL
+	if sourceURL == "" {
+		return errors.New("document source URL missing")
+	}
+
 	// Hash-valid bytes can still be a cached HTML anti-bot page from an earlier
 	// response. Search retained revisions lazily and reuse only a payload whose
 	// media semantics are compatible with the authoritative document URL.
@@ -498,6 +511,9 @@ func attachCNINFOFilingDocument(
 		return nil
 	}
 
+	if source == nil {
+		return errors.New("no healthy archived CNINFO document; offline download prohibited")
+	}
 	content, downloadedURL, mediaType, err := source.FilingDocument(ctx, filing.DocumentLocator)
 	if err != nil {
 		return err

@@ -1,0 +1,87 @@
+CREATE TABLE fundamental.earnings_guidance_observation (
+ observation_id VARCHAR PRIMARY KEY CHECK(regexp_full_match(observation_id,'[0-9a-f]{64}')),
+ source VARCHAR NOT NULL, event_key VARCHAR NOT NULL,
+ content_hash VARCHAR NOT NULL CHECK(regexp_full_match(content_hash,'[0-9a-f]{64}')),
+ normalization_version VARCHAR NOT NULL, ticker VARCHAR NOT NULL,
+ provider_code VARCHAR NOT NULL, exchange_mic VARCHAR NOT NULL, name VARCHAR,
+ instrument_id BIGINT, identity_status VARCHAR NOT NULL CHECK(identity_status IN ('resolved','pending','out_of_scope')),
+ guidance_kind VARCHAR NOT NULL CHECK(guidance_kind IN ('forecast','preliminary','other')),
+ period_start DATE, period_end DATE NOT NULL,
+ period_basis VARCHAR NOT NULL CHECK(period_basis IN ('ytd','quarter','fiscal_year','unknown')),
+ announcement_date DATE, announcement_precision VARCHAR NOT NULL CHECK(announcement_precision IN ('date','unknown')),
+ source_filing_id VARCHAR, filing_id BIGINT, title VARCHAR, predict_type VARCHAR,
+ contents JSON NOT NULL, reasons JSON NOT NULL, latest_hint BOOLEAN NOT NULL,
+ semantic_status VARCHAR NOT NULL CHECK(semantic_status IN ('valid','partial','unresolved')),
+ verification VARCHAR NOT NULL CHECK(verification IN ('unlinked','linked','verified','conflicting')),
+ first_observed_at TIMESTAMPTZ NOT NULL, source_refs JSON NOT NULL,
+ ingest_run_id BIGINT NOT NULL,
+ forecast_parent_net_income_lower DECIMAL(38,10),
+ forecast_parent_net_income_upper DECIMAL(38,10),
+ forecast_parent_net_income_growth_lower DECIMAL(38,10),
+ forecast_parent_net_income_growth_upper DECIMAL(38,10),
+ forecast_parent_net_income_prior DECIMAL(38,10),
+ forecast_parent_net_income_unit VARCHAR,
+ forecast_parent_net_income_representation VARCHAR,
+ forecast_parent_net_income_status VARCHAR,
+ forecast_parent_net_income_predict_type VARCHAR,
+ forecast_parent_net_income_scope VARCHAR,
+ forecast_adjusted_net_income_lower DECIMAL(38,10),
+ forecast_adjusted_net_income_upper DECIMAL(38,10),
+ forecast_adjusted_net_income_growth_lower DECIMAL(38,10),
+ forecast_adjusted_net_income_growth_upper DECIMAL(38,10),
+ forecast_adjusted_net_income_prior DECIMAL(38,10),
+ forecast_adjusted_net_income_unit VARCHAR,
+ forecast_adjusted_net_income_representation VARCHAR,
+ forecast_adjusted_net_income_status VARCHAR,
+ forecast_adjusted_net_income_predict_type VARCHAR,
+ forecast_adjusted_net_income_scope VARCHAR,
+ forecast_eps_lower DECIMAL(38,10),
+ forecast_eps_upper DECIMAL(38,10),
+ forecast_eps_growth_lower DECIMAL(38,10),
+ forecast_eps_growth_upper DECIMAL(38,10),
+ forecast_eps_prior DECIMAL(38,10),
+ forecast_eps_unit VARCHAR,
+ forecast_eps_representation VARCHAR,
+ forecast_eps_status VARCHAR,
+ forecast_eps_predict_type VARCHAR,
+ forecast_eps_scope VARCHAR,
+ forecast_revenue_lower DECIMAL(38,10),
+ forecast_revenue_upper DECIMAL(38,10),
+ forecast_revenue_growth_lower DECIMAL(38,10),
+ forecast_revenue_growth_upper DECIMAL(38,10),
+ forecast_revenue_prior DECIMAL(38,10),
+ forecast_revenue_unit VARCHAR,
+ forecast_revenue_representation VARCHAR,
+ forecast_revenue_status VARCHAR,
+ forecast_revenue_predict_type VARCHAR,
+ forecast_revenue_scope VARCHAR,
+ UNIQUE(source,event_key,content_hash,normalization_version),
+ CHECK(period_start IS NULL OR period_start<=period_end)
+);
+CREATE TABLE fundamental.earnings_guidance_relation (
+ relation_id VARCHAR PRIMARY KEY CHECK(regexp_full_match(relation_id,'[0-9a-f]{64}')),
+ from_id VARCHAR NOT NULL REFERENCES fundamental.earnings_guidance_observation(observation_id),
+ to_id VARCHAR NOT NULL REFERENCES fundamental.earnings_guidance_observation(observation_id),
+ kind VARCHAR NOT NULL CHECK(kind IN ('same_disclosure','supersedes','withdraws','conflicts','revoke')),
+ evidence VARCHAR NOT NULL CHECK(length(trim(evidence))>0),
+ rule_version VARCHAR NOT NULL CHECK(length(trim(rule_version))>0),
+ revokes_id VARCHAR REFERENCES fundamental.earnings_guidance_relation(relation_id),
+ ingest_run_id BIGINT NOT NULL,
+ recorded_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+ CHECK(from_id<>to_id OR kind IN ('withdraws','revoke')),
+ CHECK((kind='revoke')=(revokes_id IS NOT NULL))
+);
+CREATE VIEW fundamental.current_earnings_guidance AS
+ WITH members AS (
+  SELECT c.source,c.checkpoint_key,c.updated_at,
+         CAST(json_extract_string(c.checkpoint_value,'$.run_id') AS BIGINT) AS published_run_id,
+         CAST(json_extract_string(c.checkpoint_value,'$.observed_at') AS TIMESTAMPTZ) AS source_observed_at,
+         json_extract_string(j.value,'$') AS observation_id
+  FROM meta.checkpoint c, json_each(c.checkpoint_value,'$.observation_ids') j
+  WHERE c.dataset='earnings_guidance'
+ ), candidates AS (
+  SELECT o.*,m.published_run_id,m.source_observed_at,m.checkpoint_key,
+   row_number() OVER(PARTITION BY o.source,o.event_key ORDER BY m.source_observed_at DESC,m.updated_at DESC) AS rank
+  FROM members m JOIN fundamental.earnings_guidance_observation o ON o.observation_id=m.observation_id AND o.source=m.source
+ )
+ SELECT * EXCLUDE(rank) FROM candidates WHERE rank=1;

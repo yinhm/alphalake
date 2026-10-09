@@ -8,7 +8,10 @@ import (
 	"strings"
 )
 
-const SchemaVersion = 57
+const SchemaVersion = 58
+
+//go:embed earnings_guidance.sql
+var earningsGuidanceSQL string
 
 //go:embed schema.sql
 var schemaSQL string
@@ -57,6 +60,9 @@ func Initialize(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 	if _, err = tx.ExecContext(ctx, issuerIndustrySQL); err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, earningsGuidanceSQL); err != nil {
 		return err
 	}
 	if err := insertSourceFieldCatalog(ctx, tx); err != nil {
@@ -208,4 +214,73 @@ func UpgradeIssuerReferences(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 	return tx.Commit()
+}
+
+// UpgradeEarningsGuidance is a one-time metadata addition on an unpublished copy.
+func UpgradeEarningsGuidance(ctx context.Context, db *sql.DB) error {
+	version, err := CurrentSchemaVersion(ctx, db)
+	if err != nil {
+		return err
+	}
+	if version != 57 {
+		return fmt.Errorf("earnings guidance upgrade requires schema57, found %d", version)
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	before, err := tableContentSignatures(ctx, tx)
+	if err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, earningsGuidanceSQL); err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, `INSERT INTO meta.schema_version(version,description) VALUES (58,'Independent company earnings guidance')`); err != nil {
+		return err
+	}
+	after, err := tableContentSignatures(ctx, tx)
+	if err != nil {
+		return err
+	}
+	for table, signature := range before {
+		if after[table] != signature {
+			return fmt.Errorf("guidance migration changed existing table %s", table)
+		}
+	}
+	return tx.Commit()
+}
+
+// Aggregate inside DuckDB; never decode the existing financial matrix in Go.
+func tableContentSignatures(ctx context.Context, tx *sql.Tx) (map[string]string, error) {
+	rows, err := tx.QueryContext(ctx, `SELECT schema_name,table_name FROM duckdb_tables() WHERE database_name=current_database() AND NOT internal AND NOT (schema_name='meta' AND table_name='schema_version') ORDER BY schema_name,table_name`)
+	if err != nil {
+		return nil, err
+	}
+	names := [][2]string{}
+	for rows.Next() {
+		var schema, name string
+		if err = rows.Scan(&schema, &name); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		names = append(names, [2]string{schema, name})
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	out := map[string]string{}
+	for _, name := range names {
+		qualified := `"` + strings.ReplaceAll(name[0], `"`, `""`) + `"."` + strings.ReplaceAll(name[1], `"`, `""`) + `"`
+		var count int64
+		var hash string
+		if err = tx.QueryRowContext(ctx, `SELECT count(*),CAST(coalesce(bit_xor(hash(t)),0) AS VARCHAR) FROM `+qualified+` t`).Scan(&count, &hash); err != nil {
+			return nil, fmt.Errorf("table fingerprint %s: %w", qualified, err)
+		}
+		out[qualified] = fmt.Sprintf("%d:%s", count, hash)
+	}
+	return out, nil
 }

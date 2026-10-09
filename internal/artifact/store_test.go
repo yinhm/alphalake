@@ -194,3 +194,35 @@ func TestDamodaranFilesAreFlatAndVersionsRemainDistinct(t *testing.T) {
 		t.Fatal(string(b), err)
 	}
 }
+
+func TestPersistEastmoneyGuidanceLayout(t *testing.T) {
+	db, err := duckstore.OpenInitialized(t.Context(), filepath.Join(t.TempDir(), "guidance.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	root := t.TempDir()
+	input := Input{Source: "eastmoney", Dataset: "earnings_guidance", SourceLocator: "https://datacenter-web.eastmoney.com/api/data/v1/get?filter=%28REPORT_DATE%3D%272026-09-30%27%29&pageNumber=2", FetchedAt: time.Now(), Content: []byte(`{"success":true}`)}
+	first, err := Persist(t.Context(), db, root, input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if filepath.Dir(first.LocalPath) != "eastmoney" || filepath.Base(first.LocalPath) != "earnings-guidance-2026-09-30-p2-"+first.SHA256[:12]+".json" {
+		t.Fatal(first)
+	}
+	second, err := Persist(t.Context(), db, root, input)
+	if err != nil || first.ArtifactID != second.ArtifactID {
+		t.Fatal(second, err)
+	}
+	if _, raw, err := LoadByID(t.Context(), db, root, first.ArtifactID); err != nil || string(raw) != string(input.Content) {
+		t.Fatal(string(raw), err)
+	}
+	input.Dataset = "other_dataset"
+	other, err := Persist(t.Context(), db, root, input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if filepath.Dir(other.LocalPath) != filepath.Join("eastmoney", "objects", other.SHA256[:2]) {
+		t.Fatal("guidance layout changed another dataset", other)
+	}
+}

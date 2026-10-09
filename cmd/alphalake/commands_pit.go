@@ -26,6 +26,8 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return true, errHelp
 	}
 	switch args[0] {
+	case "sync-earnings-guidance", "earnings-guidance", "upgrade-earnings-guidance":
+		return true, runEarningsGuidance(ctx, args[0], args[1:])
 	case "import-issuer-references", "upgrade-issuer-references":
 		return true, runIssuerReference(ctx, args[0], args[1:])
 	case "extend-capital-history":
@@ -199,15 +201,19 @@ func runSyncFilings(ctx context.Context, args []string) error {
 	}
 	lastPages := -1
 	lastFailures := -1
+	kind := cninfo.CataloguePeriodic
+	if *prospectus {
+		kind = cninfo.CatalogueProspectus
+	}
 	options := ingest.CNINFOFilingOptions{
-		ProspectusOnly: *prospectus,
-		Code:           *code,
-		StartDate:      startDate,
-		EndDate:        endDate,
-		PageSize:       *pageSize,
-		WindowDays:     *windowDays,
-		MetadataOnly:   *metadataOnly,
-		Rescan:         *rescan,
+		Kind:         kind,
+		Code:         *code,
+		StartDate:    startDate,
+		EndDate:      endDate,
+		PageSize:     *pageSize,
+		WindowDays:   *windowDays,
+		MetadataOnly: *metadataOnly,
+		Rescan:       *rescan,
 		OnProgress: func(progress ingest.CNINFOFilingProgress) {
 			if progress.Pages != lastPages || progress.Failures != lastFailures {
 				fmt.Printf("CNINFO filing progress: run=%d window=%s page=%d pages=%d filings=%d inserted=%d updated=%d resolved=%d pending=%d documents=%d reused=%d issues=%d failures=%d\n",

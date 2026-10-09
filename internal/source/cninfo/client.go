@@ -133,12 +133,18 @@ func (c *Client) CataloguePage(ctx context.Context, request CatalogueRequest) (C
 		form.Set("stock", request.Code+","+request.OrganizationID)
 		form.Set("searchkey", "")
 	}
-	if request.ProspectusOnly {
+	if request.Kind == CatalogueProspectus {
 		if request.OrganizationID == "" {
 			return CataloguePage{}, nil, errors.New("prospectus query requires resolved organization")
 		}
 		form.Set("category", "")
 		form.Set("searchkey", "招股")
+	}
+	if request.Kind == CatalogueGuidance {
+		form.Set("category", GuidanceCategories)
+		// Explicit time sorting leaves same-date rows unstable across pages.
+		form.Set("sortName", "")
+		form.Set("sortType", "")
 	}
 	endpoint := c.baseURL.ResolveReference(&url.URL{Path: cataloguePath}).String()
 	headers := map[string]string{
