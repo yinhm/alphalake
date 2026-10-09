@@ -6,6 +6,8 @@
 
 ## 最近主线证据
 
+- [业绩预告宽表、真实分页修复及主库入库](earnings-guidance-ingest-20261009.md)
+
 - [沪深300经营材料、故事修订及条件估值](csi300-company-narratives-20261008.md)
 - [沪深300前版故事、显式条件及完整价差表](csi300-narrative-valuation-20261007.md)
 - [故事输入链路、真实API与修订核验](narrative-valuation-delivery-20261007.md)

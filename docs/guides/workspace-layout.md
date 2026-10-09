@@ -6,6 +6,8 @@
 - `tdx-cache/`：仅放 `gpcw.txt` 和直接落盘的 `gpcw*.zip`，不放对象目录、软链接或逐包JSON。每次按上游MD5和大小判断是否更新。
 - `tdx/`：主库血缘引用的不可变原始证据；旧版本不覆盖，不参与日常手工缓存管理。
 - `damodaran/`：按可识别的原文件名直接落盘，主库不可变证据文件追加12位内容摘要区分版本；无objects或哈希分层，行业名称映射保留在industry_lookup。
+- `eastmoney/`：业绩预告原始JSON按报告期／页码／12位内容摘要平铺，完整哈希记主库，不新增objects树。
+- `derived/earnings-guidance/`：同步锁、证券范围、候选、运行收据及验收；候选和回滚库验收后清理。
 - `cninfo/`、`chinabond/` 等：按真实来源保存原文。`objects/` 按哈希寻址，必要的 `views/` 或估值文件名视图引用相同内容。
 - `valuation.sqlite`：网页消费的唯一财务发布快照，可重建，不是权威源。顶层仅保留它和主DuckDB；原始证据按来源归档，测试产物不写真实workspace。
 - `derived/system-delivery/`：发布候选、回滚副本、排他锁、当前`.delivery.json`和`.publication.json`，逐轮日志在`run-*`；`derived/valuation-runs/`保存既有不可变估值运行，`derived/cleanup-audit/`保存迁移清单及ID映射。

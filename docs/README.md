@@ -17,7 +17,7 @@
 - **数据与资源**：[SQLite导出](guides/valuation-sqlite-export.md)、[workspace布局](guides/workspace-layout.md)、[内存隔离](guides/fundamental-memory-20260919.md)、[财务存储性能门槛](guides/financial-storage-redesign-20260925.md)。
 - **开发测试**：[默认回归、全局验收及历史测试清理](guides/testing.md)。
 - **估值数据契约**：[接入spec](valuation/data-contract.md)：累计/单季/TTM、余额、单位、研发队列、参考与会话的实际消费及转换边界。
-- **公司业绩预告**：[数据链spec](earnings-guidance-spec.md)：来源、经营期间、区间、修订及主库查询／证据导出；当前为设计稿，尚未实现。
+- **公司业绩预告**：[数据链spec](earnings-guidance-spec.md)与[采集入库](guides/earnings-guidance.md)：来源、期间、区间、宽表、手工同步及只读查询；独立证据包及故事绑定待接入。
 - **估值调用**：[公司入口](guides/company-valuation-entry.md)、[运行查询](guides/valuation-run-query.md)、[运行比较](guides/valuation-comparison.md)、[Agent Skill](../skills/alphalake-valuation/SKILL.md)。
 - **网页知识库**：[划词解释、词条 API 与内容契约](guides/valuation-knowledge.md)。
 - **证据治理**：[审核修订与撤销](guides/reviewed-evidence-history.md)、[三表标准契约](decisions/020-official-statements-and-snapshots.md)、[招股披露范围](decisions/021-prospectus-disclosure-coverage.md)。
