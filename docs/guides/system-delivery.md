@@ -14,11 +14,11 @@
 ALPHALAKE_REPO="$PWD"  # 在项目根目录执行
 systemd-run --unit=alphalake-native-publish \
   --property=WorkingDirectory="$ALPHALAKE_REPO" \
-  --property=MemoryMax=1G --property=MemoryHigh=896M \
+  --property=MemoryMax=1G --property=MemoryHigh=960M \
   --property=MemorySwapMax=0 --property=OOMPolicy=stop \
   --setenv=PYTHONPATH="$ALPHALAKE_REPO/valuation/backend" \
   --setenv=ALPHALAKE_WORKSPACE="$ALPHALAKE_REPO/workspace" \
-  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=1GiB \
+  --setenv=ALPHALAKE_DUCKDB_MEMORY_LIMIT=512MiB \
   --setenv=ALPHALAKE_DUCKDB_THREADS=1 \
   --setenv=DUCKDB_JE_MALLOC_CONF=dirty_decay_ms:0,muzzy_decay_ms:0 \
   --setenv=GOMEMLIMIT=512MiB --setenv=GOMAXPROCS=1 \
@@ -184,7 +184,7 @@ schema57的`reference.issuer_industry_review`保存不可变验证包、完整�
 
 9月30日指定102家范围的在线周期已完成真实验收：财务清单请求三台节点均为空，明确使用合格缓存；公告目录、9月30日收盘窗口、物化、候选API、原子发布与8080逐家复验完成。100成功、2项已知拒绝均保留；不称财务上游最新，未刷新参考上游。相同截止的local重放不重导、不重算、不替换网页文件；来源阶段故障保持可信网页文件，隔离副本的真实HTTP故障触发切换回滚。
 
-当前DuckDB预算1GiB、Go软预算512MiB、服务硬上限1GiB的缓存刷新及重放也已验收；资源预算涵盖整个服务组。详细测量及限制见[本轮验收](../history/scoped-refresh-publication-20260930.md)。未安装自动定时调度；每次发布保留目标证券分母、财报期、财务/参考截止、来源新鲜度、拒绝与失败，不从成功公司反推清单。个别审核数据发布仍须候选比较、重开及真实API检查。
+9月30日DuckDB预算1GiB、Go软预算512MiB、服务硬上限1GiB的缓存刷新及重放曾完成验收，详细测量见[历史记录](../history/scoped-refresh-publication-20260930.md)；当前执行配置已改为DuckDB512MiB、MemoryHigh960MiB，仍覆盖整个1GiB服务组，见[资源隔离](fundamental-memory-20260919.md)。未安装自动定时调度；每次发布保留目标证券分母、财报期、财务/参考截止、来源新鲜度、拒绝与失败，不从成功公司反推清单。个别审核数据发布仍须候选比较、重开及真实API检查。
 
 ### 契约升级的一次性协调切换
 

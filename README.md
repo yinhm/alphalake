@@ -11,6 +11,7 @@
 | 理解数据库与数据分层 | [架构](docs/design.md) |
 | 更新数据并发布网页快照 | [同步、验收与发布](docs/guides/system-delivery.md) |
 | 独立导出SQLite、核对输入 | [导出契约](docs/guides/valuation-sqlite-export.md) |
+| 用Agent检查数据、手工刷新与发布 | [数据维护Skill](skills/alphalake/SKILL.md) |
 | 用Agent估值、查询与比较 | [估值Skill](skills/alphalake-valuation/SKILL.md) |
 | 核对自动假设与资本效率 | [估值方法](docs/valuation/README.md) |
 
@@ -32,7 +33,17 @@ PYTHONPATH=valuation/backend .venv/bin/python -m pytest -q valuation/backend/tes
 
 以上默认命令执行日常回归。真实Go建库、PDF全量取证及跨语言验收仅在显式全局测试或CI运行：Go加`-tags=full`，Python加`--full`；涉及这些链路的修改须补相应全局回归。已结束研究的冻结结果按原提交复验，不再跟随当前运行时反复重放。范围及删除记录见[测试约定](docs/guides/testing.md)。
 
-本地只读状态：`./alphalake status workspace/alphalake.duckdb`。手工刷新统一使用`tools.publish_native_valuation --published-scope`，在锁内冻结当前网页完整范围；在线模式另须明确最近已完成交易日`--quote-date`，具体命令见[发布手册](docs/guides/system-delivery.md)。命令参数以当前程序帮助为准，不照抄历史验收中的旧路径和版本。
+本地只读状态：`./alphalake status workspace/alphalake.duckdb`。财务、行情及参考更新并发布网页统一使用`tools.publish_native_valuation --published-scope`，在锁内冻结当前网页完整范围；在线模式另须明确最近已完成交易日`--quote-date`，具体命令见[发布手册](docs/guides/system-delivery.md)。业绩预告沿[独立入口](docs/guides/earnings-guidance.md)入主库，不自动发布进财务SQLite。命令参数以当前程序帮助为准，不照抄历史验收中的旧路径和版本。
+
+Codex日常维护可用`$alphalake`，公司条件估值用`$alphalake-valuation`。Skill源码随本仓库维护；本地首次安装数据维护Skill可在项目根目录执行：
+
+```bash
+ALPHALAKE_SKILL_DIR="${CODEX_HOME:-$HOME/.codex}/skills"
+mkdir -p "$ALPHALAKE_SKILL_DIR"
+ln -s "$PWD/skills/alphalake" "$ALPHALAKE_SKILL_DIR/alphalake"
+```
+
+已有同名安装先核对来源，不覆盖其他Skill；软链接让仓库更新同步生效，安装后下一轮对话可发现新Skill。估值Skill可按相同方式链接其目录。
 
 ## 来源与致谢
 

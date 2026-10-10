@@ -14,6 +14,7 @@
 ## 操作手册
 
 - **更新与发布**：[离线财务同步](guides/tdx-offline-sync.md)、[节点轮询](guides/tdx-failover.md)、[报告期行情窗口](guides/valuation-quote-window.md)、[原生发布与恢复](guides/system-delivery.md)。
+- **Agent数据维护**：[AlphaLake Skill](../skills/alphalake/SKILL.md)：日常手工刷新、业绩预告入库、来源核验及网页交付；安装见[项目入口](../README.md)。
 - **数据与资源**：[SQLite导出](guides/valuation-sqlite-export.md)、[workspace布局](guides/workspace-layout.md)、[内存隔离](guides/fundamental-memory-20260919.md)、[财务存储性能门槛](guides/financial-storage-redesign-20260925.md)。
 - **开发测试**：[默认回归、全局验收及历史测试清理](guides/testing.md)。
 - **估值数据契约**：[接入spec](valuation/data-contract.md)：累计/单季/TTM、余额、单位、研发队列、参考与会话的实际消费及转换边界。
