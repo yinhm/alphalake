@@ -232,7 +232,7 @@ E30按官方纯债PV＋含权市值残差方法统一完整API、专项适配和
 
 ## 具名条件自动交付（2026-10-02）
 
-2026-10-11用户进一步明确[AlphaLake DCF Skill](../skills/alphalake-dcf/SKILL.md)用于**独立校验**：只复用数据和显式条件，不复用原生估值计算代码或结果；缺事实允许定向下载官方报告PDF，补证／冲突单列，不写主库。已改写中文Linux/Python建模、公式Excel和逐层对照规范，基础虚构算例验证折现、研发现金流重分类及总债务WACC，另验证7类非法输入拒绝、公式写入／读回及251条本地链接；收据在`workspace/derived/alphalake-dcf/independent-skill-validation/verification.json`。这不是已完成个股完整独立DCF。本机尚无LibreOffice等公式重算工具，Excel执行核验须另按任务完成。原`0621e62`版仅作原生重放／快照导出，旧收据在`workspace/derived/alphalake-dcf/skill-validation/`保留，不称独立模型验收。生产引擎、默认、主库及网页未改。
+2026-10-11用户进一步明确[AlphaLake DCF Skill](../skills/alphalake-dcf/SKILL.md)用于**独立校验**：只复用数据和显式条件，不复用原生估值计算代码或结果；缺事实允许定向下载官方报告PDF，补证／冲突单列，不写主库。中文Linux/Python建模、公式Excel及逐层对照规范已改写，基础虚构算例、7类非法输入、公式写入／读回及251条本地链接通过，初始收据在`workspace/derived/alphalake-dcf/independent-skill-validation/verification.json`。随后按`dcf-model`交付晶晨独立条件模型，补齐xlsx工具及LibreOffice 24.2.7.2，23,398条公式实算零错误、416项Python对照、75格敏感性及四项编辑重算通过；主条件57.00元／股，审慎31.24元、扩张73.91元。原生同条件独立重建62.85900546元完全一致；新主条件与原生的差异分别为投资时点3.8994元及终值利润口径1.9596元，不作为算术BUG。价格均为待定员工权利扣除前的条件值，现金／投资范围及预测经济依据仍未认证；动态报告、公式Excel、输入与核验收据在`workspace/derived/alphalake-dcf/amlogic/independent-v1/`。原`0621e62`版重放／快照导出收据保留，不称独立模型验收；生产引擎、默认、主库及网页未改。
 
 用户已批准最小自动交付：新增到现有`tools.evaluate_native_policy --explicit-input`，完整用户请求先保存及计算，再组合既有3/5/10年增长收敛、公司三年历史资本与后五年稳态资本过渡。结果统一保存规模、逐年再投资/FCFF、终值及参考版本，`selected_scenario=null`、`automatic_adoption=false`；不自动挑情景，不替换网页默认。入口及来源要求见[统一估值入口](guides/company-valuation-entry.md#原生具名条件自动交付)。
 
