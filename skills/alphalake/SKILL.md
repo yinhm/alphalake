@@ -33,7 +33,7 @@ description: 检查 AlphaLake 数据状态，手工刷新 TDX 财务、收盘行
 
 大库同步、物化、导出及会启动Go的Python任务，按`docs/guides/fundamental-memory-20260919.md`置于独立systemd服务并串行运行。核验独立ControlGroup及1GiB硬限额，当前MemoryHigh=960MiB、Swap=0、DuckDB=512MiB／1线程、GOMEMLIMIT=512MiB／GOMAXPROCS=1；显式设置GOPATH/GOCACHE，检查系统剩余资源。同步任务使用真实workspace；测试使用独立临时目录，不继承真实归档配置。
 
-运行前保存相应查询和来源版本；每次收据写入新的`workspace/derived/<任务>/<运行标识>/`，不覆盖旧完整收据或历史验收。先核对现有入口及帮助，示例中的参数从实际配置取得。
+运行前保存相应查询和来源版本；每次收据写入新的`workspace/derived/<任务>/<运行标识>/`，不覆盖旧收据。用户已授权清理过期派生数据，不要求永久保留所有旧响应；清理时按[保留边界](../../docs/guides/workspace-layout.md#清理与迁移)核对当前发布、主库引用及唯一证据，留下必要条件、摘要和删除清单。先核对现有入口及帮助，示例中的参数从实际配置取得。
 
 运行后同时读退出码、JSON收据、stderr和systemd结果：来源`completed`／`partial`／失败、范围是否完整、缓存回退、缺项及PDF下载分别统计。独立来源成功不能掩盖另一来源失败；不把HTTP200或进程退出0当作最新性证明。
 

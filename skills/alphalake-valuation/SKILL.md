@@ -62,6 +62,8 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 用户未提供run ID时，先读`docs/guides/valuation-run-query.md`，从已确认的运行目录查询；不要求用户查找哈希，不为了获得ID重新计算。
 
+过期运行可能已按用户授权退役，先核对清理收据；紧凑归档不含完整原请求，不能传入原run ID查询或重放工具。只有保留完整成员的研究归档才可在隔离临时workspace恢复，再按原提交核验。`no_matches`不代表从未估值，也不授权自动重算；当前发布快照与源事实仍从现行发布／主库读取。
+
 ```bash
 cd "$ALPHALAKE_ROOT/valuation/backend"
 "$ALPHALAKE_PYTHON" -m tools.list_valuation_runs "$ALPHALAKE_CODE" \

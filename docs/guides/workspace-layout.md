@@ -11,7 +11,7 @@
 - `cninfo/objects/<摘要前2位>/<完整SHA-256>.pdf`：巨潮PDF唯一原文；`cninfo/documents/<官方URL日期>/<公告ID>.PDF`仅为相对软链接，扩展名大小写沿用URL。相邻`.json`保存官方URL、哈希、原文相对路径和原始取得时间。公司、报告期、公告类型由主库目录及研究清单登记，不再按公司或研究批次复制PDF。
 - `chinabond/`等：按真实来源归档；其他来源PDF不改称巨潮。必要的`views/`或文件名视图仅引用原文，不能另存一份内容；审核JSON和教学PDF不冒充公告原文。
 - `valuation.sqlite`：网页消费的唯一财务发布快照，可重建，不是权威源。顶层仅保留它和主DuckDB；原始证据按来源归档，测试产物不写真实workspace。
-- `derived/system-delivery/`：发布候选、回滚副本、排他锁、当前`.delivery.json`和`.publication.json`，逐轮日志在`run-*`；`derived/valuation-runs/`保存既有不可变估值运行，`derived/cleanup-audit/`保存迁移清单及ID映射。
+- `derived/system-delivery/`：发布候选、回滚副本、排他锁、当前`.delivery.json`和`.publication.json`，逐轮日志在`run-*`；`derived/valuation-runs/`保存仍在保留范围内的不可变估值运行，过期记录可按下述规则退役。`derived/archives/`只保存仍有用的人工条件、研究及紧凑输入；`derived/cleanup-audit/`保存迁移／删除清单及ID映射。
 - `knowledge/`：词条编辑稿及 `knowledge.sqlite` 阅读库，独立于财务事实和数值参考；不随代码提交。词条 schema、只读 API 与构建命令见[知识库契约](valuation-knowledge.md)。
 - `derived/pdf-cache/`：跨语言逐URL锁及一次性归档迁移收据；不存第二份PDF原文。
 
@@ -35,15 +35,16 @@ Python下载或导入复用`data_sources.cninfo_documents.document_lock`、`read
 
 ## 清理与迁移
 
-不可变来源证据、审核记录和已引用版本保留；回滚副本在重开验收通过后清理，留下路径、哈希及原因。派生候选可重建不代表可以删除其不可重建的审核依据。禁止永久保留多个权威库、按日期重复同步目录，或向代码目录写运行产物。
+不可变来源证据、有效审核记录和已引用源版本保留；回滚副本在重开验收通过后清理，留下路径、哈希及原因。派生候选可重建不代表可以删除其不可重建的审核依据。用户已授权清理过期派生数据，冻结过的旧运行也不自动永久保留；禁止永久保留多个权威库、按日期重复同步目录，或向代码目录写运行产物。
 
 清理先核对正在运行的服务、当前发布收据及文件引用，按实际用途处理，不按修改日期批量删除：
 
 - 内容相同的不可变PDF和冻结结果可在同一文件系统共享硬链接；须核对SHA-256、大小和访问权限，保留原路径及去重清单。更新必须写新文件后原子替换，不原地改写共享内容；活动数据库、缓存、配置和发布控制文件不参与此类去重。
-- 已结束的原生API逐证券验收复用`tools.publish_native_valuation.archive_check`压缩；流式逐文件核对哈希后删除展开副本，保留`summary.json`、`.archive.json`、日志和失败证据。复验历史原提交时先解包相应证据，不要求当前运行时兼容旧版本。
-- 已被新发布替代的候选库及回滚库，在核实当前版本可读、编辑稿及验收依据仍在后删除，记录原路径、哈希和原因。当前发布收据、锁、估值run ID结果和审核记录保留。
+- 当前发布验收需要保存完整依据时，复用`tools.publish_native_valuation.archive_check`压缩，流式逐文件核对哈希后删除展开副本。已被替代的验收批次可清理完整响应，只保留仍有意义的条件、摘要、失败结论和退役清单，不把所有旧响应压缩成另一个永久大仓库。
+- 已被新发布替代的候选库及回滚库，在核实当前版本可读、编辑稿及验收依据仍在后删除。当前发布收据、证券清单和锁必须保留；与源登记或有效审核无关的重复财务快照、过期估值记录及已结束研究可以退役。估值记录压缩保留typed输入、政策及结果时可撤除重复源事实，但必须注明无法按原run ID逐字节重放，不能冒称完整原请求。
+- 近期人工故事、论点和独立模型保留；不再直接使用的研究按原路径归档必要输入及解释，逐成员核验后删除展开目录。PDF只留源目录原文和恢复映射。复验可恢复的历史运行时，在隔离临时workspace解包、恢复引用并使用原提交；已退役的完整响应不承诺重放，不给当前运行时增加兼容路径。
 - 大规模哈希或压缩串行放入独立、已核验1GiB硬上限的服务；清理后核验权威库、发布库、KB及TDX缓存内容，检查网页服务，并按唯一inode统计实际磁盘占用，避免把硬链接重复计为多份数据。
 
 迁移时的数量、路径清单和发布核验见[历史收据](../history/workspace-layout-20260925.md)；当前库版本及交付状态见[项目状态](../implementation-status.md)。
 
-10月11日已撤除660份旧平铺PDF，原路径／哈希／新引用保存于`derived/pdf-cache/normalization/normalization.json`；旧研究运行内PDF仅保留共享原文的硬链接，冻结清单不改写。重放旧采集契约时，按该清单在隔离临时workspace恢复原路径并使用原提交，不给当前工具保留旧路径兼容。范围与验证见[PDF归档记录](../history/pdf-source-archive-20261011.md)。
+10月11日已撤除660份旧平铺PDF，原路径／哈希／新引用保存于`derived/pdf-cache/normalization/normalization.json`，范围与验证见[PDF归档记录](../history/pdf-source-archive-20261011.md)。随后按用户授权退役过期派生批次，必要研究已压缩到`derived/archives/`，内部旧PDF引用另存`derived/cleanup-audit/derived-retirement-20261011/retirement.json`的`pdf_restore`；不再要求保留旧研究目录。保留范围、实际释放及复验边界见[派生清理记录](../history/derived-retirement-20261011.md)。
