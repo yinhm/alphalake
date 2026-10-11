@@ -156,10 +156,11 @@ def query_standard_inputs(connection, fields, periods, source_database=None):
         directory = export('research',{field:sorted(set(periods)) for field in fields})
         definitions = [json.loads(line) for line in (directory/'fields.jsonl').read_text().splitlines()]
         conflicts = {(r['code'],r['period']) for r in (json.loads(line) for line in (directory/'conflicts.jsonl').read_text().splitlines())}
+        if conflicts:
+            raise ValueError('Source conflicts in requested research periods: '+str(sorted(conflicts)))
         ticker_by_code = {r[0].split(':')[-1]:r[0] for r in connection.execute('SELECT ticker FROM companies')}
         with (directory/'records.jsonl').open() as stream:
-            rows = [fact | {'ticker':ticker_by_code[fact['code']]} for fact in record_facts(stream,definitions)
-                    if (fact['code'],fact['period']) not in conflicts]
+            rows = [fact | {'ticker':ticker_by_code[fact['code']]} for fact in record_facts(stream,definitions)]
     if digest(source)!=before:
         raise ValueError('Source changed during research query')
     return rows

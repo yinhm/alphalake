@@ -207,6 +207,39 @@ def test_global_metadata_reads_do_not_scan_company_contexts():
                                 aaa_global='before',zzz_global='after')
 
 
+def test_research_query_checks_financial_version_and_reports_source_conflicts(tmp_path,monkeypatch):
+    source = tmp_path/'source.duckdb'; source.write_bytes(b'mocked primary source')
+    definition = dict(field='reported_ebit',provider_field='FN207',unit='CNY',period_basis='ytd',valid_from='1900-01-01',valid_to=None)
+    record = dict(instrument_id=7,code='300866',period='2026-06-30',source_record_id=12,
+        source_filing_id=None,available_at=None,announcement_source='unknown',source_observed_at='2026-09-30',
+        artifact_sha256='a'*64,reported_ebit='33000000.0000000000')
+    conflicts, signatures = [], []
+    def run(command,**kwargs):
+        directory=Path(command[command.index('--output')+1]);directory.mkdir()
+        for name,rows in [('fields',[definition]),('records',[record]),('conflicts',conflicts),('reviewed_zeros',[])]:
+            (directory/(name+'.jsonl')).write_text(''.join(json.dumps(r)+'\n' for r in rows))
+        signatures.append(exporter.financial_signature(directory))
+    monkeypatch.setattr(exporter.subprocess,'run',run)
+    with sqlite3.connect(':memory:') as conn:
+        conn.executescript('CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT); CREATE TABLE companies(ticker TEXT);'
+            'CREATE TABLE financials_annual(ticker TEXT); CREATE TABLE financials_quarterly(ticker TEXT); CREATE TABLE financials_ttm(ticker TEXT);')
+        conn.execute("INSERT INTO companies VALUES('SZSE:300866')")
+        conn.executemany('INSERT INTO metadata VALUES(?,?)',dict(contract=exporter.CONTRACT,
+            input_context_format='native-wide-context-v1',source_database_sha256=exporter.digest(source),
+            report_period='2026-06-30',information_as_of='2026-10-05T00:00:00+00:00',financial_content_signature='frozen',
+            source_projection=json.dumps(dict(field_periods={'reported_ebit':['2026-06-30']}))).items())
+        def query():return exporter.query_standard_inputs(conn,['reported_ebit'],['2026-06-30'],source)
+        assert query()[0]['value']=='33000000.0000000000'
+        conn.execute("UPDATE metadata SET value='older-source-physical-hash' WHERE key='source_database_sha256'")
+        conn.execute("UPDATE metadata SET value=? WHERE key='financial_content_signature'",(signatures[-1],))
+        assert query()[0]['ticker']=='SZSE:300866'  # 无关域变动不阻断同版财务。
+        conn.execute("UPDATE metadata SET value='wrong' WHERE key='financial_content_signature'")
+        with pytest.raises(ValueError,match='financial content differs'):query()
+        conn.execute("UPDATE metadata SET value=? WHERE key='source_database_sha256'",(exporter.digest(source),))
+        conflicts.append(dict(code='300866',period='2026-06-30',reason='fixture_conflict'))
+        with pytest.raises(ValueError,match='Source conflicts'):query()
+
+
 def test_standard_bridge_components_and_market_proxy():
     period = date(2026,6,30)
     asof = datetime.fromisoformat('2026-09-26T00:00:00+00:00')
