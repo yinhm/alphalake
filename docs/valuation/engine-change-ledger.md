@@ -317,4 +317,4 @@ git show <提交> -- valuation/backend/engine
 
 提交`3af20fd`、`ea2a550`按[用户批准的spec](sqlite-input-snapshot-spec.md)撤销五张事实/治理辅助表，以原财务宽表、TTM、参考和紧凑上下文交付v12；当前/上年同窗TTM在数据侧准备，经原`PreparedTTM`装配，详细研究改为批量查询DuckDB。源冲突显式拒绝，单位、零/NULL、期间、资产/市值代理及原准入保持。没有估值方法调整，无新增理论或默认政策；沿用[期间与单位契约](data-contract.md)及既有方法出处。
 
-同一5,227家、2026H1及原信息截止，四张财务宽表和五张参考表逐值一致；4,998成功／229拒绝，完整计算输入及LTM、调整、WACC、FCFF、终值、转债/股权桥接和每股值无差异。只规范化协议版本、源库哈希与组成引用，经济字段未删减。`valuation/backend/engine/`与前端无文件改动，来源表示变更不是估值模型变更；候选及切换证据在`workspace/derived/sqlite-input-migration/`。
+同一5,227家、2026H1及原信息截止，四张财务宽表和五张参考表逐值一致；4,998成功／229拒绝，完整计算输入及LTM、调整、WACC、FCFF、终值、转债/股权桥接和每股值无差异。只规范化协议版本、源库哈希与组成引用，经济字段未删减。`valuation/backend/engine/`与前端无文件改动，来源表示变更不是估值模型变更；5,227家真实8080全部经济模块复验已通过；候选及切换证据在`workspace/derived/sqlite-input-migration/`，记录见[完整验收](../history/sqlite-input-snapshot-v12-20261011.md)。
