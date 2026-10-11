@@ -1,5 +1,7 @@
 # 标准财务事实导出 SQLite
 
+2026-10-11的[消费快照调整spec](../valuation/sqlite-input-snapshot-spec.md)已明确下一轮撤销辅助事实/证据表并收紧数据边界，尚未实施。本页继续描述现行v11命令和结构；新契约实施时一起替换，不能据spec直接删现行表。
+
 当前提供TDX标准财务及版本化Damodaran参考组成的SQLite快照，保持原生valuation页面、请求和估值引擎。经用户批准，现金及长期投资的已知组成可作为显式代理用于估值；不按公司套专项EBIT政策。财务值、代理与真实缺项分别留痕，准入依据见[实际模型准入](../valuation/valuation-input-gates-20260925.md)。工具不修改源DuckDB或默认seed。当前代码契约为`alphalake-sqlite-v11`，旧快照须显式重导出；主库与网页是否已切换以[项目状态](../implementation-status.md)为准。
 
 逐期间已核实TDX余额源零可通过[独立审核补充](../history/historical-debt-zero-review.md)进入目标输入，保留完整审核证据，不写入标准事实；旧快照须显式重导出。[本轮重新接入](../history/valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v11`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。

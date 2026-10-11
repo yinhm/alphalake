@@ -11,6 +11,7 @@
 | 显式政策交付 | [统一选择、字段与验收清单](explicit-policy.md) | WACC与经营/稳态联动；现有条件可计算，自动采用另行审批 |
 | 叙事驱动公司输入 | [经济特征、证据、年度条件与原生API](narrative-valuation-plan.md) | 已接通草稿、主张／参数绑定、原生计算、中文报告及修订核验；人工条件，不自动选参数 |
 | 数据接入spec | [实际消费与转换契约](data-contract.md) | TTM/累计/单季、单位、余额、研发队列及会话；任何对接前先核对 |
+| SQLite消费边界调整 | [撤表、输入投影、调用方及切换验收spec](sqlite-input-snapshot-spec.md) | 规范已形成、尚未实施；数据治理归DuckDB，估值公式及数值保持 |
 | 国内行业与估值关联 | [TDX、申万及跨体系映射调研](industry-association.md) | 国内分类与估值参考分别计数；申万主分类及新映射默认政策尚未上线 |
 | 原生参考、实际输入与版本 | [来源、WACC/预测消费及参考桥接](native-reference-bridge.md) | 默认US口径保留，主库→SQLite→会话参考有版本；不是公司市场WACC自动认证 |
 | 人民币显式场景 | [WACC与经营候选](native-cny-policy.md) | 来源、折现及经营假设分别保存，不与网页默认混为价格更新 |

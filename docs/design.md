@@ -1,6 +1,6 @@
 # 数据与估值架构
 
-本页描述当前结构和不变约束；实现范围见[项目状态](implementation-status.md)，历史设计见[早期设计](history/design-v0.md)，具体语义决策见[ADR索引](decisions/README.md)。当前只维护schema57，不保留旧模型兼容层。
+本页描述当前结构和不变约束；实现范围见[项目状态](implementation-status.md)，历史设计见[早期设计](history/design-v0.md)，具体语义决策见[ADR索引](decisions/README.md)。当前只维护schema58，不保留旧模型兼容层。
 
 ## 数据流与责任
 
@@ -51,6 +51,8 @@ AlphaLake交付事实、参考、确定性派生及显式假设，valuation消�
 `reference.issuer_industry_review`每次审核导入保存一份验证包及完整事件链，原文、清单与官方工作簿各自绑定归档；精确证券条目优先，最新撤销或源版本失效不复活旧关联。关联只补参考取数，不复制源名单、财务值或多股类市值。
 
 SQLite是原Investment_Valuation_Agent的可重建输入快照，含财务、参考和独立诊断；网页只读SQLite，不打开大DuckDB。v11共享报告来源记录，事实与年/季/TTM组成引用相联；不重复保存逐字段完整血缘，读取时恢复原接口证据，结构见[SQLite契约](guides/valuation-sqlite-export.md#sqlite证据存储契约)。保留原页面及操作流程，JSON政策仅在后端显式接口消费。默认参考、用户修改和人民币候选不能混称公司市场WACC。
+
+2026-10-11明确收紧消费边界：完整标准事实、审核和诊断留在DuckDB及数据侧收据，SQLite仅保留原生财务宽表、已有TTM、参考和实际输入的紧凑上下文；不复制事实长表或逐格证据，也不以大JSON替代。详细研究显式查询数据侧，网页计算仍独立运行。[调整spec](valuation/sqlite-input-snapshot-spec.md)已形成，现行v11辅助表尚未撤销，不能把目标结构当已发布实现。
 
 原生发布由已有同步、导出、检查和原子切换组成，失败恢复旧快照，成功后用真实API核对输入与结果。CLI/Skill的显式政策估值保留自己的运行标识，不与原生默认估值混同。细节见[发布手册](guides/system-delivery.md)和[导出契约](guides/valuation-sqlite-export.md)。
 
