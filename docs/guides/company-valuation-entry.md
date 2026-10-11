@@ -53,7 +53,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 
 需要把业务主张、证据、反例及人工年度条件连接到估值时，使用`tools.narrative_valuation`；完整命令、文件结构及采用边界见[故事输入方案](../valuation/narrative-valuation-plan.md#最小接入方式与产出)。`prepare`从同版发布SQLite和`alphalake-native-coverage-v1`范围收据生成草稿，人工给定完整经营路径并绑定既有资本／研发／融资／终点条件，`run`复用原生完整API计算。
 
-同公司可有多个故事，只计算明确指定条件，不生成额外3／5／10年对照。`narrative-valuation-v1`的run ID由程序在计算前生成，读取本次`summary.json`即可取得；此类运行用自身`verify`及`compare`命令，不交给旧`list_valuation_runs/compare_valuations`。中文`report.md`展示主张、年度现金和每股结果；默认基线并列保留，证据不足仍可作为明确条件计算，但不认证预测。
+同公司可有多个故事，只计算明确指定条件，不生成额外3／5／10年对照。当前`narrative-valuation-v2`的run ID由程序在计算前生成，读取本次`summary.json`即可取得；此类运行用自身`verify`及`compare`命令，不交给旧`list_valuation_runs/compare_valuations`。PDF按[归档规则](workspace-layout.md#pdf归档与引用)直接引用来源对象，运行不复制原文；冻结v1按原提交复验。中文`report.md`展示主张、年度现金和每股结果；默认基线并列保留，证据不足仍可作为明确条件计算，但不认证预测。
 
 修订填写`previous_run_id`，改动故事增加`revision`，计算到新目录，再比较两次输入与结果。核验收据放不可变运行目录之外。事实刷新须重新prepare并显式重建，不能只改快照哈希。使用独立1GiB服务、按已确认范围串行运行；当前没有网页故事编辑器、自动故事生成或经济参数选择器。
 

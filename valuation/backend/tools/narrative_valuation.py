@@ -26,7 +26,7 @@ from tools.export_alphalake_sqlite import digest
 from tools.publish_native_valuation import runtime_identity
 from tools.review_native_policy import review_report
 
-CONTRACT = 'narrative-valuation-v1'
+CONTRACT = 'narrative-valuation-v2'
 METHOD = 'https://pages.stern.nyu.edu/~adamodar/New_Home_Page/NNPreface.html'
 OPERATING = {'revenue', 'margin', 'tax'}
 INHERITED = {'capital', 'research', 'financing', 'terminal'}
@@ -99,7 +99,7 @@ class Story(Record):
 
 
 class Document(Record):
-    contract: Literal['narrative-valuation-v1']
+    contract: Literal['narrative-valuation-v2']
     snapshot: dict[str, Any]
     scope: dict[str, str]
     evidence: list[Evidence]
@@ -152,6 +152,14 @@ def source_path(evidence):
     path = workspace_path(evidence.file).resolve(strict=True)
     if not path.is_relative_to(workspace_path().resolve()) or digest(path) != evidence.sha256:
         raise ValueError('workspace evidence path/hash mismatch: '+evidence.id)
+    if path.suffix.lower() == '.pdf':
+        relative = path.relative_to(workspace_path().resolve())
+        if relative.parts[0] == 'derived':
+            raise ValueError('PDF must reference a source archive, not a research copy')
+        if relative.parts[0] == 'cninfo' and relative.as_posix() != 'cninfo/objects/'+evidence.sha256[:2]+'/'+evidence.sha256+'.pdf':
+            raise ValueError('CNINFO PDF must reference its canonical source object')
+        if evidence.file != relative.as_posix():
+            raise ValueError('PDF evidence must use its canonical workspace-relative path')
     return path
 
 
@@ -318,7 +326,9 @@ def render(output, document, summary):
                 f'  - 反例：{claim.counterevidence}', f'  - 修订触发：{claim.revision_trigger}']
             for key in claim.evidence:
                 source = evidence[key]
-                lines.append(f'  - 依据 [{source.id}](evidence/{source.id}{Path(source.file).suffix})：{source.locator}；{source.explanation}')
+                link = (os.path.relpath(workspace_path(source.file), output) if Path(source.file).suffix.lower() == '.pdf'
+                        else f'evidence/{source.id}{Path(source.file).suffix}')
+                lines.append(f'  - 依据 [{source.id}]({link})：{source.locator}；{source.explanation}')
         lines += ['', '限制：'+'；'.join(story.limitations), '']
         if row['status'] == 'calculated_conditional':
             body = read_json(output/(story.id+'-result.json'))
@@ -365,8 +375,12 @@ def run(database, stories_file, output, web=None):
     sources = {e.id:source_path(e) for e in document.evidence}
     output = new_output(output)
     (output/'evidence').mkdir()
+    pdf_references = {}
     for key, path in sources.items():
-        shutil.copyfile(path, output/'evidence'/(key+path.suffix))
+        if path.suffix.lower() == '.pdf':
+            pdf_references[key] = dict(file=str(path.relative_to(workspace_path().resolve())), sha256=digest(path))
+        else:
+            shutil.copyfile(path, output/'evidence'/(key+path.suffix))
     shutil.copyfile(coverage, output/'coverage.json')
     save(output/'stories.json', document.model_dump(mode='json'))
     runtime = runtime_identity(database.parent)
@@ -436,7 +450,8 @@ def run(database, stories_file, output, web=None):
         save(output/'summary.json', summary)
         render(output, document, summary)
         artifacts = {str(p.relative_to(output)):digest(p) for p in sorted(output.rglob('*')) if p.is_file()}
-        save(output/'manifest.json', dict(contract=CONTRACT, run_id=run_id, identity=identity, artifacts=artifacts))
+        save(output/'manifest.json', dict(contract=CONTRACT, run_id=run_id, identity=identity,
+            artifacts=artifacts, pdf_references=pdf_references))
         return {k:v for k,v in summary.items() if k != 'results'}
     except Exception as error:
         save(output/'failure.json', dict(status='failed_incomplete_run', reason=str(error), results=rows))
@@ -468,8 +483,12 @@ def verify(output):
         or summary['selected_story'] is not None or summary['automatic_adoption'] is not False):
         raise ValueError('summary counts or adoption differs from explicit contract')
     evidence = {e.id:e for e in document.evidence}
+    expected_pdf = {e.id:dict(file=e.file, sha256=e.sha256) for e in document.evidence if Path(e.file).suffix.lower() == '.pdf'}
+    if manifest['pdf_references'] != expected_pdf:
+        raise ValueError('PDF references differ from registered source evidence')
     for e in document.evidence:
-        if digest(output/'evidence'/(e.id+Path(e.file).suffix)) != e.sha256:
+        path = source_path(e) if e.id in expected_pdf else output/'evidence'/(e.id+Path(e.file).suffix)
+        if digest(path) != e.sha256:
             raise ValueError('archived evidence differs from registered source: '+e.id)
     if digest(output/'coverage.json') != document.snapshot['coverage_sha256']:
         raise ValueError('archived canonical coverage differs')

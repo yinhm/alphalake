@@ -1,6 +1,7 @@
 package artifact
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"database/sql"
@@ -82,6 +83,16 @@ func Persist(ctx context.Context, db *sql.DB, root string, input Input) (Stored,
 	}
 	out.LocalPath = filepath.ToSlash(rel)
 	full := filepath.Join(root, rel)
+	_, officialDocument := CNINFODocumentPath(root, input.SourceLocator)
+	cninfoPDF := officialDocument && bytes.HasPrefix(bytes.TrimSpace(input.Content), []byte("%PDF-"))
+	if cninfoPDF {
+		canonical := filepath.Join(root, "cninfo", "objects", out.SHA256[:2], out.SHA256+".pdf")
+		if valid, err := fileHasSHA(canonical, out.SHA256); err == nil && valid && canonical != full {
+			if err := shareDocumentFile(root, canonical, full); err != nil {
+				return Stored{}, err
+			}
+		}
+	}
 	if err := persistBytes(full, input.Content, out.SHA256); err != nil {
 		return Stored{}, err
 	}
@@ -115,6 +126,11 @@ func Persist(ctx context.Context, db *sql.DB, root string, input Input) (Stored,
 		return Stored{}, fmt.Errorf("record artifact metadata: %w", err)
 	}
 	out.ArtifactID = artifactID
+	if cninfoPDF {
+		if err := PublishStoredCNINFODocument(ctx, db, root, input.SourceLocator, out); err != nil {
+			return Stored{}, err
+		}
+	}
 	return out, nil
 }
 

@@ -3,13 +3,17 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
+import tempfile
 import time
 from urllib.request import Request, urlopen
 
 from data_sources.paths import workspace_path
+from data_sources.cninfo_documents import (document_lock, publish_reference, read_reference,
+                                           verified_pdf)
 from tools.export_alphalake_sqlite import digest
 from tools.narrative_valuation import new_output, read_json, save
 
@@ -42,47 +46,60 @@ def reports(inventory, codes=None):
 
 def collect_one(row, output):
     result = dict(row)
-    code, period, source_id = row['provider_code'], row['period'], row['source_filing_id']
-    raw = workspace_path('cninfo', f'{code}-{period}-{source_id}.pdf')
-    cached = workspace_path(row['local_path']) if row.get('local_path') else raw
+    source_id = row['source_filing_id']
     try:
-        if not cached.resolve().is_relative_to(workspace_path().resolve()):
-            raise ValueError('cache leaves workspace')
-        if cached.exists():
-            raw = cached
-            if row.get('sha256') and digest(raw) != row['sha256']:
-                raise ValueError('archived PDF hash differs; corrupt cache rejected')
-            result['retrieval'] = 'existing_cache'
-            result['hash_basis'] = 'matched_prior_archive' if row.get('sha256') else 'first_observed_cache_not_independently_authenticated'
-        else:
-            temporary = raw.with_suffix('.download')
-            request = Request(row['source_url'], headers={'User-Agent': 'AlphaLake/0.0',
-                'Referer': 'https://www.cninfo.com.cn/'})
-            try:
-                with urlopen(request, timeout=25) as response, temporary.open('xb') as target:
-                    if response.url != row['source_url']:
-                        raise ValueError('document redirect not approved')
-                    size = 0
-                    while chunk := response.read(1 << 20):
-                        size += len(chunk)
-                        if size > 256 << 20:
-                            raise ValueError('document exceeds source size limit')
-                        target.write(chunk)
-                with temporary.open('rb') as source:
-                    if source.read(5) != b'%PDF-':
-                        temporary.rename(output/(source_id+'.failed-response'))
-                        raise ValueError('source response is not a PDF')
-                if row.get('sha256') and digest(temporary) != row['sha256']:
-                    raise ValueError('download differs from expected archived hash')
-                temporary.rename(raw)
-            finally:
-                temporary.unlink(missing_ok=True)
-            result['retrieval'] = 'official_download'
-            result['hash_basis'] = 'matched_prior_archive' if row.get('sha256') else 'official_download_first_observation'
-        with raw.open('rb') as source:
-            if source.read(5) != b'%PDF-':
-                raise ValueError('source response is not a PDF')
-        result.update(pdf_file=str(raw.relative_to(workspace_path())), pdf_sha256=digest(raw),
+        if row.get('sha256') is not None and not re.fullmatch(r'[a-f0-9]{64}', row['sha256']):
+            raise ValueError('invalid expected archive hash')
+        with document_lock(row['source_url']):
+            prior = read_reference(row['source_url'], row.get('sha256'))
+            cached = workspace_path(row['local_path']) if row.get('local_path') else None
+            if cached is not None and not cached.resolve().is_relative_to(workspace_path().resolve()):
+                raise ValueError('cache leaves workspace')
+            if cached is not None and cached.exists():
+                sha = row.get('sha256') or digest(cached)
+                raw = verified_pdf(cached, sha)
+                prior = publish_reference(row['source_url'], raw, sha,
+                    prior['fetched_at'] if prior else row.get('document_fetched_at'))
+            elif prior is None and row.get('sha256'):
+                sha = row['sha256']
+                raw = workspace_path('cninfo', 'objects', sha[:2], sha+'.pdf')
+                if raw.exists():
+                    prior = publish_reference(row['source_url'], raw, sha, row.get('document_fetched_at'))
+            if prior is not None:
+                result['retrieval'] = 'existing_cache'
+                result['hash_basis'] = 'matched_prior_archive' if row.get('sha256') else 'matched_url_download_receipt_not_semantic_review'
+            else:
+                workspace_path('cninfo').mkdir(parents=True, exist_ok=True)
+                with tempfile.NamedTemporaryFile(prefix='.pdf-download-', dir=workspace_path('cninfo'), delete=False) as target:
+                    temporary = Path(target.name)
+                    try:
+                        request = Request(row['source_url'], headers={'User-Agent': 'AlphaLake/0.0',
+                            'Referer': 'https://www.cninfo.com.cn/'})
+                        with urlopen(request, timeout=25) as response:
+                            if response.url != row['source_url']:
+                                raise ValueError('document redirect not approved')
+                            size = 0
+                            while chunk := response.read(1 << 20):
+                                size += len(chunk)
+                                if size > 256 << 20:
+                                    raise ValueError('document exceeds source size limit')
+                                target.write(chunk)
+                        target.flush()
+                        os.fsync(target.fileno())
+                        sha = row.get('sha256') or digest(temporary)
+                        try:
+                            verified_pdf(temporary, sha)
+                        except ValueError:
+                            temporary.rename(output/(source_id+'.failed-response'))
+                            raise
+                        prior = publish_reference(row['source_url'], temporary, sha,
+                            datetime.now(timezone.utc).isoformat())
+                    finally:
+                        temporary.unlink(missing_ok=True)
+                result['retrieval'] = 'official_download'
+                result['hash_basis'] = 'matched_prior_archive' if row.get('sha256') else 'official_download_first_observation'
+            raw = workspace_path(prior['local_path'])
+        result.update(pdf_file=prior['local_path'], pdf_sha256=prior['sha256'], first_fetched_at=prior['fetched_at'],
             retrieved_at=datetime.now(timezone.utc).isoformat())
         text_file = output/(source_id+'.txt')
         subprocess.run(['pdftotext', '-layout', '-enc', 'UTF-8', str(raw), str(text_file)],
@@ -115,7 +132,7 @@ def collect(inventory_file, output, codes=None):
             rows.append(row)
             if len(rows) % 20 == 0:
                 print(f'archived {len(rows)}/{len(selected)}', flush=True)
-    result = dict(contract='narrative-document-collection-v1', companies=len(inventory['scope']),
+    result = dict(contract='narrative-document-collection-v2', companies=len(inventory['scope']),
         selected_documents=len(selected), archived=sum(r['status']=='archived_for_review' for r in rows),
         failed=sum(r['status']!='archived_for_review' for r in rows),
         elapsed_seconds=time.monotonic()-started, reports=rows)
@@ -126,16 +143,21 @@ def collect(inventory_file, output, codes=None):
 def verify_collection(output):
     """仅验归档完整性；正文、业务语义和预测仍需分别审阅。"""
     receipt = read_json(output/'collection.json')
+    if receipt.get('contract') != 'narrative-document-collection-v2':
+        raise ValueError('current PDF reference collection contract required; frozen history uses original commit')
     rows = receipt['reports']
     good = [r for r in rows if r['status'] == 'archived_for_review']
     if (len(rows), len(good), len(rows)-len(good)) != (
             receipt['selected_documents'], receipt['archived'], receipt['failed']):
         raise ValueError('collection denominator mismatch')
     for row in good:
-        for path, expected in ((workspace_path(row['pdf_file']), row['pdf_sha256']),
-                (output/row['text_file'], row['text_sha256'])):
-            if not path.resolve().is_relative_to(workspace_path().resolve()) or digest(path) != expected:
-                raise ValueError('collection evidence hash/path mismatch: '+row['source_filing_id'])
+        sha = row['pdf_sha256']
+        if not re.fullmatch(r'[a-f0-9]{64}', sha) or row['pdf_file'] != f'cninfo/objects/{sha[:2]}/{sha}.pdf':
+            raise ValueError('collection PDF reference is not canonical: '+row['source_filing_id'])
+        verified_pdf(workspace_path(row['pdf_file']), sha)
+        text = output/row['text_file']
+        if not text.resolve().is_relative_to(output.resolve()) or digest(text) != row['text_sha256']:
+            raise ValueError('collection evidence hash/path mismatch: '+row['source_filing_id'])
     return dict(verified_documents=len(good), retained_failures=receipt['failed'], semantic_review='not_certified')
 
 

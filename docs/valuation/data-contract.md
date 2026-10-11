@@ -207,7 +207,7 @@ SQLite标准事实出口增加金融业务利息收入/费用及使用权资产�
 
 ## 叙事到年度输入契约
 
-`tools.narrative_valuation`在输入侧保存`narrative-valuation-v1`，不新增引擎字段。完整设计及操作见[故事到估值](narrative-valuation-plan.md#最小接入方式与产出)。`prepare`绑定SQLite v12、完整范围收据、财务／股本期、信息截止及参考版本，计算并保存实际原生基线；生成的草稿不进入故事计算。
+`tools.narrative_valuation`在输入侧保存`narrative-valuation-v2`，不新增引擎字段。PDF仅引用来源归档及哈希，登记于`manifest.pdf_references`，不复制进研究输出；冻结v1按原提交复验。完整设计及操作见[故事到估值](narrative-valuation-plan.md#最小接入方式与产出)。`prepare`绑定SQLite v12、完整范围收据、财务／股本期、信息截止及参考版本，计算并保存实际原生基线；生成的草稿不进入故事计算。
 
 人工已指定的逐证券条件可通过`tools.narrative_conditions`展开，见[显式锚点契约](narrative-valuation-plan.md#逐证券显式条件展开)：完整FY同比／四年收入三年CAGR／规模持平，报表利润率与逐年研发桥分别处理，保持及成熟年数显式填写。实际计算仍只消费已有年度经营／研发税务／资本输入；缺历史或超界不换默认锚点。该工具不是自动识别经济合理参数或公司故事的算法，条件不适用不反向清空标准事实。价差表读取同版未复权收盘价，缺报价保留空值。
 

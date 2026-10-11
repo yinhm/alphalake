@@ -170,3 +170,28 @@ def test_evidence_hash_does_not_authorize_replacement_financial_facts(prepared, 
     with pytest.raises(ValueError, match='authoritative native source'):
         nv.run(database, directory/'stories.json', output)
     assert (output/'failure.json').exists() and not (output/'manifest.json').exists()
+
+
+def test_pdf_is_a_canonical_source_reference_not_a_run_copy(prepared, tmp_path):
+    from data_sources.cninfo_documents import canonical_pdf
+    database, directory = prepared
+    document = conditional(nv.read_json(directory/'stories.json'))
+    original = tmp_path/'cninfo'/'original.pdf'; original.parent.mkdir()
+    original.write_bytes(b'%PDF-1.7\noriginal company report')
+    sha = nv.digest(original)
+    pdf = canonical_pdf(original, sha)
+    relative = str(pdf.relative_to(tmp_path))
+    document['evidence'].append(dict(id='annual-report', kind='company_plan', file=relative,
+        sha256=sha, locator='官方年报#page=10', explanation='经营规模和扩产计划，不是预测认证'))
+    document['stories'][0]['claims'][0]['evidence'].append('annual-report')
+    nv.save(directory/'stories.json', document)
+    output = tmp_path/'derived'/'pdf-referenced'
+    nv.run(database, directory/'stories.json', output)
+    assert not list(output.rglob('*.pdf'))
+    assert nv.read_json(output/'manifest.json')['pdf_references'] == {
+        'annual-report': dict(file=relative, sha256=sha)}
+    assert pdf.name in (output/'report.md').read_text()
+    assert nv.verify(output)['calculated'] == 1
+    pdf.write_bytes(b'%PDF-1.7\ntampered source')
+    with pytest.raises(ValueError, match='path/hash mismatch'):
+        nv.verify(output)

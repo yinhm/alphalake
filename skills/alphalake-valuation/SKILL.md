@@ -112,7 +112,9 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 用户要求业务故事到估值时，先读`docs/valuation/narrative-valuation-plan.md`和数据契约的“叙事到年度输入契约”，使用`tools.narrative_valuation`。已确认同版SQLite、范围收据及证券后`prepare`生成待审草稿；只把用户明确条件或有依据、明确标记的研究判断写为`conditional`。记录证据类型、文件哈希和定位，每项经营／资本／研发／融资／终点条件绑定主张、反例和修订触发。不能将准备时的默认增长当成采用的公司故事，不能从用户一句话补出获认证的参数。
 
-`run --database ... --stories ... --output ...`只计算文档指定故事，可用`--web`复验实际API；同公司多个故事保留，无概率或胜出者。先读取`narrative-valuation-v1`摘要及中文`report.md`，run ID由工具生成，区分草稿、范围外、不适用、来源受阻与计算拒绝；经济依据不足和算术通过分别解释，不覆盖事实、股权股本输入或网页默认。
+`run --database ... --stories ... --output ...`只计算文档指定故事，可用`--web`复验实际API；同公司多个故事保留，无概率或胜出者。先读取`narrative-valuation-v2`摘要及中文`report.md`，run ID由工具生成，区分草稿、范围外、不适用、来源受阻与计算拒绝；经济依据不足和算术通过分别解释，不覆盖事实、股权股本输入或网页默认。
+
+PDF引用按[归档规则](../../docs/guides/workspace-layout.md#pdf归档与引用)：巨潮原文使用`cninfo/objects/<摘要前2位>/<SHA-256>.pdf`，下载前持逐URL锁复用共享收据或已知哈希对象；不按公司、输出目录或新run ID重新下载／复制。故事`evidence.file`及`manifest.pdf_references`记录来源相对路径、哈希和定位，报告链接原文。冻结v1按原提交复验，已迁移的旧采集路径仅在隔离workspace按迁移收据恢复，不向当前工具加入兼容路径。
 
 用自身`verify RUN_DIR`核验归档、重新编译和重放；修订写`previous_run_id`并增加改动故事的`revision`，运行到新目录后`compare BEFORE_DIR AFTER_DIR`。收据写在运行目录外，不把故事run ID传给旧历史查询／比较工具。新数据或合法口径变更重新准备基线、保留旧证据并解释输入差异；经济自动选择、短历史估计和新引擎分支仍延期。
 

@@ -8,6 +8,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -493,6 +495,14 @@ func archiveCNINFODocument(ctx context.Context, db *sql.DB, source CNINFOFilingS
 	if sourceURL == "" {
 		return errors.New("document source URL missing")
 	}
+	_, canonical := artifact.CNINFODocumentPath(artifactRoot, sourceURL)
+	if canonical {
+		release, err := artifact.LockCNINFODocument(artifactRoot, sourceURL)
+		if err != nil {
+			return err
+		}
+		defer release()
+	}
 
 	// Hash-valid bytes can still be a cached HTML anti-bot page from an earlier
 	// response. Search retained revisions lazily and reuse only a payload whose
@@ -505,10 +515,33 @@ func archiveCNINFODocument(ctx context.Context, db *sql.DB, source CNINFOFilingS
 		if err := validateCNINFOFilingDocument(sourceURL, "", version.Content); err != nil {
 			continue
 		}
+		if canonical {
+			if err := artifact.PublishStoredCNINFODocument(ctx, db, artifactRoot, sourceURL, version.Stored); err != nil {
+				return err
+			}
+		}
 		filing.DocumentArtifactID = version.Stored.ArtifactID
 		filing.DocumentSHA256 = version.Stored.SHA256
 		summary.ReusedDocs++
 		return nil
+	}
+	if cached, exists, cacheErr := artifact.ReadCNINFODocumentReference(artifactRoot, sourceURL); cacheErr == nil && exists {
+		if cached.FetchedAt == nil {
+			return errors.New("existing CNINFO PDF has unknown original retrieval time; retain cache without repeat download")
+		}
+		content, err := os.ReadFile(filepath.Join(artifactRoot, filepath.FromSlash(cached.LocalPath)))
+		if err != nil {
+			return err
+		}
+		stored, err := artifact.Persist(ctx, db, artifactRoot, artifact.Input{Source: cninfo.Source, Dataset: cninfoDocumentArtifactData, SourceLocator: sourceURL, FetchedAt: *cached.FetchedAt, MediaType: "application/pdf", ParserVersion: "raw-document-v1", IngestRunID: &runID, Content: content})
+		if err != nil {
+			return err
+		}
+		filing.DocumentArtifactID, filing.DocumentSHA256 = stored.ArtifactID, stored.SHA256
+		summary.ReusedDocs++
+		return nil
+	} else if cacheErr != nil && source == nil {
+		return cacheErr
 	}
 
 	if source == nil {

@@ -54,7 +54,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.collect_narrative_evidenc
   --verify workspace/derived/narrative-valuation/company-evidence/full
 ```
 
-原PDF放`workspace/cninfo`，文本、选择清单及失败收据放指定derived目录。已有登记哈希须匹配；未登记的初见缓存仅记为待核验，不能声称已独立认证。新下载限定官方公告URL、校验PDF响应，文本提取复用系统`pdftotext`；扫描件/空正文拒绝，不静默换OCR。两个采集任务共享隔离服务的1GiB预算，没有新增Python依赖。`--verify`核对成功材料的PDF与文本哈希并保留失败分母，**不认证发行人、业务语义、公司计划实现或预测准确度**。
+原PDF统一存`workspace/cninfo/objects/`，按官方URL日期／公告ID建立目录引用；文本、选择清单及失败收据放指定derived目录。采集契约为`narrative-document-collection-v2`，下载前在逐URL锁内复用共享收据或已知哈希对象，不因输出目录变化重复下载。已有登记哈希须匹配；缓存核验不认证发行人或经济语义。新下载限定官方公告URL、校验PDF响应，文本提取复用系统`pdftotext`；扫描件/空正文拒绝，不静默换OCR。两个采集任务共享隔离服务的1GiB预算，没有新增Python依赖。`--verify`核对规范原文路径、PDF与文本哈希并保留失败分母，**不认证发行人、业务语义、公司计划实现或预测准确度**。具体路径与迁移见[PDF约定](../guides/workspace-layout.md#pdf归档与引用)。
 
 人工故事应分别记录业务组成、需求/竞争机制、反例及数字条件。报告写“扩张市场”并不支持某个精确增长百分比，管理层日历年度计划也不能直接当模型未来滚动一年收入。可以使用现有完整年度接口提出研究条件，但须标明判断来源和未闭合项，不把读过报告等同于已核实十年预测。
 
@@ -91,7 +91,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.narrative_conditions \
 
 ## 每个故事保存什么
 
-使用`narrative-valuation-v1`故事文件及同版原生基线，运行后生成中文说明和逐项结构化证据。以下内容已落实为输入侧记录；没有扩展`CompanyValuationInput`或新增财务表。
+当前使用`narrative-valuation-v2`故事文件及同版原生基线，运行后生成中文说明和逐项结构化证据。v2仅改变PDF引用与归档方式，不改变估值字段、参数或计算；冻结v1按原提交复验。以下内容已落实为输入侧记录；没有扩展`CompanyValuationInput`或新增财务表。
 
 | 内容 | 最少需要记录 |
 |---|---|
@@ -195,9 +195,9 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.narrative_valuation compa
 
 最小结果包括：故事摘要与证据状态；完整年度请求；收入、调整利润、现金税、净投入与FCFF；终值占比与约束；经营价值、股权桥和每股值；相对同版默认的输入及结果差异；未闭合依据与可推翻条件。来源和请求留痕放`workspace/derived/narrative-valuation/`，不能成为第二财务库。
 
-中文`report.md`与`summary.csv`读取已有响应；完整请求、绑定、结果、审阅及证据保存在同目录。run ID在计算前由规范故事内容与实现版本生成，`manifest.json`登记所有产物；已存在目录不覆盖，运行计算阶段失败保留`failure.json`且不产生完整manifest。逐条业务拒绝保留分母，退出0也不表示每条故事已算或获经济认证。
+中文`report.md`与`summary.csv`读取已有响应；完整请求、绑定、结果、审阅及非PDF证据保存在同目录。PDF只保留来源目录的相对路径与哈希，CNINFO须引用规范原文对象；`manifest.pdf_references`登记引用，报告直接链接归档，不复制到运行目录。run ID在计算前由规范故事内容与实现版本生成，`manifest.json`登记产物与外部原文引用；已存在目录不覆盖，运行计算阶段失败保留`failure.json`且不产生完整manifest。逐条业务拒绝保留分母，退出0也不表示每条故事已算或获经济认证。
 
-`verify`验证归档成员和哈希，重新编译请求、重放共享引擎并独立聚合现金流／终值；即使篡改响应并同步改哈希，也不能代替引擎结果。实现变更本身不拒绝旧证据，须报告版本差异并实际重放；行为不再相同则按合法新输入重建。`compare`要求明确的`previous_run_id`，改动故事递增版本，列内容、输入与结果变化，不自动归因多因素或选胜出者。核验／比较收据放运行目录之外，避免污染不可变归档。
+`verify`验证归档成员、PDF来源引用及哈希，重新编译请求、重放共享引擎并独立聚合现金流／终值；即使篡改响应并同步改哈希，也不能代替引擎结果。冻结旧契约按原提交复验，归档迁移的旧路径仅在隔离workspace按收据恢复；当前故事用v2重新准备，不增设兼容分支。实现变更本身不拒绝旧证据，须报告版本差异并实际重放；行为不再相同则按合法新输入重建。`compare`要求明确的`previous_run_id`，改动故事递增版本，列内容、输入与结果变化，不自动归因多因素或选胜出者。核验／比较收据放运行目录之外，避免污染不可变归档。
 
 结构化编排现已实现；原生网页未新增故事编辑器、叙事目录或文字转参数能力。KB可供理解与人工复核，不是默认参数规则库。
 

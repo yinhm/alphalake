@@ -80,6 +80,13 @@ func ImportReviewedDocument(ctx context.Context, db *sql.DB, root string, review
 		}
 		alreadyAttached = true
 	}
+	if _, canonical := artifact.CNINFODocumentPath(root, review.RetrievalURL); canonical {
+		release, err := artifact.LockCNINFODocument(root, review.RetrievalURL)
+		if err != nil {
+			return false, err
+		}
+		defer release()
+	}
 	pdf, err := artifact.Persist(ctx, db, root, artifact.Input{Source: review.RetrievalSource, Dataset: "filing_document", SourceLocator: review.RetrievalURL, FetchedAt: review.FetchedAt, MediaType: "application/pdf", ParserVersion: "raw-document-v1", Content: content})
 	if err != nil {
 		return false, err

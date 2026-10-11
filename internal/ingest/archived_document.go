@@ -35,6 +35,13 @@ func ImportArchivedCNINFODocument(ctx context.Context, db *sql.DB, root string, 
 	if err = validateCNINFOFilingDocument(r.URL, "application/pdf", content); err != nil {
 		return false, err
 	}
+	if _, canonical := artifact.CNINFODocumentPath(root, r.URL); canonical {
+		release, err := artifact.LockCNINFODocument(root, r.URL)
+		if err != nil {
+			return false, err
+		}
+		defer release()
+	}
 	var id int64
 	var prior sql.NullInt64
 	var hash sql.NullString

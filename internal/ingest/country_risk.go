@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/yinhm/alphalake/internal/artifact"
@@ -87,6 +88,13 @@ func syncReference(ctx context.Context, db *sql.DB, root string, options Country
 		if len(body) == 0 || len(body) > 16<<20 {
 			return out, errors.New("empty/oversized local reference")
 		}
+		if _, officialPDF := artifact.CNINFODocumentPath(root, feed.url); officialPDF {
+			release, lockErr := artifact.LockCNINFODocument(root, feed.url)
+			if lockErr != nil {
+				return out, lockErr
+			}
+			defer release()
+		}
 		stored, err = artifact.Persist(ctx, db, root, artifact.Input{Source: feed.source, Dataset: feed.dataset, SourceLocator: feed.url, FetchedAt: time.Now().UTC(), MediaType: feed.mediaType, ParserVersion: feed.parserVersion, IngestRunID: &out.RunID, Content: body})
 		if err != nil {
 			return
@@ -127,6 +135,39 @@ func syncReference(ctx context.Context, db *sql.DB, root string, options Country
 // fetchReferenceArtifact 只取得并归档单份原文；发布完整性由具体来源校验。
 func fetchReferenceArtifact(ctx context.Context, db *sql.DB, root string, options ReferenceOptions, feed referenceFeed, runID int64) (artifact.Stored, error) {
 	var empty artifact.Stored
+	if _, officialPDF := artifact.CNINFODocumentPath(root, feed.url); officialPDF {
+		release, err := artifact.LockCNINFODocument(root, feed.url)
+		if err != nil {
+			return empty, err
+		}
+		defer release()
+		versions, _, err := artifact.LoadHealthyVersions(ctx, db, root, feed.source, feed.dataset, feed.url, 0)
+		if err != nil {
+			return empty, err
+		}
+		for _, version := range versions {
+			if validateCNINFOFilingDocument(feed.url, "", version.Content) == nil {
+				if err := artifact.PublishStoredCNINFODocument(ctx, db, root, feed.url, version.Stored); err != nil {
+					return empty, err
+				}
+				return version.Stored, nil
+			}
+		}
+		if cached, exists, err := artifact.ReadCNINFODocumentReference(root, feed.url); err == nil && exists {
+			if cached.FetchedAt == nil {
+				return empty, errors.New("existing PDF has unknown original retrieval time; retain without repeat download")
+			}
+			path := filepath.Join(root, filepath.FromSlash(cached.LocalPath))
+			if info, err := os.Stat(path); err != nil || info.Size() > 16<<20 {
+				return empty, errors.New("missing/oversized reference PDF cache")
+			}
+			body, err := os.ReadFile(path)
+			if err != nil {
+				return empty, err
+			}
+			return artifact.Persist(ctx, db, root, artifact.Input{Source: feed.source, Dataset: feed.dataset, SourceLocator: feed.url, FetchedAt: *cached.FetchedAt, MediaType: feed.mediaType, ParserVersion: feed.parserVersion, IngestRunID: &runID, Content: body})
+		}
+	}
 	client := options.Client
 	if client == nil {
 		client = &http.Client{Timeout: 45 * time.Second}
