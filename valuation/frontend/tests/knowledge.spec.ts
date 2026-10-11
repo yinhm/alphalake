@@ -13,6 +13,8 @@ const terms: KnowledgeTermSummary[] = [
     ['learning-roadmap', '测试学习路线'], ['lesson-financials', '测试第一课'],
     ['learning-practice', '测试案例练习'], ['forecast-assumptions', '测试预测专题'],
   ].map(([term_id, title_zh]) => ({ term_id, title_zh, title_en: '', kind: '测试课程', category: '合成样本', summary: '仅用于验证已发布内容的首页导航。', aliases: [] })),
+  { term_id: 'foundations-finance', title_zh: '测试金融基础课程', title_en: '', kind: '课程目录', category: '合成样本', summary: '合成课程入口。', aliases: [] },
+  ...[1, 2].map(i => ({ term_id: `foundations-finance-0${i}`, title_zh: `测试金融基础第${i}讲`, title_en: '', kind: '课程讲义', category: '合成样本', summary: '合成课程讲义。', aliases: [] })),
 ];
 const API_ROUTE = /^http:\/\/127\.0\.0\.1:4173\/api\//;
 const index: KnowledgeIndex = { status: 'ready', release_id: 'fixture-r1', schema_version: 1, terms };
@@ -22,11 +24,14 @@ function detail(termId: string, release = 'fixture-r1'): KnowledgeDetail | null 
   if (!term) return null;
   return {
     release_id: release,
-    term: { ...term, body_md: termId === 'wacc'
+    term: { ...term, body_md: term.kind === '课程讲义'
+      ? '## 课程目标\n\n先分清现金与利润。\n\n## 可核算例子\n\n例子 $100 / 1.1$。\n\n[官方视频](https://youtu.be/example)\n\n<script>window.knowledgeInjected=true</script>\n\n## 答案与解析\n\n这是最后一页的解析。'
+      : termId === 'wacc'
       ? '仅为浏览器测试文本。公式 $x^2$。\n\n## 基本解释\n\n[关联定义](/knowledge/capital-a)\n\n[危险链接](javascript:alert(1))\n\n<script>window.knowledgeInjected=true</script>\n\n![远程图片](https://example.invalid/tracker.png)\n\n## 自己试一试\n\n测试问题。\n\n## 答案与解析\n\n先区分输入和结果。\n\n## 继续阅读\n\n课程结尾。'
       : '这是合成的关联词条正文。', content_hash: `fixture-${termId}` },
     bindings: termId === 'wacc' ? [{ binding_id: 'wacc.current', term_id: termId, page_key: 'fixture', field_path: 'cost_of_capital.wacc', context_key: 'fixture', usage_md: '读取合成估值结果中的原值。', limitations_md: '仅为测试。', reviewed_engine_ref: 'fixture' }] : [],
-    relations: termId === 'wacc' ? [{ term_id: 'capital-b', title_zh: '测试资本乙', title_en: 'Capital B', relation_type: '下一课' }] : [],
+    relations: termId === 'wacc' ? [{ term_id: 'capital-b', title_zh: '测试资本乙', title_en: 'Capital B', relation_type: '下一课' }]
+      : termId === 'foundations-finance-01' ? [{ term_id: 'foundations-finance-02', title_zh: '测试金融基础第2讲', title_en: '', relation_type: '下一课' }] : [],
     sources: [{ source_id: 'fixture-source', title: '合成来源', author: '测试', url: 'https://example.org/reference', published_at: null, verified_at: '2026-01-01', section_anchor: 'definition', locator: '测试章节' }],
   };
 }
@@ -70,6 +75,49 @@ async function openHarness(page: Page) {
 
 const preview = (page: Page) => page.getByRole('region', { name: '选中文字的词条解释' });
 const panel = (page: Page) => page.getByRole('complementary', { name: '估值词条解释' });
+
+test('course slides preserve formulas and safe links, and switch lessons without retaining the old page', async ({ page }) => {
+  await mockKnowledge(page);
+  await page.goto('/knowledge');
+  await expect(page.locator('.knowledge-home').getByRole('link', { name: '测试金融基础课程', exact: true })).toBeVisible();
+  await page.goto('/knowledge/foundations-finance-01');
+  await page.getByRole('link', { name: '打开中文HTML幻灯片' }).click();
+  const slides = page.getByRole('region', { name: '中文HTML幻灯片' });
+  await expect(slides.getByRole('button', { name: '上一页', exact: true })).toBeDisabled();
+  await expect(slides.getByRole('heading', { name: '课程目标' })).toBeVisible();
+  await slides.focus();
+  await slides.press('ArrowRight');
+  await expect(slides.locator('.katex')).toBeVisible();
+  await expect(slides.getByRole('link', { name: '官方视频' })).toHaveAttribute('href', 'https://youtu.be/example');
+  expect(await page.evaluate(() => (window as unknown as Record<string, unknown>).knowledgeInjected)).toBeUndefined();
+  await slides.getByLabel('选择幻灯片').selectOption('2');
+  await expect(slides.getByRole('button', { name: '下一页', exact: true })).toBeDisabled();
+  await page.getByRole('navigation', { name: '课程导航' }).getByRole('button', { name: /下一课/ }).click();
+  await expect(page).toHaveURL(/foundations-finance-02\?view=slides$/);
+  await expect(slides.getByRole('heading', { name: '课程目标' })).toBeVisible();
+  await page.getByRole('link', { name: '连续阅读讲义' }).click();
+  await expect(page).toHaveURL(/foundations-finance-02$/);
+  await expect(page.locator('.knowledge-answer')).toBeVisible();
+  await expect(page.getByText('这是最后一页的解析。', { exact: true })).not.toBeVisible();
+});
+
+test('course slides work on narrow screens and do not intercept the page selector keys', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockKnowledge(page);
+  await page.goto('/knowledge/foundations-finance-01?view=slides');
+  const slides = page.getByRole('region', { name: '中文HTML幻灯片' });
+  await expect(slides.getByRole('heading', { name: '课程目标' })).toBeVisible();
+  const selector = slides.getByLabel('选择幻灯片');
+  await selector.selectOption('1');
+  await selector.focus();
+  await selector.press('End');
+  await expect(selector).toHaveValue('2');
+  await expect(slides.getByText('第3页 / 共3页 · 可用左右方向键翻页')).toBeVisible();
+  await slides.focus();
+  await slides.press('Home');
+  await expect(slides.getByRole('heading', { name: '课程目标' })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
 
 test('read-only financial labels resolve exact unique aliases, with explicit IDs taking priority', async ({ page }) => {
   await openHarness(page);

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useKnowledge } from './context';
 import { KnowledgeArticle, KnowledgeEmpty } from './KnowledgeArticle';
 import { searchTerms } from './matching';
@@ -15,6 +15,7 @@ const categories = [
   { title: '股权与每股价值', description: '从经营价值扣除其他索取权，再看普通股能分到多少。', terms: ['enterprise-value', 'equity-value', 'dilution'] },
 ];
 const topics = [
+  { id: 'foundations-finance', description: '达摩达兰免费金融基础课：12讲中文自学讲义、HTML幻灯片、官方视频与原版测验。' },
   { id: 'learning-practice', description: '通过概念对照、制造与研发案例、自测，把零散词条连接起来。' },
   { id: 'valuation-strategy-selection', description: '周期、亏损、扩产与有限寿命等经济特征，为什么需要不同处理？' },
   { id: 'forecast-assumptions', description: '学习怎样为增长、利润率和资本效率寻找依据、检验候选。' },
@@ -58,6 +59,7 @@ function KnowledgeHome({ terms }: { terms: KnowledgeTermSummary[] }) {
 export function KnowledgePage() {
   const knowledge = useKnowledge();
   const { termId } = useParams<{ termId: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const pageRef = useRef<HTMLDivElement>(null);
@@ -66,6 +68,7 @@ export function KnowledgePage() {
   if (!knowledge) return null;
   const { index, indexError, refreshIndex } = knowledge;
   const matches = searchTerms(query, index?.terms ?? []);
+  const presentation = searchParams.get('view') === 'slides' && index?.terms.some(term => term.term_id === termId && term.kind === '课程讲义');
   return <div ref={pageRef} className="knowledge-page">
     <header className="knowledge-page-header"><p className="knowledge-eyebrow">ALPHALAKE · 估值知识</p><h1>{termId ? '估值词汇与方法' : '估值知识库'}</h1><p>从报表到每股价值，学习生意怎样创造现金、增长需要多少投入，以及风险如何影响今天的价值。</p>
       {!termId && index?.status === 'ready' && <a href="#knowledge-search" className="knowledge-link">已有问题？直接搜索词条 →</a>}
@@ -73,7 +76,7 @@ export function KnowledgePage() {
     {indexError ? <div role="status" className="knowledge-empty"><p>{indexError}</p><button type="button" className="knowledge-link" onClick={() => void refreshIndex()}>重试读取词条库</button></div>
       : !index ? <p role="status">正在读取词条目录…</p>
       : index.status === 'unavailable' ? <KnowledgeEmpty />
-      : <div className={`knowledge-directory${termId ? ' has-article' : index.terms.length > 0 ? ' has-home' : ''}`}>
+      : <div className={`knowledge-directory${termId ? ' has-article' : index.terms.length > 0 ? ' has-home' : ''}${presentation ? ' has-slides' : ''}`}>
         {!termId && index.terms.length > 0 && <KnowledgeHome terms={index.terms} />}
         <section className="knowledge-directory-list" aria-label="词条目录"><label htmlFor="knowledge-search">搜索词条</label>
           <input id="knowledge-search" type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="中文、英文或缩写" autoComplete="off" />
@@ -83,7 +86,7 @@ export function KnowledgePage() {
             <strong>{term.title_zh || term.title_en}</strong>{term.title_en && <span>{term.title_en}</span>}<p>{term.summary}</p>
           </Link></li>)}</ul>}
         </section>
-        {termId && <div ref={articleRef} className="knowledge-page-article"><Link to="/knowledge" className="knowledge-back">← 知识库首页</Link><KnowledgeArticle termId={termId} onTerm={id => navigate(`/knowledge/${id}`)} /></div>}
+        {termId && <div ref={articleRef} className="knowledge-page-article"><Link to="/knowledge" className="knowledge-back">← 知识库首页</Link><KnowledgeArticle termId={termId} presentation={Boolean(presentation)} onTerm={id => navigate(`/knowledge/${id}${presentation && index.terms.some(term => term.term_id === id && term.kind === '课程讲义') ? '?view=slides' : ''}`)} /></div>}
       </div>}
   </div>;
 }

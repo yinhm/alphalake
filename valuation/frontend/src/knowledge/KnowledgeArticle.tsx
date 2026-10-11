@@ -6,13 +6,13 @@ import { KNOWLEDGE_BINDINGS, resolveLiveContext, resolveLiveValue } from './live
 import type { KnowledgeDetail } from './types';
 
 const LazyMarkdown = lazy(() => import('./KnowledgeMarkdown').then(module => ({ default: module.KnowledgeMarkdown })));
-function MarkdownBlock({ children, onTerm }: { children: string; onTerm?: (id: string) => void }) {
+function MarkdownBlock({ children, onTerm, presentation = false }: { children: string; onTerm?: (id: string) => void; presentation?: boolean }) {
   return <Suspense fallback={<p className="knowledge-muted" role="status">正在加载正文与公式…</p>}>
-    <LazyMarkdown onTerm={onTerm}>{children}</LazyMarkdown>
+    <LazyMarkdown onTerm={onTerm} presentation={presentation}>{children}</LazyMarkdown>
   </Suspense>;
 }
 
-export function KnowledgeArticle({ termId, bindingId, onTerm }: { termId: string; bindingId?: string; onTerm?: (id: string) => void }) {
+export function KnowledgeArticle({ termId, bindingId, onTerm, presentation = false }: { termId: string; bindingId?: string; onTerm?: (id: string) => void; presentation?: boolean }) {
   const knowledge = useKnowledge();
   const client = knowledge?.client;
   const release = knowledge?.index?.release_id;
@@ -45,7 +45,8 @@ export function KnowledgeArticle({ termId, bindingId, onTerm }: { termId: string
     <h2>{term.title_zh || term.title_en}</h2>
     {term.title_en && <p className="knowledge-subtitle">{term.title_en}</p>}
     <p className="knowledge-summary">{term.summary}</p>
-    <section aria-label="通用定义与方法"><MarkdownBlock onTerm={onTerm}>{term.body_md}</MarkdownBlock></section>
+    {term.kind === '课程讲义' && <p className="knowledge-course"><Link to={`/knowledge/${term.term_id}${presentation ? '' : '?view=slides'}`}>{presentation ? '连续阅读讲义' : '打开中文HTML幻灯片'}</Link></p>}
+    <section aria-label="通用定义与方法"><MarkdownBlock key={`${term.term_id}-${release_id}`} onTerm={onTerm} presentation={presentation}>{term.body_md}</MarkdownBlock></section>
     {binding && <section className="knowledge-usage"><h3>在估值页面中的使用</h3>
       {!bindingId && bindings.length > 1 && <label className="knowledge-binding-choice">关联页面字段<select value={binding.binding_id} onChange={event => setChosenBinding({ termId, id: event.target.value })}>{bindings.map(item => <option key={item.binding_id} value={item.binding_id}>{item.usage_md.split('\n')[0]}</option>)}</select></label>}
       <MarkdownBlock onTerm={onTerm}>{binding.usage_md}</MarkdownBlock>
