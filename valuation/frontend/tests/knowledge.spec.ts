@@ -14,6 +14,7 @@ const terms: KnowledgeTermSummary[] = [
     ['learning-practice', '测试案例练习'], ['forecast-assumptions', '测试预测专题'],
   ].map(([term_id, title_zh]) => ({ term_id, title_zh, title_en: '', kind: '测试课程', category: '合成样本', summary: '仅用于验证已发布内容的首页导航。', aliases: [] })),
   { term_id: 'foundations-finance', title_zh: '测试金融基础课程', title_en: '', kind: '课程目录', category: '合成样本', summary: '合成课程入口。', aliases: [] },
+  { term_id: 'accounting-course', title_zh: '测试会计课程', title_en: '', kind: '课程目录', category: '合成样本', summary: '合成会计课程入口。', aliases: [] },
   ...[1, 2].map(i => ({ term_id: `foundations-finance-0${i}`, title_zh: `测试金融基础第${i}讲`, title_en: '', kind: '课程讲义', category: '合成样本', summary: '合成课程讲义。', aliases: [] })),
 ];
 const API_ROUTE = /^http:\/\/127\.0\.0\.1:4173\/api\//;
@@ -227,6 +228,10 @@ test('knowledge home offers published learning, category and topic links while k
   // The publication intentionally omits the other lessons and most topic entries.
   await expect(home.locator('a[href="/knowledge/lesson-risk"]')).toHaveCount(0);
   await expect(home.locator('a[href="/knowledge/currency-wacc"]')).toHaveCount(0);
+  await home.getByRole('region', { name: '专题与实践' }).getByRole('link', { name: '测试会计课程', exact: true }).click();
+  await expect(page).toHaveURL(/\/knowledge\/accounting-course$/);
+  await expect(page.getByRole('heading', { name: '测试会计课程', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: '← 知识库首页', exact: true }).click();
   const lesson = learning.getByRole('link', { name: '测试第一课' });
   await lesson.focus();
   await lesson.press('Enter');

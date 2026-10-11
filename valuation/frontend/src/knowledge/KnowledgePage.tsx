@@ -15,7 +15,8 @@ const categories = [
   { title: '股权与每股价值', description: '从经营价值扣除其他索取权，再看普通股能分到多少。', terms: ['enterprise-value', 'equity-value', 'dilution'] },
 ];
 const topics = [
-  { id: 'foundations-finance', description: '达摩达兰免费金融基础课：12讲中文自学讲义、HTML幻灯片、官方视频与原版测验。' },
+  { id: 'foundations-finance', description: '达摩达兰免费金融基础课：原课中文译文、HTML幻灯片、官方视频与测验。' },
+  { id: 'accounting-course', description: '达摩达兰免费会计课：三张报表、会计调整与财务比率，含原课实例和测验。' },
   { id: 'learning-practice', description: '通过概念对照、制造与研发案例、自测，把零散词条连接起来。' },
   { id: 'valuation-strategy-selection', description: '周期、亏损、扩产与有限寿命等经济特征，为什么需要不同处理？' },
   { id: 'forecast-assumptions', description: '学习怎样为增长、利润率和资本效率寻找依据、检验候选。' },
