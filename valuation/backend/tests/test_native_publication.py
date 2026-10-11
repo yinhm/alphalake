@@ -9,11 +9,11 @@ import pytest
 from tools import publish_native_valuation as delivery
 
 
-@pytest.mark.parametrize('mismatch', [False, True])
+@pytest.mark.parametrize('mismatch', [None, 'final', 'cashflow'])
 def test_live_check_releases_own_session_even_when_value_differs(monkeypatch, mismatch):
     import io
     diagnostic = {'status':'ready'}
-    result = dict(id='verification', inputs={}, unresolved_fields=[], final={'value_per_share':42})
+    result = dict(id='verification', inputs={}, unresolved_fields=[], final={'value_per_share':42},cashflow={'fcff':[1,2]})
     calls = []
     def respond(request, timeout):
         calls.append((request.get_method(), request.full_url))
@@ -25,7 +25,9 @@ def test_live_check_releases_own_session_even_when_value_differs(monkeypatch, mi
     monkeypatch.setattr(delivery,'urlopen',respond)
     row = dict(ticker='SZSE:300866',admission='ready',http_status=200,
         diagnostic_sha256=delivery.value_digest(diagnostic),inputs_sha256=delivery.value_digest({}),
-        unresolved_sha256=delivery.value_digest([]),final={'value_per_share':43 if mismatch else 42})
+        unresolved_sha256=delivery.value_digest([]),final={'value_per_share':43 if mismatch=='final' else 42},
+        economic_report_sha256=delivery.value_digest(delivery.economic_payload(result)))
+    if mismatch=='cashflow':result['cashflow']['fcff'][0]=100
     summary = dict(risk_free_rate=None,results=[row])
     if mismatch:
         with pytest.raises(ValueError,match='live valuation differs'):

@@ -18,7 +18,7 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 
 from tools.export_alphalake_sqlite import CONTRACT, digest, validate_dates, completed_market_date
-from tools.check_native_sqlite import value_digest
+from tools.check_native_sqlite import value_digest, economic_payload
 from tools.refresh_valuate_alphalake import execute, reference_commands, timestamp
 
 
@@ -170,7 +170,8 @@ def verify_web(url, summary, calculate=True):
             session_id = result.get('id')
             if not isinstance(session_id, str) or request('/api/valuation/'+session_id, method='DELETE')[0] != 204:
                 raise ValueError('failed to release live verification session: '+ticker)
-        if status != row['http_status'] or (status == 200 and (result.get('final') != row['final'] or value_digest(result.get('inputs')) != row['inputs_sha256'] or value_digest(result.get('unresolved_fields')) != row['unresolved_sha256'])):
+        if status != row['http_status'] or (status == 200 and (result.get('final') != row['final'] or value_digest(result.get('inputs')) != row['inputs_sha256'] or value_digest(result.get('unresolved_fields')) != row['unresolved_sha256']
+                or value_digest(economic_payload(result)) != row['economic_report_sha256'])):
             raise ValueError('live valuation differs: '+ticker)
         checked.append(dict(ticker=ticker, http_status=status))
     return checked
