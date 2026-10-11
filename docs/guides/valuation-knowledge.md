@@ -14,6 +14,7 @@
 - `/knowledge/narrative-to-numbers`：从经济特征、经营故事到数字和现金，解释达摩达兰的五步、证据与反例；配套 `/knowledge/practice-narrative-to-numbers` 六题自测。可从首页的经济策略、学习路线和预测专题进入，也可搜索 Stories to Numbers。
 - `/knowledge/foundations-finance`：达摩达兰免费金融基础课程的中文自学入口，覆盖全部12讲，配官方YouTube、原版幻灯片、测验和答案链接。可从首页专题、学习路线或搜索进入。
 - `/knowledge/foundations-finance-01`至`-12`：逐讲中文讲义；加`?view=slides`进入HTML幻灯片。课程讲义可切换连续阅读与翻页，上一讲／下一讲保留当前模式，转到普通概念时回到连续阅读。
+- `/knowledge/accounting-course`：达摩达兰免费会计课，按原目录先学报表、调整和比率，再读各自的公司实例。11讲、142页原课译文及10组50道官方测验／答案；讲义ID为`accounting-01`、`-02`、`-02a`，依此至`-06a`，同样支持`?view=slides`。
 - `/knowledge/<term_id>`：可分享的独立词条页，保留检索与正文阅读布局；“知识库首页”返回学习入口，不在每篇正文上方重复展示整套导航。
 - 表格标签旁的帮助按钮：鼠标设备默认隐藏，悬停对应术语或键盘聚焦后显示并打开词条；预留位置避免悬停时文字移动。无悬停能力的触屏设备保持可见，可直接点击。
 - 开启“划词解释”后，选取阅读区词汇显示简释，再展开完整解释。已标注标签支持选中部分词汇；普通文字使用中英文标题及别名匹配，有歧义时由用户选择。
@@ -121,6 +122,16 @@ PYTHONPATH=valuation/backend python -m tools.knowledge_db validate
 本轮`www.stern.nyu.edu`下载返回403，同路径`pages.stern.nyu.edu`成功；两者都属NYU官方来源，不将下载域名变更说成课程内容更新。未知出版日或未记录的首次取得留空，核验日不代替出版日。资料包含历史图表，不能直接当作当前市场参数。来源哈希和PDF文本提取只能检查文件完整性与主题，不等于逐句语义审计。视频使用外部链接，不下载、内嵌或声称已核验全部播放。
 
 课程关系、导航、检索、来源和发布沿用现有七表schema及只读API，不引入课程账户、学习进度或第二套金融计算。逐页译文、图像哈希、原课习题复算、实际页面及缓存验收见[翻译交付](../history/kb-foundations-translation-20261011.md)；原教学配套退出前的验收见[历史记录](../history/kb-finance-foundations-20261011.md)。
+
+## 达摩达兰会计课程
+
+来源为[官方Accounting免费课程](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcastacctg.htm)。原课从财务报表使用者的角度解释会计，保留作者对准则及估值调整的观点。按原目录顺序提供1、2、2A、3、3A、4、4A、5、5A、6、6A，共11讲142页中文幻灯片；第1讲没有测验，其余10组各5题，答案默认折叠。预览和11讲视频保持官方英文YouTube外链。
+
+沿用金融基础课程的逐页翻译和图像规则，包含封面，一页PDF对应一页HTML。保留原公司实例、历史年份、币种、公式、数值及答案；63张原页图像配同页中文表头、标签和说明，图内英文像素不替换。原租赁现值、公司名称及答案口径有差异时，原数和独立复算分别呈现并加译注，不静默修正原文，也不把原课历史税制、会计判断或比率表当当前规则、已核验公司事实或项目估值政策。
+
+编辑来源仍为`workspace/knowledge/content.json`，翻译稿在`workspace/knowledge/courses/accounting-source-translation.md`和`accounting-tests-translation.md`。原目录及31份PDF平铺放`workspace/damodaran/accounting-online-course.html`、`accounting-session-<讲次>-slides/test/solution.pdf`，讲次使用小写如`2a`。来源、逐页对应、图像转换、算术差异和发布收据在`workspace/derived/knowledge-accounting/`；图片复用`workspace/knowledge/assets/`的内容哈希路径，不复制源PDF到KB或派生目录。
+
+课程复用现有七表、导航、检索、折叠答案和只读API，首页只增加已发布会计课程入口；现有词条及页面绑定保持。正文和资料不随代码提交，裸克隆须单独准备内容。内容覆盖、独立算术、实际桌面／窄屏和发布验证见[会计翻译验收](../history/kb-accounting-translation-20261011.md)。
 
 ## 默认参数与预测研究内容
 
