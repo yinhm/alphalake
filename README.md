@@ -13,6 +13,7 @@
 | 独立导出SQLite、核对输入 | [导出契约](docs/guides/valuation-sqlite-export.md) |
 | 用Agent检查数据、手工刷新与发布 | [数据维护Skill](skills/alphalake/SKILL.md) |
 | 用Agent估值、查询与比较 | [估值Skill](skills/alphalake-valuation/SKILL.md) |
+| 用AlphaLake数据做详细DCF与Excel交付 | [DCF Skill](skills/alphalake-dcf/SKILL.md) |
 | 核对自动假设与资本效率 | [估值方法](docs/valuation/README.md) |
 
 主库为`workspace/alphalake.duckdb`；网页使用`workspace/valuation.sqlite`。TDX是主要结构化数值来源，其有效公告日期直接采用；CNINFO补充披露身份、时点和原文核验。缺公告关联或日期不阻断当前数值，达摩达兰参考数据与财务合库。SQLite可以重建，不能作为第二权威库。文件位置与清理约定见[workspace布局](docs/guides/workspace-layout.md)。
@@ -35,16 +36,20 @@ PYTHONPATH=valuation/backend .venv/bin/python -m pytest -q valuation/backend/tes
 
 本地只读状态：`./alphalake status workspace/alphalake.duckdb`。财务、行情及参考更新并发布网页统一使用`tools.publish_native_valuation --published-scope`，在锁内冻结当前网页完整范围；在线模式另须明确最近已完成交易日`--quote-date`，具体命令见[发布手册](docs/guides/system-delivery.md)。业绩预告沿[独立入口](docs/guides/earnings-guidance.md)入主库，不自动发布进财务SQLite。命令参数以当前程序帮助为准，不照抄历史验收中的旧路径和版本。
 
-Codex日常维护可用`$alphalake`，公司条件估值用`$alphalake-valuation`。Skill源码随本仓库维护；本地首次安装数据维护Skill可在项目根目录执行：
+Codex日常维护可用`$alphalake`，公司条件估值／历史查询用`$alphalake-valuation`，详细DCF、敏感性及中文报告／Excel交付用`$alphalake-dcf`。Skill源码随本仓库维护；本地首次安装可在项目根目录执行：
 
 ```bash
 ALPHALAKE_SKILL_DIR="${CODEX_HOME:-$HOME/.codex}/skills"
 mkdir -p "$ALPHALAKE_SKILL_DIR"
-ln -s "$PWD/skills/alphalake" "$ALPHALAKE_SKILL_DIR/alphalake"
+for ALPHALAKE_SKILL_NAME in alphalake alphalake-valuation alphalake-dcf; do
+  ln -s "$PWD/skills/$ALPHALAKE_SKILL_NAME" "$ALPHALAKE_SKILL_DIR/$ALPHALAKE_SKILL_NAME"
+done
 ```
 
-已有同名安装先核对来源，不覆盖其他Skill；软链接让仓库更新同步生效，安装后下一轮对话可发现新Skill。估值Skill可按相同方式链接其目录。
+已有同名安装先核对来源，不覆盖其他Skill；可只链接所需目录。软链接让仓库更新同步生效，安装后下一轮对话可发现新Skill。DCF Skill完全复用AlphaLake数据及共享引擎，Excel为结果快照，编辑后须通过网页/API重算再导出。
 
 ## 来源与致谢
 
 估值应用[`valuation/`](valuation/README.md)源自[chrisuzy/Investment_Valuation_Agent](https://github.com/chrisuzy/Investment_Valuation_Agent)。感谢原作者Chirs Yu Zhang及贡献者。导入版本、MIT许可证与Credits见[来源记录](valuation/UPSTREAM.md)。项目继续复用其共享引擎和原页面。
+
+中文[`alphalake-dcf`](skills/alphalake-dcf/SKILL.md)改写自Anthropic的`financial-services/dcf-model`，来源版本、改写范围及Apache-2.0许可证随Skill保留。
