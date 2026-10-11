@@ -50,9 +50,9 @@ AlphaLake交付事实、参考、确定性派生及显式假设，valuation消�
 
 `reference.issuer_industry_review`每次审核导入保存一份验证包及完整事件链，原文、清单与官方工作簿各自绑定归档；精确证券条目优先，最新撤销或源版本失效不复活旧关联。关联只补参考取数，不复制源名单、财务值或多股类市值。
 
-SQLite是原Investment_Valuation_Agent的可重建输入快照，含财务、参考和独立诊断；网页只读SQLite，不打开大DuckDB。v11共享报告来源记录，事实与年/季/TTM组成引用相联；不重复保存逐字段完整血缘，读取时恢复原接口证据，结构见[SQLite契约](guides/valuation-sqlite-export.md#sqlite证据存储契约)。保留原页面及操作流程，JSON政策仅在后端显式接口消费。默认参考、用户修改和人民币候选不能混称公司市场WACC。
+SQLite是原Investment_Valuation_Agent的可重建输入快照，交付原公司/年度/季度宽表、已有TTM、参考及每证券紧凑上下文；网页只读SQLite，不打开DuckDB或启动Go。完整事实、来源、审核和资产组成诊断由DuckDB/原始归档提供，研究显式查询数据侧。结构见[消费快照spec](valuation/sqlite-input-snapshot-spec.md)与[导出契约](guides/valuation-sqlite-export.md#sqlite证据存储契约)。保留原页面、流程与冻结引擎，默认参考、用户修改和人民币条件不混称公司市场WACC。
 
-2026-10-11明确收紧消费边界：完整标准事实、审核和诊断留在DuckDB及数据侧收据，SQLite仅保留原生财务宽表、已有TTM、参考和实际输入的紧凑上下文；不复制事实长表或逐格证据，也不以大JSON替代。详细研究显式查询数据侧，网页计算仍独立运行。[调整spec](valuation/sqlite-input-snapshot-spec.md)已形成，现行v11辅助表尚未撤销，不能把目标结构当已发布实现。
+v12撤销五张事实/逐格/治理辅助表，不以别名、视图或大JSON重建第二权威库。普通已供给状态由宽表推导，实际缺项/冲突/审核引用稀疏保存；完整候选分母留在数据侧发布收据。网页响应明确来源证据尚未展开，不能因没有内嵌完整原文拒绝已验证值。
 
 原生发布由已有同步、导出、检查和原子切换组成，失败恢复旧快照，成功后用真实API核对输入与结果。CLI/Skill的显式政策估值保留自己的运行标识，不与原生默认估值混同。细节见[发布手册](guides/system-delivery.md)和[导出契约](guides/valuation-sqlite-export.md)。
 
@@ -64,4 +64,4 @@ SQLite是原Investment_Valuation_Agent的可重建输入快照，含财务、参
 
 ### 当前财务值与历史时点
 
-[ADR022](decisions/022-financial-availability-and-disclosure.md)将数值物化与公告关联分开：TDX日期直接采用，日期未知不影响当前数值；CNINFO关联保留为补充证据。当前SQLite v11读取现有标准快照，不按公告时间设门槛；显式历史查询仍执行时点及已审核披露范围约束，不冒称严格系统PIT。日期及来源等记录元数据变化不产生逐字段血缘副本，仅金额变化维护字段级覆盖血缘。
+[ADR022](decisions/022-financial-availability-and-disclosure.md)将数值物化与公告关联分开：TDX日期直接采用，日期未知不影响当前数值；CNINFO关联保留为补充证据。当前SQLite v12读取现有标准快照，不按公告时间设门槛；显式历史查询仍执行时点及已审核披露范围约束，不冒称严格系统PIT。日期及来源等记录元数据变化不产生逐字段血缘副本，仅金额变化维护字段级覆盖血缘。

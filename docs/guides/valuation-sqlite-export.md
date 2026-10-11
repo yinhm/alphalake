@@ -1,10 +1,10 @@
 # 标准财务事实导出 SQLite
 
-2026-10-11的[消费快照调整spec](../valuation/sqlite-input-snapshot-spec.md)已明确下一轮撤销辅助事实/证据表并收紧数据边界，尚未实施。本页继续描述现行v11命令和结构；新契约实施时一起替换，不能据spec直接删现行表。
+当前按[消费快照spec](../valuation/sqlite-input-snapshot-spec.md)实现v12：DuckDB负责完整标准事实与治理，SQLite交付原生财务宽表、TTM、参考和紧凑上下文。切换状态及全范围验收见[项目状态](../implementation-status.md)。旧快照必须从主库重建，不能直接改版本号。
 
-当前提供TDX标准财务及版本化Damodaran参考组成的SQLite快照，保持原生valuation页面、请求和估值引擎。经用户批准，现金及长期投资的已知组成可作为显式代理用于估值；不按公司套专项EBIT政策。财务值、代理与真实缺项分别留痕，准入依据见[实际模型准入](../valuation/valuation-input-gates-20260925.md)。工具不修改源DuckDB或默认seed。当前代码契约为`alphalake-sqlite-v11`，旧快照须显式重导出；主库与网页是否已切换以[项目状态](../implementation-status.md)为准。
+当前提供TDX标准财务及版本化Damodaran参考组成的SQLite快照，保持原生valuation页面、请求和估值引擎。经用户批准，现金及长期投资的已知组成可作为显式代理用于估值；不按公司套专项EBIT政策。财务值、代理与真实缺项分别留痕，准入依据见[实际模型准入](../valuation/valuation-input-gates-20260925.md)。工具不修改源DuckDB或默认seed。当前代码契约为`alphalake-sqlite-v12`，旧快照须显式重导出；主库与网页是否已切换以[项目状态](../implementation-status.md)为准。
 
-逐期间已核实TDX余额源零可通过[独立审核补充](../history/historical-debt-zero-review.md)进入目标输入，保留完整审核证据，不写入标准事实；旧快照须显式重导出。[本轮重新接入](../history/valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v11`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
+逐期间已核实TDX余额源零可通过[独立审核补充](../history/historical-debt-zero-review.md)进入目标输入，保留完整审核证据，不写入标准事实；旧快照须显式重导出。[本轮重新接入](../history/valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v12`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
 
 依赖Python 3.11+标准库和当前版本`alphalake`程序，无新增包。先构建当前程序；本机的大库任务、构建和测试须串行放在独立systemd系统服务中，参见[内存隔离约束](fundamental-memory-20260919.md)。例如：
 
@@ -49,11 +49,11 @@ journalctl -u alphalake-sqlite-export --no-pager
 
 链路：TDX原始包→已有标准语义/校验→DuckDB标准宽表→SQLite→网页→共享估值引擎。CNINFO补充公告身份、时点与核验血缘，不作为当前金额准入前提；PDF不覆盖TDX，参考数据和模型假设不混入标准财务事实。
 
-SQLite的`standard_facts`保存原生模型已映射目标及现金、投资、债务组成所需的标准事实、单位及独立证据，`export_cells`保存缺项和派生组成；新增TTM只存标准事实引用及系数，完整来源从`standard_facts`与审核表复用，不复制源金额/哈希。全部346字段由主库标准查询提供；不再复制整份三表、TTM和估值JSON。导出通过`export-financial-snapshot`在一次只读事务内批量投影目标列，Python逐证券写入SQLite，不逐公司/期间启动进程。
+SQLite不创建`standard_facts`、`standard_records`、`export_cells`、`reviewed_source_zeros`或`export_universe`。全部标准字段、精确金额、来源和审核由主库提供。`export-financial-snapshot`在单次只读事务内批量投影实际目标字段及期间；Python批量写宽行，不逐公司启动进程。
 
-内部中间文件统一为`records.jsonl`财务宽行与`fields.jsonl`映射元数据，另保留证券、冲突及审核补充文件。共享源记录ID、报告期、公告信息和归档哈希每个报告只输出一次；金额以十进制字符串输出，NULL保留NULL，零不丢弃。宽行按证券代码、身份、期间排序，Python按映射有效区间还原既有标准事实及事实ID，再交给原导出逻辑；季度/累计/余额规则不变。禁止先展开成逐字段重复血缘后进行全范围排序。新版程序与消费方须一起使用，不保留旧中间文件读取路径；最终SQLite v11采用下述共享来源记录；网页请求、财务宽表及引擎输入形态不变。
+内部中间文件为`records.jsonl`宽行与`fields.jsonl`定义，另有证券、冲突和审核补充。只在导出临时目录使用，不是网页运行依赖。源记录元数据每报告输出一次；金额以十进制字符串交付，NULL和0保留。`--field-periods`提供标准字段到真实期间数组的JSON，导出器按年度展示、季度差分及当前/上年TTM组成限定读取；不因最早年度边界读取其间所有旧季度。
 
-仍提供`companies`、`financials_annual`、`financials_quarterly`供通用数据读取；这些宽表金额为**百万元人民币**、股数为**百万股**，`standard_facts`金额仍为元、股数为股，按各行单位解释。原生估值使用宽表；非年末消费新增`financials_ttm`，通过既有prepared TTM入口直通，不再要求先拆季度。转换规范见[数据接入spec](../valuation/data-contract.md)。保留源精度，不补小数。日期锚点来自指定报告期，年表以最近完整自然年为FY0，季表以指定季末为FQ0。当前财务快照不是逐季度当时留存的数据版本认证。
+`companies`、`financials_annual`、`financials_quarterly`及`financials_ttm`金额为**百万元人民币**、股数为**百万股**。主库标准金额仍为元/股；详细核对须按源单位查询，不从SQLite REAL恢复源精度。原生估值使用宽表，非年末从已有prepared TTM入口直通，无需凑齐季度。日期锚点为指定报告期，FY0为最近完整自然年，FQ0为指定季末；展示窗口不缩短，缺历史不补零。详见[数据接入spec](../valuation/data-contract.md)。
 
 | SQLite列 | 标准字段 | 转换 |
 |---|---|---|
@@ -80,13 +80,13 @@ TTM流量按上一全年＋本年累计−上年同月累计直接计算，三�
 
 长期投资诊断现复用三表推导的五项标准组成，`available_component_million_cny`为全部已知组成小计，`missing_components`只列该组合缺项；即使算术组成齐全，也不自动认证可全额加回的估值范围。详见[接入及真实验收](../history/tdx-asset-derivation-20260926.md#长期投资组成接入正式导出)。
 
-`export_cells`逐单元格记录`available`、`missing_standard_fact`、`source_record_conflict`、`estimated_partial_scope`或`requires_separate_valuation_definition`等状态，年表、季表与TTM均保存组成的标准字段、期间和系数引用，读取时还原标准值、事实ID、可用时间和归档哈希；缺项、拒绝分量、审核零及范围诊断保留原状态。公司行情/税率诊断继续保存原文档，不改行情或税率口径。报告期总股本非正时保留标准值及合格报价，市值为NULL，标记`nonpositive_reported_shares`；它不能用于市值／每股计算，也不应中止其他证券的导出。单位、身份冲突及非有限金额仍拒绝。标准事实缺失不进一步推断为源零、未披露或未审核；更细状态需查`financial-statements`。`metadata`记录源库/程序/导出器哈希、报告期、信息截止及取得时间；公司`data_as_of`为信息截止日期，不冒充实际下载日。
+准入状态由宽表值、固定映射规则及`metadata.input_context:<ticker>`的稀疏例外重建。保留来源冲突、部分必需组成缺失、负投资拒绝和有效审核引用；不逐格保存available行或代理的完整资产诊断。现金/投资代理仍标为`estimated_partial_scope`并提示范围未闭合；完整分量与证据显式查数据侧。总股本非正时保留原值和报价，市值NULL并标记`nonpositive_reported_shares`。单位、身份、非有限值不放行；NULL不推断为源零。
 
 ## SQLite证据存储契约
 
-v11不在每条事实重复保存完整JSON：`standard_records(record_id,evidence_json)`按报告来源共享身份、公告信息、取得时间和源包哈希；`standard_facts`保存证券、期间、标准字段、精确十进制字符串、单位、期间类型、范围、事实ID及`record_id`引用。事实与单元格表使用SQLite `WITHOUT ROWID`，避免复合主键重复索引。年度/季度/TTM证据均通过现有组成引用恢复；`load_standard_facts`限定证券、字段和期间读取，来源缺失或身份/期间错位显式拒绝，不降级或删掉血缘。
+v12每证券一条紧凑上下文，记录身份、实际源记录ID、市场/税率状态、例外及审核哈希、累计TTM所需观察与上年同窗收入。源包哈希共享在全库元数据；公司输入与上下文共同签名，篡改值、单位、期间或审核状态拒绝。完整源金额/公告/PDF/审核包不复制到SQLite。后端诊断标明`evidence_expanded=false`，来源引用不等于完整证据。
 
-元数据须包含`financial_evidence_format=shared_records_and_standard_fact_refs`及原TTM格式标记。旧v10须从主库重导出，后端、工具和快照同时升级；不得仅改版本号，也不保留运行时双路径。迁移核对全部财务值、恢复后的完整事实/单元格证据、原生准入与估值结果，成功重开后清理回滚副本。
+全库元数据须含`contract=alphalake-sqlite-v12`、`input_context_format=native-wide-context-v1`、财务内容签名、投影规范及范围收据哈希。冻结候选身份和完整分母放`workspace/derived/sqlite-export/`，不参与网页运行。运行端只支持当前版本；旧证据用原提交复验，代码与快照协调切换，成功重开后清理回滚副本。
 
 ## 年度有效税率
 
@@ -94,7 +94,7 @@ v11不在每条事实重复保存完整JSON：`standard_records(record_id,eviden
 
 ## 网页消费与估值
 
-8080使用固定100家公司验收快照；当前已发布数量与候选验收分开维护在[项目状态](../implementation-status.md)。旧72/28、87/13等数量仅为历史验收，不代表现行准入。
+8080使用完整沪深发布范围；固定100家公司仅作回归样本，实际分母及准入见[项目状态](../implementation-status.md)。历史样本数量不能代替现行全范围状态。
 
 如需手动让网页读取该快照，在启动网页后端的环境中显式设置：
 
@@ -122,7 +122,7 @@ curl http://127.0.0.1:8080/api/database/compatibility/SZSE:300866
 
 ## 原生参考发布
 
-当前v11在财务表之外包含`reference_release`、`reference_value`、`reference_company`、`reference_issuer_association`及单行共享`reference_wacc`；参考来自同一DuckDB的已完成发布，归档哈希须合格。主库须当前schema57，缺必要发布即拒绝导出，不从workspace散落工作簿回退。原生参考契约为v3；经原文审核的同发行人关联供默认取数，精确源证券与用户覆盖优先，撤销及版本失效不回退旧关联。默认US行业方法保留，详见[参考接入与边界](../valuation/native-reference-bridge.md)。
+当前v12另含五张既有参考表：`reference_release`、`reference_value`、`reference_company`、`reference_issuer_association`和`reference_wacc`。原生参考契约v4，从当前主库schema58已完成的发布读取；缺包或错误哈希拒绝，不读散落工作簿回退。原US行业口径、发行人关联、人民币来源初值及用户覆盖规则保持。见[参考边界](../valuation/native-reference-bridge.md)。
 
 默认参考截止等于`--as-of`；`--reference-as-of <RFC3339>`允许明确使用另一参考截止。例如固定旧财务窗口比较最新参考时，两个截止分别记录，不能称当时可用的历史估值。旧快照须显式重新导出，不能只改metadata契约标签。
 
@@ -132,7 +132,7 @@ curl http://127.0.0.1:8080/api/database/compatibility/SZSE:300866
 
 国家风险源数据集现为`country-risk-rating-v2`，13条记录（四国各三项加成熟市场ERP）；当前显式WACC参考输入须从主库重新导出，不改写历史冻结请求或保留旧数据集别名。既有归档可通过`sync-country-risk --local <xlsx>`重新解析注册，之后`--offline`幂等重放；采集时点与文件内业务日期分别保留。
 
-缺项诊断会遍历全部目标分量：`export_cells.evidence_json`对缺标准值记录`kind=missing_standard_fact`及字段/期间/系数，后续已有金额和血缘仍保留。必需分量不齐时金额仍为NULL，不能把已知分量小计当成完整债务；源零原因须另回查来源证据。真实核对见[近期债务缺口](../history/native-capital-proxy-review.md#2024年债务缺口已定位)。
+必需组成不齐仍为NULL，不把已知小计当完整债务；部分已有分量的缺项引用保存在稀疏例外，源零及全缺项原因用`financial-statements`查主库。详细研究可调用`tools.export_alphalake_sqlite.query_standard_inputs`，一次批量限定标准字段和期间：核对SQLite绑定的财务内容签名；主库只因无关预告变动而物理哈希变化时重新核对财务投影，否则拒绝补旧输入。实际源金额和治理始终留在数据侧。
 
 
 原生API的TTM、年度及展示季度依据出口的`annual_bv_equity=parent_attributable`元数据，将同期期末`bv_equity + minority_interests`映射为模型的`consolidated_book_equity`（合并账面权益），年度与季度规则相同；无需新增SQLite冗余列。来源范围不明确或任一分量缺失时不构造该值。资本诊断使用此字段，股权桥接中的少数权益扣减独立保存；不得将后者的市场估计反用于账面资本。未提供合并范围的外部输入仍可按其他已齐备输入计算DCF，但相应资本诊断留空。

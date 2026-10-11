@@ -2,7 +2,7 @@
 
 本页是AlphaLake→SQLite→原生API→valuation的数据转换规范。修改解析、派生、导出、准入、会话或展示前，先核对本页及实际调用方；不能仅凭数据库列名或历史验收推断引擎要求。字段与来源映射由[SQLite导出手册](../guides/valuation-sqlite-export.md#数据范围与语义)统一维护，不再复制第二份词典。
 
-2026-10-11已形成[SQLite消费快照调整spec](sqlite-input-snapshot-spec.md)：撤销事实/单元格/来源辅助表，数据治理归DuckDB，消费端保留宽表、现有TTM、参考及紧凑上下文。本轮只写规范，现行仍为下述v11；未重建或发布，不直接删表或把计划当新接口。
+2026-10-11按[SQLite消费快照spec](sqlite-input-snapshot-spec.md)实现v12：治理与完整标准事实留在DuckDB，SQLite仅交付财务宽表、既有TTM、参考和紧凑上下文。撤销五张辅助/治理表，没有引擎公式或默认政策变更；切换及验收以[项目状态](../implementation-status.md)为准。
 
 公司披露的业绩预告已按[预告数据链spec](../earnings-guidance-spec.md)独立采集并写入主库schema58，提供手工同步和只读JSON查询。预告区间不填正式财务、TTM或EBIT缺项；独立版本化证据包仍待接入，不改变本页SQLite／原生估值输入和默认。故事自动绑定及参数采用仍需独立契约和审批。
 
@@ -38,19 +38,19 @@ AlphaLake负责单位、期间、身份、范围、缺项及确定性转换；va
 
 ## SQLite和引擎输入
 
-当前AlphaLake快照契约为`alphalake-sqlite-v11`，每公司一行`financials_ttm`；共享报告血缘在`standard_records`保存，`standard_facts.record_id`引用它；`export_cells`的年度、季度和TTM证据均只保存组成字段/期间引用、系数、缺项及审核状态，元数据`ttm_evidence_format=standard_fact_refs`；元数据另需`financial_evidence_format=shared_records_and_standard_fact_refs`；读取时从`standard_facts`、共享记录及审核表恢复原来源证据，不再重复持久化金额、源包哈希或逐字段血缘。原`financials_annual`、`financials_quarterly`保留真实历史，季表仍按累计差分产生，缺前季时保持NULL，不能伪造季度。`standard_facts`及原始ZIP仍是来源证据，TTM不回写成披露事实。
+当前快照契约为`alphalake-sqlite-v12`：每公司一行`financials_ttm`和一个`metadata.input_context:<ticker>`，保留原年度/季度宽表。上下文交付来源记录引用、市场/税率状态、稀疏例外及现有prepared TTM所需累计观察；输入与上下文签名绑定。源包哈希在全库共享，完整标准事实、源精度及审核只保留在DuckDB/归档。撤销`standard_records`、`standard_facts`、`export_cells`、`reviewed_source_zeros`和`export_universe`，不换名或藏入全量JSON。季度仍按累计差分，缺前季NULL；TTM不是新披露事实。
 
 非年末原生后端将TTM行组装为**已有**`CompanyValuationInput.prepared_ttm`；期间为上一年同月末次日至当前报告期末，且明确币种、单位、信息截止和来源。`quarterly_financials=[]`、`quarters_since_10k=0`表示不再请求引擎季度轮转，**不表示财年后实际经过零个季度**。实际累计窗口及三个组成保存在`prepared_ttm.provenance`，真实季度展示数据单独留在`quarterly_display`证据中，不参与第二次计算；历史季表仍可从公司数据接口查询。prepared财务行的`fiscal_year`保留原入口FY0索引，TTM的真实起止以`period_start/period_end`为准，不从该索引推断披露年度。年末仍消费原年度路径，避免将完整财年误标为旋转TTM及改变匹配期初资本诊断。
 
 `engine/orchestrator.py`已有两种互斥输入：提供`prepared_ttm`则直接消费；否则通过`compute_ltm_financials`由季度数组构建。不能同时传prepared TTM和季度轮转。此次只接通现有入口，不改引擎类型、公式、默认参数或研发摊销方法。标准累计TTM是未调整报表数据，不能与专项prepared TTM混为一类；审阅和候选工具按明确来源形态读取同窗累计证据，不改变原选择规则。
 
-旧SQLite须从同一主库显式重导出；禁止只改版本标签、保留v9兼容别名或缺TTM时自动退回季度/年度。读取缺必要表、TTM行或单元格证据应拒绝并要求重建。主库无需迁移，来源财务数值不变。
+旧SQLite须从同一主库显式重导出；禁止只改版本标签、保留v9兼容别名或缺TTM时自动退回季度/年度。读取缺必要表、TTM行或必要输入上下文应拒绝并要求重建。主库无需迁移，来源财务数值不变。
 
 ### LTM同比与展示契约
 
 LTM与TTM在本项目均指最近十二个月。它是经营流量基期，不是未来增长预测。同比必须比较相隔一年、同截止月的十二个月收入；`当前TTM / 最近全年 - 1`只是两个重叠窗口之差，不能称同比，也不能按距年末的季度数再年化。
 
-原生标准路径从SQLite既有`standard_financials`重建上年同月TTM，仍用“全年＋累计−同期累计”，核对单位、期间类型、范围和唯一组成。比较值、三个来源组成及系数写入`prepared_ttm.provenance.prior_ttm_revenue`，单位为百万元报表币种；不是新增标准事实或准入条件。无完整组成则诊断留空，不借全年替代、不补采早年、不阻断已完整的当前TTM。
+上年同月TTM在数据侧导出时用“全年＋累计−同期累计”重建，核对单位、期间、范围和唯一组成。`input_context.prior_ttm_revenue`交付精确十进制百万元报表币种、公式及三个来源期间；后端直接装配现有`prepared_ttm.provenance.prior_ttm_revenue`，不从SQLite复制的事实长表重算。组成不完整就不交付比较值，不借全年替代、不补早年，也不阻断完整的当前TTM。
 
 共享编排器输出`inputs.company_metrics.revenue_growth`及`revenue_growth_basis`。prepared输入只用明确的上年同窗证据；外部单季输入只有完整FQ-4至FQ-7时才计算上年TTM；完整年度路径只比较相邻财年。分母缺失、非有限或非正时百分比增长留空，当前真实零收入对正分母为−100%。网页LTM增长、公司比较、Diagnostics及Excel诊断统一消费该输出；年度列保留独立年度同比，未来增长由显式假设/年度路径供给；数据库新会话现可按已批准的[来源初值](default-assumptions.md)初始化，历史同比本身仍是观测。
 
@@ -76,7 +76,7 @@ LTM与TTM在本项目均指最近十二个月。它是经营流量基期，不�
 
 ## 准入、参考与会话
 
-准入按实际消费检查：FY0及TTM收入/EBIT、最新股权桥接、市场权重与币种转换是必需；启用研发时检查年度队列及当期TTM研发；其他调整按已选方法检查。缺可选折旧、资本开支等不阻断显式预测DCF，但相应历史FCFF/诊断保留空值。数字和对应`export_cells`状态同时检查；真实零、未知、范围代理、来源冲突分别保留。详见[准入规则](valuation-input-gates-20260925.md)。
+准入按实际消费检查：FY0及TTM收入/EBIT、最新股权桥接、市场权重与币种转换是必需；启用研发时检查年度队列及当期TTM研发；其他调整按已选方法检查。缺可选折旧、资本开支等不阻断显式预测DCF，但相应历史FCFF/诊断保留空值。数字与紧凑上下文重建的状态同时检查；真实零、未知、范围代理、来源冲突分别保留。详见[准入规则](valuation-input-gates-20260925.md)。
 
 财务信息截止不用于阻断合格当前TDX金额；历史PIT另外限制。身份、行情和参考截止分别记录。行业/国家参考随SQLite发布绑定会话，用户显式覆盖优先，US行业不得静默替换Global，总ERP不再叠加已有国家风险。现金/投资和多股类市值仍沿用已批准代理，输入接通不认证其经济范围。
 
@@ -125,7 +125,7 @@ LTM与TTM在本项目均指最近十二个月。它是经营流量基期，不�
 
 ## 人民币WACC的显式输入契约
 
-2026-10-05起，原生参考契约为`alphalake-native-references-v4`。SQLite v11保留单行`reference_wacc`，保存主库已有四类完整发布的解析参考包：国家风险、Global行业Beta、人民币国债曲线及大型非金融信用档。包与原生参考共用信息截止及内容签名；重复的国家风险须与原生源行、发布ID及观察日一致；两类Global Beta解析须绑定同一原文件哈希，不能混用修订版本。旧SQLite必须显式重导出，缺包、内容篡改或跨版本混用拒绝，不从散落JSON回退。
+2026-10-05起，原生参考契约为`alphalake-native-references-v4`。SQLite v12保留单行`reference_wacc`，保存主库已有四类完整发布的解析参考包：国家风险、Global行业Beta、人民币国债曲线及大型非金融信用档。包与原生参考共用信息截止及内容签名；重复的国家风险须与原生源行、发布ID及观察日一致；两类Global Beta解析须绑定同一原文件哈希，不能混用修订版本。旧SQLite必须显式重导出，缺包、内容篡改或跨版本混用拒绝，不从散落JSON回退。
 
 `GET /api/database/wacc-references`只读返回`reference_snapshot_id`及完整来源参考，保留观察日、取得时点、归档哈希和定位，不自动选择公司WACC。`evaluate_native_policy --recipe`及已批准报表信用条件从同一SQLite读取参考，取消额外`--references`；信用政策v2只存政策及年龄限制，不再内嵌源数据。用户完整请求仍可通过既有typed API供给，来源与政策分别留痕。数据新鲜度等待手工刷新；发布旧观察不等于最新，原显式政策年龄门槛不自动放宽。2026-10-05用户已批准人民币默认融资初值，范围见下节；不随之批准US/Global切换或公司信用认证。
 
@@ -186,7 +186,7 @@ WACC、经营与稳态的实际字段、覆盖优先级及交付步骤统一见[
 
 ## 具名条件交付契约
 
-`tools.evaluate_native_policy --explicit-input`复用当前完整`CompanyValuationInput`和`POST /api/valuation`，不增加页面；研发、融资税盾及年度总净再投资扩展沿用已批准typed字段。调用者提供已核验来源的完整`{"inputs": ...}`，批量证券须唯一且为沪深代码；SQLite须为v11，结果绑定实际`reference_snapshot_id`。具体命令和运行追溯见[统一入口](../guides/company-valuation-entry.md#原生具名条件自动交付)。
+`tools.evaluate_native_policy --explicit-input`复用当前完整`CompanyValuationInput`和`POST /api/valuation`，不增加页面；研发、融资税盾及年度总净再投资扩展沿用已批准typed字段。调用者提供已核验来源的完整`{"inputs": ...}`，批量证券须唯一且为沪深代码；SQLite须为v12，结果绑定实际`reference_snapshot_id`。具体命令和运行追溯见[统一入口](../guides/company-valuation-entry.md#原生具名条件自动交付)。
 
 - **输入优先级**：完整用户请求先原样保存并计算`user_explicit`，既有原生公司派生指标照常刷新，用户股价波动率保持。条件请求单独保存，不覆盖原输入或标准事实；金融及发布范围外保留拒绝分母。
 - **条件组合**：仅对十年预测和正基期收入复用现有3/5/10年收敛路径，起点及终点来自原结果；每条路径再分别比较公司三年历史资本和后五年稳态过渡。增长对照先验证等价基线，不改变税率、WACC及股权桥；资本对照仅改年度倍率。历史缺项/口径不符保留`outside_policy_scope`，不补零或回退另一代理；非十年原模型结果仍交付。
@@ -207,7 +207,7 @@ SQLite标准事实出口增加金融业务利息收入/费用及使用权资产�
 
 ## 叙事到年度输入契约
 
-`tools.narrative_valuation`在输入侧保存`narrative-valuation-v1`，不新增引擎字段。完整设计及操作见[故事到估值](narrative-valuation-plan.md#最小接入方式与产出)。`prepare`绑定SQLite v11、完整范围收据、财务／股本期、信息截止及参考版本，计算并保存实际原生基线；生成的草稿不进入故事计算。
+`tools.narrative_valuation`在输入侧保存`narrative-valuation-v1`，不新增引擎字段。完整设计及操作见[故事到估值](narrative-valuation-plan.md#最小接入方式与产出)。`prepare`绑定SQLite v12、完整范围收据、财务／股本期、信息截止及参考版本，计算并保存实际原生基线；生成的草稿不进入故事计算。
 
 人工已指定的逐证券条件可通过`tools.narrative_conditions`展开，见[显式锚点契约](narrative-valuation-plan.md#逐证券显式条件展开)：完整FY同比／四年收入三年CAGR／规模持平，报表利润率与逐年研发桥分别处理，保持及成熟年数显式填写。实际计算仍只消费已有年度经营／研发税务／资本输入；缺历史或超界不换默认锚点。该工具不是自动识别经济合理参数或公司故事的算法，条件不适用不反向清空标准事实。价差表读取同版未复权收盘价，缺报价保留空值。
 

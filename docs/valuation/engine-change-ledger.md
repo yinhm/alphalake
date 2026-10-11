@@ -1,6 +1,6 @@
 # 架构边界与估值引擎调整台账
 
-核对日期：2026-10-05；研发税务及通用亏损/融资税盾调整均获用户明确批准，新增E28/E29及已批准的E30；forecast修复登记E31/E32，LTM同比及基期展示修复登记E33；来源初值及导出快照登记E34/E35，人民币融资来源初值登记E36；准确上游复核的基线为`10d567d`。本页是引擎变更的维护入口，实际方法说明见[方法契约](methodology-contract.md)，当前数据供给见[项目状态](../implementation-status.md)。**本页列出准确上游基线及导入后的改动，不宣称全部本地政策均已获达摩达兰原文认证。**最新[模型复核](../history/valuation-model-review-20261004.md)记录独立算例及尚未闭合的方法边界。
+核对日期：2026-10-11；研发税务及通用亏损/融资税盾调整均获用户明确批准，新增E28/E29及已批准的E30；forecast修复登记E31/E32，LTM同比及基期展示修复登记E33；来源初值及导出快照登记E34/E35，人民币融资来源初值登记E36；准确上游复核的基线为`10d567d`。本页是引擎变更的维护入口，实际方法说明见[方法契约](methodology-contract.md)，当前数据供给见[项目状态](../implementation-status.md)。**本页列出准确上游基线及导入后的改动，不宣称全部本地政策均已获达摩达兰原文认证。**最新[模型复核](../history/valuation-model-review-20261004.md)记录独立算例及尚未闭合的方法边界。
 
 ## 责任边界
 
@@ -312,3 +312,9 @@ git log --reverse --format='%h %s' 0b29f42..4568cf4 -- valuation/backend/engine
 git diff --stat 0b29f42..4568cf4 -- valuation/backend/engine
 git show <提交> -- valuation/backend/engine
 ```
+
+## SQLite消费边界调整（2026-10-11，无引擎变更）
+
+提交`3af20fd`、`ea2a550`按[用户批准的spec](sqlite-input-snapshot-spec.md)撤销五张事实/治理辅助表，以原财务宽表、TTM、参考和紧凑上下文交付v12；当前/上年同窗TTM在数据侧准备，经原`PreparedTTM`装配，详细研究改为批量查询DuckDB。源冲突显式拒绝，单位、零/NULL、期间、资产/市值代理及原准入保持。没有估值方法调整，无新增理论或默认政策；沿用[期间与单位契约](data-contract.md)及既有方法出处。
+
+同一5,227家、2026H1及原信息截止，四张财务宽表和五张参考表逐值一致；4,998成功／229拒绝，完整计算输入及LTM、调整、WACC、FCFF、终值、转债/股权桥接和每股值无差异。只规范化协议版本、源库哈希与组成引用，经济字段未删减。`valuation/backend/engine/`与前端无文件改动，来源表示变更不是估值模型变更；候选及切换证据在`workspace/derived/sqlite-input-migration/`。

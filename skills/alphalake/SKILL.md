@@ -11,7 +11,7 @@ description: 检查 AlphaLake 数据状态，手工刷新 TDX 财务、收盘行
 
 - 优先使用会话已确认的仓库或`ALPHALAKE_ROOT`，否则检查当前目录及父目录的`cmd/alphalake`和`valuation/backend/tools/publish_native_valuation.py`。Skill安装目录不是工作目录；进入仓库后读`AGENTS.md`、`README.md`及`docs/implementation-status.md`。
 - 从用户请求、既有发布收据和已确认配置取得数据库、来源、报告期、证券范围和输出位置。复用已有授权；仅确实缺少必要信息时询问缺失项。当前数量与日期读实时收据，不写死在Skill。
-- 主库是`workspace/alphalake.duckdb`，网页快照是`workspace/valuation.sqlite`。动态来源归档及收据沿现有workspace布局，不能另建日常主库或把运行结果提交到仓库。
+- 主库是`workspace/alphalake.duckdb`，网页快照是`workspace/valuation.sqlite`。v12快照只含估值宽表、TTM、参考及紧凑上下文，完整事实、审核与候选分母留在主库/数据侧收据；网页运行不依赖DuckDB，详细核验不能再查询SQLite辅助事实表。动态来源归档及收据沿现有workspace布局，不能另建日常主库或把运行结果提交到仓库。
 - 沪深非金融是默认业务范围；保留既有失败、金融范围外及分类待定分母，不按成功筛清单，不顺便扩展北交所、历史年限或参考分类。
 
 按请求读取[日常同步](references/daily-sync.md)中对应部分及其链接的当前操作契约：
