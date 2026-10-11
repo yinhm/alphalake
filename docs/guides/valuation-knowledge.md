@@ -51,6 +51,7 @@ API 仅以只读方式打开数据库，不在启动时创建或补齐词条。�
 | `GET /api/knowledge/index` | 轻量标题、简释和别名索引，带 `release_id`；缺库时返回 `status=unavailable` |
 | `GET /api/knowledge/terms/{term_id}?release_id=...` | 正文、关系、来源和页面绑定；词条不存在为 404，版本改变为 409 |
 | `GET /api/knowledge/search?q=...&limit=20` | 标题及别名检索，返回匹配候选，支持短中文词 |
+| `GET /api/knowledge/assets/{sha256}.png` | 只读本地内容寻址PNG；核对文件头与哈希，不沿软链接读取；不存在404，损坏503，支持ETag304 |
 
 索引与详情支持 ETag。API 的 `release_id` 是覆盖完整内容的摘要令牌，`release_label` 是库中填写的可读发布名称；客户端将令牌视为不透明值。前端按令牌缓存，遇版本变化刷新索引并重新获取详情，避免新标题配旧正文；即使维护者再次使用早期发布名称，内容改变也不会复用旧缓存。损坏库返回 503，不影响估值接口。接口不返回服务器本地路径。
 
@@ -109,13 +110,17 @@ PYTHONPATH=valuation/backend python -m tools.knowledge_db validate
 
 来源为[官方免费课程](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcastfoundationsonline.htm)，[开放课程博客](https://aswathdamodaran.blogspot.com/2024/12/for-fun-of-it-open-house-for-my-spring.html)仅用于核对Online (free)入口。课程依次讨论金融概览、企业结构、现金流、风险、风险衡量、货币时间价值、债券、股权、期权、通胀、利率和汇率，不把博客年份当所有资料的版本年份。
 
-中文讲义、HTML幻灯片、可核算算例及36道中文自测均为原创教学配套，覆盖原课程主题并补充入门解释，不称原版逐字稿或PDF逐页翻译。保留全部12个官方视频、12份原版幻灯片和11组英文测验／答案；第1讲原目录没有独立英文测验。英文资源与中文原创题分别标注，不冒称题目或数字来自原作者；所有教学参数不用于改变模型或公司输入。
+按用户2026-10-11明确要求，原课改为逐页中文译本：12讲148页幻灯片，一页PDF对应一页HTML，包含封面；原页印刷编号与从1起算的文件页序分别理解。11组官方测验共53题及答案译为独立练习词条，不增加幻灯片页数；第1讲原目录没有测验。上一版原创例子、36道自测及119页教学章节退出当前课程，旧内容压缩留作历史。本轮按用户确认可翻译的授权进行，作者署名与官方出处保留。
 
-编辑来源仍是`workspace/knowledge/content.json`，另存中文课程写作稿于`workspace/knowledge/courses/foundations-finance.md`；后者便于人工修订，发布前须把修改更新到清单并沿既有构建器验收。原目录HTML与34份PDF平铺归档于`workspace/damodaran/`，文件名为`foundations-online-course.html`及`foundations-session-NN-slides/test/solution.pdf`。逐文件收据在`workspace/derived/knowledge-foundations/sources.json`，记录官方目录原链接、实际官方下载URL、哈希和取得状态，按现有文件复用，不重复建按日期的课程目录。
+保持原例的历史日期、币种、数值、公式、观点与选项顺序，不用当前市场参考替换。原图与中文标签译文并列：34张图像是原PDF页的原样转换，图内英文像素未改写；文字及图表标签在同页中文正文中译出。疑似原算式、单位、答案标号问题保留原写法，独立复算另标“译注”，不能静默纠正后冒称原作者已修订。视频仍是12个官方英文YouTube外链，未下载、转录或制作中文字幕。第9讲答案PDF的前两页重复题卷，中文题目只呈现一次，末页答案完整翻译。
+
+编辑来源仍是`workspace/knowledge/content.json`，翻译稿为`workspace/knowledge/courses/foundations-source-translation.md`及`foundations-tests-translation.md`；人工修订后更新清单，并沿既有构建器验收。原目录HTML与34份PDF平铺归档于`workspace/damodaran/`，文件名为`foundations-online-course.html`及`foundations-session-NN-slides/test/solution.pdf`。逐文件收据在`workspace/derived/knowledge-foundations/sources.json`，记录官方目录原链接、实际官方下载URL、哈希和取得状态，按现有文件复用，不重复建按日期的课程目录。
+
+课程图片放知识库文件旁的`assets/<sha256>.png`，默认即`workspace/knowledge/assets/`；不加图片表，不放workspace顶层或代码目录。正文只允许精确`/api/knowledge/assets/<64位小写SHA-256>.png`图片地址，不加载远程图片、任意相对路径、SVG、HTML或脚本。图片先写入并核验，再原子发布引用它们的SQLite；回滚期间旧版本引用的图片须保留，撤除后可按全部保留版本的引用集合清理。图片使用内容哈希及immutable缓存，库的发布令牌仍约束索引、正文与引用；部署须同时携带实际引用的图片，裸克隆没有正文或图片。
 
 本轮`www.stern.nyu.edu`下载返回403，同路径`pages.stern.nyu.edu`成功；两者都属NYU官方来源，不将下载域名变更说成课程内容更新。未知出版日或未记录的首次取得留空，核验日不代替出版日。资料包含历史图表，不能直接当作当前市场参数。来源哈希和PDF文本提取只能检查文件完整性与主题，不等于逐句语义审计。视频使用外部链接，不下载、内嵌或声称已核验全部播放。
 
-课程关系、导航、检索、来源和发布沿用现有七表schema及只读API，不引入课程账户、学习进度或第二套金融计算。版本、金额复算、真实页面及缓存验收见[本轮记录](../history/kb-finance-foundations-20261011.md)。
+课程关系、导航、检索、来源和发布沿用现有七表schema及只读API，不引入课程账户、学习进度或第二套金融计算。逐页译文、图像哈希、原课习题复算、实际页面及缓存验收见[翻译交付](../history/kb-foundations-translation-20261011.md)；原教学配套退出前的验收见[历史记录](../history/kb-finance-foundations-20261011.md)。
 
 ## 默认参数与预测研究内容
 
