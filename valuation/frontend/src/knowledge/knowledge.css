@@ -31,6 +31,7 @@
 .knowledge-article h3 { font-size: 16px; font-weight: 650; color: #0f172a; margin: 20px 0 10px; }
 .knowledge-article h4 { font-size: 14px; font-weight: 650; margin: 16px 0 6px; }
 .knowledge-markdown p { margin: 10px 0; }
+.knowledge-markdown img { display: block; max-width: 100%; height: auto; margin: 12px auto; }
 .knowledge-markdown h1, .knowledge-markdown h2 { font-size: 19px; font-weight: 650; margin: 20px 0 10px; }
 .knowledge-markdown ul, .knowledge-markdown ol { padding-left: 24px; margin: 12px 0; list-style: revert; }
 .knowledge-markdown li { margin: 4px 0; }

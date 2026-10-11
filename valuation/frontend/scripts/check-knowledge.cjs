@@ -64,6 +64,9 @@ assert.equal(readSelection(selection('#cell1', 0, 7, '#cell2')), null);
 assert.equal(readSelection(selection('[data-term-id]', 0, 4, '#plain')), null);
 
 const { safeKnowledgeUrl } = require('../src/knowledge/urls.ts');
+const assetUrl = `/api/knowledge/assets/${'a'.repeat(64)}.png`;
+assert.equal(safeKnowledgeUrl(assetUrl), assetUrl);
+for (const url of ['/api/knowledge/assets/other.png', `${assetUrl}?path=other`, '/api/knowledge/assets/../secret.png']) assert.equal(safeKnowledgeUrl(url), undefined);
 for (const url of ['javascript:alert(1)', 'data:text/html,test', '//other.test', '/admin', '/knowledge-bad']) assert.equal(safeKnowledgeUrl(url), undefined);
 for (const url of ['https://example.test/source', '/knowledge/wacc', '/knowledge', '#formula']) assert.equal(safeKnowledgeUrl(url), url);
 const { resolveLiveContext, resolveLiveValue } = require('../src/knowledge/liveValues.ts');

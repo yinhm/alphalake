@@ -1,6 +1,7 @@
 """使用临时合成词条验证知识库契约；不依赖或写入实际 workspace。"""
 
 import asyncio
+import base64
 from copy import deepcopy
 import hashlib
 import json
@@ -112,6 +113,37 @@ def test_etag_conditional_get(database, path):
         assert cached.status_code == 304 and cached.content == b""
         assert cached.headers["etag"] == etag
     assert request(path, headers={"If-None-Match": '"other"'}).status_code == 200
+
+
+def test_local_images_are_content_addressed_and_never_follow_symlinks(database, tmp_path):
+    png = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWQAAAABJRU5ErkJggg==")
+    digest = hashlib.sha256(png).hexdigest()
+    directory = database.parent / "assets"
+    directory.mkdir()
+    path = directory / f"{digest}.png"
+    path.write_bytes(png)
+    url = f"/api/knowledge/assets/{digest}.png"
+    response = request(url)
+    assert response.status_code == 200 and response.content == png
+    assert response.headers["content-type"] == "image/png"
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert "immutable" in response.headers["cache-control"]
+    cached = request(url, headers={"If-None-Match": f'"other", W/"{digest}"'})
+    assert cached.status_code == 304 and not cached.content
+    path.write_bytes(png + b"tampered")
+    assert request(url).status_code == 503
+    path.unlink()
+    external = tmp_path / "external.png"
+    external.write_bytes(png)
+    path.symlink_to(external)
+    assert request(url).status_code == 404
+    assert request("/api/knowledge/assets/not-a-hash.png").status_code == 422
+    assert request(f"/api/knowledge/assets/{'0' * 64}.png").status_code == 404
+    path.unlink()
+    directory.rmdir()
+    directory.symlink_to(tmp_path, target_is_directory=True)
+    (tmp_path / f"{digest}.png").write_bytes(png)
+    assert request(url).status_code == 503
 
 
 def test_search_normalization_ranking_ambiguity_and_literals(database):

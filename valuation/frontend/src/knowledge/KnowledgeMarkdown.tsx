@@ -5,7 +5,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 
-import { safeKnowledgeUrl } from './urls';
+import { isKnowledgeImage, safeKnowledgeUrl } from './urls';
 
 export function KnowledgeMarkdown({ children, onTerm, presentation = false }: { children: string; onTerm?: (id: string) => void; presentation?: boolean }) {
   const prefix = `knowledge-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -26,8 +26,9 @@ export function KnowledgeMarkdown({ children, onTerm, presentation = false }: { 
     remarkPlugins={[remarkMath]}
     rehypePlugins={[[rehypeKatex, { trust: false, strict: 'warn', throwOnError: false, maxExpand: 1000 }]]}
     urlTransform={url => safeKnowledgeUrl(url) ?? ''}
-    disallowedElements={['img', 'iframe', 'script', 'style', 'object', 'embed', 'form', 'input']}
-    components={{ a: ({ href, children: label }) => {
+    disallowedElements={['iframe', 'script', 'style', 'object', 'embed', 'form', 'input']}
+    components={{ img: ({ src, alt }) => src && isKnowledgeImage(src)
+      ? <img src={src} alt={alt ?? ''} loading="lazy" /> : null, a: ({ href, children: label }) => {
       if (!href || !safeKnowledgeUrl(href)) return <span>{label}</span>;
       const termLink = /^\/knowledge\/([a-z0-9][a-z0-9._-]*)$/.exec(href);
       if (href.startsWith('/knowledge') && !(termLink && onTerm)) return <Link to={href}>{label}</Link>;

@@ -18,6 +18,7 @@ const terms: KnowledgeTermSummary[] = [
 ];
 const API_ROUTE = /^http:\/\/127\.0\.0\.1:4173\/api\//;
 const index: KnowledgeIndex = { status: 'ready', release_id: 'fixture-r1', schema_version: 1, terms };
+const localImage = `/api/knowledge/assets/${'a'.repeat(64)}.png`;
 
 function detail(termId: string, release = 'fixture-r1'): KnowledgeDetail | null {
   const term = terms.find(item => item.term_id === termId);
@@ -25,7 +26,7 @@ function detail(termId: string, release = 'fixture-r1'): KnowledgeDetail | null 
   return {
     release_id: release,
     term: { ...term, body_md: term.kind === '课程讲义'
-      ? '## 课程目标\n\n先分清现金与利润。\n\n## 可核算例子\n\n例子 $100 / 1.1$。\n\n[官方视频](https://youtu.be/example)\n\n<script>window.knowledgeInjected=true</script>\n\n## 答案与解析\n\n这是最后一页的解析。'
+      ? `## 课程目标\n\n先分清现金与利润。\n\n![原课图表](${localImage})\n\n![远程图片](https://example.invalid/tracker.png)\n\n![非法路径](/api/knowledge/assets/../../secret.png)\n\n## 可核算例子\n\n例子 $100 / 1.1$。\n\n[官方视频](https://youtu.be/example)\n\n<script>window.knowledgeInjected=true</script>\n\n## 答案与解析\n\n这是最后一页的解析。`
       : termId === 'wacc'
       ? '仅为浏览器测试文本。公式 $x^2$。\n\n## 基本解释\n\n[关联定义](/knowledge/capital-a)\n\n[危险链接](javascript:alert(1))\n\n<script>window.knowledgeInjected=true</script>\n\n![远程图片](https://example.invalid/tracker.png)\n\n## 自己试一试\n\n测试问题。\n\n## 答案与解析\n\n先区分输入和结果。\n\n## 继续阅读\n\n课程结尾。'
       : '这是合成的关联词条正文。', content_hash: `fixture-${termId}` },
@@ -39,6 +40,7 @@ function detail(termId: string, release = 'fixture-r1'): KnowledgeDetail | null 
 async function mockKnowledge(page: Page, state: 'ready' | 'missing' | 'invalid' = 'ready') {
   await page.route(API_ROUTE, async route => {
     const url = new URL(route.request().url());
+    if (url.pathname === localImage) return route.fulfill({ contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWQAAAABJRU5ErkJggg==', 'base64') });
     if (url.pathname === '/api/knowledge/index') {
       if (state === 'invalid') return route.fulfill({ status: 503, json: { detail: 'invalid fixture database' } });
       return route.fulfill({ json: state === 'missing' ? { status: 'unavailable', release_id: null, schema_version: 1, terms: [] } : index });
@@ -85,6 +87,9 @@ test('course slides preserve formulas and safe links, and switch lessons without
   const slides = page.getByRole('region', { name: '中文HTML幻灯片' });
   await expect(slides.getByRole('button', { name: '上一页', exact: true })).toBeDisabled();
   await expect(slides.getByRole('heading', { name: '课程目标' })).toBeVisible();
+  await expect(slides.locator('img')).toHaveCount(1);
+  await expect(slides.getByRole('img', { name: '原课图表' })).toHaveAttribute('src', localImage);
+  await expect.poll(() => slides.locator('img').evaluate(image => (image as HTMLImageElement).naturalWidth)).toBe(1);
   await slides.focus();
   await slides.press('ArrowRight');
   await expect(slides.locator('.katex')).toBeVisible();
