@@ -14,6 +14,8 @@
 
 把valuation作为稳定估值系统维护，不以完善数据为名持续开发引擎。当前引擎冻结：仅修明确BUG；必要接口扩展、算法和模型政策调整先进入[待审批](../../valuation/TODO.md)，未经明确审批不得实施，不能混在数据补齐提交中。既有实现、既有授权和测试通过均不自动证明方法正确。
 
+2026-10-11用户明确授权[独立DCF Skill](../../skills/alphalake-dcf/SKILL.md)：以AlphaLake数据独立推导、计算和生成公式Excel，缺事实可官方PDF补证，用于校验本引擎。它是独立研究工作流，禁止调用被测计算代码或搬运结果；先冻结独立结果再作同条件／异条件对照。此次仅调整Skill与文档，不修改引擎、默认或发布；具体公式和原始方法依据见[独立模型说明](../../skills/alphalake-dcf/references/independent-model.md)。发现真实BUG后仍须登记具体生产变更及回归，不能借独立校验自动替换生产政策。
+
 2026-09-30数据适配提交`442c39b`：补入既有官方国家风险及税率文件的Israel行，国家参考范围随SQLite声明，WACC参考导出及消费校验同步为四国13条记录。未修改`engine/`、国家选择、权重、ERP计算公式或税率政策；来源仍为官方[国家风险表](https://pages.stern.nyu.edu/~adamodar/pc/datasets/ctrypremJuly26.xlsx)及[国家税率表](https://pages.stern.nyu.edu/~adamodar/pc/datasets/countrytaxrates.xls)，不是新增估值方法。原100家实际输入、最终值及旧3,961个参考值均不变，安道麦的国家参考供给闭合但仍缺行情；不能据国家标签认证其实际地区风险暴露。显式人民币WACC国家权重接口仍限CN/HK/US，未扩展；冻结旧请求按原提交复验，当前输入须显式重新导出。发布及正负验证见[当前状态](../implementation-status.md)。
 
 2026-09-30数据适配提交`d44f049`：经用户授权，将原文已审核同一法人的A/H来源关联接入主库、SQLite及原生参考默认取数，精确证券源记录和显式用户覆盖优先；会话来源增加审核/原文定位，不改变公式、预测、US默认方法或参数。复用官方[公司行业名单](https://pages.stern.nyu.edu/~adamodar/pc/datasets/indname.xls)的原H股行业/国家行，关系证据来自CNINFO年度报告公司信息；这是数据关联依据，不是新的达摩达兰模型规定。行业经济适用性未自动认证，缺行情继续拒绝。原100家实际输入和估值零变化，额外两家参考齐备但行情未闭合；发布、撤销与来源版本规则见[系统交付](../guides/system-delivery.md#同发行人参考的默认关联)。

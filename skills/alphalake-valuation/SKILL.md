@@ -7,7 +7,7 @@ description: 使用 AlphaLake 已有数据库和显式政策进行 A 股公司�
 
 日常数据刷新、来源新鲜度及SQLite网页发布使用仓库`skills/alphalake/SKILL.md`；公司估值请求不隐式执行这些维护任务。
 
-详细DCF建模、敏感性分析及中文报告／Excel交付使用仓库`skills/alphalake-dcf/SKILL.md`；同样复用本项目数据与共享引擎，Excel为结果快照，不引入独立计算器。
+需要独立DCF交叉校验时使用仓库`skills/alphalake-dcf/SKILL.md`；该Skill只复用数据，独立推导与计算，缺事实允许官方PDF补证，交付公式Excel与逐层对照。本Skill继续调用原生引擎，不将原生重放冒充独立模型验证。
 
 解释数据期间、单位、缺项和接口适配前，读取`docs/valuation/data-contract.md`。标准累计TTM通过已有prepared入口消费，季度缺项不等于TTM缺项；`quarters_since_10k=0`在prepared路径表示关闭重复轮转，实际期间看prepared证据。普通标准TTM与专项调整TTM分别处理，年度研发队列仍独立检查。
 

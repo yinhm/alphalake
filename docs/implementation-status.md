@@ -232,7 +232,7 @@ E30按官方纯债PV＋含权市值残差方法统一完整API、专项适配和
 
 ## 具名条件自动交付（2026-10-02）
 
-2026-10-11新增中文[AlphaLake DCF Skill](../skills/alphalake-dcf/SKILL.md)，完全从现有主库／SQLite及来源归档取数，在Linux/Python复用本节条件、故事及原生API入口，交付现金流解释、敏感性和原生Excel结果快照；仓库维护并本地软链接安装。Skill结构、177个本地链接及命令核对通过；沿已存晶晨原生基线完成真实8080导出、重放、独立现金聚合、每股篡改与真实时点差异拒绝，主库／SQLite哈希不变，收据在`workspace/derived/alphalake-dcf/skill-validation/`。保留初次UTC序列化误拒及验证脚本读错审阅字段的失败；输入改按已有typed模型比较，不改变引擎。未新增预测、参数选择器或Excel独立可编辑模型，网页默认与已发布结果不变；仅Skill及文档调整，不重复无关全量回归。
+2026-10-11用户进一步明确[AlphaLake DCF Skill](../skills/alphalake-dcf/SKILL.md)用于**独立校验**：只复用数据和显式条件，不复用原生估值计算代码或结果；缺事实允许定向下载官方报告PDF，补证／冲突单列，不写主库。已改写中文Linux/Python建模、公式Excel和逐层对照规范，基础虚构算例验证折现、研发现金流重分类及总债务WACC，另验证7类非法输入拒绝、公式写入／读回及251条本地链接；收据在`workspace/derived/alphalake-dcf/independent-skill-validation/verification.json`。这不是已完成个股完整独立DCF。本机尚无LibreOffice等公式重算工具，Excel执行核验须另按任务完成。原`0621e62`版仅作原生重放／快照导出，旧收据在`workspace/derived/alphalake-dcf/skill-validation/`保留，不称独立模型验收。生产引擎、默认、主库及网页未改。
 
 用户已批准最小自动交付：新增到现有`tools.evaluate_native_policy --explicit-input`，完整用户请求先保存及计算，再组合既有3/5/10年增长收敛、公司三年历史资本与后五年稳态资本过渡。结果统一保存规模、逐年再投资/FCFF、终值及参考版本，`selected_scenario=null`、`automatic_adoption=false`；不自动挑情景，不替换网页默认。入口及来源要求见[统一估值入口](guides/company-valuation-entry.md#原生具名条件自动交付)。
 

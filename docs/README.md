@@ -19,7 +19,7 @@
 - **开发测试**：[默认回归、全局验收及历史测试清理](guides/testing.md)。
 - **估值数据契约**：[接入spec](valuation/data-contract.md)：累计/单季/TTM、余额、单位、研发队列、参考与会话的实际消费及转换边界。
 - **公司业绩预告**：[数据链spec](earnings-guidance-spec.md)与[采集入库](guides/earnings-guidance.md)：来源、期间、区间、宽表、手工同步及只读查询；独立证据包及故事绑定待接入。
-- **估值调用**：[公司入口](guides/company-valuation-entry.md)、[运行查询](guides/valuation-run-query.md)、[运行比较](guides/valuation-comparison.md)、[Agent估值Skill](../skills/alphalake-valuation/SKILL.md)、[AlphaLake DCF与Excel交付Skill](../skills/alphalake-dcf/SKILL.md)。
+- **估值调用**：[公司入口](guides/company-valuation-entry.md)、[运行查询](guides/valuation-run-query.md)、[运行比较](guides/valuation-comparison.md)、[Agent估值Skill](../skills/alphalake-valuation/SKILL.md)、[独立DCF校验Skill](../skills/alphalake-dcf/SKILL.md)。后者只复用数据，独立计算，允许定向官方PDF补证，不改变生产引擎或发布。
 - **网页知识库**：[划词解释、词条 API 与内容契约](guides/valuation-knowledge.md)。
 - **证据治理**：[审核修订与撤销](guides/reviewed-evidence-history.md)、[三表标准契约](decisions/020-official-statements-and-snapshots.md)、[招股披露范围](decisions/021-prospectus-disclosure-coverage.md)。
 

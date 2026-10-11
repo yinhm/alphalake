@@ -1,4 +1,4 @@
 interface:
-  display_name: "AlphaLake DCF"
-  short_description: "从AlphaLake获取数据，完成人民币DCF、敏感性分析与中文报告及Excel交付"
-  default_prompt: "使用 $alphalake-dcf，仅从AlphaLake获取数据，为指定公司完成可复验的DCF条件估值，解释假设并交付中文报告和Excel。"
+  display_name: "AlphaLake 独立 DCF"
+  short_description: "复用AlphaLake数据、允许官方PDF补证，独立建模并交叉校验现有估值系统"
+  default_prompt: "使用 $alphalake-dcf，以AlphaLake数据独立建立DCF，缺事实时尝试官方PDF补证，交付中文报告、公式Excel和现有引擎的逐层对照。"
