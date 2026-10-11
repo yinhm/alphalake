@@ -34,7 +34,7 @@ def snapshot(path, payload):
         return data
     with sqlite3.connect(path) as conn:
         export_snapshot(conn, [company], fetch, period, asof, years=1, quarters=1)
-        conn.executemany('INSERT INTO metadata VALUES(?,?)', [('report_period', period.isoformat()),
+        conn.executemany('INSERT OR REPLACE INTO metadata VALUES(?,?)', [('report_period', period.isoformat()),
             ('information_as_of', asof.isoformat()), ('source_database_sha256', 'fixture')])
 
 
@@ -69,10 +69,9 @@ def test_original_request_reports_real_blockers(exports, tmp_path, monkeypatch):
         for table in ('financials_annual', 'financials_quarterly'):
             conn.execute('UPDATE '+table+' SET revenues=1, ebit=1')
     with TestClient(app) as client:
-        diagnostic = client.get('/api/database/compatibility/SZSE:300866').json()
-        assert any(r['field']=='ebit' for r in diagnostic['required_missing'])
-        assert diagnostic['status']=='blocked_required_inputs'
-        assert client.post('/api/valuation/from-database', json=request).status_code==422
+        diagnostic = client.get('/api/database/compatibility/SZSE:300866')
+        assert diagnostic.status_code==503 and 'signature' in diagnostic.json()['detail']
+        assert client.post('/api/valuation/from-database', json=request).status_code==503
 
 
 def test_missing_snapshot_contract_never_falls_back(exports, tmp_path, monkeypatch):

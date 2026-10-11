@@ -357,14 +357,8 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
 
     prepared_ttm = None
     if use_prepared_ttm:
-        from decimal import Decimal
         end = date.fromisoformat(co['period_date_quarterly'])
-        current, prior = {}, {}
-        for field in ('revenues', 'ebit'):
-            evidence = record['ttm_evidence'].get(field, [])
-            for values, term_end in ((current, end), (prior, end.replace(year=end.year-1))):
-                term = next((r for r in evidence if r.get('period') == term_end.isoformat() and 'value' in r), None)
-                values[field] = float(Decimal(term['value']) / Decimal(1000000)) if term else None
+        context = record['input_context']
         r = record['financials_ttm']
         prepared_ttm = PreparedTTM(
             financials=RawFinancials(fiscal_year=base_fy_year,
@@ -379,33 +373,12 @@ def _db_record_to_company_input(record: dict, risk_free_rate: float, industry_ov
             provenance=dict(basis='standard_cumulative_ttm', contract=record['data_source']['contract'],
                 source_database_sha256=record['data_source']['source_database_sha256'],
                 formula='FY + current_YTD - prior_same_YTD',
-                cumulative_windows=json.dumps(dict(current=current, prior=prior, quarters=window['quarters_since_10k'])),
+                cumulative_windows=json.dumps(context['cumulative_windows']),
                 quarterly_display=json.dumps([q.model_dump(mode='json') for q in quarterly_financials]),
-                components=json.dumps(record['ttm_evidence'], ensure_ascii=False, sort_keys=True)))
-        # 比较TTM仍用标准累计三项；无需八个完整季度，不增加估值准入条件。
-        prior_end = end.replace(year=end.year-1)
-        comparison_periods = [f'{prior_end.year-1}-12-31', prior_end.isoformat(),
-                              prior_end.replace(year=prior_end.year-1).isoformat()]
-        terms = [[f for f in record.get('standard_financials', [])
-                  if f['field'] == 'revenue_cumulative' and f['period'] == period]
-                 for period in comparison_periods]
-        if all(len(matches) == 1 for matches in terms):
-            facts = [matches[0] for matches in terms]
-            expected_types = ['FY', {3:'Q1', 6:'H1', 9:'9M', 12:'FY'}[end.month]]
-            if (all(f['unit'] == co['filing_currency'] for f in facts)
-                    and [f['period_type'] for f in facts] == [expected_types[0], expected_types[1], expected_types[1]]
-                    and len({f['statement_scope'] for f in facts}) == 1
-                    and facts[0]['statement_scope'] == next((f['statement_scope'] for f in record.get('standard_financials', [])
-                        if f['field'] == 'revenue_cumulative' and f['period'] == end.isoformat()), None)):
-                amounts = [Decimal(f['value']) for f in facts]
-                if all(v.is_finite() for v in amounts):
-                    prepared_ttm.provenance['prior_ttm_revenue'] = json.dumps(dict(
-                        period_end=prior_end.isoformat(), currency=co['filing_currency'],
-                        money_unit='million_reporting_currency',
-                        revenues=str((amounts[0]+amounts[1]-amounts[2])/Decimal(1000000)),
-                        formula='FY + current_YTD - prior_same_YTD',
-                        components=[f | {'coefficient': coefficient} for f, coefficient in zip(facts, (1,1,-1))]),
-                        ensure_ascii=False, sort_keys=True)
+                components=json.dumps(dict(source_records=context['source_records'], evidence_expanded=False), ensure_ascii=False, sort_keys=True)))
+        if context.get('prior_ttm_revenue') is not None:
+            prepared_ttm.provenance['prior_ttm_revenue'] = json.dumps(context['prior_ttm_revenue'],
+                ensure_ascii=False, sort_keys=True)
 
     # Assemble
     inputs = CompanyValuationInput(

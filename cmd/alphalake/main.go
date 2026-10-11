@@ -90,7 +90,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-country-risk <db-path> [--local file | --offline] [--python executable] [--parser path]")
 	fmt.Fprintln(os.Stderr, "  version")
 	fmt.Fprintln(os.Stderr, "  schema")
-	fmt.Fprintln(os.Stderr, "  export-financial-snapshot <db-path> --output <new-directory> --fields <standard-names> --from YYYY-MM-DD --period YYYY-MM-DD --as-of RFC3339 [--codes 300866,600519]")
+	fmt.Fprintln(os.Stderr, "  export-financial-snapshot <db-path> --output <new-directory> --fields <standard-names> --from YYYY-MM-DD --period YYYY-MM-DD --as-of RFC3339 [--codes 300866,600519] [--field-periods projection.json]")
 	fmt.Fprintln(os.Stderr, "  init <db-path>")
 	fmt.Fprintln(os.Stderr, "  sync-daily <db-path> <tdx-symbol>")
 	fmt.Fprintln(os.Stderr, "  sync-valuation-quotes <db-path> --symbols sh600004,... --date YYYY-MM-DD")

@@ -12,7 +12,7 @@ from tools.export_alphalake_sqlite import CONTRACT, digest
 
 
 def audit(connection, coverage, source_snapshot):
-    metadata = dict(connection.execute('SELECT key,value FROM metadata'))
+    metadata = dict(connection.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'"))
     if metadata.get('contract') != CONTRACT or coverage.get('contract_version') != 'alphalake-native-coverage-v1':
         raise ValueError('current SQLite and coverage contracts required')
     companies = coverage['companies']

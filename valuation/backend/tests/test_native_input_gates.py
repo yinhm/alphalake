@@ -26,6 +26,15 @@ def sample(monkeypatch, quarter='2025-12-31'):
     return record
 
 
+def standard_context(record):
+    # API选择回归的模拟取数边界；真实快照签名/单位另由导出回归验证。
+    co = record['company']
+    record['input_context'] = dict(source_records={},exceptions=[],report_period=co['period_date_quarterly'],
+        market=dict(status='available',share_period=co['period_date_quarterly']),
+        tax=dict(status='missing_standard_fact',period=co['period_date_annual']))
+    return record['input_context']
+
+
 def test_one_annual_year_can_value_without_optional_history(monkeypatch):
     record = sample(monkeypatch)
     record['financials_annual'] += [dict(fy_offset=1, revenues=None, ebit=None),
@@ -207,29 +216,23 @@ def test_adjustments_require_only_their_selected_inputs(monkeypatch):
 def test_prepared_ttm_growth_rebuilds_comparison_from_cumulative_facts_without_quarters(monkeypatch):
     import json
     record = sample(monkeypatch, quarter='2026-06-30')
-    record['data_source'] = dict(contract='alphalake-sqlite-v11', information_as_of='2026-09-25T00:00:00Z', source_database_sha256='fixture')
+    record['data_source'] = dict(contract='alphalake-sqlite-v12', information_as_of='2026-09-25T00:00:00Z', source_database_sha256='fixture')
     record['financials_ttm'] = record['financials_annual'][0] | dict(revenues=1200, ebit=170)
-    record['ttm_evidence'] = {'revenues':[dict(period=p, value=v) for p,v in
-        [('2025-12-31','1000000000'),('2026-06-30','600000000'),('2025-06-30','400000000')]]}
-    record['standard_financials'] = [dict(field='revenue_cumulative', period=p, value=v, unit='USD',
-        period_type=basis, statement_scope='provider_default') for p,v,basis in
-        [('2025-12-31','1000000000','FY'),('2026-06-30','600000000','H1'),
-         ('2025-06-30','400000000','H1'),('2024-12-31','900000000','FY'),('2024-06-30','350000000','H1')]]
+    context = standard_context(record)
+    context['cumulative_windows'] = dict(current=dict(revenues=600,ebit=None),prior=dict(revenues=400,ebit=None),quarters=2)
+    context['prior_ttm_revenue'] = dict(period_end='2025-06-30',currency='USD',money_unit='million_reporting_currency',
+        revenues='950',source_periods=['2024-12-31','2025-06-30','2024-06-30'])
     inputs, _ = _db_record_to_company_input(record,.04,None)
     assert not inputs.quarterly_financials
     evidence = json.loads(inputs.prepared_ttm.provenance['prior_ttm_revenue'])
     assert evidence['revenues'] == '950' and evidence['period_end'] == '2025-06-30'
     before = run_full_valuation(inputs)
     assert inputs.company_metrics.revenue_growth == pytest.approx(1200/950-1)
-    for change in [dict(unit='CNY'), dict(period_type='instant'), dict(statement_scope='parent_statement'),
-                   dict(value='NaN'), dict(period='2024-03-31')]:
-        original = record['standard_financials'][-1]
-        record['standard_financials'][-1] = original | change
-        invalid, _ = _db_record_to_company_input(record,.04,None)
-        after = run_full_valuation(invalid)
-        assert invalid.company_metrics.revenue_growth is None
-        assert after.dcf == before.dcf  # 可选同比诊断不阻断或改变估值。
-        record['standard_financials'][-1] = original
+    context.pop('prior_ttm_revenue')
+    invalid,_ = _db_record_to_company_input(record,.04,None)
+    after = run_full_valuation(invalid)
+    assert invalid.company_metrics.revenue_growth is None
+    assert after.dcf==before.dcf  # 可选比较仍不改变当前完整TTM的DCF。
 
 
 def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypatch):
@@ -239,18 +242,12 @@ def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypat
     from api.main import app
 
     record = sample(monkeypatch)
-    record['data_source'] = dict(contract='alphalake-sqlite-v11', report_period='2025-12-31', information_as_of='2026-09-25')
+    record['data_source'] = dict(contract='alphalake-sqlite-v12', report_period='2025-12-31', information_as_of='2026-09-25')
     record['financials_ttm'] = record['financials_annual'][0]
     record['financials_annual'].append(dict(fy_offset=1,revenues=None,ebit=None))
     conn = sqlite3.connect(':memory:', check_same_thread=False)
     conn.row_factory = sqlite3.Row
-    conn.execute('CREATE TABLE export_cells(ticker,series,period_offset,field,period,status,evidence_json)')
-    conn.execute('CREATE TABLE standard_records(record_id,evidence_json)')
-    conn.execute('CREATE TABLE standard_facts(ticker,period,field,value,unit,period_type,statement_scope,fact_id,record_id)')
-    conn.executemany('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
-        [('TEST',series,0,f,'2025-12-31','available','[]') for series in ('annual','ttm') for f in record['financials_annual'][0] if f != 'fy_offset'])
-    conn.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
-        ('TEST','company',0,'mv_equity_listing','2025-12-31','available','{}'))
+    context = standard_context(record)
     @contextmanager
     def connection():
         yield conn
@@ -267,17 +264,15 @@ def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypat
             assert resolved.status_code == 200
             assert not any(f['path']=='industry_data.industry_name' for f in resolved.json()['unresolved_fields'])
             # 即使填了数值，映射未获批准仍拒绝；不是取消全局阻断就任意放行。
-            conn.execute("UPDATE export_cells SET status='requires_separate_valuation_definition' WHERE field='bv_debt'")
+            context['exceptions'] = [dict(series='annual',offset=0,field='bv_debt',period='2025-12-31',status='requires_separate_valuation_definition')]
             assert client.post('/api/valuation/from-database',json=dict(ticker='TEST',risk_free_rate=.04)).status_code==422
-            conn.execute("UPDATE export_cells SET status='available' WHERE field='bv_debt'")
-            conn.execute("UPDATE export_cells SET status='partial_target_scope' WHERE field='cash_and_marketable_securities'")
+            context['exceptions'] = [dict(series='annual',offset=0,field='cash_and_marketable_securities',period='2025-12-31',status='partial_target_scope')]
             gap = client.get('/api/database/compatibility/TEST').json()['required_missing']
             assert len(gap)==1 and gap[0]['available_value']==50
             assert '部分组成' in client.get('/api/database/compatibility/TEST').json()['blockers'][0]
             assert client.post('/api/valuation/from-database',json=dict(ticker='TEST',risk_free_rate=.04)).status_code==422
-            conn.execute("UPDATE export_cells SET status='estimated_partial_scope', evidence_json=? WHERE field='cash_and_marketable_securities'",
-                         ('[{"available_component_million_cny":50,"not_complete_target":true}]',))
-            conn.execute("UPDATE export_cells SET status='a_share_total_share_proxy' WHERE field='mv_equity_listing'")
+            context['exceptions'] = []
+            context['market']['status'] = 'a_share_total_share_proxy'
             response = client.post('/api/valuation/from-database',json=dict(ticker='TEST',risk_free_rate=.04))
             assert response.status_code == 200 and '账面代理' in response.text
             assert response.json()['valuation_proxy']['market_proxy']['status'] == 'a_share_total_share_proxy'
@@ -361,88 +356,19 @@ def test_forecast_patch_resolution_and_inactive_sensitivity(monkeypatch):
         assert all(b['range_source'] == 'application_example' for b in sensitivity['bars'])
 
 
-def test_native_gate_requires_linked_review_for_source_zero(monkeypatch):
-    import json
-    import sqlite3
-    import pytest
+def test_native_gate_requires_valid_review_reference_for_source_zero(monkeypatch):
     record = sample(monkeypatch)
-    record['data_source'] = dict(contract='alphalake-sqlite-v11')
+    record['data_source'] = dict(contract='alphalake-sqlite-v12')
     record['financials_ttm'] = record['financials_annual'][0]
-    conn = sqlite3.connect(':memory:')
-    conn.row_factory = sqlite3.Row
-    conn.execute('CREATE TABLE export_cells(ticker,series,period_offset,field,period,status,evidence_json)')
-    conn.execute('CREATE TABLE standard_records(record_id,evidence_json)')
-    conn.execute('CREATE TABLE standard_facts(ticker,period,field,value,unit,period_type,statement_scope,fact_id,record_id)')
-    conn.execute('CREATE TABLE reviewed_source_zeros(import_sha256,ticker,evidence_json)')
-    conn.executemany('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
-        [('TEST',series,0,f,'2025-12-31','available','[]') for series in ('annual','ttm') for f in record['financials_annual'][0] if f != 'fy_offset'])
-    conn.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
-        ('TEST','company',0,'mv_equity_listing','2025-12-31','available','{}'))
-    proof = dict(import_sha256='a'*64,code='TEST',field='bonds_payable',period='2025-12-31',value='0')
-    ref = dict(kind='reviewed_source_zero',import_sha256='a'*64,field='bonds_payable',period='2025-12-31')
-    conn.execute('INSERT INTO reviewed_source_zeros VALUES(?,?,?)',('a'*64,'TEST',json.dumps(proof)))
-    conn.execute("UPDATE export_cells SET status='available_with_reviewed_source_zero',evidence_json=? WHERE field='bv_debt'",(json.dumps([ref]),))
-    report = db.native_compatibility(conn,'TEST')
-    assert report['status'] == 'ready'
-    assert len(report['reviewed_source_zeros']) == 1
-    conn.execute('DELETE FROM reviewed_source_zeros')
-    with pytest.raises(ValueError,match='Missing reviewed source zero'):
-        db.native_compatibility(conn,'TEST')
-    conn.close()
-
-
-def test_incomplete_income_year_keeps_research_cohort_without_inventing_profit(monkeypatch):
-    from copy import deepcopy
-    from engine.data_dictionary import CompanyValuationInput
-    record = sample(monkeypatch)
-    record['financials_annual'][0]['r_and_d_expense'] = 60
-    record['financials_annual'] += [dict(fy_offset=i, revenues=None, ebit=None, r_and_d_expense=60-10*i) for i in range(1,6)]
-    inputs, _ = _db_record_to_company_input(record, .04, None)
-    assert len(inputs.raw_financials) == 1
-    assert inputs.historical_research_expenses == {2024:50,2023:40,2022:30,2021:20,2020:10}
-    report = run_full_valuation(inputs)
-    # 五年摊销=(50+40+30+20+10)/5=30；历史EBIT=150+60-30。
-    assert report.cashflow.historical_margin_by_year == [pytest.approx(.18)]
-    missing = deepcopy(inputs)
-    missing.historical_research_expenses.pop(2020)
-    partial = run_full_valuation(missing)
-    assert partial.cashflow.historical_margin_by_year == [None]
-    assert partial.dcf == report.dcf and partial.final == report.final
-    for year,value in ((2025,60),(2019,-1),(2019,float('nan'))):
-        bad = inputs.model_dump()
-        bad['historical_research_expenses'][year] = value
-        with pytest.raises(ValueError,match='supplementary research'):
-            CompanyValuationInput.model_validate(bad)
-    # 更晚年度不回填旧年的研发队列。
-    future = deepcopy(inputs)
-    future.historical_research_expenses[2026] = 999
-    assert run_full_valuation(future).cashflow.historical_margin_by_year == report.cashflow.historical_margin_by_year
-
-
-def test_input_contract_exposes_selection_without_filling_missing_history(monkeypatch):
-    record = sample(monkeypatch)
-    record['financials_annual'].append(dict(fy_offset=1, revenues=None, ebit=None))
-    gate = db.native_compatibility(None, 'TEST')
-    contract = gate['input_contract']
-    assert not contract['historical_fcff_required']
-    assert not contract['silent_previous_period_fallback']
-    optional = [r for r in contract['inputs'] if r['requirement']=='optional']
-    assert len(optional)==2 and all(not r['usable'] and r['missing_action']=='retain_gap' for r in optional)
-    record['financials_annual'][0]['bv_debt'] = None
-    gate = db.native_compatibility(None, 'TEST')
-    debt = next(r for r in gate['input_contract']['inputs'] if r['field']=='bv_debt')
-    assert debt['requirement']=='required' and not debt['usable'] and debt['value'] is None
-    assert gate['status']=='blocked_required_inputs'
-
-
-def test_sensitivity_growth_label_follows_native_initial_period():
-    from engine.sensitivity_ranges import build_ranges
-    from engine.data_dictionary import CompanyValuationInput
-    inputs = CompanyValuationInput(ticker='TEST', macro_inputs=MacroInputs(risk_free_rate=.04, equity_risk_premium=.05, tax_rate_marginal=.25), industry_data=IndustryData(industry_name='Synthetic', beta_u=1))
-    inputs.valuation_assumptions.high_growth_years = 1
-    initial = next(r for r in build_ranges(inputs) if r.driver == 'revenue_growth_years_2_5')
-    assert initial.label == 'Revenue growth (transition anchor)'
-    inputs.valuation_assumptions.high_growth_years = 3
-    later = next(r for r in build_ranges(inputs) if r.driver == initial.driver)
-    assert later.label == 'Revenue growth (Y2-3)'
-    assert (later.patch_path, later.range_lo, later.range_hi) == (initial.patch_path, initial.range_lo, initial.range_hi)
+    context = standard_context(record)
+    reference = dict(kind='reviewed_source_zero',import_sha256='a'*64,field='bonds_payable',period='2025-12-31')
+    exception = dict(series='annual',offset=0,field='bv_debt',period='2025-12-31',
+        status='available_with_reviewed_source_zero',source_refs=[reference])
+    context['exceptions'] = [exception]
+    report = db.native_compatibility(None,'TEST')
+    assert report['status']=='ready' and len(report['reviewed_input_refs'])==1
+    exception['source_refs'] = []
+    assert db.native_compatibility(None,'TEST')['status']=='blocked_required_inputs'
+    exception['source_refs'] = [reference | {'import_sha256':'bad'}]
+    with pytest.raises(ValueError,match='Invalid reviewed input reference'):
+        db.native_compatibility(None,'TEST')

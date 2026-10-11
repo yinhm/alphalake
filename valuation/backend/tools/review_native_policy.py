@@ -24,8 +24,11 @@ def load_annual_evidence(connection, tickers):
             raise ValueError('annual evidence period mismatch')
         row['fiscal_year'] = base.year-row['fy_offset']
         result[row['ticker']]['rows'].append(row)
-    for row in connection.execute(f"SELECT * FROM export_cells WHERE ticker IN ({marks}) AND series='annual' ORDER BY ticker,period,field", tickers):
-        result[row['ticker']]['cells'].append(dict(row))
+    for row in connection.execute(f"SELECT key,value FROM metadata WHERE key IN ({marks})", ['input_context:'+t for t in tickers]):
+        context = json.loads(row['value'])
+        if context['ticker'] not in result or row['key'] != 'input_context:'+context['ticker']:
+            raise ValueError('annual context identity mismatch')
+        result[context['ticker']]['cells'] = [dict(ticker=context['ticker'],**r) for r in context['exceptions'] if r['series']=='annual']
     return result
 
 
@@ -392,7 +395,7 @@ def review_report(body, annual_evidence=None):
             input_basis_comparison=basis_comparison,
             annual_rows=model_annual_evidence,
             independent_annual_rows=annual_evidence_rows,
-            independent_source='sqlite_annual_rows_and_export_cells' if annual_evidence_rows is not None else None,
+            independent_source='sqlite_annual_rows_and_input_context' if annual_evidence_rows is not None else None,
             supplied_annual_years=sorted(counts),
             supplementary_research_years=sorted(inputs.historical_research_expenses),
             absent_annual_years=[y for y in range(min(counts),max(counts)+1) if y not in counts] if counts else [],

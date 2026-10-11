@@ -115,19 +115,21 @@ def test_industry_screen_is_disjoint_and_not_cycle_certification():
     assert set(INDUSTRY_PROFILE) == set(industries)
 
 
-def test_profit_scope_uses_cumulative_periods_and_keeps_missing_or_invalid():
-    with sqlite3.connect(':memory:') as conn:
-        conn.execute('CREATE TABLE standard_facts(ticker,period,field,value,unit,period_type,statement_scope,fact_id,record_id)')
-        values = [('2025-12-31', 'FY', '10000000'), ('2026-06-30', 'H1', '5000000'), ('2025-06-30', 'H1', '2000000')]
-        for index, (period, kind, amount) in enumerate(values):
-            conn.execute('INSERT INTO standard_facts VALUES(?,?,?,?,?,?,?,?,?)',
-                ('SHSE:600019', period, 'investment_income', amount, 'CNY', kind, 'provider_default', index, index))
-        result = profit_components(conn, '2026-06-30')['SHSE:600019']['components']
-        assert result['investment_income']['amount_million_cny'] == 13
-        assert len(result['fair_value_change_income']['missing_periods']) == 3
-        conn.execute("UPDATE standard_facts SET period_type='Q2' WHERE period='2026-06-30'")
-        result = profit_components(conn, '2026-06-30')['SHSE:600019']['components']['investment_income']
-        assert result['amount_million_cny'] is None and result['invalid_periods'] == ['2026-06-30']
+def test_profit_scope_queries_data_side_and_keeps_missing_or_invalid(monkeypatch):
+    values = [('2025-12-31','FY','10000000'),('2026-06-30','H1','5000000'),('2025-06-30','H1','2000000')]
+    facts = [dict(ticker='SHSE:600019',period=p,field='investment_income',value=v,unit='CNY',period_type=k,
+        statement_scope='provider_default',fact_id=i,source_record_id=i) for i,(p,k,v) in enumerate(values)]
+    def query(connection,fields,periods):
+        assert fields==('investment_income','fair_value_change_income')
+        assert set(periods)=={p for p,_,_ in values}
+        return facts
+    monkeypatch.setattr('tools.export_alphalake_sqlite.query_standard_inputs',query)
+    result = profit_components(None,'2026-06-30')['SHSE:600019']['components']
+    assert result['investment_income']['amount_million_cny']==13
+    assert len(result['fair_value_change_income']['missing_periods'])==3
+    facts[1]['period_type']='Q2'
+    result = profit_components(None,'2026-06-30')['SHSE:600019']['components']['investment_income']
+    assert result['amount_million_cny'] is None and result['invalid_periods']==['2026-06-30']
 
 
 def test_scope_requires_current_hash_cutoff_unique_universe_and_canonical_conflicts(tmp_path):

@@ -218,12 +218,12 @@ def profit_components(connection, report_period):
     periods = {end.isoformat(): 1}
     if end.month != 12:
         periods.update({f'{end.year-1}-12-31': 1, end.replace(year=end.year-1).isoformat(): -1})
-    marks = ','.join('?' for _ in periods)
+    from tools.export_alphalake_sqlite import query_standard_inputs
     facts = {}
-    for row in connection.execute(f"SELECT ticker,period,field,value,unit,period_type,statement_scope,fact_id,record_id FROM standard_facts WHERE period IN ({marks}) AND field IN ('investment_income','fair_value_change_income')", list(periods)):
-        ticker, period, field, value, unit, kind, scope, fact_id, record_id = row
-        facts.setdefault((ticker, field), {}).setdefault(period, []).append(dict(period=period, value=value,
-            unit=unit, period_type=kind, statement_scope=scope, fact_id=fact_id, record_id=record_id))
+    for row in query_standard_inputs(connection,('investment_income','fair_value_change_income'),list(periods)):
+        ticker, period, field = row['ticker'],row['period'],row['field']
+        facts.setdefault((ticker,field),{}).setdefault(period,[]).append({k:row[k] for k in
+            ('period','value','unit','period_type','statement_scope','fact_id','source_record_id')})
     result = {}
     for ticker in {k[0] for k in facts}:
         components = {}
@@ -257,7 +257,7 @@ def run(database, output, scope_file, tickers=None):
     store = _get_damodaran_store()
     with sqlite3.connect('file:'+str(database)+'?mode=ro', uri=True) as conn:
         all_tickers = [r[0] for r in conn.execute('SELECT ticker FROM companies ORDER BY ticker')]
-        metadata = dict(conn.execute('SELECT key,value FROM metadata'))
+        metadata = dict(conn.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'"))
         profits = profit_components(conn, metadata['report_period'])
     scope_file = scope_file.resolve(strict=True)
     scope_hash = digest(scope_file)

@@ -34,18 +34,15 @@ FIELDS = {
     'cross_holdings': ('long_term_equity_investments', 'instant', 'CNY'),
 }
 EXCHANGES = {'XSHG': 'SHSE', 'XSHE': 'SZSE', 'XBSE': 'BJSE'}
-CONTRACT = 'alphalake-sqlite-v11'
+CONTRACT = target.CONTRACT
 DEBT_COMPONENTS = ('short_term_borrowings', 'long_term_borrowings', 'bonds_payable',
                    'current_portion_noncurrent_liabilities', 'lease_liabilities')
 ASSET_COMPONENTS = ('monetary_funds', 'cash_and_cash_equivalents', 'trading_financial_assets',
     'noncurrent_assets_due_within_one_year', 'long_term_equity_investments', 'debt_investments',
     'other_debt_investments', 'other_equity_instrument_investments', 'other_noncurrent_financial_assets')
-SOURCE_FIELDS = sorted({f[0] for f in FIELDS.values()} | set(DEBT_COMPONENTS) | set(ASSET_COMPONENTS) | {'listed_b_shares','listed_h_shares','profit_before_tax','operating_profit_cumulative','interest_income','investment_income','fair_value_change_income',
-    'financial_business_interest_income','financial_business_interest_expense','right_of_use_assets'})
-PARTIAL_SCOPES = {
-    'cash_and_marketable_securities': 'cash_equivalents_only; short_term_investment_scope_and_overlap_unresolved',
-    'cross_holdings': 'known_long_term_investment_components; missing_components_and_valuation_scope_unresolved',
-}
+SOURCE_FIELDS = sorted({f[0] for f in FIELDS.values()} | set(DEBT_COMPONENTS) | set(LONG_TERM)
+    | {'listed_b_shares','listed_h_shares','profit_before_tax'})
+PARTIAL_SCOPES = target.ASSET_PROXIES
 
 
 def record_facts(stream, definitions):
@@ -103,6 +100,69 @@ def validate_dates(period, asof):
         raise ValueError('report period must be a quarter end')
     if asof.utcoffset() is None or asof.date() < period:
         raise ValueError('timezone-aware information cutoff after report period required')
+
+
+def input_periods(period, years=10, quarters=8):
+    """按字段实际消费的期间投影；年度窗口不拉入十年全部旧季度。"""
+    base = date(period.year if period.month==12 else period.year-1,12,31)
+    annual = {date(base.year-i,12,31) for i in range(years)}
+    ends = {quarter(period,i) for i in range(quarters)}
+    instant = annual | ends | {period}
+    flow = instant | {quarter(end,1) for end in ends if end.month!=3}
+    if period.month!=12:
+        prior = period.replace(year=period.year-1)
+        flow |= {base,prior,date(prior.year-1,12,31),prior.replace(year=prior.year-1)}
+    balances = {f[0] for f in FIELDS.values() if f[1]=='instant'} | set(DEBT_COMPONENTS) | set(ASSET_COMPONENTS)
+    return {field: sorted(d.isoformat() for d in ({base} if field=='profit_before_tax' else
+        {period} if field in ('listed_b_shares','listed_h_shares') else instant if field in balances else flow))
+        for field in SOURCE_FIELDS}
+
+
+def financial_signature(directory):
+    return hashlib.sha256(json.dumps({name:digest(directory/name) for name in
+        ('fields.jsonl','records.jsonl','conflicts.jsonl','reviewed_zeros.jsonl')},sort_keys=True).encode()).hexdigest()
+
+
+def query_standard_inputs(connection, fields, periods, source_database=None):
+    """研究显式批量查询主库；先复核发布财务签名，不用当前数据补旧版本。"""
+    metadata = target.snapshot_metadata(connection)
+    if metadata is None or not metadata.get('financial_content_signature'):
+        raise ValueError('Published financial projection signature required for source queries')
+    from data_sources.paths import workspace_path
+    source = Path(source_database) if source_database is not None else workspace_path('alphalake.duckdb')
+    source = source.resolve(strict=True)
+    binary = Path(__file__).resolve().parents[3]/'alphalake'
+    if Path(str(source)+'.wal').exists():
+        raise ValueError('Source has WAL; close writer before research query')
+    before = digest(source)
+    codes = [r[0].split(':')[-1] for r in connection.execute('SELECT ticker FROM companies ORDER BY ticker')]
+    published = json.loads(metadata['source_projection'])
+    with tempfile.TemporaryDirectory(prefix='alphalake-research-query-') as temporary:
+        root = Path(temporary)
+        def export(name, projection):
+            spec = root/(name+'.json')
+            spec.write_text(json.dumps(projection,sort_keys=True))
+            directory = root/name
+            first = min(day for days in projection.values() for day in days)
+            subprocess.run([str(binary),'export-financial-snapshot',str(source),
+                '--output',str(directory),'--codes',','.join(codes),'--fields',','.join(sorted(projection)),
+                '--field-periods',str(spec),'--from',first,'--period',metadata['report_period'],
+                '--as-of',metadata['information_as_of']],check=True,timeout=600,capture_output=True)
+            return directory
+        if before!=metadata['source_database_sha256']:
+            frozen = export('published',published['field_periods'])
+            if financial_signature(frozen)!=metadata['financial_content_signature']:
+                raise ValueError('Source financial content differs from published inputs; use the frozen source version')
+        directory = export('research',{field:sorted(set(periods)) for field in fields})
+        definitions = [json.loads(line) for line in (directory/'fields.jsonl').read_text().splitlines()]
+        conflicts = {(r['code'],r['period']) for r in (json.loads(line) for line in (directory/'conflicts.jsonl').read_text().splitlines())}
+        ticker_by_code = {r[0].split(':')[-1]:r[0] for r in connection.execute('SELECT ticker FROM companies')}
+        with (directory/'records.jsonl').open() as stream:
+            rows = [fact | {'ticker':ticker_by_code[fact['code']]} for fact in record_facts(stream,definitions)
+                    if (fact['code'],fact['period']) not in conflicts]
+    if digest(source)!=before:
+        raise ValueError('Source changed during research query')
+    return rows
 
 
 def cell(facts, conflicts, instrument, end, column, annual, reviewed_zeros=None, *, ttm=False):
@@ -178,11 +238,11 @@ def cell(facts, conflicts, instrument, end, column, annual, reviewed_zeros=None,
 
 
 
-def fact_references(evidence):
-    """年、季、TTM只保存组成引用；金额和血缘复用标准事实与共享记录。"""
+def source_references(evidence):
+    """仅交付定位和例外；完整金额与审核仍由数据侧提供。"""
     return [{k: v for k, v in part.items() if k in
              ('field', 'period', 'coefficient', 'kind', 'import_sha256')}
-            if 'field' in part else part for part in evidence]
+            for part in evidence if 'field' in part]
 
 
 def annual_effective_tax_rate(facts, conflicts, instrument, end):
@@ -213,24 +273,19 @@ def annual_effective_tax_rate(facts, conflicts, instrument, end):
 
 def export_snapshot(connection, companies, fetch, period, asof, years=10, quarters=8):
     target.init_schema(connection)
-    connection.executescript('''CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);
- CREATE TABLE standard_records(record_id INTEGER PRIMARY KEY,evidence_json TEXT NOT NULL);
- CREATE TABLE standard_facts(ticker TEXT,period TEXT,field TEXT,value TEXT,unit TEXT,period_type TEXT,statement_scope TEXT,fact_id INTEGER,record_id INTEGER NOT NULL REFERENCES standard_records(record_id),PRIMARY KEY(ticker,period,field)) WITHOUT ROWID;
- CREATE TABLE reviewed_source_zeros(import_sha256 TEXT PRIMARY KEY,ticker TEXT,period TEXT,field TEXT,evidence_json TEXT);
- CREATE TABLE export_universe(candidate INTEGER PRIMARY KEY,code TEXT,instrument_id INTEGER,status TEXT,details TEXT);
- CREATE TABLE export_cells(ticker TEXT,series TEXT,period TEXT,period_offset INTEGER,field TEXT,status TEXT,evidence_json TEXT,
- PRIMARY KEY(ticker,series,period_offset,field)) WITHOUT ROWID;''')
+    connection.execute('CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
     ttm_columns = ['ticker'] + target._ANNUAL_COLS[2:]
     connection.execute('CREATE TABLE financials_ttm(ticker TEXT PRIMARY KEY REFERENCES companies(ticker),'
                        + ','.join(name+' REAL' for name in ttm_columns[1:])+')')
     connection.execute('INSERT INTO metadata VALUES(?,?)', ('contract', CONTRACT))
-    connection.execute('INSERT INTO metadata VALUES(?,?)', ('ttm_evidence_format', 'standard_fact_refs'))
-    connection.execute('INSERT INTO metadata VALUES(?,?)', ('financial_evidence_format', 'shared_records_and_standard_fact_refs'))
+    connection.execute('INSERT INTO metadata VALUES(?,?)', ('input_context_format', 'native-wide-context-v1'))
+    connection.executemany('INSERT INTO metadata VALUES(?,?)',dict(report_period=period.isoformat(),
+        information_as_of=asof.isoformat(),wide_money_unit='million_CNY',wide_shares_unit='million_shares').items())
     base = date(period.year if period.month == 12 else period.year - 1, 12, 31)
     annual_ends = [date(base.year-i, 12, 31) for i in range(years)]
     quarter_ends = [quarter(period, i) for i in range(quarters)]
     count = 0
-    for ordinal, company in enumerate(companies):
+    for company in companies:
         symbols = company.get('symbols') or []
         symbol = symbols[0] if len(symbols) == 1 else ''
         code = symbol[2:]
@@ -239,12 +294,10 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                  and re.fullmatch(r'\d{6}', code) and mic in EXCHANGES
                  and symbol[:2] == {'XSHG': 'sh', 'XSHE': 'sz', 'XBSE': 'bj'}.get(mic)
                  and company.get('financial_status') != 'blocked_security_identity')
-        connection.execute('INSERT INTO export_universe VALUES(?,?,?,?,?)', (ordinal, code or None, company['instrument_id'],
-                           'exported' if valid else 'blocked_security_identity', json.dumps(company, ensure_ascii=False)))
         if not valid:
             continue
         ticker = EXCHANGES[mic] + ':' + code
-        facts, conflicts, reviewed_zeros, records = {}, set(), {}, {}
+        facts, conflicts, reviewed_zeros = {}, set(), {}
         # 每个现有导出覆盖当年及上年；按需缓存一家公司，不累积全市场历史。
         def load(end):
             payload = fetch(code, end)
@@ -270,15 +323,6 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                 if key in seen or key in facts and facts[key] != row:
                     raise ValueError('duplicate or changed standard fact')
                 seen.add(key)
-                if key not in facts:
-                    shared = json.dumps({k:v for k,v in row.items() if k not in (
-                        'field','canonical_field','value','unit','period_type','statement_scope','fact_id')},
-                        ensure_ascii=False, sort_keys=True)
-                    if shared not in records:
-                        records[shared] = connection.execute('INSERT INTO standard_records(evidence_json) VALUES(?)', (shared,)).lastrowid
-                    connection.execute('INSERT INTO standard_facts VALUES(?,?,?,?,?,?,?,?,?)',
-                        (ticker, row['period'], row['field'], row['value'], row['unit'], row['period_type'],
-                         row['statement_scope'], row['fact_id'], records[shared]))
                 facts[key] = row
             for zero in payload.get('reviewed_zeros', []):
                 review = zero['review']
@@ -300,9 +344,6 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                     raise ValueError('invalid reviewed source zero identity/value/evidence')
                 if key in reviewed_zeros and reviewed_zeros[key] != zero:
                     raise ValueError('conflicting reviewed source zeros')
-                if key not in reviewed_zeros:
-                    connection.execute('INSERT INTO reviewed_source_zeros VALUES(?,?,?,?,?)',
-                        (zero['import_sha256'], ticker, zero['period'], zero['field'], json.dumps(zero, ensure_ascii=False, sort_keys=True)))
                 reviewed_zeros[key] = zero
         row = dict(ticker=ticker, company_name=company['name'], company_type='Public Company',
                    exchange_code=EXCHANGES[mic], primary_exchange=EXCHANGES[mic], region='CN',
@@ -311,9 +352,6 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                    period_date_quarterly=period.isoformat(), data_as_of=asof.date().isoformat())
         load(period)
         quote = company.get('quote')
-        market_evidence = {'quote': quote, 'share_period': period.isoformat(),
-                           'price_information_as_of': asof.isoformat(),
-                           'basis': 'unadjusted_close_times_reported_total_shares'}
         shares = facts.get((period.isoformat(), 'total_shares'))
         foreign = [f for f in ('listed_b_shares', 'listed_h_shares')
                    if (period.isoformat(),f) in facts and Decimal(facts[(period.isoformat(),f)]['value']) > 0]
@@ -328,8 +366,6 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
             if not price.is_finite() or price <= 0:
                 raise ValueError('invalid market price')
             row['stock_price_listing'] = float(price)
-        market_evidence['known_foreign_share_classes'] = {f: facts[(period.isoformat(),f)] for f in foreign}
-        market_evidence['share_class_prices_and_fx_complete'] = False
         if not quote:
             market_status = 'missing_eligible_close'
         elif shares is None or period.isoformat() in conflicts:
@@ -340,7 +376,6 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                 raise ValueError('invalid market shares: '+ticker)
             if (shares['unit'], shares['period_type'], shares['instrument_id']) != ('share', 'instant', company['instrument_id']):
                 raise ValueError('invalid market share unit/identity/period')
-            market_evidence['shares'] = shares
             if share_value <= 0:
                 market_status = 'nonpositive_reported_shares'
             else:
@@ -351,28 +386,64 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
         tax_rate, tax_status, tax_evidence = annual_effective_tax_rate(facts, conflicts, company['instrument_id'], base)
         row['effective_tax_rate'] = tax_rate
         target.insert_companies(connection, [row])
-        connection.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
-            (ticker, 'company', base.isoformat(), 0, 'effective_tax_rate', tax_status, json.dumps(tax_evidence, ensure_ascii=False)))
-        connection.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
-            (ticker,'company',period.isoformat(),0,'mv_equity_listing',market_status,json.dumps(market_evidence,ensure_ascii=False)))
+        context = dict(ticker=ticker, instrument_id=company['instrument_id'], report_period=period.isoformat(),
+            currency='CNY', money_unit='million_reporting_currency', shares_unit='million_shares',
+            market=dict(status=market_status, quote=quote, share_period=period.isoformat(),
+                price_information_as_of=asof.isoformat(), basis='unadjusted_close_times_reported_total_shares',
+                known_foreign_share_classes=foreign, share_class_prices_and_fx_complete=False),
+            tax=dict(status=tax_status, period=base.isoformat(), basis=tax_evidence['basis']),
+            source_records={}, exceptions=[])
+        def remember(series, offset, end, column, value, status, evidence):
+            refs = source_references(evidence)
+            if status != target.default_cell_status(column, value) or (status == 'missing_standard_fact'
+                    and any('value' in part for part in evidence)):
+                context['exceptions'].append(dict(series=series, offset=offset, field=column,
+                    period=end.isoformat(), status=status, source_refs=refs))
         for series, ends in [('annual', annual_ends), ('quarterly', quarter_ends)]:
+            batch = []
             for offset, end in enumerate(ends):
                 values = {'ticker': ticker, 'fy_offset' if series == 'annual' else 'fq_offset': offset}
                 for column in target._ANNUAL_COLS[2:]:
                     value, status, evidence = cell(facts, conflicts, company['instrument_id'], end, column, series == 'annual', reviewed_zeros)
                     values[column] = value
-                    connection.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
-                                       (ticker, series, end.isoformat(), offset, column, status, json.dumps(fact_references(evidence), ensure_ascii=False, sort_keys=True)))
-                (target.insert_annual_financials if series == 'annual' else target.insert_quarterly_financials)(connection, [values])
+                    remember(series, offset, end, column, value, status, evidence)
+                batch.append(values)
+            (target.insert_annual_financials if series == 'annual' else target.insert_quarterly_financials)(connection, batch)
         values = {'ticker': ticker}
+        ttm_evidence = {}
         for column in ttm_columns[1:]:
             value, status, evidence = cell(facts, conflicts, company['instrument_id'], period,
                 column, True, reviewed_zeros, ttm=True)
             values[column] = value
-            connection.execute('INSERT INTO export_cells VALUES(?,?,?,?,?,?,?)',
-                (ticker, 'ttm', period.isoformat(), 0, column, status,
-                 json.dumps(fact_references(evidence), ensure_ascii=False, sort_keys=True)))
+            remember('ttm', 0, period, column, value, status, evidence)
+            if column in ('revenues', 'ebit'):
+                ttm_evidence[column] = evidence
         target._executemany_from_dicts(connection, 'financials_ttm', ttm_columns, [values])
+        if period.month != 12:
+            windows = dict(current={}, prior={}, quarters=period.month//3)
+            for column, evidence in ttm_evidence.items():
+                for name, end in [('current',period), ('prior',period.replace(year=period.year-1))]:
+                    part = next((r for r in evidence if r.get('period')==end.isoformat() and 'value' in r), None)
+                    windows[name][column] = float(Decimal(part['value'])/Decimal(1000000)) if part else None
+            context['cumulative_windows'] = windows
+            prior_end = period.replace(year=period.year-1)
+            comparison = [date(prior_end.year-1,12,31), prior_end, prior_end.replace(year=prior_end.year-1)]
+            terms = [facts.get((p.isoformat(),'revenue_cumulative')) for p in comparison]
+            current = facts.get((period.isoformat(),'revenue_cumulative'))
+            if current and all(r and r['unit']=='CNY' and r['period_type']=={3:'Q1',6:'H1',9:'9M',12:'FY'}[p.month]
+                    and r['statement_scope']==current['statement_scope'] for p,r in zip(comparison,terms)):
+                amounts = [Decimal(r['value']) for r in terms]
+                if all(v.is_finite() for v in amounts):
+                    context['prior_ttm_revenue'] = dict(period_end=prior_end.isoformat(), currency='CNY',
+                        money_unit='million_reporting_currency', revenues=str((amounts[0]+amounts[1]-amounts[2])/Decimal(1000000)),
+                        formula='FY + current_YTD - prior_same_YTD',
+                        source_periods=[p.isoformat() for p in comparison])
+        for (end, _), fact in facts.items():
+            if fact.get('source_record_id') is not None:
+                context['source_records'][end] = fact['source_record_id']
+        context['input_sha256'] = target.input_signature(connection, ticker, context)
+        connection.execute('INSERT INTO metadata VALUES(?,?)', ('input_context:'+ticker,
+            json.dumps(context,ensure_ascii=False,sort_keys=True,separators=(',',':'),allow_nan=False)))
         count += 1
     return count
 
@@ -413,14 +484,23 @@ def main():
         try:
             with tempfile.TemporaryDirectory(prefix='alphalake-export-') as spool:
                 data = Path(spool)/'rows'
-                base = args.period.year if args.period.month == 12 else args.period.year-1
-                first = min(date(base-args.years+1, 1, 1), quarter(args.period, args.quarters))
+                projection = input_periods(args.period,args.years,args.quarters)
+                first = min(date.fromisoformat(day) for days in projection.values() for day in days)
+                projection_path = Path(spool)/'field-periods.json'
+                projection_path.write_text(json.dumps(projection,sort_keys=True))
                 subprocess.run([str(binary), 'export-financial-snapshot', str(source),
                     '--output', str(data), '--fields', ','.join(SOURCE_FIELDS),
+                    '--field-periods', str(projection_path),
                     '--codes', ','.join(sorted(set(args.code or []))), '--from', first.isoformat(),
                     '--period', args.period.isoformat(), '--as-of', args.as_of.isoformat()], check=True, timeout=600)
                 companies = [json.loads(line) for line in (data/'companies.jsonl').read_text().splitlines()]
                 companies.sort(key=lambda c: ((c.get('symbols') or [''])[0][2:], c['instrument_id']))
+                source_projection = dict(fields=SOURCE_FIELDS, first=first.isoformat(), field_periods=projection)
+                source_signature = financial_signature(data)
+                artifacts = set()
+                with (data/'records.jsonl').open() as stream:
+                    for line in stream:
+                        artifacts.add(json.loads(line)['artifact_sha256'])
                 if args.code:
                     found = {s[2:] for c in companies for s in c.get('symbols') or []}
                     if set(args.code)-found:
@@ -455,6 +535,15 @@ def main():
                             report_period=end.isoformat(), information_as_of=args.as_of.isoformat(),
                             facts=facts, source_conflicts=conflicts.get(code, []), reviewed_zeros=reviewed_zeros.get(code, []))
                     count = export_snapshot(connection, companies, fetch, args.period, args.as_of, args.years, args.quarters)
+                scope_root = source.parent/'derived/sqlite-export'
+                scope_root.mkdir(parents=True,exist_ok=True)
+                scope_payload = dict(contract='alphalake-export-scope-v1',source_database_sha256=source_hash,
+                    report_period=args.period.isoformat(),information_as_of=args.as_of.isoformat(),
+                    companies=[{k:c[k] for k in ('instrument_id','name','exchange_mic','symbols','symbol_count','identifier_count','financial_status')
+                                if k in c} for c in companies])
+                scope_raw = json.dumps(scope_payload,ensure_ascii=False,sort_keys=True,separators=(',',':'))+'\n'
+                scope_hash = hashlib.sha256(scope_raw.encode()).hexdigest()
+                scope_file = scope_root/('scope-'+args.period.isoformat()+'-'+scope_hash[:16]+'.json')
             from data_sources.native_references import write_snapshot
             reference_packet = subprocess.run([str(binary), 'export-native-references', str(source),
                 '--as-of', reference_asof.isoformat()], check=True, capture_output=True, text=True, timeout=120)
@@ -465,14 +554,17 @@ def main():
                             announcement_policy='TDX_report_date_first; optional_CNINFO; unknown_date_does_not_block_amounts',
                             information_as_of=args.as_of.isoformat(), exported_at=datetime.now(timezone.utc).isoformat(),
                             wide_money_unit='million_CNY', wide_shares_unit='million_shares',
-                            standard_values='decimal_strings_in_each_rows_unit',
+                            financial_content_signature=source_signature,
+                            source_projection=json.dumps(source_projection,sort_keys=True,separators=(',',':')),
+                            source_artifacts=json.dumps(sorted(artifacts)),
+                            scope_sha256=scope_hash, scope_receipt=str(scope_file.relative_to(source.parent)),
                             annual_net_income='parent_attributable', annual_bv_equity='parent_attributable',
                             market_price_window='latest_completed_unadjusted_close_at_information_cutoff_within_14_days',
                             market_cap_basis='close_times_reported_total_shares_proxy; known_foreign_share_classes_use_explicit_a_share_price_proxy',
                             quarterly_flows='difference_of_standard_YTD_same_year; Q1 unchanged',
                             ttm_flows='FY_plus_current_YTD_minus_prior_same_YTD; FY_unchanged',
                             ttm_balances='latest_report_period; never_sum_balances',
-                            missing='NULL; see export_cells; source-zero/unreviewed not inferred from absence',
+                            missing='NULL; sparse input_context exceptions; source-zero/unreviewed not inferred from absence',
                             reviewed_zero_basis='explicit_current_review_bound_to_TDX_zero_and_PDF; not_standard_fact_or_historical_system_time',
                             boundary='TDX_standard_components_and_explicit_reviewed_source_zeros; partial_target_scope_values_are_not_complete_totals; market_value_is_explicit_price_times_total_shares_proxy',
                             standard_field_scope=','.join(SOURCE_FIELDS),
@@ -488,8 +580,17 @@ def main():
         # 同目录原子创建；不覆盖旧快照，也不修改默认seed或源库。
         with open(temporary, 'rb') as stream:
             os.fsync(stream.fileno())
+        if scope_file.exists():
+            if digest(scope_file)!=scope_hash:
+                raise ValueError('Existing scope receipt hash mismatch')
+        else:
+            with scope_file.open('x') as stream:
+                stream.write(scope_raw)
+                stream.flush()
+                os.fsync(stream.fileno())
         os.link(temporary, args.output)
-        print(json.dumps({'output': str(args.output), 'companies': count, 'candidates': len(companies), 'contract': CONTRACT}, ensure_ascii=False))
+        print(json.dumps({'output': str(args.output), 'companies': count, 'candidates': len(companies),
+            'scope_receipt':str(scope_file),'contract': CONTRACT}, ensure_ascii=False))
     finally:
         Path(temporary).unlink(missing_ok=True)
 

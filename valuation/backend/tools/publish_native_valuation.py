@@ -46,7 +46,7 @@ def snapshot(path):
     with sqlite3.connect(path.resolve().as_uri()+'?mode=ro', uri=True) as conn:
         if conn.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
             raise ValueError('invalid SQLite snapshot')
-        metadata = dict(conn.execute('SELECT key,value FROM metadata'))
+        metadata = dict(conn.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'"))
         if metadata.get('contract') != CONTRACT:
             raise ValueError('current SQLite contract required')
         tickers = [r[0] for r in conn.execute('SELECT ticker FROM companies ORDER BY ticker')]
@@ -64,10 +64,16 @@ def snapshot(path):
             for row in conn.execute('SELECT * FROM '+quoted+' ORDER BY '+order):
                 h.update(json.dumps(row, ensure_ascii=False, allow_nan=False, separators=(',', ':')).encode()+b'\n')
             tables[name] = h.hexdigest()
+        h = hashlib.sha256()
+        for row in conn.execute("SELECT key,value FROM metadata WHERE key LIKE 'input_context:%' ORDER BY key"):
+            h.update(json.dumps(row,ensure_ascii=False,separators=(',',':')).encode()+b'\n')
+        tables['input_context'] = h.hexdigest()
         semantic_metadata = {k:v for k,v in metadata.items() if k not in (
-            'exported_at', 'source_database_sha256', 'exporter_sha256', 'alphalake_binary_sha256')}
+            'exported_at', 'source_database_sha256', 'exporter_sha256', 'alphalake_binary_sha256',
+            'scope_receipt', 'scope_sha256')}
         signature = hashlib.sha256(json.dumps([tables, semantic_metadata], sort_keys=True).encode()).hexdigest()
-        identities = [r[0] for r in conn.execute('SELECT DISTINCT instrument_id FROM export_universe ORDER BY instrument_id')]
+        from data_sources.us_cn_hk_db import input_contexts
+        identities = sorted({r['instrument_id'] for r in input_contexts(conn)})
         return dict(sha256=digest(path), content_sha256=signature, tables=tables, metadata=metadata, tickers=tickers, instrument_ids=identities)
 
 
@@ -92,8 +98,11 @@ def freshness_report(path, asof, financial_source=None, sync_references=False):
     quote_end = completed_market_date(cutoff)
     quotes, releases = [], []
     with sqlite3.connect(path.resolve().as_uri()+'?mode=ro', uri=True) as conn:
-        for ticker, status, raw in conn.execute("SELECT ticker,status,evidence_json FROM export_cells WHERE series='company' AND field='mv_equity_listing' ORDER BY ticker"):
-            evidence = json.loads(raw)
+        from data_sources.us_cn_hk_db import input_contexts
+        for context in input_contexts(conn):
+            ticker = context['ticker']
+            evidence = context['market']
+            status = evidence['status']
             quote = evidence.get('quote')
             day = date.fromisoformat(quote['trade_date']) if quote else None
             age = (quote_end-day).days if day else None
@@ -510,7 +519,7 @@ def main():
             if not args.output.is_file():
                 parser.error('--published-scope requires an existing published snapshot')
             with sqlite3.connect(args.output.as_uri()+'?mode=ro', uri=True) as connection:
-                if dict(connection.execute('SELECT key,value FROM metadata')).get('contract') != CONTRACT:
+                if dict(connection.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'")).get('contract') != CONTRACT:
                     parser.error('current published SQLite contract required')
                 tickers = [t for t, in connection.execute('SELECT ticker FROM companies ORDER BY ticker')]
             if any(not t.startswith(('SHSE:','SZSE:')) for t in tickers):

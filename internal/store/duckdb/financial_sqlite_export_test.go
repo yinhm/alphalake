@@ -7,6 +7,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -37,7 +38,7 @@ func TestFinancialSQLiteMarketQuoteBoundary(t *testing.T) {
 	read := func() map[string]any {
 		t.Helper()
 		dir := filepath.Join(t.TempDir(), "rows")
-		if err := ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"total_shares"}, day, day, time.Now()); err != nil {
+		if err := ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"total_shares"}, day, day, time.Now(), nil); err != nil {
 			t.Fatal(err)
 		}
 		raw, err := os.ReadFile(filepath.Join(dir, "companies.jsonl"))
@@ -148,6 +149,7 @@ func TestFinancialAvailabilityWithoutFiling(t *testing.T) {
 		}
 		r := domain.ProviderFinancialRecord{InstrumentID: id, Provider: "tdx", ProviderCode: "300866", ReportPeriod: period, ProviderFields: make([]domain.ProviderFloat32, 584)}
 		r.ProviderFields[229].Value = 123.5
+		r.ProviderFields[206].Value = 33
 		r.ProviderFields[313].Value = []float64{260401, 250230, 0}[i]
 		records := []IndexedFinancialRecord{{ID: int64(i + 1), Revision: "fixture", Record: r}}
 		if _, err = MaterializeFinancialSnapshotBatch(ctx, conn, 1, fields, records); err != nil {
@@ -175,6 +177,7 @@ func TestFinancialAvailabilityWithoutFiling(t *testing.T) {
 	}
 	r := domain.ProviderFinancialRecord{InstrumentID: id, Provider: "tdx", ProviderCode: "300866", ReportPeriod: time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC), ProviderFields: make([]domain.ProviderFloat32, 584)}
 	r.ProviderFields[229].Value = 123.5
+	r.ProviderFields[206].Value = 33
 	r.ProviderFields[313].Value = 260401
 	conn, err = db.Conn(ctx)
 	if err != nil {
@@ -193,7 +196,7 @@ func TestFinancialAvailabilityWithoutFiling(t *testing.T) {
 		t.Fatal(n, err)
 	}
 	dir := filepath.Join(t.TempDir(), "rows")
-	if err = ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"revenue"}, time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC), time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)); err != nil {
+	if err = ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"revenue"}, time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC), time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), nil); err != nil {
 		t.Fatal(err)
 	}
 	f, err := os.Open(filepath.Join(dir, "records.jsonl"))
@@ -211,6 +214,35 @@ func TestFinancialAvailabilityWithoutFiling(t *testing.T) {
 			t.Fatal(row)
 		}
 	}
+	end := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+	prior := end.AddDate(-1, 0, 0)
+	projection := map[string][]time.Time{"revenue": {prior, end}, "reported_ebit": {end}}
+	projected := filepath.Join(t.TempDir(), "projected")
+	if err = ExportFinancialSQLiteRows(ctx, db, projected, []string{"300866"}, []string{"revenue", "reported_ebit"}, prior, end, end.AddDate(0, 1, 0), projection); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile(filepath.Join(projected, "records.jsonl"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows := strings.Split(strings.TrimSpace(string(raw)), "\n")
+	if len(rows) != 2 {
+		t.Fatalf("unused old periods exported: %d", len(rows))
+	}
+	for i, raw := range rows {
+		var row map[string]any
+		if err = json.Unmarshal([]byte(raw), &row); err != nil {
+			t.Fatal(err)
+		}
+		if row["revenue"] != "123.5000000000" || (i == 0 && row["reported_ebit"] != nil) || (i == 1 && row["reported_ebit"] != "33.0000000000") {
+			t.Fatal(row)
+		}
+	}
+	projection["reported_ebit"] = []time.Time{end.AddDate(0, 0, -1)}
+	if ExportFinancialSQLiteRows(ctx, db, filepath.Join(t.TempDir(), "bad-period"), []string{"300866"}, []string{"revenue", "reported_ebit"}, prior, end, end.AddDate(0, 1, 0), projection) == nil {
+		t.Fatal("non-quarter period accepted")
+	}
+
 }
 
 func TestCurrentFinancialExportDoesNotFillFromOlderRevision(t *testing.T) {
@@ -238,7 +270,7 @@ func TestCurrentFinancialExportDoesNotFillFromOlderRevision(t *testing.T) {
 	}
 	dir := filepath.Join(t.TempDir(), "rows")
 	period := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
-	if err = ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"revenue"}, period, period, period.AddDate(0, 1, 0)); err != nil {
+	if err = ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"revenue"}, period, period, period.AddDate(0, 1, 0), nil); err != nil {
 		t.Fatal(err)
 	}
 	raw, err := os.ReadFile(filepath.Join(dir, "records.jsonl"))

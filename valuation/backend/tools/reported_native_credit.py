@@ -3,7 +3,7 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from data_sources.alphalake_wacc import ReferenceSnapshot
-from data_sources.us_cn_hk_db import load_standard_facts
+from tools.export_alphalake_sqlite import query_standard_inputs
 from engine.data_dictionary import CompanyValuationInput, ReferenceCapitalInputs
 from engine.module_2_risk import compute_reference_cost_of_capital
 
@@ -25,13 +25,12 @@ def load_evidence(connection, tickers, metadata, policy):
     if refs.information_as_of != cutoff or not refs.credit_spreads:
         raise ValueError('credit reference cutoff mismatch or missing bands')
     sovereign = next(r for r in refs.country_risk if r['subject_code']=='CN' and r['metric_code']=='sovereign_default_spread')
-    if not connection.execute("SELECT 1 FROM standard_facts WHERE field IN ('financial_business_interest_income','financial_business_interest_expense') LIMIT 1").fetchone():
-        raise ValueError('SQLite credit scope fields not exported; rebuild snapshot before credit conditions')
     end = date.fromisoformat(metadata['report_period'])
     terms = [(end, 1)] if end.month==12 else [(date(end.year-1,12,31),1),(end,1),(end.replace(year=end.year-1),-1)]
     rows = {ticker:[] for ticker in tickers}
-    for row in load_standard_facts(connection, tickers, fields=FIELDS, periods=[p.isoformat() for p,_ in terms]):
-        rows[row['ticker']].append(row)
+    for row in query_standard_inputs(connection,FIELDS,[p.isoformat() for p,_ in terms]):
+        if row['ticker'] in rows:
+            rows[row['ticker']].append(row)
     return dict(terms=[(p.isoformat(),c) for p,c in terms], rows=rows,
         bands=refs.credit_spreads, sovereign=sovereign, cutoff=cutoff.isoformat())
 

@@ -1,6 +1,7 @@
 """逐公司调用原生估值API；可携带显式参考政策，保留默认诊断及条件请求结果。"""
 import argparse
 from collections import Counter
+from copy import deepcopy
 import hashlib
 import json
 import math
@@ -11,6 +12,25 @@ import sqlite3
 
 def value_digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False, allow_nan=False).encode()).hexdigest()
+
+
+def economic_payload(body):
+    """完整计算输入/模块；仅分离已声明的协议与来源引用变化。"""
+    result = deepcopy({key:body[key] for key in ('inputs','ltm_financials','adjusted','cost_of_capital',
+        'cashflow','dcf','multiples','final','equity_bridge','convertible_claim','industry_stats') if key in body})
+    prepared = result.get('inputs',{}).get('prepared_ttm')
+    if prepared is not None:
+        provenance = prepared['provenance']
+        for key in ('contract','source_database_sha256','components'):
+            provenance.pop(key,None)
+        for key in ('cumulative_windows','quarterly_display','prior_ttm_revenue'):
+            if key in provenance:
+                provenance[key] = json.loads(provenance[key])
+        if 'prior_ttm_revenue' in provenance:
+            comparison = provenance['prior_ttm_revenue']
+            comparison.pop('components',None)
+            comparison.pop('source_periods',None)
+    return result
 
 
 def check(database, output, risk_free_rate=None, review_methodology=False, reference_policy=None):
@@ -26,7 +46,8 @@ def check(database, output, risk_free_rate=None, review_methodology=False, refer
     with sqlite3.connect('file:'+str(database.resolve())+'?mode=ro', uri=True) as conn:
         assert conn.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
         tickers = [r[0] for r in conn.execute('SELECT ticker FROM companies ORDER BY ticker')]
-        market = dict(conn.execute("SELECT ticker,status FROM export_cells WHERE series='company' AND field='mv_equity_listing'"))
+        from data_sources.us_cn_hk_db import input_contexts
+        market = {r['ticker']:r['market']['status'] for r in input_contexts(conn)}
     requests = {}
     if reference_policy is not None:
         from api.database import FromDatabaseRequest
@@ -66,6 +87,9 @@ def check(database, output, risk_free_rate=None, review_methodology=False, refer
                           final=body.get('final'), diagnostic=d, response=body,
                           diagnostic_sha256=value_digest(d), inputs_sha256=value_digest(body.get('inputs')),
                           unresolved_sha256=value_digest(body.get('unresolved_fields')))
+            economic = economic_payload(body)
+            record.update(economic_inputs_sha256=value_digest(economic.get('inputs')),
+                          economic_report_sha256=value_digest(economic))
             if ticker in requests:
                 record.update(request=request, reference_policy_sha256=value_digest(reference_policy),
                               request_status='calculated_conditional_reference_proxy' if response.status_code == 200 else 'rejected',
@@ -76,6 +100,7 @@ def check(database, output, risk_free_rate=None, review_methodology=False, refer
                     dict(status='not_calculated', reason=d['status'], automatic_adoption=False))
             (output/(ticker.replace(':','-')+'.json')).write_text(json.dumps(record,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
             item = {k:record[k] for k in ('ticker','admission','financial_admission','reference_missing','http_status','market_status','missing_fields','final','diagnostic_sha256','inputs_sha256','unresolved_sha256')}
+            item.update(economic_inputs_sha256=record['economic_inputs_sha256'],economic_report_sha256=record['economic_report_sha256'])
             if review_methodology:
                 item['methodology'] = record['methodology_review'].get('methodology', record['methodology_review'])
             results.append(item)

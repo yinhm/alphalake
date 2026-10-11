@@ -95,9 +95,10 @@ def test_new_publication_failure_removes_untrusted_target(tmp_path):
 def test_snapshot_ignores_only_physical_metadata_and_detects_value_change(tmp_path):
     path = tmp_path/'snapshot.sqlite'
     with sqlite3.connect(path) as conn:
-        conn.executescript('CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT); CREATE TABLE companies(ticker TEXT PRIMARY KEY,value REAL); CREATE TABLE export_universe(instrument_id INTEGER); INSERT INTO export_universe VALUES(1);')
+        conn.executescript('CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT); CREATE TABLE companies(ticker TEXT PRIMARY KEY,value REAL);')
         conn.executemany('INSERT INTO metadata VALUES(?,?)', [('contract', delivery.CONTRACT), ('exported_at','before'), ('source_database_sha256','a'), ('information_as_of','2026-09-27')])
         conn.execute("INSERT INTO companies VALUES('SZSE:300866',42)")
+        conn.execute('INSERT INTO metadata VALUES(?,?)',('input_context:SZSE:300866',json.dumps(dict(ticker='SZSE:300866',instrument_id=1))))
     before = delivery.snapshot(path)
     with sqlite3.connect(path) as conn:
         conn.execute("UPDATE metadata SET value='after' WHERE key IN ('exported_at','source_database_sha256')")
@@ -134,9 +135,10 @@ def test_cycle_publishes_replays_without_export_and_keeps_last_snapshot_on_sourc
         if log.stem == 'export':
             path = Path(command[command.index('--output')+1])
             with sqlite3.connect(path) as conn:
-                conn.executescript('CREATE TABLE metadata(key TEXT,value TEXT); CREATE TABLE companies(ticker TEXT PRIMARY KEY,value REAL); CREATE TABLE export_universe(instrument_id INTEGER); INSERT INTO export_universe VALUES(1);')
+                conn.executescript('CREATE TABLE metadata(key TEXT,value TEXT); CREATE TABLE companies(ticker TEXT PRIMARY KEY,value REAL);')
                 conn.executemany('INSERT INTO metadata VALUES(?,?)', [('contract',delivery.CONTRACT), ('source_database_sha256',delivery.digest(database))])
                 conn.execute("INSERT INTO companies VALUES('SZSE:300866',42)")
+                conn.execute('INSERT INTO metadata VALUES(?,?)',('input_context:SZSE:300866',json.dumps(dict(ticker='SZSE:300866',instrument_id=1))))
         elif log.stem.startswith('check-'):
             assert Path(command[command.index('--database')+1]).exists()
             output = Path(command[command.index('--output')+1]); output.mkdir()
@@ -224,9 +226,10 @@ def test_comparison_distinguishes_evidence_refresh_from_new_value():
 def test_freshness_keeps_quote_and_reference_dates_separate(tmp_path, reference_export):
     path = tmp_path/'freshness.sqlite'
     with sqlite3.connect(path) as conn:
-        conn.executescript('CREATE TABLE export_cells(ticker,series,field,status,evidence_json); CREATE TABLE reference_release(release_id,dataset,source_version,available_at,first_seen_at,sha256); CREATE TABLE reference_value(release_id,observation_date);')
+        conn.executescript('CREATE TABLE metadata(key TEXT,value TEXT); CREATE TABLE reference_release(release_id,dataset,source_version,available_at,first_seen_at,sha256); CREATE TABLE reference_value(release_id,observation_date);')
         evidence = dict(share_period='2026-06-30', quote=dict(trade_date='2026-09-29',acquisition_started_at='2026-09-29T08:00:00Z',run_finished_at='2026-09-29T08:01:00Z'))
-        conn.execute('INSERT INTO export_cells VALUES(?,?,?,?,?)',('SZSE:300866','company','mv_equity_listing','reported_share_price_proxy',json.dumps(evidence)))
+        evidence['status']='reported_share_price_proxy'
+        conn.execute('INSERT INTO metadata VALUES(?,?)',('input_context:SZSE:300866',json.dumps(dict(ticker='SZSE:300866',market=evidence))))
         conn.execute('INSERT INTO reference_release VALUES(1,?,?,?,?,?)',('beta','2026','2026-09-01T00:00:00Z','2026-08-31T00:00:00Z','hash'))
         conn.execute("INSERT INTO reference_value VALUES(1,'2026-01-05')")
         conn.execute('CREATE TABLE reference_wacc(singleton INTEGER PRIMARY KEY,packet_json TEXT NOT NULL)')
@@ -243,7 +246,7 @@ def test_freshness_keeps_quote_and_reference_dates_separate(tmp_path, reference_
     assert curve['observation_calendar_ages_days']==[21]
     with sqlite3.connect(path) as conn:
         evidence['quote']['trade_date']='2026-09-01'
-        conn.execute('UPDATE export_cells SET evidence_json=?',(json.dumps(evidence),))
+        conn.execute('UPDATE metadata SET value=?',(json.dumps(dict(ticker='SZSE:300866',market=evidence)),))
     with pytest.raises(ValueError,match='14-day'):
         delivery.freshness_report(path,'2026-09-30T10:00:00Z')
 

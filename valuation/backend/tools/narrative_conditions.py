@@ -238,8 +238,8 @@ def report(run_dir, database, output):
     if len({r['ticker'] for r in companies}) != len(companies) or {r['ticker'] for r in companies} != set(document.scope):
         raise ValueError('report retains exact assigned company denominator')
     with sqlite3.connect(database.resolve().as_uri()+'?mode=ro', uri=True) as conn:
-        quotes = {code:json.loads(details).get('quote') or {}
-            for code, details in conn.execute('SELECT code,details FROM export_universe')}
+        from data_sources.us_cn_hk_db import input_contexts
+        quotes = {r['ticker'].split(':')[-1]:r['market'].get('quote') or {} for r in input_contexts(conn)}
         prices = dict(conn.execute('SELECT ticker,stock_price_listing FROM companies'))
     results = read_json(run_dir/'summary.json')['results']
     stories = {s.id:s for s in document.stories}

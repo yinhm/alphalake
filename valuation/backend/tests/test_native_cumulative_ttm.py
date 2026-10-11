@@ -76,7 +76,7 @@ def snapshot(monkeypatch):
             return dict(contract_version='alphalake-valuation-v2',code=code,report_period=end.isoformat(),
                 information_as_of=asof.isoformat(),facts=[r for r in rows if r['period']<=end.isoformat()],source_conflicts=[])
         export_snapshot(conn,[company],fetch,date(2026,6,30),asof,years=6)
-        conn.executemany('INSERT INTO metadata VALUES(?,?)', dict(report_period='2026-06-30',
+        conn.executemany('INSERT OR REPLACE INTO metadata VALUES(?,?)', dict(report_period='2026-06-30',
             information_as_of=asof.isoformat(),source_database_sha256='source',annual_bv_equity='parent_attributable').items())
         return conn
     return facts,build
@@ -85,8 +85,6 @@ def snapshot(monkeypatch):
 def test_complete_quarter_equivalence_and_missing_q1_still_values(snapshot):
     facts,build=snapshot
     with build(facts) as conn:
-        refs = json.loads(conn.execute("SELECT evidence_json FROM export_cells WHERE series='ttm' AND field='ebit'").fetchone()[0])
-        assert all(set(r) == {'field','period','coefficient'} for r in refs)
         record=db.fetch_company(conn,'SZSE:300866')
         assert db.native_compatibility(conn,'SZSE:300866')['status']=='ready'
         inputs,_=_db_record_to_company_input(record,.04,None)
@@ -109,9 +107,9 @@ def test_complete_quarter_equivalence_and_missing_q1_still_values(snapshot):
         body=_report_to_dict(create_session(inputs,after,reference_store=_get_damodaran_store()))
         recent=review_report(body)['model_input_recent_window']
         assert recent['quarters']==2 and recent['revenue_growth']==.25
-        assert json.loads(inputs.prepared_ttm.provenance['components'])['revenues'][1]['period']=='2026-06-30'
-        conn.execute("DELETE FROM standard_facts WHERE period='2025-06-30' AND field='reported_ebit'")
-        with pytest.raises(ValueError, match='Missing financial component evidence'):
+        assert json.loads(inputs.prepared_ttm.provenance['components'])['evidence_expanded'] is False
+        conn.execute('UPDATE financials_ttm SET ebit=ebit+1')
+        with pytest.raises(ValueError,match='signature mismatch'):
             db.fetch_company(conn,'SZSE:300866')
     without_q1=[r for r in facts if r['period'] not in ('2025-03-31','2026-03-31')]
     with build(without_q1) as conn:
@@ -120,7 +118,10 @@ def test_complete_quarter_equivalence_and_missing_q1_still_values(snapshot):
         assert record['financials_quarterly'][0]['revenues'] is None
         inputs,_=_db_record_to_company_input(record,.04,None)
         assert run_full_valuation(inputs).final==after.final
-        conn.execute("UPDATE export_cells SET status='source_record_conflict' WHERE series='ttm' AND field='ebit'")
+        context = record['input_context']
+        context['exceptions'].append(dict(series='ttm',offset=0,field='ebit',period='2026-06-30',status='source_record_conflict'))
+        context['input_sha256'] = db.input_signature(conn,'SZSE:300866',context)
+        conn.execute('UPDATE metadata SET value=? WHERE key=?',(json.dumps(context),'input_context:SZSE:300866'))
         assert any(r['field']=='ebit' for r in db.native_compatibility(conn,'SZSE:300866')['required_missing'])
         conn.execute('DELETE FROM financials_ttm')
         with pytest.raises(ValueError,match='Missing TTM'):

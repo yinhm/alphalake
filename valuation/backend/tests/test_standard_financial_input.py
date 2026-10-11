@@ -28,7 +28,7 @@ def sample():
     def fetch(code,end):
         return dict(contract_version='alphalake-valuation-v2',code=code,report_period=end.isoformat(),information_as_of=asof.isoformat(),facts=[r for r in facts if r['period']<=end.isoformat()],source_conflicts=[])
     export_snapshot(conn,[dict(symbols=['sz300866'],symbol_count=1,identifier_count=1,exchange_mic='XSHE',instrument_id=7,name='样本')],fetch,date(2026,6,30),asof)
-    conn.execute("INSERT INTO metadata VALUES('report_period','2026-06-30')")
+    conn.execute("INSERT OR REPLACE INTO metadata VALUES('report_period','2026-06-30')")
     yield conn
     conn.close()
 
@@ -39,17 +39,17 @@ def test_standard_ebit_is_not_replaced_by_sample_policy(sample, ticker):
     sample.execute("UPDATE financials_annual SET ticker=?", (ticker,))
     sample.execute("UPDATE financials_quarterly SET ticker=?", (ticker,))
     sample.execute("UPDATE financials_ttm SET ticker=?", (ticker,))
-    sample.execute("UPDATE standard_facts SET ticker=?", (ticker,))
-    for row in sample.execute("SELECT record_id,evidence_json FROM standard_records").fetchall():
-        evidence=json.loads(row["evidence_json"]); evidence["code"]=ticker.split(":")[-1]
-        sample.execute("UPDATE standard_records SET evidence_json=? WHERE record_id=?", (json.dumps(evidence),row["record_id"]))
-    sample.execute("UPDATE export_cells SET ticker=?", (ticker,))
+    context = json.loads(sample.execute("SELECT value FROM metadata WHERE key='input_context:SZSE:300866'").fetchone()[0])
+    context['ticker'] = ticker
+    context['input_sha256'] = db.input_signature(sample,ticker,context)
+    sample.execute("UPDATE metadata SET key=?,value=? WHERE key='input_context:SZSE:300866'",('input_context:'+ticker,json.dumps(context)))
     raw = db.fetch_company(sample, ticker)
     assert raw['financials_annual'][0]['ebit'] == 440
     assert raw['financials_quarterly'][0]['ebit'] == 110
     assert raw['financials_annual'][0]['cash_and_marketable_securities'] is None
     # 有效来源EBIT不能因不参与标准导出的专项组成缺失而被清空。
-    sample.execute("DELETE FROM standard_facts WHERE field='interest_income'")
+    assert 'standard_financials' not in raw
+    assert not sample.execute("SELECT 1 FROM sqlite_master WHERE name='standard_facts'").fetchone()
     unchanged = db.fetch_company(sample, ticker)
     assert unchanged['financials_annual'] == raw['financials_annual']
     assert unchanged['financials_quarterly'] == raw['financials_quarterly']
@@ -60,10 +60,15 @@ def test_standard_ebit_is_not_replaced_by_sample_policy(sample, ticker):
 
 
 def test_standard_missing_and_conflicting_ebit_still_block(sample):
-    sample.execute("UPDATE financials_ttm SET ebit=NULL")
-    gate = db.native_compatibility(sample, 'SZSE:300866')
-    assert any(r['field'] == 'ebit' for r in gate['required_missing'])
-    sample.execute("UPDATE financials_ttm SET ebit=440")
-    sample.execute("UPDATE export_cells SET status='source_record_conflict' WHERE period='2026-06-30'")
-    gate = db.native_compatibility(sample, 'SZSE:300866')
-    assert any(r['field'] == 'ebit' and r['status'] == 'source_record_conflict' for r in gate['required_missing'])
+    context = json.loads(sample.execute("SELECT value FROM metadata WHERE key='input_context:SZSE:300866'").fetchone()[0])
+    sample.execute('UPDATE financials_ttm SET ebit=NULL')
+    context['input_sha256'] = db.input_signature(sample,'SZSE:300866',context)
+    sample.execute("UPDATE metadata SET value=? WHERE key='input_context:SZSE:300866'",(json.dumps(context),))
+    gate = db.native_compatibility(sample,'SZSE:300866')
+    assert any(r['field']=='ebit' for r in gate['required_missing'])
+    sample.execute('UPDATE financials_ttm SET ebit=440')
+    context['exceptions'].append(dict(series='ttm',offset=0,field='ebit',period='2026-06-30',status='source_record_conflict'))
+    context['input_sha256'] = db.input_signature(sample,'SZSE:300866',context)
+    sample.execute("UPDATE metadata SET value=? WHERE key='input_context:SZSE:300866'",(json.dumps(context),))
+    gate = db.native_compatibility(sample,'SZSE:300866')
+    assert any(r['field']=='ebit' and r['status']=='source_record_conflict' for r in gate['required_missing'])

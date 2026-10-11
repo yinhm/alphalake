@@ -23,10 +23,8 @@ def test_delete_releases_only_requested_session(monkeypatch):
 def test_failed_diagnostic_keeps_company_and_continues_batch(tmp_path, monkeypatch):
     database = tmp_path/'input.sqlite'
     with sqlite3.connect(database) as conn:
-        conn.executescript("CREATE TABLE companies(ticker TEXT); INSERT INTO companies VALUES('A'),('B');"
-            "CREATE TABLE export_cells(ticker TEXT,series TEXT,field TEXT,status TEXT);"
-            "INSERT INTO export_cells VALUES('A','company','mv_equity_listing','missing_eligible_close'),"
-            "('B','company','mv_equity_listing','missing_eligible_close');")
+        conn.executescript("CREATE TABLE companies(ticker TEXT); INSERT INTO companies VALUES('A'),('B'); CREATE TABLE metadata(key TEXT,value TEXT);")
+        conn.executemany('INSERT INTO metadata VALUES(?,?)',[('input_context:'+t,json.dumps(dict(ticker=t,market=dict(status='missing_eligible_close')))) for t in ('A','B')])
     calls = []
 
     class Client:
@@ -47,3 +45,24 @@ def test_failed_diagnostic_keeps_company_and_continues_batch(tmp_path, monkeypat
     summary=json.loads((output/'summary.json').read_text())
     assert calls == ['A','B'] and summary['companies']==2
     assert summary['admission']=={'diagnostic_error':1, 'blocked_required_inputs':1}
+
+
+def test_economic_comparison_separates_only_protocol_and_source_references():
+    from copy import deepcopy
+    from tools.check_native_sqlite import economic_payload, value_digest
+    old = dict(inputs=dict(prepared_ttm=dict(financials=dict(revenues=100),provenance=dict(
+        basis='standard_cumulative_ttm',contract='old',source_database_sha256='old',components='full evidence',
+        cumulative_windows=json.dumps(dict(current=dict(revenues=60),prior=dict(revenues=50))),
+        prior_ttm_revenue=json.dumps(dict(period_end='2025-06-30',currency='CNY',money_unit='million_reporting_currency',
+            revenues='90',formula='FY + current_YTD - prior_same_YTD',components=[dict(value='50')]))))),dcf=dict(pv_fcff=20))
+    new = deepcopy(old)
+    provenance = new['inputs']['prepared_ttm']['provenance']
+    provenance.update(contract='new',source_database_sha256='new',components='references')
+    prior = json.loads(provenance['prior_ttm_revenue']);prior.pop('components');prior['source_periods']=['2024-12-31']
+    provenance['prior_ttm_revenue']=json.dumps(prior,sort_keys=True)
+    assert value_digest(economic_payload(old))==value_digest(economic_payload(new))
+    for key,value in [('revenues','91'),('currency','USD'),('period_end','2024-06-30')]:
+        prior[key]=value;provenance['prior_ttm_revenue']=json.dumps(prior)
+        assert value_digest(economic_payload(old))!=value_digest(economic_payload(new))
+        prior=json.loads(old['inputs']['prepared_ttm']['provenance']['prior_ttm_revenue']);prior.pop('components')
+    assert old['inputs']['prepared_ttm']['provenance']['contract']=='old'

@@ -8,7 +8,7 @@ from tools.check_native_sqlite import check
 def test_explicit_reference_requests_preserve_default_diagnostic_and_financial_gate(tmp_path, monkeypatch):
     database = tmp_path/'input.sqlite'
     with sqlite3.connect(database) as conn:
-        conn.executescript("CREATE TABLE companies(ticker TEXT); CREATE TABLE export_cells(ticker TEXT,status TEXT,series TEXT,field TEXT);")
+        conn.executescript("CREATE TABLE companies(ticker TEXT); CREATE TABLE metadata(key TEXT,value TEXT);")
         conn.executemany('INSERT INTO companies VALUES(?)', [('SZSE:001220',),('SZSE:001257',),('SZSE:300866',)])
     policy = dict(version='explicit-reference-policy-v1', approval='用户批准', evidence='审核文档及原文', requests=[
         dict(ticker='SZSE:001220',industry_override='Transportation',country_override='China'),

@@ -18,10 +18,12 @@ Public surface:
 """
 from __future__ import annotations
 
+import calendar
+import hashlib
 import json
 import math
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 import os
 import sqlite3
 from contextlib import contextmanager
@@ -281,63 +283,170 @@ def search_companies(conn: sqlite3.Connection, query: str, limit: int = 20) -> l
     return [dict(r) for r in rows]
 
 
-def snapshot_metadata(conn: sqlite3.Connection) -> dict | None:
-    """按数据产品契约识别来源；不把损坏或旧版TDX快照降级为外部数据。"""
+CONTRACT = 'alphalake-sqlite-v12'
+UNMAPPED_INPUTS = frozenset({'earnings_before_tax', 'd_a', 'operating_lease_expense'})
+ASSET_PROXIES = {
+    'cash_and_marketable_securities': 'cash_equivalents_only; short_term_investment_scope_and_overlap_unresolved',
+    'cross_holdings': 'known_long_term_investment_components; missing_components_and_valuation_scope_unresolved',
+}
+
+
+def default_cell_status(field, value):
+    if field in UNMAPPED_INPUTS:
+        return 'requires_separate_valuation_definition'
+    if value is None:
+        return 'missing_standard_fact'
+    return 'estimated_partial_scope' if field in ASSET_PROXIES else 'available'
+
+
+def snapshot_metadata(conn):
+    """仅读取全库元数据；禁止每次请求加载全市场证券上下文。"""
     tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     if not tables.intersection({'metadata', 'valuation_inputs', 'standard_facts', 'export_cells'}):
         return None
-    metadata = dict(conn.execute('SELECT key,value FROM metadata')) if 'metadata' in tables else {}
-    if metadata.get('contract') != 'alphalake-sqlite-v11':
+    # 冒号后的分号是前缀上界，两个索引范围避免每次请求扫描全市场上下文。
+    metadata = dict(conn.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'")) if 'metadata' in tables else {}
+    if metadata.get('contract') != CONTRACT:
         raise ValueError('Unsupported AlphaLake SQLite contract; rebuild the snapshot with the current exporter')
-    if not {'standard_records', 'standard_facts', 'export_cells', 'export_universe', 'reviewed_source_zeros', 'financials_ttm'} <= tables:
+    if not {'companies','financials_annual','financials_quarterly','financials_ttm'} <= tables:
         raise ValueError('Incomplete AlphaLake SQLite snapshot')
-    if metadata.get('ttm_evidence_format') != 'standard_fact_refs':
-        raise ValueError('Invalid TTM evidence contract; rebuild the snapshot')
-    if metadata.get('financial_evidence_format') != 'shared_records_and_standard_fact_refs':
-        raise ValueError('Invalid financial evidence contract; rebuild the snapshot')
+    if tables.intersection({'standard_records','standard_facts','export_cells','export_universe','reviewed_source_zeros'}):
+        raise ValueError('Data governance tables must not enter the valuation snapshot')
+    if metadata.get('input_context_format') != 'native-wide-context-v1':
+        raise ValueError('Invalid input context contract; rebuild the snapshot')
     return metadata
 
 
-def load_standard_facts(conn, tickers, *, periods=None, fields=None):
-    """限定证券及所需列/期间，还原共享来源；不保留旧快照读取路径。"""
-    clauses, parameters = [], []
-    for column, values in [('ticker',tickers), ('period',periods), ('field',fields)]:
-        if values is not None:
-            if not values:
-                return []
-            clauses.append('f.'+column+' IN ('+','.join('?' for _ in values)+')')
-            parameters.extend(values)
-    records, result = {}, []
-    for row in conn.execute('SELECT f.*,r.evidence_json AS record_evidence FROM standard_facts f '
-            'LEFT JOIN standard_records r USING(record_id) WHERE '+' AND '.join(clauses)
-            +' ORDER BY f.ticker,f.period,f.field', parameters):
-        if row['record_evidence'] is None:
-            raise ValueError('Missing standard record evidence; rebuild the snapshot')
-        record_id = row['record_id']
-        if record_id not in records:
-            records[record_id] = json.loads(row['record_evidence'])
-        shared = records[record_id]
-        if shared['period'] != row['period'] or shared['code'] != row['ticker'].split(':')[-1]:
-            raise ValueError('Mismatched standard record identity/period; rebuild the snapshot')
-        result.append(shared | {key:row[key] for key in ('period','field','value','unit',
-            'period_type','statement_scope','fact_id')} | {'canonical_field':row['field'], 'ticker':row['ticker']})
-    return result
+def input_contexts(conn):
+    for key, raw in conn.execute("SELECT key,value FROM metadata WHERE key LIKE 'input_context:%' ORDER BY key"):
+        context = json.loads(raw)
+        if not isinstance(context,dict) or context.get('ticker') != key.removeprefix('input_context:'):
+            raise ValueError('Invalid input context identity')
+        yield context
 
 
-def resolve_cell_evidence(parts, facts, *, ttm=False):
-    """组成引用恢复原接口证据；保留缺项、审核零和范围诊断。"""
-    for part in parts:
-        if 'field' not in part or part.get('kind') in ('missing_standard_fact', 'reviewed_source_zero'):
-            continue
-        fact = facts.get((part['period'], part['field']))
-        if fact is None:
-            raise ValueError('Missing financial component evidence; rebuild the snapshot')
-        keys = ('value','unit','fact_id','artifact_sha256') if not ttm and part.get('kind') == 'rejected_component' else (
-            'value','unit','fact_id','available_at','artifact_sha256','announcement_source','financial_time_basis')
-        part.update({key:fact.get(key) for key in keys})
-        if not ttm:
-            part['value'] = str(Decimal(fact['value']))
-    return parts
+def input_signature(conn, ticker, context):
+    """输入值和紧凑上下文一起绑定，拒绝只篡改金额或例外的快照。"""
+    rows = [list(map(tuple, conn.execute(query, (ticker,)))) for query in (
+        'SELECT * FROM companies WHERE ticker=?',
+        'SELECT * FROM financials_annual WHERE ticker=? ORDER BY fy_offset',
+        'SELECT * FROM financials_quarterly WHERE ticker=? ORDER BY fq_offset',
+        'SELECT * FROM financials_ttm WHERE ticker=?')]
+    unsigned = {k:v for k,v in context.items() if k!='input_sha256'}
+    return hashlib.sha256(json.dumps([rows,unsigned],sort_keys=True,ensure_ascii=False,
+        separators=(',',':'),allow_nan=False).encode()).hexdigest()
+
+
+def load_input_context(conn, ticker, company):
+    row = conn.execute('SELECT value FROM metadata WHERE key=?', ('input_context:'+ticker,)).fetchone()
+    if row is None:
+        raise ValueError('Missing input context; rebuild the snapshot')
+    context = json.loads(row[0])
+    allowed = {'ticker','instrument_id','report_period','currency','money_unit','shares_unit','market','tax',
+               'source_records','exceptions','cumulative_windows','prior_ttm_revenue','input_sha256'}
+    required = allowed-{'cumulative_windows','prior_ttm_revenue'}
+    if (not isinstance(context,dict) or set(context)-allowed or not required<=set(context) or context.get('ticker')!=ticker
+            or type(context.get('instrument_id')) is not int or context['instrument_id']<=0
+            or context.get('report_period')!=company['period_date_quarterly']
+            or context.get('currency')!=company['filing_currency'] or context['currency']!='CNY'
+            or context.get('money_unit')!='million_reporting_currency'
+            or context.get('shares_unit')!='million_shares'
+            or not isinstance(context.get('source_records'),dict)
+            or not isinstance(context.get('market'),dict) or not isinstance(context.get('tax'),dict)
+            or not isinstance(context.get('exceptions'),list)):
+        raise ValueError('Invalid input context identity/unit/period')
+    if context.get('input_sha256')!=input_signature(conn,ticker,context):
+        raise ValueError('Input values/context signature mismatch; rebuild the snapshot')
+    end = date.fromisoformat(context['report_period'])
+    if end.month%3 or end.day!=calendar.monthrange(end.year,end.month)[1]:
+        raise ValueError('Invalid report quarter end')
+    if end.month!=12:
+        windows = context.get('cumulative_windows')
+        if (not isinstance(windows,dict) or set(windows)!={'current','prior','quarters'}
+                or windows['quarters']!=end.month//3 or any(not isinstance(windows[name],dict)
+                    or set(windows[name])!={'revenues','ebit'}
+                    or any(v is not None and (type(v) not in (int,float) or not math.isfinite(v)) for v in windows[name].values())
+                    for name in ('current','prior'))):
+            raise ValueError('Invalid cumulative input windows')
+    comparison = context.get('prior_ttm_revenue')
+    if comparison is not None:
+        try:
+            finite = isinstance(comparison,dict) and isinstance(comparison.get('revenues'),str) and Decimal(comparison['revenues']).is_finite()
+        except InvalidOperation:
+            finite = False
+        if (not isinstance(comparison,dict) or set(comparison)!=
+                {'period_end','currency','money_unit','revenues','formula','source_periods'}
+                or comparison['period_end']!=end.replace(year=end.year-1).isoformat()
+                or comparison['currency']!=context['currency'] or comparison['money_unit']!=context['money_unit']
+                or comparison['formula']!='FY + current_YTD - prior_same_YTD'
+                or comparison['source_periods']!=[f'{end.year-2}-12-31',end.replace(year=end.year-1).isoformat(),end.replace(year=end.year-2).isoformat()]
+                or not finite):
+            raise ValueError('Invalid prior TTM comparison identity/unit/period')
+    market, tax = context['market'], context['tax']
+    if (market.get('share_period')!=context['report_period'] or tax.get('period')!=company['period_date_annual']
+            or not isinstance(market.get('status'),str) or not isinstance(tax.get('status'),str)):
+        raise ValueError('Invalid quote/share/tax period')
+    for period, record_id in context['source_records'].items():
+        source_end = date.fromisoformat(period)
+        if (source_end>end or source_end.month%3 or source_end.day!=calendar.monthrange(source_end.year,source_end.month)[1]
+                or type(record_id) is not int or record_id<=0):
+            raise ValueError('Invalid source record reference')
+    seen = set()
+    for exception in context['exceptions']:
+        if (not isinstance(exception,dict) or not {'series','offset','field','period','status'}<=set(exception)
+                or set(exception)-{'series','offset','field','period','status','source_refs'}
+                or not isinstance(exception.get('source_refs',[]),list)):
+            raise ValueError('Unexpected input exception payload')
+        key = (exception['series'],exception['offset'],exception['field'])
+        if (key in seen or key[0] not in ('annual','quarterly','ttm') or type(key[1]) is not int or key[1]<0
+                or key[2] not in _ANNUAL_COLS[2:] or not isinstance(exception['status'],str)):
+            raise ValueError('Invalid or duplicate input exception')
+        seen.add(key)
+        for ref in exception.get('source_refs',[]):
+            if not isinstance(ref,dict) or set(ref)-{'field','period','coefficient','kind','import_sha256'}:
+                raise ValueError('Source references must not contain full facts or evidence')
+    return context
+
+
+def cell_sources(record):
+    """宽表重建准入状态；例外稀疏保存，普通可用值不存逐格记录。"""
+    co, context = record['company'], record['input_context']
+    cells = {}
+    annual_end = date.fromisoformat(co['period_date_annual'])
+    end = date.fromisoformat(context['report_period'])
+    for series, offset_key in [('annual','fy_offset'),('quarterly','fq_offset'),('ttm',None)]:
+        rows = record['financials_'+series] if offset_key else [record['financials_ttm']]
+        for row in rows:
+            offset = row[offset_key] if offset_key else 0
+            if series=='annual':
+                period = annual_end.replace(year=annual_end.year-offset)
+            elif series=='quarterly':
+                y, q = divmod(end.year*4+end.month//3-1-offset,4)
+                m = (q+1)*3
+                period = date(y,m,calendar.monthrange(y,m)[1])
+            else:
+                period = end
+            for field in _ANNUAL_COLS[2:]:
+                value = row.get(field)
+                evidence = []
+                if value is not None and field in ASSET_PROXIES:
+                    evidence.append(dict(scope=ASSET_PROXIES[field],not_complete_target=True,
+                        available_component_million_cny=value))
+                cells[series,offset,field] = dict(period=period.isoformat(),
+                    status=default_cell_status(field,value),evidence=evidence,
+                    source_record_id=context['source_records'].get(period.isoformat()),evidence_expanded=False)
+    for exception in context['exceptions']:
+        key = (exception['series'],exception['offset'],exception['field'])
+        if key not in cells or cells[key]['period']!=exception['period']:
+            raise ValueError('Input exception refers to an unknown cell/period')
+        cell = cells[key]
+        cell['status'] = exception['status']
+        cell['evidence'].extend(exception.get('source_refs',[]))
+    for field, context_key in [('mv_equity_listing','market'),('effective_tax_rate','tax')]:
+        detail = context[context_key]
+        cells['company',0,field] = dict(period=detail.get('share_period',detail.get('period')),
+            status=detail['status'],evidence=detail,evidence_expanded=False)
+    return cells
 
 
 def fetch_company(conn: sqlite3.Connection, ticker: str) -> dict | None:
@@ -376,14 +485,7 @@ def fetch_company(conn: sqlite3.Connection, ticker: str) -> dict | None:
         if ttm is None:
             raise ValueError('Missing TTM row; rebuild the snapshot')
         result['financials_ttm'] = dict(ttm)
-        result['ttm_evidence'] = {r['field']: json.loads(r['evidence_json']) for r in conn.execute(
-            "SELECT field,evidence_json FROM export_cells WHERE ticker=? AND series='ttm' AND period_offset=0", (ticker,))}
-        source_facts = load_standard_facts(conn, [ticker])
-        facts = {(r['period'],r['field']):r for r in source_facts}
-        for parts in result['ttm_evidence'].values():
-            resolve_cell_evidence(parts, facts, ttm=True)
-        result['standard_financials'] = [{key:r[key] for key in ('period','field','value','unit',
-            'period_type','statement_scope')} for r in source_facts]
+        result['input_context'] = load_input_context(conn,ticker,co_dict)
     return result
 
 
@@ -407,7 +509,7 @@ def standard_cumulative_ttm(inputs) -> bool:
     """普通标准事实TTM，不是专项调整利润/资本输入；仅识别输入形态。"""
     return (inputs.prepared_ttm is not None
             and inputs.prepared_ttm.provenance.get('basis') == 'standard_cumulative_ttm'
-            and inputs.prepared_ttm.provenance.get('contract') == 'alphalake-sqlite-v11')
+            and inputs.prepared_ttm.provenance.get('contract') == CONTRACT)
 
 
 def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
@@ -417,14 +519,7 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
         return None
     co = record['company']
     source = record.get('data_source')
-    cells = {(r['series'], r['period_offset'], r['field']):
-             dict(period=r['period'], status=r['status'], evidence=json.loads(r['evidence_json']))
-             for r in conn.execute('SELECT series,period_offset,field,period,status,evidence_json FROM export_cells WHERE ticker=?', (ticker,))} if source else {}
-    if source:
-        facts = {(r['period'],r['field']):r for r in load_standard_facts(conn, [ticker])}
-        for (series,_,_), cell in cells.items():
-            if series in ('annual','quarterly'):
-                resolve_cell_evidence(cell['evidence'], facts)
+    cells = cell_sources(record) if source else {}
     rows = {series: {r[key]: r for r in record['financials_'+series]}
             for series, key in [('annual','fy_offset'),('quarterly','fq_offset')]}
     if source:
@@ -433,21 +528,11 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
     consumed_inputs = []
     zero_refs = [dict(series=s, offset=o, field=f, component=part['field'], period=part['period'], import_sha256=part['import_sha256'])
         for (s,o,f),e in cells.items() for part in e['evidence'] if isinstance(part, dict) and part.get('kind') == 'reviewed_source_zero']
-    reviewed_zeros = []
-    if zero_refs:
-        approvals = {r['import_sha256']: json.loads(r['evidence_json']) for r in conn.execute(
-            'SELECT import_sha256,evidence_json FROM reviewed_source_zeros WHERE ticker=?', (ticker,))}
-        if any(r['import_sha256'] not in approvals for r in zero_refs):
-            raise ValueError('Missing reviewed source zero evidence; rebuild snapshot')
-        for ref in zero_refs:
-            proof = approvals[ref['import_sha256']]
-            if (proof['import_sha256'] != ref['import_sha256'] or proof['code'] != ticker.split(':')[-1]
-                    or proof['field'] != ref['component'] or proof['period'] != ref['period'] or proof['value'] != '0'):
-                raise ValueError('Mismatched reviewed source zero evidence')
-        reviewed_zeros = [dict(import_sha256=h, evidence=approvals[h],
-            cells=[r for r in zero_refs if r['import_sha256'] == h]) for h in sorted({r['import_sha256'] for r in zero_refs})]
-    if reviewed_zeros:
-        warnings.append('部分输入采用逐期间审核的TDX源零；原标准事实仍缺项，依据与审核版本见reviewed_source_zeros，撤销后须重新发布快照')
+    reviewed_refs = sorted({(r['import_sha256'],r['component'],r['period']) for r in zero_refs})
+    if any(len(h)!=64 or any(c not in '0123456789abcdef' for c in h) for h,_,_ in reviewed_refs):
+        raise ValueError('Invalid reviewed input reference')
+    if reviewed_refs:
+        warnings.append('部分输入采用逐期间审核的TDX源零；原标准事实仍缺项，审核引用见reviewed_input_refs，完整依据在数据侧，撤销后须重新发布快照')
     reviewed_cells = {(r['series'],r['offset'],r['field']) for r in zero_refs}
     def missing(series, offset, field, purpose, dest, positive=False):
         row = co if series == 'company' else rows[series].get(offset, {})
@@ -569,7 +654,7 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
                 if isinstance(part, dict) and 'available_component_million_cny' in part), None), **e)
             for (s,o,f),e in cells.items() if e['status']=='estimated_partial_scope'
             and f in ('cash_and_marketable_securities','cross_holdings')],
-        reviewed_source_zeros=reviewed_zeros,
+        reviewed_input_refs=[dict(import_sha256=h,field=f,period=p) for h,f,p in reviewed_refs],
         financial_fields=coverage,
         company_fields=[dict(field=name,present=co.get(name) is not None) for name in _COMPANIES_COLS],
         scope='当前原生入口默认选择的数据准入；不认证预测假设、市场参数或调整后经营口径；政策改变须重新检查')

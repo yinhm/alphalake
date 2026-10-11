@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 // ExportFinancialSQLiteRows exports one read transaction, never one process per
 // company or period. Only the requested standard columns are decoded from wide
 // storage; the receiving native model defines its own target columns.
-func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, codes, fields []string, from, end, asof time.Time) error {
+func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, codes, fields []string, from, end, asof time.Time, fieldPeriods map[string][]time.Time) error {
 	if err := requireStandardFinancialSchema(ctx, db); err != nil {
 		return err
 	}
@@ -38,6 +39,35 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
 		}
 		seen[name] = true
 		names = append(names, `"`+name+`"`)
+	}
+	periodSQL := map[string]string{}
+	allPeriods := map[string]bool{}
+	for field, periods := range fieldPeriods {
+		if !seen[field] || len(periods) == 0 {
+			return fmt.Errorf("unknown field or empty report periods: %s", field)
+		}
+		quoted := []string{}
+		for _, period := range periods {
+			if period.Before(from) || period.After(end) || period.Month()%3 != 0 || period.AddDate(0, 0, 1).Day() != 1 {
+				return fmt.Errorf("invalid requested report period for %s", field)
+			}
+			value := duckdbStringLiteral(period.Format("2006-01-02")) + "::DATE"
+			quoted = append(quoted, value)
+			allPeriods[value] = true
+		}
+		periodSQL[field] = strings.Join(quoted, ",")
+	}
+	if len(fieldPeriods) != 0 && len(fieldPeriods) != len(fields) {
+		return fmt.Errorf("report periods required for every selected field")
+	}
+	periodFilter := ""
+	if len(allPeriods) > 0 {
+		values := []string{}
+		for value := range allPeriods {
+			values = append(values, value)
+		}
+		sort.Strings(values)
+		periodFilter = " AND r.report_period IN (" + strings.Join(values, ",") + ")"
 	}
 	quotedCodes := []string{}
 	for _, code := range codes {
@@ -100,7 +130,11 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
 	fieldNames, values := []string{}, []string{}
 	for i, name := range fields {
 		fieldNames = append(fieldNames, duckdbStringLiteral(name))
-		values = append(values, `CAST(w.`+names[i]+` AS VARCHAR) AS `+names[i])
+		expression := `w.` + names[i]
+		if periods, ok := periodSQL[name]; ok {
+			expression = `CASE WHEN h.report_period IN (` + periods + `) THEN ` + expression + ` END`
+		}
+		values = append(values, `CAST(`+expression+` AS VARCHAR) AS `+names[i])
 	}
 	if err = copyQuery("fields.jsonl", `SELECT canonical_field AS field,provider_field,unit,period_basis,
  CAST(valid_from AS VARCHAR) AS valid_from,CAST(valid_to AS VARCHAR) AS valid_to
@@ -111,7 +145,7 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
 	records := `WITH headers AS MATERIALIZED (
  SELECT r.source_record_id,r.instrument_id,s.source_filing_id,r.report_period,s.announcement_time,s.announcement_source,r.provider_code,a.sha256 AS artifact_sha256,a.fetched_at AS source_observed_at
  FROM fundamental.source_record r JOIN meta.artifact a USING(artifact_id) LEFT JOIN fundamental.statement_snapshot s USING(source_record_id)
- WHERE r.instrument_id IN(SELECT instrument_id FROM _sqlite_universe) AND r.report_period BETWEEN ` + start + ` AND ` + finish + `
+ WHERE r.instrument_id IN(SELECT instrument_id FROM _sqlite_universe) AND r.report_period BETWEEN ` + start + ` AND ` + finish + periodFilter + `
  QUALIFY row_number() OVER(PARTITION BY r.instrument_id,r.report_period ORDER BY a.fetched_at DESC,a.artifact_id DESC,r.source_record_id DESC)=1
  )
  SELECT h.instrument_id,h.provider_code AS code,CAST(h.report_period AS VARCHAR) AS period,
@@ -122,7 +156,7 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
 	if err = copyQuery("records.jsonl", records); err != nil {
 		return err
 	}
-	if err = copyQuery("conflicts.jsonl", `SELECT provider_code AS code,CAST(report_period AS VARCHAR) AS period,reason,artifact_sha256 FROM fundamental.provider_conflicts_asof(current_timestamp) WHERE report_period BETWEEN `+start+` AND `+finish); err != nil {
+	if err = copyQuery("conflicts.jsonl", `SELECT provider_code AS code,CAST(report_period AS VARCHAR) AS period,reason,artifact_sha256 FROM fundamental.provider_conflicts_asof(current_timestamp) WHERE provider_code IN (SELECT right(unnest(symbols),6) FROM _sqlite_universe) AND report_period BETWEEN `+start+` AND `+finish+strings.ReplaceAll(periodFilter, "r.report_period", "report_period")+` ORDER BY provider_code,report_period,artifact_sha256,reason`); err != nil {
 		return err
 	}
 	if err = exportReviewedSourceZeros(ctx, tx, root, dir, fields, from, end, asof); err != nil {

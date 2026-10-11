@@ -128,14 +128,17 @@ def evaluate(database, recipe, tickers, output, web=None, selection_policy=None)
     os.environ['US_CN_HK_DB_PATH']=str(database)
     with database.open('rb') as stream: snapshot_hash=hashlib.file_digest(stream,'sha256').hexdigest()
     with sqlite3.connect(database.as_uri()+'?mode=ro',uri=True) as conn:
-        metadata=dict(conn.execute('SELECT key,value FROM metadata'))
+        metadata=dict(conn.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'"))
         from data_sources.native_references import load_wacc_references
         references = load_wacc_references(conn)
         conn.row_factory=sqlite3.Row
         from tools.review_native_policy import load_annual_evidence
         annual_evidence=load_annual_evidence(conn,tickers)
         capital_references=[dict(r) for r in conn.execute("SELECT v.*,r.available_at,r.sha256,r.source_locator AS release_locator FROM reference_value v JOIN reference_release r USING(release_id) WHERE metric='sales_to_invested_capital_ltm'")]
-        histories={t:[dict(r) for r in conn.execute("SELECT period,value,unit,period_type,statement_scope FROM standard_facts WHERE ticker=? AND field='revenue_cumulative' AND period LIKE '%12-31' ORDER BY period",(t,))] for t in tickers}
+        histories = {t:[dict(period=f"{int(metadata['report_period'][:4])-(0 if metadata['report_period'][5:7]=='12' else 1)-r['fy_offset']}-12-31",
+            value=str(Decimal(str(r['revenues']))*Decimal(1000000)),unit='CNY',period_type='FY',statement_scope='provider_default')
+            for r in conn.execute('SELECT fy_offset,revenues FROM financials_annual WHERE ticker=? ORDER BY fy_offset DESC',(t,))
+            if r['revenues'] is not None] for t in tickers}
     def save(name,value):
         (output/name).write_text(json.dumps(value,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
     from tools.publish_native_valuation import runtime_identity
@@ -348,9 +351,9 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
     if overrides_file and not tickers:
         raise ValueError('overrides require SQLite preparation')
     with sqlite3.connect(database.as_uri()+'?mode=ro', uri=True) as connection:
-        metadata = dict(connection.execute('SELECT key,value FROM metadata'))
+        metadata = dict(connection.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'"))
         snapshot_tickers = {r[0] for r in connection.execute('SELECT ticker FROM companies')}
-    if metadata.get('contract') != 'alphalake-sqlite-v11':
+    if metadata.get('contract') != 'alphalake-sqlite-v12':
         raise ValueError('current native SQLite contract required')
     with database.open('rb') as stream: snapshot_hash = hashlib.file_digest(stream, 'sha256').hexdigest()
     override_source = dict(path=str(overrides_file), sha256=hashlib.sha256(overrides_file.read_bytes()).hexdigest()) if overrides_file else None

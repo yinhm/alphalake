@@ -600,7 +600,7 @@ def delivery_database(tmp_path, monkeypatch):
     with sqlite3.connect(database) as connection:
         connection.executescript("CREATE TABLE companies(ticker TEXT); CREATE TABLE metadata(key TEXT,value TEXT);")
         connection.execute("INSERT INTO companies VALUES('SHSE:600519')")
-        connection.executemany('INSERT INTO metadata VALUES(?,?)', [('contract','alphalake-sqlite-v11'),('reference_snapshot_id','test')])
+        connection.executemany('INSERT INTO metadata VALUES(?,?)', [('contract','alphalake-sqlite-v12'),('reference_snapshot_id','test')])
     monkeypatch.setenv('US_CN_HK_DB_PATH',str(database))
     return database
 

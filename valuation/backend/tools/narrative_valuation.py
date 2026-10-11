@@ -162,9 +162,9 @@ def prepare(database, coverage, tickers, output):
     database, coverage = database.resolve(strict=True), coverage.resolve(strict=True)
     snapshot_hash = digest(database)
     with sqlite3.connect(database.as_uri()+'?mode=ro', uri=True) as conn:
-        metadata = dict(conn.execute('SELECT key,value FROM metadata'))
+        metadata = dict(conn.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'"))
         all_tickers = [r[0] for r in conn.execute('SELECT ticker FROM companies ORDER BY ticker')]
-    if metadata.get('contract') != 'alphalake-sqlite-v11':
+    if metadata.get('contract') != 'alphalake-sqlite-v12':
         raise ValueError('current native SQLite contract required')
     scopes = load_scope(coverage, snapshot_hash, metadata, all_tickers)
     if not tickers or len(set(tickers)) != len(tickers) or set(tickers)-set(scopes):
@@ -352,7 +352,7 @@ def run(database, stories_file, output, web=None):
     document = Document.model_validate(read_json(stories_file))
     before, source_hash = digest(database), digest(stories_file)
     with sqlite3.connect(database.as_uri()+'?mode=ro', uri=True) as conn:
-        metadata = dict(conn.execute('SELECT key,value FROM metadata'))
+        metadata = dict(conn.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'"))
         tickers = [r[0] for r in conn.execute('SELECT ticker FROM companies ORDER BY ticker')]
     if metadata != document.snapshot['metadata'] or before != document.snapshot['sqlite_sha256']:
         raise ValueError('story/source snapshot mismatch; prepare a new explicit revision')

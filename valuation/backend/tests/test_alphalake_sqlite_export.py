@@ -79,47 +79,49 @@ class SQLiteExportTest(unittest.TestCase):
         with sqlite3.connect(':memory:') as db:
             db.row_factory = sqlite3.Row
             self.assertEqual(exporter.export_snapshot(db, [company], fetch, period, asof), 1)
-            self.assertEqual(db.execute('SELECT count(*) FROM standard_facts').fetchone()[0], len(facts))
-            restored = exporter.target.load_standard_facts(db, ['SZSE:300866'])
-            self.assertEqual([{k:v for k,v in r.items() if k != 'ticker'} for r in restored],
-                             sorted(facts, key=lambda r:(r['period'],r['field'])))
-            self.assertLess(db.execute('SELECT count(*) FROM standard_records').fetchone()[0], len(facts))
-            self.assertNotIn('evidence_json', {r[1] for r in db.execute('PRAGMA table_info(standard_facts)')})
+            tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            self.assertFalse(tables & {'standard_facts','standard_records','export_cells','reviewed_source_zeros','export_universe'})
+            self.assertEqual(db.execute("SELECT count(*) FROM metadata WHERE key LIKE 'input_context:%'").fetchone()[0],1)
             self.assertEqual(db.execute("SELECT count(*) FROM sqlite_master WHERE name='valuation_inputs'").fetchone()[0], 0)
             data = exporter.target.fetch_company(db, 'SZSE:300866')
             self.assertEqual(len(data['financials_annual']), 10)
             self.assertEqual(len(data['financials_quarterly']), 8)
             self.assertEqual(data['financials_annual'][0]['revenues'], 10)
             self.assertIsNone(data['financials_annual'][0]['cross_holdings'])
-            self.assertEqual(db.execute("SELECT value FROM standard_facts WHERE field='other_noncurrent_financial_assets'").fetchone()[0], '-1')
-            self.assertEqual(db.execute("SELECT status FROM export_cells WHERE series='annual' AND period_offset=0 AND field='cross_holdings'").fetchone()[0], 'negative_investment_component_requires_review')
+            cells = exporter.target.cell_sources(data)
+            self.assertEqual(cells['annual',0,'cross_holdings']['status'],'negative_investment_component_requires_review')
+            self.assertNotIn('standard_financials',data)
             self.assertEqual(data['company']['effective_tax_rate'], 0.2)
             self.assertEqual([r['revenues'] for r in data['financials_quarterly'][:4]], [4, 0, 3, None])
             self.assertEqual(data['financials_quarterly'][0]['shares_outstanding'], 500)
             self.assertIsNone(data['financials_quarterly'][0]['ebit'])
             self.assertIsNone(data['financials_quarterly'][0]['earnings_before_tax'])
-            self.assertEqual(db.execute("SELECT status FROM export_cells WHERE field='earnings_before_tax' LIMIT 1").fetchone()[0], 'requires_separate_valuation_definition')
+            self.assertEqual(cells['annual',0,'earnings_before_tax']['status'],'requires_separate_valuation_definition')
             self.assertIsNone(data['financials_annual'][1]['revenues'])
-            evidence = json.loads(db.execute("SELECT evidence_json FROM export_cells WHERE series='quarterly' AND period_offset=0 AND field='revenues'").fetchone()[0])
-            self.assertEqual([r['coefficient'] for r in evidence], [1, -1])
-            self.assertTrue(all(set(r)=={'field','period','coefficient'} for r in evidence))
-            by_field = {(r['period'],r['field']):r for r in restored}
-            annual_evidence = exporter.target.resolve_cell_evidence(json.loads(json.dumps(evidence)), by_field)
-            ttm_evidence = exporter.target.resolve_cell_evidence(json.loads(json.dumps(evidence)), by_field, ttm=True)
-            self.assertEqual(annual_evidence[1]['value'], '0E-10')
-            self.assertEqual(ttm_evidence[1]['value'], '0.0000000000')
-            rejected = json.loads(db.execute("SELECT evidence_json FROM export_cells WHERE series='annual' AND period_offset=0 AND field='cross_holdings'").fetchone()[0])
-            restored_rejection = exporter.target.resolve_cell_evidence(rejected, {(r['period'],r['field']):r for r in restored})
-            self.assertEqual(restored_rejection[0]['value'], '-1')
-            record_id = db.execute("SELECT record_id FROM standard_facts WHERE field='revenue_cumulative' LIMIT 1").fetchone()[0]
-            original = db.execute('SELECT evidence_json FROM standard_records WHERE record_id=?',(record_id,)).fetchone()[0]
-            altered = json.loads(original); altered['code']='600519'
-            db.execute('UPDATE standard_records SET evidence_json=? WHERE record_id=?',(json.dumps(altered),record_id))
-            with self.assertRaisesRegex(ValueError, 'identity/period'):
-                exporter.target.fetch_company(db, 'SZSE:300866')
-            db.execute('DELETE FROM standard_records WHERE record_id=?',(record_id,))
-            with self.assertRaisesRegex(ValueError, 'Missing standard record'):
-                exporter.target.fetch_company(db, 'SZSE:300866')
+            context = data['input_context']
+            self.assertEqual(context['cumulative_windows']['current']['revenues'],4)
+            self.assertEqual(context['cumulative_windows']['prior']['revenues'],None)
+            self.assertLess(len(context['exceptions']),100)
+            self.assertTrue(all('value' not in part for r in context['exceptions'] for part in r.get('source_refs',[])))
+            original = db.execute('SELECT value FROM metadata WHERE key=?',('input_context:SZSE:300866',)).fetchone()[0]
+            altered = json.loads(original);altered['currency']='USD'
+            db.execute('UPDATE metadata SET value=? WHERE key=?',(json.dumps(altered),'input_context:SZSE:300866'))
+            with self.assertRaisesRegex(ValueError,'identity/unit/period'):
+                exporter.target.fetch_company(db,'SZSE:300866')
+            for key, value in [('market',None),('source_records',{'2026-06-30':-1}),
+                               ('exceptions',[{'series':'annual'}])]:
+                altered = json.loads(original); altered[key] = value
+                altered['input_sha256'] = exporter.target.input_signature(db,'SZSE:300866',altered)
+                db.execute('UPDATE metadata SET value=? WHERE key=?',(json.dumps(altered),'input_context:SZSE:300866'))
+                with self.assertRaises(ValueError):
+                    exporter.target.fetch_company(db,'SZSE:300866')
+            db.execute('UPDATE metadata SET value=? WHERE key=?',(original,'input_context:SZSE:300866'))
+            db.execute('UPDATE financials_annual SET revenues=revenues+1 WHERE fy_offset=0')
+            with self.assertRaisesRegex(ValueError,'signature mismatch'):
+                exporter.target.fetch_company(db,'SZSE:300866')
+            db.execute("DELETE FROM metadata WHERE key='input_context:SZSE:300866'")
+            with self.assertRaisesRegex(ValueError,'Missing input context'):
+                exporter.target.fetch_company(db,'SZSE:300866')
         indexed = {(r['period'], r['field']): r for r in facts}
         self.assertEqual(exporter.cell(indexed, {'2026-03-31'}, 7, period, 'revenues', False)[1], 'source_record_conflict')
         facts[0]['unit'] = 'USD'
@@ -138,11 +140,20 @@ class SQLiteExportTest(unittest.TestCase):
             facts[-1]['available_at'] = announcement
             with sqlite3.connect(':memory:') as db:
                 self.assertEqual(exporter.export_snapshot(db, [company], fetch, period, asof), 1)
-                self.assertEqual(db.execute('SELECT count(*) FROM standard_facts').fetchone()[0], len(facts))
+                self.assertEqual(db.execute('SELECT revenues FROM financials_annual WHERE fy_offset=0').fetchone()[0],10)
             facts[-1]['available_at'] = original
         with sqlite3.connect(':memory:') as db:
             self.assertEqual(exporter.export_snapshot(db, [dict(company, symbols=[])], fetch, period, asof), 0)
-            self.assertEqual(db.execute('SELECT status FROM export_universe').fetchone()[0], 'blocked_security_identity')
+            self.assertEqual(db.execute('SELECT count(*) FROM companies').fetchone()[0],0)
+
+    def test_exact_period_projection_keeps_display_and_comparison_without_old_quarters(self):
+        projection = exporter.input_periods(date(2026,6,30))
+        self.assertIn('2017-12-31',projection['revenue_cumulative'])
+        self.assertNotIn('2017-06-30',projection['revenue_cumulative'])
+        self.assertIn('2024-06-30',projection['revenue_cumulative'])
+        self.assertNotIn('2024-06-30',projection['profit_before_tax'])
+        self.assertEqual(projection['listed_h_shares'],['2026-06-30'])
+        self.assertEqual(projection['profit_before_tax'],['2025-12-31'])
 
     def test_failed_publication_and_no_overwrite(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -177,6 +188,25 @@ if __name__ == '__main__':
     unittest.main()
 
 
+def test_global_metadata_reads_do_not_scan_company_contexts():
+    with sqlite3.connect(':memory:') as conn:
+        exporter.target.init_schema(conn)
+        conn.executescript('CREATE TABLE financials_ttm(ticker TEXT); CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT);')
+        conn.executemany('INSERT INTO metadata VALUES(?,?)',[
+            ('contract',exporter.CONTRACT),('input_context_format','native-wide-context-v1'),
+            ('aaa_global','before'),('zzz_global','after')])
+        conn.executemany('INSERT INTO metadata VALUES(?,?)',[(f'input_context:SZSE:{i:06}','not_loaded') for i in range(5000)])
+        steps = 0
+        def bound_work():
+            nonlocal steps
+            steps += 1
+            return int(steps>20)
+        conn.set_progress_handler(bound_work,100)
+        metadata = exporter.target.snapshot_metadata(conn)
+        assert metadata == dict(contract=exporter.CONTRACT,input_context_format='native-wide-context-v1',
+                                aaa_global='before',zzz_global='after')
+
+
 def test_standard_bridge_components_and_market_proxy():
     period = date(2026,6,30)
     asof = datetime.fromisoformat('2026-09-26T00:00:00+00:00')
@@ -204,14 +234,14 @@ def test_standard_bridge_components_and_market_proxy():
         exporter.export_snapshot(db,[company],fetch,period,asof,years=1,quarters=1)
         row=db.execute('SELECT * FROM companies').fetchone()
         assert row['stock_price_listing']==10 and row['mv_equity_listing']==10
-        assert db.execute("SELECT status FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()[0]=='reported_share_price_proxy'
+        assert json.loads(db.execute("SELECT value FROM metadata WHERE key='input_context:SZSE:300866'").fetchone()[0])['market']['status']=='reported_share_price_proxy'
     facts.append(fact('listed_h_shares',1,'share'))
     with sqlite3.connect(':memory:') as db:
         exporter.export_snapshot(db,[company],fetch,period,asof,years=1,quarters=1)
         assert db.execute('SELECT mv_equity_listing FROM companies').fetchone()[0] == 10
-        assert db.execute("SELECT status FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()[0]=='a_share_total_share_proxy'
-        evidence = json.loads(db.execute("SELECT evidence_json FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()[0])
-        assert evidence['known_foreign_share_classes']['listed_h_shares']['value'] == '1'
+        assert json.loads(db.execute("SELECT value FROM metadata WHERE key='input_context:SZSE:300866'").fetchone()[0])['market']['status']=='a_share_total_share_proxy'
+        evidence = json.loads(db.execute("SELECT value FROM metadata WHERE key='input_context:SZSE:300866'").fetchone()[0])['market']
+        assert evidence['known_foreign_share_classes']==['listed_h_shares']
     original_quote = company['quote'].copy()
     # A genuine zero remains a source fact, but cannot provide market/per-share
     # inputs. One such security must not abort the complete export universe.
@@ -220,9 +250,9 @@ def test_standard_bridge_components_and_market_proxy():
     with sqlite3.connect(':memory:') as db:
         exporter.export_snapshot(db,[company],fetch,period,asof,years=1,quarters=1)
         assert db.execute('SELECT stock_price_listing,mv_equity_listing FROM companies').fetchone() == (10,None)
-        assert db.execute("SELECT value FROM standard_facts WHERE field='total_shares'").fetchone()[0] == '0'
-        status, evidence = db.execute("SELECT status,evidence_json FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()
-        assert status == 'nonpositive_reported_shares' and json.loads(evidence)['shares']['value'] == '0'
+        assert db.execute('SELECT shares_outstanding FROM financials_ttm').fetchone()[0]==0
+        evidence = json.loads(db.execute("SELECT value FROM metadata WHERE key='input_context:SZSE:300866'").fetchone()[0])['market']
+        assert evidence['status']=='nonpositive_reported_shares'
     shares['value'] = '1000000'
     for changes in ({'trade_date':'2026-06-30'},
                     {'acquisition_started_at':'2026-09-24T06:59:59+00:00'},
@@ -237,7 +267,7 @@ def test_standard_bridge_components_and_market_proxy():
     with sqlite3.connect(':memory:') as db:
         exporter.export_snapshot(db,[company],fetch,period,asof,years=1,quarters=1)
         assert db.execute('SELECT mv_equity_listing FROM companies').fetchone()[0] is None
-        assert db.execute("SELECT status FROM export_cells WHERE series='company' AND field='mv_equity_listing'").fetchone()[0] == 'missing_eligible_close'
+        assert json.loads(db.execute("SELECT value FROM metadata WHERE key='input_context:SZSE:300866'").fetchone()[0])['market']['status'] == 'missing_eligible_close'
 
 
 def test_long_term_subtotal_requires_valid_same_period_components():
@@ -320,14 +350,12 @@ def test_reviewed_source_zero_is_separate_revocable_evidence():
             db.row_factory = sqlite3.Row
             exporter.export_snapshot(db, [company], fetch, period, asof, years=1, quarters=1)
             assert db.execute('SELECT bv_debt FROM financials_annual').fetchone()[0] == want
-            assert db.execute("SELECT count(*) FROM standard_facts WHERE field='bonds_payable'").fetchone()[0] == 0
-            evidence = json.loads(db.execute("SELECT evidence_json FROM export_cells WHERE series='annual' AND field='bv_debt'").fetchone()[0])
+            data = exporter.target.fetch_company(db,'SZSE:300866')
+            evidence = exporter.target.cell_sources(data)['annual',0,'bv_debt']['evidence']
             if want is not None:
-                assert [p['import_sha256'] for p in evidence if p.get('kind') == 'reviewed_source_zero'] == ['b'*64]
-                assert db.execute('SELECT count(*) FROM reviewed_source_zeros').fetchone()[0] == 1
-                assert not any('review' in p for p in evidence)
-                data = exporter.target.fetch_company(db, 'SZSE:300866')
-                assert data is not None
+                assert [p['import_sha256'] for p in evidence if p.get('kind')=='reviewed_source_zero']==['b'*64]
+                assert not any('review' in p or 'value' in p for p in evidence)
+                assert db.execute("SELECT count(*) FROM sqlite_master WHERE name='reviewed_source_zeros'").fetchone()[0]==0
     run(4)
     payload['reviewed_zeros'] = []; run(None)
     payload['reviewed_zeros'] = [zero]

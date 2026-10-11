@@ -50,8 +50,8 @@ def gap_category(cell):
     return 'equity_bridge_or_other_adjustment'
 
 
-def audit(conn, readiness):
-    metadata = dict(conn.execute('SELECT key,value FROM metadata'))
+def audit(conn, readiness, scope):
+    metadata = dict(conn.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'"))
     if metadata.get('contract') != CONTRACT or readiness['contract_version'] != 'alphalake-readiness-v3':
         raise ValueError('current snapshot and readiness contracts required')
     if metadata['report_period'] != readiness['report_period'] or datetime.fromisoformat(metadata['information_as_of']) != datetime.fromisoformat(readiness['information_as_of']):
@@ -61,7 +61,13 @@ def audit(conn, readiness):
         raise ValueError('incomplete/duplicate readiness universe')
     reference = readiness['company_industry_reference']
     results, categories, scope_counts, admissions = [], {}, Counter(), Counter()
-    candidates = list(conn.execute('SELECT code,instrument_id,status FROM export_universe ORDER BY candidate'))
+    if (scope['contract']!='alphalake-export-scope-v1' or scope['source_database_sha256']!=metadata['source_database_sha256']
+            or scope['report_period']!=metadata['report_period'] or scope['information_as_of']!=metadata['information_as_of']):
+        raise ValueError('Frozen export scope differs from snapshot')
+    exported = {r['instrument_id']:r['ticker'].split(':')[-1] for r in db.input_contexts(conn)}
+    candidates = [dict(instrument_id=c['instrument_id'],code=exported.get(c['instrument_id']) or
+        ((c.get('symbols') or [''])[0][2:] or None),status='exported' if c['instrument_id'] in exported else 'blocked_security_identity')
+        for c in scope['companies']]
     ids = [c['instrument_id'] for c in candidates]
     if len(set(ids)) != len(ids) or any(i not in companies for i in ids):
         raise ValueError('snapshot universe differs from source identities')
@@ -132,7 +138,7 @@ def main():
     with sqlite3.connect(args.database.resolve().as_uri()+'?mode=ro', uri=True) as conn:
         conn.row_factory = sqlite3.Row
         conn.execute('PRAGMA cache_size=-4096')
-        metadata = dict(conn.execute('SELECT key,value FROM metadata'))
+        metadata = dict(conn.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'"))
         if metadata.get('source_database_sha256') != source_hash:
             raise ValueError('SQLite must be exported from this unchanged source database')
         def query(command, extra):
@@ -141,7 +147,10 @@ def main():
                                 '--as-of', metadata['information_as_of'], *extra], stdout=stream, check=True, timeout=600)
                 stream.seek(0)
                 return json.load(stream)
-        report = audit(conn, query('valuation-readiness', ['--period',metadata['report_period']]))
+        scope_path = args.source_database.parent/metadata['scope_receipt']
+        if digest(scope_path)!=metadata['scope_sha256']:
+            raise ValueError('Frozen scope receipt hash mismatch')
+        report = audit(conn, query('valuation-readiness', ['--period',metadata['report_period']]),json.loads(scope_path.read_text()))
         report['reference_coverage'] = reference_coverage(query('export-wacc-references', ['--latest']))
     if digest(args.source_database) != source_hash or digest(args.database) != snapshot_hash:
         raise ValueError('source changed during audit')
