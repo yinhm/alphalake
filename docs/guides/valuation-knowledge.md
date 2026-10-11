@@ -12,6 +12,8 @@
 - `/knowledge/initial-valuation-assumptions`：有来源的增长、利润率及资本初值、稳态编辑、保留条件与覆盖行为；不是预测认证。
 - `/knowledge/valuation-strategy-selection`：按经营阶段、经济特征与存续条件选择策略，连接周期、年轻、成熟、衰退、困境、研发、扩产、有限寿命、监管、多业务及金融边界；附策略自测。
 - `/knowledge/narrative-to-numbers`：从经济特征、经营故事到数字和现金，解释达摩达兰的五步、证据与反例；配套 `/knowledge/practice-narrative-to-numbers` 六题自测。可从首页的经济策略、学习路线和预测专题进入，也可搜索 Stories to Numbers。
+- `/knowledge/foundations-finance`：达摩达兰免费金融基础课程的中文自学入口，覆盖全部12讲，配官方YouTube、原版幻灯片、测验和答案链接。可从首页专题、学习路线或搜索进入。
+- `/knowledge/foundations-finance-01`至`-12`：逐讲中文讲义；加`?view=slides`进入HTML幻灯片。课程讲义可切换连续阅读与翻页，上一讲／下一讲保留当前模式，转到普通概念时回到连续阅读。
 - `/knowledge/<term_id>`：可分享的独立词条页，保留检索与正文阅读布局；“知识库首页”返回学习入口，不在每篇正文上方重复展示整套导航。
 - 表格标签旁的帮助按钮：鼠标设备默认隐藏，悬停对应术语或键盘聚焦后显示并打开词条；预留位置避免悬停时文字移动。无悬停能力的触屏设备保持可见，可直接点击。
 - 开启“划词解释”后，选取阅读区词汇显示简释，再展开完整解释。已标注标签支持选中部分词汇；普通文字使用中英文标题及别名匹配，有歧义时由用户选择。
@@ -95,11 +97,25 @@ PYTHONPATH=valuation/backend python -m tools.knowledge_db validate
 
 目录识别行首的二级标题 `## 标题`，忽略围栏代码内的同形文字；至少三节时显示目录。答案使用独立二级标题 `## 答案与解析`，由原生 `details/summary` 折叠，不在正文开启任意HTML。课程导航复用 `kb_relation` 的“上一课”“下一课”“所属课程”，目标必须是已发布词条；不另建课程数据库或账户系统。
 
+课程讲义使用`kind=课程讲义`；HTML模式将同一正文的二级章节逐页展示，不另存一份幻灯片正文或执行HTML。提供上一页／下一页、章节选择、页数及局部左右方向键、Home／End；输入框及选择框保留浏览器键盘操作。切换讲义或内容版本从第一页开始。窄屏使用相同页面，隐藏检索栏以留出阅读空间；公式继续使用既有安全Markdown/KaTeX渲染。普通词条即使带同样查询参数，也不会成为课程幻灯片。
+
 跨章节案例使用同一虚构公司并独立复算：利润和资本同范围，投资与收入时序匹配，稳定增长有再投资支持，经营价值到每股值的单位与索取权闭合。当前手算入口为 `/knowledge/lesson-full-dcf`。案例参数不是公司事实、原生默认或作者统一规定；介绍相对估值、金融或短历史方法不授权新增业务算法。
 
 新增三个案例分别见 `/knowledge/case-manufacturer`、`/knowledge/case-rd-business` 和 `/knowledge/case-mature-business`。研发例明确当期税前扣除及即时利用条件，补研究费用与摊销差额的税收调整，逐年维护四年队列；收入停止增长后继续展开四年队列替换，再进入稳定终值。税收优惠和亏损企业不能无条件照搬；教材方法与原生引擎实际分支分开说明。案例独立复算只作教学校验，不提供业务估值接口。
 
 更新正文核对涉及的方法依据与当前实际分支，再建立新版本候选，检查链接、引用、全部绑定和算例，最后原子替换并重开接口/网页。使用过的发布ID不能承载不同内容，候选修订同样换ID。保留原编辑稿、出处哈希和失败记录；临时候选与回滚库在复验后删除并留摘要收据。内容字数、章节数、自动结构检查或重复提取不能代替经济语义审核；合法纠错应解释，不因旧算例已发布就继续保留错误。教学重写验收记录见 `workspace/derived/knowledge-teaching/`，专题及阅读功能验收见 `workspace/derived/knowledge-learning/`。内容仍由workspace内编辑稿重建，代码仓库不含完整正文，裸克隆不会自动拥有此本地内容发布。
+
+## 达摩达兰金融基础课程
+
+来源为[官方免费课程](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcastfoundationsonline.htm)，[开放课程博客](https://aswathdamodaran.blogspot.com/2024/12/for-fun-of-it-open-house-for-my-spring.html)仅用于核对Online (free)入口。课程依次讨论金融概览、企业结构、现金流、风险、风险衡量、货币时间价值、债券、股权、期权、通胀、利率和汇率，不把博客年份当所有资料的版本年份。
+
+中文讲义、HTML幻灯片、可核算算例及36道中文自测均为原创教学配套，覆盖原课程主题并补充入门解释，不称原版逐字稿或PDF逐页翻译。保留全部12个官方视频、12份原版幻灯片和11组英文测验／答案；第1讲原目录没有独立英文测验。英文资源与中文原创题分别标注，不冒称题目或数字来自原作者；所有教学参数不用于改变模型或公司输入。
+
+编辑来源仍是`workspace/knowledge/content.json`，另存中文课程写作稿于`workspace/knowledge/courses/foundations-finance.md`；后者便于人工修订，发布前须把修改更新到清单并沿既有构建器验收。原目录HTML与34份PDF平铺归档于`workspace/damodaran/`，文件名为`foundations-online-course.html`及`foundations-session-NN-slides/test/solution.pdf`。逐文件收据在`workspace/derived/knowledge-foundations/sources.json`，记录官方目录原链接、实际官方下载URL、哈希和取得状态，按现有文件复用，不重复建按日期的课程目录。
+
+本轮`www.stern.nyu.edu`下载返回403，同路径`pages.stern.nyu.edu`成功；两者都属NYU官方来源，不将下载域名变更说成课程内容更新。未知出版日或未记录的首次取得留空，核验日不代替出版日。资料包含历史图表，不能直接当作当前市场参数。来源哈希和PDF文本提取只能检查文件完整性与主题，不等于逐句语义审计。视频使用外部链接，不下载、内嵌或声称已核验全部播放。
+
+课程关系、导航、检索、来源和发布沿用现有七表schema及只读API，不引入课程账户、学习进度或第二套金融计算。版本、金额复算、真实页面及缓存验收见[本轮记录](../history/kb-finance-foundations-20261011.md)。
 
 ## 默认参数与预测研究内容
 
