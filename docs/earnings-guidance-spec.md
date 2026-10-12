@@ -195,7 +195,7 @@
 
 ## 8. 现有消费接口与后续边界
 
-正式财务继续沿[估值数据契约](valuation/data-contract.md)和`alphalake-sqlite-v11`运行。第一版导出是独立可重建证据，不需要新增估值SQLite、修改现有SQLite版本或另建网页。
+正式财务继续沿[估值数据契约](valuation/data-contract.md)及[当前SQLite消费契约](valuation/sqlite-input-snapshot-spec.md)运行。预告证据独立于财务消费快照，不需要新增估值SQLite、修改现有SQLite版本或另建网页。
 
 尚未交付独立内容签名及完整归档哈希清单导出；现有只读JSON可用于人工研究，但不冒称可独立移动的版本化证据包。
 
