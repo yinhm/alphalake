@@ -15,6 +15,8 @@ const terms: KnowledgeTermSummary[] = [
   ].map(([term_id, title_zh]) => ({ term_id, title_zh, title_en: '', kind: '测试课程', category: '合成样本', summary: '仅用于验证已发布内容的首页导航。', aliases: [] })),
   { term_id: 'foundations-finance', title_zh: '测试金融基础课程', title_en: '', kind: '课程目录', category: '合成样本', summary: '合成课程入口。', aliases: [] },
   { term_id: 'accounting-course', title_zh: '测试会计课程', title_en: '', kind: '课程目录', category: '合成样本', summary: '合成会计课程入口。', aliases: [] },
+  { term_id: 'statistics-course', title_zh: '测试统计课程', title_en: '', kind: '课程目录', category: '合成样本', summary: '合成统计课程入口。', aliases: [] },
+  { term_id: 'valuation-course', title_zh: '测试估值课程', title_en: '', kind: '课程目录', category: '合成样本', summary: '合成估值课程入口。', aliases: [] },
   ...[1, 2].map(i => ({ term_id: `foundations-finance-0${i}`, title_zh: `测试金融基础第${i}讲`, title_en: '', kind: '课程讲义', category: '合成样本', summary: '合成课程讲义。', aliases: [] })),
 ];
 const API_ROUTE = /^http:\/\/127\.0\.0\.1:4173\/api\//;
@@ -231,6 +233,12 @@ test('knowledge home offers published learning, category and topic links while k
   await home.getByRole('region', { name: '专题与实践' }).getByRole('link', { name: '测试会计课程', exact: true }).click();
   await expect(page).toHaveURL(/\/knowledge\/accounting-course$/);
   await expect(page.getByRole('heading', { name: '测试会计课程', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: '← 知识库首页', exact: true }).click();
+  await home.getByRole('region', { name: '专题与实践' }).getByRole('link', { name: '测试统计课程', exact: true }).click();
+  await expect(page).toHaveURL(/\/knowledge\/statistics-course$/);
+  await page.getByRole('link', { name: '← 知识库首页', exact: true }).click();
+  await home.getByRole('region', { name: '专题与实践' }).getByRole('link', { name: '测试估值课程', exact: true }).click();
+  await expect(page).toHaveURL(/\/knowledge\/valuation-course$/);
   await page.getByRole('link', { name: '← 知识库首页', exact: true }).click();
   const lesson = learning.getByRole('link', { name: '测试第一课' });
   await lesson.focus();
