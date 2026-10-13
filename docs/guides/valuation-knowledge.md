@@ -15,6 +15,8 @@
 - `/knowledge/foundations-finance`：达摩达兰免费金融基础课程的中文自学入口，覆盖全部12讲，配官方YouTube、原版幻灯片、测验和答案链接。可从首页专题、学习路线或搜索进入。
 - `/knowledge/foundations-finance-01`至`-12`：逐讲中文讲义；加`?view=slides`进入HTML幻灯片。课程讲义可切换连续阅读与翻页，上一讲／下一讲保留当前模式，转到普通概念时回到连续阅读。
 - `/knowledge/accounting-course`：达摩达兰免费会计课，按原目录先学报表、调整和比率，再读各自的公司实例。11讲、142页原课译文及10组50道官方测验／答案；讲义ID为`accounting-01`、`-02`、`-02a`，依此至`-06a`，同样支持`?view=slides`。
+- `/knowledge/statistics-course`：达摩达兰统计课，13讲加预览共189页、13组65题；讲义从`statistics-01`至`-06b`及`statistics-preview`，按原课含A／B应用讲。
+- `/knowledge/valuation-course`：达摩达兰估值课，25讲295页、25组129道有效题；讲义ID为`valuation-01`至`-25`，附13个实务工具专题原链接。两门沿用HTML翻页、连续阅读及折叠答案。
 - `/knowledge/<term_id>`：可分享的独立词条页，保留检索与正文阅读布局；“知识库首页”返回学习入口，不在每篇正文上方重复展示整套导航。
 - 表格标签旁的帮助按钮：鼠标设备默认隐藏，悬停对应术语或键盘聚焦后显示并打开词条；预留位置避免悬停时文字移动。无悬停能力的触屏设备保持可见，可直接点击。
 - 开启“划词解释”后，选取阅读区词汇显示简释，再展开完整解释。已标注标签支持选中部分词汇；普通文字使用中英文标题及别名匹配，有歧义时由用户选择。
@@ -132,6 +134,18 @@ PYTHONPATH=valuation/backend python -m tools.knowledge_db validate
 编辑来源仍为`workspace/knowledge/content.json`，翻译稿在`workspace/knowledge/courses/accounting-source-translation.md`和`accounting-tests-translation.md`。原目录及31份PDF平铺放`workspace/damodaran/accounting-online-course.html`、`accounting-session-<讲次>-slides/test/solution.pdf`，讲次使用小写如`2a`。来源、逐页对应、图像转换、算术差异和发布收据在`workspace/derived/knowledge-accounting/`；图片复用`workspace/knowledge/assets/`的内容哈希路径，不复制源PDF到KB或派生目录。
 
 课程复用现有七表、导航、检索、折叠答案和只读API，首页只增加已发布会计课程入口；现有词条及页面绑定保持。正文和资料不随代码提交，裸克隆须单独准备内容。内容覆盖、独立算术、实际桌面／窄屏和发布验证见[会计翻译验收](../history/kb-accounting-translation-20261011.md)。
+
+## 达摩达兰统计与估值课程
+
+[Statistics官方目录](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcaststatistics.htm)按1、2、2A、3、3A、4、4A、5、5A、5B、6、6A、6B提供13讲，另有6页预览；共189页、65题。覆盖抽样、描述统计、分布、回归、概率、决策树及模拟；金融应用与原课历史数据保留。目录中的5处空锚点不作为资料，其中部分误指其他讲答案；只采用可见的Slides／Post-class test／solution链接，保留原HTML及失败收据。附原作者5项工具说明和35条阅读链接，第三方阅读只翻译标题，不复制正文。
+
+[Valuation官方目录](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcastvalonline.htm)包含25讲295页和25份合并题卷／答案，129道有题干问题。目录第20讲起与原封面的19A、20至24编号不一致，导航依官网25讲序，原封面编号在译文注明；末卷空“6.”不编造题干、不计有效题。附13个实务视频及配套Excel／报告／讲义外链，不重新实现其模型或下载视频。资料版本按文件原例，不把课程入口或取得年份当市场参考日期。
+
+两门按现有逐页翻译契约发布：一页PDF一页HTML，包含封面，讲授文字、公式与图表标签用中文；必要原图保留英文像素。原统计标准误、p值软件异常、R平方条件，及估值租赁／研发、现金桥接、答案编号和算式错误分别保留原值并加译注，不能静默修正后称原作者版本。历史税制、私人／金融／期权等教学不授权扩大本项目模型范围，也不改当前默认参数。第三方漫画、新闻和论文正文不另复制；相关页保留原PDF定位。
+
+编辑稿仍为`workspace/knowledge/content.json`；四份新译稿为`workspace/knowledge/courses/statistics-source-translation.md`、`statistics-tests-translation.md`、`valuation-source-translation.md`、`valuation-tests-translation.md`。两个官方HTML及90份PDF平铺放`workspace/damodaran/`，使用`statistics-<讲次>-slides/test/solution.pdf`与`valuation-NN-slides/test-solution.pdf`；按哈希复用，不在派生目录复制PDF。新图复用既有`assets/<sha256>.png`及只读API，不新增表。
+
+来源和失败收据分别在`workspace/derived/knowledge-statistics/`、`workspace/derived/knowledge-valuation/`。逐页对应、结构、原例算术、篡改拒绝、真实API和桌面／窄屏验收见[课程交付](../history/kb-statistics-valuation-20261013.md)。动态正文、发布库及图片不随Git，部署仍需携带内容；临时转换图、候选及回滚副本复验后清理。既有词条正文与全部页面绑定保持，代码只为首页补两门课程卡片及导航回归。
 
 ## 默认参数与预测研究内容
 

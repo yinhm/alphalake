@@ -6,6 +6,8 @@
 
 ## 最近主线证据
 
+- [Statistics与Valuation原课中文讲义、测验及KB发布](kb-statistics-valuation-20261013.md)
+
 - [业绩预告宽表、真实分页修复及主库入库](earnings-guidance-ingest-20261009.md)
 
 - [沪深300经营材料、故事修订及条件估值](csi300-company-narratives-20261008.md)
