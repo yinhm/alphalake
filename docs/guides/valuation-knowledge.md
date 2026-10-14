@@ -16,7 +16,7 @@
 - `/knowledge/foundations-finance-01`至`-12`：逐讲中文讲义；加`?view=slides`进入HTML幻灯片。课程讲义可切换连续阅读与翻页，上一讲／下一讲保留当前模式，转到普通概念时回到连续阅读。
 - `/knowledge/accounting-course`：达摩达兰免费会计课，按原目录先学报表、调整和比率，再读各自的公司实例。11讲、142页原课译文及10组50道官方测验／答案；讲义ID为`accounting-01`、`-02`、`-02a`，依此至`-06a`，同样支持`?view=slides`。
 - `/knowledge/statistics-course`：达摩达兰统计课，13讲加预览共189页、13组65题；讲义从`statistics-01`至`-06b`及`statistics-preview`，按原课含A／B应用讲。
-- `/knowledge/valuation-course`：达摩达兰估值课，25讲295页、25组129道有效题；讲义ID为`valuation-01`至`-25`，附13个实务工具专题原链接。两门沿用HTML翻页、连续阅读及折叠答案。
+- `/knowledge/valuation-course`：达摩达兰估值课，25讲295页、25组129道有效题；讲义ID为`valuation-01`至`-25`，附13个实务工具专题原链接，其中5份45页讲义和1篇作者文章另有完整中文。两门沿用HTML翻页、连续阅读及折叠答案。
 - `/knowledge/investment-philosophies-course`：指定38讲版投资哲学课程，503页中文逐页讲义及38组189题官方测验／答案；讲义ID为`investment-philosophies-01`至`-38`，测验在对应ID后加`-test`。保留官方英文视频及原PDF。
 - `/knowledge/<term_id>`：可分享的独立词条页，保留检索与正文阅读布局；“知识库首页”返回学习入口，不在每篇正文上方重复展示整套导航。
 - 表格标签旁的帮助按钮：鼠标设备默认隐藏，悬停对应术语或键盘聚焦后显示并打开词条；预留位置避免悬停时文字移动。无悬停能力的触屏设备保持可见，可直接点击。
@@ -138,9 +138,9 @@ PYTHONPATH=valuation/backend python -m tools.knowledge_db validate
 
 ## 达摩达兰统计与估值课程
 
-[Statistics官方目录](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcaststatistics.htm)按1、2、2A、3、3A、4、4A、5、5A、5B、6、6A、6B提供13讲，另有6页预览；共189页、65题。覆盖抽样、描述统计、分布、回归、概率、决策树及模拟；金融应用与原课历史数据保留。目录中的5处空锚点不作为资料，其中部分误指其他讲答案；只采用可见的Slides／Post-class test／solution链接，保留原HTML及失败收据。附原作者5项工具说明和35条阅读链接，第三方阅读只翻译标题，不复制正文。
+[Statistics官方目录](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcaststatistics.htm)按1、2、2A、3、3A、4、4A、5、5A、5B、6、6A、6B提供13讲，另有6页预览；共189页、65题。覆盖抽样、描述统计、分布、回归、概率、决策树及模拟；金融应用与原课历史数据保留。目录中的5处空锚点不作为资料，其中部分误指其他讲答案；只采用可见的Slides／Post-class test／solution链接，保留原HTML及失败收据。附原作者5项工具说明和35条阅读链接：作者文章《DCF误解3.2》提供完整中文，另外34条第三方阅读保留标题、作者及原链接。
 
-[Valuation官方目录](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcastvalonline.htm)包含25讲295页和25份合并题卷／答案，129道有题干问题。目录第20讲起与原封面的19A、20至24编号不一致，导航依官网25讲序，原封面编号在译文注明；末卷空“6.”不编造题干、不计有效题。附13个实务视频及配套Excel／报告／讲义外链，不重新实现其模型或下载视频。资料版本按文件原例，不把课程入口或取得年份当市场参考日期。
+[Valuation官方目录](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcastvalonline.htm)包含25讲295页和25份合并题卷／答案，129道有题干问题。目录第20讲起与原封面的19A、20至24编号不一致，导航依官网25讲序，原封面编号在译文注明；末卷空“6.”不编造题干、不计有效题。附13个实务视频及配套Excel／报告／讲义外链；其中读10-K、隐含ERP、价值定义、倍数回归和专利等待期权五份作者讲义共45页／张，已逐页译为中文，另附《价值的纠缠》完整中文文章。原工作簿、公司申报文件及第三方参考保留原链接，不重新实现其模型或下载视频。资料版本按文件原例，不把课程入口或取得年份当市场参考日期。
 
 两门按现有逐页翻译契约发布：一页PDF一页HTML，包含封面，讲授文字、公式与图表标签用中文；必要原图保留英文像素。原统计标准误、p值软件异常、R平方条件，及估值租赁／研发、现金桥接、答案编号和算式错误分别保留原值并加译注，不能静默修正后称原作者版本。历史税制、私人／金融／期权等教学不授权扩大本项目模型范围，也不改当前默认参数。第三方漫画、新闻和论文正文不另复制；相关页保留原PDF定位。
 
@@ -159,6 +159,16 @@ PYTHONPATH=valuation/backend python -m tools.knowledge_db validate
 76份PDF及目录HTML平铺归档于`workspace/damodaran/`，文件名为`investment-philosophies-NN-slides/test.pdf`；复用本地原件，不重复下载或复制到KB。中文稿为`workspace/knowledge/courses/investment-philosophies-source-translation.md`与`investment-philosophies-tests-translation.md`，构建清单仍为`workspace/knowledge/content.json`。图片沿用内容哈希assets及只读API，不新增表或产品依赖。
 
 来源、页数、原文问题、独立算术、候选与发布收据放`workspace/derived/knowledge-investment-philosophies/`；见[逐页翻译交付](../history/kb-investment-philosophies-translation-20261014.md)。此前[提要交付](../history/kb-investment-philosophies-20261014.md)只作历史记录；旧编辑稿压缩保留，提要退出当前课程。既有680篇正文及34项估值页面绑定不变，历史实证不作为当前A股事实，课程不授权新增业务估值能力。
+
+## 课程完整性复核与补充译文
+
+2026-10-14按用户要求全面核对上述五门课程：主课100份讲义1,277页、97组486题均有中文；补齐5份45页估值实务讲义、2篇作者文章，并修订11讲中的13页。中文正文保留原材料的历史公司、数值及观点；原文错误或展示精度不足时，原值与独立核算分别说明。图像保留原像素，同页中文译出标签、坐标和必要表格，不把图片数量当翻译完整性证明。
+
+新增讲义ID为`valuation-practice-reading-10k`、`valuation-practice-implied-erp`、`valuation-practice-value-definitions`、`valuation-practice-multiple-regression`、`valuation-practice-patent-option`；仍支持`?view=slides`。文章ID为`statistics-uncertainty-reading`及`valuation-value-definitions-reading`，均从原课程目录进入，不另建课程或阅读模块。
+
+补充译稿为`workspace/knowledge/courses/valuation-practice-source-translation.md`及`course-readings-source-translation.md`，使用实际发布的本地图片地址；既有受修订主课译稿同时更新。新增原件平铺于`workspace/damodaran/`，文件名前缀与词条ID一致；ERP原件为PPT，按实际7张含隐藏页导出核对，不将失效的文档页数元数据当实际幻灯片数。来源、原文差异、结构、公式、发布及浏览器收据位于`workspace/derived/knowledge-course-audit/run-kj1dr1uo/`，见[完整性验收](../history/kb-course-completeness-20261014.md)。
+
+本次翻译范围是原课讲义、测验／答案及作者配套讲义／文章；视频保持官方原链接，第三方书籍、论文、软件网站、公司申报文件和原生工作簿按参考资料提供，没有递归复制全部外链正文或制作视频字幕。正文、原件及发布库仍只在workspace，代码提交不包含动态译文；跨机器部署须携带知识内容和实际引用图片。
 
 ## 默认参数与预测研究内容
 
