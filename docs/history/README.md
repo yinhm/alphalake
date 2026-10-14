@@ -36,6 +36,8 @@
 - [原生系统交付与恢复验收](system-delivery-20260927.md)
 - [财务存储切换](financial-storage-cutover-20260925.md)
 
+- [10月14日日常刷新及昨日预告观察](data-maintenance-20261014.md)
+
 ## 按文件名查阅
 
 - [全 A 股条件估值自动化验收（2026-09-10）](a-share-automation-acceptance-20260910.md)
