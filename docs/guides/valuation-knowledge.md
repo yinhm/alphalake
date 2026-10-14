@@ -17,7 +17,7 @@
 - `/knowledge/accounting-course`：达摩达兰免费会计课，按原目录先学报表、调整和比率，再读各自的公司实例。11讲、142页原课译文及10组50道官方测验／答案；讲义ID为`accounting-01`、`-02`、`-02a`，依此至`-06a`，同样支持`?view=slides`。
 - `/knowledge/statistics-course`：达摩达兰统计课，13讲加预览共189页、13组65题；讲义从`statistics-01`至`-06b`及`statistics-preview`，按原课含A／B应用讲。
 - `/knowledge/valuation-course`：达摩达兰估值课，25讲295页、25组129道有效题；讲义ID为`valuation-01`至`-25`，附13个实务工具专题原链接。两门沿用HTML翻页、连续阅读及折叠答案。
-- `/knowledge/investment-philosophies-course`：指定38讲版投资哲学课程，提供逐讲中文学习提要、官方视频、幻灯片及英文测验／答案；讲义ID为`investment-philosophies-01`至`-38`。提要支持HTML翻页，未将503页原幻灯片译为逐页中文版。
+- `/knowledge/investment-philosophies-course`：指定38讲版投资哲学课程，503页中文逐页讲义及38组189题官方测验／答案；讲义ID为`investment-philosophies-01`至`-38`，测验在对应ID后加`-test`。保留官方英文视频及原PDF。
 - `/knowledge/<term_id>`：可分享的独立词条页，保留检索与正文阅读布局；“知识库首页”返回学习入口，不在每篇正文上方重复展示整套导航。
 - 表格标签旁的帮助按钮：鼠标设备默认隐藏，悬停对应术语或键盘聚焦后显示并打开词条；预留位置避免悬停时文字移动。无悬停能力的触屏设备保持可见，可直接点击。
 - 开启“划词解释”后，选取阅读区词汇显示简释，再展开完整解释。已标注标签支持选中部分词汇；普通文字使用中英文标题及别名匹配，有歧义时由用户选择。
@@ -152,9 +152,13 @@ PYTHONPATH=valuation/backend python -m tools.knowledge_db validate
 
 入口为[官方38讲目录](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/webcastinvphil.htm)，不自动混入官网另设的新版本。按原讲次组织风险、报表、估值和交易成本基础，以及技术分析、价值／成长投资、信息交易、三类套利、市场择时和被动投资；书章编号与讲次分别保存。
 
-本轮新增目录及38篇中文学习提要，保留全部官方视频、38份幻灯片和38份含解释的英文测验链接。提要与前四门的逐页译文区分：概括概念、适用条件和误区，不复制完整原课文字、图表或试题，不自编替代测验；HTML的114个提要章节不称503页原幻灯片译文。历史实证、税制和制度背景不能当成当前A股结论；课程不授权新增择时、套利、私人企业或指数估值能力。
+按用户确认的翻译授权，当前为完整原课中文译本：38讲503页幻灯片，一页PDF对应一页HTML，包含封面；38组官方测验共189道主问题与答案，单独提供中文练习词条。沿用原目录、原讲次和既有讲义ID，替换此前提要；不另编教学配套，也不把测验PDF重复的题干再计一次。
 
-76份PDF及目录HTML平铺归档于`workspace/damodaran/`，文件名为`investment-philosophies-NN-slides/test.pdf`，复用本地原件，不在派生目录复制。中文稿为`workspace/knowledge/courses/investment-philosophies-notes.md`，权威构建清单仍为`workspace/knowledge/content.json`。来源、哈希、页数、候选及发布收据放`workspace/derived/knowledge-investment-philosophies/`；计数和验收见[交付记录](../history/kb-investment-philosophies-20261014.md)。既有正文与页面绑定不变，关系连接现有课程，首页只补一个已发布课程入口。
+保持原历史年份、币种、公式、数值、观点及选项顺序。155张原课页图像配同页中文坐标、图例、列名与说明，图内英文像素保留；第三方终端／行业轮动截图只保留原页链接及标签译文。原件被页脚遮住的文字明确标识，不补造。原公式、题干／答案版本及标号冲突单列译注，独立复算与原打印数分别呈现，不替原作者静默修订。视频仍是官方英文外链，未下载、转录或制作中文字幕。
+
+76份PDF及目录HTML平铺归档于`workspace/damodaran/`，文件名为`investment-philosophies-NN-slides/test.pdf`；复用本地原件，不重复下载或复制到KB。中文稿为`workspace/knowledge/courses/investment-philosophies-source-translation.md`与`investment-philosophies-tests-translation.md`，构建清单仍为`workspace/knowledge/content.json`。图片沿用内容哈希assets及只读API，不新增表或产品依赖。
+
+来源、页数、原文问题、独立算术、候选与发布收据放`workspace/derived/knowledge-investment-philosophies/`；见[逐页翻译交付](../history/kb-investment-philosophies-translation-20261014.md)。此前[提要交付](../history/kb-investment-philosophies-20261014.md)只作历史记录；旧编辑稿压缩保留，提要退出当前课程。既有680篇正文及34项估值页面绑定不变，历史实证不作为当前A股事实，课程不授权新增业务估值能力。
 
 ## 默认参数与预测研究内容
 

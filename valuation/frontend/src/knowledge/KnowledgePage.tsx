@@ -19,7 +19,7 @@ const topics = [
   { id: 'accounting-course', description: '达摩达兰免费会计课：三张报表、会计调整与财务比率，含原课实例和测验。' },
   { id: 'statistics-course', description: '达摩达兰免费统计课：抽样、分布、回归与概率工具，含金融应用和原课测验。' },
   { id: 'valuation-course', description: '达摩达兰免费估值课：现金流折现、相对估值、实物期权与特殊情景，含原课测验和实务工具。' },
-  { id: 'investment-philosophies-course', description: '达摩达兰免费投资哲学课：38讲中文学习提要，连接价值、成长、信息交易、套利、择时与被动投资的原课材料。' },
+  { id: 'investment-philosophies-course', description: '达摩达兰免费投资哲学课：38讲503页中文译文，配官方测验与答案，涵盖价值、成长、信息交易、套利、择时与被动投资。' },
   { id: 'learning-practice', description: '通过概念对照、制造与研发案例、自测，把零散词条连接起来。' },
   { id: 'valuation-strategy-selection', description: '周期、亏损、扩产与有限寿命等经济特征，为什么需要不同处理？' },
   { id: 'forecast-assumptions', description: '学习怎样为增长、利润率和资本效率寻找依据、检验候选。' },
