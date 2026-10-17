@@ -126,6 +126,8 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 PDF引用按[归档规则](../../docs/guides/workspace-layout.md#pdf归档与引用)：巨潮原文使用`cninfo/objects/<摘要前2位>/<SHA-256>.pdf`，下载前持逐URL锁复用共享收据或已知哈希对象；不按公司、输出目录或新run ID重新下载／复制。故事`evidence.file`及`manifest.pdf_references`记录来源相对路径、哈希和定位，报告链接原文。冻结v1按原提交复验，已迁移的旧采集路径仅在隔离workspace按迁移收据恢复，不向当前工具加入兼容路径。
 
+报告采集v3附`budget_review_index`候选物理页及后一页，先按`docs/valuation/narrative-valuation-plan.md`的“从报告证据到资本预算”核对承诺、计划与付款时段。索引不是金额或计划认证；已签约／仅批准、建设／对外投资、合并／母公司分别审阅。项目余额或承诺不直接作年度总净投入；自然年计划不自动等于下一TTM年；正承诺与负净投入并存仍需分量桥，不自动判错或加扣现金流。按原种类登记事实、公司计划和研究判断，不自动更改默认。
+
 用自身`verify RUN_DIR`核验归档、重新编译和重放；修订写`previous_run_id`并增加改动故事的`revision`，运行到新目录后`compare BEFORE_DIR AFTER_DIR`。收据写在运行目录外，不把故事run ID传给旧历史查询／比较工具。新数据或合法口径变更重新准备基线、保留旧证据并解释输入差异；经济自动选择、短历史估计和新引擎分支仍延期。
 
 已明确逐证券历史锚点与过渡条件时，可用`tools.narrative_conditions --prepared ... --assignments ... --output ...`展开，再沿上述run/verify；先读设计文档“逐证券显式条件展开”。FY同比、三年CAGR、持平及报表利润率目标分别标明，年数是显式研究选择，不按行业自动认证参数。`--run ... --database ... --output ...`从核验后的故事响应及同版SQLite生成完整价差表；A/B按输入顺序并列，拒绝、缺报价、资本释放及终值衔接保留，不称乐观／悲观或自动目标价。

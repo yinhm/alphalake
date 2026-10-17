@@ -82,7 +82,9 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.review_operating_evidence
 
 **负净再投资不等于卖资产。** 折旧超过当期资本支出、营运资本回收、资产处置均可能产生负净投入；须解释机制、期间和可持续性，不能一概拒绝、设零下限，也不能认为账面折旧本身创造现金。达摩达兰的[资本支出与折旧讨论第4节](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/AppldCF/derivn/ch5deriv.html)区分有限期资产消耗与持续经营的维护投入；[非现金营运资本](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/noncashwc.htm)须排除现金投资及已按融资处理的有息债务。
 
-这份事实证据可按已有故事`Evidence`登记文件哈希与字段／期间定位，再把未来判断另列为`company_plan`或`research_judgment`。历史金额可得、对账通过不将`Claim.evidence_state`自动升级为预测已获支持。真实12家公司验收及经济解释见[本轮记录](../history/operating-evidence-20261017.md)。
+这份事实证据可按已有故事`Evidence`登记文件哈希与字段／期间定位，再把未来判断另列为`company_plan`或`research_judgment`。历史金额可得、对账通过不将`Claim.evidence_state`自动升级为预测已获支持。真实12家公司验收及经济解释见[经营取证记录](../history/operating-evidence-20261017.md)。
+
+核对未来投入时，读取既有报告采集v3的`budget_review_index`候选页及相邻页，按[预算证据规则](../valuation/narrative-valuation-plan.md#从报告证据到资本预算)区分承诺、项目余额和管理层年度计划。页码索引不提取或审核金额，承诺合计不直接填`annual_net_reinvestment`；自然年计划不自动分配到下一TTM年，也不因正承诺直接否定负净投入。已取得的[12家预算上下文](../history/capital-budget-evidence-20261017.md)按原事实、公司计划和既有条件并排，仍未独立闭合整年预算。
 
 ## 故事到估值与版本修订
 
