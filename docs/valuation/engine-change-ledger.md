@@ -326,3 +326,9 @@ git show <提交> -- valuation/backend/engine
 - 方法边界：达摩达兰[《Valuing Financial Service Firms》](https://pages.stern.nyu.edu/~adamodar/pdfiles/papers/finfirm.pdf)，pp.4–7说明金融业的债务与再投资难以按普通企业定义，倾向直接估股权。当前暂停金融专项，因此本修复只落实产品范围，不新增金融模型，也不宣称普通FCFF适用于银行或券商。
 - 回归：金融／冲突分类拒绝、显式行业不能绕过、未知分类与合法非金融条件分开、财务缺项不填补、上下文篡改拒绝；代码与快照须协调切换。数值及全范围验收以本轮交付记录为准，不以单例测试声称全市场通过。
 - 影响：估值引擎、网页页面及公式不变；错误放入非金融模型的公司的准入会合法改变，其余经济输入／输出须逐家同条件比较。
+
+## 经营条件解释与资本释放审阅（2026-10-17，无引擎变更）
+
+提交`00a0666`修复只读审阅：保留显式研发预算的增长条件不再仅凭原政策标识解释成费用率不变；逐年及终值列实际费用率、研发／非研发投入，并分列累计投入、释放和净额。原先终值非研发释放提示只覆盖直接预算，现资本倍率入口同样检查。输入、DCF、WACC、终值及每股值均不修改，不增加准入、自动采用或新参数规则。
+
+原始依据为[增长与投入](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/littlebook/growthvaluedrivers.htm)、[研发资本化](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/R%26D.htm)及[稳态增长与回报](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm)；费用率条件和回收依据仍须公司证据。20个旧条件全部经济数值不变；固定12家120条件中117可计算、3不适用，70个标识／路径差异和83个非研发释放提示保留，不称经济错误率。验收、失败夹具和压缩证据见[本轮记录](../history/operating-consistency-20261017.md)。

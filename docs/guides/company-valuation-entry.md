@@ -49,6 +49,19 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 
 完整显式输入还可提供`valuation_assumptions.debt_tax_shield`；逐年/长期整体正常化WACC及对应债务分量须一起给出，不能只改债务权重后沿用不匹配的整体WACC。所有路径统一承接剩余NOL，规则及无到期/限额、部分比例边界见[亏损契约](../valuation/methodology-contract.md#亏损抵扣与融资税盾契约)。不另加自动融资预测或网页参数入口。
 
+### 整套经营条件的一致性审阅
+
+摘要中每个可计算条件都含共用`economic_checks`。先核对实际路径，再解释政策标识；标识只记录来源，不证明组合后的条件仍满足原描述。
+
+| 检查 | 读取与解释 |
+|---|---|
+| 研发费用率 | `forecast[*].research_expense_to_revenue`及`economic_checks.research_forecast`给出所选当前费用率、不同年度和终值费用率。增长比较保留研发绝对预算，不能继续将费用率变化的条件称为“费用率不变”；自定义名义预算不因此判错，也不自动改写预算 |
+| 资本释放 | `economic_checks.capital_release`分列逐年释放、累计投入、累计释放和净额；`recoverability_verified=false`表示资产回收依据尚未核实。非研发释放是总投入的组成诊断，不和总释放相加，不在FCFF中再加一次 |
+| 研发及终值 | 显式研发路径的`terminal.research_capital`同时列示研发净投入及隐含非研发净投入，资本倍率和直接预算两种路径均检查；终值非研发为负也须解释回收依据 |
+| 稳态切换 | `economic_checks.terminal_transition`比较预测投入规则与终值`g/ROIC`规则，列明投入和FCFF差额；代数衔接成立不证明竞争优势、税率或资产可回收 |
+
+`research_expense_ratio_label_differs_from_path`提示已知费用率政策标识与实际费用路径不同；显式请求及原结果保留。没有显式研发路径时保持未知，不能补零。以上检查用于审阅，不增设准入门槛、不替用户选择条件、不修改引擎公式或网页默认。
+
 ## 故事到估值与版本修订
 
 需要把业务主张、证据、反例及人工年度条件连接到估值时，使用`tools.narrative_valuation`；完整命令、文件结构及采用边界见[故事输入方案](../valuation/narrative-valuation-plan.md#最小接入方式与产出)。`prepare`从同版发布SQLite和`alphalake-native-coverage-v1`范围收据生成草稿，人工给定完整经营路径并绑定既有资本／研发／融资／终点条件，`run`复用原生完整API计算。
