@@ -17,7 +17,8 @@ def source_rows(end=END):
         finance_costs=-2000000, interest_income=3000000, investment_income=4000000,
         associates_and_joint_ventures_investment_income=2000000, fair_value_change_income=-500000,
         asset_disposal_income=0, monetary_funds=9000000, cash_and_cash_equivalents=8000000,
-        equity_parent=20000000, noncontrolling_interests=1000000, total_equity=21000000)
+        equity_parent=20000000, noncontrolling_interests=1000000, total_equity=21000000,
+        closing_cash=8000000, closing_cash_equivalents=0, net_exposure_hedging_income=0)
     rows = []
     for field, periods in scope.projection(end).items():
         for period in periods:
@@ -113,6 +114,37 @@ def test_identity_bound_handles_source_precision_without_certifying_formula():
     assert scope.identity_check(facts,terms)['status']=='missing_components'
 
 
+def test_cash_overlap_and_hedging_zero_do_not_approve_asset_addback():
+    rows=source_rows()
+    result=scope.review_company(rows,CONTEXT,consumed(),END)['asset_boundary']
+    assert result['cash_equivalent_overlap']['status']=='no_cash_equivalents_reported'
+    assert result['monetary_cash_difference']['value_cny']=='1000000'
+    assert result['trading_assets']==dict(status='nonzero_requires_composition_review',native_projection='not_separately_projected')
+    assert result['net_exposure_hedging']['status']=='zero_not_absence_proof'
+    for row in rows:
+        if row['field']=='closing_cash':row['value']='6000000'
+        if row['field']=='closing_cash_equivalents':row['value']='2000000'
+        if row['field']=='net_exposure_hedging_income':row['value']='-1000000'
+    result=scope.review_company(rows,CONTEXT,consumed(),END)['asset_boundary']
+    assert result['cash_equivalent_overlap']['status']=='cash_equivalent_composition_unknown'
+    assert result['net_exposure_hedging']['status']=='nonzero_hedging_line_observed'
+    rows=[r for r in rows if r['field']!='closing_cash_equivalents']
+    assert scope.review_company(rows,CONTEXT,consumed(),END)['asset_boundary']['cash_equivalent_overlap']['status']=='missing_cash_components'
+    rows.append(next(r for r in source_rows() if r['field']=='closing_cash_equivalents') | {'value':'-1'})
+    assert scope.review_company(rows,CONTEXT,consumed(),END)['asset_boundary']['cash_equivalent_overlap']['status']=='negative_cash_component_requires_review'
+
+
+def test_cash_component_mismatch_and_source_zero_are_distinct():
+    rows=source_rows()
+    for row in rows:
+        if row['field']=='closing_cash':row['value']='7000000'
+        if row['field']=='trading_financial_assets':row['value']='0'
+    result=scope.review_company(rows,CONTEXT,consumed(),END)['asset_boundary']
+    assert result['cash_equivalent_overlap']['status']=='cash_components_differ'
+    assert result['trading_assets']['status']=='reported_zero'
+    assert scope.review_company(rows,CONTEXT,consumed() | {'cross_holdings':6},END)['asset_boundary']['trading_assets']['native_projection']=='native_mapping_requires_review'
+
+
 def test_scope_denominator_is_preserved_and_no_valuation_is_run(monkeypatch):
     conn=sqlite3.connect(':memory:');conn.row_factory=sqlite3.Row
     conn.executescript('CREATE TABLE companies(ticker TEXT); CREATE TABLE financials_ttm(ticker TEXT, ebit REAL);')
@@ -129,6 +161,8 @@ def test_scope_denominator_is_preserved_and_no_valuation_is_run(monkeypatch):
     assert len(result['scope_counts'])==3 and result['valuations_run']==0
     assert not result['automatic_adjustment'] and not result['operating_scope_verified']
     assert result['counts']['native_reconciliation:ebit']=={'matches':1}
+    assert result['contract']=='alphalake-profit-asset-scope-v2'
+    assert result['counts']['asset_boundary:net_exposure_hedging']=={'zero_not_absence_proof':1}
     assert scope.projection(END)['cash_and_cash_equivalents']==['2026-06-30']
     assert len(scope.projection(END)['investment_income'])==3
     with pytest.raises(ValueError,match='Unpublished'):

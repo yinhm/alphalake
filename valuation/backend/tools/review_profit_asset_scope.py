@@ -16,9 +16,10 @@ from tools.derive_tdx_assets import LONG_TERM
 
 FLOW_FIELDS = ('reported_ebit', 'profit_before_tax', 'finance_costs', 'interest_expense',
     'interest_income', 'investment_income', 'associates_and_joint_ventures_investment_income',
-    'fair_value_change_income', 'asset_disposal_income')
+    'fair_value_change_income', 'asset_disposal_income', 'net_exposure_hedging_income')
 BALANCE_FIELDS = ('monetary_funds', 'cash_and_cash_equivalents', 'trading_financial_assets',
-    'derivative_financial_assets', *LONG_TERM, 'equity_parent', 'noncontrolling_interests', 'total_equity')
+    'derivative_financial_assets', 'closing_cash', 'closing_cash_equivalents',
+    *LONG_TERM, 'equity_parent', 'noncontrolling_interests', 'total_equity')
 PAIRS = {
     'cash_returns': (('cash_and_cash_equivalents',), ('interest_income',)),
     'equity_method_holdings': (('long_term_equity_investments',), ('associates_and_joint_ventures_investment_income',)),
@@ -131,9 +132,31 @@ def review_company(rows, context, consumed, end):
             for p, _ in flow_terms(end)}
     identities['consolidated_equity'] = identity_check(facts,
         [(f, end.isoformat(), c) for f, c in (('total_equity', 1), ('equity_parent', -1), ('noncontrolling_interests', -1))])
+    cash_parts = ('cash_and_cash_equivalents', 'closing_cash', 'closing_cash_equivalents')
+    cash_check = identity_check(facts,
+        [(f, end.isoformat(), c) for f, c in zip(cash_parts, (1, -1, -1))])
+    cash_equivalents = amount('closing_cash_equivalents')
+    if any(amount(f) is not None and amount(f) < 0 for f in cash_parts):
+        overlap = 'negative_cash_component_requires_review'
+    elif cash_check['status'] != 'within_source_rounding':
+        overlap = 'missing_cash_components' if cash_check['status'] == 'missing_components' else 'cash_components_differ'
+    else:
+        overlap = 'no_cash_equivalents_reported' if cash_equivalents == 0 else 'cash_equivalent_composition_unknown'
+    trading, money, cash = (amount(f) for f in ('trading_financial_assets', 'monetary_funds', 'cash_and_cash_equivalents'))
+    hedging = amount('net_exposure_hedging_income')
+    asset_boundary = dict(
+        cash_equivalent_overlap=dict(status=overlap, reconciliation=cash_check),
+        monetary_cash_difference=dict(status='missing_components' if money is None or cash is None else 'difference_not_restriction_classification',
+            value_cny=str(money-cash) if money is not None and cash is not None else None),
+        trading_assets=dict(status='missing_standard_value' if trading is None else
+            'negative_balance_requires_review' if trading < 0 else 'reported_zero' if trading == 0 else 'nonzero_requires_composition_review',
+            native_projection='not_separately_projected' if all(checks[f]['status']=='matches'
+                for f in ('cash_and_marketable_securities', 'cross_holdings')) else 'native_mapping_requires_review'),
+        net_exposure_hedging=dict(status='missing_standard_value' if hedging is None else
+            'zero_not_absence_proof' if hedging == 0 else 'nonzero_hedging_line_observed'))
     return dict(ticker=context['ticker'], instrument_id=context['instrument_id'],
         model_scope=context['model_scope']['status'], source_records=records, source_values=values,
-        native_reconciliation=checks, observed_pairs=pairs, arithmetic_checks=identities,
+        native_reconciliation=checks, observed_pairs=pairs, arithmetic_checks=identities, asset_boundary=asset_boundary,
         asset_disposal_return_observed=amount('asset_disposal_income') not in (None, 0),
         minority_balance_observed=amount('noncontrolling_interests') not in (None, 0))
 
@@ -164,7 +187,7 @@ def audit(connection, rows):
         if scope != 'nonfinancial_by_reference':
             continue
         result = review_company(grouped[ticker], context, native_rows.get(ticker, {}), end)
-        for category in ('native_reconciliation', 'observed_pairs', 'arithmetic_checks'):
+        for category in ('native_reconciliation', 'observed_pairs', 'arithmetic_checks', 'asset_boundary'):
             for name, check in result[category].items():
                 counts[category+':'+name][check['status']] += 1
         for flag in ('asset_disposal_return_observed', 'minority_balance_observed'):
@@ -175,13 +198,13 @@ def audit(connection, rows):
             'missing_components' if any(r['status']=='missing_components' for r in net_interest.values()) else
             'outside_source_rounding'] += 1
         results.append(result)
-    return dict(contract='alphalake-profit-asset-scope-v1', report_period=metadata['report_period'],
+    return dict(contract='alphalake-profit-asset-scope-v2', report_period=metadata['report_period'],
         information_as_of=metadata['information_as_of'], published_companies=len(companies),
         scope_counts=dict(scope_counts), reviewed_nonfinancial_companies=len(results), counts=dict(counts),
         source_flow_terms=flow_terms(end), balance_date=end.isoformat(), currency='CNY', source_money_unit='CNY',
         native_money_unit='million_CNY', pairing_fields={k:dict(asset_fields=a, return_fields=r) for k,(a,r) in PAIRS.items()},
         automatic_adjustment=False, valuations_run=0, operating_scope_verified=False,
-        boundary='组成对账及舍入界限不是经营／非经营分类、供应商公式认证或估值审批；权益法收益包含于投资收益，不重复相减；代理账面值不是市场价值。未分类和金融保留分母，不进行专项模型审核。',
+        boundary='组成对账及舍入界限不是经营／非经营分类、供应商公式认证或估值审批；权益法收益包含于投资收益，不重复相减；代理账面值不是市场价值。现金等价物源零须组成核对，不证明所有交易性资产可加回；货币资金差额不是受限额；净敞口套期行零不证明没有套期，套期可能进入其他损益或OCI。未分类和金融保留分母，不进行专项模型审核。',
         companies=results)
 
 
