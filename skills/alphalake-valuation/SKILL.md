@@ -13,7 +13,7 @@ description: 使用 AlphaLake 已有数据库和显式政策进行 A 股公司�
 
 已有专项／行业政策使用`tools.company_valuation`；原生完整条件用下方具名交付，业务故事用“故事估值与修订”入口。把结构化结果解释给用户；计算、身份／单位／时点及政策准入由程序执行，不在Skill中重写DCF、补数或另选数据源。
 
-当前SQLite财务契约为v12，只有原生宽表、TTM、参考和紧凑来源上下文；完整事实与审核显式查DuckDB，旧快照须重建，不改版本号或回退。财务是现有标准快照，不是历史PIT认证；缺公告日期或CNINFO关联不阻断数值。诊断的来源引用标明证据未展开，不能把引用称作完整原文核验。
+当前SQLite财务契约为v13，只有原生宽表、TTM、参考和紧凑来源上下文；完整事实与审核显式查DuckDB，旧快照须重建，不改版本号或回退。财务是现有标准快照，不是历史PIT认证；缺公告日期或CNINFO关联不阻断数值。诊断的来源引用标明证据未展开，不能把引用称作完整原文核验。
 
 ## 准备调用
 
@@ -101,6 +101,8 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 
 ## 用户完整输入的条件交付
+
+涉及收益剔除及现金／持股单列时，先核对`docs/valuation/valuation-book-proxies.md`的成套交付清单。`--prepare-inputs`不覆盖来源财务；人工审核后的财务条件使用完整`--explicit-input`或既有完整API，分别保存原生基线、原始来源、分类依据及输入差异，不放宽故事入口的财务覆盖限制。剔除有符号收益、其中项不重复扣、持股加一次；只改基期EBIT不等于改变未来利润率，税、研发、投入和折现必须配套。真实权益法收益例见`docs/history/real-operating-scope-conditions-20261017.md`，其中参数和金额不是通用默认，也不认证完整经营范围；报表历史资本不随本期条件冒称重建。
 
 用户已要求或授权具名条件比较时，先读`docs/guides/company-valuation-entry.md`的“原生具名条件自动交付”，使用既有`tools.evaluate_native_policy --explicit-input`。已有完整请求使用`--explicit-input`；仅有证券及已确认参数时使用`--prepare-inputs --ticker`，可选`--overrides`按证券提供原生假设点路径，复用SQLite取数及PATCH，不手工拼财务。两种模式互斥，不需要BatchPolicy或新前端JSON表单；不替用户指定信用、增长或资本倍率，不借样本参数凑齐。核对`protocol.input_preparation`来源、继承默认与覆盖，保留准备失败分母；`user_explicit`在准备模式只是基线名，不表示所有字段都由用户提供。
 
