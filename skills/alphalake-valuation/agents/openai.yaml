@@ -1,4 +1,4 @@
 interface:
   display_name: "AlphaLake 估值"
-  short_description: "使用标准财务与显式政策进行公司估值，解释候选、阻断和证据口径"
-  default_prompt: "使用 $alphalake-valuation，根据已配置的数据和政策给出公司条件估值，并说明时点、选择依据和缺项。"
+  short_description: "完成中文公司研究与条件估值，论证假设、解释价值驱动并跟踪反证和版本变化"
+  default_prompt: "使用 $alphalake-valuation，基于AlphaLake数据完成公司研究与条件估值，说明经营论点、假设依据、现金流和股权桥、反证及修订触发；保留来源、实际输入和可追溯运行。"

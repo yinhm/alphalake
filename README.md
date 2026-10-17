@@ -12,7 +12,7 @@
 | 更新数据并发布网页快照 | [同步、验收与发布](docs/guides/system-delivery.md) |
 | 独立导出SQLite、核对输入 | [导出契约](docs/guides/valuation-sqlite-export.md) |
 | 用Agent检查数据、手工刷新与发布 | [数据维护Skill](skills/alphalake/SKILL.md) |
-| 用Agent估值、查询与比较 | [估值Skill](skills/alphalake-valuation/SKILL.md) |
+| 用Agent完成公司研究、条件估值、解释与更新 | [估值Skill](skills/alphalake-valuation/SKILL.md) |
 | 复用数据、独立DCF与交叉校验 | [独立DCF Skill](skills/alphalake-dcf/SKILL.md) |
 | 核对自动假设与资本效率 | [估值方法](docs/valuation/README.md) |
 
@@ -36,7 +36,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m pytest -q valuation/backend/tes
 
 本地只读状态：`./alphalake status workspace/alphalake.duckdb`。财务、行情及参考更新并发布网页统一使用`tools.publish_native_valuation --published-scope`，在锁内冻结当前网页完整范围；在线模式另须明确最近已完成交易日`--quote-date`，具体命令见[发布手册](docs/guides/system-delivery.md)。业绩预告沿[独立入口](docs/guides/earnings-guidance.md)入主库，不自动发布进财务SQLite。命令参数以当前程序帮助为准，不照抄历史验收中的旧路径和版本。
 
-Codex日常维护可用`$alphalake`，原生公司估值／历史查询用`$alphalake-valuation`；`$alphalake-dcf`只复用数据，独立建模与交叉校验，缺事实允许定向官方PDF补证，交付中文报告及公式Excel。Skill源码随本仓库维护；本地首次安装可在项目根目录执行：
+Codex日常维护可用`$alphalake`；`$alphalake-valuation`统一承接公司研究、可证伪论点、成套假设、原生条件估值、结果解释及财报后修订，也支持只查询／解释已有结果。完整交付含中文报告、假设依据、现金流与股权桥、反证及可追溯运行，不代表已具备合理参数自动选择器。`$alphalake-dcf`只复用数据，独立建模与交叉校验，缺事实允许定向官方PDF补证，交付中文报告及公式Excel。Skill源码随本仓库维护；本地首次安装可在项目根目录执行：
 
 ```bash
 ALPHALAKE_SKILL_DIR="${CODEX_HOME:-$HOME/.codex}/skills"
@@ -53,3 +53,5 @@ done
 估值应用[`valuation/`](valuation/README.md)源自[chrisuzy/Investment_Valuation_Agent](https://github.com/chrisuzy/Investment_Valuation_Agent)。感谢原作者Chirs Yu Zhang及贡献者。导入版本、MIT许可证与Credits见[来源记录](valuation/UPSTREAM.md)。项目继续复用其共享引擎和原页面。
 
 中文[`alphalake-dcf`](skills/alphalake-dcf/SKILL.md)改写自Anthropic的`financial-services/dcf-model`，来源版本、改写范围及Apache-2.0许可证随Skill保留。
+
+公司研究[`alphalake-valuation`](skills/alphalake-valuation/SKILL.md)借鉴并改写Anthropic的研究、论点、DCF交付及财报更新流程；[固定来源与取舍](skills/alphalake-valuation/UPSTREAM.md)、Apache-2.0许可证随Skill保留，计算继续调用本项目现有引擎。

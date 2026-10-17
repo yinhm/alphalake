@@ -1,6 +1,6 @@
 ---
 name: alphalake
-description: 检查 AlphaLake 数据状态，手工刷新 TDX 财务、收盘行情、人民币利率、达摩达兰参考和公司业绩预告，并核验入库变化、来源完整性及 SQLite 网页发布。适用于数据同步、新鲜度检查和日常维护；公司条件估值与故事计算使用 alphalake-valuation，不用于一般股价预测或仓库开发。
+description: 检查 AlphaLake 数据状态，手工刷新 TDX 财务、收盘行情、人民币利率、达摩达兰参考和公司业绩预告，并核验入库变化、来源完整性及 SQLite 网页发布。适用于数据同步、新鲜度检查和日常维护；公司研究、条件估值和结果解释使用 alphalake-valuation，不用于一般股价预测或仓库开发。
 ---
 
 # AlphaLake 数据维护
@@ -23,7 +23,7 @@ description: 检查 AlphaLake 数据状态，手工刷新 TDX 财务、收盘行
 | 刷新财务 | 已有TDX缓存／上游清单→源同步→标准物化；未发布时明确网页仍为旧快照 |
 | 刷新行情／参考 | 限定当前消费范围及既有来源，更新主库；网页更新另走统一发布验收 |
 | 更新数据并发布网页 | `tools.publish_native_valuation`冻结当前完整发布范围，验收后原子切换 |
-| 公司估值／故事与修订 | 转用仓库`skills/alphalake-valuation/SKILL.md`；不附带全市场同步 |
+| 公司研究／估值／解释／修订 | 转用仓库`skills/alphalake-valuation/SKILL.md`；不附带全市场同步 |
 
 只有用户要求整体刷新时才组合各来源；“刷新预告”不等于同步全部数据，“同步入库”不等于网页发布。保持手工执行，不安装定时任务。
 

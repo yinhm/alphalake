@@ -25,7 +25,7 @@ license: Apache-2.0，完整文本见 LICENSE.txt
 
 按以下顺序取数：
 
-1. 优先用 `export-financial-snapshot` 从DuckDB取得标准金额、期间、单位和来源，限定证券与实际消费字段。`GET /api/database/company/{ticker}` 及v12 SQLite只提供百万元/百万股年度、季度、TTM宽表和未展开的来源引用；不得假设仍有`standard_financials`或完整标准事实，独立TTM推导须用主库累计组成。
+1. 优先用 `export-financial-snapshot` 从DuckDB取得标准金额、期间、单位和来源，限定证券与实际消费字段。`GET /api/database/company/{ticker}` 及v13 SQLite只提供百万元/百万股年度、季度、TTM宽表和未展开的来源引用；不得假设仍有`standard_financials`或完整标准事实，独立TTM推导须用主库累计组成。
 2. `GET /api/database/wacc-references`、主库及归档中的原始达摩达兰和人民币利率参考行。缺参考先查已接入数据，不从已算WACC倒推。
 3. `export-financial-snapshot` 等只读标准出口，限定证券、期间及通用字段。接口为空时区分源缺失、未同步、未导出、未关联。
 4. 已归档报告及论点／故事证据；仍缺事实时按下一节定向下载官方PDF。
