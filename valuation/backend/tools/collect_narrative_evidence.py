@@ -17,6 +17,32 @@ from data_sources.cninfo_documents import (document_lock, publish_reference, rea
 from tools.export_alphalake_sqlite import digest
 from tools.narrative_valuation import new_output, read_json, save
 
+CONTRACT = 'narrative-document-collection-v3'
+BUDGET_TOPICS = {
+    'capital_commitment': r'资本(?:性支出|性)?承诺|资本性支出.{0,4}承诺|已签约.{0,12}(?:资本|资产)',
+    'capital_expenditure_plan': r'资本(?:开支|支出).{0,10}(?:计划|预算)|(?:计划|预算).{0,10}资本(?:开支|支出)',
+    'construction_projects': r'重要在建工程项目|重大非股权投资',
+    'management_plan': r'未来发展的展望|下半年.{0,12}(?:计划|重点|工作)|经营计划',
+    'research_plan': r'研发投入计划|研发计划|研发项目.{0,8}预算',
+}
+
+
+def budget_review_index(text):
+    """仅定位待审页，并保留后一页以免切断表格；关键词不认证经济含义。"""
+    pages = text.split('\f')
+    if pages[-1] == '':
+        pages.pop()
+    matches = []
+    for number, page in enumerate(pages, 1):
+        normalized = re.sub(r'\s+', '', page)
+        topics = [topic for topic, pattern in BUDGET_TOPICS.items() if re.search(pattern, normalized)]
+        if topics:
+            matches.append(dict(physical_page=number, topics=topics,
+                read_pages=list(range(number, min(number+1, len(pages))+1))))
+    return dict(status='page_candidates_not_semantically_reviewed', pages=matches,
+        unmatched_topics=[topic for topic in BUDGET_TOPICS if not any(topic in p['topics'] for p in matches)],
+        boundary='索引不提取金额、不区分已签约/仅批准及经营/投资范围；无匹配不等于无承诺。核对相邻页、单位、合并范围及付款期间后另记证据，不自动填年度预算')
+
 
 def reports(inventory, codes=None):
     scope_codes = {t.split(':')[1] for t in inventory['scope']}
@@ -109,6 +135,7 @@ def collect_one(row, output):
             raise ValueError('empty extracted text; OCR not silently substituted')
         result.update(status='archived_for_review', text_file=text_file.name, text_sha256=digest(text_file),
             pages=len(text.split('\f'))-int(text.endswith('\f')),
+            budget_review_index=budget_review_index(text),
             semantic_review='pending; hash/text extraction does not verify company or forecast')
     except Exception as error:
         result.update(status='source_or_extraction_failed', error_type=type(error).__name__, reason=str(error))
@@ -132,7 +159,7 @@ def collect(inventory_file, output, codes=None):
             rows.append(row)
             if len(rows) % 20 == 0:
                 print(f'archived {len(rows)}/{len(selected)}', flush=True)
-    result = dict(contract='narrative-document-collection-v2', companies=len(inventory['scope']),
+    result = dict(contract=CONTRACT, companies=len(inventory['scope']),
         selected_documents=len(selected), archived=sum(r['status']=='archived_for_review' for r in rows),
         failed=sum(r['status']!='archived_for_review' for r in rows),
         elapsed_seconds=time.monotonic()-started, reports=rows)
@@ -143,7 +170,7 @@ def collect(inventory_file, output, codes=None):
 def verify_collection(output):
     """仅验归档完整性；正文、业务语义和预测仍需分别审阅。"""
     receipt = read_json(output/'collection.json')
-    if receipt.get('contract') != 'narrative-document-collection-v2':
+    if receipt.get('contract') != CONTRACT:
         raise ValueError('current PDF reference collection contract required; frozen history uses original commit')
     rows = receipt['reports']
     good = [r for r in rows if r['status'] == 'archived_for_review']
@@ -158,6 +185,8 @@ def verify_collection(output):
         text = output/row['text_file']
         if not text.resolve().is_relative_to(output.resolve()) or digest(text) != row['text_sha256']:
             raise ValueError('collection evidence hash/path mismatch: '+row['source_filing_id'])
+        if row['budget_review_index'] != budget_review_index(text.read_text()):
+            raise ValueError('collection budget review index differs: '+row['source_filing_id'])
     return dict(verified_documents=len(good), retained_failures=receipt['failed'], semantic_review='not_certified')
 
 

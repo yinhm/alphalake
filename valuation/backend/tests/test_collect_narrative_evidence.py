@@ -44,15 +44,19 @@ def test_cached_pdf_tamper_is_rejected_before_text_extraction(tmp_path, monkeypa
     out = tmp_path/'derived'; out.mkdir()
 
     def extract(args, **kwargs):
-        Path(args[-1]).write_text('公司经营材料\f')
+        Path(args[-1]).write_text('资本性支出承诺\f公司经营材料\f')
 
     monkeypatch.setattr(tool.subprocess, 'run', extract)
     positive = tool.collect_one(row, out)
-    assert positive['status'] == 'archived_for_review' and positive['pages'] == 1
+    assert positive['status'] == 'archived_for_review' and positive['pages'] == 2
     assert positive['pdf_sha256'] == row['sha256']
     assert positive['semantic_review'].startswith('pending;')
-    tool.save(out/'collection.json', dict(contract='narrative-document-collection-v2', selected_documents=1, archived=1, failed=0, reports=[positive]))
+    tool.save(out/'collection.json', dict(contract=tool.CONTRACT, selected_documents=1, archived=1, failed=0, reports=[positive]))
     assert tool.verify_collection(out)['verified_documents'] == 1
+    positive['budget_review_index']['pages'][0]['read_pages'] = [1]
+    tool.save(out/'collection.json', dict(contract=tool.CONTRACT, selected_documents=1, archived=1, failed=0, reports=[positive]))
+    with pytest.raises(ValueError, match='budget review index differs'):
+        tool.verify_collection(out)
     (out/positive['text_file']).write_text('篡改业务正文')
     with pytest.raises(ValueError, match='hash/path mismatch'):
         tool.verify_collection(out)
@@ -61,6 +65,20 @@ def test_cached_pdf_tamper_is_rejected_before_text_extraction(tmp_path, monkeypa
     negative = tool.collect_one(row, out)
     assert negative['status'] == 'source_or_extraction_failed'
     assert 'corrupt cache rejected' in negative['reason']
+
+
+def test_budget_review_index_preserves_cross_page_tables_without_interpreting_amounts():
+    text = ('资本性支出\n承诺 已签约和已批准 100\f'
+        '重要在建工程项目 研发计划 200\f经营计划 资本开支计划\f')
+    index = tool.budget_review_index(text)
+    assert index['pages'] == [
+        dict(physical_page=1, topics=['capital_commitment'], read_pages=[1,2]),
+        dict(physical_page=2, topics=['construction_projects','research_plan'], read_pages=[2,3]),
+        dict(physical_page=3, topics=['capital_expenditure_plan','management_plan'], read_pages=[3])]
+    assert index['unmatched_topics'] == []
+    assert index['status'] == 'page_candidates_not_semantically_reviewed'
+    absent = tool.budget_review_index('本期实际购建现金100元\f')
+    assert absent['pages'] == [] and 'capital_commitment' in absent['unmatched_topics']
 
 
 def test_url_cache_is_shared_across_output_directories_and_catalogue_refresh(tmp_path, monkeypatch):
