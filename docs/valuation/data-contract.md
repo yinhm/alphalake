@@ -194,7 +194,7 @@ WACC、经营与稳态的实际字段、覆盖优先级及交付步骤统一见[
 
 - **输入优先级**：完整用户请求先原样保存并计算`user_explicit`，既有原生公司派生指标照常刷新，用户股价波动率保持。条件请求单独保存，不覆盖原输入或标准事实；金融及发布范围外保留拒绝分母。
 - **条件组合**：仅对十年预测和正基期收入复用现有3/5/10年收敛路径，起点及终点来自原结果；每条路径再分别比较公司三年历史资本和后五年稳态过渡。增长对照先验证等价基线，不改变税率、WACC及股权桥；资本对照仅改年度倍率。历史缺项/口径不符保留`outside_policy_scope`，不补零或回退另一代理；非十年原模型结果仍交付。
-- **输出**：`native-conditional-delivery-v1`包含每公司/场景状态、完整逐年规模与FCFF、资本及终值审阅、参考版本、可选真实API一致标记；`selected_scenario=null`和`automatic_adoption=false`固定。run ID为摘要加入ID前的内容签名；旧估值运行查询契约不适用。
+- **输出**：`native-conditional-delivery-v2`包含每公司/场景状态、完整逐年规模与FCFF、资本及终值审阅、参考版本、可选真实API一致标记；每个成功场景同时交付原有`methodology`审阅和相对`user_explicit`原请求的`input_changes`（JSON Pointer，缺键与NULL分开）。基线差异为空，其他场景不因计算成功继承经济认证。`economic_approval=not_inferred_from_calculation_or_source_availability`、`selected_scenario=null`和`automatic_adoption=false`固定。run ID为摘要加入ID前的内容签名；旧估值运行查询契约不适用。
 - **来源及失败**：计算前冻结源请求哈希、SQLite哈希、元数据与实现版本，结束复核来源未变；不覆盖既有目录。版本冲突、重放不一致或来源改变时拒绝最终摘要，保留诊断产物；业务拒绝逐场景记录，不能把退出0当作全成功。
 
 `--prepare-inputs --ticker`模式复用原生`from-database`与PATCH准备完整请求，再走上述同一交付函数。`--overrides`为证券→原生点路径→值的字典，只接受既有假设/参考字段，不允许财务、身份代码或期间覆盖；行业/国家选择更新对应参考值，未知路径拒绝。无覆盖时保留原来源及模型默认；`user_explicit`仅为准备后基线的既有场景名，来源必须按协议区分。批次名单不缩减：原生取数缺项、默认取数阶段计算失败或覆盖失败分别留状态，其他公司继续；不新建绕过原生准入的取数路径。

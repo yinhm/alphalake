@@ -638,6 +638,7 @@ def test_condition_delivery_preserves_user_and_no_winner(tmp_path, monkeypatch, 
     request = tmp_path/'request.json'; request.write_text(json.dumps({'inputs':inputs}))
     database=delivery_database(tmp_path,monkeypatch)
     result=deliver_conditions(database,[request],tmp_path/'derived'/'run')
+    assert result['contract'] == 'native-conditional-delivery-v2'
     assert result['selected_scenario'] is None and not result['automatic_adoption']
     row=result['results'][0]; original=json.loads((tmp_path/'derived/run/SHSE-600519-user_explicit-request.json').read_text())
     assert original['inputs']==inputs
@@ -645,6 +646,13 @@ def test_condition_delivery_preserves_user_and_no_winner(tmp_path, monkeypatch, 
     assert row['scenarios']['user_explicit']['projection_years']==projection
     assert len(row['scenarios'])==(10 if projection==10 else 1)
     assert all(s['status']=='calculated_conditional' for s in row['scenarios'].values())
+    assert row['scenarios']['user_explicit']['input_changes'] == []
+    for name, scenario in row['scenarios'].items():
+        assert scenario['methodology']['economic_basis'] == 'not_established_by_arithmetic'
+        assert scenario['economic_approval'] == 'not_inferred_from_calculation_or_source_availability'
+        if name != 'user_explicit':
+            assert scenario['input_changes']
+            assert all('/raw_financials' not in c['path'] for c in scenario['input_changes'])
     run_id=result.pop('run_id'); assert run_id==value_digest(result)
     with pytest.raises(ValueError,match='new output'):
         deliver_conditions(database,[request],tmp_path/'derived'/'run')
@@ -723,6 +731,7 @@ def test_sqlite_input_preparation_preserves_overrides_and_blocked_denominator(tm
     delivery_client(monkeypatch); monkeypatch.setenv('ALPHALAKE_WORKSPACE',str(tmp_path))
     original_client=fastapi.testclient.TestClient
     supplied=sample()['inputs']
+    released=[]
     class PreparingClient(original_client):
         def post(self, path, json):
             if path.endswith('/from-database'):
@@ -739,6 +748,9 @@ def test_sqlite_input_preparation_preserves_overrides_and_blocked_denominator(tm
             body=super().post('/api/valuation',{'inputs':self.inputs}).json()
             body.update(source_metadata={'valuation_assumptions.revenue_growth_next_year':'User override'})
             return SimpleNamespace(status_code=200,json=lambda:body)
+        def delete(self, path):
+            released.append(path)
+            return SimpleNamespace(status_code=204)
     monkeypatch.setattr(fastapi.testclient,'TestClient',PreparingClient)
     database=delivery_database(tmp_path,monkeypatch)
     overrides=tmp_path/'overrides.json'; overrides.write_text(json.dumps({'SHSE:600519':{
@@ -751,10 +763,12 @@ def test_sqlite_input_preparation_preserves_overrides_and_blocked_denominator(tm
     assert prepared['inputs']['macro_inputs']['risk_free_rate']==.03
     assert result['protocol']['input_preparation'][0]['source_metadata']
     assert result['selected_scenario'] is None
+    assert released == ['/api/valuation/prepared']
     for path, message in [('raw_financials','only existing'),('valuation_assumptions.typo','unknown native')]:
         overrides.write_text(json.dumps({'SHSE:600519':{path:1}}))
         with pytest.raises(ValueError,match=message):
             deliver_conditions(database,None,tmp_path/'derived'/message.split()[0],tickers=['SHSE:600519'],overrides_file=overrides)
+    assert released == ['/api/valuation/prepared']*2  # 未知PATCH字段拒绝时也释放会话。
 
 
 def test_reported_credit_conditions_preserve_baseline_and_scope():

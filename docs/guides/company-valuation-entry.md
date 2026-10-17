@@ -43,7 +43,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 
 先准备已确认的CNY参考融资组件，程序不会把原生详细/default分支静默切换。额外结果为`reported_credit_initial_credit_only`和`reported_credit_hold_current_wacc_and_no_terminal_excess_return`，仅从原基线生成、不与全部增长/资本路径交叉扩张；用户原信用及默认结果保持。`reported_credit`记录表内标签、覆盖率、标准组成、年龄和不适用原因，均非正式评级。旧SQLite缺金融业务范围字段时明确要求重建；不借此给零利息赋AAA或删除原条件。
 
-标准输出仅给`contract=native-conditional-delivery-v1`、`run_id`、公司数和`summary_file`。先读摘要，再按场景展开request/result/review及资本证据；协议保存源请求、SQLite及实现哈希。这个run ID追溯到该目录`summary.json`，不能传给旧`list_valuation_runs/compare_valuations`解析。存在业务拒绝时仍须逐行报告，进程退出0不等于全部可计算；版本冲突或源文件途中改变则失败且不写最终摘要，已有部分文件保留用于诊断。
+标准输出仅给`contract=native-conditional-delivery-v2`、`run_id`、公司数和`summary_file`。先读摘要中的逐场景`input_changes`及`methodology`，明确增长／利润／投入／融资到底改了什么、仍有哪些方法条件，再按需展开request/result/review及资本证据；协议保存源请求、SQLite及实现哈希。准备入口的临时会话在成功或失败后释放。这个run ID追溯到该目录`summary.json`，不能传给旧`list_valuation_runs/compare_valuations`解析。存在业务拒绝时仍须逐行报告，进程退出0不等于全部可计算；版本冲突或源文件途中改变则失败且不写最终摘要，已有部分文件保留用于诊断。
 
 此入口不自动刷新行情/参考，也不认证请求里的财务来源、公司信用或未来经济依据。按原请求的财务/信息/股本时点解释；数据库当前参考绑定不能将归档WACC变成今日市场WACC。原始输入保存不变，原引擎仍重算公司派生指标。
 

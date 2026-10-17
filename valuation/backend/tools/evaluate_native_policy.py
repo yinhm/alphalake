@@ -279,24 +279,29 @@ def prepare_sqlite_requests(database, tickers, output, overrides_file=None):
             if response.status_code != 200:
                 row.update(status='blocked_preparation', http_status=response.status_code, reason=response.text); continue
             body = response.json()
-            if fields:
-                # PATCH允许开放字典；先核对真实typed路径，防止拼错键静默丢失。
-                for path in fields:
-                    value = body['inputs']
-                    for part in path.split('.'):
-                        if not isinstance(value, dict) or part not in value:
-                            raise ValueError('unknown native override path: '+path)
-                        value = value[part]
-                response = client.patch('/api/valuation/'+body['id'], json=dict(overrides=fields))
-                if response.status_code != 200:
-                    row.update(status='blocked_override', http_status=response.status_code, reason=response.text); continue
-                body = response.json()
-            path = output/(ticker.replace(':','-')+'-request.json')
-            path.write_text(json.dumps(dict(inputs=body['inputs']),ensure_ascii=False,indent=2,allow_nan=False)+'\n')
-            paths.append(path)
-            row.update(status='prepared', source_metadata=body.get('source_metadata'),
-                reference_snapshot=body.get('reference_snapshot'), source_snapshot=body.get('valuation_proxy'),
-                inherited_policy='未覆盖字段沿原生取数及默认政策，不自动认证经济依据')
+            session_id = body['id']
+            try:
+                if fields:
+                    # PATCH允许开放字典；先核对真实typed路径，防止拼错键静默丢失。
+                    for path in fields:
+                        value = body['inputs']
+                        for part in path.split('.'):
+                            if not isinstance(value, dict) or part not in value:
+                                raise ValueError('unknown native override path: '+path)
+                            value = value[part]
+                    response = client.patch('/api/valuation/'+session_id, json=dict(overrides=fields))
+                    if response.status_code != 200:
+                        row.update(status='blocked_override', http_status=response.status_code, reason=response.text); continue
+                    body = response.json()
+                path = output/(ticker.replace(':','-')+'-request.json')
+                path.write_text(json.dumps(dict(inputs=body['inputs']),ensure_ascii=False,indent=2,allow_nan=False)+'\n')
+                paths.append(path)
+                row.update(status='prepared', source_metadata=body.get('source_metadata'),
+                    reference_snapshot=body.get('reference_snapshot'), source_snapshot=body.get('valuation_proxy'),
+                    inherited_policy='未覆盖字段沿原生取数及默认政策，不自动认证经济依据')
+            finally:
+                if client.delete('/api/valuation/'+session_id).status_code != 204:
+                    raise ValueError('preparation session release failed')
     return paths, rows
 
 
@@ -386,7 +391,7 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
     output.mkdir(parents=True, exist_ok=True)
     def save(name, value):
         (output/name).write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False)+'\n')
-    protocol = dict(contract='native-conditional-delivery-v1', sqlite_sha256=snapshot_hash,
+    protocol = dict(contract='native-conditional-delivery-v2', sqlite_sha256=snapshot_hash,
         metadata=metadata,
         input_preparation=preparation, override_source=override_source,
         reported_credit_policy=credit_policy, reported_credit_source=credit_source,
@@ -420,6 +425,9 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
                 row['scenarios'][name] = dict(status='calculated_conditional', value_per_share=body['final']['value_per_share'],
                     projection_years=len(reviewed['forecast']), revenue_multiple_end=reviewed['forecast'][-1]['revenue_multiple_of_base'],
                     forecast=reviewed['forecast'], terminal=reviewed['terminal'], economic_checks=reviewed['economic_checks'],
+                    methodology=reviewed['methodology'],
+                    input_changes=list(changes(payload['inputs'],request['inputs'])),
+                    economic_approval='not_inferred_from_calculation_or_source_availability',
                     reference_snapshot=body.get('reference_snapshot'), live_verified=bool(web),
                     request_file=key+'-'+name+'-request.json', result_file=key+'-'+name+'-result.json')
                 return body

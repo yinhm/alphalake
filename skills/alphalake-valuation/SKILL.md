@@ -106,7 +106,7 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 用户已要求或授权具名条件比较时，先读`docs/guides/company-valuation-entry.md`的“原生具名条件自动交付”，使用既有`tools.evaluate_native_policy --explicit-input`。已有完整请求使用`--explicit-input`；仅有证券及已确认参数时使用`--prepare-inputs --ticker`，可选`--overrides`按证券提供原生假设点路径，复用SQLite取数及PATCH，不手工拼财务。两种模式互斥，不需要BatchPolicy或新前端JSON表单；不替用户指定信用、增长或资本倍率，不借样本参数凑齐。核对`protocol.input_preparation`来源、继承默认与覆盖，保留准备失败分母；`user_explicit`在准备模式只是基线名，不表示所有字段都由用户提供。
 
-重复`--explicit-input`在单进程处理已确认范围，使用新的`workspace/derived`输出目录，按项目资源隔离规则运行；可用`--web`核验现行API。先读`native-conditional-delivery-v1`的`summary_file`，保留`user_explicit`、全部条件、拒绝及原因；`selected_scenario=null`是预期结果，不要求选最高/最低/中间值。收入规模、FCFF与终值检查不是预测认证，归档参考不称今日WACC。该run ID在本次目录追溯，不传给旧估值运行查询或比较入口。
+重复`--explicit-input`在单进程处理已确认范围，使用新的`workspace/derived`输出目录，按项目资源隔离规则运行；可用`--web`核验现行API。先读`native-conditional-delivery-v2`的`summary_file`，保留`user_explicit`、全部条件、拒绝及原因；按每场景`input_changes`解释实际输入差异，结合`methodology`列明经营范围、税务、资本释放及终值条件。`economic_approval`不由计算或来源可得自动成立；`selected_scenario=null`是预期结果，不要求选最高/最低/中间值。收入规模、FCFF与终值检查不是预测认证，归档参考不称今日WACC。该run ID在本次目录追溯，不传给旧估值运行查询或比较入口。
 
 已批准报表信用附加条件使用同一入口的可选`--reported-credit`及已有显式政策，参考从同一SQLite读取，先读`docs/valuation/native-cny-policy.md`已批准规则。不从统一BBB、净财务费用或零利息推信用；保留原用户结果，解释表内标签及两种初始/稳态条件差别。缺明确CNY参考融资组件、范围或匹配版本时报告原因，不自动切原生详细/default分支；不能称代理为公司正式评级或新市场WACC。
 
