@@ -158,7 +158,7 @@ def run(database, source_database, constituents_file, scope_file, overrides_file
     with sqlite3.connect(database.as_uri()+'?mode=ro', uri=True) as conn:
         metadata = dict(conn.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'"))
         published = [r[0] for r in conn.execute('SELECT ticker FROM companies ORDER BY ticker')]
-        if metadata.get('contract') != 'alphalake-sqlite-v12' or metadata['source_database_sha256'] != hashes[str(source_database)]:
+        if metadata.get('contract') != 'alphalake-sqlite-v13' or metadata['source_database_sha256'] != hashes[str(source_database)]:
             raise ValueError('current canonical source and SQLite contract required')
         companies = {r[0]: r[1] for r in conn.execute('SELECT ticker,stock_price_listing FROM companies') if r[0] in members}
         from data_sources.us_cn_hk_db import input_contexts

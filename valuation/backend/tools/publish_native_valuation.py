@@ -88,7 +88,7 @@ def validate_check(summary, expected):
             value = row['final'].get('value_per_share')
             if not isinstance(value, (int, float)) or not math.isfinite(value):
                 raise ValueError('nonfinite/missing valuation: '+row['ticker'])
-        elif row['admission'] not in ('blocked_required_inputs','blocked_reference_inputs') or row['http_status'] != 422:
+        elif row['admission'] not in ('blocked_required_inputs','blocked_reference_inputs','outside_product_scope','requires_scope_review') or row['http_status'] != 422:
             raise ValueError('unexpected native rejection: '+row['ticker'])
 
 

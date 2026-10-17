@@ -1,3 +1,4 @@
+from data_sources import valuation_scope
 import json
 import sqlite3
 
@@ -33,7 +34,7 @@ def test_coverage_keeps_financial_unknown_and_missing_denominators(monkeypatch):
     assert result['missing_categories']=={'research_history':{'nonfinancial_by_reference':1}}
     assert len(result['companies'][1]['gaps'])==2
     assert result['companies'][2]['admission']=='blocked_security_identity'
-    assert coverage.company_scope(companies[0], {'status':'not_published'})[0]=='unresolved_industry_scope'
+    assert valuation_scope.company_scope(companies[0], {'status':'not_published'})[0]=='unresolved_industry_scope'
     with pytest.raises(ValueError,match='cutoff mismatch'):
         coverage.audit(conn, ready | {'information_as_of':'2026-09-28T00:00:00Z'},scope)
     with pytest.raises(ValueError,match='source identities'):
@@ -45,7 +46,7 @@ def test_financial_policy_uses_existing_catalogue_and_gap_is_not_root_cause():
     from pathlib import Path
     root = Path(__file__).resolve().parents[3]
     packet = json.loads((root/'internal/source/damodaran/testdata/beta-expected.json').read_text())
-    assert coverage.FINANCIAL_INDUSTRIES <= {r['industry'] for r in packet['observations']}
+    assert valuation_scope.FINANCIAL_INDUSTRIES <= {r['industry'] for r in packet['observations']}
     assert coverage.gap_category(dict(series='quarterly',offset=0,field='r_and_d_expense'))=='research_ttm'
     assert coverage.gap_category(dict(series='annual',offset=0,field='r_and_d_expense'))=='research_base_year'
 
@@ -53,8 +54,8 @@ def test_financial_policy_uses_existing_catalogue_and_gap_is_not_root_cause():
 def test_tdx_financial_identity_is_used_but_conflict_is_not_guessed():
     member = dict(source='tdx',taxonomy_code='tdx_shenwan_industry',node_code='X5101',node_name='证券')
     company = dict(industry_memberships=[member])
-    assert coverage.company_scope(company, {'status':'not_published'})[0]=='outside_financial_scope'
+    assert valuation_scope.company_scope(company, {'status':'not_published'})[0]=='outside_financial_scope'
     company['industry_memberships'].append(dict(source='damodaran',taxonomy_code='damodaran_industry_2026',node_name='Retail (General)'))
-    assert coverage.company_scope(company, {'status':'verified_source'})[0]=='unresolved_industry_scope'
+    assert valuation_scope.company_scope(company, {'status':'verified_source'})[0]=='unresolved_industry_scope'
     member['node_name']='tampered'
-    assert coverage.company_scope(dict(industry_memberships=[member]), {})[0]=='unresolved_industry_scope'
+    assert valuation_scope.company_scope(dict(industry_memberships=[member]), {})[0]=='unresolved_industry_scope'

@@ -7,7 +7,7 @@ import sqlite3
 
 from data_sources.native_references import load_snapshot, reference_gaps
 from data_sources.damodaran_parsers.company_industry_parser import alphalake_company_industry_snapshot
-from tools.audit_native_coverage import company_scope
+from data_sources.valuation_scope import company_scope
 from tools.export_alphalake_sqlite import CONTRACT, digest
 
 

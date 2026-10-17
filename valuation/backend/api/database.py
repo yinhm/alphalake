@@ -98,12 +98,15 @@ def compatibility(ticker: str) -> dict:
         raise HTTPException(status_code=503, detail=f'Database unavailable: {error}') from error
     if result is None:
         raise HTTPException(status_code=404, detail=f'Ticker not in database: {ticker}')
+    from data_sources.valuation_scope import attach_scope_diagnostic
+    if result.get('model_scope') is not None:
+        result = attach_scope_diagnostic(result, result['model_scope'])
     if result['status']=='ready':
         from api.routes import _get_damodaran_store
         from data_sources.native_references import attach_reference_diagnostic
         result=attach_reference_diagnostic(result,_get_damodaran_store(),ticker)
     else:
-        result=dict(result,financial_status=result['status'],reference_missing=[],reference_status='not_evaluated_financial_blocked')
+        result=dict(result,financial_status=result.get('financial_status', result['status']),reference_missing=[],reference_status='not_evaluated_admission_blocked')
     return result
 
 
@@ -414,7 +417,7 @@ def _initialize_native_cny_financing(inputs, store, risk_free_rate):
     from datetime import date
     from decimal import Decimal
     from data_sources.alphalake_wacc import ReferenceSnapshot
-    from tools.audit_native_coverage import FINANCIAL_INDUSTRIES
+    from data_sources.valuation_scope import FINANCIAL_INDUSTRIES
     if (inputs.reporting_currency!='CNY' or inputs.stock_price_currency!='CNY'
             or not inputs.ticker.startswith(('SHSE:', 'SZSE:'))
             or inputs.industry_data.industry_name in FINANCIAL_INDUSTRIES):
@@ -503,6 +506,10 @@ def from_database(req: FromDatabaseRequest) -> dict:
     if record is None:
         raise HTTPException(status_code=404, detail=f"Ticker not in database: {req.ticker}")
 
+    if compatibility is not None:
+        from data_sources.valuation_scope import attach_scope_diagnostic
+        compatibility = attach_scope_diagnostic(compatibility, record['input_context']['model_scope'], req.industry_override)
+
     if compatibility is not None and compatibility['status'] != 'ready':
         raise HTTPException(status_code=422, detail='原生估值数据尚未达标：' + '；'.join(compatibility['blockers']) + '。详细字段见 /api/database/compatibility/' + req.ticker)
 
@@ -520,6 +527,9 @@ def from_database(req: FromDatabaseRequest) -> dict:
         raise HTTPException(status_code=422,detail='；'.join(r['reason'] for r in gaps))
     try:
         inputs, industry_resolved = _db_record_to_company_input(record, .0425 if req.risk_free_rate is None else req.risk_free_rate, req.industry_override, reference_store=store, country_override=req.country_override)
+        from data_sources.valuation_scope import FINANCIAL_INDUSTRIES
+        if inputs.industry_data.industry_name in FINANCIAL_INDUSTRIES:
+            raise ValueError('实际参考选择为金融行业，不适用当前非金融DCF')
         financing_sources, financing_warnings = _initialize_native_cny_financing(inputs, store, req.risk_free_rate)
     except ValueError as e:
         raise HTTPException(status_code=422,detail=str(e)) from e

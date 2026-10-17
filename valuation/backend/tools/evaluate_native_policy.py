@@ -35,7 +35,7 @@ def prepare(baseline, references, recipe, metadata, revenue_facts):
     if set(recipe) != {'version','wacc','forecast','boundaries'}:
         raise ValueError('explicit native policy recipe required')
     # 单行业、全中国暴露和信用档均是显式情景，不写回公司分类或评级。
-    from tools.audit_native_coverage import FINANCIAL_INDUSTRIES
+    from data_sources.valuation_scope import FINANCIAL_INDUSTRIES
     if inputs.industry_data.industry_name in FINANCIAL_INDUSTRIES:
         raise ValueError('financial industry outside native policy scope')
     policy = deepcopy(recipe['wacc'])
@@ -336,7 +336,7 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
     """保存用户完整输入，组合既有增长/资本对照，不选择胜出者。"""
     from fastapi.testclient import TestClient
     from api.main import app
-    from tools.audit_native_coverage import FINANCIAL_INDUSTRIES
+    from data_sources.valuation_scope import FINANCIAL_INDUSTRIES
     from tools.compare_native_capital import compare as compare_capital, POLICY, HISTORY_POLICY
     from tools.compare_native_growth import compare as compare_growth
     from tools.review_native_policy import review_report
@@ -353,7 +353,7 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
     with sqlite3.connect(database.as_uri()+'?mode=ro', uri=True) as connection:
         metadata = dict(connection.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'"))
         snapshot_tickers = {r[0] for r in connection.execute('SELECT ticker FROM companies')}
-    if metadata.get('contract') != 'alphalake-sqlite-v12':
+    if metadata.get('contract') != 'alphalake-sqlite-v13':
         raise ValueError('current native SQLite contract required')
     with database.open('rb') as stream: snapshot_hash = hashlib.file_digest(stream, 'sha256').hexdigest()
     override_source = dict(path=str(overrides_file), sha256=hashlib.sha256(overrides_file.read_bytes()).hexdigest()) if overrides_file else None

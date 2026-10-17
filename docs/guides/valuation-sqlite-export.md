@@ -1,10 +1,10 @@
 # 标准财务事实导出 SQLite
 
-当前按[消费快照spec](../valuation/sqlite-input-snapshot-spec.md)实现v12：DuckDB负责完整标准事实与治理，SQLite交付原生财务宽表、TTM、参考和紧凑上下文。切换状态及全范围验收见[项目状态](../implementation-status.md)。旧快照必须从主库重建，不能直接改版本号。
+当前按[消费快照spec](../valuation/sqlite-input-snapshot-spec.md)实现v13：DuckDB负责完整标准事实与治理，SQLite交付原生财务宽表、TTM、参考和紧凑上下文。切换状态及全范围验收见[项目状态](../implementation-status.md)。旧快照必须从主库重建，不能直接改版本号。
 
-当前提供TDX标准财务及版本化Damodaran参考组成的SQLite快照，保持原生valuation页面、请求和估值引擎。经用户批准，现金及长期投资的已知组成可作为显式代理用于估值；不按公司套专项EBIT政策。财务值、代理与真实缺项分别留痕，准入依据见[实际模型准入](../valuation/valuation-input-gates-20260925.md)。工具不修改源DuckDB或默认seed。当前代码契约为`alphalake-sqlite-v12`，旧快照须显式重导出；主库与网页是否已切换以[项目状态](../implementation-status.md)为准。
+当前提供TDX标准财务及版本化Damodaran参考组成的SQLite快照，保持原生valuation页面、请求和估值引擎。经用户批准，现金及长期投资的已知组成可作为显式代理用于估值；不按公司套专项EBIT政策。财务值、代理与真实缺项分别留痕，准入依据见[实际模型准入](../valuation/valuation-input-gates-20260925.md)。工具不修改源DuckDB或默认seed。当前代码契约为`alphalake-sqlite-v13`，旧快照须显式重导出；主库与网页是否已切换以[项目状态](../implementation-status.md)为准。
 
-逐期间已核实TDX余额源零可通过[独立审核补充](../history/historical-debt-zero-review.md)进入目标输入，保留完整审核证据，不写入标准事实；旧快照须显式重导出。[本轮重新接入](../history/valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v12`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
+逐期间已核实TDX余额源零可通过[独立审核补充](../history/historical-debt-zero-review.md)进入目标输入，保留完整审核证据，不写入标准事实；旧快照须显式重导出。[本轮重新接入](../history/valuation-reconnect-20260926.md)已补债务组成、历史研发与市场价格代理；现金/长期投资列以`estimated_partial_scope`写入已知分量并允许估值使用，不能直接视作完整目标总额。当前证据快照契约为`alphalake-sqlite-v13`；新导出不再将报表利润总额误填为剔除特殊项目税前利润，旧快照不能据旧available标记冒充语义已审核。
 
 依赖Python 3.11+标准库和当前版本`alphalake`程序，无新增包。先构建当前程序；本机的大库任务、构建和测试须串行放在独立systemd系统服务中，参见[内存隔离约束](fundamental-memory-20260919.md)。例如：
 
@@ -84,9 +84,9 @@ TTM流量按上一全年＋本年累计−上年同月累计直接计算，三�
 
 ## SQLite证据存储契约
 
-v12每证券一条紧凑上下文，记录身份、实际源记录ID、市场/税率状态、例外及审核哈希、累计TTM所需观察与上年同窗收入。源包哈希共享在全库元数据；公司输入与上下文共同签名，篡改值、单位、期间或审核状态拒绝。完整源金额/公告/PDF/审核包不复制到SQLite。后端诊断标明`evidence_expanded=false`，来源引用不等于完整证据。
+v13每证券一条紧凑上下文，记录身份、实际源记录ID、市场/税率状态、例外及审核哈希、累计TTM所需观察与上年同窗收入。源包哈希共享在全库元数据；公司输入与上下文共同签名，篡改值、单位、期间或审核状态拒绝。完整源金额/公告/PDF/审核包不复制到SQLite。后端诊断标明`evidence_expanded=false`，来源引用不等于完整证据。
 
-全库元数据须含`contract=alphalake-sqlite-v12`、`input_context_format=native-wide-context-v1`、财务内容签名、投影规范及范围收据哈希。冻结候选身份和完整分母放`workspace/derived/sqlite-export/`，不参与网页运行。运行端只支持当前版本；旧证据用原提交复验，代码与快照协调切换，成功重开后清理回滚副本。
+全库元数据须含`contract=alphalake-sqlite-v13`、`input_context_format=native-wide-context-v2`、财务内容签名、投影规范及范围收据哈希。冻结候选身份和完整分母放`workspace/derived/sqlite-export/`，不参与网页运行。运行端只支持当前版本；旧证据用原提交复验，代码与快照协调切换，成功重开后清理回滚副本。
 
 ## 年度有效税率
 
@@ -122,7 +122,7 @@ curl http://127.0.0.1:8080/api/database/compatibility/SZSE:300866
 
 ## 原生参考发布
 
-当前v12另含五张既有参考表：`reference_release`、`reference_value`、`reference_company`、`reference_issuer_association`和`reference_wacc`。原生参考契约v4，从当前主库schema58已完成的发布读取；缺包或错误哈希拒绝，不读散落工作簿回退。原US行业口径、发行人关联、人民币来源初值及用户覆盖规则保持。见[参考边界](../valuation/native-reference-bridge.md)。
+当前v13另含五张既有参考表：`reference_release`、`reference_value`、`reference_company`、`reference_issuer_association`和`reference_wacc`。原生参考契约v4，从当前主库schema58已完成的发布读取；缺包或错误哈希拒绝，不读散落工作簿回退。原US行业口径、发行人关联、人民币来源初值及用户覆盖规则保持。见[参考边界](../valuation/native-reference-bridge.md)。
 
 默认参考截止等于`--as-of`；`--reference-as-of <RFC3339>`允许明确使用另一参考截止。例如固定旧财务窗口比较最新参考时，两个截止分别记录，不能称当时可用的历史估值。旧快照须显式重新导出，不能只改metadata契约标签。
 

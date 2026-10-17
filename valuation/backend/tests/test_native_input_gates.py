@@ -29,7 +29,10 @@ def sample(monkeypatch, quarter='2025-12-31'):
 def standard_context(record):
     # API选择回归的模拟取数边界；真实快照签名/单位另由导出回归验证。
     co = record['company']
-    record['input_context'] = dict(source_records={},exceptions=[],report_period=co['period_date_quarterly'],
+    from data_sources.valuation_scope import scope_context
+    record['input_context'] = dict(model_scope=scope_context(dict(industry_memberships=[dict(
+        source='damodaran',taxonomy_code='damodaran_industry_2026',node_name='Synthetic')]),
+        dict(status='verified_source', release_id=1)), source_records={},exceptions=[],report_period=co['period_date_quarterly'],
         market=dict(status='available',share_period=co['period_date_quarterly']),
         tax=dict(status='missing_standard_fact',period=co['period_date_annual']))
     return record['input_context']
@@ -216,7 +219,7 @@ def test_adjustments_require_only_their_selected_inputs(monkeypatch):
 def test_prepared_ttm_growth_rebuilds_comparison_from_cumulative_facts_without_quarters(monkeypatch):
     import json
     record = sample(monkeypatch, quarter='2026-06-30')
-    record['data_source'] = dict(contract='alphalake-sqlite-v12', information_as_of='2026-09-25T00:00:00Z', source_database_sha256='fixture')
+    record['data_source'] = dict(contract='alphalake-sqlite-v13', information_as_of='2026-09-25T00:00:00Z', source_database_sha256='fixture')
     record['financials_ttm'] = record['financials_annual'][0] | dict(revenues=1200, ebit=170)
     context = standard_context(record)
     context['cumulative_windows'] = dict(current=dict(revenues=600,ebit=None),prior=dict(revenues=400,ebit=None),quarters=2)
@@ -242,7 +245,7 @@ def test_original_api_admits_reviewed_current_inputs_with_history_gaps(monkeypat
     from api.main import app
 
     record = sample(monkeypatch)
-    record['data_source'] = dict(contract='alphalake-sqlite-v12', report_period='2025-12-31', information_as_of='2026-09-25')
+    record['data_source'] = dict(contract='alphalake-sqlite-v13', report_period='2025-12-31', information_as_of='2026-09-25')
     record['financials_ttm'] = record['financials_annual'][0]
     record['financials_annual'].append(dict(fy_offset=1,revenues=None,ebit=None))
     conn = sqlite3.connect(':memory:', check_same_thread=False)
@@ -358,7 +361,7 @@ def test_forecast_patch_resolution_and_inactive_sensitivity(monkeypatch):
 
 def test_native_gate_requires_valid_review_reference_for_source_zero(monkeypatch):
     record = sample(monkeypatch)
-    record['data_source'] = dict(contract='alphalake-sqlite-v12')
+    record['data_source'] = dict(contract='alphalake-sqlite-v13')
     record['financials_ttm'] = record['financials_annual'][0]
     context = standard_context(record)
     reference = dict(kind='reviewed_source_zero',import_sha256='a'*64,field='bonds_payable',period='2025-12-31')
@@ -372,3 +375,50 @@ def test_native_gate_requires_valid_review_reference_for_source_zero(monkeypatch
     exception['source_refs'] = [reference | {'import_sha256':'bad'}]
     with pytest.raises(ValueError,match='Invalid reviewed input reference'):
         db.native_compatibility(None,'TEST')
+
+
+def test_database_product_scope_precedes_dcf_and_keeps_financial_readiness(monkeypatch):
+    from contextlib import contextmanager
+    from fastapi.testclient import TestClient
+    from api.main import app
+    from data_sources.valuation_scope import scope_context
+    record = sample(monkeypatch)
+    record['data_source'] = dict(contract=db.CONTRACT)
+    record['financials_ttm'] = record['financials_annual'][0]
+    context = standard_context(record)
+    @contextmanager
+    def connection():
+        yield None
+    monkeypatch.setattr(db, 'get_connection', connection)
+    reference = dict(status='verified_source', release_id=1)
+    def scope(industry=None, financial_node=False):
+        members = [dict(source='damodaran', taxonomy_code='damodaran_industry_2026', node_name=industry)] if industry else []
+        if financial_node:
+            members.append(dict(source='tdx', taxonomy_code='tdx_shenwan_industry', node_code='X5101', node_name='证券'))
+        context['model_scope'] = scope_context(dict(industry_memberships=members), reference)
+    with TestClient(app) as client:
+        for industry, node in [('Brokerage & Investment Banking', False), ('Synthetic', True), (None, True)]:
+            scope(industry, node)
+            diagnostic = client.get('/api/database/compatibility/TEST').json()
+            assert diagnostic['status'] == ('requires_scope_review' if industry == 'Synthetic' else 'outside_product_scope')
+            assert diagnostic['financial_status'] == 'ready' and not diagnostic['required_missing']
+            # An industry override cannot erase positive financial-classification evidence.
+            for override in (None, 'Synthetic'):
+                response = client.post('/api/valuation/from-database', json=dict(ticker='TEST', industry_override=override))
+                assert response.status_code == 422 and '金融' in response.text
+        scope()
+        assert client.get('/api/database/compatibility/TEST').json()['status'] == 'requires_scope_review'
+        assert client.post('/api/valuation/from-database', json=dict(ticker='TEST')).status_code == 422
+        response = client.post('/api/valuation/from-database', json=dict(ticker='TEST', industry_override='Synthetic', risk_free_rate=.04))
+        assert response.status_code == 200, response.text
+        assert '显式非金融行业条件' in response.text
+        assert client.delete('/api/valuation/'+response.json()['id']).status_code == 204
+        scope('Synthetic')
+        response = client.post('/api/valuation/from-database', json=dict(ticker='TEST', risk_free_rate=.04))
+        assert response.status_code == 200, response.text
+        assert client.delete('/api/valuation/'+response.json()['id']).status_code == 204
+
+        from api.routes import _get_damodaran_store
+        store = _get_damodaran_store()
+        store.lookup_industry = lambda *a, **kw: IndustryData(industry_name='Brokerage & Investment Banking', beta_u=1)
+        assert client.post('/api/valuation/from-database', json=dict(ticker='TEST', risk_free_rate=.04)).status_code == 422

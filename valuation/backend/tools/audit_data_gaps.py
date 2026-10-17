@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 
 from tools.export_alphalake_sqlite import FIELDS, DEBT_COMPONENTS, LONG_TERM, digest
-from tools.audit_native_coverage import FINANCIAL_INDUSTRIES, TDX_FINANCIAL_NODES
+from data_sources.valuation_scope import FINANCIAL_INDUSTRIES, TDX_FINANCIAL_NODES
 
 
 def source_requests(coverage):

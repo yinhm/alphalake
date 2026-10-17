@@ -2,7 +2,7 @@
 
 本页是AlphaLake→SQLite→原生API→valuation的数据转换规范。修改解析、派生、导出、准入、会话或展示前，先核对本页及实际调用方；不能仅凭数据库列名或历史验收推断引擎要求。字段与来源映射由[SQLite导出手册](../guides/valuation-sqlite-export.md#数据范围与语义)统一维护，不再复制第二份词典。
 
-2026-10-11按[SQLite消费快照spec](sqlite-input-snapshot-spec.md)实现v12：治理与完整标准事实留在DuckDB，SQLite仅交付财务宽表、既有TTM、参考和紧凑上下文。撤销五张辅助/治理表，没有引擎公式或默认政策变更；切换及验收以[项目状态](../implementation-status.md)为准。
+2026-10-11按[SQLite消费快照spec](sqlite-input-snapshot-spec.md)实现v13：治理与完整标准事实留在DuckDB，SQLite仅交付财务宽表、既有TTM、参考和紧凑上下文。撤销五张辅助/治理表，没有引擎公式或默认政策变更；切换及验收以[项目状态](../implementation-status.md)为准。
 
 公司披露的业绩预告已按[预告数据链spec](../earnings-guidance-spec.md)独立采集并写入主库schema58，提供手工同步和只读JSON查询。预告区间不填正式财务、TTM或EBIT缺项；独立版本化证据包仍待接入，不改变本页SQLite／原生估值输入和默认。故事自动绑定及参数采用仍需独立契约和审批。
 
@@ -38,7 +38,7 @@ AlphaLake负责单位、期间、身份、范围、缺项及确定性转换；va
 
 ## SQLite和引擎输入
 
-当前快照契约为`alphalake-sqlite-v12`：每公司一行`financials_ttm`和一个`metadata.input_context:<ticker>`，保留原年度/季度宽表。上下文交付来源记录引用、市场/税率状态、稀疏例外及现有prepared TTM所需累计观察；输入与上下文签名绑定。源包哈希在全库共享，完整标准事实、源精度及审核只保留在DuckDB/归档。撤销`standard_records`、`standard_facts`、`export_cells`、`reviewed_source_zeros`和`export_universe`，不换名或藏入全量JSON。季度仍按累计差分，缺前季NULL；TTM不是新披露事实。
+当前快照契约为`alphalake-sqlite-v13`：每公司一行`financials_ttm`和一个`metadata.input_context:<ticker>`，保留原年度/季度宽表。上下文交付来源记录引用、市场/税率状态、稀疏例外及现有prepared TTM所需累计观察；输入与上下文签名绑定。源包哈希在全库共享，完整标准事实、源精度及审核只保留在DuckDB/归档。撤销`standard_records`、`standard_facts`、`export_cells`、`reviewed_source_zeros`和`export_universe`，不换名或藏入全量JSON。季度仍按累计差分，缺前季NULL；TTM不是新披露事实。
 
 非年末原生后端将TTM行组装为**已有**`CompanyValuationInput.prepared_ttm`；期间为上一年同月末次日至当前报告期末，且明确币种、单位、信息截止和来源。`quarterly_financials=[]`、`quarters_since_10k=0`表示不再请求引擎季度轮转，**不表示财年后实际经过零个季度**。实际累计窗口及三个组成保存在`prepared_ttm.provenance`，真实季度展示数据单独留在`quarterly_display`证据中，不参与第二次计算；历史季表仍可从公司数据接口查询。prepared财务行的`fiscal_year`保留原入口FY0索引，TTM的真实起止以`period_start/period_end`为准，不从该索引推断披露年度。年末仍消费原年度路径，避免将完整财年误标为旋转TTM及改变匹配期初资本诊断。
 
@@ -125,7 +125,7 @@ LTM与TTM在本项目均指最近十二个月。它是经营流量基期，不�
 
 ## 人民币WACC的显式输入契约
 
-2026-10-05起，原生参考契约为`alphalake-native-references-v4`。SQLite v12保留单行`reference_wacc`，保存主库已有四类完整发布的解析参考包：国家风险、Global行业Beta、人民币国债曲线及大型非金融信用档。包与原生参考共用信息截止及内容签名；重复的国家风险须与原生源行、发布ID及观察日一致；两类Global Beta解析须绑定同一原文件哈希，不能混用修订版本。旧SQLite必须显式重导出，缺包、内容篡改或跨版本混用拒绝，不从散落JSON回退。
+2026-10-05起，原生参考契约为`alphalake-native-references-v4`。SQLite v13保留单行`reference_wacc`，保存主库已有四类完整发布的解析参考包：国家风险、Global行业Beta、人民币国债曲线及大型非金融信用档。包与原生参考共用信息截止及内容签名；重复的国家风险须与原生源行、发布ID及观察日一致；两类Global Beta解析须绑定同一原文件哈希，不能混用修订版本。旧SQLite必须显式重导出，缺包、内容篡改或跨版本混用拒绝，不从散落JSON回退。
 
 `GET /api/database/wacc-references`只读返回`reference_snapshot_id`及完整来源参考，保留观察日、取得时点、归档哈希和定位，不自动选择公司WACC。`evaluate_native_policy --recipe`及已批准报表信用条件从同一SQLite读取参考，取消额外`--references`；信用政策v2只存政策及年龄限制，不再内嵌源数据。用户完整请求仍可通过既有typed API供给，来源与政策分别留痕。数据新鲜度等待手工刷新；发布旧观察不等于最新，原显式政策年龄门槛不自动放宽。2026-10-05用户已批准人民币默认融资初值，范围见下节；不随之批准US/Global切换或公司信用认证。
 
@@ -186,7 +186,7 @@ WACC、经营与稳态的实际字段、覆盖优先级及交付步骤统一见[
 
 ## 具名条件交付契约
 
-`tools.evaluate_native_policy --explicit-input`复用当前完整`CompanyValuationInput`和`POST /api/valuation`，不增加页面；研发、融资税盾及年度总净再投资扩展沿用已批准typed字段。调用者提供已核验来源的完整`{"inputs": ...}`，批量证券须唯一且为沪深代码；SQLite须为v12，结果绑定实际`reference_snapshot_id`。具体命令和运行追溯见[统一入口](../guides/company-valuation-entry.md#原生具名条件自动交付)。
+`tools.evaluate_native_policy --explicit-input`复用当前完整`CompanyValuationInput`和`POST /api/valuation`，不增加页面；研发、融资税盾及年度总净再投资扩展沿用已批准typed字段。调用者提供已核验来源的完整`{"inputs": ...}`，批量证券须唯一且为沪深代码；SQLite须为v13，结果绑定实际`reference_snapshot_id`。具体命令和运行追溯见[统一入口](../guides/company-valuation-entry.md#原生具名条件自动交付)。
 
 - **输入优先级**：完整用户请求先原样保存并计算`user_explicit`，既有原生公司派生指标照常刷新，用户股价波动率保持。条件请求单独保存，不覆盖原输入或标准事实；金融及发布范围外保留拒绝分母。
 - **条件组合**：仅对十年预测和正基期收入复用现有3/5/10年收敛路径，起点及终点来自原结果；每条路径再分别比较公司三年历史资本和后五年稳态过渡。增长对照先验证等价基线，不改变税率、WACC及股权桥；资本对照仅改年度倍率。历史缺项/口径不符保留`outside_policy_scope`，不补零或回退另一代理；非十年原模型结果仍交付。
@@ -207,7 +207,7 @@ SQLite标准事实出口增加金融业务利息收入/费用及使用权资产�
 
 ## 叙事到年度输入契约
 
-`tools.narrative_valuation`在输入侧保存`narrative-valuation-v2`，不新增引擎字段。PDF仅引用来源归档及哈希，登记于`manifest.pdf_references`，不复制进研究输出；冻结v1按原提交复验。完整设计及操作见[故事到估值](narrative-valuation-plan.md#最小接入方式与产出)。`prepare`绑定SQLite v12、完整范围收据、财务／股本期、信息截止及参考版本，计算并保存实际原生基线；生成的草稿不进入故事计算。
+`tools.narrative_valuation`在输入侧保存`narrative-valuation-v2`，不新增引擎字段。PDF仅引用来源归档及哈希，登记于`manifest.pdf_references`，不复制进研究输出；冻结v1按原提交复验。完整设计及操作见[故事到估值](narrative-valuation-plan.md#最小接入方式与产出)。`prepare`绑定SQLite v13、完整范围收据、财务／股本期、信息截止及参考版本，计算并保存实际原生基线；生成的草稿不进入故事计算。
 
 人工已指定的逐证券条件可通过`tools.narrative_conditions`展开，见[显式锚点契约](narrative-valuation-plan.md#逐证券显式条件展开)：完整FY同比／四年收入三年CAGR／规模持平，报表利润率与逐年研发桥分别处理，保持及成熟年数显式填写。实际计算仍只消费已有年度经营／研发税务／资本输入；缺历史或超界不换默认锚点。该工具不是自动识别经济合理参数或公司故事的算法，条件不适用不反向清空标准事实。价差表读取同版未复权收盘价，缺报价保留空值。
 
@@ -240,3 +240,8 @@ SQLite标准事实出口增加金融业务利息收入/费用及使用权资产�
 来源初值Kd随会话Rf或行业更新重新基准化，来源稳态条件随初始WACC重算；用户显式Kd、稳态值（包括0）分别解除对应联动，完整未来融资路径优先。清空这两项融资覆盖恢复人民币来源条件，避免隐含回退美元行业利率；其他经营参数的既有清空行为不变。失败PATCH先拒绝，保留会话与来源记录。来源初值及用户覆盖分别保存在`source_metadata`。
 
 `check_native_sqlite`及手工发布的`--risk-free-rate`现为可选；省略验收实际数据库初值，显式传入仍是用户条件。参考年龄按快照截止报告；若归档国债超过独立显式市场政策7天则警告，允许研发来源初值，不宣称公司融资已获市场核实，也不放宽显式政策拒绝门槛。方法、代理及KB入口见[人民币政策](native-cny-policy.md#当前数据库默认人民币融资2026-10-05)。
+
+
+### 数据库入口的产品范围
+
+财务齐全不等于非金融模型适用。SQLite v13随输入交付紧凑`model_scope`；原生GET诊断独立保留`financial_status`，明确金融为`outside_product_scope`，分类未明为`requires_scope_review`。两类计算返回422，完整证券及财务事实不删除。无金融证据时可沿既有显式非金融行业条件计算；行业覆盖不消除已知金融证据。详见[消费快照范围契约](sqlite-input-snapshot-spec.md#8-产品范围准入v13)。

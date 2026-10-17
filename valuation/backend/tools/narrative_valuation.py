@@ -172,7 +172,7 @@ def prepare(database, coverage, tickers, output):
     with sqlite3.connect(database.as_uri()+'?mode=ro', uri=True) as conn:
         metadata = dict(conn.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'"))
         all_tickers = [r[0] for r in conn.execute('SELECT ticker FROM companies ORDER BY ticker')]
-    if metadata.get('contract') != 'alphalake-sqlite-v12':
+    if metadata.get('contract') != 'alphalake-sqlite-v13':
         raise ValueError('current native SQLite contract required')
     scopes = load_scope(coverage, snapshot_hash, metadata, all_tickers)
     if not tickers or len(set(tickers)) != len(tickers) or set(tickers)-set(scopes):

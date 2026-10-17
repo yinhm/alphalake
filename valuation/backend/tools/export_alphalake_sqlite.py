@@ -273,13 +273,14 @@ def annual_effective_tax_rate(facts, conflicts, instrument, end):
 
 
 def export_snapshot(connection, companies, fetch, period, asof, years=10, quarters=8):
+    from data_sources.valuation_scope import scope_context
     target.init_schema(connection)
     connection.execute('CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
     ttm_columns = ['ticker'] + target._ANNUAL_COLS[2:]
     connection.execute('CREATE TABLE financials_ttm(ticker TEXT PRIMARY KEY REFERENCES companies(ticker),'
                        + ','.join(name+' REAL' for name in ttm_columns[1:])+')')
     connection.execute('INSERT INTO metadata VALUES(?,?)', ('contract', CONTRACT))
-    connection.execute('INSERT INTO metadata VALUES(?,?)', ('input_context_format', 'native-wide-context-v1'))
+    connection.execute('INSERT INTO metadata VALUES(?,?)', ('input_context_format', 'native-wide-context-v2'))
     connection.executemany('INSERT INTO metadata VALUES(?,?)',dict(report_period=period.isoformat(),
         information_as_of=asof.isoformat(),wide_money_unit='million_CNY',wide_shares_unit='million_shares').items())
     base = date(period.year if period.month == 12 else period.year - 1, 12, 31)
@@ -393,6 +394,7 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
                 price_information_as_of=asof.isoformat(), basis='unadjusted_close_times_reported_total_shares',
                 known_foreign_share_classes=foreign, share_class_prices_and_fx_complete=False),
             tax=dict(status=tax_status, period=base.isoformat(), basis=tax_evidence['basis']),
+            model_scope=scope_context(company, company.get('industry_reference', {})),
             source_records={}, exceptions=[])
         def remember(series, offset, end, column, value, status, evidence):
             refs = source_references(evidence)
@@ -496,6 +498,12 @@ def main():
                     '--period', args.period.isoformat(), '--as-of', args.as_of.isoformat()], check=True, timeout=600)
                 companies = [json.loads(line) for line in (data/'companies.jsonl').read_text().splitlines()]
                 companies.sort(key=lambda c: ((c.get('symbols') or [''])[0][2:], c['instrument_id']))
+                reference = json.loads((data/'industry-reference.json').read_text())
+                memberships = {row['instrument_id']: row['industry_memberships']
+                    for row in map(json.loads, (data/'industries.jsonl').read_text().splitlines())}
+                for company in companies:
+                    company['industry_reference'] = reference
+                    company['industry_memberships'] = memberships.get(company['instrument_id'], [])
                 source_projection = dict(fields=SOURCE_FIELDS, first=first.isoformat(), field_periods=projection)
                 source_signature = financial_signature(data)
                 artifacts = set()

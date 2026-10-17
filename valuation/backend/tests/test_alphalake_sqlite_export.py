@@ -168,8 +168,9 @@ class SQLiteExportTest(unittest.TestCase):
                 rows = Path(argv[argv.index('--output')+1])
                 rows.mkdir()
                 (rows/'reviewed_zeros.jsonl').write_text('')
-                for name in ('companies.jsonl', 'records.jsonl', 'fields.jsonl', 'conflicts.jsonl'):
+                for name in ('companies.jsonl', 'records.jsonl', 'fields.jsonl', 'conflicts.jsonl', 'industries.jsonl'):
                     (rows/name).write_text('')
+                (rows/'industry-reference.json').write_text('{}')
             with patch('sys.argv', argv), patch.object(exporter.subprocess, 'run', side_effect=snapshot_command), patch.object(exporter, 'export_snapshot', side_effect=ValueError('invalid unit')):
                 with self.assertRaisesRegex(ValueError, 'invalid unit'):
                     exporter.main()
@@ -193,7 +194,7 @@ def test_global_metadata_reads_do_not_scan_company_contexts():
         exporter.target.init_schema(conn)
         conn.executescript('CREATE TABLE financials_ttm(ticker TEXT); CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT);')
         conn.executemany('INSERT INTO metadata VALUES(?,?)',[
-            ('contract',exporter.CONTRACT),('input_context_format','native-wide-context-v1'),
+            ('contract',exporter.CONTRACT),('input_context_format','native-wide-context-v2'),
             ('aaa_global','before'),('zzz_global','after')])
         conn.executemany('INSERT INTO metadata VALUES(?,?)',[(f'input_context:SZSE:{i:06}','not_loaded') for i in range(5000)])
         steps = 0
@@ -203,7 +204,7 @@ def test_global_metadata_reads_do_not_scan_company_contexts():
             return int(steps>20)
         conn.set_progress_handler(bound_work,100)
         metadata = exporter.target.snapshot_metadata(conn)
-        assert metadata == dict(contract=exporter.CONTRACT,input_context_format='native-wide-context-v1',
+        assert metadata == dict(contract=exporter.CONTRACT,input_context_format='native-wide-context-v2',
                                 aaa_global='before',zzz_global='after')
 
 
@@ -225,7 +226,7 @@ def test_research_query_checks_financial_version_and_reports_source_conflicts(tm
             'CREATE TABLE financials_annual(ticker TEXT); CREATE TABLE financials_quarterly(ticker TEXT); CREATE TABLE financials_ttm(ticker TEXT);')
         conn.execute("INSERT INTO companies VALUES('SZSE:300866')")
         conn.executemany('INSERT INTO metadata VALUES(?,?)',dict(contract=exporter.CONTRACT,
-            input_context_format='native-wide-context-v1',source_database_sha256=exporter.digest(source),
+            input_context_format='native-wide-context-v2',source_database_sha256=exporter.digest(source),
             report_period='2026-06-30',information_as_of='2026-10-05T00:00:00+00:00',financial_content_signature='frozen',
             source_projection=json.dumps(dict(field_periods={'reported_ebit':['2026-06-30']}))).items())
         def query():return exporter.query_standard_inputs(conn,['reported_ebit'],['2026-06-30'],source)

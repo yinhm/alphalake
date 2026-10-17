@@ -3,6 +3,7 @@ package duckdb
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -123,6 +124,31 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
  AND o.recorded_at<=`+cutoff+` AND r.finished_at<=`+cutoff+`
  QUALIFY row_number() OVER(PARTITION BY o.instrument_id ORDER BY o.trade_date DESC,o.recorded_at DESC,o.observation_id DESC)=1
  ) q USING(instrument_id) ORDER BY u.instrument_id`); err != nil {
+		return err
+	}
+	memberships, reference, err := valuationIndustriesAsOf(ctx, tx, asof)
+	if err != nil {
+		return err
+	}
+	scopeFile, err := os.Create(filepath.Join(dir, "industries.jsonl"))
+	if err != nil {
+		return err
+	}
+	encoder := json.NewEncoder(scopeFile)
+	for id, members := range memberships {
+		if err = encoder.Encode(map[string]any{"instrument_id": id, "industry_memberships": members}); err != nil {
+			scopeFile.Close()
+			return err
+		}
+	}
+	if err = scopeFile.Close(); err != nil {
+		return err
+	}
+	referenceJSON, err := json.Marshal(reference)
+	if err != nil {
+		return err
+	}
+	if err = os.WriteFile(filepath.Join(dir, "industry-reference.json"), referenceJSON, 0600); err != nil {
 		return err
 	}
 	// Sort narrow report rows before JSON export. Expanding shared lineage for

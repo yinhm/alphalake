@@ -283,7 +283,7 @@ def search_companies(conn: sqlite3.Connection, query: str, limit: int = 20) -> l
     return [dict(r) for r in rows]
 
 
-CONTRACT = 'alphalake-sqlite-v12'
+CONTRACT = 'alphalake-sqlite-v13'
 UNMAPPED_INPUTS = frozenset({'earnings_before_tax', 'd_a', 'operating_lease_expense'})
 ASSET_PROXIES = {
     'cash_and_marketable_securities': 'cash_equivalents_only; short_term_investment_scope_and_overlap_unresolved',
@@ -312,7 +312,7 @@ def snapshot_metadata(conn):
         raise ValueError('Incomplete AlphaLake SQLite snapshot')
     if tables.intersection({'standard_records','standard_facts','export_cells','export_universe','reviewed_source_zeros'}):
         raise ValueError('Data governance tables must not enter the valuation snapshot')
-    if metadata.get('input_context_format') != 'native-wide-context-v1':
+    if metadata.get('input_context_format') != 'native-wide-context-v2':
         raise ValueError('Invalid input context contract; rebuild the snapshot')
     return metadata
 
@@ -342,7 +342,7 @@ def load_input_context(conn, ticker, company):
     if row is None:
         raise ValueError('Missing input context; rebuild the snapshot')
     context = json.loads(row[0])
-    allowed = {'ticker','instrument_id','report_period','currency','money_unit','shares_unit','market','tax',
+    allowed = {'ticker','instrument_id','report_period','currency','money_unit','shares_unit','market','tax','model_scope',
                'source_records','exceptions','cumulative_windows','prior_ttm_revenue','input_sha256'}
     required = allowed-{'cumulative_windows','prior_ttm_revenue'}
     if (not isinstance(context,dict) or set(context)-allowed or not required<=set(context) or context.get('ticker')!=ticker
@@ -355,6 +355,8 @@ def load_input_context(conn, ticker, company):
             or not isinstance(context.get('market'),dict) or not isinstance(context.get('tax'),dict)
             or not isinstance(context.get('exceptions'),list)):
         raise ValueError('Invalid input context identity/unit/period')
+    from data_sources.valuation_scope import validate_scope
+    validate_scope(context['model_scope'])
     if context.get('input_sha256')!=input_signature(conn,ticker,context):
         raise ValueError('Input values/context signature mismatch; rebuild the snapshot')
     end = date.fromisoformat(context['report_period'])
@@ -637,6 +639,7 @@ def native_compatibility(conn: sqlite3.Connection, ticker: str) -> dict | None:
         warnings.append('使用TDX来源报告EBIT；不代表已完成非经营/特殊项目调整或CIQ逐项口径认证')
         warnings.append('来源EBIT与现金/投资资产加回尚未完成经营范围配套核验，存在重复计价或遗漏风险；结果是条件估值，不是已正常化经营价值')
     return dict(ticker=ticker,status='blocked_required_inputs' if blockers else 'ready',
+        model_scope=record.get('input_context', {}).get('model_scope'),
         report_period=source.get('report_period') if source else co['period_date_quarterly'],
         information_as_of=source.get('information_as_of') if source else co['data_as_of'],
         blockers=blockers,required_missing=required,conditional_missing=conditional,

@@ -11,31 +11,7 @@ import tempfile
 from data_sources import us_cn_hk_db as db
 from tools.export_alphalake_sqlite import CONTRACT, digest
 
-# 当前范围政策，只匹配已核验Damodaran分类；不按公司名称猜行业。
-FINANCIAL_INDUSTRIES = frozenset({
-    'Bank (Money Center)', 'Banks (Regional)', 'Brokerage & Investment Banking',
-    'Financial Svcs. (Non-bank & Insurance)', 'Insurance (General)',
-    'Insurance (Life)', 'Insurance (Prop/Cas.)', 'Investments & Asset Management',
-})
-
-TDX_FINANCIAL_NODES = {
-    'X500101':'国有大型银行', 'X500102':'股份制银行', 'X500201':'城商行', 'X500202':'农商行',
-    'X5101':'证券', 'X5102':'保险', 'X510301':'非货币银行', 'X510302':'信托',
-    'X510303':'投资管理', 'X510304':'期货', 'X510305':'租赁', 'X510306':'金融控股', 'X510399':'其他金融服务',
-}
-
-
-def company_scope(company, reference):
-    all_members = company.get('industry_memberships') or []
-    members = [m for m in all_members if m['source'] == 'damodaran' and m['taxonomy_code'] == 'damodaran_industry_2026']
-    tdx_financial = any(m['source']=='tdx' and m['taxonomy_code']=='tdx_shenwan_industry'
-                        and TDX_FINANCIAL_NODES.get(m['node_code'])==m['node_name'] for m in all_members)
-    if reference.get('status') != 'verified_source' or len(members) != 1:
-        return ('outside_financial_scope' if tdx_financial else 'unresolved_industry_scope'), all_members
-    if tdx_financial and members[0]['node_name'] not in FINANCIAL_INDUSTRIES:
-        return 'unresolved_industry_scope', all_members
-    return ('outside_financial_scope' if members[0]['node_name'] in FINANCIAL_INDUSTRIES
-            else 'nonfinancial_by_reference'), all_members
+from data_sources.valuation_scope import company_scope
 
 
 def gap_category(cell):

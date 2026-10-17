@@ -56,19 +56,6 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
  ), latest AS (
  SELECT instrument_id,max(report_period) AS latest_report_period FROM fundamental.statement_snapshot
  WHERE announcement_time<=CAST(? AS TIMESTAMPTZ) AND report_period<=CAST(? AS DATE) GROUP BY instrument_id
- ), industries AS (
- SELECT m.instrument_id,list(struct_pack(source:=t.source,taxonomy_code:=t.taxonomy_code,
- node_code:=n.source_node_code,node_name:=n.name,node_id:=n.node_id,
- observed_at:=CAST(m.last_observed_at AS VARCHAR),effective_from:=CAST(m.effective_from AS VARCHAR),
- ingest_run_id:=m.last_observed_run_id,run_finished_at:=CAST(r.finished_at AS VARCHAR))
- ORDER BY t.taxonomy_code,n.source_node_code) AS industry_memberships
- FROM classification.membership m JOIN classification.node n USING(node_id)
- JOIN classification.taxonomy t USING(taxonomy_id) JOIN meta.ingest_run r ON r.ingest_run_id=m.last_observed_run_id
- WHERE t.taxonomy_type='industry' AND m.source=t.source AND r.source=m.source
- AND r.dataset='classification_industry' AND r.status IN ('completed','partial')
- AND m.last_observed_at<=CAST(? AS TIMESTAMPTZ) AND r.finished_at<=CAST(? AS TIMESTAMPTZ)
- AND m.effective_from<=CAST(? AS DATE) AND (m.effective_to IS NULL OR m.effective_to>CAST(? AS DATE))
- GROUP BY m.instrument_id
  ), conflicts AS (
  SELECT provider_code,list(struct_pack(code:=provider_code,period:=CAST(report_period AS VARCHAR),
  artifact_id:=artifact_id,artifact_sha256:=artifact_sha256,available_at:=CAST(observed_at AS VARCHAR),reason:=reason)
@@ -77,11 +64,11 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
  WHERE source='tdx' AND report_period<=CAST(? AS DATE) AND report_period>=make_date(year(CAST(? AS DATE))-1,1,1)
  GROUP BY provider_code
  ) SELECT CAST(to_json(r) AS VARCHAR) FROM (
- SELECT u.*,CAST(l.latest_report_period AS VARCHAR) AS latest_report_period,NULL AS fields,c.industry_memberships,q.source_conflicts
- FROM universe u LEFT JOIN latest l USING(instrument_id) LEFT JOIN industries c USING(instrument_id) LEFT JOIN conflicts q ON q.provider_code=substr(u.symbols[1],3)) r ORDER BY instrument_id`,
+ SELECT u.*,CAST(l.latest_report_period AS VARCHAR) AS latest_report_period,NULL AS fields,NULL AS industry_memberships,q.source_conflicts
+ FROM universe u LEFT JOIN latest l USING(instrument_id) LEFT JOIN conflicts q ON q.provider_code=substr(u.symbols[1],3)) r ORDER BY instrument_id`,
 		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"),
 		domain.IncludesBSE(ctx), code,
-		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), code, code, asof, end, asof, asof, asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof, end, end)
+		asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), asof.In(time.FixedZone("China", 8*3600)).Format("2006-01-02"), code, code, asof, end, asof, end, end)
 	if err != nil {
 		return nil, err
 	}
@@ -116,16 +103,13 @@ func exportValuationReadiness(ctx context.Context, db *sql.DB, end, asof time.Ti
 		}
 		ids[i], byID[id] = id, row
 	}
-	companyMemberships, companyReference, referenceErr := companyIndustriesAsOf(ctx, tx, asof)
+	companyMemberships, companyReference, referenceErr := valuationIndustriesAsOf(ctx, tx, asof)
 	if referenceErr != nil {
-		companyReference["status"] = "blocked_invalid_reference"
-		companyReference["reason"] = referenceErr.Error()
-	} else {
-		for id, members := range companyMemberships {
-			if row, ok := byID[id]; ok {
-				existing, _ := row["industry_memberships"].([]any)
-				row["industry_memberships"] = append(existing, members...)
-			}
+		return nil, referenceErr
+	}
+	for id, members := range companyMemberships {
+		if row, ok := byID[id]; ok {
+			row["industry_memberships"] = members
 		}
 	}
 	required := []string{"revenue", "operating_profit_cumulative", "interest_expense", "interest_income", "investment_income", "fair_value_change_income", "asset_disposal_income", "total_shares", "cash_and_cash_equivalents", "short_term_borrowings", "current_portion_noncurrent_liabilities", "long_term_borrowings", "bonds_payable", "lease_liabilities", "noncontrolling_interests"}

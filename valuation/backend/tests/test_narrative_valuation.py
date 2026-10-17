@@ -19,7 +19,7 @@ def prepared(tmp_path, monkeypatch):
     monkeypatch.setattr(nv, 'runtime_identity', lambda _: {'test_engine':'fixed'})
     database = tmp_path/'valuation.sqlite'
     monkeypatch.setenv('US_CN_HK_DB_PATH', str(database))
-    metadata = dict(contract='alphalake-sqlite-v12', reference_snapshot_id='test',
+    metadata = dict(contract='alphalake-sqlite-v13', reference_snapshot_id='test',
         source_database_sha256='a'*64, report_period='2025-12-31', information_as_of='2026-10-07T00:00:00+00:00')
     with sqlite3.connect(database) as conn:
         conn.executescript('CREATE TABLE companies(ticker TEXT); CREATE TABLE metadata(key TEXT,value TEXT);')

@@ -18,7 +18,7 @@ import time
 from engine.data_dictionary import CompanyValuationInput, ForecastYear
 from engine.module_1_adjustments import capitalize_r_and_d
 from engine.orchestrator import run_full_valuation
-from tools.audit_native_coverage import FINANCIAL_INDUSTRIES
+from data_sources.valuation_scope import FINANCIAL_INDUSTRIES
 from tools.check_native_sqlite import value_digest
 from tools.evaluate_native_policy import research_tax_condition
 from tools.export_alphalake_sqlite import digest
