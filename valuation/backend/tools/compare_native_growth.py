@@ -1,4 +1,4 @@
-"""只改变逐年收入增长路径，经共享引擎比较资本需求与条件估值。"""
+"""保留基线预算并改变收入路径，经共享引擎比较资本需求与条件估值。"""
 import argparse
 import hashlib
 import json
@@ -76,7 +76,7 @@ def compare(baseline, scenarios):
             dcf=dcf.model_dump(mode='json'),first_five_reinvestment_million_cny=sum(dcf.reinvestment_projections[:5]),
             terminal_value_share=dcf.pv_terminal_value/dcf.value_of_operating_assets if dcf.value_of_operating_assets else None))
     result = dict(contract='native-growth-comparison-v1',baseline=baseline,scenarios=results,
-        automatic_adoption=False,boundary='增长路径条件比较，不认证持续期；其余经济假设沿用基线，不给情景分配概率',
+        automatic_adoption=False,boundary='增长路径条件比较，不认证持续期；研发及融资绝对预算沿用基线，费用率可随收入变化，原policy_id不认证组合后的费用率。其余输入保留，不给情景分配概率',
         implementation_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
     result['run_id'] = value_digest(result)
     return result

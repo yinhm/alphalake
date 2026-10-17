@@ -315,6 +315,102 @@ def test_controlled_growth_replays_and_preserves_other_assumptions():
         compare(bad, scenarios)
 
 
+@pytest.mark.parametrize('policy_id', ['research-current-expense-ratio-ordinary-deduction-v1', 'user-fixed-budget'])
+def test_growth_review_explains_research_ratio_without_rewriting_budget(policy_id):
+    from tools.compare_native_growth import compare
+    from tools.evaluate_native_policy import research_tax_condition
+    from tools.review_native_policy import review_report
+    inputs = CompanyValuationInput.model_validate(sample()['inputs'])
+    inputs.raw_financials[0].r_and_d_expense = 100
+    inputs.adjustment_inputs.has_r_and_d = True
+    inputs.adjustment_inputs.r_and_d_expense_current = 100
+    inputs.adjustment_inputs.r_and_d_expense_past = [40]*5
+    inputs.valuation_assumptions.stable_growth_rate = .03
+    def saved(value):
+        report = run_full_valuation(value)
+        return dict(inputs=value.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
+            for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+    request, _ = research_tax_condition(saved(inputs), .03)
+    inputs = CompanyValuationInput.model_validate(request['inputs'])
+    inputs.valuation_assumptions.research_tax.policy_id = policy_id
+    baseline = saved(inputs)
+    original = deepcopy(baseline)
+    before = review_report(baseline)['economic_checks']['research_forecast']
+    assert before['different_from_current_ratio_years'] == []
+    assert before['terminal_matches_current_ratio']
+    if policy_id.startswith('research-current'):
+        assert before['status'] == 'current_ratio_reproduced'
+    result = compare(baseline, [dict(name='lower', reason='收入收缩但保留研发预算', growth=[-.02]*10)])
+    scenario = result['scenarios'][0]
+    changed_report = run_full_valuation(CompanyValuationInput.model_validate(scenario['inputs']))
+    reviewed = review_report(dict(inputs=scenario['inputs'], **{name:getattr(changed_report,name).model_dump(mode='json')
+        for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')}))
+    actual = reviewed['economic_checks']['research_forecast']
+    assert baseline == original
+    assert scenario['inputs']['valuation_assumptions']['research_tax'] == baseline['inputs']['valuation_assumptions']['research_tax']
+    assert actual['different_from_current_ratio_years'] == list(range(1,11))
+    assert not actual['terminal_matches_current_ratio']
+    assert reviewed['forecast'][-1]['research_expense_to_revenue'] > before['current_expense_to_revenue']
+    flag = 'research_expense_ratio_label_differs_from_path'
+    if policy_id.startswith('research-current'):
+        assert actual['status'] == 'inherited_ratio_label_differs_from_explicit_path'
+        assert actual['policy_claim_matches_path'] is False
+        assert flag in reviewed['methodology']['findings']
+    else:
+        assert actual['status'] == 'explicit_expense_path'
+        assert actual['policy_claim_matches_path'] is None
+        assert flag not in reviewed['methodology']['findings']
+
+
+def test_capital_release_review_keeps_gross_amounts_and_unknown_research_separate():
+    from tools.review_native_policy import review_report
+    inputs = CompanyValuationInput.model_validate(sample()['inputs'])
+    inputs.valuation_assumptions.annual_net_reinvestment = [-30,50]+[0]*8
+    report = run_full_valuation(inputs)
+    body = dict(inputs=inputs.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
+        for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+    before = deepcopy(body)
+    review = review_report(body)
+    release = review['economic_checks']['capital_release']
+    assert release['years'] == [1]
+    assert release['gross_release_million_cny'] == 30
+    assert release['gross_investment_million_cny'] == 50
+    assert release['net_reinvestment_million_cny'] == 20
+    assert release['nonresearch_release_years'] is None
+    assert release['gross_nonresearch_release_million_cny'] is None
+    assert not release['recoverability_verified']
+    assert body == before
+
+
+def test_terminal_research_release_is_reviewed_for_capital_ratio_paths():
+    from tools.evaluate_native_policy import research_tax_condition
+    from tools.review_native_policy import review_report
+    inputs = CompanyValuationInput.model_validate(sample()['inputs'])
+    inputs.raw_financials[0].r_and_d_expense = 100
+    inputs.adjustment_inputs.has_r_and_d = True
+    inputs.adjustment_inputs.r_and_d_expense_current = 100
+    inputs.adjustment_inputs.r_and_d_expense_past = [40]*5
+    inputs.valuation_assumptions.stable_growth_rate = .03
+    inputs.valuation_assumptions.sales_to_capital_high = .01
+    inputs.valuation_assumptions.sales_to_capital_stable = .01
+    inputs.valuation_assumptions.revenue_growth_next_year = .1
+    inputs.valuation_assumptions.revenue_growth_years_2_5 = .1
+    inputs.valuation_assumptions.roic_stable_override = 1
+    report = run_full_valuation(inputs)
+    baseline = dict(inputs=inputs.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
+        for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})
+    request, _ = research_tax_condition(baseline, .03)
+    report = run_full_valuation(CompanyValuationInput.model_validate(request['inputs']))
+    review = review_report(dict(inputs=request['inputs'], **{name:getattr(report,name).model_dump(mode='json')
+        for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')}))
+    assert all(r['implied_nonresearch_net_reinvestment_million_cny'] > 0 for r in review['forecast'])
+    terminal = review['terminal']['research_capital']
+    assert terminal['nonresearch_net_investment_million_cny'] < 0
+    assert terminal['net_investment_million_cny']+terminal['nonresearch_net_investment_million_cny'] == pytest.approx(
+        review['economic_checks']['terminal_transition']['reinvestment_million_cny'])
+    assert 'research_condition_requires_nonresearch_capital_release_basis' in review['methodology']['findings']
+
+
 def test_growth_comparison_rejects_implicit_terminal_tax_change():
     from tools.compare_native_growth import compare
     inputs = CompanyValuationInput.model_validate(sample()['inputs'])
@@ -650,6 +746,8 @@ def test_condition_delivery_preserves_user_and_no_winner(tmp_path, monkeypatch, 
     for name, scenario in row['scenarios'].items():
         assert scenario['methodology']['economic_basis'] == 'not_established_by_arithmetic'
         assert scenario['economic_approval'] == 'not_inferred_from_calculation_or_source_availability'
+        assert 'research_forecast' in scenario['economic_checks']
+        assert not scenario['economic_checks']['capital_release']['recoverability_verified']
         if name != 'user_explicit':
             assert scenario['input_changes']
             assert all('/raw_financials' not in c['path'] for c in scenario['input_changes'])

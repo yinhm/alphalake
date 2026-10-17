@@ -189,6 +189,8 @@ def review_report(body, annual_evidence=None):
             research_net = a.research_tax.expenses[i]-dcf.research_amortization_projections[i]
             row['research_net_investment_million_cny'] = research_net
             row['implied_nonresearch_net_reinvestment_million_cny'] = row['reinvestment_million_cny']-research_net
+            row['research_expense_to_revenue'] = (a.research_tax.expenses[i]/row['revenue_million_cny']
+                if row['revenue_million_cny'] > 0 else None)
     history = sorted(inputs.raw_financials, key=lambda f: f.fiscal_year)
     # 复用引擎逐年研发队列结果；不拿当前研发资产或TTM利润率填历史。
     counts = Counter(f.fiscal_year for f in inputs.raw_financials)
@@ -344,6 +346,29 @@ def review_report(body, annual_evidence=None):
     if a.annual_forecast is not None:
         margin, terminal_tax = a.annual_forecast[-1].margin, a.annual_forecast[-1].tax
     terminal_revenue = rows[-1]['revenue_million_cny']*(1+g)
+    research_forecast = dict(status='not_supplied' if inputs.adjustment_inputs.has_r_and_d else 'not_applicable',
+        declared_policy_id=None, current_expense_to_revenue=None, different_from_current_ratio_years=[],
+        terminal_expense_to_revenue=None, terminal_matches_current_ratio=None,
+        policy_claim_matches_path=None, interpretation='未提供显式研发费用与税务路径，不把缺项视为零')
+    if a.research_tax is not None:
+        ratio = inputs.adjustment_inputs.r_and_d_expense_current/raw.revenues if raw.revenues and raw.revenues > 0 else None
+        def matches_ratio(value):
+            return ratio is not None and value is not None and math.isclose(value, ratio, rel_tol=1e-10, abs_tol=1e-12)
+        different = [r['year'] for r in rows if not matches_ratio(r['research_expense_to_revenue'])] if ratio is not None else []
+        terminal_ratio = a.research_tax.terminal_expense/terminal_revenue if terminal_revenue > 0 else None
+        terminal_matches = matches_ratio(terminal_ratio) if ratio is not None else None
+        claims_ratio = a.research_tax.policy_id == 'research-current-expense-ratio-ordinary-deduction-v1'
+        reproduced = not different and terminal_matches if ratio is not None else None
+        research_forecast.update(status=('current_ratio_basis_unavailable' if claims_ratio and ratio is None else
+                'current_ratio_reproduced' if claims_ratio and reproduced else
+                'inherited_ratio_label_differs_from_explicit_path' if claims_ratio else 'explicit_expense_path'),
+            declared_policy_id=a.research_tax.policy_id, current_expense_to_revenue=ratio,
+            different_from_current_ratio_years=different, terminal_expense_to_revenue=terminal_ratio,
+            terminal_matches_current_ratio=terminal_matches, policy_claim_matches_path=reproduced if claims_ratio else None,
+            interpretation=('固定研发绝对预算；费用率随收入变化，原policy_id仅作来源标识，不代表本情景仍保持当前费用率'
+                if claims_ratio and reproduced is False else
+                '所选当前研发费用率的显式条件；未认证公司预测' if claims_ratio and reproduced else
+                '用户显式研发费用与扣除路径；不根据标识推断费用率、税收资格或经济合理性'))
     terminal_ebit = terminal_revenue*margin
     tax_base = terminal_ebit
     if a.research_tax is not None:
@@ -367,6 +392,17 @@ def review_report(body, annual_evidence=None):
         spread=r['incremental_return_bridge']['constant_nopat_margin_incremental_return']-replay.cost_of_capital.wacc)
         for r in rows if r['incremental_return_bridge']['constant_nopat_margin_incremental_return'] is not None]
     economic_checks = dict(version='native-economic-consistency-v1', automatic_approval=False,
+        research_forecast=research_forecast,
+        capital_release=dict(years=[r['year'] for r in rows if r['reinvestment_million_cny'] < 0],
+            gross_release_million_cny=-sum(min(0.0,r['reinvestment_million_cny']) for r in rows),
+            gross_investment_million_cny=sum(max(0.0,r['reinvestment_million_cny']) for r in rows),
+            net_reinvestment_million_cny=sum(r['reinvestment_million_cny'] for r in rows),
+            nonresearch_release_years=([r['year'] for r in rows if r['implied_nonresearch_net_reinvestment_million_cny'] < 0]
+                if a.research_tax else None),
+            gross_nonresearch_release_million_cny=(-sum(min(0.0,r['implied_nonresearch_net_reinvestment_million_cny']) for r in rows)
+                if a.research_tax else None),
+            recoverability_verified=False,
+            boundary='总净投入已含研发与非研发分量；两类释放金额不能相加，也不能在FCFF中再次加回。负投入不证明资产可回收，净额不能代替逐年回收依据'),
         marginal_return_screen=dict(years=spreads, below_initial_wacc_years=[r['investment_year'] for r in spreads if r['spread'] < 0],
             boundary='恒定税后利润率分量相对初始WACC的筛查；不是项目IRR，不认证时间变化风险或投资因果'),
         terminal_transition=dict(nopat_million_cny=terminal_nopat,
@@ -451,13 +487,13 @@ def review_report(body, annual_evidence=None):
         result['capital'].update(annual_net_reinvestment=a.annual_net_reinvestment,
             reinvestment_lag_applied=False, budget_evidence_verified=False)
         result['decision']['capital'] = 'requires_total_net_reinvestment_budget_evidence'
-        if a.research_tax is not None:
-            amort = dcf.terminal_tax_base-dcf.terminal_ebit+a.research_tax.terminal_deduction
-            net = a.research_tax.terminal_expense-amort
-            result['terminal']['research_capital'] = dict(
-                amortization_million_cny=amort, net_investment_million_cny=net,
-                nonresearch_net_investment_million_cny=terminal_investment-net,
-                evidence_verified=False)
+    if a.research_tax is not None:
+        amort = dcf.terminal_tax_base-dcf.terminal_ebit+a.research_tax.terminal_deduction
+        net = a.research_tax.terminal_expense-amort
+        result['terminal']['research_capital'] = dict(
+            amortization_million_cny=amort, net_investment_million_cny=net,
+            nonresearch_net_investment_million_cny=terminal_investment-net,
+            evidence_verified=False)
     result['methodology'] = methodology_review(inputs, replay, result)
     return result
 
@@ -492,8 +528,11 @@ def methodology_review(inputs, report, review):
     flag('terminal_capital_transition_requires_basis', review['economic_checks']['terminal_transition']['requires_capital_transition_basis'])
     flag('future_research_tax_bridge_unspecified', inputs.adjustment_inputs.has_r_and_d and a.research_tax is None)
     flag('research_tax_forecast_requires_expense_deduction_and_NOL_basis', a.research_tax is not None)
+    flag('research_expense_ratio_label_differs_from_path',
+        review['economic_checks']['research_forecast']['policy_claim_matches_path'] is False)
     flag('research_condition_requires_nonresearch_capital_release_basis', any(
-        r.get('implied_nonresearch_net_reinvestment_million_cny',0) < 0 for r in forecast))
+        r.get('implied_nonresearch_net_reinvestment_million_cny',0) < 0 for r in forecast)
+        or terminal.get('research_capital',{}).get('nonresearch_net_investment_million_cny',0) < 0)
     terminal_tax = inputs.macro_inputs.tax_rate_marginal
     if a.override_tax_convergence:
         if a.effective_tax_rate_override_years_1_5 is not None:
