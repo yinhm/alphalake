@@ -123,7 +123,7 @@ def financial_signature(directory):
         ('fields.jsonl','records.jsonl','conflicts.jsonl','reviewed_zeros.jsonl')},sort_keys=True).encode()).hexdigest()
 
 
-def query_standard_inputs(connection, fields, periods, source_database=None):
+def query_standard_inputs(connection, field_periods, source_database=None):
     """研究显式批量查询主库；先复核发布财务签名，不用当前数据补旧版本。"""
     metadata = target.snapshot_metadata(connection)
     if metadata is None or not metadata.get('financial_content_signature'):
@@ -153,7 +153,7 @@ def query_standard_inputs(connection, fields, periods, source_database=None):
             frozen = export('published',published['field_periods'])
             if financial_signature(frozen)!=metadata['financial_content_signature']:
                 raise ValueError('Source financial content differs from published inputs; use the frozen source version')
-        directory = export('research',{field:sorted(set(periods)) for field in fields})
+        directory = export('research',{field:sorted(set(periods)) for field, periods in field_periods.items()})
         definitions = [json.loads(line) for line in (directory/'fields.jsonl').read_text().splitlines()]
         conflicts = {(r['code'],r['period']) for r in (json.loads(line) for line in (directory/'conflicts.jsonl').read_text().splitlines())}
         if conflicts:

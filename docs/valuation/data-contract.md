@@ -34,6 +34,8 @@ AlphaLake负责单位、期间、身份、范围、缺项及确定性转换；va
 
 标准事实金额为元、股数为股；SQLite估值宽表金额为百万元、股数为百万股；模型`PreparedTTM`明确`million_reporting_currency`和`million_shares`。价格保持元/股，利率保持小数比例。同一TTM字段三个组成必须对应同一证券、标准名称、单位、同月累计期间及合并范围，保留源版本/哈希。已知冲突期间拒绝；独立比较口径未审核的限制仍提示，不因能算而认证可比。
 
+标准报表EBIT的组成解释、现金／持股加回和合并资本必须沿[收益与资产配套契约](valuation-book-proxies.md#按类别核对)核对。来源EBIT直接导出不等于含有所有利息收入；基础查询不得再按固定清单扣一次收益，也不能为调整利润篡改账面权益。数据侧可进行[完整范围对账](valuation-book-proxies.md#通用数据对账入口)，实际经营调整仍沿显式条件及冻结审批。
+
 达摩达兰明确可用年报和季度报告的年初累计金额直接更新TTM，无需凑齐四份单季报告，见[估值课程Update Earnings，第119页](https://pages.stern.nyu.edu/~adamodar/podcasts/valUGspr24/session8slides.pdf)。例如2026H1的TTM为2025全年＋2026H1−2025H1。年末只取当年全年；Q1/H1/9M分别对齐上年同月。该转换不等于正常化经营利润或预测。
 
 ## SQLite和引擎输入

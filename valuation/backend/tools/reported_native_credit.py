@@ -28,7 +28,7 @@ def load_evidence(connection, tickers, metadata, policy):
     end = date.fromisoformat(metadata['report_period'])
     terms = [(end, 1)] if end.month==12 else [(date(end.year-1,12,31),1),(end,1),(end.replace(year=end.year-1),-1)]
     rows = {ticker:[] for ticker in tickers}
-    for row in query_standard_inputs(connection,FIELDS,[p.isoformat() for p,_ in terms]):
+    for row in query_standard_inputs(connection,{field:[p.isoformat() for p,_ in terms] for field in FIELDS}):
         if row['ticker'] in rows:
             rows[row['ticker']].append(row)
     return dict(terms=[(p.isoformat(),c) for p,c in terms], rows=rows,

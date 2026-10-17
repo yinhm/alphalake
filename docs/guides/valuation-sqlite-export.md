@@ -132,7 +132,7 @@ curl http://127.0.0.1:8080/api/database/compatibility/SZSE:300866
 
 国家风险源数据集现为`country-risk-rating-v2`，13条记录（四国各三项加成熟市场ERP）；当前显式WACC参考输入须从主库重新导出，不改写历史冻结请求或保留旧数据集别名。既有归档可通过`sync-country-risk --local <xlsx>`重新解析注册，之后`--offline`幂等重放；采集时点与文件内业务日期分别保留。
 
-必需组成不齐仍为NULL，不把已知小计当完整债务；部分已有分量的缺项引用保存在稀疏例外，源零及全缺项原因用`financial-statements`查主库。详细研究可调用`tools.export_alphalake_sqlite.query_standard_inputs`，一次批量限定标准字段和期间：核对SQLite绑定的财务内容签名；主库只因无关预告变动而物理哈希变化时重新核对财务投影，否则拒绝补旧输入。实际源金额和治理始终留在数据侧。
+必需组成不齐仍为NULL，不把已知小计当完整债务；部分已有分量的缺项引用保存在稀疏例外，源零及全缺项原因用`financial-statements`查主库。详细研究可调用`tools.export_alphalake_sqlite.query_standard_inputs(connection, field_periods, source_database=None)`，`field_periods`为标准名称→所需报告期列表：一次批量投影，余额只读期末、流量明确累计窗口，不为新增字段扩大其他字段的期间。核对SQLite绑定的财务内容签名；主库只因无关预告变动而物理哈希变化时重新核对财务投影，否则拒绝补旧输入。实际源金额和治理始终留在数据侧。收益／资产组成及消费值对账使用[通用审阅入口](../valuation/valuation-book-proxies.md#通用数据对账入口)，不复制进网页数据库。
 
 
 原生API的TTM、年度及展示季度依据出口的`annual_bv_equity=parent_attributable`元数据，将同期期末`bv_equity + minority_interests`映射为模型的`consolidated_book_equity`（合并账面权益），年度与季度规则相同；无需新增SQLite冗余列。来源范围不明确或任一分量缺失时不构造该值。资本诊断使用此字段，股权桥接中的少数权益扣减独立保存；不得将后者的市场估计反用于账面资本。未提供合并范围的外部输入仍可按其他已齐备输入计算DCF，但相应资本诊断留空。

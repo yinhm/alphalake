@@ -229,7 +229,7 @@ def test_research_query_checks_financial_version_and_reports_source_conflicts(tm
             input_context_format='native-wide-context-v2',source_database_sha256=exporter.digest(source),
             report_period='2026-06-30',information_as_of='2026-10-05T00:00:00+00:00',financial_content_signature='frozen',
             source_projection=json.dumps(dict(field_periods={'reported_ebit':['2026-06-30']}))).items())
-        def query():return exporter.query_standard_inputs(conn,['reported_ebit'],['2026-06-30'],source)
+        def query():return exporter.query_standard_inputs(conn,{'reported_ebit':['2026-06-30']},source)
         assert query()[0]['value']=='33000000.0000000000'
         conn.execute("UPDATE metadata SET value='older-source-physical-hash' WHERE key='source_database_sha256'")
         conn.execute("UPDATE metadata SET value=? WHERE key='financial_content_signature'",(signatures[-1],))

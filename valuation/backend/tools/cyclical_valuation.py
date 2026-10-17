@@ -220,7 +220,7 @@ def profit_components(connection, report_period):
         periods.update({f'{end.year-1}-12-31': 1, end.replace(year=end.year-1).isoformat(): -1})
     from tools.export_alphalake_sqlite import query_standard_inputs
     facts = {}
-    for row in query_standard_inputs(connection,('investment_income','fair_value_change_income'),list(periods)):
+    for row in query_standard_inputs(connection,{field:list(periods) for field in ('investment_income','fair_value_change_income')}):
         ticker, period, field = row['ticker'],row['period'],row['field']
         facts.setdefault((ticker,field),{}).setdefault(period,[]).append({k:row[k] for k in
             ('period','value','unit','period_type','statement_scope','fact_id','source_record_id')})

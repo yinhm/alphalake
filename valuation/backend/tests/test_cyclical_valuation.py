@@ -119,9 +119,9 @@ def test_profit_scope_queries_data_side_and_keeps_missing_or_invalid(monkeypatch
     values = [('2025-12-31','FY','10000000'),('2026-06-30','H1','5000000'),('2025-06-30','H1','2000000')]
     facts = [dict(ticker='SHSE:600019',period=p,field='investment_income',value=v,unit='CNY',period_type=k,
         statement_scope='provider_default',fact_id=i,source_record_id=i) for i,(p,k,v) in enumerate(values)]
-    def query(connection,fields,periods):
-        assert fields==('investment_income','fair_value_change_income')
-        assert set(periods)=={p for p,_,_ in values}
+    def query(connection,projection):
+        assert set(projection)=={'investment_income','fair_value_change_income'}
+        assert all(set(periods)=={p for p,_,_ in values} for periods in projection.values())
         return facts
     monkeypatch.setattr('tools.export_alphalake_sqlite.query_standard_inputs',query)
     result = profit_components(None,'2026-06-30')['SHSE:600019']['components']
