@@ -10,6 +10,8 @@
 
 只读资本核算工具同样消费当前宽行导出及共用字段目录适配，按[资本来源契约](native-capital-definition.md)输出`tdx-capital-derivation-v2`。公告时间与CNINFO关联为空不阻断当前金额；共享来源按记录保存，金额仍为CNY元。核算候选不写回事实、不自动填历史FCFF或未来资本预算，不与百万元估值输入混用。
 
+资本核算的`depreciation_scope_review`及`working_capital_scope_review`是附加数据诊断，分别保留来源差额／分量舍入检查和经营／融资范围疑点，不是新的估值输入。标准列可能承载合并列示；跨期组成须查原文，不能由列名、NULL或EBITDA−EBIT差额推断可加总。原计算、金额、来源及缺项仍保留，`valuation_inputs`不因诊断而自动填值。
+
 候选DuckDB位于派生目录时，须以`ALPHALAKE_WORKSPACE`显式指定共同归档根目录；财务重建、参考同步和原生参考／发行人证据核验共用既有workspace解析，不把候选库父目录当另一份数据湖。缺文件或哈希不符仍拒绝，不复制归档或跳过验证来接通导出；未指定时仅采用数据库所在目录，不猜其他位置。
 
 ## 职责与实际调用链

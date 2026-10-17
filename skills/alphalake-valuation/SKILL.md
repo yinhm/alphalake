@@ -116,6 +116,8 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 补经营依据时先复用`tools.review_operating_evidence --database --source-database --ticker --output`，按统一入口说明在独立服务中批量取得最近五年的标准证据。读取源／SQLite对账、研发费用率、报表EBIT与折旧摊销分量；输出金额为元，不混用估值百万元。`d_a`空不等于TDX无分量，分量不能未经范围核对相加；负净投入也可能来自折旧超过支出或周转资本回收，不等于必须卖资产，不自动设下限。事实与公司计划／研究判断分别引用，历史支持不自动批准未来利润率、研发预算或释放现金；不能把三项CFO调节凑成完整估值营运资本。
 
+折旧组成再用`tools.derive_tdx_capital`的`depreciation_scope_review`及`working_capital_scope_review`审阅，命令和状态见`docs/valuation/native-capital-definition.md`。EBITDA−EBIT为0不证明无折旧，核心三项舍入内一致不证明租赁范围；标准列也可能承载合并金额，跨期改列不固定相加。本期／上年比较列与原披露不一致时保留双方，不静默覆盖。诊断及原文对账不自动填原生D&A、历史FCFF或未来预算，不把范围疑点一概说成TDX无数据。
+
 ## 故事估值与修订
 
 用户要求业务故事到估值时，先读`docs/valuation/narrative-valuation-plan.md`和数据契约的“叙事到年度输入契约”，使用`tools.narrative_valuation`。已确认同版SQLite、范围收据及证券后`prepare`生成待审草稿；只把用户明确条件或有依据、明确标记的研究判断写为`conditional`。记录证据类型、文件哈希和定位，每项经营／资本／研发／融资／终点条件绑定主张、反例和修订触发。不能将准备时的默认增长当成采用的公司故事，不能从用户一句话补出获认证的参数。

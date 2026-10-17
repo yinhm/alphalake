@@ -78,6 +78,8 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.review_operating_evidence
 
 报表EBIT利润率不能直接与研发调整后的未来利润率比较。SQLite的`d_a`为空时，应先看标准分量是否存在；分量齐全也不自动证明可以相加，须核对租赁、重复列示及现金资本支出的范围。三项经营现金流调整只说明报表调节方向，不等于完整非现金营运资本或未来预算。
 
+进一步核对组成时，复用[资本核算入口](../valuation/native-capital-definition.md#使用与下一步决策)`tools.derive_tdx_capital`批量读取相同证券／期间。先看`depreciation_scope_review.status`及残差：零差额与已知折旧并存、核心分量缺项、范围未核实的算术一致和超舍入残差分别处理；不从这些诊断自动选总额。再看`working_capital_scope_review`所列经营／融资待分类项目。美的合并列示、海螺跨期改列和顺丰零差额的真实反例见[列示核验](../history/depreciation-scope-20261017.md)；按字段名直接相加或用EBITDA差额统一填补均不成立。
+
 **负净再投资不等于卖资产。** 折旧超过当期资本支出、营运资本回收、资产处置均可能产生负净投入；须解释机制、期间和可持续性，不能一概拒绝、设零下限，也不能认为账面折旧本身创造现金。达摩达兰的[资本支出与折旧讨论第4节](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/AppldCF/derivn/ch5deriv.html)区分有限期资产消耗与持续经营的维护投入；[非现金营运资本](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/noncashwc.htm)须排除现金投资及已按融资处理的有息债务。
 
 这份事实证据可按已有故事`Evidence`登记文件哈希与字段／期间定位，再把未来判断另列为`company_plan`或`research_judgment`。历史金额可得、对账通过不将`Claim.evidence_state`自动升级为预测已获支持。真实12家公司验收及经济解释见[本轮记录](../history/operating-evidence-20261017.md)。
