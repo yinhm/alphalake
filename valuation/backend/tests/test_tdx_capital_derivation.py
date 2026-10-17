@@ -34,6 +34,14 @@ def test_arithmetic_does_not_approve_economic_scope():
     assert set(result['valuation_inputs'].values()) == {None}
     assert result['valuation_approved'] is False
     assert result['context']['right_of_use_depreciation'] == '10'  # not silently added to overlapping core
+    scope = result['depreciation_scope_review']
+    assert scope['status'] == 'core_components_reconciled_scope_unverified'
+    assert scope['arithmetic_identity']['status'] == 'within_source_rounding'
+    assert not scope['valuation_approved']
+    wc = result['working_capital_scope_review']
+    assert wc['cashflow_contribution_cny'] == '-80'
+    assert not wc['cashflow_contribution_is_change_in_noncash_wc']
+    assert 'current_portion_noncurrent_liabilities' in wc['liability_classification_fields']
 
 
 def test_missing_and_conflict_never_become_zero():
@@ -43,6 +51,47 @@ def test_missing_and_conflict_never_become_zero():
     assert wc['value_cny'] is None and wc['missing_fields'] == ['short_term_borrowings']
     assert all(r['value_cny'] is None for r in derive(facts(), 1, PERIOD, CUTOFF, True)['calculations'].values())
     assert all(r['value_cny'] is None for r in derive([], 1, PERIOD, CUTOFF)['calculations'].values())
+    assert derive([],1,PERIOD,CUTOFF)['depreciation_scope_review']['status']=='missing_components_or_difference'
+    assert derive(facts(),1,PERIOD,CUTOFF,True)['depreciation_scope_review']['status']=='source_record_conflict'
+
+
+@pytest.mark.parametrize('component', ['right_of_use_depreciation', 'investment_property_depreciation_amortization'])
+def test_zero_ebitda_difference_does_not_erase_known_depreciation(component):
+    excluded = {'depreciation_depletion', 'intangible_amortization', 'deferred_expense_amortization',
+        'right_of_use_depreciation', 'investment_property_depreciation_amortization'} - {component}
+    rows = [r for r in facts() if r['field'] not in excluded]
+    for row in rows:
+        if row['field']=='reported_ebitda':row['value']='100'
+    result = derive(rows,1,PERIOD,CUTOFF)
+    review = result['depreciation_scope_review']
+    assert review['status']=='zero_difference_with_positive_depreciation'
+    assert review['positive_standard_components']==[component]
+    assert result['valuation_inputs']['d_a'] is None
+
+
+def test_partial_combined_presentation_is_not_inferred_from_arithmetic_match():
+    rows = [r for r in facts() if r['field'] not in ('intangible_amortization','deferred_expense_amortization')]
+    for row in rows:
+        if row['field']=='depreciation_depletion':row['value']='30'
+    result=derive(rows,1,PERIOD,CUTOFF)
+    review=result['depreciation_scope_review']
+    assert review['status']=='missing_components_or_difference'
+    assert review['missing_comparison_fields']==['intangible_amortization','deferred_expense_amortization']
+    assert result['valuation_inputs']['d_a'] is None
+
+
+@pytest.mark.parametrize('changed_source', [False,True])
+def test_depreciation_scope_keeps_unexplained_gap_and_mixed_lease_source(changed_source):
+    rows=facts()
+    for row in rows:
+        if changed_source and row['field']=='right_of_use_depreciation':row['source_record_id']=3
+        elif not changed_source and row['field']=='reported_ebitda':row['value']='200'
+    review=derive(rows,1,PERIOD,CUTOFF)['depreciation_scope_review']
+    assert review['status']==('source_record_conflict' if changed_source else 'reported_difference_has_unexplained_components')
+    if not changed_source:
+        assert review['arithmetic_identity']['residual_cny']=='70'
+        assert review['arithmetic_identity']['status']=='outside_source_rounding'
+    assert not review['valuation_approved']
 
 
 @pytest.mark.parametrize('key,value', [('unit','million_CNY'), ('period_type','Q4'),

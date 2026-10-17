@@ -14,6 +14,7 @@ import tempfile
 import time
 
 from tools.export_alphalake_sqlite import digest, record_facts, validate_dates
+from tools.review_profit_asset_scope import identity_check
 
 FLOW_FORMULAS = {
     'reported_ebitda_less_ebit': (('reported_ebitda', 1), ('reported_ebit', -1)),
@@ -46,6 +47,34 @@ BOUNDARIES = {
                    'other_operating_balances_require_classification',
                    'cashflow_reconciliation_not_balance_change'],
 }
+
+
+def depreciation_scope_review(facts, calculations, conflict):
+    """源差额只用于诊断，不能从相等、零或缺项批准完整折旧。"""
+    core = [field for field, _ in FLOW_FORMULAS['core_depreciation_amortization_components']]
+    context = ('right_of_use_depreciation', 'investment_property_depreciation_amortization')
+    terms = [('reported_ebitda', 1), ('reported_ebit', -1), *((field, -1) for field in core)]
+    fields = [field for field, _ in terms]
+    present = [facts[f] for f in (*fields, *context) if f in facts]
+    same_record = len({(r['source_record_id'], r['source_filing_id'], r['artifact_sha256']) for r in present}) <= 1
+    positive = [f for f in (*core, *context) if f in facts and Decimal(facts[f]['value']) > 0]
+    difference = calculations['reported_ebitda_less_ebit']['value_cny']
+    identity = dict(status='not_compared', residual_cny=None, rounding_bound_cny=None)
+    status = 'missing_components_or_difference'
+    if conflict or not same_record:
+        status = 'source_record_conflict'
+    elif difference is not None and Decimal(difference) == 0 and positive:
+        status = 'zero_difference_with_positive_depreciation'
+    elif all(f in facts for f in fields):
+        period = present[0]['period']
+        identity = identity_check({(f, r['period']): Decimal(r['value']) for f, r in facts.items()},
+            [(f, period, c) for f, c in terms])
+        status = ('core_components_reconciled_scope_unverified' if identity['status'] == 'within_source_rounding'
+            else 'reported_difference_has_unexplained_components')
+    return dict(status=status, reported_ebitda_less_ebit_cny=difference,
+        positive_standard_components=positive, missing_comparison_fields=[f for f in fields if f not in facts],
+        arithmetic_identity=identity, valuation_approved=False,
+        boundary='EBITDA与EBIT差额为零不证明折旧为零；核心分量相等不证明已含使用权或投资性房地产。合并列示须依原文确认范围，不按字段有无猜总额')
 
 
 def derive(rows, instrument, period, cutoff, conflict=False):
@@ -90,6 +119,14 @@ def derive(rows, instrument, period, cutoff, conflict=False):
             records.append({k:fact.get(k) for k in shared})
         values[field] = dict(value_cny=fact['value'], record_index=indices[key])
     return dict(period=period.isoformat(), calculations=calculations,
+        depreciation_scope_review=depreciation_scope_review(facts, calculations, conflict),
+        working_capital_scope_review=dict(cashflow_contribution_cny=calculations['cashflow_working_capital_contribution']['value_cny'],
+            liability_classification_fields=[f for f in ('current_portion_noncurrent_liabilities','notes_payable',
+                'other_payables') if f in facts and Decimal(facts[f]['value']) != 0],
+            receivable_classification_fields=[f for f in ('other_receivables','noncurrent_assets_due_within_one_year')
+                if f in facts and Decimal(facts[f]['value']) != 0],
+            cashflow_contribution_is_change_in_noncash_wc=False, valuation_approved=False,
+            boundary='CFO调节不是经营余额变动；往来、票据及一年内到期负债的经营/融资分类未闭合，不自动当有息债务或营运资本，合并金融业务另审'),
         ebitda_difference_less_core_components_cny=residual,
         residual_boundary='source_precision_retained; equality_is_not_independent_scope_validation',
         context={f: facts.get(f, {}).get('value') for f in (*FLOW_CONTEXT, *BALANCE_CONTEXT)},
@@ -169,7 +206,8 @@ def main():
             '--output', str(data), '--codes', args.codes, '--fields', ','.join(FIELDS),
             '--from', min(args.period).isoformat(), '--period', max(args.period).isoformat(), '--as-of', args.as_of.isoformat()]
         subprocess.run(command, check=True, timeout=600)
-        counts, complete = Counter(), Counter({name:0 for name in FLOW_FORMULAS | BALANCE_FORMULAS})
+        counts, reconciliation = Counter(), Counter()
+        complete = Counter({name:0 for name in FLOW_FORMULAS | BALANCE_FORMULAS})
         stream = (gzip.open(args.output, 'xt', compresslevel=1) if args.output.suffix == '.gz' else args.output.open('x'))
         try:
             with stream:
@@ -179,6 +217,8 @@ def main():
                         stream.write(',\n')
                     json.dump(row, stream, ensure_ascii=False, allow_nan=False)
                     counts[row['status']] += 1
+                    if 'depreciation_scope_review' in row:
+                        reconciliation[row['depreciation_scope_review']['status']] += 1
                     complete.update(name for name, value in row.get('calculations', {}).items()
                         if value['status'] == 'arithmetic_complete_not_valuation_approved')
                 if digest(args.database) != source_hash or Path(str(args.database)+'.wal').exists():
@@ -187,6 +227,7 @@ def main():
                     information_as_of=args.as_of.isoformat(), codes=codes, periods=[p.isoformat() for p in args.period],
                     positions=len(codes)*len(args.period), source_fields=FIELDS,
                     statuses=dict(counts), calculation_complete_counts=dict(complete),
+                    depreciation_reconciliation_statuses=dict(reconciliation),
                     source_evidence_catalog=[json.loads(line) for line in (data/'fields.jsonl').read_text().splitlines()],
                     execution=dict(elapsed_seconds=time.monotonic()-started,
                         python_peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,
