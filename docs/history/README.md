@@ -6,6 +6,9 @@
 
 ## 最近主线证据
 
+- [2026-10-17整合前状态汇总](implementation-status-before-consolidation-20261017.md)：多个历史时点与旧阶段结论，不作当前状态。
+- [2026-10-17产品范围准入](product-scope-v13-20261017.md)、[预告期间及离线解释](guidance-period-v3-20261017.md)。
+
 - [Statistics与Valuation原课中文讲义、测验及KB发布](kb-statistics-valuation-20261013.md)
 
 - [业绩预告宽表、真实分页修复及主库入库](earnings-guidance-ingest-20261009.md)

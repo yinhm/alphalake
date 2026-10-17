@@ -16,4 +16,4 @@ TypeScript／Vite构建、定向ESLint、匹配／缓存检查及20项浏览器�
 
 首轮浏览器检查误将搜索侧栏的学习链接也作为结果点击，产生选择器歧义；限定结果列表并移除首页重复学习入口后，20项全部通过。首次真实检查错误要求搜索“EBITDA”只有一条，实际词库有五个相关结果；改为验证十条上限及精确词条优先，未修改搜索规则。该次失败自动恢复旧HTML入口，摘要核对通过，随后重新发布并验收成功。
 
-构建／失败日志、前后摘要、发布收据、实际链接检查和桌面／手机截图位于 `workspace/derived/knowledge-home/`。临时候选、检查脚本及回滚HTML在验收后清理，路径、摘要及原因留收据；故障日志和测试trace保留。阅读契约见[知识库指南](../guides/valuation-knowledge.md#阅读入口)，当前数量见[实现状态](../implementation-status.md#网页知识库代码接入2026-10-03)。
+构建／失败日志、前后摘要、发布收据、实际链接检查和桌面／手机截图位于 `workspace/derived/knowledge-home/`。临时候选、检查脚本及回滚HTML在验收后清理，路径、摘要及原因留收据；故障日志和测试trace保留。阅读契约见[知识库指南](../guides/valuation-knowledge.md#阅读入口)，当前数量见[实现状态](../implementation-status.md#知识库)。

@@ -35,4 +35,4 @@
 
 Stories to Numbers提供现有参数、历史／参考、诊断及敏感性，未实现文字故事理解或合理参数选择。检查发现两处既有显示问题：税前目标利润率乘前向资本倍率后与税后回报比较，以及终值回报必须收敛WACC的文案。两者已记入[待办](../../valuation/TODO.md)，KB说明正确条件；本轮没有修改显示、算法或默认政策，不能把教学说明当作已修复页面。
 
-长期内容／发布规范见[知识库契约](../guides/valuation-knowledge.md#估值叙事与经济特征)，当前数量与优先级见[项目状态](../implementation-status.md#网页知识库代码接入2026-10-03)。
+长期内容／发布规范见[知识库契约](../guides/valuation-knowledge.md#估值叙事与经济特征)，当前数量与优先级见[项目状态](../implementation-status.md#知识库)。

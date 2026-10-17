@@ -171,7 +171,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 
 本轮复用已有通用通道，活动人工审核关联3→6，官方沪深原名单仍5,100行。板材18家均有默认参考关联，候选3家行业/国家缺项由来源补链闭合；国内申万标签不覆盖官方行业，US地域及原引擎不变。缺报价另用既有TDX窗口补采，3家公司已通过默认网页/API；负条件值保留，不视为预测已合理。
 
-板材轮重审：5,227家中4,970非金融、120金融范围外、137待定；5,077已关联、150缺默认参考（含19家金融）。待定14家单一候选、117家多候选、6家冲突，89个申万节点、9个优先类别；原首轮90类/17家报告保留为基线，不改写冻结证据。板材轮报告在`workspace/derived/steel-reference/reference-audit.log`，复验仍用同一只读工具，换成该目录的`classification-coverage.json`；后续发布状态见[项目状态](../implementation-status.md#剩余身份缺口闭合及行情发布上轮验收)。
+板材轮重审：5,227家中4,970非金融、120金融范围外、137待定；5,077已关联、150缺默认参考（含19家金融）。待定14家单一候选、117家多候选、6家冲突，89个申万节点、9个优先类别；原首轮90类/17家报告保留为基线，不改写冻结证据。板材轮报告在`workspace/derived/steel-reference/reference-audit.log`，复验仍用同一只读工具，换成该目录的`classification-coverage.json`；后续发布状态见[项目状态](../history/implementation-status-before-consolidation-20261017.md#剩余身份缺口闭合及行情发布上轮验收)。
 
 通用排查顺序：精确证券原行→有原文证明的同发行人其他股类→显式业务映射候选；前两步能解决的不升级为行业代理。其他类别仍需审核，不能仅凭H股原行存在、名字相似或国家标签证明法人等同、业务同质或国家风险暴露已闭合。
 
@@ -203,7 +203,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 | 股类适用边界 | 中国移动600941 | 年报列A股与“港股”，不是H股表述；不能把原文改写成H股来满足现有合同。应先明确通用股类身份契约，不涉及H股价格采集或多市场估值 |
 | 法人英文名表示差异 | 新华文轩601811 | 年报`XinhuaWinsharePublishing&MediaCo.,Ltd.`与官方源`Xinhua Winshare Publishing and Media Co., Ltd.`不同；现有复验只忽略空白，尚无显式表示差异依据，不扩大模糊匹配 |
 
-本轮未修改默认US地域、行业代理政策、估值引擎或前端。后续正式发布及重放见[当前状态](../implementation-status.md#剩余身份缺口闭合及行情发布上轮验收)；新报告使用`workspace/derived/issuer-association/classification-coverage.json`与`reference-audit.log`。原首轮及板材报告保留冻结时点，不覆盖为新计数。参考关联齐全、API可算、经济适配及预测有效性分别验收。
+本轮未修改默认US地域、行业代理政策、估值引擎或前端。后续正式发布及重放见[当前状态](../history/implementation-status-before-consolidation-20261017.md#剩余身份缺口闭合及行情发布上轮验收)；新报告使用`workspace/derived/issuer-association/classification-coverage.json`与`reference-audit.log`。原首轮及板材报告保留冻结时点，不覆盖为新计数。参考关联齐全、API可算、经济适配及预测有效性分别验收。
 
 ## 剩余身份缺口及代理审批边界
 
@@ -238,7 +238,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.audit_industry_candidates
 
 2026-10-02用户批准上述显式条件方案，已通过现有API实施：世盟请求Transportation/China，HTTP200，条件每股值21.3199023363元；盛龙请求Metals & Mining/China，HTTP422，结构化诊断仍为2020/2021年度研发缺失。原US地域、4.25%无风险率及经营预测默认值保持，不能把此值称公司合理目标价。会话分别记录用户选择的行业/国家参考，不写官方公司事实；世盟重复请求的实际输入及最终值相同，伪造行业名称请求422。
 
-初轮119家默认路径为115成功/4拒绝；仅对两家采用已批准显式请求时为116成功/3拒绝，两种口径分别报告。该代理验收轮主库及SQLite哈希均未变，无新发布或默认关联变更。政策、完整请求/响应、运行会话及验证位于`workspace/derived/approved-reference-proxies/`；批量默认映射、Global地域及缺失研发估计仍未批准。后续政策边界见[valuation TODO](../../valuation/TODO.md)，当前默认发布结果见[项目状态](../implementation-status.md#剩余身份缺口闭合及行情发布上轮验收)。
+初轮119家默认路径为115成功/4拒绝；仅对两家采用已批准显式请求时为116成功/3拒绝，两种口径分别报告。该代理验收轮主库及SQLite哈希均未变，无新发布或默认关联变更。政策、完整请求/响应、运行会话及验证位于`workspace/derived/approved-reference-proxies/`；批量默认映射、Global地域及缺失研发估计仍未批准。后续政策边界见[valuation TODO](../../valuation/TODO.md)，当前默认发布结果见[项目状态](../history/implementation-status-before-consolidation-20261017.md#剩余身份缺口闭合及行情发布上轮验收)。
 
 批量复验复用原验收工具，按[显式参考政策契约](data-contract.md#显式参考政策的批量验收)提供已批准文件；不再依赖一次性脚本。在[独立1GiB服务](../guides/fundamental-memory-20260919.md#测试环境)中运行：
 
@@ -280,4 +280,4 @@ curl --fail-with-body -sS http://127.0.0.1:8080/api/valuation/from-database \
 
 126家默认原生API及8080验收122成功/4拒绝，新增7家全部成功，原119家结果不变；既有两家显式代理重新绑定当前参考快照后为123成功/3拒绝，世盟仍21.32元/股，盛龙仍缺研发。报价仍9月30日、财务/股本2026H1。原119家条件输入的变化仅信息截止及来源库哈希，完整差异保留；不是财务数值或默认政策变化。7项收入金额核验与25项身份复验分别留证，不把前者说成全部财务附注已核验，不把人工审核数量称自动化完成度。
 
-当前证据为`workspace/derived/energy-issuer-reference/`，完整发布、性能及来源限制见[当前项目状态](../implementation-status.md#能源类别参考补链与发布当前)。2026-10-02用户决定行业分类暂时维持现状，新增关联及类别扩展暂停，缺项和原文证据保留；已批准的两类显式代理不外推到这些源分类或其他国内行业。下一步转向[输入质量与交付路线](../implementation-status.md#当前路线输入质量与条件估值交付)。
+当前证据为`workspace/derived/energy-issuer-reference/`，完整发布、性能及来源限制见[当前项目状态](../history/implementation-status-before-consolidation-20261017.md#能源类别参考补链与发布当前)。2026-10-02用户决定行业分类暂时维持现状，新增关联及类别扩展暂停，缺项和原文证据保留；已批准的两类显式代理不外推到这些源分类或其他国内行业。下一步转向[输入质量与交付路线](../implementation-status.md#当前路线输入质量与条件估值交付)。
