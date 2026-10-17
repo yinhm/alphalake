@@ -14,7 +14,7 @@ import (
 )
 
 const Source = "eastmoney"
-const GuidanceVersion = "eastmoney-earnings-guidance-v2"
+const GuidanceVersion = "eastmoney-earnings-guidance-v3"
 const GuidanceReport = "RPT_PUBLIC_OP_NEWPREDICT"
 
 type Row struct {

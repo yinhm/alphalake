@@ -120,6 +120,46 @@ func TestEarningsGuidanceIngestReplayRevisionAndFailure(t *testing.T) {
 			t.Fatal("first observed changed")
 		}
 	}
+	// An earlier classifier may have excluded every target filing. Reinterpret
+	// the complete archive without advancing the upstream observation timestamp.
+	checkpointKey := duckstore.GuidanceCheckpointKey(options.Period, options.Start, options.End, options.Scope)
+	payload, _, err := duckstore.GetCheckpoint(t.Context(), db, cninfo.Source, duckstore.GuidanceDataset, checkpointKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var prior duckstore.GuidanceReceipt
+	if err = json.Unmarshal([]byte(payload), &prior); err != nil {
+		t.Fatal(err)
+	}
+	prior.ObservationIDs = []string{}
+	if _, err = duckstore.PublishGuidance(t.Context(), db, checkpointKey, prior, nil, nil, true); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = SyncEarningsGuidance(t.Context(), db, root, nil, nil, options); err != nil {
+		t.Fatal(err)
+	}
+	rows, err = duckstore.QueryEarningsGuidance(t.Context(), db, options.Period, options.Scope)
+	if err != nil || len(rows) != 2 || httpCalls != callsBefore {
+		t.Fatal("offline interpretation not published", rows, err)
+	}
+	updated, _, err := duckstore.GetCheckpoint(t.Context(), db, cninfo.Source, duckstore.GuidanceDataset, checkpointKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var interpreted duckstore.GuidanceReceipt
+	if err = json.Unmarshal([]byte(updated), &interpreted); err != nil {
+		t.Fatal(err)
+	}
+	if !interpreted.ObservedAt.Equal(prior.ObservedAt) || len(interpreted.ObservationIDs) != 1 {
+		t.Fatal(interpreted)
+	}
+	if _, err = SyncEarningsGuidance(t.Context(), db, root, nil, nil, options); err != nil {
+		t.Fatal(err)
+	}
+	unchanged, _, _ := duckstore.GetCheckpoint(t.Context(), db, cninfo.Source, duckstore.GuidanceDataset, checkpointKey)
+	if unchanged != updated {
+		t.Fatal("unchanged offline interpretation advanced checkpoint")
+	}
 	// A same-source new version with NULL must not borrow the earlier interval.
 	options.Offline = false
 	for _, item := range result["data"].([]any) {

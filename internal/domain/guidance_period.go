@@ -30,6 +30,10 @@ func GuidanceOperatingPeriod(content, report string) (string, string) {
 		if match[2] >= "1" && match[2] <= "4" {
 			fmt.Sscan(match[2], &q)
 		}
+		// 第一季度没有累计/单季歧义；其余季度标签可能指累计预告。
+		if q != 1 {
+			return "", "unknown"
+		}
 		first, last = (q-1)*3+1, q*3
 	} else if strings.Contains(content, fmt.Sprintf("%d年", year)) && (strings.Contains(content, "全年") || strings.Contains(content, "年度")) {
 		first, last = 1, 12

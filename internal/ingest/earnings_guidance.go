@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -232,7 +233,10 @@ func syncGuidanceSource(ctx context.Context, db *sql.DB, root, source string, em
 	summary.Issues = len(diagnostics)
 	receipt.Issues = summary.Issues
 	receipt.Rows = summary.Rows
-	summary.Inserted, err = duckstore.PublishGuidance(ctx, db, key, receipt, gs, diagnostics, !options.Offline || !found)
+	// 离线重解释可更新成员，原始取得时点沿 prior 保留；相同成员不推进检查点。
+	sort.Strings(receipt.ObservationIDs)
+	summary.Inserted, err = duckstore.PublishGuidance(ctx, db, key, receipt, gs, diagnostics,
+		!options.Offline || !found || !slices.Equal(prior.ObservationIDs, receipt.ObservationIDs))
 	if err != nil {
 		return summary, err
 	}
@@ -443,6 +447,10 @@ func acquireCNINFOGuidance(ctx context.Context, db *sql.DB, root string, source 
 			}
 		}
 		g := domain.EarningsGuidance{Source: cninfo.Source, EventKey: filing.SourceFilingID, NormalizationVersion: cninfo.GuidanceClassifierVersion, Ticker: ticker, ProviderCode: filing.ProviderCode, ExchangeMIC: filing.ExchangeMIC, Name: filing.SecurityName, Kind: kind, PeriodStart: start, PeriodEnd: period, PeriodBasis: basis, AnnouncementDate: filing.AnnouncementDate.Format("2006-01-02"), AnnouncementPrecision: "date", SourceFilingID: filing.SourceFilingID, Title: filing.Title, Contents: []string{filing.Title}, Reasons: []string{}, Metrics: map[string]domain.GuidanceMetric{}, SemanticStatus: "valid", Verification: "unlinked", SourceRefs: []domain.GuidanceRef{{ArtifactID: filing.CatalogueArtifactID, Row: positions[filing.SourceFilingID]}}}
+		if basis == "unknown" {
+			g.SemanticStatus = "partial"
+			diagnostics = append(diagnostics, duckstore.IngestDiagnostic{RuleCode: "guidance.operating_period_unresolved", Severity: "warning", SubjectType: "filing", SubjectKey: filing.SourceFilingID, Details: "季度标题不能区分累计与单季；保留截止期，经营起始日未知"})
+		}
 		if err = g.Seal(); err != nil {
 			return nil, nil, err
 		}

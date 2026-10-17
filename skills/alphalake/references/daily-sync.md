@@ -73,3 +73,5 @@ PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.publish_native_valuati
 `local`仅导出已有事实、原生API验收及原子发布，不能加`--sync-references`或报价日期。`offline`重放财务缓存，可按请求加`--sync-references`，不刷新行情；`online`必须有显式最近已完成交易日`--quote-date`，既有参考可加`--sync-references`。公告目录只按请求补采，不为此暗中扩大来源。
 
 读取发布收据及实际HTTP复验，成功才报告网页已更新；失败回滚，保留候选、来源失败、拒绝和完整分母。同信息截止的local重放应复用已验证内容；仅元数据变化不要求替换网页文件。没有明确发布目标时完成可独立验证的来源刷新，列明仍缺的部署信息，不能猜主机或把主库更新称生产发布。
+
+季度预告必须分别看标题截止期和实际经营起始日：v3对无法区分累计／单季的季度标签保留`unknown`，不将其自动计为7–9月。解释版本升级沿同一窗口离线重建，新增ID先判断是否仅重解释；来源取得时间、公司数和金额需另行比较，不能称为新增上游公告。具体以[预告期间契约](../../../docs/earnings-guidance-spec.md#季度标签的期间边界v3)为准。
