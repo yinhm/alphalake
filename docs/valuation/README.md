@@ -11,7 +11,7 @@
 | 显式政策交付 | [统一选择、字段与验收清单](explicit-policy.md) | WACC与经营/稳态联动；现有条件可计算，自动采用另行审批 |
 | 叙事驱动公司输入 | [经济特征、证据、年度条件与原生API](narrative-valuation-plan.md) | 已接通草稿、主张／参数绑定、原生计算、中文报告及修订核验；人工条件，不自动选参数 |
 | 数据接入spec | [实际消费与转换契约](data-contract.md) | TTM/累计/单季、单位、余额、研发队列及会话；任何对接前先核对 |
-| SQLite消费边界调整 | [撤表、输入投影、调用方及切换验收spec](sqlite-input-snapshot-spec.md) | 规范已形成、尚未实施；数据治理归DuckDB，估值公式及数值保持 |
+| SQLite消费边界调整 | [撤表、输入投影、调用方及切换验收spec](sqlite-input-snapshot-spec.md) | 已实施并发布v13；数据治理归DuckDB，估值公式及数值保持 |
 | 国内行业与估值关联 | [TDX、申万及跨体系映射调研](industry-association.md) | 国内分类与估值参考分别计数；申万主分类及新映射默认政策尚未上线 |
 | 原生参考、实际输入与版本 | [来源、WACC/预测消费及参考桥接](native-reference-bridge.md) | 默认US口径保留，主库→SQLite→会话参考有版本；不是公司市场WACC自动认证 |
 | 人民币显式场景 | [WACC与经营候选](native-cny-policy.md) | 来源、折现及经营假设分别保存，不与网页默认混为价格更新 |
@@ -20,7 +20,7 @@
 | 周期企业 | [正常化与显式回落路径](cyclical-valuation.md) | 利润、收入、研发、资本和融资联合核对；历史均值及回落年限不是自动预测 |
 | 资本效率 | [投入、回报及过渡](capital-efficiency.md) | 公司/行业存量倍率、未来新增效率、终值回报分开 |
 | 历史资本分量 | [标准资本核算](native-capital-definition.md) | 算术闭合不等于经营分类或预测倍率获批 |
-| 资产代理 | [已批准账面代理](valuation-book-proxies.md) | 现金/投资/债务范围限制保留，不冒充完整公允价值 |
+| 资产代理及收益范围 | [已批准代理、组成对账及成套调整边界](valuation-book-proxies.md) | 现金／投资／少数权益与对应利润配套，账面对账不冒充完整公允价值或经营范围认证 |
 | 准入与缺项 | [模型准入原则](valuation-input-gates-20260925.md) | 窗口不等于门槛，事实/补充/预测分别处理；现行列定义以[SQLite契约](../guides/valuation-sqlite-export.md)为准 |
 | 预测有效性 | [复验纪律](valuation-accuracy.md) | 历史回测暂非主线，既有失败及前视边界仍保留 |
 
