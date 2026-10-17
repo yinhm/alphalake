@@ -1,8 +1,10 @@
 package duckdb
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/yinhm/alphalake/internal/domain"
 	"math"
 	"os"
@@ -11,6 +13,71 @@ import (
 	"testing"
 	"time"
 )
+
+func TestFinancialSQLiteIndustryOrderIsStable(t *testing.T) {
+	ctx := context.Background()
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "industries.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	symbols := []string{}
+	for i := 0; i < 16; i++ {
+		symbol := fmt.Sprintf("sz%06d", 300000+i)
+		_, err = UpsertInstrument(ctx, db, domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHE", Currency: "CNY"}, domain.Identifier{Provider: "tdx", Type: "symbol", Value: symbol})
+		if err != nil {
+			t.Fatal(err)
+		}
+		symbols = append(symbols, symbol)
+	}
+	snapshot := classificationSnapshot(symbols...)
+	snapshot.Taxonomy.Code, snapshot.Taxonomy.Type = "tdx_industry", "industry"
+	snapshot.Nodes[0].Taxonomy = snapshot.Taxonomy
+	run, err := StartIngestRun(ctx, db, "tdx", "classification_industry", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	seen := time.Now().Add(-time.Hour)
+	if _, err = ApplyClassificationSnapshotForRun(ctx, db, run, seen, seen, snapshot); err != nil {
+		t.Fatal(err)
+	}
+	if err = FinishIngestRun(ctx, db, run, IngestRunCompleted, nil, nil); err != nil {
+		t.Fatal(err)
+	}
+	period, cutoff := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC), time.Now().Add(time.Minute)
+	var previous []byte
+	for i := 0; i < 2; i++ {
+		dir := filepath.Join(t.TempDir(), "rows")
+		if err = ExportFinancialSQLiteRows(ctx, db, dir, nil, []string{"total_shares"}, period, period, cutoff, nil); err != nil {
+			t.Fatal(err)
+		}
+		raw, err := os.ReadFile(filepath.Join(dir, "industries.jsonl"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		lines := bytes.Split(bytes.TrimSpace(raw), []byte("\n"))
+		if len(lines) != len(symbols) {
+			t.Fatalf("industry rows %d", len(lines))
+		}
+		var last int64
+		for _, line := range lines {
+			var row struct {
+				InstrumentID int64 `json:"instrument_id"`
+			}
+			if err = json.Unmarshal(line, &row); err != nil {
+				t.Fatal(err)
+			}
+			if row.InstrumentID <= last {
+				t.Fatal("industry rows are not sorted")
+			}
+			last = row.InstrumentID
+		}
+		if i > 0 && !bytes.Equal(previous, raw) {
+			t.Fatal("unchanged industry export differs")
+		}
+		previous = raw
+	}
+}
 
 func TestFinancialSQLiteMarketQuoteBoundary(t *testing.T) {
 	ctx := context.Background()

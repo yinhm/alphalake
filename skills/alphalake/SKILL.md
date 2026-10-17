@@ -29,6 +29,8 @@ description: 检查 AlphaLake 数据状态，手工刷新 TDX 财务、收盘行
 
 ## 执行与核验
 
+发布使用`alphalake-native-delivery-v2`收据，按[发布手册](../../docs/guides/system-delivery.md#复用与证据保留)区分整阶段复用和消费投影核对后复用。主库物理SHA变化不能单独证明财务／参考变化；须核对实际消费签名，保留本次来源核验日志。无关研究代码不触发全量重算，实际转换、引擎或审阅依赖变化仍重验。比较文件只保留变化字段；退役过期完整响应时留下清单，明确旧run不能再完整重放，不删当前发布验收。
+
 巨潮PDF共用[归档与引用规则](../../docs/guides/workspace-layout.md#pdf归档与引用)：唯一原文在`cninfo/objects/`，按官方URL日期／公告ID建立软链接及哈希、原始取得时间收据。下载前逐URL加锁并核验共享缓存；已有健康原文不因新同步批次再次下载或归档，源角色与公告身份分别留痕。研究输出只保留来源路径、哈希及页码，原始取得未知留空；不用本次复用时间冒充首次取得或上游最新。
 
 大库同步、物化、导出及会启动Go的Python任务，按`docs/guides/fundamental-memory-20260919.md`置于独立systemd服务并串行运行。核验独立ControlGroup及1GiB硬限额，当前MemoryHigh=960MiB、Swap=0、DuckDB=512MiB／1线程、GOMEMLIMIT=512MiB／GOMAXPROCS=1；显式设置GOPATH/GOCACHE，检查系统剩余资源。同步任务使用真实workspace；测试使用独立临时目录，不继承真实归档配置。

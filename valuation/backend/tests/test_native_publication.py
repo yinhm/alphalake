@@ -126,7 +126,7 @@ def test_cycle_publishes_replays_without_export_and_keeps_last_snapshot_on_sourc
     binary = workspace/'alphalake'; binary.write_bytes(b'binary')
     target = workspace/'valuation.sqlite'
     calls = []
-    monkeypatch.setattr(delivery, 'runtime_identity', lambda _: {'engine':'fixed'})
+    monkeypatch.setattr(delivery, 'runtime_identity', lambda _: {'stages':dict(export='fixed',review='fixed',delivery='fixed')})
     monkeypatch.setattr(delivery, 'verify_web', lambda *a, **kw: ['checked'])
     monkeypatch.setattr(delivery, 'freshness_report', lambda *a: {'contract':'test-only'})
     def execute(command, log, timeout):
@@ -165,6 +165,16 @@ def test_cycle_publishes_replays_without_export_and_keeps_last_snapshot_on_sourc
     assert calls == []  # 相同源、程序、参考及请求不重导、不重算。
     assert target.read_bytes() == saved and target.stat().st_ino == stat.st_ino
     assert json.loads((second/'run.json').read_text())['calculation_reused']
+    receipt = state/'valuation.sqlite.delivery.json'
+    old_receipt = json.loads(receipt.read_text()); old_receipt.pop('contract')
+    delivery.save(receipt,old_receipt)
+    migration = tmp_path/'receipt-migration'; migration.mkdir()
+    assert delivery.run(args,migration) == 0
+    assert calls == ['export','check-candidate','check-previous']
+    assert json.loads((migration/'previous-delivery-receipt.json').read_text()) == old_receipt
+    assert json.loads(receipt.read_text())['contract'] == 'alphalake-native-delivery-v2'
+    assert target.read_bytes() == saved
+    calls.clear()
     args.risk_free_rate = .04
     changed_rate = tmp_path/'changed-rate'; changed_rate.mkdir()
     assert delivery.run(args, changed_rate) == 0
@@ -201,6 +211,24 @@ def test_cycle_publishes_replays_without_export_and_keeps_last_snapshot_on_sourc
     assert 'requested security identity' in json.loads((fourth/'run.json').read_text())['error']
     assert target.read_bytes() == saved
 
+    # 仅消费签名变化仍须切换元数据，但经济内容相同就不重复网页计算。
+    def metadata_export(command,log,timeout):
+        result = execute(command,log,timeout)
+        if log.stem == 'export':
+            with sqlite3.connect(command[command.index('--output')+1]) as conn:
+                conn.execute('INSERT INTO metadata VALUES(?,?)',('source_input_signature','new-signature'))
+        return result
+    checked_modes=[]
+    monkeypatch.setattr(delivery,'execute',metadata_export)
+    monkeypatch.setattr(delivery,'runtime_identity',lambda _: {'stages':dict(export='changed',review='fixed',delivery='changed')})
+    monkeypatch.setattr(delivery,'verify_web',lambda *a,**kw: checked_modes.append(kw['calculate']) or ['checked'])
+    args.source_mode='local'
+    metadata_only=tmp_path/'metadata-only';metadata_only.mkdir()
+    assert delivery.run(args,metadata_only)==0
+    result=json.loads((metadata_only/'run.json').read_text())
+    assert result['status']=='published' and result['calculation_reused']
+    assert checked_modes==[False]
+
 
 def test_partial_source_is_scoped_not_silently_completed(tmp_path):
     path = tmp_path/'source.json'
@@ -222,6 +250,10 @@ def test_comparison_distinguishes_evidence_refresh_from_new_value():
     before = {'results':[{'ticker':'SZSE:300866','final':{'value_per_share':42},'diagnostic_sha256':'old'}]}
     after = {'results':[{'ticker':'SZSE:300866','final':{'value_per_share':42},'diagnostic_sha256':'new'}]}
     assert delivery.compare_checks(before, after)[0]['changed_fields'] == ['diagnostic_sha256']
+    assert delivery.compare_checks(before, after)[0]['before'] == {'diagnostic_sha256':'old'}
+    assert delivery.compare_checks(before, after)[0]['after'] == {'diagnostic_sha256':'new'}
+    after['results'][0]['unknown'] = None
+    assert 'unknown' in delivery.compare_checks(before, after)[0]['changed_fields']
 
 
 @pytest.mark.full
@@ -354,11 +386,23 @@ def test_published_scope_uses_current_snapshot_instead_of_stale_sample_file(tmp_
 
 def test_runtime_identity_excludes_tests_but_tracks_execution_code(tmp_path, monkeypatch):
     backend = tmp_path/'backend'
-    for name in ('tools/publish_native_valuation.py','engine/dcf.py','tests/test_dcf.py'):
+    for name in ('tools/publish_native_valuation.py','tools/export_alphalake_sqlite.py',
+                 'tools/review_native_policy.py','tools/research_only.py','engine/dcf.py','tests/test_dcf.py'):
         path=backend/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text('original')
     monkeypatch.setattr(delivery, '__file__', str(backend/'tools/publish_native_valuation.py'))
     before=delivery.runtime_identity(tmp_path)
     (backend/'tests/test_dcf.py').write_text('new test only')
     assert delivery.runtime_identity(tmp_path)==before
+    (backend/'tools/research_only.py').write_text('changed unrelated research')
+    research = delivery.runtime_identity(tmp_path)
+    assert research != before and research['stages'] == before['stages']
+    (backend/'tools/export_alphalake_sqlite.py').write_text('changed conversion')
+    export = delivery.runtime_identity(tmp_path)
+    assert export['stages']['export'] != research['stages']['export']
+    assert export['stages']['review'] == research['stages']['review']
+    (backend/'tools/review_native_policy.py').write_text('changed review')
+    review = delivery.runtime_identity(tmp_path)
+    assert review['stages']['review'] != export['stages']['review']
+    assert review['stages']['export'] == export['stages']['export']
     (backend/'engine/dcf.py').write_text('changed calculation')
-    assert delivery.runtime_identity(tmp_path)!=before
+    assert delivery.runtime_identity(tmp_path)['stages']['review'] != review['stages']['review']

@@ -123,6 +123,36 @@ def financial_signature(directory):
         ('fields.jsonl','records.jsonl','conflicts.jsonl','reviewed_zeros.jsonl')},sort_keys=True).encode()).hexdigest()
 
 
+def export_runtime_files(backend=None):
+    backend = backend or Path(__file__).resolve().parents[1]
+    files = sorted((backend/'data_sources').glob('*.py')) + sorted((backend/'data_sources').glob('*.json'))
+    files += [backend/'tools'/name for name in ('export_alphalake_sqlite.py','derive_tdx_assets.py')]
+    return {p.relative_to(backend).as_posix():digest(p) for p in files if p.is_file()}
+
+
+def source_input_signature(directory, references, period, asof, reference_asof, years, quarters):
+    """绑定实际消费文件、参考和窗口；不以整个DuckDB物理文件代替输入内容。"""
+    files = ('companies.jsonl','industries.jsonl','industry-reference.json',
+             'fields.jsonl','records.jsonl','conflicts.jsonl','reviewed_zeros.jsonl')
+    return hashlib.sha256(json.dumps(dict(files={name:digest(directory/name) for name in files},
+        references=references, implementation=export_runtime_files(), contract=CONTRACT,
+        period=period.isoformat(),asof=asof.isoformat(),
+        reference_asof=reference_asof.isoformat(),years=years,quarters=quarters),sort_keys=True,
+        ensure_ascii=False,separators=(',',':')).encode()).hexdigest()
+
+
+def reusable_snapshot(path, signature):
+    if path is None:
+        return False
+    if any(Path(str(path)+suffix).exists() for suffix in ('-wal','-journal')):
+        raise ValueError('reuse snapshot has a write journal')
+    with sqlite3.connect(path.resolve(strict=True).as_uri()+'?mode=ro',uri=True) as conn:
+        if conn.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
+            raise ValueError('reuse snapshot integrity failure')
+        values = dict(conn.execute("SELECT key,value FROM metadata WHERE key IN ('contract','source_input_signature')"))
+    return values.get('contract') == CONTRACT and values.get('source_input_signature') == signature
+
+
 def query_standard_inputs(connection, field_periods, source_database=None):
     """研究显式批量查询主库；先复核发布财务签名，不用当前数据补旧版本。"""
     metadata = target.snapshot_metadata(connection)
@@ -464,6 +494,7 @@ def main():
     parser.add_argument('--years', type=int, default=10, choices=range(1, 11))
     parser.add_argument('--quarters', type=int, default=8, choices=range(1, 9))
     parser.add_argument('--alphalake', type=Path, default=Path(__file__).resolve().parents[3]/'alphalake')
+    parser.add_argument('--reuse-from', type=Path, help='消费输入签名相同才复用已验收SQLite；未知签名重新导出')
     args = parser.parse_args()
     validate_dates(args.period, args.as_of)
     reference_asof = args.reference_as_of or args.as_of
@@ -496,6 +527,23 @@ def main():
                     '--field-periods', str(projection_path),
                     '--codes', ','.join(sorted(set(args.code or []))), '--from', first.isoformat(),
                     '--period', args.period.isoformat(), '--as-of', args.as_of.isoformat()], check=True, timeout=600)
+                reference_packet = subprocess.run([str(binary), 'export-native-references', str(source),
+                    '--as-of', reference_asof.isoformat()], check=True, capture_output=True, text=True, timeout=120)
+                references = json.loads(reference_packet.stdout)
+                input_signature = source_input_signature(data,references,args.period,args.as_of,reference_asof,args.years,args.quarters)
+                if reusable_snapshot(args.reuse_from,input_signature):
+                    if fingerprint() != version or digest(source) != source_hash:
+                        raise ValueError('source changed during input verification')
+                    connection.close()
+                    Path(temporary).unlink()
+                    # 硬链接后再次核对实际候选，避免读取与链接间路径被替换。
+                    os.link(args.reuse_from,temporary)
+                    if not reusable_snapshot(Path(temporary),input_signature):
+                        raise ValueError('reuse snapshot changed during verification')
+                    os.link(temporary,args.output)
+                    print(json.dumps(dict(status='reused_verified_source_inputs',source_database_sha256=source_hash,
+                        source_input_signature=input_signature,output=str(args.output)),ensure_ascii=False))
+                    return
                 companies = [json.loads(line) for line in (data/'companies.jsonl').read_text().splitlines()]
                 companies.sort(key=lambda c: ((c.get('symbols') or [''])[0][2:], c['instrument_id']))
                 reference = json.loads((data/'industry-reference.json').read_text())
@@ -554,9 +602,7 @@ def main():
                 scope_hash = hashlib.sha256(scope_raw.encode()).hexdigest()
                 scope_file = scope_root/('scope-'+args.period.isoformat()+'-'+scope_hash[:16]+'.json')
             from data_sources.native_references import write_snapshot
-            reference_packet = subprocess.run([str(binary), 'export-native-references', str(source),
-                '--as-of', reference_asof.isoformat()], check=True, capture_output=True, text=True, timeout=120)
-            write_snapshot(connection, json.loads(reference_packet.stdout))
+            write_snapshot(connection, references)
             metadata = dict(contract=CONTRACT, source_database_sha256=source_hash, exporter_sha256=digest(__file__),
                             alphalake_binary_sha256=digest(binary), report_period=args.period.isoformat(),
                             financial_time_basis='current_standard_snapshot_not_pit',
@@ -564,6 +610,7 @@ def main():
                             information_as_of=args.as_of.isoformat(), exported_at=datetime.now(timezone.utc).isoformat(),
                             wide_money_unit='million_CNY', wide_shares_unit='million_shares',
                             financial_content_signature=source_signature,
+                            source_input_signature=input_signature,
                             source_projection=json.dumps(source_projection,sort_keys=True,separators=(',',':')),
                             source_artifacts=json.dumps(sorted(artifacts)),
                             scope_sha256=scope_hash, scope_receipt=str(scope_file.relative_to(source.parent)),

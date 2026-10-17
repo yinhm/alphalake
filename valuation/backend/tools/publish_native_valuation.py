@@ -17,7 +17,7 @@ import time
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 
-from tools.export_alphalake_sqlite import CONTRACT, digest, validate_dates, completed_market_date
+from tools.export_alphalake_sqlite import CONTRACT, digest, validate_dates, completed_market_date, export_runtime_files
 from tools.check_native_sqlite import value_digest, economic_payload
 from tools.refresh_valuate_alphalake import execute, reference_commands, timestamp
 
@@ -70,7 +70,7 @@ def snapshot(path):
         tables['input_context'] = h.hexdigest()
         semantic_metadata = {k:v for k,v in metadata.items() if k not in (
             'exported_at', 'source_database_sha256', 'exporter_sha256', 'alphalake_binary_sha256',
-            'scope_receipt', 'scope_sha256')}
+            'scope_receipt', 'scope_sha256', 'source_input_signature')}
         signature = hashlib.sha256(json.dumps([tables, semantic_metadata], sort_keys=True).encode()).hexdigest()
         from data_sources.us_cn_hk_db import input_contexts
         identities = sorted({r['instrument_id'] for r in input_contexts(conn)})
@@ -141,8 +141,16 @@ def freshness_report(path, asof, financial_source=None, sync_references=False):
 
 def compare_checks(before, after):
     old = {r['ticker']:r for r in before['results']} if before else {}
-    return [dict(ticker=r['ticker'], changed_fields=[k for k,v in r.items() if old.get(r['ticker'], {}).get(k) != v], before=old.get(r['ticker']), after=r)
-            for r in after['results'] if old.get(r['ticker']) != r]
+    result = []
+    for row in after['results']:
+        previous = old.get(row['ticker'], {})
+        fields = sorted(k for k in previous.keys() | row.keys()
+                        if (k in previous) != (k in row) or previous.get(k) != row.get(k))
+        if fields:
+            result.append(dict(ticker=row['ticker'], changed_fields=fields,
+                before={k:previous[k] for k in fields if k in previous},
+                after={k:row[k] for k in fields if k in row}))
+    return result
 
 
 def verify_web(url, summary, calculate=True):
@@ -238,12 +246,22 @@ def publish(candidate, target, journal, verify):
 
 
 def runtime_identity(workspace):
-    """原生计算绑定SQLite参考快照及后端/冻结模型参考版本。"""
+    """完整追溯与实际执行依赖分别签名，研究工具不使原生发布失效。"""
     from api.alphalake import runtime_versions
     backend = Path(__file__).resolve().parents[1]
     files = sorted(p for p in backend.rglob('*.py') if 'tests' not in p.relative_to(backend).parts) + sorted((backend/'data_sources').glob('*.json'))
     hashes = {str(p):digest(p) for p in files}
-    return dict(versions=runtime_versions(), files=hashes)
+    versions = runtime_versions()
+    core = {str(p):hashes[str(p)] for p in files
+            if p.relative_to(backend).parts[0] in ('api', 'engine', 'data_sources', 'knowledge')}
+    export = export_runtime_files(backend)
+    review = core | {str(p):hashes[str(p)] for p in files
+        if p.relative_to(backend).as_posix() in ('tools/check_native_sqlite.py','tools/review_native_policy.py')}
+    delivery = export | review | {str(p):hashes[str(p)] for p in files
+        if p.relative_to(backend).as_posix() in ('tools/publish_native_valuation.py','tools/refresh_valuate_alphalake.py')}
+    stages = {name:value_digest(dict(versions=versions,files=group))
+              for name,group in (('export',export),('calculation',core),('review',review),('delivery',delivery))}
+    return dict(versions=versions, files=hashes, stages=stages)
 
 
 def accept_financial_report(path, exit_code, codes):
@@ -384,16 +402,22 @@ def run(args, root):
         identity = runtime_identity(workspace)
         save(root/'runtime-inputs.json', identity)
         previous_receipt = json.loads(receipt.read_text()) if receipt.exists() else None
+        if previous_receipt and previous_receipt.get('contract') != 'alphalake-native-delivery-v2':
+            save(root/'previous-delivery-receipt.json', previous_receipt)
+            ledger['receipt_rebuild'] = '新分阶段依赖契约：保存旧收据，完整重验后建立新基线'
+            previous_receipt = None
         validate_dates(date.fromisoformat(args.period), datetime.fromisoformat(asof))
         command = [sys.executable, '-m', 'tools.export_alphalake_sqlite', '--database', str(args.database),
             '--output', str(candidate), '--period', args.period, '--as-of', asof, '--alphalake', str(args.alphalake)]
         for code in codes:
             command += ['--code', code]
+        if args.output.exists():
+            command += ['--reuse-from',str(args.output)]
         request_identity = dict(source_sha256=digest(args.database), binary_sha256=digest(args.alphalake),
                                 codes=codes, period=args.period, as_of=asof)
         export_reused = (previous_receipt is not None and args.output.exists()
                          and previous_receipt['request_identity'] == request_identity
-                         and previous_receipt['runtime_identity'] == identity
+                         and previous_receipt['runtime_identity']['stages']['export'] == identity['stages']['export']
                          and previous_receipt['published_sha256'] == digest(args.output))
         if export_reused:
             current = snapshot(args.output)
@@ -413,7 +437,7 @@ def run(args, root):
         reuse = (previous_receipt is not None
                  and 'methodology' in previous_receipt['check']
                  and previous_receipt['content_sha256'] == current['content_sha256']
-                 and previous_receipt['runtime_identity'] == identity
+                 and previous_receipt['runtime_identity']['stages']['review'] == identity['stages']['review']
                  and previous_receipt['risk_free_rate'] == args.risk_free_rate)
         if reuse:
             checked = previous_receipt['check']
@@ -425,7 +449,7 @@ def run(args, root):
         validate_check(checked, current['tickers'])
         before = None
         if previous:
-            if previous_receipt and 'methodology' in previous_receipt['check'] and previous_receipt['published_sha256'] == previous['sha256'] and previous_receipt['runtime_identity'] == identity and previous_receipt['risk_free_rate'] == args.risk_free_rate:
+            if previous_receipt and 'methodology' in previous_receipt['check'] and previous_receipt['published_sha256'] == previous['sha256'] and previous_receipt['runtime_identity']['stages']['review'] == identity['stages']['review'] and previous_receipt['risk_free_rate'] == args.risk_free_rate:
                 before = previous_receipt['check']
             else:
                 stage('check-previous', [sys.executable, '-m', 'tools.check_native_sqlite', '--database', str(args.output),
@@ -441,24 +465,24 @@ def run(args, root):
             removed_tickers=sorted(set(previous['tickers'])-set(current['tickers'])) if previous else [],
             changed_tables=[k for k,v in current['tables'].items() if not previous or previous['tables'].get(k)!=v]))
         ledger['evidence_archives'] = [archive_check(root/name) for name in ('candidate-check','previous-check') if (root/name).exists()]
-        if runtime_identity(workspace) != identity:
+        if runtime_identity(workspace)['stages']['delivery'] != identity['stages']['delivery']:
             raise ValueError('runtime/reference inputs changed during validation')
         if digest(args.database) != request_identity['source_sha256']:
             raise ValueError('source database changed after export')
         if (digest(args.output) if args.output.exists() else None) != (previous['sha256'] if previous else None):
             raise ValueError('published snapshot changed during validation')
-        if previous and previous['content_sha256'] == current['content_sha256']:
+        if previous and previous['content_sha256'] == current['content_sha256'] and previous['metadata'].get('source_input_signature') == current['metadata'].get('source_input_signature'):
             ledger['web_checks'] = verify_web(args.web_url, before, calculate=not reuse)
             checked = before
             ledger['status'] = 'unchanged'
             candidate.unlink(missing_ok=True)
         else:
-            ledger['publication'] = publish(candidate, args.output, journal, lambda: verify_web(args.web_url, checked))
+            ledger['publication'] = publish(candidate, args.output, journal, lambda: verify_web(args.web_url, checked, calculate=not reuse))
             ledger['status'] = 'published'
         ledger['admission'] = checked['admission']
         ledger['methodology'] = checked['methodology']
         ledger['published_sha256'] = digest(args.output)
-        save(receipt, dict(published_sha256=ledger['published_sha256'], content_sha256=current['content_sha256'],
+        save(receipt, dict(contract='alphalake-native-delivery-v2', published_sha256=ledger['published_sha256'], content_sha256=current['content_sha256'],
             runtime_identity=identity, request_identity=request_identity, risk_free_rate=args.risk_free_rate, check=checked, report=str(root/'run.json')))
     except (Exception, KeyboardInterrupt) as error:
         ledger.update(status='failed', error=str(error), error_type=type(error).__name__)

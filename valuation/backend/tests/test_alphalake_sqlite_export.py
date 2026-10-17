@@ -11,6 +11,38 @@ from tools import export_alphalake_sqlite as exporter
 import pytest
 
 
+def test_export_reuse_binds_every_consumed_file_reference_window_and_implementation(tmp_path, monkeypatch):
+    files = ('companies.jsonl','industries.jsonl','industry-reference.json',
+             'fields.jsonl','records.jsonl','conflicts.jsonl','reviewed_zeros.jsonl')
+    for name in files: (tmp_path/name).write_text('original')
+    period = date(2026,6,30)
+    asof = datetime.fromisoformat('2026-10-17T00:00:00+00:00')
+    def signature(ref=None, **kw):
+        args = dict(directory=tmp_path,references=ref or {'value':1},period=period,
+                    asof=asof,reference_asof=asof,years=10,quarters=8)
+        return exporter.source_input_signature(**(args | kw))
+    original = signature()
+    for name in files:
+        (tmp_path/name).write_text('changed')
+        assert signature() != original
+        (tmp_path/name).write_text('original')
+    assert signature({'value':2}) != original
+    assert signature(years=9) != original
+    assert signature(asof=asof.replace(hour=1)) != original
+    monkeypatch.setattr(exporter,'export_runtime_files',lambda: {'conversion':'changed'})
+    assert signature() != original
+    snapshot = tmp_path/'snapshot.sqlite'
+    with sqlite3.connect(snapshot) as conn:
+        conn.execute('CREATE TABLE metadata(key TEXT,value TEXT)')
+        conn.executemany('INSERT INTO metadata VALUES(?,?)', [('contract',exporter.CONTRACT),('source_input_signature',original)])
+    assert exporter.reusable_snapshot(snapshot,original)
+    assert not exporter.reusable_snapshot(snapshot,'different')
+    with sqlite3.connect(snapshot) as conn: conn.execute("DELETE FROM metadata WHERE key='source_input_signature'")
+    assert not exporter.reusable_snapshot(snapshot,original)
+    Path(str(snapshot)+'-wal').touch()
+    with pytest.raises(ValueError,match='write journal'): exporter.reusable_snapshot(snapshot,original)
+
+
 class SQLiteExportTest(unittest.TestCase):
     def test_wide_records_restore_exact_facts_without_old_revision_or_null_fill(self):
         row = dict(instrument_id=7,code='300866',period='2025-12-31',source_record_id=12,
@@ -165,6 +197,9 @@ class SQLiteExportTest(unittest.TestCase):
                     '--output', str(output), '--period', '2026-06-30',
                     '--as-of', '2026-09-22T00:00:00Z', '--all']
             def snapshot_command(argv, **kwargs):
+                if argv[1] == 'export-native-references':
+                    from types import SimpleNamespace
+                    return SimpleNamespace(stdout='{}')
                 rows = Path(argv[argv.index('--output')+1])
                 rows.mkdir()
                 (rows/'reviewed_zeros.jsonl').write_text('')

@@ -135,7 +135,13 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
 		return err
 	}
 	encoder := json.NewEncoder(scopeFile)
-	for id, members := range memberships {
+	ids := make([]int64, 0, len(memberships))
+	for id := range memberships {
+		ids = append(ids, id)
+	}
+	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+	for _, id := range ids {
+		members := memberships[id]
 		if err = encoder.Encode(map[string]any{"instrument_id": id, "industry_memberships": members}); err != nil {
 			scopeFile.Close()
 			return err
