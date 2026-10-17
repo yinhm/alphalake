@@ -249,8 +249,9 @@ def test_research_query_checks_financial_version_and_reports_source_conflicts(tm
     record = dict(instrument_id=7,code='300866',period='2026-06-30',source_record_id=12,
         source_filing_id=None,available_at=None,announcement_source='unknown',source_observed_at='2026-09-30',
         artifact_sha256='a'*64,reported_ebit='33000000.0000000000')
-    conflicts, signatures = [], []
+    conflicts, signatures, requested_codes = [], [], []
     def run(command,**kwargs):
+        requested_codes.append(command[command.index('--codes')+1])
         directory=Path(command[command.index('--output')+1]);directory.mkdir()
         for name,rows in [('fields',[definition]),('records',[record]),('conflicts',conflicts),('reviewed_zeros',[])]:
             (directory/(name+'.jsonl')).write_text(''.join(json.dumps(r)+'\n' for r in rows))
@@ -266,14 +267,26 @@ def test_research_query_checks_financial_version_and_reports_source_conflicts(tm
             source_projection=json.dumps(dict(field_periods={'reported_ebit':['2026-06-30']}))).items())
         def query():return exporter.query_standard_inputs(conn,{'reported_ebit':['2026-06-30']},source)
         assert query()[0]['value']=='33000000.0000000000'
+        conn.execute("INSERT INTO companies VALUES('SHSE:600519')")
+        assert exporter.query_standard_inputs(conn,{'reported_ebit':['2026-06-30']},source,tickers=['SZSE:300866'])
+        assert requested_codes[-1]=='300866'
+        for invalid in ([],['SZSE:300866','SZSE:300866'],['SZSE:000001']):
+            with pytest.raises(ValueError,match='published scope'):
+                exporter.query_standard_inputs(conn,{'reported_ebit':['2026-06-30']},source,tickers=invalid)
         conn.execute("UPDATE metadata SET value='older-source-physical-hash' WHERE key='source_database_sha256'")
         conn.execute("UPDATE metadata SET value=? WHERE key='financial_content_signature'",(signatures[-1],))
         assert query()[0]['ticker']=='SZSE:300866'  # 无关域变动不阻断同版财务。
+        assert exporter.query_standard_inputs(conn,{'reported_ebit':['2026-06-30']},source,tickers=['SZSE:300866'])
+        assert requested_codes[-2:]==['600519,300866','300866']
         conn.execute("UPDATE metadata SET value='wrong' WHERE key='financial_content_signature'")
         with pytest.raises(ValueError,match='financial content differs'):query()
         conn.execute("UPDATE metadata SET value=? WHERE key='source_database_sha256'",(exporter.digest(source),))
         conflicts.append(dict(code='300866',period='2026-06-30',reason='fixture_conflict'))
         with pytest.raises(ValueError,match='Source conflicts'):query()
+        conflicts.clear()
+        record['code']='600519'
+        with pytest.raises(ValueError,match='unrequested security'):
+            exporter.query_standard_inputs(conn,{'reported_ebit':['2026-06-30']},source,tickers=['SZSE:300866'])
 
 
 def test_standard_bridge_components_and_market_proxy():

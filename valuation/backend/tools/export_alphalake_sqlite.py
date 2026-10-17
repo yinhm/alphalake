@@ -153,7 +153,7 @@ def reusable_snapshot(path, signature):
     return values.get('contract') == CONTRACT and values.get('source_input_signature') == signature
 
 
-def query_standard_inputs(connection, field_periods, source_database=None):
+def query_standard_inputs(connection, field_periods, source_database=None, *, tickers=None):
     """研究显式批量查询主库；先复核发布财务签名，不用当前数据补旧版本。"""
     metadata = target.snapshot_metadata(connection)
     if metadata is None or not metadata.get('financial_content_signature'):
@@ -165,32 +165,40 @@ def query_standard_inputs(connection, field_periods, source_database=None):
     if Path(str(source)+'.wal').exists():
         raise ValueError('Source has WAL; close writer before research query')
     before = digest(source)
-    codes = [r[0].split(':')[-1] for r in connection.execute('SELECT ticker FROM companies ORDER BY ticker')]
+    published_tickers = [r[0] for r in connection.execute('SELECT ticker FROM companies ORDER BY ticker')]
+    if tickers is not None and (not tickers or len(set(tickers)) != len(tickers) or set(tickers)-set(published_tickers)):
+        raise ValueError('unique tickers within published scope required')
+    codes = [t.split(':')[-1] for t in (tickers if tickers is not None else published_tickers)]
+    code_set = set(codes)
     published = json.loads(metadata['source_projection'])
     with tempfile.TemporaryDirectory(prefix='alphalake-research-query-') as temporary:
         root = Path(temporary)
-        def export(name, projection):
+        def export(name, projection, selected_codes):
             spec = root/(name+'.json')
             spec.write_text(json.dumps(projection,sort_keys=True))
             directory = root/name
             first = min(day for days in projection.values() for day in days)
             subprocess.run([str(binary),'export-financial-snapshot',str(source),
-                '--output',str(directory),'--codes',','.join(codes),'--fields',','.join(sorted(projection)),
+                '--output',str(directory),'--codes',','.join(selected_codes),'--fields',','.join(sorted(projection)),
                 '--field-periods',str(spec),'--from',first,'--period',metadata['report_period'],
                 '--as-of',metadata['information_as_of']],check=True,timeout=600,capture_output=True)
             return directory
         if before!=metadata['source_database_sha256']:
-            frozen = export('published',published['field_periods'])
+            frozen = export('published',published['field_periods'],[t.split(':')[-1] for t in published_tickers])
             if financial_signature(frozen)!=metadata['financial_content_signature']:
                 raise ValueError('Source financial content differs from published inputs; use the frozen source version')
-        directory = export('research',{field:sorted(set(periods)) for field, periods in field_periods.items()})
+        directory = export('research',{field:sorted(set(periods)) for field, periods in field_periods.items()},codes)
         definitions = [json.loads(line) for line in (directory/'fields.jsonl').read_text().splitlines()]
         conflicts = {(r['code'],r['period']) for r in (json.loads(line) for line in (directory/'conflicts.jsonl').read_text().splitlines())}
         if conflicts:
             raise ValueError('Source conflicts in requested research periods: '+str(sorted(conflicts)))
         ticker_by_code = {r[0].split(':')[-1]:r[0] for r in connection.execute('SELECT ticker FROM companies')}
         with (directory/'records.jsonl').open() as stream:
-            rows = [fact | {'ticker':ticker_by_code[fact['code']]} for fact in record_facts(stream,definitions)]
+            rows = []
+            for fact in record_facts(stream,definitions):
+                if fact['code'] not in code_set:
+                    raise ValueError('Source returned unrequested security')
+                rows.append(fact | {'ticker':ticker_by_code[fact['code']]})
     if digest(source)!=before:
         raise ValueError('Source changed during research query')
     return rows
