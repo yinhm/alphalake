@@ -114,6 +114,8 @@ cd "$ALPHALAKE_ROOT/valuation/backend"
 
 读取每个条件的`economic_checks.research_forecast`及逐年`research_expense_to_revenue`，不可仅凭研发`policy_id`声称费用率不变：收入路径改变而绝对预算保留时，明确这是固定预算条件；自定义预算不改写。资本释放读取`economic_checks.capital_release`的累计释放、投入及净额，不能净额抵销后隐去回收假设，不能把非研发分量再加到总释放或FCFF。显式研发的终值读取`terminal.research_capital`，连同`terminal_transition`解释投入规则切换。提示不是新准入门槛，未核实回收依据或公司预测时继续标明条件；不自动调预算、选情景或修改默认。详见统一入口的“整套经营条件的一致性审阅”。
 
+补经营依据时先复用`tools.review_operating_evidence --database --source-database --ticker --output`，按统一入口说明在独立服务中批量取得最近五年的标准证据。读取源／SQLite对账、研发费用率、报表EBIT与折旧摊销分量；输出金额为元，不混用估值百万元。`d_a`空不等于TDX无分量，分量不能未经范围核对相加；负净投入也可能来自折旧超过支出或周转资本回收，不等于必须卖资产，不自动设下限。事实与公司计划／研究判断分别引用，历史支持不自动批准未来利润率、研发预算或释放现金；不能把三项CFO调节凑成完整估值营运资本。
+
 ## 故事估值与修订
 
 用户要求业务故事到估值时，先读`docs/valuation/narrative-valuation-plan.md`和数据契约的“叙事到年度输入契约”，使用`tools.narrative_valuation`。已确认同版SQLite、范围收据及证券后`prepare`生成待审草稿；只把用户明确条件或有依据、明确标记的研究判断写为`conditional`。记录证据类型、文件哈希和定位，每项经营／资本／研发／融资／终点条件绑定主张、反例和修订触发。不能将准备时的默认增长当成采用的公司故事，不能从用户一句话补出获认证的参数。

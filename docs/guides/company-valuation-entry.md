@@ -62,6 +62,26 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 
 `research_expense_ratio_label_differs_from_path`提示已知费用率政策标识与实际费用路径不同；显式请求及原结果保留。没有显式研发路径时保持未知，不能补零。以上检查用于审阅，不增设准入门槛、不替用户选择条件、不修改引擎公式或网页默认。
 
+### 从标准库取得经营事实依据
+
+已有条件需要资本、研发及利润率证据时，先用`tools.review_operating_evidence`。它按指定证券批量读取主库最近五个财年及当前TTM组成期间，不扩采历史、不下载PDF、不选择预测参数。命令在[独立1GiB服务](fundamental-memory-20260919.md)中执行：
+
+```bash
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.review_operating_evidence \
+  --database workspace/valuation.sqlite \
+  --source-database workspace/alphalake.duckdb \
+  --ticker SZSE:300866 --ticker SHSE:688099 \
+  --output workspace/derived/operating-evidence/new-report.json
+```
+
+输出`native-operating-evidence-v1`，金额为元，来源按报告记录共享；与SQLite的对账值单独标明百万元。读取`comparisons.differences`、各公司的`annual/current_ttm`及`depreciation`。主库物理版本变化时先验证完整发布财务投影，再查询指定证券，不能用部分范围证明全快照同版。来源冲突、单位／期间或证券不符明确拒绝；未知公告日期不阻断金额。缺项保留，不猜单位、不补零。
+
+报表EBIT利润率不能直接与研发调整后的未来利润率比较。SQLite的`d_a`为空时，应先看标准分量是否存在；分量齐全也不自动证明可以相加，须核对租赁、重复列示及现金资本支出的范围。三项经营现金流调整只说明报表调节方向，不等于完整非现金营运资本或未来预算。
+
+**负净再投资不等于卖资产。** 折旧超过当期资本支出、营运资本回收、资产处置均可能产生负净投入；须解释机制、期间和可持续性，不能一概拒绝、设零下限，也不能认为账面折旧本身创造现金。达摩达兰的[资本支出与折旧讨论第4节](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/AppldCF/derivn/ch5deriv.html)区分有限期资产消耗与持续经营的维护投入；[非现金营运资本](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/noncashwc.htm)须排除现金投资及已按融资处理的有息债务。
+
+这份事实证据可按已有故事`Evidence`登记文件哈希与字段／期间定位，再把未来判断另列为`company_plan`或`research_judgment`。历史金额可得、对账通过不将`Claim.evidence_state`自动升级为预测已获支持。真实12家公司验收及经济解释见[本轮记录](../history/operating-evidence-20261017.md)。
+
 ## 故事到估值与版本修订
 
 需要把业务主张、证据、反例及人工年度条件连接到估值时，使用`tools.narrative_valuation`；完整命令、文件结构及采用边界见[故事输入方案](../valuation/narrative-valuation-plan.md#最小接入方式与产出)。`prepare`从同版发布SQLite和`alphalake-native-coverage-v1`范围收据生成草稿，人工给定完整经营路径并绑定既有资本／研发／融资／终点条件，`run`复用原生完整API计算。
