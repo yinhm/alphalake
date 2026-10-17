@@ -75,3 +75,5 @@ PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.publish_native_valuati
 读取发布收据及实际HTTP复验，成功才报告网页已更新；失败回滚，保留候选、来源失败、拒绝和完整分母。同信息截止的local重放应复用已验证内容；仅元数据变化不要求替换网页文件。没有明确发布目标时完成可独立验证的来源刷新，列明仍缺的部署信息，不能猜主机或把主库更新称生产发布。
 
 季度预告必须分别看标题截止期和实际经营起始日：v3对无法区分累计／单季的季度标签保留`unknown`，不将其自动计为7–9月。解释版本升级沿同一窗口离线重建，新增ID先判断是否仅重解释；来源取得时间、公司数和金额需另行比较，不能称为新增上游公告。具体以[预告期间契约](../../../docs/earnings-guidance-spec.md#季度标签的期间边界v3)为准。
+
+机器检查主库用`./alphalake status workspace/alphalake.duckdb --json`，先看`schema_supported`；旧的人类文本输出不能直接`json.load`。累计validation计数不代表本轮新增失败。发布stdout为JSONL，当前结果读delivery收据指向的`run.json`；计算复用的`web_checks`没有`http_status`，应核对实际`calculation=reused_verified_inputs`、完整范围及发布哈希。不要把收据格式判断错误当来源或网页失败而重复在线同步；多命令包装须前置失败即停。详细契约见[状态与收据](../../../docs/guides/system-delivery.md#状态与收据的机器读取)。

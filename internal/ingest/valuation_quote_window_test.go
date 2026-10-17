@@ -2,6 +2,7 @@ package ingest
 
 import (
 	"context"
+	"fmt"
 	"github.com/yinhm/alphalake/internal/domain"
 	store "github.com/yinhm/alphalake/internal/store/duckdb"
 	"path/filepath"
@@ -71,5 +72,41 @@ func TestQuoteWindowDoesNotAdvanceDailyHistoryAndRejectsInvalidScope(t *testing.
 	}
 	if _, e = SyncValuationQuoteWindow(ctx, db, f, []string{"sh600004", "sh600004"}, day); e == nil {
 		t.Fatal("duplicate symbol accepted")
+	}
+}
+
+type benchmarkQuoteSource struct{}
+
+func (benchmarkQuoteSource) StockDailyBarsWindow(_ context.Context, id int64, _ string, _, end time.Time) ([]domain.DailyBar, error) {
+	bars := make([]domain.DailyBar, 10)
+	for i := range bars {
+		bars[i] = domain.DailyBar{InstrumentID: id, TradeDate: end.AddDate(0, 0, -i), Open: 10, High: 11, Low: 9, Close: 10, Volume: 100, Amount: 1000, Source: "tdx"}
+	}
+	return bars, nil
+}
+
+// Fixed 256-symbol/2,560-observation workload isolates storage from network latency.
+func BenchmarkSyncValuationQuoteWindow(b *testing.B) {
+	ctx := context.Background()
+	db, err := store.OpenInitialized(ctx, filepath.Join(b.TempDir(), "quotes.duckdb"))
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer db.Close()
+	observations := make([]domain.InstrumentObservation, 256)
+	symbols := make([]string, len(observations))
+	for i := range observations {
+		symbols[i] = fmt.Sprintf("sh%06d", 600000+i)
+		observations[i] = domain.InstrumentObservation{Instrument: domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY"}, Identifier: domain.Identifier{Provider: "tdx", Type: "symbol", Value: symbols[i]}}
+	}
+	if _, err = store.UpsertInstruments(ctx, db, observations); err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		out, err := SyncValuationQuoteWindow(ctx, db, benchmarkQuoteSource{}, symbols, time.Date(2020, 6, 30, 0, 0, 0, 0, time.UTC))
+		if err != nil || out.Written != 2560 || !out.Complete {
+			b.Fatal(out, err)
+		}
 	}
 }

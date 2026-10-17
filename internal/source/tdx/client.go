@@ -136,7 +136,9 @@ func (c *Client) StockDailyBarsWindow(ctx context.Context, id int64, symbol stri
 	if c == nil {
 		return nil, fmt.Errorf("TDX client is not initialized")
 	}
-	return fetchStockDailyBarsWindow(ctx, c.requests(ctx), id, symbol, start, end)
+	requests := c.requests(ctx)
+	requests.klinePageSize = windowPageSize(start, time.Now())
+	return fetchStockDailyBarsWindow(ctx, requests, id, symbol, start, end)
 }
 func fetchStockDailyBarsWindow(ctx context.Context, c dailyKlineSinceClient, id int64, symbol string, start, end time.Time) ([]domain.DailyBar, error) {
 	if start.IsZero() || end.IsZero() || canonicalTradeDate(start).After(canonicalTradeDate(end)) {

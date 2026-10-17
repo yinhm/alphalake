@@ -114,7 +114,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  filing-unresolved <db-path> [--limit N] [--offset N]")
 	fmt.Fprintln(os.Stderr, "  financial-ack <db-path> <artifact-id> <provider-code> <reason>")
 	fmt.Fprintln(os.Stderr, "  financial-unack <db-path> <artifact-id> <provider-code>")
-	fmt.Fprintln(os.Stderr, "  status <db-path>")
+	fmt.Fprintln(os.Stderr, "  status <db-path> [--json]")
 	fmt.Fprintln(os.Stderr, "  import-cninfo-document <db-path> <artifact-root> <receipt-json> <pdf-file>")
 	fmt.Fprintln(os.Stderr, "  import-reviewed-document <db-path> <artifact-root> <review-json> <pdf-file>")
 	fmt.Fprintln(os.Stderr, "  supplement-history <db-path> <six-digit-code>")
@@ -561,7 +561,7 @@ func main() {
 		}
 
 	case "status":
-		if len(os.Args) != 3 {
+		if len(os.Args) != 3 && (len(os.Args) != 4 || os.Args[3] != "--json") {
 			usage()
 			os.Exit(2)
 		}
@@ -576,6 +576,12 @@ func main() {
 		status, err := duckstore.ReadOperationalStatus(ctx, db, 10)
 		if err != nil {
 			fatal(err)
+		}
+		if len(os.Args) == 4 {
+			if err = writeOperationalStatusJSON(os.Stdout, status, version, os.Args[2]); err != nil {
+				fatal(err)
+			}
+			return
 		}
 		fmt.Printf("AlphaLake %s\n", version)
 		fmt.Printf("database: %s\n", os.Args[2])

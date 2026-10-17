@@ -350,3 +350,15 @@ def test_published_scope_uses_current_snapshot_instead_of_stale_sample_file(tmp_
     assert delivery.main()==0
     with sqlite3.connect(target) as db: db.execute("UPDATE companies SET ticker='BSE:920001' WHERE ticker='SHSE:600000'")
     with pytest.raises(SystemExit):delivery.main()
+
+
+def test_runtime_identity_excludes_tests_but_tracks_execution_code(tmp_path, monkeypatch):
+    backend = tmp_path/'backend'
+    for name in ('tools/publish_native_valuation.py','engine/dcf.py','tests/test_dcf.py'):
+        path=backend/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text('original')
+    monkeypatch.setattr(delivery, '__file__', str(backend/'tools/publish_native_valuation.py'))
+    before=delivery.runtime_identity(tmp_path)
+    (backend/'tests/test_dcf.py').write_text('new test only')
+    assert delivery.runtime_identity(tmp_path)==before
+    (backend/'engine/dcf.py').write_text('changed calculation')
+    assert delivery.runtime_identity(tmp_path)!=before

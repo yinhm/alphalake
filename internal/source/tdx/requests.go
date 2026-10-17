@@ -10,11 +10,14 @@ import (
 // Implement the existing narrow source interfaces, routing every network call
 // through the same connection policy. No SDK client escapes this package.
 type nodeRequests struct {
-	owner *Client
-	ctx   context.Context
+	owner         *Client
+	ctx           context.Context
+	klinePageSize uint16
 }
 
-func (c *Client) requests(ctx context.Context) nodeRequests { return nodeRequests{c, ctx} }
+func (c *Client) requests(ctx context.Context) nodeRequests {
+	return nodeRequests{owner: c, ctx: ctx, klinePageSize: 800}
+}
 func (r nodeRequests) GetCodeAll(exchange protocol.Exchange) (*protocol.CodeResp, error) {
 	return withNode(r.ctx, r.owner, "codes/"+exchange.String(), func(c *tdxlib.Client) (*protocol.CodeResp, error) {
 		v, e := c.GetCodeAll(exchange)
@@ -29,7 +32,7 @@ func (r nodeRequests) GetKlineDayAll(code string) (*protocol.KlineResp, error) {
 }
 func (r nodeRequests) GetKlineDayUntil(code string, f func(*protocol.Kline) bool) (*protocol.KlineResp, error) {
 	return withNode(r.ctx, r.owner, "daily-since/"+code, func(c *tdxlib.Client) (*protocol.KlineResp, error) {
-		v, err := c.GetKlineDayUntil(code, f)
+		v, err := klineDayUntil(r.ctx, c, code, r.klinePageSize, f)
 		return dailyWindowResponse(v, err, f)
 	})
 }

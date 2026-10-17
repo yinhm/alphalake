@@ -241,7 +241,7 @@ def runtime_identity(workspace):
     """原生计算绑定SQLite参考快照及后端/冻结模型参考版本。"""
     from api.alphalake import runtime_versions
     backend = Path(__file__).resolve().parents[1]
-    files = sorted(backend.rglob('*.py')) + sorted((backend/'data_sources').glob('*.json'))
+    files = sorted(p for p in backend.rglob('*.py') if 'tests' not in p.relative_to(backend).parts) + sorted((backend/'data_sources').glob('*.json'))
     hashes = {str(p):digest(p) for p in files}
     return dict(versions=runtime_versions(), files=hashes)
 
@@ -287,7 +287,7 @@ def archive_check(directory):
         raise ValueError('native check summary/evidence missing')
     expected = {p.name:digest(p) for p in files}
     archive = directory.with_suffix('.tar.gz')
-    with tarfile.open(archive, 'x:gz') as stream:
+    with tarfile.open(archive, 'x:gz', compresslevel=1) as stream:
         for path in files:
             stream.add(path, arcname=path.name, recursive=False)
     actual = {}

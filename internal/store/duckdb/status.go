@@ -9,12 +9,12 @@ import (
 )
 
 type RecentIngestRun struct {
-	RunID      int64
-	Source     string
-	Dataset    string
-	Status     string
-	StartedAt  time.Time
-	FinishedAt *time.Time
+	RunID      int64      `json:"run_id"`
+	Source     string     `json:"source"`
+	Dataset    string     `json:"dataset"`
+	Status     string     `json:"status"`
+	StartedAt  time.Time  `json:"started_at"`
+	FinishedAt *time.Time `json:"finished_at"`
 }
 
 type OperationalStatus struct {
