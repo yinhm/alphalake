@@ -27,7 +27,7 @@ SQLite从v12升至v13，使用`native-wide-context-v2`：每公司只增加政�
 - 主库SHA-256：`87456b04faecd9e6cf9db3ab61aacdcb5205d0f8952fb91b62246abd75466016`。
 - 旧SQLite：`58110e75255c28f377d6c381ee6876e2583f43944f36654f0cad205852dafeea`。
 - 新SQLite：`cfd7612a75bd253665c4b799570b3a7170c731eb087603bf06332a4ea3e8f50d`。
-- 数据侧收据：`workspace/derived/product-scope-v13/run.json`、`comparison.json`、`approved-explicit-proxies.json`及当前发布收据；逐公司响应按成员哈希核对后压缩。
+- 数据侧收据：`workspace/derived/product-scope-v13/run.json`、`comparison.json`、`approved-explicit-proxies.json`及当前发布收据；阶段逐公司响应按成员哈希核对后压缩；收口时与最终正常验收的经济字段逐家相同，重复归档已退役，摘要及成员哈希保留，完整替代验收与旧路径边界见[最终收口](project-audit-closeout-20261017.md)。
 - 旧库与43ebf99运行时先保留回滚；原子切换后重启匹配代码、完整复验8080，再由正常发布器重放生成当前规范收据。重开及幂等通过后按清理收据删除旧回滚副本，不保留旧运行时兼容。
 
 前置夹具错误、候选范围多一只、一次性脚本恢复链接及首轮迁移收据漏二进制签名均保留失败日志。失败发生在发布前或重放核验中，主库未改；首轮规范重放因此重导出，但复用计算、内容及网页文件不变，未重复在线同步。不是来源失败或估值变化。
