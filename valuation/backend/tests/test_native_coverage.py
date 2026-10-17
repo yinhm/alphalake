@@ -59,3 +59,42 @@ def test_tdx_financial_identity_is_used_but_conflict_is_not_guessed():
     assert valuation_scope.company_scope(company, {'status':'verified_source'})[0]=='unresolved_industry_scope'
     member['node_name']='tampered'
     assert valuation_scope.company_scope(dict(industry_memberships=[member]), {})[0]=='unresolved_industry_scope'
+
+
+def test_profit_asset_evidence_displays_components_without_normalizing_or_approving():
+    from copy import deepcopy
+    fields=[dict(canonical_field=name,value=str(value),unit='CNY',status='complete',scope='consolidated_statement')
+        for name,value in [('interest_income',1000000),('investment_income',-2000000),
+                           ('fair_value_change_income',0),('asset_disposal_income',0)]]
+    company=dict(fields=fields)
+    diagnostic=dict(input_contract=dict(flow_basis='standard_cumulative_TTM',inputs=[
+        dict(series='ttm',offset=0,field=f,value=v,usable=True,source={'status':s}) for f,v,s in
+        [('ebit',10,'available'),('cash_and_marketable_securities',3,'estimated_partial_scope'),
+         ('cross_holdings',5,'estimated_partial_scope'),('minority_interests',0,'available')]]))
+    before=deepcopy((company,diagnostic))
+    result=coverage.profit_asset_evidence(company,diagnostic)
+    assert result['status']=='components_available_scope_unverified'
+    assert result['nonzero_components']==['interest_income','investment_income']
+    assert [r['value_million_cny'] for r in result['components']]==['1','-2','0','0']
+    assert [r['ratio_to_reported_ebit'] for r in result['components']][:2]==['0.1','-0.2']
+    assert result['current_equity_bridge_inputs'][0]['source_status']=='estimated_partial_scope'
+    assert not result['automatic_adjustment'] and not result['operating_scope_verified']
+    assert (company,diagnostic)==before and 'normalized_ebit' not in result
+    diagnostic['input_contract']['inputs'][0]['value']=-10
+    negative=coverage.profit_asset_evidence(company,diagnostic)
+    assert [r['ratio_to_reported_ebit'] for r in negative['components']][:2]==['-0.1','0.2']
+    diagnostic['input_contract']['inputs'][0]['value']=10
+    # Source zero, absence, incompatible unit, duplicate scope and zero denominator differ.
+    for row in fields:row['value']='0'
+    zero=coverage.profit_asset_evidence(company,diagnostic)
+    assert zero['nonzero_components']==[] and not zero['operating_scope_verified']
+    fields.pop()
+    assert coverage.profit_asset_evidence(company,diagnostic)['components'][-1]['value_million_cny'] is None
+    fields[0]['unit']='USD'
+    assert coverage.profit_asset_evidence(company,diagnostic)['components'][0]['value_million_cny'] is None
+    fields.append(deepcopy(fields[1]))
+    assert coverage.profit_asset_evidence(company,diagnostic)['components'][1]['status']=='ambiguous_component_scope'
+    diagnostic['input_contract']['inputs'][0]['value']=0
+    assert all(r['ratio_to_reported_ebit'] is None for r in coverage.profit_asset_evidence(company,diagnostic)['components'])
+    company['source_conflicts']=[{'period':'2026-06-30'}]
+    assert coverage.profit_asset_evidence(company,diagnostic)['status']=='source_conflict_requires_review'

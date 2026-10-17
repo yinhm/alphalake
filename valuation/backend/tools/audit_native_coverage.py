@@ -2,6 +2,7 @@
 import argparse
 from collections import Counter
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 import json
 from pathlib import Path
 import sqlite3
@@ -12,6 +13,53 @@ from data_sources import us_cn_hk_db as db
 from tools.export_alphalake_sqlite import CONTRACT, digest
 
 from data_sources.valuation_scope import company_scope
+
+
+def profit_asset_evidence(company, diagnostic):
+    """显示收益分量和实际资产代理，不将报表行自动分类或相加扣除。"""
+    fields = company.get('fields') or []
+    inputs = diagnostic.get('input_contract', {}).get('inputs', [])
+    basis = diagnostic.get('input_contract', {}).get('flow_basis')
+    series = {'standard_cumulative_TTM': 'ttm', 'standard_annual': 'annual'}.get(basis)
+    def consumed(field):
+        rows = [r for r in inputs if r['series'] == series and r['offset'] == 0 and r['field'] == field]
+        return rows[0] if len(rows) == 1 else {}
+    reported = consumed('ebit')
+    denominator = Decimal(str(reported['value'])) if reported.get('usable') and reported.get('value') is not None else None
+    components = []
+    for name in ('interest_income', 'investment_income', 'fair_value_change_income', 'asset_disposal_income'):
+        rows = [r for r in fields if r['canonical_field'] == name]
+        row = rows[0] if len(rows) == 1 else {}
+        value = None
+        status = row.get('status', 'missing_component' if not rows else 'ambiguous_component_scope')
+        if status == 'complete' and row.get('unit') == 'CNY' and row.get('value') is not None:
+            try:
+                amount = Decimal(str(row['value']))
+                if amount.is_finite():
+                    value = amount/Decimal(1000000)
+                else:
+                    status = 'invalid_component_value'
+            except InvalidOperation:
+                status = 'invalid_component_value'
+        elif status == 'complete':
+            status = 'invalid_component_unit_or_value'
+        components.append(dict(field=name, status=status, statement_scope=row.get('scope'),
+            value_million_cny=str(value) if value is not None else None,
+            ratio_to_reported_ebit=str(value/denominator) if value is not None and denominator not in (None, 0) else None))
+    available = [r for r in components if r['value_million_cny'] is not None]
+    nonzero = [r['field'] for r in available if Decimal(r['value_million_cny']) != 0]
+    assets = []
+    for name in ('cash_and_marketable_securities', 'cross_holdings', 'minority_interests', 'bv_debt'):
+        row = consumed(name)
+        assets.append(dict(field=name, usable=row.get('usable', False), value_million_cny=row.get('value'),
+            source_status=row.get('source', {}).get('status', 'not_provided')))
+    source_conflict = bool(company.get('source_conflicts'))
+    return dict(status='source_conflict_requires_review' if source_conflict else
+        'components_available_scope_unverified' if len(available) == 4 else 'partial_components_scope_unverified',
+        source_conflicts_present=source_conflict,
+        native_flow_basis=basis, native_reported_ebit_million_cny=reported.get('value'),
+        components=components, nonzero_components=nonzero, current_equity_bridge_inputs=assets,
+        automatic_adjustment=False, operating_scope_verified=False)
 
 
 def gap_category(cell):
@@ -37,6 +85,7 @@ def audit(conn, readiness, scope):
         raise ValueError('incomplete/duplicate readiness universe')
     reference = readiness['company_industry_reference']
     results, categories, scope_counts, admissions = [], {}, Counter(), Counter()
+    economic_evidence = Counter()
     if (scope['contract']!='alphalake-export-scope-v1' or scope['source_database_sha256']!=metadata['source_database_sha256']
             or scope['report_period']!=metadata['report_period'] or scope['information_as_of']!=metadata['information_as_of']):
         raise ValueError('Frozen export scope differs from snapshot')
@@ -70,6 +119,10 @@ def audit(conn, readiness, scope):
                 optional_history_missing=len(diagnostic['optional_history_missing']),
                 uses_market_proxy=diagnostic['market_proxy'] is not None,
                 partial_asset_proxy_cells=len(diagnostic['exported_asset_proxies']))
+            if scope == 'nonfinancial_by_reference':
+                row['profit_asset_evidence'] = profit_asset_evidence(company, diagnostic)
+                economic_evidence[row['profit_asset_evidence']['status']] += 1
+                economic_evidence['nonzero_listed_returns'] += bool(row['profit_asset_evidence']['nonzero_components'])
             for category in {g['category'] for g in gaps}:
                 counts = categories.setdefault(category, Counter())
                 counts[scope] += 1
@@ -79,6 +132,12 @@ def audit(conn, readiness, scope):
         information_as_of=metadata['information_as_of'], source_database_sha256=metadata['source_database_sha256'],
         source_universe=readiness['universe_count'], snapshot_candidates=len(candidates),
         full_source_universe=set(ids)==set(companies), scope_policy='nonfinancial-tdx-damodaran-2026-v1',
+        not_exported_source_candidates=[dict(instrument_id=i, name=companies[i]['name'], symbols=companies[i].get('symbols'))
+            for i in sorted(set(companies)-set(ids))],
+        profit_asset_evidence_counts=dict(economic_evidence),
+        profit_asset_evidence_policy=dict(currency='CNY', money_unit='million_CNY', source_flow_basis='standard_TTM',
+            source_query='valuation-readiness.fields', automatic_adjustment=False, operating_scope_verified=False,
+            boundary='收益组成分别展示，不自动相加或认作非经营；现金/投资加回、收益剔除、合并资本及少数权益须同范围。四项为零也不证明没有其他收益或兼营；金额比值不是批准阈值，不影响准入或默认。'),
         scope_counts=dict(scope_counts), admission_by_scope=[dict(scope=s,admission=a,companies=n) for (s,a),n in sorted(admissions.items())],
         missing_categories={k:dict(v) for k,v in sorted(categories.items())}, companies=results, valuations_run=0,
         boundary='原生默认调整的数据准入；行业映射是范围代理，不证明无金融兼营；分类缺失保留待审。缺标准事实不等于TDX缺数；本报告不推断上市前、源零或公告歧义根因。类别可重叠。',
@@ -95,10 +154,9 @@ def reference_coverage(packet):
         industry_regions=sorted({r['sample_region'] for r in s.industry_stats}),
         industry_metrics=sorted({r['metric_code'] for r in s.industry_stats}),
         country_metrics=sorted({r['metric_code'] for r in s.country_risk}),
-        boundary='版本可用不等于满足消费政策的新鲜度；未改变原生输入或选择Global替代US。',
-        native_gaps=['原生默认US行业参考未包含在本参考出口', '国家边际税率未包含在本参考出口',
-                     '公司行业选择需绑定主库分类版本', '信用利差与原生债务成本分支须明确对齐',
-                     '无风险利率显式请求优先；自动取值需规定期限、方法和年龄限制'])
+        scope='standalone_wacc_reference_export_not_native_sqlite_reference_v4',
+        native_reference_completeness_evaluated=False,
+        boundary='该出口仅描述本WACC数据包；不能据此推断原生SQLite参考缺项或将Global替换US，实际准入沿原生参考诊断。')
 
 
 def main():

@@ -152,3 +152,17 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.select_native_assumptions
 `selection.decisions.growth.path`区分收缩恢复与非负增长；收缩时`economic_basis.unresolved`必须列出恢复时点/存续及资本释放可收回性。收入增量为负时仍按所选倍率和投入滞后计算负再投资，不截零；原方法审阅逐年列出释放金额和年份。此金额不是已实现现金、资产出售价格或已核实的折旧回收。没有回收证据不得自动采用，`automatic_adoption=false`及无场景概率保持。
 
 v1冻结运行按原提交复验，当前工具只接受v2；不保留旧政策别名。既有正增长公司的完整输入与DCF结果必须不变，新增可计算情况单独计数。网页默认、主库与SQLite不变。
+
+## 收益与资产范围的数据证据
+
+`tools.audit_native_coverage`现按既有完整范围输出`profit_asset_evidence`：标准TTM利息收入、投资收益、公允价值变动收益和资产处置收益，逐项对照实际消费的报表EBIT，并列出当前现金、投资、少数权益及债务输入与代理状态。全库共享单位／规则，金额按百万元CNY、比值为无量纲；不把原始编号当业务字段，不复制逐字段血缘。未知、坏单位、重复范围及源冲突分别保留，零分母不产生比值。
+
+该检查提供来源组成，不产生“正常化EBIT”。某项非零只说明要核对收益／资产范围，不能直接断言它非经营、将四项相加扣除或按比值阈值拒绝；四项零也不证明没有其他收益／兼营。已批准资产代理继续可用，不因审阅标签清空事实或改变准入。
+
+达摩达兰的[资产加回解释](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/a22.htm)要求收益与被单独加回的资产范围配套；[非现金营运资本](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/noncashwc.htm)区分经营投入与现金／有息融资，并说明资本释放不能无限延续。具体公司是否经营现金、套期投资或经营性处置仍需经济依据，这些原文不是“所有投资收益一律剔除”的规定。
+
+未来研发、资本投入及终值沿既有显式入口与共享审阅：[研发资本化](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/R%26D.htm)须使利润、资产、税及再投资一致；[终值](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm)中增长、再投资及ROIC须配套。未提供公司未来路径时只标缺依据，不新增自动估计、参数选优或默认替换。
+
+审核须绑定同版主库与消费投影的报告期、截止及源哈希；若主库独立预告域更新使物理哈希变化，可先导出临时同版输入，核对其原生内容签名与生产一致再审阅，不能改版本号或绕过来源校验。临时投影只供数据侧审核，完成后按收据清理，不成为网页运行依赖。报告另外列出未进入冻结发布范围的源候选；分类、输入完整、经济适配及DCF产出分别计数。窄WACC出口覆盖不推断原生SQLite v4参考缺项。
+
+本轮实际盘点与边界见[收益／资本输入验收](../history/economic-input-evidence-20261017.md)。
