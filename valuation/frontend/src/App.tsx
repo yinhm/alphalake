@@ -19,6 +19,7 @@ import FailureRate from './pages/FailureRate';
 import TrailingTwelveMonth from './pages/TrailingTwelveMonth';
 import AnswerKeys from './pages/AnswerKeys';
 import AdminDataSources from './pages/AdminDataSources';
+import ResearchPage from './research/ResearchPage';
 import CurrencyBanner from './components/CurrencyBanner';
 import UnresolvedFieldsPanel from './components/UnresolvedFieldsPanel';
 import type { ValuationResponse } from './types/valuation';
@@ -82,6 +83,7 @@ export default function App() {
   // page tree.
   const isAdminRoute = pathname.startsWith('/admin');
   const isKnowledgeRoute = pathname === '/knowledge' || pathname.startsWith('/knowledge/');
+  const isResearchRoute = pathname === '/research' || pathname.startsWith('/research/');
 
   return (
     <KnowledgeProvider valuation={data}>
@@ -89,7 +91,14 @@ export default function App() {
       <Sidebar />
       <main className="min-w-0 flex-1 p-3 md:p-6 overflow-auto" data-knowledge-scope>
         <KnowledgeToolbar />
-        {isKnowledgeRoute ? (
+        {isResearchRoute ? (
+          <ErrorBoundary resetKey={pathname}>
+            <Routes>
+              <Route path="/research" element={<ResearchPage />} />
+              <Route path="/research/:id" element={<ResearchPage />} />
+            </Routes>
+          </ErrorBoundary>
+        ) : isKnowledgeRoute ? (
           <ErrorBoundary resetKey={pathname}>
             <Routes>
               <Route path="/knowledge" element={<KnowledgePage />} />

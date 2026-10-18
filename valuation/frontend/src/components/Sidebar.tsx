@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { adminWhoami } from '../api/client';
-import { Menu, PanelLeftClose, BookOpen } from 'lucide-react';
+import { Menu, PanelLeftClose, BookOpen, FileText } from 'lucide-react';
 
 // Order reflects the valuation workflow: inputs → adjustments & WACC → outputs → cross-checks.
 const NAV = [
@@ -64,6 +64,10 @@ export default function Sidebar() {
             {label}
           </NavLink>
         ))}
+        <NavLink to="/research" className={({ isActive }) =>
+          `mt-3 px-3 py-2 rounded text-xs flex items-center gap-2 ${isActive ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}>
+          <FileText size={15} /> 研究报告
+        </NavLink>
         <NavLink to="/knowledge" className={({ isActive }) =>
           `mt-3 px-3 py-2 rounded text-xs flex items-center gap-2 ${isActive ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-100'}`}>
           <BookOpen size={15} /> 估值知识库

@@ -1,7 +1,18 @@
 import axios from 'axios';
 import type { ValuationResponse } from '../types/valuation';
+import type { ResearchCatalog, ResearchDetail } from '../types/research';
 
 const api = axios.create({ baseURL: '/api' });
+
+export async function fetchResearchCatalog(q: string, kind: string, offset: number, signal?: AbortSignal): Promise<ResearchCatalog> {
+  const { data } = await api.get('/research', { params: { q, kind: kind || undefined, offset, limit: 20 }, signal });
+  return data;
+}
+
+export async function fetchResearch(id: string, document: string | null, signal?: AbortSignal): Promise<ResearchDetail> {
+  const { data } = await api.get(`/research/${encodeURIComponent(id)}`, { params: { document: document || undefined }, signal });
+  return data;
+}
 
 export function apiErrorMessage(error: unknown): string {
   const detail = axios.isAxiosError(error) ? error.response?.data?.detail : null;
