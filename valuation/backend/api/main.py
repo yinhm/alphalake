@@ -19,6 +19,7 @@ from .export import router as export_router
 from .admin import router as admin_router
 from .database import router as database_router, valuation_router as db_valuation_router
 from .knowledge import router as knowledge_router
+from .research import router as research_router
 
 app = FastAPI(title="Valuation Engine API", version="0.1.0")
 
@@ -55,6 +56,7 @@ app.include_router(admin_router, prefix="/api")
 app.include_router(database_router, prefix="/api")
 app.include_router(db_valuation_router, prefix="/api")
 app.include_router(knowledge_router, prefix="/api")
+app.include_router(research_router, prefix="/api")
 
 DIST_DIR = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
 
