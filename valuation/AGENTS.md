@@ -3,6 +3,7 @@
 - 遵循根目录[AGENTS.md](../AGENTS.md)。当前能力及优先级只查[实现状态](../docs/implementation-status.md)，发布及恢复操作见[系统交付](../docs/guides/system-delivery.md)；历史记录不作为当前接口规范。
 - 当前只推进沪深非金融企业；金融专项与多市场暂停。100家仅作固定回归集合，范围外和拒绝记录保留。
 - 原生网页消费主库导出的SQLite，入口为`backend/api/database.py`，发布使用`backend/tools/publish_native_valuation.py`。保持原页面及请求，只修明确BUG或必要后端适配；显式政策CLI/API与原生默认政策分别记录。
+- 2026-10-18用户批准独立只读`/research`及`/research/:id`页面；仅读取workspace研究交付，不计算估值、不改变原生参数或公司加载流程。
 - 数据转换、准入、会话及展示变更必须先查[数据接入spec](../docs/valuation/data-contract.md)并同步实际消费方；标准累计TTM复用已有prepared入口，来源事实、年度研发队列和展示季度分别保留，不将季度拆分当估值硬门槛。
 - 合法数据/口径变更应重建基线并重新估值，保存变更依据与前后差异；不得因新结果不同于旧结果而拒绝，也不得混用旧利润率与新资本输入。原生重建复用`tools.select_native_assumptions --rebuild`，详见[重建契约](../docs/valuation/native-assumption-selection.md#合法变更重建基线并重新估值)。
 - 引擎暂时冻结，仅允许有复现及回归的明确BUG修复；非BUG方法、默认政策、算法或输入接口扩展先记入[待审批](TODO.md)，等待明确审批，不借API或假设工具绕过冻结。既有数据契约的解析、核验及适配继续推进。
@@ -16,7 +17,7 @@
 - LTM同比只比上年同截止月的十二个月，不比最近全年、不按距年末时长年化；缺比较窗口不阻断当前估值。余额及股本用最新期末值，不四季求和；展示及导出消费引擎实际基期，不借旧年度补齐。历史增长不是已验证预测；已批准的数据库来源初值与完整显式请求分开，见[数据契约](../docs/valuation/data-contract.md#ltm同比与展示契约)。
 - 参数PATCH先校验并经共享引擎重算成功，再更新会话；失败保留原会话。行业/国家选择须实际更新参考数值，并记录用户选择及参考来源，不能只改标签。
 - 原始CIQ公式保持不变；模板期间按公式解析，不信任可能过时的`_RowMap`期间列。导出Excel的文本标签须防止被解释为公式。
-- Python工具放`backend/tools/`；运行输出写workspace/derived，原始来源按根规范归档。改动运行相关Python回归，真实发布复用原生API验收；不得以样本研究值代替应用链路。
+- Python工具放`backend/tools/`；临时计算及内部验收写workspace/derived；正式报告／模型写workspace/research/<id>，按[研究交付契约](../docs/guides/research-delivery.md)登记，不提交Git。原始来源按根规范归档。改动运行相关Python回归，真实发布复用原生API验收；不得以样本研究值代替应用链路。
 
 上游来源及credit见[UPSTREAM.md](UPSTREAM.md)；导入时的开发背景移至[历史说明](docs/upstream-development-notes.md)，其中默认回退、多市场及旧测试结果不作为本阶段要求。
 

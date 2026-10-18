@@ -17,6 +17,8 @@ Go的`full`构建标签才包含重型测试；`-run`不代替标签，遗漏标
 
 测试取消`ALPHALAKE_WORKSPACE`覆盖；显式设置`GOPATH/GOCACHE`，跨语言验收设置`ALPHALAKE_TEST_PYTHON`。本地默认测试勿继承`CI=true`。结果区分通过、跳过和未选择，不把默认组称全局通过。
 
+研究阅读链的轻量回归为`pytest valuation/backend/tests/test_research_reports.py`及前端`npx playwright test tests/research.spec.ts`；后者覆盖无需公司加载、表格／公式、附件、搜索筛选与移动端。现有`npm run test:knowledge`执行全部前端浏览器测试，包含research与原估值页面回归。新增`remark-gfm`只为研究Markdown正确呈现表格，不变更KB或估值计算。
+
 ## 保留范围
 
 - 默认组保留引擎公式与错误输入、当前财务累计/季度/TTM及单位转换、研发队列、假设与信用边界、SQLite/API准入、发布回滚、知识接口，以及Go核心存储/同步和源解析。小型合成测试和轻量真实解析仍执行。

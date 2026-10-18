@@ -11,6 +11,7 @@
 - `cninfo/objects/<摘要前2位>/<完整SHA-256>.pdf`：巨潮PDF唯一原文；`cninfo/documents/<官方URL日期>/<公告ID>.PDF`仅为相对软链接，扩展名大小写沿用URL。相邻`.json`保存官方URL、哈希、原文相对路径和原始取得时间。公司、报告期、公告类型由主库目录及研究清单登记，不再按公司或研究批次复制PDF。
 - `chinabond/`等：按真实来源归档；其他来源PDF不改称巨潮。必要的`views/`或文件名视图仅引用原文，不能另存一份内容；审核JSON和教学PDF不冒充公告原文。
 - `valuation.sqlite`：网页消费的唯一财务发布快照，可重建，不是权威源。顶层仅保留它和主DuckDB；原始证据按来源归档，测试产物不写真实workspace。
+- `research/<id>/`：正式中文研究报告、论点、模型及最终结果；`research.json`登记后在`/research`及详情页读取，不提交Git。原PDF继续引用来源归档，既有冻结计算可显式引用、不重复写事实；临时计算与内部验收继续用derived。见[研究交付契约](research-delivery.md)。
 - `derived/system-delivery/`：发布候选、回滚副本、排他锁、当前`.delivery.json`和`.publication.json`，逐轮日志在`run-*`；`derived/valuation-runs/`保存仍在保留范围内的不可变估值运行，过期记录可按下述规则退役。`derived/archives/`只保存仍有用的人工条件、研究及紧凑输入；`derived/cleanup-audit/`保存迁移／删除清单及ID映射。
 - `knowledge/`：词条编辑稿及 `knowledge.sqlite` 阅读库，独立于财务事实和数值参考；不随代码提交。词条 schema、只读 API 与构建命令见[知识库契约](valuation-knowledge.md)。
 - `derived/pdf-cache/`：跨语言逐URL锁及一次性归档迁移收据；不存第二份PDF原文。

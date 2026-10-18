@@ -12,6 +12,7 @@
 | 更新数据并发布网页快照 | [同步、验收与发布](docs/guides/system-delivery.md) |
 | 独立导出SQLite、核对输入 | [导出契约](docs/guides/valuation-sqlite-export.md) |
 | 用Agent检查数据、手工刷新与发布 | [数据维护Skill](skills/alphalake/SKILL.md) |
+| 阅读研究报告、登记新的交付 | [研究平台与交付契约](docs/guides/research-delivery.md)（网页`/research`） |
 | 用Agent完成公司研究、条件估值、解释与更新 | [估值Skill](skills/alphalake-valuation/SKILL.md) |
 | 复用数据、独立DCF与交叉校验 | [独立DCF Skill](skills/alphalake-dcf/SKILL.md) |
 | 核对自动假设与资本效率 | [估值方法](docs/valuation/README.md) |
@@ -46,7 +47,7 @@ for ALPHALAKE_SKILL_NAME in alphalake alphalake-valuation alphalake-dcf; do
 done
 ```
 
-已有同名安装先核对来源，不覆盖其他Skill；可只链接所需目录。软链接让仓库更新同步生效，安装后下一轮对话可发现新Skill。独立DCF不调用现有估值引擎或原生导出；其公式Excel执行核验须使用实际可用的Linux计算工具，`openpyxl`本身不能重算。研究补证和结果不自动进入主库或网页发布。
+已有同名安装先核对来源，不覆盖其他Skill；可只链接所需目录。软链接让仓库更新同步生效，安装后下一轮对话可发现新Skill。独立DCF不调用现有估值引擎或原生导出；其公式Excel执行核验须使用实际可用的Linux计算工具，`openpyxl`本身不能重算。研究补证和结果不自动进入主库或财务快照。正式研究交付统一放`workspace/research/<id>`，登记后在`/research`阅读；正文、模型和结果不提交Git。
 
 ## 来源与致谢
 

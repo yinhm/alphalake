@@ -26,7 +26,7 @@ description: 使用 AlphaLake 数据与既有估值引擎完成沪深非金融�
 1. 定位仓库：会话已知路径或`ALPHALAKE_ROOT`优先，否则检查当前目录及父目录的`valuation/backend/tools/company_valuation.py`。安装Skill目录不等于仓库目录。读取根`AGENTS.md`、[当前状态](../../docs/implementation-status.md)与[统一入口](../../docs/guides/company-valuation-entry.md)；涉及取数或转换再查[数据契约](../../docs/valuation/data-contract.md)。
 2. 默认主库`workspace/alphalake.duckdb`，原生消费`workspace/valuation.sqlite`（当前v13）；从现行发布收据确认实际范围、哈希、报告期、信息截止、收盘日、股本基期与参考版本。未知留空，不能把旧运行说成今日最新。SQLite不是第二事实／审核库，也不是严格历史PIT认证。
 3. 复用已确认的Python环境、数据与用户覆盖。原生准备只需合格SQLite与证券，**不普遍要求BatchPolicy**；只有专项／行业入口要求相应政策。准备输入中的`user_explicit`只是基线名，不代表全部由用户提供。
-4. 研究及报告写入新的`workspace/derived`子目录；引用规范源文件，不复制PDF。真实批量重放依项目资源规则串行隔离，不随估值请求升级主库、刷新全市场、发布或安装调度。
+4. 正式报告、论点、模型及最终结果写入`workspace/research/<id>`，不提交项目仓库；按[研究交付契约](../../docs/guides/research-delivery.md)最后登记`research.json`，校验后交付`/research/<id>`链接。临时计算／内部验收留derived，已有冻结运行显式引用；引用规范源文件，不复制PDF。真实批量重放依项目资源规则串行隔离，不随估值请求升级主库、刷新全市场、发布或安装调度。
 
 ## 完整研究的七步
 
