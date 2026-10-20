@@ -83,10 +83,13 @@ class Observation(Record):
 class Calculation(Record):
     id: str
     ticker: str
-    kind: Literal['growth', 'unit_revenue', 'annual_remainder', 'forward_ttm']
+    kind: Literal['growth', 'unit_revenue', 'annual_remainder', 'forward_ttm', 'revenue_mix']
     observations: list[str]
     annual_revenue_condition_cny: Decimal | None = None
     next_h1_growth_condition: Decimal | None = None
+    total_growth_condition: Decimal | None = None
+    growth_driver: str | None = None
+    other_segments_growth_condition: Decimal | None = None
     condition: str = Field(min_length=1)
 
 
@@ -125,6 +128,10 @@ def calculate(rule, observations):
         raise ValueError('calculation security mismatch')
     if any(o.comparison != 'value' for o in args):
         raise ValueError('a threshold statement is not an exact calculation input; supply an explicit condition')
+    if rule.kind == 'revenue_mix':
+        return revenue_mix(rule, args)
+    if any(v is not None for v in (rule.total_growth_condition, rule.growth_driver, rule.other_segments_growth_condition)):
+        raise ValueError('business growth conditions require a revenue mix')
     first = args[0]
     unit = UNITS[first.source_unit][0]
     if len({(UNITS[o.source_unit][0], o.scope, o.segment) for o in args}) != 1 and rule.kind != 'unit_revenue':
@@ -178,6 +185,100 @@ def calculate(rule, observations):
                 condition=rule.condition, future_bound=None)
 
 
+def revenue_mix(rule, args):
+    """原文同比按显示精度反推区间，不制造精确上期分部收入。"""
+    if (len(args) < 4 or len(args)%2 or len({a.id for a in args}) != len(args)
+            or rule.annual_revenue_condition_cny is not None or rule.next_h1_growth_condition is not None):
+        raise ValueError('total pair and unique segment pairs required')
+    current, prior = args[:2]
+    def same_period(a,b):
+        return (a.period_start,a.period_end)==(b.period_start,b.period_end)
+    def yoy(a,b):
+        return (a.period_start.replace(year=a.period_start.year-1),a.period_end.replace(year=a.period_end.year-1)) == (b.period_start,b.period_end)
+    def amount(a):
+        return a.metric=='revenue_cumulative' and UNITS[a.source_unit][0]=='CNY' and a.bounds[0]==a.bounds[1]
+    if (not amount(current) or not amount(prior) or current.segment != prior.segment or not yoy(current,prior)
+            or current.bounds[0] <= 0 or prior.bounds[0] <= 0
+            or any(a.ticker != current.ticker or a.scope != current.scope or a.kind != 'reported' for a in args)):
+        raise ValueError('positive comparable reported company totals required')
+    total, base = current.bounds[0], prior.bounds[0]
+    rows, axes, seen = [], set(), set()
+    display_bound = number_quantum(current)/2
+    prior_display_bound = number_quantum(prior)/2
+    for now, before in zip(args[2::2],args[3::2],strict=True):
+        parts = now.segment.split('/')
+        if (len(parts)!=2 or not all(parts) or now.segment in seen or now.segment==current.segment
+                or now.segment != before.segment or not amount(now) or not same_period(now,current)):
+            raise ValueError('unique explicit partition/segment and matching current revenue required')
+        axes.add(parts[0]);seen.add(now.segment)
+        if amount(before) and yoy(now,before):
+            low,high=before.bounds
+            basis='reported_prior_amount'
+            prior_display_bound+=number_quantum(before)/2
+        elif (before.metric=='revenue_growth' and before.source_unit in ('percent','fraction')
+                and same_period(now,before) and before.bounds[0]==before.bounds[1]):
+            rate=before.bounds[0];half=number_quantum(before)/2
+            if now.bounds[0]<=0 or 1+rate-half<=0:
+                raise ValueError('rounded growth cannot reconstruct a nonpositive or absent base')
+            low,high=now.bounds[0]/(1+rate+half),now.bounds[0]/(1+rate-half)
+            basis='interval_from_rounded_growth_not_reported_amount'
+        else:
+            raise ValueError('compatible prior revenue or rounded same-period growth required')
+        display_bound+=number_quantum(now)/2
+        rows.append(dict(segment=now.segment,current_revenue_cny=str(now.bounds[0]),
+            prior_revenue_interval_cny=[str(low),str(high)],prior_basis=basis,
+            rounding_policy='nearest_display_unit_assumed' if before.metric=='revenue_growth' else 'amount_as_printed',
+            current_revenue_share=str(now.bounds[0]/total),
+            contribution_to_total_growth_interval=[str((now.bounds[0]-high)/base),str((now.bounds[0]-low)/base)]))
+    if len(axes)!=1:
+        raise ValueError('product, geography and channel partitions cannot be added together')
+    covered=sum((Decimal(r['current_revenue_cny']) for r in rows),Decimal(0))
+    residual=total-covered
+    if residual < -display_bound:
+        raise ValueError('segments exceed company revenue; overlap or wrong scope')
+    prior_low=sum((Decimal(r['prior_revenue_interval_cny'][0]) for r in rows),Decimal(0))
+    prior_high=sum((Decimal(r['prior_revenue_interval_cny'][1]) for r in rows),Decimal(0))
+    prior_residual=[base-prior_high,base-prior_low]
+    if prior_residual[1] < -prior_display_bound:
+        raise ValueError('reconstructed prior segments exceed company revenue')
+    complete=abs(residual)<=display_bound
+    if complete and not (prior_residual[0]-prior_display_bound<=0<=prior_residual[1]+prior_display_bound):
+        raise ValueError('complete partition does not reconcile prior total within displayed rounding')
+    condition_values=(rule.total_growth_condition,rule.growth_driver,rule.other_segments_growth_condition)
+    requirement=None
+    if any(v is not None for v in condition_values):
+        target,driver,other=condition_values
+        if any(v is None for v in condition_values) or target < -1 or other < -1 or driver not in seen:
+            raise ValueError('explicit total, other-business growth and existing driver required')
+        if not complete:
+            requirement=dict(status='unclassified_revenue_requires_explicit_condition',value=None)
+        else:
+            value=Decimal(next(r['current_revenue_cny'] for r in rows if r['segment']==driver))
+            if value<=0:
+                raise ValueError('positive driver revenue required')
+            # 仅作条件负担反推；不将上期反推区间或余数归入某项业务。
+            required=(total*target-(total-value)*other)/value
+            requirement=dict(status='conditional_identity_not_forecast',driver=driver,
+                total_growth=str(target),other_segments_growth=str(other),required_driver_growth=str(required),
+                feasible_nonnegative_driver_revenue=required>=-1,
+                period_start=current.period_start.replace(year=current.period_start.year+1).isoformat(),
+                period_end=current.period_end.replace(year=current.period_end.year+1).isoformat(),
+                boundary='仅下一年同窗条件；半年分部不充当TTM分部，不认证公司增长')
+    return dict(id=rule.id,status='calculated',meaning='reported_revenue_mix_not_future_growth',unit='CNY',
+        period_start=current.period_start.isoformat(),period_end=current.period_end.isoformat(),
+        total_current_cny=str(total),total_prior_cny=str(base),observed_total_growth=str(total/base-1),
+        partition=next(iter(axes)),segments=rows,current_unclassified_residual_cny=str(residual),
+        current_sum_rounding_bound_cny=str(display_bound),
+        coverage='complete_with_display_rounding' if complete else 'partial_not_zero_filled',
+        prior_total_minus_reconstruction_interval_cny=list(map(str,prior_residual)),
+        requirement=requirement,condition=rule.condition,future_bound=None,
+        boundary='反推区间只反映原文同比显示精度，不是统计区间；各端点不保证同时可达；项目互斥性仍须人工语义核对')
+
+
+def number_quantum(observation):
+    return Decimal(1).scaleb(number(observation.printed_low).as_tuple().exponent)*Decimal(UNITS[observation.source_unit][1])
+
+
 def review(manifest, database):
     spec = Manifest.model_validate(manifest)
     if digest(database) != spec.sqlite_sha256:
@@ -219,7 +320,7 @@ def review(manifest, database):
     expected = {(t,p) for t in scope for p in ('growth','margin','capital')}
     if len(spec.cards) != len(expected) or {(c.ticker,c.parameter) for c in spec.cards} != expected:
         raise ValueError('retain growth, margin and capital cards for every company')
-    reports = {}
+    reports, report_windows = {}, {}
     for binding in spec.bindings:
         if binding.report_source not in sources or sources[binding.report_source].kind != 'snapshot_baseline':
             raise ValueError('native report source binding required')
@@ -231,6 +332,9 @@ def review(manifest, database):
                 or (prepared is not None and prepared.get('information_as_of') != metadata['information_as_of'])):
             raise ValueError('native report identity/reference/information cutoff differs')
         reports[binding.ticker] = review_report(body)
+        end = date.fromisoformat(metadata['report_period'])
+        report_windows[binding.ticker] = (dict(period_start=prepared['period_start'],period_end=prepared['period_end'])
+            if prepared is not None else dict(period_start=date(end.year,1,1).isoformat(),period_end=end.isoformat()))
     cards = []
     for card in spec.cards:
         if set(card.observations)-set(observations) or set(card.calculations)-set(calculations):
@@ -246,6 +350,14 @@ def review(manifest, database):
         values = [r[{'growth':'growth','margin':'adjusted_operating_margin','capital':'reinvestment_million_cny'}[card.parameter]] for r in reviewed['forecast']]
         relations = [dict(computed[k]) for k in card.calculations]
         for relation in relations:
+            if calculations[relation['id']].kind == 'revenue_mix':
+                window=report_windows[card.ticker]
+                forecast={k:date.fromisoformat(v).replace(year=date.fromisoformat(v).year+1).isoformat() for k,v in window.items()}
+                relation['native_alignment']=dict(base_window=window,first_forecast_window=forecast,
+                    mix_matches_base=all(relation[k]==v for k,v in window.items()),
+                    condition_matches_forecast=(all(relation['requirement'].get(k)==v for k,v in forecast.items())
+                        if relation['requirement'] is not None else None),
+                    native_first_year_growth=reviewed['forecast'][0]['growth'],automatic_conversion=False)
             if calculations[relation['id']].kind == 'forward_ttm' and relation['status'] == 'calculated':
                 native = Decimal(str(reviewed['forecast'][0]['revenue_million_cny']))*1000000
                 relation['native_first_year_revenue_cny'] = str(native)
