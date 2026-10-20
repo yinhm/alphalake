@@ -148,7 +148,82 @@ def capital_proxy_comparison(base_year, model_rows, independent_rows, peers, for
         boundary='年度收入/期末账面资本是存量比；未来收入增量/再投资是假设。反事实仅量化前五年资本需求，不是公司新增效率、完整DCF或置信区间。行业匹配、研发年限、租赁、现金/投资及少数股权范围仍需核对；缺项不延长窗口。')
 
 
-def review_report(body, annual_evidence=None):
+def assumption_sources(body, source_context=None):
+    """解释已解析参数的来源；explicit_input只说明数值存在，不证明用户预测。"""
+    context = source_context or {}
+    metadata = context.get('source_metadata') or body.get('source_metadata') or {}
+    native = context.get('prepared_from_sqlite', False) or metadata.get('valuation_assumptions', '').startswith('native-source-initialization-v1;')
+    overrides = context.get('overrides', {})
+    generated = context.get('generated_paths', [])
+    inputs = body['inputs']
+    a = inputs['valuation_assumptions']
+    def touches(path, paths):
+        return any(path == p or path.startswith(p+'.') or p.startswith(path+'.') for p in paths)
+    def driver(path):
+        value = inputs
+        for part in path.split('.'):
+            value = value[part]
+        basis = metadata.get(path)
+        if touches(path, generated):
+            origin = ('generated_named_condition' if any(path == p or path.startswith(p+'.') for p in generated)
+                else 'partly_generated_named_condition')
+        elif touches(path, overrides) or (basis or '').startswith('User override'):
+            origin = 'user_override'
+        elif native and basis and not basis.startswith('Original model defaults'):
+            origin = 'source_initialized_condition'
+        else:
+            origin = 'inherited_native_condition' if native else 'caller_supplied_condition'
+        return dict(path=path, origin=origin, input_state='unset' if value is None else 'provided',
+            recorded_basis=basis, condition=context.get('condition') if touches(path, generated) else None,
+            generated_paths=[p for p in generated if touches(path, [p])],
+            override_actions={p:'clear' if v is None else 'set' for p, v in overrides.items() if touches(path, [p])})
+    parameters = {}
+    for name, resolved in body['dcf']['forecast_parameters'].items():
+        resolution = resolved['source']
+        paths = ['valuation_assumptions.'+name]
+        if resolution in ('annual_forecast', 'annual_sales_to_capital', 'annual_net_reinvestment'):
+            paths = ['valuation_assumptions.'+resolution]
+        elif resolution == 'inherited':
+            parent = dict(revenue_growth_years_2_5='revenue_growth_next_year',
+                target_operating_margin='operating_margin_next_year', sales_to_capital_stable='sales_to_capital_high')[name]
+            paths = ['valuation_assumptions.'+parent]
+        elif resolution == 'explicit_financing':
+            paths = ['valuation_assumptions.debt_tax_shield']
+        elif name == 'growth_perpetuity_rate':
+            field = dict(explicit_perpetuity='valuation_assumptions.growth_perpetuity_rate',
+                explicit_stable_capped='valuation_assumptions.stable_growth_rate',
+                explicit_riskfree='valuation_assumptions.riskfree_after_yr10',
+                risk_free_reference='macro_inputs.risk_free_rate')[resolution]
+            paths = [field]
+            if resolution in ('explicit_stable_capped', 'explicit_riskfree'):
+                paths.append('macro_inputs.risk_free_rate')
+        elif resolution == 'riskfree_plus_erp_proxy':
+            paths = ['valuation_assumptions.riskfree_after_yr10' if a['override_riskfree'] and a['riskfree_after_yr10'] is not None
+                else 'macro_inputs.risk_free_rate', 'macro_inputs.equity_risk_premium']
+        parameters[name] = dict(resolution=resolution, value=resolved['value'], basis=resolved['basis'],
+            drivers=[driver(path) for path in paths])
+    return dict(version='native-assumption-sources-v1', parameters=parameters,
+        research_tax=driver('valuation_assumptions.research_tax') if inputs['adjustment_inputs']['has_r_and_d'] else None,
+        economic_approval='not_inferred_from_input_origin',
+        boundary='来源初值、用户覆盖及生成条件均非已认证预测；unset须结合resolution读取引擎回退。年度路径覆盖的标量不是实际驱动，来源说明不替代公司经济证据。')
+
+
+def summarize_methodology(reviews):
+    """按参数和缺口类别汇总；一家公司多种来源各计一次，拒绝保留分母。"""
+    origins, resolutions = {}, {}
+    for review in reviews:
+        for name, parameter in review.get('assumption_sources', {}).get('parameters', {}).items():
+            origins.setdefault(name, Counter()).update({d['origin'] for d in parameter['drivers']})
+            resolutions.setdefault(name, Counter()).update([parameter['resolution']])
+    return dict(companies=len(reviews), reviewed=sum('version' in r for r in reviews),
+        not_calculated=sum('version' not in r for r in reviews),
+        findings=dict(Counter(f for r in reviews for f in r.get('findings', []))),
+        assumption_origin_company_counts={name:dict(sorted(counts.items())) for name, counts in sorted(origins.items())},
+        parameter_resolution_company_counts={name:dict(sorted(counts.items())) for name, counts in sorted(resolutions.items())},
+        economic_approval='not_inferred', predictive_validity='not_established')
+
+
+def review_report(body, annual_evidence=None, source_context=None):
     inputs = CompanyValuationInput.model_validate(body['inputs'])
     if (inputs.reporting_currency != 'CNY' or inputs.stock_price_currency != 'CNY'
             or not re.fullmatch(r'(?:SHSE|SZSE):[0-9]{6}', inputs.ticker)):
@@ -495,6 +570,7 @@ def review_report(body, annual_evidence=None):
             nonresearch_net_investment_million_cny=terminal_investment-net,
             evidence_verified=False)
     result['methodology'] = methodology_review(inputs, replay, result)
+    result['methodology']['assumption_sources'] = assumption_sources(body, source_context)
     return result
 
 

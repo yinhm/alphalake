@@ -10,6 +10,8 @@
 
 只用当前接口支持的路径，核对[数据契约](../../../docs/valuation/data-contract.md)与完整请求。`--prepare-inputs --ticker …`可配已确认的原生点路径`--overrides`；已有完整请求用互斥的`--explicit-input`。不手工拼缺失财务、不要求用户制作前端JSON，不混用BatchPolicy格式。实际`input_changes`与`dcf.forecast_parameters`优先于显示标签；显式0与空值不同。
 
+来源读取共享审阅的`methodology.assumption_sources`，区分来源初值、继承原生条件、用户覆盖、完整请求及具名生成；同时读实际`resolution`、`drivers`及清空动作。`explicit_input`只表示计算取得显式值，`user_explicit`只表示交付基线名，均不能证明用户亲自提供了预测。年度路径优先时不解读已失效标量，局部改动不归因整条数组。字段见[来源契约](../../../docs/guides/company-valuation-entry.md#实际参数与来源)。
+
 ## 参数之间的经济约束
 
 | 参数 | 如何建立依据 | 联动和边界 |

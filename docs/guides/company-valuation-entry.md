@@ -49,6 +49,27 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 
 完整显式输入还可提供`valuation_assumptions.debt_tax_shield`；逐年/长期整体正常化WACC及对应债务分量须一起给出，不能只改债务权重后沿用不匹配的整体WACC。所有路径统一承接剩余NOL，规则及无到期/限额、部分比例边界见[亏损契约](../valuation/methodology-contract.md#亏损抵扣与融资税盾契约)。不另加自动融资预测或网页参数入口。
 
+### 实际参数与来源
+
+每份审阅及`summary.results[].scenarios[].methodology.assumption_sources`提供`native-assumption-sources-v1`。`parameters`直接读取引擎`dcf.forecast_parameters`的实际值、分支和解释；`drivers`关联真实输入路径及来源，不再从“非空”推断谁填写了预测。
+
+本项覆盖上述预测参数及研发税务入口；初始WACC、税盾、利润／资本和股权桥仍按既有`methodology`、完整请求及来源记录审阅，不称全部假设字段已有自动来源认证。
+
+| 来源标记 | 含义 |
+| --- | --- |
+| `source_initialized_condition` | 原生记录了历史／参考初始化依据；仍是条件初值 |
+| `inherited_native_condition` | 从原生准备继承，未记录为该字段的来源初始化或本次用户覆盖 |
+| `user_override` | 有用户覆盖记录；`override_actions`区分赋值与清空，不靠数值是否改变判定 |
+| `caller_supplied_condition` | 完整请求提供；缺准备来源，不能追认为公司事实或用户亲自预测 |
+| `generated_named_condition` | 既有具名条件改变该输入，保留条件名和变动路径 |
+| `partly_generated_named_condition` | 年度数组仅部分字段改变；具体范围读`generated_paths`，不能称整条路径均由程序生成 |
+
+来源与解析结果分别读：`resolution=application_default`说明实际用了应用回退；`input_state=unset`表示对应输入为空。显式0仍是已提供值。清空融资项可能恢复来源联动，此时`override_actions=clear`与恢复后的来源说明同时保留，不称用户明确输入了恢复数值。完整年度经营／资本路径优先时关联年度路径，不把被覆盖标量当驱动；继承值关联实际上游字段。研发资本化启用时另列`research_tax`是否提供，未知不补零。
+
+完整请求经API重算会新建会话；交付器把准备阶段保存的来源与覆盖动作接回审阅，未改API或引擎输入。直接审阅原生数据库响应则读取该响应的来源记录。来源可追溯不等于公司依据合理或预测有效，不自动选情景。
+
+全范围`tools.check_native_sqlite --review-methodology`沿同一审阅输出`methodology.assumption_origin_company_counts`及`parameter_resolution_company_counts`。按每个参数的公司数计，同一参数有多个来源时分别计一次，因此来源数可能相加超过已审公司数；未计算证券仍留在总分母。此统计用于定位通用假设缺口，不是新增估值准入或准确度评分。
+
 ### 整套经营条件的一致性审阅
 
 摘要中每个可计算条件都含共用`economic_checks`。先核对实际路径，再解释政策标识；标识只记录来源，不证明组合后的条件仍满足原描述。

@@ -211,7 +211,7 @@ def evaluate(database, recipe, tickers, output, web=None, selection_policy=None)
     return summary
 
 
-def calculate_request(client, request, metadata, web=None):
+def calculate_request(client, request, metadata, web=None, *, source_context=None):
     """完整显式请求的统一API、输入保留及重放核验；不生成额外条件。"""
     from tools.review_native_policy import review_report
     response = client.post('/api/valuation', json=request)
@@ -230,7 +230,7 @@ def calculate_request(client, request, metadata, web=None):
         supplied.company_metrics = returned.company_metrics
         if supplied != returned:
             raise ValueError('explicit input changed during calculation')
-        reviewed = review_report(body)
+        reviewed = review_report(body, source_context=source_context)
         if web:
             req = Request(web.rstrip('/')+'/api/valuation', json.dumps(request).encode(), {'Content-Type':'application/json'})
             with urlopen(req, timeout=60) as live:
@@ -344,7 +344,6 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
     from data_sources.valuation_scope import FINANCIAL_INDUSTRIES
     from tools.compare_native_capital import compare as compare_capital, POLICY, HISTORY_POLICY
     from tools.compare_native_growth import compare as compare_growth
-    from tools.review_native_policy import review_report
     from tools.select_native_assumptions import growth_scenarios, SCENARIO_RULES
     from tools.publish_native_valuation import runtime_identity
     from data_sources.paths import workspace_path
@@ -403,6 +402,7 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
     save('protocol.json', protocol)
     rows = [dict(ticker=r['ticker'], status=r['status'], reason=r['reason'], http_status=r['http_status'],
         scenarios={}, selected_scenario=None, automatic_adoption=False) for r in preparation if r['status'] != 'prepared']
+    prepared = {r['ticker']: r for r in preparation if r['status'] == 'prepared'}
     with TestClient(app, raise_server_exceptions=False) as client:
         for ticker, payload, source in requests:
             inputs = CompanyValuationInput.model_validate(payload['inputs'])
@@ -416,7 +416,12 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
                 row.update(status='outside_scope', reason='financial_industry'); continue
             def calculate(name, request):
                 save(key+'-'+name+'-request.json', request)
-                body, reviewed = calculate_request(client, request, metadata, web)
+                input_changes = list(changes(payload['inputs'], request['inputs']))
+                original = prepared.get(ticker, {})
+                source_context = dict(prepared_from_sqlite=ticker in prepared,
+                    source_metadata=original.get('source_metadata') or {}, overrides=original.get('overrides', {}),
+                    generated_paths=[c['path'].lstrip('/').replace('/', '.') for c in input_changes], condition=name)
+                body, reviewed = calculate_request(client, request, metadata, web, source_context=source_context)
                 if body is None:
                     row['scenarios'][name] = reviewed
                     return None
@@ -426,7 +431,7 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
                     projection_years=len(reviewed['forecast']), revenue_multiple_end=reviewed['forecast'][-1]['revenue_multiple_of_base'],
                     forecast=reviewed['forecast'], terminal=reviewed['terminal'], economic_checks=reviewed['economic_checks'],
                     methodology=reviewed['methodology'],
-                    input_changes=list(changes(payload['inputs'],request['inputs'])),
+                    input_changes=input_changes,
                     economic_approval='not_inferred_from_calculation_or_source_availability',
                     reference_snapshot=body.get('reference_snapshot'), live_verified=bool(web),
                     request_file=key+'-'+name+'-request.json', result_file=key+'-'+name+'-result.json')

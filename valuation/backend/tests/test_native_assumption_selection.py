@@ -747,6 +747,8 @@ def test_condition_delivery_preserves_user_and_no_winner(tmp_path, monkeypatch, 
     assert len(row['scenarios'])==(10 if projection==10 else 1)
     assert all(s['status']=='calculated_conditional' for s in row['scenarios'].values())
     assert row['scenarios']['user_explicit']['input_changes'] == []
+    sources = row['scenarios']['user_explicit']['methodology']['assumption_sources']
+    assert sources['parameters']['revenue_growth_next_year']['drivers'][0]['origin'] == 'caller_supplied_condition'
     for name, scenario in row['scenarios'].items():
         assert scenario['methodology']['economic_basis'] == 'not_established_by_arithmetic'
         assert scenario['economic_approval'] == 'not_inferred_from_calculation_or_source_availability'
@@ -755,6 +757,9 @@ def test_condition_delivery_preserves_user_and_no_winner(tmp_path, monkeypatch, 
         if name != 'user_explicit':
             assert scenario['input_changes']
             assert all('/raw_financials' not in c['path'] for c in scenario['input_changes'])
+            annual = scenario['methodology']['assumption_sources']['parameters']['revenue_growth_next_year']
+            assert annual['drivers'][0]['origin'] == 'generated_named_condition'
+            assert annual['drivers'][0]['condition'] == name
     run_id=result.pop('run_id'); assert run_id==value_digest(result)
     with pytest.raises(ValueError,match='new output'):
         deliver_conditions(database,[request],tmp_path/'derived'/'run')
@@ -864,6 +869,9 @@ def test_sqlite_input_preparation_preserves_overrides_and_blocked_denominator(tm
     assert prepared['inputs']['raw_financials']==supplied['raw_financials']
     assert prepared['inputs']['macro_inputs']['risk_free_rate']==.03
     assert result['protocol']['input_preparation'][0]['source_metadata']
+    sources = result['results'][0]['scenarios']['user_explicit']['methodology']['assumption_sources']['parameters']
+    assert sources['revenue_growth_next_year']['drivers'][0]['origin'] == 'user_override'
+    assert sources['operating_margin_next_year']['drivers'][0]['origin'] == 'inherited_native_condition'
     assert result['selected_scenario'] is None
     assert released == ['/api/valuation/prepared']
     for path, message in [('raw_financials','only existing'),('valuation_assumptions.typo','unknown native')]:

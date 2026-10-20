@@ -115,11 +115,8 @@ def check(database, output, risk_free_rate=None, review_methodology=False, refer
                    http_status=dict(Counter(r['http_status'] for r in results)),
                    missing_company_counts=dict(gaps), results=results)
     if review_methodology:
-        summary['methodology'] = dict(companies=len(results),
-            reviewed=sum('version' in r['methodology'] for r in results),
-            not_calculated=sum('version' not in r['methodology'] for r in results),
-            findings=dict(Counter(f for r in results for f in r['methodology'].get('findings', []))),
-            economic_approval='not_inferred', predictive_validity='not_established')
+        from tools.review_native_policy import summarize_methodology
+        summary['methodology'] = summarize_methodology([r['methodology'] for r in results])
     if reference_policy is not None:
         summary['explicit_reference_policy'] = dict(sha256=value_digest(reference_policy),
             approval=reference_policy['approval'], evidence=reference_policy['evidence'],
