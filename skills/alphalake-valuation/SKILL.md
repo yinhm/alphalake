@@ -48,6 +48,7 @@ description: 使用 AlphaLake 数据与既有估值引擎完成沪深非金融�
 | 主张／证据到年度故事 | `tools.narrative_valuation prepare/run/verify/compare`；prepare需同版`alphalake-native-coverage-v1`收据。[叙事契约](../../docs/valuation/narrative-valuation-plan.md) |
 | 既有专项／行业政策 | `tools.company_valuation`，消费BatchPolicy；检查`alphalake-company-valuation-v1`及selection，不从候选自行选价。[统一入口](../../docs/guides/company-valuation-entry.md#使用) |
 | 标准经营依据与经济审阅 | `tools.review_operating_evidence`、`tools.review_native_policy`；来源金额元与估值百万元分开。[经营事实](../../docs/guides/company-valuation-entry.md#从标准库取得经营事实依据) |
+| 经营证据与预测约束 | `tools.review_operating_constraints`；按完整公司分母核对单位／期间、原文金额及显式下一TTM桥，区分定量条件关系、方向判断和未建立。[约束契约](../../docs/valuation/narrative-valuation-plan.md#经营证据到预测约束) |
 | 运行发现／旧政策运行比较 | `tools.list_valuation_runs`、`tools.compare_valuations`；故事与具名交付ID另有命名空间。[更新与比较](references/updates-and-comparison.md) |
 | 已有跨公司／周期／资本效率条件 | 只在问题涉及时读取[统一情景](../../docs/valuation/native-uniform-scenarios.md)、[周期框架](../../docs/valuation/cyclical-valuation.md)、[资本效率](../../docs/valuation/capital-efficiency.md)，复用现有工具，保留全部拒绝与条件 |
 

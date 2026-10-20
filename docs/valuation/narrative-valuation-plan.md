@@ -229,6 +229,45 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.narrative_valuation compa
 
 结构化编排现已实现；原生网页未新增故事编辑器、叙事目录或文字转参数能力。KB可供理解与人工复核，不是默认参数规则库。
 
+## 经营证据到预测约束
+
+`tools.review_operating_constraints`是只读研究审阅入口：复用同版原生结果、规范PDF及既有`review_report`重放，不生成预测参数、不新增估值公式、不改默认或事实。研究者先声明证据与判断，工具核对来源、期间、单位和条件算术；哈希及页内金额匹配不独立证明项目行、发行人或经济含义正确，这些仍须人工语义核对。
+
+```bash
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.review_operating_constraints \
+  --manifest workspace/research/operating-constraints-20261020/attachments/manifest.json \
+  --database workspace/valuation.sqlite \
+  --output workspace/derived/operating-constraints-20261020/new-review.json
+```
+
+真实重放沿项目独立1GiB服务串行执行；输出必须是workspace内新文件，旧记录不覆盖。数据库版本变化后须重建声明及原生结果，不仅更新哈希。
+
+输入契约`operating-constraints-input-v1`：
+
+| 字段 | 契约 |
+| --- | --- |
+| `sqlite_sha256/scope` | 完整消费快照哈希及事先固定的沪深证券分母；结果保留全部公司 |
+| `sources` | 复用故事的`Evidence`类型：规范workspace相对文件、SHA-256、原文定位和说明；原生完整结果类型为`snapshot_baseline`，可以是已冻结研究条件，名称不代表网页默认 |
+| `observations` | 稳定ID、证券、指标、业务分部、合并／母公司范围、起止日、`reported/guidance/plan`、原文金额上下限、来源单位、PDF物理页及原文锚点；单值不伪造区间，预告不取中点。“突破”用`comparison=greater_than`标为阈值，禁止拿它当精确算术输入 |
+| `calculations` | 显式引用观察值及下表关系；自然年收入条件和次年半年增长须人工给定，并说明条件；不从历史或计划自动选择 |
+| `bindings` | 每家公司恰好绑定一份完整原生结果，核对身份、财务期、参考版本及已接通TTM信息截止；复用原生输入重放全部现金结果。不是重新从SQLite独立核对每个财务值，真实交付需另保留标准事实对账或同版原生取数证据 |
+| `cards` | 每家公司完整保留增长、利润率、资本三张卡；列首年／全路径、证据与计算引用、解释和缺失依据，不以某家公司缺证据缩小分母 |
+
+观察金额统一换算人民币元，比例统一小数；销量、产量和研发投入分别标记。研发投入不自动等于报表研发费用，分部毛利率不等于合并调整EBIT率。资本卡展示的原生数值为**百万元总净再投资**，不是资本倍率或毛资本开支。
+
+| 可复算关系 | 必须满足的条件与限制 |
+| --- | --- |
+| 同比增长 | 同公司、同业务及报表范围、同一年度窗口；上年分母非正时不生成虚假零增长。历史同比不是未来增长 |
+| 单位收入 | 同业务／期间收入÷销量；明确拒绝以产量替销量。即使可算也只是混合产品单位实现收入，不证明同款价格变化 |
+| 自然年剩余收入 | 显式全年条件−完整累计期间区间，保留相减后的上下限；计划不是业绩承诺 |
+| 下一TTM年收入 | 基期为半年时，显式自然年收入＋显式次年H1同比×本年H1收入；结果属于当年7月至次年6月，不把自然年直接填入下一TTM年 |
+
+三类卡状态由研究者声明：`quantitative_conditional`仅表示首年增长有显式下一TTM桥，**不认证条件发生或实际预测一致**；`directional`有经营观察支持方向，尚无未来数值界限；`not_established`未完成该参数的经营依据。工具验证前者必须有对应算术桥，拒绝把毛利率贴成定量EBIT支持，但不代替经济判断。
+
+输出`operating-constraints-review-v1`包含归一化观察值、实际预测路径及单位、可复算关系、卡状态计数、来源声明签名。下一TTM桥并列原生首年收入和差额，不静默接受或消除TDX浮点精度差异。所有卡`future_parameter_bounds=null`、`automatic_adoption=false`；没有统一未来增长／利润率／资本倍率自动界限，也不因为核验成功将卡升级为公司预测。
+
+本入口核验同版已有请求，不替代故事版本／run ID及修改前后API比较。完整研究仍须说明反例、修订触发和现金影响；不以此工具绕过引擎冻结或恢复参数自动选择器。
+
 ## 验收与修订
 
 四项分开报告：
