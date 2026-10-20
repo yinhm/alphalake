@@ -37,7 +37,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m pytest -q valuation/backend/tes
 
 本地只读状态：`./alphalake status workspace/alphalake.duckdb`。财务、行情及参考更新并发布网页统一使用`tools.publish_native_valuation --published-scope`，在锁内冻结当前网页完整范围；在线模式另须明确最近已完成交易日`--quote-date`，具体命令见[发布手册](docs/guides/system-delivery.md)。业绩预告沿[独立入口](docs/guides/earnings-guidance.md)入主库，不自动发布进财务SQLite。命令参数以当前程序帮助为准，不照抄历史验收中的旧路径和版本。
 
-Codex日常维护可用`$alphalake`；`$alphalake-valuation`统一承接公司研究、可证伪论点、成套假设、原生条件估值、结果解释及财报后修订，也支持只查询／解释已有结果。完整交付含中文报告、假设依据、现金流与股权桥、反证及可追溯运行，不代表已具备合理参数自动选择器。`$alphalake-dcf`只复用数据，独立建模与交叉校验，缺事实允许定向官方PDF补证，交付中文报告及公式Excel。Skill源码随本仓库维护；本地首次安装可在项目根目录执行：
+Codex日常维护可用`$alphalake`；`$alphalake-valuation`统一承接基本面深度研究、成套假设、原生条件估值、结果解释及财报后修订，也支持只查询／解释已有结果。完整交付让首次接触者理解业务、竞争、财务质量与资本配置，并给出明确每股条件值、重要图表、现金流／股权桥及反证；用现有`/research`阅读，不代表已具备合理参数自动选择器。`$alphalake-dcf`只复用数据，独立建模与交叉校验，缺事实允许定向官方PDF补证，交付中文报告及公式Excel。Skill源码随本仓库维护；本地首次安装可在项目根目录执行：
 
 ```bash
 ALPHALAKE_SKILL_DIR="${CODEX_HOME:-$HOME/.codex}/skills"

@@ -1,11 +1,11 @@
 ---
 name: alphalake-valuation
-description: 使用 AlphaLake 数据与既有估值引擎完成沪深非金融公司的中文研究与条件估值，论证经营故事、增长／利润率／资本投入假设，解释现金流、价值驱动、风险及修订触发。用于首次完整估值、已有结果解读、单项假设研究、财报后更新和版本比较；独立建模校验使用 alphalake-dcf，数据刷新发布使用 alphalake。
+description: 使用AlphaLake数据与既有引擎完成沪深非金融公司的中文基本面深度研究与条件估值，讲清业务、竞争、财务质量、管理层与资本配置，以图表解释预测、现金流、每股价值和风险。用于完整公司研究、估值报告、结果解释、财报后更新与版本比较；独立建模校验使用alphalake-dcf，数据刷新发布使用alphalake。
 ---
 
 # AlphaLake 公司研究与估值
 
-交付可追溯的判断：**公司如何赚钱 → 哪些主张可被证伪 → 假设如何形成现金流 → 条件价值为何如此 → 何时修订**。按用户问题选择工作深度；只问已有结果时不重做整篇研究。
+完整交付应让一个此前不了解公司的读者，读懂**卖什么、卖给谁、如何赚钱、优势与代价、财务是否健康、未来需要兑现什么，以及每股值多少**。不能只交估值接口说明、同比复述或几张论点卡。按用户问题选择工作深度；只问已有结果时不重做整篇研究。
 
 本Skill由AlphaLake改写，研究流程借鉴Anthropic financial-services；来源、版本与取舍见[来源记录](UPSTREAM.md)，许可证见[LICENSE.txt](LICENSE.txt)。不要求另装这些上游Skill或订阅外部终端。
 
@@ -13,7 +13,7 @@ description: 使用 AlphaLake 数据与既有估值引擎完成沪深非金融�
 
 | 用户意图 | 工作范围 | 按需读取 |
 | --- | --- | --- |
-| 首次研究／完整估值 | 执行下列七步，交付报告、假设依据和运行引用 | [研究与论点](references/research-and-thesis.md)、[假设论证](references/assumptions.md)、[交付与解释](references/delivery-and-explanation.md) |
+| 首次研究／完整估值 | 连续完成七步；交付独立可读的公司研究、明确每股条件值、重要图表及计算依据 | [研究与论点](references/research-and-thesis.md)、[假设论证](references/assumptions.md)、[交付与解释](references/delivery-and-explanation.md)、[图表](references/charts.md) |
 | 解释一个已有结果 | 找到保存的运行，核对原时点及实际输入，回答价值驱动 | [交付与解释](references/delivery-and-explanation.md)；无ID再读[更新与比较](references/updates-and-comparison.md) |
 | 深挖增长／利润率／WACC等单项 | 查该项输入、依据、相关约束和反例；仅获授权时计算条件对照 | [假设论证](references/assumptions.md) |
 | 新财报／预告／经营证据更新 | 逐项比较事实、论点与条件，保存修订；没改变估值输入则解释即可 | [更新与比较](references/updates-and-comparison.md) |
@@ -31,11 +31,11 @@ description: 使用 AlphaLake 数据与既有估值引擎完成沪深非金融�
 ## 完整研究的七步
 
 1. **冻结起点**：证券身份、数据与方法版本、财务／信息／价格／股本时点；记录准入与缺项。已有结果可作为基线，不能把继承初值当已认可预测。
-2. **解释生意**：业务、客户、量价、成本、竞争、研发和资本需求；只收集会改变估值决策的证据，已有原文优先。见[研究与论点](references/research-and-thesis.md)。
+2. **理解公司与财务**：阅读已有年报、最近中报及重要更新，拆解产品／客户／渠道、价值链、行业与竞争、财务质量、管理层资本配置。主要判断写清“数据观察→经济机制→替代解释→估值后果”，不以笼统的品牌／技术优势代替证据。见[研究与论点](references/research-and-thesis.md)。
 3. **建立可证伪论点**：围绕增长、利润率、再投资写主张、支持证据、反例和触发条件；缺证据单列，不将管理层计划等同实现。
 4. **形成成套假设**：给路径、单位、出处、公司经济依据与本地选择，联动收入、利润、研发／税务、资本、融资及终值。可以提出具名研究条件；不得把规则候选称为合理参数自动选择器。见[假设论证](references/assumptions.md)。
 5. **计算并核验**：调用下表既有入口，保存完整请求／响应、运行ID与证据。读取退出码、状态、拒绝及经济审阅；不在报告或Skill中重写估值公式。
-6. **解释价值**：从收入到FCFF、终值和股权桥，说明主要驱动、资本释放、敏感性与适用边界。完整报告使用[报告模板](assets/report-template.md)，细则见[交付与解释](references/delivery-and-explanation.md)。
+6. **图表化交付明确估值**：首页给主研究条件的每股点值、其他条件及成立依据；从收入到FCFF、终值和股权桥说明价值。完整报告通常选4—8幅能回答重要问题的图，正文嵌入、逐图解释并登记来源；数据不足用表或说明原因，不造图凑数。复用`tools.research_charts`绘图，不重算模型。使用[报告模板](assets/report-template.md)及[交付规范](references/delivery-and-explanation.md)、[图表契约](references/charts.md)。
 7. **保存与修订**：记录主张、条件、输出及下一次观察事件；已有工具按其契约生成ID与修订关系。新证据未改变条件时也可只记录论点变化，不强行重算。见[更新与比较](references/updates-and-comparison.md)。
 
 ## 复用现有入口
@@ -48,11 +48,19 @@ description: 使用 AlphaLake 数据与既有估值引擎完成沪深非金融�
 | 主张／证据到年度故事 | `tools.narrative_valuation prepare/run/verify/compare`；prepare需同版`alphalake-native-coverage-v1`收据。[叙事契约](../../docs/valuation/narrative-valuation-plan.md) |
 | 既有专项／行业政策 | `tools.company_valuation`，消费BatchPolicy；检查`alphalake-company-valuation-v1`及selection，不从候选自行选价。[统一入口](../../docs/guides/company-valuation-entry.md#使用) |
 | 标准经营依据与经济审阅 | `tools.review_operating_evidence`、`tools.review_native_policy`；来源金额元与估值百万元分开。[经营事实](../../docs/guides/company-valuation-entry.md#从标准库取得经营事实依据) |
+| 研究图表 | `tools.research_charts --input … --output …`，仅绘制已核对数据和现有引擎输出，写新研究目录；不改事实、参数或页面。[图表输入与交付](references/charts.md) |
 | 经营证据与预测约束 | `tools.review_operating_constraints`；保留公司分母，核对单位／期间、分部增长贡献及显式条件；区分历史归因、条件关系和未建立，半年结构不套入TTM。[约束契约](../../docs/valuation/narrative-valuation-plan.md#经营证据到预测约束) |
 | 运行发现／旧政策运行比较 | `tools.list_valuation_runs`、`tools.compare_valuations`；故事与具名交付ID另有命名空间。[更新与比较](references/updates-and-comparison.md) |
 | 已有跨公司／周期／资本效率条件 | 只在问题涉及时读取[统一情景](../../docs/valuation/native-uniform-scenarios.md)、[周期框架](../../docs/valuation/cyclical-valuation.md)、[资本效率](../../docs/valuation/capital-efficiency.md)，复用现有工具，保留全部拒绝与条件 |
 
 原生具名交付读`native-conditional-delivery-v2`的`summary_file`；故事读`narrative-valuation-v2`摘要及其报告，再展开实际请求／响应。不将计算成功、`ready`或重放一致当经济认证；`selected_scenario=null`不需要选胜出者。专项入口退出0成功、2业务阻断、1运行失败；其余入口按各自契约读状态，非零仍读JSON和stderr。专项受阻不能偷偷换行业候选，失败不等于估值0。
+
+## 交付前用读者视角检查
+
+- 不依赖旧报告也能说清公司的生意、规模、主要业务贡献、竞争和现金约束；重要数字有期间与来源。管理层讲决策及结果，不堆履历；行业讲公司真正能服务的需求，不把大市场等同收入机会。
+- 基本面分析至少解释收入质量、利润可持续性、利润与经营现金差异、研发／资本投入及融资能力。没有证据的因果关系写成待检验解释，不能用“风险存在”结束。
+- 能明确找到每股点值、币种、资本基期、实际情景与输入。研究者可在算价前确定有依据的主研究条件；这是本次判断，不是自动选择器、最可能情景或全项目新默认。证据不足仍给已有可计算条件，清楚限定，不隐去数字或包装成当前目标价。
+- 图与正文、表格、已保存结果一致，事实／预测分开；每图有一句洞见及来源，历史不足不补零，未计算敏感性不画矩阵。登记后实际打开`/research/<id>`，核对图片、附件与窄屏阅读。
 
 ## 不能跨越的边界
 

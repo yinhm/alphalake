@@ -11,6 +11,7 @@ workspace/research/<id>/
   report.md             # 中文主报告
   assumptions.md        # 按需附文
   model.xlsx            # 按需交付的模型
+  charts/               # PNG、精确绘图数据及来源清单
   research.json         # 最后原子写入的登记，不是财务数据库
 ```
 
@@ -60,6 +61,16 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.research_reports validate
 ```
 
 工具核对全部登记文件、填充哈希，最后原子写`research.json`；已有登记不覆盖。新版本使用新ID；新文件应先写好再登记。正文可用相对链接指向附件，浏览器按当前文档路径与登记清单解析；Markdown附文在同页阅读，PDF及模型通过文件入口查看／下载。项目操作指南不自动开放给浏览器；确需作为研究依据时附一份有来源的文本快照，或链接知识库／官方原始方法。
+
+## 完整公司研究与图表
+
+完整覆盖应让首次接触者理解业务、客户／渠道、竞争、财务质量和资本配置，并明确看到每股条件值及关键假设；不能只交同比、论点卡或模型操作说明。深度、证据和报告结构沿[估值Skill](../../skills/alphalake-valuation/SKILL.md)，模板和[制图契约](../../skills/alphalake-valuation/references/charts.md)按需读取；简短结果解释不强制重做完整研究。
+
+研究制图使用可选`research`依赖中的Matplotlib，Linux须有中文字体；`tools.research_charts`生成PNG、精确数据、来源哈希及图注，拒绝覆盖已发布报告。四种图型为趋势、分组柱、价值桥及已有敏感性矩阵，只展示给定数值、不选择参数或计算DCF。图表来源文件的哈希核对不能替代口径和经济解释审核。
+
+正文用`![中文图名](charts/revenue.png)`在相关分析处嵌图，每图写读图结论、期间、单位和来源。将PNG、`chart-data.json`、必要来源和可选画廊附文登记到同一`files`清单；PNG本来就在页面白名单，不新增前端、图片接口或报告数据库。既有报告只增加解释时另建版本并注明旧计算时点，不能冒称新重估。
+
+通常选择4—8幅回答重要问题的图，不强制凑齐；缺项不补零，不同期间／角色不混画，没有实际计算的矩阵不插值。正文保留关键数表。发布后用真实页面核对图像加载、可点来源与窄屏宽度，不能只验证文件已生成。
 
 ## 页面与API
 
