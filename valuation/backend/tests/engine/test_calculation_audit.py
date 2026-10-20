@@ -1,5 +1,6 @@
 """10月19日审计反例：索偿、输入域与辅助诊断，预期不沿用错误结果。"""
 import math
+import json
 from types import SimpleNamespace
 
 import pytest
@@ -116,8 +117,11 @@ def test_api_invalid_inputs_refuse_and_preserve_existing_session(monkeypatch):
             {'methodology_choices.wacc_level_shift_bps':-20000},
             {'methodology_choices.cost_of_capital_approach':'decile'},
             {'adjustment_inputs.has_r_and_d':True},
+            {'methodology_choices.cost_of_capital_approach':'direct','methodology_choices.wacc_direct_input':.08,'macro_inputs.country_risk_premium':float('nan')},
+            {'industry_data.ev_sales':float('inf')},
+            {'methodology_choices.business_segments':[{'name':'unused','revenue':float('nan')}]},
         ]:
-            bad=client.patch(url,json={'overrides':overrides})
+            bad=client.patch(url,content=json.dumps({'overrides':overrides}),headers={'Content-Type':'application/json'})
             assert bad.status_code==422,(overrides,bad.text)
             assert client.get(url).json()==baseline
         bars = client.post(url+'/sensitivity').json()['bars']
@@ -202,3 +206,16 @@ def test_explicit_market_debt_convertible_and_preferred_claims_do_not_duplicate(
     report = run_full_valuation(CompanyValuationInput.model_validate(bridge.model_dump()))
     assert report.dcf.value_of_equity == pytest.approx(report.dcf.value_of_operating_assets+50-200-130-20)
     assert sum(report.dcf.equity_bridge_components.values())+report.dcf.value_of_operating_assets == pytest.approx(report.dcf.value_of_equity)
+
+
+def test_signed_historical_research_reversal_is_not_unknown_or_replaced_with_zero():
+    model = inputs(adjustment_inputs=dict(has_r_and_d=True,r_and_d_expense_current=-.09,
+        r_and_d_expense_past=[3,2,11,23,0]))
+    report = run_full_valuation(model)
+    assert report.adjusted.amortization_r_and_d == pytest.approx(39/5)
+    assert report.adjusted.adjusted_ebit == pytest.approx(200-.09-39/5)
+    assert report.final.value_per_share is not None
+    assert any('Signed historical R&D retained' in w for w in report.warnings)
+    model.adjustment_inputs.r_and_d_expense_past.pop()
+    with pytest.raises(InvalidValuationInput,match='complete selected research cohort'):
+        run_full_valuation(model)

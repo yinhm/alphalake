@@ -178,6 +178,11 @@ def run_full_valuation(
     if inputs.adjustment_inputs.has_operating_leases:
         report.warnings.append('Historical lease investment/principal financing bridge unavailable; historical FCFF/FCFE and reinvestment rates are not reconstructed')
 
+    if inputs.adjustment_inputs.has_r_and_d and any(v < 0 for v in [
+            inputs.adjustment_inputs.r_and_d_expense_current,
+            *inputs.adjustment_inputs.r_and_d_expense_past[:inputs.adjustment_inputs.amortization_period_n]]):
+        report.warnings.append('Signed historical R&D retained: net reversals require scope review; amounts are not replaced with zero')
+
     # --- Module 4: DCF ---
     report.dcf = compute_dcf(
         report.cashflow, report.cost_of_capital, report.adjusted,

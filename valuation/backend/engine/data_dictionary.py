@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from typing import Literal
+import json
 import math
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -88,7 +89,7 @@ class AdjustmentInputs(BaseModel):
     def selected_research_cohort(self):
         if self.has_r_and_d and (self.amortization_period_n < 1
                 or len(self.r_and_d_expense_past) < self.amortization_period_n
-                or any(v < 0 or not math.isfinite(v) for v in
+                or any(not math.isfinite(v) for v in
                     [self.r_and_d_expense_current, *self.r_and_d_expense_past])):
             raise ValueError('R&D capitalization requires the complete selected research cohort; unknown history is not zero')
         if self.has_operating_leases and (self.operating_lease_expense_current < 0
@@ -813,6 +814,11 @@ class CompanyValuationInput(BaseModel):
 
     @model_validator(mode="after")
     def check_prepared_ttm(self):
+        # Includes unused optional branches: accepted inputs are returned in JSON.
+        try:
+            json.dumps(self.model_dump(mode='json'), allow_nan=False)
+        except ValueError as error:
+            raise ValueError('valuation inputs must contain only finite numbers') from error
         if self.methodology_choices.cost_of_capital_approach == 'decile' and self.reporting_currency != 'USD':
             raise ValueError('decile WACC reference is USD only; use explicit same-currency financing inputs')
         if self.equity_bridge is not None:
