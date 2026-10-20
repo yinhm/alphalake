@@ -30,6 +30,7 @@
 ## 现有专项契约怎样使用
 
 - **研发税务**：完整`research_tax`优先；需要对照才在具名入口加`--research-tax`。该条件是当前研发费用率及普通扣除，保留原基线，不改网页默认。读取`operating_tax_basis`、年度税基／现金税／NOL、`unused_nol_at_terminal`及`terminal_nol_treatment`。不能沿用旧“普通路径未计NOL”描述。比例／融资代理和抵亏到期／限额未核实部分要明说。
+- **成套现金核对**：读取`economic_checks.cashflow_bridge`及预测行的经济利润、税基、期初／新增／抵扣亏损、现金税、实际NOPAT及FCFF；费用化利润与非研发投入只有在完整研发路径下才可解释。附加研发条件的`research_tax_effect`区分现金流、折现及终值现值变化；不能把抵亏／税盾联动全称为单一税率贡献，也不把非研发残余当实际预算。总再投资只扣一次。
 - **再投资**：读取`economic_checks.research_forecast`逐年费用率；改收入而绝对研发预算未变，不能称保持费用率。`capital_release`并列累计投入、释放与净额；零／负再投资可能有折旧、周转回收、处置或收缩解释，不自动拒绝或设下限，也不未经依据称已实现现金。
 - **年度总预算**：`annual_net_reinvestment`是实际投资年、百万元报表币种的完整路径，与`annual_sales_to_capital`互斥；已含研发净投入及经营周转，不额外相加、不按销售领先期移动。末期核对g/ROIC与`terminal_transition`，不自动延长预算。无预算保留倍率路径。
 - **税盾／未来融资**：读取`dcf.wacc_tax_shield_adjustments`、`tax_shield_basis`与`debt_tax_shield_spreads`。完整显式路径优先，未提供保留固定初始分量限制；整体WACC不能猜拆。报表信用条件只沿已批准`--reported-credit`及[人民币政策](../../../docs/valuation/native-cny-policy.md)，不用零利息或净财务费用推信用。

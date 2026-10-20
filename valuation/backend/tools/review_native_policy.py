@@ -240,17 +240,34 @@ def review_report(body, annual_evidence=None, source_context=None):
     raw, adjusted, dcf = replay.ltm_financials, replay.adjusted, replay.dcf
     a = inputs.valuation_assumptions
     previous_revenue = raw.revenues
+    opening_nol = a.nol_amount if a.override_nol else 0.0
+    def reconcile(name, actual, expected, scale):
+        # 现金税由E−NOPAT回读；大额利润下容纳浮点消减，不放宽经济口径。
+        tolerance = max(1e-8, 8*math.ulp(scale))
+        if not math.isclose(actual, expected, rel_tol=1e-10, abs_tol=tolerance):
+            raise ValueError('cashflow bridge does not reconcile: '+name)
     rows = []
     for i, (revenue, ebit, reinvestment, fcff, discount) in enumerate(zip(
             dcf.revenue_projections, dcf.ebit_projections, dcf.reinvestment_projections,
             dcf.fcff_projections, dcf.discount_factors, strict=True)):
-        nopat = fcff + reinvestment
+        nopat = dcf.nopat_projections[i]
+        tax_base, cash_tax = dcf.tax_base_projections[i], dcf.cash_tax_projections[i]
+        rate, closing_nol = dcf.tax_rate_projections[i], dcf.nol_projections[i]
+        nol_added, nol_used = max(0.0, -tax_base), min(opening_nol, max(0.0, tax_base))
+        expected_base = (ebit+dcf.research_amortization_projections[i]-a.research_tax.deductions[i]
+            if a.research_tax is not None else ebit)
+        reconcile('tax_base', tax_base, expected_base, max(abs(ebit), abs(expected_base)))
+        reconcile('NOL', closing_nol, opening_nol+nol_added-nol_used, max(abs(tax_base), opening_nol))
+        reconcile('cash_tax', cash_tax, (max(0.0, tax_base)-nol_used)*rate, max(abs(ebit), abs(tax_base)))
+        reconcile('NOPAT', nopat, ebit-cash_tax, max(abs(ebit), abs(cash_tax)))
+        reconcile('FCFF', fcff, nopat-reinvestment, max(abs(nopat), abs(reinvestment)))
         rows.append(dict(year=i+1, revenue_million_cny=revenue,
             revenue_multiple_of_base=revenue/raw.revenues if raw.revenues and raw.revenues > 0 else None,
             growth=revenue/previous_revenue-1 if previous_revenue else None,
-            adjusted_operating_margin=ebit/revenue if revenue else None,
-            tax_base_million_cny=dcf.tax_base_projections[i], cash_tax_million_cny=dcf.cash_tax_projections[i],
-            closing_nol_million_cny=dcf.nol_projections[i], operating_tax_basis=dcf.operating_tax_basis,
+            adjusted_operating_margin=ebit/revenue if revenue else None, economic_ebit_million_cny=ebit,
+            tax_base_million_cny=tax_base, cash_tax_million_cny=cash_tax, tax_base_rate=rate,
+            opening_nol_million_cny=opening_nol, nol_added_million_cny=nol_added, nol_used_million_cny=nol_used,
+            closing_nol_million_cny=closing_nol, operating_tax_basis=dcf.operating_tax_basis,
             research_expense_million_cny=a.research_tax.expenses[i] if a.research_tax else None,
             research_amortization_million_cny=dcf.research_amortization_projections[i] if a.research_tax else None,
             research_tax_deduction_million_cny=a.research_tax.deductions[i] if a.research_tax else None,
@@ -259,11 +276,13 @@ def review_report(body, annual_evidence=None, source_context=None):
             fcff_million_cny=fcff, pv_fcff_million_cny=fcff*discount,
             implied_book_roic=dcf.implied_roic_projections[i]))
         previous_revenue = revenue
+        opening_nol = closing_nol
     if a.research_tax is not None:
         for i, row in enumerate(rows):
             research_net = a.research_tax.expenses[i]-dcf.research_amortization_projections[i]
             row['research_net_investment_million_cny'] = research_net
             row['implied_nonresearch_net_reinvestment_million_cny'] = row['reinvestment_million_cny']-research_net
+            row['expense_basis_ebit_million_cny'] = row['economic_ebit_million_cny']-research_net
             row['research_expense_to_revenue'] = (a.research_tax.expenses[i]/row['revenue_million_cny']
                 if row['revenue_million_cny'] > 0 else None)
     history = sorted(inputs.raw_financials, key=lambda f: f.fiscal_year)
@@ -467,6 +486,13 @@ def review_report(body, annual_evidence=None, source_context=None):
         spread=r['incremental_return_bridge']['constant_nopat_margin_incremental_return']-replay.cost_of_capital.wacc)
         for r in rows if r['incremental_return_bridge']['constant_nopat_margin_incremental_return'] is not None]
     economic_checks = dict(version='native-economic-consistency-v1', automatic_approval=False,
+        cashflow_bridge=dict(status='arithmetic_reconciled', years=len(rows),
+            research_basis='explicit_expense_and_deduction' if a.research_tax is not None else
+                'economic_ebit_tax_proxy' if inputs.adjustment_inputs.has_r_and_d else 'no_research_capitalization',
+            total_cash_tax_million_cny=sum(r['cash_tax_million_cny'] for r in rows),
+            total_net_reinvestment_million_cny=sum(r['reinvestment_million_cny'] for r in rows),
+            nonresearch_investment_basis='residual_not_verified_budget' if a.research_tax is not None else 'not_inferred',
+            boundary='核对已有税基、无到期/上限抵亏及FCFF恒等式，不认证税法或经营预测；总投入已含研发净投入，不另扣一次。无显式研发路径不推算费用化利润或非研发预算。'),
         research_forecast=research_forecast,
         capital_release=dict(years=[r['year'] for r in rows if r['reinvestment_million_cny'] < 0],
             gross_release_million_cny=-sum(min(0.0,r['reinvestment_million_cny']) for r in rows),

@@ -39,6 +39,8 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 
 例如在前述命令中加`--research-tax`，原输出之外保存研发证据、请求、结果及审阅。先比较逐年税基、现金税/NOL及正常化终值与过渡值；恒定费用率是本地条件，不是未来事实。总投入减研发净投入若隐含非研发资本释放，审阅明确标记所需依据，不自动认证资本效率。
 
+该附加条件的摘要另含`research_tax_effect`：先确认仅研发税务输入改变，收入、经济EBIT和总投入完全相同，再逐年核对`ΔFCFF=−Δ现金税`。预测期现值按固定顺序拆成“现金流差额×原折现因子”与“新现金流×折现因子差额”，并列终值现值差，合计须等于持续经营价值差。终值项含正常税、旧研发队列、抵亏、投入及折现的共同变化，不再猜分原因；同时列终值正常现金税、首年现金税和税务过渡价值差。每股差额读取实际最终结果，可能另含既有失败及索偿机制。该说明不增加情景、不与增长／资本条件自动交叉、不自动采用为默认。
+
 已批准的报表信用条件通过可选`--reported-credit workspace/derived/native-inputs/credit-policy.json`附加，适用于上述两种模式。政策文件包含`version="reported-statement-credit-conditions-v2"`、`sovereign_spread_policy="add_cn_default_spread"`或`"none"`、显式`max_credit_age_days`和`reason`。参考直接读取当前SQLite中绑定的WACC发布；政策文件不再携带源数值，不能从旧样本摘要复制评级；范围和来源依据见[已批准规则](../valuation/native-cny-policy.md#已批准规则与依据)。
 
 先准备已确认的CNY参考融资组件，程序不会把原生详细/default分支静默切换。额外结果为`reported_credit_initial_credit_only`和`reported_credit_hold_current_wacc_and_no_terminal_excess_return`，仅从原基线生成、不与全部增长/资本路径交叉扩张；用户原信用及默认结果保持。`reported_credit`记录表内标签、覆盖率、标准组成、年龄和不适用原因，均非正式评级。旧SQLite缺金融业务范围字段时明确要求重建；不借此给零利息赋AAA或删除原条件。
@@ -76,6 +78,7 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.evaluate_native_policy \
 
 | 检查 | 读取与解释 |
 |---|---|
+| 利润到现金流 | `cashflow_bridge`核对逐年经济EBIT→税基→期初亏损／新增／抵扣／结余→现金税→实际NOPAT→总再投资→FCFF；预测行提供对应金额和税基税率。恒等式核验补充同引擎重放，不认证公司税法、披露金额或未来经济依据 |
 | 研发费用率 | `forecast[*].research_expense_to_revenue`及`economic_checks.research_forecast`给出所选当前费用率、不同年度和终值费用率。增长比较保留研发绝对预算，不能继续将费用率变化的条件称为“费用率不变”；自定义名义预算不因此判错，也不自动改写预算 |
 | 资本释放 | `economic_checks.capital_release`分列逐年释放、累计投入、累计释放和净额；`recoverability_verified=false`表示资产回收依据尚未核实。非研发释放是总投入的组成诊断，不和总释放相加，不在FCFF中再加一次 |
 | 研发及终值 | 显式研发路径的`terminal.research_capital`同时列示研发净投入及隐含非研发净投入，资本倍率和直接预算两种路径均检查；终值非研发为负也须解释回收依据 |

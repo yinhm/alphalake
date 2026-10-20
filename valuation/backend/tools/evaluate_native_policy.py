@@ -337,6 +337,47 @@ def research_tax_condition(baseline, terminal_growth):
         selected_scenario=None, automatic_adoption=False)
 
 
+def research_tax_effect(baseline, candidate):
+    """解释既有研发税务条件的真实现金影响，不生成假设或重算估值。"""
+    if any(c['path'] != '/valuation_assumptions/research_tax' and not c['path'].startswith('/valuation_assumptions/research_tax/')
+            for c in changes(baseline['inputs'], candidate['inputs'])):
+        raise ValueError('research tax comparison changed unrelated inputs')
+    before, after = baseline['dcf'], candidate['dcf']
+    for field in ('revenue_projections', 'ebit_projections', 'reinvestment_projections'):
+        if before[field] != after[field]:
+            raise ValueError('research tax comparison changed operating path '+field)
+    annual = []
+    for i, (old_fcff, new_fcff, old_tax, new_tax, old_df, new_df) in enumerate(zip(
+            before['fcff_projections'], after['fcff_projections'], before['cash_tax_projections'],
+            after['cash_tax_projections'], before['discount_factors'], after['discount_factors'], strict=True)):
+        tax_change, fcff_change = new_tax-old_tax, new_fcff-old_fcff
+        if not math.isclose(fcff_change, -tax_change, rel_tol=1e-10,
+                abs_tol=max(1e-8, 8*math.ulp(max(abs(old_fcff), abs(new_fcff), abs(old_tax), abs(new_tax))))):
+            raise ValueError('research tax FCFF change does not reconcile')
+        annual.append(dict(year=i+1, cash_tax_change_million_cny=tax_change, fcff_change_million_cny=fcff_change,
+            cashflow_pv_effect_million_cny=fcff_change*old_df,
+            discount_pv_effect_million_cny=new_fcff*(new_df-old_df)))
+    cash_effect = sum(r['cashflow_pv_effect_million_cny'] for r in annual)
+    discount_effect = sum(r['discount_pv_effect_million_cny'] for r in annual)
+    terminal_effect = after['pv_terminal_value']-before['pv_terminal_value']
+    value_change = after['value_as_going_concern']-before['value_as_going_concern']
+    if not math.isclose(value_change, cash_effect+discount_effect+terminal_effect, rel_tol=1e-10,
+            abs_tol=max(1e-8, 8*math.ulp(max(abs(before['value_as_going_concern']), abs(after['value_as_going_concern']))))):
+        raise ValueError('research tax value change does not reconcile')
+    old_share, new_share = baseline['final']['value_per_share'], candidate['final']['value_per_share']
+    return dict(status='arithmetic_reconciled_not_economic_approval', annual=annual,
+        cashflow_pv_effect_million_cny=cash_effect, discount_pv_effect_million_cny=discount_effect,
+        terminal_pv_effect_million_cny=terminal_effect, going_concern_value_change_million_cny=value_change,
+        value_per_share_change=new_share-old_share if old_share is not None and new_share is not None else None,
+        terminal_normal_cash_tax_change_million_cny=after['terminal_cash_tax']-before['terminal_cash_tax'],
+        terminal_first_year_cash_tax_change_million_cny=after['terminal_first_year_cash_tax']-before['terminal_first_year_cash_tax'],
+        terminal_tax_transition_value_change_million_cny=after['terminal_tax_transition_value']-before['terminal_tax_transition_value'],
+        discount_factors_changed=before['discount_factors'] != after['discount_factors'],
+        terminal_wacc_changed=before['terminal_wacc'] != after['terminal_wacc'],
+        attribution_order='cashflows_at_baseline_discount_then_discount_change; terminal_effect_not_further_attributed',
+        boundary='收入、经济EBIT及总投入不变；研发税基可改变抵亏、融资税盾、正常化终值税及再投资，不能称单一税率影响。终值现值变化含税务/投入/折现共同变化；每股差额另含既有失败及索偿机制。')
+
+
 def deliver_conditions(database, request_files, output, web=None, *, tickers=None, overrides_file=None, credit_policy_file=None, research_tax=False):
     """保存用户完整输入，组合既有增长/资本对照，不选择胜出者。"""
     from fastapi.testclient import TestClient
@@ -450,9 +491,7 @@ def deliver_conditions(database, request_files, output, web=None, *, tickers=Non
                     save(key+'-research-tax-evidence.json', evidence)
                     body = calculate(name, request)
                     if body is not None:
-                        for field in ('revenue_projections','ebit_projections','reinvestment_projections'):
-                            if body['dcf'][field] != baseline['dcf'][field]:
-                                raise ValueError('research tax condition changed operating path '+field)
+                        row['scenarios'][name]['research_tax_effect'] = research_tax_effect(baseline, body)
                         row['scenarios'][name]['evidence_file'] = key+'-research-tax-evidence.json'
             if credit_policy:
                 from tools.reported_native_credit import compare as compare_credit

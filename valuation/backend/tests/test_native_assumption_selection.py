@@ -794,6 +794,10 @@ def test_condition_delivery_adds_opt_in_research_tax_without_replacing_baseline(
     assert row['scenarios']['user_explicit']['status'] == 'calculated_conditional'
     condition = row['scenarios']['research_tax_current_ratio_ordinary_deduction']
     assert condition['status'] == 'calculated_conditional'
+    assert condition['economic_checks']['cashflow_bridge']['research_basis'] == 'explicit_expense_and_deduction'
+    assert condition['research_tax_effect']['status'] == 'arithmetic_reconciled_not_economic_approval'
+    assert condition['research_tax_effect']['value_per_share_change'] == pytest.approx(
+        condition['value_per_share']-row['scenarios']['user_explicit']['value_per_share'])
     assert condition['value_per_share'] != row['scenarios']['user_explicit']['value_per_share']
     assert result['selected_scenario'] is None and not result['automatic_adoption']
     original = json.loads((tmp_path/'derived/tax/SHSE-600519-user_explicit-request.json').read_text())
