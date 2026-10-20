@@ -3,7 +3,8 @@ import type { PatchValue } from '../api/client';
 import SpreadsheetCell from '../components/SpreadsheetCell';
 import SpreadsheetGrid from '../components/SpreadsheetGrid';
 import ColorLegend from '../components/ColorLegend';
-import { user, formula, backendField } from '../lib/sources';
+import { parsePercent } from '../lib/percent';
+import { user, backendField } from '../lib/sources';
 
 // Cumulative default rates by rating (10-year)
 const DEFAULT_RATES = [
@@ -32,16 +33,7 @@ interface Props {
 export default function FailureRate({ data, onPatch }: Props) {
   const failProb = data.inputs.valuation_assumptions.failure_probability;
   const proceedsPct = data.inputs.valuation_assumptions.distress_proceeds_pct;
-  const opAssets = data.dcf?.value_of_operating_assets ?? 0;
-
-  // Parse "5" or "5%" or "0.05" → decimal fraction. User-friendly: accept
-  // percentages entered without the % sign (e.g. "2.5") and normalize.
-  const parsePct = (raw: string): number | null => {
-    const cleaned = raw.replace(/[,%\s]/g, '');
-    const n = parseFloat(cleaned);
-    if (isNaN(n)) return null;
-    return n > 1 ? n / 100 : n;
-  };
+  const opAssets = data.dcf?.value_as_going_concern;
 
   return (
     <div className="max-w-5xl">
@@ -54,16 +46,16 @@ export default function FailureRate({ data, onPatch }: Props) {
             <SpreadsheetCell type="label" value="Probability of failure" termId="failure-probability" bindingId="failure-probability.input" />
             <SpreadsheetCell type="hypothesis" value={(failProb * 100).toFixed(2) + '%'} editable
               onChange={(raw) => {
-                const v = parsePct(raw);
+                const v = parsePercent(raw);
                 if (v !== null && onPatch) onPatch('valuation_assumptions.failure_probability', v);
               }}
               tooltip={user('Probability of failure over the DCF horizon', 'Default = 0%. Analyst sets based on bond rating, cash-burn runway, or distress flags. See cumulative default rates below for rating-based benchmarks.')} />
           </tr>
           <tr>
-            <SpreadsheetCell type="label" value="Proceeds as % of book value if failure" />
+            <SpreadsheetCell type="label" value="Recovery as % of selected base if failure" />
             <SpreadsheetCell type="hypothesis" value={(proceedsPct * 100).toFixed(2) + '%'} editable
               onChange={(raw) => {
-                const v = parsePct(raw);
+                const v = parsePercent(raw);
                 if (v !== null && onPatch) onPatch('valuation_assumptions.distress_proceeds_pct', v);
               }}
               tooltip={user('Distress sale proceeds fraction', 'Default 50%. Liquidation recovery rate on assets in failure. 0% if you believe assets will be worthless.')} />
@@ -85,23 +77,22 @@ export default function FailureRate({ data, onPatch }: Props) {
           <tr>
             <SpreadsheetCell type="label" value="Value of operating assets (going concern)" termId="operating-asset-value" bindingId="operating-asset-value.current" />
             <SpreadsheetCell type="calc" value={opAssets}
-              tooltip={backendField('dcf.value_of_operating_assets', 'Σ PV(FCFF) + PV(Terminal Value) before failure overlay')} />
+              tooltip={backendField('dcf.value_as_going_concern', 'Σ PV(FCFF) + PV(Terminal Value) before failure overlay')} />
           </tr>
           <tr>
             <SpreadsheetCell type="label" value="Probability of failure" termId="failure-probability" bindingId="failure-probability.input" />
-            <SpreadsheetCell type="calc" value={failProb}
+            <SpreadsheetCell type="calc" format="percent" value={failProb}
               tooltip="Echoed from Failure Probability Inputs above" />
           </tr>
           <tr>
             <SpreadsheetCell type="label" value="Distress sale proceeds" termId="distress-value" />
-            <SpreadsheetCell type="calc" value={opAssets * proceedsPct}
-              tooltip={formula('Proceeds = V_op × distress_proceeds_pct',
-                               `${opAssets.toLocaleString('en-US',{maximumFractionDigits:0})} × ${(proceedsPct*100).toFixed(0)}% = ${(opAssets*proceedsPct).toLocaleString('en-US',{maximumFractionDigits:0})}`)} />
+            <SpreadsheetCell type="calc" value={data.dcf?.distress_value}
+              tooltip={backendField('dcf.distress_value', 'Selected book-capital (B) or going-concern operating-value (V) recovery; unknown stays blank')} />
           </tr>
           <tr>
             <SpreadsheetCell type="label" value="Expected operating asset value" bold termId="distress-value" />
-            <SpreadsheetCell type="calc" value={opAssets * (1 - failProb) + opAssets * proceedsPct * failProb} bold
-              tooltip={formula('V_expected = V_op × (1 − p_fail) + Proceeds × p_fail', 'Probability-weighted blend of going-concern + distress scenarios.')} />
+            <SpreadsheetCell type="calc" value={data.dcf?.value_of_operating_assets} bold
+              tooltip={backendField('dcf.value_of_operating_assets', 'Failure weighting applied once by the engine')} />
           </tr>
         </tbody>
       </SpreadsheetGrid>
@@ -120,11 +111,11 @@ export default function FailureRate({ data, onPatch }: Props) {
             <tr key={i}>
               <SpreadsheetCell type="reference" value={r.rating} align="left"
                 tooltip="Moody's / S&P composite rating" />
-              <SpreadsheetCell type="reference" value={r.prob1}
+              <SpreadsheetCell type="reference" format="percent" value={r.prob1}
                 tooltip={`1-year cumulative default probability for ${r.rating} (Damodaran failure rate worksheet, 2025 update)`} />
-              <SpreadsheetCell type="reference" value={r.prob5}
+              <SpreadsheetCell type="reference" format="percent" value={r.prob5}
                 tooltip={`5-year cumulative default probability for ${r.rating} — multi-year projection of 1-yr rate`} />
-              <SpreadsheetCell type="reference" value={r.prob10}
+              <SpreadsheetCell type="reference" format="percent" value={r.prob10}
                 tooltip={`10-year cumulative default probability for ${r.rating} — typical choice for DCF horizon`} />
             </tr>
           ))}

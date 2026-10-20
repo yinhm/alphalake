@@ -207,7 +207,7 @@ export default function CostOfCapital({ data, onPatch }: Props) {
             className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
           >
             {APPROACH_OPTIONS.map(o => (
-              <option key={o.value} value={o.value}>{o.label}</option>
+              <option key={o.value} value={o.value} disabled={o.value === 'decile' && data.inputs.reporting_currency !== 'USD'}>{o.label}{o.value === 'decile' ? ' (USD only)' : ''}</option>
             ))}
           </select>
         </Field>

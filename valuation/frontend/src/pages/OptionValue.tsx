@@ -2,7 +2,7 @@ import type { ValuationResponse } from '../types/valuation';
 import SpreadsheetCell from '../components/SpreadsheetCell';
 import SpreadsheetGrid from '../components/SpreadsheetGrid';
 import ColorLegend from '../components/ColorLegend';
-import { ciq, formula, iterated, user, backendField } from '../lib/sources';
+import { ciq, formula, user, backendField } from '../lib/sources';
 import { baseYear } from '../lib/baseYear';
 
 // ---------- helpers ----------
@@ -24,6 +24,7 @@ export default function OptionValue({ data }: { data: ValuationResponse; session
   const fin0 = baseYear(data);              // LTM-rotated base year
   const macro = data.inputs.macro_inputs;
   const fin = data.final;
+  const pricing = fin?.option_pricing;
 
   // ---------- render helpers ----------
 
@@ -90,122 +91,18 @@ export default function OptionValue({ data }: { data: ValuationResponse; session
           {/* ===== Section 2: Dilution-Adjusted Black-Scholes ===== */}
           <SpreadsheetGrid title="Dilution-Adjusted Black-Scholes">
             <tbody>
-              {calcRow(
-                'Adjusted S (dilution-adjusted stock price)',
-                fin0?.stock_price != null &&
-                  fin0?.shares_outstanding != null &&
-                  opt.number_of_options != null
-                  ? fmtNum(
-                      (fin0.stock_price * fin0.shares_outstanding +
-                        opt.average_strike_price * opt.number_of_options) /
-                        (fin0.shares_outstanding + opt.number_of_options),
-                    )
-                  : '',
-                iterated('Adjusted S = (S·N_shares + K·N_options) / (N_shares + N_options). The backend iterates Adjusted_S ↔ call_value to convergence (≤20 iters, $0.01 tolerance) because dilution depends on the call value which depends on the adjusted price.'),
-              )}
-              {calcRow('K (strike price)', fmtNum(opt.average_strike_price),
-                'Echo of input — average strike of outstanding options')}
-              {calcRow('t (time to expiration)', fmtNum(opt.average_maturity),
-                'Echo of input — weighted-average remaining life')}
-              {calcRow('sigma (std dev)', pct(opt.stock_price_std_dev),
-                'Echo of input — annualized volatility')}
-              {calcRow(
-                'd1',
-                (() => {
-                  const S =
-                    fin0?.stock_price != null &&
-                    fin0?.shares_outstanding != null &&
-                    opt.number_of_options != null
-                      ? (fin0.stock_price * fin0.shares_outstanding +
-                          opt.average_strike_price * opt.number_of_options) /
-                        (fin0.shares_outstanding + opt.number_of_options)
-                      : null;
-                  const K = opt.average_strike_price;
-                  const t = opt.average_maturity;
-                  const sigma = opt.stock_price_std_dev;
-                  const r = macro.risk_free_rate;
-                  const y = opt.dividend_yield;
-                  if (S == null || K === 0 || t === 0 || sigma === 0) return '';
-                  const d1 =
-                    (Math.log(S / K) + (r - y + (sigma * sigma) / 2) * t) /
-                    (sigma * Math.sqrt(t));
-                  return d1.toFixed(4);
-                })(),
-                formula('d1 = [ln(S/K) + (r − y + σ²/2)·t] / (σ·√t)',
-                        'Black-Scholes drift-adjusted term for call value.'),
-              )}
-              {calcRow(
-                'N(d1)',
-                (() => {
-                  const S =
-                    fin0?.stock_price != null &&
-                    fin0?.shares_outstanding != null &&
-                    opt.number_of_options != null
-                      ? (fin0.stock_price * fin0.shares_outstanding +
-                          opt.average_strike_price * opt.number_of_options) /
-                        (fin0.shares_outstanding + opt.number_of_options)
-                      : null;
-                  const K = opt.average_strike_price;
-                  const t = opt.average_maturity;
-                  const sigma = opt.stock_price_std_dev;
-                  const r = macro.risk_free_rate;
-                  const y = opt.dividend_yield;
-                  if (S == null || K === 0 || t === 0 || sigma === 0) return '';
-                  const d1 =
-                    (Math.log(S / K) + (r - y + (sigma * sigma) / 2) * t) /
-                    (sigma * Math.sqrt(t));
-                  return normCdf(d1).toFixed(4);
-                })(),
-                'N(d1) = Standard-normal CDF at d1 (Abramowitz & Stegun approximation)',
-              )}
-              {calcRow(
-                'd2',
-                (() => {
-                  const S =
-                    fin0?.stock_price != null &&
-                    fin0?.shares_outstanding != null &&
-                    opt.number_of_options != null
-                      ? (fin0.stock_price * fin0.shares_outstanding +
-                          opt.average_strike_price * opt.number_of_options) /
-                        (fin0.shares_outstanding + opt.number_of_options)
-                      : null;
-                  const K = opt.average_strike_price;
-                  const t = opt.average_maturity;
-                  const sigma = opt.stock_price_std_dev;
-                  const r = macro.risk_free_rate;
-                  const y = opt.dividend_yield;
-                  if (S == null || K === 0 || t === 0 || sigma === 0) return '';
-                  const d2 =
-                    (Math.log(S / K) + (r - y - (sigma * sigma) / 2) * t) /
-                    (sigma * Math.sqrt(t));
-                  return d2.toFixed(4);
-                })(),
-                formula('d2 = d1 − σ·√t = [ln(S/K) + (r − y − σ²/2)·t] / (σ·√t)'),
-              )}
-              {calcRow(
-                'N(d2)',
-                (() => {
-                  const S =
-                    fin0?.stock_price != null &&
-                    fin0?.shares_outstanding != null &&
-                    opt.number_of_options != null
-                      ? (fin0.stock_price * fin0.shares_outstanding +
-                          opt.average_strike_price * opt.number_of_options) /
-                        (fin0.shares_outstanding + opt.number_of_options)
-                      : null;
-                  const K = opt.average_strike_price;
-                  const t = opt.average_maturity;
-                  const sigma = opt.stock_price_std_dev;
-                  const r = macro.risk_free_rate;
-                  const y = opt.dividend_yield;
-                  if (S == null || K === 0 || t === 0 || sigma === 0) return '';
-                  const d2 =
-                    (Math.log(S / K) + (r - y - (sigma * sigma) / 2) * t) /
-                    (sigma * Math.sqrt(t));
-                  return normCdf(d2).toFixed(4);
-                })(),
-                'N(d2) = Standard-normal CDF at d2 — interprets as risk-neutral probability of finishing in-the-money',
-              )}
+              {calcRow('Adjusted S (actual engine input)', pricing?.adjusted_stock_price,
+                backendField('final.option_pricing.adjusted_stock_price', 'Existing intrinsic-seeded dilution iteration; no market-price substitution'))}
+              {calcRow('Seed value per share', pricing?.seed_value_per_share)}
+              {calcRow('K (strike price)', opt.average_strike_price)}
+              {calcRow('t (time to expiration)', opt.average_maturity)}
+              {calcRow('sigma (std dev)', pct(opt.stock_price_std_dev))}
+              {calcRow('d1', pricing?.d1)}
+              {calcRow('N(d1)', pricing?.n_d1)}
+              {calcRow('d2', pricing?.d2)}
+              {calcRow('N(d2)', pricing?.n_d2)}
+              {calcRow('Iterations', pricing?.iterations)}
+              {calcRow('Convergence residual', pricing?.residual)}
               {calcRow('Value per option', fmtNum(fin?.call_value_per_option),
                 formula('Call = S·e^(−y·t)·N(d1) − K·e^(−r·t)·N(d2)',
                         'Black-Scholes-Merton with continuous dividend yield. Output after fixed-point iteration converges.') + ' — ' + backendField('final.call_value_per_option'))}
@@ -217,22 +114,4 @@ export default function OptionValue({ data }: { data: ValuationResponse; session
       )}
     </div>
   );
-}
-
-// ---------- Normal CDF approximation (Abramowitz & Stegun) ----------
-
-function normCdf(x: number): number {
-  const a1 = 0.254829592;
-  const a2 = -0.284496736;
-  const a3 = 1.421413741;
-  const a4 = -1.453152027;
-  const a5 = 1.061405429;
-  const p = 0.3275911;
-
-  const sign = x < 0 ? -1 : 1;
-  const z = Math.abs(x) / Math.SQRT2;
-  const t = 1.0 / (1.0 + p * z);
-  const y = 1.0 - ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-z * z);
-
-  return 0.5 * (1.0 + sign * y);
 }

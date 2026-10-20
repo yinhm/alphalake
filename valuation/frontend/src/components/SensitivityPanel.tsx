@@ -1,3 +1,4 @@
+import { parsePercent } from '../lib/percent';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import type { ValuationResponse } from '../types/valuation';
 import type { PatchValue } from '../api/client';
@@ -660,15 +661,6 @@ interface DriverMeta {
   parse: (raw: string) => number | null;
 }
 
-/** Parse "22" / "22%" / "0.22" / " 0.22 " → 0.22 for percentage drivers. */
-function parsePct(raw: string): number | null {
-  const cleaned = raw.replace(/[,\s%]/g, '').trim();
-  if (!cleaned) return null;
-  const n = parseFloat(cleaned);
-  if (isNaN(n)) return null;
-  // Heuristic: if the user typed a value > 1, they meant percent points.
-  return Math.abs(n) > 1 ? n / 100 : n;
-}
 function parseNum(raw: string): number | null {
   const cleaned = raw.replace(/[,\s]/g, '').trim();
   if (!cleaned) return null;
@@ -694,7 +686,7 @@ function getDriverMeta(bar: SensitivityBar, _industry: ValuationResponse['inputs
         arrowStep: 0.005, arrowLabel: '0.50%',
         display: (v) => `${(v * 100).toFixed(2)}%`,
         edit:    (v) => `${(v * 100).toFixed(2)}%`,
-        parse:   parsePct,
+        parse:   parsePercent,
       };
     case 'margin_convergence_year':
       return {

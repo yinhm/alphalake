@@ -14,7 +14,7 @@ export default function AnswerKeys({ data }: { data: ValuationResponse; sessionI
   const dcf = data.dcf;
   const final_ = data.final;
 
-  const answers: { category: string; items: { label: string; value: string | number | null }[] }[] = [
+  const answers: { category: string; items: { label: string; value: string | number | null; format?: 'percent' }[] }[] = [
     {
       category: 'Company Data',
       items: [
@@ -29,18 +29,18 @@ export default function AnswerKeys({ data }: { data: ValuationResponse; sessionI
     {
       category: 'Key Assumptions',
       items: [
-        { label: 'Revenue Growth (Yr 1)', value: forecastValue(data, 'revenue_growth_next_year') },
-        { label: 'Revenue Growth (Yrs 2-5)', value: forecastValue(data, 'revenue_growth_years_2_5') },
-        { label: 'Target Operating Margin', value: forecastValue(data, 'target_operating_margin') },
+        { label: 'Revenue Growth (Yr 1)', format: 'percent', value: forecastValue(data, 'revenue_growth_next_year') },
+        { label: 'Revenue Growth (Yrs 2-5)', format: 'percent', value: forecastValue(data, 'revenue_growth_years_2_5') },
+        { label: 'Target Operating Margin', format: 'percent', value: forecastValue(data, 'target_operating_margin') },
         { label: 'Convergence Year', value: forecastValue(data, 'margin_convergence_year') },
-        { label: 'Risk-free Rate', value: macro.risk_free_rate },
-        { label: 'Failure Probability', value: assumptions.failure_probability },
+        { label: 'Risk-free Rate', format: 'percent', value: macro.risk_free_rate },
+        { label: 'Failure Probability', format: 'percent', value: assumptions.failure_probability },
       ],
     },
     {
       category: 'Computed Results',
       items: [
-        { label: 'WACC', value: coc?.wacc ?? null },
+        { label: 'WACC', format: 'percent', value: coc?.wacc ?? null },
         { label: 'Levered Beta', value: coc?.beta_l ?? null },
         { label: 'Terminal Value', value: dcf?.terminal_value_firm ?? null },
         { label: 'Value of Operating Assets', value: dcf?.value_of_operating_assets ?? null },
@@ -53,8 +53,8 @@ export default function AnswerKeys({ data }: { data: ValuationResponse; sessionI
       items: [
         { label: 'Industry Beta (unlevered)', value: industry.beta_u },
         { label: 'Industry D/E', value: industry.industry_d_e_ratio },
-        { label: 'Industry WACC', value: industry.wacc },
-        { label: 'Industry Operating Margin', value: industry.pretax_operating_margin },
+        { label: 'Industry WACC', format: 'percent', value: industry.wacc },
+        { label: 'Industry Operating Margin', format: 'percent', value: industry.pretax_operating_margin },
         { label: 'Industry Sales/Capital', value: industry.sales_to_capital },
       ],
     },
@@ -88,6 +88,7 @@ export default function AnswerKeys({ data }: { data: ValuationResponse; sessionI
                     section.category === 'Industry Benchmarks' ? 'reference' : 'calc'
                   }
                   value={item.value}
+                  format={item.format}
                 />
               </tr>
             ))}

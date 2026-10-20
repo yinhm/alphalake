@@ -2,28 +2,27 @@ import type { ValuationResponse } from '../types/valuation';
 import SpreadsheetCell from '../components/SpreadsheetCell';
 import SpreadsheetGrid from '../components/SpreadsheetGrid';
 import ColorLegend from '../components/ColorLegend';
-import { ciq, formula, damodaran, backendField } from '../lib/sources';
+import { ciq, formula, backendField } from '../lib/sources';
 
 export default function LeaseConverter({ data }: { data: ValuationResponse; sessionId?: string | null }) {
   const adj = data.inputs.adjustment_inputs;
-  const industry = data.inputs.industry_data;
   const adjusted = data.adjusted;
   const ticker = data.inputs.ticker;
 
   const commitments = adj.operating_lease_commitments; // index 0-4 = Year 1-5, index 5 = Beyond
-  const costOfDebt = industry.cost_of_debt_pretax;
+  const costOfDebt = adjusted?.lease_discount_rate;
   const leaseExpense = adj.operating_lease_expense_current;
 
   // Compute n_additional using Damodaran method: round(beyond / avg(yr1..yr5))
   const yr1to5 = commitments.slice(0, 5);
   const avgYr1to5 = yr1to5.length > 0 ? yr1to5.reduce((a, b) => a + b, 0) / yr1to5.length : 0;
   const beyond = commitments.length > 5 ? commitments[5] : 0;
-  const nAdditional = avgYr1to5 > 0 && beyond > 0 ? Math.max(1, Math.round(beyond / avgYr1to5)) : (beyond > 0 ? 1 : 0);
+  const nAdditional = avgYr1to5 > 0 && beyond > 0 ? (adjusted?.lease_n_additional_years ?? Math.max(1, Math.round(beyond / avgYr1to5))) : (beyond > 0 ? 1 : 0);
   const totalLeaseYears = Math.min(commitments.length, 5) + nAdditional;
 
   // Build PV rows for years 1-5 + annuity years
   const pvRows: { label: string; commitment: number; pv: number }[] = [];
-  if (costOfDebt !== null && costOfDebt !== undefined && costOfDebt !== 0) {
+  if (costOfDebt !== null && costOfDebt !== undefined) {
     for (let i = 0; i < Math.min(commitments.length, 5); i++) {
       const c = commitments[i];
       const pv = c / Math.pow(1 + costOfDebt, i + 1);
@@ -91,8 +90,8 @@ export default function LeaseConverter({ data }: { data: ValuationResponse; sess
         <tbody>
           <tr>
             <SpreadsheetCell value="Pre-tax cost of debt" type="label" width="280px" termId="cost-of-debt" bindingId="cost-of-debt.pretax" />
-            <SpreadsheetCell value={costOfDebt} type="reference"
-              tooltip={damodaran("wacc.xls", "Cost of Debt (pre-tax)", industry.industry_name)} />
+            <SpreadsheetCell format="percent" value={costOfDebt} type="reference"
+              tooltip={backendField("adjusted.lease_discount_rate", "Actual selected pre-tax borrowing rate used by M1")} />
           </tr>
           <tr>
             <SpreadsheetCell value="Number of years embedded in yr 6 estimate" type="label" />

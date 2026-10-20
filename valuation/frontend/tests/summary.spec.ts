@@ -186,3 +186,82 @@ test('rejected parameter edit is visible and retains the prior forecast display'
   await expect(page.getByText(/参数未生效，保留上一次估值：Convergence year must be positive/)).toBeVisible();
   await expect(cell).toHaveText('5');
 });
+
+function auditFixture() {
+  const data = forecastFixture() as any;
+  data.inputs.valuation_assumptions.failure_probability = .2;
+  data.inputs.valuation_assumptions.distress_proceeds_pct = .3;
+  data.inputs.valuation_assumptions.failure_tie_to = 'B';
+  data.inputs.option_inputs = { has_options: true, number_of_options: 2, average_strike_price: 8, average_maturity: 3, stock_price_std_dev: .3, dividend_yield: 0 };
+  Object.assign(data.dcf, { value_as_going_concern: 2000, distress_value: 300, value_of_operating_assets: 1660,
+    value_of_equity: 1530, equity_bridge_components: { debt: -200, preferred: -30, cash: 100 },
+    discount_factors: [1/1.09, 1/1.09/1.11] });
+  data.final = { call_value_per_option: 7, value_of_all_options: 14, value_per_share: .5,
+    option_pricing: { adjusted_stock_price: 12.34, seed_value_per_share: 13.5, d1: .5, n_d1: .69, d2: .25, n_d2: .6, iterations: 4, residual: .001 } };
+  data.multiples = { pe_ratio_market: 12, pe_ratio_intrinsic: 20 };
+  return data;
+}
+
+test('failure percent edits preserve small percent points and display exactly one overlay', async ({ page }) => {
+  await page.route('**/api/synthetic-summary', route => route.fulfill({ json: auditFixture() }));
+  await page.goto('/tests/fixtures/summary.html?sheet=failure');
+  const inputTable = page.getByText('Failure Probability Inputs', { exact: true }).locator('..');
+  const cell = inputTable.getByRole('row').filter({ has: page.getByText('Probability of failure', { exact: true }) }).getByRole('cell').nth(1);
+  for (const [text, expected] of [['0.5%', .005], ['1%', .01], ['0.5', .005], ['0%', 0]] as const) {
+    await cell.dblclick(); await cell.locator('input').fill(text); await cell.locator('input').press('Enter');
+    await expect(page.getByTestId('patch')).toHaveText(JSON.stringify({ 'valuation_assumptions.failure_probability': expected }));
+  }
+  const row = (name: string) => page.getByRole('row').filter({ has: page.getByText(name, { exact: true }) }).getByRole('cell').last();
+  await expect(row('Value of operating assets (going concern)')).toHaveText('2,000');
+  await expect(row('Distress sale proceeds')).toHaveText('300');
+  await expect(row('Expected operating asset value')).toHaveText('1,660');
+});
+
+test('DCF detail has exact horizon, real discount path, NOPAT and complete terminal column', async ({ page }) => {
+  await page.route('**/api/synthetic-summary', route => route.fulfill({ json: auditFixture() }));
+  await page.goto('/tests/fixtures/summary.html?sheet=output');
+  const table = page.getByText(/Projection Table \(/).locator('..');
+  await expect(table.getByRole('columnheader')).toHaveCount(0); // Existing grid uses data cells for headers.
+  const rows = table.getByRole('row');
+  await expect(rows.first().getByRole('cell')).toHaveCount(5);
+  const expected: Record<string,string[]> = {
+    'Cost of capital': ['', '9.00%', '11.00%', '12.34%'],
+    'NOPAT (after cash tax)': ['', '195', '190', '192'],
+    'Reinvestment': ['', '15', '5', '-3'], 'FCFF': ['', '180', '185', '195'],
+  };
+  for (const [label, values] of Object.entries(expected)) {
+    const cells = rows.filter({ has: page.getByText(label, { exact: true }) }).getByRole('cell');
+    for (let i=0;i<values.length;i++) await expect(cells.nth(i+1)).toHaveText(values[i]);
+  }
+  await expect(page.getByRole('row').filter({ has: page.getByText('Equity bridge: preferred', {exact:true}) }).getByRole('cell').last()).toHaveText('-30');
+});
+
+test('option page uses recorded pricing state and ordinary fractional cells stay numeric', async ({ page }) => {
+  await page.route('**/api/synthetic-summary', route => route.fulfill({ json: auditFixture() }));
+  await page.goto('/tests/fixtures/summary.html?sheet=options');
+  const row = (name: string) => page.getByRole('row').filter({ has: page.getByText(name, { exact:true }) }).getByRole('cell').last();
+  await expect(row('Adjusted S (actual engine input)')).toHaveText('12.34');
+  await expect(row('N(d1)')).toHaveText('0.69');
+  await expect(row('Iterations')).toHaveText('4');
+  await page.goto('/tests/fixtures/summary.html?sheet=cell');
+  await expect(page.getByRole('cell')).toHaveText(['0.5','0.5','0.50%']);
+});
+
+test('stable multiples are not labelled multi-stage DCF and use backend market PE', async ({ page }) => {
+  await page.route('**/api/synthetic-summary', route => route.fulfill({ json: auditFixture() }));
+  await page.goto('/tests/fixtures/summary.html?sheet=relative');
+  await expect(page.getByText('Intrinsic (DCF)', {exact:true})).toHaveCount(0);
+  await expect(page.getByRole('row').filter({ has: page.getByText('PE Ratio', {exact:true}) }).getByRole('cell').nth(2)).toHaveText('12.00');
+  await expect(page.getByText('Market vs Intrinsic', {exact:true})).toHaveCount(0);
+});
+
+test('sensitivity percentage editor uses the same percent-point contract', async ({ page }) => {
+  await page.route('**/api/synthetic-summary', route => route.fulfill({ json: auditFixture() }));
+  await page.route('**/api/valuation/fixture/sensitivity', route => route.fulfill({ json: { baseline_vps: .5, currency: 'CNY', bars: [
+    { driver:'failure_probability', label:'Failure probability', patch_path:'valuation_assumptions.failure_probability', range_lo:0,range_hi:.3,vps_lo:1,vps_hi:.2,delta_lo:.5,delta_hi:-.3,range_source:'application_example' },
+  ] } }));
+  await page.goto('/tests/fixtures/summary.html?sheet=output');
+  const editor = page.getByRole('textbox', {name:'Failure probability value'});
+  await editor.fill('0.5%'); await editor.press('Enter');
+  await expect(page.getByTestId('patch')).toHaveText('{"valuation_assumptions.failure_probability":0.005}');
+});

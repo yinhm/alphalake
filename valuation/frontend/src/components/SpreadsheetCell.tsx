@@ -6,6 +6,7 @@ export type CellType = 'hypothesis' | 'financial' | 'reference' | 'calc' | 'labe
 interface SpreadsheetCellProps {
   value: string | number | null | undefined;
   type: CellType;
+  format?: 'number' | 'percent';
   editable?: boolean;
   onChange?: (value: string) => void;
   className?: string;
@@ -47,12 +48,11 @@ const TYPE_STYLES: Record<CellType, string> = {
 
 const ALIGN_MAP = { left: 'text-left', center: 'text-center', right: 'text-right' };
 
-function formatValue(v: string | number | null | undefined): string {
+function formatValue(v: string | number | null | undefined, format: 'number' | 'percent'): string {
   if (v === null || v === undefined) return '';
   if (typeof v === 'number') {
+    if (format === 'percent') return (v * 100).toFixed(2) + '%';
     if (Math.abs(v) >= 1e6) return v.toLocaleString('en-US', { maximumFractionDigits: 0 });
-    if (Math.abs(v) < 0.01 && v !== 0) return (v * 100).toFixed(2) + '%';
-    if (Math.abs(v) < 1 && v !== 0) return (v * 100).toFixed(2) + '%';
     return v.toLocaleString('en-US', { maximumFractionDigits: 2 });
   }
   return String(v);
@@ -61,6 +61,7 @@ function formatValue(v: string | number | null | undefined): string {
 export default function SpreadsheetCell({
   value,
   type,
+  format = 'number',
   editable = false,
   onChange,
   className = '',
@@ -80,9 +81,9 @@ export default function SpreadsheetCell({
 
   const startEdit = useCallback(() => {
     if (!editable) return;
-    setDraft(value === null || value === undefined ? '' : String(value));
+    setDraft(value === null || value === undefined ? '' : typeof value === 'number' && format === 'percent' ? `${value * 100}%` : String(value));
     setEditing(true);
-  }, [editable, value]);
+  }, [editable, value, format]);
 
   const commit = useCallback(() => {
     setEditing(false);
@@ -122,8 +123,8 @@ export default function SpreadsheetCell({
       data-knowledge-ignore={editable ? true : undefined}
     >
       {!editable && (termId || type === 'label' || type === 'header') ? (
-        <Term termId={termId} bindingId={bindingId}>{formatValue(value)}</Term>
-      ) : formatValue(value)}
+        <Term termId={termId} bindingId={bindingId}>{formatValue(value, format)}</Term>
+      ) : formatValue(value, format)}
       {hasTip && (
         <span
           aria-hidden="true"

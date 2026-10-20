@@ -34,9 +34,9 @@ export default function ValuationPicture({ data }: { data: ValuationResponse; se
             <SpreadsheetCell type="label" value="Current revenues" />
             <SpreadsheetCell type="financial" value={baseRevenue} tooltip="LTM revenue (base year). Source: IQ_TOTAL_REV rotated from FY-0 + quarterly delta." />
             <SpreadsheetCell type="label" value="→ Growth yr 1" />
-            <SpreadsheetCell type="hypothesis" value={forecastValue(data, 'revenue_growth_next_year')} tooltip="Resolved assumption: revenue_growth_next_year. Year-1 growth rate applied to base revenue." />
+            <SpreadsheetCell type="hypothesis" format="percent" value={forecastValue(data, 'revenue_growth_next_year')} tooltip="Resolved assumption: revenue_growth_next_year. Year-1 growth rate applied to base revenue." />
             <SpreadsheetCell type="label" value="→ Growth yrs 2-5" />
-            <SpreadsheetCell type="hypothesis" value={forecastValue(data, 'revenue_growth_years_2_5')} tooltip="Resolved assumption: revenue_growth_years_2_5. Single flat rate applied to years 2–5 per folder §3.1." />
+            <SpreadsheetCell type="hypothesis" format="percent" value={forecastValue(data, 'revenue_growth_years_2_5')} tooltip="Resolved assumption: revenue_growth_years_2_5. Single flat rate applied to years 2–5 per folder §3.1." />
             <SpreadsheetCell type="label" value="→ Terminal revenues" />
             <SpreadsheetCell type="calc" value={terminalRevenue} tooltip="Terminal-year revenue resolved by the DCF engine, after the explicit projection period." />
           </tr>
@@ -48,9 +48,9 @@ export default function ValuationPicture({ data }: { data: ValuationResponse; se
         <tbody>
           <tr>
             <SpreadsheetCell type="label" value="Current EBIT margin" />
-            <SpreadsheetCell type="calc" value={currentMargin} tooltip="Base-year operating margin = adjusted EBIT / LTM revenue. Uses R&D- and lease-adjusted EBIT." />
+            <SpreadsheetCell type="calc" format="percent" value={currentMargin} tooltip="Base-year operating margin = adjusted EBIT / LTM revenue. Uses R&D- and lease-adjusted EBIT." />
             <SpreadsheetCell type="label" value="→ Target margin" />
-            <SpreadsheetCell type="hypothesis" value={forecastValue(data, 'target_operating_margin')} tooltip="Resolved assumption: target_operating_margin. The mature-state margin the firm converges to by year K." />
+            <SpreadsheetCell type="hypothesis" format="percent" value={forecastValue(data, 'target_operating_margin')} tooltip="Resolved assumption: target_operating_margin. The mature-state margin the firm converges to by year K." />
             <SpreadsheetCell type="label" value="→ Converge year" />
             <SpreadsheetCell type="hypothesis" value={forecastValue(data, 'margin_convergence_year')} tooltip="Resolved assumption: margin_convergence_year (K). Years 2..K interpolate linearly from year-1 margin to target; years K+1..10 flat at target." />
             <SpreadsheetCell type="label" value="→ Terminal EBIT" />
@@ -64,11 +64,11 @@ export default function ValuationPicture({ data }: { data: ValuationResponse; se
         <tbody>
           <tr>
             <SpreadsheetCell type="label" value="Risk-free rate" />
-            <SpreadsheetCell type="hypothesis" value={data.inputs.macro_inputs.risk_free_rate} tooltip="10Y treasury rate (analyst input on upload page). Anchor for WACC and terminal growth cap." />
+            <SpreadsheetCell type="hypothesis" format="percent" value={data.inputs.macro_inputs.risk_free_rate} tooltip="10Y treasury rate (analyst input on upload page). Anchor for WACC and terminal growth cap." />
             <SpreadsheetCell type="label" value="+ Beta × ERP" />
-            <SpreadsheetCell type="reference" value={data.inputs.macro_inputs.equity_risk_premium} tooltip="Mature-market equity risk premium. Source: Damodaran annual update (ctryprem). Multiplied by levered beta to give equity risk premium component of Ke." />
+            <SpreadsheetCell type="reference" format="percent" value={data.inputs.macro_inputs.equity_risk_premium} tooltip="Mature-market equity risk premium. Source: Damodaran annual update (ctryprem). Multiplied by levered beta to give equity risk premium component of Ke." />
             <SpreadsheetCell type="label" value="→ WACC" />
-            <SpreadsheetCell type="calc" value={coc?.wacc ?? null} tooltip="WACC = Ke × E/V + Kd(1−t) × D/V. Source: cost_of_capital.wacc from Module 2." />
+            <SpreadsheetCell type="calc" format="percent" value={coc?.wacc ?? null} tooltip="WACC = Ke × E/V + Kd(1−t) × D/V. Source: cost_of_capital.wacc from Module 2." />
           </tr>
         </tbody>
       </SpreadsheetGrid>
@@ -88,23 +88,10 @@ export default function ValuationPicture({ data }: { data: ValuationResponse; se
             <SpreadsheetCell type="label" value="→ Operating Assets" bold />
             <SpreadsheetCell type="calc" value={dcf?.value_of_operating_assets ?? null} bold tooltip="PV of all future FCFF + PV of terminal value, adjusted for failure probability if set. Source: dcf.value_of_operating_assets." />
           </tr>
-          <tr>
-            <SpreadsheetCell type="label" value="− Debt (MV)" />
-            <SpreadsheetCell type="financial" value={coc?.mv_debt_total ?? fin?.bv_debt ?? null}
-              tooltip="Market value of debt — includes PV of operating leases and the straight portion of convertible debt. Falls back to book debt if MV unavailable." />
-          </tr>
-          <tr>
-            <SpreadsheetCell type="label" value="− Minority interests" />
-            <SpreadsheetCell type="financial" value={fin?.minority_interests ?? 0} tooltip="Base-year minority interests. Source: IQ_MINORITY_INTEREST × IQ_FY-0." />
-          </tr>
-          <tr>
-            <SpreadsheetCell type="label" value="+ Cash" />
-            <SpreadsheetCell type="financial" value={fin?.cash_and_marketable_securities ?? null} tooltip="Base-year cash & marketable securities. Source: IQ_CASH_ST_INVEST × IQ_FY-0 (or LTM if rotated)." />
-          </tr>
-          <tr>
-            <SpreadsheetCell type="label" value="+ Cross-holdings" />
-            <SpreadsheetCell type="financial" value={fin?.cross_holdings ?? 0} tooltip="Long-term investments in other firms. Source: IQ_LT_INVEST × IQ_FY-0." />
-          </tr>
+          {Object.entries(dcf?.equity_bridge_components ?? {}).map(([key, value]) => <tr key={key}>
+            <SpreadsheetCell type="label" value={`Equity bridge: ${key}`} />
+            <SpreadsheetCell type="calc" value={value} tooltip="Signed contribution from the same engine calculation" />
+          </tr>)}
           <tr>
             <SpreadsheetCell type="label" value="→ Value of Equity" bold />
             <SpreadsheetCell type="calc" value={dcf?.value_of_equity ?? null} bold
@@ -116,7 +103,7 @@ export default function ValuationPicture({ data }: { data: ValuationResponse; se
           </tr>
           <tr>
             <SpreadsheetCell type="label" value="÷ Shares Outstanding" />
-            <SpreadsheetCell type="financial" value={fin?.shares_outstanding ?? null} tooltip="Base-year shares outstanding. Source: IQ_TOTAL_OUTSTANDING_FILING_DATE (point-in-time, most recent filing)." />
+            <SpreadsheetCell type="financial" value={(data.equity_bridge as { shares?: number } | null)?.shares ?? fin?.shares_outstanding ?? null} tooltip="Base-year shares outstanding. Source: IQ_TOTAL_OUTSTANDING_FILING_DATE (point-in-time, most recent filing)." />
           </tr>
           <tr>
             <SpreadsheetCell type="label" value="→ Value per Share" bold />

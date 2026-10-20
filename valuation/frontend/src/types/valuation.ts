@@ -48,6 +48,7 @@ export interface AdjustmentInputs {
 }
 
 export interface AdjustedFinancials {
+  lease_discount_rate: number | null;
   unamortized_r_and_d: number;
   amortization_r_and_d: number;
   value_of_research_asset: number;
@@ -339,6 +340,9 @@ export interface ForecastParameter {
 }
 
 export interface DCFResult {
+  value_as_going_concern: number | null;
+  distress_value: number | null;
+  equity_bridge_components: Record<string, number | null>;
   forecast_parameters: Record<string, ForecastParameter>;
   terminal_growth: number | null;
   terminal_revenue: number | null;
@@ -405,6 +409,7 @@ export interface OptionInputs {
 }
 
 export interface FinalValuation {
+  option_pricing: Record<string, number>;
   call_value_per_option: number;
   value_of_all_options: number;
   value_per_share: number | null;

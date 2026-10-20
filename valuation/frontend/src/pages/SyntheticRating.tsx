@@ -84,7 +84,7 @@ export default function SyntheticRating({ data }: { data: ValuationResponse; ses
           </tr>
           <tr>
             <SpreadsheetCell type="label" value="Estimated default spread" bold termId="default-spread" />
-            <SpreadsheetCell type="calc" value={match?.spread ?? 0} bold
+            <SpreadsheetCell type="calc" format="percent" value={match?.spread ?? 0} bold
               tooltip="Spread above risk-free rate at the inferred rating. Kd_pretax = RF + spread." />
           </tr>
         </tbody>
@@ -108,7 +108,7 @@ export default function SyntheticRating({ data }: { data: ValuationResponse; ses
                 tooltip={`Upper bound of coverage bucket for rating ${r.rating}`} />
               <SpreadsheetCell type="reference" value={r.rating} align="left"
                 tooltip={`Moody's / S&P composite rating assigned when coverage ∈ [${r.minCoverage}, ${r.maxCoverage})`} />
-              <SpreadsheetCell type="reference" value={r.spread}
+              <SpreadsheetCell type="reference" format="percent" value={r.spread}
                 tooltip={`Default spread (over RF) for rating ${r.rating}. Source: Damodaran synthetic rating table (Jan 2026), cost_of_capital_reference.json`} />
             </tr>
           ))}
@@ -141,7 +141,7 @@ export default function SyntheticRating({ data }: { data: ValuationResponse; ses
           </tr>
           <tr>
             <SpreadsheetCell type="label" value="Kd pre-tax (engine)" bold termId="cost-of-debt" bindingId="cost-of-debt.pretax" />
-            <SpreadsheetCell type="calc" value={engineKdPretax}
+            <SpreadsheetCell type="calc" format="percent" value={engineKdPretax}
               tooltip="Cost of debt pre-tax currently feeding the WACC. = RF + credit spread from the rating the engine used." />
           </tr>
         </tbody>

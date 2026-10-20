@@ -14,12 +14,6 @@ import VintageBadge from '../components/VintageBadge';
 
 // ---------- helpers ----------
 
-/** Safe array access — returns undefined when data is missing */
-function at(arr: number[] | undefined | null, i: number): number | undefined {
-  if (!arr || i < 0 || i >= arr.length) return undefined;
-  return arr[i];
-}
-
 function pct(v: number | null | undefined): string {
   if (v === null || v === undefined) return '';
   return (v * 100).toFixed(2) + '%';
@@ -57,179 +51,50 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
   const sharesVintage = getField(data, 'shares_outstanding');
   const priceVintage = getField(data, 'stock_price');
 
-  // 13 columns: base year + years 1-10 + terminal year
-  const colCount = 13;
-  const headers = [
-    'Base year',
-    ...Array.from({ length: 10 }, (_, i) => `Year ${i + 1}`),
-    'Terminal year',
-  ];
-
-  // ---------- derived projection arrays (length 12 each) ----------
-
-  // Revenues: index 0 = base-year, 1..11 from revenue_projections.
-  // Base-year uses the same revenue as the engine.
-  const revenues: (number | undefined)[] = Array(colCount).fill(undefined);
-  revenues[0] = (revVintage.value ?? fin0.revenues) as number | undefined;
-  if (dcf?.revenue_projections) {
-    dcf.revenue_projections.forEach((v, i) => {
-      revenues[i + 1] = v;
-    });
-  }
-
-  // Revenue growth rate: base year blank, year N = (rev[N]-rev[N-1]) / rev[N-1]
-  const revenueGrowth: (number | undefined)[] = Array(colCount).fill(undefined);
-  for (let i = 1; i < colCount; i++) {
-    const prev = revenues[i - 1];
-    const cur = revenues[i];
-    if (prev !== undefined && cur !== undefined && prev !== 0) {
-      revenueGrowth[i] = (cur - prev) / prev;
-    }
-  }
-
-  // EBIT — base year uses Damodaran-adjusted EBIT (post R&D + lease
-  // capitalization). This matches what M4 uses as the starting point
-  // of the margin path, so there's no artificial cliff between the
-  // "Base year" column and Year 1.
-  const ebit: (number | undefined)[] = Array(colCount).fill(undefined);
-  ebit[0] = baseEbit;
-  if (dcf?.ebit_projections) {
-    dcf.ebit_projections.forEach((v, i) => {
-      ebit[i + 1] = v;
-    });
-  }
-
-  // EBIT margin = ebit / revenue
-  const ebitMargin: (number | undefined)[] = Array(colCount).fill(undefined);
-  for (let i = 0; i < colCount; i++) {
-    const r = revenues[i];
-    const e = ebit[i];
-    if (r !== undefined && e !== undefined && r !== 0) {
-      ebitMargin[i] = e / r;
-    }
-  }
-
-  // Tax rate per year — back out from the engine's actual NOPAT / EBIT.
-  // The engine transitions effective → marginal over the projection, so
-  // showing a flat marginal rate here (old behavior) caused the displayed
-  // EBIT(1-t) row to disagree with FCFF+Reinvestment in the same column.
-  // NOPAT_t = FCFF_t + Reinvestment_t ; tax_t = 1 − NOPAT_t / EBIT_t.
-  const taxRatePerYear: (number | undefined)[] = Array(colCount).fill(undefined);
-  if (dcf?.fcff_projections && dcf?.reinvestment_projections) {
-    for (let i = 0; i < dcf.fcff_projections.length; i++) {
-      const e = ebit[i + 1];
-      if (e != null && e !== 0) {
-        const nopat = dcf.fcff_projections[i] + dcf.reinvestment_projections[i];
-        taxRatePerYear[i + 1] = 1 - nopat / e;
-      }
-    }
-  }
-  // Base-year tax uses macro.tax_rate_effective (what the firm actually paid).
-  taxRatePerYear[0] = macro.tax_rate_effective ?? macro.tax_rate_marginal;
-
-  // EBIT(1-t) per year — matches the engine's per-year NOPAT exactly.
-  const ebitAfterTax: (number | undefined)[] = ebit.map((e, i) => {
-    const t = taxRatePerYear[i];
-    return (e != null && t != null) ? e * (1 - t) : undefined;
-  });
-
-  // Reinvestment — base-year uses historical (adj_CapEx − adj_D&A + ΔNCWC)
-  // from Module 3; projection years come from the DCF engine.
-  const reinvestment: (number | undefined)[] = Array(colCount).fill(undefined);
-  reinvestment[0] = data.cashflow?.reinvestment_firm ?? undefined;
-  if (dcf?.reinvestment_projections) {
-    dcf.reinvestment_projections.forEach((v, i) => {
-      reinvestment[i + 1] = v;
-    });
-  }
-
-  // FCFF
-  const fcff: (number | undefined)[] = Array(colCount).fill(undefined);
-  if (dcf?.fcff_projections) {
-    dcf.fcff_projections.forEach((v, i) => {
-      fcff[i + 1] = v;
-    });
-  }
-
-  // Cost of capital (same for years 1-10, possibly different for terminal)
-  const costOfCapital: (number | undefined)[] = Array(colCount).fill(undefined);
-  if (data.cost_of_capital?.wacc !== undefined) {
-    for (let i = 1; i < colCount; i++) {
-      costOfCapital[i] = data.cost_of_capital.wacc;
-    }
-  }
-
-  // Cumulated discount factor
-  const discountFactor: (number | undefined)[] = Array(colCount).fill(undefined);
-  if (dcf?.discount_factors) {
-    dcf.discount_factors.forEach((v, i) => {
-      discountFactor[i + 1] = v;
-    });
-  }
-
-  // PV(FCFF)
-  const pvFcff: (number | undefined)[] = Array(colCount).fill(undefined);
-  if (dcf?.pv_fcff) {
-    dcf.pv_fcff.forEach((v, i) => {
-      pvFcff[i + 1] = v;
-    });
-  }
-
-  // ---------- Section 2 value-bridge rows ----------
-
-  const terminalCF = dcf?.fcff_projections
-    ? at(dcf.fcff_projections, dcf.fcff_projections.length - 1)
-    : undefined;
-
-  const terminalCostOfCapital = data.cost_of_capital?.wacc;
-
+  const n = dcf?.revenue_projections.length ?? 0;
+  const colCount = n + 2;
+  const headers = ['Base year', ...Array.from({ length: n }, (_, i) => `Year ${i + 1}`), 'Terminal year'];
+  const revenues = [fin0.revenues, ...(dcf?.revenue_projections ?? []), dcf?.terminal_revenue ?? undefined];
+  const ebit = [baseEbit, ...(dcf?.ebit_projections ?? []), dcf?.terminal_ebit ?? undefined];
+  const revenueGrowth = revenues.map((cur, i) => i > 0 && cur != null && revenues[i - 1]
+    ? cur / revenues[i - 1]! - 1 : undefined);
+  const ebitMargin = ebit.map((value, i) => value != null && revenues[i] ? value / revenues[i]! : undefined);
+  const taxRatePerYear = [macro.tax_rate_effective ?? macro.tax_rate_marginal,
+    ...(dcf?.tax_rate_projections ?? []), dcf?.terminal_tax_rate ?? undefined];
+  const historicalFcff = data.cashflow?.fcff;
+  const historicalReinvestment = data.cashflow?.reinvestment_firm;
+  const baseNopat = historicalFcff != null && historicalReinvestment != null
+    ? historicalFcff + historicalReinvestment : undefined;
+  const ebitAfterTax = [baseNopat, ...(dcf?.nopat_projections ?? []), dcf?.terminal_nopat];
+  const reinvestment = [historicalReinvestment ?? undefined, ...(dcf?.reinvestment_projections ?? []), dcf?.terminal_reinvestment];
+  const fcff = [historicalFcff ?? undefined, ...(dcf?.fcff_projections ?? []), dcf?.terminal_fcff];
+  const factors = dcf?.discount_factors ?? [];
+  const costOfCapital = [undefined, ...factors.map((factor, i) => (i === 0 ? 1 : factors[i - 1]) / factor - 1), dcf?.terminal_wacc ?? undefined];
+  const discountFactor = [undefined, ...factors, factors[n - 1]];
+  const pvFcff = [undefined, ...(dcf?.pv_fcff ?? []), dcf?.pv_terminal_value ?? undefined];
+  const terminalCF = dcf?.terminal_fcff;
+  const terminalCostOfCapital = dcf?.terminal_wacc;
   const pvCashFlows = dcf?.pv_cash_flows_sum;
   const pvTerminal = dcf?.pv_terminal_value;
-  const valueOfOpAssets = dcf?.value_of_operating_assets;
-
+  const valueOfOpAssets = dcf?.value_as_going_concern;
   const failureProbability = assumptions.failure_probability;
-  const distressProceedsPct = assumptions.distress_proceeds_pct;
-  const proceedsIfFails =
-    valueOfOpAssets !== undefined && valueOfOpAssets !== null
-      ? valueOfOpAssets * distressProceedsPct
-      : undefined;
-
-  const adjustedOpAssets =
-    valueOfOpAssets !== undefined && valueOfOpAssets !== null
-      ? valueOfOpAssets * (1 - failureProbability) +
-        (proceedsIfFails ?? 0) * failureProbability
-      : undefined;
-
-  // Equity-bridge components — read the actual engine fields, not 0.
-  // Earlier version hardcoded minority/cross-holdings to 0 as placeholders,
-  // which made the arithmetic shown disagree with `equityValue` below
-  // (the engine DOES subtract minority and add cross-holdings).
-  // Prefer the CostOfCapital.mv_debt_total (includes lease PV and
-  // convertible straight part) when available, falling back to raw bv_debt.
-  const debt = (data.cost_of_capital?.mv_debt_total ?? debtVintage.value ?? fin0.bv_debt) as number | undefined;
-  const minorityInterests = fin0.minority_interests ?? 0;
-  const cash = (cashVintage.value ?? fin0.cash_and_marketable_securities) as number | undefined;
-  const nonOpAssets = fin0.cross_holdings ?? 0;
-
+  const proceedsIfFails = dcf?.distress_value;
+  const adjustedOpAssets = dcf?.value_of_operating_assets;
+  const bridge = dcf?.equity_bridge_components ?? {};
   const equityValue = dcf?.value_of_equity;
   const optionsValue = data.final?.value_of_all_options;
-
-  const equityInCommon =
-    equityValue !== undefined && equityValue !== null && optionsValue !== undefined && optionsValue !== null
-      ? equityValue - optionsValue
-      : undefined;
-
-  const sharesOutstanding = (sharesVintage.value ?? fin0.shares_outstanding) as number | undefined;
+  const equityInCommon = equityValue != null && optionsValue != null ? equityValue - optionsValue : undefined;
+  const explicitShares = (data.equity_bridge as { shares?: number } | null)?.shares;
+  const sharesOutstanding = explicitShares ?? fin0.shares_outstanding;
   const valuePerShare = data.final?.value_per_share;
-  const currentPrice = (priceVintage.value ?? fin0.stock_price) as number | undefined;
-
+  const currentPrice = fin0.stock_price;
 
   // ---------- render helpers ----------
 
-  /** Build a row of 13 cells from a label + values array */
+  /** One base column, the actual forecast horizon, and the terminal column. */
   function projRow(
     label: string,
-    values: (number | undefined)[],
+    values: (number | null | undefined)[],
     format?: 'pct' | 'num',
     tooltip?: string | ((i: number) => string),
     termId?: string,
@@ -274,7 +139,7 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
   const projTip = (colLabel: string, baseDesc: string) => {
     return (i: number) => {
       if (i === 0) return `${baseDesc} — Base year (LTM from CIQ)`;
-      if (i === 11) return `${baseDesc} — Terminal (year 10+1 perpetuity)`;
+      if (i === colCount - 1) return `${baseDesc} — Terminal (year ${n + 1} perpetuity)`;
       return `${baseDesc} — ${colLabel.replace('{i}', String(i))}`;
     };
   };
@@ -310,7 +175,7 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
           </thead>
           <tbody>
             {projRow('Revenue growth rate', revenueGrowth, 'pct',
-              projTip('year {i}', 'g = (Rev_t − Rev_{t-1}) / Rev_{t-1}. Year 1 = user hypothesis; years 2-5 = CAGR user input; years 6-10 = linear decay to stable growth rate ≤ RF'), 'revenue-growth')}
+              projTip('year {i}', 'Actual selected annual growth path; explicit annual conditions take priority over scalar stages.'), 'revenue-growth')}
             {projRow('Revenues', revenues, 'num',
               projTip('year {i}', 'Rev_t = Rev_{t-1} × (1 + g_t). Base year is LTM revenue from CIQ.'))}
             {projRow('EBIT margin', ebitMargin, 'pct',
@@ -323,18 +188,18 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
               'pct',
               formula(
                 'Effective in base year, converges to marginal over the projection',
-                `Base = ${pct(macro.tax_rate_effective)} (what the firm actually paid); terminal → ${pct(macro.tax_rate_marginal)} (marginal). Per-year value back-calculated from the engine's FCFF + Reinvestment so it reconciles exactly with the EBIT(1-t) row below.`,
+                `Base = ${pct(macro.tax_rate_effective)} (what the firm actually paid); terminal → ${pct(macro.tax_rate_marginal)} (marginal). Tax-base rate from the engine. With R&D or NOL, this is not cash tax divided by economic EBIT.`,
               ),
               'effective-tax-rate',
             )}
-            {projRow('EBIT(1-t)', ebitAfterTax, 'num',
-              formula('EBIT × (1 − tax rate) using the per-year tax rate shown above (NOT a flat marginal rate). Matches the engine\'s NOPAT.'), 'nopat')}
+            {projRow('NOPAT (after cash tax)', ebitAfterTax, 'num',
+              backendField('dcf.nopat_projections', 'Economic EBIT minus actual modelled cash tax; includes selected R&D and NOL treatment'), 'nopat')}
             {projRow('Reinvestment', reinvestment, 'num',
-              projTip('year {i}', 'Sales-to-capital method: Reinvest_t = (Rev_t − Rev_{t−lag}) / (S/C ratio). Lag = 1 year default.'), 'reinvestment')}
+              projTip('year {i}', 'Actual selected annual budget or capital-ratio path. Terminal reinvestment uses terminal growth / ROIC.'), 'reinvestment')}
             {projRow('FCFF', fcff, 'num',
-              projTip('year {i}', 'FCFF_t = EBIT(1−t)_t − Reinvest_t'), 'fcff')}
+              projTip('year {i}', 'FCFF_t = NOPAT_t − Reinvestment_t'), 'fcff')}
             {projRow('Cost of capital', costOfCapital, 'pct',
-              'WACC from Module 2. If "stable WACC override" is set, terminal WACC may differ from years 1-10.', 'wacc', 'wacc.current')}
+              'Actual annual discount-rate path from the engine factors; terminal uses dcf.terminal_wacc.', 'wacc', 'wacc.current')}
             {projRow('Cumulated discount factor', discountFactor, 'num',
               projTip('year {i}', 'CumDiscount_t = Π(1 / (1 + WACC_s)) for s=1..t. Product form handles non-constant WACC.'), 'discount-factor')}
             {projRow('PV(FCFF)', pvFcff, 'num',
@@ -347,33 +212,29 @@ export default function ValuationOutput({ data, onPatch, onPatchMany }: Props) {
       <SpreadsheetGrid title={`Value Bridge (${data.inputs.reporting_currency ?? '—'}, in millions — per-share figures on final row)`}>
         <tbody>
           {bridgeRow('Terminal cash flow', terminalCF,
-            'FCFF in year 10. If override_growth_perpetuity is set, FCFF is adjusted for post-yr-10 growth rate.', false, 'fcff')}
+            backendField('dcf.terminal_fcff', 'Stable-period NOPAT minus growth / ROIC reinvestment'), false, 'fcff')}
           {bridgeRow('Terminal cost of capital', pct(terminalCostOfCapital),
-            user('Stable-period WACC', 'Default = same as year-10 WACC; can be overridden (typically 8.5% for mature firms).'))}
+            backendField('dcf.terminal_wacc', 'Actual selected stable-period rate including the tax-shield treatment'))}
           {bridgeRow('Terminal value', dcf?.terminal_value_firm,
-            formula('TV = FCFF_yr10 × (1 + g_stable) / (WACC_stable − g_stable)', 'Gordon growth; g_stable ≤ RF per Damodaran constraint.'), false, 'terminal-value', 'terminal-value.current')}
+            formula('TV = Terminal FCFF / (terminal WACC − terminal growth) + selected tax transition value'), false, 'terminal-value', 'terminal-value.current')}
           {bridgeRow('PV(terminal value)', pvTerminal,
-            formula('PV(TV) = TV × CumDiscount_yr10'), false, 'terminal-value', 'terminal-value.present')}
-          {bridgeRow('PV(cash flows over next 10 years)', pvCashFlows,
-            formula('Σ PV(FCFF_t) for t=1..10') + ' — ' + backendField('dcf.pv_cash_flows_sum'))}
+            formula(`PV(TV) = TV × cumulative discount factor at year ${n}`), false, 'terminal-value', 'terminal-value.present')}
+          {bridgeRow(`PV(cash flows over next ${n} years)`, pvCashFlows,
+            formula(`Σ PV(FCFF_t) for t=1..${n}`) + ' — ' + backendField('dcf.pv_cash_flows_sum'))}
           {bridgeRow('Sum of PV (operating assets)', valueOfOpAssets,
-            formula('V_operating = Σ PV(FCFF) + PV(TV)') + ' — ' + backendField('dcf.value_of_operating_assets'), false, 'operating-asset-value', 'operating-asset-value.current')}
+            formula('V_operating = Σ PV(FCFF) + PV(TV)') + ' — ' + backendField('dcf.value_as_going_concern'), false, 'operating-asset-value')}
           {bridgeRow('Probability of failure', pct(failureProbability),
             user('Failure probability', 'Default 0%. Override via FailureRate page. Applied as overlay to going-concern value.'))}
           {bridgeRow('Proceeds if firm fails', proceedsIfFails,
             formula('Proceeds = V_operating × distress_proceeds_pct (or BV if failure_tie_to = "B")'))}
           {bridgeRow('Value of operating assets (adjusted)', adjustedOpAssets,
-            formula('V_adj = V_op × (1 − p_fail) + Proceeds × p_fail'))}
-          {bridgeRow('Minus: Debt', debt,
-            ciq(inputs.ticker, 'IQ_TOTAL_DEBT', 'IQ_FY-0'))}
-          {bridgeRow('Minus: Minority interests', minorityInterests,
-            ciq(inputs.ticker, 'IQ_MINORITY_INTEREST', 'IQ_FY-0'))}
-          {bridgeRow('Plus: Cash', cash,
-            ciq(inputs.ticker, 'IQ_CASH_ST_INVEST', 'IQ_FY-0'))}
-          {bridgeRow('Plus: Non-operating assets', nonOpAssets,
-            'Cross-holdings / investments in affiliates — placeholder in current schema')}
+            backendField('dcf.value_of_operating_assets', 'V_adj = V_gc × (1 − p_fail) + recovery × p_fail'), false, 'operating-asset-value', 'operating-asset-value.current')}
+          {Object.entries(bridge).map(([key, value]) => <tr key={key}>
+            <SpreadsheetCell value={`Equity bridge: ${key}`} type="label" />
+            <SpreadsheetCell value={value} type="calc" tooltip={backendField(`dcf.equity_bridge_components.${key}`, 'Signed contribution to common equity before employee options')} />
+          </tr>)}
           {bridgeRow('Value of equity', equityValue,
-            formula('V_equity = V_op (adj) − Debt − Minority + Cash + Non-op'), false, 'equity-value', 'equity-value.current')}
+            formula('V_equity = adjusted operating value + sum of signed equity-bridge components'), false, 'equity-value', 'equity-value.current')}
           {bridgeRow('Minus: Value of options', optionsValue,
             'Iterative Black-Scholes from Module 6 (Option value page).')}
           {bridgeRow('Value of equity in common stock', equityInCommon,

@@ -66,15 +66,15 @@ export default function Diagnostics({ data }: { data: ValuationResponse; session
           </tr>
           <tr>
             <SpreadsheetCell value="Most recent revenue growth" type="label" />
-            <SpreadsheetCell value={recentRevenueGrowth} type="calc" tooltip={data.inputs.company_metrics?.revenue_growth_basis ?? '同比比较窗口未提供。'} />
+            <SpreadsheetCell format="percent" value={recentRevenueGrowth} type="calc" tooltip={data.inputs.company_metrics?.revenue_growth_basis ?? '同比比较窗口未提供。'} />
           </tr>
           <tr>
             <SpreadsheetCell value="Your forecast — Year 1 growth" type="label" />
-            <SpreadsheetCell value={forecastValue(data, 'revenue_growth_next_year')} type="hypothesis" tooltip="Resolved assumption: valuation_assumptions.revenue_growth_next_year." />
+            <SpreadsheetCell format="percent" value={forecastValue(data, 'revenue_growth_next_year')} type="hypothesis" tooltip="Resolved assumption: valuation_assumptions.revenue_growth_next_year." />
           </tr>
           <tr>
             <SpreadsheetCell value={data.inputs.valuation_assumptions.high_growth_years === 1 ? 'Your forecast — Transition growth anchor' : 'Your forecast — Initial-stage growth'} type="label" />
-            <SpreadsheetCell value={forecastValue(data, 'revenue_growth_years_2_5')} type="hypothesis" tooltip={data.dcf?.forecast_parameters.revenue_growth_years_2_5?.basis} />
+            <SpreadsheetCell format="percent" value={forecastValue(data, 'revenue_growth_years_2_5')} type="hypothesis" tooltip={data.dcf?.forecast_parameters.revenue_growth_years_2_5?.basis} />
           </tr>
           <tr>
             <SpreadsheetCell
@@ -124,15 +124,15 @@ export default function Diagnostics({ data }: { data: ValuationResponse; session
         <tbody>
           <tr>
             <SpreadsheetCell value="Current operating margin" type="label" width="280px" />
-            <SpreadsheetCell value={currentMargin} type="calc" tooltip="= Adjusted EBIT / LTM Revenue. Adjusted EBIT includes R&D add-back + lease add-back from Module 1." />
+            <SpreadsheetCell format="percent" value={currentMargin} type="calc" tooltip="= Adjusted EBIT / LTM Revenue. Adjusted EBIT includes R&D add-back + lease add-back from Module 1." />
           </tr>
           <tr>
             <SpreadsheetCell value="Target operating margin" type="label" />
-            <SpreadsheetCell value={forecastValue(data, 'target_operating_margin')} type="hypothesis" tooltip="Resolved assumption: valuation_assumptions.target_operating_margin. The mature-state margin the firm converges to." />
+            <SpreadsheetCell format="percent" value={forecastValue(data, 'target_operating_margin')} type="hypothesis" tooltip="Resolved assumption: valuation_assumptions.target_operating_margin. The mature-state margin the firm converges to." />
           </tr>
           <tr>
             <SpreadsheetCell value="Industry pretax margin" type="label" />
-            <SpreadsheetCell value={industry.pretax_operating_margin} type="reference" tooltip={`Damodaran industry median pre-tax operating margin. Industry: ${industry.industry_name} (${industry.region}). Source: margin${industry.region === 'Global' ? 'Global' : ''}.xls.`} />
+            <SpreadsheetCell format="percent" value={industry.pretax_operating_margin} type="reference" tooltip={`Damodaran industry median pre-tax operating margin. Industry: ${industry.industry_name} (${industry.region}). Source: margin${industry.region === 'Global' ? 'Global' : ''}.xls.`} />
           </tr>
           <tr>
             <SpreadsheetCell value="Year of convergence" type="label" />
@@ -178,15 +178,15 @@ export default function Diagnostics({ data }: { data: ValuationResponse; session
         <tbody>
           <tr>
             <SpreadsheetCell value="Cost of capital (WACC)" type="label" width="280px" />
-            <SpreadsheetCell value={data.cost_of_capital?.wacc ?? null} type="calc" tooltip="Source: cost_of_capital.wacc from Module 2. WACC = Ke × E/V + Kd(1−t) × D/V." />
+            <SpreadsheetCell format="percent" value={data.cost_of_capital?.wacc ?? null} type="calc" tooltip="Source: cost_of_capital.wacc from Module 2. WACC = Ke × E/V + Kd(1−t) × D/V." />
           </tr>
           <tr>
             <SpreadsheetCell value="Industry WACC" type="label" />
-            <SpreadsheetCell value={industry.wacc} type="reference" tooltip={`Damodaran industry median WACC for ${industry.industry_name}. Source: wacc${industry.region === 'Global' ? 'Global' : ''}.xls.`} />
+            <SpreadsheetCell format="percent" value={industry.wacc} type="reference" tooltip={`Damodaran industry median WACC for ${industry.industry_name}. Source: wacc${industry.region === 'Global' ? 'Global' : ''}.xls.`} />
           </tr>
           <tr>
             <SpreadsheetCell value="Risk-free rate" type="label" />
-            <SpreadsheetCell value={macro.risk_free_rate} type="hypothesis" tooltip="Analyst input (set on upload): macro_inputs.risk_free_rate. 10Y treasury rate." />
+            <SpreadsheetCell format="percent" value={macro.risk_free_rate} type="hypothesis" tooltip="Analyst input (set on upload): macro_inputs.risk_free_rate. 10Y treasury rate." />
           </tr>
           <tr>
             <SpreadsheetCell
@@ -215,7 +215,7 @@ export default function Diagnostics({ data }: { data: ValuationResponse; session
           </tr>
           <tr>
             <SpreadsheetCell value="Price as % of value (same currency)" type="label" />
-            <SpreadsheetCell value={priceAsPctOfValue} type="calc"
+            <SpreadsheetCell format="percent" value={priceAsPctOfValue} type="calc"
               tooltip={`Market price converted to ${reportingCcy ?? 'reporting ccy'} and divided by VPS, so both sides are in the same currency.`}
             />
           </tr>
