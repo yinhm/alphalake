@@ -10,6 +10,13 @@ function RequestError({ message, retry }: { message: string; retry: () => void }
   return <div className="research-message" role="alert"><p>{message}</p><button type="button" onClick={retry}>重试读取</button></div>;
 }
 
+function ResearchTickers({ tickers }: { tickers: string[] }) {
+  const text = tickers.join(' · ') || '批量／专题研究';
+  return tickers.length > 5
+    ? <details><summary>{tickers.length}只证券（展开）</summary>{text}</details>
+    : <>{text}</>;
+}
+
 function ResearchList() {
   const [params, setParams] = useSearchParams();
   const q = params.get('q') ?? '';
@@ -59,7 +66,7 @@ function ResearchList() {
             <div className="research-card-meta"><span>{RESEARCH_KINDS[report.kind]}</span><span>{report.research_date ?? '研究日期未注明'}</span>
               {report.status !== 'complete' && <span>{report.status === 'partial' ? '部分交付' : '历史归档'}</span>}</div>
             <h2><Link to={`/research/${report.id}`}>{report.title}</Link></h2><p>{report.summary}</p>
-            {report.tickers.length > 0 && <p className="research-muted">{report.tickers.join(' · ')}</p>}
+            {report.tickers.length > 0 && <div className="research-muted"><ResearchTickers tickers={report.tickers} /></div>}
           </article></li>)}</ul>}
         {catalog.total > 20 && <nav className="research-pagination" aria-label="研究分页">
           <button type="button" disabled={offset === 0} onClick={() => update(q, kind, Math.max(0, offset - 20))}>上一页</button>
@@ -90,7 +97,7 @@ function ResearchArticle({ id }: { id: string }) {
         <header className="research-header"><p className="research-eyebrow">{RESEARCH_KINDS[current.report.kind]}</p><h1>{current.report.title}</h1>
           <p>{current.report.summary}</p></header>
         <dl className="research-facts">
-          <div><dt>证券</dt><dd>{current.report.tickers.join(' · ') || '批量／专题研究'}</dd></div>
+          <div><dt>证券</dt><dd><ResearchTickers tickers={current.report.tickers} /></dd></div>
           <div><dt>研究日期</dt><dd>{current.report.research_date ?? '未注明'}</dd></div>
           <div><dt>财务基期</dt><dd>{current.report.financial_period ?? '未注明'}</dd></div>
           <div><dt>股本基期</dt><dd>{current.report.share_date ?? '未注明'}</dd></div>

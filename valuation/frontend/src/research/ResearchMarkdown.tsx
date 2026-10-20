@@ -15,7 +15,7 @@ export default function ResearchMarkdown({ detail }: { detail: ResearchDetail })
     disallowedElements={['script', 'style', 'iframe', 'object', 'embed', 'form', 'input']}
     components={{
       a: ({ href, children }) => !href ? <span title="该链接未登记为可阅读附件">{children}（链接未登记）</span>
-        : href.startsWith('/research/') || href.startsWith('/knowledge')
+        : /^\/research(?:\/|$|\?|#)/.test(href) || href.startsWith('/knowledge')
           ? <Link to={href}>{children}</Link>
           : <a href={href} target={href.startsWith('#') ? undefined : '_blank'} rel="noopener noreferrer">{children}</a>,
       img: ({ src, alt }) => {

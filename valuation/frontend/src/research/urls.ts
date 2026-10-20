@@ -3,7 +3,8 @@ import type { ResearchDetail } from '../types/research';
 // Virtual paths resolve Markdown relatives; only registered files become actual HTTP links.
 export function researchLink(href: string, detail: ResearchDetail): string | undefined {
   if (/^https?:\/\//i.test(href) || /^#[^\s]*$/.test(href)
-      || /^\/knowledge(?:\/|$|\?|#)/.test(href)) return href;
+      || /^\/knowledge(?:\/|$|\?|#)/.test(href)
+      || /^\/research(?:\/[a-z0-9][a-z0-9-]{0,79})?(?:[?#][^\s]*)?$/.test(href)) return href;
   if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//')) return undefined;
   try {
     const resolved = new URL(href, `https://research.invalid/${detail.document.path}`);

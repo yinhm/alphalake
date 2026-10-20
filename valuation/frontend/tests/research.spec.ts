@@ -30,6 +30,14 @@ const markdown = `## 核心结论
 
 [公式词条](/knowledge/wacc)
 
+[另一份报告](/research/other-report)
+
+[研究目录](/research?kind=initial_coverage)
+
+[冒充报告的文件](/research/other-report/private.txt)
+
+[越界报告路径](/research/../private.txt)
+
 ![本地图表](chart.png)
 
 ![跟踪图片](https://example.invalid/tracking.png)
@@ -40,7 +48,8 @@ const markdown = `## 核心结论
 
 <script>window.researchInjected=true</script>`;
 
-async function mock(page: Page, total = 1) {
+async function mock(page: Page, total = 1, tickers = report.tickers) {
+  const shownReport = { ...report, tickers };
   const unexpected: string[] = [];
   await page.route(/^http:\/\/127\.0\.0\.1:4173\/api\//, async route => {
     const url = new URL(route.request().url());
@@ -48,12 +57,12 @@ async function mock(page: Page, total = 1) {
     if (url.pathname.startsWith('/api/admin/')) return route.fulfill({ json: { configured: false, admin: false } });
     if (url.pathname === '/api/research') {
       const matches = (!url.searchParams.get('q') || url.searchParams.get('q') === '300866') && (!url.searchParams.get('kind') || url.searchParams.get('kind') === report.kind);
-      return route.fulfill({ json: { contract: report.contract, reports: matches ? [report] : [], total: matches ? total : 0, offset: Number(url.searchParams.get('offset') ?? 0), limit: 20, issues: [] } });
+      return route.fulfill({ json: { contract: report.contract, reports: matches ? [shownReport] : [], total: matches ? total : 0, offset: Number(url.searchParams.get('offset') ?? 0), limit: 20, issues: [] } });
     }
     if (url.pathname === '/api/research/test-report') {
       const id = url.searchParams.get('document') || 'report';
       const document = files.find(f => f.id === id)!;
-      const detail: ResearchDetail = { report, files, document: { ...document, body_md: id === 'report' ? markdown : '## 年度条件明细\n\n不把条件当作事实。' } };
+      const detail: ResearchDetail = { report: shownReport, files, document: { ...document, body_md: id === 'report' ? markdown : '## 年度条件明细\n\n不把条件当作事实。' } };
       return route.fulfill({ json: detail });
     }
     if (url.pathname.endsWith('/files/chart')) return route.fulfill({ contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWQAAAABJRU5ErkJggg==', 'base64') });
@@ -97,6 +106,10 @@ test('detail renders tables, formulas, registered links and attachments safely, 
   await expect(article.locator('.katex')).toBeVisible();
   await expect(article.getByRole('link', { name: '核对PDF' })).toHaveAttribute('href', '/api/research/test-report/files/pdf#page=12');
   await expect(article.getByRole('link', { name: '公式词条' })).toHaveAttribute('href', '/knowledge/wacc');
+  await expect(article.getByRole('link', { name: '另一份报告' })).toHaveAttribute('href', '/research/other-report');
+  await expect(article.getByRole('link', { name: '研究目录' })).toHaveAttribute('href', '/research?kind=initial_coverage');
+  await expect(article.getByRole('link', { name: '冒充报告的文件' })).toHaveCount(0);
+  await expect(article.getByRole('link', { name: '越界报告路径' })).toHaveCount(0);
   await expect(article.getByRole('img')).toHaveCount(1);
   await expect(article.getByRole('link', { name: '危险链接' })).toHaveCount(0);
   await expect(article.getByRole('link', { name: '未登记文件' })).toHaveCount(0);
@@ -128,4 +141,23 @@ test('mobile report keeps wide tables within the reading area and unknown report
   await expect(page.getByRole('alert')).toContainText('研究报告不存在');
   await page.getByRole('link', { name: '返回研究目录' }).click();
   await expect(page.getByRole('link', { name: report.title })).toBeVisible();
+});
+
+test('large research scopes collapse in both catalogue and detail without losing securities', async ({ page }) => {
+  const tickers = Array.from({ length: 520 }, (_, i) => `SHSE:${600000 + i}`);
+  await mock(page, 1, tickers);
+  await page.goto('/research');
+  const card = page.locator('.research-cards article');
+  await expect(card.getByText('520只证券（展开）', { exact: true })).toBeVisible();
+  await expect(card.locator('details')).not.toHaveAttribute('open');
+  await page.getByRole('link', { name: report.title }).click();
+  const scope = page.locator('.research-facts details');
+  await expect(scope).not.toHaveAttribute('open');
+  await expect(page.getByRole('heading', { name: '核心结论' })).toBeInViewport();
+  await scope.locator('summary').click();
+  await expect(scope).toContainText(tickers[0]);
+  await expect(scope).toContainText(tickers[519]);
+  await scope.locator('summary').click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
