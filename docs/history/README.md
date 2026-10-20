@@ -6,6 +6,8 @@
 
 ## 最近主线证据
 
+- [2026-10-20全范围条件估值与经营故事](all-market-valuation-20261020.md)：完整发布范围、故事条件与基线并列，原文及正式交付在workspace。
+
 - [2026-10-17项目盘点与五项改进收口](project-audit-closeout-20261017.md)。
 
 - [2026-10-17整合前状态汇总](implementation-status-before-consolidation-20261017.md)：多个历史时点与旧阶段结论，不作当前状态。
