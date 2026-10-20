@@ -125,6 +125,7 @@ class TestCashFlowAndGrowth:
         )
         adj_inputs = AdjustmentInputs(
             r_and_d_expense_current=100.0,
+            r_and_d_expense_past=[40.0]*5,
             has_r_and_d=True,
             has_operating_leases=False,
         )
@@ -345,7 +346,8 @@ def test_historical_returns_require_actual_annual_intervals():
 @pytest.mark.parametrize('tax,ebt', [(None,100), (20,None), (20,0), (20,-100), (float('nan'),100), (20,float('inf'))])
 def test_historical_missing_tax_does_not_invent_roic(tax, ebt):
     from engine.module_3_cashflow import _compute_historical_series
-    history = [RawFinancials(fiscal_year=y, revenues=1000, ebit=100,
+    # Bypass public finite-value validation to exercise internal diagnostics.
+    history = [RawFinancials.model_construct(fiscal_year=y, revenues=1000, ebit=100,
         bv_equity=500, consolidated_book_equity=500, bv_debt=100, cash_and_marketable_securities=0,
         total_tax_expense=tax, earnings_before_tax=ebt) for y in (2025,2024)]
     result = _compute_historical_series(history, None)

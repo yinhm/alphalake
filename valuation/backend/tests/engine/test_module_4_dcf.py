@@ -36,6 +36,7 @@ def macro():
 def cost_of_capital():
     return CostOfCapital(
         d_e_ratio=0.3,
+        mv_debt_total=300.0,
         beta_l=1.1,
         cost_of_equity=0.095,
         cost_of_debt_pretax=0.055,

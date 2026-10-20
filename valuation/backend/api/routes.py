@@ -1213,6 +1213,8 @@ def sensitivity(session_id: str):
     driver_ranges = build_ranges(session.inputs)
     bars = []
     for dr in driver_ranges:
+        if dr.patch_path == 'methodology_choices.wacc_level_shift_bps' and session.inputs.valuation_assumptions.debt_tax_shield is not None:
+            continue  # Explicit annual financing owns the complete discount-rate path.
         resolved = session.report.dcf.forecast_parameters.get(dr.driver)
         if resolved is not None and not resolved.editable:
             continue  # The annual path supersedes this scalar; it is not a sensitivity driver.

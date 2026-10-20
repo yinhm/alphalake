@@ -53,6 +53,8 @@ def apply_equity_bridge(dcf: DCFResult, policy: EquityBridgeInputs) -> dict:
     equity = ev * policy.operating_ownership + sum(policy.components.values())
     plain = equity / policy.shares
     dcf.value_of_equity = equity
+    dcf.equity_bridge_components = dict(policy.components)
+    dcf.equity_bridge_components['operating_ownership_adjustment'] = ev * (policy.operating_ownership - 1)
     dcf.value_per_share_pre_options = plain
     return dict(policy_id=policy.policy_id, status='illustrative_policy_not_reported_fact',
                 operating_value=ev, operating_ownership=policy.operating_ownership,

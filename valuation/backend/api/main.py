@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 
 from engine.module_4_dcf import InvalidTerminalValue, InvalidReinvestment, InvalidResearchTax, InvalidTaxForecast
 from engine.equity_bridge import InvalidConvertibleInput
+from engine.data_dictionary import InvalidValuationInput
 
 from .alphalake import router as alphalake_router
 from .routes import router
@@ -37,6 +38,7 @@ async def invalid_request_input(request: Request, error: RequestValidationError)
 @app.exception_handler(InvalidResearchTax)
 @app.exception_handler(InvalidTaxForecast)
 @app.exception_handler(InvalidConvertibleInput)
+@app.exception_handler(InvalidValuationInput)
 async def invalid_dcf_input(request: Request, error: ValueError):
     return JSONResponse(status_code=422, content={'detail': {'status': 'rejected_input_or_policy', 'reason': str(error)}})
 

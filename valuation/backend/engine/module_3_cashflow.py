@@ -238,6 +238,9 @@ def compute_cashflow_and_growth(
                     if raw.d_a is not None else None)
     reinvestment_firm = (adjusted_capex - adjusted_d_a + raw.change_in_noncash_wc
         if all(v is not None for v in (adjusted_capex, adjusted_d_a, raw.change_in_noncash_wc)) else None)
+    if adj_inputs.has_operating_leases:
+        # Lease additions/principal financing are absent from this contract.
+        reinvestment_firm = None
     reinvestment_equity = (reinvestment_firm - raw.net_debt_issued
         if reinvestment_firm is not None and raw.net_debt_issued is not None else None)
     nopat = after_tax_operating_income(adjusted, raw, tax_rate)

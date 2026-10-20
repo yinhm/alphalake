@@ -7,7 +7,10 @@ to debt equivalents, producing adjusted EBIT, net income, book equity, and debt.
 
 from __future__ import annotations
 
-from .data_dictionary import RawFinancials, AdjustmentInputs, AdjustedFinancials
+from pydantic import ValidationError
+
+import math
+from .data_dictionary import RawFinancials, AdjustmentInputs, AdjustedFinancials, InvalidValuationInput
 
 
 def after_tax_operating_income(
@@ -77,7 +80,9 @@ def capitalize_operating_leases(
     Returns:
         (pv, n_additional, total_years)
     """
-    if not operating_lease_commitments or cost_of_debt_pretax <= 0:
+    if not math.isfinite(cost_of_debt_pretax) or cost_of_debt_pretax <= -1:
+        raise InvalidValuationInput('lease discount rate must be finite and exceed -100%')
+    if not operating_lease_commitments:
         return 0.0, 0, 0
 
     pv = 0.0
@@ -128,6 +133,11 @@ def compute_adjustments(
     Returns:
         AdjustedFinancials with all adjusted values.
     """
+    # Orchestration may refresh current R&D after model construction.
+    try:
+        AdjustmentInputs.model_validate(adj_inputs.model_dump())
+    except ValidationError as error:
+        raise InvalidValuationInput(str(error)) from error
     # Start with raw values
     adjusted_ebit = raw.ebit
     adjusted_net_income = raw.net_income
@@ -180,8 +190,7 @@ def compute_adjustments(
         # Adjusted MV Debt = MV Debt + PV of operating leases
         if adjusted_mv_debt is not None:
             adjusted_mv_debt = adjusted_mv_debt + pv_of_operating_leases
-        else:
-            adjusted_mv_debt = pv_of_operating_leases
+        # Unknown ordinary debt stays unknown; lease PV alone is not total debt.
 
         # Damodaran: depreciation = PV / total_lease_years (straight-line)
         if lease_years_total > 0:
@@ -194,6 +203,7 @@ def compute_adjustments(
         adjusted_ebit = adjusted_ebit + lease_adjustment_to_ebit
 
     return AdjustedFinancials(
+        lease_discount_rate=cost_of_debt_pretax if adj_inputs.has_operating_leases else None,
         unamortized_r_and_d=unamortized_r_and_d,
         amortization_r_and_d=amortization_r_and_d,
         value_of_research_asset=value_of_research_asset,

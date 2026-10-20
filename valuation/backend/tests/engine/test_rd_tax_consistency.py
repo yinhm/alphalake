@@ -3,7 +3,7 @@ import pytest
 
 from engine.company_metrics import compute_company_metrics
 from engine.data_dictionary import RawFinancials, AdjustedFinancials, AdjustmentInputs, CostOfCapital, MacroInputs, ValuationAssumptions
-from engine.module_1_adjustments import compute_adjustments
+from engine.module_1_adjustments import compute_adjustments, after_tax_operating_income
 from engine.module_3_cashflow import compute_cashflow_and_growth
 from engine.module_5_multiples import compute_multiples
 
@@ -29,20 +29,30 @@ def test_rd_reclassification_preserves_tax_and_cashflow(current_rd, leases):
     old_cf = compute_cashflow_and_growth(before, raw, base, capital, prior, macro)
     new_cf = compute_cashflow_and_growth(after, raw, rd, capital, prior, macro)
     delta = current_rd-40
-    assert new_cf.reinvestment_firm-old_cf.reinvestment_firm == pytest.approx(delta)
-    assert new_cf.fcff == pytest.approx(old_cf.fcff)
-    assert new_cf.fcfe == pytest.approx(old_cf.fcfe)
+    if leases:
+        assert old_cf.reinvestment_firm is new_cf.reinvestment_firm is None
+        assert old_cf.fcff is new_cf.fcff is None
+        assert old_cf.fcfe is new_cf.fcfe is None
+    else:
+        assert new_cf.reinvestment_firm-old_cf.reinvestment_firm == pytest.approx(delta)
+        assert new_cf.fcff == pytest.approx(old_cf.fcff)
+        assert new_cf.fcfe == pytest.approx(old_cf.fcfe)
     # Prior research asset = 40 × (1 + 4/5 + 3/5 + 2/5 + 1/5) = 120.
     assert new_cf.adjusted_invested_capital == (None if leases else pytest.approx(750+120))
     expected_nopat = (200+before.lease_adjustment_to_ebit)*.8+delta
-    assert new_cf.fcff+new_cf.reinvestment_firm == pytest.approx(expected_nopat)
+    assert after_tax_operating_income(after, raw, .2) == pytest.approx(expected_nopat)
+    if not leases:
+        assert new_cf.fcff+new_cf.reinvestment_firm == pytest.approx(expected_nopat)
     metrics = compute_company_metrics([raw, prior], adjusted=after, tax_rate=.20)
     assert metrics.roic == (None if leases else pytest.approx(expected_nopat/870))
     assert metrics.marginal_sales_to_capital == (None if leases else pytest.approx(100/delta))
     multiples = compute_multiples(after, raw, new_cf, capital, ValuationAssumptions(stable_growth_rate=.02), macro)
-    expected_value = old_cf.fcff/(.08-.02)
-    assert multiples.ev_sales_intrinsic == pytest.approx(expected_value/1000)
-    assert multiples.ev_ebitda_intrinsic == pytest.approx(expected_value/240)
+    if leases:
+        assert multiples.ev_sales_intrinsic is multiples.ev_ebitda_intrinsic is None
+    else:
+        expected_value = old_cf.fcff/(.08-.02)
+        assert multiples.ev_sales_intrinsic == pytest.approx(expected_value/1000)
+        assert multiples.ev_ebitda_intrinsic == pytest.approx(expected_value/240)
 
 
 def test_anker_reported_rd_matches_frozen_tax_unchanged_scenarios():

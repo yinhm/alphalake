@@ -35,9 +35,9 @@ class TestBlackScholes:
         assert call < 1.0
 
     def test_zero_volatility(self):
-        """Zero vol: intrinsic value only."""
+        """Zero volatility: deterministic discounted payoff, not expiry payoff."""
         call = black_scholes_call(S=110, K=100, T=1, r=0.05, sigma=0.0)
-        assert call == pytest.approx(10.0)  # max(110-100, 0)
+        assert call == pytest.approx(110-100*math.exp(-.05))
 
     def test_zero_time(self):
         """Zero time to expiry: intrinsic value."""

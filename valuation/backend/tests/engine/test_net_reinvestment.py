@@ -54,7 +54,7 @@ def test_total_budget_changes_only_investment_cashflow_and_capital(growth, resea
         assert getattr(report, field) == getattr(baseline, field)
     for field, value in baseline.dcf.model_dump().items():
         if field not in ('forecast_parameters','reinvestment_projections','fcff_projections','pv_fcff',
-                'pv_cash_flows_sum','value_of_operating_assets','value_of_equity','value_per_share_pre_options',
+                'pv_cash_flows_sum','distress_value','value_as_going_concern','value_of_operating_assets','value_of_equity','value_per_share_pre_options',
                 'implied_roic_projections','implied_roic_terminal'):
             assert getattr(dcf, field) == getattr(baseline.dcf, field), field
     assert dcf.fcff_projections == pytest.approx([p-b for p,b in zip(dcf.nopat_projections, budget)])

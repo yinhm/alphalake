@@ -13,6 +13,10 @@ import math
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
+class InvalidValuationInput(ValueError):
+    """Selected inputs cannot support a finite, internally consistent calculation."""
+
+
 # ---------------------------------------------------------------------------
 # A. Macro & Risk Variables (from Damodaran country-level datasets)
 # ---------------------------------------------------------------------------
@@ -31,6 +35,7 @@ class MacroInputs(BaseModel):
 # ---------------------------------------------------------------------------
 
 class RawFinancials(BaseModel):
+    model_config = ConfigDict(allow_inf_nan=False)
     fiscal_year: int = Field(description="Fiscal year label")
     revenues: float = Field(description="Total revenue")
     ebit: float = Field(description="Operating income (EBIT)")
@@ -70,6 +75,7 @@ class QuarterlyFinancials(RawFinancials):
 # ---------------------------------------------------------------------------
 
 class AdjustmentInputs(BaseModel):
+    model_config = ConfigDict(allow_inf_nan=False)
     amortization_period_n: int = Field(default=5, description="R&D amortization period in years")
     r_and_d_expense_current: float = Field(default=0.0, description="Current year R&D expense")
     r_and_d_expense_past: list[float] = Field(default_factory=list, description="Past R&D expenses [t=1..n], most recent first")
@@ -78,12 +84,25 @@ class AdjustmentInputs(BaseModel):
     has_r_and_d: bool = Field(default=False, description="Whether to capitalize R&D")
     has_operating_leases: bool = Field(default=False, description="Whether to capitalize leases")
 
+    @model_validator(mode='after')
+    def selected_research_cohort(self):
+        if self.has_r_and_d and (self.amortization_period_n < 1
+                or len(self.r_and_d_expense_past) < self.amortization_period_n
+                or any(v < 0 or not math.isfinite(v) for v in
+                    [self.r_and_d_expense_current, *self.r_and_d_expense_past])):
+            raise ValueError('R&D capitalization requires the complete selected research cohort; unknown history is not zero')
+        if self.has_operating_leases and (self.operating_lease_expense_current < 0
+                or any(v < 0 or not math.isfinite(v) for v in self.operating_lease_commitments)):
+            raise ValueError('lease payments must be finite and nonnegative')
+        return self
+
 
 # ---------------------------------------------------------------------------
 # D. Adjusted Financials (Module 1 output)
 # ---------------------------------------------------------------------------
 
 class AdjustedFinancials(BaseModel):
+    lease_discount_rate: float | None = None
     unamortized_r_and_d: float = Field(default=0.0)
     amortization_r_and_d: float = Field(default=0.0)
     value_of_research_asset: float = Field(default=0.0)
@@ -316,9 +335,10 @@ class ConvertibleDebt(BaseModel):
 
 class PreferredStock(BaseModel):
     """Preferred stock inputs for WACC preferred component."""
-    shares: float = Field(default=0.0)
-    price_per_share: float = Field(default=0.0)
-    dividend_per_share: float = Field(default=0.0)
+    model_config = ConfigDict(allow_inf_nan=False)
+    shares: float = Field(default=0.0, ge=0)
+    price_per_share: float = Field(default=0.0, ge=0)
+    dividend_per_share: float = Field(default=0.0, ge=0)
 
 
 class ReferenceCapitalInputs(BaseModel):
@@ -363,7 +383,8 @@ class MethodologyChoices(BaseModel):
             "'decile' = regional risk-quartile lookup (NOT IMPLEMENTED)."
         ),
     )
-    wacc_direct_input: float | None = Field(default=None, description="Direct WACC when approach='direct'")
+    model_config = ConfigDict(allow_inf_nan=False)
+    wacc_direct_input: float | None = Field(default=None, gt=-1, description="Direct WACC when approach='direct'")
     reference_capital_inputs: ReferenceCapitalInputs | None = None
 
     # --- Unlevered beta (Ginzu cell B21) ---
@@ -402,7 +423,7 @@ class MethodologyChoices(BaseModel):
             "'actual_rating' = rating → spread lookup (NOT IMPLEMENTED, needs ratings.xls)."
         ),
     )
-    kd_direct_input: float | None = Field(default=None)
+    kd_direct_input: float | None = Field(default=None, gt=-1)
     synthetic_rating_firm_type: str = Field(
         default="large",
         description="'large' | 'small' | 'financial' (used when kd_approach='synthetic_rating')",
@@ -547,9 +568,9 @@ class ValuationAssumptions(BaseModel):
     sales_to_capital_stable: float | None = Field(default=None, description="Sales/Capital for stable years")
     cost_of_capital_stable_override: float | None = Field(default=None)
     roic_stable_override: float | None = Field(default=None)
-    failure_probability: float = Field(default=0.0)
-    distress_proceeds_pct: float = Field(default=0.5)
-    failure_tie_to: str = Field(default="V", description="B=book value, V=fair value")
+    failure_probability: float = Field(default=0.0, ge=0, le=1)
+    distress_proceeds_pct: float = Field(default=0.5, ge=0)
+    failure_tie_to: Literal['B', 'V'] = Field(default="V", description="B=book value, V=fair value")
     override_reinvestment_lag: bool = Field(default=False)
     reinvestment_lag_years: int = Field(default=1)
     override_tax_convergence: bool = Field(default=False)
@@ -581,6 +602,9 @@ class ForecastParameter(BaseModel):
 
 
 class DCFResult(BaseModel):
+    value_as_going_concern: float | None = None
+    distress_value: float | None = None
+    equity_bridge_components: dict[str, float | None] = Field(default_factory=dict)
     forecast_parameters: dict[str, ForecastParameter] = Field(default_factory=dict)
     terminal_growth: float | None = None
     terminal_revenue: float | None = None
@@ -647,10 +671,11 @@ class MultiplesResult(BaseModel):
 # ---------------------------------------------------------------------------
 
 class OptionInputs(BaseModel):
-    number_of_options: float = Field(default=0, description="Outstanding options/warrants")
-    average_strike_price: float = Field(default=0.0)
-    average_maturity: float = Field(default=0.0, description="Average remaining life in years")
-    stock_price_std_dev: float = Field(default=0.0, description="Annualized std deviation of stock")
+    model_config = ConfigDict(allow_inf_nan=False)
+    number_of_options: float = Field(default=0, ge=0, description="Outstanding options/warrants")
+    average_strike_price: float = Field(default=0.0, ge=0)
+    average_maturity: float = Field(default=0.0, ge=0, description="Average remaining life in years")
+    stock_price_std_dev: float = Field(default=0.0, ge=0, description="Annualized std deviation of stock")
     dividend_yield: float = Field(default=0.0)
     has_options: bool = Field(default=False)
 
@@ -660,6 +685,7 @@ class OptionInputs(BaseModel):
 # ---------------------------------------------------------------------------
 
 class FinalValuation(BaseModel):
+    option_pricing: dict[str, float | int] = Field(default_factory=dict)
     call_value_per_option: float = Field(default=0.0)
     value_of_all_options: float = Field(default=0.0)
     value_per_share: float | None = None
@@ -787,11 +813,17 @@ class CompanyValuationInput(BaseModel):
 
     @model_validator(mode="after")
     def check_prepared_ttm(self):
+        if self.methodology_choices.cost_of_capital_approach == 'decile' and self.reporting_currency != 'USD':
+            raise ValueError('decile WACC reference is USD only; use explicit same-currency financing inputs')
         if self.equity_bridge is not None:
             if self.prepared_ttm is None or self.option_inputs.has_options:
                 raise ValueError("reviewed bridge requires prepared TTM; employee option overlay not supported")
             if self.adjustment_inputs.has_r_and_d or self.adjustment_inputs.has_operating_leases:
                 raise ValueError("reviewed bridge forbids repeated RD/lease capitalization")
+            if self.methodology_choices.has_preferred:
+                preferred = self.methodology_choices.preferred_stock
+                if self.equity_bridge.components.get('preferred') != -preferred.shares * preferred.price_per_share:
+                    raise ValueError('explicit equity bridge must include the same signed preferred claim exactly once')
         if self.prepared_ttm is not None:
             if self.quarterly_financials or self.quarters_since_10k:
                 raise ValueError("prepared TTM cannot also request quarterly rotation")

@@ -160,9 +160,9 @@ class TestCapitalizeOperatingLeases:
         assert total == 0
 
     def test_zero_discount_rate(self):
-        """Zero discount rate → PV = 0 (guarded edge case)."""
+        """Zero discount rate preserves the undiscounted commitments."""
         pv, n_add, total = capitalize_operating_leases([100.0, 100.0], 0.0)
-        assert pv == 0.0
+        assert pv == 200.0
 
     def test_single_year_commitment(self):
         """Single year, no beyond: PV = 100/1.06."""
@@ -336,14 +336,14 @@ class TestComputeAdjustments:
         adj_inputs = AdjustmentInputs(
             r_and_d_expense_current=100.0,
             r_and_d_expense_past=[80.0, 60.0],
-            amortization_period_n=5,
+            amortization_period_n=2,
             has_r_and_d=True,
         )
         result = compute_adjustments(raw, adj_inputs, cost_of_debt_pretax=0.05)
         assert result.adjusted_net_income is None
 
     def test_none_mv_debt_with_leases(self):
-        """When raw mv_debt is None but leases exist, adjusted_mv_debt = PV of leases."""
+        """Lease PV cannot turn unknown ordinary debt into a known total."""
         raw = RawFinancials(fiscal_year=0, revenues=1000.0, ebit=200.0, mv_debt=None)
         adj_inputs = AdjustmentInputs(
             has_operating_leases=True,
@@ -352,6 +352,7 @@ class TestComputeAdjustments:
         )
         result = compute_adjustments(raw, adj_inputs, cost_of_debt_pretax=0.05)
         expected_pv = 50 / 1.05 + 50 / 1.05**2
-        assert result.adjusted_mv_debt == pytest.approx(expected_pv, rel=1e-6)
+        assert result.pv_of_operating_leases == pytest.approx(expected_pv, rel=1e-6)
+        assert result.adjusted_mv_debt is None
         assert result.lease_years_total == 2
         assert result.lease_n_additional_years == 0

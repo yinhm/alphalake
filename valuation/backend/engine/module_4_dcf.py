@@ -37,6 +37,7 @@ from .data_dictionary import (
     DCFResult,
     MacroInputs,
     AdjustmentInputs,
+    InvalidValuationInput,
 )
 from .module_1_adjustments import capitalize_r_and_d
 
@@ -295,6 +296,7 @@ def compute_dcf(
     assumptions: ValuationAssumptions,
     macro: MacroInputs,
     *, adjustment_inputs: AdjustmentInputs | None = None,
+    preferred_value: float = 0.0,
 ) -> DCFResult:
     # --- Resolve structural parameters ---
     n = assumptions.projection_years or 10
@@ -535,6 +537,8 @@ def compute_dcf(
         raise InvalidTaxForecast('debt tax shield components must be finite and nonnegative')
     shield_adjustments = [spread*(1-fraction) for spread,fraction in zip(shield_spreads, shield_availability, strict=True)]
     wacc_path_vals = [rate+delta for rate,delta in zip(wacc_path_vals,shield_adjustments,strict=True)]
+    if any(not math.isfinite(rate) or rate <= -1 for rate in wacc_path_vals):
+        raise InvalidValuationInput('each forecast discount rate must be finite and exceed -100%')
 
     # --- Reinvestment ---
     reinvestment_projections = _reinvestment_path(
@@ -613,13 +617,14 @@ def compute_dcf(
 
     # --- Failure overlay (BEFORE equity bridge, per Ginzu B40→B43) ---
     p_failure = assumptions.failure_probability
+    if assumptions.failure_tie_to == 'B':
+        distress_value = ((raw.bv_equity + raw.bv_debt) * assumptions.distress_proceeds_pct
+                          if raw.bv_equity is not None and raw.bv_debt is not None else None)
+    else:
+        distress_value = value_as_going_concern * assumptions.distress_proceeds_pct
     if p_failure > 0:
-        if assumptions.failure_tie_to == "B":
-            bv_eq = raw.bv_equity or 0.0
-            bv_debt = raw.bv_debt or 0.0
-            distress_value = (bv_eq + bv_debt) * assumptions.distress_proceeds_pct
-        else:
-            distress_value = value_as_going_concern * assumptions.distress_proceeds_pct
+        if distress_value is None:
+            raise InvalidValuationInput('book-value failure proceeds require known book equity and debt')
         value_of_operating_assets = (
             value_as_going_concern * (1 - p_failure) + distress_value * p_failure
         )
@@ -627,7 +632,9 @@ def compute_dcf(
         value_of_operating_assets = value_as_going_concern
 
     # --- Equity bridge ---
-    debt_total = adjusted.adjusted_mv_debt if adjusted.adjusted_mv_debt is not None else (raw.bv_debt or 0.0)
+    debt_claim = (cost_of_capital.mv_debt_total if cost_of_capital.approach_used == 'detailed'
+                  else adjusted.adjusted_mv_debt)
+    debt_total = debt_claim if debt_claim is not None else (raw.bv_debt or 0.0)
     minority = raw.minority_interests or 0.0
     cross = raw.cross_holdings or 0.0
     cash = raw.cash_and_marketable_securities or 0.0
@@ -644,13 +651,14 @@ def compute_dcf(
         value_of_operating_assets
         - debt_total
         - minority
+        - preferred_value
         + cash_usable
         + cross
     )
 
     # --- Per-share ---
     bridge_complete = all(v is not None for v in (
-        adjusted.adjusted_mv_debt, raw.minority_interests,
+        adjusted.adjusted_mv_debt, debt_claim, raw.minority_interests,
         raw.cross_holdings, raw.cash_and_marketable_securities,
     ))
     if not bridge_complete:
@@ -667,6 +675,11 @@ def compute_dcf(
     implied_roic_terminal = nopat_terminal / ic_last if ic_last is not None and ic_last > 0 else None
 
     return DCFResult(
+        value_as_going_concern=value_as_going_concern, distress_value=distress_value,
+        equity_bridge_components=dict(debt=-debt_claim if debt_claim is not None else None,
+            minority=-raw.minority_interests if raw.minority_interests is not None else None,
+            preferred=-preferred_value, cash=cash_usable if raw.cash_and_marketable_securities is not None else None,
+            cross_holdings=raw.cross_holdings),
         forecast_parameters=forecast_parameters,
         terminal_growth=g_terminal, terminal_revenue=rev_terminal,
         terminal_ebit=ebit_terminal, terminal_margin=margin_target,

@@ -1,6 +1,6 @@
 # 架构边界与估值引擎调整台账
 
-核对日期：2026-10-19；本次[计算审计](calculation-audit.md)未改引擎，开放问题单独记录。研发税务及通用亏损/融资税盾调整均获用户明确批准，新增E28/E29及已批准的E30；forecast修复登记E31/E32，LTM同比及基期展示修复登记E33；来源初值及导出快照登记E34/E35，人民币融资来源初值登记E36；准确上游复核的基线为`10d567d`。本页是引擎变更的维护入口，实际方法说明见[方法契约](methodology-contract.md)，当前数据供给见[项目状态](../implementation-status.md)。**本页列出准确上游基线及导入后的改动，不宣称全部本地政策均已获达摩达兰原文认证。**10月4日[上游模型复核](../history/valuation-model-review-20261004.md)保留当时独立算例及方法边界。
+核对日期：2026-10-20；[计算审计](calculation-audit.md)的明确BUG按用户授权修复，新增E42；其余方法边界仍冻结。研发税务及通用亏损/融资税盾调整均获用户明确批准，新增E28/E29及已批准的E30；forecast修复登记E31/E32，LTM同比及基期展示修复登记E33；来源初值及导出快照登记E34/E35，人民币融资来源初值登记E36；准确上游复核的基线为`10d567d`。本页是引擎变更的维护入口，实际方法说明见[方法契约](methodology-contract.md)，当前数据供给见[项目状态](../implementation-status.md)。**本页列出准确上游基线及导入后的改动，不宣称全部本地政策均已获达摩达兰原文认证。**10月4日[上游模型复核](../history/valuation-model-review-20261004.md)保留当时独立算例及方法边界。
 
 ## 责任边界
 
@@ -334,3 +334,17 @@ git show <提交> -- valuation/backend/engine
 提交`00a0666`修复只读审阅：保留显式研发预算的增长条件不再仅凭原政策标识解释成费用率不变；逐年及终值列实际费用率、研发／非研发投入，并分列累计投入、释放和净额。原先终值非研发释放提示只覆盖直接预算，现资本倍率入口同样检查。输入、DCF、WACC、终值及每股值均不修改，不增加准入、自动采用或新参数规则。
 
 原始依据为[增长与投入](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/littlebook/growthvaluedrivers.htm)、[研发资本化](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/R%26D.htm)及[稳态增长与回报](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm)；费用率条件和回收依据仍须公司证据。20个旧条件全部经济数值不变；固定12家120条件中117可计算、3不适用，70个标识／路径差异和83个非研发释放提示保留，不称经济错误率。验收、失败夹具和压缩证据见[本轮记录](../history/operating-consistency-20261017.md)。
+
+## E42：计算审计的输入、索偿及数值BUG修复（2026-10-20）
+
+用户要求“修正已发现BUG”，对应[审计VAL-A02–A10、A14/A15](calculation-audit.md)。实现提交见本节后续登记；仅修已有路径，不新增估值方法或默认选择。
+
+- **债务／普通股桥**：原M2债券估值与M4账面扣债分叉，显式债务市值也未贯穿M2；现显式市场纯债优先，否则沿原估计，详细融资与M4共用当前债务索偿。优先股按已选数量×价格扣一次；显式桥须包含相同的有符号优先股索偿。转债纯债及含权残差分别扣除，不再重复替换已估值纯债。当前索偿不改目标融资权重定义。
+- **研发／定义域**：启用研发必须提供完整所选寿命的队列，真实零可用、缺项拒绝；重算前再次校验被更新的费用。失败概率限0–1，输入拒绝非有限值，实际逐年折现率须有限且大于−100%；错误返回422，失败PATCH保留旧会话。美元分位表只允许USD现金流，不新增汇率／通胀转换政策。
+- **期权**：零波动取确定性折现支付、到期取内在价值，零行权价可用。保留原20次／0.01容差及循环方程，未收敛、残差失效或期权索偿超过正权益时明确拒绝。返回本次实际BSM输入和收敛状态；**原循环经济定义并未因此获得认证**，新方程仍待审批。
+- **旧表外租赁**：M1采用实际选定的直接／评级／行业税前Kd，零利率保留未折现承诺，并返回该利率。合成评级与租赁相互依赖的组合拒绝，另需算法审批；缺历史租赁投资／融资衔接时，历史净再投资、FCFF／FCFE及依赖比例留空，既有预测DCF不因此被清空。已入表租赁不重复资本化。
+- **消费BUG**：直接／行业／美元分位WACC均消费已存在的bps冲击；显式完整融资路径接管时，不展示未消费的敏感性驱动。调整后净利润为真实0时不回退报表利润计算PE。稳定倍数原公式保留，不能称为本次多阶段DCF倍数。
+
+原始方法依据：[应扣债务与混合证券](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/debttosubtract.htm)、[租赁资本化](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/oplease.htm)、[研发重分类](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/R%26D.htm)、[期权定价教材](https://pages.stern.nyu.edu/~adamodar/pdfiles/valn2ed/ch5.pdf)及[折现率币种一致性](https://pages.stern.nyu.edu/~adamodar/pdfiles/blog/CostofCapitalInPractice.pdf)。完整性、有限值、残差和失败会话保护是工程校验；20次／0.01为保留的本地数值政策，不称教材规定。
+
+回归包含独立逐期纯债PV、优先股／转债桥恒等式、真实零与缺队列、BSM连续边界、租赁折现、API422及会话保护、各WACC分支冲击和Excel同次状态。合成例中400账面债以10%和五年20票息估值为324.1842646，桥接改扣该市值；200优先股不再留在普通股权益内。例子不代表公司事实或新默认，完整验收及当前原生影响见[修复记录](../history/valuation-calculation-fixes-20261020.md)。

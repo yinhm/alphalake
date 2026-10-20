@@ -392,8 +392,6 @@ def _write_option_value(wb: openpyxl.Workbook, inp: CompanyValuationInput, repor
     ws.column_dimensions['A'].width = 40
     ws.column_dimensions['B'].width = 20
 
-    import math
-
     opt = inp.option_inputs
     fin0 = report.ltm_financials
     macro = inp.macro_inputs
@@ -428,38 +426,19 @@ def _write_option_value(wb: openpyxl.Workbook, inp: CompanyValuationInput, repor
     _section_title(ws, row, "Dilution-Adjusted Black-Scholes", 2)
     row += 1
 
-    S = None
-    if fin0 and fin0.stock_price and fin0.shares_outstanding and opt.number_of_options:
-        S = (fin0.stock_price * fin0.shares_outstanding + opt.average_strike_price * opt.number_of_options) / (fin0.shares_outstanding + opt.number_of_options)
-    K = opt.average_strike_price
-    t = opt.average_maturity
-    sigma = opt.stock_price_std_dev
-    r = macro.risk_free_rate
-    y = opt.dividend_yield
-
-    d1 = d2 = None
-    if S and K > 0 and t > 0 and sigma > 0:
-        d1 = (math.log(S / K) + (r - y + sigma**2 / 2) * t) / (sigma * math.sqrt(t))
-        d2 = d1 - sigma * math.sqrt(t)
-
-    def _norm_cdf(x):
-        """Abramowitz & Stegun approximation."""
-        a1, a2, a3, a4, a5, p = 0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429, 0.3275911
-        sign = -1 if x < 0 else 1
-        z = abs(x) / math.sqrt(2)
-        tt = 1.0 / (1.0 + p * z)
-        yy = 1.0 - ((((a5 * tt + a4) * tt + a3) * tt + a2) * tt + a1) * tt * math.exp(-z * z)
-        return 0.5 * (1.0 + sign * yy)
-
+    pricing = final_.option_pricing if final_ else {}
     bs_rows = [
-        ("Adjusted S (dilution-adjusted price)", S, DEC_FMT),
-        ("K (strike price)", K, DEC_FMT),
-        ("t (time to expiration)", t, DEC_FMT),
-        ("sigma (std dev)", sigma, PCT_FMT),
-        ("d1", d1, '0.0000'),
-        ("N(d1)", _norm_cdf(d1) if d1 is not None else None, '0.0000'),
-        ("d2", d2, '0.0000'),
-        ("N(d2)", _norm_cdf(d2) if d2 is not None else None, '0.0000'),
+        ("Adjusted S (actual engine input)", pricing.get('adjusted_stock_price'), DEC_FMT),
+        ("Seed value per share", pricing.get('seed_value_per_share'), DEC_FMT),
+        ("K (strike price)", opt.average_strike_price, DEC_FMT),
+        ("t (time to expiration)", opt.average_maturity, DEC_FMT),
+        ("sigma (std dev)", opt.stock_price_std_dev, PCT_FMT),
+        ("d1", pricing.get('d1'), '0.0000'),
+        ("N(d1)", pricing.get('n_d1'), '0.0000'),
+        ("d2", pricing.get('d2'), '0.0000'),
+        ("N(d2)", pricing.get('n_d2'), '0.0000'),
+        ("Iterations", pricing.get('iterations'), NUM_FMT),
+        ("Convergence residual", pricing.get('residual'), '0.000000'),
         ("Value per option", final_.call_value_per_option if final_ else None, DEC_FMT),
         ("Total value of options", final_.value_of_all_options if final_ else None, NUM_FMT),
     ]
@@ -489,8 +468,8 @@ def _write_valuation_picture(wb: openpyxl.Workbook, inp: CompanyValuationInput, 
     macro = inp.macro_inputs
 
     base_rev = fin0.revenues if fin0 else 0
-    term_rev = dcf.revenue_projections[-1] if dcf and dcf.revenue_projections else 0
-    term_ebit = dcf.ebit_projections[-1] if dcf and dcf.ebit_projections else 0
+    term_rev = dcf.terminal_revenue if dcf else None
+    term_ebit = dcf.terminal_ebit if dcf else None
 
     row = 1
 
@@ -510,7 +489,7 @@ def _write_valuation_picture(wb: openpyxl.Workbook, inp: CompanyValuationInput, 
     # Margin Path
     _section_title(ws, row, "Operating Margin Path", 8)
     row += 1
-    cur_margin = fin0.ebit / fin0.revenues if fin0 and fin0.revenues else 0
+    cur_margin = report.adjusted.adjusted_ebit / fin0.revenues if fin0 and fin0.revenues else None
     for col, label, val, fill, fmt in [
         (1, "Current EBIT margin", cur_margin, GRAY_FILL, PCT_FMT),
         (3, "Target margin", va.target_operating_margin, GREEN_FILL, PCT_FMT),
@@ -544,10 +523,8 @@ def _write_valuation_picture(wb: openpyxl.Workbook, inp: CompanyValuationInput, 
         ("PV(Cash Flows)",             dcf.pv_cash_flows_sum if dcf else None,          GRAY_FILL, False),
         ("+ PV(Terminal Value)",        dcf.pv_terminal_value if dcf else None,          GRAY_FILL, False),
         ("→ Operating Assets",          dcf.value_of_operating_assets if dcf else None, GRAY_FILL, True),
-        ("− Debt",                      fin0.bv_debt if fin0 else None,                  BLUE_FILL, False),
-        ("− Minority interests",        fin0.minority_interests if fin0 else 0,          BLUE_FILL, False),
-        ("+ Cash",                      fin0.cash_and_marketable_securities if fin0 else None, BLUE_FILL, False),
-        ("+ Non-operating assets",      fin0.cross_holdings if fin0 else 0,              BLUE_FILL, False),
+        *((f"Equity bridge: {key}", value, GRAY_FILL, False)
+          for key, value in (dcf.equity_bridge_components if dcf else {}).items()),
         ("→ Value of Equity",           dcf.value_of_equity if dcf else None,            GRAY_FILL, True),
         ("− Options",                   final_.value_of_all_options if final_ else 0,    GRAY_FILL, False),
         ("÷ Shares Outstanding",        fin0.shares_outstanding if fin0 else None,       BLUE_FILL, False),
@@ -720,7 +697,7 @@ def _write_failure_rate(wb: openpyxl.Workbook, inp: CompanyValuationInput, repor
     va = inp.valuation_assumptions
     fail_prob = va.failure_probability
     proceeds_pct = va.distress_proceeds_pct
-    op_assets = report.dcf.value_of_operating_assets if report.dcf else 0
+    op_assets = report.dcf.value_as_going_concern if report.dcf else None
 
     row = 1
 
@@ -730,7 +707,7 @@ def _write_failure_rate(wb: openpyxl.Workbook, inp: CompanyValuationInput, repor
     _cell(ws, row, 1, "Probability of failure", font=BOLD_FONT)
     _cell(ws, row, 2, fail_prob, fill=GREEN_FILL, fmt=PCT_FMT)
     row += 1
-    _cell(ws, row, 1, "Proceeds as % of book value if failure", font=BOLD_FONT)
+    _cell(ws, row, 1, "Recovery as % of selected base if failure", font=BOLD_FONT)
     _cell(ws, row, 2, proceeds_pct, fill=GREEN_FILL, fmt=PCT_FMT)
     row += 2
 
@@ -744,9 +721,9 @@ def _write_failure_rate(wb: openpyxl.Workbook, inp: CompanyValuationInput, repor
     _cell(ws, row, 2, fail_prob, fill=GRAY_FILL, fmt=PCT_FMT)
     row += 1
     _cell(ws, row, 1, "Distress sale proceeds", font=BOLD_FONT)
-    _cell(ws, row, 2, (op_assets or 0) * proceeds_pct, fill=GRAY_FILL, fmt=NUM_FMT)
+    _cell(ws, row, 2, report.dcf.distress_value if report.dcf else None, fill=GRAY_FILL, fmt=NUM_FMT)
     row += 1
-    expected = (op_assets or 0) * (1 - fail_prob) + (op_assets or 0) * proceeds_pct * fail_prob
+    expected = report.dcf.value_of_operating_assets if report.dcf else None
     _cell(ws, row, 1, "Expected operating asset value", font=Font(bold=True, size=11))
     _cell(ws, row, 2, expected, fill=GRAY_FILL, fmt=NUM_FMT, font=Font(bold=True, size=11))
     row += 2
@@ -840,10 +817,9 @@ def _write_lease_converter(wb: openpyxl.Workbook, inp: CompanyValuationInput, re
     ws.column_dimensions['D'].width = 20
 
     adj = inp.adjustment_inputs
-    ind = inp.industry_data
     adjusted = report.adjusted
     commitments = adj.operating_lease_commitments
-    cost_of_debt = ind.cost_of_debt_pretax or 0
+    cost_of_debt = adjusted.lease_discount_rate
 
     row = 1
 
@@ -874,7 +850,7 @@ def _write_lease_converter(wb: openpyxl.Workbook, inp: CompanyValuationInput, re
     row += 1
 
     total_pv = 0.0
-    if cost_of_debt > 0:
+    if cost_of_debt is not None:
         for i in range(min(len(commitments), 5)):
             c = commitments[i]
             df = 1 / ((1 + cost_of_debt) ** (i + 1))
@@ -889,8 +865,7 @@ def _write_lease_converter(wb: openpyxl.Workbook, inp: CompanyValuationInput, re
         # Beyond year 5
         if len(commitments) > 5 and commitments[5] > 0:
             beyond = commitments[5]
-            yr5_commit = commitments[4] if len(commitments) >= 5 else 0
-            n_add = max(1, round(beyond / yr5_commit)) if yr5_commit > 0 else 1
+            n_add = adjusted.lease_n_additional_years
             annual_amt = beyond / n_add
             for j in range(n_add):
                 year = 6 + j
@@ -1092,10 +1067,10 @@ def _write_valuation_output(wb: openpyxl.Workbook, inp: CompanyValuationInput, r
         (16, f"PV(cash flows, years 1-{n})", dcf.pv_cash_flows_sum, NUM_FMT),
         (17, "PV(terminal value incl. tax transition)", dcf.pv_terminal_value, NUM_FMT),
         (18, "Operating assets (after failure overlay)", dcf.value_of_operating_assets, NUM_FMT),
-        (19, "Debt before explicit bridge / convertible adjustments", report.adjusted.adjusted_mv_debt, NUM_FMT),
-        (20, "Minority interests (reported)", raw.minority_interests, NUM_FMT),
-        (21, "Cash (before trapped-cash adjustment)", raw.cash_and_marketable_securities, NUM_FMT),
-        (22, "Non-operating assets (reported)", raw.cross_holdings, NUM_FMT),
+        (19, "Debt (signed actual claim)", dcf.equity_bridge_components.get("debt"), NUM_FMT),
+        (20, "Minority interests (signed actual claim)", dcf.equity_bridge_components.get("minority"), NUM_FMT),
+        (21, "Cash (usable)", dcf.equity_bridge_components.get("cash"), NUM_FMT),
+        (22, "Non-operating assets", dcf.equity_bridge_components.get("cross_holdings"), NUM_FMT),
         (23, "Value of equity (all selected adjustments)", dcf.value_of_equity, NUM_FMT),
         (24, "- Employee options", report.final.value_of_all_options, NUM_FMT),
         (25, "Value of equity in common stock", common, NUM_FMT),
@@ -1108,7 +1083,11 @@ def _write_valuation_output(wb: openpyxl.Workbook, inp: CompanyValuationInput, r
         _cell(ws, row, 1, label, font=BOLD_FONT)
         _cell(ws, row, 2, value, fill=GRAY_FILL, fmt=fmt)
     _cell(ws, 31, 1, "导出是当前会话快照；请在网页/API修改并重算后重新导出。附表交叉引用不驱动DCF。", fill=YELLOW_FILL)
-    _cell(ws, 32, 1, "桥接分项为原始参考；受限现金、显式桥接、转债及失败调整以共享引擎的权益/每股结果为准。", fill=YELLOW_FILL)
+    _cell(ws, 32, 1, "下列完整有符号桥接之和加经营资产价值，等于扣员工期权前普通股权益。", fill=YELLOW_FILL)
+
+    for row, (key, value) in enumerate(dcf.equity_bridge_components.items(), 34):
+        _cell(ws, row, 1, f"Equity bridge: {key}", font=BOLD_FONT)
+        _cell(ws, row, 2, value, fill=GRAY_FILL, fmt=NUM_FMT)
 
 
 def generate_full_workbook(inp: CompanyValuationInput, report: ValuationReport) -> bytes:

@@ -95,7 +95,7 @@ def compute_multiples(
 
     # --- Market multiples (actual) ---
     pe_market = None
-    adj_ni = adjusted.adjusted_net_income or raw.net_income
+    adj_ni = adjusted.adjusted_net_income if adjusted.adjusted_net_income is not None else raw.net_income
     if adj_ni and adj_ni > 0 and raw.mv_equity:
         pe_market = raw.mv_equity / adj_ni
 

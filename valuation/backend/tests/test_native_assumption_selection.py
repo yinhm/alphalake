@@ -39,6 +39,7 @@ def test_sustainability_evidence_keeps_accounting_and_history_gaps():
     from tools.review_native_policy import review_report
     inputs=CompanyValuationInput.model_validate(sample()['inputs'])
     inputs.adjustment_inputs.has_r_and_d=True
+    inputs.adjustment_inputs.r_and_d_expense_past=[0]*5
     inputs.industry_data.pretax_operating_margin=.2
     def review():
         report=run_full_valuation(inputs)
@@ -247,6 +248,8 @@ def test_selection_rejects_mixed_financial_and_adjustment_basis(section,field,va
         candidate[section][0][field]=value
     else:
         candidate[section][field]=value
+    if section == 'adjustment_inputs' and field == 'has_r_and_d':
+        candidate['adjustment_inputs']['r_and_d_expense_past'] = [0]*5
     original=deepcopy(candidate)
     with pytest.raises(ValueError,match='basis differs'):
         select(baseline,candidate,[reference()],'2026-09-27T00:00:00+00:00',POLICY)
@@ -445,6 +448,7 @@ def test_uniform_scenarios_preserve_facts_and_use_consecutive_adjusted_history()
     # 同口径研发队列不足：不能把未调整利润或更早年度拼成三年目标。
     inputs = CompanyValuationInput.model_validate(baseline['inputs'])
     inputs.adjustment_inputs.has_r_and_d = True
+    inputs.adjustment_inputs.r_and_d_expense_past = [0]*5
     report = run_full_valuation(inputs)
     short = dict(inputs=inputs.model_dump(mode='json'), **{name:getattr(report,name).model_dump(mode='json')
         for name in ('ltm_financials','adjusted','cost_of_capital','cashflow','dcf','final')})

@@ -37,6 +37,7 @@ from pathlib import Path
 
 from .data_dictionary import (
     AdjustedFinancials,
+    InvalidValuationInput,
     ReferenceCapitalInputs,
     MacroInputs,
     IndustryData,
@@ -95,8 +96,10 @@ def _bond_price_of_debt(book_debt: float, interest_expense: float, kd: float, ma
 
     MV = interest × [1 − (1+Kd)^−T] / Kd  +  BookDebt / (1+Kd)^T
     """
-    if kd <= 0 or maturity <= 0 or book_debt <= 0:
+    if maturity <= 0 or book_debt <= 0:
         return book_debt
+    if kd == 0:
+        return interest_expense * maturity + book_debt
     annuity = interest_expense * (1 - (1 + kd) ** -maturity) / kd
     principal = book_debt / (1 + kd) ** maturity
     return annuity + principal
@@ -189,6 +192,83 @@ def compute_reference_cost_of_capital(c: ReferenceCapitalInputs, shift_bps: floa
         warnings=[('Industry reference weights are a target proxy, not company market capital structure.' if c.capital_structure_basis=='industry_reference_weights' else 'Target capital weights and debt cost are explicit assumptions, not observed market values.' if c.capital_structure_basis=='target_weights' else 'Market prices, carried disclosed shares, estimated debt and operating-scope bridge; not entirely observed fair values.')])
 
 
+def resolve_debt_cost(
+    adjusted: AdjustedFinancials, macro: MacroInputs, industry: IndustryData,
+    m: MethodologyChoices, interest_expense: float,
+) -> tuple[float, str, float | None, str | None, list[str]]:
+    """Resolve the selected pre-tax debt cost once for leases and WACC."""
+    warnings = []
+    industry_kd = (industry.cost_of_debt_pretax if industry.cost_of_debt_pretax is not None
+                   else macro.risk_free_rate + (macro.default_spread or 0.0))
+    # --- Pre-tax cost of debt (need to compute first so we can bond-price if requested) ---
+    kd_pretax = 0.0
+    kd_branch = m.kd_approach
+    coverage_ratio: float | None = None
+    synthetic_rating_inferred: str | None = None
+
+    if m.kd_approach == "direct":
+        if m.kd_direct_input is None:
+            warnings.append("kd_approach='direct' but no kd_direct_input; falling back to industry.")
+            kd_pretax = industry_kd
+            kd_branch = "industry_fallback (fallback)"
+        else:
+            kd_pretax = m.kd_direct_input
+    elif m.kd_approach == "synthetic_rating":
+        # EBIT for coverage: Damodaran uses lease-adjusted EBIT, NOT R&D-adjusted
+        ebit_for_coverage = adjusted.adjusted_ebit - (adjusted.lease_adjustment_to_ebit or 0.0)
+        # Actually adjusted.adjusted_ebit includes both R&D and lease; strip the R&D-component
+        # The R&D adjustment = r_and_d_current − amortization, which equals
+        #   (adjusted EBIT − raw EBIT) − lease_adjustment_to_ebit, but we don't have raw_ebit here.
+        # Simpler: use adjusted.adjusted_ebit and note this is an approximation.
+        # For Ginzu-faithful implementation, caller should pass a pre-R&D-adjusted EBIT explicitly.
+        ebit_for_coverage = adjusted.adjusted_ebit - 0.0  # placeholder; see warning
+        warnings.append("synthetic_rating: using fully-adjusted EBIT. Ginzu uses lease-adjusted-only EBIT; small discrepancy for R&D-heavy firms.")
+        if interest_expense <= 0:
+            coverage_ratio = 1_000_000.0
+        elif ebit_for_coverage < 0:
+            coverage_ratio = -100_000.0
+        else:
+            coverage_ratio = ebit_for_coverage / interest_expense
+        lookup = _get_synthetic_rating(coverage_ratio, m.synthetic_rating_firm_type)
+        if lookup is None:
+            warnings.append(f"synthetic_rating: coverage {coverage_ratio} out of table range; falling back to industry.")
+            kd_pretax = industry_kd
+            kd_branch = "industry_fallback (fallback)"
+        else:
+            rating, spread = lookup
+            synthetic_rating_inferred = rating
+            # Ginzu convention: Kd = RF + rating_spread. Country default spread is
+            # NOT added on top (it's already baked into the rating-to-spread table
+            # via sovereign+corporate mixing).
+            kd_pretax = macro.risk_free_rate + spread
+            kd_branch = f"synthetic_rating → {rating}"
+    elif m.kd_approach == "actual_rating":
+        if not m.actual_rating:
+            warnings.append("actual_rating: no rating specified; falling back to industry.")
+            kd_pretax = industry_kd
+            kd_branch = "industry_fallback (fallback)"
+        else:
+            spread = _rating_to_spread(m.actual_rating)
+            if spread is None:
+                warnings.append(f"actual_rating: '{m.actual_rating}' not in rating table; falling back to industry.")
+                kd_pretax = industry_kd
+                kd_branch = "industry_fallback (fallback)"
+            else:
+                # Ginzu: Kd = RF + rating_spread (no separate default_spread add-on)
+                kd_pretax = macro.risk_free_rate + spread
+                kd_branch = f"actual_rating → {m.actual_rating}"
+    elif m.kd_approach == "industry_fallback":
+        kd_pretax = industry_kd
+    else:
+        warnings.append(f"Unknown kd_approach='{m.kd_approach}'; using industry fallback.")
+        kd_pretax = industry_kd
+        kd_branch = "industry_fallback (fallback)"
+
+    if not math.isfinite(kd_pretax) or kd_pretax <= -1:
+        raise InvalidValuationInput('pre-tax debt cost must be finite and exceed -100%')
+    return kd_pretax, kd_branch, coverage_ratio, synthetic_rating_inferred, warnings
+
+
 def compute_cost_of_capital(
     adjusted: AdjustedFinancials,
     macro: MacroInputs,
@@ -201,6 +281,7 @@ def compute_cost_of_capital(
     book_debt: float,
     interest_expense: float = 0.0,
     industry_global: IndustryData | None = None,
+    market_debt: float | None = None,
 ) -> CostOfCapital:
     """Full Ginzu WACC dispatch. See module docstring for branch structure."""
 
@@ -238,7 +319,7 @@ def compute_cost_of_capital(
                 weight_equity=1.0, weight_debt=0.0, weight_preferred=0.0,
                 risk_free_rate=macro.risk_free_rate,
                 equity_risk_premium=0.0,
-                wacc=m.wacc_direct_input,
+                wacc=m.wacc_direct_input + m.wacc_level_shift_bps / 10000,
                 warnings=warnings,
             )
 
@@ -249,7 +330,7 @@ def compute_cost_of_capital(
             warnings.append("industry_average: industry WACC not available; falling back to detailed.")
         else:
             base_rf = _REF.get("decile_base_riskfree", 0.0388)
-            wacc = ind_wacc + (macro.risk_free_rate - base_rf)
+            wacc = ind_wacc + (macro.risk_free_rate - base_rf) + m.wacc_level_shift_bps / 10000
             return CostOfCapital(
                 approach_used="industry_average",
                 capital_structure_basis="not_used",
@@ -292,7 +373,7 @@ def compute_cost_of_capital(
                 weight_equity=1.0, weight_debt=0.0, weight_preferred=0.0,
                 risk_free_rate=macro.risk_free_rate,
                 equity_risk_premium=0.0,
-                wacc=wacc,
+                wacc=wacc + m.wacc_level_shift_bps / 10000,
                 warnings=warnings + [f"Decile lookup: {m.decile_region} / {m.decile_risk_group}"],
             )
 
@@ -398,69 +479,9 @@ def compute_cost_of_capital(
         erp = macro.equity_risk_premium + (macro.country_risk_premium or 0.0)
         erp_branch = "country_of_incorporation (fallback)"
 
-    # --- Pre-tax cost of debt (need to compute first so we can bond-price if requested) ---
-    kd_pretax = 0.0
-    kd_branch = m.kd_approach
-    coverage_ratio: float | None = None
-    synthetic_rating_inferred: str | None = None
-
-    if m.kd_approach == "direct":
-        if m.kd_direct_input is None:
-            warnings.append("kd_approach='direct' but no kd_direct_input; falling back to industry.")
-            kd_pretax = industry.cost_of_debt_pretax or (macro.risk_free_rate + (macro.default_spread or 0.0))
-            kd_branch = "industry_fallback (fallback)"
-        else:
-            kd_pretax = m.kd_direct_input
-    elif m.kd_approach == "synthetic_rating":
-        # EBIT for coverage: Damodaran uses lease-adjusted EBIT, NOT R&D-adjusted
-        ebit_for_coverage = adjusted.adjusted_ebit - (adjusted.lease_adjustment_to_ebit or 0.0)
-        # Actually adjusted.adjusted_ebit includes both R&D and lease; strip the R&D-component
-        # The R&D adjustment = r_and_d_current − amortization, which equals
-        #   (adjusted EBIT − raw EBIT) − lease_adjustment_to_ebit, but we don't have raw_ebit here.
-        # Simpler: use adjusted.adjusted_ebit and note this is an approximation.
-        # For Ginzu-faithful implementation, caller should pass a pre-R&D-adjusted EBIT explicitly.
-        ebit_for_coverage = adjusted.adjusted_ebit - 0.0  # placeholder; see warning
-        warnings.append("synthetic_rating: using fully-adjusted EBIT. Ginzu uses lease-adjusted-only EBIT; small discrepancy for R&D-heavy firms.")
-        if interest_expense <= 0:
-            coverage_ratio = 1_000_000.0
-        elif ebit_for_coverage < 0:
-            coverage_ratio = -100_000.0
-        else:
-            coverage_ratio = ebit_for_coverage / interest_expense
-        lookup = _get_synthetic_rating(coverage_ratio, m.synthetic_rating_firm_type)
-        if lookup is None:
-            warnings.append(f"synthetic_rating: coverage {coverage_ratio} out of table range; falling back to industry.")
-            kd_pretax = industry.cost_of_debt_pretax or (macro.risk_free_rate + (macro.default_spread or 0.0))
-            kd_branch = "industry_fallback (fallback)"
-        else:
-            rating, spread = lookup
-            synthetic_rating_inferred = rating
-            # Ginzu convention: Kd = RF + rating_spread. Country default spread is
-            # NOT added on top (it's already baked into the rating-to-spread table
-            # via sovereign+corporate mixing).
-            kd_pretax = macro.risk_free_rate + spread
-            kd_branch = f"synthetic_rating → {rating}"
-    elif m.kd_approach == "actual_rating":
-        if not m.actual_rating:
-            warnings.append("actual_rating: no rating specified; falling back to industry.")
-            kd_pretax = industry.cost_of_debt_pretax or (macro.risk_free_rate + (macro.default_spread or 0.0))
-            kd_branch = "industry_fallback (fallback)"
-        else:
-            spread = _rating_to_spread(m.actual_rating)
-            if spread is None:
-                warnings.append(f"actual_rating: '{m.actual_rating}' not in rating table; falling back to industry.")
-                kd_pretax = industry.cost_of_debt_pretax or (macro.risk_free_rate + (macro.default_spread or 0.0))
-                kd_branch = "industry_fallback (fallback)"
-            else:
-                # Ginzu: Kd = RF + rating_spread (no separate default_spread add-on)
-                kd_pretax = macro.risk_free_rate + spread
-                kd_branch = f"actual_rating → {m.actual_rating}"
-    elif m.kd_approach == "industry_fallback":
-        kd_pretax = industry.cost_of_debt_pretax or (macro.risk_free_rate + (macro.default_spread or 0.0))
-    else:
-        warnings.append(f"Unknown kd_approach='{m.kd_approach}'; using industry fallback.")
-        kd_pretax = industry.cost_of_debt_pretax or (macro.risk_free_rate + (macro.default_spread or 0.0))
-        kd_branch = "industry_fallback (fallback)"
+    kd_pretax, kd_branch, coverage_ratio, synthetic_rating_inferred, kd_warnings = resolve_debt_cost(
+        adjusted, macro, industry, m, interest_expense)
+    warnings.extend(kd_warnings)
 
     # --- MV of debt ---
     # Explicit book debt; an actual zero must not select a different debt basis.
@@ -475,15 +496,19 @@ def compute_cost_of_capital(
         cd = m.convertible_debt
         if cd.book_value is None or cd.book_value > book_debt:
             raise InvalidConvertibleInput('convertible carrying amount/interest exceeds the inclusive debt/interest total')
-        if m.use_bond_pricing_for_debt and (cd.interest_expense is None or cd.interest_expense > interest_expense):
+        if market_debt is None and m.use_bond_pricing_for_debt and (cd.interest_expense is None or cd.interest_expense > interest_expense):
             raise InvalidConvertibleInput('pricing remaining debt requires the convertible accounting interest included in the total')
         split = value_convertible(cd, kd_pretax)
         mv_conv_straight = split['straight_debt_value']
         equity_in_conv = split['conversion_rights_value']
         debt_for_pricing -= cd.book_value
-        if m.use_bond_pricing_for_debt:
+        if market_debt is None and m.use_bond_pricing_for_debt:
             interest_for_pricing -= cd.interest_expense
-    if debt_for_pricing > 0:
+    if market_debt is not None:
+        if not math.isfinite(market_debt) or market_debt < mv_conv_straight:
+            raise InvalidValuationInput('explicit market debt must cover the selected convertible straight-debt component')
+        mv_straight = market_debt - mv_conv_straight
+    elif debt_for_pricing > 0:
         if m.use_bond_pricing_for_debt and interest_for_pricing > 0 and m.debt_maturity_years > 0:
             mv_straight = _bond_price_of_debt(debt_for_pricing, interest_for_pricing, kd_pretax, m.debt_maturity_years)
         else:

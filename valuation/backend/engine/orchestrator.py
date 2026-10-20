@@ -17,9 +17,10 @@ from .data_dictionary import (
     DCFResult,
     MultiplesResult,
     FinalValuation,
+    InvalidValuationInput,
 )
 from .module_1_adjustments import compute_adjustments
-from .module_2_risk import compute_cost_of_capital
+from .module_2_risk import compute_cost_of_capital, resolve_debt_cost
 from .module_3_cashflow import compute_cashflow_and_growth
 from .module_4_dcf import compute_dcf
 from .module_5_multiples import compute_multiples
@@ -119,10 +120,14 @@ def run_full_valuation(
     if ltm.r_and_d_expense is not None and inputs.adjustment_inputs.has_r_and_d:
         inputs.adjustment_inputs.r_and_d_expense_current = ltm.r_and_d_expense
 
-    # Get pre-tax cost of debt for lease discounting (use industry data or default)
-    cost_of_debt_pretax = inputs.industry_data.cost_of_debt_pretax or (
-        inputs.macro_inputs.risk_free_rate + (inputs.macro_inputs.default_spread or 0.02)
-    )
+    cost_of_debt_pretax = 0.0  # Unused when no off-balance-sheet leases are selected.
+    if inputs.adjustment_inputs.has_operating_leases:
+        if inputs.methodology_choices.kd_approach == 'synthetic_rating':
+            raise InvalidValuationInput('lease/rating circular inputs require an explicit pre-tax debt cost; no automatic iteration policy')
+        unleased = compute_adjustments(raw_current,
+            inputs.adjustment_inputs.model_copy(update={'has_operating_leases': False}), 0.0)
+        cost_of_debt_pretax, *_ = resolve_debt_cost(unleased, inputs.macro_inputs,
+            inputs.industry_data, inputs.methodology_choices, raw_current.interest_expense or 0.0)
 
     # --- Module 1: Financial Adjustments ---
     report.adjusted = compute_adjustments(
@@ -143,6 +148,7 @@ def run_full_valuation(
         book_debt=book_debt,
         interest_expense=interest_expense,
         industry_global=inputs.industry_data_global,
+        market_debt=raw_current.mv_debt,
     )
 
     # --- Module 3: Cash Flow & Growth ---
@@ -169,12 +175,17 @@ def run_full_valuation(
         report.warnings.append("Historical FCFF unavailable: incomplete reinvestment inputs")
     if report.cashflow.fcfe is None:
         report.warnings.append("Historical FCFE unavailable: incomplete equity cashflow inputs")
+    if inputs.adjustment_inputs.has_operating_leases:
+        report.warnings.append('Historical lease investment/principal financing bridge unavailable; historical FCFF/FCFE and reinvestment rates are not reconstructed')
 
     # --- Module 4: DCF ---
     report.dcf = compute_dcf(
         report.cashflow, report.cost_of_capital, report.adjusted,
         raw_current, inputs.valuation_assumptions, inputs.macro_inputs,
         adjustment_inputs=inputs.adjustment_inputs,
+        preferred_value=(inputs.methodology_choices.preferred_stock.shares *
+                         inputs.methodology_choices.preferred_stock.price_per_share
+                         if inputs.methodology_choices.has_preferred else 0.0),
     )
 
     if any(report.dcf.wacc_tax_shield_adjustments) or report.dcf.terminal_tax_shield_adjustment:
@@ -206,14 +217,15 @@ def run_full_valuation(
         equity = report.dcf.value_of_equity
         shares = inputs.equity_bridge.shares if inputs.equity_bridge else raw_current.shares_outstanding
         if equity is not None and shares is not None and shares > 0:
-            if inputs.equity_bridge is None and risk.approach_used == 'detailed':
-                # M4原桥扣的是含转债账面总债务；详细WACC已有同次市场债务拆分。
-                adjustment = report.adjusted.adjusted_mv_debt - risk.mv_debt_total - split['conversion_rights_value']
-                debt_basis = 'detailed_market_debt_replaces_inclusive_book_bridge'
+            if inputs.equity_bridge is None and (risk.approach_used == 'detailed' or raw_current.mv_debt is not None):
+                # M4 already deducted the current market debt, including pure convertible debt.
+                adjustment = -split['conversion_rights_value']
+                debt_basis = 'current_market_debt_and_separate_rights'
             else:
                 adjustment = policy.book_value - split['total_market_value']
                 debt_basis = 'replace_convertible_carrying_claim_only'
             report.dcf.value_of_equity = equity+adjustment
+            report.dcf.equity_bridge_components['convertible_adjustment'] = adjustment
             report.dcf.value_per_share_pre_options = (equity+adjustment)/shares
             split.update(equity_before_revaluation=equity, equity_adjustment=adjustment,
                 equity_after_claims=equity+adjustment, shares=shares, debt_bridge_basis=debt_basis)

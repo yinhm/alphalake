@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import math
 
-from .data_dictionary import DCFResult, OptionInputs, FinalValuation, MacroInputs
+from .data_dictionary import DCFResult, OptionInputs, FinalValuation, MacroInputs, InvalidValuationInput
 
 
 def black_scholes_call(
@@ -34,8 +34,12 @@ def black_scholes_call(
     Returns:
         Call option value.
     """
-    if T <= 0 or sigma <= 0 or S <= 0:
-        return max(S - K, 0.0)  # Intrinsic value only
+    if any(not math.isfinite(v) for v in (S, K, T, r, sigma, y)) or min(S, K, T, sigma) < 0:
+        raise InvalidValuationInput('option prices, strike, life and volatility must be finite and nonnegative')
+    if T == 0:
+        return max(S - K, 0.0)
+    if sigma == 0 or K == 0 or S == 0:
+        return max(S * math.exp(-y * T) - K * math.exp(-r * T), 0.0)
 
     d1 = (math.log(S / K) + (r - y + sigma**2 / 2) * T) / (sigma * math.sqrt(T))
     d2 = d1 - sigma * math.sqrt(T)
@@ -95,21 +99,35 @@ def compute_options_and_final_value(
     sigma = option_inputs.stock_price_std_dev
     y = option_inputs.dividend_yield
 
-    # Fixed-point iteration
+    # Keep the existing equation, but never publish an unconverged result.
     call_value = 0.0
-    for _ in range(20):
+    for iteration in range(1, 21):
         adjusted_S = (S_seed * shares + call_value * warrants) / (shares + warrants)
         new_call = black_scholes_call(adjusted_S, K, T, r, sigma, y)
         if abs(new_call - call_value) < 0.01:
             call_value = new_call
             break
         call_value = new_call
+    else:
+        raise InvalidValuationInput('employee option iteration did not converge; review the selected dilution condition')
+
+    next_stock_price = (S_seed * shares + call_value * warrants) / (shares + warrants)
+    residual = abs(black_scholes_call(next_stock_price, K, T, r, sigma, y) - call_value)
+    if not math.isfinite(call_value) or residual >= 0.01 or call_value * warrants > value_of_equity_pre:
+        raise InvalidValuationInput('employee option claims exceed available equity or the iteration residual is invalid')
+    pricing = dict(adjusted_stock_price=adjusted_S, iterations=iteration, residual=residual,
+                   seed_value_per_share=S_seed)
+    if adjusted_S > 0 and K > 0 and T > 0 and sigma > 0:
+        d1 = (math.log(adjusted_S / K) + (r - y + sigma ** 2 / 2) * T) / (sigma * math.sqrt(T))
+        d2 = d1 - sigma * math.sqrt(T)
+        pricing.update(d1=d1, d2=d2, n_d1=_normal_cdf(d1), n_d2=_normal_cdf(d2))
 
     total_option_value = call_value * warrants
     adjusted_equity = value_of_equity_pre - total_option_value
     value_per_share = adjusted_equity / shares if shares > 0 else 0.0
 
     return FinalValuation(
+        option_pricing=pricing,
         call_value_per_option=call_value,
         value_of_all_options=total_option_value,
         value_per_share=value_per_share,
