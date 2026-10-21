@@ -18,6 +18,12 @@
 
 ## 职责与实际调用链
 
+`fundamental.statement_snapshot`标准宽表→`ExportFinancialSQLiteRows`批量投影→`tools.export_alphalake_sqlite`→SQLite→`data_sources.us_cn_hk_db.fetch_company/native_compatibility`→`api.database._db_record_to_company_input`→`engine.orchestrator.run_full_valuation`。
+
+AlphaLake负责单位、期间、身份、范围、缺项及确定性转换；valuation负责调整、WACC、FCFF、预测、终值与股权桥接。原生网页提交`{ticker}`；可选`risk_free_rate`为用户显式覆盖，缺省或NULL采用发布绑定的人民币融资初值，不再隐含提交美元4.25%，不新增政策文件或参数表单。外部文件/CIQ季度输入与AlphaLake标准累计输入是不同的源契约，不是旧版快照兼容路径。
+
+发布刷新将所选财报期传给`sync-financial --through`，作为源包报告期上限，先过滤再选择最近N包；采集观察时间和公告可用时间仍独立记录。较晚空包不证明所选报告期缺数据，也不因跳过空包而认证上游最新。独立源维护不提供上限时，仍保留已到期无效包的失败证据。
+
 ### 发布范围与个股缺项
 
 2026-10-21用户批准：个别证券缺数、无报价或TDX源标识不可用不阻断其他证券发布。`--published-scope`在锁内冻结现行快照的规范`instrument_id`、`ticker`和名称，经`--scope-file`交给导出；范围完整与数值齐备分开验收，不再按当日源代码清单重建发布分母。
@@ -28,12 +34,6 @@
 - 完整分母核对仍用于发现漏行、重复与串股；快照损坏、源／运行时在导出中变化、声明ready却计算失败、API与候选不一致、切换故障等停止或回滚。个股缺项不冒充此类整批故障。
 
 SQLite继续为v13，不加治理表：`metadata.publication_quality`保存来源身份数量及例外；稀疏的`input_context.market.source_identity_status`仅记录非正常源身份状态。数值和估值公式不变，原生API可直接读取紧凑上下文；完整范围绑定及来源证据留在数据侧收据。
-
-`fundamental.statement_snapshot`标准宽表→`ExportFinancialSQLiteRows`批量投影→`tools.export_alphalake_sqlite`→SQLite→`data_sources.us_cn_hk_db.fetch_company/native_compatibility`→`api.database._db_record_to_company_input`→`engine.orchestrator.run_full_valuation`。
-
-AlphaLake负责单位、期间、身份、范围、缺项及确定性转换；valuation负责调整、WACC、FCFF、预测、终值与股权桥接。原生网页提交`{ticker}`；可选`risk_free_rate`为用户显式覆盖，缺省或NULL采用发布绑定的人民币融资初值，不再隐含提交美元4.25%，不新增政策文件或参数表单。外部文件/CIQ季度输入与AlphaLake标准累计输入是不同的源契约，不是旧版快照兼容路径。
-
-发布刷新将所选财报期传给`sync-financial --through`，作为源包报告期上限，先过滤再选择最近N包；采集观察时间和公告可用时间仍独立记录。较晚空包不证明所选报告期缺数据，也不因跳过空包而认证上游最新。独立源维护不提供上限时，仍保留已到期无效包的失败证据。
 
 ## 期间与单位
 
