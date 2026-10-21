@@ -174,8 +174,8 @@ export default function ScreenPage() {
             {heading('value', '每股条件价值')}{heading('close', '来源收盘价')}{heading('difference', '描述性价差')}{heading('initial_wacc_rate', '初始WACC', 'screen-wacc')}
             <th scope="col" className="screen-review">审阅提示</th>{showAssumptions && extraColumns.map(([key, title]) => <Fragment key={key}>{heading(key, title)}</Fragment>)}</tr></thead>
           <tbody>{data.rows.map(row => <Fragment key={row.ticker}><tr>
-            <td className="screen-company"><Link to={row.url} state={{ screenReturn: location.pathname + location.search }}>{row.name}</Link><small>{row.ticker}</small>
-              <button type="button" aria-expanded={expanded === row.ticker} onClick={() => setExpanded(expanded === row.ticker ? null : row.ticker)}>详情{expanded === row.ticker ? ' −' : ' ＋'}</button></td>
+            <td className="screen-company"><div className="screen-company-heading"><Link to={row.url} state={{ screenReturn: location.pathname + location.search }}>{row.name}</Link>
+              <button type="button" aria-expanded={expanded === row.ticker} onClick={() => setExpanded(expanded === row.ticker ? null : row.ticker)}>详情{expanded === row.ticker ? ' −' : ' ＋'}</button></div><small>{row.ticker}</small></td>
             <td className="screen-industry">{row.reference_industry ?? '未知'}</td><td>{data.labels.admission[row.admission]}</td>
             <td className={`screen-number ${row.condition_value_cny_per_share !== null && row.condition_value_cny_per_share <= 0 ? 'screen-caution' : ''}`}>{money(row.condition_value_cny_per_share)}</td>
             <td className="screen-number">{money(row.close_cny)}<small>{date(row.close_date)}{row.close_date && row.close_date < Object.keys(data.dataset.quote_dates).filter(key => key !== 'unknown').sort().at(-1)! ? ' · 较旧报价' : ''}</small></td>

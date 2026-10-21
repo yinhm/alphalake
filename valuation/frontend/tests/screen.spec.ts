@@ -60,6 +60,11 @@ test('screen loads without a company; search, URL restore, pagination and report
   await expect(page.getByRole('heading',{name:'选股',exact:true})).toBeVisible();
   await expect(page).toHaveURL(/dataset=screen-test/);
   await expect(page.getByRole('table').getByRole('row')).toHaveCount(51);
+  const tableSize = await page.locator('.screen-scroll').evaluate(element => ({
+    content: element.scrollHeight, visible: element.clientHeight, viewport: window.innerHeight,
+  }));
+  expect(tableSize.content).toBeLessThanOrEqual(tableSize.visible + 1);
+  expect(tableSize.visible).toBeGreaterThan(tableSize.viewport);
   await page.getByRole('button',{name:'下一页',exact:true}).click();
   await expect(page.getByRole('table').getByRole('row')).toHaveCount(16);
   await page.getByRole('searchbox',{name:'搜索公司'}).fill('600001');

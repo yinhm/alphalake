@@ -21,14 +21,14 @@
 .screen-ranges { margin-top:12px; }.screen-ranges form { display:flex; flex-wrap:wrap; gap:16px; align-items:end; padding:16px; background:#f8fafb; border:1px solid #dce5eb; }
 .screen-ranges fieldset { display:flex; gap:6px; }.screen-ranges legend { font-size:12px; margin-bottom:8px; }.screen-ranges label { display:grid; gap:4px; font-size:11px; color:#657785; }.screen-ranges input { width:105px; }
 .screen-table-tools { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; margin:18px 0 10px; font-size:13px; }.screen-table-tools label { display:flex; align-items:center; gap:6px; }
-.screen-scroll { overflow:auto; max-height:74vh; background:white; border:1px solid #dce5eb; border-radius:8px; }
-.screen-page table { border-collapse:separate; border-spacing:0; width:100%; font-size:12px; }.screen-page :is(th,td) { padding:13px 12px; border-bottom:1px solid #e8eef1; text-align:left; vertical-align:top; min-width:110px; }
-.screen-page th { position:sticky; top:0; z-index:2; background:#eff4f6; font-weight:600; white-space:nowrap; }.screen-page th button { text-align:inherit; min-height:24px; }
-.screen-page th.screen-company { z-index:3; }.screen-page .screen-company { position:sticky; left:0; background:white; min-width:150px; max-width:210px; z-index:1; border-right:1px solid #e8eef1; }.screen-page th.screen-company { background:#eff4f6; }
-.screen-company > a { display:block; font-size:14px; font-weight:600; }.screen-company > button { font-size:11px; margin-top:6px; color:#526777; }
-.screen-page td.screen-number { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }.screen-page td > small { display:block; color:#657785; font-size:10px; margin-top:5px; }
+.screen-scroll { overflow-x:auto; background:white; border:1px solid #dce5eb; border-radius:8px; }
+.screen-page table { border-collapse:separate; border-spacing:0; width:100%; font-size:12px; line-height:1.4; }.screen-page :is(th,td) { padding:6px 8px; border-bottom:1px solid #e8eef1; text-align:left; vertical-align:middle; min-width:100px; }
+.screen-page th { background:#eff4f6; font-weight:600; white-space:nowrap; }.screen-page th button { text-align:inherit; min-height:24px; }
+.screen-page th.screen-company { z-index:3; }.screen-page .screen-company { position:sticky; left:0; background:white; min-width:144px; max-width:200px; z-index:1; border-right:1px solid #e8eef1; }.screen-page th.screen-company { background:#eff4f6; }
+.screen-company-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; }.screen-company-heading a { font-size:13px; font-weight:600; }.screen-company-heading button { flex-shrink:0; min-height:24px; padding:2px; font-size:11px; color:#526777; }
+.screen-page td.screen-number { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }.screen-page td > small { display:block; color:#657785; font-size:11px; line-height:1.3; margin-top:1px; }
 .screen-page .screen-industry { max-width:180px; }.screen-review { min-width:170px!important; max-width:230px; }
-.screen-badge { display:block; font-size:10px; padding:3px 5px; margin-bottom:4px; border-radius:3px; background:#f8f0e5; color:#815c30; }.screen-review button { font-size:11px; text-decoration:underline; }
+.screen-badge { display:block; width:fit-content; font-size:11px; line-height:1.3; padding:1px 4px; margin:1px 0; border-radius:3px; background:#f8f0e5; color:#815c30; }.screen-review button { font-size:11px; text-decoration:underline; }
 .screen-caution { color:#9a5546; }.screen-row-detail { padding:8px; font-size:12px; line-height:1.9; }.screen-row-detail p,.screen-row-detail dl { margin:10px 0; }.screen-row-detail ul { padding-left:20px; list-style:disc; }
 .screen-message { margin:20px 0; padding:20px; background:white; border:1px dashed #b9cbd6; border-radius:8px; }.screen-message button { margin-left:14px; text-decoration:underline; }
 .screen-pagination { display:flex; justify-content:center; align-items:center; gap:22px; margin:20px 0; font-size:13px; }.screen-muted { font-size:12px; color:#657785; margin-top:10px; }
