@@ -7,6 +7,22 @@ import './screen.css';
 const money = (value: number | null) => value === null ? '—' : value.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const percent = (value: number | null, scale = 100) => value === null ? '—' : `${money(value * scale)}%`;
 const date = (value: string | null) => value ?? '未知';
+const signed = (value: number | null) => value === null ? '—' : value.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: 'exceptZero' });
+const differenceBands = [
+  ['negative-large', '≤−50%'], ['negative-medium', '−50%～−20%'], ['negative-small', '−20%～0%'],
+  ['flat', '0%'], ['positive-small', '0%～+20%'], ['positive-medium', '+20%～+50%'], ['positive-large', '≥+50%'],
+];
+function differenceBand(value: number | null, nonpositive: boolean) {
+  if (value === null) return 'unavailable';
+  if (nonpositive) return 'nonpositive';
+  if (value <= -50) return 'negative-large';
+  if (value <= -20) return 'negative-medium';
+  if (value < 0) return 'negative-small';
+  if (value === 0) return 'flat';
+  if (value < 20) return 'positive-small';
+  if (value < 50) return 'positive-medium';
+  return 'positive-large';
+}
 const fields: Record<string, string> = {
   revenues: '营业收入', ebit: '息税前利润', bv_debt: '账面债务', cash_and_marketable_securities: '现金与有价证券',
   cross_holdings: '金融投资', minority_interests: '少数股东权益', mv_equity_listing: '挂牌市值', shares_outstanding: '总股本',
@@ -24,6 +40,8 @@ const extraColumns = [
   ['first_year_funding_sales_to_capital', '首年资金安排资本倍率'], ['terminal_growth_rate', '永续增长'],
   ['terminal_wacc_rate', '稳态WACC'], ['terminal_pv_share_rate', '终值现值占经营价值'],
 ];
+const primaryAssumptions = extraColumns.slice(0, 2);
+const additionalAssumptions = extraColumns.slice(2);
 
 export default function ScreenPage() {
   const [params, setParams] = useSearchParams();
@@ -125,13 +143,13 @@ export default function ScreenPage() {
     {pending && <p role="status">{data ? '正在更新筛选；下表仍为上次已完成查询结果。' : '正在读取选股结果…'}</p>}
     {data && <>
       <div className="screen-snapshot">
-        <dl><div><dt>财务基期</dt><dd>{data.dataset.financial_period}</dd></div>
+        <dl><div><dt>财务基期</dt><dd>{date(data.dataset.financial_period)}</dd></div>
           <div><dt>股本基期（家数）</dt><dd>{Object.entries(data.dataset.share_dates).map(([key, count]) => `${key === 'unknown' ? '未知' : key}（${count}）`).join('；')}</dd></div>
           <div><dt>报价交易日（家数）</dt><dd>{Object.entries(data.dataset.quote_dates).map(([key, count]) => `${key === 'unknown' ? '无合格报价' : key}（${count}）`).join('；')}</dd></div>
-          <div><dt>财务输入信息截止</dt><dd>{data.dataset.information_as_of}</dd></div>
-          <div><dt>研究冻结</dt><dd>{data.dataset.research_frozen_at}</dd></div></dl>
+          <div><dt>财务输入信息截止</dt><dd>{date(data.dataset.information_as_of)}</dd></div>
+          <div><dt>研究冻结</dt><dd>{date(data.dataset.research_frozen_at)}</dd></div></dl>
         <p>批次：{data.dataset.id} · {data.dataset.research_date ?? '研究日期未知'}。{data.dataset.condition_type}。此表沿冻结研究快照，财务库刷新不会自动重估；资本基期代理价差不代表预期收益。</p>
-        <div className="screen-links"><Link to={data.dataset.report_url}>阅读批次总览</Link><a href={data.dataset.csv_url}>下载完整批次CSV</a></div>
+        <div className="screen-links"><Link to={data.dataset.report_url}>阅读批次说明</Link>{data.dataset.csv_url && <a href={data.dataset.csv_url}>下载来源完整CSV</a>}</div>
       </div>
       <div className="screen-counts" aria-label="完整批次状态">
         <span>全部 <strong>{data.universe_count.toLocaleString()}</strong></span>
@@ -164,26 +182,42 @@ export default function ScreenPage() {
       </details>
       {Object.keys(data.range_unknown_counts).length > 0 && <p className="screen-muted">各条件排除的未知值（重叠不相加）：{Object.entries(data.range_unknown_counts).map(([key, count]) => `${ranges.find(range => range.key === key)?.label ?? key} ${count}家`).join('；')}</p>}
       <div className="screen-table-tools"><p aria-live="polite">匹配 <strong>{data.filtered_count.toLocaleString()}</strong> 家 / 完整批次 {data.universe_count.toLocaleString()} 家<small className="block text-slate-500">金额单位：人民币元／股</small></p>
-        <label><input type="checkbox" checked={showAssumptions} onChange={event => update('assumptions', event.target.checked ? '1' : null)} /> 显示关键假设</label>
+        <label><input type="checkbox" checked={showAssumptions} onChange={event => update('assumptions', event.target.checked ? '1' : null)} /> 显示更多假设</label>
         <label>每页<select value={params.get('limit') ?? '50'} onChange={event => update('limit', event.target.value)}>{[25, 50, 100].map(value => <option key={value}>{value}</option>)}</select></label>
       </div>
+      <div className="screen-difference-legend" aria-label="价差底色说明"><span>价差底色</span>{differenceBands.map(([band, label]) => <span key={band} className={`screen-gap-${band}`}>{label}</span>)}<span className="screen-gap-nonpositive">权益非正</span><span className="screen-gap-unavailable">未比较</span></div>
+      <p className="screen-muted screen-difference-note">每股差额＝条件价值－收盘价；百分比沿已保存结果。底色只表示数值区间，不代表预期收益或置信度；默认比较为资本基期代理。悬浮查看完整内容，点击行内＋展开。</p>
       {data.issues.map((item, index) => <p key={index} role="status">{item.message}</p>)}
       {!data.rows.length ? <p className="screen-message" role="status">没有匹配的公司，请调整或重置筛选条件。</p> : <div className="screen-scroll" tabIndex={0} role="region" aria-busy={pending} aria-label="选股结果表，可横向滚动">
         <table><caption className="sr-only">冻结批次条件估值。表头按钮可排序；金额为人民币元每股，非实时行情。</caption>
-          <thead><tr>{heading('ticker', '公司／代码', 'screen-company')}<th scope="col" className="screen-industry">估值参考行业</th><th scope="col">计算状态</th>
-            {heading('value', '每股条件价值')}{heading('close', '来源收盘价')}{heading('difference', '描述性价差')}{heading('initial_wacc_rate', '初始WACC', 'screen-wacc')}
-            <th scope="col" className="screen-review">审阅提示</th>{showAssumptions && extraColumns.map(([key, title]) => <Fragment key={key}>{heading(key, title)}</Fragment>)}</tr></thead>
-          <tbody>{data.rows.map(row => <Fragment key={row.ticker}><tr>
-            <td className="screen-company"><div className="screen-company-heading"><Link to={row.url} state={{ screenReturn: location.pathname + location.search }}>{row.name}</Link>
-              <button type="button" aria-expanded={expanded === row.ticker} onClick={() => setExpanded(expanded === row.ticker ? null : row.ticker)}>详情{expanded === row.ticker ? ' −' : ' ＋'}</button></div><small>{row.ticker}</small></td>
-            <td className="screen-industry">{row.reference_industry ?? '未知'}</td><td>{data.labels.admission[row.admission]}</td>
-            <td className={`screen-number ${row.condition_value_cny_per_share !== null && row.condition_value_cny_per_share <= 0 ? 'screen-caution' : ''}`}>{money(row.condition_value_cny_per_share)}</td>
-            <td className="screen-number">{money(row.close_cny)}<small>{date(row.close_date)}{row.close_date && row.close_date < Object.keys(data.dataset.quote_dates).filter(key => key !== 'unknown').sort().at(-1)! ? ' · 较旧报价' : ''}</small></td>
-            <td className="screen-number">{percent(row.descriptive_difference_pct, 1)}<small title={row.comparison_display_reason}>{data.labels.comparison[row.comparison_display_status]}</small></td>
+          <thead><tr>{heading('ticker', '公司／代码', 'screen-company')}<th scope="col" className="screen-industry">估值参考行业</th><th scope="col" className="screen-status">计算状态</th>
+            {heading('value', '每股条件价值', 'screen-value')}{heading('close', '来源收盘价')}<th scope="col" title="每股条件价值减来源收盘价；仅在来源已允许比较时显示">每股差额</th>{heading('difference', '描述性价差')}
+            {primaryAssumptions.map(([key, title]) => <Fragment key={key}>{heading(key, title, 'screen-assumption')}</Fragment>)}{heading('initial_wacc_rate', '初始WACC', 'screen-wacc')}
+            <th scope="col" className="screen-review">审阅提示</th>{showAssumptions && additionalAssumptions.map(([key, title]) => <Fragment key={key}>{heading(key, title)}</Fragment>)}</tr></thead>
+          <tbody>{data.rows.map(row => {
+            const nonpositive = row.condition_value_cny_per_share !== null && row.condition_value_cny_per_share <= 0;
+            const comparable = row.comparison_display_status === 'capital_date_proxy' && row.descriptive_difference_pct !== null
+              && row.condition_value_cny_per_share !== null && row.close_cny !== null && row.close_cny > 0;
+            const difference = comparable ? row.descriptive_difference_pct : null;
+            const amount = comparable ? row.condition_value_cny_per_share! - row.close_cny! : null;
+            const gapClass = `screen-number screen-gap-${differenceBand(difference, nonpositive)}`;
+            const comparison = `${data.labels.comparison[row.comparison_display_status] ?? '不支持的比较状态'}：${row.comparison_display_reason}${nonpositive ? '；条件权益非正，不代表股票可交易的负价格或确定亏损。' : ''}`;
+            const review = row.review_flags.map(flag => data.labels.flag[flag]).join('；');
+            const quote = `收盘交易日：${date(row.close_date)}${row.close_date && row.close_date < Object.keys(data.dataset.quote_dates).filter(key => key !== 'unknown').sort().at(-1)! ? ' · 较旧报价' : ''}`;
+            return <Fragment key={row.ticker}><tr>
+            <td className="screen-company"><div className="screen-company-heading"><small title={row.ticker}>{row.ticker.split(':')[1]}</small><Link title={`${row.name} · ${row.ticker}`} to={row.url} state={{ screenReturn: location.pathname + location.search }}>{row.name}</Link>
+              <button type="button" aria-label={`详情${expanded === row.ticker ? ' −' : ' ＋'}`} title={expanded === row.ticker ? '收起详情' : '展开完整数据与适用边界'} aria-expanded={expanded === row.ticker} onClick={() => setExpanded(expanded === row.ticker ? null : row.ticker)}>{expanded === row.ticker ? '−' : '＋'}</button></div></td>
+            <td className="screen-industry"><span className="screen-ellipsis" title={row.reference_industry ?? '未知'}>{row.reference_industry ?? '未知'}</span></td><td className="screen-status" title={`${data.labels.admission[row.admission]}：${row.reason}`}>{data.labels.admission[row.admission]}</td>
+            <td className={`screen-number screen-value ${nonpositive ? 'screen-caution' : ''}`} title={`每股条件价值：${money(row.condition_value_cny_per_share)} 元${nonpositive ? '；条件权益非正' : ''}`}>{money(row.condition_value_cny_per_share)}</td>
+            <td className="screen-number" title={quote}>{money(row.close_cny)}{quote.includes('较旧报价') && <span className="screen-old-quote" aria-label="较旧报价">旧</span>}</td>
+            <td className={gapClass} title={`每股差额：${signed(amount)} 元；${comparison}`}>{signed(amount)}</td>
+            <td className={gapClass} title={comparison}>{difference === null ? <span className="screen-ellipsis">{data.labels.comparison[row.comparison_display_status] ?? '未比较'}</span> : `${signed(difference)}%`}</td>
+            {primaryAssumptions.map(([key]) => <td className="screen-number screen-assumption" key={key} title={row.assumption_missing_reasons[key]}>{percent(row.assumptions[key])}</td>)}
             <td className="screen-number screen-wacc" title={row.assumption_missing_reasons.initial_wacc_rate}>{percent(row.assumptions.initial_wacc_rate)}</td>
-            <td className="screen-review">{row.review_flags.slice(0, 2).map(flag => <span className="screen-badge" key={flag}>{data.labels.flag[flag]}</span>)}{row.review_flags.length > 2 && <button onClick={() => setExpanded(row.ticker)}>另{row.review_flags.length - 2}项</button>}{!row.review_flags.length && '—'}</td>
-            {showAssumptions && extraColumns.map(([key]) => <td className="screen-number" key={key} title={row.assumption_missing_reasons[key]}>{key === 'first_year_funding_sales_to_capital' ? money(row.assumptions[key]) : percent(row.assumptions[key])}</td>)}
-          </tr>{expanded === row.ticker && <tr><td colSpan={8 + (showAssumptions ? extraColumns.length : 0)}><RowDetails row={row} data={data} /></td></tr>}</Fragment>)}</tbody>
+            <td className="screen-review">{review ? <button className="screen-ellipsis screen-review-summary" title={review} onClick={() => setExpanded(row.ticker)}>{data.labels.flag[row.review_flags[0]]}{row.review_flags.length > 1 ? ` +${row.review_flags.length - 1}` : ''}</button> : '—'}</td>
+            {showAssumptions && additionalAssumptions.map(([key]) => <td className="screen-number" key={key} title={row.assumption_missing_reasons[key]}>{key === 'first_year_funding_sales_to_capital' ? money(row.assumptions[key]) : percent(row.assumptions[key])}</td>)}
+          </tr>{expanded === row.ticker && <tr><td colSpan={11 + (showAssumptions ? additionalAssumptions.length : 0)}><RowDetails row={row} data={data} /></td></tr>}</Fragment>;
+          })}</tbody>
         </table>
       </div>}
       <nav className="screen-pagination" aria-label="选股分页"><button disabled={data.offset === 0} onClick={() => update('offset', String(Math.max(0, data.offset - data.limit)), true)}>上一页</button>
@@ -195,7 +229,7 @@ export default function ScreenPage() {
 
 function RowDetails({ row, data }: { row: ScreenRow; data: ScreenResults }) {
   const location = useLocation();
-  const facts = { 估值参考行业: row.reference_industry ?? '未知', 初始WACC: percent(row.assumptions.initial_wacc_rate),
+  const facts = { 证券代码: row.ticker, 估值参考行业: row.reference_industry ?? '未知', 每股条件价值: money(row.condition_value_cny_per_share), 来源收盘价: money(row.close_cny), 报价交易日: date(row.close_date), 初始WACC: percent(row.assumptions.initial_wacc_rate),
     ...Object.fromEntries(extraColumns.map(([key, label]) => [label, key === 'first_year_funding_sales_to_capital' ? money(row.assumptions[key]) : percent(row.assumptions[key])])),
     财务基期: row.financial_period, 股本基期: date(row.share_date), 信息截止: row.information_as_of,
     研究冻结: row.research_frozen_at, 条件类型: row.mode ? data.dataset.condition_type : '未生成估值', 参考版本: data.dataset.reference_snapshot_id,
@@ -206,7 +240,7 @@ function RowDetails({ row, data }: { row: ScreenRow; data: ScreenResults }) {
     <p>{row.comparison_display_reason}</p>
     {row.review_flags.length > 0 && <ul>{row.review_flags.map(flag => <li key={flag}>{data.labels.flag[flag]}</li>)}</ul>}
     {Object.entries(row.assumption_missing_reasons).length > 0 && <p>假设缺项：{Object.entries(row.assumption_missing_reasons).map(([key, reason]) => `${key === 'initial_wacc_rate' ? '初始WACC' : extraColumns.find(([id]) => id === key)?.[1] ?? key}：${reason}`).join('；')}</p>}
-    <dl>{Object.entries(facts).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+    <dl>{Object.entries(facts).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value ?? '未记录'}</dd></div>)}</dl>
     <p>原价格比较状态：{data.labels.comparison[row.price_comparison_status] ?? row.price_comparison_status}。{row.price_comparison_reason}</p>
     <Link to={row.url} state={{ screenReturn: location.pathname + location.search }}>阅读完整研究报告 →</Link>
   </div>;

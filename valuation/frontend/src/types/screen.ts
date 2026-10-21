@@ -1,9 +1,9 @@
 export interface ScreenDataset {
-  id: string; title: string; source_report_id: string; report_url: string; csv_url: string;
-  research_date: string | null; financial_period: string; information_as_of: string;
-  research_frozen_at: string; company_evidence_acquired_at: string;
+  id: string; title: string; source_report_id: string; report_url: string; csv_url: string | null;
+  research_date: string | null; financial_period: string | null; information_as_of: string | null;
+  research_frozen_at: string | null; company_evidence_acquired_at: string | null;
   share_dates: Record<string, number>; quote_dates: Record<string, number>;
-  condition_type: string; sqlite_sha256: string; reference_snapshot_id: string;
+  condition_type: string; sqlite_sha256: string | null; reference_snapshot_id: string | null;
   runtime_stages: Record<string, string>; build_version: string; built_at: string;
   limitations: string[]; content_hash: string;
 }
@@ -14,10 +14,10 @@ export interface ScreenRow {
   report_id: string; url: string; mode: string | null;
   condition_value_cny_per_share: number | null; close_cny: number | null; close_date: string | null;
   descriptive_difference_pct: number | null; price_comparison_status: string; price_comparison_reason: string;
-  financial_period: string; share_date: string | null; information_as_of: string; research_frozen_at: string;
-  run_id: string; assumptions: Record<string, number | null>; assumption_missing_reasons: Record<string, string>;
+  financial_period: string | null; share_date: string | null; information_as_of: string | null; research_frozen_at: string | null;
+  run_id: string | null; assumptions: Record<string, number | null>; assumption_missing_reasons: Record<string, string>;
   review_flags: string[]; comparison_display_status: string; comparison_display_reason: string;
-  model_source: { path: string; sha256: string };
+  model_source: { path: string | null; sha256: string | null };
 }
 
 export interface ScreenCatalog {

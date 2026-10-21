@@ -15,7 +15,8 @@ from .research_reports import IDENTIFIER, ResearchError
 
 CONTRACT = 'alphalake-valuation-results-v1'
 ADMISSIONS = {'ready': '已计算', 'blocked_required_inputs': '缺财务输入',
-              'requires_scope_review': '待范围审核', 'outside_product_scope': '产品范围外'}
+              'requires_scope_review': '待范围审核', 'outside_product_scope': '产品范围外',
+              'not_calculated': '本情景未计算'}
 FLAGS = {'nonpositive_equity_condition': '条件权益非正',
          'capital_release_requires_recoverability_basis': '资本释放缺回收依据',
          'capitalized_research_without_explicit_future_tax_path': '未供未来研发税务路径',

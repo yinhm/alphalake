@@ -133,6 +133,48 @@ def test_projection_keeps_zero_negative_missing_and_frozen_versions(workspace, p
     assert tool.build('all-test', 'first', activate=True)['sha256'] == receipt['sha256']
 
 
+def imported_projection(root):
+    body = tool.project('all-test', 'imported')
+    report = tool.read_report('all-test')
+    entry = next(entry for entry in report.files if entry.id == 'results')
+    body['dataset']['source_files'] = [dict(report_id=report.id, file_id=entry.id, sha256=entry.sha256)]
+    return body
+
+
+def test_import_current_snapshot_preserves_sources_versions_and_current_choice(workspace, published):
+    body = imported_projection(workspace)
+    path = workspace / 'derived' / 'snapshot.json'
+    save(path, body)
+    result = tool.import_snapshot(path)
+    assert result['current'] == 'first'
+    actual, _, _ = source.load_dataset('imported')
+    assert actual == body
+    assert tool.import_snapshot(path)['sha256'] == result['sha256']
+    assert {item['id'] for item in source.datasets()['datasets']} == {'first', 'imported'}
+    assert actual['rows'][0]['condition_value_cny_per_share'] == 0
+    assert actual['dataset']['runtime_stages']['calculation'] == 'frozen-calc'
+
+
+@pytest.mark.parametrize('change', [
+    lambda body: body['dataset']['source_files'][0].update(sha256='0' * 64),
+    lambda body: body.update(universe_count=99),
+    lambda body: body['rows'][1].update(ticker=body['rows'][0]['ticker']),
+    lambda body: body['rows'][0].update(admission='not_calculated'),
+    lambda body: body['rows'][0].update(comparison_display_status='unreconciled_post_period_capital_change'),
+    lambda body: body['rows'][0].update(url='/research/wrong'),
+    lambda body: body['rows'][0]['model_source'].update(sha256='0' * 64),
+])
+def test_import_rejects_changed_sources_denominators_and_invalid_comparisons(workspace, published, change):
+    body = imported_projection(workspace)
+    change(body)
+    path = workspace / 'derived' / 'bad-snapshot.json'
+    save(path, body)
+    with pytest.raises(ValueError):
+        tool.import_snapshot(path)
+    assert source.registry()['current'] == 'first'
+    assert 'imported' not in source.registry()['datasets']
+
+
 def test_queries_use_only_published_projection_and_do_not_mutate_cache(published, client, monkeypatch):
     monkeypatch.setattr(tool, 'registered_json', lambda *args: pytest.fail('查询不得重新扫描模型'))
     result = client.get('/api/valuation-results/first?q=６００００１').json()

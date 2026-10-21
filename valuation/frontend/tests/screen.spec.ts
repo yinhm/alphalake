@@ -20,6 +20,12 @@ const rows: ScreenRow[] = Array.from({length:65},(_,index)=>({
   assumption_missing_reasons:{},review_flags:index===0?['nonpositive_equity_condition']:[],comparison_display_status:index===2?'not_calculated':index===1?'unreconciled_post_period_capital_change':'capital_date_proxy',
   comparison_display_reason:'合成边界',model_source:{path:'research/test-company/valuation.json',sha256:'a'.repeat(64)},
 }));
+// 覆盖各底色边界；数字是合成展示用例，不是公司预测。
+[5, 8, 9, 10, 11, 12, 15].forEach((value, index) => {
+  rows[index + 3].condition_value_cny_per_share = value;
+  rows[index + 3].descriptive_difference_pct = [-50, -20, -10, 0, 10, 20, 50][index];
+});
+rows[4].reference_industry = 'Synthetic industry with a very long description that must stay on one line';
 const labels = {admission:{ready:'已计算',blocked_required_inputs:'缺财务输入',requires_scope_review:'待范围审核',outside_product_scope:'产品范围外'},
   flag:{nonpositive_equity_condition:'条件权益非正'},comparison:{capital_date_proxy:'资本基期代理',unreconciled_post_period_capital_change:'期后资本变化未衔接',not_calculated:'未计算／未比较'}};
 
@@ -96,9 +102,10 @@ test('numeric percent units, multi filters, assumptions, null comparison and rea
   await expect.poll(()=>queries.at(-1)?.get('wacc_max_rate')).toBe('0.1');
   expect(queries.at(-1)?.get('difference_min_pct')).toBe('20');
   // URL状态通过路由transition提交；检查提交后的复选状态。
-  await page.getByLabel('显示关键假设').click();
-  await expect(page.getByLabel('显示关键假设')).toBeChecked();
-  await expect(page.getByRole('columnheader',{name:'首年增长'})).toBeVisible();
+  await expect(page.getByRole('columnheader',{name:/首年增长/})).toBeVisible();
+  await page.getByLabel('显示更多假设').click();
+  await expect(page.getByLabel('显示更多假设')).toBeChecked();
+  await expect(page.getByRole('columnheader',{name:/永续增长/})).toBeVisible();
   await page.getByRole('button',{name:/每股条件价值/}).click();
   await expect(page.getByRole('columnheader',{name:/每股条件价值/})).toHaveAttribute('aria-sort','ascending');
   await page.getByRole('button',{name:/每股条件价值/}).click();
@@ -112,6 +119,38 @@ test('numeric percent units, multi filters, assumptions, null comparison and rea
   await expect(page.getByRole('checkbox',{name:/缺财务输入/})).toBeChecked();
   await expect.poll(()=>queries.at(-1)?.getAll('admission').length).toBe(2);
   expect(unexpected).toEqual([]);
+});
+
+test('single-line rows show signed gaps, distinct bands and full hover information without inventing comparisons', async ({page}) => {
+  await mock(page);
+  await page.goto('/screen?dataset=screen-test');
+  await expect(page.getByRole('table').getByRole('row')).toHaveCount(51);
+  const row = (name: string) => page.getByRole('row').filter({has:page.getByRole('link',{name,exact:true})});
+  const zero = row('合成公司1');
+  await expect(zero.getByRole('cell',{name:'-10.00',exact:true})).toHaveClass(/screen-gap-nonpositive/);
+  await expect(zero.getByRole('cell',{name:'-100.00%',exact:true})).toHaveClass(/screen-gap-nonpositive/);
+  await expect(row('合成公司2').getByRole('cell',{name:'期后资本变化未衔接',exact:true})).toHaveClass(/screen-gap-unavailable/);
+  await expect(row('合成公司2')).not.toContainText('+90.00');
+  await expect(row('合成公司3')).not.toContainText('-10.00');
+  for (const [index, band, amount, pct] of [
+    [4, 'negative-large', '-5.00', '-50.00%'], [5, 'negative-medium', '-2.00', '-20.00%'],
+    [6, 'negative-small', '-1.00', '-10.00%'], [7, 'flat', '0.00', '0.00%'],
+    [8, 'positive-small', '+1.00', '+10.00%'], [9, 'positive-medium', '+2.00', '+20.00%'],
+    [10, 'positive-large', '+5.00', '+50.00%'],
+  ] as const) {
+    const cells = row(`合成公司${index}`).locator(`.screen-gap-${band}`);
+    await expect(cells).toHaveCount(2);
+    await expect(cells.nth(0)).toHaveText(amount);
+    await expect(cells.nth(1)).toHaveText(pct);
+  }
+  await expect(row('合成公司5').locator('.screen-industry span')).toHaveAttribute('title', rows[4].reference_industry!);
+  await expect(zero.locator('td').nth(4)).toHaveAttribute('title', '收盘交易日：2026-10-20');
+  const geometry = await page.locator('tbody > tr').evaluateAll(elements => elements.map(element => element.getBoundingClientRect().height));
+  expect(Math.max(...geometry)).toBeLessThanOrEqual(36);
+  expect(await row('合成公司5').locator('.screen-industry span').evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true);
+  await zero.getByRole('button',{name:'详情 ＋'}).click();
+  await expect(page.locator('.screen-row-detail')).toContainText('报价交易日');
+  await expect(page.locator('.screen-row-detail')).toContainText('SHSE:600001');
 });
 
 test('mobile details expose hidden columns, keyboard works, empty/error states are explicit',async({page})=>{

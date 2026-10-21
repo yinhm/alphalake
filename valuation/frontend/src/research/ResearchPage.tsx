@@ -47,7 +47,8 @@ function ResearchList() {
   };
   return <div className="research-page">
     <header className="research-header"><p className="research-eyebrow">ALPHALAKE · RESEARCH</p><h1>研究报告</h1>
-      <p>阅读公司研究、经营论点、条件估值及独立模型。每份报告保留原始时点、假设与限制。</p></header>
+      <p>阅读公司研究、经营论点、条件估值及独立模型。每份报告保留原始时点、假设与限制。</p>
+      <Link to="/screen">查看全部估值覆盖与价差表 →</Link></header>
     <form className="research-filters" onSubmit={event => event.preventDefault()} role="search">
       <label>搜索研究<input type="search" value={q} onChange={event => update(event.target.value, kind)}
         placeholder="公司、证券代码或研究主题" maxLength={160} /></label>
@@ -94,7 +95,7 @@ function ResearchArticle({ id }: { id: string }) {
   }, [id, selected, attempt]);
   const current = detail?.report.id === id && detail.document.id === (selected || detail.report.report_file) ? detail : null;
   return <div className="research-page">{typeof screenReturn === 'string' && (screenReturn === '/screen' || screenReturn.startsWith('/screen?')) &&
-    <Link to={screenReturn} className="research-back">← 返回选股列表</Link>} <Link to="/research" className="research-back">← 返回研究目录</Link>
+    <Link to={screenReturn} className="research-back">← 返回选股列表</Link>} <Link to="/research" className="research-back">← 返回研究目录</Link> <Link to="/screen" className="research-back">估值覆盖总览</Link>
     {error ? <RequestError message={error} retry={() => setAttempt(value => value + 1)} />
       : !current ? <p role="status">正在读取研究报告…</p> : <>
         <header className="research-header"><p className="research-eyebrow">{RESEARCH_KINDS[current.report.kind]}</p><h1>{current.report.title}</h1>

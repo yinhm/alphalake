@@ -179,8 +179,8 @@ def atomic_json(path, body):
     return hashlib.sha256(encoded).hexdigest()
 
 
-def build(report_id, dataset_id, activate=False):
-    body = project(report_id, dataset_id)
+def publish_projection(body, activate=False):
+    dataset_id = body['dataset']['id']
     target = result_path(dataset_id, 'index.json')
     result_path().mkdir(parents=True, exist_ok=True)
     with result_path('publish.lock').open('a') as lock:
@@ -204,6 +204,78 @@ def build(report_id, dataset_id, activate=False):
                 current=records['current'], url='/screen?dataset=' + dataset_id)
 
 
+def build(report_id, dataset_id, activate=False):
+    return publish_projection(project(report_id, dataset_id), activate)
+
+
+def import_snapshot(path, activate=False):
+    """显式导入已按当前消费契约转换的摘要；HTTP不解析历史格式。"""
+    body, _ = read_json(path)
+    checked(body.get('contract') == CONTRACT, '只接受当前选股消费契约')
+    metadata = body['dataset']
+    checked(re.fullmatch(IDENTIFIER, metadata['id']), '摘要ID不合格')
+    report = read_report(metadata['source_report_id'])
+    checked(metadata['report_url'] == '/research/' + report.id, '总览链接与登记不一致')
+    sources = metadata.get('source_files')
+    checked(isinstance(sources, list) and sources, '导入摘要必须列明已登记来源')
+    source_hashes = set()
+    for reference in sources:
+        entry, _ = verified_file(read_report(reference['report_id']), reference['file_id'])
+        checked(entry.sha256 == reference['sha256'], '转换来源哈希与登记不一致')
+        source_hashes.add(entry.sha256)
+    checked(metadata['source_result_sha256'] in source_hashes, '结果来源未登记')
+    checked(metadata['source_manifest_sha256'] == hashlib.sha256(
+        workspace_path('research', report.id, 'research.json').read_bytes()).hexdigest(), '研究登记发生变化')
+    checked(set(('title', 'csv_url', 'research_date', 'financial_period', 'information_as_of', 'research_frozen_at',
+                 'company_evidence_acquired_at', 'condition_type', 'sqlite_sha256', 'reference_snapshot_id',
+                 'runtime_stages', 'build_version', 'built_at', 'limitations')) <= metadata.keys(), '缺少批次上下文')
+    if metadata['csv_url'] is not None:
+        checked(any(metadata['csv_url'] == f'/api/research/{report.id}/files/{entry.id}?download=true'
+                    and entry.path.endswith('.csv') for entry in report.files), 'CSV不是本总览登记文件')
+    rows = body['rows']
+    checked(isinstance(rows, list) and body['universe_count'] == len(rows)
+            and len({row['ticker'] for row in rows}) == len(rows), '转换证券分母或重复代码有误')
+    required = set(BASE_FIELDS) | {'assumptions', 'assumption_missing_reasons', 'review_flags',
+                                 'comparison_display_status', 'comparison_display_reason', 'model_source'}
+    reports = {report.id: report}
+    for row in rows:
+        checked(required <= row.keys(), '转换行缺少当前契约字段')
+        checked(re.fullmatch(r'(SHSE|SZSE):[0-9]{6}', row['ticker']) and row['admission'] in ADMISSIONS,
+                '转换行证券或计算状态无效')
+        checked(row['comparison_display_status'] in COMPARISONS and row['price_comparison_status'] in COMPARISONS,
+                '转换行比较状态无效')
+        checked(set(row['assumptions']) == set(ASSUMPTIONS) and set(row['review_flags']) <= set(FLAGS),
+                '转换行假设或提示不符合当前契约')
+        for key in ('condition_value_cny_per_share', 'close_cny', 'descriptive_difference_pct'):
+            number(row[key])
+        for value in row['assumptions'].values():
+            number(value)
+        checked((row['admission'] == 'ready') == (row['condition_value_cny_per_share'] is not None),
+                '转换行数值与计算状态不一致')
+        if row['descriptive_difference_pct'] is not None:
+            checked(row['comparison_display_status'] == 'capital_date_proxy'
+                    and row['condition_value_cny_per_share'] is not None and row['close_cny'] is not None
+                    and row['close_cny'] > 0, '不得发布不适用的价差')
+        target = reports.get(row['report_id'])
+        if target is None:
+            target = reports[row['report_id']] = read_report(row['report_id'])
+        checked(row['url'] == '/research/' + target.id
+                and (not target.tickers or row['ticker'] in target.tickers), '转换行报告身份不一致')
+        model = row['model_source']
+        checked((model['path'] is None) == (model['sha256'] is None), '模型定位与哈希必须同时存在或同时未知')
+        if model['path'] is not None:
+            entry = next((entry for entry in target.files if entry.path == model['path']), None)
+            checked(entry is not None and entry.sha256 == model['sha256'], '模型哈希与报告登记不一致')
+            verified_file(target, entry.id)
+    checked(body['admission_counts'] == dict(Counter(row['admission'] for row in rows)), '转换状态计数不一致')
+    checked(body['review_flag_counts'] == dict(Counter(flag for row in rows for flag in row['review_flags'])),
+            '转换提示计数不一致')
+    for field, key in (('share_dates', 'share_date'), ('quote_dates', 'close_date')):
+        checked(metadata[field] == dict(Counter(row[key] or 'unknown' for row in rows)), '转换日期分母不一致')
+    checked(isinstance(body['issues'], list), '转换诊断必须保留')
+    return publish_projection(body, activate)
+
+
 def activate(identifier):
     from data_sources.valuation_results import load_dataset
     with result_path('publish.lock').open('a') as lock:
@@ -224,6 +296,9 @@ def main():
     create.add_argument('report_id')
     create.add_argument('--dataset-id', required=True)
     create.add_argument('--activate', action='store_true')
+    ingest = commands.add_parser('import-snapshot', help='导入显式转换成当前选股契约的摘要；不解析历史格式')
+    ingest.add_argument('snapshot', type=Path)
+    ingest.add_argument('--activate', action='store_true')
     switch = commands.add_parser('activate')
     switch.add_argument('dataset_id')
     args = parser.parse_args()
@@ -233,6 +308,8 @@ def main():
             result = dict(count=len(body['rows']), rows=body['rows'])
         elif args.command == 'build':
             result = build(args.report_id, args.dataset_id, args.activate)
+        elif args.command == 'import-snapshot':
+            result = import_snapshot(args.snapshot, args.activate)
         else:
             activate(args.dataset_id)
             result = dict(current=args.dataset_id)
