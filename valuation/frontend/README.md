@@ -1,15 +1,15 @@
 # AlphaLake 网页
 
-TDX SQLite快照的使用、数据边界及重建命令见[导出与网页估值](../../docs/guides/valuation-sqlite-export.md)。已恢复原页面/导航和原数据库请求，移除专用政策UI与TDX结果页。当前TDX快照未通过原生数据契约，API明确报告阻断；原模型的手工输入与交互保留。
+原生估值保留既有编辑流程；`/research`阅读公司与专题报告，`/screen`统一覆盖总览，另有`/macro`和`/knowledge`。当前范围及数据状态只查[项目状态](../../docs/implementation-status.md)，SQLite/API见[数据契约](../../docs/valuation/data-contract.md)。
 
-构建：`npm ci`后执行`npm run build`，CI执行同样检查。当前前端无新增依赖。
+在本目录执行`npm ci`、`npm run dev`。`npm run build`只生成`workspace/derived/frontend-candidate`及Vite依赖清单，**不会替换正在服务的网页**。从项目根目录发布已验收的候选：
 
-浏览器验收脚本为`tests/tdx-sqlite.smoke.cjs`。它启动临时本地后端并在结束后关闭；先构建前端，准备含安克与茅台的v2 SQLite，再在独立内存受限服务中运行`node valuation/frontend/tests/tdx-sqlite.smoke.cjs`（从仓库根目录）。需要：
+```bash
+PYTHONPATH=valuation/backend .venv/bin/python -m tools.publish_frontend
+```
 
-- `US_CN_HK_DB_PATH`：待验收SQLite绝对路径。
-- `ALPHALAKE_TEST_PYTHON`：已安装后端依赖的Python解释器。
-- `ALPHALAKE_PLAYWRIGHT_MODULE`：已有`playwright-core`模块的绝对路径；未设置则按Node正常模块查找。
-- `ALPHALAKE_CHROMIUM_PATH`：已安装Chromium程序路径；未设置则使用Playwright已安装浏览器。
-- 可选`ALPHALAKE_SCREENSHOT`：截图保存路径。
+构建、测试及发布按[隔离与发布约定](../../docs/guides/system-delivery.md#前端构建与发布)执行。发布器先验证全部静态／动态依赖，补齐散列资源后原子替换HTML；保留已发布资源供旧页面继续切页，禁止整目录替换后删除旧资源。回滚HTML及发布收据在`workspace/derived/frontend-publication`。
 
-检查三家真实快照的原请求格式、无需政策UI、数据不足拒绝；另用原内置示例验证原页面及导航。示例已修复四季度不足以旋转H1 TTM的问题，使用完整年度输入；演示成功不冒称TDX接入完成。浏览器依赖不属于应用运行依赖；本地已运行此检查，CI当前覆盖Python链路与前端构建，不声称CI已运行浏览器。
+HTML不缓存，散列资源长期缓存，文本响应gzip压缩。读取研究／宏观／选股不加载未使用的估值页面；页面资源加载失败由用户明确刷新，不自动重载并丢弃手工输入。
+
+浏览器回归用`npx playwright test`，期间冻结前端源码、样式和本目录文档，避免Vite／Tailwind热更新刷新测试中的页面。真实数据验收使用[数据发布手册](../../docs/guides/system-delivery.md)；合成测试通过不代替真实SQLite及研究目录验收。前端构建不增加依赖，也不改变估值公式或假设。早期v2 SQLite烟测说明已随契约演进退出当前操作入口，冻结验收仍按原提交复验。

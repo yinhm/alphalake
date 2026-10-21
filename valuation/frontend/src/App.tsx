@@ -2,30 +2,33 @@ import { Routes, Route, useLocation, Navigate, Link } from 'react-router-dom';
 import { useState, useCallback, lazy, Suspense } from 'react';
 import Sidebar from './components/Sidebar';
 import ErrorBoundary from './components/ErrorBoundary';
-import OnboardingWizard from './components/OnboardingWizard';
-import InputSheet from './pages/InputSheet';
-import ValuationOutput from './pages/ValuationOutput';
-import SummarySheet from './pages/SummarySheet';
-import RelativeValuation from './pages/RelativeValuation';
-import StoriesToNumbers from './pages/StoriesToNumbers';
-import ValuationPicture from './pages/ValuationPicture';
-import Diagnostics from './pages/Diagnostics';
-import OptionValue from './pages/OptionValue';
-import SyntheticRating from './pages/SyntheticRating';
-import RDConverter from './pages/RDConverter';
-import LeaseConverter from './pages/LeaseConverter';
-import CostOfCapital from './pages/CostOfCapital';
-import FailureRate from './pages/FailureRate';
-import TrailingTwelveMonth from './pages/TrailingTwelveMonth';
-import AnswerKeys from './pages/AnswerKeys';
-import AdminDataSources from './pages/AdminDataSources';
-import ResearchPage from './research/ResearchPage';
 import CurrencyBanner from './components/CurrencyBanner';
 import UnresolvedFieldsPanel from './components/UnresolvedFieldsPanel';
 import type { ValuationResponse } from './types/valuation';
 import { createValuation, patchValuation, downloadFullWorkbook, apiErrorMessage, type PatchValue } from './api/client';
-import { KnowledgeProvider, KnowledgePanel, KnowledgePage, useKnowledge } from './knowledge';
+import { KnowledgeProvider } from './knowledge/KnowledgeProvider';
+import { KnowledgePanel } from './knowledge/KnowledgePanel';
+import { useKnowledge } from './knowledge/context';
 
+const OnboardingWizard = lazy(() => import('./components/OnboardingWizard'));
+const InputSheet = lazy(() => import('./pages/InputSheet'));
+const ValuationOutput = lazy(() => import('./pages/ValuationOutput'));
+const SummarySheet = lazy(() => import('./pages/SummarySheet'));
+const RelativeValuation = lazy(() => import('./pages/RelativeValuation'));
+const StoriesToNumbers = lazy(() => import('./pages/StoriesToNumbers'));
+const ValuationPicture = lazy(() => import('./pages/ValuationPicture'));
+const Diagnostics = lazy(() => import('./pages/Diagnostics'));
+const OptionValue = lazy(() => import('./pages/OptionValue'));
+const SyntheticRating = lazy(() => import('./pages/SyntheticRating'));
+const RDConverter = lazy(() => import('./pages/RDConverter'));
+const LeaseConverter = lazy(() => import('./pages/LeaseConverter'));
+const CostOfCapital = lazy(() => import('./pages/CostOfCapital'));
+const FailureRate = lazy(() => import('./pages/FailureRate'));
+const TrailingTwelveMonth = lazy(() => import('./pages/TrailingTwelveMonth'));
+const AnswerKeys = lazy(() => import('./pages/AnswerKeys'));
+const AdminDataSources = lazy(() => import('./pages/AdminDataSources'));
+const ResearchPage = lazy(() => import('./research/ResearchPage'));
+const KnowledgePage = lazy(() => import('./knowledge/KnowledgePage').then(module => ({ default: module.KnowledgePage })));
 const MacroPage = lazy(() => import('./macro/MacroPage'));
 const ScreenPage = lazy(() => import('./screen/ScreenPage'));
 
@@ -96,6 +99,7 @@ export default function App() {
       <Sidebar />
       <main className="min-w-0 flex-1 p-3 md:p-6 overflow-auto" data-knowledge-scope>
         <KnowledgeToolbar />
+        <ErrorBoundary resetKey={pathname}><Suspense fallback={<p role="status">正在加载页面…</p>}>
         {isScreenRoute ? (
           <ErrorBoundary resetKey={pathname}><Suspense fallback={<p role="status">正在加载选股页面…</p>}><ScreenPage /></Suspense></ErrorBoundary>
         ) : isMacroRoute ? (
@@ -175,6 +179,7 @@ export default function App() {
             />
           </>
         )}
+        </Suspense></ErrorBoundary>
       </main>
       <KnowledgePanel />
     </div>

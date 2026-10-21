@@ -75,6 +75,10 @@ async function mock(page: Page, total = 1, tickers = report.tickers) {
 
 test('research is independent of company loading; search, category, pagination and back restore the requested list', async ({ page }) => {
   const unexpected = await mock(page, 21);
+  const unrelatedPages: string[] = [];
+  page.on('request', request => {
+    if (/\/src\/(pages\/|components\/OnboardingWizard)/.test(request.url())) unrelatedPages.push(request.url());
+  });
   await page.goto('/research');
   await expect(page.getByRole('heading', { name: '研究报告', exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: report.title })).toBeVisible();
@@ -92,7 +96,22 @@ test('research is independent of company loading; search, category, pagination a
   await expect(page.getByRole('link', { name: report.title })).toBeVisible();
   await page.getByRole('link', { name: report.title }).click();
   await expect(page.getByRole('heading', { name: '核心结论' })).toBeVisible();
+  expect(unrelatedPages).toEqual([]);
   expect(unexpected).toEqual([]);
+});
+
+test('failed lazy page offers a full resource reload instead of retrying a rejected import', async ({page}) => {
+  await mock(page);
+  await page.route('**/api/macro', route => route.fulfill({json:{current_id:null,publications:[]}}));
+  await page.route('**/src/macro/MacroPage.tsx*', route => route.abort());
+  await page.goto('/macro');
+  await expect(page.getByRole('heading', {name:'页面资源未能加载'})).toBeVisible();
+  await expect(page.getByRole('button', {name:'刷新页面版本'})).toBeVisible();
+  await expect(page.getByText('刷新前请先保存尚未保存的输入。', {exact:false})).toBeVisible();
+  await page.unroute('**/src/macro/MacroPage.tsx*');
+  await page.getByRole('button', {name:'刷新页面版本'}).click();
+  await expect(page.getByRole('heading', {name:'宏观概览',exact:true})).toBeVisible();
+  await expect(page.getByRole('heading', {name:'页面资源未能加载'})).not.toBeVisible();
 });
 
 test('detail renders tables, formulas, registered links and attachments safely, including direct refresh', async ({ page }) => {

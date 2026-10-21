@@ -54,6 +54,7 @@ export default class ErrorBoundary extends Component<Props, State> {
     if (!this.state.error) return this.props.children;
 
     const message = this.state.error.message || String(this.state.error);
+    const resourceError = /failed to fetch dynamically imported module|importing a module script failed|error loading dynamically imported module|unable to preload css/i.test(message);
     const componentStack = this.state.info?.componentStack?.trim() ?? '';
 
     return (
@@ -61,10 +62,10 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div className="flex items-start gap-3">
           <div className="text-3xl leading-none">⚠</div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold text-rose-700">This page crashed</h2>
+            <h2 className="text-lg font-semibold text-rose-700">{resourceError ? '页面资源未能加载' : 'This page crashed'}</h2>
             <p className="text-sm text-slate-600 mt-1">
-              Your valuation data and other pages are still intact — only this page hit an error while rendering.
-              Use the buttons below to recover, or open DevTools console for the full stack trace.
+              {resourceError ? '页面资源可能已更新或下载失败，请重新加载页面。刷新前请先保存尚未保存的输入。'
+                : 'Your valuation data and other pages are still intact — only this page hit an error while rendering. Use the buttons below to recover, or open DevTools console for the full stack trace.'}
             </p>
           </div>
         </div>
@@ -89,10 +90,10 @@ export default class ErrorBoundary extends Component<Props, State> {
             ← Back to Input Sheet
           </Link>
           <button
-            onClick={this.handleReset}
+            onClick={resourceError ? () => window.location.reload() : this.handleReset}
             className="px-3 py-1.5 text-sm bg-slate-100 text-slate-700 rounded border border-slate-300 hover:bg-slate-200"
           >
-            Retry this page
+            {resourceError ? '刷新页面版本' : 'Retry this page'}
           </button>
         </div>
       </div>

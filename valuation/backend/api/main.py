@@ -5,10 +5,10 @@ import math
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 
 from engine.module_4_dcf import InvalidTerminalValue, InvalidReinvestment, InvalidResearchTax, InvalidTaxForecast
 from engine.equity_bridge import InvalidConvertibleInput
@@ -23,6 +23,7 @@ from .knowledge import router as knowledge_router
 from .research import router as research_router
 from .macro import router as macro_router
 from .valuation_results import router as valuation_results_router
+from .frontend import mount_frontend
 
 app = FastAPI(title="Valuation Engine API", version="0.1.0")
 
@@ -51,6 +52,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=5)
 
 app.include_router(alphalake_router)
 app.include_router(router)
@@ -72,11 +74,4 @@ def health():
     return {"status": "ok"}
 
 
-# Serve frontend static assets (JS, CSS, etc.)
-if DIST_DIR.exists():
-    app.mount("/assets", StaticFiles(directory=str(DIST_DIR / "assets")), name="assets")
-
-    # Catch-all: serve index.html for any non-API route (SPA client-side routing)
-    @app.get("/{full_path:path}")
-    async def serve_spa(request: Request, full_path: str):
-        return FileResponse(str(DIST_DIR / "index.html"))
+mount_frontend(app, DIST_DIR)

@@ -6,6 +6,7 @@
 - 2026-10-18用户批准独立只读`/research`及`/research/:id`页面；仅读取workspace研究交付，不计算估值、不改变原生参数或公司加载流程。
 - 2026-10-21用户批准独立只读`/macro`、`/macro/history`及`/macro/:id`；API只读已发布宏观消费快照，不请求DuckDB／Go或改估值输入。数据点评与不可变期次沿[宏观阅读契约](../docs/guides/macro-pages.md)。
 - 2026-10-21用户批准独立只读`/screen`选股页，全部估值覆盖总览统一在此按批次交付，原生、故事及诊断条件分开；沿[选股契约](../docs/valuation/valuation-results-page-spec.md)发布紧凑摘要，历史格式显式一次转换，不给HTTP增加兼容解析；查询不扫描全市场模型、不重估、不刷新报价或改变原生默认。
+- 前端构建只写workspace候选，发布沿`tools.publish_frontend`先补齐散列资源再原子切HTML；禁止清空线上dist或随构建删除旧页面仍可能加载的资源。HTML不缓存、散列资源长期缓存；性能验收同时覆盖空浏览器缓存、限速传输及旧标签页跨发布切页，不能仅用本机暖API耗时证明页面快。见[前端发布](../docs/guides/system-delivery.md#前端构建与发布)。
 - 数据转换、准入、会话及展示变更必须先查[数据接入spec](../docs/valuation/data-contract.md)并同步实际消费方；标准累计TTM复用已有prepared入口，来源事实、年度研发队列和展示季度分别保留，不将季度拆分当估值硬门槛。
 - 合法数据/口径变更应重建基线并重新估值，保存变更依据与前后差异；不得因新结果不同于旧结果而拒绝，也不得混用旧利润率与新资本输入。原生重建复用`tools.select_native_assumptions --rebuild`，详见[重建契约](../docs/valuation/native-assumption-selection.md#合法变更重建基线并重新估值)。
 - 引擎暂时冻结，仅允许有复现及回归的明确BUG修复；非BUG方法、默认政策、算法或输入接口扩展先记入[待审批](TODO.md)，等待明确审批，不借API或假设工具绕过冻结。既有数据契约的解析、核验及适配继续推进。

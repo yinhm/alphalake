@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { apiErrorMessage, fetchResearch, fetchResearchCatalog } from '../api/client';
 import { RESEARCH_KINDS, type ResearchCatalog, type ResearchDetail } from '../types/research';
-import ResearchMarkdown from './ResearchMarkdown';
 import { researchLink } from './urls';
 import './research.css';
+
+const ResearchMarkdown = lazy(() => import('./ResearchMarkdown'));
 
 function RequestError({ message, retry }: { message: string; retry: () => void }) {
   return <div className="research-message" role="alert"><p>{message}</p><button type="button" onClick={retry}>重试读取</button></div>;
@@ -115,7 +116,7 @@ function ResearchArticle({ id }: { id: string }) {
         <nav className="research-documents" aria-label="报告与附文">{current.files.filter(file => file.path.endsWith('.md')).map(file => file.available
           ? <Link key={file.id} to={researchLink('/' + file.path, current)!} aria-current={file.id === current.document.id ? 'page' : undefined}>{file.label}</Link>
           : <span key={file.id}>{file.label}（不可用）</span>)}</nav>
-        <article className="research-article" aria-label={current.document.label}><ResearchMarkdown detail={current} /></article>
+        <article className="research-article" aria-label={current.document.label}><Suspense fallback={<p role="status">正在加载正文与公式…</p>}><ResearchMarkdown detail={current} /></Suspense></article>
         <details className="research-attachments"><summary>附件与来源（{current.files.length}项）</summary><ul>{current.files.map(file => <li key={file.id}>
           {file.available ? <a href={`${file.url}?download=true`}>{file.label}</a> : <span>{file.label}（文件不可用）</span>}
           <small>{file.available && file.size_bytes !== null ? ` · ${(file.size_bytes / 1024).toFixed(1)} KB` : ''}</small>
