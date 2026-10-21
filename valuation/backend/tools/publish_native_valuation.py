@@ -18,6 +18,7 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 
 from tools.export_alphalake_sqlite import CONTRACT, digest, validate_dates, completed_market_date, export_runtime_files
+from data_sources.us_cn_hk_db import publication_scope
 from tools.check_native_sqlite import value_digest, economic_payload
 from tools.refresh_valuate_alphalake import execute, reference_commands, timestamp
 
@@ -409,12 +410,15 @@ def run(args, root):
         validate_dates(date.fromisoformat(args.period), datetime.fromisoformat(asof))
         command = [sys.executable, '-m', 'tools.export_alphalake_sqlite', '--database', str(args.database),
             '--output', str(candidate), '--period', args.period, '--as-of', asof, '--alphalake', str(args.alphalake)]
-        for code in codes:
-            command += ['--code', code]
+        if args.scope_file:
+            command += ['--scope-file',str(args.scope_file)]
+        else:
+            for code in codes:
+                command += ['--code', code]
         if args.output.exists():
             command += ['--reuse-from',str(args.output)]
         request_identity = dict(source_sha256=digest(args.database), binary_sha256=digest(args.alphalake),
-                                codes=codes, period=args.period, as_of=asof)
+                                codes=codes, scope_sha256=digest(args.scope_file) if args.scope_file else None, period=args.period, as_of=asof)
         export_reused = (previous_receipt is not None and args.output.exists()
                          and previous_receipt['request_identity'] == request_identity
                          and previous_receipt['runtime_identity']['stages']['export'] == identity['stages']['export']
@@ -434,6 +438,7 @@ def run(args, root):
         previous = snapshot(args.output) if args.output.exists() else None
         ledger['candidate'] = current
         ledger['previous'] = previous
+        ledger['publication_quality'] = json.loads(current['metadata'].get('publication_quality', '{}'))
         reuse = (previous_receipt is not None
                  and 'methodology' in previous_receipt['check']
                  and previous_receipt['content_sha256'] == current['content_sha256']
@@ -489,7 +494,7 @@ def run(args, root):
     finally:
         ledger.update(finished_at=timestamp(), elapsed_seconds=time.monotonic()-started)
         save(root/'run.json', ledger)
-    print(json.dumps(dict(status=ledger['status'], source_status=ledger.get('financial_source', {}).get('status', 'not_synchronized'), quote_status=ledger.get('quote_source', {}).get('status','not_requested'), reference_status=ledger.get('reference_source', {}).get('status','not_requested'), freshness=ledger.get('freshness', 'existing_local_standard_facts'), admission=ledger.get('admission'), error=ledger.get('error'), report=str(root/'run.json')), ensure_ascii=False), flush=True)
+    print(json.dumps(dict(status=ledger['status'], source_status=ledger.get('financial_source', {}).get('status', 'not_synchronized'), quote_status=ledger.get('quote_source', {}).get('status','not_requested'), reference_status=ledger.get('reference_source', {}).get('status','not_requested'), freshness=ledger.get('freshness', 'existing_local_standard_facts'), publication_quality=ledger.get('publication_quality'), admission=ledger.get('admission'), error=ledger.get('error'), report=str(root/'run.json')), ensure_ascii=False), flush=True)
     return 0 if ledger['status'] in ('published', 'unchanged') else 1
 
 
@@ -515,6 +520,7 @@ def main():
     parser.add_argument('--stage-timeout', type=int, default=3600)
     parser.add_argument('--alphalake', type=Path, default=Path(__file__).resolve().parents[3]/'alphalake')
     args = parser.parse_args()
+    args.scope_file = None
     workspace = Path(os.environ.get('ALPHALAKE_WORKSPACE', Path(__file__).resolve().parents[3]/'workspace')).resolve()
     args.database = args.database.resolve(strict=True)
     args.alphalake = args.alphalake.resolve(strict=True)
@@ -546,15 +552,19 @@ def main():
             with sqlite3.connect(args.output.as_uri()+'?mode=ro', uri=True) as connection:
                 if dict(connection.execute("SELECT key,value FROM metadata WHERE key < 'input_context:' OR key >= 'input_context;'")).get('contract') != CONTRACT:
                     parser.error('current published SQLite contract required')
-                tickers = [t for t, in connection.execute('SELECT ticker FROM companies ORDER BY ticker')]
-            if any(not t.startswith(('SHSE:','SZSE:')) for t in tickers):
-                parser.error('published scope must contain SH/SZ securities only')
-            args.code = [t.split(':',1)[1] for t in tickers]
+                try:
+                    frozen_scope = publication_scope(connection)
+                except ValueError as error:
+                    parser.error(str(error))
+            args.code = [s['ticker'].split(':',1)[1] for s in frozen_scope]
         if not args.code or len(set(args.code)) != len(args.code):
             parser.error('nonempty scope without duplicate codes required')
         if any(len(c)!=6 or not c.isascii() or not c.isdigit() for c in args.code):
             parser.error('six-digit codes required')
         root = Path(tempfile.mkdtemp(prefix='run-', dir=root))
+        if args.published_scope:
+            args.scope_file = root/'scope.json'
+            save(args.scope_file, frozen_scope)
         def cancel(*_):
             raise KeyboardInterrupt
         signal.signal(signal.SIGTERM, cancel)

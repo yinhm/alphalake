@@ -325,6 +325,21 @@ def input_contexts(conn):
         yield context
 
 
+def publication_scope(connection):
+    """冻结已发布规范身份，不将短暂源缺失当作证券退出。"""
+    contexts = {c['ticker']:c for c in input_contexts(connection)}
+    result = []
+    for ticker, name in connection.execute('SELECT ticker,company_name FROM companies ORDER BY ticker'):
+        context = contexts.get(ticker)
+        if (not ticker.startswith(('SHSE:','SZSE:')) or context is None
+                or type(context.get('instrument_id')) is not int or context['instrument_id']<=0):
+            raise ValueError('published canonical security identity missing/invalid: '+ticker)
+        result.append(dict(instrument_id=context['instrument_id'],ticker=ticker,name=name))
+    if not result or len({s['instrument_id'] for s in result})!=len(result):
+        raise ValueError('nonempty unique published canonical identities required')
+    return result
+
+
 def input_signature(conn, ticker, context):
     """输入值和紧凑上下文一起绑定，拒绝只篡改金额或例外的快照。"""
     rows = [list(map(tuple, conn.execute(query, (ticker,)))) for query in (

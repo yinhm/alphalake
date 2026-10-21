@@ -149,7 +149,7 @@ def test_cycle_publishes_replays_without_export_and_keeps_last_snapshot_on_sourc
                 results=[dict(ticker='SZSE:300866', admission='ready', http_status=200, final={'value_per_share':42})]))
         return 0
     monkeypatch.setattr(delivery, 'execute', execute)
-    args = SimpleNamespace(database=database, alphalake=binary, output=target, code=['300866'],
+    args = SimpleNamespace(database=database, alphalake=binary, output=target, code=['300866'], scope_file=None,
         period='2026-06-30', as_of='2026-09-27T00:00:00Z', risk_free_rate=.0425, stage_timeout=10,
         source_mode='local', sync_references=False, latest=6, web_url='http://localhost')
     first = tmp_path/'first'; first.mkdir()
@@ -309,7 +309,7 @@ def test_online_sync_uses_reviewed_symbols_and_optional_filings(tmp_path, monkey
         return 1 if log.stem == 'materialize' else 0
     monkeypatch.setattr(delivery, 'execute', execute)
     args = SimpleNamespace(database=tmp_path/'alphalake.duckdb', alphalake=tmp_path/'alphalake',
-        output=target, code=['600519','300866'], period='2026-06-30', risk_free_rate=.0425,
+        output=target, code=['600519','300866'], scope_file=None, period='2026-06-30', risk_free_rate=.0425,
         source_mode='online', sync_references=False, as_of='2026-09-30T05:00:00Z', quote_date='2026-09-29', latest=6, stage_timeout=10, filings_start='2026-09-01' if filing_exit is not None else None, filings_end='2026-09-27')
     assert delivery.run(args, tmp_path) == 1
     assert [c[1] for c in calls] == ['sync-financial', *(['sync-filings'] if filing_exit is not None else []), 'sync-valuation-quotes','materialize-fundamentals']
@@ -368,20 +368,35 @@ def test_published_scope_uses_current_snapshot_instead_of_stale_sample_file(tmp_
     binary=workspace/'alphalake';binary.write_bytes(b'binary')
     target=workspace/'valuation.sqlite'
     with sqlite3.connect(target) as db:
-        db.executescript('CREATE TABLE metadata(key TEXT,value TEXT);CREATE TABLE companies(ticker TEXT);')
+        db.executescript('CREATE TABLE metadata(key TEXT,value TEXT);CREATE TABLE companies(ticker TEXT,company_name TEXT);')
         db.execute('INSERT INTO metadata VALUES(?,?)',('contract',delivery.CONTRACT))
-        db.executemany('INSERT INTO companies VALUES(?)',[(t,) for t in ['SZSE:300866','SHSE:600519','SHSE:600000']])
+        for i,ticker in enumerate(['SZSE:300866','SHSE:600519','SHSE:600000'],1):
+            db.execute('INSERT INTO companies VALUES(?,?)',(ticker,'sample'))
+            db.execute('INSERT INTO metadata VALUES(?,?)',('input_context:'+ticker,json.dumps(dict(ticker=ticker,instrument_id=i))))
     state=workspace/'derived/system-delivery';state.mkdir(parents=True)
     (state/'published-codes.txt').write_text('300866\n')
     monkeypatch.setattr(delivery.sys,'argv',['publish','--database',str(database),'--output',str(target),
         '--alphalake',str(binary),'--period','2026-06-30','--source-mode','local','--published-scope','--web-url','http://localhost'])
     def run(args,root):
         assert args.code==['600000','600519','300866']  # 金融／缺项仍保留在原分母。
+        assert json.loads(args.scope_file.read_text()) == [
+            dict(instrument_id=i,ticker=t,name='sample') for i,t in [(3,'SHSE:600000'),(2,'SHSE:600519'),(1,'SZSE:300866')]]
         return 0
     monkeypatch.setattr(delivery,'run',run)
     assert delivery.main()==0
     with sqlite3.connect(target) as db: db.execute("UPDATE companies SET ticker='BSE:920001' WHERE ticker='SHSE:600000'")
     with pytest.raises(SystemExit):delivery.main()
+
+
+def test_frozen_scope_rejects_unknown_and_repeated_canonical_ids():
+    with sqlite3.connect(':memory:') as db:
+        db.executescript('CREATE TABLE metadata(key TEXT,value TEXT);CREATE TABLE companies(ticker TEXT,company_name TEXT);')
+        db.execute("INSERT INTO companies VALUES('SZSE:300866','sample')")
+        with pytest.raises(ValueError,match='canonical security identity'):delivery.publication_scope(db)
+        db.execute('INSERT INTO metadata VALUES(?,?)',('input_context:SZSE:300866',json.dumps(dict(ticker='SZSE:300866',instrument_id=1))))
+        db.execute("INSERT INTO companies VALUES('SHSE:600519','another')")
+        db.execute('INSERT INTO metadata VALUES(?,?)',('input_context:SHSE:600519',json.dumps(dict(ticker='SHSE:600519',instrument_id=1))))
+        with pytest.raises(ValueError,match='unique'):delivery.publication_scope(db)
 
 
 def test_runtime_identity_excludes_tests_but_tracks_execution_code(tmp_path, monkeypatch):

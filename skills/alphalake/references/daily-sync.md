@@ -84,7 +84,9 @@
 
 ## SQLite与网页交付
 
-必读[统一发布指南](../../../docs/guides/system-delivery.md)。用户要求刷新并发布时，沿`tools.publish_native_valuation`执行，不能只复制导出的SQLite。发布目标、实际消费该目标的`WEB_URL`、财报期必须明确；沿`--published-scope`在锁内冻结现行完整范围，首次建范围或主动扩缩时使用经核验的`--codes-file`。
+必读[统一发布指南](../../../docs/guides/system-delivery.md)。用户要求刷新并发布时，沿`tools.publish_native_valuation`执行，不能只复制导出的SQLite。发布目标、实际消费该目标的`WEB_URL`、财报期必须明确；沿`--published-scope`在锁内冻结现行规范证券ID、ticker和名称，首次建范围或主动扩缩时使用经核验的`--codes-file`。
+
+个股缺数、无报价及源标识关闭不阻断其他证券发布；核对`publication_quality`的来源身份状态和例外，保留全范围及正常缺项422，不删证券、不续写标识、不从旧SQLite拼数。身份冲突／复用的个股隔离数值，范围漏行、快照损坏、ready计算失败及实际网页不一致仍拒绝或回滚；不能把放行个股缺项理解为跳过整批验收。报价保留真实日期和既有窗口，不因缺报价猜停牌／退市。契约见[发布范围与个股缺项](../../../docs/valuation/data-contract.md#发布范围与个股缺项)。
 
 ```bash
 PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.publish_native_valuation \

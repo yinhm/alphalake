@@ -18,6 +18,17 @@
 
 ## 职责与实际调用链
 
+### 发布范围与个股缺项
+
+2026-10-21用户批准：个别证券缺数、无报价或TDX源标识不可用不阻断其他证券发布。`--published-scope`在锁内冻结现行快照的规范`instrument_id`、`ticker`和名称，经`--scope-file`交给导出；范围完整与数值齐备分开验收，不再按当日源代码清单重建发布分母。
+
+- 已核实历史标识仍属于同一规范证券、当前源标识关闭时，按规范ID读取主库已有标准事实；标记`inactive_source_identifier`，不续写标识区间，不把缺席当退市。
+- 缺本期、研发、报价等按原输入契约保留NULL、真实期间及来源，个股正常返回缺项／范围422，其他公司继续发布。旧有效事实来自主库，不从旧SQLite拼接，也不把旧价称最新。
+- 冻结身份在主库不存在、不匹配、被复用或已正式摘牌时，保留该ticker及规范ID为`blocked_security_identity`，不输出该身份下的财务或报价，不影响其他公司；没有身份依据的新代码不能凭空建行。
+- 完整分母核对仍用于发现漏行、重复与串股；快照损坏、源／运行时在导出中变化、声明ready却计算失败、API与候选不一致、切换故障等停止或回滚。个股缺项不冒充此类整批故障。
+
+SQLite继续为v13，不加治理表：`metadata.publication_quality`保存来源身份数量及例外；稀疏的`input_context.market.source_identity_status`仅记录非正常源身份状态。数值和估值公式不变，原生API可直接读取紧凑上下文；完整范围绑定及来源证据留在数据侧收据。
+
 `fundamental.statement_snapshot`标准宽表→`ExportFinancialSQLiteRows`批量投影→`tools.export_alphalake_sqlite`→SQLite→`data_sources.us_cn_hk_db.fetch_company/native_compatibility`→`api.database._db_record_to_company_input`→`engine.orchestrator.run_full_valuation`。
 
 AlphaLake负责单位、期间、身份、范围、缺项及确定性转换；valuation负责调整、WACC、FCFF、预测、终值与股权桥接。原生网页提交`{ticker}`；可选`risk_free_rate`为用户显式覆盖，缺省或NULL采用发布绑定的人民币融资初值，不再隐含提交美元4.25%，不新增政策文件或参数表单。外部文件/CIQ季度输入与AlphaLake标准累计输入是不同的源契约，不是旧版快照兼容路径。

@@ -64,7 +64,7 @@ func TestReviewedSourceZeroExportAndRevocation(t *testing.T) {
 	export := func(want int) {
 		t.Helper()
 		dir := filepath.Join(t.TempDir(), "out")
-		check(ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"bonds_payable"}, period, period, time.Now(), nil))
+		check(ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"bonds_payable"}, period, period, time.Now(), nil, nil))
 		raw, e := os.ReadFile(filepath.Join(dir, "reviewed_zeros.jsonl"))
 		check(e)
 		if strings.Count(string(raw), "\n") != want {
@@ -124,12 +124,12 @@ func TestReviewedSourceZeroExportAndRevocation(t *testing.T) {
 	check(err)
 	export(1)
 	check(os.WriteFile(filepath.Join(root, "annual.pdf"), []byte("%PDF-corrupt"), 0600))
-	if e := ExportFinancialSQLiteRows(ctx, db, filepath.Join(t.TempDir(), "bad-pdf"), []string{"300866"}, []string{"bonds_payable"}, period, period, time.Now(), nil); e == nil {
+	if e := ExportFinancialSQLiteRows(ctx, db, filepath.Join(t.TempDir(), "bad-pdf"), []string{"300866"}, []string{"bonds_payable"}, period, period, time.Now(), nil, nil); e == nil {
 		t.Fatal("corrupt PDF accepted")
 	}
 	check(os.WriteFile(filepath.Join(root, "annual.pdf"), pdf, 0600))
 	check(os.WriteFile(sourcePath, []byte("corrupt"), 0600))
-	if e := ExportFinancialSQLiteRows(ctx, db, filepath.Join(t.TempDir(), "bad"), []string{"300866"}, []string{"bonds_payable"}, period, period, time.Now(), nil); e == nil {
+	if e := ExportFinancialSQLiteRows(ctx, db, filepath.Join(t.TempDir(), "bad"), []string{"300866"}, []string{"bonds_payable"}, period, period, time.Now(), nil, nil); e == nil {
 		t.Fatal("corrupt source accepted")
 	}
 }

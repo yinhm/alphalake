@@ -48,7 +48,7 @@ func TestFinancialSQLiteIndustryOrderIsStable(t *testing.T) {
 	var previous []byte
 	for i := 0; i < 2; i++ {
 		dir := filepath.Join(t.TempDir(), "rows")
-		if err = ExportFinancialSQLiteRows(ctx, db, dir, nil, []string{"total_shares"}, period, period, cutoff, nil); err != nil {
+		if err = ExportFinancialSQLiteRows(ctx, db, dir, nil, []string{"total_shares"}, period, period, cutoff, nil, nil); err != nil {
 			t.Fatal(err)
 		}
 		raw, err := os.ReadFile(filepath.Join(dir, "industries.jsonl"))
@@ -105,7 +105,7 @@ func TestFinancialSQLiteMarketQuoteBoundary(t *testing.T) {
 	read := func() map[string]any {
 		t.Helper()
 		dir := filepath.Join(t.TempDir(), "rows")
-		if err := ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"total_shares"}, day, day, time.Now(), nil); err != nil {
+		if err := ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"total_shares"}, day, day, time.Now(), nil, nil); err != nil {
 			t.Fatal(err)
 		}
 		raw, err := os.ReadFile(filepath.Join(dir, "companies.jsonl"))
@@ -263,7 +263,7 @@ func TestFinancialAvailabilityWithoutFiling(t *testing.T) {
 		t.Fatal(n, err)
 	}
 	dir := filepath.Join(t.TempDir(), "rows")
-	if err = ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"revenue"}, time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC), time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), nil); err != nil {
+	if err = ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"revenue"}, time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC), time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), nil, nil); err != nil {
 		t.Fatal(err)
 	}
 	f, err := os.Open(filepath.Join(dir, "records.jsonl"))
@@ -285,7 +285,7 @@ func TestFinancialAvailabilityWithoutFiling(t *testing.T) {
 	prior := end.AddDate(-1, 0, 0)
 	projection := map[string][]time.Time{"revenue": {prior, end}, "reported_ebit": {end}}
 	projected := filepath.Join(t.TempDir(), "projected")
-	if err = ExportFinancialSQLiteRows(ctx, db, projected, []string{"300866"}, []string{"revenue", "reported_ebit"}, prior, end, end.AddDate(0, 1, 0), projection); err != nil {
+	if err = ExportFinancialSQLiteRows(ctx, db, projected, []string{"300866"}, []string{"revenue", "reported_ebit"}, prior, end, end.AddDate(0, 1, 0), projection, nil); err != nil {
 		t.Fatal(err)
 	}
 	raw, err := os.ReadFile(filepath.Join(projected, "records.jsonl"))
@@ -306,7 +306,7 @@ func TestFinancialAvailabilityWithoutFiling(t *testing.T) {
 		}
 	}
 	projection["reported_ebit"] = []time.Time{end.AddDate(0, 0, -1)}
-	if ExportFinancialSQLiteRows(ctx, db, filepath.Join(t.TempDir(), "bad-period"), []string{"300866"}, []string{"revenue", "reported_ebit"}, prior, end, end.AddDate(0, 1, 0), projection) == nil {
+	if ExportFinancialSQLiteRows(ctx, db, filepath.Join(t.TempDir(), "bad-period"), []string{"300866"}, []string{"revenue", "reported_ebit"}, prior, end, end.AddDate(0, 1, 0), projection, nil) == nil {
 		t.Fatal("non-quarter period accepted")
 	}
 
@@ -337,12 +337,91 @@ func TestCurrentFinancialExportDoesNotFillFromOlderRevision(t *testing.T) {
 	}
 	dir := filepath.Join(t.TempDir(), "rows")
 	period := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
-	if err = ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"revenue"}, period, period, period.AddDate(0, 1, 0), nil); err != nil {
+	if err = ExportFinancialSQLiteRows(ctx, db, dir, []string{"300866"}, []string{"revenue"}, period, period, period.AddDate(0, 1, 0), nil, nil); err != nil {
 		t.Fatal(err)
 	}
 	raw, err := os.ReadFile(filepath.Join(dir, "records.jsonl"))
 	var row map[string]any
 	if err != nil || json.Unmarshal(raw, &row) != nil || row["revenue"] != nil || row["source_record_id"] != float64(2) {
 		t.Fatal("unavailable latest value silently replaced by old revision", string(raw), err)
+	}
+}
+
+func TestFrozenPublicationScopeSurvivesSourceAbsence(t *testing.T) {
+	ctx := context.Background()
+	db, err := OpenInitialized(ctx, filepath.Join(t.TempDir(), "scope.duckdb"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	check := func(err error) {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	id, err := UpsertInstrument(ctx, db, domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHE", Currency: "CNY"}, domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sz300866"})
+	check(err)
+	other, err := UpsertInstrument(ctx, db, domain.InstrumentRef{Type: domain.InstrumentEquity, ExchangeMIC: "XSHG", Currency: "CNY"}, domain.Identifier{Provider: "tdx", Type: "symbol", Value: "sh600519"})
+	check(err)
+	_, err = db.Exec(`INSERT INTO meta.artifact(artifact_id,source,dataset,source_locator,fetched_at,sha256,content_length,local_path) VALUES(1,'tdx','professional_financial','test','2026-10-20','test',1,'test')`)
+	check(err)
+	_, err = db.Exec(`INSERT INTO fundamental.source_record VALUES(1,1,1,'300866',0,584,'2026-06-30',?)`, id)
+	check(err)
+	_, err = db.Exec(`INSERT INTO fundamental.statement_snapshot(source_record_id,instrument_id,report_period,ingest_run_id,announcement_source,revenue) VALUES(1,?,'2026-06-30',1,'unknown',123)`, id)
+	check(err)
+	_, err = db.Exec(`UPDATE core.instrument_identifier SET valid_from='2020-01-01',valid_to='2026-10-19' WHERE instrument_id=?`, id)
+	check(err)
+	_, err = db.Exec(`UPDATE core.instrument_identifier SET valid_from='2020-01-01' WHERE instrument_id=?`, other)
+	check(err)
+	scope := []FinancialExportSecurity{{InstrumentID: id, Ticker: "SZSE:300866", Name: "reviewed"}, {InstrumentID: other, Ticker: "SHSE:600519", Name: "no facts"}}
+	period := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
+	cutoff := time.Date(2026, 10, 20, 16, 0, 0, 0, time.UTC)
+	read := func(status string, wantRecords bool) {
+		t.Helper()
+		dir := filepath.Join(t.TempDir(), "rows")
+		check(ExportFinancialSQLiteRows(ctx, db, dir, nil, []string{"revenue"}, period, period, cutoff, nil, scope))
+		raw, err := os.ReadFile(filepath.Join(dir, "companies.jsonl"))
+		check(err)
+		lines := strings.Split(strings.TrimSpace(string(raw)), "\n")
+		if len(lines) != 2 {
+			t.Fatalf("scope shrank: %s", raw)
+		}
+		for _, line := range lines {
+			var c map[string]any
+			check(json.Unmarshal([]byte(line), &c))
+			if c["instrument_id"] == float64(scope[0].InstrumentID) && c["source_identity_status"] != status {
+				t.Fatalf("wrong source status: %s", line)
+			}
+		}
+		raw, err = os.ReadFile(filepath.Join(dir, "records.jsonl"))
+		check(err)
+		if wantRecords {
+			var row map[string]any
+			check(json.Unmarshal(raw, &row))
+			if row["revenue"] != "123.0000000000" || row["instrument_id"] != float64(id) {
+				t.Fatalf("facts lost or mixed: %s", raw)
+			}
+		} else if len(bytes.TrimSpace(raw)) != 0 {
+			t.Fatalf("unsafe identity exported facts: %s", raw)
+		}
+	}
+	read("inactive_source_identifier", true)
+	_, err = db.Exec(`INSERT INTO core.instrument_identifier(instrument_id,provider,identifier_type,identifier_value,valid_from) VALUES(?,'tdx','symbol','sz300866','2026-10-20')`, other)
+	check(err)
+	read("blocked_security_identity", false)
+	_, err = db.Exec(`DELETE FROM core.instrument_identifier WHERE instrument_id=? AND identifier_value='sz300866'`, other)
+	check(err)
+	_, err = db.Exec(`UPDATE core.instrument SET delist_date='2026-10-20' WHERE instrument_id=?`, id)
+	check(err)
+	read("blocked_security_identity", false)
+	_, err = db.Exec(`UPDATE core.instrument SET delist_date=NULL WHERE instrument_id=?`, id)
+	check(err)
+	scope[0].InstrumentID = 999999
+	read("blocked_security_identity", false)
+	scope[0].InstrumentID = id
+	scope = append(scope, scope[0])
+	if ExportFinancialSQLiteRows(ctx, db, filepath.Join(t.TempDir(), "bad"), nil, []string{"revenue"}, period, period, cutoff, nil, scope) == nil {
+		t.Fatal("duplicate scope accepted")
 	}
 }

@@ -1,6 +1,7 @@
 """显式导出AlphaLake标准事实到现有网页SQLite结构；不改变默认数据源。"""
 import argparse
 import calendar
+from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 import hashlib
@@ -166,6 +167,7 @@ def query_standard_inputs(connection, field_periods, source_database=None, *, ti
         raise ValueError('Source has WAL; close writer before research query')
     before = digest(source)
     published_tickers = [r[0] for r in connection.execute('SELECT ticker FROM companies ORDER BY ticker')]
+    frozen_scope = target.publication_scope(connection)
     if tickers is not None and (not tickers or len(set(tickers)) != len(tickers) or set(tickers)-set(published_tickers)):
         raise ValueError('unique tickers within published scope required')
     codes = [t.split(':')[-1] for t in (tickers if tickers is not None else published_tickers)]
@@ -176,10 +178,13 @@ def query_standard_inputs(connection, field_periods, source_database=None, *, ti
         def export(name, projection, selected_codes):
             spec = root/(name+'.json')
             spec.write_text(json.dumps(projection,sort_keys=True))
+            scope = root/(name+'-scope.json')
+            selected = set(selected_codes)
+            scope.write_text(json.dumps([s for s in frozen_scope if s['ticker'].split(':')[-1] in selected],ensure_ascii=False))
             directory = root/name
             first = min(day for days in projection.values() for day in days)
             subprocess.run([str(binary),'export-financial-snapshot',str(source),
-                '--output',str(directory),'--codes',','.join(selected_codes),'--fields',','.join(sorted(projection)),
+                '--output',str(directory),'--scope-file',str(scope),'--fields',','.join(sorted(projection)),
                 '--field-periods',str(spec),'--from',first,'--period',metadata['report_period'],
                 '--as-of',metadata['information_as_of']],check=True,timeout=600,capture_output=True)
             return directory
@@ -193,11 +198,14 @@ def query_standard_inputs(connection, field_periods, source_database=None, *, ti
         if conflicts:
             raise ValueError('Source conflicts in requested research periods: '+str(sorted(conflicts)))
         ticker_by_code = {r[0].split(':')[-1]:r[0] for r in connection.execute('SELECT ticker FROM companies')}
+        identity_by_code = {s['ticker'].split(':')[-1]:s['instrument_id'] for s in frozen_scope}
         with (directory/'records.jsonl').open() as stream:
             rows = []
             for fact in record_facts(stream,definitions):
                 if fact['code'] not in code_set:
                     raise ValueError('Source returned unrequested security')
+                if fact['instrument_id']!=identity_by_code[fact['code']]:
+                    raise ValueError('Source canonical security identity differs')
                 rows.append(fact | {'ticker':ticker_by_code[fact['code']]})
     if digest(source)!=before:
         raise ValueError('Source changed during research query')
@@ -333,13 +341,15 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
         valid = (company.get('symbol_count') == 1 and company.get('identifier_count') == 1
                  and re.fullmatch(r'\d{6}', code) and mic in EXCHANGES
                  and symbol[:2] == {'XSHG': 'sh', 'XSHE': 'sz', 'XBSE': 'bj'}.get(mic)
-                 and company.get('financial_status') != 'blocked_security_identity')
+                 and (company.get('financial_status') != 'blocked_security_identity' or company.get('scope_bound') is True))
         if not valid:
             continue
         ticker = EXCHANGES[mic] + ':' + code
         facts, conflicts, reviewed_zeros = {}, set(), {}
         # 每个现有导出覆盖当年及上年；按需缓存一家公司，不累积全市场历史。
         def load(end):
+            if company.get('financial_status') == 'blocked_security_identity':
+                return
             payload = fetch(code, end)
             if (payload.get('contract_version'), payload.get('code'), payload.get('report_period')) != ('alphalake-valuation-v2', code, end.isoformat()):
                 raise ValueError('unexpected standard export identity')
@@ -434,6 +444,8 @@ def export_snapshot(connection, companies, fetch, period, asof, years=10, quarte
             tax=dict(status=tax_status, period=base.isoformat(), basis=tax_evidence['basis']),
             model_scope=scope_context(company, company.get('industry_reference', {})),
             source_records={}, exceptions=[])
+        if company.get('source_identity_status', 'active') != 'active':
+            context['market']['source_identity_status'] = company['source_identity_status']
         def remember(series, offset, end, column, value, status, evidence):
             refs = source_references(evidence)
             if status != target.default_cell_status(column, value) or (status == 'missing_standard_fact'
@@ -499,11 +511,23 @@ def main():
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--code', action='append')
     group.add_argument('--all', action='store_true')
+    group.add_argument('--scope-file', type=Path, help='冻结的规范证券ID、ticker、名称；按既有身份保留源缺项公司')
     parser.add_argument('--years', type=int, default=10, choices=range(1, 11))
     parser.add_argument('--quarters', type=int, default=8, choices=range(1, 9))
     parser.add_argument('--alphalake', type=Path, default=Path(__file__).resolve().parents[3]/'alphalake')
     parser.add_argument('--reuse-from', type=Path, help='消费输入签名相同才复用已验收SQLite；未知签名重新导出')
     args = parser.parse_args()
+    frozen_scope = None
+    if args.scope_file:
+        frozen_scope = json.loads(args.scope_file.read_text())
+        if (not isinstance(frozen_scope,list) or not frozen_scope or any(not isinstance(s,dict)
+                or set(s)!={'instrument_id','ticker','name'} or type(s['instrument_id']) is not int or s['instrument_id']<=0
+                or not isinstance(s['ticker'],str) or not re.fullmatch(r'(SHSE|SZSE):[0-9]{6}',s['ticker'])
+                or not isinstance(s['name'],str) or not s['name'] for s in frozen_scope)
+                or len({s['instrument_id'] for s in frozen_scope})!=len(frozen_scope)
+                or len({s['ticker'] for s in frozen_scope})!=len(frozen_scope)):
+            parser.error('nonempty unique canonical publication identities required')
+        args.code = [s['ticker'].split(':')[1] for s in frozen_scope]
     validate_dates(args.period, args.as_of)
     reference_asof = args.reference_as_of or args.as_of
     validate_dates(args.period, reference_asof)
@@ -530,10 +554,11 @@ def main():
                 first = min(date.fromisoformat(day) for days in projection.values() for day in days)
                 projection_path = Path(spool)/'field-periods.json'
                 projection_path.write_text(json.dumps(projection,sort_keys=True))
+                scope_args = ['--scope-file',str(args.scope_file)] if frozen_scope is not None else ['--codes', ','.join(sorted(set(args.code or [])))]
                 subprocess.run([str(binary), 'export-financial-snapshot', str(source),
                     '--output', str(data), '--fields', ','.join(SOURCE_FIELDS),
                     '--field-periods', str(projection_path),
-                    '--codes', ','.join(sorted(set(args.code or []))), '--from', first.isoformat(),
+                    *scope_args, '--from', first.isoformat(),
                     '--period', args.period.isoformat(), '--as-of', args.as_of.isoformat()], check=True, timeout=600)
                 reference_packet = subprocess.run([str(binary), 'export-native-references', str(source),
                     '--as-of', reference_asof.isoformat()], check=True, capture_output=True, text=True, timeout=120)
@@ -553,6 +578,11 @@ def main():
                         source_input_signature=input_signature,output=str(args.output)),ensure_ascii=False))
                     return
                 companies = [json.loads(line) for line in (data/'companies.jsonl').read_text().splitlines()]
+                if frozen_scope is not None:
+                    expected = {s['instrument_id']:s['ticker'] for s in frozen_scope}
+                    actual = {c['instrument_id']:EXCHANGES[c['exchange_mic']]+':'+c['symbols'][0][2:] for c in companies}
+                    if len(companies)!=len(frozen_scope) or actual!=expected:
+                        raise ValueError('frozen canonical publication scope differs')
                 companies.sort(key=lambda c: ((c.get('symbols') or [''])[0][2:], c['instrument_id']))
                 reference = json.loads((data/'industry-reference.json').read_text())
                 memberships = {row['instrument_id']: row['industry_memberships']
@@ -604,7 +634,7 @@ def main():
                 scope_root.mkdir(parents=True,exist_ok=True)
                 scope_payload = dict(contract='alphalake-export-scope-v1',source_database_sha256=source_hash,
                     report_period=args.period.isoformat(),information_as_of=args.as_of.isoformat(),
-                    companies=[{k:c[k] for k in ('instrument_id','name','exchange_mic','symbols','symbol_count','identifier_count','financial_status')
+                    companies=[{k:c[k] for k in ('instrument_id','name','exchange_mic','symbols','symbol_count','identifier_count','financial_status','source_identity_status','scope_bound')
                                 if k in c} for c in companies])
                 scope_raw = json.dumps(scope_payload,ensure_ascii=False,sort_keys=True,separators=(',',':'))+'\n'
                 scope_hash = hashlib.sha256(scope_raw.encode()).hexdigest()
@@ -632,6 +662,10 @@ def main():
                             reviewed_zero_basis='explicit_current_review_bound_to_TDX_zero_and_PDF; not_standard_fact_or_historical_system_time',
                             boundary='TDX_standard_components_and_explicit_reviewed_source_zeros; partial_target_scope_values_are_not_complete_totals; market_value_is_explicit_price_times_total_shares_proxy',
                             standard_field_scope=','.join(SOURCE_FIELDS),
+                            publication_quality=json.dumps(dict(companies=len(companies),
+                                source_identity=dict(Counter(c['source_identity_status'] for c in companies)),
+                                exceptions=[dict(instrument_id=c['instrument_id'],ticker=EXCHANGES[c['exchange_mic']]+':'+c['symbols'][0][2:],status=c['source_identity_status'])
+                                    for c in companies if c['source_identity_status']!='active']),ensure_ascii=False,sort_keys=True,separators=(',',':')),
                             candidates=str(len(companies)), companies=str(count))
             connection.executemany('INSERT OR REPLACE INTO metadata VALUES(?,?)', metadata.items())
             connection.commit()

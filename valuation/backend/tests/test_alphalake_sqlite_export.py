@@ -11,6 +11,27 @@ from tools import export_alphalake_sqlite as exporter
 import pytest
 
 
+@pytest.mark.parametrize('source_status', ['inactive_source_identifier','blocked_security_identity'])
+def test_frozen_company_keeps_null_inputs_instead_of_disappearing(source_status):
+    period, asof = date(2026,6,30), datetime.fromisoformat('2026-10-20T14:58:53+00:00')
+    company = dict(symbols=['sz300866'],symbol_count=1,identifier_count=1,exchange_mic='XSHE',
+                   instrument_id=7,name='测试公司',scope_bound=True,source_identity_status=source_status,
+                   financial_status='blocked_security_identity' if source_status=='blocked_security_identity' else None)
+    calls=[]
+    def fetch(code,end):
+        calls.append(code)
+        return dict(contract_version='alphalake-valuation-v2',code=code,report_period=end.isoformat(),
+                    information_as_of=asof.isoformat(),facts=[],source_conflicts=[],reviewed_zeros=[])
+    with sqlite3.connect(':memory:') as db:
+        assert exporter.export_snapshot(db,[company],fetch,period,asof,1,1)==1
+        assert db.execute('SELECT ticker,stock_price_listing FROM companies').fetchall()==[('SZSE:300866',None)]
+        assert db.execute('SELECT revenues,ebit FROM financials_ttm').fetchall()==[(None,None)]
+        context=json.loads(db.execute("SELECT value FROM metadata WHERE key='input_context:SZSE:300866'").fetchone()[0])
+        assert context['market']['source_identity_status']==source_status
+        assert context['market']['status']=='missing_eligible_close'
+        assert bool(calls)==(source_status!='blocked_security_identity')
+
+
 def test_export_reuse_binds_every_consumed_file_reference_window_and_implementation(tmp_path, monkeypatch):
     files = ('companies.jsonl','industries.jsonl','industry-reference.json',
              'fields.jsonl','records.jsonl','conflicts.jsonl','reviewed_zeros.jsonl')
@@ -251,23 +272,27 @@ def test_research_query_checks_financial_version_and_reports_source_conflicts(tm
         artifact_sha256='a'*64,reported_ebit='33000000.0000000000')
     conflicts, signatures, requested_codes = [], [], []
     def run(command,**kwargs):
-        requested_codes.append(command[command.index('--codes')+1])
+        scope=json.loads(Path(command[command.index('--scope-file')+1]).read_text())
+        requested_codes.append(','.join(s['ticker'].split(':')[-1] for s in scope))
+        assert [s['instrument_id'] for s in scope] == [8 if s['ticker'].startswith('SHSE:') else 7 for s in scope]
         directory=Path(command[command.index('--output')+1]);directory.mkdir()
         for name,rows in [('fields',[definition]),('records',[record]),('conflicts',conflicts),('reviewed_zeros',[])]:
             (directory/(name+'.jsonl')).write_text(''.join(json.dumps(r)+'\n' for r in rows))
         signatures.append(exporter.financial_signature(directory))
     monkeypatch.setattr(exporter.subprocess,'run',run)
     with sqlite3.connect(':memory:') as conn:
-        conn.executescript('CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT); CREATE TABLE companies(ticker TEXT);'
+        conn.executescript('CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT); CREATE TABLE companies(ticker TEXT,company_name TEXT);'
             'CREATE TABLE financials_annual(ticker TEXT); CREATE TABLE financials_quarterly(ticker TEXT); CREATE TABLE financials_ttm(ticker TEXT);')
-        conn.execute("INSERT INTO companies VALUES('SZSE:300866')")
+        conn.execute("INSERT INTO companies VALUES('SZSE:300866','test')")
+        conn.execute('INSERT INTO metadata VALUES(?,?)',('input_context:SZSE:300866',json.dumps(dict(ticker='SZSE:300866',instrument_id=7))))
         conn.executemany('INSERT INTO metadata VALUES(?,?)',dict(contract=exporter.CONTRACT,
             input_context_format='native-wide-context-v2',source_database_sha256=exporter.digest(source),
             report_period='2026-06-30',information_as_of='2026-10-05T00:00:00+00:00',financial_content_signature='frozen',
             source_projection=json.dumps(dict(field_periods={'reported_ebit':['2026-06-30']}))).items())
         def query():return exporter.query_standard_inputs(conn,{'reported_ebit':['2026-06-30']},source)
         assert query()[0]['value']=='33000000.0000000000'
-        conn.execute("INSERT INTO companies VALUES('SHSE:600519')")
+        conn.execute("INSERT INTO companies VALUES('SHSE:600519','other')")
+        conn.execute('INSERT INTO metadata VALUES(?,?)',('input_context:SHSE:600519',json.dumps(dict(ticker='SHSE:600519',instrument_id=8))))
         assert exporter.query_standard_inputs(conn,{'reported_ebit':['2026-06-30']},source,tickers=['SZSE:300866'])
         assert requested_codes[-1]=='300866'
         for invalid in ([],['SZSE:300866','SZSE:300866'],['SZSE:000001']):
@@ -284,6 +309,9 @@ def test_research_query_checks_financial_version_and_reports_source_conflicts(tm
         conflicts.append(dict(code='300866',period='2026-06-30',reason='fixture_conflict'))
         with pytest.raises(ValueError,match='Source conflicts'):query()
         conflicts.clear()
+        record['instrument_id']=8
+        with pytest.raises(ValueError,match='canonical security identity'):query()
+        record['instrument_id']=7
         record['code']='600519'
         with pytest.raises(ValueError,match='unrequested security'):
             exporter.query_standard_inputs(conn,{'reported_ebit':['2026-06-30']},source,tickers=['SZSE:300866'])

@@ -14,10 +14,17 @@ import (
 	"github.com/yinhm/alphalake/internal/domain"
 )
 
+// FinancialExportSecurity binds an already reviewed publication identity.
+type FinancialExportSecurity struct {
+	InstrumentID int64  `json:"instrument_id"`
+	Ticker       string `json:"ticker"`
+	Name         string `json:"name"`
+}
+
 // ExportFinancialSQLiteRows exports one read transaction, never one process per
 // company or period. Only the requested standard columns are decoded from wide
 // storage; the receiving native model defines its own target columns.
-func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, codes, fields []string, from, end, asof time.Time, fieldPeriods map[string][]time.Time) error {
+func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, codes, fields []string, from, end, asof time.Time, fieldPeriods map[string][]time.Time, scope []FinancialExportSecurity) error {
 	if err := requireStandardFinancialSchema(ctx, db); err != nil {
 		return err
 	}
@@ -104,6 +111,46 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
  FROM core.instrument i LEFT JOIN core.instrument_identifier d ON d.instrument_id=i.instrument_id AND d.provider='tdx' AND d.identifier_type='symbol' AND (d.valid_from IS NULL OR d.valid_from<=` + day + `) AND (d.valid_to IS NULL OR d.valid_to>` + day + `)
  WHERE i.instrument_type='equity' AND i.currency='CNY' AND ` + market + ` AND (i.list_date IS NULL OR i.list_date<=` + day + `) AND (i.delist_date IS NULL OR i.delist_date>` + day + `) AND (i.status='active' OR i.delist_date IS NOT NULL)
  GROUP BY i.instrument_id,i.name,i.exchange_mic` + codeFilter
+	if len(scope) > 0 {
+		if len(codes) > 0 {
+			return fmt.Errorf("choose codes or frozen publication scope")
+		}
+		rows, ids, tickers := []string{}, map[int64]bool{}, map[string]bool{}
+		for _, security := range scope {
+			parts := strings.Split(security.Ticker, ":")
+			if len(parts) != 2 || (parts[0] != "SHSE" && parts[0] != "SZSE") || !sixDigitCode.MatchString(parts[1]) || security.InstrumentID <= 0 || security.Name == "" || ids[security.InstrumentID] || tickers[security.Ticker] {
+				return fmt.Errorf("invalid/duplicate frozen security identity")
+			}
+			ids[security.InstrumentID], tickers[security.Ticker] = true, true
+			symbol, mic := "sh"+parts[1], "XSHG"
+			if parts[0] == "SZSE" {
+				symbol, mic = "sz"+parts[1], "XSHE"
+			}
+			rows = append(rows, fmt.Sprintf("(%d,%s,%s,%s)", security.InstrumentID, duckdbStringLiteral(symbol), duckdbStringLiteral(mic), duckdbStringLiteral(security.Name)))
+		}
+		if _, err = tx.ExecContext(ctx, `CREATE TEMP TABLE _sqlite_scope AS SELECT * FROM (VALUES `+strings.Join(rows, ",")+`) s(instrument_id,symbol,mic,name)`); err != nil {
+			return err
+		}
+		// Source absence closes a provider identifier, not the canonical company.
+		// A reused/wrong identity stays in the publication with no financial values.
+		universe = `WITH checked AS (
+ SELECT s.*,i.name AS current_name,
+ i.instrument_id IS NULL OR i.instrument_type<>'equity' OR i.currency<>'CNY' OR i.exchange_mic<>s.mic
+ OR (i.list_date IS NOT NULL AND i.list_date>` + day + `)
+ OR (i.delist_date IS NOT NULL AND i.delist_date<=` + day + `)
+ OR (i.status<>'active' AND i.delist_date IS NULL)
+ OR NOT EXISTS(SELECT 1 FROM core.instrument_identifier d WHERE d.instrument_id=s.instrument_id AND d.provider='tdx' AND d.identifier_type='symbol' AND d.identifier_value=s.symbol AND (d.valid_from IS NULL OR d.valid_from<=` + day + `))
+ OR EXISTS(SELECT 1 FROM core.instrument_identifier d WHERE d.instrument_id<>s.instrument_id AND d.provider='tdx' AND d.identifier_type='symbol' AND d.identifier_value=s.symbol AND (d.valid_from IS NULL OR d.valid_from<=` + day + `) AND (d.valid_to IS NULL OR d.valid_to>` + day + `)) AS blocked,
+ (SELECT count(*) FROM core.instrument_identifier d WHERE d.instrument_id=s.instrument_id AND d.provider='tdx' AND d.identifier_type='symbol' AND d.identifier_value=s.symbol AND (d.valid_from IS NULL OR d.valid_from<=` + day + `) AND (d.valid_to IS NULL OR d.valid_to>` + day + `)) AS active_identifiers
+ FROM _sqlite_scope s LEFT JOIN core.instrument i USING(instrument_id))
+ SELECT instrument_id,CASE WHEN blocked OR active_identifiers>1 THEN name ELSE coalesce(current_name,name) END AS name,mic AS exchange_mic,[symbol] AS symbols,
+ 1 AS symbol_count,1 AS identifier_count,true AS scope_bound,
+ CASE WHEN blocked OR active_identifiers>1 THEN 'blocked_security_identity' WHEN active_identifiers=0 THEN 'inactive_source_identifier' ELSE 'active' END AS source_identity_status,
+ CASE WHEN blocked OR active_identifiers>1 THEN 'blocked_security_identity' ELSE NULL END AS financial_status
+ FROM checked`
+	} else {
+		universe = `SELECT *,false AS scope_bound,'active' AS source_identity_status,NULL::VARCHAR AS financial_status FROM (` + universe + `)`
+	}
 	if _, err = tx.ExecContext(ctx, `CREATE TEMP TABLE _sqlite_universe AS `+universe); err != nil {
 		return err
 	}
@@ -117,7 +164,7 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
  acquisition_started_at:=CAST(r.started_at AS VARCHAR),run_finished_at:=CAST(r.finished_at AS VARCHAR),
  adjustment:='unadjusted',source:='tdx') AS quote
  FROM market.daily_observation o JOIN meta.ingest_run r USING(ingest_run_id)
- WHERE o.instrument_id IN(SELECT instrument_id FROM _sqlite_universe) AND o.source='tdx' AND r.source='tdx'
+ WHERE o.instrument_id IN(SELECT instrument_id FROM _sqlite_universe WHERE financial_status IS NULL) AND o.source='tdx' AND r.source='tdx'
  AND r.dataset IN ('daily_ohlcv','valuation_quote_window') AND r.status IN ('completed','partial') AND o.close>0
  AND o.trade_date BETWEEN `+quoteEnd+`-INTERVAL 14 DAY AND `+quoteEnd+`
  AND r.started_at>=((o.trade_date::TIMESTAMP+INTERVAL 15 HOUR) AT TIME ZONE 'Asia/Shanghai')
@@ -177,7 +224,7 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
 	records := `WITH headers AS MATERIALIZED (
  SELECT r.source_record_id,r.instrument_id,s.source_filing_id,r.report_period,s.announcement_time,s.announcement_source,r.provider_code,a.sha256 AS artifact_sha256,a.fetched_at AS source_observed_at
  FROM fundamental.source_record r JOIN meta.artifact a USING(artifact_id) LEFT JOIN fundamental.statement_snapshot s USING(source_record_id)
- WHERE r.instrument_id IN(SELECT instrument_id FROM _sqlite_universe) AND r.report_period BETWEEN ` + start + ` AND ` + finish + periodFilter + `
+ WHERE r.instrument_id IN(SELECT instrument_id FROM _sqlite_universe WHERE financial_status IS NULL) AND r.report_period BETWEEN ` + start + ` AND ` + finish + periodFilter + `
  QUALIFY row_number() OVER(PARTITION BY r.instrument_id,r.report_period ORDER BY a.fetched_at DESC,a.artifact_id DESC,r.source_record_id DESC)=1
  )
  SELECT h.instrument_id,h.provider_code AS code,CAST(h.report_period AS VARCHAR) AS period,
@@ -196,6 +243,11 @@ func ExportFinancialSQLiteRows(ctx context.Context, db *sql.DB, dir string, code
 	}
 	if _, err = tx.ExecContext(ctx, `DROP TABLE _sqlite_universe`); err != nil {
 		return err
+	}
+	if len(scope) > 0 {
+		if _, err = tx.ExecContext(ctx, `DROP TABLE _sqlite_scope`); err != nil {
+			return err
+		}
 	}
 	return tx.Commit()
 }

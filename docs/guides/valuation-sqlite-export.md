@@ -49,6 +49,8 @@ journalctl -u alphalake-sqlite-export --no-pager
 
 ## 数据范围与语义
 
+刷新已发布范围时沿发布入口生成的`--scope-file`读取规范证券ID与ticker，不再要求TDX标识在刷新日仍有效；普通`--code`／`--all`仍是来源范围选择，不能用它们重选既有发布分母。源标识关闭、数据缺项和正式退市分别留状态，个股缺项不会删掉整行或阻断其他证券发布；错误／复用身份的数值隔离。具体状态与拒绝边界见[发布范围契约](../valuation/data-contract.md#发布范围与个股缺项)。
+
 链路：TDX原始包→已有标准语义/校验→DuckDB标准宽表→SQLite→网页→共享估值引擎。CNINFO补充公告身份、时点与核验血缘，不作为当前金额准入前提；PDF不覆盖TDX，参考数据和模型假设不混入标准财务事实。
 
 SQLite不创建`standard_facts`、`standard_records`、`export_cells`、`reviewed_source_zeros`或`export_universe`。全部标准字段、精确金额、来源和审核由主库提供。`export-financial-snapshot`在单次只读事务内批量投影实际目标字段及期间；Python批量写宽行，不逐公司启动进程。

@@ -18,6 +18,7 @@ func runFinancialSnapshotExport(ctx context.Context, args []string) error {
 	fs := flag.NewFlagSet("export-financial-snapshot", flag.ContinueOnError)
 	output := fs.String("output", "", "new temporary export directory")
 	codes := fs.String("codes", "", "comma-separated security codes; empty selects Shanghai/Shenzhen")
+	scopeFile := fs.String("scope-file", "", "JSON array of reviewed instrument_id/ticker/name publication identities; excludes --codes")
 	fields := fs.String("fields", "", "standard fields")
 	projection := fs.String("field-periods", "", "JSON file mapping each selected standard field to exact report dates")
 	from := fs.String("from", "", "first report period")
@@ -72,5 +73,15 @@ func runFinancialSnapshotExport(ctx context.Context, args []string) error {
 	if *codes != "" {
 		selected = strings.Split(*codes, ",")
 	}
-	return store.ExportFinancialSQLiteRows(ctx, db, *output, selected, strings.Split(*fields, ","), start, end, at, fieldPeriods)
+	var scope []store.FinancialExportSecurity
+	if *scopeFile != "" {
+		raw, err := os.ReadFile(*scopeFile)
+		if err != nil {
+			return err
+		}
+		if err = json.Unmarshal(raw, &scope); err != nil || len(scope) == 0 {
+			return fmt.Errorf("nonempty frozen publication scope required")
+		}
+	}
+	return store.ExportFinancialSQLiteRows(ctx, db, *output, selected, strings.Split(*fields, ","), start, end, at, fieldPeriods, scope)
 }
