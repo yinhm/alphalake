@@ -78,6 +78,32 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.research_reports validate
 
 公司经营资料按实际取得的信息截止筛选，不以估值财务基期截掉已取得的更新披露；较新经营说明进入观察与反证，未重建财务与条件时不能冒称已更新TTM或重估。站内研究目录及`/research/<合法ID>`可直接互链，目标仍由只读API核对登记；附件、原始文件与图片继续按当前报告的文件清单放行，不开放任意workspace路径。
 
+### 完整发布范围的初次覆盖
+
+当前编排契约为`initial-coverage-protocol-v2`，先绑定实际SQLite发布、规范证券ID、参考及计算依赖，再冻结完整证券名单。全部公司沿同版已验收的原生请求；旧专项研究仅通过前版关联，不把旧预测、旧行情及新参考拼接成一次更新。可计算、缺财务、范围待审和金融范围外分别交付；后几类仍有独立局部研究页，不能填0凑估值。主库存在但未发布的身份可凭证据列附录，不混入已发布准入率。
+
+准备新的`ALPHALAKE_COVERAGE_WORK`（位于实际workspace的derived内）、已确认的Python环境，以及已有公司概况、研究问句和公告目录清单。下列清单变量指向选定来源文件，不把某个历史日期目录写成通用运行配置。需要预告时，先沿[查询入口](earnings-guidance.md#范围与运行)把本地主库的只读查询保存为本工作目录的`guidance.json`；它不更新财报或假设。已知期后资本等解释边界可用`--research-context`绑定有证据的报告上下文，不能夹带估值参数。
+
+在项目根目录、按[隔离约定](fundamental-memory-20260919.md)逐阶段串行运行；每阶段先核对退出状态与收据，不能只见文件存在就进入下一步：
+
+```bash
+PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.initial_coverage freeze \
+  --protocol "$ALPHALAKE_COVERAGE_WORK/protocol.json" \
+  --profile-inventory "$ALPHALAKE_PROFILE_INVENTORY" \
+  --questions-file "$ALPHALAKE_MECHANISM_QUESTIONS" \
+  --filing-inventory "$ALPHALAKE_FILING_INVENTORY"
+
+PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.initial_coverage collect --protocol "$ALPHALAKE_COVERAGE_WORK/protocol.json"
+PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.initial_coverage facts --protocol "$ALPHALAKE_COVERAGE_WORK/protocol.json"
+PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.initial_coverage calculate --protocol "$ALPHALAKE_COVERAGE_WORK/protocol.json"
+PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.initial_coverage build --protocol "$ALPHALAKE_COVERAGE_WORK/protocol.json"
+PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.initial_coverage catalogue --protocol "$ALPHALAKE_COVERAGE_WORK/protocol.json"
+```
+
+先用`calculate/build --ticker …`验小批及边界；回到不带ticker的命令完成同一完整名单，复用前须验证协议及内容。经营资料复用健康缓存，失败保留；事实按规范ID一次批量导出，`financial-facts.json`只保存紧凑清单及JSONL定位，制图按公司读取，不驻留全市场事实。每家本地完整API重放一次并释放会话；没有执行实际网页HTTP就不标作逐公司网页验收，不为凑图数生成敏感性。
+
+正式公司报告与总览仍放research；总览用分页附文、CSV及JSON保存全部分母，登记的`tickers`可为空，不提高现有1000证券、256附件或正文大小限制。登记之前核对完整证券集合、快照、每家公司状态／数值／日期及附件哈希，再验实际页面、搜索、分页与图片。原文语义、计算一致、经济依据及预测有效性分别报告；结构化初次覆盖不称逐公司独立全文深研或合理参数认证。
+
 ## 页面与API
 
 - `/research`无需先加载估值公司，按研究日期排序（未知日期列后，不借登记时间充当研究日），支持标题、公司代码、摘要搜索、类型筛选与分页；缺目录和空目录明确显示暂无报告。目录卡片与详情的证券超过5只时默认折叠，完整列表仍可展开；搜索继续匹配全部证券。内部测试报告不冒充正式公司研究。
