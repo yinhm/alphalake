@@ -110,7 +110,7 @@ PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.initial_coverage catal
 
 ## 页面与API
 
-现有卡片目录及报告阅读继续沿以下接口；拟新增的独立数值总览、搜索／排序和紧凑结果查询见[估值结果表spec](../valuation/valuation-results-page-spec.md)，尚未实施，不把该计划当作当前能力。
+现有卡片目录及报告阅读继续沿以下接口；拟新增的`/screen`选股表、搜索／数值筛选／排序和紧凑结果查询见[选股页面spec](../valuation/valuation-results-page-spec.md)，尚未实施，不把该计划当作当前能力。
 
 - `/research`无需先加载估值公司，按研究日期排序（未知日期列后，不借登记时间充当研究日），支持标题、公司代码、摘要搜索、类型筛选与分页；缺目录和空目录明确显示暂无报告。目录卡片与详情的证券超过5只时默认折叠，完整列表仍可展开；搜索继续匹配全部证券。内部测试报告不冒充正式公司研究。
 - `/research/:id`可直接访问和刷新；显示类型、研究日、财务期、信息截止、股本日、限制、Markdown正文、附文及附件。表格独立横向滚动，窄屏可读；不重新计算价值或改写情景。
