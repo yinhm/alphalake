@@ -1,0 +1,121 @@
+[
+  {
+    "dataset": "gdp",
+    "url": "https://www.stats.gov.cn/sj/zxfb/202610/t20261020_1965658.html",
+    "sha256": "0200a738827cf2999db39d158598de88034e35944c1712c2f75222bc180f3ebf",
+    "bytes": 267616,
+    "fetched_at": "2026-10-21T03:51:17.744019+00:00"
+  },
+  {
+    "dataset": "cpi",
+    "url": "https://www.stats.gov.cn/sj/zxfb/202610/t20261014_1965477.html",
+    "sha256": "ac0ed2d2e3d259249d113fe41b32b0936823d4493143aa0fea55707a14cffc3b",
+    "bytes": 245756,
+    "fetched_at": "2026-10-21T03:51:17.941176+00:00"
+  },
+  {
+    "dataset": "ppi",
+    "url": "https://www.stats.gov.cn/sj/zxfb/202610/t20261014_1965476.html",
+    "sha256": "e50ab7dc7d03a9bc30c4aa9b9c4bd5e06b6036cff29124f2a3f53e485fcbcf02",
+    "bytes": 265760,
+    "fetched_at": "2026-10-21T03:51:19.580518+00:00"
+  },
+  {
+    "dataset": "pmi",
+    "url": "https://www.stats.gov.cn/sj/zxfb/202609/t20260930_1965449.html",
+    "sha256": "5793799202066c330332cce23b6c312f1ab2a24df40f6732cf6b3b71a16c2e1f",
+    "bytes": 421979,
+    "fetched_at": "2026-10-21T03:51:24.897280+00:00"
+  },
+  {
+    "dataset": "industrial",
+    "url": "https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965617.html",
+    "sha256": "9b9afe091c8f6e1a7c1b536dde7921e491ae5d105dedd3d46a9e187b04cc6fcf",
+    "bytes": 405753,
+    "fetched_at": "2026-10-21T03:51:31.436570+00:00"
+  },
+  {
+    "dataset": "investment",
+    "url": "https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965616.html",
+    "sha256": "37c4728269674ef5fb95696b58f94cadea66564ffa4e6baa7747bec71936205c",
+    "bytes": 190726,
+    "fetched_at": "2026-10-21T03:51:24.293728+00:00"
+  },
+  {
+    "dataset": "property",
+    "url": "https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965615.html",
+    "sha256": "81f43efbc242d618070adeecf985576b49aeb5b729f063db664a2d00db9a56a5",
+    "bytes": 250665,
+    "fetched_at": "2026-10-21T03:51:30.121586+00:00"
+  },
+  {
+    "dataset": "retail",
+    "url": "https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965614.html",
+    "sha256": "b27d0c8aa542541828c90f42953d0e2011eeb4e7552671f15aa1ada6202cb5b6",
+    "bytes": 246685,
+    "fetched_at": "2026-10-21T03:51:30.482865+00:00"
+  },
+  {
+    "dataset": "capacity",
+    "url": "https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965611.html",
+    "sha256": "ef6b78f3e578f9f129809ff8befdc93442acebe8ba961e3301ba5407734a23bf",
+    "bytes": 168061,
+    "fetched_at": "2026-10-21T03:51:35.402234+00:00"
+  },
+  {
+    "dataset": "household",
+    "url": "https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965612.html",
+    "sha256": "dfe47867a33572595e64fc8647e370444306d2ec75561943bd02c2abec9d9c6d",
+    "bytes": 249068,
+    "fetched_at": "2026-10-21T03:51:38.246266+00:00"
+  },
+  {
+    "dataset": "economy",
+    "url": "https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965618.html",
+    "sha256": "e8334689a2708a1f86adac88612cddaaa2b1c4c25a3604174523ac357d1604ad",
+    "bytes": 553739,
+    "fetched_at": "2026-10-21T03:51:41.996365+00:00"
+  },
+  {
+    "dataset": "profits",
+    "url": "https://www.stats.gov.cn/sj/zxfb/202609/t20260928_1965425.html",
+    "sha256": "7731d5e18d8f41630e495201dd02f3948751c8412598bddca9b4e5c06ffad06e",
+    "bytes": 493851,
+    "fetched_at": "2026-10-21T03:51:43.416165+00:00"
+  },
+  {
+    "dataset": "money",
+    "url": "https://www.pbc.gov.cn/diaochatongjisi/attachDir/2026/10/2026101417435141164.htm",
+    "sha256": "7240e02eee12b46e4e8199a5977cd2868778a79cca4aacfc1d97335299ef6ff8",
+    "bytes": 47514,
+    "fetched_at": "2026-10-21T03:51:40.812950+00:00"
+  },
+  {
+    "dataset": "afre_flow",
+    "url": "https://www.pbc.gov.cn/diaochatongjisi/attachDir/2026/10/2026101417443343908.htm",
+    "sha256": "6595e4c2c44fddf849e6bf00624f2666ea0b1c762eec9394e6ff54ba13092924",
+    "bytes": 55824,
+    "fetched_at": "2026-10-21T03:51:43.032120+00:00"
+  },
+  {
+    "dataset": "afre_stock",
+    "url": "https://www.pbc.gov.cn/diaochatongjisi/attachDir/2026/10/2026101417444554195.htm",
+    "sha256": "8649f9da169e8c89985781bfb26f222f277adc59685315836c0c133dc0056794",
+    "bytes": 57401,
+    "fetched_at": "2026-10-21T03:51:42.763832+00:00"
+  },
+  {
+    "dataset": "financial_report",
+    "url": "https://www.pbc.gov.cn/diaochatongjisi/116219/116225/2026101417073743604/index.html",
+    "sha256": "41c2f6f84f997c66fe342d571aec38e315240cd25e853b0c4d72a09804534a25",
+    "bytes": 44942,
+    "fetched_at": "2026-10-21T03:57:09.966031+00:00"
+  },
+  {
+    "dataset": "fiscal",
+    "url": "https://gks.mof.gov.cn/tongjishuju/202609/t20260918_3997709.htm",
+    "sha256": "5e47ce002478d8985d251cde0d2f11da89c48dab4a754aebf4dadf768c4f8e21",
+    "bytes": 33626,
+    "fetched_at": "2026-10-21T04:12:38.922811+00:00"
+  }
+]

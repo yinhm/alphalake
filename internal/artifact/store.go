@@ -72,6 +72,14 @@ func Persist(ctx context.Context, db *sql.DB, root string, input Input) (Stored,
 		name := safeSegment(strings.TrimSuffix(filepath.Base(locator.Path), ext))
 		rel = filepath.Join(sourceDir, name+"-"+out.SHA256[:12]+ext)
 	}
+	if (input.Source == "nbs" || input.Source == "pbc" || input.Source == "mof") && strings.HasPrefix(input.Dataset, "macro_") {
+		locator, err := url.Parse(input.SourceLocator)
+		if err != nil {
+			return Stored{}, err
+		}
+		name := safeSegment(strings.TrimSuffix(filepath.Base(locator.Path), ext))
+		rel = filepath.Join(sourceDir, safeSegment(input.Dataset)+"-"+name+"-"+out.SHA256[:12]+ext)
+	}
 	if input.Source == "eastmoney" && input.Dataset == "earnings_guidance" {
 		locator, err := url.Parse(input.SourceLocator)
 		if err != nil {

@@ -176,7 +176,7 @@ func fetchReferenceArtifact(ctx context.Context, db *sql.DB, root string, option
 	if err != nil {
 		return empty, err
 	}
-	if feed.source == "bse" {
+	if feed.source == "bse" || feed.source == "nbs" || feed.source == "pbc" || feed.source == "mof" {
 		req.Header.Set("User-Agent", "AlphaLake/1.0")
 		req.Header.Set("Accept", "text/html")
 	}

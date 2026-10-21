@@ -26,6 +26,8 @@ func runExtendedCommand(ctx context.Context, args []string) (bool, error) {
 		return true, errHelp
 	}
 	switch args[0] {
+	case "sync-macro", "macro-series", "macro-data", "upgrade-macro-data":
+		return true, runMacroData(ctx, args[0], args[1:])
 	case "sync-earnings-guidance", "earnings-guidance", "upgrade-earnings-guidance":
 		return true, runEarningsGuidance(ctx, args[0], args[1:])
 	case "import-issuer-references", "upgrade-issuer-references":

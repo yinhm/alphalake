@@ -8,7 +8,10 @@ import (
 	"strings"
 )
 
-const SchemaVersion = 58
+const SchemaVersion = 59
+
+//go:embed macro.sql
+var macroSQL string
 
 //go:embed earnings_guidance.sql
 var earningsGuidanceSQL string
@@ -65,6 +68,9 @@ func Initialize(ctx context.Context, db *sql.DB) error {
 	if _, err = tx.ExecContext(ctx, earningsGuidanceSQL); err != nil {
 		return err
 	}
+	if _, err = tx.ExecContext(ctx, macroSQL); err != nil {
+		return err
+	}
 	if err := insertSourceFieldCatalog(ctx, tx); err != nil {
 		return err
 	}
@@ -100,6 +106,42 @@ func CurrentSchemaVersion(ctx context.Context, db *sql.DB) (int, error) {
 		return 0, err
 	}
 	return version, nil
+}
+
+// UpgradeMacroData adds only the macro domain on an explicitly selected schema58 copy.
+func UpgradeMacroData(ctx context.Context, db *sql.DB) error {
+	version, err := CurrentSchemaVersion(ctx, db)
+	if err != nil {
+		return err
+	}
+	if version != 58 {
+		return fmt.Errorf("macro data upgrade requires schema58, found %d", version)
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	before, err := tableContentSignatures(ctx, tx)
+	if err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, macroSQL); err != nil {
+		return err
+	}
+	if _, err = tx.ExecContext(ctx, `INSERT INTO meta.schema_version(version,description) VALUES(59,'Official macroeconomic series and publication vintages')`); err != nil {
+		return err
+	}
+	after, err := tableContentSignatures(ctx, tx)
+	if err != nil {
+		return err
+	}
+	for table, signature := range before {
+		if after[table] != signature {
+			return fmt.Errorf("macro migration changed existing table %s", table)
+		}
+	}
+	return tx.Commit()
 }
 
 // UpgradeFilingCoverage is an explicit, one-time schema52 -> schema53 change.

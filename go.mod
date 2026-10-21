@@ -6,6 +6,7 @@ require (
 	github.com/duckdb/duckdb-go/v2 v2.10505.0
 	github.com/injoyai/ios v1.2.6
 	github.com/injoyai/tdx v0.0.87
+	golang.org/x/text v0.34.0
 )
 
 require (
@@ -47,7 +48,6 @@ require (
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
 	golang.org/x/telemetry v0.0.0-20260116145544-c6413dc483f5 // indirect
-	golang.org/x/text v0.34.0 // indirect
 	golang.org/x/tools v0.41.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

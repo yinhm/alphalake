@@ -34,7 +34,8 @@ func TestUpgradeEarningsGuidancePreservesFinancialFacts(t *testing.T) {
 	if err = db.Close(); err != nil {
 		t.Fatal(err)
 	}
-	db, err = OpenInitialized(t.Context(), path)
+	// The one-time historical converter ends at schema58; inspect its output without pretending it is the current schema.
+	db, err = Open(t.Context(), path)
 	if err != nil {
 		t.Fatal(err)
 	}

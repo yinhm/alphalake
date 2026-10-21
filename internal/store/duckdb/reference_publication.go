@@ -14,6 +14,7 @@ import (
 // Shared by the reviewed reference feeds, not a public arbitrary-table writer.
 type referenceInput struct {
 	Source, Dataset, URL, Date, SHA, ParserVersion, Runtime, Normalization, ParserHash string
+	PublishedAt                                                                        *time.Time
 }
 type referencePublication struct {
 	tx                   *sql.Tx
@@ -81,6 +82,15 @@ func beginReferencePublication(ctx context.Context, db *sql.DB, runID, artifactI
 		version = in.Date
 	}
 	normalization := in.Normalization + ";" + in.ParserHash + ";" + in.Runtime
+	precision := "unknown"
+	var published any
+	if in.PublishedAt != nil {
+		if in.PublishedAt.After(firstSeen) {
+			return p, errors.New("reference publication exceeds acquisition")
+		}
+		precision = "timestamp"
+		published = in.PublishedAt.UTC()
+	}
 	digest := sha256.Sum256([]byte(hash + "\n" + in.ParserVersion + "\n" + normalization))
 	p.source, p.dataset, p.key = source, dataset, hex.EncodeToString(digest[:])
 	err = p.tx.QueryRowContext(ctx, `SELECT release_id FROM meta.dataset_release WHERE source=? AND dataset=? AND content_key=?`, source, dataset, p.key).Scan(&p.id)
@@ -91,8 +101,8 @@ func beginReferencePublication(ctx context.Context, db *sql.DB, runID, artifactI
    JOIN meta.dataset_release_artifact a ON a.release_id=r.release_id AND a.artifact_id=? AND a.role='data'
    JOIN meta.checkpoint c ON c.source=r.source AND c.dataset=r.dataset AND c.checkpoint_key=r.content_key AND c.checkpoint_value=CAST(r.release_id AS VARCHAR)
    WHERE r.release_id=? AND r.source_version IS NOT DISTINCT FROM ? AND r.parser_version=? AND r.normalization_version=?
-   AND r.publication_precision='unknown' AND r.source_published_at IS NULL
-   AND r.availability_basis='first_seen' AND r.available_at=? AND r.first_seen_at=?`, artifactID, p.id, version, in.ParserVersion, normalization, firstSeen, firstSeen).Scan(&linked)
+   AND r.publication_precision=? AND r.source_published_at IS NOT DISTINCT FROM ?
+	   AND r.availability_basis='first_seen' AND r.available_at=? AND r.first_seen_at=?`, artifactID, p.id, version, in.ParserVersion, normalization, precision, published, firstSeen, firstSeen).Scan(&linked)
 		if err == nil && linked != 1 {
 			err = errors.New("published reference lineage/checkpoint changed")
 		}
@@ -119,8 +129,8 @@ func beginReferencePublication(ctx context.Context, db *sql.DB, runID, artifactI
 	if !errors.Is(err, sql.ErrNoRows) {
 		return
 	}
-	err = p.tx.QueryRowContext(ctx, `INSERT INTO meta.dataset_release(source,dataset,source_version,content_key,publication_precision,available_at,availability_basis,first_seen_at,parser_version,normalization_version,ingest_run_id)
- VALUES (?,?,?,?,'unknown',?,'first_seen',?,?,?,?) RETURNING release_id`, source, dataset, version, p.key, firstSeen, firstSeen, in.ParserVersion, normalization, runID).Scan(&p.id)
+	err = p.tx.QueryRowContext(ctx, `INSERT INTO meta.dataset_release(source,dataset,source_version,content_key,publication_precision,source_published_at,available_at,availability_basis,first_seen_at,parser_version,normalization_version,ingest_run_id)
+ VALUES (?,?,?,?,?,?,?,'first_seen',?,?,?,?) RETURNING release_id`, source, dataset, version, p.key, precision, published, firstSeen, firstSeen, in.ParserVersion, normalization, runID).Scan(&p.id)
 	if err != nil {
 		return
 	}
