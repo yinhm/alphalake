@@ -22,6 +22,8 @@
 
 `snapshot`绑定SQLite SHA-256、其来源库SHA-256、参考ID、信息截止和财务期。每个故事使用原有`Story`结构，包括完整`annual_operating_plan`与允许的`assumption_overrides`，沿现有typed契约核对期间、单位和长度。
 
+快照信息截止是财务消费版本的时点，不是公司研究资料的统一截止。较新经营材料可进入本次研究，逐源保留实际期间、取得时间和已知公告日，报告分别标注；F10标题期间与正文不一致时按实际内容说明，不将后续经营文字当正式TTM，也不认证严格历史PIT。
+
 | 内容 | 契约 |
 | --- | --- |
 | `basis[story_id]` | 七项：`revenue/margin/capital/research/tax/financing/terminal` |

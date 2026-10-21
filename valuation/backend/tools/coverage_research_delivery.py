@@ -119,7 +119,8 @@ def company_report(identifier, source, result, story, evidence, plan, frozen, ru
     folder.mkdir(exist_ok=True)
     files = [entry('authored-note', '计算前的结构化公司研究', note_file), entry('authored-text', '计算前研究正文', note_text)]
     text = ['# '+source['name']+'：公司故事与'+('条件估值' if model else '研究边界'), '',
-        f"证券：`{source['ticker']}`；财务／股本基期{run['snapshot']['financial_report_period']}；信息截止`{run['snapshot']['information_as_of']}`。", '',
+        f"证券：`{source['ticker']}`；财务／股本基期{run['snapshot']['financial_report_period']}；财务快照信息截止`{run['snapshot']['information_as_of']}`。", '',
+        '公司研究信息时点独立于财务快照；经营材料的实际期间及取得时间见来源，本报告不认证这些材料在财务快照截止时已经可知。', '',
         '未来数值是阅读本公司资料后明确采用的研究条件，不是公司承诺。原生默认只作基线，不代替公司故事。', '']
     text += ['报价与资本比较边界：'+source['price_comparison_reason']+'；不以较新研究日期伪装已更新股本。', '']
     if purpose == 'diagnostic_condition':
