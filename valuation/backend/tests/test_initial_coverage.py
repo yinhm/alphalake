@@ -235,6 +235,7 @@ def test_calculate_replays_ready_once_and_never_fabricates_financial_valuation(f
     ready=json.loads((tool.report_folder(rows[0]['ticker'],protocol)/'valuation.json').read_text())
     blocked=json.loads((tool.report_folder(rows[1]['ticker'],protocol)/'valuation.json').read_text())
     assert ready['api_verified'] and not ready['live_verified'] and ready['sensitivities']==[]
+    assert ready['mode']=='native_baseline_with_operating_context' and not ready['model_parameters_changed']
     assert blocked['status']=='outside_product_scope' and blocked['request'] is None and 'review' not in blocked
     assert blocked['response']==dict(detail='金融模型暂停') and ready['run_id']!=blocked['run_id']
     tool.calculate(path)

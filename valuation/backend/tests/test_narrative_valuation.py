@@ -102,6 +102,25 @@ def test_story_to_native_value_and_explicit_revision(prepared, tmp_path):
         nv.run(database, directory/'stories.json', output)
 
 
+def test_story_accepts_equivalent_utc_representation_without_exempting_financial_overrides(prepared):
+    _, directory = prepared
+    document = conditional(nv.read_json(directory/'stories.json'))
+    story = nv.Story.model_validate(document['stories'][0])
+    baseline = nv.read_json(directory/'shse-600519-baseline.json')
+    baseline['body']['inputs']['prepared_ttm'] = dict(financials=baseline['body']['ltm_financials'],
+        period_start='2025-01-01', period_end='2025-12-31', information_as_of='2026-10-07T00:00:00+00:00',
+        currency='CNY', money_unit='million_reporting_currency', shares_unit='million_shares', provenance={'source': 'synthetic'})
+    request, binding = nv.compile_story(story, baseline)
+    assert request['inputs']['prepared_ttm']['information_as_of'] == '2026-10-07T00:00:00Z'
+    assert not any(change['path'].startswith('/prepared_ttm') for change in binding['input_changes'])
+    assert CompanyValuationInput.model_validate(request['inputs']).prepared_ttm == CompanyValuationInput.model_validate(baseline['body']['inputs']).prepared_ttm
+    altered = story.model_dump(mode='json')
+    altered['assumption_overrides']['prepared_ttm.information_as_of'] = '2026-10-08T00:00:00Z'
+    altered['claims'][0]['parameters'].append('prepared_ttm.information_as_of')
+    with pytest.raises(ValueError, match='only existing assumption/reference'):
+        nv.compile_story(nv.Story.model_validate(altered), baseline)
+
+
 def test_draft_missing_bindings_and_protected_facts(prepared, tmp_path):
     database, directory = prepared
     summary = nv.run(database, directory/'stories.json', tmp_path/'derived'/'drafts')

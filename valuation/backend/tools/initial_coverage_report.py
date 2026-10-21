@@ -237,8 +237,9 @@ def company_report(row, protocol, model, facts, business, profile, mechanism, pe
     value=body['final']['value_per_share'];price=ltm.get('stock_price_reporting')
     change, comparison_status, comparison_reason = price_comparison(row, protocol, value, price)
     mode='当前SQLite绑定的原生来源初值与默认路径条件'
-    paragraphs=[f"# {row['name']}（{row['ticker']}）初次覆盖",'',
-        f"**每股条件价值 {value:,.2f} 元人民币**。本报告采用{mode}，给出该值需要兑现的经营表现及当前反证。"
+    paragraphs=[f"# {row['name']}（{row['ticker']}）资料与原生基线",'',
+        '**公司研究尚未完成。** 以下为已有数据与默认条件的解释，不是研究后选定的公司故事估值。', '',
+        f"**每股原生基线条件价值 {value:,.2f} 元人民币**。本报告采用{mode}，给出该值需要兑现的经营表现及当前反证。"
         f"所用{row['quote_date'] or '未取得合格报价日'}未复权收盘价{money(price,1)}元，"
         +(f"描述价差{percent(change)}" if change is not None else '价差不比较')+'；不是预期收益率或新价格目标。','',
         f"**价格比较边界：** {comparison_reason}（`{comparison_status}`）。",'',
@@ -318,7 +319,7 @@ def company_report(row, protocol, model, facts, business, profile, mechanism, pe
         '研发费用不等于全部当期研发现金，货币资金不等于可自由分配现金，经营负债也不等于全是有息债。投入支撑什么产品、多久收回、融资期限是否匹配，是资本配置的核心检验。','',
         f"**对管理层的具体问题：** {mechanism['observe']}。本报告不根据履历或公司自述给予管理层溢价；当前材料没有完成控制权、关联交易、员工权利及全部到期债务审查。"
         '已有研发、扩产与现金占用是行动证据，未来回报仍需客户与现金兑现。','',
-        '## 四、经营故事与三个可证伪主张','',
+        '## 四、公司观察与原生基线的待检验条件','',
         table(['主张主题','本公司已知观察','当前原生条件要求','反证／修订触发'],company_observations(facts,model,latest)),'',
         f"**关键分歧：** {clean(profile['profile'].get('MAIN_BUSINESS')) or row['name']}所披露的需求与投入，能否转化为上表所需收入、利润及现金？"
         f"主要替代解释是：{mechanism['counterevidence']}。当前材料尚不能唯一选定未来参数，先看{mechanism['observe']}，再决定是否提出新的显式研究条件。",'',
@@ -578,6 +579,8 @@ def build(protocol_file, tickers=None, revision=None):
             folder = base_folder.with_name(base_folder.name+'-'+revision) if revision else base_folder
             if (folder/'research.json').exists():
                 existing = read_report(folder.name)
+                if existing.kind != 'research_note' or existing.status != 'partial':
+                    raise ValueError('旧报告未区分原生基线与公司研究；请新建revision，不改写冻结报告：'+ticker)
                 model = json.loads((folder/'valuation.json').read_text())
                 verify_model(model, row, protocol, protocol_hash)
                 for entry in existing.files:
@@ -665,8 +668,8 @@ def build(protocol_file, tickers=None, revision=None):
             summary = (profile['profile'].get('MAIN_BUSINESS') or '已有资料与范围／输入状态逐项保留。')[:180]
             summary += ('；每股原生条件值'+f'{value:,.2f}'+'元，尚非已验证公司预测。') if ready else '；未生成DCF：'+row['admission']
             metadata = dict(contract='alphalake-research-v1', id=folder.name,
-                title=row['name']+'：业务、财务与'+('条件估值' if ready else '范围／缺项')+'｜初次覆盖', summary=summary,
-                kind='initial_coverage', status='complete' if ready and not source_limitation else 'partial', tickers=[ticker],
+                title=row['name']+'：业务、财务与'+('原生基线' if ready else '范围／缺项')+'｜研究待补', summary=summary,
+                kind='research_note', status='partial', tickers=[ticker],
                 research_date=collection['acquired_at'][:10], financial_period=protocol['financial_report_period'],
                 information_as_of=collection['acquired_at'], share_date=protocol['financial_report_period'] if ready else None,
                 run_ids=[model['run_id']] if model.get('run_id') else [], files=files, limitations=[
@@ -757,8 +760,8 @@ def catalogue(protocol_file, revision=None):
     for row in protocol['companies']:
         ticker, identifier = row['ticker'], current_reports[row['ticker']]
         report = read_report(identifier)
-        if report.tickers != [ticker] or report.kind != 'initial_coverage':
-            raise ValueError('不是独立公司初次覆盖')
+        if report.tickers != [ticker] or report.kind != 'research_note' or report.status != 'partial':
+            raise ValueError('不是独立公司资料／基线待补研究')
         for entry in report.files:
             verified_file(report, entry.id)
         folder = workspace_path('research', identifier)
@@ -806,7 +809,8 @@ def catalogue(protocol_file, revision=None):
         protocol_sha256=protocol_hash, sqlite_sha256=protocol['sqlite_sha256'], report_period=protocol['financial_report_period'],
         valuation_information_as_of=protocol['information_as_of'], research_frozen_at=protocol['frozen_at'],
         company_evidence_acquired_at=collection['acquired_at'], results=results, annual_input_comparison=comparisons,
-        automatic_parameter_selection=False, default_parameters_changed=False, pdf_full_text_independent_reviews=0)
+        automatic_parameter_selection=False, default_parameters_changed=False, pdf_full_text_independent_reviews=0,
+        company_research_conditions=0, research_completion_status='pending_company_research')
     summary['run_id'] = value_digest(summary)
     save(folder/'results.json', summary)
     with (folder/'results.csv').open('w', newline='') as stream:
@@ -815,16 +819,16 @@ def catalogue(protocol_file, revision=None):
         for result in results:
             writer.writerow(result | dict(missing_fields=json.dumps(result['missing_fields'], ensure_ascii=False)))
     page_files, pages = catalogue_pages(folder, results)
-    narrative = [f"# 全部{len(results):,}家已发布沪深公司初次覆盖", '',
-        f"**{len(results):,}家逐一交付研究页；{admissions['ready']:,}家有当前原生条件值，其余{len(results)-admissions['ready']:,}家保留范围或输入状态。** "
-        '研究交付不等于全部公司已完成DCF，也不等于未来预测已获验证。', '',
+    narrative = [f"# 全部{len(results):,}家沪深公司资料与原生基线", '',
+        f"**{len(results):,}家逐一整理；{admissions['ready']:,}家有原生基线值，其余{len(results)-admissions['ready']:,}家保留范围或输入状态。公司故事研究尚未完成。** "
+        '本入口没有形成研究后选定的年度条件，不能计入公司研究估值完成数。', '',
         '## 本轮采用什么起点', '',
         '证券名单按当前发布消费快照的规范身份完整冻结，不按市值、估值高低或资料齐全程度删选。默认沪深范围，不含北交所。', '',
         f"财务／股本基期{protocol['financial_report_period']}；估值输入截止{protocol['information_as_of']}；范围／请求冻结{protocol['frozen_at']}；经营资料收集截至{collection['acquired_at']}。"
         '报价按每家公司实际收盘日列示，旧价与未知价格保留。经营资料的期间和实际取得分别留痕，不把新取得冒充当时已经留存。', '',
         '全部可计算公司统一沿当前SQLite绑定的原生请求，经本地原生API逐个重放；旧人工故事只作前版链接，没有混入新请求。条件不同不是同一组条件的价格更新或单因素改善。'
         '实际服务HTTP抽样验收与本地全范围API核验分别记录，本总览不声称逐家公司在8080重新POST。', '',
-        '## 如何阅读公司研究', '',
+        '## 如何阅读公司资料与基线', '',
         '- 每家公司独立展示已知业务、标准财务、同窗观察、当前条件及反证；增长、利润和资本的矛盾作为待检验解释，不按正则问句自动认证周期或预测。',
         '- 最新经营披露及已存预告列明实际期间、累计或单季、来源状态和用途；预告未写入财报／TTM，也未自动转为未来参数。',
         '- 经营汇编未取得的公司保留局部覆盖与标准财务，不称全文已读；没有已计算敏感性则不补造对照。金融范围外、范围待审及缺必需输入各有独立partial页。',
@@ -851,9 +855,9 @@ def catalogue(protocol_file, revision=None):
     narrative_text = (folder/'report.md').read_text().replace('(protocol.json)', '('+Path(os.path.relpath(protocol_file.resolve(), folder.resolve())).as_posix()+')')
     (folder/'report.md').write_text(narrative_text)
     files[0]['sha256'] = digest(folder/'report.md')
-    metadata = dict(contract='alphalake-research-v1', id=folder.name, title=f"全部{len(results):,}家沪深初次覆盖：公司、条件值与缺项",
-        summary=f"{admissions['ready']:,}家当前原生条件、{len(results)-admissions['ready']:,}家范围／输入状态；{summary['chart_count']:,}幅图，保留局部证据限制。",
-        kind='research_note', status='complete', tickers=[], research_date=collection['acquired_at'][:10],
+    metadata = dict(contract='alphalake-research-v1', id=folder.name, title=f"全部{len(results):,}家沪深公司资料与原生基线｜研究待补",
+        summary=f"{admissions['ready']:,}家原生基线、{len(results)-admissions['ready']:,}家范围／输入状态；未完成逐公司故事研究。",
+        kind='research_note', status='partial', tickers=[], research_date=collection['acquired_at'][:10],
         financial_period=protocol['financial_report_period'], information_as_of=collection['acquired_at'], share_date=protocol['financial_report_period'],
         run_ids=[summary['run_id']], files=files, limitations=[
             '完整证券分母的结构化初次覆盖；不是逐页原文审计或经认证的新预测。',

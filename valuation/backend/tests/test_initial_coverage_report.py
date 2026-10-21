@@ -69,6 +69,7 @@ def test_zero_revenue_forecast_keeps_undefined_margin_in_complete_report():
     mechanism = dict(meaning='合成测试', observe='等待真实收入', counterevidence='收入未形成')
     text = company_report(row, protocol, model, {}, business, profile, mechanism, [], [], [])
     assert '未来收入增长 | 未取得' in text and '调整经营利润率 | 未取得' in text
+    assert '**公司研究尚未完成。**' in text and '每股原生基线条件价值' in text
     assert review['forecast'][0]['adjusted_operating_margin'] is None
 
 

@@ -274,7 +274,8 @@ def compile_story(story, baseline):
         if actual != value:
             raise ValueError('override was ignored or normalized unexpectedly: '+path)
     permitted = ('/valuation_assumptions/', '/macro_inputs/', '/methodology_choices/')
-    input_changes = list(changes(body['inputs'], canonical))
+    # Typed日期会把同一UTC瞬间的+00:00写成Z，先统一基线表示再核对事实。
+    input_changes = list(changes(inputs.model_dump(mode='json'), canonical))
     if any(not c['path'].startswith(permitted) for c in input_changes):
         raise ValueError('story changed financial facts, identity or equity bridge')
     return dict(inputs=canonical), dict(input_changes=input_changes,

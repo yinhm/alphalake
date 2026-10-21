@@ -23,6 +23,8 @@ description: 使用AlphaLake数据与既有引擎完成沪深非金融公司的�
 
 研究深度取决于问题，而非可调用工具的数量。先定位已有报告／论点和冻结计算，明确本轮是**解释旧条件、提出新研究条件，还是更新已有条件**；把最影响判断的经营分歧写成研究问题。已知数据足以回答就交付，不默认再跑全市场、独立DCF或完整敏感性矩阵。
 
+**全量公司研究不能由原生基线加经营说明代替。** 每家公司先形成有来源的故事、参数选择理由和完整年度条件，再计算；引用原生数值只能标为基线。已有研究须逐项判断继承、修订或失效，不因较新的批处理日期退回默认。历史锚点或周期均值展开的旧路径也须审阅公司依据，不按“有显式路径”自动算研究完成。缺依据保留研究待补状态及可用基线，不以模板、图数或HTTP成功凑完成率。
+
 ## 开始前核对
 
 1. 定位仓库：会话已知路径或`ALPHALAKE_ROOT`优先，否则检查当前目录及父目录的`valuation/backend/tools/company_valuation.py`。安装Skill目录不等于仓库目录。读取根`AGENTS.md`、[当前状态](../../docs/implementation-status.md)与[统一入口](../../docs/guides/company-valuation-entry.md)；涉及取数或转换再查[数据契约](../../docs/valuation/data-contract.md)。
@@ -52,7 +54,7 @@ description: 使用AlphaLake数据与既有引擎完成沪深非金融公司的�
 | 既有专项／行业政策 | `tools.company_valuation`，消费BatchPolicy；检查`alphalake-company-valuation-v1`及selection，不从候选自行选价。[统一入口](../../docs/guides/company-valuation-entry.md#使用) |
 | 标准经营依据与经济审阅 | `tools.review_operating_evidence`、`tools.review_native_policy`；来源金额元与估值百万元分开。[经营事实](../../docs/guides/company-valuation-entry.md#从标准库取得经营事实依据) |
 | 研究图表 | `tools.research_charts --input … --output …`，仅绘制已核对数据和现有引擎输出，写新研究目录；不改事实、参数或页面。[图表输入与交付](references/charts.md) |
-| 完整范围初次覆盖 | `tools.initial_coverage freeze/collect/facts/calculate/build/catalogue`；冻结实际发布范围及当前原生条件，保留逐公司缺项／范围外，复用健康经营缓存并流式取事实。[批量执行与验收](../../docs/guides/research-delivery.md#完整发布范围的初次覆盖) |
+| 完整范围初次覆盖 | 先沿[批量研究要求](references/delivery-and-explanation.md#批量初次覆盖)逐公司完成证据与显式条件；`tools.coverage_research freeze/check/run`冻结、验证并沿既有原生API执行，保留完整分母和待研究状态，不选择参数。[研究输入与执行](../../docs/valuation/company-research-coverage.md)。`tools.initial_coverage`仅整理资料、重放并解释原生基线 |
 | 经营证据与预测约束 | `tools.review_operating_constraints`；保留公司分母，核对单位／期间、分部增长贡献及显式条件；区分历史归因、条件关系和未建立，半年结构不套入TTM。[约束契约](../../docs/valuation/narrative-valuation-plan.md#经营证据到预测约束) |
 | 运行发现／旧政策运行比较 | `tools.list_valuation_runs`、`tools.compare_valuations`；故事与具名交付ID另有命名空间。[更新与比较](references/updates-and-comparison.md) |
 | 已有跨公司／周期／资本效率条件 | 只在问题涉及时读取[统一情景](../../docs/valuation/native-uniform-scenarios.md)、[周期框架](../../docs/valuation/cyclical-valuation.md)、[资本效率](../../docs/valuation/capital-efficiency.md)，复用现有工具，保留全部拒绝与条件 |

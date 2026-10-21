@@ -32,7 +32,7 @@ def register(root, identifier, files, tickers=None):
     (folder / 'report.md').write_text('# 合成研究\n')
     entries = [('report', folder / 'report.md'), *files]
     return publish(folder, dict(contract='alphalake-research-v1', id=identifier, title='合成研究批次', summary='合成条件',
-        kind='initial_coverage', tickers=tickers or [], research_date='2026-10-21',
+        kind='research_note', status='partial', tickers=tickers or [], research_date='2026-10-21',
         files=[dict(id=key, label=key, path=path.relative_to(root).as_posix()) for key, path in entries]))
 
 
@@ -80,7 +80,7 @@ def fixture_batch(root):
         difference = None if not ready or index == 2 else (value / 10 - 1) * 100
         rows.append(dict(**{key: frozen[key] for key in ('ticker','name','admission','financial_admission','missing_fields','reason')},
             reference_industry='Synthetic' if index < 6 else None, report_id=identifier, url='/research/' + identifier,
-            mode='native_conditions_with_company_story' if ready else None, condition_value_cny_per_share=value,
+            mode='native_baseline_with_operating_context' if ready else None, condition_value_cny_per_share=value,
             close_cny=frozen['stock_price_listing'], close_date=frozen['quote_date'], descriptive_difference_pct=difference,
             price_comparison_status=comparison, price_comparison_reason='合成资本比较边界', financial_period=period,
             information_as_of=cutoff, research_frozen_at=cutoff, share_date=period if ready else None, run_id=model['run_id']))

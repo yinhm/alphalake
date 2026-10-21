@@ -529,7 +529,7 @@ def calculate(protocol_file, tickers=None):
                 raise ValueError('原冻结请求重放值或现金流闭合发生变化：'+ticker)
             folder.mkdir(parents=True,exist_ok=True)
             result = dict(contract='initial-coverage-calculation-v2',protocol_sha256=protocol_hash,
-                ticker=ticker,mode='native_conditions_with_company_story',status='calculated',admission='ready',
+                ticker=ticker,mode='native_baseline_with_operating_context',status='calculated',admission='ready',
                 request=request,response=body,review=review,
                 source_archive=protocol['calculation_archive'],source_archive_sha256=protocol['calculation_archive_sha256'],
                 runtime=runtime,sensitivities=[],api_verified=True,live_verified=False,

@@ -71,7 +71,8 @@ def project_row(row, frozen, protocol, summary):
                           ('research_frozen_at', protocol['frozen_at']), ('close_date', frozen.get('quote_date'))):
         checked(row[key] == expected, ticker + '：总览日期不一致：' + key)
     report = read_report(row['report_id'])
-    checked(report.tickers == [ticker] and report.kind == 'initial_coverage', ticker + '：公司研究身份不一致')
+    checked(report.tickers == [ticker] and report.kind == 'research_note' and report.status == 'partial',
+            ticker + '：原生基线必须明确为公司研究待补资料')
     model, entry = registered_json(report, 'valuation')
     checked(model.get('contract') == 'initial-coverage-calculation-v2'
             and model.get('ticker') == ticker and model.get('admission') == row['admission']
