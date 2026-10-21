@@ -18,6 +18,11 @@ def authored_story(note, baseline, key):
     if not baseline['inputs']['adjustment_inputs']['has_r_and_d'] and any(
             year['research_expense_ratio'] != 0 for year in years):
         raise ValueError('当前基线未接通研发调整，不能忽略非零未来研发条件：' + key)
+    terminal = note['terminal']
+    if baseline['inputs']['valuation_assumptions']['override_growth_perpetuity']:
+        raise ValueError('基线已启用永续增长覆盖，不能用稳定增长条件替代：' + key)
+    if terminal['growth'] > baseline['inputs']['macro_inputs']['risk_free_rate']:
+        raise ValueError('终值增长超过原生无风险利率上限，须明确修订研究条件：' + key)
     revenue = baseline['ltm_financials']['revenues']
     operating, expenses = [], []
     for year in years:
@@ -33,7 +38,6 @@ def authored_story(note, baseline, key):
             'valuation_assumptions.annual_net_reinvestment': [year['annual_net_reinvestment_million_cny'] for year in years]}
     else:
         raise ValueError('未知资本条件；不得自行选择：' + str(mode))
-    terminal = note['terminal']
     overrides.update({'valuation_assumptions.roic_stable_override': terminal['marginal_roic'],
         'valuation_assumptions.stable_growth_rate': terminal['growth']})
     if baseline['inputs']['adjustment_inputs']['has_r_and_d']:

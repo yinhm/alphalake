@@ -10,21 +10,23 @@ from tools.check_native_sqlite import value_digest
 from tools.coverage_research_notes import authored_story
 
 
-def test_authored_values_and_new_terminal_growth_are_consumed_without_selection():
+@pytest.mark.parametrize('terminal_growth', [.01, .03])
+def test_authored_values_and_new_terminal_growth_are_consumed_without_selection(terminal_growth):
     note = dict(annual_assumptions=[
         dict(year=1, growth=.1, adjusted_operating_margin=.12, tax_rate=.2, research_expense_ratio=.05, sales_to_capital=2.),
         dict(year=2, growth=.2, adjusted_operating_margin=.13, tax_rate=.25, research_expense_ratio=.06, sales_to_capital=1.5)],
-        capital_path_mode='annual_sales_to_capital', terminal=dict(growth=.01, marginal_roic=None),
+        capital_path_mode='annual_sales_to_capital', terminal=dict(growth=terminal_growth, marginal_roic=None),
         tax_and_research=dict(tax_path_is_analyst_policy=True))
     original = deepcopy(note)
-    baseline = dict(ltm_financials=dict(revenues=1000.), inputs=dict(adjustment_inputs=dict(has_r_and_d=True)),
+    baseline = dict(ltm_financials=dict(revenues=1000.), inputs=dict(adjustment_inputs=dict(has_r_and_d=True),
+        valuation_assumptions=dict(override_growth_perpetuity=False), macro_inputs=dict(risk_free_rate=.03)),
         dcf=dict(terminal_growth=.03))
     years, overrides = authored_story(note, baseline, 'synthetic')
     assert [year['revenue_million_cny'] for year in years] == [1100., 1320.]
     assert overrides['valuation_assumptions.annual_sales_to_capital'] == [2., 1.5]
     tax = overrides['valuation_assumptions.research_tax']
     assert tax['expenses'] == tax['deductions'] == [55., 79.2]
-    assert tax['terminal_expense'] == tax['terminal_deduction'] == 79.2*1.01
+    assert tax['terminal_expense'] == tax['terminal_deduction'] == 79.2*(1+terminal_growth)
     assert tax['tax_rate_basis'] == 'taxable_profit_rate'
     assert overrides['valuation_assumptions.roic_stable_override'] is None
     assert note == original
@@ -61,7 +63,8 @@ def test_future_research_cannot_disappear_when_baseline_research_is_disabled():
         tax_rate=.25, research_expense_ratio=.015, annual_net_reinvestment_million_cny=10.)],
         capital_path_mode='annual_net_reinvestment', terminal=dict(growth=.01, marginal_roic=None))
     baseline = dict(ltm_financials=dict(revenues=1000.),
-        inputs=dict(adjustment_inputs=dict(has_r_and_d=False)))
+        inputs=dict(adjustment_inputs=dict(has_r_and_d=False),
+            valuation_assumptions=dict(override_growth_perpetuity=False), macro_inputs=dict(risk_free_rate=.03)))
     original = deepcopy(note)
     with pytest.raises(ValueError, match='不能忽略非零未来研发条件'):
         authored_story(note, baseline, 'synthetic')
@@ -71,6 +74,20 @@ def test_future_research_cannot_disappear_when_baseline_research_is_disabled():
     assert years[0]['revenue_million_cny'] == 1100.
     assert overrides['valuation_assumptions.annual_net_reinvestment'] == [10.]
     assert 'valuation_assumptions.research_tax' not in overrides
+
+
+@pytest.mark.parametrize('override,growth,message', [
+    (False, .04, '超过原生无风险利率上限'),
+    (True, .01, '基线已启用永续增长覆盖')])
+def test_terminal_growth_cannot_be_silently_replaced_by_inherited_engine_rules(override, growth, message):
+    note = dict(annual_assumptions=[dict(research_expense_ratio=.05)],
+        terminal=dict(growth=growth, marginal_roic=None))
+    baseline = dict(inputs=dict(adjustment_inputs=dict(has_r_and_d=True),
+        valuation_assumptions=dict(override_growth_perpetuity=override), macro_inputs=dict(risk_free_rate=.03)))
+    original = deepcopy(note)
+    with pytest.raises(ValueError, match=message):
+        authored_story(note, baseline, 'synthetic')
+    assert note == original
 
 
 def test_delivery_rejects_result_or_request_drift_before_publishing():
