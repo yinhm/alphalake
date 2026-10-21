@@ -56,3 +56,18 @@ export interface MacroCatalog {
     content_hash: string; sha256: string; series_count: number; observation_count: number; latest_statistical_period: string;
   }[];
 }
+
+export interface MacroComparison {
+  contract: string;
+  before: { id: string; content_hash: string; published_at: string };
+  after: { id: string; content_hash: string; published_at: string };
+  commentary_changed: boolean;
+  summary: Record<string, number>;
+  total: number;
+  changes: {
+    series_code: string; name_zh: string; unit: string; kind: string; period_end: string | null;
+    before: { period_start: string; value: string | null; source_url: string } | null;
+    after: { period_start: string; value: string | null; source_url: string } | null;
+    delta: string | null; changed_fields: string[];
+  }[];
+}

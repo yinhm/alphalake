@@ -62,7 +62,7 @@ async function mock(page: Page, total = 1, tickers = report.tickers) {
     if (url.pathname === '/api/research/test-report') {
       const id = url.searchParams.get('document') || 'report';
       const document = files.find(f => f.id === id)!;
-      const detail: ResearchDetail = { report: shownReport, files, document: { ...document, body_md: id === 'report' ? markdown : '## 年度条件明细\n\n不把条件当作事实。' } };
+      const detail: ResearchDetail = { report: shownReport, files, document: { ...document, body_md: id === 'report' ? markdown + '\n\n[本期宏观](/macro/cn-macro-test)\n\n[伪装宏观文件](/macro/cn-macro-test/private.txt)' : '## 年度条件明细\n\n不把条件当作事实。' } };
       return route.fulfill({ json: detail });
     }
     if (url.pathname.endsWith('/files/chart')) return route.fulfill({ contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWQAAAABJRU5ErkJggg==', 'base64') });
@@ -107,6 +107,8 @@ test('detail renders tables, formulas, registered links and attachments safely, 
   await expect(article.getByRole('link', { name: '核对PDF' })).toHaveAttribute('href', '/api/research/test-report/files/pdf#page=12');
   await expect(article.getByRole('link', { name: '公式词条' })).toHaveAttribute('href', '/knowledge/wacc');
   await expect(article.getByRole('link', { name: '另一份报告' })).toHaveAttribute('href', '/research/other-report');
+  await expect(article.getByRole('link', { name: '本期宏观' })).toHaveAttribute('href', '/macro/cn-macro-test');
+  await expect(article.getByRole('link', { name: '伪装宏观文件' })).toHaveCount(0);
   await expect(article.getByRole('link', { name: '研究目录' })).toHaveAttribute('href', '/research?kind=initial_coverage');
   await expect(article.getByRole('link', { name: '冒充报告的文件' })).toHaveCount(0);
   await expect(article.getByRole('link', { name: '越界报告路径' })).toHaveCount(0);

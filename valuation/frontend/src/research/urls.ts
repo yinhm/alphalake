@@ -4,6 +4,7 @@ import type { ResearchDetail } from '../types/research';
 export function researchLink(href: string, detail: ResearchDetail): string | undefined {
   if (/^https?:\/\//i.test(href) || /^#[^\s]*$/.test(href)
       || /^\/knowledge(?:\/|$|\?|#)/.test(href)
+      || /^\/macro(?:\/[a-z0-9][a-z0-9-]{1,100})?(?:#[a-z0-9-]+)?$/.test(href)
       || /^\/research(?:\/[a-z0-9][a-z0-9-]{0,79})?(?:[?#][^\s]*)?$/.test(href)) return href;
   if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//')) return undefined;
   try {
