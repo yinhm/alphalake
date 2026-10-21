@@ -716,6 +716,24 @@ def catalogue_pages(folder, results):
     return page_files, pages
 
 
+def model_review_flags(model):
+    """只提取既有经济审阅提示，供报告汇总和只读选股共用。"""
+    if model.get('admission') != 'ready':
+        return []
+    flags = []
+    if model['response']['final']['value_per_share'] <= 0:
+        flags.append('nonpositive_equity_condition')
+    if model['review']['economic_checks']['capital_release']['gross_release_million_cny'] > 0:
+        flags.append('capital_release_requires_recoverability_basis')
+    if (model['request']['inputs']['adjustment_inputs']['has_r_and_d']
+            and model['request']['inputs']['valuation_assumptions'].get('research_tax') is None):
+        flags.append('capitalized_research_without_explicit_future_tax_path')
+    if any(row['adjusted_operating_margin'] is not None and abs(row['adjusted_operating_margin']) > 1
+           for row in model['review']['forecast']):
+        flags.append('forecast_margin_outside_plus_minus_100_percent')
+    return flags
+
+
 def catalogue(protocol_file, revision=None):
     from data_sources.research_reports import publish, read_report, verified_file
     from tools.check_native_sqlite import value_digest
@@ -757,15 +775,7 @@ def catalogue(protocol_file, revision=None):
         research_states[report.status] += 1
         references += len(report.files)
         if ready:
-            checks = model['review']['economic_checks']
-            if value <= 0:
-                risks['nonpositive_equity_condition'] += 1
-            if checks['capital_release']['gross_release_million_cny'] > 0:
-                risks['capital_release_requires_recoverability_basis'] += 1
-            if model['request']['inputs']['adjustment_inputs']['has_r_and_d'] and model['request']['inputs']['valuation_assumptions'].get('research_tax') is None:
-                risks['capitalized_research_without_explicit_future_tax_path'] += 1
-            if any(r['adjusted_operating_margin'] is not None and abs(r['adjusted_operating_margin']) > 1 for r in model['review']['forecast']):
-                risks['forecast_margin_outside_plus_minus_100_percent'] += 1
+            risks.update(model_review_flags(model))
             risks['sensitivity_calculated'] += sum(s['status'] == 'calculated' for s in model['sensitivities'])
             risks['sensitivity_rejected'] += sum(s['status'] != 'calculated' for s in model['sensitivities'])
         evidence = json.loads((folder/'business.json').read_text())

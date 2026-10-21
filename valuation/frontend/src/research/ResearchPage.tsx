@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { apiErrorMessage, fetchResearch, fetchResearchCatalog } from '../api/client';
 import { RESEARCH_KINDS, type ResearchCatalog, type ResearchDetail } from '../types/research';
 import ResearchMarkdown from './ResearchMarkdown';
@@ -78,6 +78,8 @@ function ResearchList() {
 }
 
 function ResearchArticle({ id }: { id: string }) {
+  const location = useLocation();
+  const screenReturn: unknown = location.state?.screenReturn;
   const [params] = useSearchParams();
   const selected = params.get('document');
   const [detail, setDetail] = useState<ResearchDetail | null>(null);
@@ -91,7 +93,8 @@ function ResearchArticle({ id }: { id: string }) {
     return () => controller.abort();
   }, [id, selected, attempt]);
   const current = detail?.report.id === id && detail.document.id === (selected || detail.report.report_file) ? detail : null;
-  return <div className="research-page"><Link to="/research" className="research-back">← 返回研究目录</Link>
+  return <div className="research-page">{typeof screenReturn === 'string' && (screenReturn === '/screen' || screenReturn.startsWith('/screen?')) &&
+    <Link to={screenReturn} className="research-back">← 返回选股列表</Link>} <Link to="/research" className="research-back">← 返回研究目录</Link>
     {error ? <RequestError message={error} retry={() => setAttempt(value => value + 1)} />
       : !current ? <p role="status">正在读取研究报告…</p> : <>
         <header className="research-header"><p className="research-eyebrow">{RESEARCH_KINDS[current.report.kind]}</p><h1>{current.report.title}</h1>

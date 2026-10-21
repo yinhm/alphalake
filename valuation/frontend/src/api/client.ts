@@ -2,8 +2,17 @@ import axios from 'axios';
 import type { ValuationResponse } from '../types/valuation';
 import type { ResearchCatalog, ResearchDetail } from '../types/research';
 import type { MacroCatalog, MacroPublication, MacroComparison } from '../types/macro';
+import type { ScreenCatalog, ScreenResults } from '../types/screen';
 
 const api = axios.create({ baseURL: '/api' });
+
+export async function fetchScreenCatalog(signal?: AbortSignal): Promise<ScreenCatalog> {
+  return (await api.get('/valuation-results/datasets', { signal })).data;
+}
+
+export async function fetchScreenResults(id: string, params: URLSearchParams, signal?: AbortSignal): Promise<ScreenResults> {
+  return (await api.get(`/valuation-results/${encodeURIComponent(id)}`, { params, signal })).data;
+}
 
 export async function fetchMacroCatalog(signal?: AbortSignal): Promise<MacroCatalog> {
   return (await api.get('/macro', { signal })).data;

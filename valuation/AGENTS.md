@@ -5,6 +5,7 @@
 - 原生网页消费主库导出的SQLite，入口为`backend/api/database.py`，发布使用`backend/tools/publish_native_valuation.py`。保持原页面及请求，只修明确BUG或必要后端适配；显式政策CLI/API与原生默认政策分别记录。
 - 2026-10-18用户批准独立只读`/research`及`/research/:id`页面；仅读取workspace研究交付，不计算估值、不改变原生参数或公司加载流程。
 - 2026-10-21用户批准独立只读`/macro`、`/macro/history`及`/macro/:id`；API只读已发布宏观消费快照，不请求DuckDB／Go或改估值输入。数据点评与不可变期次沿[宏观阅读契约](../docs/guides/macro-pages.md)。
+- 2026-10-21用户批准独立只读`/screen`选股页，沿[选股契约](../docs/valuation/valuation-results-page-spec.md)筛选已保存研究结果；发布时一次提取紧凑摘要，查询不扫描全市场模型、不重估、不刷新报价或改变原生默认。
 - 数据转换、准入、会话及展示变更必须先查[数据接入spec](../docs/valuation/data-contract.md)并同步实际消费方；标准累计TTM复用已有prepared入口，来源事实、年度研发队列和展示季度分别保留，不将季度拆分当估值硬门槛。
 - 合法数据/口径变更应重建基线并重新估值，保存变更依据与前后差异；不得因新结果不同于旧结果而拒绝，也不得混用旧利润率与新资本输入。原生重建复用`tools.select_native_assumptions --rebuild`，详见[重建契约](../docs/valuation/native-assumption-selection.md#合法变更重建基线并重新估值)。
 - 引擎暂时冻结，仅允许有复现及回归的明确BUG修复；非BUG方法、默认政策、算法或输入接口扩展先记入[待审批](TODO.md)，等待明确审批，不借API或假设工具绕过冻结。既有数据契约的解析、核验及适配继续推进。

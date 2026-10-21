@@ -46,6 +46,7 @@ description: 使用AlphaLake数据与既有引擎完成沪深非金融公司的�
 
 | 任务 | 入口与权威说明 |
 | --- | --- |
+| 筛选已发布估值／发现研究候选 | 网页`/screen`；先`GET /api/valuation-results/datasets`确定批次，再以`GET /api/valuation-results/{dataset_id}`搜索／筛选并读取当前页，沿行内报告和run ID追溯。[选股契约](../../docs/valuation/valuation-results-page-spec.md)；价差沿原资本比较边界，查询不触发重估，未知不当0 |
 | 从SQLite准备原生条件、完整显式请求交付 | `tools.evaluate_native_policy --prepare-inputs --ticker …`，可加已确认`--overrides`；已有请求用互斥的`--explicit-input`。[具名交付](../../docs/guides/company-valuation-entry.md#原生具名条件自动交付) |
 | 主张／证据到年度故事 | `tools.narrative_valuation prepare/run/verify/compare`；prepare需同版`alphalake-native-coverage-v1`收据。[叙事契约](../../docs/valuation/narrative-valuation-plan.md) |
 | 既有专项／行业政策 | `tools.company_valuation`，消费BatchPolicy；检查`alphalake-company-valuation-v1`及selection，不从候选自行选价。[统一入口](../../docs/guides/company-valuation-entry.md#使用) |

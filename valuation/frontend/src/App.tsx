@@ -27,6 +27,7 @@ import { createValuation, patchValuation, downloadFullWorkbook, apiErrorMessage,
 import { KnowledgeProvider, KnowledgePanel, KnowledgePage, useKnowledge } from './knowledge';
 
 const MacroPage = lazy(() => import('./macro/MacroPage'));
+const ScreenPage = lazy(() => import('./screen/ScreenPage'));
 
 export default function App() {
   const [data, setData] = useState<ValuationResponse | null>(null);
@@ -87,6 +88,7 @@ export default function App() {
   const isKnowledgeRoute = pathname === '/knowledge' || pathname.startsWith('/knowledge/');
   const isResearchRoute = pathname === '/research' || pathname.startsWith('/research/');
   const isMacroRoute = pathname === '/macro' || pathname.startsWith('/macro/');
+  const isScreenRoute = pathname === '/screen';
 
   return (
     <KnowledgeProvider valuation={data}>
@@ -94,7 +96,9 @@ export default function App() {
       <Sidebar />
       <main className="min-w-0 flex-1 p-3 md:p-6 overflow-auto" data-knowledge-scope>
         <KnowledgeToolbar />
-        {isMacroRoute ? (
+        {isScreenRoute ? (
+          <ErrorBoundary resetKey={pathname}><Suspense fallback={<p role="status">正在加载选股页面…</p>}><ScreenPage /></Suspense></ErrorBoundary>
+        ) : isMacroRoute ? (
           <ErrorBoundary resetKey={pathname}>
             <Suspense fallback={<p role="status">正在加载宏观页面…</p>}>
             <Routes>
