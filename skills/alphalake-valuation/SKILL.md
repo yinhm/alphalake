@@ -16,7 +16,7 @@ description: 使用AlphaLake数据与既有引擎完成沪深非金融公司的�
 | 首次研究／完整估值 | 连续完成七步；交付独立可读的公司研究、明确每股条件值、重要图表及计算依据 | [研究与论点](references/research-and-thesis.md)、[假设论证](references/assumptions.md)、[交付与解释](references/delivery-and-explanation.md)、[图表](references/charts.md) |
 | 解释一个已有结果 | 找到保存的运行，核对原时点及实际输入，回答价值驱动 | [交付与解释](references/delivery-and-explanation.md)；无ID再读[更新与比较](references/updates-and-comparison.md) |
 | 深挖增长／利润率／WACC等单项 | 查该项输入、依据、相关约束和反例；仅获授权时计算条件对照 | [假设论证](references/assumptions.md) |
-| 新财报／预告／经营证据更新 | 逐项比较事实、论点与条件，保存修订；没改变估值输入则解释即可 | [更新与比较](references/updates-and-comparison.md) |
+| 新财报／预告／宏观经营证据更新 | 逐项比较事实、论点与条件，保存修订；宏观先核对真实变化与公司暴露，没改变输入则解释即可 | [更新与比较](references/updates-and-comparison.md)、[宏观研究链](references/research-and-thesis.md#宏观证据按经营暴露选取) |
 | 两次估值为何不同 | 先比真实输入，再区分事实、预测、折现与股权桥；不凭标签猜原因 | [更新与比较](references/updates-and-comparison.md) |
 
 完整任务已获授权时连续完成，不逐阶段重复确认。缺必要身份、文件或用户选择时，只问真正阻塞的问题；同时推进其他独立部分。没有经济依据时保留条件或拒绝，不以询问代替研究，也不伪造确定性。

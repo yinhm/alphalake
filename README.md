@@ -12,7 +12,7 @@
 | 更新数据并发布网页快照 | [同步、验收与发布](docs/guides/system-delivery.md) |
 | 独立导出SQLite、核对输入 | [导出契约](docs/guides/valuation-sqlite-export.md) |
 | 用Agent检查数据、手工刷新与发布 | [数据维护Skill](skills/alphalake/SKILL.md) |
-| 查询、刷新及阅读宏观统计 | [宏观来源、期间与单位](docs/guides/macro-data.md)、[阅读与历史发布](docs/guides/macro-pages.md)（网页`/macro`） |
+| 查询、刷新及研究宏观统计 | [来源与口径](docs/guides/macro-data.md)、[阅读与历史](docs/guides/macro-pages.md)、[宏观到投资](docs/guides/macro-investment.md)（网页`/macro`） |
 | 阅读研究报告、登记新的交付 | [研究平台与交付契约](docs/guides/research-delivery.md)（网页`/research`） |
 | 用Agent完成公司研究、条件估值、解释与更新 | [估值Skill](skills/alphalake-valuation/SKILL.md) |
 | 复用数据、独立DCF与交叉校验 | [独立DCF Skill](skills/alphalake-dcf/SKILL.md) |
