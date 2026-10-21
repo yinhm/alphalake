@@ -17,6 +17,9 @@ def main():
     create.add_argument('--alphalake', type=Path, default=Path(__file__).resolve().parents[3] / 'alphalake')
     check = commands.add_parser('validate')
     check.add_argument('--id', required=True)
+    compare = commands.add_parser('compare')
+    compare.add_argument('--before', required=True)
+    compare.add_argument('--after', required=True)
     args = parser.parse_args()
     try:
         if args.command == 'publish':
@@ -25,6 +28,10 @@ def main():
             result = subprocess.run([str(args.alphalake.resolve()), 'export-macro', str(args.database.resolve())],
                                     check=True, capture_output=True, timeout=120)
             page = publish(json.loads(result.stdout), json.loads(args.commentary.read_text(encoding='utf-8')), args.id)
+        elif args.command == 'compare':
+            from data_sources.macro_comparison import compare
+            print(json.dumps(compare(args.before, args.after), ensure_ascii=False))
+            return
         else:
             page = read_page(args.id)
     except (ValueError, OSError, subprocess.SubprocessError) as exc:

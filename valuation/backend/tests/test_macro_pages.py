@@ -78,6 +78,65 @@ def test_publication_replay_history_and_api_never_call_go(workspace, monkeypatch
     points = old.json()['snapshot']['series'][0]['points']
     assert [p['value'] for p in points] == ['0E-12', '-0.001000000000', None]
     assert points[-1]['value_status'] == 'not_reported'
+    compared = request('/api/macro/compare?before=macro-first&after=macro-second')
+    assert compared.status_code == 200
+    assert compared.json()['total'] == 0 and compared.json()['commentary_changed']
+    assert request('/api/macro/compare?before=macro-first&after=macro-second', {'if-none-match': compared.headers['etag']}).status_code == 304
+    assert request('/api/macro/compare?before=macro-second&after=macro-first').status_code == 400
+    assert request('/api/macro/compare?before=macro-first&after=macro-first').status_code == 400
+
+
+@pytest.mark.parametrize('case,kind,count', [
+    ('new', 'new_period', 1), ('history', 'historical_added', 1), ('value', 'value_revised', 1),
+    ('scope', 'scope_changed', 1), ('source', 'source_changed', 3),
+    ('removed', 'removed_observation', 1), ('definition', 'definition_changed', 1),
+    ('coverage', 'coverage_added', 3),
+])
+def test_comparison_separates_observation_revision_scope_and_source(workspace, case, kind, count):
+    before, commentary = inputs()
+    after = deepcopy(before)
+    points = after['series'][0]['points']
+    if case == 'new': before['series'][0]['points'].pop()
+    elif case == 'history': before['series'][0]['points'].pop(0)
+    elif case == 'value': points[0]['value'] = '0.002'
+    elif case == 'scope': points[0]['period_start'] = '2026-07-02'
+    elif case == 'source': after['releases'][0]['sha256'] = 'b' * 64
+    elif case == 'removed': points.pop()
+    elif case == 'definition': after['series'][0]['unit'] = 'index_points'
+    elif case == 'coverage':
+        added = deepcopy(after['series'][0])
+        added['series_code'] = 'cn_synthetic_added'
+        after['series'].append(added)
+    store.publish(before, commentary, 'comparison-before')
+    store.publish(after, commentary, 'comparison-after')
+    response = request('/api/macro/compare?before=comparison-before&after=comparison-after')
+    assert response.status_code == 200
+    result = response.json()
+    assert result['total'] == count and result['summary'][kind] == count
+    assert sum(result['summary'].values()) == count
+    if case == 'new':
+        assert result['changes'][0]['before'] is None
+        assert result['changes'][0]['after']['value'] is None
+    if case == 'value': assert result['changes'][0]['delta'] == '0.002000000000'
+    if case in ('scope', 'definition', 'source'):
+        assert all(row['delta'] is None for row in result['changes'])
+
+
+def test_comparison_ignores_release_id_churn_and_preserves_decimal_precision(workspace):
+    from data_sources.macro_comparison import compare
+    before, commentary = inputs()
+    store.publish(before, commentary, 'comparison-before')
+    after = deepcopy(before)
+    after['releases'][0]['release_id'] = 2
+    for point in after['series'][0]['points']: point['release_id'] = 2
+    store.publish(after, commentary, 'comparison-identities')
+    assert compare('comparison-before', 'comparison-identities')['total'] == 0
+    before['series'][0]['unit'] = 'CNY'
+    before['series'][0]['points'][0]['value'] = '99999999999999999999999999.000000000001'
+    store.publish(before, commentary, 'large-before')
+    before['series'][0]['points'][0]['value'] = '99999999999999999999999999.000000000002'
+    store.publish(before, commentary, 'large-after')
+    assert compare('large-before', 'large-after')['changes'][0]['delta'] == '1E-12'
 
 
 @pytest.mark.parametrize('mutation', ['value', 'period', 'release', 'duplicate', 'infinite', 'unsafe_url', 'precision'])

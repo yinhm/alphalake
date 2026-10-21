@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 
 from data_sources.macro_pages import MacroPageError, catalog, encoded, read_page
+from data_sources.macro_comparison import compare
 
 router = APIRouter(prefix='/macro', tags=['macro'])
 
@@ -41,6 +42,14 @@ def latest(request: Request):
     if identifier is None:
         raise HTTPException(404, detail={'reason': '尚未发布宏观阅读页'})
     return detail(request, identifier)
+
+
+@router.get('/compare')
+def comparison(before: str, after: str, request: Request):
+    try:
+        return respond(request, compare(before, after))
+    except MacroPageError as exc:
+        raise HTTPException(exc.status, detail={'reason': exc.reason}) from exc
 
 
 @router.get('/publications/{identifier}')
