@@ -1,9 +1,12 @@
 """读取workspace内已登记的研究交付；不访问财务库或估值引擎。"""
 from datetime import date, datetime, timezone
+from functools import lru_cache
 import hashlib
 import json
+import os
 from pathlib import Path, PurePosixPath
 import re
+import stat
 import unicodedata
 from typing import Literal
 
@@ -106,9 +109,13 @@ def read_report(identifier):
             raise ResearchError(422, 'invalid_report', '研究目录不能使用别名')
     except (OSError, RuntimeError) as exc:
         raise ResearchError(422, 'invalid_report', '研究目录无法解析') from exc
-    path = folder / 'research.json'
+    return _read_manifest(folder / 'research.json', identifier)
+
+
+def _read_manifest(path, identifier):
     try:
-        if path.stat().st_size > MAX_MANIFEST or path.is_symlink():
+        info = path.lstat()
+        if info.st_size > MAX_MANIFEST or stat.S_ISLNK(info.st_mode):
             raise ResearchError(422, 'invalid_report', '研究登记文件不合格')
         body = ResearchReport.model_validate_json(path.read_bytes())
     except FileNotFoundError as exc:
@@ -120,6 +127,17 @@ def read_report(identifier):
     return body
 
 
+@lru_cache(maxsize=16384)
+def _catalog_entry(path, signature):
+    # 文件身份、大小及纳秒mtime/ctime进入缓存键，原地修改与替换均须重新校验。
+    path = Path(path)
+    report = _read_manifest(path, path.parent.name)
+    fields = [report.title, report.summary, *report.tickers]
+    return ((report.research_date or date.min, report.published_at, report.id), report.kind,
+            unicodedata.normalize('NFKC', ' '.join(fields)).casefold(),
+            report.model_dump_json(exclude={'files'}))
+
+
 def catalog(query='', kind=None, offset=0, limit=20):
     reports, issues = [], []
     root = workspace_path('research')
@@ -127,22 +145,41 @@ def catalog(query='', kind=None, offset=0, limit=20):
     if root.is_symlink() or (root.exists() and not root.is_dir()):
         raise ResearchError(422, 'invalid_directory', '研究根目录必须是workspace内的实际目录')
     if root.exists():
-        for path in sorted(root.glob('*/research.json')):
-            identifier = path.parent.name
+        root = root.resolve()
+        with os.scandir(root) as entries:
+            folders = sorted(entries, key=lambda entry: entry.name)
+        for folder in folders:
+            identifier = folder.name
+            path = os.path.join(folder.path, 'research.json')
             try:
-                report = read_report(identifier)
+                if not folder.is_dir():
+                    continue
+                try:
+                    info = os.stat(path, follow_symlinks=False)
+                except FileNotFoundError:
+                    continue
+                if not re.fullmatch(IDENTIFIER, identifier):
+                    raise ResearchError(404, 'report_missing', '研究报告不存在')
+                if folder.is_symlink():
+                    raise ResearchError(422, 'invalid_report', '研究目录不能使用别名')
+                if stat.S_ISLNK(info.st_mode) or info.st_size > MAX_MANIFEST:
+                    raise ResearchError(422, 'invalid_report', '研究登记文件不合格')
+                signature = (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+                order, category, text, encoded = _catalog_entry(path, signature)
             except ResearchError as exc:
                 issues.append(dict(id=identifier, code=exc.code, message=str(exc)))
                 continue
-            fields = [report.title, report.summary, *report.tickers]
-            if kind and kind != report.kind:
+            except OSError:
+                issues.append(dict(id=identifier, code='invalid_report', message='研究登记字段或内容无效'))
                 continue
-            if needle and needle not in unicodedata.normalize('NFKC', ' '.join(fields)).casefold():
+            if kind and kind != category:
                 continue
-            reports.append(report)
-    reports.sort(key=lambda r: (r.research_date or date.min, r.published_at, r.id), reverse=True)
+            if needle and needle not in text:
+                continue
+            reports.append((order, encoded))
+    reports.sort(key=lambda row: row[0], reverse=True)
     return dict(contract=CONTRACT, total=len(reports), offset=offset, limit=limit, issues=issues,
-                reports=[r.model_dump(mode='json', exclude={'files'}) for r in reports[offset:offset + limit]])
+                reports=[json.loads(encoded) for _, encoded in reports[offset:offset + limit]])
 
 
 def registered_file(report, identifier):

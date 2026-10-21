@@ -2,13 +2,14 @@
 import asyncio
 from copy import deepcopy
 import json
+import os
 
 from fastapi import FastAPI
 import httpx
 import pytest
 
 from api.research import router
-from data_sources.research_reports import publish, file_digest
+from data_sources.research_reports import catalog, publish, file_digest
 from tools.research_reports import main
 
 
@@ -110,6 +111,7 @@ def test_publish_rejects_unsafe_or_unsupported_files(workspace, path):
 def test_symlink_escape_and_hash_tampering_are_rejected(workspace, tmp_path_factory):
     folder, body = draft(workspace)
     publish(folder, body)
+    assert request('/api/research').json()['total'] == 1
     source = workspace / 'cninfo' / 'objects' / 'test.pdf'
     outside = tmp_path_factory.mktemp('outside') / 'private.pdf'
     outside.write_bytes(source.read_bytes())
@@ -164,6 +166,7 @@ def test_publish_cli_and_validate(workspace, monkeypatch, capsys):
 def test_catalog_and_direct_read_reject_aliased_roots(workspace):
     folder, body = draft(workspace)
     publish(folder, body)
+    assert catalog()['total'] == 1
     root = workspace / 'research'
     target = workspace / 'other'
     root.rename(target)
@@ -172,3 +175,94 @@ def test_catalog_and_direct_read_reject_aliased_roots(workspace):
     assert request('/api/research/test-report').status_code == 422
     with pytest.raises(ValueError, match='canonical'):
         publish(folder, body)
+
+
+def test_catalog_reuses_unchanged_validation_and_returns_detached_page(workspace, monkeypatch):
+    from data_sources import research_reports as reports
+    for identifier in ('first', 'second'):
+        folder, body = draft(workspace, identifier)
+        publish(folder, body)
+    original = reports._read_manifest
+    reads = []
+
+    def tracked(path, identifier):
+        reads.append(identifier)
+        return original(path, identifier)
+
+    monkeypatch.setattr(reports, '_read_manifest', tracked)
+    first = catalog()
+    assert sorted(reads) == ['first', 'second']
+    first['reports'][0]['title'] = '外部修改不得污染缓存'
+    first['reports'][0]['tickers'].clear()
+    assert catalog(query='３００８６６')['total'] == 2
+    fresh = catalog(offset=1, limit=1)['reports'][0]
+    assert fresh['title'] == '合成安克研究' and fresh['tickers'] == ['SZSE:300866']
+    assert len(reads) == 2
+
+
+def test_cached_catalog_detects_same_size_edit_even_with_restored_mtime(workspace):
+    folder, body = draft(workspace, title='初版研究')
+    publish(folder, body)
+    assert catalog(query='初版')['total'] == 1
+    path = folder/'research.json'
+    before = path.stat()
+    encoded = path.read_text().replace('初版研究', '修订研究')
+    assert len(encoded.encode()) == before.st_size
+    path.write_text(encoded)
+    os.utime(path, ns=(before.st_atime_ns, before.st_mtime_ns))
+    assert catalog(query='初版')['total'] == 0
+    assert catalog(query='修订')['reports'][0]['title'] == '修订研究'
+    path.write_text('{broken JSON')
+    rejected = catalog()
+    assert rejected['reports'] == [] and rejected['issues'][0]['code'] == 'invalid_report'
+    path.write_text(encoded)
+    assert catalog()['total'] == 1 and catalog()['issues'] == []
+
+
+def test_cached_catalog_observes_atomic_replacement_addition_and_removal(workspace):
+    folder, body = draft(workspace, 'first')
+    publish(folder, body)
+    assert catalog()['total'] == 1
+    path = folder/'research.json'
+    record = json.loads(path.read_text())
+    record['kind'] = 'thesis'
+    pending = folder/'pending.json'
+    pending.write_text(json.dumps(record))
+    pending.replace(path)
+    assert catalog(kind='thesis')['total'] == 1
+    other, metadata = draft(workspace, 'second')
+    publish(other, metadata)
+    assert catalog()['total'] == 2
+    path.unlink()
+    assert [row['id'] for row in catalog()['reports']] == ['second']
+
+
+def test_cached_catalog_rejects_folder_and_manifest_symlink_replacements(workspace):
+    folder, body = draft(workspace)
+    publish(folder, body)
+    assert catalog()['total'] == 1
+    relocated = workspace/'relocated'
+    folder.rename(relocated)
+    folder.symlink_to(relocated, target_is_directory=True)
+    assert catalog()['reports'] == [] and catalog()['issues'][0]['code'] == 'invalid_report'
+    assert request('/api/research/test-report').status_code == 422
+    folder.unlink()
+    relocated.rename(folder)
+    assert catalog()['total'] == 1
+    source = folder/'research.json'
+    target = workspace/'registration.json'
+    source.rename(target)
+    source.symlink_to(target)
+    assert catalog()['reports'] == [] and catalog()['issues'][0]['code'] == 'invalid_report'
+    assert request('/api/research/test-report').status_code == 422
+
+
+def test_catalog_cache_isolated_between_workspaces(workspace, tmp_path, monkeypatch):
+    folder, body = draft(workspace, title='第一空间')
+    publish(folder, body)
+    assert catalog()['reports'][0]['title'] == '第一空间'
+    second = tmp_path/'another-workspace'
+    monkeypatch.setenv('ALPHALAKE_WORKSPACE', str(second))
+    folder, body = draft(second, title='第二空间')
+    publish(folder, body)
+    assert catalog()['reports'][0]['title'] == '第二空间'
