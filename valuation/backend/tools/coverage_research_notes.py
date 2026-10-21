@@ -81,7 +81,11 @@ def prepare_batch(index_file, baseline_report_id, output, database):
             raise ValueError('分析师笔记路径或哈希不符')
         note = read_json(note_file)
         ticker = note['ticker']
-        adopted = note['analyst_status'] == ADOPTED
+        purpose = item.get('purpose', 'company_condition')
+        if purpose not in ('company_condition', 'diagnostic_condition', 'deferred'):
+            raise ValueError('研究执行用途须明确为公司条件、诊断条件或延期')
+        adopted = ((note['analyst_status'] == ADOPTED and purpose != 'deferred')
+                   or purpose == 'diagnostic_condition')
         reference = note['reference_snapshot']
         if (note.get('format') != NOTE or ticker != item['ticker'] or ticker in seen or ticker not in scope
                 or note['source_sqlite_sha256'] != snapshot['sqlite_sha256']
@@ -127,6 +131,8 @@ def prepare_batch(index_file, baseline_report_id, output, database):
             sha256=digest(root/item['note']), locator='全文；与同名结构化笔记配对',
             explanation='计算前研究正文，与年度数值和反证共同冻结。'))
         limitations = note['unresolved'] or ['未来条件仍需经营兑现；没有认证预测有效性。']
+        if purpose == 'diagnostic_condition':
+            limitations = ['仅作诊断条件，尚未采纳为公司主估值；不得隐藏未解决的范围或融资条件。', *limitations]
         rationales = {entry['parameter']: entry['basis'] for entry in note.get('parameter_basis', [])}
         rationales['revenue'] = rationales.pop('growth', note['thesis']['growth_claim'])
         rationales.setdefault('margin', note['thesis']['margin_claim'])
@@ -151,7 +157,7 @@ def prepare_batch(index_file, baseline_report_id, output, database):
                 counterevidence=note['thesis']['counterevidence'],
                 revision_trigger='新披露反证本公司需求、利润或投入机制时，明确修订对应年度条件。'))
         stories.append(dict(id=identifier, revision=1, ticker=ticker, baseline_evidence=baseline_id,
-            title=note['title'], narrative=note['business_and_competition'],
+            title=('仅作诊断：' if purpose == 'diagnostic_condition' else '')+note['title'], narrative=note['business_and_competition'],
             economic_profile='逐公司人工研究条件；范围及重大边界另列', mechanisms=[note['thesis']['title']],
             status='conditional' if adopted else 'draft', claims=claims, annual_operating_plan=operating,
             assumption_overrides=overrides, limitations=limitations))

@@ -1,5 +1,6 @@
 """研究批次机械装配与累计交付；不调用真实库、网络或DCF计算。"""
 from copy import deepcopy
+from datetime import date
 from types import SimpleNamespace
 
 import pytest
@@ -100,6 +101,8 @@ def test_retry_reuses_only_identical_registered_company_report(tmp_path, monkeyp
 def test_known_post_period_capital_change_cannot_be_hidden_by_approved_proxy():
     native = dict(price_comparison_status='capital_date_proxy', price_comparison_reason='已批准基期代理')
     assert price_context(native, {}) == native
+    assert price_context(native, dict(price_comparison=dict(status='capital_date_proxy',
+        reason='笔记重述相同基期代理，不替换来源限制'))) == native
     actual = price_context(native, dict(price_comparison=dict(status='unreconciled_post_period_capital_change',
         reason='新股已登记但尚未桥接资金及股数')))
     assert actual['price_comparison_status'] == 'unreconciled_post_period_capital_change'
@@ -111,3 +114,20 @@ def test_delivery_identifier_is_checked_before_reading_or_writing_files():
     from tools.coverage_research_delivery import deliver
     with pytest.raises(ValueError, match='不能包含目录路径'):
         deliver(None, 'unused', 'unused', '../outside')
+
+
+def test_calculated_diagnostic_is_visible_but_not_labelled_as_adopted_company_case():
+    from tools.coverage_research_delivery import condition_row
+    source = dict(admission='not_calculated', close_cny=10., price_comparison_status='capital_date_proxy',
+        price_comparison_reason='已批准的资本基期描述比较')
+    report = SimpleNamespace(id='diagnostic-report', share_date=date(2026, 6, 30),
+        files=[SimpleNamespace(id='valuation', path='research/model.json', sha256='a'*64)])
+    forecast = dict(growth=.1, adjusted_operating_margin=.12, capital_funding=dict(sales_to_capital=None))
+    model = dict(run_id='diagnostic-run', response=dict(final=dict(value_per_share=12.), cost_of_capital=dict(wacc=.08)),
+        request=dict(inputs=dict(adjustment_inputs=dict(has_r_and_d=False))),
+        review=dict(forecast=[forecast], terminal=dict(growth=.01, wacc=.08, value_share=.6),
+            economic_checks=dict(capital_release=dict(gross_release_million_cny=0., gross_nonresearch_release_million_cny=None))))
+    row = condition_row(source, dict(value_per_share=12.), model, report, 'frozen-time', 'diagnostic_condition')
+    assert row['condition_value_cny_per_share'] == 12. and row['admission'] == 'ready'
+    assert row['mode'] == 'authored_company_diagnostic_condition' and '未采纳' in row['reason']
+    assert row['run_id'] == 'diagnostic-run'

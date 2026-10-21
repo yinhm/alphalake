@@ -318,6 +318,27 @@ def test_analyst_batch_freezes_prose_and_keeps_native_baseline_out_of_company_ev
     index_file.write_text(json.dumps(index))
     with pytest.raises(ValueError, match='消费版本不符'):
         notes.prepare_batch(index_file, 'baseline', root/'derived'/'invalid-plan.json', path.parent/'fake.sqlite')
+    note.update(analyst_status='complete_numeric_diagnostic_not_main_case',
+        reference_snapshot=snapshot['reference_snapshot_id'])
+    note_file.write_text(json.dumps(note, ensure_ascii=False))
+    index['notes'][0].update(sha256=research.digest(note_file), purpose='diagnostic_condition')
+    index_file.write_text(json.dumps(index))
+    diagnostic_output = root/'derived'/'diagnostic-plan.json'
+    notes.prepare_batch(index_file, 'baseline', diagnostic_output, path.parent/'fake.sqlite')
+    diagnostic = research.evaluate_plan(diagnostic_output, expected_scope=scope, expected_snapshot=snapshot)
+    assert diagnostic['counts'] == {'company_condition': 1, 'not_in_batch': 1}
+    story = json.loads(diagnostic_output.read_text())['document']['stories'][0]
+    assert story['title'].startswith('仅作诊断') and not diagnostic['economic_approval']
+    index['notes'][0]['purpose'] = 'deferred'
+    index_file.write_text(json.dumps(index))
+    deferred_output = root/'derived'/'deferred-plan.json'
+    notes.prepare_batch(index_file, 'baseline', deferred_output, path.parent/'fake.sqlite')
+    deferred = research.evaluate_plan(deferred_output, expected_scope=scope, expected_snapshot=snapshot)
+    assert deferred['counts'] == {'pending': 1, 'not_in_batch': 1}
+    index['notes'][0]['purpose'] = 'guess_from_result'
+    index_file.write_text(json.dumps(index))
+    with pytest.raises(ValueError, match='研究执行用途'):
+        notes.prepare_batch(index_file, 'baseline', root/'derived'/'invalid-purpose.json', path.parent/'fake.sqlite')
 
 
 @pytest.mark.parametrize('rejected', [False, True])

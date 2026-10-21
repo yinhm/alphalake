@@ -57,19 +57,21 @@ def price_context(native, note):
     result = {key: native[key] for key in ('price_comparison_status', 'price_comparison_reason')}
     context = note.get('price_comparison')
     if context:
+        if context.get('status') == native['price_comparison_status'] and context.get('reason'):
+            return result
         if context.get('status') != 'unreconciled_post_period_capital_change' or not context.get('reason'):
             raise ValueError('研究报价边界只能明确保留已知未桥接资本变化，不能自动放开比较')
         result.update(price_comparison_status=context['status'], price_comparison_reason=context['reason'])
     return result
 
 
-def condition_row(source, result, model, report, frozen_at):
+def condition_row(source, result, model, report, frozen_at, purpose='company_condition'):
     row = deepcopy(source)
     calculated = model is not None
     row.update(admission='ready' if calculated else source['admission'] if source['admission'] not in ('ready', 'not_calculated') else 'not_calculated',
-        reason='公司研究条件已冻结并计算' if calculated else '已研究，重要边界待闭合；不以原生默认替代',
+        reason=('诊断条件已计算，未采纳为公司主估值' if purpose == 'diagnostic_condition' else '公司研究条件已冻结并计算') if calculated else '已研究，重要边界待闭合；不以原生默认替代',
         report_id=report.id, url='/research/'+report.id,
-        mode='authored_company_condition' if calculated else 'company_research_pending',
+        mode=('authored_company_diagnostic_condition' if purpose == 'diagnostic_condition' else 'authored_company_condition') if calculated else 'company_research_pending',
         condition_value_cny_per_share=result['value_per_share'] if calculated else None,
         share_date=report.share_date.isoformat() if report.share_date else None,
         research_frozen_at=frozen_at, run_id=model['run_id'] if calculated else None,
@@ -97,7 +99,7 @@ def condition_row(source, result, model, report, frozen_at):
     return row
 
 
-def company_report(identifier, source, result, story, evidence, plan, frozen, run, note_file):
+def company_report(identifier, source, result, story, evidence, plan, frozen, run, note_file, purpose='company_condition'):
     root = workspace_path()
     folder = root/'research'/identifier
     note, note_text = read_json(note_file), note_file.with_suffix('.md')
@@ -120,10 +122,13 @@ def company_report(identifier, source, result, story, evidence, plan, frozen, ru
         f"证券：`{source['ticker']}`；财务／股本基期{run['snapshot']['financial_report_period']}；信息截止`{run['snapshot']['information_as_of']}`。", '',
         '未来数值是阅读本公司资料后明确采用的研究条件，不是公司承诺。原生默认只作基线，不代替公司故事。', '']
     text += ['报价与资本比较边界：'+source['price_comparison_reason']+'；不以较新研究日期伪装已更新股本。', '']
+    if purpose == 'diagnostic_condition':
+        text += ['**本页只计算明确的诊断条件，尚未采纳为公司主估值。** 恢复、范围及融资等未解问题仍成立；数字用于解释需要兑现什么，不是已核实的正常经营预测。', '']
     if 'batch-capital-review' in evidence:
         capital = read_json(root/evidence['batch-capital-review'].file)
-        reviewed = next(row for row in capital['companies'] if row['ticker'] == source['ticker'])
-        text += ['## 计算前资本数量级复核', '', reviewed['assessment'], '']
+        reviewed = next((row for row in capital['companies'] if row['ticker'] == source['ticker']), None)
+        if reviewed is not None:
+            text += ['## 计算前资本数量级复核', '', reviewed['assessment'], '']
     if model:
         if digest(root/result['model_file']) != result['model_sha256'] or model['snapshot'] != run['snapshot']:
             raise ValueError('本批模型或快照已变化')
@@ -183,7 +188,7 @@ def company_report(identifier, source, result, story, evidence, plan, frozen, ru
     (folder/'report.md').write_text('\n'.join(text)+'\n')
     now = datetime.now(timezone.utc)
     report = publish(folder, dict(contract='alphalake-research-v1', id=identifier,
-        title=source['name']+'：'+(f"公司研究条件值{result['value_per_share']:.2f}元" if model else '公司研究边界'),
+        title=source['name']+'：'+((('诊断条件值' if purpose == 'diagnostic_condition' else '公司研究条件值')+f"{result['value_per_share']:.2f}元") if model else '公司研究边界'),
         summary='业务、竞争、财务质量与资本条件均单独研究；数值成立条件及反证见正文。',
         kind='initial_coverage' if model else 'research_note', status='complete' if model else 'partial',
         tickers=[source['ticker']], research_date=now.date().isoformat(),
@@ -225,13 +230,17 @@ def deliver(run_directory, previous_dataset, baseline_report, identifier):
     previous_rows = {row['ticker']: row for row in previous['rows']}
     evidence = {item.id: item for item in plan.document.evidence}
     stories = {story.id: story for story in plan.document.stories}
+    index = read_json(root/evidence['analyst-batch-index'].file)
+    intentions = {row['ticker']: row for row in index['notes']}
     updates, new_reports = [], []
-    if reviewed & {row['ticker'] for row in run['results']}:
-        raise ValueError('本批重复已研究公司；修订须显式新建公司版本，不当作新增覆盖')
+    for ticker in reviewed & {row['ticker'] for row in run['results']}:
+        if intentions[ticker].get('previous_report_id') != previous_rows[ticker]['report_id']:
+            raise ValueError('本批重复已研究公司；修订须显式绑定前报告，不当作新增覆盖')
     for result in run['results']:
         if result['status'] == 'not_selected':
             continue
         ticker, story = result['ticker'], stories[result['story_id']]
+        purpose = intentions[ticker].get('purpose', 'company_condition')
         if result['model_file']:
             model_file = root/result['model_file']
             if digest(model_file) != result['model_sha256']:
@@ -241,12 +250,13 @@ def deliver(run_directory, previous_dataset, baseline_report, identifier):
         if note_id not in evidence or evidence[note_id].kind != 'research_judgment':
             raise ValueError('每家公司须引用明确计算前研究笔记')
         comparison = price_context(native_rows[ticker], read_json(root/evidence[note_id].file))
-        source = {**previous_rows[ticker], **comparison, 'report_id': native_rows[ticker]['report_id'],
+        source = {**previous_rows[ticker], **comparison,
+            'report_id': previous_rows[ticker]['report_id'] if ticker in reviewed else native_rows[ticker]['report_id'],
             'native_report_id': native_rows[ticker]['report_id']}
         company_id = identifier+'-'+ticker.lower().replace('shse:', 'sh-').replace('szse:', 'sz-')
         report, model = company_report(company_id, source, result, story, evidence, plan,
-            frozen, run, root/evidence[note_id].file)
-        updates.append(condition_row(previous_rows[ticker] | comparison, result, model, report, frozen['frozen_at']))
+            frozen, run, root/evidence[note_id].file, purpose)
+        updates.append(condition_row(previous_rows[ticker] | comparison, result, model, report, frozen['frozen_at'], purpose))
         new_reports.append(report.id)
         reviewed.add(ticker)
     rows = merge_rows(previous['rows'], updates, plan.document.scope)
@@ -255,10 +265,12 @@ def deliver(run_directory, previous_dataset, baseline_report, identifier):
         raise ValueError('累计报告不可覆盖')
     folder.mkdir()
     ready = sum(row['admission'] == 'ready' for row in rows)
+    diagnostics = sum(row['mode'] == 'authored_company_diagnostic_condition' for row in rows)
     whole_complete = all(ticker in reviewed or scope == 'outside_financial_scope'
         for ticker, scope in plan.document.scope.items())
     summary = dict(contract='company-research-delivery-v2', companies=len(rows), actual_notes=len(reviewed),
         reviewed_tickers=sorted(reviewed), authored_conditions=ready, snapshot=run['snapshot'], rows=rows,
+        company_conditions=ready-diagnostics, diagnostic_conditions=diagnostics,
         new_reports=new_reports, new_run=relative_path(run_directory/'summary.json'),
         previous_report_id=old_report.id, whole_market_research_complete=whole_complete)
     save(folder/'results.json', summary)
@@ -269,6 +281,7 @@ def deliver(run_directory, previous_dataset, baseline_report, identifier):
         writer.writerows(rows)
     text = ['# 全范围公司故事与条件估值', '',
         f"完整{len(rows):,}家公司；累计实际研究{len(reviewed):,}家，已计算公司条件{ready:,}家。全范围研究{'已逐家公司处理' if whole_complete else '仍在持续推进，尚未完成'}。", '',
+        f"其中{diagnostics}套仅作诊断，未采纳为公司主值；不能把可执行诊断路径说成缺财务数据。", '',
         '未进入本批不撤销既有公司条件；未研究不以原生默认冒充。金融范围外、缺数据和未解决经济边界保留。', '',
         '## 本批交付', '', *['- ['+report_id+'](/research/'+report_id+')' for report_id in new_reports], '',
         '[完整结果与状态](results.csv)；全部公司及旧研究入口见选股页。算术核验与经济依据、未来预测有效性分开。']
