@@ -48,6 +48,7 @@
 - **成套现金核对**：读取`economic_checks.cashflow_bridge`及预测行的经济利润、税基、期初／新增／抵扣亏损、现金税、实际NOPAT及FCFF；费用化利润与非研发投入只有在完整研发路径下才可解释。附加研发条件的`research_tax_effect`区分现金流、折现及终值现值变化；不能把抵亏／税盾联动全称为单一税率贡献，也不把非研发残余当实际预算。总再投资只扣一次。
 - **再投资**：读取`economic_checks.research_forecast`逐年费用率；改收入而绝对研发预算未变，不能称保持费用率。`capital_release`并列累计投入、释放与净额；零／负再投资可能有折旧、周转回收、处置或收缩解释，不自动拒绝或设下限，也不未经依据称已实现现金。
 - **年度总预算**：`annual_net_reinvestment`是实际投资年、百万元报表币种的完整路径，与`annual_sales_to_capital`互斥；已含研发净投入及经营周转，不额外相加、不按销售领先期移动。末期核对g/ROIC与`terminal_transition`，不自动延长预算。无预算保留倍率路径。
+- **终值关系与资本变化**：已明确选择“新增ROIC=WACC”时，用既有`roic_stable_override=null`表达本条件的实际关系，不能复制旧亏损基线含税盾附加项的WACC数字。逐公司列末年／终值净投入、同一终值年度继续原资本规则的投入及FCFF差额；增加和减少分别解释，不用统一警告掩盖跳变，不为消除警告机械调参。[原始方法](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/termvalueexreturns.htm)约束增长、回报与再投资的一致性，不要求所有公司永远没有超额回报。
 - **税盾／未来融资**：读取`dcf.wacc_tax_shield_adjustments`、`tax_shield_basis`与`debt_tax_shield_spreads`。完整显式路径优先，未提供保留固定初始分量限制；整体WACC不能猜拆。报表信用条件只沿已批准`--reported-credit`及[人民币政策](../../../docs/valuation/native-cny-policy.md)，不用零利息或净财务费用推信用。
 - **人民币折现初值**：归档国债收益率、所选无风险利率和公司WACC是不同数值；读同版实际组件及代理，不能把国债收益率直接填成WACC。已发布参考更新不自动更新旧研究；宏观较新也不意味着通胀、ERP或公司风险已重新估计。
 - **可转债**：按[市场索偿契约](../../../docs/valuation/methodology-contract.md#可转债索偿契约)读取`convertible_claim`的纯债B、权利O、含权M和原已扣账面额。主值扣纯债及权利一次后除现有股份；潜在股数仅诊断。缺报价／收益率／现金流说明无法完整定价，不恢复终局取低法。

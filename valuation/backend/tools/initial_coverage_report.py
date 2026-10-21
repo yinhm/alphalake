@@ -726,7 +726,8 @@ def model_review_flags(model):
     flags = []
     if model['response']['final']['value_per_share'] <= 0:
         flags.append('nonpositive_equity_condition')
-    if model['review']['economic_checks']['capital_release']['gross_release_million_cny'] > 0:
+    releases = model['review']['economic_checks']['capital_release']
+    if any(releases[key] > 0 for key in ('gross_release_million_cny', 'gross_nonresearch_release_million_cny')):
         flags.append('capital_release_requires_recoverability_basis')
     if (model['request']['inputs']['adjustment_inputs']['has_r_and_d']
             and model['request']['inputs']['valuation_assumptions'].get('research_tax') is None):

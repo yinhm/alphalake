@@ -1,4 +1,4 @@
-"""冻结逐公司研究条件并核对证据；不选择预测参数或计算公司价值。"""
+"""冻结逐公司研究并沿原生API核验；不选择预测参数或另写估值公式。"""
 import argparse
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
@@ -225,6 +225,8 @@ def run(frozen_file, database, output, *, tickers=None, web=None):
     scope, snapshot, metadata = published_context(database)
     assessment = assess_plan(frozen_file, expected_scope=scope, expected_snapshot=snapshot)
     receipt = read_json(Path(frozen_file))
+    # 审阅结果已由assess_plan验证并返回，不在批量执行时保留第二份完整分母。
+    receipt.pop('assessment')
     plan = ResearchPlan.model_validate(read_json(workspace_path(receipt['plan_file'])))
     selected = set(tickers or scope)
     if not selected or not selected <= set(scope):
@@ -292,6 +294,8 @@ def run(frozen_file, database, output, *, tickers=None, web=None):
                 live_verified=bool(web))
     if digest(database) != snapshot['sqlite_sha256']:
         raise ValueError('研究计算期间消费快照已变化')
+    # 结束时重新解析并核验；先释放本次已消费的完整故事，避免两份全量计划共存。
+    del plan, evidence, statuses, receipt
     assess_plan(frozen_file, expected_scope=scope, expected_snapshot=snapshot)
     summary = dict(contract='coverage-research-run-v1', run_id=run_id, snapshot=snapshot, companies=len(scope),
         selected_companies=len(selected), selected_is_full_scope=selected == set(scope),

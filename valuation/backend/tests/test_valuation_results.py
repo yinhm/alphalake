@@ -72,7 +72,8 @@ def fixture_batch(root):
                 review=dict(forecast=[dict(growth=None if index == 1 else .2, adjusted_operating_margin=2 if index == 0 else .2,
                     capital_funding=dict(sales_to_capital=None if index == 1 else 2))],
                     terminal=dict(growth=.02, wacc=.08, value_share=.6),
-                    economic_checks=dict(capital_release=dict(gross_release_million_cny=10 if index == 0 else 0))))
+                    economic_checks=dict(capital_release=dict(gross_release_million_cny=10 if index == 0 else 0,
+                        gross_nonresearch_release_million_cny=0))))
         model_path = root / 'research' / identifier / 'valuation.json'
         save(model_path, model)
         register(root, identifier, [('valuation', model_path)], [ticker])
@@ -131,6 +132,15 @@ def test_projection_keeps_zero_negative_missing_and_frozen_versions(workspace, p
     assert body['dataset']['runtime_stages']['calculation'] == 'frozen-calc'
     assert body['review_flag_counts'] == summary['risk_and_diagnostic_counts']
     assert tool.build('all-test', 'first', activate=True)['sha256'] == receipt['sha256']
+
+
+@pytest.mark.parametrize('total,component', [(0,12), (10,0), (10,12)])
+def test_release_flag_includes_nonresearch_component_without_double_counting(total, component):
+    model=dict(admission='ready',response=dict(final=dict(value_per_share=1)),
+        request=dict(inputs=dict(adjustment_inputs=dict(has_r_and_d=False))),
+        review=dict(forecast=[],economic_checks=dict(capital_release=dict(
+            gross_release_million_cny=total,gross_nonresearch_release_million_cny=component))))
+    assert tool.model_review_flags(model)==['capital_release_requires_recoverability_basis']
 
 
 def imported_projection(root):
