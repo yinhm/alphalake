@@ -253,7 +253,7 @@ def company_report(row, protocol, model, facts, business, profile, mechanism, pe
             '条件不同，不是同一组条件的价格更新或单因素改善，也不以新原生值覆盖前版专项结论。','']
     if value <= 0:
         paragraphs += ['**结论力度：** 本组原生条件给出非正普通股权益，保留其诊断含义；不能解释成股票将以负价格交易，也不是已完成困境或期权估值。','']
-    if any(abs(r['adjusted_operating_margin']) > 1 for r in forecast):
+    if any(r['adjusted_operating_margin'] is not None and abs(r['adjusted_operating_margin']) > 1 for r in forecast):
         paragraphs += ['**利润范围需重点复核：** 实际路径含绝对值超过100%的调整经营利润率，不能只据计算成功认证合理。先核对收入基数、利润／资产范围、研发及周期；本轮没有为美化数值换参数。','']
     products=select_segments(business,'product') or select_segments(business,'industry');regions=select_segments(business,'region')
     if products:
@@ -764,7 +764,7 @@ def catalogue(protocol_file, revision=None):
                 risks['capital_release_requires_recoverability_basis'] += 1
             if model['request']['inputs']['adjustment_inputs']['has_r_and_d'] and model['request']['inputs']['valuation_assumptions'].get('research_tax') is None:
                 risks['capitalized_research_without_explicit_future_tax_path'] += 1
-            if any(abs(r['adjusted_operating_margin']) > 1 for r in model['review']['forecast']):
+            if any(r['adjusted_operating_margin'] is not None and abs(r['adjusted_operating_margin']) > 1 for r in model['review']['forecast']):
                 risks['forecast_margin_outside_plus_minus_100_percent'] += 1
             risks['sensitivity_calculated'] += sum(s['status'] == 'calculated' for s in model['sensitivities'])
             risks['sensitivity_rejected'] += sum(s['status'] != 'calculated' for s in model['sensitivities'])

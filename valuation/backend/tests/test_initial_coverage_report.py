@@ -6,7 +6,7 @@ import json
 import pytest
 
 from tools.initial_coverage_report import (
-    catalogue_pages, company_facts, company_observations, disclosed_points, digest, guidance_rows,
+    catalogue_pages, company_facts, company_observations, company_report, disclosed_points, digest, guidance_rows,
     partial_company_report, price_comparison, protocol_resource,
     read_guidance, verify_materials, verify_model,
 )
@@ -51,6 +51,25 @@ def test_post_period_capital_keeps_condition_value_but_suppresses_price_differen
     assert price_comparison(row, {}, 200, 100)[0] == 1
     assert '资本基期代理' in price_comparison(row, {}, 200, 100)[2]
     assert price_comparison(row, {}, 200, None)[0] is None
+
+
+def test_zero_revenue_forecast_keeps_undefined_margin_in_complete_report():
+    from tests.test_native_cashflow_bridge import inputs, saved
+    from tools.review_native_policy import review_report
+    value = inputs()
+    value.raw_financials[0].revenues = 0
+    body = saved(value)
+    review = review_report(body)
+    assert all(r['revenue_million_cny'] == 0 and r['adjusted_operating_margin'] is None for r in review['forecast'])
+    row = dict(ticker=value.ticker, name='合成零收入企业', quote_date=None, industry='合成测试')
+    protocol = dict(financial_report_period='2026-06-30', information_as_of='2026-10-20T15:00:00Z')
+    model = dict(response=body, review=review, request=dict(inputs=body['inputs']), sensitivities=[], run_id='synthetic')
+    business = dict(report_end='2026-06-30', segments=[], reviews=[])
+    profile = dict(profile=dict(ORG_NAME=row['name'], MAIN_BUSINESS='合成测试业务'), source_page=None)
+    mechanism = dict(meaning='合成测试', observe='等待真实收入', counterevidence='收入未形成')
+    text = company_report(row, protocol, model, {}, business, profile, mechanism, [], [], [])
+    assert '未来收入增长 | 未取得' in text and '调整经营利润率 | 未取得' in text
+    assert review['forecast'][0]['adjusted_operating_margin'] is None
 
 
 def test_same_period_observations_keep_actual_zero_and_do_not_create_forecast():
