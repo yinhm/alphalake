@@ -1,8 +1,17 @@
 import axios from 'axios';
 import type { ValuationResponse } from '../types/valuation';
 import type { ResearchCatalog, ResearchDetail } from '../types/research';
+import type { MacroCatalog, MacroPublication } from '../types/macro';
 
 const api = axios.create({ baseURL: '/api' });
+
+export async function fetchMacroCatalog(signal?: AbortSignal): Promise<MacroCatalog> {
+  return (await api.get('/macro', { signal })).data;
+}
+
+export async function fetchMacro(id?: string, signal?: AbortSignal): Promise<MacroPublication> {
+  return (await api.get(id ? `/macro/publications/${encodeURIComponent(id)}` : '/macro/latest', { signal })).data;
+}
 
 export async function fetchResearchCatalog(q: string, kind: string, offset: number, signal?: AbortSignal): Promise<ResearchCatalog> {
   const { data } = await api.get('/research', { params: { q, kind: kind || undefined, offset, limit: 20 }, signal });

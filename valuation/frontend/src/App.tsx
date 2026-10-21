@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation, Navigate, Link } from 'react-router-dom';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import Sidebar from './components/Sidebar';
 import ErrorBoundary from './components/ErrorBoundary';
 import OnboardingWizard from './components/OnboardingWizard';
@@ -25,6 +25,8 @@ import UnresolvedFieldsPanel from './components/UnresolvedFieldsPanel';
 import type { ValuationResponse } from './types/valuation';
 import { createValuation, patchValuation, downloadFullWorkbook, apiErrorMessage, type PatchValue } from './api/client';
 import { KnowledgeProvider, KnowledgePanel, KnowledgePage, useKnowledge } from './knowledge';
+
+const MacroPage = lazy(() => import('./macro/MacroPage'));
 
 export default function App() {
   const [data, setData] = useState<ValuationResponse | null>(null);
@@ -84,6 +86,7 @@ export default function App() {
   const isAdminRoute = pathname.startsWith('/admin');
   const isKnowledgeRoute = pathname === '/knowledge' || pathname.startsWith('/knowledge/');
   const isResearchRoute = pathname === '/research' || pathname.startsWith('/research/');
+  const isMacroRoute = pathname === '/macro' || pathname.startsWith('/macro/');
 
   return (
     <KnowledgeProvider valuation={data}>
@@ -91,7 +94,17 @@ export default function App() {
       <Sidebar />
       <main className="min-w-0 flex-1 p-3 md:p-6 overflow-auto" data-knowledge-scope>
         <KnowledgeToolbar />
-        {isResearchRoute ? (
+        {isMacroRoute ? (
+          <ErrorBoundary resetKey={pathname}>
+            <Suspense fallback={<p role="status">正在加载宏观页面…</p>}>
+            <Routes>
+              <Route path="/macro" element={<MacroPage />} />
+              <Route path="/macro/history" element={<MacroPage />} />
+              <Route path="/macro/:id" element={<MacroPage />} />
+            </Routes>
+            </Suspense>
+          </ErrorBoundary>
+        ) : isResearchRoute ? (
           <ErrorBoundary resetKey={pathname}>
             <Routes>
               <Route path="/research" element={<ResearchPage />} />
