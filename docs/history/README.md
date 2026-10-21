@@ -6,6 +6,9 @@
 
 ## 最近主线证据
 
+- [2026-10-21项目文档与研究整理](project-cleanup-20261021.md)：当前说明收敛、39组冻结研究导航、过期响应退役及引用核验。
+- [冻结研究索引](../../valuation/research/README.md)：仍用回归证据、已结束方法试验与历史数据分开阅读。
+
 - [2026-10-21宏观到投资研究](macro-investment-20261021.md)：发布变化比较、六条传导链、11组图表、52处引用与研究双向入口。
 
 - [2026-10-21宏观概览及历史阅读](macro-pages-20261021.md)：主库只读导出、点评证据绑定、七组图表、不可变历史期次及实际网页验收。
@@ -84,8 +87,6 @@
 - [AlphaLake 设计](design-v0.md)
 - [处置长期资产现金正式发布（2026-09-18）](disposal-main-publication-20260918.md)
 - [安克历史损益与一季度收入主库发布](earnings-main-publication-20260911.md)
-- [EBIT与投资资产配套核对](ebit-investment-scope-audit.md)
-- [无源数值副本的财务存储切换](financial-storage-cutover-20260925.md)
 - [财务存储与导出重设计：实测问题、目标与实施规格](financial-storage-redesign-20260925.md)
 - [一年期利润校准政策](forecast-calibration.md)
 - [全字段财务物化的内存修复](fundamental-memory-20260919.md)
@@ -100,8 +101,6 @@
 - [贵州茅台回溯验证性估值（2026-09-06）](moutai-validation-valuation-20260906.md)
 - [自动选择条件估值假设](native-assumption-selection.md)
 - [原生估值的折旧与非现金营运资本口径](native-capital-definition.md)
-- [公司与行业资本倍率核对](native-capital-proxy-review.md)
-- [资本效率过渡条件情景](native-capital-transition.md)
 - [原生估值的人民币政策与经营候选](native-cny-policy.md)
 - [原生估值缺口基线](native-coverage.md)
 - [聚焦当前预测的经济一致性](native-current-economic-checks.md)
@@ -120,7 +119,6 @@
 - [标准供给扩展：下一批40家](supply-expansion-next.md)
 - [标准数据供给扩展：20家串行验收](supply-expansion.md)
 - [标准供给扩展：跨代码区间40家](supply-policy-expansion.md)
-- [系统整理与自动估值交付](system-delivery-20260927.md)
 - [TDX现金与投资推导：账面小计和估值范围分开](tdx-asset-derivation-20260926.md)
 - [TDX 财务全量源目录与解析](tdx-financial-catalog-20260919.md)
 - [portfolio 财务字段词典核对](tdx-portfolio-reference-20260919.md)

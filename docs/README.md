@@ -8,14 +8,14 @@
 | [操作手册](guides/) | 同步、资源、查询、导出、发布与审核 | 使用当前命令与契约；旧步骤移出，不保留双路径 |
 | [估值方法](valuation/README.md) | 原生参考、自动候选、输入口径、资本效率 | 区分方法、公司证据和政策假设；保留适用边界 |
 | [架构决策](decisions/README.md) | 已接受的设计选择及替代关系 | 不抹去决策历史；当前实现以代码和状态页为准 |
-| [历史验收](history/README.md) | 旧迁移、样本、阶段性审核和失败记录 | 带历史边界，不作为日常操作指南 |
+| [历史验收](history/README.md)／[冻结研究](../valuation/research/README.md) | 旧迁移、样本、已结束试验和失败记录 | 带历史边界，按原提交复验，不作为日常操作指南 |
 | [机器验收收据](acceptance/) | 已冻结JSON | 原字节保留，不当成当前状态 |
 
 ## 操作手册
 
 - **更新与发布**：[离线财务同步](guides/tdx-offline-sync.md)、[节点轮询](guides/tdx-failover.md)、[报告期行情窗口](guides/valuation-quote-window.md)、[原生发布与恢复](guides/system-delivery.md)。
 - **Agent数据维护**：[AlphaLake Skill](../skills/alphalake/SKILL.md)：日常手工刷新、业绩预告入库、来源核验及网页交付；安装见[项目入口](../README.md)。
-- **数据与资源**：[SQLite导出](guides/valuation-sqlite-export.md)、[workspace布局](guides/workspace-layout.md)、[内存隔离](guides/fundamental-memory-20260919.md)、[财务存储性能门槛](guides/financial-storage-redesign-20260925.md)。
+- **数据与资源**：[SQLite导出](guides/valuation-sqlite-export.md)、[workspace布局](guides/workspace-layout.md)、[内存隔离](guides/fundamental-memory-20260919.md)、[财务存储性能评估](guides/financial-storage-redesign-20260925.md)。
 - **开发测试**：[默认回归、全局验收及历史测试清理](guides/testing.md)。
 - **估值数据契约**：[接入spec](valuation/data-contract.md)：累计/单季/TTM、余额、单位、研发队列、参考与会话的实际消费及转换边界。
 - **消费快照调整**：[SQLite撤表与边界spec](valuation/sqlite-input-snapshot-spec.md)：数据治理归DuckDB，保留估值宽表及必要上下文；v13已发布，数据治理不复制进消费库；[撤表验收](history/sqlite-input-snapshot-v12-20261011.md)、[产品范围验收](history/product-scope-v13-20261017.md)。
@@ -30,6 +30,6 @@
 
 ## 阅读与维护边界
 
-历史报告中的“当前”、数值、源码路径、迁移命令和待办属于当时提交，不能据此初始化新库、补零或改估值政策。`valuation/research`、测试夹具和机器收据是冻结证据，不在文档整理中批量改写；旧链接按原提交查看，现存说明可在历史索引按文件名查找。
+历史报告中的“当前”、数值、源码路径、迁移命令和待办属于当时提交，不能据此初始化新库、补零或改估值政策。`valuation/research`、测试夹具和机器收据是冻结证据，不在文档整理中批量改写；旧链接按原提交查看，现存说明可在历史索引按文件名查找。正式公司研究与宏观点评在workspace发布，代码仓库只保存工具、契约及必要冻结证据，三者不混作当前功能。
 
 长期规范写入AGENTS，未完成维护项写入[待办](review-minor-backlog.md)，动态运行结果写入workspace/derived。新一轮工作应更新已有主题页；只有独立契约或必要的验收证据才新建文档，不再为每轮进度新开一个当前说明页。
