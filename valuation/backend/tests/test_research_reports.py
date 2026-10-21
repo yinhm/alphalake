@@ -3,6 +3,7 @@ import asyncio
 from copy import deepcopy
 import json
 import os
+import time
 
 from fastapi import FastAPI
 import httpx
@@ -208,8 +209,11 @@ def test_cached_catalog_detects_same_size_edit_even_with_restored_mtime(workspac
     before = path.stat()
     encoded = path.read_text().replace('初版研究', '修订研究')
     assert len(encoded.encode()) == before.st_size
+    # 同一内核时钟tick内ctime可能相同；本例核验ctime变化后、mtime恢复时的缓存失效。
+    time.sleep(0.01)
     path.write_text(encoded)
     os.utime(path, ns=(before.st_atime_ns, before.st_mtime_ns))
+    assert path.stat().st_ctime_ns != before.st_ctime_ns
     assert catalog(query='初版')['total'] == 0
     assert catalog(query='修订')['reports'][0]['title'] == '修订研究'
     path.write_text('{broken JSON')
