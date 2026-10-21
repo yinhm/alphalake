@@ -25,6 +25,7 @@
 - **宏观到投资研究**：[发布变化与六类传导链](guides/macro-investment.md)：从事实及反证定位公司经营取证与参数复核，不自动选股或预测。
 - **公司研究与估值**：[Agent估值Skill](../skills/alphalake-valuation/SKILL.md)统一组织经营论点、假设论证、条件估值、完整解释与修订；[公司入口](guides/company-valuation-entry.md)、[运行查询](guides/valuation-run-query.md)、[运行比较](guides/valuation-comparison.md)维护程序契约。[独立DCF校验Skill](../skills/alphalake-dcf/SKILL.md)只复用数据，独立计算，允许定向官方PDF补证，不改变生产引擎或发布。
 - **研究报告平台**：[workspace交付、登记与只读阅读](guides/research-delivery.md)，入口`/research`，不依赖公司加载。
+- **估值结果总览（待实施）**：[表格、搜索、筛选与只读查询spec](valuation/valuation-results-page-spec.md)，拟新增`/valuations`，沿冻结研究结果展示，不重新估值。
 - **网页知识库**：[划词解释、词条 API 与内容契约](guides/valuation-knowledge.md)。
 - **证据治理**：[审核修订与撤销](guides/reviewed-evidence-history.md)、[三表标准契约](decisions/020-official-statements-and-snapshots.md)、[招股披露范围](decisions/021-prospectus-disclosure-coverage.md)。
 
