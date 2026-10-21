@@ -163,7 +163,7 @@ export default function ScreenPage() {
         </form>
       </details>
       {Object.keys(data.range_unknown_counts).length > 0 && <p className="screen-muted">各条件排除的未知值（重叠不相加）：{Object.entries(data.range_unknown_counts).map(([key, count]) => `${ranges.find(range => range.key === key)?.label ?? key} ${count}家`).join('；')}</p>}
-      <div className="screen-table-tools"><p aria-live="polite">匹配 <strong>{data.filtered_count.toLocaleString()}</strong> 家 / 完整批次 {data.universe_count.toLocaleString()} 家</p>
+      <div className="screen-table-tools"><p aria-live="polite">匹配 <strong>{data.filtered_count.toLocaleString()}</strong> 家 / 完整批次 {data.universe_count.toLocaleString()} 家<small className="block text-slate-500">金额单位：人民币元／股</small></p>
         <label><input type="checkbox" checked={showAssumptions} onChange={event => update('assumptions', event.target.checked ? '1' : null)} /> 显示关键假设</label>
         <label>每页<select value={params.get('limit') ?? '50'} onChange={event => update('limit', event.target.value)}>{[25, 50, 100].map(value => <option key={value}>{value}</option>)}</select></label>
       </div>
