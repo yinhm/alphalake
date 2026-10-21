@@ -124,7 +124,7 @@ curl http://127.0.0.1:8080/api/database/compatibility/SZSE:300866
 
 ## 原生参考发布
 
-当前v13另含五张既有参考表：`reference_release`、`reference_value`、`reference_company`、`reference_issuer_association`和`reference_wacc`。原生参考契约v4，从当前主库schema58已完成的发布读取；缺包或错误哈希拒绝，不读散落工作簿回退。原US行业口径、发行人关联、人民币来源初值及用户覆盖规则保持。见[参考边界](../valuation/native-reference-bridge.md)。
+当前v13另含五张既有参考表：`reference_release`、`reference_value`、`reference_company`、`reference_issuer_association`和`reference_wacc`。原生参考契约v4，从当前主库schema59已完成的发布读取；缺包或错误哈希拒绝，不读散落工作簿回退。原US行业口径、发行人关联、人民币来源初值及用户覆盖规则保持；宏观域不复制进此消费快照。见[参考边界](../valuation/native-reference-bridge.md)。
 
 默认参考截止等于`--as-of`；`--reference-as-of <RFC3339>`允许明确使用另一参考截止。例如固定旧财务窗口比较最新参考时，两个截止分别记录，不能称当时可用的历史估值。旧快照须显式重新导出，不能只改metadata契约标签。
 

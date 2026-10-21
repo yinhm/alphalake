@@ -59,6 +59,23 @@
 
 这些任务只更新主库。若同时要求网页交付，沿下一节发布；参考／行情已完成在线刷新时，保存真实同步日志与local发布之间的关联，不把local收据改称在线全来源刷新。
 
+## 宏观定期统计
+
+读取[宏观来源与口径](../../../docs/guides/macro-data.md)。仅沿现有统计局、人民银行、财政部发布目录刷新；无需证券范围、财报报告期或估值重算。用户只要求宏观时不附带财务／报价同步，已有国债与汇率沿原入口，不另存宏观副本。
+
+```bash
+./alphalake sync-macro "$ALPHALAKE_DB" \
+  --workspace "$ALPHALAKE_WORKSPACE" --source all > "$ALPHALAKE_RECEIPTS/macro-sync.json"
+./alphalake sync-macro "$ALPHALAKE_DB" \
+  --workspace "$ALPHALAKE_WORKSPACE" --source all --offline > "$ALPHALAKE_RECEIPTS/macro-replay.json"
+./alphalake macro-series "$ALPHALAKE_DB" > "$ALPHALAKE_RECEIPTS/macro-series.json"
+./alphalake macro-data "$ALPHALAKE_DB" --latest > "$ALPHALAKE_RECEIPTS/macro-latest.json"
+```
+
+`--source`可限定`nbs`／`pbc`／`mof`。逐个核对`alphalake-macro-sync-v1`收据的请求／成功数据集、统计期、发布ID、观测与新增、未来空占位和失败；离线新增应为0且版本不变。原文坏档必须失败，partial不能称全量最新。各类最新期不同，不用今天或URL日期补发布时间；百分比已规范为小数，PMI仍为指数点。金额、同比及可比口径不可混算。
+
+宏观保留来源修订，不宣称严格历史PIT。它为经营判断提供证据，不自动把GDP／CPI／信贷变化代入公司增长、利润率、永续增长或WACC；不导出到财务SQLite，不发布网页财务库。当前库版本与迁移先查状态页，不能对旧库直接强制初始化。
+
 ## SQLite与网页交付
 
 必读[统一发布指南](../../../docs/guides/system-delivery.md)。用户要求刷新并发布时，沿`tools.publish_native_valuation`执行，不能只复制导出的SQLite。发布目标、实际消费该目标的`WEB_URL`、财报期必须明确；沿`--published-scope`在锁内冻结现行完整范围，首次建范围或主动扩缩时使用经核验的`--codes-file`。

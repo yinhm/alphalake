@@ -12,13 +12,7 @@
 
 未知或重复ticker拒绝；源响应中的其他证券完整归档，目标范围之外的数值不写预告宽表、不进入查询分母。没有预告不增加估值准入要求。
 
-主库当前schema58。旧schema57先复制到`workspace/derived/earnings-guidance/candidate.duckdb`，在独立1GiB服务内显式升级：
-
-```bash
-./alphalake upgrade-earnings-guidance workspace/derived/earnings-guidance/candidate.duckdb
-```
-
-升级会比较既有表的行数与聚合内容签名，只有相同时才提交；不重算财务。副本重开、真实入库及原财务核对通过后才替换主库；保留可验证回滚，切换后清理备份。正常当前schema使用下列入口，资源配置沿[内存隔离](fundamental-memory-20260919.md)。
+主库当前schema59，预告表已包含在当前模型中；旧57→58是已完成的一次性迁移，不作为正常运行入口。58→59的宏观域升级见[当前迁移契约](macro-data.md#存储与刷新)。当前库使用下列入口，资源配置沿[内存隔离](fundamental-memory-20260919.md)。
 
 ```bash
 ./alphalake sync-earnings-guidance workspace/alphalake.duckdb \

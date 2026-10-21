@@ -1,4 +1,4 @@
 interface:
   display_name: "AlphaLake 数据维护"
-  short_description: "检查数据状态，手工刷新财务、行情、参考与业绩预告并核验发布结果"
+  short_description: "检查数据状态，手工刷新财务、行情、参考、业绩预告及官方宏观统计并核验结果"
   default_prompt: "使用 $alphalake，按项目当前契约完成所需数据刷新，核对变化、来源完整性和发布状态。"

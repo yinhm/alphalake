@@ -1,6 +1,6 @@
 # 数据与估值架构
 
-本页描述当前结构和不变约束；实现范围见[项目状态](implementation-status.md)，历史设计见[早期设计](history/design-v0.md)，具体语义决策见[ADR索引](decisions/README.md)。当前只维护schema58，不保留旧模型兼容层。
+本页描述当前结构和不变约束；实现范围见[项目状态](implementation-status.md)，历史设计见[早期设计](history/design-v0.md)，具体语义决策见[ADR索引](decisions/README.md)。当前只维护schema59，不保留旧模型兼容层。
 
 ## 数据流与责任
 
@@ -16,6 +16,8 @@ flowchart LR
   G --> I
   I --> J[原生网页及API共享估值引擎]
   K[显式政策与用户假设] --> J
+  L[统计局／央行／财政部原文] --> M[同库宏观系列与版本化观测]
+  M --> N[经营证据与显式条件审阅]
 ```
 
 TDX是结构化财务数值主源；CNINFO负责公告身份、披露时间、合并范围及原文核验，不静默覆盖TDX。标准字段使用通用业务名称，源编号仅在解析、映射及来源证据中出现。估值方法以达摩达兰原始资料为准，事实、代理与预测分层。
@@ -30,10 +32,13 @@ AlphaLake交付事实、参考、确定性派生及显式假设，valuation消�
 | `market` / `classification` | 未复权行情、股本/行动、汇率和时态分类 |
 | `fundamental` | 源记录定位、公告关联、标准财务宽表、拒绝原因、逐期间审核补充 |
 | `reference` | 版本化国家/行业、风险与成本参考及同发行人审核关联；不是公司财务事实 |
+| `macro` | 全国需求、价格、经营周期、信用与财政统计；保留标准系列定义、期间及修订，不自动填公司预测 |
 | `meta` | 原始归档、发布版本、运行、检查点与治理记录 |
 | workspace派生文件 | SQLite、估值运行与研究结果，可按输入和版本重建 |
 
 唯一主库是`workspace/alphalake.duckdb`。原始证据按来源归档，源ZIP已保存时不在数据库重复持久化BLOB、原位值或源字段长表。
+
+宏观`series`／`observation`共用`meta`归档与发布版本，不与公司财务、市场价格或达摩达兰估计混存；研究通过标准查询读取，财务SQLite不携带宏观副本。期间、单位与手工刷新见[宏观指南](guides/macro-data.md)，设计依据见[ADR025](decisions/025-macroeconomic-observations.md)。
 
 财务源层`fundamental.source_record`只保存归档、原行和身份定位；`statement_snapshot`按来源记录宽行存标准列，金额采用`DECIMAL(38,10)`，不恢复float32已经丢失的精度。拒绝按记录/规则归并，字段运行血缘只在内容变化时更新。批量查询先限定证券、期间和标准列，禁止逐字段入库或逐公司启动导出进程。基准及发布门槛见[财务存储约束](guides/financial-storage-redesign-20260925.md)。
 
