@@ -69,7 +69,7 @@ def condition_row(source, result, model, report, frozen_at, purpose='company_con
     row = deepcopy(source)
     calculated = model is not None
     row.update(admission='ready' if calculated else source['admission'] if source['admission'] not in ('ready', 'not_calculated') else 'not_calculated',
-        reason=('诊断条件已计算，未采纳为公司主估值' if purpose == 'diagnostic_condition' else '公司研究条件已冻结并计算') if calculated else '已研究，重要边界待闭合；不以原生默认替代',
+        reason=('诊断条件已计算，未采纳为公司主估值' if purpose == 'diagnostic_condition' else '公司研究条件已冻结并计算') if calculated else '研究检查已留档，重要边界待闭合；不以原生默认替代',
         report_id=report.id, url='/research/'+report.id,
         mode=('authored_company_diagnostic_condition' if purpose == 'diagnostic_condition' else 'authored_company_condition') if calculated else 'company_research_pending',
         condition_value_cny_per_share=result['value_per_share'] if calculated else None,
@@ -174,7 +174,7 @@ def company_report(identifier, source, result, story, evidence, plan, frozen, ru
         for topic, basis in plan.basis[story.id].items():
             text.append('- **'+topic+'**：'+basis.rationale)
     else:
-        text += ['**已完成本公司资料研究，但重要范围／口径或条件仍待解决，本轮不编造新的每股值。**', '',
+        text += ['**本公司研究检查已留档，重要范围／口径或条件仍待解决，本轮不编造新的每股值。**', '',
             '；'.join(note['unresolved']), '']
     text += ['', '## 计算前的公司研究', '',
         '下文保持计算前判断，执行状态以本页上方为准。', '', note_text.read_text(), '',
@@ -281,7 +281,7 @@ def deliver(run_directory, previous_dataset, baseline_report, identifier):
         writer.writeheader()
         writer.writerows(rows)
     text = ['# 全范围公司故事与条件估值', '',
-        f"完整{len(rows):,}家公司；累计实际研究{len(reviewed):,}家，已计算公司条件{ready:,}家。全范围研究{'已逐家公司处理' if whole_complete else '仍在持续推进，尚未完成'}。", '',
+        f"完整{len(rows):,}家公司；累计留下研究记录{len(reviewed):,}家，已计算条件{ready:,}套。完整队列{'已逐家公司处理' if whole_complete else '仍在持续推进，尚未完成'}。", '',
         f"其中{diagnostics}套仅作诊断，未采纳为公司主值；不能把可执行诊断路径说成缺财务数据。", '',
         '未进入本批不撤销既有公司条件；未研究不以原生默认冒充。金融范围外、缺数据和未解决经济边界保留。', '',
         '## 本批交付', '', *['- ['+report_id+'](/research/'+report_id+')' for report_id in new_reports], '',
@@ -289,7 +289,7 @@ def deliver(run_directory, previous_dataset, baseline_report, identifier):
     (folder/'report.md').write_text('\n'.join(text)+'\n')
     now = datetime.now(timezone.utc)
     report = publish(folder, dict(contract='alphalake-research-v1', id=identifier,
-        title=f"公司故事：{len(reviewed):,}家已研究／{ready:,}家已计算，完整{len(rows):,}家",
+        title=f"公司故事：{len(reviewed):,}家已检查／{ready:,}套已计算，完整{len(rows):,}家",
         summary='持续按固定完整队列逐公司研究；保留既有已核验条件，不重算旧公司，不回退原生默认。',
         kind='narrative_batch', status='complete' if whole_complete else 'partial', tickers=[],
         research_date=now.date().isoformat(), financial_period=run['snapshot']['financial_report_period'],
