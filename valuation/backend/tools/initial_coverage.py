@@ -31,7 +31,7 @@ def digest(path):
 def save(path, value):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False)+'\n')
+    path.write_text(json.dumps(value, ensure_ascii=False, separators=(',', ':'), allow_nan=False)+'\n')
 
 
 def workspace_file(path):

@@ -77,6 +77,7 @@ def test_partial_company_has_known_business_and_missing_inputs_without_fake_dcf(
     assert '金融业务暂不纳入' in text and '财务输入状态`ready`' in text
     assert '合成银行的金融服务' in text and '本次没有每股DCF条件值' in text
     assert '每股条件价值 0' not in text and '未列必需财务缺项' in text
+    assert '未设估值股本基期' in text and '财务／股本基期2026-06-30' not in text
 
 
 def materials():
@@ -89,6 +90,13 @@ def materials():
         companies_count=1, company_facts_file='financial-facts.jsonl', company_facts_sha256='facts', differences=[])
     collection = dict(protocol_sha256='protocol', records={})
     return protocol, financial, collection
+
+
+def model_inputs():
+    from engine.data_dictionary import CompanyValuationInput
+    return CompanyValuationInput(ticker='SHSE:600519', reporting_currency='CNY',
+        macro_inputs=dict(risk_free_rate=.03, equity_risk_premium=.06, tax_rate_marginal=.25),
+        industry_data=dict(industry_name='合成测试', beta_u=.7)).model_dump(mode='json')
 
 
 @pytest.fixture
@@ -135,7 +143,7 @@ def test_streamed_company_facts_reject_tampered_identity_or_truncated_rows(finan
 @pytest.mark.parametrize('changed', ['ticker', 'admission', 'financial_input_snapshot'])
 def test_other_company_or_snapshot_model_is_rejected(changed):
     protocol, _, _ = materials()
-    inputs = dict(ticker='SHSE:600519')
+    inputs = model_inputs()
     row = dict(ticker='SHSE:600519', admission='ready', inputs_sha256=value_digest(inputs))
     model = dict(contract='initial-coverage-calculation-v2', protocol_sha256='protocol', ticker=row['ticker'],
         admission='ready', financial_input_snapshot='sqlite', api_verified=True,
@@ -149,7 +157,7 @@ def test_other_company_or_snapshot_model_is_rejected(changed):
 
 def test_unverified_api_or_different_reference_is_rejected():
     protocol, _, _ = materials()
-    inputs = dict(ticker='SHSE:600519')
+    inputs = model_inputs()
     row = dict(ticker='SHSE:600519', admission='ready', inputs_sha256=value_digest(inputs))
     model = dict(contract='initial-coverage-calculation-v2', protocol_sha256='protocol', ticker=row['ticker'],
         admission='ready', financial_input_snapshot='sqlite', api_verified=False,
@@ -164,7 +172,7 @@ def test_unverified_api_or_different_reference_is_rejected():
 
 def test_matching_top_level_identity_does_not_allow_another_company_payload():
     protocol, _, _ = materials()
-    inputs = dict(ticker='SHSE:600519')
+    inputs = model_inputs()
     row = dict(ticker='SHSE:600519', admission='ready', inputs_sha256=value_digest(inputs))
     model = dict(contract='initial-coverage-calculation-v2', protocol_sha256='protocol', ticker=row['ticker'],
         admission='ready', financial_input_snapshot='sqlite', api_verified=True,
@@ -172,6 +180,32 @@ def test_matching_top_level_identity_does_not_allow_another_company_payload():
             reference_snapshot=dict(id='references')))
     with pytest.raises(ValueError, match='请求或响应身份'):
         verify_model(model, row, protocol, 'protocol')
+
+
+def test_api_normalization_accepts_same_utc_instant_and_numbers_but_rejects_real_input_change():
+    from engine.data_dictionary import RawFinancials
+    protocol, _, _ = materials()
+    inputs = model_inputs()
+    inputs['prepared_ttm'] = dict(financials=RawFinancials(fiscal_year=2026, revenues=100, ebit=20).model_dump(mode='json'),
+        period_start='2025-07-01', period_end='2026-06-30', information_as_of='2026-10-20T15:00:00Z',
+        currency='CNY', money_unit='million_reporting_currency', shares_unit='million_shares', provenance={'source': 'synthetic'})
+    inputs['methodology_choices']['convertible_debt']['face_value'] = 0
+    normalized = deepcopy(inputs)
+    normalized['prepared_ttm']['information_as_of'] = '2026-10-20T15:00:00+00:00'
+    normalized['methodology_choices']['convertible_debt']['face_value'] = 0.0
+    row = dict(ticker=inputs['ticker'], admission='ready', inputs_sha256=value_digest(inputs))
+    model = dict(contract='initial-coverage-calculation-v2', protocol_sha256='protocol', ticker=row['ticker'],
+        admission='ready', financial_input_snapshot='sqlite', api_verified=True,
+        request=dict(inputs=inputs), response=dict(ticker=row['ticker'], inputs=normalized, reference_snapshot=dict(id='references')))
+    verify_model(model, row, protocol, 'protocol')
+    for changed in ('instant', 'forecast'):
+        altered = deepcopy(model)
+        if changed == 'instant':
+            altered['response']['inputs']['prepared_ttm']['information_as_of'] = '2026-10-20T15:00:01Z'
+        else:
+            altered['response']['inputs']['valuation_assumptions']['revenue_growth_next_year'] = .123
+        with pytest.raises(ValueError, match='请求或响应身份'):
+            verify_model(altered, row, protocol, 'protocol')
 
 
 def test_catalogue_paginates_every_security_and_does_not_fill_partial_values(tmp_path):

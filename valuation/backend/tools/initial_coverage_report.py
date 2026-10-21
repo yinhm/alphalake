@@ -410,7 +410,7 @@ def partial_company_report(row, protocol, model, facts, business, profile, mecha
         '## 公司与已知业务', '',
         clean(profile['profile'].get('MAIN_BUSINESS')) or '现有研究缓存未取得可核对主营，不按公司名称或行业标签猜业务。', '',
         '## 已有财务与缺项', '',
-        f"财务／股本基期{period}；消费快照截止{protocol['information_as_of']}；本轮范围／请求冻结{protocol['frozen_at']}。", '',
+        f"财务研究窗口截至{period}；本次未计算估值，因此未设估值股本基期。消费快照截止{protocol['information_as_of']}；本轮范围／请求冻结{protocol['frozen_at']}。", '',
         f"已有最近合格报价：{money(row.get('stock_price_listing'),1)}元，交易日{row.get('quote_date') or '未取得'}。"
         '本次未计算DCF所以不比较价差；范围外或财务受阻不等于行情缺失。', '',
         f"必需输入缺项：{missing}。范围审核与财务完整性分别记录，财务已有值不因产品范围外被当作缺失或删除。", '',
@@ -499,6 +499,7 @@ def company_facts(stream, financial, ticker):
 
 
 def verify_model(model, row, protocol, protocol_hash):
+    from engine.data_dictionary import CompanyValuationInput
     from tools.check_native_sqlite import value_digest
     if (model.get('contract') != 'initial-coverage-calculation-v2'
             or model.get('protocol_sha256') != protocol_hash or model.get('ticker') != row['ticker']
@@ -512,8 +513,10 @@ def verify_model(model, row, protocol, protocol_hash):
         response, request = model['response'], model['request']
         if (response.get('ticker') != row['ticker'] or response['inputs'].get('ticker') != row['ticker']
                 or request['inputs'].get('ticker') != row['ticker']
-                or value_digest(response['inputs']) != row['inputs_sha256']
-                or value_digest(request['inputs']) != row['inputs_sha256']):
+                or value_digest(request['inputs']) != row['inputs_sha256']
+                # API按类型规范化数字与UTC日期；原请求哈希仍严格绑定冻结快照。
+                or CompanyValuationInput.model_validate(response['inputs']).model_dump(mode='json')
+                    != CompanyValuationInput.model_validate(request['inputs']).model_dump(mode='json')):
             raise ValueError('公司请求或响应身份／实际输入与冻结快照不一致：'+row['ticker'])
     elif value_digest(model['diagnostic']) != row['diagnostic_sha256']:
         raise ValueError('公司准入诊断与冻结快照不一致：'+row['ticker'])
@@ -665,7 +668,7 @@ def build(protocol_file, tickers=None, revision=None):
                 title=row['name']+'：业务、财务与'+('条件估值' if ready else '范围／缺项')+'｜初次覆盖', summary=summary,
                 kind='initial_coverage', status='complete' if ready and not source_limitation else 'partial', tickers=[ticker],
                 research_date=collection['acquired_at'][:10], financial_period=protocol['financial_report_period'],
-                information_as_of=collection['acquired_at'], share_date=protocol['financial_report_period'],
+                information_as_of=collection['acquired_at'], share_date=protocol['financial_report_period'] if ready else None,
                 run_ids=[model['run_id']] if model.get('run_id') else [], files=files, limitations=[
                     '结构化初次覆盖；经营汇编与已读材料分别记录，未逐页独立审核整份年报／中报。',
                     '统一解释本次消费快照的原生条件；没有新增经济参数自动选择、概率或默认采用。',
@@ -779,7 +782,7 @@ def catalogue(protocol_file, revision=None):
             descriptive_difference_pct=difference*100 if difference is not None else None,
             price_comparison_status=comparison_status, price_comparison_reason=comparison_reason,
             financial_period=protocol['financial_report_period'], information_as_of=protocol['information_as_of'],
-            research_frozen_at=protocol['frozen_at'], share_date=protocol['financial_report_period'], run_id=model.get('run_id'),
+            research_frozen_at=protocol['frozen_at'], share_date=protocol['financial_report_period'] if ready else None, run_id=model.get('run_id'),
             registered_files=len(report.files), charts=len(graph['files']), main_report_sha256=digest(folder/'report.md'),
             complete_pdf_semantic_review=False, forecast_economic_certification=False))
     base_folder = workspace_path('research', protocol['catalogue_id'])

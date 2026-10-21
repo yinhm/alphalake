@@ -8,9 +8,21 @@ import tarfile
 
 import pytest
 
-from tools.initial_coverage import business_data
+from tools.initial_coverage import business_data, save
 from tools.initial_coverage_report import cash_display, disclosed_points, guidance_rows
 from datetime import date
+
+
+def test_research_json_preserves_decimal_evidence_zero_unknown_and_prior_file_on_bad_value(tmp_path):
+    path = tmp_path/'valuation.json'
+    payload = {'evidence': '1234567890123456789.12', 'source_zero': 0, 'unknown': None,
+               'forecast': [0.125, -2.5, {'label': '条件值'}]}
+    save(path, payload)
+    assert json.loads(path.read_text()) == payload
+    before = path.read_bytes()
+    with pytest.raises(ValueError):
+        save(path, {'invalid': float('nan')})
+    assert path.read_bytes() == before
 
 
 def packet():
