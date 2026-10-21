@@ -56,6 +56,23 @@ def test_incremental_delivery_keeps_other_company_inputs_results_and_denominator
         merge_rows(old, [dict(ticker='SHSE:600001')], scope)
 
 
+def test_future_research_cannot_disappear_when_baseline_research_is_disabled():
+    note = dict(annual_assumptions=[dict(year=1, growth=.1, adjusted_operating_margin=.1,
+        tax_rate=.25, research_expense_ratio=.015, annual_net_reinvestment_million_cny=10.)],
+        capital_path_mode='annual_net_reinvestment', terminal=dict(growth=.01, marginal_roic=None))
+    baseline = dict(ltm_financials=dict(revenues=1000.),
+        inputs=dict(adjustment_inputs=dict(has_r_and_d=False)))
+    original = deepcopy(note)
+    with pytest.raises(ValueError, match='不能忽略非零未来研发条件'):
+        authored_story(note, baseline, 'synthetic')
+    assert note == original
+    note['annual_assumptions'][0]['research_expense_ratio'] = 0.
+    years, overrides = authored_story(note, baseline, 'synthetic')
+    assert years[0]['revenue_million_cny'] == 1100.
+    assert overrides['valuation_assumptions.annual_net_reinvestment'] == [10.]
+    assert 'valuation_assumptions.research_tax' not in overrides
+
+
 def test_delivery_rejects_result_or_request_drift_before_publishing():
     request = dict(inputs=dict(ticker='SHSE:600519', condition='synthetic'))
     expected = value_digest(request)

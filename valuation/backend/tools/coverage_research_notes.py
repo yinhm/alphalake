@@ -15,6 +15,9 @@ ADOPTED = 'compile_condition_with_disclosed_open_items'
 def authored_story(note, baseline, key):
     """只展开研究者已提供的年度增长、费用率和资本条件。"""
     years = note['annual_assumptions']
+    if not baseline['inputs']['adjustment_inputs']['has_r_and_d'] and any(
+            year['research_expense_ratio'] != 0 for year in years):
+        raise ValueError('当前基线未接通研发调整，不能忽略非零未来研发条件：' + key)
     revenue = baseline['ltm_financials']['revenues']
     operating, expenses = [], []
     for year in years:

@@ -278,7 +278,7 @@ def test_analyst_batch_freezes_prose_and_keeps_native_baseline_out_of_company_ev
             capital_claim='明确资本条件', counterevidence='投入不能形成订单与回款则反证'),
         parameter_basis=[dict(parameter='research', basis='普通费用研发')], unresolved=['未来需求未知'],
         annual_assumptions=[dict(year=1, growth=.1, adjusted_operating_margin=.12, tax_rate=.25,
-            research_expense_ratio=.02, sales_to_capital=2.)], capital_path_mode='annual_sales_to_capital',
+            research_expense_ratio=0., sales_to_capital=2.)], capital_path_mode='annual_sales_to_capital',
         terminal=dict(growth=.01, marginal_roic=None, basis='无新增超额回报研究条件'),
         tax_and_research=dict(tax_path_is_analyst_policy=True, tax_basis='普通税率研究条件'))
     note_file.write_text(json.dumps(note, ensure_ascii=False))
