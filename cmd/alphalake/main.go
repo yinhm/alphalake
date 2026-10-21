@@ -80,6 +80,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "  sync-hkd-cny <db-path> [--offline] [--python executable] [--parser path]")
 	fmt.Fprintln(os.Stderr, "  sync-cny-yield <db-path> [--offline] [--python executable] [--parser path]")
 	fmt.Fprintln(os.Stderr, "  sync-macro <db-path> [--source all|nbs|pbc|mof] [--offline]")
+	fmt.Fprintln(os.Stderr, "  export-macro <db-path>  (consistent, compact read snapshot)")
 	fmt.Fprintln(os.Stderr, "  macro-series <db-path>; macro-data <db-path> [--series standard_name --from YYYY-MM-DD --through YYYY-MM-DD --latest]")
 	fmt.Fprintln(os.Stderr, "  upgrade-macro-data <unpublished-schema58-copy>")
 	fmt.Fprintln(os.Stderr, "  export-industry-capital <db-path> --as-of RFC3339 [--release N] [--recorded-cutoff RFC3339]")

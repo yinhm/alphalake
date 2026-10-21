@@ -94,6 +94,13 @@ func runMacroData(ctx context.Context, command string, args []string) error {
 		}
 		return json.NewEncoder(os.Stdout).Encode(map[string]any{"contract": "alphalake-macro-series-v1", "count": len(rows), "series": rows})
 	}
+	if command == "export-macro" {
+		snapshot, err := duckstore.ExportMacroReadSnapshot(ctx, db)
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(snapshot)
+	}
 	rows, err := duckstore.QueryMacroData(ctx, db, series, from, through, latest)
 	if err != nil {
 		return err

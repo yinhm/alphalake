@@ -100,6 +100,19 @@ func TestMacroRealArchivesReplayAndFailedRunSurviveReopen(t *testing.T) {
 		t.Fatal(first, err)
 	}
 	before := calls
+	if destination := os.Getenv("ALPHALAKE_MACRO_EXPORT"); destination != "" {
+		snapshot, err := duckstore.ExportMacroReadSnapshot(t.Context(), db)
+		if err != nil {
+			t.Fatal(err)
+		}
+		raw, err := json.Marshal(snapshot)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = os.WriteFile(destination, raw, 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
 	options.Offline = true
 	second, err := SyncMacroData(t.Context(), db, dir, options)
 	if err != nil || second.NewObservations != 0 || second.Completed != first.Completed || calls != before {

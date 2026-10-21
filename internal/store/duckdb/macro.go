@@ -103,7 +103,9 @@ type MacroObservation struct {
 	Evidence           MacroEvidence `json:"source_evidence"`
 }
 
-func QueryMacroData(ctx context.Context, db *sql.DB, series []string, from, through string, latest bool) ([]MacroObservation, error) {
+func QueryMacroData(ctx context.Context, db interface {
+	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
+}, series []string, from, through string, latest bool) ([]MacroObservation, error) {
 	conditions := []string{"TRUE"}
 	args := []any{}
 	for _, bound := range []struct{ value, predicate string }{{from, "o.period_end>=CAST(? AS DATE)"}, {through, "o.period_end<=CAST(? AS DATE)"}} {
@@ -176,7 +178,9 @@ type MacroSeriesCoverage struct {
 	LatestPeriod *string `json:"latest_period"`
 }
 
-func ListMacroSeries(ctx context.Context, db *sql.DB) ([]MacroSeriesCoverage, error) {
+func ListMacroSeries(ctx context.Context, db interface {
+	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
+}) ([]MacroSeriesCoverage, error) {
 	rows, err := db.QueryContext(ctx, `SELECT s.*,count(DISTINCT o.period_end),CAST(max(o.period_end) AS VARCHAR) FROM macro.series s LEFT JOIN macro.observation o USING(series_code) GROUP BY ALL ORDER BY s.series_code`)
 	if err != nil {
 		return nil, err

@@ -74,6 +74,22 @@ func TestMacroPublicationRevisionQueryAndReopen(t *testing.T) {
 	if rows[0].PeriodStart != "2026-09-01" || rows[0].Evidence.FirstAcquiredAt.Before(*rows[0].Evidence.PublishedAt) {
 		t.Fatal("report period and publication/acquisition mixed")
 	}
+	snapshot, err := ExportMacroReadSnapshot(ctx, db)
+	if err != nil || len(snapshot.Series) != len(s.Series) || len(snapshot.Releases) != 1 || snapshot.Releases[0].ReleaseID != id {
+		t.Fatal("compact macro snapshot", snapshot, err)
+	}
+	var points int
+	for _, series := range snapshot.Series {
+		for _, p := range series.Points {
+			points++
+			if p.ReleaseID != id || p.Locator == "" {
+				t.Fatal(p)
+			}
+		}
+	}
+	if points != len(s.Observations) {
+		t.Fatal("snapshot point count", points)
+	}
 	// A source revision is another vintage; the old point must remain queryable in storage.
 	changed := s
 	changed.Observations = append([]macro.Observation{}, s.Observations...)
