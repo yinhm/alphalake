@@ -18,6 +18,8 @@
 
 当前新接口覆盖统计局12组、央行4组、财政部1组发布。详细标准系列以`macro-series`实时目录为准，数量和最新期集中在[项目状态](../implementation-status.md)。宏观的全国范围不等于扩展北交所／金融企业估值范围。
 
+已知解析缺口：CPI原表的“不包括食品和能源”行尚未映射，不能称上游没有核心CPI；PMI原表题明确经季节调整，当前目录暂记未说明。两者见[维护待办](../review-minor-backlog.md)，不把现有系列数当成原文所有项目已穷尽。研究可独立引用原文已列数值，并注明尚未结构化入库。
+
 优先官方原文：[统计局发布页](https://www.stats.gov.cn/sj/zxfb/)、[发布日程](https://www.stats.gov.cn/xw/tjxw/tzgg/202512/t20251224_1962137.html)、[央行统计数据](https://www.pbc.gov.cn/diaochatongjisi/116219/116319/index.html)、[金融统计报告](https://www.pbc.gov.cn/diaochatongjisi/116219/116225/index.html)、[财政统计](https://gks.mof.gov.cn/tongjishuju/)。旧国家数据查询接口本轮返回403，当前采集器使用可访问的官方发布原文，不伪称该API已接通。统计局说明数据库进度更新可能晚于新闻稿约3个工作日，因此不能把数据库尚未更新误判为没有发布。
 
 ### 怎样帮助估值研究
