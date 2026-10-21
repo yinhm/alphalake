@@ -19,6 +19,8 @@ Go的`full`构建标签才包含重型测试；`-run`不代替标签，遗漏标
 
 研究阅读链的轻量回归为`pytest valuation/backend/tests/test_research_reports.py`及前端`npx playwright test tests/research.spec.ts`；后者覆盖无需公司加载、表格／公式、附件、搜索筛选与移动端。现有`npm run test:knowledge`执行全部前端浏览器测试，包含research与原估值页面回归。新增`remark-gfm`只为研究Markdown正确呈现表格，不变更KB或估值计算。
 
+宏观阅读链的轻量回归为`pytest valuation/backend/tests/test_macro_pages.py`及前端`npx playwright test tests/macro.spec.ts`，覆盖点评证据绑定、不可变期次、原子登记、零／负值／缺项、图表尺度、历史入口及窄屏。该Python文件加`--full`时额外串行执行17组真实原文的Go建库→消费导出→发布→API验收；临时workspace独立，不读取真实主库。宏观页面按需加载图表代码，浏览器回归同时保留原估值、KB及research检查。
+
 ## 保留范围
 
 - 默认组保留引擎公式与错误输入、当前财务累计/季度/TTM及单位转换、研发队列、假设与信用边界、SQLite/API准入、发布回滚、知识接口，以及Go核心存储/同步和源解析。小型合成测试和轻量真实解析仍执行。

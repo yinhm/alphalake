@@ -55,6 +55,8 @@
 
 [ADR025](../decisions/025-macroeconomic-observations.md)定义`macro.series`与`macro.observation`，共用已有采集运行、归档和发布版本；不另建宏观数据库，不复制到网页SQLite。来源目录`workspace/nbs`、`workspace/pbc`、`workspace/mof`采用可识别文件名平铺；无需PDF或额外objects层。
 
+用户已批准独立`/macro`阅读页及历史期次。来源同步与阅读发布分开：`export-macro`在同一只读事务导出已有系列及历史，点评核验后发布到`workspace/macro`；网页只读这份消费快照，不打开主库。命令、点评稿及历史边界见[宏观阅读发布](macro-pages.md)。财务SQLite仍不携带宏观副本。
+
 下列命令在项目根目录执行；同步／升级及测试须沿[独立1GiB资源约定](fundamental-memory-20260919.md)串行运行。保持手工刷新，不安装调度。
 
 ```bash

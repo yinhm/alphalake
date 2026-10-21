@@ -21,6 +21,7 @@
 - **消费快照调整**：[SQLite撤表与边界spec](valuation/sqlite-input-snapshot-spec.md)：数据治理归DuckDB，保留估值宽表及必要上下文；v13已发布，数据治理不复制进消费库；[撤表验收](history/sqlite-input-snapshot-v12-20261011.md)、[产品范围验收](history/product-scope-v13-20261017.md)。
 - **公司业绩预告**：[数据链spec](earnings-guidance-spec.md)与[采集入库](guides/earnings-guidance.md)：来源、期间、区间、宽表、手工同步及只读查询；独立证据包及故事绑定待接入。
 - **宏观定期统计**：[来源、口径及手工维护](guides/macro-data.md)：需求、物价、经营周期、信用及财政，共用主库；不自动变成公司预测。
+- **宏观阅读与历史页**：[导出、点评核验及只读发布](guides/macro-pages.md)：`/macro`概览、图表与指标历史，`/macro/history`及固定期次页面；网页不连接主库。
 - **公司研究与估值**：[Agent估值Skill](../skills/alphalake-valuation/SKILL.md)统一组织经营论点、假设论证、条件估值、完整解释与修订；[公司入口](guides/company-valuation-entry.md)、[运行查询](guides/valuation-run-query.md)、[运行比较](guides/valuation-comparison.md)维护程序契约。[独立DCF校验Skill](../skills/alphalake-dcf/SKILL.md)只复用数据，独立计算，允许定向官方PDF补证，不改变生产引擎或发布。
 - **研究报告平台**：[workspace交付、登记与只读阅读](guides/research-delivery.md)，入口`/research`，不依赖公司加载。
 - **网页知识库**：[划词解释、词条 API 与内容契约](guides/valuation-knowledge.md)。

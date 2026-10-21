@@ -15,6 +15,7 @@
 - `research/<id>/`：正式中文研究报告、论点、模型及最终结果；`research.json`登记后在`/research`及详情页读取，不提交Git。原PDF继续引用来源归档，既有冻结计算可显式引用、不重复写事实；临时计算与内部验收继续用derived。见[研究交付契约](research-delivery.md)。
 - `derived/system-delivery/`：发布候选、回滚副本、排他锁、当前`.delivery.json`和`.publication.json`，逐轮日志在`run-*`；`derived/valuation-runs/`保存仍在保留范围内的不可变估值运行，过期记录可按下述规则退役。`derived/archives/`只保存仍有用的人工条件、研究及紧凑输入；`derived/cleanup-audit/`保存迁移／删除清单及ID映射。
 - `knowledge/`：词条编辑稿及 `knowledge.sqlite` 阅读库，独立于财务事实和数值参考；不随代码提交。词条 schema、只读 API 与构建命令见[知识库契约](valuation-knowledge.md)。
+- `macro/`：已批准的宏观阅读产品；`editorial/`存中文点评稿，`publications/<id>.json`保留不可变期次，`index.json`登记当前及历史。只存紧凑消费投影，不复制主库或源HTML；历史页按实际发布日期积累，不回造历史PIT。见[宏观阅读契约](macro-pages.md)。
 - `derived/pdf-cache/`：跨语言逐URL锁及一次性归档迁移收据；不存第二份PDF原文。
 
 ## 缓存行为

@@ -76,6 +76,10 @@
 
 宏观保留来源修订，不宣称严格历史PIT。它为经营判断提供证据，不自动把GDP／CPI／信贷变化代入公司增长、利润率、永续增长或WACC；不导出到财务SQLite，不发布网页财务库。当前库版本与迁移先查状态页，不能对旧库直接强制初始化。
 
+用户同时要求宏观网页交付时，读[宏观阅读发布契约](../../../docs/guides/macro-pages.md)，使用`tools.macro_pages publish`，从同版主库取得快照、逐条核对点评中的系列／期间／值，再发布`workspace/macro`。点评稿放其`editorial/`，明确作者、审核时间及限制；新数据与旧点评证据不符必须拒绝，不能跳过校验强发。使用新期次ID修订，相同内容重放复用原期次；`validate`及实际`/api/macro/latest`、`/macro`／历史固定链接核验成功才称页面更新。请求侧不启动Go或读DuckDB，宏观发布不走财务SQLite发布器。
+
+现有历史曲线来自本期来源提供的旧期间，历史页面只从真实发布起积累；不为凑历史归档回造旧点评。普通`sync-macro`只更新主库，不等于阅读页已发布；只有要求宏观页面交付时才执行上述发布，不自动安装调度。
+
 ## SQLite与网页交付
 
 必读[统一发布指南](../../../docs/guides/system-delivery.md)。用户要求刷新并发布时，沿`tools.publish_native_valuation`执行，不能只复制导出的SQLite。发布目标、实际消费该目标的`WEB_URL`、财报期必须明确；沿`--published-scope`在锁内冻结现行完整范围，首次建范围或主动扩缩时使用经核验的`--codes-file`。
