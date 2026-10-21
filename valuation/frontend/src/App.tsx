@@ -9,6 +9,8 @@ import { createValuation, patchValuation, downloadFullWorkbook, apiErrorMessage,
 import { KnowledgeProvider } from './knowledge/KnowledgeProvider';
 import { KnowledgePanel } from './knowledge/KnowledgePanel';
 import { useKnowledge } from './knowledge/context';
+import ResearchPage from './research/ResearchPage';
+import ScreenPage from './screen/ScreenPage';
 
 const OnboardingWizard = lazy(() => import('./components/OnboardingWizard'));
 const InputSheet = lazy(() => import('./pages/InputSheet'));
@@ -27,10 +29,8 @@ const FailureRate = lazy(() => import('./pages/FailureRate'));
 const TrailingTwelveMonth = lazy(() => import('./pages/TrailingTwelveMonth'));
 const AnswerKeys = lazy(() => import('./pages/AnswerKeys'));
 const AdminDataSources = lazy(() => import('./pages/AdminDataSources'));
-const ResearchPage = lazy(() => import('./research/ResearchPage'));
 const KnowledgePage = lazy(() => import('./knowledge/KnowledgePage').then(module => ({ default: module.KnowledgePage })));
 const MacroPage = lazy(() => import('./macro/MacroPage'));
-const ScreenPage = lazy(() => import('./screen/ScreenPage'));
 
 export default function App() {
   const [data, setData] = useState<ValuationResponse | null>(null);
