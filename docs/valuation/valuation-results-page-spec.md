@@ -1,6 +1,6 @@
 # 选股页面 spec
 
-状态：**已实现，实际网页发布验收中**。2026-10-21用户批准实施；本文维护选股结果表的当前契约。入口与模型边界沿用[研究交付契约](../guides/research-delivery.md)、[数据契约](data-contract.md)及[引擎冻结约定](../../valuation/TODO.md)。
+状态：**已实现并在既有8080发布验收**。2026-10-21用户批准实施；本文维护选股结果表的当前契约，实际范围与测试见[交付验收](../history/screen-delivery-20261021.md)。入口与模型边界沿用[研究交付契约](../guides/research-delivery.md)、[数据契约](data-contract.md)及[引擎冻结约定](../../valuation/TODO.md)。
 
 ## 1. 目标与页面位置
 

@@ -14,6 +14,7 @@
 | 用Agent检查数据、手工刷新与发布 | [数据维护Skill](skills/alphalake/SKILL.md) |
 | 查询、刷新及研究宏观统计 | [来源与口径](docs/guides/macro-data.md)、[阅读与历史](docs/guides/macro-pages.md)、[宏观到投资](docs/guides/macro-investment.md)（网页`/macro`） |
 | 阅读研究报告、登记新的交付 | [研究平台与交付契约](docs/guides/research-delivery.md)（网页`/research`） |
+| 搜索、筛选与比较已发布估值 | [选股页面与结果契约](docs/valuation/valuation-results-page-spec.md)（网页`/screen`） |
 | 用Agent完成公司研究、条件估值、解释与更新 | [估值Skill](skills/alphalake-valuation/SKILL.md) |
 | 复用数据、独立DCF与交叉校验 | [独立DCF Skill](skills/alphalake-dcf/SKILL.md) |
 | 核对自动假设与资本效率 | [估值方法](docs/valuation/README.md) |

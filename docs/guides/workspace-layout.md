@@ -17,6 +17,7 @@
 - `knowledge/`：词条编辑稿及 `knowledge.sqlite` 阅读库，独立于财务事实和数值参考；不随代码提交。词条 schema、只读 API 与构建命令见[知识库契约](valuation-knowledge.md)。
 - `macro/`：已批准的宏观阅读产品；`editorial/`存中文点评稿，`publications/<id>.json`保留不可变期次，`index.json`登记当前及历史。只存紧凑消费投影，不复制主库或源HTML；历史页按实际发布日期积累，不回造历史PIT。见[宏观阅读契约](macro-pages.md)。
 - `derived/pdf-cache/`：跨语言逐URL锁及一次性归档迁移收据；不存第二份PDF原文。
+- `derived/valuation-results/`：`/screen`正在发布及明确保留的历史结果摘要，按批次存`index.json`，共用`current.json`登记及发布锁；仅读已存研究，不复制全量财务／模型。当前发布摘要及登记须保留，旧候选可按[选股契约](../valuation/valuation-results-page-spec.md)重建或退役，不扫描研究目录自动拼批次。
 
 ## 缓存行为
 
