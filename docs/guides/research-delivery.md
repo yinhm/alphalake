@@ -66,6 +66,8 @@ PYTHONPATH=valuation/backend .venv/bin/python -m tools.research_reports validate
 
 完整覆盖应让首次接触者理解业务、客户／渠道、竞争、财务质量和资本配置，并明确看到每股条件值及关键假设；不能只交同比、论点卡或模型操作说明。深度、证据和报告结构沿[估值Skill](../../skills/alphalake-valuation/SKILL.md)，模板和[制图契约](../../skills/alphalake-valuation/references/charts.md)按需读取；简短结果解释不强制重做完整研究。
 
+首页同时说明关键经营分歧、最强反证及改变判断的观察；假设表连接证据、期间、年度路径及实际消费字段。解释旧条件、提出新研究条件与更新重估分别标明；较新中报／预告列明是否改变实际输入，取得新资料或登记新报告不等于已重估。研究执行及报告深度见[研究核对](../../skills/alphalake-valuation/references/research-and-thesis.md#先核对数据与证据)与[证据到参数](../../skills/alphalake-valuation/references/assumptions.md#从主张落到实际年度输入)，不增加财务准入或报告登记字段。
+
 研究制图使用可选`research`依赖中的Matplotlib，Linux须有中文字体；`tools.research_charts`生成PNG、精确数据、来源哈希及图注，拒绝覆盖已发布报告。支持趋势、横／纵柱、总值与调整分面的价值桥、带显式基准的敏感性点图及已有矩阵；统一报告版式，不用斜线纹理或倾斜小字。只展示给定数值、不选择参数或计算DCF。图表来源文件的哈希核对不能替代口径和经济解释审核。
 
 正文用`![中文图名](charts/revenue.png)`在相关分析处嵌图，每图写读图结论、期间、单位和来源。将PNG、`chart-data.json`、必要来源和可选画廊附文登记到同一`files`清单；PNG本来就在页面白名单，不新增前端、图片接口或报告数据库。既有报告只增加解释时另建版本并注明旧计算时点，不能冒称新重估。

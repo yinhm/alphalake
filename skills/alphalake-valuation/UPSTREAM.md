@@ -2,9 +2,13 @@
 
 本Skill的程序调用与数据边界来自AlphaLake；公司研究、论点跟踪、假设说明和完整交付流程参考并改写自[Anthropic financial-services](https://github.com/anthropics/financial-services)。感谢Anthropic及原贡献者。
 
-固定参考提交：`574ed3624aebd0418c7e96cd101262f30210ab26`；本轮核对日期：2026-10-20。此目录是**中文适配及重组版本**，不是上游原件：入口、references及报告模板均由AlphaLake改写，未复制上游计算器或模板实现。相关改写沿[Apache-2.0](LICENSE.txt)许可保留；许可证与该提交根LICENSE逐字节一致，SHA-256为`cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`。该提交文件树无NOTICE文件。
+固定参考提交：`574ed3624aebd0418c7e96cd101262f30210ab26`；核对日期：2026-10-21，未宣称这是上游最新提交。此目录是**中文适配及重组版本**，不是上游原件：入口、references及报告模板均由AlphaLake改写，未复制上游计算器或模板实现。相关改写沿[Apache-2.0](LICENSE.txt)许可保留；许可证与该提交根LICENSE逐字节一致，SHA-256为`cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`。该提交文件树无NOTICE文件。
 
-本轮进一步查阅同提交的[公司研究细则](https://github.com/anthropics/financial-services/blob/574ed3624aebd0418c7e96cd101262f30210ab26/plugins/vertical-plugins/equity-research/skills/initiating-coverage/references/task1-company-research.md)及[制图细则](https://github.com/anthropics/financial-services/blob/574ed3624aebd0418c7e96cd101262f30210ab26/plugins/vertical-plugins/equity-research/skills/initiating-coverage/references/task4-chart-generation.md)：借鉴业务／客户／竞争／治理的覆盖和先有研究、财务、估值再制图的依赖；改为中文网页研究、通常4—8幅关键图，不继承6,000—8,000词、管理层履历配额、25—35图或分五次请求的强制流程。现金与估值图直接消费AlphaLake已保存输出；新增`tools.research_charts`是本地展示工具，不是上游代码或第二套估值模型。
+既有图文交付参考同提交的[公司研究细则](https://github.com/anthropics/financial-services/blob/574ed3624aebd0418c7e96cd101262f30210ab26/plugins/vertical-plugins/equity-research/skills/initiating-coverage/references/task1-company-research.md)及[制图细则](https://github.com/anthropics/financial-services/blob/574ed3624aebd0418c7e96cd101262f30210ab26/plugins/vertical-plugins/equity-research/skills/initiating-coverage/references/task4-chart-generation.md)：借鉴业务／客户／竞争／治理的覆盖和先有研究、财务、估值再制图的依赖；改为中文网页研究、通常4—8幅关键图，不继承6,000—8,000词、管理层履历配额、25—35图或分五次请求的强制流程。现金与估值图直接消费AlphaLake已保存输出；`tools.research_charts`是既有本地展示工具，不是上游代码或第二套估值模型。
+
+10月21日复核同提交的公司研究、`dcf-model`、`model-update`及`ic-memo`：进一步借鉴证据到假设的对应、更新前后对照及结论与反方证据并列，整合进既有references与报告模板。未采纳示例税率／增长区间、统一五年收敛、固定三情景或“最可能”标签，也未引入倍数目标价、评级、交易行动、反向DCF求解器或逐阶段审批。
+
+本地适配重点是当前原生条件与经济依据分开、正式财务与较新中报／预告分开、经营特征决定取证重点、按实际字段核验年度路径，以及个股缺项不泛化为整批阻断。调用参数与运行位置核对现有实现，研究登记与计算ID分别保留。它们是研究流程约定，不构成新的参数选择算法、引擎方法或数据已完成核验的声明。
 
 ## 核心流程来源
 

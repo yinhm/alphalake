@@ -1,4 +1,4 @@
 interface:
   display_name: "AlphaLake 估值"
-  short_description: "深入解释公司业务、竞争、财务与资本配置，交付有图表的中文研究及明确条件估值"
-  default_prompt: "使用 $alphalake-valuation，让首次接触者读懂公司的业务、竞争、财务质量和资本配置，形成有依据的经营条件，给出明确每股估值、关键图表及风险反证，并在research页面交付可追溯报告。"
+  short_description: "从公司经营证据论证年度假设，交付中文研究、明确每股条件值、关键分歧与图表"
+  default_prompt: "使用 $alphalake-valuation 研究这家公司：从已有数据与报告出发，解释业务、竞争及财务质量，将证据接到成套年度条件，给出明确每股价值、关键图表和最强反证，说明会改变判断的观察，并在research页面交付可追溯报告。"
