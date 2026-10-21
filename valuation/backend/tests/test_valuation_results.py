@@ -134,13 +134,15 @@ def test_projection_keeps_zero_negative_missing_and_frozen_versions(workspace, p
     assert tool.build('all-test', 'first', activate=True)['sha256'] == receipt['sha256']
 
 
-@pytest.mark.parametrize('total,component', [(0,12), (10,0), (10,12)])
-def test_release_flag_includes_nonresearch_component_without_double_counting(total, component):
+@pytest.mark.parametrize('total,component,flagged', [
+    (0, 12, True), (10, 0, True), (10, 12, True), (10, None, True),
+    (None, 12, True), (0, None, False), (None, None, False)])
+def test_release_flag_includes_nonresearch_component_without_double_counting(total, component, flagged):
     model=dict(admission='ready',response=dict(final=dict(value_per_share=1)),
         request=dict(inputs=dict(adjustment_inputs=dict(has_r_and_d=False))),
         review=dict(forecast=[],economic_checks=dict(capital_release=dict(
             gross_release_million_cny=total,gross_nonresearch_release_million_cny=component))))
-    assert tool.model_review_flags(model)==['capital_release_requires_recoverability_basis']
+    assert tool.model_review_flags(model)==(['capital_release_requires_recoverability_basis'] if flagged else [])
 
 
 def imported_projection(root):

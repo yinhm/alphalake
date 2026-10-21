@@ -18,7 +18,7 @@
 
 ## 研究输入
 
-`coverage-research-plan-v1`直接包含既有`narrative_valuation.Document`和逐故事`basis`，不引入第二套DCF或参数生成器。`Document.scope`须与当前SQLite的完整规范证券范围相同；小批执行可显式选择ticker，完整分母仍保留。
+`coverage-research-plan-v2`包含完整范围、当批实际研究的既有`Story`及逐故事`basis`，不引入第二套DCF或参数生成器。`document.scope`须与当前SQLite的完整规范证券范围相同；`stories/evidence`只携带当批公司，不为其他公司复制基线或构造占位故事。原生叙事类型仍校验当批全部主张、证据及每家公司唯一基线。旧v1冻结研究按原提交复验，当前入口不保留旧版兼容。
 
 `snapshot`绑定SQLite SHA-256、其来源库SHA-256、参考ID、信息截止和财务期。每个故事使用原有`Story`结构，包括完整`annual_operating_plan`与允许的`assumption_overrides`，沿现有typed契约核对期间、单位和长度。
 
@@ -30,7 +30,8 @@
 | 公司核心证据 | 增长／利润／资本绑定实际公司资料；仅snapshot或行业参考不足以成为公司研究依据 |
 | 基线引用 | 当前公司`valuation.json`的`$.response`，核对消费快照；旧narrative基线可显式定位`$.body`，执行前仍须与当前数据库完整核对 |
 | 来源 | workspace规范相对路径、SHA-256及具体定位；多个主张共用源文件，不复制PDF或完整基线 |
-| 待研究公司 | `draft`及空年度路径合法，保持`pending`；范围外与财务缺项不填默认预测 |
+| 当批待研究公司 | `draft`及空年度路径合法，保持`pending`；范围外与财务缺项不填默认预测 |
+| 非本批公司 | 完整分母中标为`not_in_batch`，不读取其基线、不重复计算；不据此撤销累计已完成的公司研究 |
 
 研究者必须先审阅并写下条件。每项引用的全部主张必须直接绑定该主题，不能借另一主题的公司资料通过依据核对。工具只验证绑定与机械转换，不判断主张是否真实，不因为`company_condition`状态宣称经济认证或预测可靠性已经验证。`decision=unresolved`或缺少重要依据保留pending；明确采用的代理和普通未来未知不自动阻断。
 
@@ -51,10 +52,33 @@ PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.coverage_research run 
 
 先用`run --ticker …`执行小批，`--web`仅在实际网页目标明确时交叉核验并释放临时会话。新运行目录不能覆盖，计划或依据变化必须另建冻结版本。冻结同时保存逐故事规范实际请求的SHA-256，发送API前再次核对；转换实现演进也须重新冻结，不能只凭计划文件未变沿用旧收据。冻结后修改计划、来源变化、串公司或串参考、非法事实覆盖及不完整年度输入均拒绝。
 
-每个可执行故事先与当前原生数据库基线对账，再通过已有`compile_story`、`calculate_request`和`check_operating_plan`。输出各公司请求／响应／审阅／绑定与完整范围摘要；pending不执行默认估值，拒绝不当作0。小批结果必须标明实际选择集合，不能冒称全范围已经计算。
+每个可执行故事先与当前原生数据库基线对账，再通过已有`compile_story`、`calculate_request`和`check_operating_plan`。输出当批各公司请求／响应／审阅／绑定与完整范围审阅计数；pending不执行默认估值，拒绝不当作0。默认只执行本批故事；`--ticker`只能选择其中公司。小批结果必须标明实际选择集合，不能冒称全范围已经计算。累计交付引用相同财务／参考快照及方法版本的既有已核验研究，新批次只增加或显式修订本公司；不能重算全部旧公司或把非本批状态误作退回待研究。
 
 研发预算按人工年度条件机械展开，普通扣除不表示已审核税法优惠；旧路径重建时核对终值费用是否仍表达同一费用率、年度窗口与新终值增长。资本倍率与年度总净预算遵守既有互斥契约；亏损恢复、短历史和范围缺口不借研究入口绕过引擎边界。
 
 终值的关系判断不能被旧基线常数替代。研究者选择无新增超额回报时，既有`roic_stable_override=null`随本条件的实际终值WACC及税盾执行；照抄旧亏损基线WACC会意外保留超额回报。显式未来税率与普通扣除须准确标注其研究条件，不能称已报告有效税率。报告列明末年及终值投入、同一终值年继续原资本规则的差额与FCFF影响；方向可能增加也可能减少，不称平稳成熟或已经出售资产。前段负FCFF须解释融资成立条件，不因账面低债而认证资金充裕，也不从价值重复扣除已消费的投资。
 
 报告按[研究交付](../guides/research-delivery.md)登记；`/screen`以明确的公司研究批次交付，基线、诊断与研究条件分开，保留全范围待补状态。不先把原生基线设成新的研究结论，也不在算后按价值或股价挑故事。
+
+## 连续批次
+
+`tools.coverage_research_notes`读取已完成的分析师索引及登记的全范围原生基线，机械装配本批计划。索引每项包含证券、结构化笔记与同名正文的workspace相对路径、结构化笔记哈希；两份笔记与采用索引一同冻结。笔记使用`alphalake-analyst-research-note-v1`，需写明消费及参考版本、实际公司来源、七项依据和具体年度数值；工具不推断或选择缺少的参数。缺公司参考允许登记pending诊断，不能产生可执行条件。原生基线不重新标成公司事实；研究复核明确标为`research_judgment`，不冒充事实。研发普通扣除沿已批准条件展开，终值费用采用本笔记终值增长，不能误用旧基线增长。
+
+本批完成`freeze/check/run`后，`tools.coverage_research_delivery`接收运行目录、前一选股批次ID、原生基线报告ID及新的交付ID，生成本批公司报告、图表和累计总览。它只复用相同财务、参考、计算及审阅版本的旧公司结果；新公司逐家公司新增，重复覆盖必须另行明确修订，不能暗作新增完成数。累计冻结时间各公司分别保存，不伪造一个全市场同时冻结的日期。
+
+累计快照完整保留原分母，验证登记及模型哈希后原子切换`/screen`。新报告只引用旧研究，不复制全部旧模型／PDF或重新执行旧条件。每批均保留本批公司数、累计研究数、条件计算数及未解决数，固定队列未处理完不能称全市场研究完成。研究计划、结果、图片和所有运行收据均留workspace。
+
+资本复核可在索引显式附`capital_review`及哈希，工具把其中标准来源一起冻结；报告展开该公司数量级判断，不把三项现金流调节称为完整营运资本。明确期后资本尚未桥接时，笔记用`price_comparison.status=unreconciled_post_period_capital_change`及具体原因收紧既有比较边界，不能反向放开。登记失败保留当前选股指针；重试只复用来源／运行完全相同的已登记公司报告，不覆盖旧签名。未登记非空目录须核对失败产物后恢复。
+
+连续操作仍须按上文独立服务、串行执行；以下在同一已确认工作目录内使用：
+
+```bash
+PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.coverage_research_notes \
+  "$ALPHALAKE_ANALYST_INDEX" --baseline-report "$ALPHALAKE_BASELINE_REPORT" \
+  --output "$ALPHALAKE_RESEARCH_PLAN"
+
+# 随后执行上文freeze/check/run，保持本批输入和目录不可变。
+PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.coverage_research_delivery \
+  "$ALPHALAKE_RESEARCH_RUN" --previous-dataset "$ALPHALAKE_PREVIOUS_DATASET" \
+  --baseline-report "$ALPHALAKE_BASELINE_REPORT" --id "$ALPHALAKE_RESEARCH_ID"
+```

@@ -225,6 +225,101 @@ def test_financial_and_source_missing_companies_remain_in_full_scope(plan):
     assert result['counts'] == {'company_condition': 1, 'not_applicable': 1, 'pending': 1}
 
 
+def test_sparse_batch_keeps_full_denominator_without_loading_other_baselines(plan):
+    path, payload, _ = plan
+    payload['document']['scope']['SZSE:301718'] = 'nonfinancial_by_reference'
+    payload['document']['scope']['SHSE:600000'] = 'outside_financial_scope'
+    update(path, payload)
+    result = assess(path, payload)
+    assert result['counts'] == {'company_condition': 1, 'not_in_batch': 2}
+    assert result['companies'][1]['story_ids'] == []
+    # The ordinary narrative contract still requires all of its own companies.
+    with pytest.raises(ValueError, match='complete prepared company denominator'):
+        research.Document.model_validate(payload['document'])
+    payload['document']['scope'].pop('SHSE:600519')
+    update(path, payload)
+    with pytest.raises(ValueError, match='不属于完整发布范围'):
+        assess(path, payload)
+
+
+def test_sparse_batch_preserves_native_evidence_validation_and_rejects_old_plan(plan):
+    path, payload, _ = plan
+    payload['document']['scope']['SZSE:301718'] = 'nonfinancial_by_reference'
+    broken = deepcopy(payload)
+    broken['document']['stories'][0]['claims'][0]['evidence'] = ['unknown-source']
+    update(path, broken)
+    with pytest.raises(ValueError, match='registered evidence'):
+        assess(path, broken)
+    payload['contract'] = 'coverage-research-plan-v1'
+    update(path, payload)
+    with pytest.raises(ValueError, match='coverage-research-plan-v2'):
+        assess(path, payload)
+
+
+def test_analyst_batch_freezes_prose_and_keeps_native_baseline_out_of_company_evidence(plan, monkeypatch):
+    from tools import coverage_research_notes as notes
+    path, payload, frozen_file = plan
+    root = path.parents[2]
+    snapshot = payload['document']['snapshot'] | {'financial_report_period': '2026-06-30'}
+    scope = payload['document']['scope'] | {'SZSE:301718': 'nonfinancial_by_reference'}
+    ticker = 'SHSE:600519'
+    results = path.parent/'results.json'
+    results.write_text(json.dumps({'results': [dict(ticker=key, report_id=key) for key in scope]}))
+    baseline = path.parent/'baseline.json'
+    note_file = path.parent/'analyst.json'
+    source = dict(path=(path.parent/'company.json').relative_to(root).as_posix(),
+                  sha256=research.digest(path.parent/'company.json'), locator='$.observation')
+    note = dict(format=notes.NOTE, ticker=ticker, company='合成公司', financial_period='2026-06-30',
+        source_sqlite_sha256=snapshot['sqlite_sha256'], reference_snapshot=snapshot['reference_snapshot_id'],
+        source_snapshot=[source, dict(path=baseline.relative_to(root).as_posix(), sha256=research.digest(baseline))],
+        company_evidence=[source], analyst_status=notes.ADOPTED, title='人工合成条件',
+        business_and_competition='公司需求与资本投入机制，仅测试结构，不代表实际公司。',
+        thesis=dict(title='产品扩张', growth_claim='明确增长条件', margin_claim='明确利润条件',
+            capital_claim='明确资本条件', counterevidence='投入不能形成订单与回款则反证'),
+        parameter_basis=[dict(parameter='research', basis='普通费用研发')], unresolved=['未来需求未知'],
+        annual_assumptions=[dict(year=1, growth=.1, adjusted_operating_margin=.12, tax_rate=.25,
+            research_expense_ratio=.02, sales_to_capital=2.)], capital_path_mode='annual_sales_to_capital',
+        terminal=dict(growth=.01, marginal_roic=None, basis='无新增超额回报研究条件'),
+        tax_and_research=dict(tax_path_is_analyst_policy=True, tax_basis='普通税率研究条件'))
+    note_file.write_text(json.dumps(note, ensure_ascii=False))
+    note_file.with_suffix('.md').write_text('计算前的公司判断与反证。')
+    index_file = path.parent/'batch.json'
+    index_file.write_text(json.dumps(dict(notes=[dict(ticker=ticker, structured=note_file.relative_to(root).as_posix(),
+        note=note_file.with_suffix('.md').relative_to(root).as_posix(), sha256=research.digest(note_file))])))
+    monkeypatch.setattr(notes, 'published_context', lambda _: (scope, snapshot, {}))
+    monkeypatch.setattr(notes, 'read_report', lambda identifier: SimpleNamespace(id=identifier))
+    def verified(report, field):
+        selected = results if field == 'results' else baseline
+        return SimpleNamespace(path=selected.relative_to(root).as_posix(), sha256=research.digest(selected)), selected
+    monkeypatch.setattr(notes, 'verified_file', verified)
+    output = root/'derived'/'plan.json'
+    result = notes.prepare_batch(index_file, 'baseline', output, path.parent/'fake.sqlite')
+    assert result['authored_companies'] == 1 and result['companies'] == 2
+    research.freeze_plan(output, frozen_file, expected_scope=scope, expected_snapshot=snapshot)
+    evidence = json.loads(output.read_text())['document']['evidence']
+    baseline_refs = [item for item in evidence if item['file'] == baseline.relative_to(root).as_posix()]
+    assert all(item['kind'] == 'snapshot_baseline' for item in baseline_refs)
+    note_file.with_suffix('.md').write_text('计算之后偷偷改写正文。')
+    with pytest.raises(ValueError, match='path/hash'):
+        research.assess_plan(frozen_file, expected_scope=scope, expected_snapshot=snapshot)
+    # 缺公司参考不阻止登记真实研究诊断，但不能产生可执行条件。
+    note.update(analyst_status='pending_scope_review', reference_snapshot=None)
+    note_file.write_text(json.dumps(note, ensure_ascii=False))
+    index = json.loads(index_file.read_text())
+    index['notes'][0]['sha256'] = research.digest(note_file)
+    index_file.write_text(json.dumps(index))
+    pending_output = root/'derived'/'pending-plan.json'
+    notes.prepare_batch(index_file, 'baseline', pending_output, path.parent/'fake.sqlite')
+    pending = research.evaluate_plan(pending_output, expected_scope=scope, expected_snapshot=snapshot)
+    assert pending['counts'] == {'pending': 1, 'not_in_batch': 1}
+    note['analyst_status'] = notes.ADOPTED
+    note_file.write_text(json.dumps(note, ensure_ascii=False))
+    index['notes'][0]['sha256'] = research.digest(note_file)
+    index_file.write_text(json.dumps(index))
+    with pytest.raises(ValueError, match='消费版本不符'):
+        notes.prepare_batch(index_file, 'baseline', root/'derived'/'invalid-plan.json', path.parent/'fake.sqlite')
+
+
 @pytest.mark.parametrize('rejected', [False, True])
 def test_run_executes_only_frozen_company_conditions_and_keeps_rejections(plan, monkeypatch, rejected):
     from fastapi import testclient

@@ -17,8 +17,8 @@ from tools.narrative_valuation import (
     Document, Record, compile_story, digest, read_json, source_path,
 )
 
-CONTRACT = 'coverage-research-plan-v1'
-FROZEN = 'coverage-research-frozen-v1'
+CONTRACT = 'coverage-research-plan-v2'
+FROZEN = 'coverage-research-frozen-v2'
 TOPICS = ('revenue', 'margin', 'capital', 'research', 'tax', 'financing', 'terminal')
 CORE = {'revenue', 'margin', 'capital'}
 
@@ -31,9 +31,23 @@ class Basis(Record):
     unresolved: list[str] = Field(default_factory=list)
 
 
+class ResearchDocument(Document):
+    """冻结完整发布分母，只为本批实际研究的公司携带故事和证据。"""
+
+    @model_validator(mode='after')
+    def references(self):
+        tickers = {story.ticker for story in self.stories}
+        if not tickers <= set(self.scope):
+            raise ValueError('本批研究公司不属于完整发布范围')
+        # 原生叙事契约仍负责全部证据、主张和唯一基线校验。
+        Document.model_validate(self.model_dump(mode='python') | {
+            'scope': {ticker: self.scope[ticker] for ticker in tickers}})
+        return self
+
+
 class ResearchPlan(Record):
-    contract: Literal['coverage-research-plan-v1']
-    document: Document
+    contract: Literal['coverage-research-plan-v2']
+    document: ResearchDocument
     basis: dict[str, dict[Literal['revenue', 'margin', 'capital', 'research', 'tax', 'financing', 'terminal'], Basis]]
 
     @model_validator(mode='after')
@@ -150,7 +164,8 @@ def evaluate_plan(plan_file, *, expected_scope, expected_snapshot):
     for ticker in document.scope:
         items = by_company[ticker]
         states = {item['research_status'] for item in items}
-        state = ('company_condition' if 'company_condition' in states else
+        state = ('not_in_batch' if not items else
+                 'company_condition' if 'company_condition' in states else
                  'not_applicable' if states == {'not_applicable'} else 'pending')
         companies.append(dict(ticker=ticker, research_status=state,
             story_ids=[item['id'] for item in items],
@@ -228,9 +243,10 @@ def run(frozen_file, database, output, *, tickers=None, web=None):
     # 审阅结果已由assess_plan验证并返回，不在批量执行时保留第二份完整分母。
     receipt.pop('assessment')
     plan = ResearchPlan.model_validate(read_json(workspace_path(receipt['plan_file'])))
-    selected = set(tickers or scope)
-    if not selected or not selected <= set(scope):
-        raise ValueError('研究计算证券不属于冻结的完整范围')
+    authored = {story.ticker for story in plan.document.stories}
+    selected = set(tickers or authored)
+    if not selected or not selected <= authored:
+        raise ValueError('研究计算证券须属于本批已冻结的公司故事')
     output = Path(output)
     if output.exists() or not output.resolve().is_relative_to(workspace_path('derived').resolve()):
         raise ValueError('研究计算须使用workspace/derived内新的运行目录')
@@ -299,6 +315,7 @@ def run(frozen_file, database, output, *, tickers=None, web=None):
     assess_plan(frozen_file, expected_scope=scope, expected_snapshot=snapshot)
     summary = dict(contract='coverage-research-run-v1', run_id=run_id, snapshot=snapshot, companies=len(scope),
         selected_companies=len(selected), selected_is_full_scope=selected == set(scope),
+        authored_companies=len(authored),
         research_counts=assessment['counts'], statuses=dict(Counter(row['status'] for row in rows)), results=rows,
         economic_approval=False, prediction_validity='not_established', automatic_adoption=False,
         elapsed_seconds=time.monotonic()-started)
