@@ -21,6 +21,8 @@ Go的`full`构建标签才包含重型测试；`-run`不代替标签，遗漏标
 
 选股链的轻量回归为`pytest valuation/backend/tests/test_valuation_results.py`及前端`npx playwright test tests/screen.spec.ts`，覆盖冻结研究投影、零／负值／未知、范围与分母、数值筛选单位、稳定分页、ETag、篡改拒绝及发布失败保留指针。浏览器检查URL还原、报告返回、关键假设、手机与键盘；无需财务数据库或重估。实际发布再逐页核对选定完整批次的API结果及性能，不能以合成测试替代真实全范围验收。
 
+选股导入另以1,000份独立公司元数据验证全部访问后可及时释放，防止附件目录随证券数无限驻留；该断言检查对象存活数量，不将合成测试耗时当成全市场性能。实际5,227行恢复导入及失败过程见[研究交付记录](../history/company-story-recoverage-20261021.md)。
+
 宏观阅读链的轻量回归为`pytest valuation/backend/tests/test_macro_pages.py`及前端`npx playwright test tests/macro.spec.ts`，覆盖点评证据绑定、不可变期次、原子登记、零／负值／缺项、图表尺度、历史入口及窄屏。该Python文件加`--full`时额外串行执行17组真实原文的Go建库→消费导出→发布→API验收；临时workspace独立，不读取真实主库。宏观页面按需加载图表代码，浏览器回归同时保留原估值、KB及research检查。
 
 发布比较还覆盖新增覆盖／统计期／历史、零与未知、数值与来源修订、区间／定义变更、ID重排及Decimal精度；宏观与研究互链变化同时执行`tests/research.spec.ts`，包含非法本地链接拒绝。全负数柱图也须保留零基线。比较及阅读请求不得启动Go或估值计算。

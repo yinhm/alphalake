@@ -2,6 +2,7 @@
 import argparse
 from collections import Counter
 from datetime import datetime, timezone
+from functools import lru_cache
 import fcntl
 import hashlib
 import json
@@ -238,7 +239,8 @@ def import_snapshot(path, activate=False):
             and len({row['ticker'] for row in rows}) == len(rows), '转换证券分母或重复代码有误')
     required = set(BASE_FIELDS) | {'assumptions', 'assumption_missing_reasons', 'review_flags',
                                  'comparison_display_status', 'comparison_display_reason', 'model_source'}
-    reports = {report.id: report}
+    # 多数公司报告只用一次，避免全市场导入长期保留全部附件元数据。
+    reports = lru_cache(maxsize=32)(read_report)
     for row in rows:
         checked(required <= row.keys(), '转换行缺少当前契约字段')
         checked(re.fullmatch(r'(SHSE|SZSE):[0-9]{6}', row['ticker']) and row['admission'] in ADMISSIONS,
@@ -257,9 +259,7 @@ def import_snapshot(path, activate=False):
             checked(row['comparison_display_status'] == 'capital_date_proxy'
                     and row['condition_value_cny_per_share'] is not None and row['close_cny'] is not None
                     and row['close_cny'] > 0, '不得发布不适用的价差')
-        target = reports.get(row['report_id'])
-        if target is None:
-            target = reports[row['report_id']] = read_report(row['report_id'])
+        target = reports(row['report_id'])
         checked(row['url'] == '/research/' + target.id
                 and (not target.tickers or row['ticker'] in target.tickers), '转换行报告身份不一致')
         model = row['model_source']

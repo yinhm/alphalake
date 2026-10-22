@@ -1,8 +1,10 @@
 """选股使用真实登记文件和临时workspace；不读取主库、不重新估值。"""
 from collections import Counter
 import asyncio
+from copy import deepcopy
 import json
 from types import SimpleNamespace
+from weakref import WeakSet
 
 from fastapi import FastAPI
 import httpx
@@ -165,6 +167,48 @@ def test_import_current_snapshot_preserves_sources_versions_and_current_choice(w
     assert {item['id'] for item in source.datasets()['datasets']} == {'first', 'imported'}
     assert actual['rows'][0]['condition_value_cny_per_share'] == 0
     assert actual['dataset']['runtime_stages']['calculation'] == 'frozen-calc'
+
+
+def test_large_import_releases_company_metadata_after_validation(workspace, published, monkeypatch):
+    body = imported_projection(workspace)
+    template = body['rows'][4]
+    body['rows'] = []
+    for index in range(1000):
+        identifier = f'generated-{index}'
+        row = deepcopy(template)
+        row.update(ticker=f'SHSE:{600000 + index}', report_id=identifier, url='/research/' + identifier,
+                   model_source=dict(path=None, sha256=None))
+        body['rows'].append(row)
+    body['universe_count'] = len(body['rows'])
+    body['admission_counts'] = dict(Counter(row['admission'] for row in body['rows']))
+    body['review_flag_counts'] = {}
+    for field, key in [('share_dates', 'share_date'), ('quote_dates', 'close_date')]:
+        body['dataset'][field] = dict(Counter(row[key] or 'unknown' for row in body['rows']))
+    path = workspace / 'derived' / 'large-snapshot.json'
+    save(path, body)
+    real_read = tool.read_report
+    live, seen = WeakSet(), set()
+    peak = 0
+
+    class Report:
+        def __init__(self, identifier):
+            self.id, self.tickers = identifier, []
+
+    def read(identifier):
+        nonlocal peak
+        if not identifier.startswith('generated-'):
+            return real_read(identifier)
+        report = Report(identifier)
+        seen.add(identifier)
+        live.add(report)
+        peak = max(peak, len(live))
+        return report
+
+    monkeypatch.setattr(tool, 'read_report', read)
+    monkeypatch.setattr(tool, 'publish_projection', lambda verified, activate: verified['universe_count'])
+    assert tool.import_snapshot(path) == 1000
+    assert len(seen) == 1000
+    assert peak <= 64, '一次性公司元数据不得随全市场证券数持续驻留'
 
 
 @pytest.mark.parametrize('change', [
