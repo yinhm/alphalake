@@ -1,6 +1,8 @@
 """验证图表保留缺项、来源、桥接关系及冻结报告边界；不运行DCF。"""
 from copy import deepcopy
+import gc
 import json
+from weakref import WeakSet
 
 import pytest
 
@@ -95,6 +97,34 @@ def test_existing_output_is_not_overwritten(packet):
     with pytest.raises(ValueError, match='覆盖'):
         render(payload, out)
     assert (out/'marker').read_text() == 'keep'
+
+
+def test_closed_figures_do_not_accumulate_across_company_reports(packet, monkeypatch):
+    from matplotlib import pyplot as plt
+    from matplotlib.figure import Figure
+    ws, payload = packet
+    real_figure = plt.figure
+    live, peak = WeakSet(), 0
+
+    def figure(*args, **kwargs):
+        nonlocal peak
+        fig = real_figure(*args, **kwargs)
+        live.add(fig)
+        peak = max(peak, len(live))
+        return fig
+
+    monkeypatch.setattr(plt, 'figure', figure)
+    monkeypatch.setattr(Figure, 'savefig', lambda self, path, **kwargs: path.write_bytes(b'figure-lifecycle-test'))
+    enabled = gc.isenabled()
+    gc.disable()  # 批量交付不能依赖下一次自动循环回收恰好及时发生。
+    try:
+        for index in range(6):
+            render(payload, ws/'research'/f'company-{index}'/'charts')
+        assert peak <= 2, '已关闭图形不得随独立公司报告数量持续驻留'
+    finally:
+        if enabled:
+            gc.enable()
+        gc.collect()
 
 
 @pytest.mark.parametrize('reference', [{}, {'label':'基准', 'value':True}, {'label':'基准', 'value':float('inf')}, {'value':2}])

@@ -1,5 +1,6 @@
 """把已核对的研究数据绘成中文PNG，不计算估值、选择假设或下载数据。"""
 import argparse
+import gc
 import hashlib
 import json
 import math
@@ -308,6 +309,8 @@ def render(payload, output):
     if output.exists() or any((p / 'research.json').exists() for p in [output, *output.parents] if p.is_relative_to(research)):
         raise ValueError('不能覆盖图表或已登记的冻结报告')
     verified = validate(payload, workspace)
+    # pyplot.close解除登记后仍有循环引用，及时回收前一份公司的图形及像素缓冲。
+    gc.collect()
     try:
         import matplotlib
         matplotlib.use('Agg')
