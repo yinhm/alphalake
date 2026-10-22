@@ -17,7 +17,6 @@ from tools.check_native_sqlite import value_digest
 from tools.initial_coverage import save
 from tools.initial_coverage_report import build_charts, model_review_flags
 from tools.narrative_valuation import digest, read_json
-from tools.valuation_results import import_snapshot
 
 LIMITS = ['未来年度数值是逐公司研究条件，不是公司承诺、概率预测或当前目标价。',
           '财务、股本、现金及金融投资沿冻结消费快照，期后资本与参考代理限制保留。',
@@ -316,7 +315,7 @@ def deliver(run_directory, previous_dataset, baseline_report, identifier):
     screen_file = run_directory/'screen.json'
     save(screen_file, snapshot)
     return dict(report_id=identifier, actual_notes=len(reviewed), authored_conditions=ready,
-        new_company_reports=len(updates), screen=import_snapshot(screen_file, activate=True))
+        new_company_reports=len(updates), screen_file=relative_path(screen_file), publication_status='not_published')
 
 
 def main():

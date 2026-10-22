@@ -1,6 +1,7 @@
 """研究批次机械装配与累计交付；不调用真实库、网络或DCF计算。"""
 from copy import deepcopy
 from datetime import date
+import json
 from types import SimpleNamespace
 
 import pytest
@@ -130,6 +131,62 @@ def test_retry_reuses_only_identical_registered_company_report(tmp_path, monkeyp
     with pytest.raises(ValueError, match='身份或运行不一致'):
         delivery.company_report('existing', dict(ticker='SHSE:600519'), result,
             None, None, None, None, dict(run_id='same-run'), note)
+
+
+def test_generation_writes_complete_snapshot_without_activating_screen(tmp_path, monkeypatch):
+    from tools import coverage_research_delivery as delivery
+    monkeypatch.setenv('ALPHALAKE_WORKSPACE', str(tmp_path))
+    (tmp_path/'research').mkdir()
+    ticker, outside = 'SZSE:300866', 'SHSE:600000'
+    old_rows = [dict(ticker=t, report_id='previous', admission='not_calculated', close_date=None,
+                    share_date=None, price_comparison_status='not_calculated',
+                    price_comparison_reason='合成测试', mode=None, review_flags=[]) for t in (ticker, outside)]
+    original = deepcopy(old_rows)
+    snapshot = dict(sqlite_sha256='same', reference_snapshot_id='same',
+                    financial_report_period='2026-06-30', information_as_of='2026-10-20T00:00:00Z')
+    stages = dict(calculation='same', review='same')
+    pending = dict(ticker=ticker, status='pending', story_id='story', model_file=None)
+    bodies = {
+        'summary.json': dict(results=[pending], snapshot=snapshot, run_id='same'),
+        'protocol.json': dict(frozen_file='frozen.json', frozen_sha256='same', run_id='same',
+                              runtime=dict(stages=stages)),
+        'frozen.json': dict(plan_file='plan.json', frozen_at='2026-10-21T00:00:00Z'),
+        'index.json': dict(dataset=dict(**snapshot, runtime_stages=stages, source_report_id='previous'), rows=old_rows),
+        'previous-results.json': dict(reviewed_tickers=[]),
+        'baseline-results.json': dict(results=[dict(**old_rows[0], native_report_id='native')]),
+        'batch.json': dict(notes=[dict(ticker=ticker, purpose='deferred')]),
+        'note.json': {}, 'plan.json': {},
+    }
+    for name, body in bodies.items():
+        target = tmp_path/('run' if name in ('summary.json', 'protocol.json') else '')/name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(body))
+    plan = SimpleNamespace(document=SimpleNamespace(
+        scope={ticker: 'scope', outside: 'outside_financial_scope'}, stories=[SimpleNamespace(id='story')],
+        evidence=[SimpleNamespace(id='analyst-batch-index', file='batch.json'),
+                  SimpleNamespace(id='szse-300866-analyst-judgment', kind='research_judgment', file='note.json')]))
+    monkeypatch.setattr(delivery, 'read_json', lambda path: bodies[path.name])
+    monkeypatch.setattr(delivery, 'digest', lambda _: 'same')
+    monkeypatch.setattr(delivery.ResearchPlan, 'model_validate', lambda _: plan)
+    monkeypatch.setattr(delivery, 'assess_plan', lambda *args, **kwargs: dict(stories=[]))
+    monkeypatch.setattr(delivery, 'read_report', lambda identifier: SimpleNamespace(id=identifier))
+    monkeypatch.setattr(delivery, 'verified_file',
+                        lambda report, _: (None, tmp_path/(report.id+'-results.json')))
+    monkeypatch.setattr(delivery, 'company_report', lambda *args: (
+        SimpleNamespace(id='company-report', share_date=None), None))
+
+    def publish(folder, metadata):
+        (folder/'research.json').write_text(json.dumps(metadata))
+        return SimpleNamespace(id=metadata['id'], title=metadata['title'], limitations=metadata['limitations'])
+
+    monkeypatch.setattr(delivery, 'publish', publish)
+    result = delivery.deliver(tmp_path/'run', 'previous', 'baseline', 'new-batch')
+    assert result['publication_status'] == 'not_published'
+    actual = json.loads((tmp_path/result['screen_file']).read_text())
+    assert actual['universe_count'] == 2 and [row['ticker'] for row in actual['rows']] == [ticker, outside]
+    assert actual['rows'][1] == original[1] and old_rows == original
+    assert actual['rows'][0]['report_id'] == 'company-report'
+    assert not delivery.result_path('current.json').exists()
 
 
 def test_known_post_period_capital_change_cannot_be_hidden_by_approved_proxy():

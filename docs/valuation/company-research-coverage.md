@@ -78,7 +78,7 @@ PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.coverage_research run 
 
 修订索引须用`previous_report_id`绑定当前该公司报告，交付另建ID及前版关系；累计唯一公司数不因补算／修订增加。无此关联的重复公司拒绝。累计分别统计已留下研究记录、公司条件、诊断条件和仍无新值的公司，不用全部可计算数代替公司研究采用数。范围检查或材料不足的记录不称完整经营研究；完整队列处理完也不表示所有公司都有可采用的主值。
 
-累计快照完整保留原分母，验证登记及模型哈希后原子切换`/screen`。新报告只引用旧研究，不复制全部旧模型／PDF或重新执行旧条件。每批均保留本批公司数、累计研究数、条件计算数及未解决数，固定队列未处理完不能称全市场研究完成。研究计划、结果、图片和所有运行收据均留workspace。
+图文生成与摘要导入须在两个串行进程执行，避免绘图缓冲、累计结果与导入校验副本叠加驻留。`coverage_research_delivery`只返回`screen_file`及`publication_status=not_published`，生成成功不等于选股已更新。随后用既有`valuation_results import-snapshot`完整核对原分母、登记及模型哈希，成功才原子切换`/screen`；失败保留旧指针，只重试未完成的导入，不重算或重画。新报告只引用旧研究，不复制全部旧模型／PDF或重新执行旧条件。每批均保留本批公司数、累计研究数、条件计算数及未解决数，固定队列未处理完不能称全市场研究完成。研究计划、结果、图片和所有运行收据均留workspace。
 
 资本复核可在索引显式附`capital_review`及哈希，工具把其中标准来源一起冻结；报告展开该公司数量级判断，不把三项现金流调节称为完整营运资本。明确期后资本尚未桥接时，笔记用`price_comparison.status=unreconciled_post_period_capital_change`及具体原因收紧既有比较边界，不能反向放开；重述相同原生状态沿用原来源限制，不替换原因。登记失败保留当前选股指针；重试只复用来源／运行完全相同的已登记公司报告，不覆盖旧签名。未登记非空目录须核对失败产物后恢复。
 
@@ -95,4 +95,8 @@ PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.coverage_research_note
 PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.coverage_research_delivery \
   "$ALPHALAKE_RESEARCH_RUN" --previous-dataset "$ALPHALAKE_PREVIOUS_DATASET" \
   --baseline-report "$ALPHALAKE_BASELINE_REPORT" --id "$ALPHALAKE_RESEARCH_ID"
+
+# 前一进程退出释放图文内存后，完整验证并原子切换当前选股批次。
+PYTHONPATH=valuation/backend "$ALPHALAKE_PYTHON" -m tools.valuation_results import-snapshot \
+  "$ALPHALAKE_RESEARCH_RUN/screen.json" --activate
 ```
