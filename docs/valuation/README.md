@@ -14,6 +14,7 @@
 | SQLite消费边界调整 | [撤表、输入投影、调用方及切换验收spec](sqlite-input-snapshot-spec.md) | 已实施并发布v13；数据治理归DuckDB，估值公式及数值保持 |
 | 国内行业与估值关联 | [TDX、申万及跨体系映射调研](industry-association.md) | 国内分类与估值参考分别计数；申万主分类及新映射默认政策尚未上线 |
 | 原生参考、实际输入与版本 | [来源、WACC/预测消费及参考桥接](native-reference-bridge.md) | 默认US口径保留，主库→SQLite→会话参考有版本；不是公司市场WACC自动认证 |
+| 风险参考的经济适用性 | [样本、业务、杠杆及显式修订](reference-applicability.md) | 已证失配不只加免责声明继续采用；研究修订与统一默认分开 |
 | 人民币显式场景 | [WACC与经营候选](native-cny-policy.md) | 来源、折现及经营假设分别保存，不与网页默认混为价格更新 |
 | 自动选择与合法变更 | [基础选择规则](native-assumption-selection.md) | 规则只是条件候选；合法输入变更须重建基线，不静默混用口径 |
 | 跨公司复验 | [统一情景](native-uniform-scenarios.md) | 固定分母、持续期与利润率场景，不逐个公司调参挑结果 |
