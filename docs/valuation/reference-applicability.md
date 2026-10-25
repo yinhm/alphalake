@@ -24,8 +24,16 @@
 | Chemical (Diversified) | 同版Global业务Beta；US仅4家且高杠杆，已读公司为受全球价差、能源及装置投入影响的多产品化工制造 | 不用行业均值改写公司利润或资本效率 |
 | Oil/Gas (Integrated) | 已有明确上游、炼化和销售一体化业务证据的公司采用同版Global业务Beta；US仅4家 | 燃气分销/管网不因分类名称纳入 |
 
-以上均保留现有行业分类。国新能源的已读业务主要为燃气分销/管网，不据分类名称套用一体化油气修订；原数值保留为诊断，新的业务关联方案另审。公用事业、广播等低Beta参考尚未形成充分修订依据，不扩大采用范围。
+以上均保留现有行业分类。宽行业内部仍须看公司实际业务，不能把同版Global当作审核终点。2026-10-25沿既有显式`direct_unlevered`入口完成以下研究修订：
+
+| 已读业务类别 | 显式业务Beta代理 | 本次适用及限制 |
+|---|---|---|
+| 汽车橡塑零部件 | Auto Parts／Global，现金调整去杠杆Beta 1.353472；797家 | 朗博、中鼎、川环的客户、产品和需求主要为汽车配套，不继续套轮胎参考；新领域贡献仍按原故事，不改收入或资本条件 |
+| 天然气分销／管网 | Oil/Gas Distribution／Global，0.461154；186家 | 国新能源采用输配业务风险，不冒称油气一体化；顺价、信用及债务期限未闭合，继续仅作诊断 |
+| 有线接入网络 | Cable TV／Global，0.590830；42家 | 江苏有线、湖北广电区别于节目广播；政企业务等混合暴露仍披露，湖北广电恢复／融资条件继续仅作诊断 |
+
+这是业务可比性审阅后的显式风险代理，**不是修改官方公司行业事实或批量分类关联**。采用工作簿的业务Beta后按本公司资本结构重新加杠杆，不移植行业债务权重；利润率、资本倍率、债务利差及ERP继续沿原条件。Global在此是分散地域样本的研究选择，不是因为样本数大就必然正确。其他未审公司、公用事业和广播业务不自动采用。
 
 后续研究复用本清单时仍核对业务和来源版本，明确继承或例外；不得把未审公司自动回退旧基线并当主研究。Beta地域变化不自动带动利润率、资本倍率、债务利差或ERP地域切换。
 
-本轮实际数值、范围、前后版及核验见[修订验收](../history/valuation-anomaly-corrections-20261023.md)。来源依据：[达摩达兰US Beta](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/Betas.html)、[Global Beta](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/BetasGlobal.html)、[折现率与自下而上Beta](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/littlebook/discountrates.htm)。这些资料支持样本及业务风险审核，不替本项目选择公司参数。
+实际数值、范围、前后版及核验见[首次修订验收](../history/valuation-anomaly-corrections-20261023.md)及[业务风险对齐](../history/business-risk-alignment-20261025.md)。来源依据：[达摩达兰US Beta](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/Betas.html)、[Global Beta](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/BetasGlobal.html)、[折现率与自下而上Beta](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/littlebook/discountrates.htm)。这些资料支持样本及业务风险审核，不替本项目选择公司参数；本轮改善参考可比性，不证明未来经营预测已经准确。
